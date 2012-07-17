@@ -1,0 +1,362 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: oLanguage - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: oLanguage</h1>
+					<h2 class="ancestors">Ancestry: <span class="ancestors"><a href="DataTable.html">DataTable</a> » <a href="DataTable.defaults.html">.defaults</a>.</span> » oLanguage</h2>
+					<div class="page-info">
+						DataTables v1.9.1 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_namespaces">Namespaces</a> | <a href="#summary_properties">Properties</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">All strings that DataTables uses in the user interface that it creates
+are defined in this object, allowing you to modified them individually or
+completely replace them all as required.</p><dl class="details">
+	
+</dl>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_namespaces"></a><h3 class="subsection-title">Namespaces</h3>
+<dl>
+	<dt class="even"><span class="type-name"><a href="DataTable.defaults.oLanguage.oAria.html">oAria</a></span></dt><dd class="even">Strings that are used for WAI-ARIA labels and controls only (these are not
+actually visible on the page, but will be read by screenreaders, and thus
+must be internationalised as well).</dd><dt class="odd"><span class="type-name"><a href="DataTable.defaults.oLanguage.oPaginate.html">oPaginate</a></span></dt><dd class="odd">Pagination string used by DataTables for the two built-in pagination
+control types ("two_button" and "full_numbers")</dd>
+</dl></div><div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sEmptyTable">sEmptyTable</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">This string is shown in preference to sZeroRecords when the table is
+empty of data (regardless of filtering). Note that this is an optional
+parameter - if it is not given, the value of sZeroRecords will be used
+instead (either the default or given value).</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfo">sInfo</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">This string gives information to the end user about the information that 
+is current on display on the page. The _START_, _END_ and _TOTAL_ 
+variables are all dynamically replaced as the table display updates, and 
+can be freely moved or removed as the language requirements change.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoEmpty">sInfoEmpty</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Display information string for when the table is empty. Typically the 
+format of this string should match sInfo.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoFiltered">sInfoFiltered</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">When a user filters the information in a table, this string is appended 
+to the information (sInfo) to give an idea of how strong the filtering 
+is. The variable _MAX_ is dynamically updated.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoPostFix">sInfoPostFix</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">If can be useful to append extra information to the info string at times,
+and this variable does exactly that. This information will be appended to
+the sInfo (sInfoEmpty and sInfoFiltered in whatever combination they are
+being used) at all times.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoThousands">sInfoThousands</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">DataTables has a build in number formatter (fnFormatNumber) which is used
+to format large numbers that are used in the table information. By
+default a comma is used, but this can be trivially changed to any
+character you wish with this parameter.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sLengthMenu">sLengthMenu</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Detail the action that will be taken when the drop down menu for the
+pagination length option is changed. The '_MENU_' variable is replaced
+with a default select list of 10, 25, 50 and 100, and can be replaced
+with a custom select box if required.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sLoadingRecords">sLoadingRecords</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">When using Ajax sourced data and during the first draw when DataTables is
+gathering the data, this message is shown in an empty row in the table to
+indicate to the end user the the data is being loaded. Note that this
+parameter is not used when loading data by server-side processing, just
+Ajax sourced data with client-side processing.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sProcessing">sProcessing</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Text which is displayed when the table is processing a user action
+(usually a sort command or similar).</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sSearch">sSearch</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Details the actions that will be taken when the user types into the
+filtering input text box. The variable "_INPUT_", if used in the string,
+is replaced with the HTML text box for the filtering input allowing
+control over where it appears in the string. If "_INPUT_" is not given
+then the input box is appended to the string automatically.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sUrl">sUrl</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">All of the language information can be stored in a file on the
+server-side, which DataTables will look up if this parameter is passed.
+It must store the URL of the language file, which is in a JSON format,
+and the object has the same properties as the oLanguage object in the
+initialiser object (i.e. the above parameters). Please refer to one of
+the example language files to see how this works in action.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sZeroRecords">sZeroRecords</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Text shown inside the table records when the is no information to be
+displayed after filtering. sEmptyTable is shown when there is simply no
+information in the table at all (regardless of filtering).</dd>
+</dl></div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class="  even"><a name="sEmptyTable"></a><a name="sEmptyTable_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sEmptyTable">sEmptyTable</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">This string is shown in preference to sZeroRecords when the table is
+empty of data (regardless of filtering). Note that this is an optional
+parameter - if it is not given, the value of sZeroRecords will be used
+instead (either the default or given value).</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sEmptyTable": "No data available in table"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="sInfo"></a><a name="sInfo_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfo">sInfo</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">This string gives information to the end user about the information that 
+is current on display on the page. The _START_, _END_ and _TOTAL_ 
+variables are all dynamically replaced as the table display updates, and 
+can be freely moved or removed as the language requirements change.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sInfo": "Got a total of _TOTAL_ entries to show (_START_ to _END_)"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  even"><a name="sInfoEmpty"></a><a name="sInfoEmpty_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoEmpty">sInfoEmpty</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Display information string for when the table is empty. Typically the 
+format of this string should match sInfo.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sInfoEmpty": "No entries to show"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="sInfoFiltered"></a><a name="sInfoFiltered_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoFiltered">sInfoFiltered</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">When a user filters the information in a table, this string is appended 
+to the information (sInfo) to give an idea of how strong the filtering 
+is. The variable _MAX_ is dynamically updated.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sInfoFiltered": " - filtering from _MAX_ records"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  even"><a name="sInfoPostFix"></a><a name="sInfoPostFix_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoPostFix">sInfoPostFix</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">If can be useful to append extra information to the info string at times,
+and this variable does exactly that. This information will be appended to
+the sInfo (sInfoEmpty and sInfoFiltered in whatever combination they are
+being used) at all times.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sInfoPostFix": "All records shown are derived from real information."
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="sInfoThousands"></a><a name="sInfoThousands_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInfoThousands">sInfoThousands</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">DataTables has a build in number formatter (fnFormatNumber) which is used
+to format large numbers that are used in the table information. By
+default a comma is used, but this can be trivially changed to any
+character you wish with this parameter.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sInfoThousands": "'"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  even"><a name="sLengthMenu"></a><a name="sLengthMenu_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sLengthMenu">sLengthMenu</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Detail the action that will be taken when the drop down menu for the
+pagination length option is changed. The '_MENU_' variable is replaced
+with a default select list of 10, 25, 50 and 100, and can be replaced
+with a custom select box if required.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Examples</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // Language change only
+   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sLengthMenu": "Display _MENU_ records"
+       }
+     } );
+   } );
+   
+ </pre>
+    </div>
+
+    <div class="example-code">
+    	<pre class="brush: js">   // Language and options change
+   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sLengthMenu": 'Display <select>'+
+           '<option value="10">10</option>'+
+           '<option value="20">20</option>'+
+           '<option value="30">30</option>'+
+           '<option value="40">40</option>'+
+           '<option value="50">50</option>'+
+           '<option value="-1">All</option>'+
+           '</select> records'
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="sLoadingRecords"></a><a name="sLoadingRecords_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sLoadingRecords">sLoadingRecords</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">When using Ajax sourced data and during the first draw when DataTables is
+gathering the data, this message is shown in an empty row in the table to
+indicate to the end user the the data is being loaded. Note that this
+parameter is not used when loading data by server-side processing, just
+Ajax sourced data with client-side processing.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready( function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sLoadingRecords": "Please wait - loading..."
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  even"><a name="sProcessing"></a><a name="sProcessing_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sProcessing">sProcessing</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Text which is displayed when the table is processing a user action
+(usually a sort command or similar).</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sProcessing": "DataTables is currently busy"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="sSearch"></a><a name="sSearch_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sSearch">sSearch</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Details the actions that will be taken when the user types into the
+filtering input text box. The variable "_INPUT_", if used in the string,
+is replaced with the HTML text box for the filtering input allowing
+control over where it appears in the string. If "_INPUT_" is not given
+then the input box is appended to the string automatically.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Examples</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // Input text box will be appended at the end automatically
+   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sSearch": "Filter records:"
+       }
+     } );
+   } );
+   
+ </pre>
+    </div>
+
+    <div class="example-code">
+    	<pre class="brush: js">   // Specify where the filter should appear
+   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sSearch": "Apply filter _INPUT_ to table"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  even"><a name="sUrl"></a><a name="sUrl_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sUrl">sUrl</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">All of the language information can be stored in a file on the
+server-side, which DataTables will look up if this parameter is passed.
+It must store the URL of the language file, which is in a JSON format,
+and the object has the same properties as the oLanguage object in the
+initialiser object (i.e. the above parameters). Please refer to one of
+the example language files to see how this works in action.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sUrl": "http://www.sprymedia.co.uk/dataTables/lang.txt"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="sZeroRecords"></a><a name="sZeroRecords_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sZeroRecords">sZeroRecords</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Text shown inside the table records when the is no information to be
+displayed after filtering. sEmptyTable is shown when there is simply no
+information in the table at all (regardless of filtering).</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     $('#example').dataTable( {
+       "oLanguage": {
+         "sZeroRecords": "No records to display"
+       }
+     } );
+   } );</pre>
+    </div>
+</div></dd>
+</dl></div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			DataTables: Copyright 2008-2012 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

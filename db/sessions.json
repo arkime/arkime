@@ -1,0 +1,96 @@
+{
+  "template": "session*",
+  "settings" : {
+    "index.cache.field.type" : "soft",
+    "index" : {
+      "routing.allocation.total_shards_per_node" : 1,
+      "refresh_interval" : 60,
+      "number_of_shards" : CHANGE_ME_TO_NUMBER_OF_NODES,
+      "number_of_replicas" : 0,
+      "analysis" : {
+        "analyzer" : {
+          "url_analyzer" : {
+            "type" : "custom",
+            "tokenizer": "pattern",
+            "filter": ["lowercase"]
+          }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "session": {
+      "_all" : {"enabled" : false},
+      "_source" : {"compress" : true},
+      "properties": {
+        "us": {
+          "type": "string",
+          "analyzer": "url_analyzer"
+        },
+        "ps": {
+          "type": "long",
+          "index": "no"
+        },
+        "fs": {
+          "type": "long"
+        },
+        "lp": {
+          "type": "long"
+        },
+        "fp": {
+          "type": "long"
+        },
+        "a1": {
+          "type": "long"
+        },
+        "g1": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "p1": {
+          "type": "integer"
+        },
+        "a2": {
+          "type": "long"
+        },
+        "g2": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "p2": {
+          "type": "integer"
+        },
+        "pr": {
+          "type": "short"
+        },
+        "pa": {
+          "type": "integer"
+        },
+        "by": {
+          "type": "long"
+        },
+        "db": {
+          "type": "long"
+        },
+        "ro": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "no": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "ho": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "ta": {
+          "type": "integer"
+        },
+        "hh": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

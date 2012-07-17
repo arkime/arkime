@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: oScroll - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: oScroll</h1>
+					<h2 class="ancestors">Ancestry: <span class="ancestors"><a href="DataTable.html">DataTable</a> » <a href="DataTable.models.html">.models</a> » <a href="DataTable.models.oSettings.html">.oSettings</a>.</span> » oScroll</h2>
+					<div class="page-info">
+						DataTables v1.9.1 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_properties">Properties</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">Scrolling settings for a table.</p><dl class="details">
+	
+</dl>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bAutoCss">bAutoCss</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Indicate if DataTables should be allowed to set the padding / margin
+etc for the scrolling header elements or not. Typically you will want
+this.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bCollapse">bCollapse</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">When the table is shorter in height than sScrollY, collapse the
+table container down to the height of the table (when true).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bInfinite">bInfinite</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Infinite scrolling enablement flag. Now deprecated in favour of
+using the Scroller plug-in.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iBarWidth">iBarWidth</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd">Width of the scrollbar for the web-browser's platform. Calculated
+during table initialisation.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iLoadGap">iLoadGap</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even">Space (in pixels) between the bottom of the scrolling container and 
+the bottom of the scrolling viewport before the next page is loaded
+when using infinite scrolling.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sX">sX</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Viewport width for horizontal scrolling. Horizontal scrolling is 
+disabled if an empty string.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sXInner">sXInner</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Width to expand the table to when using x-scrolling. Typically you
+should not need to use this.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sY">sY</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Viewport height for vertical scrolling. Vertical scrolling is disabled
+if an empty string.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd>
+</dl></div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class="  even"><a name="bAutoCss"></a><a name="bAutoCss_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bAutoCss">bAutoCss</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Indicate if DataTables should be allowed to set the padding / margin
+etc for the scrolling header elements or not. Typically you will want
+this.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bCollapse"></a><a name="bCollapse_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bCollapse">bCollapse</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">When the table is shorter in height than sScrollY, collapse the
+table container down to the height of the table (when true).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bInfinite"></a><a name="bInfinite_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bInfinite">bInfinite</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Infinite scrolling enablement flag. Now deprecated in favour of
+using the Scroller plug-in.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="iBarWidth"></a><a name="iBarWidth_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iBarWidth">iBarWidth</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd"><p class="description">Width of the scrollbar for the web-browser's platform. Calculated
+during table initialisation.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="iLoadGap"></a><a name="iLoadGap_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iLoadGap">iLoadGap</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even"><p class="description">Space (in pixels) between the bottom of the scrolling container and 
+the bottom of the scrolling viewport before the next page is loaded
+when using infinite scrolling.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="sX"></a><a name="sX_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sX">sX</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Viewport width for horizontal scrolling. Horizontal scrolling is 
+disabled if an empty string.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="sXInner"></a><a name="sXInner_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sXInner">sXInner</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Width to expand the table to when using x-scrolling. Typically you
+should not need to use this.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	<dt class="important">Deprecated</dt><dd class="yes-def">Yes</dd>
+</dl>
+</div></dd><dt class="  odd"><a name="sY"></a><a name="sY_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sY">sY</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Viewport height for vertical scrolling. Vertical scrolling is disabled
+if an empty string.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd>
+</dl></div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			DataTables: Copyright 2008-2012 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

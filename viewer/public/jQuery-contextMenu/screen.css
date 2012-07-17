@@ -1,0 +1,159 @@
+@charset "utf-8";
+
+body {
+    margin: 0;
+    background-color: #D0D0D0;
+    font-family: "Helvetica,Arial,FreeSans";
+    color: #000000;
+}
+
+img { border:0; }
+
+#container {
+    margin: 0 auto;
+    width: 700px;
+    padding: 20px;
+    background-color: #FFFFFF;
+    border-left: 1px solid #999999;
+    border-right: 1px solid #999999;
+}
+
+h1 { 
+    font-size: 3.8em; 
+    color: #2c879b; 
+    margin-bottom: 3px; 
+}
+
+h1 > .small { 
+    font-size: 0.4em;
+}
+
+h1 a { 
+    text-decoration: none 
+}
+
+h2 { 
+    font-size: 1.5em; 
+    color: #2c879b;
+    border-bottom: 1px dotted #2c879b;
+}
+
+h3 { 
+    text-align: center; 
+    color: #2c879b; 
+}
+
+a { 
+    color: #2c879b; 
+}
+
+.description { 
+    font-size: 1.2em; 
+    margin-bottom: 30px; 
+    margin-top: 30px; 
+    font-style: italic;
+}
+
+/*
+pre { 
+    background: #000; 
+    color: #fff; 
+    padding: 15px;
+}
+*/
+
+hr { 
+    border: 0; 
+    width: 80%; 
+    border-bottom: 1px solid #aaa;
+}
+
+ul.plain-list {
+    list-style-type:none;
+    margin:0;
+    padding:0;
+}
+
+ul.plain-list > li {
+    list-style-type:none;
+    margin:0;
+    padding:0;
+}
+
+#download { 
+    float: right; 
+}
+
+#github-forkme {
+    position: absolute; 
+    top: 0; 
+    right: 0;
+}
+
+#github-watch {
+    position: fixed; 
+    bottom: 10px; 
+    right: 10px;
+}
+
+#container .footer { text-align:center; padding-top:30px; font-style: italic; }
+
+.menu { font-size: 0; }
+.menu > li {
+    list-style-type: none;
+    display: inline-block;
+    font-size: 15px;
+}
+.menu > li + li {
+    margin-left: 5px;
+}
+.menu > li > a {
+    color: white;
+    font-weight: bold;
+    background-color: #666;
+    text-decoration: none;
+    display: block;
+    padding: 2px 4px 2px 4px;
+}
+
+.menu > li.active > a {
+    background-color: #2C879B;
+}
+
+.menu > li > a:hover {
+    background-color: #111;
+}
+
+#demo-list > li.current {
+    font-style: italic;
+}
+#demo-list > li.current:after {
+    content: "« currently viewing";
+    color: #AAA;
+    display: inline-block;
+    margin-left: 20px;
+}
+
+/* hide whitespace between inline-block elements */
+.inline-spaces { font-size: 0; }
+.inline-spaces > * { font-size: 11px; }
+
+/* demo trigger boxes */
+.box {
+    color: #EEE;
+    background: #666;
+    font-weight: bold;
+    padding: 20px;
+    text-align: center;
+    font-size: 20px;
+    margin: 5px 0;
+}
+.box:hover {
+    background: #777;
+}
+.box > * {
+    display:block;
+}
+.menu-injected { background-color: #C87958; }
+.box.context-menu-disabled { background-color: red; }
+

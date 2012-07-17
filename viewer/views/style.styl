@@ -1,0 +1,257 @@
+// general
+body
+  margin: 0 auto
+
+.bold
+  font-weight: bold
+
+.ulist-nav li
+  display:inline
+  font-size:1em
+  border-right:1px solid black
+  margin-right:1em
+  padding-right:1em
+
+.ulist-nav li.last
+  border-right:none
+
+.ulist-nav li a
+  text-decoration:none
+  color:black
+
+.ulist-nav li a:hover
+  text-decoration:underline
+
+.ulist-side li
+  list-style:none
+  font-size:1em
+  margin-right:1em
+  padding-right:1em
+
+.ulist-side li a
+  text-decoration:none
+  color:black
+
+.ulist-side li a:hover
+  text-decoration:underline
+
+// layout.jade
+#header
+  margin-bottom:2em
+  line-height: 0px
+  height: 30px
+
+#logo
+  display: inline
+  float: left
+  padding-left:5px
+
+#version
+  float:right
+  padding-right:10px
+  color:#666666
+  
+#nav 
+  font-weight:bold
+  text-indent:15px
+  background:#B6CDE1
+  border:1px solid #93B2CC
+  padding:5px 0
+  margin:0 auto
+  height: 39px
+
+#nav h3
+  position:absolute
+  left:-100000em
+
+#footer
+  clear: both
+
+// config.jade
+
+#sidenav
+  float: left
+
+#config
+  float: left
+
+#form-status.formmgr-status-hidden
+  display: none
+
+.formmgr-message-text
+  display: none
+
+fieldset .formmgr-haserror .formmgr-message-text,
+fieldset .formmgr-haswarn .formmgr-message-text,
+fieldset .formmgr-hassuccess .formmgr-message-text,
+fieldset .formmgr-hasinfo .formmgr-message-text
+  display: block
+
+#form-status.formmgr-status-failure
+  font-weight: bold
+  color: #BE1E2D
+
+.formmgr-message-text
+  margin: 5px 0 0
+
+fieldset.formmgr-haserror h2,
+fieldset .formmgr-haserror .formmgr-message-text
+  color: #BE1E2D
+
+fieldset input.formmgr-haserror,
+fieldset select.formmgr-haserror
+  background-color: #FFCCCC
+
+fieldset.formmgr-haswarn h2,
+.formmgr-haswarn .formmgr-message-text
+  color: #999900
+
+.formmgr-row
+  margin-bottom: 5px
+
+// SESSIONS
+
+.dataTables_processing
+  color: red
+  font-size: 24px
+
+#sessions
+  word-wrap:break-word
+  table-layout:fixed
+
+#textpacket
+  width:90%
+  border: 1px
+  padding-left:10px
+  table-layout:fixed
+  word-wrap:break-word
+
+.textcol
+  width: 45%
+
+.box
+  display: inline
+
+
+#sessionsInfo
+  width: 100%
+
+#sessionGraph
+  border: 10px
+  width: 80%
+  height: 150px
+  float: left
+  z-index: 0
+
+#sessionGraph .button
+  position: absolute
+  cursor: pointer
+
+#sessionGraph div.button
+  font-size: smaller
+  color: #999
+  background-color: #eee
+  padding: 2px
+
+#world-map
+  width: 250px
+  height: 150px
+  float: right
+  z-index: 2
+
+.jvectormap-label
+  z-index: 3
+
+// stats
+
+.axis path, .axis line
+  fill: none
+  stroke: #000
+  shape-rendering: crispEdges
+
+.axis
+  font: 10px sans-serif
+
+.axis text
+  -webkit-transition: fill-opacity 250ms linear
+
+.axis path
+  display: none
+
+.axis line
+  stroke: #000
+  shape-rendering: crispEdges
+
+.horizon
+  border-bottom: solid 1px #000
+  overflow: hidden
+  position: relative
+
+.horizon + .horizon
+  border-top: none
+
+.horizon canvas
+  display: block
+
+.horizon .title, .horizon .value
+  bottom: 0
+  line-height: 30px
+  margin: 0 6px
+  position: absolute
+  text-shadow: 0 1px 0 rgba(255,255,255,.5)
+  white-space: nowrap
+
+.horizon .title
+  left: 0
+
+.horizon .value
+  right: 0
+
+.line
+  background: #000
+  opacity: .2
+  z-index: 2
+  right: 0
+
+#stats td.right
+  text-align: right
+
+#stats th
+  padding: 3px 10px
+  text-align: right
+
+// map
+
+.jvectormap-label
+  position: absolute
+  display: none
+  border: solid 1px #CDCDCD
+  -webkit-border-radius: 3px
+  -moz-border-radius: 3px
+  border-radius: 3px
+  background: #292929
+  color: white
+  font-family: sans-serif, Verdana
+  font-size: smaller
+  padding: 3px
+
+.jvectormap-zoomin, .jvectormap-zoomout
+  position: absolute
+  left: 10px
+  -webkit-border-radius: 3px
+  -moz-border-radius: 3px
+  border-radius: 3px
+  background: #292929
+  padding: 3px
+  color: white
+  width: 10px
+  height: 10px
+  cursor: pointer
+  line-height: 10px
+  text-align: center
+
+.jvectormap-zoomin
+  top: 10px
+
+.jvectormap-zoomout
+  top: 30px

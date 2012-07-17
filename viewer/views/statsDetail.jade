@@ -1,0 +1,48 @@
+div(id='graph-#{nodeName}')
+
+script(type='text/javascript')
+  var dcontext = cubism.context()
+      .serverDelay(0)
+      .clientDelay(0)
+      .step(60e3)
+      .size(1440);
+
+  function dmetric(name, mname) {
+    return dcontext.metric(function(startV, stopV, stepV, callback) {
+      $.ajax( {
+        "dataType": 'json', 
+        "type": "GET", 
+        "url": "/dstats.json?nodeName=#{nodeName}" +
+                      "&start=" + startV/1000 + 
+                      "&stop=" + stopV/1000 + 
+                      "&step=" + stepV/1000 + 
+                      "&interval=60" + 
+                      "&name=" + mname,
+        "success": function(data) {
+          callback(null, data);
+        }
+      });
+    }, name);
+  }
+
+  d3.select("#graph-#{nodeName}").call(function(div) {
+
+    div.append("div")
+        .attr("class", "axis")
+        .call(dcontext.axis().orient("top"));
+
+    div.selectAll(".horizon")
+        .data([dmetric("Packets/Min", "deltaPackets"), dmetric("Bytes/Min", "deltaBytes"), dmetric("Sessions/Min", "deltaSessions"), dmetric("Dropped/Min", "deltaDropped"), dmetric("Active Sessions", "monitoring"), dmetric("Free Space", "freeSpaceM")])
+      .enter().append("div")
+        .attr("class", "horizon")
+        .call(dcontext.horizon());
+
+    div.append("div")
+        .attr("class", "rule")
+        .call(dcontext.rule());
+
+  });
+
+  dcontext.on("focus", function(i) {
+      d3.selectAll(".value").style("right", i == null ? null : dcontext.size() - i + "px");
+  });

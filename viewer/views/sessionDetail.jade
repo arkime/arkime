@@ -1,0 +1,94 @@
+div(id='sessionDetail#{session.id}')
+  div Actions:
+    if (session.ro)
+      a(href='/#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
+      | &nbsp;
+      a(href='/#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
+      br
+    else
+      a(href='/#{session.no}/pcap/#{session.id}.pcap') Download Pcap
+  div Node: 
+    a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
+  div Start Time: 
+    a(href='#', onclick='return setSessionStartTime(#{session.fp});')
+      span(id='startTime-#{session.id}')
+    | &nbsp;
+    | Stop Time:
+    a(href='#', onclick='return setSessionStopTime(#{session.lp});')
+      span(id='stopTime-#{session.id}')
+  div IP Protocol: 
+    a(href='#', onclick='return addExpression("protocol == #{session.pr}");') #{session.pr}
+  div IP/Port: 
+    a(href='#', onclick='return addSessionIP(#{session.a1});')
+      span(id='a1-#{session.id}')
+    | :
+    a(href='#', onclick='return addExpression("port == #{session.p1}");') #{session.p1}
+    if (session.g1)
+      |  (
+      a(href='#', onclick='return addExpression("country == #{session.g1}");') #{session.g1}
+      | )
+    | &nbsp; &nbsp;
+    a(href='#', onclick='return addSessionIP(#{session.a2});')
+      span(id='a2-#{session.id}')
+    | :
+    a(href='#', onclick='return addExpression("port == #{session.p2}");') #{session.p2}
+    if (session.g2)
+      |  (
+      a(href='#', onclick='return addExpression("country == #{session.g2}");') #{session.g2}
+      | )
+  if (session.ta)
+    div Tags:
+      each tag in session.ta
+        a(href='#', onclick='return addExpression("tags contains \\\"#{tag}\\\"");') #{tag}
+        | 
+  if (session.ho)
+    div Hosts:
+      each host in session.ho
+        a(href='#', onclick='return addExpression("host == #{host}");') #{host}
+        | 
+  hr
+  div
+    if (session.pa > 200)
+      p 
+        b Only showing first 200 packets
+    span
+      select(id='format-base-#{session.id}')
+        options = ['natural', 'ascii', 'utf8', 'hex']
+        for item in options
+          option(selected=query.base==item) #{item}
+      label Base
+    span
+      input(id='format-line-#{session.id}', type="checkbox", checked=query.line=='true') 
+      label Line Numbers
+    span
+      input(id='format-gzip-#{session.id}', type="checkbox", checked=query.gzip=='true') 
+      label Decode GZip
+  table#textpacket
+    tr
+      th.textcol Source
+      th.textcol Destination
+
+    each item, i in data
+      tr
+        if i % 2 == 0
+          td !{item.data}
+          td
+        else
+          td
+          td !{item.data}
+
+  script(type='text/javascript')
+    $(function() {
+      $('#startTime-#{session.id}').html(dateString(#{session.fp}, " "));
+      $('#stopTime-#{session.id}').html(dateString(#{session.lp}, " "));
+      $('#a1-#{session.id}').html(ipString(#{session.a1}));
+      $('#a2-#{session.id}').html(ipString(#{session.a2}));
+      $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, select#format-base-#{session.id}').on('change', function() {
+        var url = "/#{session.no}/#{session.id}/sessionDetail" +
+                   "?base=" + $('select#format-base-#{session.id} :selected').html() +
+                   "&line=" + $('input#format-line-#{session.id}').is(':checked') + 
+                   "&gzip=" + $('input#format-gzip-#{session.id}').is(':checked');
+
+        $("#sessionDetail#{session.id}").load(url);
+      });
+    });

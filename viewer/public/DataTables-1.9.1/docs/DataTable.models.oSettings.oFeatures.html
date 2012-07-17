@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: oFeatures - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: oFeatures</h1>
+					<h2 class="ancestors">Ancestry: <span class="ancestors"><a href="DataTable.html">DataTable</a> » <a href="DataTable.models.html">.models</a> » <a href="DataTable.models.oSettings.html">.oSettings</a>.</span> » oFeatures</h2>
+					<div class="page-info">
+						DataTables v1.9.1 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_properties">Properties</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">Primary features of DataTables and their enablement state.</p><dl class="details">
+	
+</dl>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bAutoWidth">bAutoWidth</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Flag to say if DataTables should automatically try to calculate the
+optimum table and columns widths (true) or not (false).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bDeferRender">bDeferRender</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Delay the creation of TR and TD elements until they are actually
+needed by a driven page draw. This can give a significant speed
+increase for Ajax source and Javascript source data, but makes no
+difference at all fro DOM and server-side processing tables.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bFilter">bFilter</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Enable filtering on the table or not. Note that if this is disabled
+then there is no filtering at all on the table, including fnFilter.
+To just remove the filtering input use sDom and remove the 'f' option.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bInfo">bInfo</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Table information element (the 'Showing x of y records' div) enable
+flag.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bLengthChange">bLengthChange</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Present a user control allowing the end user to change the page size
+when pagination is enabled.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bPaginate">bPaginate</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Pagination enabled or not. Note that if this is disabled then length
+changing must also be disabled.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bProcessing">bProcessing</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Processing indicator enable flag whenever DataTables is enacting a
+user request - typically an Ajax request for server-side processing.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bServerSide">bServerSide</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Server-side processing enabled flag - when enabled DataTables will
+get all data from the server for every draw - there is no filtering,
+sorting or paging done on the client-side.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSort">bSort</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Sorting enablement flag.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSortClasses">bSortClasses</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Apply a class to the columns which are being sorted to provide a
+visual highlight or not. This can slow things down when enabled since
+there is a lot of DOM interaction.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bStateSave">bStateSave</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">State saving enablement flag.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd>
+</dl></div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class="  even"><a name="bAutoWidth"></a><a name="bAutoWidth_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bAutoWidth">bAutoWidth</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Flag to say if DataTables should automatically try to calculate the
+optimum table and columns widths (true) or not (false).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bDeferRender"></a><a name="bDeferRender_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bDeferRender">bDeferRender</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Delay the creation of TR and TD elements until they are actually
+needed by a driven page draw. This can give a significant speed
+increase for Ajax source and Javascript source data, but makes no
+difference at all fro DOM and server-side processing tables.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bFilter"></a><a name="bFilter_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bFilter">bFilter</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Enable filtering on the table or not. Note that if this is disabled
+then there is no filtering at all on the table, including fnFilter.
+To just remove the filtering input use sDom and remove the 'f' option.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bInfo"></a><a name="bInfo_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bInfo">bInfo</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Table information element (the 'Showing x of y records' div) enable
+flag.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bLengthChange"></a><a name="bLengthChange_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bLengthChange">bLengthChange</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Present a user control allowing the end user to change the page size
+when pagination is enabled.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bPaginate"></a><a name="bPaginate_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bPaginate">bPaginate</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Pagination enabled or not. Note that if this is disabled then length
+changing must also be disabled.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bProcessing"></a><a name="bProcessing_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bProcessing">bProcessing</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Processing indicator enable flag whenever DataTables is enacting a
+user request - typically an Ajax request for server-side processing.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bServerSide"></a><a name="bServerSide_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bServerSide">bServerSide</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Server-side processing enabled flag - when enabled DataTables will
+get all data from the server for every draw - there is no filtering,
+sorting or paging done on the client-side.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bSort"></a><a name="bSort_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSort">bSort</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Sorting enablement flag.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bSortClasses"></a><a name="bSortClasses_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSortClasses">bSortClasses</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Apply a class to the columns which are being sorted to provide a
+visual highlight or not. This can slow things down when enabled since
+there is a lot of DOM interaction.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bStateSave"></a><a name="bStateSave_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bStateSave">bStateSave</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">State saving enablement flag.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd>
+</dl></div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			DataTables: Copyright 2008-2012 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

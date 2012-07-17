@@ -1,0 +1,37 @@
+!!!
+html
+  head
+    title Moloch - #{title}
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+    script(src='/DataTables-1.9.1/media/js/jquery.dataTables.min.js')
+    script(src='/flot-0.7/jquery.flot.min.js')
+    script(src='/flot-0.7/jquery.flot.selection.min.js')
+    script(src='/flot-0.7/jquery.flot.resize.min.js')
+    script(src='/flot-0.7/jquery.flot.navigate.min.js')
+    script(src='/common.js')
+
+    link(rel='stylesheet', type='text/css', href='/DataTables-1.9.1/media/css/demo_table.css')
+    link(rel='stylesheet', type='text/css', href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css')
+    link(rel='stylesheet', type='text/css', href='/style.css')
+  body
+    #header
+      div#logo
+        a.config(href='/about') 
+          img(src='header_logo.png')
+      div#nav
+        ul.ulist-nav
+          li
+            a(href='/') Sessions
+          li
+            a(href='/files') Files
+          if user.createEnabled
+            li
+              a(href='/users') Users
+          li
+            a(href='/stats') Stats
+          li.last
+            a.config(href='/password') Change Password
+          
+        div#version v#{molochversion}
+    #pageBody
+      != body

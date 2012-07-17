@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Sub Menus Demo - jQuery contextMenu Plugin</title>
+    <meta name="description" content="simple contextMenu generator for interactive web applications based on jQuery" />
+
+    <script src="../jquery-1.7.1.min.js" type="text/javascript"></script>
+    <script src="../src/jquery.ui.position.js" type="text/javascript"></script>
+    <script src="../src/jquery.contextMenu.js" type="text/javascript"></script>
+    <script src="../prettify/prettify.js" type="text/javascript"></script>
+    <script src="../screen.js" type="text/javascript"></script>
+
+    <link href="../src/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
+    <link href="../screen.css" rel="stylesheet" type="text/css" />
+    <link href="../prettify/prettify.sunburst.css" rel="stylesheet" type="text/css" />
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-8922143-3']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body>
+    <a id="github-forkme" href="https://github.com/medialize/jQuery-contextMenu"><img src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <div id="container">
+    <h1><a href="https://github.com/medialize/jQuery-contextMenu">jQuery contextMenu</a></h1>
+    
+    <ul class="menu">
+        <li><a href="../index.html">About</a></li>
+        <li class="active"><a href="../demo.html">Demo</a></li>
+        <li><a href="../docs.html">Documentation</a></li>
+        <li><a href="http://rodneyrehm.de/en/">Author</a></li>
+    </ul>
+
+    <h2 id="demo">Demo: Submenus</h2>
+    <div class="inline-spaces">
+<div class="context-menu-sub box menu-1">
+    <strong>right click me</strong>
+</div>
+    </div>
+
+    <h3 id="code">Example code: Submenus</h3>
+    <script type="text/javascript" class="showcase">
+$(function(){
+    /**************************************************
+     * Context-Menu with Sub-Menu
+     **************************************************/
+    $.contextMenu({
+        selector: '.context-menu-sub', 
+        callback: function(key, options) {
+            var m = "clicked: " + key;
+            window.console && console.log(m) || alert(m); 
+        },
+        items: {
+            "edit": {"name": "Edit", "icon": "edit"},
+            "cut": {"name": "Cut", "icon": "cut"},
+            "sep1": "---------",
+            "quit": {"name": "Quit", "icon": "quit"},
+            "sep2": "---------",
+            "fold1": {
+                "name": "Sub group", 
+                "items": {
+                    "fold1-key1": {"name": "Foo bar"},
+                    "fold2": {
+                        "name": "Sub group 2", 
+                        "items": {
+                            "fold2-key1": {"name": "alpha"},
+                            "fold2-key2": {"name": "bravo"},
+                            "fold2-key3": {"name": "charlie"}
+                        }
+                    },
+                    "fold1-key3": {"name": "delta"}
+                }
+            },
+            "fold1a": {
+                "name": "Other group", 
+                "items": {
+                    "fold1a-key1": {"name": "echo"},
+                    "fold1a-key2": {"name": "foxtrot"},
+                    "fold1a-key3": {"name": "golf"}
+                }
+            }
+        }
+    });
+});
+    </script>
+
+    <h3 id="html">Example HTML: Submenus</h3>
+    <div style="display:none" class="showcase" data-showcase-import=".menu-1"></div>
+    
+    
+    <h2>jQuery Context Menu Demo Gallery</h2>
+    <ul id="demo-list">
+        <li><a href="../demo.html">Simple Context Menu</a></li>
+        <li><a href="dynamic.html">Adding new Context Menu Triggers</a></li>
+        <li><a href="dynamic-create.html">Create Context Menu on demand</a></li>
+        <li><a href="async-create.html">Create Context Menu (asynchronous)</a></li>
+
+        <li><a href="keeping-contextmenu-open.html">Keeping the context menu open</a></li>
+        <li><a href="callback.html">Command's action (callbacks)</a></li>
+
+        <li><a href="trigger-left-click.html">Left-Click Trigger</a></li>
+        <li><a href="trigger-hover.html">Hover Activated Context Menu</a></li>
+        <li><a href="trigger-hover-autohide.html">Hover Activated Context Menu With Autohide</a></li>
+        <li><a href="trigger-custom.html">Custom Activated Context Menu</a></li>
+
+        <li><a href="disabled-menu.html">Disabled Menu</a></li>
+        <li><a href="disabled.html">Disabled Command</a></li>
+        <li><a href="disabled-callback.html">Disabled Callback Command</a></li>
+        <li><a href="disabled-changing.html">Changing Command's disabled status</a></li>
+
+        <li><a href="accesskeys.html">Accesskeys</a></li>
+        <li class="current"><a href="sub-menus.html">Submenus</a></li>
+
+        <li><a href="input.html">Input Commands</a></li>
+        <li><a href="custom-command.html">Custom Command Types</a></li>
+        
+        <li><a href="menu-title.html">Menus with titles</a></li>
+
+        <li><a href="html5-import.html">Importing HTML5 &lt;menu type=&quot;context&quot;&gt;</a></li>
+        <li><a href="html5-polyfill.html">HTML5 Polyfill</a></li>
+        <li><a href="html5-polyfill-firefox8.html">HTML5 Polyfill (Firefox 8)</a></li>
+    </ul>
+    </div>
+</body>
+</html>

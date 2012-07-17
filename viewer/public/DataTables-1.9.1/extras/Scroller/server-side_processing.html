@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<link rel="shortcut icon" type="image/ico" href="http://www.datatables.net/favicon.ico" />
+		
+		<title>DataTables example</title>
+		<style type="text/css" title="currentStyle">
+			@import "../../media/css/demo_page.css";
+			@import "../../media/css/demo_table.css";
+			td { white-space: nowrap; }
+		</style>
+		<script type="text/javascript" language="javascript" src="../../media/js/jquery.js"></script>
+		<script type="text/javascript" language="javascript" src="../../media/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" language="javascript" src="media/js/Scroller.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(document).ready(function() {
+				var oTable = $('#example').dataTable( {
+					"sScrollY": "200px",
+					"sAjaxSource": "media/data/server_processing.php",
+					"bServerSide": true,
+					"sDom": "frtiS"
+				} );
+			} );
+		</script>
+	</head>
+	<body id="dt_example">
+		<div id="container" style="width:980px">
+			<div class="full_width big">
+				Scroller example - server-side processing
+			</div>
+			
+			<h1>Preamble</h1>
+			<p>When using server-side processing, Scroller will wait a small amount of time to allow the scrolling to finish before requesting more data from the server (200mS by default). This prevents you from DoSing your own server! This example shows Scroller in action with a database of 10'000 records, although of course server-side processing can scale much larger if you require.</p>
+			
+			<h1>Live example</h1>
+			<div id="demo">
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>First name</th>
+			<th>Last name</th>
+			<th>ZIP</th>
+			<th width="33%">Country</th>
+		</tr>
+	</thead>
+</table>
+			</div>
+			<div class="spacer"></div>
+			
+			
+			<h1>Initialisation code</h1>
+			<pre>$(document).ready(function() {
+	var oTable = $('#example').dataTable( {
+		"sScrollY": "200px",
+		"sAjaxSource": "media/data/server_processing.php",
+		"bServerSide": true,
+		"sDom": "frtiS"
+	} );
+} );</pre>
+			
+			
+			<h1>Other examples</h1>
+			<div class="demo_links">
+				<ul>
+					<li><a href="index.html">Basic initialisation of Scroller</a></li>
+					<li><a href="state_saving.html">State saving</a></li>
+					<li><a href="api_scrolling.html">API - pragmatically move to a row</a></li>
+					<li><a href="server-side_processing.html">Server-side processing with Scroller</a></li>
+					<li><a href="large_js_source.html">50'000 rows in a table - client-side generated data</a></li>
+				</ul>
+			</div>
+			
+		</div>
+	</body>
+</html>

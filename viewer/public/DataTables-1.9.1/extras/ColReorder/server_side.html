@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<link rel="shortcut icon" type="image/ico" href="http://www.sprymedia.co.uk/media/images/favicon.ico">
+		
+		<title>ColReorder example</title>
+		<style type="text/css" title="currentStyle">
+			@import "../../media/css/demo_page.css";
+			@import "../../media/css/demo_table.css";
+			@import "media/css/ColReorder.css";
+		</style>
+		<script type="text/javascript" charset="utf-8" src="../../media/js/jquery.js"></script>
+		<script type="text/javascript" charset="utf-8" src="../../media/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" charset="utf-8" src="media/js/ColReorder.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(document).ready( function () {
+				var oTable = $('#example').dataTable( {
+					"sDom": 'Rlfrtip',
+					"bProcessing": true,
+					"bServerSide": true,
+					"sAjaxSource": "../../examples/server_side/scripts/objects.php",
+					"aoColumns": [
+						{ "mDataProp": "engine" },
+						{ "mDataProp": "browser" },
+						{ "mDataProp": "platform" },
+						{ "mDataProp": "version" },
+						{ "mDataProp": "grade" }
+					]
+				} );
+			} );
+		</script>
+	</head>
+	<body id="dt_example">
+		<div id="container">
+			<div class="full_width big">
+				ColReorder example with server-side processing
+			</div>
+			
+			<h1>Preamble</h1>
+			<p>Server-side processing can be exceptionally useful in DataTables when dealing with 
+				massive data sets, and ColReorder works with this as would be expected. There must be
+				special consideration for the column ordering on the server-side script since the 
+				columns can be in an unexpected order. For this you can either choose to use the 
+				<i>sName</i> parameter for each column and take this into account in the server-side
+				script (the parameter 'sColumns' is a comma separated string of these sName parameters).</p>
+			
+			</p>Alternatively use the more flexible <a href="http://datatables.net/usage/columns#mDataProp">mDataProp</a>
+				option for each column. This allows you to use JSON objects which DataTables, so order doesn't
+				matter like it would do in an array. Again the server-side script must take this into account
+				through the <i>mDataProp_{i}</i> which is sent for each column (so the server knows which
+				column is to be sorted on).</p>
+				
+			
+			<h1>Live example</h1>
+			<form>
+			<div id="demo">
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+	<thead>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</tfoot>
+	<tbody>
+	</tbody>
+</table>
+			</div>
+		</form>
+			<div class="spacer"></div>
+			
+			
+			<h1>Examples</h1>
+			<ul>
+				<li><a href="index.html">Basic initialisation</a></li>
+				<li><a href="alt_insert.html">Styling the insert cursor</a></li>
+				<li><a href="col_filter.html">Individual column filtering</a></li>
+				<li><a href="colvis.html">Integration with DataTables' ColVis plug-in</a></li>
+				<li><a href="fixedcolumns.html">Integration with DataTables' FixedColumns plug-in</a></li>
+				<li><a href="fixedheader.html">Integration with DataTables' FixedHeader plug-in</a></li>
+				<li><a href="predefined.html">Using a predefined column order set</a></li>
+				<li><a href="reset.html">Providing a user control to reset the column order</a></li>
+				<li><a href="scrolling.html">Column reordering shown with scrolling in DataTables</a></li>
+				<li><a href="server_side.html">Server-side processing support</a></li>
+				<li><a href="state_save.html">State saving of the column position</a></li>
+				<li><a href="theme.html">jQuery UI theme integration</a></li>
+			</ul>
+			
+			
+			<h1>Initialisation code</h1>
+			<pre>$(document).ready( function () {
+	var oTable = $('#example').dataTable( {
+		"sDom": 'Rlfrtip',
+		"bProcessing": true,
+		"bServerSide": true,
+		"sAjaxSource": "../../examples/server_side/scripts/objects.php",
+		"aoColumns": [
+			{ "mDataProp": "engine" },
+			{ "mDataProp": "browser" },
+			{ "mDataProp": "platform" },
+			{ "mDataProp": "version" },
+			{ "mDataProp": "grade" }
+		]
+	} );
+} );</pre>
+
+      <h1>Example JSON return from the server</h1>
+      <pre>{
+"sEcho": 1,
+"iTotalRecords": "57",
+"iTotalDisplayRecords": "57",
+"aaData": [
+    {
+        "engine": "Gecko",
+        "browser": "Firefox 1.0",
+        "platform": "Win 98+ / OSX.2+",
+        "version": "1.7",
+        "grade": "A"
+    },
+    {
+        "engine": "Gecko",
+        "browser": "Firefox 1.5",
+        "platform": "Win 98+ / OSX.2+",
+        "version": "1.8",
+        "grade": "A"
+    },
+    ...
+  ]
+}</pre>
+			
+			<div id="footer" style="text-align:center;">
+				<span style="font-size:10px;">
+					ColReorder and DataTables &copy; Allan Jardine 2010
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<link rel="shortcut icon" type="image/ico" href="http://www.sprymedia.co.uk/media/images/favicon.ico">
+		
+		<title>AutoFill example</title>
+		<style type="text/css" title="currentStyle">
+			@import "../../media/css/demo_page.css";
+			@import "../../media/css/demo_table.css";
+			@import "media/css/AutoFill.css";
+			td input { width: 90% }
+		</style>
+		<script type="text/javascript" charset="utf-8" src="../../media/js/jquery.js"></script>
+		<script type="text/javascript" charset="utf-8" src="../../media/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" charset="utf-8" src="media/js/AutoFill.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			$.fn.dataTableExt.afnSortData['dom-text'] = function  ( oSettings, iColumn )
+			{
+				var aData = [];
+				$( 'td:eq('+iColumn+') input', oSettings.oApi._fnGetTrNodes(oSettings) ).each( function () {
+					aData.push( this.value );
+				} );
+				return aData;
+			}
+			
+			$(document).ready( function () {
+				var oTable = $('#example').dataTable( {
+					"aoColumnDefs": [
+						{ "sSortDataType": "dom-text", "aTargets": [ "_all" ] },
+						{ "sType": "numeric", "aTargets": [ -2 ] }
+					]
+				} );
+				new AutoFill( oTable );
+			} );
+		</script>
+	</head>
+	<body id="dt_example">
+		<div id="container">
+			<div class="full_width big">
+				AutoFill example with input elements
+			</div>
+			
+			<h1>Preamble</h1>
+			<p>
+				AutoFill works with Input elements and Select elements, as well as plain HTML cells. This
+				example shows all inputs cells, combined with DataTables' DOM sorting plug-in. You can 
+				even combine input and plain HTML cells if you wanted (useful from something like jEditable).
+			</p>
+			
+			
+			
+			<h1>Live example</h1>
+			<form>
+			<div id="demo">
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+	<thead>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</tfoot>
+	<tbody>
+		<tr class="odd_gradeX">
+			<td><input type="text" value="Trident"></td>
+			<td><input type="text" value="Internet Explorer 4.0"></td>
+			<td><input type="text" value="Win 95+ (Entity: &amp;)"></td>
+			<td class="center"><input type="text" value="4"></td>
+			<td class="center"><input type="text" value="X"></td>
+		</tr>
+		<tr class="even_gradeC">
+			<td><input type="text" value="Trident"></td>
+			<td><input type="text" value="Internet Explorer 5.0"></td>
+			<td><input type="text" value="Win 95+"></td>
+			<td class="center"><input type="text" value="5"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Trident"></td>
+			<td><input type="text" value="Internet Explorer 5.5"></td>
+			<td><input type="text" value="Win 95+"></td>
+			<td class="center"><input type="text" value="5.5"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Trident"></td>
+			<td><input type="text" value="Internet Explorer 6"></td>
+			<td><input type="text" value="Win 98+"></td>
+			<td class="center"><input type="text" value="6"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Trident"></td>
+			<td><input type="text" value="Internet Explorer 7"></td>
+			<td><input type="text" value="Win XP SP2+"></td>
+			<td class="center"><input type="text" value="7"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Trident"></td>
+			<td><input type="text" value="AOL browser (AOL desktop)"></td>
+			<td><input type="text" value="Win XP"></td>
+			<td class="center"><input type="text" value="6"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko (UTF-8: $¢€)"></td>
+			<td><input type="text" value="Firefox 1.0"></td>
+			<td><input type="text" value="Win 98+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="1.7"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Firefox 1.5"></td>
+			<td><input type="text" value="Win 98+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Firefox 2.0"></td>
+			<td><input type="text" value="Win 98+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Firefox 3.0"></td>
+			<td><input type="text" value="Win 2k+ / OSX.3+"></td>
+			<td class="center"><input type="text" value="1.9"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Camino 1.0"></td>
+			<td><input type="text" value="OSX.2+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Camino 1.5"></td>
+			<td><input type="text" value="OSX.3+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Netscape 7.2"></td>
+			<td><input type="text" value="Win 95+ / Mac OS 8.6-9.2"></td>
+			<td class="center"><input type="text" value="1.7"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Netscape Browser 8"></td>
+			<td><input type="text" value="Win 98SE+"></td>
+			<td class="center"><input type="text" value="1.7"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Netscape Navigator 9"></td>
+			<td><input type="text" value="Win 98+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.0"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.1"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.1"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.2"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.2"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.3"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.3"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.4"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.4"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.5"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.5"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.6"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.6"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.7"></td>
+			<td><input type="text" value="Win 98+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.7"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Mozilla 1.8"></td>
+			<td><input type="text" value="Win 98+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Seamonkey 1.1"></td>
+			<td><input type="text" value="Win 98+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Gecko"></td>
+			<td><input type="text" value="Epiphany 2.20"></td>
+			<td><input type="text" value="Gnome"></td>
+			<td class="center"><input type="text" value="1.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="Safari 1.2"></td>
+			<td><input type="text" value="OSX.3"></td>
+			<td class="center"><input type="text" value="125.5"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="Safari 1.3"></td>
+			<td><input type="text" value="OSX.3"></td>
+			<td class="center"><input type="text" value="312.8"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="Safari 2.0"></td>
+			<td><input type="text" value="OSX.4+"></td>
+			<td class="center"><input type="text" value="419.3"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="Safari 3.0"></td>
+			<td><input type="text" value="OSX.4+"></td>
+			<td class="center"><input type="text" value="522.1"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="OmniWeb 5.5"></td>
+			<td><input type="text" value="OSX.4+"></td>
+			<td class="center"><input type="text" value="420"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="iPod Touch / iPhone"></td>
+			<td><input type="text" value="iPod"></td>
+			<td class="center"><input type="text" value="420.1"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Webkit"></td>
+			<td><input type="text" value="S60"></td>
+			<td><input type="text" value="S60"></td>
+			<td class="center"><input type="text" value="413"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 7.0"></td>
+			<td><input type="text" value="Win 95+ / OSX.1+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 7.5"></td>
+			<td><input type="text" value="Win 95+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 8.0"></td>
+			<td><input type="text" value="Win 95+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 8.5"></td>
+			<td><input type="text" value="Win 95+ / OSX.2+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 9.0"></td>
+			<td><input type="text" value="Win 95+ / OSX.3+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 9.2"></td>
+			<td><input type="text" value="Win 88+ / OSX.3+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera 9.5"></td>
+			<td><input type="text" value="Win 88+ / OSX.3+"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Opera for Wii"></td>
+			<td><input type="text" value="Wii"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Nokia N800"></td>
+			<td><input type="text" value="N800"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Presto"></td>
+			<td><input type="text" value="Nintendo DS browser"></td>
+			<td><input type="text" value="Nintendo DS"></td>
+			<td class="center"><input type="text" value="8.5"></td>
+			<td class="center"><input type="text" value="C/A<sup>1</sup>"></td>
+		</tr>
+		<tr class="even_gradeC">
+			<td><input type="text" value="KHTML"></td>
+			<td><input type="text" value="Konqureror 3.1"></td>
+			<td><input type="text" value="KDE 3.1"></td>
+			<td class="center"><input type="text" value="3.1"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="KHTML"></td>
+			<td><input type="text" value="Konqureror 3.3"></td>
+			<td><input type="text" value="KDE 3.3"></td>
+			<td class="center"><input type="text" value="3.3"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="KHTML"></td>
+			<td><input type="text" value="Konqureror 3.5"></td>
+			<td><input type="text" value="KDE 3.5"></td>
+			<td class="center"><input type="text" value="3.5"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="odd_gradeX">
+			<td><input type="text" value="Tasman"></td>
+			<td><input type="text" value="Internet Explorer 4.5"></td>
+			<td><input type="text" value="Mac OS 8-9"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="X"></td>
+		</tr>
+		<tr class="even_gradeC">
+			<td><input type="text" value="Tasman"></td>
+			<td><input type="text" value="Internet Explorer 5.1"></td>
+			<td><input type="text" value="Mac OS 7.6-9"></td>
+			<td class="center"><input type="text" value="1"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="odd_gradeC">
+			<td><input type="text" value="Tasman"></td>
+			<td><input type="text" value="Internet Explorer 5.2"></td>
+			<td><input type="text" value="Mac OS 8-X"></td>
+			<td class="center"><input type="text" value="1"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="even_gradeA">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="NetFront 3.1"></td>
+			<td><input type="text" value="Embedded devices"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="NetFront 3.4"></td>
+			<td><input type="text" value="Embedded devices"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="A"></td>
+		</tr>
+		<tr class="even_gradeX">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="Dillo 0.8"></td>
+			<td><input type="text" value="Embedded devices"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="X"></td>
+		</tr>
+		<tr class="odd_gradeX">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="Links"></td>
+			<td><input type="text" value="Text only"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="X"></td>
+		</tr>
+		<tr class="even_gradeX">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="Lynx"></td>
+			<td><input type="text" value="Text only"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="X"></td>
+		</tr>
+		<tr class="odd_gradeC">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="IE Mobile"></td>
+			<td><input type="text" value="Windows Mobile 6"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="even_gradeC">
+			<td><input type="text" value="Misc"></td>
+			<td><input type="text" value="PSP browser"></td>
+			<td><input type="text" value="PSP"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="C"></td>
+		</tr>
+		<tr class="odd_gradeU">
+			<td><input type="text" value="Other browsers"></td>
+			<td><input type="text" value="All others"></td>
+			<td><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="-"></td>
+			<td class="center"><input type="text" value="U"></td>
+		</tr>
+	</tbody>
+</table>
+			</div>
+		</form>
+			<div class="spacer"></div>
+			
+			
+			<h1>Examples</h1>
+			<ul>
+				<li><a href="index.html">Basic initialisation</a></li>
+				<li><a href="columns.html">Selecting which columns to provide AutoFill on</a></li>
+				<li><a href="scrolling.html">Scrolling a DataTable using fill</a></li>
+				<li><a href="inputs.html">Using with input elements</a></li>
+				<li><a href="callbacks.html">Customisation using callback functions</a></li>
+			</ul>
+			
+			
+			<h1>Initialisation code</h1>
+			<pre>$.fn.dataTableExt.afnSortData['dom-text'] = function ( oSettings, iColumn )
+{
+	var aData = [];
+	$( 'td:eq('+iColumn+') input', oSettings.oApi._fnGetTrNodes(oSettings) ).each( function () {
+		aData.push( this.value );
+	} );
+	return aData;
+}
+
+$(document).ready( function () {
+	var oTable = $('#example').dataTable( {
+		"aoColumnDefs": [
+			{ "sSortDataType": "dom-text", "aTargets": [ "_all" ] },
+			{ "sType": "numeric", "aTargets": [ -2 ] }
+		]
+	} );
+	new AutoFill( oTable );
+} );</pre>
+			
+			<div id="footer" style="text-align:center;">
+				<span style="font-size:10px;">
+					AutoFill and DataTables &copy; Allan Jardine 2009-2010.<br>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

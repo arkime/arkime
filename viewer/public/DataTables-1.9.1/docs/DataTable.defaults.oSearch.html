@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: oSearch - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: oSearch</h1>
+					<h2 class="ancestors">Ancestry: <span class="ancestors"><a href="DataTable.html">DataTable</a> » <a href="DataTable.defaults.html">.defaults</a>.</span> » oSearch</h2>
+					<div class="page-info">
+						DataTables v1.9.1 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_properties">Properties</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">This parameter allows you to have define the global filtering state at
+initialisation time. As an object the "sSearch" parameter must be
+defined, but all other parameters are optional. When "bRegex" is true,
+the search string will be treated as a regular expression, when false
+(default) it will be treated as a straight string. When "bSmart"
+DataTables will use it's smart filtering methods (to word match at
+any point in the data), when false this will not be done.</p><dl class="details">
+	
+</dl>
+<h3>Example</h3>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready( function() {
+     $('#example').dataTable( {
+       "oSearch": {"sSearch": "Initial search"}
+     } );
+   } )</pre>
+    </div>
+<h3 class="subsection-title">Extends</h3>
+<ul>
+	<li><a href="DataTable.models.oSearch.html">DataTable.models.oSearch</a></li>
+</ul>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bCaseInsensitive">bCaseInsensitive</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.oSearch"><a href="DataTable.models.oSearch.html#bCaseInsensitive"><img src="media/images/extended.png"></a></div>Flag to indicate if the filtering should be case insensitive or not</dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bRegex">bRegex</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.oSearch"><a href="DataTable.models.oSearch.html#bRegex"><img src="media/images/extended.png"></a></div>Flag to indicate if the search term should be interpreted as a
+regular expression (true) or not (false) and therefore and special
+regex characters escaped.</dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSmart">bSmart</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.oSearch"><a href="DataTable.models.oSearch.html#bSmart"><img src="media/images/extended.png"></a></div>Flag to indicate if DataTables is to use its smart filtering or not.</dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sSearch">sSearch</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.oSearch"><a href="DataTable.models.oSearch.html#sSearch"><img src="media/images/extended.png"></a></div>Applied search term</dd>
+</dl></div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class=" augmented even"><a name="bCaseInsensitive"></a><a name="bCaseInsensitive_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bCaseInsensitive">bCaseInsensitive</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class=" augmented even"><p class="description">Flag to indicate if the filtering should be case insensitive or not</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.oSearch.html"><img src="media/images/extended.png"> DataTable.models.oSearch</a></div></div></dd><dt class=" augmented odd"><a name="bRegex"></a><a name="bRegex_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bRegex">bRegex</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class=" augmented odd"><p class="description">Flag to indicate if the search term should be interpreted as a
+regular expression (true) or not (false) and therefore and special
+regex characters escaped.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.oSearch.html"><img src="media/images/extended.png"> DataTable.models.oSearch</a></div></div></dd><dt class=" augmented even"><a name="bSmart"></a><a name="bSmart_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSmart">bSmart</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class=" augmented even"><p class="description">Flag to indicate if DataTables is to use its smart filtering or not.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.oSearch.html"><img src="media/images/extended.png"> DataTable.models.oSearch</a></div></div></dd><dt class=" augmented odd"><a name="sSearch"></a><a name="sSearch_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sSearch">sSearch</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class=" augmented odd"><p class="description">Applied search term</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.oSearch.html"><img src="media/images/extended.png"> DataTable.models.oSearch</a></div></div></dd>
+</dl></div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			DataTables: Copyright 2008-2012 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

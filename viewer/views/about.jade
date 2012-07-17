@@ -1,0 +1,110 @@
+- var range = "<, <=, ==, >=, >, !=";
+div(style="margin:10px")
+  p
+    img(src="moloch_77.png", style="float: left;margin:4px;")
+    | Moloch is a open source large scale IPv4 PCAP capturing, indexing and database system.  A simple web interface is provided for pcap browsing, searching, and exporting.  Moloch is not meant to replace IDS engines but instead work along side them to easily store and index all the network traffic.  Moloch is built to be deployed across many machines and can scale to handle multiple megabits/sec of traffic.
+  p Moloch uses a very simple query language for building expresions.  It supports grouping using parenthesis and logical AND and OR using && and || respectively.  Most fields can be accessed directly using the field names and operators described in the table below.
+  table(border=1)
+    tr
+      th Name
+      th Operators
+      th Data type
+      th What?
+    tr
+      td bytes
+      td #{range}
+      td integer
+      td Number of raw bytes in session<br>Example:bytes &gt; 1000 && bytes &lt; 2000
+    tr
+      td country
+      td.
+        ==, !=, contains
+      td 3 character country string<br>with 'contains' *s are permitted
+      td Maxmind GeoIP string of either country1 or country2<br>Examples:country == USA, country contains *SA
+    tr
+      td country1
+      td.
+        ==, !=, contains
+      td 3 character country string<br>with 'contains' *s are permitted
+      td Maxmind GeoIP string of country1<br>Examples:country == USA, country contains *SA
+    tr
+      td country2
+      td.
+        ==, !=, contains
+      td 3 character country string<br>with 'contains' *s are permitted
+      td Maxmind GeoIP string of country2<br>Examples:country == USA, country contains *SA
+    tr
+      td databytes
+      td #{range}
+      td integer
+      td Number of databytes in session<br>databytes &gt;= 2000
+    tr
+      td host
+      td.
+        ==, !=, contains
+      td string<br>with 'contains' *s are permitted
+      td host from HTTP Host header or DNS query<br>Example:host contains *net
+    tr
+      td ip
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n][:port]
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address1 or address2.<br>Examples: 10.10.10.10, 10.10.10.0/24:80, 10.10.10:80
+    tr
+      td ip1
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n][:port]
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address1.<br>Examples: 10.10.10.10, 10.10.10.0/24:80, 10.10.10:80
+    tr
+      td ip2
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n][:port]
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: 10.10.10.10, 10.10.10.0/24:80, 10.10.10:80
+    tr
+      td node
+      td.
+        ==, !=, contains
+      td string<br>with 'contains' *s are permitted
+      td Moloch node the session was captured on.<br>Examples:node == node1, node contains *1
+    tr
+      td packets
+      td #{range}
+      td integer
+      td Number of packets in the session.<br>Example: packets &lt; 10
+    tr
+      td port
+      td #{range}
+      td integer
+      td Port 1 or Port 2 of the sessions.<br>Example:port == 80
+    tr
+      td port1
+      td #{range}
+      td integer
+      td Port 1 of the sessions.<br>Example:port1 == 80
+    tr
+      td port2
+      td #{range}
+      td integer
+      td Port 2 of the sessions.<br>Example:port2 == 80
+    tr
+      td protocol
+      td #{range}
+      td integer | == tcp | == udp
+      td IP packet protocol
+    tr
+      td tags
+      td contains
+      td string or quoted string
+      td Matches against the tags for the session
+    tr
+      td uri
+      td contains
+      td string or quoted string
+      td Matches against the URIs for the session
+  h2 Examples
+  p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com
+  code (country == rus || country == chn) && port == 80 && host contains *com
+  p 2) Context type of text/plain, involving Canda, and less then 20 packets
+  code tags contains "http:content:text/plain" && country == CAN && packets < 20

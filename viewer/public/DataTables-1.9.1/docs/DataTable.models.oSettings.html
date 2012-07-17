@@ -1,0 +1,517 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: oSettings - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: oSettings</h1>
+					<h2 class="ancestors">Ancestry: <span class="ancestors"><a href="DataTable.html">DataTable</a> » <a href="DataTable.models.html">.models</a>.</span> » oSettings</h2>
+					<div class="page-info">
+						DataTables v1.9.1 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_namespaces">Namespaces</a> | <a href="#summary_properties">Properties</a> | <a href="#summary_methods">Methods</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a> | <a href="#details_methods">Methods</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">DataTables settings object - this holds all the information needed for a
+given table, including configuration, data and current application of the
+table options. DataTables does not have a single instance for each DataTable
+with the settings attached to that instance, but rather instances of the
+DataTable "class" are created on-the-fly as needed (typically by a 
+$().dataTable() call) and the settings object is then applied to that
+instance.<br><br>Note that this object is related to <a href="DataTable.defaults.html">DataTable.defaults</a> but this 
+one is the internal data store for DataTables's cache of columns. It should
+NOT be manipulated outside of DataTables. Any configuration should be done
+through the initialisation options.</p><dl class="details">
+	
+</dl>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_namespaces"></a><h3 class="subsection-title">Namespaces</h3>
+<dl>
+	<dt class="even"><span class="type-name"><a href="DataTable.models.oSettings.oFeatures.html">oFeatures</a></span></dt><dd class="even">Primary features of DataTables and their enablement state.</dd><dt class="odd"><span class="type-name"><a href="DataTable.models.oSettings.oLanguage.html">oLanguage</a></span></dt><dd class="odd">Language information for the table.</dd><dt class="even"><span class="type-name"><a href="DataTable.models.oSettings.oPreviousSearch.html">oPreviousSearch</a></span></dt><dd class="even">Store the applied global search information in case we want to force a 
+research or compare the old search to a new one.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="odd"><span class="type-name"><a href="DataTable.models.oSettings.oScroll.html">oScroll</a></span></dt><dd class="odd">Scrolling settings for a table.</dd>
+</dl></div><div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aanFeatures">aanFeatures</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Array referencing the nodes which are used for the features. The 
+parameters of this object match what is allowed by sDom - i.e.
+  <ul>
+    <li>'l' - Length changing</li>
+    <li>'f' - Filtering input</li>
+    <li>'t' - The table!</li>
+    <li>'i' - Information</li>
+    <li>'p' - Pagination</li>
+    <li>'r' - pRocessing</li>
+  </ul></dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aaSorting">aaSorting</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Sorting that is applied to the table. Note that the inner arrays are
+used in the following manner:
+<ul>
+  <li>Index 0 - column number</li>
+  <li>Index 1 - current sorting direction</li>
+  <li>Index 2 - index of asSorting for this column</li>
+</ul>
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aaSortingFixed">aaSortingFixed</a></span><span class="type-sig"><span class="type-signature"> :array|null</span></span></dt><dd class="  even">Sorting that is always applied to the table (i.e. prefixed in front of
+aaSorting).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aiDisplay">aiDisplay</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Array of indexes which are in the current display (after filtering etc)</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aiDisplayMaster">aiDisplayMaster</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Array of indexes for display - no filtering</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aLengthMenu">aLengthMenu</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">List of options that can be used for the user selectable length menu.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoColumns">aoColumns</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Store information about each column that is in use</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoData">aoData</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Store data information - see <a href="DataTable.models.oRow.html">DataTable.models.oRow</a> for detailed
+information.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoDestroyCallback">aoDestroyCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Destroy callback functions - for plug-ins to attach themselves to the
+destroy so they can clean up markup and events.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoDrawCallback">aoDrawCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Array of callback functions for draw callback functions</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoFooter">aoFooter</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Store information about the table's footer</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoFooterCallback">aoFooterCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Callback function for the footer on each draw.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoHeader">aoHeader</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Store information about the table's header</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoHeaderCallback">aoHeaderCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Callback functions for the header on each draw.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoInitComplete">aoInitComplete</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Callback functions for when the table has been initialised.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoOpenRows">aoOpenRows</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Information about open rows. Each object in the array has the parameters
+'nTr' and 'nParent'</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoPreDrawCallback">aoPreDrawCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Callback functions for just before the table is redrawn. A return of 
+false will be used to cancel the draw.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoPreSearchCols">aoPreSearchCols</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Store the applied search for each column - see 
+<a href="DataTable.models.oSearch.html">DataTable.models.oSearch</a> for the format that is used for the
+filtering information for each column.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoRowCallback">aoRowCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Callback functions array for every time a row is inserted (i.e. on a draw).</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoRowCreatedCallback">aoRowCreatedCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Array of callback functions for row created function</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoServerParams">aoServerParams</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Functions which are called prior to sending an Ajax request so extra 
+parameters can easily be sent to the server</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateLoad">aoStateLoad</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Array of callback functions for state loading. Each array element is an 
+object with the following parameters:
+  <ul>
+    <li>function:fn - function to call. Takes two parameters, oSettings 
+      and the object stored. May return false to cancel state loading</li>
+    <li>string:sName - name of callback</li>
+  </ul></dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateLoaded">aoStateLoaded</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Callbacks for operating on the settings object once the saved state has been
+loaded</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateLoadParams">aoStateLoadParams</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Callbacks for modifying the settings that have been stored for state saving
+prior to using the stored values to restore the state.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateSave">aoStateSave</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Array of callback functions for state saving. Each array element is an 
+object with the following parameters:
+  <ul>
+    <li>function:fn - function to call. Takes two parameters, oSettings
+      and the JSON string to save that has been thus far created. Returns
+      a JSON string to be inserted into a json object 
+      (i.e. '"param": [ 0, 1, 2]')</li>
+    <li>string:sName - name of callback</li>
+  </ul></dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateSaveParams">aoStateSaveParams</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">Callbacks for modifying the settings to be stored for state saving, prior to
+saving state.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#asDataSearch">asDataSearch</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Search data array for regular expression searching</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#asDestroyStripes">asDestroyStripes</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd">If restoring a table - we should restore its striping classes as well</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#asStripeClasses">asStripeClasses</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even">Classes to use for the striping of a table.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bAjaxDataGet">bAjaxDataGet</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Note if draw should be blocked while getting data</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bDeferLoading">bDeferLoading</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Indicate if when using server-side processing the loading of data 
+should be deferred until the second draw.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bDrawing">bDrawing</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Indicate if a redraw is being done - useful for Ajax</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bFiltered">bFiltered</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Flag attached to the settings object so you can check in the draw 
+callback if filtering has been done in the draw. Deprecated in favour of
+events.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bInitialised">bInitialised</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Indicate if all required information has been read in</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bJUI">bJUI</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Flag to indicate if jQuery UI marking and classes should be used.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSortCellsTop">bSortCellsTop</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd">Indicate that if multiple rows are in the header and there is more than 
+one unique cell per column, if the top one (true) or bottom one (false) 
+should be used for sorting / title by DataTables.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSorted">bSorted</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even">Flag attached to the settings object so you can check in the draw 
+callback if sorting has been done in the draw. Deprecated in favour of
+events.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnCookieCallback">fnCookieCallback</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></dt><dd class="  odd">Callback function for cookie creation.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnFormatNumber">fnFormatNumber</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></dt><dd class="  even">Format numbers for display.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnServerData">fnServerData</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></dt><dd class="  odd">Function to get the server-side data.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iCookieDuration">iCookieDuration</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even">The cookie duration (for bStateSave) in seconds.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iDraw">iDraw</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd">Counter for the draws that the table does. Also used as a tracker for
+server-side processing</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iDrawError">iDrawError</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even">Draw index (iDraw) of the last error when parsing the returned data</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iTabIndex">iTabIndex</a></span><span class="type-sig"><span class="type-signature"></span></span></dt><dd class="  odd">tabindex attribute value that is added to DataTables control elements, allowing
+keyboard navigation of the table and its controls.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#jqXHR">jqXHR</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  even">The last jQuery XHR object that was used for server-side data gathering. 
+This can be used for working with the XHR information in one of the 
+callbacks</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nScrollFoot">nScrollFoot</a></span><span class="type-sig"><span class="type-signature"></span></span></dt><dd class="  odd">DIV container for the footer scrolling table if scrolling</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nScrollHead">nScrollHead</a></span><span class="type-sig"><span class="type-signature"></span></span></dt><dd class="  even">DIV container for the footer scrolling table if scrolling</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTable">nTable</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  odd">The TABLE node for the main table</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTableWrapper">nTableWrapper</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  even">Cache the wrapper node (contains all DataTables controlled elements)</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTBody">nTBody</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  odd">Permanent ref to the tbody element</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTFoot">nTFoot</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  even">Permanent ref to the tfoot element - if it exists</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTHead">nTHead</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  odd">Permanent ref to the thead element</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oClasses">oClasses</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  even">The classes to use for the table</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oInit">oInit</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  odd">Initialisation object that is used for the table</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oInstance">oInstance</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  even">The DataTables object for this table</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oLoadedState">oLoadedState</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  odd">State that was loaded from the cookie. Useful for back reference</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sAjaxDataProp">sAjaxDataProp</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Property from a given object from which to read the table data from. This
+can be an empty string (when not server-side processing), in which case 
+it is  assumed an an array is given directly.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sAjaxSource">sAjaxSource</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Source url for AJAX data for the table.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sCookiePrefix">sCookiePrefix</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">The cookie name prefix.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sDestroyWidth">sDestroyWidth</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd">If restoring a table - we should restore its width</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sDom">sDom</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Dictate the positioning of DataTables' control elements - see
+DataTable.model.oInit.sDom.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInstance">sInstance</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Unique identifier for each instance of the DataTables object. If there
+is an ID on the table node, then it takes that value, otherwise an
+incrementing internal counter is used.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sPaginationType">sPaginationType</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Which type of pagination should be used.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sServerMethod">sServerMethod</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd">Send the XHR HTTP method - GET or POST (could be PUT or DELETE if 
+required).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sTableId">sTableId</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even">Cache the table ID for quick access</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#_iDisplayLength">_iDisplayLength</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd">Paging display length</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#_iDisplayStart">_iDisplayStart</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even">Paging start point - aiDisplay index</dd>
+</dl></div><div class="doc_group"><a name="summary_methods"></a><h3 class="subsection-title">Methods</h3>
+
+<dl>
+    <dt class=" even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnDisplayEnd">fnDisplayEnd</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"></span></span></dt><dd class=" even">Set the display end point - aiDisplay index</dd><dt class=" odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnRecordsDisplay">fnRecordsDisplay</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"></span></span></dt><dd class=" odd">Get the number of records in the current record set, after filtering</dd><dt class=" even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnRecordsTotal">fnRecordsTotal</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"></span></span></dt><dd class=" even">Get the number of records in the current record set, before filtering</dd>
+</dl>
+</div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class="  even"><a name="aanFeatures"></a><a name="aanFeatures_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aanFeatures">aanFeatures</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Array referencing the nodes which are used for the features. The 
+parameters of this object match what is allowed by sDom - i.e.
+  <ul>
+    <li>'l' - Length changing</li>
+    <li>'f' - Filtering input</li>
+    <li>'t' - The table!</li>
+    <li>'i' - Information</li>
+    <li>'p' - Pagination</li>
+    <li>'r' - pRocessing</li>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aaSorting"></a><a name="aaSorting_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aaSorting">aaSorting</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Sorting that is applied to the table. Note that the inner arrays are
+used in the following manner:
+<ul>
+  <li>Index 0 - column number</li>
+  <li>Index 1 - current sorting direction</li>
+  <li>Index 2 - index of asSorting for this column</li>
+</ul>
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aaSortingFixed"></a><a name="aaSortingFixed_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aaSortingFixed">aaSortingFixed</a></span><span class="type-sig"><span class="type-signature"> :array|null</span></span></dt><dd class="  even"><p class="description">Sorting that is always applied to the table (i.e. prefixed in front of
+aaSorting).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aiDisplay"></a><a name="aiDisplay_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aiDisplay">aiDisplay</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Array of indexes which are in the current display (after filtering etc)</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aiDisplayMaster"></a><a name="aiDisplayMaster_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aiDisplayMaster">aiDisplayMaster</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Array of indexes for display - no filtering</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aLengthMenu"></a><a name="aLengthMenu_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aLengthMenu">aLengthMenu</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">List of options that can be used for the user selectable length menu.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoColumns"></a><a name="aoColumns_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoColumns">aoColumns</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Store information about each column that is in use</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoData"></a><a name="aoData_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoData">aoData</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Store data information - see <a href="DataTable.models.oRow.html">DataTable.models.oRow</a> for detailed
+information.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoDestroyCallback"></a><a name="aoDestroyCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoDestroyCallback">aoDestroyCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Destroy callback functions - for plug-ins to attach themselves to the
+destroy so they can clean up markup and events.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoDrawCallback"></a><a name="aoDrawCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoDrawCallback">aoDrawCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Array of callback functions for draw callback functions</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoFooter"></a><a name="aoFooter_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoFooter">aoFooter</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Store information about the table's footer</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoFooterCallback"></a><a name="aoFooterCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoFooterCallback">aoFooterCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Callback function for the footer on each draw.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoHeader"></a><a name="aoHeader_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoHeader">aoHeader</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Store information about the table's header</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoHeaderCallback"></a><a name="aoHeaderCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoHeaderCallback">aoHeaderCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Callback functions for the header on each draw.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoInitComplete"></a><a name="aoInitComplete_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoInitComplete">aoInitComplete</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Callback functions for when the table has been initialised.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoOpenRows"></a><a name="aoOpenRows_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoOpenRows">aoOpenRows</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Information about open rows. Each object in the array has the parameters
+'nTr' and 'nParent'</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoPreDrawCallback"></a><a name="aoPreDrawCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoPreDrawCallback">aoPreDrawCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Callback functions for just before the table is redrawn. A return of 
+false will be used to cancel the draw.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoPreSearchCols"></a><a name="aoPreSearchCols_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoPreSearchCols">aoPreSearchCols</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Store the applied search for each column - see 
+<a href="DataTable.models.oSearch.html">DataTable.models.oSearch</a> for the format that is used for the
+filtering information for each column.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoRowCallback"></a><a name="aoRowCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoRowCallback">aoRowCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Callback functions array for every time a row is inserted (i.e. on a draw).</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoRowCreatedCallback"></a><a name="aoRowCreatedCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoRowCreatedCallback">aoRowCreatedCallback</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Array of callback functions for row created function</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoServerParams"></a><a name="aoServerParams_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoServerParams">aoServerParams</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Functions which are called prior to sending an Ajax request so extra 
+parameters can easily be sent to the server</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoStateLoad"></a><a name="aoStateLoad_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateLoad">aoStateLoad</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Array of callback functions for state loading. Each array element is an 
+object with the following parameters:
+  <ul>
+    <li>function:fn - function to call. Takes two parameters, oSettings 
+      and the object stored. May return false to cancel state loading</li>
+    <li>string:sName - name of callback</li>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoStateLoaded"></a><a name="aoStateLoaded_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateLoaded">aoStateLoaded</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Callbacks for operating on the settings object once the saved state has been
+loaded</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoStateLoadParams"></a><a name="aoStateLoadParams_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateLoadParams">aoStateLoadParams</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Callbacks for modifying the settings that have been stored for state saving
+prior to using the stored values to restore the state.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="aoStateSave"></a><a name="aoStateSave_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateSave">aoStateSave</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Array of callback functions for state saving. Each array element is an 
+object with the following parameters:
+  <ul>
+    <li>function:fn - function to call. Takes two parameters, oSettings
+      and the JSON string to save that has been thus far created. Returns
+      a JSON string to be inserted into a json object 
+      (i.e. '"param": [ 0, 1, 2]')</li>
+    <li>string:sName - name of callback</li>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="aoStateSaveParams"></a><a name="aoStateSaveParams_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoStateSaveParams">aoStateSaveParams</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">Callbacks for modifying the settings to be stored for state saving, prior to
+saving state.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="asDataSearch"></a><a name="asDataSearch_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#asDataSearch">asDataSearch</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Search data array for regular expression searching</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="asDestroyStripes"></a><a name="asDestroyStripes_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#asDestroyStripes">asDestroyStripes</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  odd"><p class="description">If restoring a table - we should restore its striping classes as well</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="asStripeClasses"></a><a name="asStripeClasses_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#asStripeClasses">asStripeClasses</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class="  even"><p class="description">Classes to use for the striping of a table.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bAjaxDataGet"></a><a name="bAjaxDataGet_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bAjaxDataGet">bAjaxDataGet</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Note if draw should be blocked while getting data</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bDeferLoading"></a><a name="bDeferLoading_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bDeferLoading">bDeferLoading</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Indicate if when using server-side processing the loading of data 
+should be deferred until the second draw.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bDrawing"></a><a name="bDrawing_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bDrawing">bDrawing</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Indicate if a redraw is being done - useful for Ajax</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bFiltered"></a><a name="bFiltered_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bFiltered">bFiltered</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Flag attached to the settings object so you can check in the draw 
+callback if filtering has been done in the draw. Deprecated in favour of
+events.</p><div class="collapse_details"><dl class="details">
+	<dt class="important">Deprecated</dt><dd class="yes-def">Yes</dd>
+</dl>
+</div></dd><dt class="  odd"><a name="bInitialised"></a><a name="bInitialised_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bInitialised">bInitialised</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Indicate if all required information has been read in</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bJUI"></a><a name="bJUI_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bJUI">bJUI</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Flag to indicate if jQuery UI marking and classes should be used.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="bSortCellsTop"></a><a name="bSortCellsTop_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSortCellsTop">bSortCellsTop</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  odd"><p class="description">Indicate that if multiple rows are in the header and there is more than 
+one unique cell per column, if the top one (true) or bottom one (false) 
+should be used for sorting / title by DataTables.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="bSorted"></a><a name="bSorted_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#bSorted">bSorted</a></span><span class="type-sig"><span class="type-signature"> :boolean</span></span></dt><dd class="  even"><p class="description">Flag attached to the settings object so you can check in the draw 
+callback if sorting has been done in the draw. Deprecated in favour of
+events.</p><div class="collapse_details"><dl class="details">
+	<dt class="important">Deprecated</dt><dd class="yes-def">Yes</dd>
+</dl>
+</div></dd><dt id="DataTable.models.oSettings.fnCookieCallback" class=" odd"><a name="fnCookieCallback"></a><a name="fnCookieCallback_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnCookieCallback</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></span></dt><dd class=" odd"><p class="description">Callback function for cookie creation.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div>
+<dt id="DataTable.models.oSettings.fnFormatNumber" class=" even"><a name="fnFormatNumber"></a><a name="fnFormatNumber_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnFormatNumber</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></span></dt><dd class=" even"><p class="description">Format numbers for display.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div>
+<dt id="DataTable.models.oSettings.fnServerData" class=" odd"><a name="fnServerData"></a><a name="fnServerData_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnServerData</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></span></dt><dd class=" odd"><p class="description">Function to get the server-side data.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div>
+<dt class="  even"><a name="iCookieDuration"></a><a name="iCookieDuration_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iCookieDuration">iCookieDuration</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even"><p class="description">The cookie duration (for bStateSave) in seconds.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="iDraw"></a><a name="iDraw_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iDraw">iDraw</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd"><p class="description">Counter for the draws that the table does. Also used as a tracker for
+server-side processing</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="iDrawError"></a><a name="iDrawError_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iDrawError">iDrawError</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even"><p class="description">Draw index (iDraw) of the last error when parsing the returned data</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="iTabIndex"></a><a name="iTabIndex_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iTabIndex">iTabIndex</a></span><span class="type-sig"><span class="type-signature"></span></span></dt><dd class="  odd"><p class="description">tabindex attribute value that is added to DataTables control elements, allowing
+keyboard navigation of the table and its controls.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="jqXHR"></a><a name="jqXHR_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#jqXHR">jqXHR</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  even"><p class="description">The last jQuery XHR object that was used for server-side data gathering. 
+This can be used for working with the XHR information in one of the 
+callbacks</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="nScrollFoot"></a><a name="nScrollFoot_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nScrollFoot">nScrollFoot</a></span><span class="type-sig"><span class="type-signature"></span></span></dt><dd class="  odd"><p class="description">DIV container for the footer scrolling table if scrolling</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="nScrollHead"></a><a name="nScrollHead_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nScrollHead">nScrollHead</a></span><span class="type-sig"><span class="type-signature"></span></span></dt><dd class="  even"><p class="description">DIV container for the footer scrolling table if scrolling</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="nTable"></a><a name="nTable_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTable">nTable</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  odd"><p class="description">The TABLE node for the main table</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="nTableWrapper"></a><a name="nTableWrapper_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTableWrapper">nTableWrapper</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  even"><p class="description">Cache the wrapper node (contains all DataTables controlled elements)</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="nTBody"></a><a name="nTBody_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTBody">nTBody</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  odd"><p class="description">Permanent ref to the tbody element</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="nTFoot"></a><a name="nTFoot_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTFoot">nTFoot</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  even"><p class="description">Permanent ref to the tfoot element - if it exists</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="nTHead"></a><a name="nTHead_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#nTHead">nTHead</a></span><span class="type-sig"><span class="type-signature"> :node</span></span></dt><dd class="  odd"><p class="description">Permanent ref to the thead element</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="oClasses"></a><a name="oClasses_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oClasses">oClasses</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  even"><p class="description">The classes to use for the table</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="oInit"></a><a name="oInit_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oInit">oInit</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  odd"><p class="description">Initialisation object that is used for the table</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="oInstance"></a><a name="oInstance_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oInstance">oInstance</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  even"><p class="description">The DataTables object for this table</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="oLoadedState"></a><a name="oLoadedState_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oLoadedState">oLoadedState</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class="  odd"><p class="description">State that was loaded from the cookie. Useful for back reference</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="sAjaxDataProp"></a><a name="sAjaxDataProp_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sAjaxDataProp">sAjaxDataProp</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Property from a given object from which to read the table data from. This
+can be an empty string (when not server-side processing), in which case 
+it is  assumed an an array is given directly.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="sAjaxSource"></a><a name="sAjaxSource_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sAjaxSource">sAjaxSource</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Source url for AJAX data for the table.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="sCookiePrefix"></a><a name="sCookiePrefix_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sCookiePrefix">sCookiePrefix</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">The cookie name prefix.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="sDestroyWidth"></a><a name="sDestroyWidth_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sDestroyWidth">sDestroyWidth</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd"><p class="description">If restoring a table - we should restore its width</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="sDom"></a><a name="sDom_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sDom">sDom</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Dictate the positioning of DataTables' control elements - see
+DataTable.model.oInit.sDom.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="sInstance"></a><a name="sInstance_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sInstance">sInstance</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Unique identifier for each instance of the DataTables object. If there
+is an ID on the table node, then it takes that value, otherwise an
+incrementing internal counter is used.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="sPaginationType"></a><a name="sPaginationType_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sPaginationType">sPaginationType</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Which type of pagination should be used.
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="sServerMethod"></a><a name="sServerMethod_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sServerMethod">sServerMethod</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  odd"><p class="description">Send the XHR HTTP method - GET or POST (could be PUT or DELETE if 
+required).
+Note that this parameter will be set by the initialisation routine. To
+set a default use <a href="DataTable.defaults.html">DataTable.defaults</a>.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="sTableId"></a><a name="sTableId_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sTableId">sTableId</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class="  even"><p class="description">Cache the table ID for quick access</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  odd"><a name="_iDisplayLength"></a><a name="_iDisplayLength_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#_iDisplayLength">_iDisplayLength</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd"><p class="description">Paging display length</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd><dt class="  even"><a name="_iDisplayStart"></a><a name="_iDisplayStart_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#_iDisplayStart">_iDisplayStart</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  even"><p class="description">Paging start point - aiDisplay index</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd>
+</dl></div><div class="doc_group"><a name="details_methods"></a><h3 class="subsection-title">Methods</h3>
+<dl>
+    <dt id="DataTable.models.oSettings.fnDisplayEnd" class=" even"><a name="fnDisplayEnd"></a><a name="fnDisplayEnd_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnDisplayEnd</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"></span></span></span></dt><dd class=" even"><p class="description">Set the display end point - aiDisplay index</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div>
+<dt id="DataTable.models.oSettings.fnRecordsDisplay" class=" odd"><a name="fnRecordsDisplay"></a><a name="fnRecordsDisplay_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnRecordsDisplay</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"></span></span></span></dt><dd class=" odd"><p class="description">Get the number of records in the current record set, after filtering</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div>
+<dt id="DataTable.models.oSettings.fnRecordsTotal" class=" even"><a name="fnRecordsTotal"></a><a name="fnRecordsTotal_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnRecordsTotal</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"></span></span></span></dt><dd class=" even"><p class="description">Get the number of records in the current record set, before filtering</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div>
+
+</dd>
+</div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			DataTables: Copyright 2008-2012 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

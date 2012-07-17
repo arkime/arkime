@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<link rel="shortcut icon" type="image/ico" href="http://www.sprymedia.co.uk/media/images/favicon.ico">
+		
+		<title>ColVis example</title>
+		<style type="text/css" title="currentStyle">
+			@import "../../media/css/demo_page.css";
+			@import "../../media/css/demo_table.css";
+			@import "media/css/ColVis.css";
+		</style>
+		<script type="text/javascript" charset="utf-8" src="../../media/js/jquery.js"></script>
+		<script type="text/javascript" charset="utf-8" src="../../media/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" charset="utf-8" src="media/js/ColVis.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(document).ready( function () {
+				$('table').dataTable( {
+					"sDom": 'C<"clear">lfrtip'
+				} );
+			} );
+		</script>
+	</head>
+	<body id="dt_example">
+		<div id="container">
+			<div class="full_width big">
+				ColVis example - two tables with individual controls
+			</div>
+			
+			<h1>Preamble</h1>
+			<p>It can be useful to have DataTables initialise more than one table with a single call can for them to each have individual ColVis controllers. All this requires is a suitable jQuery selector to be used, and DataTables and ColVis will take care of the rest - as shown in this example.</p>
+			
+			<h1>Live example</h1>
+			<form>
+			<div id="demo">
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+	<thead>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</tfoot>
+	<tbody>
+		<tr class="odd_gradeX">
+			<td>Trident</td>
+			<td>Internet Explorer 4.0</td>
+			<td>Win 95+ (Entity: &amp;)</td>
+			<td class="center">4</td>
+			<td class="center">X</td>
+		</tr>
+		<tr class="even_gradeC">
+			<td>Trident</td>
+			<td>Internet Explorer 5.0</td>
+			<td>Win 95+</td>
+			<td class="center">5</td>
+			<td class="center">C</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Trident</td>
+			<td>Internet Explorer 5.5</td>
+			<td>Win 95+</td>
+			<td class="center">5.5</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Trident</td>
+			<td>Internet Explorer 6</td>
+			<td>Win 98+</td>
+			<td class="center">6</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Trident</td>
+			<td>Internet Explorer 7</td>
+			<td>Win XP SP2+</td>
+			<td class="center">7</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Trident</td>
+			<td>AOL browser (AOL desktop)</td>
+			<td>Win XP</td>
+			<td class="center">6</td>
+			<td class="center">A</td>
+		</tr>
+	</tbody>
+</table>
+
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="example2">
+	<thead>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+			<th>Rendering engine</th>
+			<th>Browser</th>
+			<th>Platform(s)</th>
+			<th>Engine version</th>
+			<th>CSS grade</th>
+		</tr>
+	</tfoot>
+	<tbody>
+		<tr class="odd_gradeA">
+			<td>Gecko (UTF-8: $¢€)</td>
+			<td>Firefox 1.0</td>
+			<td>Win 98+ / OSX.2+</td>
+			<td class="center">1.7</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Firefox 1.5</td>
+			<td>Win 98+ / OSX.2+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Firefox 2.0</td>
+			<td>Win 98+ / OSX.2+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Firefox 3.0</td>
+			<td>Win 2k+ / OSX.3+</td>
+			<td class="center">1.9</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Camino 1.0</td>
+			<td>OSX.2+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Camino 1.5</td>
+			<td>OSX.3+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Netscape 7.2</td>
+			<td>Win 95+ / Mac OS 8.6-9.2</td>
+			<td class="center">1.7</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Netscape Browser 8</td>
+			<td>Win 98SE+</td>
+			<td class="center">1.7</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Netscape Navigator 9</td>
+			<td>Win 98+ / OSX.2+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.0</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.1</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1.1</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.2</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1.2</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.3</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1.3</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.4</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1.4</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.5</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1.5</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.6</td>
+			<td>Win 95+ / OSX.1+</td>
+			<td class="center">1.6</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.7</td>
+			<td>Win 98+ / OSX.1+</td>
+			<td class="center">1.7</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Mozilla 1.8</td>
+			<td>Win 98+ / OSX.1+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="odd_gradeA">
+			<td>Gecko</td>
+			<td>Seamonkey 1.1</td>
+			<td>Win 98+ / OSX.2+</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+		<tr class="even_gradeA">
+			<td>Gecko</td>
+			<td>Epiphany 2.20</td>
+			<td>Gnome</td>
+			<td class="center">1.8</td>
+			<td class="center">A</td>
+		</tr>
+	</tbody>
+</table>
+			</div>
+		</form>
+			<div class="spacer"></div>
+			
+			
+			<h1>Examples</h1>
+			<ul>
+				<li><a href="index.html">Basic initialisation</a></li>
+				<li><a href="mouseover.html">Activate with a mouseover rather than click</a></li>
+				<li><a href="text.html">Custom text in the button</a></li>
+				<li><a href="theme.html">Using with jQuery UI ThemeRoller</a></li>
+				<li><a href="exclude_columns.html">Excluding columns from the show / hide list</a></li>
+				<li><a href="two_tables.html">Two tables initialised together - individual controls</a></li>
+				<li><a href="two_tables_identical.html">Two tables initialised together - shared control</a></li>
+				<li><a href="style.html">Alternative styling and reset to original</a></li>
+				<li><a href="title_callback.html">Customisation of the button label with a callback</a></li>
+			</ul>
+			
+			
+			<h1>Initialisation code</h1>
+			<pre>$(document).ready( function () {
+	$('table').dataTable( {
+		"sDom": 'C&lt;"clear"&gt;lfrtip'
+	} );
+} );</pre>
+			
+			<div id="footer" style="text-align:center;">
+				<span style="font-size:10px;">
+					ColVis and DataTables &copy; Allan Jardine 2009-2010
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

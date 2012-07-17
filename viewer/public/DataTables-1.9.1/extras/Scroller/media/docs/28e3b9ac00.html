@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: oDefaults - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: oDefaults</h1>
+					
+					<div class="page-info">
+						Scroller v1.0.2 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_properties">Properties</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">Scroller default settings for initialisation</p><dl class="details">
+	
+</dl>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#rowHeight">rowHeight</a></span><span class="type-sig"><span class="type-signature"> :int|string</span></span></dt><dd class="  even">Scroller will attempt to automatically calculate the height of rows for it's internal
+calculations. However the height that is used can be overridden using this parameter.</dd><dt class="  odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#serverWait">serverWait</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd">When using server-side processing, Scroller will wait a small amount of time to allow
+the scrolling to finish before requesting more data from the server. This prevents
+you from DoSing your own server! The wait time can be configured by this parameter.</dd><dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#trace">trace</a></span><span class="type-sig"><span class="type-signature"> :bool</span></span></dt><dd class="  even">Indicate if Scroller show show trace information on the console or not. This can be 
+useful when debugging Scroller or if just curious as to what it is doing, but should
+be turned off for production.</dd>
+</dl></div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class="  even"><a name="rowHeight"></a><a name="rowHeight_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#rowHeight">rowHeight</a></span><span class="type-sig"><span class="type-signature"> :int|string</span></span></dt><dd class="  even"><p class="description">Scroller will attempt to automatically calculate the height of rows for it's internal
+calculations. However the height that is used can be overridden using this parameter.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   var oTable = $('#example').dataTable( {
+       "sScrollY": "200px",
+       "sDom": "frtiS",
+       "bDeferRender": true
+       "oScroller": {
+         "rowHeight": 30
+       }
+   } );</pre>
+    </div>
+</div></dd><dt class="  odd"><a name="serverWait"></a><a name="serverWait_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#serverWait">serverWait</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class="  odd"><p class="description">When using server-side processing, Scroller will wait a small amount of time to allow
+the scrolling to finish before requesting more data from the server. This prevents
+you from DoSing your own server! The wait time can be configured by this parameter.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   var oTable = $('#example').dataTable( {
+       "sScrollY": "200px",
+       "sDom": "frtiS",
+       "bDeferRender": true
+       "oScroller": {
+         "serverWait": 100
+       }
+   } );</pre>
+    </div>
+</div></dd><dt class="  even"><a name="trace"></a><a name="trace_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#trace">trace</a></span><span class="type-sig"><span class="type-signature"> :bool</span></span></dt><dd class="  even"><p class="description">Indicate if Scroller show show trace information on the console or not. This can be 
+useful when debugging Scroller or if just curious as to what it is doing, but should
+be turned off for production.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   var oTable = $('#example').dataTable( {
+       "sScrollY": "200px",
+       "sDom": "frtiS",
+       "bDeferRender": true
+       "oScroller": {
+         "trace": true
+       }
+   } );</pre>
+    </div>
+</div></dd>
+</dl></div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			Scroller: Copyright 2011 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:31
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

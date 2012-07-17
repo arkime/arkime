@@ -1,0 +1,47 @@
+CC            = @CC@
+CCX           = @CCX@
+
+INCLUDE_PCAP  = @PCAP_CFLAGS@
+INCLUDE_SNF   = -I/opt/snf/include/
+
+INCLUDE_OTHER = -Ithirdparty \
+                @GLIB2_CFLAGS@ \
+	        @YARA_CFLAGS@ \
+	        @GEOIP_CFLAGS@ \
+	        @NIDS_CFLAGS@
+
+
+LIB_PCAP      = @PCAP_LIBS@
+LIB_SNF       = /opt/snf/lib/*.so
+LIB_OTHER     = @NIDS_LIBS@ \
+	        @GLIB2_LIBS@ \
+	        @YARA_LIBS@ \
+	        @GEOIP_LIBS@ \
+	        thirdparty/http_parser.o -ldl
+
+C_FILES         = main.c db.c nids.c yara.c es.c config.c
+O_FILES         = $(C_FILES:.c=.o)
+
+all:thirdparty/js0n.o thirdparty/http_parser.o
+	$(CC) -O2 -ggdb -Wall -Wextra -c $(C_FILES) \
+	    $(INCLUDE_PCAP) \
+	    $(INCLUDE_OTHER) 
+	$(CXX) -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
+	    $(LIB_PCAP) \
+	    $(LIB_OTHER) \
+	    -lrt -lm -lpcre -lresolv -luuid -lmagic
+
+snf:thirdparty/js0n.o thirdparty/http_parser.o
+	gcc -ggdb -Wall -Wextra -c $(C_FILES) \
+	    $(INCLUDE_SNF) -DSNF \
+	    $(INCLUDE_OTHER) 
+	g++ -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
+	    $(LIB_SNF) \
+	    $(LIB_OTHER) \
+	    -lrt -lm -lpcre -lresolv -luuid -lmagic
+
+thirdparty/js0n.o:thirdparty/js0n.c
+	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o
+
+thirdparty/http_parser.o: thirdparty/http_parser.c
+	$(CC) -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o

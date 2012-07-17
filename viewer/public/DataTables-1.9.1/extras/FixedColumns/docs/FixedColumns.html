@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Class: FixedColumns - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Class: FixedColumns</h1>
+					
+					<div class="page-info">
+						FixedColumns v2.0.3 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_namespaces">Namespaces</a> | <a href="#summary_properties">Properties</a> | <a href="#summary_methods">Methods</a> | <a href="#summary_events">Events</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a> | <a href="#details_methods">Methods</a> | <a href="#details_events">Events</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<dl><dt id="FixedColumns" class=" even"><a name="FixedColumns"></a><a name="FixedColumns_details"></a><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a>new FixedColumns</a></span><span class="type-sig"><span class="signature">(oDT, <span class="optional">oInit</span>)</span><span class="type-signature"></span></span></span></dt><dd class=" even"><p class="description">When making use of DataTables' x-axis scrolling feature, you may wish to 
+fix the left most column in place. This plug-in for DataTables provides 
+exactly this option (note for non-scrolling tables, please use the  
+FixedHeader plug-in, which can fix headers, footers and columns). Key 
+features include:
+  <ul class="limit_length">
+    <li>Freezes the left or right most columns to the side of the table</li>
+    <li>Option to freeze two or more columns</li>
+    <li>Full integration with DataTables' scrolling options</li>
+    <li>Speed - FixedColumns is fast in its operation</li>
+  </ul></p><div class="collapse_details"><h3>Constructor</h3><dl class="details">
+	
+</dl>
+<h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+        <th width="20"></th>
+        <th width="12%" class="bottom_border name">Name</th>
+		<th width="10%" class="bottom_border">Type</th>
+		<th width="10%" class="bottom_border">Attributes</th>
+		<th width="10%" class="bottom_border">Default</th>
+		<th class="last bottom_border">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<tr class="even"><td class="number right_border"><div>1</div></td><td class="name">oDT</td><td class="type type-param">object</td><td class="attributes"></td><td class="default"></td><td class="description last">DataTables instance</td></tr><tr class="odd"><td class="number right_border"><div>2</div></td><td class="name">oInit</td><td class="type type-param">object</td><td class="attributes">Optional</td><td class="default">{}</td><td class="description last">Configuration object for FixedColumns. Options are defined by <a href="FixedColumns.defaults.html">FixedColumns.defaults</a></td></tr>
+	</tbody>
+</table><h5>Example:</h5>
+    <div class="example-code">
+    	<pre class="brush: js"> 	var oTable = $('#example').dataTable( {
+ 		"sScrollX": "100%"
+ 	} );
+ 	new FixedColumns( oTable );</pre>
+    </div>
+</div>
+</dl><h3 class="subsection-title">Requires</h3>
+<ul>
+	<li>module:jQuery</li><li>module:DataTables</li>
+</ul>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_namespaces"></a><h3 class="subsection-title">Namespaces</h3>
+<dl>
+	<dt class="even"><span class="type-name"><a href="FixedColumns.defaults.html">defaults</a></span></dt><dd class="even">FixedColumns default settings for initialisation</dd><dt class="odd"><span class="type-name"><a href="d3890ba7c4.html">dom</a></span></dt><dd class="odd">DOM elements used by the class instance</dd><dt class="even"><span class="type-name"><a href="91bce7c4ad.html">s</a></span></dt><dd class="even">Settings object which contains customisable information for FixedColumns instance</dd>
+</dl></div><div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class="  even"><span class="type-attr"><span class="type-signature">&lt;static, constant> </span></span><span class="type-name"><a href="#VERSION">VERSION</a></span><span class="type-sig"><span class="type-signature"> :String</span></span></dt><dd class="  even">FixedColumns version</dd>
+</dl></div><div class="doc_group"><a name="summary_methods"></a><h3 class="subsection-title">Methods</h3>
+
+<dl>
+    <dt class=" even"><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a href="#fnRecalculateHeight">fnRecalculateHeight</a></span><span class="type-sig"><span class="signature">(nTr)</span><span class="type-signature"> &rarr; {void}</span></span></dt><dd class=" even">Mark a row such that it's height should be recalculated when using 'semiauto' row
+height matching. This function will have no effect when 'none' or 'auto' row height
+matching is used.</dd><dt class=" odd"><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a href="#fnRedrawLayout">fnRedrawLayout</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></span></dt><dd class=" odd">Recalculate the resizes of the 3x3 grid that FixedColumns uses for display of the table.
+This is useful if you update the width of the table container. Note that FixedColumns will
+perform this function automatically when the window.resize event is fired.</dd><dt class=" even"><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a href="#fnSetRowHeight">fnSetRowHeight</a></span><span class="type-sig"><span class="signature">(nTarget, iHeight)</span><span class="type-signature"> &rarr; {void}</span></span></dt><dd class=" even">Set the height of a given row - provides cross browser compatibility</dd><dt class=" odd"><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a href="#fnUpdate">fnUpdate</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></span></dt><dd class=" odd">Update the fixed columns - including headers and footers. Note that FixedColumns will
+automatically update the display whenever the host DataTable redraws.</dd>
+</dl>
+</div><div class="doc_group"><a name="summary_events"></a><h3 class="subsection-title">Events</h3>
+<dl>
+    <dt class=" even"><span class="type-attr"></span><span class="type-name"><a href="#draw">draw</a></span><span class="type-sig"></span></dt><dd class=" even">Event fired whenever FixedColumns redraws the fixed columns (i.e. clones the table elements from the main DataTable). This will occur whenever the DataTable that the FixedColumns instance is attached does its own draw.</dd>
+</dd>
+</div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class="  even"><a name="VERSION"></a><a name="VERSION_details"></a><span class="type-attr"><span class="type-signature">&lt;static, constant> </span></span><span class="type-name"><a href="#VERSION">VERSION</a></span><span class="type-sig"><span class="type-signature"> :String</span></span></dt><dd class="  even"><p class="description">FixedColumns version</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+</div></dd>
+</dl></div><div class="doc_group"><a name="details_methods"></a><h3 class="subsection-title">Methods</h3>
+<dl>
+    <dt id="FixedColumns#fnRecalculateHeight" class=" even"><a name="fnRecalculateHeight"></a><a name="fnRecalculateHeight_details"></a><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a>fnRecalculateHeight</a></span><span class="type-sig"><span class="signature">(nTr)</span><span class="type-signature"> &rarr; {void}</span></span></span></dt><dd class=" even"><p class="description">Mark a row such that it's height should be recalculated when using 'semiauto' row
+height matching. This function will have no effect when 'none' or 'auto' row height
+matching is used.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+        <th width="20"></th>
+        <th width="12%" class="bottom_border name">Name</th>
+		<th width="10%" class="bottom_border">Type</th>
+		<th width="10%" class="bottom_border">Attributes</th>
+		<th width="10%" class="bottom_border">Default</th>
+		<th class="last bottom_border">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<tr class="even"><td class="number right_border"><div>1</div></td><td class="name">nTr</td><td class="type type-param">Node</td><td class="attributes"></td><td class="default"></td><td class="description last">TR element that should have it's height recalculated</td></tr>
+	</tbody>
+</table><h5>Example:</h5>
+    <div class="example-code">
+    	<pre class="brush: js"> 	var oTable = $('#example').dataTable( {
+ 		"sScrollX": "100%"
+ 	} );
+ 	var oFC = new FixedColumns( oTable );
+ 	
+ 	// manipulate the table - mark the row as needing an update then update the table
+ 	// this allows the redraw performed by DataTables fnUpdate to recalculate the row
+ 	// height
+ 	oFC.fnRecalculateHeight();
+ 	oTable.fnUpdate( $('#example tbody tr:eq(0)')[0], ["insert date", 1, 2, 3 ... ]);</pre>
+    </div>
+</div>
+<dt id="FixedColumns#fnRedrawLayout" class=" odd"><a name="fnRedrawLayout"></a><a name="fnRedrawLayout_details"></a><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a>fnRedrawLayout</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></span></span></dt><dd class=" odd"><p class="description">Recalculate the resizes of the 3x3 grid that FixedColumns uses for display of the table.
+This is useful if you update the width of the table container. Note that FixedColumns will
+perform this function automatically when the window.resize event is fired.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example:</h5>
+    <div class="example-code">
+    	<pre class="brush: js"> 	var oTable = $('#example').dataTable( {
+ 		"sScrollX": "100%"
+ 	} );
+ 	var oFC = new FixedColumns( oTable );
+ 	
+ 	// Resize the table container and then have FixedColumns adjust its layout....
+     $('#content').width( 1200 );
+ 	oFC.fnRedrawLayout();</pre>
+    </div>
+</div>
+<dt id="FixedColumns#fnSetRowHeight" class=" even"><a name="fnSetRowHeight"></a><a name="fnSetRowHeight_details"></a><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a>fnSetRowHeight</a></span><span class="type-sig"><span class="signature">(nTarget, iHeight)</span><span class="type-signature"> &rarr; {void}</span></span></span></dt><dd class=" even"><p class="description">Set the height of a given row - provides cross browser compatibility</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+        <th width="20"></th>
+        <th width="12%" class="bottom_border name">Name</th>
+		<th width="10%" class="bottom_border">Type</th>
+		<th width="10%" class="bottom_border">Attributes</th>
+		<th width="10%" class="bottom_border">Default</th>
+		<th class="last bottom_border">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<tr class="even"><td class="number right_border"><div>1</div></td><td class="name">nTarget</td><td class="type type-param">Node</td><td class="attributes"></td><td class="default"></td><td class="description last">TR element that should have it's height recalculated</td></tr><tr class="odd"><td class="number right_border"><div>2</div></td><td class="name">iHeight</td><td class="type type-param">int</td><td class="attributes"></td><td class="default"></td><td class="description last">Height in pixels to set</td></tr>
+	</tbody>
+</table><h5>Example:</h5>
+    <div class="example-code">
+    	<pre class="brush: js"> 	var oTable = $('#example').dataTable( {
+ 		"sScrollX": "100%"
+ 	} );
+ 	var oFC = new FixedColumns( oTable );
+ 	
+ 	// You may want to do this after manipulating a row in the fixed column
+ 	oFC.fnSetRowHeight( $('#example tbody tr:eq(0)')[0], 50 );</pre>
+    </div>
+</div>
+<dt id="FixedColumns#fnUpdate" class=" odd"><a name="fnUpdate"></a><a name="fnUpdate_details"></a><span class="type-attr"><span class="type-signature"></span></span><span class="type-name"><a>fnUpdate</a></span><span class="type-sig"><span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></span></span></dt><dd class=" odd"><p class="description">Update the fixed columns - including headers and footers. Note that FixedColumns will
+automatically update the display whenever the host DataTable redraws.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Example:</h5>
+    <div class="example-code">
+    	<pre class="brush: js"> 	var oTable = $('#example').dataTable( {
+ 		"sScrollX": "100%"
+ 	} );
+ 	var oFC = new FixedColumns( oTable );
+ 	
+ 	// at some later point when the table has been manipulated....
+ 	oFC.fnUpdate();</pre>
+    </div>
+</div>
+
+</dd>
+</div><div class="doc_group"><a name="details_events"></a><h3 class="subsection-title">Events</h3>
+<dl>
+    <dt id="FixedColumns#event:draw" class=" even"><a name="draw"></a><a name="draw_details"></a><span class="type-attr"></span><span class="type-name"><a>draw</a></span><span class="type-sig"></span></span></dt><dd class=" even"><p class="description">Event fired whenever FixedColumns redraws the fixed columns (i.e. clones the table elements from the main DataTable). This will occur whenever the DataTable that the FixedColumns instance is attached does its own draw.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+        <th width="20"></th>
+        <th width="12%" class="bottom_border name">Name</th>
+		<th width="10%" class="bottom_border">Type</th>
+		<th width="10%" class="bottom_border">Attributes</th>
+		<th width="10%" class="bottom_border">Default</th>
+		<th class="last bottom_border">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<tr class="even"><td class="number right_border"><div>1</div></td><td class="name">e</td><td class="type type-param">event</td><td class="attributes"></td><td class="default"></td><td class="description last">jQuery event object</td></tr><tr class="odd"><td class="number right_border"><div>2</div></td><td class="name">o</td><td class="type type-param">object</td><td class="attributes"></td><td class="default"></td><td class="description last">Event parameters from FixedColumns</td></tr><tr><td class="number right_border"></td><td class="name">o.leftClone</td><td class="type type-param">object</td><td class="attributes"></td><td class="default"></td><td class="description last">Instance's object dom.clone.left for easy reference. This object contains references to the left fixed clumn column's nodes</td></tr><tr><td class="number right_border"></td><td class="name">o.rightClone</td><td class="type type-param">object</td><td class="attributes"></td><td class="default"></td><td class="description last">Instance's object dom.clone.right for easy reference. This object contains references to the right fixed clumn column's nodes</td></tr>
+	</tbody>
+</table></div>
+
+</dd>
+</div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			FixedColumns: Copyright 2010-2011 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Maps</title>
+  <link rel="stylesheet" media="all" href="../jquery-jvectormap.css"/>
+  <script src="assets/jquery-1.7.2.min.js"></script>
+  <script src="../jquery-jvectormap.js"></script>
+  <script src="assets/jquery-jvectormap-world-en.js"></script>
+  <script>
+    $(function(){
+      $('.map').vectorMap({
+        map: 'world_en',
+        markers: [
+          [0, 0],
+          [48.51, 2.21],
+          [-33.51, 151.12],
+          [64.623877,56.25],
+          {latLng: [-21.13, -175.2], name: 'Tonga'},
+          {latLng: [1.3, 103.8], name: 'Singapore'},
+          {latLng: [22.2, 114.1], name: 'Hong Kong'}
+        ]
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="map" style="width: 1000px; height: 400px"></div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+Moloch is a open source large scale IPv4 PCAP capturing, indexing and database 
+system.  A simple web interface is provided for PCAP browsing, searching, and 
+exporting.  APIs are exposed that allow PCAP data and JSON formatted session
+data to be downloaded directly. Simple security is implemented by using https
+and HTTP digest password support.  Moloch is not meant to replace IDS engines but 
+instead work along side them to easily store and index all the network traffic.  
+Moloch is built to be deployed across many machines and can scale to handle multiple 
+megabits/sec of traffic.
+
+The Moloch system is composed of 3 components
+
+1) capture - A single threaded C application that runs per network interface.  
+             It is possible to run multiple capture processes per machine if
+             there are multiple interfaces to monitor.
+2) viewer - A Node.js application that runs per capture machine and handles
+            the web interface and transfer of PCAP files.
+3) elasticsearch - The database/search technology powering Moloch
+
+
+
+Hardware requirements - Moloch is built to run across many machines for large
+deployments.  What follows are rough guidelines for folks capturing large amounts of
+data with high bit rates, obviously tailor for the situation.  It is not 
+recommended to run the capture and elasticsearch processes on the same machines.
+
+1) Moloch capture/viewer machines
+   * One dedicated management network interface and CPU for OS
+   * For each network interface being monitored recommend ~10G of memory 
+     and another dedicated CPU
+   * If running suricata or another IDS add an additional two (2) CPUs per interface, 
+     and an additional 5G memory (or more depending on IDS requirements)
+   * Disk space to store the PCAP files.  Recommend at least 10T, xfs 
+     (with inode64 option set in fstab), raid 5 
+   * If networks are highly utilized and running IDS then CPU affinity is required
+   * disable swap by removing it from fstab
+
+2) elasticsearch machines - some black magic here
+   * 1/3 * Number_Highly_Utilized_Interfaces * Number_of_Days_of_History is a ROUGH
+     guideline for number of elasticsearch instances (nodes) required. 
+     (Example: 1/3 * 8 interfaces * 7 days = 18 nodes)
+   * Each elasticsearch node should have ~30G-40G memory (20G - 30G [no more!] for 
+     the java process, at least 10G for the OS disk cache)
+   * Can have multiple nodes per machine (Example 64G machine can have 2 ES nodes, 22G for the
+     java process 10G saved for the disk cache)
+   * disable swap by removing it from fstab
+   * obviously the more nodes, the faster responses will be
+   * can always add more nodes, but hard to remove nodes
+
+
+Example config for monitoring 8 GigE highly utilized networks for 7 days
+- capture/viewer machines - 8 x PenguinComputing Relion 4724 with 48G of memory and 40T of disk, running Moloch and suricata
+- elasticsearch machines - 10 x HP DL380-G7 with 64G of memory and 2T of disk running 2 nodes each
+
+
+Note about security
+* Elasticsearch provides no security, so iptables should be used allowing only 
+  Moloch machines to talk to the elasticsearch machines
+* Moloch machines should be locked down, however they need to talk to each other,
+  to the elasticsearch machines, and the web interface needs to be open
+* Moloch viewer should be configured to use SSL, easiest to use a single cert 
+  with multiple DNs, make sure you protect the cert on the filesystem
+* It is possible to set up a Moloch viewer on a machine that doesn't capture any 
+  data that gateways all requests
+* A shared password in the config file is used to encrypt password hashes AND 
+  for inter Moloch communication, this means you should protect the config file.  
+  (Encrypted password hashes are used so a new password hash can not be
+  inserted into elasticsearch directly in case elasticsearch isn't secured :)
+
+
+
+Building and Installing
+
+
+Installing Elasticsearch
+1) Download >= 0.19.8 and install bigdesk and elasticsearch-head BEFORE pushing 
+   to all machines
+     bin/plugin -install mobz/elasticsearch-head
+     bin/plugin -install lukas-vlcek/bigdesk
+2) Increase max file descriptors on ALL elasticsearch machines by adding the 
+   following to bottom of /etc/security/limits.conf
+* hard nofile 128000
+* soft nofile 128000
+3) Create/Modify elasticsearch.yml and push to all machines
+   - set cluster.name to something unique
+   - set node.name to "${ES_HOSTNAME}" 
+   - set node.max_local_storage_nodes to number of nodes per machine
+   - add "index.cache.field.type: soft"
+   - set path.data and path.logs
+   - set gateway.type: local
+   - set gateway.recover_after_nodes should match the number of nodes you will run 
+   - set gateway.expected_nodes: to the number of nodes you will run
+   - disable zen.ping.multicast
+   - enable zen.ping.unicast and set the list of hosts
+4) Create a elasticsearch launch script or use one of ones out there.  
+     Make sure you call "ulimit -a" first 
+     set ES_HEAP_SIZE=20G (or whatever number you are using, less then 32G) 
+     set JAVA_OPTS="-XX:+UseCompressedOops"
+     set ES_HOSTNAME to `hostname -s`
+5) Start the cluster, waiting ~5s between starting each node
+6) Use elasticsearch-head to look at your cluster and make sure it is GREEN
+7) Inside the db directory edit the sessions.json file and run the init.sh script
+8) Check elasticsearch-head again and make sure it is GREEN and now you should see some of the indexes
+
+
+
+Building Capture
+1) Install prerequisites standard packages
+yum install pcre.x86_64 pcre-devel.x86_64 libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel
+2) Download, build and optionally install
+* glib-2 version 2.22 or higher (2.22 is recommended for static builds) - http://ftp.gnome.org/pub/gnome/sources/glib
+* yara - 1.6 or higher - http://yara-project.googlecode.com/files/yara-1.6.tar.gz
+* MaxMind GeoIP - (The OS version may be recent enough) - http://www.maxmind.com/app/c
+* libpcap - 1.1 or higher, most OS versions are older - http://www.tcpdump.org/
+* libnids - 1.24 or higher, http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
+3) run configure, use the --with-* directives to use static libraries from build directories
+4) make
+
+
+Building Viewer
+1) You'll need python 2.6 or higher, if still using Centos 5.x install a
+   parallel version of python from the EPEL repository.  Make sure python2.6 is in
+   your path first!
+2) Download, build, and install nodejs - http://nodejs.org/ at least node-0.8.1 
+3) In the moloch/viewer directory run "npm install"
+
+
+Configuration
+1) Make sure you download a GeoIP file.  The free version is available at
+   http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+2) Edit the config.ini file
+3) In the viewer directory run the addUser.js to add users, use -admin if you want admin users 
+   that can edit users from the web site.  This is a good test if elasticsearch and config.ini are right
+      node addUser.js <userid> "<Friendly Name>" <password>
+4) Edit the db/daily.sh script, and set that up in a cron on one machine
+
+
+Running - If you made it this far, you are awesome!
+On each capture machine you need to run at least one moloch-capture and one moloch-viewer.  
+I like using good old inittab for this
+
+  m1:2345:respawn:/home/moloch/capture/run.sh
+  v1:2345:respawn:/home/moloch/viewer/run.sh
+
+Where capture/run.sh has something like
+  #!/bin/sh
+  cd /home/moloch/capture
+  /bin/mv OUT OUT.old
+  exec taskset -c 7 ./moloch-capture -c ../config.ini > OUT 2>&1
+
+Where viewer/run.sh has something like
+  #!/bin/sh
+  cd /home/moloch/viewer
+  /bin/mv OUT OUT.old
+  exec /usr/local/bin/node viewer.js -c ../config.ini > OUT 2>&1
+
+
+Now point your browser to any moloch https://hostname:port

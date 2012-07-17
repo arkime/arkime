@@ -1,0 +1,44 @@
+<h1> Saved Files</h1>
+table#files(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+  thead
+    tr
+      th File Number
+      th Node
+      th Name
+      th First Date
+      th File Size (MB)
+  tbody
+br
+#files
+
+script(type='text/javascript')
+  $(document).ready(function() {
+    filesTable = $('#files').dataTable( {
+      "sDom": '<"H"lipr>t<"F"ip>',
+      "iDisplayLength": 500,
+      "aLengthMenu": [100, 500, 1000, 5000],
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "/files.json",
+      "bRetrieve": true,
+      "bFilter": false,
+      "bScrollCollapse": true,
+      "bAutoWidth": false,
+      "aoColumns": [
+        { "mDataProp" : "num",
+        },
+        { "mDataProp" : "node",
+        },
+        { "mDataProp" : "name",
+        },
+        { "mDataProp" : "first",
+          "fnRender" : function(oObj) {
+            return dateString(oObj.aData.first, " ");
+          }
+        },
+        { "mDataProp" : "size",
+        }
+      ],
+      "aaSorting": [[3, "desc"]]
+    } );
+  } );

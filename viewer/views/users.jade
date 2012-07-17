@@ -1,0 +1,132 @@
+<h2> System Users</h2>
+table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+  thead
+    tr
+      th id
+      th Name
+      th Enabled?
+      th Admin?
+      th Web Interface?
+      th Actions
+  tbody
+br
+#users
+hr
+<h2> Add User</h2>
+form#addUser
+  label(for='userId') User ID
+  input(type='text', id='userId', name='userId', size='30')
+  label(for='userName') User Name
+  input(type='text', id='userName', name='userName', size='30')
+  label(for='Password') Password
+  input(type='password', id='password', name='password', size='30')
+  label(for='enabled') Enabled
+  input(type='checkbox', id='enabled', name='enabled', value="true", CHECKED)
+  label(for='createEnabled') Admin
+  input(type='checkbox', id='createEnabled', name='createEnabled', value="true")
+  label(for='webEnabled') Web Enabled
+  input(type='checkbox', id='webEnabled', name='webEnabled', value="true", CHECKED)
+  button#create create
+
+script(type='text/javascript')
+  $(document).ready(function() {
+    usersTable = $('#users').dataTable( {
+      "sDom": '<"H"lipr>t<"F"ip>',
+      "iDisplayLength": 500,
+      "aLengthMenu": [100, 500, 1000, 5000],
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "/users.json",
+      "fnServerData": function ( sSource, aoData, fnCallback ) {
+        $.ajax( {
+         "dataType": 'json', 
+          "type": "POST", 
+          "url": sSource, 
+          "data": aoData, 
+          "success": fnCallback
+        } );
+      },
+      "bRetrieve": true,
+      "bFilter": false,
+      "bScrollCollapse": true,
+      "bAutoWidth": false,
+      "aoColumns": [
+        { "mDataProp" : "userId",
+        },
+        { "mDataProp" : "userName",
+          "bSortable" : false,
+        },
+        { "mDataProp" : "enabled",
+          "fnRender" : function(oObj) {
+            return "<input type='checkbox' id='" + oObj.aData.userId +"-enabled' " + (oObj.aData.enabled?"CHECKED":"") + ">";
+          }
+        },
+        { "mDataProp" : "createEnabled",
+          "fnRender" : function(oObj) {
+            return "<input type='checkbox' id='" + oObj.aData.userId +"-createEnabled' " + (oObj.aData.createEnabled?"CHECKED":"") + ">";
+          }
+        },
+        { "mDataProp" : "webEnabled",
+          "fnRender" : function(oObj) {
+            return "<input type='checkbox' id='" + oObj.aData.userId +"-webEnabled' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
+          }
+        },
+        { "mDataProp" : null,
+          "bSortable" : false,
+          "fnRender" : function(oObj) {
+            //return "fred";
+            return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a>";
+          }
+        }
+      ]
+    } );
+
+    $('#users tbody td input').live('change', function () {
+      var nTr = this.parentNode.parentNode;
+      var aData = usersTable.fnGetData( nTr );
+      console.log(aData);
+      console.log("#" + aData.userId  + "-enabled");
+      console.log($("#" + aData.userId  + "-enabled").is(':checked'));
+      $.ajax( {
+        "dataType": 'json', 
+        "type": "POST", 
+        "url": "/updateUser/" + aData.userId + "?" +
+          "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') + 
+          "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') + 
+          "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
+        "success": function(data) {
+          console.log("Deleted user");
+        }
+      });
+      return true;
+    } );
+
+    $('#addUser').submit(function() {
+      console.log("hmm", $("#addUser").serialize());
+      $.ajax( {
+        "dataType": 'json', 
+        "type": "POST", 
+        "url": "/addUser",
+        "data": $("#addUser").serialize(),
+        "success": function(data) {
+          if (!data.success) {
+            alert(data);
+          }
+        }
+      });
+      usersTable.fnDraw();
+      return false;
+    });
+  } );
+  function deleteUser(user) {
+    $.ajax( {
+      "dataType": 'json', 
+      "type": "POST", 
+      "url": "/deleteUser/" + user,
+      "success": function(data) {
+        console.log("Deleted user");
+      }
+    });
+    usersTable.fnDraw();
+    return false;
+  }

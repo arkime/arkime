@@ -1,0 +1,391 @@
+script(src='/jvectormap/jquery-jvectormap.js')
+script(src='/jquery-jvectormap-world-en.js')
+script(src='/jQuery-contextMenu/src/jquery.ui.position.js')
+script(src='/jQuery-contextMenu/src/jquery.contextMenu.js')
+link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.contextMenu.css')
+
+div.context-menu-one
+  form#searchForm
+    div
+      select(id='date')
+        option(value=1,selected) Last 1 hr
+        option(value=6) Last 6 hrs
+        option(value=24) Last 24 hrs 
+        option(value=72) Last 3 days
+        option(value=168) Last Week
+        option(value=-1) All
+        option(value=-2) Graph
+      input#expression(type='text', name='expression')
+      button#export(type="button", style="float:right") Export
+      button#search(type="submit", style="float:right") Search
+    div#bsqErr
+span#sessionsInfo
+  div#world-map
+  div#sessionGraph
+table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+  thead
+    tr
+      th
+      th Id
+      th Start
+      th Stop
+      th#a1 Address 1
+      th Port 1
+      th#a2 Address 2
+      th Port 2
+      th Packets
+      th Bytes
+      th Node
+      th urls
+  tbody
+br
+script(type='text/javascript')
+  var startTime, stopTime;
+  var sessionsTable;
+  var mapData;
+  var initialDisplayLength;
+  var doPushState = 1;
+
+  $(window).bind('popstate', function(e) {
+    if (window.history.ready) {
+      doPushState = 0;
+      handleUrlParams();
+
+      sessionsTable.fnLengthChange(initialDisplayLength);
+      sessionsTable.fnDraw();
+    }
+  });
+
+  $("#export").click(function (e) {
+    var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+
+    var params = buildParams();
+    params = $.merge(data, params);
+
+    var url = "sessions.pcap?" + $.param(params);
+
+    window.location = url;
+    return false;
+  });
+
+
+
+  $(document).ready(function() {
+    handleUrlParams();
+
+    $('#sessions tbody td img').live('click', function () {
+      var nTr = this.parentNode.parentNode;
+      if ( this.src.match('details_close') )
+      {
+        /* This row is already open - close it */
+        this.src = "/DataTables-1.9.1/examples/examples_support/details_open.png";
+        sessionsTable.fnClose( nTr );
+      }
+      else
+      {
+        var aData = sessionsTable.fnGetData( nTr );
+        this.src = "/DataTables-1.9.1/examples/examples_support/details_close.png";
+        $.ajax( {
+            "dataType": 'html', 
+            "type": "GET", 
+            "url": '/' + aData.no + '/' + aData.id + '/sessionDetail',
+            "success": function(data) {
+              sessionsTable.fnOpen( nTr, data, 'details' );
+            }
+        } );
+
+      }
+    } );
+
+    $('#searchForm').submit(function() {
+      sessionsTable.fnDraw();
+      return false;
+    });
+
+    $('#date').change(function() {
+      sessionsTable.fnDraw();
+      return false;
+    });
+
+    sessionsTable = $('#sessions').dataTable( {
+      "oLanguage": {
+        "sProcessing": "<span class='blink'>I'm Hootin' :D</span>"
+      },
+      "sDom": '<"H"lipr>t<"F"ip>',
+      "iDisplayLength": initialDisplayLength,
+      "aLengthMenu": [100, 500, 1000, 5000],
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "/sessions.json",
+      "bRetrieve": true,
+      "bFilter": false,
+      "bScrollCollapse": true,
+      "bAutoWidth": false,
+      "sPaginationType": "full_numbers",
+      "aoColumns": [
+        {
+          "mDataProp" : null,
+          "sWidth": "10px",
+          "bSortable": false,
+          "fnRender" : function(oObj) {
+            return '<img src="/DataTables-1.9.1/examples/examples_support/details_open.png">';
+          }
+        },
+        {
+          "mDataProp" : "id",
+          "bVisible": false
+        },
+        { "mDataProp" : "fp",
+          "sWidth": "50",
+          "fnRender" : function(oObj) {
+            return dateString(oObj.aData.fp, "<br>");
+          }
+        },
+        { "mDataProp" : "lp",
+          "sWidth": "50",
+          "fnRender" : function(oObj) {
+            return dateString(oObj.aData.lp, "<br>");
+          }
+        },
+
+        { "mDataProp" : "a1",
+          "sWidth": "100",
+          "fnRender" : function(oObj) {
+            if (oObj.aData.g1)
+              return ipString(oObj.aData.a1) + "<br>" + oObj.aData.g1;
+            else
+              return ipString(oObj.aData.a1);
+          }
+        },
+        { "mDataProp" : "p1",
+          "sWidth": "55px"
+        },
+        { "mDataProp" : "a2",
+          "sWidth": "100",
+          "fnRender" : function(oObj) {
+            if (oObj.aData.g2)
+              return ipString(oObj.aData.a2) + "<br>" + oObj.aData.g2;
+            else
+              return ipString(oObj.aData.a2);
+          }
+        },
+        { "mDataProp" : "p2",
+          "sWidth": "55px"
+        },
+        { "mDataProp" : "pa",
+          "sWidth": "55px"
+          },
+        { "mDataProp" : "by",
+          "sWidth": "80px",
+          "fnRender" : function(oObj) {
+            return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
+          }
+        },
+        { "mDataProp" : "no",
+          "sWidth": "100px"
+        },
+        { "bSortable": false,
+          "mDataProp" : "us",
+          "fnRender" : function(oObj) {
+            return (oObj.aData.us.join("<br>"));
+          }
+        },
+      ],
+      "aaSorting": [[2, "asc"]],
+      "fnServerData": function ( sSource, aoData, fnCallback ) {
+        var params = buildParams();
+        aoData = $.merge(aoData, params);
+
+        if (this.fnSettings()._iDisplayLength !== 100) {
+          params.push({name: "iDisplayLength", value: this.fnSettings()._iDisplayLength});;
+        }
+
+        var state = $.param(params);
+        if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
+          history.pushState({}, this.title || '', '?' + state);
+        } else {
+          doPushState = 1;
+        }
+
+        startBlink();
+
+        $.ajax( {
+           "dataType": 'json', 
+            "type": "GET", 
+            "url": sSource, 
+            "data": aoData, 
+            "success": function (json) {
+              if (json.histo && json.histo[0]) {
+                startTime = json.histo[0][0]/1000;
+                stopTime = (json.histo[json.histo.length-1][0]/1000) + 59;
+              }
+              // What a hack
+              $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-10);
+
+              drawGraph(json.histo);
+              mapData = json.map;
+
+              // Hack to clear colors
+              var map = $('#world-map').data('mapObject');
+              if (map.countries) {
+                for(var key in map.countries) {
+                  map.countries[key].setFill('#ffffff');
+                }
+              }
+
+              if (json.bsqErr) {
+                $("#bsqErr").show();
+                $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
+              } else {
+                $("#bsqErr").hide();
+              }
+
+              $('#world-map').vectorMap('set', 'values', mapData);
+              fnCallback(json);
+              stopBlink();
+            }
+        } );
+      }
+    } );
+
+    setupSessionGraphBinds(sessionsTable);
+    $("#expression").width($("#sessionsInfo").outerWidth(true) - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-10);
+
+    $('#world-map').vectorMap({
+      map: 'world_en',
+      scaleColors: ['#C8EEFF', '#0071A4'],
+      normalizeFunction: 'polynomial',
+      hoverOpacity: 0.7,
+      hoverColor: false,
+      onLabelShow: function(e, el, code){
+        el.html(el.html() + ' - ' + numberWithCommas(mapData[code] || 0));
+      },
+      onRegionClick: function(e, code){
+        addExpression("country == " + code);
+      },
+    });
+
+    $('#world-map').hover (
+      function() {
+        $(this).css({
+          position: "fixed",
+          right: 0,
+          top: $(this).offset().top,
+          width: $(window).width()*0.75,
+          height: $(window).height()*0.75
+        });
+        $(this).resize();
+      },
+      function(e) {
+        if (e.relatedTarget && e.relatedTarget.className === "jvectormap-label") {
+          return;
+        }
+
+        $(this).css({
+          position: "relative",
+          right: 0,
+          top: 0,
+          width: "250px",
+          height: "150px"
+        });
+        $(this).resize();
+      }
+    );
+
+    $.contextMenu({
+        selector: '.context-menu-one', 
+        build: function($trigger, e) {
+          var items = {};
+
+          if (e.target.id === "a1" || e.target.id === "a2") {
+            items = {
+              export: {name: "Export Unique IPs", counts:0},
+              exportcounts: {name: "Export Unique IPs with Counts", counts:1}
+            };
+            return {
+              callback: function(key, options) {
+                var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+                var params = buildParams();
+                params = $.merge(data, params);
+
+                params.push({name:'field', value:e.target.id});
+                params.push({name:'counts', value:items[key].counts});
+                var url = "unique.txt?" + $.param(params);
+                
+                window.location = url;
+              },
+              items: items
+            };
+          }
+
+          var sData = sessionsTable.fnGetData( e.target );
+          if (sData === null) {
+            return null;
+          }
+          var sPos = sessionsTable.fnGetPosition( e.target );
+          var br;
+          if (sPos[1] === 3 || sPos[1] === 5) {
+            br = sData.indexOf("<br>");
+            var ip = sData.substr(0, br);
+            var country = sData.substr(br+4);
+            var port = sessionsTable.fnGetData(sPos[0], sPos[1]+2);
+            items = {
+              andip: {name: "and " + ip, exp: "ip==" + ip},
+              andnotip: {name: "and NOT " + ip, exp: "ip!=" + ip},
+              andcountry: {name: "and Country " + country, exp: "country==" + country},
+              andnotcountry: {name: "and NOT Country " + country, exp: "country!=" + country},
+              andipport: {name: "and " + ip + ":" + port, exp: "ip=" + ip + ":" + port},
+              andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip!==" + ip + ":" + port}
+            };
+          } else if (sPos[1] === 4 || sPos[1] === 6)  {
+            items = {
+              andport: {name: "and Port " + sData, exp: "port=" + sData},
+              andnotport: {name: "and NOT Port " + sData, exp: "port!=" + sData},
+            };
+          } else if (sPos[1] === 9)  {
+            items = {
+              andport: {name: "and Node " + sData, exp: "node==" + sData},
+              andnotport: {name: "and NOT Node " + sData, exp: "node!=" + sData},
+            };
+          } else 
+            return null;
+
+          return {
+            callback: function(key, options) {
+              addExpression(items[key].exp);
+            },
+            items: items
+          };
+        }
+    });
+      
+    $('.context-menu-one').on('click', function(e){
+    })
+  } );
+
+  var isBlinking = 0;
+  function startBlink(loop) {
+    if (isBlinking && !loop)
+      return;
+    isBlinking = 1;
+    $(".blink").animate({opacity:0},500,"linear",function() {
+      $(this).animate({opacity:1},500, function() {
+        if (isBlinking)
+          startBlink(1)
+      });
+    });
+  }
+  function stopBlink() {
+    isBlinking = 0;
+  }
+  setTimeout("window.history.ready = true;", 500);
+
+  $(window).resize(function(e) {
+    if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
+      return;
+    }
+    // What a hack
+    $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-10);
+    $("#expression").width($("#sessionsInfo").outerWidth(true) - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-10);
+  });
+

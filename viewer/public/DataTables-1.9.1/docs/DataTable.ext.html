@@ -1,0 +1,764 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Namespace: ext - documentation</title>
+  
+		<style type="text/css" media="screen">
+			@import "media/css/doc.css";
+			@import "media/css/shCore.css";
+			@import "media/css/shThemeDataTables.css";
+		</style>
+	
+		<script type="text/javascript" src="media/js/shCore.js"></script>
+		<script type="text/javascript" src="media/js/shBrushJScript.js"></script>
+		<script type="text/javascript" src="media/js/jquery.js"></script>
+		<script type="text/javascript" src="media/js/doc.js"></script>
+	</head>
+	<body>
+		<div class="fw_container">
+			
+				<a name="top"></a>
+				<div class="fw_header">
+					<h1 class="page-title">Namespace: ext</h1>
+					<h2 class="ancestors">Ancestry: <span class="ancestors"><a href="DataTable.html">DataTable</a>.</span> » ext</h2>
+					<div class="page-info">
+						DataTables v1.9.1 documentation
+					</div>
+				</div>
+
+				
+
+				<div class="fw_nav">
+					<h2>Navigation</h2>
+					<ul>
+					<li><a href="#top">Overview</a></li>
+					<li><a href="#summary">Summary</a><div><a href="#summary_properties">Properties</a></div></li><li><a href="#details">Details</a><div><a href="#details_properties">Properties</a></div></li></ul>
+					<div style="margin-top: 10px;">
+						<input type="hidden" name="show_private" value="0">
+						<span id="private_label">Hiding</span> private elements 
+							(<a id="private_toggle" href="">toggle</a>)
+						</span>
+					</div>
+					<div>
+						<input type="hidden" name="show_extended" value="1">
+						<span id="extended_label">Showing</span> extended elements 
+							(<a id="extended_toggle" href="">toggle</a>)
+						</span>
+					</div>
+				</div>
+
+				<div class="fw_content">
+					<a name="overview"></a>
+					<div class="doc_overview">
+						<div class="nav_blocker"></div>
+						<p class="description">Extension object for DataTables that is used to provide all extension options.<br><br>Note that the <i>DataTable.ext</i> object is available through
+<i>jQuery.fn.dataTable.ext</i> where it may be accessed and manipulated. It is
+also aliased to <i>jQuery.fn.dataTableExt</i> for historic reasons.</p><dl class="details">
+	
+</dl>
+<h3 class="subsection-title">Extends</h3>
+<ul>
+	<li><a href="DataTable.models.ext.html">DataTable.models.ext</a></li>
+</ul>
+
+					</div>
+
+					
+					<div class="doc_summary">
+						<a name="summary"></a>
+						<h2>Summary</h2>
+
+						<div class="doc_group"><a name="summary_properties"></a><h3 class="subsection-title">Properties</h3>
+
+<dl>
+    <dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#afnFiltering">afnFiltering</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#afnFiltering"><img src="media/images/extended.png"></a></div>Plug-in filtering functions - this method of filtering is complimentary to the default
+type based filtering, and a lot more comprehensive as it allows you complete control
+over the filtering logic. Each element in this array is a function (parameters
+described below) that is called for every row in the table, and your logic decides if
+it should be included in the filtered data set or not.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+        <li>{array|object} Data for the row to be processed (same as the original format
+          that was passed in as the data source, or an array from a DOM data source</li>
+        <li>{int} Row index in aoData (<a href="DataTable.models.oSettings.html#aoData">DataTable.models.oSettings.aoData</a>), which can
+          be useful to retrieve the TR element if you need DOM interaction.</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{boolean} Include the row in the filtered result set (true) or not (false)</li>
+      </ul>
+    </il>
+  </ul></dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#afnSortData">afnSortData</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#afnSortData"><img src="media/images/extended.png"></a></div>Plug-in sorting functions - this method of sorting is complimentary to the default type
+based sorting that DataTables does automatically, allowing much greater control over the
+the data that is being used to sort a column. This is useful if you want to do sorting
+based on live data (for example the contents of an 'input' element) rather than just the
+static string that DataTables knows of. The way these plug-ins work is that you create
+an array of the values you wish to be sorted for the column in question and then return
+that array. Which pre-sorting function is run here depends on the sSortDataType parameter
+that is used for the column (if any). This is the corollary of <i>ofnSearch</i> for sort 
+data.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+        <li>{int} Target column index</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{array} Data for the column to be sorted upon</li>
+      </ul>
+    </il>
+  </ul>
+ 
+Note that as of v1.9, it is typically preferable to use <i>mDataProp</i> to prepare data for
+the different uses that DataTables can put the data to. Specifically <i>mDataProp</i> when
+used as a function will give you a 'type' (sorting, filtering etc) that you can use to 
+prepare the data as required for the different types. As such, this method is deprecated.</dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoFeatures">aoFeatures</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#aoFeatures"><img src="media/images/extended.png"></a></div>Feature plug-ins - This is an array of objects which describe the feature plug-ins that are
+available to DataTables. These feature plug-ins are accessible through the sDom initialisation
+option. As such, each feature plug-in must describe a function that is used to initialise
+itself (fnInit), a character so the feature can be enabled by sDom (cFeature) and the name
+of the feature (sFeature). Thus the objects attached to this method must provide:
+  <ul>
+    <li>{function} fnInit Initialisation of the plug-in
+      <ul>
+        <li>
+          Function input parameters:
+          <ul>
+            <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+          </ul>
+        </li>
+        <li>
+          Function return:
+          <ul>
+            <li>{node|null} The element which contains your feature. Note that the return
+               may also be void if your plug-in does not require to inject any DOM elements 
+               into DataTables control (sDom) - for example this might be useful when 
+               developing a plug-in which allows table control via keyboard entry.</li>
+          </ul>
+        </il>
+      </ul>
+    </li>
+    <li>{character} cFeature Character that will be matched in sDom - case sensitive</li>
+    <li>{string} sFeature Feature name</li>
+  </ul></dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aTypes">aTypes</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#aTypes"><img src="media/images/extended.png"></a></div>Type detection plug-in functions - DataTables utilises types to define how sorting and
+filtering behave, and types can be either  be defined by the developer (sType for the
+column) or they can be automatically detected by the methods in this array. The functions
+defined in the array are quite simple, taking a single parameter (the data to analyse) 
+and returning the type if it is a known type, or null otherwise.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{*} Data from the column cell to be analysed</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{string|null} Data type detected, or null if unknown (and thus pass it
+          on to the other type detection functions.</li>
+      </ul>
+    </il>
+  </ul></dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#fnVersionCheck">fnVersionCheck</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#fnVersionCheck"><img src="media/images/extended.png"></a></div>Provide a common method for plug-ins to check the version of DataTables being used, 
+in order to ensure compatibility.</dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iApiIndex">iApiIndex</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#iApiIndex"><img src="media/images/extended.png"></a></div>Index for what 'this' index API functions should use</dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oApi">oApi</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#oApi"><img src="media/images/extended.png"></a></div>Container for all private functions in DataTables so they can be exposed externally</dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#ofnSearch">ofnSearch</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#ofnSearch"><img src="media/images/extended.png"></a></div>Pre-processing of filtering data plug-ins - When you assign the sType for a column
+(or have it automatically detected for you by DataTables or a type detection plug-in), 
+you will typically be using this for custom sorting, but it can also be used to provide 
+custom filtering by allowing you to pre-processing the data and returning the data in
+the format that should be filtered upon. This is done by adding functions this object 
+with a parameter name which matches the sType for that target column. This is the
+corollary of <i>afnSortData</i> for filtering data.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{*} Data from the column cell to be prepared for filtering</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{string|null} Formatted string that will be used for the filtering.</li>
+      </ul>
+    </il>
+  </ul>
+
+Note that as of v1.9, it is typically preferable to use <i>mDataProp</i> to prepare data for
+the different uses that DataTables can put the data to. Specifically <i>mDataProp</i> when
+used as a function will give you a 'type' (sorting, filtering etc) that you can use to 
+prepare the data as required for the different types. As such, this method is deprecated.</dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oJUIClasses">oJUIClasses</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#oJUIClasses"><img src="media/images/extended.png"></a></div>Storage for the various classes that DataTables uses - jQuery UI suitable</dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oPagination">oPagination</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#oPagination"><img src="media/images/extended.png"></a></div>Pagination plug-in methods - The style and controls of the pagination can significantly 
+impact on how the end user interacts with the data in your table, and DataTables allows 
+the addition of pagination controls by extending this object, which can then be enabled
+through the <i>sPaginationType</i> initialisation parameter. Each pagination type that
+is added is an object (the property name of which is what <i>sPaginationType</i> refers
+to) that has two properties, both methods that are used by DataTables to update the
+control's state.
+  <ul>
+    <li>
+      fnInit -  Initialisation of the paging controls. Called only during initialisation 
+        of the table. It is expected that this function will add the required DOM elements 
+        to the page for the paging controls to work. The element pointer 
+        'oSettings.aanFeatures.p' array is provided by DataTables to contain the paging 
+        controls (note that this is a 2D array to allow for multiple instances of each 
+        DataTables DOM element). It is suggested that you add the controls to this element 
+        as children
+      <ul>
+        <li>
+          Function input parameters:
+          <ul>
+            <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+            <li>{node} Container into which the pagination controls must be inserted</li>
+            <li>{function} Draw callback function - whenever the controls cause a page
+              change, this method must be called to redraw the table.</li>
+          </ul>
+        </li>
+        <li>
+          Function return:
+          <ul>
+            <li>No return required</li>
+          </ul>
+        </il>
+      </ul>
+    </il>
+    <li>
+      fnInit -  This function is called whenever the paging status of the table changes and is
+        typically used to update classes and/or text of the paging controls to reflex the new 
+        status.
+      <ul>
+        <li>
+          Function input parameters:
+          <ul>
+            <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+            <li>{function} Draw callback function - in case you need to redraw the table again
+              or attach new event listeners</li>
+          </ul>
+        </li>
+        <li>
+          Function return:
+          <ul>
+            <li>No return required</li>
+          </ul>
+        </il>
+      </ul>
+    </il>
+  </ul></dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oSort">oSort</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#oSort"><img src="media/images/extended.png"></a></div>Sorting plug-in methods - Sorting in DataTables is based on the detected type of the
+data column (you can add your own type detection functions, or override automatic 
+detection using sType). With this specific type given to the column, DataTables will 
+apply the required sort from the functions in the object. Each sort type must provide
+two mandatory methods, one each for ascending and descending sorting, and can optionally
+provide a pre-formatting method that will help speed up sorting by allowing DataTables
+to pre-format the sort data only once (rather than every time the actual sort functions
+are run). The two sorting functions are typical Javascript sort methods:
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{*} Data to compare to the second parameter</li>
+        <li>{*} Data to compare to the first parameter</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{int} Sorting match: <0 if first parameter should be sorted lower than
+          the second parameter, ===0 if the two parameters are equal and >0 if
+          the first parameter should be sorted height than the second parameter.</li>
+      </ul>
+    </il>
+  </ul></dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oStdClasses">oStdClasses</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#oStdClasses"><img src="media/images/extended.png"></a></div>Storage for the various classes that DataTables uses</dd><dt class=" augmented even"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sErrMode">sErrMode</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class=" augmented even"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#sErrMode"><img src="media/images/extended.png"></a></div>How should DataTables report an error. Can take the value 'alert' or 'throw'</dd><dt class=" augmented odd"><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sVersion">sVersion</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class=" augmented odd"><div class="type-augmented" title="Extended from DataTable.models.ext"><a href="DataTable.models.ext.html#sVersion"><img src="media/images/extended.png"></a></div>Version string for plug-ins to check compatibility. Allowed format is
+a.b.c.d.e where: a:int, b:int, c:int, d:string(dev|beta), e:int. d and
+e are optional</dd>
+</dl></div>
+					</div>
+					
+
+
+					
+					<div class="doc_details">
+						<a name="details"></a>
+						<h2>Details</h2>
+						<div class="doc_group"><a name="details_properties"></a><h3 class="subsection-title">Properties</h3>
+<dl>
+    <dt class=" augmented even"><a name="afnFiltering"></a><a name="afnFiltering_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#afnFiltering">afnFiltering</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented even"><p class="description">Plug-in filtering functions - this method of filtering is complimentary to the default
+type based filtering, and a lot more comprehensive as it allows you complete control
+over the filtering logic. Each element in this array is a function (parameters
+described below) that is called for every row in the table, and your logic decides if
+it should be included in the filtered data set or not.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+        <li>{array|object} Data for the row to be processed (same as the original format
+          that was passed in as the data source, or an array from a DOM data source</li>
+        <li>{int} Row index in aoData (<a href="DataTable.models.oSettings.html#aoData">DataTable.models.oSettings.aoData</a>), which can
+          be useful to retrieve the TR element if you need DOM interaction.</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{boolean} Include the row in the filtered result set (true) or not (false)</li>
+      </ul>
+    </il>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // The following example shows custom filtering being applied to the fourth column (i.e.
+   // the aData[3] index) based on two input values from the end-user, matching the data in 
+   // a certain range.
+   $.fn.dataTableExt.afnFiltering.push(
+     function( oSettings, aData, iDataIndex ) {
+       var iMin = document.getElementById('min').value * 1;
+       var iMax = document.getElementById('max').value * 1;
+       var iVersion = aData[3] == "-" ? 0 : aData[3]*1;
+       if ( iMin == "" && iMax == "" ) {
+         return true;
+       }
+       else if ( iMin == "" && iVersion < iMax ) {
+         return true;
+       }
+       else if ( iMin < iVersion && "" == iMax ) {
+         return true;
+       }
+       else if ( iMin < iVersion && iVersion < iMax ) {
+         return true;
+       }
+       return false;
+     }
+   );</pre>
+    </div>
+</div></dd><dt class=" augmented odd"><a name="afnSortData"></a><a name="afnSortData_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#afnSortData">afnSortData</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented odd"><p class="description">Plug-in sorting functions - this method of sorting is complimentary to the default type
+based sorting that DataTables does automatically, allowing much greater control over the
+the data that is being used to sort a column. This is useful if you want to do sorting
+based on live data (for example the contents of an 'input' element) rather than just the
+static string that DataTables knows of. The way these plug-ins work is that you create
+an array of the values you wish to be sorted for the column in question and then return
+that array. Which pre-sorting function is run here depends on the sSortDataType parameter
+that is used for the column (if any). This is the corollary of <i>ofnSearch</i> for sort 
+data.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+        <li>{int} Target column index</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{array} Data for the column to be sorted upon</li>
+      </ul>
+    </il>
+  </ul>
+ 
+Note that as of v1.9, it is typically preferable to use <i>mDataProp</i> to prepare data for
+the different uses that DataTables can put the data to. Specifically <i>mDataProp</i> when
+used as a function will give you a 'type' (sorting, filtering etc) that you can use to 
+prepare the data as required for the different types. As such, this method is deprecated.</p><div class="collapse_details"><dl class="details">
+	<dt class="important">Deprecated</dt><dd class="yes-def">Yes</dd>
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // Updating the cached sorting information with user entered values in HTML input elements
+   jQuery.fn.dataTableExt.afnSortData['dom-text'] = function ( oSettings, iColumn )
+   {
+     var aData = [];
+     $( 'td:eq('+iColumn+') input', oSettings.oApi._fnGetTrNodes(oSettings) ).each( function () {
+       aData.push( this.value );
+     } );
+     return aData;
+   }</pre>
+    </div>
+</div></dd><dt class=" augmented even"><a name="aoFeatures"></a><a name="aoFeatures_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aoFeatures">aoFeatures</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented even"><p class="description">Feature plug-ins - This is an array of objects which describe the feature plug-ins that are
+available to DataTables. These feature plug-ins are accessible through the sDom initialisation
+option. As such, each feature plug-in must describe a function that is used to initialise
+itself (fnInit), a character so the feature can be enabled by sDom (cFeature) and the name
+of the feature (sFeature). Thus the objects attached to this method must provide:
+  <ul>
+    <li>{function} fnInit Initialisation of the plug-in
+      <ul>
+        <li>
+          Function input parameters:
+          <ul>
+            <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+          </ul>
+        </li>
+        <li>
+          Function return:
+          <ul>
+            <li>{node|null} The element which contains your feature. Note that the return
+               may also be void if your plug-in does not require to inject any DOM elements 
+               into DataTables control (sDom) - for example this might be useful when 
+               developing a plug-in which allows table control via keyboard entry.</li>
+          </ul>
+        </il>
+      </ul>
+    </li>
+    <li>{character} cFeature Character that will be matched in sDom - case sensitive</li>
+    <li>{string} sFeature Feature name</li>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // How TableTools initialises itself.
+   $.fn.dataTableExt.aoFeatures.push( {
+     "fnInit": function( oSettings ) {
+       return new TableTools( { "oDTSettings": oSettings } );
+     },
+     "cFeature": "T",
+     "sFeature": "TableTools"
+   } );</pre>
+    </div>
+</div></dd><dt class=" augmented odd"><a name="aTypes"></a><a name="aTypes_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#aTypes">aTypes</a></span><span class="type-sig"><span class="type-signature"> :array</span></span></dt><dd class=" augmented odd"><p class="description">Type detection plug-in functions - DataTables utilises types to define how sorting and
+filtering behave, and types can be either  be defined by the developer (sType for the
+column) or they can be automatically detected by the methods in this array. The functions
+defined in the array are quite simple, taking a single parameter (the data to analyse) 
+and returning the type if it is a known type, or null otherwise.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{*} Data from the column cell to be analysed</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{string|null} Data type detected, or null if unknown (and thus pass it
+          on to the other type detection functions.</li>
+      </ul>
+    </il>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // Currency type detection plug-in:
+   jQuery.fn.dataTableExt.aTypes.push(
+     function ( sData ) {
+       var sValidChars = "0123456789.-";
+       var Char;
+       
+       // Check the numeric part
+       for ( i=1 ; i<sData.length ; i++ ) {
+         Char = sData.charAt(i); 
+         if (sValidChars.indexOf(Char) == -1) {
+           return null;
+         }
+       }
+       
+       // Check prefixed by currency
+       if ( sData.charAt(0) == '$' || sData.charAt(0) == '&pound;' ) {
+         return 'currency';
+       }
+       return null;
+     }
+   );</pre>
+    </div>
+</div></dd><dt id="DataTable.models.ext.fnVersionCheck" class=" even"><a name="fnVersionCheck"></a><a name="fnVersionCheck_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a>fnVersionCheck</a></span><span class="type-sig"><span class="type-signature"> :function</span></span></span></dt><dd class=" even"><p class="description">Provide a common method for plug-ins to check the version of DataTables being used, 
+in order to ensure compatibility.</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+        <th width="20"></th>
+        <th width="12%" class="bottom_border name">Name</th>
+		<th width="10%" class="bottom_border">Type</th>
+		<th width="10%" class="bottom_border">Attributes</th>
+		<th width="10%" class="bottom_border">Default</th>
+		<th class="last bottom_border">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	<tr class="even"><td class="number right_border"><div>1</div></td><td class="name">sVersion</td><td class="type type-param">string</td><td class="attributes"></td><td class="default"></td><td class="description last">Version string to check for, in the format "X.Y.Z". Note 
+   that the formats "X" and "X.Y" are also acceptable.</td></tr>
+	</tbody>
+</table><h5>Returns:</h5><p class="returns">true if this version of DataTables is greater or equal to the 
+   required version, or false if this version of DataTales is not suitable</p><h5>Example:</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $(document).ready(function() {
+     var oTable = $('#example').dataTable();
+     alert( oTable.fnVersionCheck( '1.9.0' ) );
+   } );</pre>
+    </div>
+</div>
+<dt class=" augmented odd"><a name="iApiIndex"></a><a name="iApiIndex_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#iApiIndex">iApiIndex</a></span><span class="type-sig"><span class="type-signature"> :int</span></span></dt><dd class=" augmented odd"><p class="description">Index for what 'this' index API functions should use</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div></div></dd><dt class=" augmented even"><a name="oApi"></a><a name="oApi_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oApi">oApi</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented even"><p class="description">Container for all private functions in DataTables so they can be exposed externally</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div></div></dd><dt class=" augmented odd"><a name="ofnSearch"></a><a name="ofnSearch_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#ofnSearch">ofnSearch</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented odd"><p class="description">Pre-processing of filtering data plug-ins - When you assign the sType for a column
+(or have it automatically detected for you by DataTables or a type detection plug-in), 
+you will typically be using this for custom sorting, but it can also be used to provide 
+custom filtering by allowing you to pre-processing the data and returning the data in
+the format that should be filtered upon. This is done by adding functions this object 
+with a parameter name which matches the sType for that target column. This is the
+corollary of <i>afnSortData</i> for filtering data.
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{*} Data from the column cell to be prepared for filtering</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{string|null} Formatted string that will be used for the filtering.</li>
+      </ul>
+    </il>
+  </ul>
+
+Note that as of v1.9, it is typically preferable to use <i>mDataProp</i> to prepare data for
+the different uses that DataTables can put the data to. Specifically <i>mDataProp</i> when
+used as a function will give you a 'type' (sorting, filtering etc) that you can use to 
+prepare the data as required for the different types. As such, this method is deprecated.</p><div class="collapse_details"><dl class="details">
+	<dt class="important">Deprecated</dt><dd class="yes-def">Yes</dd>
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $.fn.dataTableExt.ofnSearch['title-numeric'] = function ( sData ) {
+     return sData.replace(/\n/g," ").replace( /<.*?>/g, "" );
+   }</pre>
+    </div>
+</div></dd><dt class=" augmented even"><a name="oJUIClasses"></a><a name="oJUIClasses_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oJUIClasses">oJUIClasses</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented even"><p class="description">Storage for the various classes that DataTables uses - jQuery UI suitable</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div></div></dd><dt class=" augmented odd"><a name="oPagination"></a><a name="oPagination_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oPagination">oPagination</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented odd"><p class="description">Pagination plug-in methods - The style and controls of the pagination can significantly 
+impact on how the end user interacts with the data in your table, and DataTables allows 
+the addition of pagination controls by extending this object, which can then be enabled
+through the <i>sPaginationType</i> initialisation parameter. Each pagination type that
+is added is an object (the property name of which is what <i>sPaginationType</i> refers
+to) that has two properties, both methods that are used by DataTables to update the
+control's state.
+  <ul>
+    <li>
+      fnInit -  Initialisation of the paging controls. Called only during initialisation 
+        of the table. It is expected that this function will add the required DOM elements 
+        to the page for the paging controls to work. The element pointer 
+        'oSettings.aanFeatures.p' array is provided by DataTables to contain the paging 
+        controls (note that this is a 2D array to allow for multiple instances of each 
+        DataTables DOM element). It is suggested that you add the controls to this element 
+        as children
+      <ul>
+        <li>
+          Function input parameters:
+          <ul>
+            <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+            <li>{node} Container into which the pagination controls must be inserted</li>
+            <li>{function} Draw callback function - whenever the controls cause a page
+              change, this method must be called to redraw the table.</li>
+          </ul>
+        </li>
+        <li>
+          Function return:
+          <ul>
+            <li>No return required</li>
+          </ul>
+        </il>
+      </ul>
+    </il>
+    <li>
+      fnInit -  This function is called whenever the paging status of the table changes and is
+        typically used to update classes and/or text of the paging controls to reflex the new 
+        status.
+      <ul>
+        <li>
+          Function input parameters:
+          <ul>
+            <li>{object} DataTables settings object: see <a href="DataTable.models.oSettings.html">DataTable.models.oSettings</a>.</li>
+            <li>{function} Draw callback function - in case you need to redraw the table again
+              or attach new event listeners</li>
+          </ul>
+        </li>
+        <li>
+          Function return:
+          <ul>
+            <li>No return required</li>
+          </ul>
+        </il>
+      </ul>
+    </il>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Example</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   $.fn.dataTableExt.oPagination.four_button = {
+     "fnInit": function ( oSettings, nPaging, fnCallbackDraw ) {
+       nFirst = document.createElement( 'span' );
+       nPrevious = document.createElement( 'span' );
+       nNext = document.createElement( 'span' );
+       nLast = document.createElement( 'span' );
+       
+       nFirst.appendChild( document.createTextNode( oSettings.oLanguage.oPaginate.sFirst ) );
+       nPrevious.appendChild( document.createTextNode( oSettings.oLanguage.oPaginate.sPrevious ) );
+       nNext.appendChild( document.createTextNode( oSettings.oLanguage.oPaginate.sNext ) );
+       nLast.appendChild( document.createTextNode( oSettings.oLanguage.oPaginate.sLast ) );
+       
+       nFirst.className = "paginate_button first";
+       nPrevious.className = "paginate_button previous";
+       nNext.className="paginate_button next";
+       nLast.className = "paginate_button last";
+       
+       nPaging.appendChild( nFirst );
+       nPaging.appendChild( nPrevious );
+       nPaging.appendChild( nNext );
+       nPaging.appendChild( nLast );
+       
+       $(nFirst).click( function () {
+         oSettings.oApi._fnPageChange( oSettings, "first" );
+         fnCallbackDraw( oSettings );
+       } );
+       
+       $(nPrevious).click( function() {
+         oSettings.oApi._fnPageChange( oSettings, "previous" );
+         fnCallbackDraw( oSettings );
+       } );
+       
+       $(nNext).click( function() {
+         oSettings.oApi._fnPageChange( oSettings, "next" );
+         fnCallbackDraw( oSettings );
+       } );
+       
+       $(nLast).click( function() {
+         oSettings.oApi._fnPageChange( oSettings, "last" );
+         fnCallbackDraw( oSettings );
+       } );
+       
+       $(nFirst).bind( 'selectstart', function () { return false; } );
+       $(nPrevious).bind( 'selectstart', function () { return false; } );
+       $(nNext).bind( 'selectstart', function () { return false; } );
+       $(nLast).bind( 'selectstart', function () { return false; } );
+     },
+     
+     "fnUpdate": function ( oSettings, fnCallbackDraw ) {
+       if ( !oSettings.aanFeatures.p ) {
+         return;
+       }
+       
+       // Loop over each instance of the pager
+       var an = oSettings.aanFeatures.p;
+       for ( var i=0, iLen=an.length ; i<iLen ; i++ ) {
+         var buttons = an[i].getElementsByTagName('span');
+         if ( oSettings._iDisplayStart === 0 ) {
+           buttons[0].className = "paginate_disabled_previous";
+           buttons[1].className = "paginate_disabled_previous";
+         }
+         else {
+           buttons[0].className = "paginate_enabled_previous";
+           buttons[1].className = "paginate_enabled_previous";
+         }
+         
+         if ( oSettings.fnDisplayEnd() == oSettings.fnRecordsDisplay() ) {
+           buttons[2].className = "paginate_disabled_next";
+           buttons[3].className = "paginate_disabled_next";
+         }
+         else {
+           buttons[2].className = "paginate_enabled_next";
+           buttons[3].className = "paginate_enabled_next";
+         }
+       }
+     }
+   };</pre>
+    </div>
+</div></dd><dt class=" augmented even"><a name="oSort"></a><a name="oSort_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oSort">oSort</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented even"><p class="description">Sorting plug-in methods - Sorting in DataTables is based on the detected type of the
+data column (you can add your own type detection functions, or override automatic 
+detection using sType). With this specific type given to the column, DataTables will 
+apply the required sort from the functions in the object. Each sort type must provide
+two mandatory methods, one each for ascending and descending sorting, and can optionally
+provide a pre-formatting method that will help speed up sorting by allowing DataTables
+to pre-format the sort data only once (rather than every time the actual sort functions
+are run). The two sorting functions are typical Javascript sort methods:
+  <ul>
+    <li>
+      Function input parameters:
+      <ul>
+        <li>{*} Data to compare to the second parameter</li>
+        <li>{*} Data to compare to the first parameter</li>
+      </ul>
+    </li>
+    <li>
+      Function return:
+      <ul>
+        <li>{int} Sorting match: <0 if first parameter should be sorted lower than
+          the second parameter, ===0 if the two parameters are equal and >0 if
+          the first parameter should be sorted height than the second parameter.</li>
+      </ul>
+    </il>
+  </ul></p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div><h5>Examples</h5>
+    <div class="example-code">
+    	<pre class="brush: js">   // Case-sensitive string sorting, with no pre-formatting method
+   $.extend( $.fn.dataTableExt.oSort, {
+     "string-case-asc": function(x,y) {
+       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+     },
+     "string-case-desc": function(x,y) {
+       return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+     }
+   } );
+
+ </pre>
+    </div>
+
+    <div class="example-code">
+    	<pre class="brush: js">   // Case-insensitive string sorting, with pre-formatting
+   $.extend( $.fn.dataTableExt.oSort, {
+     "string-pre": function(x) {
+       return x.toLowerCase();
+     },
+     "string-asc": function(x,y) {
+       return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+     },
+     "string-desc": function(x,y) {
+       return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+     }
+   } );</pre>
+    </div>
+</div></dd><dt class=" augmented odd"><a name="oStdClasses"></a><a name="oStdClasses_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#oStdClasses">oStdClasses</a></span><span class="type-sig"><span class="type-signature"> :object</span></span></dt><dd class=" augmented odd"><p class="description">Storage for the various classes that DataTables uses</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div></div></dd><dt class=" augmented even"><a name="sErrMode"></a><a name="sErrMode_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sErrMode">sErrMode</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class=" augmented even"><p class="description">How should DataTables report an error. Can take the value 'alert' or 'throw'</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div></div></dd><dt class=" augmented odd"><a name="sVersion"></a><a name="sVersion_details"></a><span class="type-attr"><span class="type-signature">&lt;static> </span></span><span class="type-name"><a href="#sVersion">sVersion</a></span><span class="type-sig"><span class="type-signature"> :string</span></span></dt><dd class=" augmented odd"><p class="description">Version string for plug-ins to check compatibility. Allowed format is
+a.b.c.d.e where: a:int, b:int, c:int, d:string(dev|beta), e:int. d and
+e are optional</p><div class="collapse_details"><dl class="details">
+	
+</dl>
+<h5>Extended from:</h5><div class="extended"><a href="DataTable.models.ext.html"><img src="media/images/extended.png"> DataTable.models.ext</a></div></div></dd>
+</dl></div>
+   					</div>
+				
+		</div>
+
+		<div class="fw_footer">
+			DataTables: Copyright 2008-2012 Allan Jardine, all rights reserved<br>
+
+			Documentation generated by <a href="https://github.com/micmath/JSDoc">JSDoc 3</a> on
+			15th Apr 2012 - 19:30
+			with the <a href="http://datatables.net/">DataTables</a> template.
+		</div>
+	</body>
+</html>

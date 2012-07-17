@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>jQuery contextMenu Plugin</title>
+    <meta name="description" content="simple contextMenu generator for interactive web applications based on jQuery" />
+    
+    <link href="screen.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-8922143-3']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body>
+    <a id="github-forkme" href="https://github.com/medialize/jQuery-contextMenu"><img src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <div id="github-watch"><a href="https://github.com/medialize/jQuery-contextMenu" class="gitwatch">jQuery Github Repository</a></div>
+
+    <div id="container">
+    <h1><a href="https://github.com/medialize/jQuery-contextMenu">jQuery contextMenu</a></h1>
+    
+    <ul class="menu">
+        <li class="active"><a href="index.html">About</a></li>
+        <li><a href="demo.html">Demo</a></li>
+        <li><a href="docs.html">Documentation</a></li>
+        <li><a href="http://rodneyrehm.de/en/">Author</a></li>
+    </ul>
+
+    <p>
+        <img src="screenshots/jquery-contextMenu.subs.png" alt="context menu rendered by $.contextMenu">
+        <img src="screenshots/native.firefox-9.0a1.png" alt="Native context menu in Firefox 9.0 Alpha 1">
+        <!-- img src="screenshots/jquery-contextMenu.png" alt="context menu rendered by $.contextMenu" -->
+    </p>
+
+    <p>
+        The contextMenu Plugin was designed for web applications in need of menus on a possibly large amount of objects.
+        Unlike implementations as <a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/" target="_blank">a beautiful site's</a> or <a href="http://www.trendskitchens.co.nz/jquery/contextmenu/" target="_blank">trendskitchens'</a> this contextMenu treats the menu as the primary object. That means, that a single menu is defined that can be used by multiple objects. Unlike the mentioned plugins, contextMenu doesn't need to bind itself to triggering objects. This allows injecting and removing triggers without having to re-initialize or update contextMenu.
+    </p>
+    
+    <p>
+        contextMenu can provide a simple list of clickable commands, or offer an in-menu form. This makes very simple attribute modification possible. See the <a href="demo/input.html">input example</a>.
+    </p>
+    
+    <p>
+        Once a menu is registered, it cannot be altered. That means no commands can be added or removed from the menu. This allows contextMenu to keep a single definition in memory, which enables it to work with hundreds of trigger objects. contextMenu knows the two callbacks <em>show</em> and <em>hide</em> which can be used to update the state of commands within the menu. This allows en/disabling commands, changing icons or updating the values of contained &lt;input&gt; elements.
+    </p>
+    <p>
+        As of version 1.5 context menus can be created dynamically. That means the afore described behavior (once created, cannot be altered) still applies - but can be circumvented.  Menus can be created on demand and they can be different depending on the triggering element.
+    </p>
+    
+    <p>
+        And, yes, the icons provided in this demo are taken from a <a href="http://abeautifulsite.net/blog/2008/09/jquery-context-menu-plugin/">beautiful site</a>, 
+        as well as some implementation ideas...
+    </p>
+    
+    <h2 id="features">Features</h2>
+    
+    <ul>
+        <li>trigger contextMenu with right-click, <a href="demo/trigger-left-click.html">left-click</a>, <a href="demo/trigger-hover.html">hover</a> or own <a href="demo/trigger-custom.html">custom trigger</a> events</li>
+        <li>delegated event handling removing the need for re-initialization when trigger objects are <a href="demo/dynamic.html">added / removed</a></li>
+        <li>dynamic <a href="demo/dynamic-create.html">on-demand</a> menu creation</li>
+        <li>optional icons for commands</li>
+        <li><a href="demo/input.html">input elements</a> (text, textarea, checkbox, radio, select) within the menu</li>
+        <li>custom html elements (command free)</li>
+        <li>show/hide callbacks to update the state of commands</li>
+        <li>small memory footprint even with hundreds of trigger objects</li>
+        <li>adjust position of menu to fit in viewport</li>
+        <li><a href="demo/disabled-changing.html">enable / disable</a> commands</li>
+        <li>nested <a href="demo/sub-menus.html">sub-menus</a></li>
+        <li>full keyboard interaction</li>
+        <li><a href="demo/html5-import.html">HTML5 &lt;menu&gt;</a> support</li>
+        <li>CSS is for styling, javascript is not...</li>
+    </ul>
+
+    <h2 id="authors">Authors</h2>
+	<ul>
+		<li><a href="http://rodneyrehm.de/en/">Rodney Rehm</a></li>
+		<li><a href="https://github.com/christiaan">Christian Baartse</a> (single callback per menu)</li>
+		<li><a href="https://github.com/addyosmani">Addy Osmani</a> (compatibility with native context menu in Firefox 8)</li>
+	</ul>
+	
+    <h2 id="license">License</h2>
+	<p>$.contextMenu is published under the <a href="http://www.opensource.org/licenses/mit-license">MIT license</a> and <a href="http://opensource.org/licenses/GPL-3.0">GPL v3</a>.</p>
+	
+    </div>
+    
+    <script type="text/javascript" src="https://raw.github.com/addyosmani/github-watchers-button/master/github-watchers.min.js"></script>
+</body>
+</html>

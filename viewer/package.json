@@ -1,0 +1,20 @@
+{
+    "name": "application-name"
+  , "version": "0.0.1"
+  , "private": true
+  , "dependencies": {
+      "jade": ">= 0.0.1"
+    , "express": "== 2.5.10"
+    , "async": ">= 0.0.1"
+    , "stylus": ">= 0.0.1"
+    , "connect": "< 2.0.0"
+    , "request": ">= 0.0.1"
+    , "connect-timeout": ">= 0.0.1"
+    , "elasticsearchclient": ">= 0.0.1"
+    , "fs-ext": "http://github.com/awick/node-fs-ext/tarball/master"
+    , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
+    , "hexy": ">= 0.0.1"
+    , "passport": ">= 0.0.1"
+    , "passport-http": ">= 0.0.1"
+  }
+}
