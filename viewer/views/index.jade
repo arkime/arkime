@@ -4,22 +4,9 @@ script(src='/jQuery-contextMenu/src/jquery.ui.position.js')
 script(src='/jQuery-contextMenu/src/jquery.contextMenu.js')
 link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.contextMenu.css')
 
-div.context-menu-one
-  form#searchForm
-    div
-      select(id='date')
-        option(value=1,selected) Last 1 hr
-        option(value=6) Last 6 hrs
-        option(value=24) Last 24 hrs 
-        option(value=72) Last 3 days
-        option(value=168) Last Week
-        option(value=-1) All
-        option(value=-2) Graph
-      input#expression(type='text', name='expression')
-      button#export(type="button", style="float:right") Export
-      button#search(type="submit", style="float:right") Search
-    div#bsqErr
-span#sessionsInfo
+div.context-menu-one(style="margin-bottom: 4px")
+div#bsqErr
+div#sessionsInfo
   div#world-map
   div#sessionGraph
 table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
@@ -36,7 +23,7 @@ table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class
       th Packets
       th Bytes
       th Node
-      th urls
+      th#us uris
   tbody
 br
 script(type='text/javascript')
@@ -109,7 +96,8 @@ script(type='text/javascript')
 
     sessionsTable = $('#sessions').dataTable( {
       "oLanguage": {
-        "sProcessing": "<span class='blink'>I'm Hootin' :D</span>"
+        "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
+        "sLengthMenu": "_MENU_",
       },
       "sDom": '<"H"lipr>t<"F"ip>',
       "iDisplayLength": initialDisplayLength,
@@ -220,7 +208,7 @@ script(type='text/javascript')
                 stopTime = (json.histo[json.histo.length-1][0]/1000) + 59;
               }
               // What a hack
-              $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-10);
+              $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
 
               drawGraph(json.histo);
               mapData = json.map;
@@ -249,11 +237,13 @@ script(type='text/javascript')
     } );
 
     setupSessionGraphBinds(sessionsTable);
-    $("#expression").width($("#sessionsInfo").outerWidth(true) - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-10);
+    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-25);
 
     $('#world-map').vectorMap({
       map: 'world_en',
-      scaleColors: ['#C8EEFF', '#0071A4'],
+      backgroundColor: '#686868',
+      scaleColors: ['#C8EEFF', '#0042A4'],
+      oldscaleColors: ['#C8EEFF', '#1b2e61'],
       normalizeFunction: 'polynomial',
       hoverOpacity: 0.7,
       hoverColor: false,
@@ -297,11 +287,18 @@ script(type='text/javascript')
         build: function($trigger, e) {
           var items = {};
 
-          if (e.target.id === "a1" || e.target.id === "a2") {
-            items = {
-              export: {name: "Export Unique IPs", counts:0},
-              exportcounts: {name: "Export Unique IPs with Counts", counts:1}
-            };
+          if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'us') {
+            if (e.target.id === 'us') {
+              items = {
+                export: {name: "Export Unique URLs", counts:0},
+                exportcounts: {name: "Export Unique URLs with Counts", counts:1}
+              };
+            } else {
+              items = {
+                export: {name: "Export Unique IPs", counts:0},
+                exportcounts: {name: "Export Unique IPs with Counts", counts:1}
+              };
+            }
             return {
               callback: function(key, options) {
                 var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
@@ -385,7 +382,7 @@ script(type='text/javascript')
       return;
     }
     // What a hack
-    $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-10);
-    $("#expression").width($("#sessionsInfo").outerWidth(true) - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-10);
+    $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
+    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-25);
   });
 

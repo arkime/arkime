@@ -193,10 +193,15 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     g_ptr_array_free(session->urlArray, TRUE);
     session->urlArray = g_ptr_array_new_with_free_func(g_free);
 
-    MolochString_t *hstring;
-    HASH_FORALL_POP_HEAD(s_, session->hosts, hstring, 
-        free(hstring->str);
-        free(hstring);
+    MolochString_t *string;
+    HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
+        free(string->str);
+        free(string);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, session->userAgents, string, 
+        free(string->str);
+        free(string);
     );
 
     if (session->tcp_next) {
@@ -284,6 +289,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
         session->urlArray = g_ptr_array_new_with_free_func(g_free);
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
+        HASH_INIT(s_, session->userAgents, moloch_string_hash, moloch_string_cmp);
         HASH_ADD(h_, sessions, sessionId, session);
         session->lastSave = session->firstPacket = nids_last_pcap_header->ts.tv_sec;
         session->addr1 = packet->ip_src.s_addr;
@@ -672,6 +678,20 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         g_string_free(session->hostString, TRUE);
         session->hostString = NULL;
     }
+
+    if (session->uaString) {
+        MolochString_t *string;
+
+        HASH_FIND(s_, session->userAgents, session->uaString->str, string);
+        if (!string) {
+            string = malloc(sizeof(*string));
+            string->str = g_strdup(session->uaString->str);
+            HASH_ADD(s_, session->userAgents, string->str, string);
+        }
+
+        g_string_free(session->uaString, TRUE);
+        session->uaString = NULL;
+    }
     return 0;
 }
 
@@ -713,6 +733,13 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         g_string_append_len(session->hostString, at, length);
     } 
 
+    if (strcasecmp("user-agent", session->header) == 0) {
+        if (!session->uaString)
+            session->uaString = g_string_new_len(at, length);
+        else
+            g_string_append_len(session->uaString, at, length);
+    } 
+
     return 0;
 }
 
@@ -731,16 +758,23 @@ void moloch_nids_session_free (MolochSession_t *session)
     g_array_free(session->fileNumArray, TRUE);
     g_ptr_array_free(session->urlArray, TRUE);
 
-    MolochString_t *hstring;
-    HASH_FORALL_POP_HEAD(s_, session->hosts, hstring, 
-        free(hstring->str);
-        free(hstring);
+    MolochString_t *string;
+    HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
+        free(string->str);
+        free(string);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
+        free(string->str);
+        free(string);
     );
 
     if (session->urlString)
         g_string_free(session->urlString, TRUE);
     if (session->hostString)
         g_string_free(session->hostString, TRUE);
+    if (session->uaString)
+        g_string_free(session->uaString, TRUE);
 
     if (session->rootId)
         g_free(session->rootId);

@@ -90,6 +90,12 @@ script(type='text/javascript')
   
   $(document).ready(function() {
     statsTable = $('#stats').dataTable( {
+      "oLanguage": {
+        "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
+        "sLengthMenu": "_MENU_",
+        "sInfo" : "Showing _START_ - _END_ of _TOTAL_",
+        "sInfoFiltered" : "(_MAX_ total)"
+      },
       "sDom": '<"H"lipr>t<"F"ip>',
       "iDisplayLength": 500,
       "aLengthMenu": [100, 500, 1000, 5000],

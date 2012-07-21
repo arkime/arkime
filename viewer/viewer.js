@@ -68,7 +68,7 @@ app.configure(function() {
   app.enable("jsonp callback");
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.set('view options', {molochversion: molochversion.version});
+  app.set('view options', {molochversion: molochversion.version, isIndex: false});
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
@@ -166,7 +166,8 @@ app.get('/', function(req, res) {
   }
   res.render('index', {
     user: req.user,
-    title: 'Home'
+    title: 'Home',
+    isIndex: true
   });
 });
 
@@ -601,24 +602,45 @@ function getIndices(startTime, stopTime, cb) {
 function lookupQueryTags(query, doneCb) {
   var outstanding = 0;
   var finished = 0;
-  function convert(obj) {
+  function convert(parent, obj) {
     for (var item in obj) {
       if (item === "ta" && typeof obj[item] === "string") {
-        outstanding++;
-        Db.tagNameToId(obj[item], function (id) {
-          obj[item] = id;
-          outstanding--;
-          if (finished && outstanding === 0) {
-            doneCb();
-          }
-        });
+        if (obj[item].indexOf("*") !== -1) {
+          delete parent.term;
+          outstanding++;
+          var query = {bool: {must: {wildcard: {_uid: obj[item]}},
+                              must_not: {wildcard: {_uid: "*http:header:*"}}
+                             }
+                      };
+          Db.search('tags', 'tag', {size:50, fields:["id", "n"], query: query}, function(err, result) {
+            var terms = [];
+            result.hits.hits.forEach(function (item) {
+              terms.push(item.fields.n);
+            });
+            delete parent.term;
+            parent.terms = {ta: terms};
+            outstanding--;
+            if (finished && outstanding === 0) {
+              doneCb();
+            }
+          });
+        } else {
+          outstanding++;
+          Db.tagNameToId(obj[item], function (id) {
+            obj[item] = id;
+            outstanding--;
+            if (finished && outstanding === 0) {
+              doneCb();
+            }
+          });
+        }
       } else if (typeof obj[item] === "object") {
-        convert(obj[item]);
+        convert(obj, obj[item]);
       }
     }
   }
 
-  convert(query);
+  convert(null, query);
   if (outstanding === 0) {
     return doneCb();
   }
@@ -695,11 +717,25 @@ app.get('/sessions.json', function(req, res) {
   var i;
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      var r = {sEcho: req.query.sEcho,
+               iTotalRecords: 0,
+               iTotalDisplayRecords: 0,
+               histo: {entries: []},
+               bsqErr: bsqErr.toString(),
+               map: [],
+               aaData:[]};
+      res.send(r);
+      return;
+    }
+    console.log("sessions.json query", JSON.stringify(query));
+
     async.parallel({
       sessions: function (sessionsCb) {
-        Db.search(indices, 'session', query, function(err, result) {
+        Db.searchPrimary(indices, 'session', query, function(err, result) {
           //console.log("sessions query = ", util.inspect(result, false, 10));
           if (err || result.error) {
+            console.log("sessions.json error", err);
             sessionsCb(null, {total: 0, results: []});
             return;
           }
@@ -753,7 +789,6 @@ app.get('/sessions.json', function(req, res) {
                iTotalRecords: results.total,
                iTotalDisplayRecords: (results.sessions?results.sessions.total:0),
                histo: histo,
-               bsqErr: (bsqErr?bsqErr.toString():null),
                map: map,
                aaData: (results.sessions?results.sessions.results:[])};
       try {
@@ -764,6 +799,8 @@ app.get('/sessions.json', function(req, res) {
   });
 });
 
+function isEmptyObject(object) { for(var i in object) { return false; } return true; }
+
 app.get('/unique.txt', function(req, res) {
   noCache(req, res);
   var doCounts = parseInt(req.query.counts, 10) || 0;
@@ -771,10 +808,51 @@ app.get('/unique.txt', function(req, res) {
 
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = [req.query.field];
-    query.facets = {facets: { terms : {field : req.query.field, size: 100000}}};
-    query.size = 0;
+    if (req.query.field === "us") {
+      query.size = 100000;
+      delete query.facets;
+      if (isEmptyObject(query.query.filtered.filter)) {
+        query.query.filtered.filter = {exists: {field: req.query.field}};
+      } else {
+        query.query.filtered.filter = {and: [{exists: {field: req.query.field}}, query.query.filtered.filter]};
+      }
+    } else {
+      query.facets = {facets: { terms : {field : req.query.field, size: 100000}}};
+      query.size = 0;
+    }
 
-    Db.search(indices, 'session', query, function(err, result) {
+    console.log("unique query", JSON.stringify(query));
+
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      //console.log("unique result", util.inspect(result, false, 100));
+      if (req.query.field === "us") {
+        result.hits.hits.forEach(function (item) {
+          if (!item.fields || !item.fields.us) {
+            return;
+          }
+          if (doCounts) {
+            var counts = {};
+            item.fields.us.forEach(function (url) {
+              if (!counts[url]) {
+                counts[url] = 1;
+              } else {
+                counts[url]++;
+              }
+            });
+
+            for (var key in counts) {
+              res.write(counts[key] + ", " + key +"\n");
+            }
+          } else {
+            item.fields.us.forEach(function (url) {
+              res.write(url+"\n");
+            });
+          }
+        });
+        res.end();
+        return;
+      }
+
       result.facets.facets.terms.forEach(function (item) {
         if (doIp) {
           res.write(decode.inet_ntoa(item.term));
@@ -1170,7 +1248,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
     res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
     res.statusCode = 200;
     
-    Db.search('sessions*', 'session', query, function(err, data) {
+    Db.searchPrimary('sessions*', 'session', query, function(err, data) {
       var firstHeader = 1;
 
       async.forEachSeries(data.hits.hits, function(item, nextCb) {
@@ -1197,7 +1275,7 @@ app.get('/sessions.pcap', function(req, res) {
   buildSessionQuery(req, function(err, query, indices) {
     delete query.facets;
     query.fields = ["no"];
-    Db.search(indices, 'session', query, function(err, result) {
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
       var firstHeader = 1;
 
       async.forEachSeries(result.hits.hits, function(item, nextCb) {

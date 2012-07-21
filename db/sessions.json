@@ -27,6 +27,10 @@
           "type": "string",
           "analyzer": "url_analyzer"
         },
+        "ua": {
+          "type": "string",
+          "analyzer": "url_analyzer"
+        },
         "ps": {
           "type": "long",
           "index": "no"

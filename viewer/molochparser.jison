@@ -22,6 +22,7 @@
 "ip1"                     return "ip1"
 "ip2"                     return "ip2"
 "uri"                     return "uri"
+"ua"                      return "ua"
 "tcp"                     return "tcp"
 "udp"                     return "udp"
 "host"                    return "host"
@@ -115,6 +116,7 @@ STR : ID
     | ip1
     | ip2
     | uri
+    | ua
     ;
  
 e
@@ -122,6 +124,8 @@ e
         {$$ = {and: [$1, $3]};}
     | 'uri' contains STR
         {$$ = {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}};}
+    | 'ua' contains STR
+        {$$ = {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}};}
     | e '||' e
         {$$ = {or: [$1, $3]};}
     | '!' e %prec UMINUS
@@ -180,6 +184,14 @@ e
         {$$ = parseIpPort($3,2);}
     | 'ip2' '!=' IPNUM
         {$$ = {not: parseIpPort($3,2)};}
+    | tags '==' STR
+        { var tag = stripQuotes($3);
+          $$ = {term: {ta: tag}};
+        }
+    | tags '!=' STR
+        { var tag = stripQuotes($3);
+          $$ = {not: {term: {ta: tag}}};
+        }
     | tags contains STR
         { var tag = stripQuotes($3);
           $$ = {term: {ta: tag}};

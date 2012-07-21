@@ -68,6 +68,17 @@ exports.search =  function (index, type, query, cb) {
     .exec();
 };
 
+exports.searchPrimary =  function (index, type, query, cb) {
+  internals.elasticSearchClient.search(index, type, query, {preference: "_primary_first"})
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
 exports.deleteByQuery = function (index, type, query, cb) {
   internals.elasticSearchClient.deleteByQuery(index, type, query)
     .on('data', function(data) {

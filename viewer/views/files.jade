@@ -14,6 +14,10 @@ br
 script(type='text/javascript')
   $(document).ready(function() {
     filesTable = $('#files').dataTable( {
+      "oLanguage": {
+        "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
+        "sLengthMenu": "_MENU_",
+      },
       "sDom": '<"H"lipr>t<"F"ip>',
       "iDisplayLength": 500,
       "aLengthMenu": [100, 500, 1000, 5000],

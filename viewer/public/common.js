@@ -163,8 +163,7 @@ function drawGraph(graphData) {
   var color = "#000000";
   var plot = $.plot(
   $("#sessionGraph"), [{
-    data: graphData,
-    label: "Sessions per " + (parseInt(interval, 10) / 1000) + "s"
+    data: graphData
   }], {
     series: {
       lines: {

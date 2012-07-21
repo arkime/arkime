@@ -95,14 +95,21 @@ div(style="margin:10px")
       td IP packet protocol
     tr
       td tags
+      td.
+        ==, !=, contains
+      td string or quoted string<br>with 'contains' *s are permitted
+      td Matches against the tags for the session<br>Examples: tags contains *gzip, tags contains http:method:CONNECT
+    tr
+      td ua
       td contains
       td string or quoted string
-      td Matches against the tags for the session
+      td Matches against the User Agent for the session
     tr
       td uri
       td contains
       td string or quoted string
       td Matches against the URIs for the session
+
   h2 Examples
   p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com
   code (country == rus || country == chn) && port == 80 && host contains *com

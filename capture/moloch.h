@@ -60,6 +60,7 @@ typedef struct moloch_session {
     int                    h_bucket;
 
     HASH_VAR(s_, hosts, MolochStringHead_t, 11);
+    HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
 
     char        header[32];
     http_parser parsers[2];
@@ -71,6 +72,7 @@ typedef struct moloch_session {
     GString    *urlString;
     char       *rootId;
     GString    *hostString;
+    GString    *uaString;
     GHashTable *tags[2];
 
     uint64_t    bytes;

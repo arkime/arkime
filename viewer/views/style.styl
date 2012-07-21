@@ -17,7 +17,7 @@ body
 
 .ulist-nav li a
   text-decoration:none
-  color:black
+  color:white
 
 .ulist-nav li a:hover
   text-decoration:underline
@@ -37,79 +37,88 @@ body
 
 // layout.jade
 #header
-  margin-bottom:2em
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
+  margin-bottom:10px
   line-height: 0px
-  height: 30px
+  text-shadow: black 0.1em 0.1em 0.2em
+  color:white
+  height: 70px
+  position: relative
+  background: #16285a /* Old browsers */
+  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
+  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
 #logo
+  position: absolute
   display: inline
-  float: left
-  padding-left:5px
+  bottom: -5px
+  left: 10px
 
 #version
-  float:right
+  position: absolute
+  right:0
+  top: 0
+  padding:5px 0px
   padding-right:10px
-  color:#666666
-  
-#nav 
-  font-weight:bold
-  text-indent:15px
-  background:#B6CDE1
-  border:1px solid #93B2CC
-  padding:5px 0
   margin:0 auto
-  height: 39px
+  
+#searchStuff
+  clear: both
+  padding-left: 65px
+
+
+#nav 
+  top: 0
+  padding:5px 0px
+  padding-left: 25px
+  margin:0 auto
 
 #nav h3
   position:absolute
   left:-100000em
 
-#footer
-  clear: both
-
-// config.jade
-
-#sidenav
-  float: left
-
-#config
-  float: left
-
-#form-status.formmgr-status-hidden
-  display: none
-
-.formmgr-message-text
-  display: none
-
-fieldset .formmgr-haserror .formmgr-message-text,
-fieldset .formmgr-haswarn .formmgr-message-text,
-fieldset .formmgr-hassuccess .formmgr-message-text,
-fieldset .formmgr-hasinfo .formmgr-message-text
-  display: block
-
-#form-status.formmgr-status-failure
-  font-weight: bold
-  color: #BE1E2D
-
-.formmgr-message-text
-  margin: 5px 0 0
-
-fieldset.formmgr-haserror h2,
-fieldset .formmgr-haserror .formmgr-message-text
-  color: #BE1E2D
-
-fieldset input.formmgr-haserror,
-fieldset select.formmgr-haserror
-  background-color: #FFCCCC
-
-fieldset.formmgr-haswarn h2,
-.formmgr-haswarn .formmgr-message-text
-  color: #999900
-
-.formmgr-row
-  margin-bottom: 5px
-
 // SESSIONS
+.dataTables_length
+  padding-top: 4px
+  width: 10%
+
+.dataTables_info
+  font-size: 14px
+  padding-top: 6px
+  width: auto
+
+.dataTables_paginate
+  padding-top: 4px
+  padding-bottom: 2px
+
+.paging_full_numbers
+  font-size: 14px
+
+.paging_full_numbers a.paginate_button, .paging_full_numbers a.paginate_button:hover
+  text-shadow: none
+  background-color: #C7CAE2
+
+.paginate_disabled_previous, .paginate_enabled_previous
+  background-color: none
+
+.paginate_disabled_next, .paginate_enabled_next
+  background-color: none
+
+.paginate_enabled_next, .paginate_enabled_previous
+  color: white !important
+
+.paging_full_numbers a.paginate_active 
+  text-shadow: none
+  background-color: white
+
+
+#bsqErr
+  clean: both
 
 .dataTables_processing
   color: red
@@ -135,9 +144,9 @@ fieldset.formmgr-haswarn h2,
 
 #sessionsInfo
   width: 100%
+  padding-left: 10px
 
 #sessionGraph
-  border: 10px
   width: 80%
   height: 150px
   float: left
@@ -161,6 +170,25 @@ fieldset.formmgr-haswarn h2,
 
 .jvectormap-label
   z-index: 3
+
+.ui-widget-header a
+  color:white
+
+.ui-widget-header
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
+  text-shadow: black 0.1em 0.1em 0.2em
+  font-weight: normal
+  color:white
+  padding-left: 10px
+  padding-bottom: 2px
+  background: #16285a /* Old browsers */
+  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
+  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
 // stats
 
