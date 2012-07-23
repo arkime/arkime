@@ -2,7 +2,7 @@
 div(style="margin:10px")
   p
     img(src="moloch_77.png", style="float: left;margin:4px;")
-    | Moloch is a open source large scale IPv4 PCAP capturing, indexing and database system.  A simple web interface is provided for pcap browsing, searching, and exporting.  Moloch is not meant to replace IDS engines but instead work along side them to easily store and index all the network traffic.  Moloch is built to be deployed across many machines and can scale to handle multiple megabits/sec of traffic.
+    | Moloch is a open source large scale IPv4 PCAP capturing, indexing and database system.  A simple web interface is provided for PCAP browsing, searching, and exporting.  APIs are exposed that allow PCAP data and JSON formatted session data to be downloaded directly. Simple security is implemented by using https and HTTP digest password support.  Moloch is not meant to replace IDS engines but instead work along side them to store and index all the network traffic in standard PCAP format, providing fast access.  Moloch is built to be deployed across many machines and can scale to handle multiple megabits/sec of traffic.
   p Moloch uses a very simple query language for building expresions.  It supports grouping using parenthesis and logical AND and OR using && and || respectively.  Most fields can be accessed directly using the field names and operators described in the table below.
   table(border=1)
     tr

@@ -44,14 +44,15 @@ body
   color:white
   height: 70px
   position: relative
-  background: #16285a /* Old browsers */
-  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
-  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
-  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
+  background: #162758; /* Old browsers */
+  background: -moz-linear-gradient(top,  #162758 0%, #445b9a 50%, #445b9a 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#162758), color-stop(50%,#445b9a), color-stop(100%,#445b9a)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #162758 0%,#445b9a 50%,#445b9a 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #162758 0%,#445b9a 50%,#445b9a 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #162758 0%,#445b9a 50%,#445b9a 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #162758 0%,#445b9a 50%,#445b9a 100%) /* W3C */
+  //filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#162758', endColorstr='#445b9a',GradientType=0 ); /* IE6-9 */
+
 
 #logo
   position: absolute
@@ -66,6 +67,7 @@ body
   padding:5px 0px
   padding-right:10px
   margin:0 auto
+  font-weight: normal
   
 #searchStuff
   clear: both
@@ -191,6 +193,10 @@ body
   //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
 // stats
+
+#stats.display td
+  padding: 3px 0px
+  border: 0px
 
 .axis path, .axis line
   fill: none

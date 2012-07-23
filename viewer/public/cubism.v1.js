@@ -1,5 +1,5 @@
 (function(exports){
-var cubism = exports.cubism = {version: "1.2.0"};
+var cubism = exports.cubism = {version: "1.2.1"};
 var cubism_id = 0;
 function cubism_identity(d) { return d; }
 cubism.option = function(name, defaultValue) {
@@ -470,7 +470,7 @@ cubism_contextPrototype.horizon = function() {
   function horizon(selection) {
 
     selection
-        .on("mousemove.horizon", function() { context.focus(d3.mouse(this)[0]); })
+        .on("mousemove.horizon", function() { context.focus(Math.round(d3.mouse(this)[0])); })
         .on("mouseout.horizon", function() { context.focus(null); });
 
     selection.append("canvas")
@@ -686,7 +686,7 @@ cubism_contextPrototype.comparison = function() {
   function comparison(selection) {
 
     selection
-        .on("mousemove.comparison", function() { context.focus(d3.mouse(this)[0]); })
+        .on("mousemove.comparison", function() { context.focus(Math.round(d3.mouse(this)[0])); })
         .on("mouseout.comparison", function() { context.focus(null); });
 
     selection.append("canvas")
@@ -1006,7 +1006,7 @@ cubism_contextPrototype.rule = function() {
     context.on("focus.rule-" + id, function(i) {
       line.datum(i)
           .style("display", i == null ? "none" : null)
-          .style("left", cubism_ruleLeft);
+          .style("left", i == null ? null : cubism_ruleLeft);
     });
   }
 

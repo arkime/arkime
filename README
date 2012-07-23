@@ -3,16 +3,16 @@ system.  A simple web interface is provided for PCAP browsing, searching, and
 exporting.  APIs are exposed that allow PCAP data and JSON formatted session
 data to be downloaded directly. Simple security is implemented by using https
 and HTTP digest password support.  Moloch is not meant to replace IDS engines but 
-instead work along side them to easily store and index all the network traffic.  
-Moloch is built to be deployed across many machines and can scale to handle multiple 
-megabits/sec of traffic.
+instead work along side them to store and index all the network traffic in standard
+PCAP format, providing fast access.  Moloch is built to be deployed across many 
+machines and can scale to handle multiple megabits/sec of traffic.
 
 The Moloch system is composed of 3 components
 
 1) capture - A single threaded C application that runs per network interface.  
              It is possible to run multiple capture processes per machine if
              there are multiple interfaces to monitor.
-2) viewer - A Node.js application that runs per capture machine and handles
+2) viewer - A node.js application that runs per capture machine and handles
             the web interface and transfer of PCAP files.
 3) elasticsearch - The database/search technology powering Moloch
 
@@ -68,19 +68,24 @@ Note about security
 
 
 
+
 Building and Installing
+
+Moloch is a complex system to build and install.  The following are rough
+guidelines
 
 
 Installing Elasticsearch
-1) Download >= 0.19.8 and install bigdesk and elasticsearch-head BEFORE pushing 
-   to all machines
+1) Download elasicsearch http://www.elasticsearch.org/download/ at this time
+   all development is done with 0.19.8 http://www.elasticsearch.org/download/2012/07/02/0.19.8.html
+2) Install bigdesk and elasticsearch-head BEFORE pushing to all machines
      bin/plugin -install mobz/elasticsearch-head
      bin/plugin -install lukas-vlcek/bigdesk
-2) Increase max file descriptors on ALL elasticsearch machines by adding the 
+3) Increase max file descriptors on ALL elasticsearch machines by adding the 
    following to bottom of /etc/security/limits.conf
 * hard nofile 128000
 * soft nofile 128000
-3) Create/Modify elasticsearch.yml and push to all machines
+4) Create/Modify elasticsearch.yml and push to all machines.  See moloch/db/elasticsearch.yml.sample
    - set cluster.name to something unique
    - set node.name to "${ES_HOSTNAME}" 
    - set node.max_local_storage_nodes to number of nodes per machine
@@ -91,28 +96,33 @@ Installing Elasticsearch
    - set gateway.expected_nodes: to the number of nodes you will run
    - disable zen.ping.multicast
    - enable zen.ping.unicast and set the list of hosts
-4) Create a elasticsearch launch script or use one of ones out there.  
+5) Create a elasticsearch launch script or use one of ones out there.  See moloch/db/runes.sh.sample for a simple one
      Make sure you call "ulimit -a" first 
      set ES_HEAP_SIZE=20G (or whatever number you are using, less then 32G) 
      set JAVA_OPTS="-XX:+UseCompressedOops"
      set ES_HOSTNAME to `hostname -s`
-5) Start the cluster, waiting ~5s between starting each node
-6) Use elasticsearch-head to look at your cluster and make sure it is GREEN
-7) Inside the db directory edit the sessions.json file and run the init.sh script
-8) Check elasticsearch-head again and make sure it is GREEN and now you should see some of the indexes
+6) Start the cluster, waiting ~5s between starting each node
+7) Use elasticsearch-head to look at your cluster and make sure it is GREEN
+8) Inside the db directory edit the sessions.json file and run the init.sh script
+9) Check elasticsearch-head again and make sure it is GREEN and now you should see some of the indexes
 
 
 
 Building Capture
 1) Install prerequisites standard packages
-yum install pcre.x86_64 pcre-devel.x86_64 libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel
+Centos: yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel
 2) Download, build and optionally install
 * glib-2 version 2.22 or higher (2.22 is recommended for static builds) - http://ftp.gnome.org/pub/gnome/sources/glib
-* yara - 1.6 or higher - http://yara-project.googlecode.com/files/yara-1.6.tar.gz
+    http://ftp.acc.umu.se/pub/gnome/sources/glib/2.22/glib-2.22.5.tar.gz
+* yara - 1.6 or higher  - http://yara-project.googlecode.com
+    http://yara-project.googlecode.com/files/yara-1.6.tar.gz
 * MaxMind GeoIP - (The OS version may be recent enough) - http://www.maxmind.com/app/c
-* libpcap - 1.1 or higher, most OS versions are older - http://www.tcpdump.org/
-* libnids - 1.24 or higher, http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
-3) run configure, use the --with-* directives to use static libraries from build directories
+    http://www.maxmind.com/download/geoip/api/c/GeoIP-1.4.8.tar.gz
+* libpcap - 1.1 or higher, most OS versions are older - http://www.tcpdump.org/#latest-release
+    http://www.tcpdump.org/release/libpcap-1.3.0.tar.gz
+* libnids - 1.24 or higher
+    http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
+3) run configure, optionally use the --with-* directives to use static libraries from build directories
 4) make
 
 
@@ -120,7 +130,8 @@ Building Viewer
 1) You'll need python 2.6 or higher, if still using Centos 5.x install a
    parallel version of python from the EPEL repository.  Make sure python2.6 is in
    your path first!
-2) Download, build, and install nodejs - http://nodejs.org/ at least node-0.8.1 
+2) Download, build, and install nodejs - http://nodejs.org/ at least node-0.8.1
+       http://nodejs.org/dist/v0.8.3/node-v0.8.3.tar.gz
 3) In the moloch/viewer directory run "npm install"
 
 
@@ -141,17 +152,7 @@ I like using good old inittab for this
   m1:2345:respawn:/home/moloch/capture/run.sh
   v1:2345:respawn:/home/moloch/viewer/run.sh
 
-Where capture/run.sh has something like
-  #!/bin/sh
-  cd /home/moloch/capture
-  /bin/mv OUT OUT.old
-  exec taskset -c 7 ./moloch-capture -c ../config.ini > OUT 2>&1
-
-Where viewer/run.sh has something like
-  #!/bin/sh
-  cd /home/moloch/viewer
-  /bin/mv OUT OUT.old
-  exec /usr/local/bin/node viewer.js -c ../config.ini > OUT 2>&1
+See sample versions in moloch/capture/run.sh.sample and moloch/viewer/run.sh.sample
 
 
 Now point your browser to any moloch https://hostname:port

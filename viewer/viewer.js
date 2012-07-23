@@ -131,6 +131,7 @@ app.configure(function() {
 });
 
 
+function isEmptyObject(object) { for(var i in object) { return false; } return true; }
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
@@ -535,7 +536,7 @@ app.get('/files.json', function(req, res) {
 });
 
 app.post('/users.json', function(req, res) {
-  var fields = ["userId", "userName", "enabled", "createEnabled", "webEnabled"];
+  var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
   var query = {fields: fields,
@@ -556,6 +557,7 @@ app.post('/users.json', function(req, res) {
           var results = {total: result.hits.total, results: []};
           for (i = 0; i < result.hits.hits.length; i++) {
             result.hits.hits[i].fields.id = result.hits.hits[i]._id;
+            result.hits.hits[i].fields.expression = result.hits.hits[i].fields.expression || "";
             results.results.push(result.hits.hits[i].fields);
           }
           cb(null, results);
@@ -700,6 +702,19 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
+  if (req.user.expression && req.user.expression.length > 0) {
+    try {
+      var userExpression = molochparser.parse(req.user.expression);
+      if (isEmptyObject(query.query.filtered.filter)) {
+        query.query.filtered.filter = userExpression;
+      } else {
+        query.query.filtered.filter = {and: [userExpression, query.query.filtered.filter]};
+      }
+    } catch (e) {
+      console.log("ERR - User expression doesn't compile", req.user.expression, e);
+    }
+  }
+
   lookupQueryTags(query.query.filtered, function () {
     if (req.query.date && req.query.date === '-1') {
       return buildCb(err, query, "sessions*");
@@ -798,8 +813,6 @@ app.get('/sessions.json', function(req, res) {
     });
   });
 });
-
-function isEmptyObject(object) { for(var i in object) { return false; } return true; }
 
 app.get('/unique.txt', function(req, res) {
   noCache(req, res);
@@ -1353,6 +1366,7 @@ app.post('/addUser', function(req, res) {
     var nuser = {
       userId: req.body.userId,
       userName: req.body.userName,
+      expression: req.body.expression,
       passStore: Config.pass2store(req.body.userId, req.body.password),
       enabled: (req.body.enabled || "false") === "true",
       webEnabled: (req.body.webEnabled || "true") === "true",

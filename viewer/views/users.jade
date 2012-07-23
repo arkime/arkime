@@ -2,8 +2,9 @@
 table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
   thead
     tr
-      th id
+      th User Id
       th Name
+      th Forced Expression
       th Enabled?
       th Admin?
       th Web Interface?
@@ -20,11 +21,13 @@ form#addUser
   input(type='text', id='userName', name='userName', size='30')
   label(for='Password') Password
   input(type='password', id='password', name='password', size='30')
-  label(for='enabled') Enabled
+  label(for='Expression') Expression
+  input(type='expression', id='expression', name='expression', size='30')
+  label(for='enabled') Enabled:
   input(type='checkbox', id='enabled', name='enabled', value="true", CHECKED)
-  label(for='createEnabled') Admin
+  label(for='createEnabled') Admin:
   input(type='checkbox', id='createEnabled', name='createEnabled', value="true")
-  label(for='webEnabled') Web Enabled
+  label(for='webEnabled') Web Enabled:
   input(type='checkbox', id='webEnabled', name='webEnabled', value="true", CHECKED)
   button#create create
 
@@ -60,6 +63,8 @@ script(type='text/javascript')
         { "mDataProp" : "userName",
           "bSortable" : false,
         },
+        { "mDataProp" : "expression",
+        },
         { "mDataProp" : "enabled",
           "fnRender" : function(oObj) {
             return "<input type='checkbox' id='" + oObj.aData.userId +"-enabled' " + (oObj.aData.enabled?"CHECKED":"") + ">";
@@ -88,9 +93,6 @@ script(type='text/javascript')
     $('#users tbody td input').live('change', function () {
       var nTr = this.parentNode.parentNode;
       var aData = usersTable.fnGetData( nTr );
-      console.log(aData);
-      console.log("#" + aData.userId  + "-enabled");
-      console.log($("#" + aData.userId  + "-enabled").is(':checked'));
       $.ajax( {
         "dataType": 'json', 
         "type": "POST", 
@@ -106,7 +108,6 @@ script(type='text/javascript')
     } );
 
     $('#addUser').submit(function() {
-      console.log("hmm", $("#addUser").serialize());
       $.ajax( {
         "dataType": 'json', 
         "type": "POST", 
@@ -116,9 +117,9 @@ script(type='text/javascript')
           if (!data.success) {
             alert(data);
           }
+          usersTable.fnDraw();
         }
       });
-      usersTable.fnDraw();
       return false;
     });
   } );
@@ -127,10 +128,9 @@ script(type='text/javascript')
       "dataType": 'json', 
       "type": "POST", 
       "url": "/deleteUser/" + user,
-      "success": function(data) {
-        console.log("Deleted user");
+      "complete": function(data) {
+        usersTable.fnDraw();
       }
     });
-    usersTable.fnDraw();
     return false;
   }

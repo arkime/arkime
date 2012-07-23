@@ -115,6 +115,10 @@ curl -XPUT http://$ESHOST:9200/users/?pretty=1 -d '
         "passHash": {
           "type": "string",
           "index": "no"
+        },
+        "expression": {
+          "type": "string",
+          "index": "no"
         }
       }
     }

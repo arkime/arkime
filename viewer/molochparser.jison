@@ -28,7 +28,7 @@
 "host"                    return "host"
 "contains"                return 'contains'
 "tags"                    return 'tags'
-[\w*._-]+                 return 'ID'
+[\w*._:-]+                 return 'ID'
 \"[^"]+\"                 return 'QUOTEDSTR'
 "<="                      return 'lte'
 "<"                       return 'lt'
