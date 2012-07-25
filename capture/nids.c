@@ -989,6 +989,7 @@ void moloch_nids_root_init()
 void moloch_nids_init()
 {
 
+    LOG("%s", pcap_lib_version());
     LOG("Size of MolochSession = %d", (int)sizeof(MolochSession_t));
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", nodeName);
     moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, nodeTag, NULL);

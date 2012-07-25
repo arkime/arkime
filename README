@@ -114,7 +114,7 @@ Installing Elasticsearch - Tested with 0.19.8
 
 Building Capture
 1) Install prerequisites standard packages
-Centos: yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel
+Centos: yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel
 Ubuntu: apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev
 2) Building capture can be a pain because of OS versions.
 2a) try ./easybutton.sh  which will download all the following, compile them statically, and run the local 

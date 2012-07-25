@@ -47,18 +47,19 @@ fi
 if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
   wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
 fi
-tar xvf libpcap-$PCAP.tar.gz
+tar zxf libpcap-$PCAP.tar.gz
 (cd libpcap-$PCAP; ./configure --disable-libglib; make)
 
 # libnids
 if [ ! -f "libnids-$NIDS.tar.gz" ]; then
   wget http://downloads.sourceforge.net/project/libnids/libnids/$NIDS/libnids-$NIDS.tar.gz
 fi
-tar zxvf libnids-$NIDS.tar.gz
-( cd libnids-$NIDS; ./configure --disable-libnet --disable-glib2; make)
+tar zxf libnids-$NIDS.tar.gz
+( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=../libpcap-$PCAP --disable-libglib; make)
 
 # Now build moloch
 cd ..
+echo "./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
 ./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
 make
 
