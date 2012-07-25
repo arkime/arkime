@@ -116,17 +116,28 @@ Building Capture
 1) Install prerequisites standard packages
 Centos: yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel
 Ubuntu: apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev
-2) Depending on OS, OS Version, and static build requirements you may need to do download, build and optionally install
+2) Building capture can be a pain because of OS versions.
+2a) try ./easybutton.sh  which will download all the following, compile them statically, and run the local 
+    configure script.
+2b) Or if you want build yourself, or use some already installed packages then here are the pieces you need
 * glib-2 version 2.22 or higher (2.22 is recommended for static builds) - http://ftp.gnome.org/pub/gnome/sources/glib
-    http://ftp.acc.umu.se/pub/gnome/sources/glib/2.22/glib-2.22.5.tar.gz
+    wget http://ftp.acc.umu.se/pub/gnome/sources/glib/2.22/glib-2.22.5.tar.gz
+    ./configure --disable-xattr --disable-selinux --enable-static
 * yara - 1.6 or higher  - http://yara-project.googlecode.com
-    http://yara-project.googlecode.com/files/yara-1.6.tar.gz
+    wget http://yara-project.googlecode.com/files/yara-1.6.tar.gz
+    ./configure --enable-static
 * MaxMind GeoIP - (The OS version may be recent enough) - http://www.maxmind.com/app/c
-    http://www.maxmind.com/download/geoip/api/c/GeoIP-1.4.8.tar.gz
+    wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.4.8.tar.gz
+    libtoolize -f # Only some platforms need this
+    ./configure --enable-static
 * libpcap - 1.1 or higher, most OS versions are older - http://www.tcpdump.org/#latest-release
-    http://www.tcpdump.org/release/libpcap-1.3.0.tar.gz
+    wget http://www.tcpdump.org/release/libpcap-1.3.0.tar.gz
+    ./configure --disable-libglib
 * libnids - 1.24 or higher
-    http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
+    wget http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
+    tar zxvf libnids-1.24.tar.gz
+    cd libnids-1.24
+    ./configure --disable-libnet --disable-glib2
 3) run configure, optionally use the --with-* directives to use static libraries from build directories
 4) make
 
