@@ -472,8 +472,8 @@
     countries: {},
     countriesColors: {},
     countriesData: {},
-    zoomStep: 1.4,
-    zoomMaxStep: 4,
+    zoomStep: 1.5,
+    zoomMaxStep: 6,
     zoomCurStep: 1,
 
     setColors: function(key, color) {

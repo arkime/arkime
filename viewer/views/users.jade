@@ -32,11 +32,13 @@ form#addUser
   button#create create
 
 script(type='text/javascript')
+  var usersTable;
+
   $(document).ready(function() {
     usersTable = $('#users').dataTable( {
       "oLanguage": {
         "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
-        "sLengthMenu": "_MENU_",
+        "sLengthMenu": "_MENU_"
       },
       "sDom": '<"H"lipr>t<"F"ip>',
       "iDisplayLength": 500,
@@ -46,10 +48,10 @@ script(type='text/javascript')
       "sAjaxSource": "/users.json",
       "fnServerData": function ( sSource, aoData, fnCallback ) {
         $.ajax( {
-         "dataType": 'json', 
-          "type": "POST", 
-          "url": sSource, 
-          "data": aoData, 
+         "dataType": 'json',
+          "type": "POST",
+          "url": sSource,
+          "data": aoData,
           "success": fnCallback
         } );
       },
@@ -58,12 +60,12 @@ script(type='text/javascript')
       "bScrollCollapse": true,
       "bAutoWidth": false,
       "aoColumns": [
-        { "mDataProp" : "userId",
+        { "mDataProp" : "userId"
         },
         { "mDataProp" : "userName",
-          "bSortable" : false,
+          "bSortable" : false
         },
-        { "mDataProp" : "expression",
+        { "mDataProp" : "expression"
         },
         { "mDataProp" : "enabled",
           "fnRender" : function(oObj) {
@@ -94,14 +96,13 @@ script(type='text/javascript')
       var nTr = this.parentNode.parentNode;
       var aData = usersTable.fnGetData( nTr );
       $.ajax( {
-        "dataType": 'json', 
-        "type": "POST", 
+        "dataType": 'json',
+        "type": "POST",
         "url": "/updateUser/" + aData.userId + "?" +
-          "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') + 
-          "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') + 
+          "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
+          "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
           "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
         "success": function(data) {
-          console.log("Deleted user");
         }
       });
       return true;
@@ -109,8 +110,8 @@ script(type='text/javascript')
 
     $('#addUser').submit(function() {
       $.ajax( {
-        "dataType": 'json', 
-        "type": "POST", 
+        "dataType": 'json',
+        "type": "POST",
         "url": "/addUser",
         "data": $("#addUser").serialize(),
         "success": function(data) {
@@ -125,8 +126,8 @@ script(type='text/javascript')
   } );
   function deleteUser(user) {
     $.ajax( {
-      "dataType": 'json', 
-      "type": "POST", 
+      "dataType": 'json',
+      "type": "POST",
       "url": "/deleteUser/" + user,
       "complete": function(data) {
         usersTable.fnDraw();

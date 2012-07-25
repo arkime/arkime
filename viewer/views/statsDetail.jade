@@ -10,13 +10,13 @@ script(type='text/javascript')
   function dmetric(name, mname) {
     return dcontext.metric(function(startV, stopV, stepV, callback) {
       $.ajax( {
-        "dataType": 'json', 
-        "type": "GET", 
+        "dataType": 'json',
+        "type": "GET",
         "url": "/dstats.json?nodeName=#{nodeName}" +
-                      "&start=" + startV/1000 + 
-                      "&stop=" + stopV/1000 + 
-                      "&step=" + stepV/1000 + 
-                      "&interval=60" + 
+                      "&start=" + startV/1000 +
+                      "&stop=" + stopV/1000 +
+                      "&step=" + stepV/1000 +
+                      "&interval=60" +
                       "&name=" + mname,
         "success": function(data) {
           callback(null, data);
@@ -44,5 +44,5 @@ script(type='text/javascript')
   });
 
   dcontext.on("focus", function(i) {
-      d3.selectAll(".value").style("right", i == null ? null : dcontext.size() - i + "px");
+      d3.selectAll(".value").style("right", i === null ? null : dcontext.size() - i + "px");
   });

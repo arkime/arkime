@@ -72,20 +72,24 @@ Note about security
 Building and Installing
 
 Moloch is a complex system to build and install.  The following are rough
-guidelines
+guidelines, updates are always welcome.
 
 
-Installing Elasticsearch
-1) Download elasicsearch http://www.elasticsearch.org/download/ at this time
-   all development is done with 0.19.8 http://www.elasticsearch.org/download/2012/07/02/0.19.8.html
-2) Install bigdesk and elasticsearch-head BEFORE pushing to all machines
-     bin/plugin -install mobz/elasticsearch-head
-     bin/plugin -install lukas-vlcek/bigdesk
-3) Increase max file descriptors on ALL elasticsearch machines by adding the 
-   following to bottom of /etc/security/limits.conf
+Installing Elasticsearch - Tested with 0.19.8
+1) Prep the elasticsearch machines by increasing max file descriptors.  On CentOS and others this is done 
+   by adding the following to bottom of /etc/security/limits.conf
 * hard nofile 128000
 * soft nofile 128000
-4) Create/Modify elasticsearch.yml and push to all machines.  See moloch/db/elasticsearch.yml.sample
+2) If this is a dedicated machine disable swap by commenting out the swap lines in /etc/fstab
+   and either reboot or use the swapoff command
+3) Download elasicsearch http://www.elasticsearch.org/download/ at this time
+   all development is done with 0.19.8 http://www.elasticsearch.org/download/2012/07/02/0.19.8.html
+5) Uncompress
+6) Install bigdesk and elasticsearch-head BEFORE pushing to all machines
+     cd elasticsearch-*
+     bin/plugin -install mobz/elasticsearch-head
+     bin/plugin -install lukas-vlcek/bigdesk
+6) Create/Modify elasticsearch.yml and push to all machines.  See moloch/db/elasticsearch.yml.sample
    - set cluster.name to something unique
    - set node.name to "${ES_HOSTNAME}" 
    - set node.max_local_storage_nodes to number of nodes per machine
@@ -96,22 +100,23 @@ Installing Elasticsearch
    - set gateway.expected_nodes: to the number of nodes you will run
    - disable zen.ping.multicast
    - enable zen.ping.unicast and set the list of hosts
-5) Create a elasticsearch launch script or use one of ones out there.  See moloch/db/runes.sh.sample for a simple one
+7) Create a elasticsearch launch script or use one of ones out there.  See moloch/db/runes.sh.sample for a simple one
      Make sure you call "ulimit -a" first 
      set ES_HEAP_SIZE=20G (or whatever number you are using, less then 32G) 
      set JAVA_OPTS="-XX:+UseCompressedOops"
      set ES_HOSTNAME to `hostname -s`
-6) Start the cluster, waiting ~5s between starting each node
-7) Use elasticsearch-head to look at your cluster and make sure it is GREEN
-8) Inside the db directory edit the sessions.json file and run the init.sh script
-9) Check elasticsearch-head again and make sure it is GREEN and now you should see some of the indexes
+8) Start the cluster, waiting ~5s between starting each node
+9) Use elasticsearch-head to look at your cluster and make sure it is GREEN
+10) Inside the moloch/db directory edit the sessions.json file and run the "init.sh A_ES_HOSTNAME" script
+11) Check elasticsearch-head again and make sure it is GREEN and now you should see some of the indexes
 
 
 
 Building Capture
 1) Install prerequisites standard packages
 Centos: yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel
-2) Download, build and optionally install
+Ubuntu: apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev
+2) Depending on OS, OS Version, and static build requirements you may need to do download, build and optionally install
 * glib-2 version 2.22 or higher (2.22 is recommended for static builds) - http://ftp.gnome.org/pub/gnome/sources/glib
     http://ftp.acc.umu.se/pub/gnome/sources/glib/2.22/glib-2.22.5.tar.gz
 * yara - 1.6 or higher  - http://yara-project.googlecode.com
@@ -130,8 +135,10 @@ Building Viewer
 1) You'll need python 2.6 or higher, if still using Centos 5.x install a
    parallel version of python from the EPEL repository.  Make sure python2.6 is in
    your path first!
-2) Download, build, and install nodejs - http://nodejs.org/ at least node-0.8.1
-       http://nodejs.org/dist/v0.8.3/node-v0.8.3.tar.gz
+2) Install Node.js at least version 0.8.1
+2a) From prebuilt binaries see various platform instruction here
+       https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager
+2b) From source  download, build, install nodejs - http://nodejs.org/dist/v0.8.3/node-v0.8.3.tar.gz
 3) In the moloch/viewer directory run "npm install"
 
 
@@ -156,3 +163,5 @@ See sample versions in moloch/capture/run.sh.sample and moloch/viewer/run.sh.sam
 
 
 Now point your browser to any moloch https://hostname:port
+
+Wiki with FAQ is available at https://github.com/aol/moloch/wiki

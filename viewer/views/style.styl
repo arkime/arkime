@@ -118,6 +118,8 @@ body
   text-shadow: none
   background-color: white
 
+#search, #export
+  height: auto
 
 #bsqErr
   clean: both
@@ -145,13 +147,16 @@ body
 
 
 #sessionsInfo
-  width: 100%
-  padding-left: 10px
+  padding-bottom: 10px
+  position: relative
+  height: 150px
 
 #sessionGraph
-  width: 80%
+  position: absolute
+  top: 0
+  left: 0px
+  right: 270px
   height: 150px
-  float: left
   z-index: 0
 
 #sessionGraph .button
@@ -164,11 +169,17 @@ body
   background-color: #eee
   padding: 2px
 
+#world-map-wrapper
+  position: absolute
+  width: 250px
+  height: 150px
+  top: 0
+  right: 0
+  z-index: 2
+
 #world-map
   width: 250px
   height: 150px
-  float: right
-  z-index: 2
 
 .jvectormap-label
   z-index: 3

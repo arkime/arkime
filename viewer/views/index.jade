@@ -7,7 +7,8 @@ link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.con
 div.context-menu-one(style="margin-bottom: 4px")
 div#bsqErr
 div#sessionsInfo
-  div#world-map
+  div#world-map-wrapper
+    div#world-map
   div#sessionGraph
 table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
   thead
@@ -57,6 +58,24 @@ script(type='text/javascript')
 
 
 
+  var isBlinking = 0;
+  function startBlink(loop) {
+    if (isBlinking && !loop) {
+      return;
+    }
+    isBlinking = 1;
+    $(".blink").animate({opacity:0},500,"linear",function() {
+      $(this).animate({opacity:1},500, function() {
+        if (isBlinking) {
+          startBlink(1);
+        }
+      });
+    });
+  }
+  function stopBlink() {
+    isBlinking = 0;
+  }
+
   $(document).ready(function() {
     handleUrlParams();
 
@@ -73,8 +92,8 @@ script(type='text/javascript')
         var aData = sessionsTable.fnGetData( nTr );
         this.src = "/DataTables-1.9.1/examples/examples_support/details_close.png";
         $.ajax( {
-            "dataType": 'html', 
-            "type": "GET", 
+            "dataType": 'html',
+            "type": "GET",
             "url": '/' + aData.no + '/' + aData.id + '/sessionDetail',
             "success": function(data) {
               sessionsTable.fnOpen( nTr, data, 'details' );
@@ -97,7 +116,7 @@ script(type='text/javascript')
     sessionsTable = $('#sessions').dataTable( {
       "oLanguage": {
         "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
-        "sLengthMenu": "_MENU_",
+        "sLengthMenu": "_MENU_"
       },
       "sDom": '<"H"lipr>t<"F"ip>',
       "iDisplayLength": initialDisplayLength,
@@ -139,10 +158,11 @@ script(type='text/javascript')
         { "mDataProp" : "a1",
           "sWidth": "100",
           "fnRender" : function(oObj) {
-            if (oObj.aData.g1)
+            if (oObj.aData.g1) {
               return ipString(oObj.aData.a1) + "<br>" + oObj.aData.g1;
-            else
+            } else {
               return ipString(oObj.aData.a1);
+            }
           }
         },
         { "mDataProp" : "p1",
@@ -151,10 +171,11 @@ script(type='text/javascript')
         { "mDataProp" : "a2",
           "sWidth": "100",
           "fnRender" : function(oObj) {
-            if (oObj.aData.g2)
+            if (oObj.aData.g2) {
               return ipString(oObj.aData.a2) + "<br>" + oObj.aData.g2;
-            else
+            } else {
               return ipString(oObj.aData.a2);
+            }
           }
         },
         { "mDataProp" : "p2",
@@ -177,7 +198,7 @@ script(type='text/javascript')
           "fnRender" : function(oObj) {
             return (oObj.aData.us.join("<br>"));
           }
-        },
+        }
       ],
       "aaSorting": [[2, "asc"]],
       "fnServerData": function ( sSource, aoData, fnCallback ) {
@@ -185,7 +206,7 @@ script(type='text/javascript')
         aoData = $.merge(aoData, params);
 
         if (this.fnSettings()._iDisplayLength !== 100) {
-          params.push({name: "iDisplayLength", value: this.fnSettings()._iDisplayLength});;
+          params.push({name: "iDisplayLength", value: this.fnSettings()._iDisplayLength});
         }
 
         var state = $.param(params);
@@ -198,17 +219,17 @@ script(type='text/javascript')
         startBlink();
 
         $.ajax( {
-           "dataType": 'json', 
-            "type": "GET", 
-            "url": sSource, 
-            "data": aoData, 
+           "dataType": 'json',
+            "type": "GET",
+            "url": sSource,
+            "data": aoData,
             "success": function (json) {
               if (json.histo && json.histo[0]) {
                 startTime = json.histo[0][0]/1000;
                 stopTime = (json.histo[json.histo.length-1][0]/1000) + 59;
               }
               // What a hack
-              $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
+              //$("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
 
               drawGraph(json.histo);
               mapData = json.map;
@@ -253,7 +274,7 @@ script(type='text/javascript')
       },
       onRegionClick: function(e, code){
         addExpression("country == " + code);
-      },
+      }
     });
 
     $('#world-map').hover (
@@ -284,20 +305,20 @@ script(type='text/javascript')
     );
 
     $.contextMenu({
-        selector: '.context-menu-one', 
+        selector: '.context-menu-one',
         build: function($trigger, e) {
           var items = {};
 
           if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'us') {
             if (e.target.id === 'us') {
               items = {
-                export: {name: "Export Unique URLs", counts:0},
-                exportcounts: {name: "Export Unique URLs with Counts", counts:1}
+                items: {name: "Export Unique URLs", counts:0},
+                itemcounts: {name: "Export Unique URLs with Counts", counts:1}
               };
             } else {
               items = {
-                export: {name: "Export Unique IPs", counts:0},
-                exportcounts: {name: "Export Unique IPs with Counts", counts:1}
+                items: {name: "Export Unique IPs", counts:0},
+                itemcounts: {name: "Export Unique IPs with Counts", counts:1}
               };
             }
             return {
@@ -309,7 +330,7 @@ script(type='text/javascript')
                 params.push({name:'field', value:e.target.id});
                 params.push({name:'counts', value:items[key].counts});
                 var url = "unique.txt?" + $.param(params);
-                
+
                 window.location = url;
               },
               items: items
@@ -324,6 +345,9 @@ script(type='text/javascript')
           var br;
           if (sPos[1] === 3 || sPos[1] === 5) {
             br = sData.indexOf("<br>");
+            if (br === -1) {
+              br = sData.length;
+            }
             var ip = sData.substr(0, br);
             var country = sData.substr(br+4);
             var port = sessionsTable.fnGetData(sPos[0], sPos[1]+2);
@@ -338,15 +362,16 @@ script(type='text/javascript')
           } else if (sPos[1] === 4 || sPos[1] === 6)  {
             items = {
               andport: {name: "and Port " + sData, exp: "port=" + sData},
-              andnotport: {name: "and NOT Port " + sData, exp: "port!=" + sData},
+              andnotport: {name: "and NOT Port " + sData, exp: "port!=" + sData}
             };
           } else if (sPos[1] === 9)  {
             items = {
               andport: {name: "and Node " + sData, exp: "node==" + sData},
-              andnotport: {name: "and NOT Node " + sData, exp: "node!=" + sData},
+              andnotport: {name: "and NOT Node " + sData, exp: "node!=" + sData}
             };
-          } else 
+          } else {
             return null;
+          }
 
           return {
             callback: function(key, options) {
@@ -356,34 +381,19 @@ script(type='text/javascript')
           };
         }
     });
-      
-    $('.context-menu-one').on('click', function(e){
-    })
+
+    /*$('.context-menu-one').on('click', function(e){
+    })*/
   } );
 
-  var isBlinking = 0;
-  function startBlink(loop) {
-    if (isBlinking && !loop)
-      return;
-    isBlinking = 1;
-    $(".blink").animate({opacity:0},500,"linear",function() {
-      $(this).animate({opacity:1},500, function() {
-        if (isBlinking)
-          startBlink(1)
-      });
-    });
-  }
-  function stopBlink() {
-    isBlinking = 0;
-  }
-  setTimeout("window.history.ready = true;", 500);
+  setTimeout(function () {window.history.ready = true;}, 500);
 
   $(window).resize(function(e) {
     if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
       return;
     }
     // What a hack
-    $("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
+    //$("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
     $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#date").outerWidth(true)-25);
   });
 

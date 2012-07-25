@@ -12,11 +12,13 @@ br
 #files
 
 script(type='text/javascript')
+  var filesTable;
+
   $(document).ready(function() {
     filesTable = $('#files').dataTable( {
       "oLanguage": {
         "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
-        "sLengthMenu": "_MENU_",
+        "sLengthMenu": "_MENU_"
       },
       "sDom": '<"H"lipr>t<"F"ip>',
       "iDisplayLength": 500,
@@ -29,18 +31,18 @@ script(type='text/javascript')
       "bScrollCollapse": true,
       "bAutoWidth": false,
       "aoColumns": [
-        { "mDataProp" : "num",
+        { "mDataProp" : "num"
         },
-        { "mDataProp" : "node",
+        { "mDataProp" : "node"
         },
-        { "mDataProp" : "name",
+        { "mDataProp" : "name"
         },
         { "mDataProp" : "first",
           "fnRender" : function(oObj) {
             return dateString(oObj.aData.first, " ");
           }
         },
-        { "mDataProp" : "size",
+        { "mDataProp" : "size"
         }
       ],
       "aaSorting": [[3, "desc"]]
