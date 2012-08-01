@@ -33,6 +33,7 @@ typedef struct moloch_config {
     uint32_t  logEveryXPackets;
     uint32_t  packetsPerPoll;
     uint32_t  pcapBufferSize;
+    uint32_t  pcapWriteSize;
 
     char      logUnknownProtocols;
     char      logESRequests;

@@ -149,7 +149,7 @@ function deleteFile(node, id, path, cb) {
 }
 
 function isLocalView(node, yesCB, noCB) {
-  Db.nodeStats(node, function(err, stat) {
+  Db.nodeStatsCache(node, function(err, stat) {
     if (err || stat.hostname !== os.hostname()) {
       noCB();
     } else {
@@ -822,7 +822,7 @@ app.get('/unique.txt', function(req, res) {
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = [req.query.field];
     if (req.query.field === "us") {
-      query.size = 100000;
+      query.size = 200000;
       delete query.facets;
       if (isEmptyObject(query.query.filtered.filter)) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
@@ -839,29 +839,27 @@ app.get('/unique.txt', function(req, res) {
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       //console.log("unique result", util.inspect(result, false, 100));
       if (req.query.field === "us") {
+        var counts = {};
         result.hits.hits.forEach(function (item) {
           if (!item.fields || !item.fields.us) {
             return;
           }
-          if (doCounts) {
-            var counts = {};
-            item.fields.us.forEach(function (url) {
-              if (!counts[url]) {
-                counts[url] = 1;
-              } else {
-                counts[url]++;
-              }
-            });
-
-            for (var key in counts) {
-              res.write(counts[key] + ", " + key +"\n");
+          item.fields.us.forEach(function (url) {
+            if (counts[url]) {
+              counts[url]++;
+            } else {
+              counts[url] = 1;
+              console.log(counts);
             }
-          } else {
-            item.fields.us.forEach(function (url) {
-              res.write(url+"\n");
-            });
-          }
+          });
         });
+
+        for (var key in counts) {
+          if (doCounts) {
+            res.write(counts[key] + ", ");
+          }
+          res.write(key +"\n");
+        }
         res.end();
         return;
       }
@@ -1141,7 +1139,7 @@ function getViewUrl(node, cb) {
     return;
   }
 
-  Db.nodeStats(node, function(err, stat) {
+  Db.nodeStatsCache(node, function(err, stat) {
     if (Config.isHTTPS(node)) {
       cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"));
     } else {

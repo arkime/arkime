@@ -115,14 +115,26 @@ exports.status = function(index, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
+internals.nodeStatsCache = {};
 exports.nodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
     if (err) {
       cb(err, null);
     } else {
+      internals.nodeStatsCache[name] = stat._source;
+      internals.nodeStatsCache[name]._timeStamp = Date.now();
+
       cb(null, stat._source);
     }
   });
+};
+
+exports.nodeStatsCache = function (name, cb) {
+  if (internals.nodeStatsCache[name] && internals.nodeStatsCache[name]._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.nodeStatsCache[name]);
+  }
+
+  return exports.nodeStats(name, cb);
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {

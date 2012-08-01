@@ -15,6 +15,8 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "glib.h"
 #include "nids.h"
 #include "pcap.h"
@@ -33,7 +35,11 @@ static MolochSessionHead_t   udpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
 
 
-static pcap_dumper_t        *dumper;
+static int64_t               dumperFilePos = 0;
+static int                   dumperBufPos = 0;
+static int                   dumperBufMax = 0;
+static int                   dumperFd = -1;
+static char                  dumperBuf[0x1fffff + 4096];
 static uint32_t              dumperId;
 static http_parser_settings  parserSettings;
 static magic_t               cookie;
@@ -217,6 +223,89 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
 }
 /******************************************************************************/
 char *filename;
+void moloch_nids_file_create()
+{
+    pcap_dumper_t        *dumper;
+
+    filename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, &dumperId);
+    dumper = pcap_dump_open(nids_params.pcap_desc, filename);
+
+    if (!dumper) {
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s'", filename);
+        exit (1);
+    }
+    pcap_dump_close(dumper);
+
+    dumperFilePos = 24;
+    dumperBufPos = 0;
+    dumperBufMax = config.pcapWriteSize - 24;
+
+    dumperFd = open(filename,  O_LARGEFILE | O_NOATIME | O_WRONLY );
+    if (dumperFd < 0) {
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %d", filename, errno);
+        exit (2);
+    }
+    lseek(dumperFd, 24, SEEK_SET);
+}
+/******************************************************************************/
+void moloch_nids_file_flush(gboolean all)
+{
+    int pos = 0;
+    int amount;
+
+    all |= (dumperBufPos <= dumperBufMax);
+
+    if (all) {
+        amount = dumperBufPos;
+    } else {
+        amount = dumperBufMax;
+    }
+
+    while (pos < amount) {
+        int len = write(dumperFd, dumperBuf+pos, amount-pos);
+        if (len < 0) {
+            LOG("ERROR - Write failed with %d %d\n", len, errno);
+            exit (0);
+        }
+        pos += len;
+    }
+
+    if (all) {
+        dumperBufPos = 0;
+    } else {
+        dumperBufPos = dumperBufPos - dumperBufMax;
+        memmove(dumperBuf, dumperBuf+dumperBufMax, dumperBufPos);
+    }
+    dumperBufMax = config.pcapWriteSize;
+
+}
+/******************************************************************************/
+struct pcap_timeval {
+    int32_t tv_sec;		/* seconds */
+    int32_t tv_usec;		/* microseconds */
+};
+struct pcap_sf_pkthdr {
+    struct pcap_timeval ts;	/* time stamp */
+    uint32_t caplen;		/* length of portion present */
+    uint32_t len;		/* length this packet (off wire) */
+};
+void
+moloch_nids_pcap_dump(const struct pcap_pkthdr *h, const u_char *sp)
+{
+    struct pcap_sf_pkthdr hdr;
+
+    hdr.ts.tv_sec  = h->ts.tv_sec;
+    hdr.ts.tv_usec = h->ts.tv_usec;
+    hdr.caplen     = h->caplen;
+    hdr.len        = h->len;
+
+    memcpy(dumperBuf+dumperBufPos, (char *)&hdr, sizeof(hdr));
+    dumperBufPos += sizeof(hdr);
+
+    memcpy(dumperBuf+dumperBufPos, sp, h->caplen);
+    dumperBufPos += h->caplen;
+}
+/******************************************************************************/
 void moloch_nids_cb_ip(struct ip *packet, int len)
 {
     char             sessionId[MOLOCH_SESSIONID_LEN];
@@ -321,36 +410,29 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     }
 
     /* Save packet to file */
-    if (!dumper || pcap_dump_ftell(dumper) >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
-        if (dumper) {
-            pcap_dump_close(dumper);
+    if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
+        if (dumperFd > 0) {
+            moloch_nids_file_flush(TRUE);
+            close(dumperFd);
         }
-
-        filename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, &dumperId);
-        FILE *f = fopen(filename, "wb");
-        if (!f) {
-            LOG("ERROR - pcap open failed - Couldn't open file: '%s'", filename);
-        }
-
-        if (setvbuf(f, NULL, _IOFBF, 0xfffff) != 0)
-            LOG("ERROR - setvbuf failed - %d", errno);
-
-        dumper = pcap_dump_fopen(nids_params.pcap_desc, f);
-        if (!dumper) {
-            LOG("ERROR - pcap open failed - Couldn't open file: '%s'", filename);
-            exit (1);
-        }
+        moloch_nids_file_create();
     }
-    uint64_t val = (pcap_dump_ftell(dumper) & 0xfffffffffLL) | ((uint64_t)dumperId << 36);
+    uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
     g_array_append_val(session->filePosArray, val);
     if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
         g_array_append_val(session->fileNumArray, dumperId);
     }
 
-    if (fakepcap)
-        fwrite("P", 1, 1, (FILE *)dumper);
-    else {
-        pcap_dump((u_char *)dumper, nids_last_pcap_header, nids_last_pcap_data);
+    if (fakepcap) {
+        dumperBuf[dumperBufPos] = 'P';
+        dumperBufPos++;
+    } else {
+        moloch_nids_pcap_dump(nids_last_pcap_header, nids_last_pcap_data);
+        dumperFilePos += 16 + nids_last_pcap_header->caplen;
+    }
+
+    if (dumperBufPos > dumperBufMax) {
+        moloch_nids_file_flush(FALSE);
     }
 
     if (session->filePosArray->len >= config.maxPackets) {
@@ -990,7 +1072,6 @@ void moloch_nids_init()
 {
 
     LOG("%s", pcap_lib_version());
-    LOG("Size of MolochSession = %d", (int)sizeof(MolochSession_t));
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", nodeName);
     moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, nodeTag, NULL);
 
@@ -1058,8 +1139,6 @@ void moloch_nids_init()
     nids_params.syslog = moloch_nids_syslog;
     nids_params.n_tcp_streams = config.maxStreams;
 
-    LOG("max streams = %d", config.maxStreams);
-
     if (config.bpfFilter)
         nids_params.pcap_filter = config.bpfFilter;
 
@@ -1097,4 +1176,6 @@ void moloch_nids_exit() {
     );
 
     magic_close(cookie);
+    moloch_nids_file_flush(TRUE);
+    close(dumperFd);
 }

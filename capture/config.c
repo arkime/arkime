@@ -116,6 +116,7 @@ void moloch_config_load()
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
     config.packetsPerPoll   = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
     config.pcapBufferSize   = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
+    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x3ffff, 0x3ffff, 0x1fffff);
 
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", debug);
@@ -154,6 +155,7 @@ void moloch_config_init()
         LOG("logEveryXPackets: %u", config.logEveryXPackets);
         LOG("packetsPerPoll: %u", config.packetsPerPoll);
         LOG("pcapBufferSize: %u", config.pcapBufferSize);
+        LOG("pcapWriteSize: %u", config.pcapWriteSize);
 
         LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));

@@ -17,6 +17,8 @@ The Moloch system is composed of 3 components
 3) elasticsearch - The database/search technology powering Moloch
 
 
+Wiki/FAQ - https://github.com/aol/moloch/wiki
+
 
 Hardware requirements - Moloch is built to run across many machines for large
 deployments.  What follows are rough guidelines for folks capturing large amounts of

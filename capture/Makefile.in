@@ -23,7 +23,7 @@ C_FILES         = main.c db.c nids.c yara.c es.c config.c
 O_FILES         = $(C_FILES:.c=.o)
 
 all:thirdparty/js0n.o thirdparty/http_parser.o
-	$(CC) -O2 -ggdb -Wall -Wextra -c $(C_FILES) \
+	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
 	$(CXX) -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
