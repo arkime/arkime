@@ -124,7 +124,7 @@ app.configure(function() {
   } else {
     /* Shared password isn't set, who cares about auth */
     app.use(function(req, res, next) {
-      req.user = {userId: "anonymous", enabled: true, createEnabled: false};
+      req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true};
       next();
     });
   }
@@ -156,6 +156,27 @@ function isLocalView(node, yesCB, noCB) {
       yesCB();
     }
   });
+}
+
+function dbCheck() {
+  var index;
+
+  ["stats", "dstats", "tags", "sequence", "files", "users"].forEach(function(index) {
+    Db.status(index, function(err, status) {
+      if (err || status.error) {
+        console.log("ERROR - Issue with index '" + index + "' make sure db/init.sh <eshost> has been run", err, status);
+        process.exit(1);
+      }
+    });
+  });
+
+  if (Config.get("passwordSecret")) {
+    Db.status("users", function(err, status) {
+      if (status.indices.users.docs.num_docs === 0) {
+        console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
+      }
+    });
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -584,7 +605,12 @@ function twoDigitString(value) {
 function getIndices(startTime, stopTime, cb) {
   var indices = [];
   startTime = Math.floor(startTime/86400)*86400;
-  Db.status("sessions*", function(err, status) {
+  Db.status("sessions-*", function(err, status) {
+
+    if (err || status.error) {
+    return cb("");
+    }
+
     while (startTime < stopTime) {
       var d = new Date(startTime*1000);
       var iname = "sessions-" +
@@ -604,41 +630,48 @@ function getIndices(startTime, stopTime, cb) {
 function lookupQueryTags(query, doneCb) {
   var outstanding = 0;
   var finished = 0;
+
+  function process(parent, obj, item) {
+    if (item === "ta" && typeof obj[item] === "string") {
+      if (obj[item].indexOf("*") !== -1) {
+        delete parent.term;
+        outstanding++;
+        var query = {bool: {must: {wildcard: {_uid: obj[item]}},
+                            must_not: {wildcard: {_uid: "*http:header:*"}}
+                           }
+                    };
+        Db.search('tags', 'tag', {size:50, fields:["id", "n"], query: query}, function(err, result) {
+          var terms = [];
+          result.hits.hits.forEach(function (hit) {
+            terms.push(hit.fields.n);
+          });
+          delete parent.term;
+          parent.terms = {ta: terms};
+          outstanding--;
+          if (finished && outstanding === 0) {
+            doneCb();
+          }
+        });
+      } else {
+        outstanding++;
+        Db.tagNameToId(obj[item], function (id) {
+          obj[item] = id;
+          outstanding--;
+          if (finished && outstanding === 0) {
+            doneCb();
+          }
+        });
+      }
+    } else if (typeof obj[item] === "object") {
+      convert(obj, obj[item]);
+    }
+  }
+
+
+
   function convert(parent, obj) {
     for (var item in obj) {
-      if (item === "ta" && typeof obj[item] === "string") {
-        if (obj[item].indexOf("*") !== -1) {
-          delete parent.term;
-          outstanding++;
-          var query = {bool: {must: {wildcard: {_uid: obj[item]}},
-                              must_not: {wildcard: {_uid: "*http:header:*"}}
-                             }
-                      };
-          Db.search('tags', 'tag', {size:50, fields:["id", "n"], query: query}, function(err, result) {
-            var terms = [];
-            result.hits.hits.forEach(function (item) {
-              terms.push(item.fields.n);
-            });
-            delete parent.term;
-            parent.terms = {ta: terms};
-            outstanding--;
-            if (finished && outstanding === 0) {
-              doneCb();
-            }
-          });
-        } else {
-          outstanding++;
-          Db.tagNameToId(obj[item], function (id) {
-            obj[item] = id;
-            outstanding--;
-            if (finished && outstanding === 0) {
-              doneCb();
-            }
-          });
-        }
-      } else if (typeof obj[item] === "object") {
-        convert(obj, obj[item]);
-      }
+      process(parent, obj, item);
     }
   }
 
@@ -1436,6 +1469,7 @@ app.post('/changePassword', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
+dbCheck();
 expireCheckAll();
 setInterval(expireCheckAll, 5*60*1000);
 app.listen(Config.get("viewPort", "8005"));

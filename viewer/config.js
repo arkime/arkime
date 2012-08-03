@@ -117,7 +117,7 @@ function dropPrivileges() {
 }
 
 exports.isHTTPS = function(node) {
-  return exports.getFull(node || internals.nodeName, "keyFile") && 
+  return exports.getFull(node || internals.nodeName, "keyFile") &&
          exports.getFull(node || internals.nodeName, "certFile");
 };
 

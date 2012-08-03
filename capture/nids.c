@@ -146,6 +146,15 @@ void moloch_nids_save_session(char *key, MolochSession_t *session)
     if (session->outstandingTags > 0) {
         session->needSave = 1;
 
+        if (session->tcp_next) {
+            DLL_REMOVE(tcp_, &tcpWriteQ, session);
+        }
+
+        if (session->protocol == IPPROTO_TCP)
+            DLL_REMOVE(q_, &tcpSessionQ, session);
+        else
+            DLL_REMOVE(q_, &udpSessionQ, session);
+
         HASH_REMOVE(h_, sessions, session);
         return;
     }
@@ -828,10 +837,12 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 /******************************************************************************/
 void moloch_nids_session_free (MolochSession_t *session)
 {
-    if (session->protocol == IPPROTO_TCP)
-        DLL_REMOVE(q_, &tcpSessionQ, session);
-    else
-        DLL_REMOVE(q_, &udpSessionQ, session);
+    if (session->q_next) {
+        if (session->protocol == IPPROTO_TCP)
+            DLL_REMOVE(q_, &tcpSessionQ, session);
+        else
+            DLL_REMOVE(q_, &udpSessionQ, session);
+    }
 
     if (session->tcp_next)
         DLL_REMOVE(tcp_, &tcpWriteQ, session);
@@ -903,13 +914,13 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 /******************************************************************************/
 gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) {
     int r = nids_dispatch(config.packetsPerPoll);
-    if (r == 0 && pcapFile)
+    if (r <= 0 && pcapFile)
         g_main_loop_quit(mainLoop);
     return TRUE;
 }
 /******************************************************************************/
 gboolean moloch_nids_poll_cb(gpointer UNUSED(uw)) {
-    nids_dispatch(5);
+    nids_dispatch(config.packetsPerPoll);
     return TRUE;
 }
 
