@@ -26,9 +26,10 @@
 "tcp"                     return "tcp"
 "udp"                     return "udp"
 "host"                    return "host"
+"header"                  return "header"
 "contains"                return 'contains'
 "tags"                    return 'tags'
-[\w*._:-]+                 return 'ID'
+[\w*._:-]+                return 'ID'
 \"[^"]+\"                 return 'QUOTEDSTR'
 "<="                      return 'lte'
 "<"                       return 'lt'
@@ -109,6 +110,7 @@ STR : ID
     | QUOTEDSTR
     | node
     | host
+    | header
     | tcp
     | contains
     | udp
@@ -195,6 +197,18 @@ e
     | tags contains STR
         { var tag = stripQuotes($3);
           $$ = {term: {ta: tag}};
+        }
+    | header '==' STR
+        { var tag = stripQuotes($3);
+          $$ = {term: {hh: tag}};
+        }
+    | header '!=' STR
+        { var tag = stripQuotes($3);
+          $$ = {not: {term: {hh: tag}}};
+        }
+    | header contains STR
+        { var tag = stripQuotes($3);
+          $$ = {term: {hh: tag}};
         }
     | country '==' ID {$$ = {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}]};}
     | country '!=' ID {$$ = {not: {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}]}};}

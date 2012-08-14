@@ -741,10 +741,27 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
             HASH_ADD(s_, session->hosts, hstring->str, hstring);
         }
 
-        g_string_append(session->hostString, session->urlString->str);
-        
-        g_ptr_array_add(session->urlArray, g_string_free(session->hostString, FALSE));
-        g_string_free(session->urlString, TRUE);
+        if (session->urlString->str[0] != '/') {
+            char *result = strstr(session->urlString->str, session->hostString->str+2);
+
+            /* If the host header is in the first 8 bytes of url then just use the url */
+            if (result && result - session->urlString->str <= 8) {
+                g_ptr_array_add(session->urlArray, g_string_free(session->urlString, FALSE));
+                g_string_free(session->hostString, TRUE);
+            } else {
+                /* Host header doesn't match the url */
+                g_string_append(session->hostString, ";");
+                g_string_append(session->hostString, session->urlString->str);
+                g_ptr_array_add(session->urlArray, g_string_free(session->hostString, FALSE));
+                g_string_free(session->urlString, TRUE);
+            }
+        } else {
+            /* Normal case, url starts with /, so no extra host in url */
+            g_string_append(session->hostString, session->urlString->str);
+            g_ptr_array_add(session->urlArray, g_string_free(session->hostString, FALSE));
+            g_string_free(session->urlString, TRUE);
+        }
+
         if (session->urlArray->len == 1)
             moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:http");
 

@@ -39,6 +39,11 @@ div(style="margin:10px")
       td integer
       td Number of databytes in session<br>databytes &gt;= 2000
     tr
+      td header
+      td contains
+      td string or quoted string
+      td Matches against the lowercased http headers for the session<br>Examples: header contains *length, header contains content-length
+    tr
       td host
       td.
         ==, !=, contains
@@ -103,12 +108,12 @@ div(style="margin:10px")
       td ua
       td contains
       td string or quoted string
-      td Matches against the User Agent for the session
+      td Matches against the User Agent for the session<br>ua contains Java
     tr
       td uri
       td contains
       td string or quoted string
-      td Matches against the URIs for the session
+      td Matches against the URIs for the session<br>Example:uri contains facebook.com
 
   h2 Examples
   p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com
