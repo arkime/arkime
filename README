@@ -32,7 +32,7 @@ recommended to run the capture and elasticsearch processes on the same machines.
    * If running suricata or another IDS add an additional two (2) CPUs per interface, 
      and an additional 5G memory (or more depending on IDS requirements)
    * Disk space to store the PCAP files.  Recommend at least 10T, xfs 
-     (with inode64 option set in fstab), raid 5 
+     (with inode64 option set in fstab), raid 5, at least 4 spindles
    * If networks are highly utilized and running IDS then CPU affinity is required
    * disable swap by removing it from fstab
 
