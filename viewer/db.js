@@ -211,10 +211,17 @@ exports.tagNameToId = function (name, cb) {
 exports.numberOfDocuments = function (index, cb) {
   exports.status(index, function(err, result) {
     if (err || result.error) {
-      cb(null, 0);
-    } else {
-      cb(null, result.indices[index].docs.num_docs);
+      return cb(null, 0);
+    } 
+
+    var i;
+    var num = 0;
+    for (i in result.indices) {
+      if (typeof result.indices[i] === "object") {
+        num += result.indices[i].docs.num_docs;
+      }
     }
+    cb(null, num);
   });
 };
 

@@ -184,8 +184,8 @@ function dbCheck() {
   });
 
   if (Config.get("passwordSecret")) {
-    Db.status("users", function(err, status) {
-      if (status.indices.users.docs.num_docs === 0) {
+    Db.numberOfDocuments("users", function(err, num) {
+      if (num === 0) {
         console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
       }
     });
@@ -645,21 +645,30 @@ function lookupQueryTags(query, doneCb) {
   var finished = 0;
 
   function process(parent, obj, item) {
-    if (item === "ta" && typeof obj[item] === "string") {
+    if ((item === "ta" || item === "hh") && typeof obj[item] === "string") {
       if (obj[item].indexOf("*") !== -1) {
         delete parent.term;
         outstanding++;
-        var query = {bool: {must: {wildcard: {_uid: obj[item]}},
-                            must_not: {wildcard: {_uid: "*http:header:*"}}
-                           }
-                    };
+        var query;
+        if (item === "ta") {
+          query = {bool: {must: {wildcard: {_id: obj[item]}},
+                          must_not: {wildcard: {_id: "http:header:*"}}
+                         }
+                  };
+        } else {
+          query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
+        }
         Db.search('tags', 'tag', {size:50, fields:["id", "n"], query: query}, function(err, result) {
           var terms = [];
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);
           });
           delete parent.term;
-          parent.terms = {ta: terms};
+          if (item === "ta") {
+            parent.terms = {ta: terms};
+          } else {
+            parent.terms = {hh: terms};
+          }
           outstanding--;
           if (finished && outstanding === 0) {
             doneCb();
@@ -667,7 +676,9 @@ function lookupQueryTags(query, doneCb) {
         });
       } else {
         outstanding++;
-        Db.tagNameToId(obj[item], function (id) {
+        var tag = (item === "hh"?"http:header:" + obj[item].toLowerCase():obj[item]);
+
+        Db.tagNameToId(tag, function (id) {
           obj[item] = id;
           outstanding--;
           if (finished && outstanding === 0) {
@@ -857,6 +868,22 @@ app.get('/sessions.json', function(req, res) {
       } catch (c) {
       }
     });
+  });
+});
+
+app.get('/tags.json', function(req, res) {
+  noCache(req, res);
+  var query = {bool: {must: {wildcard: {_id: req.query.tag + "*"}},
+                  must_not: {wildcard: {_id: "http:header:*"}}
+                     }
+          };
+
+  Db.search('tags', 'tag', {size:100, query: query}, function(err, result) {
+    var terms = [];
+    result.hits.hits.forEach(function (hit) {
+      terms.push(hit._id);
+    });
+    res.send(terms);
   });
 });
 

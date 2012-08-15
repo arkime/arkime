@@ -10,16 +10,16 @@ ESHOST=$1
 
 
 echo "Deleting"
-echo curl -XDELETE http://$ESHOST:9200/tags
-curl -XDELETE http://$ESHOST:9200/tags
+echo curl -XDELETE http://$ESHOST:9200/tags_v1
+curl -XDELETE http://$ESHOST:9200/tags_v1
 echo
 
 echo curl -XDELETE http://$ESHOST:9200/sequence
 curl -XDELETE http://$ESHOST:9200/sequence
 echo
 
-echo curl -XDELETE http://$ESHOST:9200/files
-curl -XDELETE http://$ESHOST:9200/files
+echo curl -XDELETE http://$ESHOST:9200/files_v1
+curl -XDELETE http://$ESHOST:9200/files_v1
 echo
 
 echo curl -XDELETE http://$ESHOST:9200/stats
@@ -50,7 +50,7 @@ curl -XPUT http://$ESHOST:9200/dstats --data @dstats.json
 echo 
 
 echo "Create Files"
-curl -XPUT http://$ESHOST:9200/files/?pretty=1 -d '
+curl -XPUT "http://$ESHOST:9200/files_v1/?pretty=1" -d '
 {
   "mappings": {
     "file": {
@@ -86,10 +86,17 @@ curl -XPUT http://$ESHOST:9200/files/?pretty=1 -d '
   }
 }
 '
+
+curl -XPOST "http://$ESHOST:9200/_aliases" -d '
+{
+    "actions" : [
+        { "add" : { "index" : "files_v1", "alias" : "files" } }
+    ]
+}'
 echo 
 
 echo "Create Users"
-curl -XPUT http://$ESHOST:9200/users/?pretty=1 -d '
+curl -XPUT "http://$ESHOST:9200/users_v1/?pretty=1" -d '
 {
   "mappings": {
     "user": {
@@ -125,6 +132,12 @@ curl -XPUT http://$ESHOST:9200/users/?pretty=1 -d '
   }
 }
 '
+curl -XPOST "http://$ESHOST:9200/_aliases" -d '
+{
+    "actions" : [
+        { "add" : { "index" : "users_v1", "alias" : "users" } }
+    ]
+}'
 echo 
 
 echo "Create Sequence"
@@ -146,19 +159,29 @@ curl -XPUT "http://$ESHOST:9200/sequence/?pretty=1"  -d '
 '
 
 echo 'Create tags'
-curl -XPUT "http://$ESHOST:9200/tags/?pretty=1"  -d '
+curl -XPUT "http://$ESHOST:9200/tags_v1/?pretty=1"  -d '
 {
-   "settings" : {
-      "number_of_shards"     : 1,           
-      "auto_expand_replicas" : "0-all"  
-   },
-   "mappings" : {
-      "sequence" : {
-         "_source" : { "enabled" : 0 },
-         "_all"    : { "enabled" : 0 },
-         "_type"   : { "index" : "no" },
-         "enabled" : 0
+  "settings" : {
+    "number_of_shards"     : 1,           
+    "auto_expand_replicas" : "0-all"  
+  },
+  "mappings" : {
+    "tag" : {
+      "_type"   : { "index" : "no" },
+      "_id"     : { "index": "not_analyzed"},
+      "enabled" : 0,
+      "properties": {
+        "n": {
+          "type": "integer"
+        }
       }
-   }
-}
-'
+    }
+  }
+}'
+
+curl -XPOST "http://$ESHOST:9200/_aliases" -d '
+{
+    "actions" : [
+        { "add" : { "index" : "tags_v1", "alias" : "tags" } }
+    ]
+}'

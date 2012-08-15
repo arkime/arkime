@@ -370,6 +370,13 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     totalBytes += len;
 
+    if (totalPackets == 1) {
+        struct pcap_stat ps;
+        pcap_stats(nids_params.pcap_desc, &ps);
+        initialDropped = ps.ps_drop;
+        LOG("%ld Initial Dropped = %d", totalPackets, initialDropped);
+    }
+
     if ((++totalPackets) % config.logEveryXPackets == 0) {
         struct pcap_stat ps;
         pcap_stats(nids_params.pcap_desc, &ps);
@@ -1201,11 +1208,6 @@ void moloch_nids_init()
 
     nids_register_tcp(moloch_nids_cb_tcp);
     nids_register_ip(moloch_nids_cb_ip);
-
-    struct pcap_stat ps;
-    pcap_stats(nids_params.pcap_desc, &ps);
-    initialDropped = ps.ps_drop;
-    LOG("Initial Dropped = %d", initialDropped);
 }
 /******************************************************************************/
 void moloch_nids_exit() {
