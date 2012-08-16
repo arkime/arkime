@@ -10,8 +10,8 @@ ESHOST=$1
 
 
 echo "Deleting"
-echo curl -XDELETE http://$ESHOST:9200/tags_v1
-curl -XDELETE http://$ESHOST:9200/tags_v1
+echo curl -XDELETE http://$ESHOST:9200/tags_v2
+curl -XDELETE http://$ESHOST:9200/tags_v2
 echo
 
 echo curl -XDELETE http://$ESHOST:9200/sequence
@@ -159,7 +159,7 @@ curl -XPUT "http://$ESHOST:9200/sequence/?pretty=1"  -d '
 '
 
 echo 'Create tags'
-curl -XPUT "http://$ESHOST:9200/tags_v1/?pretty=1"  -d '
+curl -XPUT "http://$ESHOST:9200/tags_v2/?pretty=1"  -d '
 {
   "settings" : {
     "number_of_shards"     : 1,           
@@ -167,9 +167,7 @@ curl -XPUT "http://$ESHOST:9200/tags_v1/?pretty=1"  -d '
   },
   "mappings" : {
     "tag" : {
-      "_type"   : { "index" : "no" },
       "_id"     : { "index": "not_analyzed"},
-      "enabled" : 0,
       "properties": {
         "n": {
           "type": "integer"
@@ -182,6 +180,6 @@ curl -XPUT "http://$ESHOST:9200/tags_v1/?pretty=1"  -d '
 curl -XPOST "http://$ESHOST:9200/_aliases" -d '
 {
     "actions" : [
-        { "add" : { "index" : "tags_v1", "alias" : "tags" } }
+        { "add" : { "index" : "tags_v2", "alias" : "tags" } }
     ]
 }'
