@@ -14,7 +14,7 @@ typedef struct moloch_config {
     char     *elasticsearch;
     char     *interface;
     char     *pcapDir;
-    char     *bpfFilter;
+    char     *bpf;
     char     *yara;
     char     *geoipFile;
     char     *dropUser;
@@ -51,6 +51,17 @@ typedef struct {
     int s_count;
 } MolochStringHead_t;
 
+typedef struct moloch_int {
+    struct moloch_int    *i_next, *i_prev;
+    int                   i;
+    short                 i_bucket;
+} MolochInt_t;
+
+typedef struct {
+    struct moloch_int *i_next, *i_prev;
+    int i_count;
+} MolochIntHead_t;
+
 
 #define MOLOCH_TAG_TAGS         0
 #define MOLOCH_TAG_HTTP_HEADERS 1
@@ -62,6 +73,7 @@ typedef struct moloch_session {
 
     HASH_VAR(s_, hosts, MolochStringHead_t, 11);
     HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
+    HASH_VAR(i_, xffs, MolochIntHead_t, 11);
 
     char        header[32];
     http_parser parsers[2];
@@ -74,6 +86,7 @@ typedef struct moloch_session {
     char       *rootId;
     GString    *hostString;
     GString    *uaString;
+    GString    *xffString;
     GHashTable *tags[2];
 
     uint64_t    bytes;
@@ -142,6 +155,9 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
 
 uint32_t moloch_string_hash(const void *key);
 int moloch_string_cmp(const void *keyv, const void *elementv);
+
+uint32_t moloch_int_hash(const void *key);
+int moloch_int_cmp(const void *keyv, const void *elementv);
 
 
 /******************************************************************************/

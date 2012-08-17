@@ -265,6 +265,22 @@ void moloch_db_save_session(MolochSession_t *session)
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
+    if (HASH_COUNT(i_, session->xffs)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"xff\":[");
+        i = 0;
+
+        MolochInt_t *xff;
+        HASH_FORALL_POP_HEAD(i_, session->xffs, xff, 
+            if (i != 0)
+                *(sJPtr++) = ',';
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%u", htonl(xff->i));
+            free(xff);
+            i++;
+        );
+
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+    }
+
     if (g_hash_table_size(session->tags[0])) {
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ta\":[");
         g_hash_table_iter_init (&iter, session->tags[0]);
@@ -306,7 +322,7 @@ void moloch_db_save_session(MolochSession_t *session)
         LOG("MEMORY OUT OF BOUNDS ERROR - %ld", (long)(sJPtr - sJson));
     }
 
-    
+
     if (sJPtr - sJson > config.dbBulkSize) {
         //printf("Sending: %ld %ld\n", sJPtr - sessionJson, totalSessions);
         //printf("%.*s", sJPtr - sessionJson, sessionJson);

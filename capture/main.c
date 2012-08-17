@@ -160,6 +160,20 @@ int moloch_string_cmp(const void *keyv, const void *elementv)
     return strcmp(key, element->str) == 0;
 }
 /******************************************************************************/
+uint32_t moloch_int_hash(const void *key)
+{
+    return (uint32_t)((long)key);
+}
+
+/******************************************************************************/
+int moloch_int_cmp(const void *keyv, const void *elementv)
+{
+    int key = (int)((long)keyv);
+    MolochInt_t *element = (MolochInt_t *)elementv;
+
+    return key == element->i;
+}
+/******************************************************************************/
 typedef struct {
     MolochWatchFd_func  func;
     gpointer            data;

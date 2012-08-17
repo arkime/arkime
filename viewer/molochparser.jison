@@ -27,6 +27,7 @@
 "udp"                     return "udp"
 "host"                    return "host"
 "header"                  return "header"
+"xff"                     return "xff"
 "contains"                return 'contains'
 "tags"                    return 'tags'
 [\w*._:-]+                return 'ID'
@@ -111,6 +112,7 @@ STR : ID
     | node
     | host
     | header
+    | xff
     | tcp
     | contains
     | udp
@@ -186,6 +188,10 @@ e
         {$$ = parseIpPort($3,2);}
     | 'ip2' '!=' IPNUM
         {$$ = {not: parseIpPort($3,2)};}
+    | 'xff' '==' IPNUM
+        {$$ = parseIpPort($3,3);}
+    | 'xff' '!=' IPNUM
+        {$$ = {not: parseIpPort($3,3)};}
     | tags '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {ta: tag}};
@@ -261,10 +267,18 @@ function parseIpPort(ipPortStr, which) {
 
   var t1 = {and: []};
   var t2 = {and: []};
+  var xff;
 
   if (ip1 !== -1) {
-    t1.and.push({numeric_range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-    t2.and.push({numeric_range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+    if (ip1 === ip2) {
+        t1  = {term: {a1: ip1}};
+        t2  = {term: {a2: ip1}};
+        xff = {term: {xff: ip1}};
+    } else {
+        t1.and.push({numeric_range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
+        t2.and.push({numeric_range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+        xff =  {numeric_range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
+    }
   }
 
   if (port !== -1) {
@@ -272,17 +286,18 @@ function parseIpPort(ipPortStr, which) {
     t2.and.push({term: {p2: port}});
   }
 
-  if (which === 0) {
+  switch(which) {
+  case 0:
     return {or: [t1, t2]};
-  } 
-  if (which === 1) {
+  case 1:
     return t1;
-  }
-  if (which === 2) {
+  case 2:
     return t2;
+  case 3:
+    return xff;
   }
-
 }
+
 function stripQuotes (str) {
   if (str[0] === "\"") {
     str =  str.substring(1, str.length-1);

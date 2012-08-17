@@ -42,31 +42,31 @@ div(style="margin:10px")
       td header
       td contains
       td string or quoted string
-      td Matches against the lowercased http headers for the session<br>Examples: header contains *length, header contains content-length
+      td Matches against the lowercased http request and response headers for the session<br>Examples: header contains *length, header contains content-length
     tr
       td host
       td.
         ==, !=, contains
       td string<br>with 'contains' *s are permitted
-      td host from HTTP Host header or DNS query<br>Example:host contains *net
+      td host from HTTP request Host header or DNS query<br>Example:host contains *net
     tr
       td ip
       td.
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for address1 or address2.<br>Examples: 10.10.10.10, 10.10.10.0/24:80, 10.10.10:80
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address1 or address2.<br>Examples: ip==10.10.10.10, ip!=10.10.10.0/24:80, ip==10.10.10:80
     tr
       td ip1
       td.
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for address1.<br>Examples: 10.10.10.10, 10.10.10.0/24:80, 10.10.10:80
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address1.<br>Examples: ip1==10.10.10.10, ip1!=10.10.10.0/24:80, ip1==10.10.10:80
     tr
       td ip2
       td.
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: 10.10.10.10, 10.10.10.0/24:80, 10.10.10:80
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip2==10.10.10.10, ip2==10.10.10.0/24:80, ip2==10.10.10:80
     tr
       td node
       td.
@@ -108,12 +108,18 @@ div(style="margin:10px")
       td ua
       td contains
       td string or quoted string
-      td Matches against the User Agent for the session<br>ua contains Java
+      td Matches against the User Agent for the http request<br>ua contains Java
     tr
       td uri
       td contains
       td string or quoted string
       td Matches against the URIs for the session<br>Example:uri contains facebook.com
+    tr
+      td xff
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n]
+      td Matches ip addresses in the X-Forwarded-For http request header.<br>Examples: xff==10.10.10.10, xff==10.10.10.0/24
 
   h2 Examples
   p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com

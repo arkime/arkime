@@ -32,7 +32,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic
 
 snf:thirdparty/js0n.o thirdparty/http_parser.o
-	gcc -ggdb -Wall -Wextra -c $(C_FILES) \
+	gcc -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_SNF) -DSNF \
 	    $(INCLUDE_OTHER) 
 	g++ -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \

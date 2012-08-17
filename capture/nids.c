@@ -65,7 +65,6 @@ uint64_t                     totalSessions = 0;
 /******************************************************************************/
 extern gchar   *interface;
 extern gchar   *pcapFile;
-extern gchar   *bpfFilter;
 extern gboolean fakepcap;
 
 HASH_VAR(h_, sessions, MolochSessionHead_t, 199337);
@@ -230,6 +229,11 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     HASH_FORALL_POP_HEAD(s_, session->userAgents, string, 
         free(string->str);
         free(string);
+    );
+
+    MolochInt_t *mi;
+    HASH_FORALL_POP_HEAD(i_, session->xffs, mi, 
+        free(mi);
     );
 
     if (session->tcp_next) {
@@ -408,6 +412,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->urlArray = g_ptr_array_new_with_free_func(g_free);
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->userAgents, moloch_string_hash, moloch_string_cmp);
+        HASH_INIT(i_, session->xffs, moloch_int_hash, moloch_int_cmp);
         HASH_ADD(h_, sessions, sessionId, session);
         session->lastSave = session->firstPacket = nids_last_pcap_header->ts.tv_sec;
         session->addr1 = packet->ip_src.s_addr;
@@ -820,6 +825,36 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         g_string_free(session->uaString, TRUE);
         session->uaString = NULL;
     }
+
+    if (session->xffString) {
+        int i;
+        gchar **parts = g_strsplit(session->xffString->str, ",", 0);
+
+        for (i = 0; parts[i]; i++) {
+            gchar *ip = parts[i];
+            while (*ip == ' ')
+                ip++;
+
+            in_addr_t ia = inet_addr(ip);
+            if (ia == 0 || ia == 0xffffffff) {
+                LOG("ERROR - Didn't understand ip: %s %s %d", session->xffString->str, ip, ia);
+                continue;
+            }
+
+            MolochInt_t *mi;
+
+            HASH_FIND(i_, session->xffs, (void*)(long)ia, mi);
+            if (!mi) {
+                mi = malloc(sizeof(*mi));
+                mi->i = ia;
+                HASH_ADD(i_, session->xffs, (void *)(long)mi->i, mi);
+            }
+        }
+
+        g_strfreev(parts);
+        g_string_free(session->xffString, TRUE);
+        session->xffString = NULL;
+    }
     return 0;
 }
 
@@ -855,17 +890,24 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         moloch_nids_add_tag(session, MOLOCH_TAG_HTTP_HEADERS, header);
     }
 
-    if (strcasecmp("host", session->header) == 0) {
+    if (parser->method && strcasecmp("host", session->header) == 0) {
         if (!session->hostString)
             session->hostString = g_string_new_len("//", 2);
         g_string_append_len(session->hostString, at, length);
     } 
 
-    if (strcasecmp("user-agent", session->header) == 0) {
+    if (parser->method && strcasecmp("user-agent", session->header) == 0) {
         if (!session->uaString)
             session->uaString = g_string_new_len(at, length);
         else
             g_string_append_len(session->uaString, at, length);
+    } 
+
+    if (parser->method && strcasecmp("x-forwarded-for", session->header) == 0) {
+        if (!session->xffString)
+            session->xffString = g_string_new_len(at, length);
+        else
+            g_string_append_len(session->xffString, at, length);
     } 
 
     return 0;
@@ -905,6 +947,8 @@ void moloch_nids_session_free (MolochSession_t *session)
         g_string_free(session->hostString, TRUE);
     if (session->uaString)
         g_string_free(session->uaString, TRUE);
+    if (session->xffString)
+        g_string_free(session->xffString, TRUE);
 
     if (session->rootId)
         g_free(session->rootId);
@@ -1187,8 +1231,8 @@ void moloch_nids_init()
     nids_params.syslog = moloch_nids_syslog;
     nids_params.n_tcp_streams = config.maxStreams;
 
-    if (config.bpfFilter)
-        nids_params.pcap_filter = config.bpfFilter;
+    if (config.bpf)
+        nids_params.pcap_filter = config.bpf;
 
 
     nids_init();

@@ -212,7 +212,7 @@ exports.numberOfDocuments = function (index, cb) {
   exports.status(index, function(err, result) {
     if (err || result.error) {
       return cb(null, 0);
-    } 
+    }
 
     var i;
     var num = 0;

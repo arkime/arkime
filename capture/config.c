@@ -110,7 +110,7 @@ void moloch_config_load()
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = moloch_config_str(keyfile, "interface", NULL);
     config.pcapDir          = moloch_config_str(keyfile, "pcapDir", NULL);
-    config.bpfFilter        = moloch_config_str(keyfile, "bpfFilter", NULL);
+    config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
     config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
@@ -129,7 +129,7 @@ void moloch_config_load()
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
     config.packetsPerPoll   = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
     config.pcapBufferSize   = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x3ffff, 0x3ffff, 0x1fffff);
+    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x200000);
 
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", debug);
@@ -149,7 +149,7 @@ void moloch_config_init()
         LOG("elasticsearch: %s", config.elasticsearch);
         LOG("interface: %s", config.interface);
         LOG("pcapDir: %s", config.pcapDir);
-        LOG("bpfFilter: %s", config.bpfFilter);
+        LOG("bpf: %s", config.bpf);
         LOG("yara: %s", config.yara);
         LOG("geoipFile: %s", config.geoipFile);
         LOG("dropUser: %s", config.dropUser);
@@ -189,8 +189,8 @@ void moloch_config_exit()
         g_free(config.interface);
     if (config.elasticsearch)
         g_free(config.elasticsearch);
-    if (config.bpfFilter)
-        g_free(config.bpfFilter);
+    if (config.bpf)
+        g_free(config.bpf);
     if (config.yara)
         g_free(config.yara);
     if (config.pcapDir)

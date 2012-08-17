@@ -958,9 +958,12 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
   function processFile(fd, pos, nextCb) {
     var buffer = new Buffer(5000);
     fs.read(fd, buffer, 0, 16, pos, function (err, bytesRead, buffer) {
+      if (bytesRead !== 16) {
+        return packetCb(buffer.slice(0,0), nextCb);
+      }
       var len = buffer.readInt32LE(8);
       fs.read(fd, buffer, 16, len, pos+16, function (err, bytesRead, buffer) {
-        packetCb(buffer.slice(0,16+len), nextCb);
+        return packetCb(buffer.slice(0,16+len), nextCb);
       });
     });
   }
@@ -1016,15 +1019,36 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
         fs.close(fileHandle);
       }
 
-      async.map(session._source.ta, function (item, cb) {
-        Db.tagIdToName(item, function (name) {
-          cb(null, name);
-        });
-      },
-      function(err, results) {
-        session._source.ta = results;
-        endCb(null, session._source);
-      });
+      async.parallel([
+        function(parallelCb) {
+          async.map(session._source.ta, function (item, cb) {
+            Db.tagIdToName(item, function (name) {
+              cb(null, name);
+            });
+          },
+          function(err, results) {
+            session._source.ta = results;
+            parallelCb(null);
+          });
+        },
+        function(parallelCb) {
+          if (!session._source.hh) {
+            return parallelCb(null);
+          }
+          async.map(session._source.hh, function (item, cb) {
+            Db.tagIdToName(item, function (name) {
+              cb(null, name.substring(12));
+            });
+          },
+          function(err, results) {
+            session._source.hh = results;
+            parallelCb(null);
+          });
+        }],
+        function(err, results) {
+          endCb(null, session._source);
+        }
+      );
     });
   });
 }
@@ -1175,7 +1199,11 @@ function localSessionDetail(req, res) {
   var packets = [];
   processSessionId(req.params.id, null, function (buffer, cb) {
     var obj = {};
-    decode.pcap(buffer, obj);
+    if (buffer.length > 16) {
+      decode.pcap(buffer, obj);
+    } else {
+      obj = {ip: {p: "Empty"}};
+    }
     packets.push(obj);
     cb(null);
   },
@@ -1186,6 +1214,9 @@ function localSessionDetail(req, res) {
     }
     session.id = req.params.id;
     session.ta = session.ta.sort();
+    if (session.hh) {
+      session.hh = session.hh.sort();
+    }
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {

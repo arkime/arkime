@@ -93,6 +93,9 @@
         },
         "hh": {
           "type": "integer"
+        },
+        "xff": {
+          "type": "long"
         }
       }
     }
