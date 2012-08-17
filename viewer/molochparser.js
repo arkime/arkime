@@ -299,9 +299,9 @@ function parseIpPort(ipPortStr, which) {
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1  = {term: {a1: ip1}};
-        t2  = {term: {a2: ip1}};
-        xff = {term: {xff: ip1}};
+        t1  = {term: {a1: ip1>>>0}};
+        t2  = {term: {a2: ip1>>>0}};
+        xff = {term: {xff: ip1>>>0}};
     } else {
         t1.and.push({numeric_range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
         t2.and.push({numeric_range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
