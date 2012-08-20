@@ -57,9 +57,9 @@ case 50:this.$ = {term: {pr: 6}};
 break;
 case 51:this.$ = {term: {pr: 17}};
 break;
-case 52:this.$ = {numeric_range: {}};
-         this.$.numeric_range[$$[$0-2]] = {};
-         this.$.numeric_range[$$[$0-2]][$$[$0-1]] = $$[$0];
+case 52:this.$ = {range: {}};
+         this.$.range[$$[$0-2]] = {};
+         this.$.range[$$[$0-2]][$$[$0-1]] = $$[$0];
 break;
 case 53:this.$ = {term: {}};
          this.$.term[$$[$0-2]] = $$[$0];
@@ -67,9 +67,9 @@ break;
 case 54:this.$ = {not: {term: {}}};
          this.$.not.term[$$[$0-2]] = $$[$0];
 break;
-case 55:this.$ = {or: [{numeric_range: {p1: {}}}, {numeric_range: {p2: {}}}]};
-         this.$.or[0].numeric_range.p1[$$[$0-1]] = $$[$0];
-         this.$.or[1].numeric_range.p2[$$[$0-1]] = $$[$0];
+case 55:this.$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
+         this.$.or[0].range.p1[$$[$0-1]] = $$[$0];
+         this.$.or[1].range.p2[$$[$0-1]] = $$[$0];
 break;
 case 56:this.$ = {term: {}};
          this.$.term[$$[$0-2]] = $$[$0];
@@ -303,9 +303,9 @@ function parseIpPort(ipPortStr, which) {
         t2  = {term: {a2: ip1>>>0}};
         xff = {term: {xff: ip1>>>0}};
     } else {
-        t1.and.push({numeric_range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-        t2.and.push({numeric_range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
-        xff =  {numeric_range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
+        t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
+        t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+        xff =  {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
     }
   }
 

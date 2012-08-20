@@ -143,9 +143,9 @@ e
     | protocol '==' 'udp'
         {$$ = {term: {pr: 17}};}
     | RANGEFIELD GTLT NUMBER
-        {$$ = {numeric_range: {}};
-         $$.numeric_range[$1] = {};
-         $$.numeric_range[$1][$2] = $3;}
+        {$$ = {range: {}};
+         $$.range[$1] = {};
+         $$.range[$1][$2] = $3;}
     | RANGEFIELD '==' NUMBER
         {$$ = {term: {}};
          $$.term[$1] = $3;}
@@ -153,9 +153,9 @@ e
         {$$ = {not: {term: {}}};
          $$.not.term[$1] = $3;}
     | 'port' GTLT NUMBER
-        {$$ = {or: [{numeric_range: {p1: {}}}, {numeric_range: {p2: {}}}]};
-         $$.or[0].numeric_range.p1[$2] = $3;
-         $$.or[1].numeric_range.p2[$2] = $3;}
+        {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
+         $$.or[0].range.p1[$2] = $3;
+         $$.or[1].range.p2[$2] = $3;}
     | STRFIELD '==' STR
         {$$ = {term: {}};
          $$.term[$1] = $3;}
@@ -232,7 +232,6 @@ e
     ;
 %%
 function parseIpPort(ipPortStr, which) {
-  console.log("Looking at ", ipPortStr);
   ipPortStr = ipPortStr.trim();
   // Support '10.10.10/16:4321'
 
@@ -275,9 +274,9 @@ function parseIpPort(ipPortStr, which) {
         t2  = {term: {a2: ip1>>>0}};
         xff = {term: {xff: ip1>>>0}};
     } else {
-        t1.and.push({numeric_range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-        t2.and.push({numeric_range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
-        xff =  {numeric_range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
+        t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
+        t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+        xff =  {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
     }
   }
 
