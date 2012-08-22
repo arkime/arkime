@@ -33,7 +33,7 @@ fi
 
 
 # Building thirdparty libraries and moloch
-#./easybutton-build.sh
+./easybutton-build.sh
 
 # Increase limits
 grep -q "hard.*nofile.*128000" /etc/security/limits.conf
