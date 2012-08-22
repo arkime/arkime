@@ -16,7 +16,7 @@ NIDS=1.24
 
 
 # Installing dependencies
-echo "Installing Dependencies"
+echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
   yum -y install pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel
 fi
@@ -28,7 +28,7 @@ fi
 
 
 
-echo "Downloading and building static thirdparty libraries"
+echo "MOLOCH: Downloading and building static thirdparty libraries"
 if [ ! -d "thirdparty" ]; then
   mkdir thirdparty
 fi
@@ -76,7 +76,7 @@ tar zxf libnids-$NIDS.tar.gz
 
 
 # Now build moloch
-echo "Building moloch"
+echo "MOLOCH: Building moloch"
 cd ..
 echo "./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
 ./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB

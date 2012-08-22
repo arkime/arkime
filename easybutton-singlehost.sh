@@ -33,20 +33,20 @@ fi
 
 
 # Building thirdparty libraries and moloch
-./easybutton-build.sh
+#./easybutton-build.sh
 
 # Increase limits
-if grep -Fxq "hard.*nofile.*128000" /etc/security/limits.conf
-then
-else
-  echo "Adding entries to /etc/security/limits.conf"
+grep -q "hard.*nofile.*128000" /etc/security/limits.conf
+LIMIT_VAL=$?
+if [ $LIMIT_VAL -ne 0 ]; then
+  echo "MOLOCH: Adding entries to /etc/security/limits.conf"
   echo "* hard nofile 128000" >> /etc/security/limits.conf
   echo "* soft nofile 128000" >> /etc/security/limits.conf
 fi
 
 
 # Install area
-echo "Creating install area"
+echo "MOLOCH: Creating install area"
 mkdir -p ${TDIR}/data
 mkdir -p ${TDIR}/logs
 mkdir -p ${TDIR}/raw
@@ -56,7 +56,7 @@ mkdir -p ${TDIR}/bin
 
 
 # ElasticSearch
-echo "Downloading and installing elastic search"
+echo "MOLOCH: Downloading and installing elastic search"
 cd ${INSTALL_DIR}/thirdparty
 if [ ! -f "elasticsearch-${ES}.tar.gz" ]; then
   wget https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-${ES}.tar.gz
@@ -70,7 +70,7 @@ cd elasticsearch-${ES}
 
 
 # NodeJS
-echo "Downloading and installing node"
+echo "MOLOCH: Downloading and installing node"
 cd ${INSTALL_DIR}/thirdparty
 if [ ! -f "node-v${NODEJS}.tar.gz" ]; then
   wget http://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}.tar.gz
@@ -91,7 +91,7 @@ gunzip GeoIP.dat.gz
 
 
 
-echo "Copying single-host config files"
+echo "MOLOCH: Copying single-host config files"
 cp ${INSTALL_DIR}/capture/moloch-capture ${TDIR}/bin/
 cp ${INSTALL_DIR}/single-host/etc/* ${TDIR}/etc
 cp ${INSTALL_DIR}/single-host/bin/* ${TDIR}/bin
@@ -105,12 +105,14 @@ cp -Rp ${INSTALL_DIR}/viewer ${TDIR}/
 #openssl x509 -req -days 3650 -in moloch.csr -signkey moloch.key -out moloch.crt
 
 
-echo "Running  npm install"
+echo "MOLOCH: Running npm install"
 cd ${TDIR}/viewer
 ${TDIR}/bin/npm install
 chmod a+w public
 
 chown daemon:daemon ${TDIR}/raw
+
+echo "MOLOCH: Complete, now look in ${TDIR} at etc/config.ini and use the run scripts in ${TDIR}/bin"
 
 exit
 
