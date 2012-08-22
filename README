@@ -7,6 +7,14 @@ instead work along side them to store and index all the network traffic in stand
 PCAP format, providing fast access.  Moloch is built to be deployed across many 
 machines and can scale to handle multiple megabits/sec of traffic.
 
+
+
+IMPATIENT - Use ./easybutton-singlehost.sh to build a complete single machine 
+moloch system.  Good for a demo and can be used as a starting point for a
+real production deployment.
+
+
+
 The Moloch system is composed of 3 components
 
 1) capture - A single threaded C application that runs per network interface.  
@@ -119,7 +127,7 @@ Building Capture
 Centos: yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel
 Ubuntu: apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev
 2) Building capture can be a pain because of OS versions.
-2a) try ./easybutton.sh  which will download all the following, compile them statically, and run the local 
+2a) try ./easybutton-build.sh  which will download all the following, compile them statically, and run the local 
     configure script.
 2b) Or if you want build yourself, or use some already installed packages then here are the pieces you need
 * glib-2 version 2.22 or higher (2.22 is recommended for static builds) - http://ftp.gnome.org/pub/gnome/sources/glib

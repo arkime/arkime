@@ -1,0 +1,151 @@
+# Moloch uses a tiered system for configuration variables.  This allows Moloch
+# to share one config file for many machines.  The ordering of sections in this 
+# file doesn't matter.  
+#
+# Order of config variables:
+# 1st) [optional] The section titled with the node name is used first.
+#      Moloch will always tag sessions with node:<node name>
+# 2nd) [optional] If a node has a nodeClass variable, the section titled with
+#      the nodeClass name is used next.  Sessions will be tagged with 
+#      node:<node class name> which is useful if watching different 
+#      network classes.
+# 3rd) The section titled "default" is used last.
+
+[default]
+# The elasticsearch host:port.  If not using a elasticsearch VIP, a different 
+# elasticsearch node in the cluster can be specified for each Moloch node to
+# help spread load on high volume clusters
+elasticsearch=localhost:9200
+
+# Cert file to use, comment out to use http instead
+certFile=/data/moloch/etc/moloch.crt
+
+# Private key file to use, comment out to use http instead
+keyFile=/data/moloch/etc/moloch.key
+
+# S2S and Password Hash secret - Must be in default section. Since elasticsearch
+# is wide open by default, we encrypt the stored password hashes with this
+# so a malicous person can't insert a working new account.  It is also used
+# for secure S2S communication. Comment out for no user authentication.
+# Changing the value will make all previously stored passwords no longer work.
+passwordSecret = _PASSWORD_
+
+# HTTP Digest Realm - Must be in default section.  Changing the value
+# will make all previously stored passwords no longer work
+httpRealm = Moloch
+
+# The interface to listen on for traffic
+interface=eth0
+
+# The bpf filter
+#bpf=
+
+# The yara file name
+#yara=
+
+# The directory to save raw pcap files to
+pcapDir = /data/moloch/raw
+
+# The max raw pcap file size in gigabytes, with a max value of 36G.  
+# The disk should have room for at least 10*maxFileSizeG
+maxFileSizeG = 1
+
+# TCP timeout value.  Moloch writes a session record after this many seconds 
+# of inactivity.
+tcpTimeout = 600
+
+# Moloch writes a session record after this many seconds, no matter if 
+# active or inactive
+tcpSaveTimeout = 720
+
+# UDP timeout value.  Moloch assumes the UDP session is ended after this 
+# many seconds of inactivity.
+udpTimeout = 30
+
+# An aproximiate maximum number of active sessions Moloch/libnids will try 
+# and monitor
+maxStreams = 1000000
+
+# Moloch writes a session record after this many packets
+maxPackets = 10000
+
+# Delete pcap files when free space is lower then this.  This does NOT
+# delete the session records in the database. It is recommended this value is 
+# between 5% and 10% of the disk.  Database deletes are done by the 
+# daily.sh script
+freeSpaceG = 600
+
+# The port to listen on, by default 8005
+viewPort = 8005
+
+# By default the viewer process is https://hostname:<viewPort> for each node.
+#viewUrl = https://HOSTNAME:8005
+
+# Path of the maxmind geoip country file.  Download free version from:
+#  http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+geoipFile = /data/moloch/etc/GeoIP.dat
+
+# User to drop privileges to. The pcapDir must be writable by this user or group below
+dropUser=_USERNAME_
+
+# Group to drop privileges to. The pcapDir must be writable by this group or user above
+dropGroup=_GROUPNAME_
+
+
+# ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
+# stripe size.  Defaults to 256k
+pcapWriteSize = 262143
+
+# ADVANCED - value for pcap_set_buffer_size, may not be used depending on kernel etc
+pcapBufferSize = 30000000
+
+# ADVANCED - Number of bytes to bulk index at a time
+dbBulkSize = 300000
+
+# ADVANCED - Max number of connections to elastic search
+maxESConns = 30
+
+# ADVANCED - Max number of es requests outstanding in q
+maxESRequests = 500
+
+# ADVANCED - Number of packets to ask libnids/libpcap to read per poll/spin
+# Increasing may hurt stats and ES performance
+# Decreasing may cause more dropped packets
+packetsPerPoll = 50000
+
+# DEBUG - Write to stdout info every X packets.
+# Set to -1 to never log status
+logEveryXPackets = 100000
+
+# DEBUG - Write to stdout unknown protocols
+logUnknownProtocols = false
+
+# DEBUG - Write to stdout elastic search requests
+logESRequests = true
+
+# DEBUG - Write to stdout file creation information
+logFileCreation = true
+
+
+##############################################################################
+# Classes of nodes
+# Can override most default values, and create a tag call node:<classname>
+[test]
+freeSpaceG = 200
+
+##############################################################################
+# Nodes
+# Usually just use the hostname before the first dot as the node name
+# Can override most default values
+
+[moloch-node01]
+nodeClass = test
+# Might use a different elasticsearch node
+####elasticsearch=es-moloch-test
+
+#[node2]
+#nodeClass = daha
+# Might use a different elasticsearch node
+#elasticsearch=elasticsearchhost2
+# Uses a different interface
+#interface = eth4
