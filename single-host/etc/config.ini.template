@@ -35,7 +35,7 @@ passwordSecret = _PASSWORD_
 httpRealm = Moloch
 
 # The interface to listen on for traffic
-interface=eth0
+interface=_INTERFACE_
 
 # The bpf filter
 #bpf=

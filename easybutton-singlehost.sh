@@ -112,7 +112,12 @@ chmod a+w public
 
 chown daemon:daemon ${TDIR}/raw
 
-echo "MOLOCH: Complete, now look in ${TDIR} at etc/config.ini and use the run scripts in ${TDIR}/bin"
+echo "MOLOCH: Running config script"
+
+
+${INSTALL_DIR}/easybutton-config.sh
+
+echo "MOLOCH: Complete, now look in ${TDIR} and use the run scripts in ${TDIR}/bin"
 
 exit
 
