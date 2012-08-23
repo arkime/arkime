@@ -39,17 +39,17 @@ div(id='sessionDetail#{session.id}')
   if (session.ta)
     div Tags:
       each tag in session.ta
-        a(href='#', onclick='return addExpression("tags contains \\\"#{tag}\\\"");') #{tag}
+        a(href='#', onclick='return addExpression("tags == \\\"#{tag}\\\"");') #{tag}
         | 
   if (session.hh)
     div Header:
       each header in session.hh
-        a(href='#', onclick='return addExpression("header contains \\\"#{header}\\\"");') #{header}
+        a(href='#', onclick='return addExpression("header == \\\"#{header}\\\"");') #{header}
         | 
   if (session.ua)
     div User Agents:
       each ua in session.ua
-        a(href='#', onclick='return addExpression("ua contains \\\"#{ua}\\\"");') '#{ua}'
+        a(href='#', onclick='return addExpression("ua == \\\"#{ua}\\\"");') '#{ua}'
         | 
   if (session.ho)
     div Hosts:
