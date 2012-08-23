@@ -1,6 +1,6 @@
 script(src='/jvectormap/jquery-jvectormap.js')
 script(src='/jquery-jvectormap-world-en.js')
-script(src='/jquery.autocomplete.min.js')
+script(src='/jquery.autocomplete.js')
 script(src='/jQuery-contextMenu/src/jquery.ui.position.js')
 script(src='/jQuery-contextMenu/src/jquery.contextMenu.js')
 link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.contextMenu.css')
@@ -399,7 +399,7 @@ script(type='text/javascript')
       var input = $("#expression").val();
 
       var spaceCP = (cp > 0 && cp === input.length && input[cp-1] === " ");
-      
+
       for (var end = cp; end < input.length; end++) {
         if (input[end] === " ") {
           break;
