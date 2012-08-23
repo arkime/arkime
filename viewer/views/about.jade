@@ -20,19 +20,25 @@ div(style="margin:10px")
       td.
         ==, !=, contains
       td 3 character country string<br>with 'contains' *s are permitted
-      td Maxmind GeoIP string of either country1 or country2<br>Examples:country == USA, country contains *SA
+      td Maxmind GeoIP string of country.src, country.dst, or country.xff<br>Examples:country == USA, country contains *SA
     tr
-      td country1
+      td country.src
       td.
         ==, !=, contains
       td 3 character country string<br>with 'contains' *s are permitted
-      td Maxmind GeoIP string of country1<br>Examples:country == USA, country contains *SA
+      td Maxmind GeoIP string of source ip country<br>Examples:country == USA, country contains *SA
     tr
-      td country2
+      td country.dst
       td.
         ==, !=, contains
       td 3 character country string<br>with 'contains' *s are permitted
-      td Maxmind GeoIP string of country2<br>Examples:country == USA, country contains *SA
+      td Maxmind GeoIP string of destination ip country<br>Examples:country == USA, country contains *SA
+    tr
+      td country.xff
+      td.
+        ==, !=, contains
+      td 3 character country string<br>with 'contains' *s are permitted
+      td Maxmind GeoIP string of XFF ip country<br>Examples:country == USA, country contains *SA
     tr
       td databytes
       td #{range}
@@ -56,17 +62,23 @@ div(style="margin:10px")
       td a[.b[.c[.d]]][/n][:port]
       td Matches ip addresses and optionally port using short hand and/or /n notation for address1 or address2.<br>Examples: ip==10.10.10.10, ip!=10.10.10.0/24:80, ip==10.10.10:80
     tr
-      td ip1
+      td ip.src
       td.
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for address1.<br>Examples: ip1==10.10.10.10, ip1!=10.10.10.0/24:80, ip1==10.10.10:80
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address1.<br>Examples: ip.src==10.10.10.10, ip.src!=10.10.10.0/24:80, ip.src==10.10.10:80
     tr
-      td ip2
+      td ip.dst
       td.
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip2==10.10.10.10, ip2==10.10.10.0/24:80, ip2==10.10.10:80
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip.dst==10.10.10.10, ip.dst==10.10.10.0/24:80, ip.dst==10.10.10:80
+    tr
+      td ip.xff
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n][:port]
+      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip.xff==10.10.10.10, ip.xff==10.10.10.0/24:80, ip.xff==10.10.10:80
     tr
       td node
       td.
@@ -82,17 +94,17 @@ div(style="margin:10px")
       td port
       td #{range}
       td integer
-      td Port 1 or Port 2 of the sessions.<br>Example:port == 80
+      td Source port or destination port of the sessions.<br>Example:port == 80
     tr
-      td port1
+      td port.src
       td #{range}
       td integer
-      td Port 1 of the sessions.<br>Example:port1 == 80
+      td Source port of the sessions.<br>Example:port.src == 80
     tr
-      td port2
+      td port.dst
       td #{range}
       td integer
-      td Port 2 of the sessions.<br>Example:port2 == 80
+      td Destination port of the sessions.<br>Example:port.dst == 80
     tr
       td protocol
       td #{range}
@@ -114,12 +126,6 @@ div(style="margin:10px")
       td contains
       td string or quoted string
       td Matches against the URIs for the session<br>Example:uri contains facebook.com
-    tr
-      td xff
-      td.
-        ==, !=
-      td a[.b[.c[.d]]][/n]
-      td Matches ip addresses in the X-Forwarded-For http request header.<br>Examples: xff==10.10.10.10, xff==10.10.10.0/24
 
   h2 Examples
   p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com

@@ -207,6 +207,42 @@ body
   background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
   //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
+
+.acInput
+  width: 200px
+
+.acResults
+  padding: 0px
+  border: 1px solid WindowFrame
+  background-color: Window
+  overflow: hidden
+  max-height: 200px
+  overflow-y: auto
+  overflow-x: hidden
+  padding-right: 20px
+  z-index: 3
+
+.acResults ul
+  margin: 0px
+  padding: 0px
+  list-style-position: outside
+  list-style: none
+
+.acResults ul li
+  margin: 0px
+  padding: 2px 5px
+  cursor: pointer
+  display: block
+  font: menu
+  font-size: 12px
+
+.acLoading
+  background : url('indicator.gif') right center no-repeat
+
+.acSelect
+  background-color: Highlight
+  color: HighlightText
+
 // stats
 
 #stats.display td

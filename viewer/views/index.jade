@@ -1,5 +1,6 @@
 script(src='/jvectormap/jquery-jvectormap.js')
 script(src='/jquery-jvectormap-world-en.js')
+script(src='/jquery.autocomplete.min.js')
 script(src='/jQuery-contextMenu/src/jquery.ui.position.js')
 script(src='/jQuery-contextMenu/src/jquery.contextMenu.js')
 link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.contextMenu.css')
@@ -17,10 +18,10 @@ table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class
       th Id
       th Start
       th Stop
-      th#a1 Address 1
-      th Port 1
-      th#a2 Address 2
-      th Port 2
+      th#a1 Src IP
+      th Src Port
+      th#a2 Dst IP
+      th Dst Port
       th Packets
       th Bytes
       th Node
@@ -33,6 +34,7 @@ script(type='text/javascript')
   var mapData;
   var initialDisplayLength;
   var doPushState = 1;
+
 
   $(window).bind('popstate', function(e) {
     if (window.history.ready) {
@@ -384,7 +386,79 @@ script(type='text/javascript')
 
     /*$('.context-menu-one').on('click', function(e){
     })*/
-  } );
+
+    $("#expression").autocomplete("", {
+      useDelimiter: true,
+      delimiterChar: ' ',
+      minChars: 0,
+      maxItemsToShow: 100
+    });
+
+    $("#expression").data('autocompleter').fetchRemoteData = function(filter,callback) {
+      var cp = $("#expression").getCursorPosition();
+      var input = $("#expression").val();
+
+      var spaceCP = (cp > 0 && cp === input.length && input[cp-1] === " ");
+      
+      for (var end = cp; end < input.length; end++) {
+        if (input[end] === " ") {
+          break;
+        }
+      }
+
+      input = input.substr(0, end);
+      var tokens = splitExpression(input);
+      if (spaceCP) {
+        tokens.push(" ");
+      }
+
+      if (tokens.length <= 1) {
+        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri"]);
+      }
+
+      if (/^(ip)/.test(tokens[tokens.length-2])) {
+        return callback(["!=", "=="]);
+      }
+
+      if (/^(bytes|databytes|protocol)/.test(tokens[tokens.length-2])) {
+        return callback(["!=", "==" , ">=", "<=", "<", ">"]);
+      }
+
+      if (/^(tags|ua|header|country|host|node|uri)/.test(tokens[tokens.length-2])) {
+        return callback(["!=", "==" , "contains"]);
+      }
+
+      var item = tokens[tokens.length-3];
+      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri)/.test(item)) {
+        return callback([]);
+      }
+
+      if (/^(country)/.test(item)) {
+        return callback(Object.keys($('#world-map').data('mapObject').countries));
+      }
+
+      if (/^[!<=>]/.test(item) || item === "contains") {
+        return callback(["&&", "||", ")"]);
+      }
+
+      if (/^(tags|header)/.test(item)) {
+        if (filter.length < 1) {
+          return callback([]);
+        }
+        $.ajax( {
+            "dataType": 'html',
+            "type": "GET",
+            "url": '/uniqueValue.json?type=' + item + '&filter=' + filter,
+            "success": function(data) {
+              return callback(JSON.parse(data));
+            }
+        } );
+        return;
+      }
+
+      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri"]);
+    }
+  });
 
   setTimeout(function () {window.history.ready = true;}, 500);
 

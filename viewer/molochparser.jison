@@ -11,23 +11,24 @@
 "databytes"               return 'databytes'
 "packets"                 return 'packets'
 "protocol"                return 'protocol'
+"port.src"                return 'port.src'
+"port.dst"                return 'port.dst'
 "port"                    return 'port'
-"port1"                   return 'port1'
-"port2"                   return 'port2'
 "node"                    return 'node'
+"country.src"             return 'country.src'
+"country.dst"             return 'country.dst'
+"country.xff"             return 'country.xff'
 "country"                 return 'country'
-"country1"                return 'country1'
-"country2"                return 'country2'
+"ip.src"                  return "ip.src"
+"ip.dst"                  return "ip.dst"
+"ip.xff"                  return "ip.xff"
 "ip"                      return "ip"
-"ip1"                     return "ip1"
-"ip2"                     return "ip2"
 "uri"                     return "uri"
 "ua"                      return "ua"
 "tcp"                     return "tcp"
 "udp"                     return "udp"
 "host"                    return "host"
 "header"                  return "header"
-"xff"                     return "xff"
 "contains"                return 'contains'
 "tags"                    return 'tags'
 [\w*._:-]+                return 'ID'
@@ -84,18 +85,19 @@ IPNUM: IPMATCH
      | NUMBER
      ;
 
-RANGEFIELD: databytes {$$ = 'db'}
-          | bytes     {$$ = 'by'}
-          | packets   {$$ = 'pa'}
-          | protocol  {$$ = 'pr'}
-          | port1     {$$ = 'p1'}
-          | port2     {$$ = 'p2'}
+RANGEFIELD: databytes   {$$ = 'db'}
+          | bytes       {$$ = 'by'}
+          | packets     {$$ = 'pa'}
+          | protocol    {$$ = 'pr'}
+          | 'port.src'  {$$ = 'p1'}
+          | 'port.dst'  {$$ = 'p2'}
           ;
 
-STRFIELD  : country1 {$$ = 'g1'}
-          | country2 {$$ = 'g2'}
-          | node     {$$ = 'no'}
-          | host     {$$ = 'ho'}
+STRFIELD  : 'country.src' {$$ = 'g1'}
+          | 'country.dst' {$$ = 'g2'}
+          | 'country.xff' {$$ = 'gxff'}
+          | node          {$$ = 'no'}
+          | host          {$$ = 'ho'}
           ;
 
 STR : ID
@@ -103,22 +105,23 @@ STR : ID
     | bytes
     | protocol
     | port
-    | port1
-    | port2
+    | port.src
+    | port.dst
     | country
-    | country1
-    | country2
+    | country.src
+    | country.dst
+    | country.xff
     | QUOTEDSTR
     | node
     | host
     | header
-    | xff
     | tcp
     | contains
     | udp
     | ip
-    | ip1
-    | ip2
+    | ip.src
+    | ip.dst
+    | ip.xff
     | uri
     | ua
     ;
@@ -180,17 +183,17 @@ e
         {$$ = parseIpPort($3,0);}
     | 'ip' '!=' IPNUM
         {$$ = {not: parseIpPort($3,0)};}
-    | 'ip1' '==' IPNUM
+    | 'ip.src' '==' IPNUM
         {$$ = parseIpPort($3,1);}
-    | 'ip1' '!=' IPNUM
+    | 'ip.src' '!=' IPNUM
         {$$ = {not: parseIpPort($3,1)};}
-    | 'ip2' '==' IPNUM
+    | 'ip.dst' '==' IPNUM
         {$$ = parseIpPort($3,2);}
-    | 'ip2' '!=' IPNUM
+    | 'ip.dst' '!=' IPNUM
         {$$ = {not: parseIpPort($3,2)};}
-    | 'xff' '==' IPNUM
+    | 'ip.xff' '==' IPNUM
         {$$ = parseIpPort($3,3);}
-    | 'xff' '!=' IPNUM
+    | 'ip.xff' '!=' IPNUM
         {$$ = {not: parseIpPort($3,3)};}
     | tags '==' STR
         { var tag = stripQuotes($3);
@@ -216,9 +219,9 @@ e
         { var tag = stripQuotes($3);
           $$ = {term: {hh: tag}};
         }
-    | country '==' ID {$$ = {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}]};}
-    | country '!=' ID {$$ = {not: {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}]}};}
-    | country 'contains' ID {$$ = {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}]};}
+    | country '==' ID {$$ = {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]};}
+    | country '!=' ID {$$ = {not: {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]}};}
+    | country 'contains' ID {$$ = {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}, {query: {wildcard: {gxff: $3.toUpperCase()}}}]};}
     | STRFIELD 'contains' STR
         { var str = stripQuotes($3);
           if (str.indexOf("*") !== -1) {
@@ -287,7 +290,7 @@ function parseIpPort(ipPortStr, which) {
 
   switch(which) {
   case 0:
-    return {or: [t1, t2]};
+    return {or: [t1, t2, xff]};
   case 1:
     return t1;
   case 2:

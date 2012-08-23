@@ -266,10 +266,28 @@ void moloch_db_save_session(MolochSession_t *session)
     }
 
     if (HASH_COUNT(i_, session->xffs)) {
-        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"xff\":[");
-        i = 0;
 
         MolochInt_t *xff;
+
+        if (gi) {
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"gxff\":[");
+            i = 0;
+            HASH_FORALL(i_, session->xffs, xff, 
+                if (i != 0)
+                    *(sJPtr++) = ',';
+                const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(xff->i));
+                if (g)
+                    sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"%s\"", g);
+                else
+                    sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"---\"");
+                i++;
+            );
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+        }
+
+
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"xff\":[");
+        i = 0;
         HASH_FORALL_POP_HEAD(i_, session->xffs, xff, 
             if (i != 0)
                 *(sJPtr++) = ',';

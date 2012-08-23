@@ -15,8 +15,8 @@
 # * build ElasticSearch
 
 
-ES=0.19.8
-NODEJS=0.8.7
+ES=0.19.9
+NODEJS=0.8.8
 # If you change TDIR you need to change TDIR in the single-host/*/* files
 TDIR=/data/moloch
 INSTALL_DIR=$PWD

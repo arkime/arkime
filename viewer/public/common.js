@@ -95,6 +95,79 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
     }
 } );
 
+// From http://stackoverflow.com/a/8999941
+(function ($, undefined) {
+    $.fn.getCursorPosition = function() {
+        var el = $(this).get(0);
+        var pos = 0;
+        if('selectionStart' in el) {
+            pos = el.selectionStart;
+        } else if('selection' in document) {
+            el.focus();
+            var Sel = document.selection.createRange();
+            var SelLength = document.selection.createRange().text.length;
+            Sel.moveStart('character', -el.value.length);
+            pos = Sel.text.length - SelLength;
+        }
+        return pos;
+    };
+}(jQuery));
+
+(function ($, undefined) {
+    $.fn.getCurrentWord = function() {
+      var val = $(this).val();
+      var start, end;
+      for (start = $(this).getCursorPosition(); start > 0; start--) {
+        if (val[start-1] === " ") {
+          break;
+        }
+      }
+
+      for (end = $(this).getCursorPosition(); end < val.length; end++) {
+        if (val[end] === " ") {
+          break;
+        }
+      }
+
+      return val.substring(start, end);
+    };
+}(jQuery));
+
+
+function splitExpression(input ) {
+  input = input.replace(/ /g, "");
+  var output = [];
+  var cur = "";
+
+  for (var i = 0; i < input.length; i++) {
+      if (/[)(]/.test(input[i])) {
+        if (cur !== "") {
+          output.push(cur);
+        }
+        output.push(input[i]);
+        cur = "";
+      } else if (cur === "") {
+        cur += input[i];
+      } else if (/[!&|=]/.test(cur)) {
+        if (/[&|=]/.test(input[i])) {
+          cur += input[i];
+        } else {
+          output.push(cur);
+          cur = input[i];
+        }
+      } else if (/[!&|=]/.test(input[i])) {
+        output.push(cur);
+        cur = input[i];
+      } else {
+        cur += input[i];
+      }
+  }
+  if (cur !== "") {
+    output.push(cur);
+  }
+  return output;
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // index Functions
 //////////////////////////////////////////////////////////////////////////////////

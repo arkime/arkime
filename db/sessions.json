@@ -61,6 +61,13 @@
           "type": "string",
           "index": "not_analyzed"
         },
+        "xff": {
+          "type": "long"
+        },
+        "gxff": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
         "p2": {
           "type": "integer"
         },
@@ -93,9 +100,6 @@
         },
         "hh": {
           "type": "integer"
-        },
-        "xff": {
-          "type": "long"
         }
       }
     }

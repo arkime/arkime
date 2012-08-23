@@ -22,19 +22,19 @@ div(id='sessionDetail#{session.id}')
     a(href='#', onclick='return addSessionIP(#{session.a1});')
       span(id='a1-#{session.id}')
     | :
-    a(href='#', onclick='return addExpression("port == #{session.p1}");') #{session.p1}
+    a(href='#', onclick='return addExpression("port.src == #{session.p1}");') #{session.p1}
     if (session.g1)
       |  (
-      a(href='#', onclick='return addExpression("country == #{session.g1}");') #{session.g1}
+      a(href='#', onclick='return addExpression("country.src == #{session.g1}");') #{session.g1}
       | )
     | &nbsp; &nbsp;
     a(href='#', onclick='return addSessionIP(#{session.a2});')
       span(id='a2-#{session.id}')
     | :
-    a(href='#', onclick='return addExpression("port == #{session.p2}");') #{session.p2}
+    a(href='#', onclick='return addExpression("port.dst == #{session.p2}");') #{session.p2}
     if (session.g2)
       |  (
-      a(href='#', onclick='return addExpression("country == #{session.g2}");') #{session.g2}
+      a(href='#', onclick='return addExpression("country.dst == #{session.g2}");') #{session.g2}
       | )
   if (session.ta)
     div Tags:
@@ -59,9 +59,15 @@ div(id='sessionDetail#{session.id}')
   if (session.xff)
     div XFFs:
       - var xffIps = session.xff.map(function(ip) {return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff)});
-      each xff in xffIps
-        a(href='#', onclick='return addExpression("xff == #{xff}");') #{xff}
-        | 
+      each xff,i in xffIps
+        - if (session.gxff)
+          a(href='#', onclick='return addExpression("ip.xff == #{xff}");') #{xff}
+          | 
+          a(href='#', onclick='return addExpression("country.xff == #{session.gxff[i]}");') (#{session.gxff[i]})
+          | 
+        - else
+          a(href='#', onclick='return addExpression("ip.xff == #{xff}");') #{xff}
+          | 
   hr
   div
     if (session.pa > 200)

@@ -871,18 +871,31 @@ app.get('/sessions.json', function(req, res) {
   });
 });
 
-app.get('/tags.json', function(req, res) {
+app.get('/uniqueValue.json', function(req, res) {
   noCache(req, res);
-  var query = {bool: {must: {wildcard: {_id: req.query.tag + "*"}},
+  var query;
+
+  if (req.query.type === "tags") {
+    query = {bool: {must: {wildcard: {_id: req.query.filter + "*"}},
                   must_not: {wildcard: {_id: "http:header:*"}}
                      }
           };
+  } else if (req.query.type === "header") {
+    query = {wildcard: {_id: "http:header:" + req.query.filter + "*"}};
+  }
 
-  Db.search('tags', 'tag', {size:100, query: query}, function(err, result) {
+  console.log("uniqueValue query", JSON.stringify(query));
+  Db.search('tags', 'tag', {size:200, query: query}, function(err, result) {
     var terms = [];
-    result.hits.hits.forEach(function (hit) {
-      terms.push(hit._id);
-    });
+    if (req.query.type === "header") {
+      result.hits.hits.forEach(function (hit) {
+        terms.push(hit._id.substring(12));
+      });
+    } else {
+      result.hits.hits.forEach(function (hit) {
+        terms.push(hit._id);
+      });
+    }
     res.send(terms);
   });
 });
@@ -907,7 +920,7 @@ app.get('/unique.txt', function(req, res) {
       query.size = 0;
     }
 
-    console.log("unique query", JSON.stringify(query));
+    console.log("unique query", indices, JSON.stringify(query));
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       //console.log("unique result", util.inspect(result, false, 100));
@@ -922,7 +935,6 @@ app.get('/unique.txt', function(req, res) {
               counts[url]++;
             } else {
               counts[url] = 1;
-              console.log(counts);
             }
           });
         });
@@ -1021,6 +1033,10 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 
       async.parallel([
         function(parallelCb) {
+          if (!session._source.ta) {
+            session._source.ta = [];
+            return parallelCb(null);
+          }
           async.map(session._source.ta, function (item, cb) {
             Db.tagIdToName(item, function (name) {
               cb(null, name);
@@ -1501,7 +1517,6 @@ app.post('/updateUser/:userId', function(req, res) {
     }
     user = user._source;
 
-    console.log("before", user);
     if (req.query.enabled) {
       user.enabled = req.query.enabled === "true";
     }
@@ -1513,7 +1528,6 @@ app.post('/updateUser/:userId', function(req, res) {
     if (req.user.createEnabled && req.query.createEnabled) {
       user.createEnabled = req.query.createEnabled === "true";
     }
-    console.log("after", user);
 
     Db.indexNow("users", "user", req.params.userId, user, function(err, info) {
       return res.end(JSON.stringify({success: true}));
