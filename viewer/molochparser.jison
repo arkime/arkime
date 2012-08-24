@@ -29,7 +29,6 @@
 "udp"                     return "udp"
 "host"                    return "host"
 "header"                  return "header"
-"contains"                return 'contains'
 "tags"                    return 'tags'
 [\w*._:-]+                return 'ID'
 \"[^"]+\"                 return 'QUOTEDSTR'
@@ -55,7 +54,7 @@
 /* operator associations and precedence */
 
 %left '!'
-%left '<' '<=' '>' '>=' '==' '!=' contains
+%left '<' '<=' '>' '>=' '==' '!=' 
 %left '||'
 %left '&&'
 %left UMINUS
@@ -116,7 +115,6 @@ STR : ID
     | host
     | header
     | tcp
-    | contains
     | udp
     | ip
     | ip.src
@@ -129,10 +127,14 @@ STR : ID
 e
     : e '&&' e
         {$$ = {and: [$1, $3]};}
-    | 'uri' contains STR
+    | 'uri' '==' STR
         {$$ = {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}};}
-    | 'ua' contains STR
+    | 'uri' '!=' STR
+        {$$ = {not: {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}}};}
+    | 'ua' '==' STR
         {$$ = {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}};}
+    | 'ua' '!=' STR
+        {$$ = {not: {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}}};}
     | e '||' e
         {$$ = {or: [$1, $3]};}
     | '!' e %prec UMINUS
@@ -159,13 +161,17 @@ e
         {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
          $$.or[0].range.p1[$2] = $3;
          $$.or[1].range.p2[$2] = $3;}
-    | STRFIELD '==' STR
-        {$$ = {term: {}};
-         $$.term[$1] = $3;}
     | STRFIELD '!=' STR
-        {$$ = {not: {term: {}}};
-         $$.not.term[$1] = $3;}
-    | STRFIELD 'contains' STR
+        { var str = stripQuotes($3);
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {query: {wildcard: {}}}};
+            $$.not.query.wildcard[$1] = str;
+          } else {
+            $$ = {not: {term: {}}};
+            $$.not.term[$1] = str;
+          }
+        }
+    | STRFIELD '==' STR
         { var str = stripQuotes($3);
           if (str.indexOf("*") !== -1) {
             $$ = {query: {wildcard: {}}};
@@ -203,10 +209,6 @@ e
         { var tag = stripQuotes($3);
           $$ = {not: {term: {ta: tag}}};
         }
-    | tags contains STR
-        { var tag = stripQuotes($3);
-          $$ = {term: {ta: tag}};
-        }
     | header '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {hh: tag}};
@@ -215,21 +217,20 @@ e
         { var tag = stripQuotes($3);
           $$ = {not: {term: {hh: tag}}};
         }
-    | header contains STR
-        { var tag = stripQuotes($3);
-          $$ = {term: {hh: tag}};
-        }
-    | country '==' ID {$$ = {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]};}
-    | country '!=' ID {$$ = {not: {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]}};}
-    | country 'contains' ID {$$ = {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}, {query: {wildcard: {gxff: $3.toUpperCase()}}}]};}
-    | STRFIELD 'contains' STR
+    | country '==' STR 
         { var str = stripQuotes($3);
           if (str.indexOf("*") !== -1) {
-            $$ = {query: {wildcard: {}}};
-            $$.query.wildcard[$1] = str;
+            $$ = {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}, {query: {wildcard: {gxff: $3.toUpperCase()}}}]};
           } else {
-            $$ = {term: {}};
-            $$.term[$1] = str;
+            $$ = {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]};
+          }
+        }
+    | country '!=' STR 
+        { var str = stripQuotes($3);
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}, {query: {wildcard: {gxff: $3.toUpperCase()}}}]}};
+          } else {
+            $$ = {not: {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]}};
           }
         }
     ;

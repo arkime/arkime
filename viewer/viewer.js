@@ -658,7 +658,7 @@ function lookupQueryTags(query, doneCb) {
         } else {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
-        Db.search('tags', 'tag', {size:50, fields:["id", "n"], query: query}, function(err, result) {
+        Db.search('tags', 'tag', {size:500, fields:["id", "n"], query: query}, function(err, result) {
           var terms = [];
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);

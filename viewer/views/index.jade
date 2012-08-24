@@ -1,6 +1,6 @@
 script(src='/jvectormap/jquery-jvectormap.js')
 script(src='/jquery-jvectormap-world-en.js')
-script(src='/jquery.autocomplete.min.js')
+script(src='/jquery.autocomplete.js')
 script(src='/jQuery-contextMenu/src/jquery.ui.position.js')
 script(src='/jQuery-contextMenu/src/jquery.contextMenu.js')
 link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.contextMenu.css')
@@ -399,7 +399,7 @@ script(type='text/javascript')
       var input = $("#expression").val();
 
       var spaceCP = (cp > 0 && cp === input.length && input[cp-1] === " ");
-      
+
       for (var end = cp; end < input.length; end++) {
         if (input[end] === " ") {
           break;
@@ -413,7 +413,7 @@ script(type='text/javascript')
       }
 
       if (tokens.length <= 1) {
-        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri"]);
+        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
       }
 
       if (/^(ip)/.test(tokens[tokens.length-2])) {
@@ -425,7 +425,7 @@ script(type='text/javascript')
       }
 
       if (/^(tags|ua|header|country|host|node|uri)/.test(tokens[tokens.length-2])) {
-        return callback(["!=", "==" , "contains"]);
+        return callback(["!=", "=="]);
       }
 
       var item = tokens[tokens.length-3];
@@ -437,7 +437,7 @@ script(type='text/javascript')
         return callback(Object.keys($('#world-map').data('mapObject').countries));
       }
 
-      if (/^[!<=>]/.test(item) || item === "contains") {
+      if (/^[!<=>]/.test(item)) {
         return callback(["&&", "||", ")"]);
       }
 
@@ -456,8 +456,8 @@ script(type='text/javascript')
         return;
       }
 
-      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri"]);
-    }
+      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
+    };
   });
 
   setTimeout(function () {window.history.ready = true;}, 500);

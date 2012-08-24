@@ -1,11 +1,11 @@
-Moloch is a open source large scale IPv4 PCAP capturing, indexing and database 
+Moloch is an open source large scale IPv4 PCAP capturing, indexing and database 
 system.  A simple web interface is provided for PCAP browsing, searching, and 
 exporting.  APIs are exposed that allow PCAP data and JSON formatted session
 data to be downloaded directly. Simple security is implemented by using https
 and HTTP digest password support.  Moloch is not meant to replace IDS engines but 
 instead work along side them to store and index all the network traffic in standard
 PCAP format, providing fast access.  Moloch is built to be deployed across many 
-machines and can scale to handle multiple megabits/sec of traffic.
+machines and can scale to handle multiple gigabits/sec of traffic.
 
 
 
@@ -64,9 +64,10 @@ Example config for monitoring 8 GigE highly utilized networks for 7 days
 
 Note about security
 * Elasticsearch provides no security, so iptables should be used allowing only 
-  Moloch machines to talk to the elasticsearch machines
-* Moloch machines should be locked down, however they need to talk to each other,
-  to the elasticsearch machines, and the web interface needs to be open
+  Moloch machines to talk to the elasticsearch machines (9200-920N) and for them
+  to mesh connect (9300-930N)
+* Moloch machines should be locked down, however they need to talk to each other (8005),
+  to the elasticsearch machines (9200 - 920N), and the web interface needs to be open (8005)
 * Moloch viewer should be configured to use SSL, easiest to use a single cert 
   with multiple DNs, make sure you protect the cert on the filesystem
 * It is possible to set up a Moloch viewer on a machine that doesn't capture any 
@@ -85,7 +86,7 @@ Moloch is a complex system to build and install.  The following are rough
 guidelines, updates are always welcome.
 
 
-Installing Elasticsearch - Tested with 0.19.8
+Installing Elasticsearch - Tested with 0.19.9
 1) Prep the elasticsearch machines by increasing max file descriptors.  On CentOS and others this is done 
    by adding the following to bottom of /etc/security/limits.conf
 * hard nofile 128000
@@ -93,7 +94,7 @@ Installing Elasticsearch - Tested with 0.19.8
 2) If this is a dedicated machine disable swap by commenting out the swap lines in /etc/fstab
    and either reboot or use the swapoff command
 3) Download elasicsearch http://www.elasticsearch.org/download/ at this time
-   all development is done with 0.19.8 http://www.elasticsearch.org/download/2012/07/02/0.19.8.html
+   all development is done with 0.19.9 http://www.elasticsearch.org/download/2012/08/23/0.19.9.html
 5) Uncompress
 6) Install bigdesk and elasticsearch-head BEFORE pushing to all machines
      cd elasticsearch-*

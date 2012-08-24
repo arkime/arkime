@@ -6,4 +6,4 @@ flot - MIT - http://code.google.com/p/flot/
 highlight.min.js - BSD - http://code.google.com/p/testprogramming/source/browse/trunk/javascript/svg
 jvectormap - MIT - http://jvectormap.com/
 jQuery-contextMenu - MIT or GPLv3 - http://medialize.github.com/jQuery-contextMenu/
-jquery.autocomplete.min.js - MIT or GPL - https://github.com/dyve/jquery-autocomplete
+jquery.autocomplete.js - MIT or GPL - https://github.com/dyve/jquery-autocomplete
