@@ -18,10 +18,10 @@
 elasticsearch=localhost:9200
 
 # Cert file to use, comment out to use http instead
-certFile=/data/moloch/etc/moloch.crt
+certFile=_TDIR_/etc/moloch.crt
 
 # Private key file to use, comment out to use http instead
-keyFile=/data/moloch/etc/moloch.key
+keyFile=_TDIR_/etc/moloch.key
 
 # S2S and Password Hash secret - Must be in default section. Since elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
@@ -44,7 +44,7 @@ interface=_INTERFACE_
 #yara=
 
 # The directory to save raw pcap files to
-pcapDir = /data/moloch/raw
+pcapDir = _TDIR_/raw
 
 # The max raw pcap file size in gigabytes, with a max value of 36G.  
 # The disk should have room for at least 10*maxFileSizeG
@@ -83,7 +83,7 @@ viewPort = 8005
 
 # Path of the maxmind geoip country file.  Download free version from:
 #  http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
-geoipFile = /data/moloch/etc/GeoIP.dat
+geoipFile = _TDIR_/etc/GeoIP.dat
 
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=_USERNAME_

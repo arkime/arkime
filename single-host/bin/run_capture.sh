@@ -2,7 +2,7 @@
 # Add to /etc/inittab something like 
 # m1:2345:respawn:/data/moloch/bin/run_capture.sh
 
-TDIR=/data/moloch
+TDIR=_TDIR_
 
 cd ${TDIR}/bin
 /bin/rm -f ${TDIR}/capture.log.old

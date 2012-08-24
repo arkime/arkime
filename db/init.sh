@@ -1,7 +1,7 @@
 #!/bin/sh
 # This initializes the elasticsearch database.  Make sure you edit sessions.json first
 
-if [ $# == 0 ] ; then
+if [ $# -eq 0 ] ; then
     echo "$0 <elasticsearch host>"
     exit 0;
 fi

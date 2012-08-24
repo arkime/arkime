@@ -5,7 +5,7 @@
     "index" : {
       "routing.allocation.total_shards_per_node" : 1,
       "refresh_interval" : 60,
-      "number_of_shards" : CHANGE_ME_TO_NUMBER_OF_NODES,
+      "number_of_shards" : _CHANGE_ME_TO_NUMBER_OF_NODES_,
       "number_of_replicas" : 0,
       "analysis" : {
         "analyzer" : {
