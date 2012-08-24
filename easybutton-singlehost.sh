@@ -1,7 +1,9 @@
 #!/bin/sh
-# Use this script to create a single instance host for Moloch for testing, you probably don't want
-# to use this for a real deployment.  This script uses easybutton-build.sh to build everything.  
-# It also uses sample config files from the single-host directory.
+# Use this script to create a single instance host for Moloch for testing, 
+# you probably don't want to use this for a real deployment.  This script 
+# uses easybutton-build.sh to build everything and easybutton-config.sh
+# to configure moloch using the sample config files from single-host directory.
+# At the end you'll have a full deployment in /data/moloch.
 
 
 # This script will 
