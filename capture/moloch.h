@@ -23,6 +23,7 @@ typedef struct moloch_config {
 
     uint32_t  maxFileSizeG;
     uint32_t  minFreeSpaceG;
+    uint32_t  icmpTimeout;
     uint32_t  udpTimeout;
     uint32_t  tcpTimeout;
     uint32_t  tcpSaveTimeout;

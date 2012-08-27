@@ -1249,6 +1249,10 @@ function localSessionDetail(req, res) {
     /* Now reassembly the packets */
     if (packets.length === 0) {
       localSessionDetailReturn(req, res, session, [{data: "No pcap data found"}]);
+    } else if (packets[0].ip.p === 1) {
+      decode.reassemble_icmp(packets, function(err, results) {
+        localSessionDetailReturn(req, res, session, results);
+      });
     } else if (packets[0].ip.p === 6) {
       decode.reassemble_tcp(packets, function(err, results) {
         localSessionDetailReturn(req, res, session, results);

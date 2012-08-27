@@ -118,7 +118,8 @@ void moloch_config_load()
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
 
     config.maxFileSizeG     = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 63);
-    config.udpTimeout       = moloch_config_int(keyfile, "udpTimeout", 60, 10, 0xffff);
+    config.icmpTimeout      = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
+    config.udpTimeout       = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
     config.tcpTimeout       = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
     config.tcpSaveTimeout   = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
     config.maxStreams       = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
@@ -158,6 +159,7 @@ void moloch_config_init()
         LOG("dropGroup: %s", config.dropGroup);
 
         LOG("maxFileSizeG: %u", config.maxFileSizeG);
+        LOG("icmpTimeout: %u", config.icmpTimeout);
         LOG("udpTimeout: %u", config.udpTimeout);
         LOG("tcpTimeout: %u", config.tcpTimeout);
         LOG("tcpSaveTimeout: %u", config.tcpSaveTimeout);

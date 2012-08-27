@@ -45,6 +45,7 @@ static gchar                 classTag[100];
 
 static MolochSessionHead_t   tcpSessionQ;
 static MolochSessionHead_t   udpSessionQ;
+static MolochSessionHead_t   icmpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
 
 
@@ -162,10 +163,17 @@ void moloch_nids_save_session(char *key, MolochSession_t *session)
             DLL_REMOVE(tcp_, &tcpWriteQ, session);
         }
 
-        if (session->protocol == IPPROTO_TCP)
+        switch (session->protocol) {
+        case IPPROTO_TCP:
             DLL_REMOVE(q_, &tcpSessionQ, session);
-        else
+            break;
+        case IPPROTO_UDP:
             DLL_REMOVE(q_, &udpSessionQ, session);
+            break;
+        case IPPROTO_ICMP:
+            DLL_REMOVE(q_, &icmpSessionQ, session);
+            break;
+        }
 
         HASH_REMOVE(h_, sessions, session);
         return;
@@ -338,11 +346,11 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     MolochSession_t *headSession;
     struct tcphdr   *tcphdr = 0;
     struct udphdr   *udphdr = 0;
-    struct icmphdr  *icmphdr = 0;
     MolochSessionHead_t *sessionsQ;
     uint32_t         sessionTimeout;
 
-    if (packet->ip_p == IPPROTO_TCP) {
+    switch (packet->ip_p) {
+    case IPPROTO_TCP:
         sessionsQ = &tcpSessionQ;
         sessionTimeout = config.tcpTimeout;
 
@@ -350,8 +358,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, ntohs(tcphdr->source), 
                           packet->ip_dst.s_addr, ntohs(tcphdr->dest));
-
-    } else if (packet->ip_p == IPPROTO_UDP) {
+        break;
+    case IPPROTO_UDP:
         sessionsQ = &udpSessionQ;
         sessionTimeout = config.udpTimeout;
 
@@ -359,14 +367,17 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, ntohs(udphdr->source), 
                           packet->ip_dst.s_addr, ntohs(udphdr->dest));
-    } else if (packet->ip_p == IPPROTO_ICMP) {
-        icmphdr = (struct icmphdr *)((void*)packet + 4 * packet->ip_hl);
-        /*LOG("ICMP type:%d code: %d id: %d sequence: %d gateway: %d mtu: %d",
-          icmphdr->type, icmphdr->code, icmphdr->un.echo.id,icmphdr->un.echo.sequence,icmphdr->un.gateway,icmphdr->un.frag.mtu);*/
+        break;
+    case IPPROTO_ICMP:
+        sessionsQ = &icmpSessionQ;
+        sessionTimeout = config.icmpTimeout;
+
+        moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, 0, 
+                          packet->ip_dst.s_addr, 0);
+        break;
+    case IPPROTO_IPV6:
         return;
-    } else if (packet->ip_p == IPPROTO_IPV6) {
-        return;
-    } else {
+    default:
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", packet->ip_p);
         return;
@@ -420,13 +431,19 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         moloch_nids_initial_tag(session);
 
-        if (packet->ip_p == IPPROTO_TCP) {
+        switch (packet->ip_p) {
+        case IPPROTO_TCP:
             session->port1 = ntohs(tcphdr->source);
             session->port2 = ntohs(tcphdr->dest);
-
-        } else {
+            break;
+        case IPPROTO_UDP:
             session->port1 = ntohs(udphdr->source);
             session->port2 = ntohs(udphdr->dest);
+            break;
+        case IPPROTO_ICMP:
+            session->port1 = 0;
+            session->port2 = 0;
+            break;
         }
 
         DLL_PUSH_TAIL(q_, sessionsQ, session);
@@ -917,10 +934,17 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 void moloch_nids_session_free (MolochSession_t *session)
 {
     if (session->q_next) {
-        if (session->protocol == IPPROTO_TCP)
+        switch (session->protocol) {
+        case IPPROTO_TCP:
             DLL_REMOVE(q_, &tcpSessionQ, session);
-        else
+            break;
+        case IPPROTO_UDP:
             DLL_REMOVE(q_, &udpSessionQ, session);
+            break;
+        case IPPROTO_ICMP:
+            DLL_REMOVE(q_, &icmpSessionQ, session);
+            break;
+        }
     }
 
     if (session->tcp_next)
@@ -1215,6 +1239,7 @@ void moloch_nids_init()
     DLL_INIT(tcp_, &tcpWriteQ);
     DLL_INIT(q_, &tcpSessionQ);
     DLL_INIT(q_, &udpSessionQ);
+    DLL_INIT(q_, &icmpSessionQ);
 
     cookie = magic_open(MAGIC_MIME);
     if (!cookie) {

@@ -41,7 +41,7 @@ exports.icmp = function (buffer, obj) {
     sequence:  buffer.readUInt16BE(6)
   };
 
-  obj.udp.data = buffer.slice(8);
+  obj.icmp.data = buffer.slice(8);
 };
 
 exports.tcp = function (buffer, obj) {
@@ -155,6 +155,26 @@ exports.pcap = function (buffer, obj) {
   };
 
   exports.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj);
+};
+
+exports.reassemble_icmp = function (packets, cb) {
+  var results = [];
+  packets.forEach(function (item) {
+    var key = item.ip.addr1;
+    if (results.length === 0 || key !== results[results.length-1].key) {
+      var result = {
+        key: key,
+        data: item.icmp.data
+      };
+      results.push(result);
+    } else {
+      var newBuf = new Buffer(results[results.length-1].data.length + item.icmp.data.length);
+      results[results.length-1].data.copy(newBuf);
+      item.icmp.data.copy(newBuf, results[results.length-1].data.length);
+      results[results.length-1].data = newBuf;
+    }
+  });
+  cb(null, results);
 };
 
 exports.reassemble_udp = function (packets, cb) {
