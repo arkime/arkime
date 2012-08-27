@@ -19,12 +19,17 @@
 "country.dst"             return 'country.dst'
 "country.xff"             return 'country.xff'
 "country"                 return 'country'
+"asn.src"                 return 'asn.src'
+"asn.dst"                 return 'asn.dst'
+"asn.xff"                 return 'asn.xff'
+"asn"                     return 'asn'
 "ip.src"                  return "ip.src"
 "ip.dst"                  return "ip.dst"
 "ip.xff"                  return "ip.xff"
 "ip"                      return "ip"
 "uri"                     return "uri"
 "ua"                      return "ua"
+"icmp"                    return "icmp"
 "tcp"                     return "tcp"
 "udp"                     return "udp"
 "host"                    return "host"
@@ -92,12 +97,17 @@ RANGEFIELD: databytes   {$$ = 'db'}
           | 'port.dst'  {$$ = 'p2'}
           ;
 
-STRFIELD  : 'country.src' {$$ = 'g1'}
-          | 'country.dst' {$$ = 'g2'}
-          | 'country.xff' {$$ = 'gxff'}
-          | node          {$$ = 'no'}
-          | host          {$$ = 'ho'}
-          ;
+TERMFIELD  : 'country.src' {$$ = 'g1'}
+           | 'country.dst' {$$ = 'g2'}
+           | 'country.xff' {$$ = 'gxff'}
+           | node          {$$ = 'no'}
+           | host          {$$ = 'ho'}
+           ;
+
+TEXTFIELD  : 'asn.src'     {$$ = 'as1'}
+           | 'asn.dst'     {$$ = 'as2'}
+           | 'asn.xff'     {$$ = 'asxff'}
+           ;
 
 STR : ID
     | packets
@@ -110,10 +120,15 @@ STR : ID
     | country.src
     | country.dst
     | country.xff
+    | asn
+    | asn.src
+    | asn.dst
+    | asn.xff
     | QUOTEDSTR
     | node
     | host
     | header
+    | icmp
     | tcp
     | udp
     | ip
@@ -143,6 +158,8 @@ e
         {$$ = -$2;}
     | '(' e ')'
         {$$ = $2;}
+    | protocol '==' 'icmp'
+        {$$ = {term: {pr: 1}};}
     | protocol '==' 'tcp'
         {$$ = {term: {pr: 6}};}
     | protocol '==' 'udp'
@@ -161,8 +178,8 @@ e
         {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
          $$.or[0].range.p1[$2] = $3;
          $$.or[1].range.p2[$2] = $3;}
-    | STRFIELD '!=' STR
-        { var str = stripQuotes($3);
+    | TERMFIELD '!=' STR
+        { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
             $$ = {not: {query: {wildcard: {}}}};
             $$.not.query.wildcard[$1] = str;
@@ -171,14 +188,34 @@ e
             $$.not.term[$1] = str;
           }
         }
-    | STRFIELD '==' STR
-        { var str = stripQuotes($3);
+    | TERMFIELD '==' STR
+        { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
             $$ = {query: {wildcard: {}}};
             $$.query.wildcard[$1] = str;
           } else {
             $$ = {term: {}};
             $$.term[$1] = str;
+          }
+        }
+    | TEXTFIELD '!=' STR
+        { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {query: {wildcard: {}}}};
+            $$.not.query.wildcard[$1] = str;
+          } else {
+            $$ = {not: {term: {}}};
+            $$.not.term[$1] = str;
+          }
+        }
+    | TEXTFIELD '==' STR
+        { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {query: {wildcard: {}}};
+            $$.query.wildcard[$1] = str;
+          } else {
+            $$ = {query: {text: {}}};
+            $$.query.text[$1] = {query: str, type: "phrase", operator: "and"}
           }
         }
     | 'port' '==' NUMBER
@@ -218,19 +255,43 @@ e
           $$ = {not: {term: {hh: tag}}};
         }
     | country '==' STR 
-        { var str = stripQuotes($3);
+        { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}, {query: {wildcard: {gxff: $3.toUpperCase()}}}]};
+            $$ = {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}]};
           } else {
-            $$ = {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]};
+            $$ = {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}]};
           }
         }
     | country '!=' STR 
-        { var str = stripQuotes($3);
+        { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {g1: $3.toUpperCase()}}}, {query: {wildcard: {g2: $3.toUpperCase()}}}, {query: {wildcard: {gxff: $3.toUpperCase()}}}]}};
+            $$ = {not: {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}]}};
           } else {
-            $$ = {not: {or: [{term: {g1: $3.toUpperCase()}}, {term: {g2: $3.toUpperCase()}}, {term: {gxff: $3.toUpperCase()}}]}};
+            $$ = {not: {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}]}};
+          }
+        }
+    | asn '==' STR 
+        { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}]};
+          } else {
+            $$ = {or: [{query: {text: {as1:   {query: str, type: "phrase", operator: "and"}}}}, 
+                       {query: {text: {as2:   {query: str, type: "phrase", operator: "and"}}}}, 
+                       {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}}
+                      ]
+                 };
+          }
+        }
+    | asn '!=' STR 
+        { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}]}};
+          } else {
+            $$ = {not: {or: [{query: {text: {as1:   {query: str, type: "phrase", operator: "and"}}}}, 
+                             {query: {text: {as2:   {query: str, type: "phrase", operator: "and"}}}}, 
+                             {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}}
+                            ]
+                 }};
           }
         }
     ;

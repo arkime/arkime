@@ -11,6 +11,10 @@ div#sessionsInfo
   div#world-map-wrapper
     div#world-map
   div#sessionGraph
+  select#sessionGraphSelect
+    option(value="lpHisto") sessions
+    option(value="paHisto") packets
+    option(value="dbHisto") databytes
 table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
   thead
     tr
@@ -31,7 +35,7 @@ br
 script(type='text/javascript')
   var startTime, stopTime;
   var sessionsTable;
-  var mapData;
+  var lastResult;
   var initialDisplayLength;
   var doPushState = 1;
 
@@ -112,6 +116,11 @@ script(type='text/javascript')
 
     $('#date').change(function() {
       sessionsTable.fnDraw();
+      return false;
+    });
+
+    $('#sessionGraphSelect').change(function() {
+      drawGraph(lastResult[$('#sessionGraphSelect').val()]);
       return false;
     });
 
@@ -226,15 +235,15 @@ script(type='text/javascript')
             "url": sSource,
             "data": aoData,
             "success": function (json) {
-              if (json.histo && json.histo[0]) {
-                startTime = json.histo[0][0]/1000;
-                stopTime = (json.histo[json.histo.length-1][0]/1000) + 59;
+              if (json.lpHisto && json.lpHisto[0]) {
+                startTime = json.lpHisto[0][0]/1000;
+                stopTime = (json.lpHisto[json.lpHisto.length-1][0]/1000) + 59;
               }
               // What a hack
               //$("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
 
-              drawGraph(json.histo);
-              mapData = json.map;
+              lastResult = json;
+              drawGraph(json[$('#sessionGraphSelect').val()]);
 
               // Hack to clear colors
               var map = $('#world-map').data('mapObject');
@@ -251,7 +260,7 @@ script(type='text/javascript')
                 $("#bsqErr").hide();
               }
 
-              $('#world-map').vectorMap('set', 'values', mapData);
+              $('#world-map').vectorMap('set', 'values', lastResult.map);
               fnCallback(json);
               stopBlink();
             }
@@ -272,7 +281,7 @@ script(type='text/javascript')
       normalizeFunction: 'polynomial',
       hoverOpacity: 0.7,
       onLabelShow: function(e, el, code){
-        el.html(el.html() + ' - ' + numberWithCommas(mapData[code] || 0));
+        el.html(el.html() + ' - ' + numberWithCommas(lastResult.map[code] || 0));
       },
       onRegionClick: function(e, code){
         addExpression("country == " + code);
@@ -413,7 +422,7 @@ script(type='text/javascript')
       }
 
       if (tokens.length <= 1) {
-        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
+        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
       }
 
       if (/^(ip)/.test(tokens[tokens.length-2])) {
@@ -424,7 +433,7 @@ script(type='text/javascript')
         return callback(["!=", "==" , ">=", "<=", "<", ">"]);
       }
 
-      if (/^(tags|ua|header|country|host|node|uri)/.test(tokens[tokens.length-2])) {
+      if (/^(tags|ua|header|country|asn|host|node|uri)/.test(tokens[tokens.length-2])) {
         return callback(["!=", "=="]);
       }
 
@@ -456,7 +465,7 @@ script(type='text/javascript')
         return;
       }
 
-      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
+      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
     };
   });
 

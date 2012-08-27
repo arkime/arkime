@@ -14,9 +14,11 @@ function twoDigitString(value) {
 
 function dateString(seconds, sep) {
   var d = new Date(seconds*1000);
+  var yearStr = (new Date().getFullYear() == d.getFullYear())?"":"/"+(d.getFullYear()%100);
   return (d.getMonth()+1) +
          "/" +
          d.getDate() +
+         yearStr +
          sep +
          twoDigitString(d.getHours()) +
          ":" +
@@ -265,7 +267,10 @@ function drawGraph(graphData) {
     },
     yaxis: {
       min: 0,
-      color: "#000"
+      color: "#000",
+      tickFormatter: function(v, axis) {
+        return numberWithCommas(v);
+      }
     },
     selection: {
       mode: "x",
@@ -344,7 +349,7 @@ function showTooltip(x, y, contents) {
 }
 
 function setupSessionGraphBinds(sessionsTable) {
-  // Code from Kibana
+  // Pieces from Kibana
   var previousPoint = null;
   $("#sessionGraph").bind("plothover", function (event, pos, item) {
     $("#x").text(pos.x.toFixed(2));
@@ -356,11 +361,10 @@ function setupSessionGraphBinds(sessionsTable) {
 
         $("#tooltip").remove();
         var x = item.datapoint[0].toFixed(0),
-          y = Math.round(item.datapoint[1]*100)/100;
+            y = Math.round(item.datapoint[1]*100)/100,
+            d = dateString(x/1000, " ");
 
-        showTooltip(
-          item.pageX, item.pageY, y + " at " + dateString(x/1000, "<br>")
-        );
+        showTooltip(item.pageX, item.pageY, numberWithCommas(y) + " at " + d.substr(0, d.length-3));
       }
     } else {
       $("#tooltip").remove();

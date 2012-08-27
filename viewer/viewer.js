@@ -715,7 +715,8 @@ function buildSessionQuery(req, buildCb) {
 
   var query = {fields: columns,
                facets: {
-                 histo: {histogram : {field: "lp", interval: 60, size:1440}},
+                 dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: 60, size:1440}},
+                 paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: 60, size:1440}},
                  map1: {terms : {field: "g1", size:1000}},
                  map2: {terms : {field: "g2", size:1000}}
                },
@@ -785,7 +786,9 @@ function buildSessionQuery(req, buildCb) {
 
 app.get('/sessions.json', function(req, res) {
   var map = {};
-  var histo = [];
+  var lpHisto = [];
+  var dbHisto = [];
+  var paHisto = [];
   var i;
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -793,7 +796,8 @@ app.get('/sessions.json', function(req, res) {
       var r = {sEcho: req.query.sEcho,
                iTotalRecords: 0,
                iTotalDisplayRecords: 0,
-               histo: {entries: []},
+               lpHisto: {entries: []},
+               dbHisto: {entries: []},
                bsqErr: bsqErr.toString(),
                map: [],
                aaData:[]};
@@ -805,7 +809,7 @@ app.get('/sessions.json', function(req, res) {
     async.parallel({
       sessions: function (sessionsCb) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
-          //console.log("sessions query = ", util.inspect(result, false, 10));
+          //console.log("sessions query = ", util.inspect(result, false, 50));
           if (err || result.error) {
             console.log("sessions.json error", err);
             sessionsCb(null, {total: 0, results: []});
@@ -813,11 +817,16 @@ app.get('/sessions.json', function(req, res) {
           }
 
           if (!result.facets) {
-            result.facets = {map1: {terms: []}, map2: {terms: []}, histo: {entries: []}};
+            result.facets = {map1: {terms: []}, map2: {terms: []}, dpHisto: {entries: []}, lpHisto: {entries: []}};
           }
 
-          result.facets.histo.entries.forEach(function (item) {
-            histo.push([item.key*1000, item.count]);
+          result.facets.dbHisto.entries.forEach(function (item) {
+            lpHisto.push([item.key*1000, item.count]);
+            dbHisto.push([item.key*1000, item.total]);
+          });
+
+          result.facets.paHisto.entries.forEach(function (item) {
+            paHisto.push([item.key*1000, item.total]);
           });
 
           result.facets.map1.terms.forEach(function (item) {
@@ -853,14 +862,17 @@ app.get('/sessions.json', function(req, res) {
         });
       },
       total: function (totalCb) {
-        Db.numberOfDocumentsMultiIndex('sessions-', totalCb);
+        Db.numberOfDocuments('sessions-*', totalCb);
       }
     },
     function(err, results) {
+      console.log("total = ", results.total, "display total = ", (results.sessions?results.sessions.total:0));
       var r = {sEcho: req.query.sEcho,
                iTotalRecords: results.total,
                iTotalDisplayRecords: (results.sessions?results.sessions.total:0),
-               histo: histo,
+               lpHisto: lpHisto,
+               dbHisto: dbHisto,
+               paHisto: paHisto,
                map: map,
                aaData: (results.sessions?results.sessions.results:[])};
       try {

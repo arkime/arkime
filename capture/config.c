@@ -113,6 +113,7 @@ void moloch_config_load()
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
     config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
+    config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
 
@@ -152,6 +153,7 @@ void moloch_config_init()
         LOG("bpf: %s", config.bpf);
         LOG("yara: %s", config.yara);
         LOG("geoipFile: %s", config.geoipFile);
+        LOG("geoipASNFile: %s", config.geoipASNFile);
         LOG("dropUser: %s", config.dropUser);
         LOG("dropGroup: %s", config.dropGroup);
 

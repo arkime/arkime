@@ -224,20 +224,3 @@ exports.numberOfDocuments = function (index, cb) {
     cb(null, num);
   });
 };
-
-exports.numberOfDocumentsMultiIndex = function (index, cb) {
-  exports.status("_all", function(err, result) {
-    if (err || result.error || !result.indices) {
-      return cb(null, 0);
-    }
-
-    var i;
-    var num = 0;
-    for (i in result.indices) {
-      if (typeof result.indices[i] === "object" && i.indexOf(index) === 0) {
-        num += result.indices[i].docs.num_docs;
-      }
-    }
-    cb(null, num);
-  });
-};

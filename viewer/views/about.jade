@@ -11,6 +11,30 @@ div(style="margin:10px")
       th Data type
       th What?
     tr
+      td asn
+      td.
+        ==, !=
+      td Autonomous System Number String
+      td Maxmind GeoIP string of asn.src, asn.dst, or asn.xff<br>Examples:asn == as12345, asn == AOL
+    tr
+      td asn.src
+      td.
+        ==, !=
+      td Autonomous System Number String
+      td Maxmind GeoIP ASNum string of source ip address<br>Examples:asn.src == as12345, asn.src == AOL
+    tr
+      td asn.dst
+      td.
+        ==, !=
+      td Autonomous System Number String
+      td Maxmind GeoIP ASNum string of destination ip address<br>Examples:asn.dst == as12345, asn.dst == AOL
+    tr
+      td asn.xff
+      td.
+        ==, !=
+      td Autonomous System Number String
+      td Maxmind GeoIP ASNum string of XFF ip addresses<br>Examples:asn.xff == as12345, asn.xff == AOL
+    tr
       td bytes
       td #{range}
       td integer

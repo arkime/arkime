@@ -85,6 +85,10 @@ viewPort = 8005
 #  http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
 geoipFile = /data/moloch/etc/GeoIP.dat
 
+# Path of the maxmind geoip ASN file.  Download free version from:
+#  http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
+geoipASNFile = /data/moloch/etc/GeoIPASNum.dat
+
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=_USERNAME_
 

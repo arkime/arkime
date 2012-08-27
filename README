@@ -165,8 +165,9 @@ Building Viewer
 
 
 Configuration
-1) Make sure you download a GeoIP file.  The free version is available at
+1) Make sure you download a GeoIP files.  The free versions are available at
    http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+   http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
 2) Edit the config.ini file
 3) In the viewer directory run the addUser.js to add users, use -admin if you want admin users 
    that can edit users from the web site.  This is a good test if elasticsearch and config.ini are right

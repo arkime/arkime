@@ -43,6 +43,7 @@ static time_t         dbLastSave;
 
 struct timeval        startTime;
 static GeoIP         *gi = 0;
+static GeoIP         *giASN = 0;
 
 /******************************************************************************/
 extern MolochConfig_t config;
@@ -195,12 +196,26 @@ void moloch_db_save_session(MolochSession_t *session)
         if (g1)
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"g1\":\"%s\",", g1);
     }
+    if (giASN) {
+        char *as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
+        if (as1) {
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"as1\":\"%s\",", as1);
+            free(as1);
+        }
+    }
     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"p1\":%u,", session->port1);
     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"a2\":%u,", htonl(session->addr2));
     if (gi) {
         const char *g2 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
         if (g2)
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"g2\":\"%s\",", g2);
+    }
+    if (giASN) {
+        char *as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
+        if (as2) {
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"as2\":\"%s\",", as2);
+            free(as2);
+        }
     }
     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"p2\":%u,", session->port2);
     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"pr\":%u,", session->protocol);
@@ -279,6 +294,23 @@ void moloch_db_save_session(MolochSession_t *session)
                 if (g)
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"%s\"", g);
                 else
+                    sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"---\"");
+                i++;
+            );
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+        }
+
+        if (giASN) {
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"asxff\":[");
+            i = 0;
+            HASH_FORALL(i_, session->xffs, xff, 
+                if (i != 0)
+                    *(sJPtr++) = ',';
+                char *as = GeoIP_name_by_ipnum(gi, htonl(xff->i));
+                if (as) {
+                    sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"%s\"", as);
+                    free(as);
+                } else
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"---\"");
                 i++;
             );
@@ -878,6 +910,14 @@ void moloch_db_init()
         gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE);
         if (!gi) {
             printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoipFile);
+            exit(1);
+        }
+    }
+
+    if (config.geoipASNFile) {
+        giASN = GeoIP_open(config.geoipASNFile, GEOIP_MEMORY_CACHE);
+        if (!giASN) {
+            printf("Couldn't initialize GeoIP ASN %s from %s", strerror(errno), config.geoipASNFile);
             exit(1);
         }
     }

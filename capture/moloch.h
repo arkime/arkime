@@ -17,6 +17,7 @@ typedef struct moloch_config {
     char     *bpf;
     char     *yara;
     char     *geoipFile;
+    char     *geoipASNFile;
     char     *dropUser;
     char     *dropGroup;
 
