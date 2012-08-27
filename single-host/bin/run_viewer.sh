@@ -2,7 +2,7 @@
 # Add to /etc/inittab something like 
 # v1:2345:respawn:/data/moloch/bin/run_viewer.sh
 
-TDIR=/data/moloch
+TDIR=_TDIR_
 
 cd ${TDIR}/viewer
 /bin/rm -f ${TDIR}/logs/viewer.log.old

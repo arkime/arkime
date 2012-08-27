@@ -86,7 +86,7 @@ node.name: "${ES_HOSTNAME}"
 # to disable it, set the following:
 
 #MOLOCH - Set to number of nodes per machine
-node.max_local_storage_nodes: 2
+node.max_local_storage_nodes: 1
 
 
 #################################### Index ####################################
@@ -155,7 +155,7 @@ index.cache.field.type: soft
 # the locations (à la RAID 0) on a file level, favouring locations with most free
 # space on creation. For example:
 #
-path.data: /data/moloch/data
+path.data: _TDIR_/data
 
 # Path to temporary files:
 #
@@ -163,7 +163,7 @@ path.data: /data/moloch/data
 
 # Path to log files:
 #
-path.logs: /data/moloch/logs
+path.logs: _TDIR_/logs
 
 # Path to where plugins are installed:
 #
@@ -333,7 +333,7 @@ discovery.zen.ping.multicast.enabled: false
 #
 
 #MOLOCH: List at least 4 node, you don't need to list all of them
-discovery.zen.ping.unicast.hosts: ["moloch-node01"]
+discovery.zen.ping.unicast.hosts: ["localhost"]
 
 # EC2 discovery allows to use AWS EC2 API in order to perform discovery.
 #

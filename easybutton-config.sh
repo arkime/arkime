@@ -64,6 +64,10 @@ echo
 echo "Hit Ctrl-C *now* to stop!   Hit enter to proceed"
 read OK
 
-cat ${TDIR}/etc/openssl.cnf.template | sed -e 's/_ORGANIZATION_NAME_/'${ORG_NAME}'/g' | sed -e 's/_COMMON_NAME_/'${FQDN}'/g' | sed -e 's/_COUNTRY_/'${COUNTRY}'/g' | sed -e 's/_STATE_OR_PROVINCE_/'${STATE}'/g' | sed -e 's/_LOCALITY_/'${LOCALITY}'/g' | sed -e 's/_ORGANIZATION_UNIT_/'${ORG_UNIT}'/g'  > ${TDIR}/etc/openssl.cnf
+cat ${TDIR}/etc/openssl.cnf.template | sed -e 's/_ORGANIZATION_NAME_/'${ORG_NAME}'/g' -e 's/_COMMON_NAME_/'${FQDN}'/g' -e 's/_COUNTRY_/'${COUNTRY}'/g' -e 's/_STATE_OR_PROVINCE_/'${STATE}'/g' -e 's/_LOCALITY_/'${LOCALITY}'/g' -e 's/_ORGANIZATION_UNIT_/'${ORG_UNIT}'/g'  > ${TDIR}/etc/openssl.cnf
 
-cat ${TDIR}/etc/config.ini.template | sed -e 's/_PASSWORD_/'${PASSWORD}'/g' -e 's/_USERNAME_/'${USERNAME}'/g' -e 's/_GROUPNAME_/'${GROUPNAME}'/g' -e 's/_INTERFACE_/'${INTERFACE}'/g'  > ${TDIR}/etc/config.ini
+cat ${TDIR}/etc/config.ini.template | sed -e 's/_PASSWORD_/'${PASSWORD}'/g' -e 's/_USERNAME_/'${USERNAME}'/g' -e 's/_GROUPNAME_/'${GROUPNAME}'/g' -e 's/_INTERFACE_/'${INTERFACE}'/g'  -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/config.ini
+
+cd ${TDIR}/etc/
+openssl req -new -newkey rsa:2048 -nodes -keyout moloch.key -out moloch.csr -config ${TDIR}/etc/openssl.cnf
+openssl x509 -req -days 3650 -in moloch.csr -signkey moloch.key -out moloch.crt
