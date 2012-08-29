@@ -708,23 +708,26 @@ function lookupQueryTags(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var columns = ["ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2"];
-  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):100);
+  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2"];
+  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
   var i;
 
 
   var query = {fields: columns,
-               facets: {
-                 dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: 60, size:1440}},
-                 paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: 60, size:1440}},
-                 map1: {terms : {field: "g1", size:1000}},
-                 map2: {terms : {field: "g2", size:1000}}
-               },
                from: req.query.iDisplayStart || 0,
                size: limit,
                query: {filtered: {query: {},
                                   filter: {}}}
               };
+
+  if (req.query.facets) {
+    query.facets = {
+                     dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: 60, size:1440}},
+                     paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: 60, size:1440}},
+                     map1: {terms : {field: "g1", size:1000}},
+                     map2: {terms : {field: "g2", size:1000}}
+                   };
+  }
 
   
   if (req.query.date && req.query.date === '-1') {
@@ -817,7 +820,7 @@ app.get('/sessions.json', function(req, res) {
           }
 
           if (!result.facets) {
-            result.facets = {map1: {terms: []}, map2: {terms: []}, dpHisto: {entries: []}, lpHisto: {entries: []}};
+            result.facets = {map1: {terms: []}, map2: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}};
           }
 
           result.facets.dbHisto.entries.forEach(function (item) {
@@ -883,6 +886,49 @@ app.get('/sessions.json', function(req, res) {
   });
 });
 
+app.get('/sessions.csv', function(req, res) {
+  res.setHeader("Content-Type", "text/csv");
+
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      res.send("#Error " + bsqErr.toString() + "\r\n");
+      return;
+    }
+
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err || result.error) {
+        console.log("sessions.json error", err);
+        res.send("#Error db\r\n");
+        return;
+      }
+
+      res.write("Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node\r\n");
+      var i;
+      for (i = 0; i < result.hits.hits.length; i++) {
+        if (!result.hits.hits[i] || !result.hits.hits[i].fields) {
+          continue;
+        }
+        var f = result.hits.hits[i].fields;
+        var pr;
+        switch (f.pr) {
+        case 1:
+          pr = "icmp";
+          break;
+        case 6:
+          pr = "tcp";
+          break;
+        case 17:
+          pr =  "udp";
+          break;
+        }
+
+        res.write(pr + ", " + f.fp + ", " + f.lp + ", " + decode.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + decode.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
+      }
+      res.end();
+    });
+  });
+});
+
 app.get('/uniqueValue.json', function(req, res) {
   noCache(req, res);
   var query;
@@ -921,7 +967,6 @@ app.get('/unique.txt', function(req, res) {
     query.fields = [req.query.field];
     if (req.query.field === "us") {
       query.size = 200000;
-      delete query.facets;
       if (isEmptyObject(query.query.filtered.filter)) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
       } else {
@@ -1420,7 +1465,6 @@ app.get('/sessions.pcap', function(req, res) {
   res.statusCode = 200;
 
   buildSessionQuery(req, function(err, query, indices) {
-    delete query.facets;
     query.fields = ["no"];
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       var firstHeader = 1;

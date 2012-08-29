@@ -306,7 +306,7 @@ void moloch_db_save_session(MolochSession_t *session)
             HASH_FORALL(i_, session->xffs, xff, 
                 if (i != 0)
                     *(sJPtr++) = ',';
-                char *as = GeoIP_name_by_ipnum(gi, htonl(xff->i));
+                char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"%s\"", as);
                     free(as);

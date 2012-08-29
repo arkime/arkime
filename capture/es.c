@@ -21,10 +21,12 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <string.h>
 #include <sys/time.h>
+#include <netdb.h>
 #include <netdb.h>
 #include "glib.h"
 #include "gio/gio.h"
@@ -147,7 +149,7 @@ gboolean moloch_es_write_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer
 
     if (gerror) {
         /* Should free stuff here */
-        LOG("%p: Receive Error: %s", es, gerror->message);
+        LOG("ERROR: %p: Receive Error: %s", es, gerror->message);
         return FALSE;
     }
 
@@ -169,11 +171,11 @@ gboolean moloch_es_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) {
 
     if (gerror || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (gerror)
-            LOG("%p: Receive Error: %s", es, gerror->message);
+            LOG("ERROR: %p: Receive Error: %s", es, gerror->message);
         else if (cond & (G_IO_HUP | G_IO_ERR))
-            LOG("%p: Lost connection to es", es);
+            LOG("ERROR: %p: Lost connection to es", es);
         else if (len <= 0)
-            LOG("%p: len: %d cond: %x", es, len, cond);
+            LOG("ERROR: %p: len: %d cond: %x", es, len, cond);
 
         g_object_unref (es->elastic);
         es->elastic = 0;
@@ -271,6 +273,7 @@ int moloch_es_connect(MolochES_t *es)
 
 
     //g_object_ref (es->elastic);
+    g_socket_set_keepalive(es->elastic, TRUE);
     int fd = g_socket_get_fd(es->elastic);
     moloch_watch_fd(fd, MOLOCH_GIO_READ_COND, moloch_es_read_cb, es);
 
@@ -281,6 +284,12 @@ int moloch_es_connect(MolochES_t *es)
     if(res != -1 && sendbuff < 300000) {
         sendbuff = 300000;
         setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sendbuff, sizeof(sendbuff));
+    }
+
+    res = getsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, &optlen);
+    if(res != -1 && sendbuff > 60*8) {
+        sendbuff = 60*8;
+        setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, sizeof(sendbuff));
     }
 
     return 0;

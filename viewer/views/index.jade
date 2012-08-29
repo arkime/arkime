@@ -146,7 +146,19 @@ script(type='text/javascript')
           "sWidth": "10px",
           "bSortable": false,
           "fnRender" : function(oObj) {
-            return '<img src="/DataTables-1.9.1/examples/examples_support/details_open.png">';
+            var pr; 
+            switch (oObj.aData.pr) {
+            case 1:
+              pr = "icmp";
+              break;
+            case 6:
+              pr = "tcp";
+              break;
+            case 17:
+              pr =  "udp";
+              break;
+            }
+            return '<img src="/DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
           }
         },
         {
@@ -165,7 +177,6 @@ script(type='text/javascript')
             return dateString(oObj.aData.lp, "<br>");
           }
         },
-
         { "mDataProp" : "a1",
           "sWidth": "100",
           "fnRender" : function(oObj) {
@@ -215,6 +226,7 @@ script(type='text/javascript')
       "fnServerData": function ( sSource, aoData, fnCallback ) {
         var params = buildParams();
         aoData = $.merge(aoData, params);
+        aoData.push({name: "facets", value: "1"});
 
         if (this.fnSettings()._iDisplayLength !== 100) {
           params.push({name: "iDisplayLength", value: this.fnSettings()._iDisplayLength});
