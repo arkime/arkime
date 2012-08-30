@@ -199,7 +199,9 @@ void moloch_db_save_session(MolochSession_t *session)
     if (giASN) {
         char *as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
         if (as1) {
-            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"as1\":\"%s\",", as1);
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"as1\":");
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as1);
+            *(sJPtr++) = ',';
             free(as1);
         }
     }
@@ -213,7 +215,9 @@ void moloch_db_save_session(MolochSession_t *session)
     if (giASN) {
         char *as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
         if (as2) {
-            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"as2\":\"%s\",", as2);
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"as2\":");
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as2);
+            *(sJPtr++) = ',';
             free(as2);
         }
     }
@@ -308,7 +312,7 @@ void moloch_db_save_session(MolochSession_t *session)
                     *(sJPtr++) = ',';
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
-                    sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"%s\"", as);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
                     free(as);
                 } else
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"---\"");
