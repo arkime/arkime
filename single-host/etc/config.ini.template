@@ -34,6 +34,10 @@ passwordSecret = _PASSWORD_
 # will make all previously stored passwords no longer work
 httpRealm = Moloch
 
+# The base url for Moloch web access.  Must end with a / or bad things will happen
+# Default: "/"
+# webBasePath = /moloch/
+
 # The interface to listen on for traffic
 interface=_INTERFACE_
 

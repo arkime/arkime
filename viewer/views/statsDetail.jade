@@ -12,7 +12,7 @@ script(type='text/javascript')
       $.ajax( {
         "dataType": 'json',
         "type": "GET",
-        "url": "/dstats.json?nodeName=#{nodeName}" +
+        "url": "#{basePath}dstats.json?nodeName=#{nodeName}" +
                       "&start=" + startV/1000 +
                       "&stop=" + stopV/1000 +
                       "&step=" + stepV/1000 +

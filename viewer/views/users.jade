@@ -45,7 +45,7 @@ script(type='text/javascript')
       "aLengthMenu": [100, 500, 1000, 5000],
       "bProcessing": true,
       "bServerSide": true,
-      "sAjaxSource": "/users.json",
+      "sAjaxSource": "#{basePath}users.json",
       "fnServerData": function ( sSource, aoData, fnCallback ) {
         $.ajax( {
          "dataType": 'json',
@@ -98,7 +98,7 @@ script(type='text/javascript')
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
-        "url": "/updateUser/" + aData.userId + "?" +
+        "url": "#{basePath}updateUser/" + aData.userId + "?" +
           "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
           "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
           "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
@@ -112,7 +112,7 @@ script(type='text/javascript')
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
-        "url": "/addUser",
+        "url": "#{basePath}addUser",
         "data": $("#addUser").serialize(),
         "success": function(data) {
           if (!data.success) {
@@ -128,7 +128,7 @@ script(type='text/javascript')
     $.ajax( {
       "dataType": 'json',
       "type": "POST",
-      "url": "/deleteUser/" + user,
+      "url": "#{basePath}deleteUser/" + user,
       "complete": function(data) {
         usersTable.fnDraw();
       }

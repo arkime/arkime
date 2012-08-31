@@ -1,12 +1,12 @@
 div(id='sessionDetail#{session.id}')
   div Actions:
     if (session.ro)
-      a(href='/#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
+      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
       | &nbsp;
-      a(href='/#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
+      a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
       br
     else
-      a(href='/#{session.no}/pcap/#{session.id}.pcap') Download Pcap
+      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
   div Node: 
     a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
   div Start Time: 
@@ -114,7 +114,7 @@ div(id='sessionDetail#{session.id}')
       $('#a1-#{session.id}').html(ipString(#{session.a1}));
       $('#a2-#{session.id}').html(ipString(#{session.a2}));
       $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, select#format-base-#{session.id}').on('change', function() {
-        var url = "/#{session.no}/#{session.id}/sessionDetail" +
+        var url = "#{basePath}#{session.no}/#{session.id}/sessionDetail" +
                    "?base=" + $('select#format-base-#{session.id} :selected').html() +
                    "&line=" + $('input#format-line-#{session.id}').is(':checked') + 
                    "&gzip=" + $('input#format-gzip-#{session.id}').is(':checked');

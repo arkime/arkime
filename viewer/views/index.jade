@@ -1,9 +1,9 @@
-script(src='/jvectormap/jquery-jvectormap.js')
-script(src='/jquery-jvectormap-world-en.js')
-script(src='/jquery.autocomplete.js')
-script(src='/jQuery-contextMenu/src/jquery.ui.position.js')
-script(src='/jQuery-contextMenu/src/jquery.contextMenu.js')
-link(rel='stylesheet', type='text/css', href='/jQuery-contextMenu/src/jquery.contextMenu.css')
+script(src='jvectormap/jquery-jvectormap.js')
+script(src='jquery-jvectormap-world-en.js')
+script(src='jquery.autocomplete.js')
+script(src='jQuery-contextMenu/src/jquery.ui.position.js')
+script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
+link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
 
 div.context-menu-one(style="margin-bottom: 4px")
 div#bsqErr
@@ -90,17 +90,17 @@ script(type='text/javascript')
       if ( this.src.match('details_close') )
       {
         /* This row is already open - close it */
-        this.src = "/DataTables-1.9.1/examples/examples_support/details_open.png";
+        this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
         sessionsTable.fnClose( nTr );
       }
       else
       {
         var aData = sessionsTable.fnGetData( nTr );
-        this.src = "/DataTables-1.9.1/examples/examples_support/details_close.png";
+        this.src = "DataTables-1.9.1/examples/examples_support/details_close.png";
         $.ajax( {
             "dataType": 'html',
             "type": "GET",
-            "url": '/' + aData.no + '/' + aData.id + '/sessionDetail',
+            "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
             "success": function(data) {
               sessionsTable.fnOpen( nTr, data, 'details' );
             }
@@ -134,7 +134,7 @@ script(type='text/javascript')
       "aLengthMenu": [100, 500, 1000, 5000],
       "bProcessing": true,
       "bServerSide": true,
-      "sAjaxSource": "/sessions.json",
+      "sAjaxSource": "#{basePath}sessions.json",
       "bRetrieve": true,
       "bFilter": false,
       "bScrollCollapse": true,
@@ -159,7 +159,7 @@ script(type='text/javascript')
               pr =  "udp";
               break;
             }
-            return '<img src="/DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
+            return '<img src="DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
           }
         },
         {
@@ -470,7 +470,7 @@ script(type='text/javascript')
         $.ajax( {
             "dataType": 'html',
             "type": "GET",
-            "url": '/uniqueValue.json?type=' + item + '&filter=' + filter,
+            "url": '#{basePath}uniqueValue.json?type=' + item + '&filter=' + filter,
             "success": function(data) {
               return callback(JSON.parse(data));
             }

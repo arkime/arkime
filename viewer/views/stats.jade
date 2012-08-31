@@ -50,7 +50,7 @@ script(type='text/javascript')
       $.ajax( {
         "dataType": 'json',
         "type": "GET",
-        "url": "/dstats.json?nodeName=" + name +
+        "url": "#{basePath}dstats.json?nodeName=" + name +
                       "&start=" + startV/1000 +
                       "&stop=" + stopV/1000 +
                       "&step=" + stepV/1000 +
@@ -219,16 +219,16 @@ script(type='text/javascript')
       var aData = statsTable.fnGetData( nTr );
       if ( this.src.match('details_close') )
       {
-        this.src = "/DataTables-1.9.1/examples/examples_support/details_open.png";
+        this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
         statsTable.fnClose( nTr );
       }
       else
       {
-        this.src = "/DataTables-1.9.1/examples/examples_support/details_close.png";
+        this.src = "DataTables-1.9.1/examples/examples_support/details_close.png";
         $.ajax( {
           "dataType": 'html',
           "type": "GET",
-          "url": '/' + aData.id + '/statsDetail',
+          "url": '#{basePath}' + aData.id + '/statsDetail',
           "success": function(data) {
             statsTable.fnOpen( nTr, data, 'details' );
           }
@@ -241,7 +241,7 @@ script(type='text/javascript')
       $.ajax( {
         "dataType": 'json',
         "type": "GET",
-        "url": '/stats.json',
+        "url": '#{basePath}stats.json',
         "success": function(data) {
           var nNodes = statsTable.fnGetNodes();
           for (var i = 0; i < data.aaData.length; i++) {
@@ -251,16 +251,16 @@ script(type='text/javascript')
               if (id === data.aaData[i].id) {
                 found = true;
                 if (statsTable.fnIsOpen(nNodes[n])) {
-                  data.aaData[i].detail = '<img src="/DataTables-1.9.1/examples/examples_support/details_close.png" height="20px">';
+                  data.aaData[i].detail = '<img src="DataTables-1.9.1/examples/examples_support/details_close.png" height="20px">';
                 } else {
-                  data.aaData[i].detail = '<img src="/DataTables-1.9.1/examples/examples_support/details_open.png" height="20px">';
+                  data.aaData[i].detail = '<img src="DataTables-1.9.1/examples/examples_support/details_open.png" height="20px">';
                 }
                 statsTable.fnUpdate(data.aaData[i], n, 0, false, false);
                 break;
               }
             }
             if (!found) {
-              data.aaData[i].detail = '<img src="/DataTables-1.9.1/examples/examples_support/details_open.png" height="20px">';
+              data.aaData[i].detail = '<img src="DataTables-1.9.1/examples/examples_support/details_open.png" height="20px">';
               statsTable.fnAddData(data.aaData[i], false);
             }
           }

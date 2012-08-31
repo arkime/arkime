@@ -134,4 +134,8 @@ exports.isHTTPS = function(node) {
          exports.getFull(node || internals.nodeName, "certFile");
 };
 
+exports.basePath = function(node) {
+  return exports.getFull(node || internals.nodeName, "webBasePath", "/")
+};
+
 dropPrivileges();

@@ -81,7 +81,7 @@ app.configure(function() {
   app.enable("jsonp callback");
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.set('view options', {molochversion: molochversion.version, isIndex: false});
+  app.set('view options', {molochversion: molochversion.version, isIndex: false, basePath: Config.basePath()});
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
@@ -93,7 +93,7 @@ app.configure(function() {
     src: __dirname + '/views',
     dest: __dirname + '/public'
   }));
-  app.use(express['static'](__dirname + '/public', { maxAge: 60 * 1000}));
+  app.use(Config.basePath(), express['static'](__dirname + '/public', { maxAge: 60 * 1000}));
   if (Config.get("passwordSecret")) {
     app.use(function(req, res, next) {
 
@@ -195,7 +195,7 @@ function dbCheck() {
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
-app.get('/', function(req, res) {
+app.get(Config.basePath(), function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -206,7 +206,7 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/about', function(req, res) {
+app.get(Config.basePath() + 'about', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -216,7 +216,7 @@ app.get('/about', function(req, res) {
   });
 });
 
-app.get('/files', function(req, res) {
+app.get(Config.basePath() + 'files', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -226,7 +226,7 @@ app.get('/files', function(req, res) {
   });
 });
 
-app.get('/users', function(req, res) {
+app.get(Config.basePath() + 'users', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -236,7 +236,7 @@ app.get('/users', function(req, res) {
   });
 });
 
-app.get('/password', function(req, res) {
+app.get(Config.basePath() + 'password', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -246,7 +246,7 @@ app.get('/password', function(req, res) {
   });
 });
 
-app.get('/stats', function(req, res) {
+app.get(Config.basePath() + 'stats', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -268,7 +268,7 @@ app.get('/stats', function(req, res) {
   });
 });
 
-app.get('/:nodeName/statsDetail', function(req, res) {
+app.get(Config.basePath() + ':nodeName/statsDetail', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
@@ -412,7 +412,7 @@ function noCache(req, res) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 }
 
-app.get('/stats.json', function(req, res) {
+app.get(Config.basePath() + 'stats.json', function(req, res) {
   noCache(req, res);
 
   var columns = ["", "_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
@@ -460,7 +460,7 @@ app.get('/stats.json', function(req, res) {
   });
 });
 
-app.get('/dstats.json', function(req, res) {
+app.get(Config.basePath() + 'dstats.json', function(req, res) {
   noCache(req, res);
 
   var query = {size: req.query.size || 1440,
@@ -514,7 +514,7 @@ app.get('/dstats.json', function(req, res) {
   });
 });
 
-app.get('/files.json', function(req, res) {
+app.get(Config.basePath() + 'files.json', function(req, res) {
   noCache(req, res);
 
   var columns = ["num", "node", "name", "first", "size"];
@@ -569,7 +569,7 @@ app.get('/files.json', function(req, res) {
   });
 });
 
-app.post('/users.json', function(req, res) {
+app.post(Config.basePath() + 'users.json', function(req, res) {
   var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
@@ -787,7 +787,7 @@ function buildSessionQuery(req, buildCb) {
   });
 }
 
-app.get('/sessions.json', function(req, res) {
+app.get(Config.basePath() + 'sessions.json', function(req, res) {
   var map = {};
   var lpHisto = [];
   var dbHisto = [];
@@ -886,7 +886,7 @@ app.get('/sessions.json', function(req, res) {
   });
 });
 
-app.get('/sessions.csv', function(req, res) {
+app.get(Config.basePath() + 'sessions.csv', function(req, res) {
   res.setHeader("Content-Type", "text/csv");
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -929,7 +929,7 @@ app.get('/sessions.csv', function(req, res) {
   });
 });
 
-app.get('/uniqueValue.json', function(req, res) {
+app.get(Config.basePath() + 'uniqueValue.json', function(req, res) {
   noCache(req, res);
   var query;
 
@@ -958,7 +958,7 @@ app.get('/uniqueValue.json', function(req, res) {
   });
 });
 
-app.get('/unique.txt', function(req, res) {
+app.get(Config.basePath() + 'unique.txt', function(req, res) {
   noCache(req, res);
   var doCounts = parseInt(req.query.counts, 10) || 0;
   var doIp =  (req.query.field === "a1" || req.query.field === "a2");
@@ -1370,7 +1370,7 @@ function proxyRequest (req, res) {
   });
 }
 
-app.get('/:nodeName/:id/sessionDetail', function(req, res) {
+app.get(Config.basePath() + ':nodeName/:id/sessionDetail', function(req, res) {
   noCache(req, res);
 
   isLocalView(req.params.nodeName, function () {
@@ -1409,7 +1409,7 @@ function writePcap(res, id, writeHeader, doneCb) {
   });
 }
 
-app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
+app.get(Config.basePath() + ':nodeName/pcap/:id.pcap', function(req, res) {
   noCache(req, res);
 
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
@@ -1425,7 +1425,7 @@ app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
   });
 });
 
-app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
+app.get(Config.basePath() + ':nodeName/entirePcap/:id.pcap', function(req, res) {
   noCache(req, res);
 
   isLocalView(req.params.nodeName, function () {
@@ -1458,7 +1458,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
   });
 });
 
-app.get('/sessions.pcap', function(req, res) {
+app.get(Config.basePath() + 'sessions.pcap', function(req, res) {
   noCache(req, res);
 
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
@@ -1483,9 +1483,9 @@ app.get('/sessions.pcap', function(req, res) {
             var info = url.parse(viewUrl);
 
             if (firstHeader) {
-              info.path = '/' + item.fields.no + "/pcap/" + item._id + ".pcap";
+              info.path = Config.basePath(item.fields.no) + item.fields.no + "/pcap/" + item._id + ".pcap";
             } else {
-              info.path = '/' + item.fields.no + "/pcap/" + item._id + ".pcap?noHeader=true";
+              info.path = Config.basePath(item.fields.no) + item.fields.no + "/pcap/" + item._id + ".pcap?noHeader=true";
             }
 
             addAuth(info, req.user, item.fields.no);
@@ -1512,7 +1512,7 @@ app.get('/sessions.pcap', function(req, res) {
   });
 });
 
-app.post('/deleteUser/:userId', function(req, res) {
+app.post(Config.basePath() + 'deleteUser/:userId', function(req, res) {
   if (!req.user.createEnabled) {
     return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
@@ -1527,7 +1527,7 @@ app.post('/deleteUser/:userId', function(req, res) {
   });
 });
 
-app.post('/addUser', function(req, res) {
+app.post(Config.basePath() + 'addUser', function(req, res) {
   if (!req.user.createEnabled) {
     return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
@@ -1565,7 +1565,7 @@ app.post('/addUser', function(req, res) {
 
 });
 
-app.post('/updateUser/:userId', function(req, res) {
+app.post(Config.basePath() + 'updateUser/:userId', function(req, res) {
   if (req.params.userId !== req.user.userId &&
       !req.user.createEnabled) {
     return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
@@ -1595,7 +1595,7 @@ app.post('/updateUser/:userId', function(req, res) {
   });
 });
 
-app.post('/changePassword', function(req, res) {
+app.post(Config.basePath() + 'changePassword', function(req, res) {
   if (req.user.passStore !== Config.pass2store(req.user.userId, req.body.currentPassword)) {
     res.end(JSON.stringify({success: false, text: "Current password mismatch"}));
     return;

@@ -306,7 +306,7 @@ function drawGraph(graphData) {
   });
 
   function addArrow(dir, right, top, offset) {
-      $('<img class="button" src="/flot-0.7/examples/arrow-' + dir + '.gif" style="right:' + right + 'px;top:' + top + 'px">').appendTo($("#sessionGraph")).click(function (e) {
+      $('<img class="button" src="flot-0.7/examples/arrow-' + dir + '.gif" style="right:' + right + 'px;top:' + top + 'px">').appendTo($("#sessionGraph")).click(function (e) {
         e.preventDefault();
         plot.pan(offset);
       });
