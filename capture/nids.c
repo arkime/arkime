@@ -570,6 +570,18 @@ void moloch_nids_parse_classify(MolochSession_t *session, struct tcp_stream *UNU
 
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:pop3");
+
+    if (hlf->count > 30 && data[0] == 0x16 && data[1] == 0x03 && data[2] == 0x01) {
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:tls");
+
+        /*unsigned char *ssldata = data;
+        while (ssldata < data + hlf->count) {
+            int len = ((ssldata[3]&0xff) << 8 | (ssldata[4]&0xff));
+            if (ssldata[5] == 0x0b) {
+            }
+            ssldata += len;
+        }*/
+    }
 }
 /******************************************************************************/
 void moloch_nids_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
@@ -854,6 +866,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
+                moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "http:bad-xff");
                 LOG("ERROR - Didn't understand ip: %s %s %d", session->xffString->str, ip, ia);
                 continue;
             }

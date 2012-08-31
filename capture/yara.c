@@ -227,12 +227,24 @@ int callback(RULE* rule, void* data)
 /******************************************************************************/
 int moloch_yara_callback(RULE* rule, MolochSession_t* session)
 {
+    char tagname[256];
+    TAG* tag;
+
 #ifdef DEBUG
     callback(rule, session);
 #endif
 
     if (rule->flags & RULE_FLAGS_MATCH) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, rule->identifier);
+        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier); 
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tagname);
+        tag = rule->tag_list_head;
+        while(tag != NULL) {
+            if (tag->identifier) {
+                snprintf(tagname, sizeof(tagname), "yara:%s", tag->identifier); 
+                moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tagname);
+            }
+            tag = tag->next;
+        }
     }
     
     return CALLBACK_CONTINUE;
