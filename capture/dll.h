@@ -57,4 +57,9 @@
 #define DLL_PEEK_TAIL(name,head) \
     ((head)->name##count == 0?NULL:(head)->name##prev)
 
+#define DLL_FOREACH(name,head,element) \
+      for ((element) = (head)->name##next; \
+           (element) != (void *)(head); \
+           (element)=(element)->name##next)
+
 #endif

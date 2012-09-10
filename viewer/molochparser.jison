@@ -27,6 +27,12 @@
 "ip.dst"                  return "ip.dst"
 "ip.xff"                  return "ip.xff"
 "ip"                      return "ip"
+"tls.issuer.cn"           return "tls.issuer.cn"
+"tls.issuer.on"           return "tls.issuer.on"
+"tls.subject.cn"          return "tls.subject.cn"
+"tls.subject.on"          return "tls.subject.on"
+"tls.alt"                 return "tls.alt"
+"tls.serial"              return "tls.serial"
 "uri"                     return "uri"
 "ua"                      return "ua"
 "icmp"                    return "icmp"
@@ -97,16 +103,24 @@ RANGEFIELD: databytes   {$$ = 'db'}
           | 'port.dst'  {$$ = 'p2'}
           ;
 
-TERMFIELD  : 'country.src' {$$ = 'g1'}
-           | 'country.dst' {$$ = 'g2'}
-           | 'country.xff' {$$ = 'gxff'}
-           | node          {$$ = 'no'}
-           | host          {$$ = 'ho'}
+TERMFIELD  : node             {$$ = 'no'}
+           | host             {$$ = 'ho'}
+           | 'tls.subject.cn' {$$ = 'tls.sCn'}
+           | 'tls.issuer.cn'  {$$ = 'tls.iCn'}
+           | 'tls.serial'     {$$ = 'tls.sn'}
+           | 'tls.alt'        {$$ = 'tls.alt'}
            ;
 
-TEXTFIELD  : 'asn.src'     {$$ = 'as1'}
-           | 'asn.dst'     {$$ = 'as2'}
-           | 'asn.xff'     {$$ = 'asxff'}
+UPTERMFIELD  : 'country.src' {$$ = 'g1'}
+             | 'country.dst' {$$ = 'g2'}
+             | 'country.xff' {$$ = 'gxff'}
+             ;
+
+TEXTFIELD  : 'asn.src'        {$$ = 'as1'}
+           | 'asn.dst'        {$$ = 'as2'}
+           | 'asn.xff'        {$$ = 'asxff'}
+           | 'tls.subject.on' {$$ = 'tls.sOn'}
+           | 'tls.issuer.on'  {$$ = 'tls.iOn'}
            ;
 
 STR : ID
@@ -124,6 +138,12 @@ STR : ID
     | asn.src
     | asn.dst
     | asn.xff
+    | tls.issuer.cn
+    | tls.issuer.on
+    | tls.subject.cn
+    | tls.subject.on
+    | tls.alt
+    | tls.serial
     | QUOTEDSTR
     | node
     | host
@@ -190,6 +210,26 @@ e
         }
     | TERMFIELD '==' STR
         { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {query: {wildcard: {}}};
+            $$.query.wildcard[$1] = str;
+          } else {
+            $$ = {term: {}};
+            $$.term[$1] = str;
+          }
+        }
+    | UPTERMFIELD '!=' STR
+        { var str = stripQuotes($3).toUpperCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {query: {wildcard: {}}}};
+            $$.not.query.wildcard[$1] = str;
+          } else {
+            $$ = {not: {term: {}}};
+            $$.not.term[$1] = str;
+          }
+        }
+    | UPTERMFIELD '==' STR
+        { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
             $$ = {query: {wildcard: {}}};
             $$.query.wildcard[$1] = str;

@@ -47,6 +47,7 @@ static GeoIP         *giASN = 0;
 
 /******************************************************************************/
 extern MolochConfig_t config;
+extern gboolean dryRun;
 
 /******************************************************************************/
 typedef struct moloch_tag {
@@ -152,9 +153,16 @@ void moloch_db_save_session(MolochSession_t *session)
     int             key_len;
     uuid_t          uuid;
 
+
     /* No Packets */
     if (!session->filePosArray->len)
         return;
+
+    totalSessions++;
+
+    if (dryRun) {
+        return;
+    }
 
     if (!sJson) {
         sJPtr = sJson = moloch_es_get_buffer(MOLOCH_ES_BUFFER_SIZE_L);
@@ -247,6 +255,89 @@ void moloch_db_save_session(MolochSession_t *session)
                 *(sJPtr++) = ',';
             sJPtr += moloch_db_js0n_str(sJPtr, g_ptr_array_index(session->urlArray, i));
         }
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+    }
+
+    if (HASH_COUNT(t_, session->certs)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"tls\":[");
+        i = 0;
+
+        MolochCertsInfo_t *certs;
+        HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
+            int j = 0;
+            if (i != 0)
+                *(sJPtr++) = ',';
+
+            *(sJPtr++) = '{';
+
+            if (certs->issuer.commonName) {
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"iCn\":");
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->issuer.commonName);
+                free(certs->issuer.commonName);
+                j++;
+            }
+
+            if (certs->issuer.orgName) {
+                if (j != 0)
+                    *(sJPtr++) = ',';
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"iOn\":");
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->issuer.orgName);
+                free(certs->issuer.orgName);
+                j++;
+            }
+
+            if (certs->subject.commonName) {
+                if (j != 0)
+                    *(sJPtr++) = ',';
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sCn\":");
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->subject.commonName);
+                free(certs->subject.commonName);
+                j++;
+            }
+
+            if (certs->subject.orgName) {
+                if (j != 0)
+                    *(sJPtr++) = ',';
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sOn\":");
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->subject.orgName);
+                free(certs->subject.orgName);
+                j++;
+            }
+
+            if (certs->serialNumber) {
+                if (j != 0)
+                    *(sJPtr++) = ',';
+                int k;
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sn\":\"");
+                for (k = 0; k < certs->serialNumberLen; k++) {
+                    sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%02x", certs->serialNumber[k]);
+                }
+                *(sJPtr++) = '"';
+            }
+
+            if (certs->alt.s_count) {
+                int k = 0;
+                if (j != 0)
+                    *(sJPtr++) = ',';
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"alt\":[");
+                while (certs->alt.s_count > 0) {
+                    MolochString_t *string;
+                    DLL_POP_HEAD(s_, &certs->alt, string);
+                    if (k != 0)
+                        *(sJPtr++) = ',';
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
+                    free(string->str);
+                    free(string);
+                    k++;
+                }
+                *(sJPtr++) = ']';
+            }
+
+            free(certs);
+            i++;
+
+            *(sJPtr++) = '}';
+        );
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
@@ -387,7 +478,6 @@ void moloch_db_save_session(MolochSession_t *session)
         gettimeofday(&currentTime, NULL);
         dbLastSave = currentTime.tv_sec;
     }
-    totalSessions++;
 }
 /******************************************************************************/
 long long zero_atoll(char *v) {
@@ -926,13 +1016,17 @@ void moloch_db_init()
         }
     }
 
-    g_timeout_add_seconds( 2, moloch_db_update_stats_gfunc, 0);
-    g_timeout_add_seconds( 5, moloch_db_update_stats_gfunc, (gpointer)1);
-    g_timeout_add_seconds(60, moloch_db_update_stats_gfunc, (gpointer)2);
-    g_timeout_add_seconds( 1, moloch_db_flush_gfunc, 0);
+    if (!dryRun) {
+        g_timeout_add_seconds( 2, moloch_db_update_stats_gfunc, 0);
+        g_timeout_add_seconds( 5, moloch_db_update_stats_gfunc, (gpointer)1);
+        g_timeout_add_seconds(60, moloch_db_update_stats_gfunc, (gpointer)2);
+        g_timeout_add_seconds( 1, moloch_db_flush_gfunc, 0);
+    }
 }
 /******************************************************************************/
 void moloch_db_exit()
 {
-    moloch_db_flush_gfunc((gpointer)1);
+    if (!dryRun) {
+        moloch_db_flush_gfunc((gpointer)1);
+    }
 }

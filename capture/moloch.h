@@ -64,6 +64,26 @@ typedef struct {
     int i_count;
 } MolochIntHead_t;
 
+typedef struct {
+    char *commonName; //2.5.4.3
+    char *orgName; // 2.5.4.10
+} MolochCertInfo_t;
+
+typedef struct moloch_tlsinfo{
+    struct moloch_tlsinfo *t_next, *t_prev;
+    MolochCertInfo_t       issuer;
+    MolochCertInfo_t       subject;
+    MolochStringHead_t     alt;
+    unsigned char         *serialNumber;
+    short                  serialNumberLen;
+    short                  t_bucket;
+} MolochCertsInfo_t;
+
+typedef struct {
+    struct moloch_tlsinfo *t_next, *t_prev;
+    int                    t_count;
+} MolochCertsInfoHead_t;
+
 
 #define MOLOCH_TAG_TAGS         0
 #define MOLOCH_TAG_HTTP_HEADERS 1
@@ -76,6 +96,7 @@ typedef struct moloch_session {
     HASH_VAR(s_, hosts, MolochStringHead_t, 11);
     HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
     HASH_VAR(i_, xffs, MolochIntHead_t, 11);
+    HASH_VAR(t_, certs, MolochCertsInfoHead_t, 11);
 
     char        header[32];
     http_parser parsers[2];

@@ -124,25 +124,32 @@ exports.ip6 = function (buffer, obj) {
   };
 };
 
-exports.ether = function (buffer, obj) {
-  obj.ether = {
-    length: buffer.length,
-    addr1:  buffer.slice(0, 6).toString('hex', 0, 6),
-    addr2:  buffer.slice(6, 12).toString('hex', 0, 6),
-    type:   buffer.readUInt16BE(12)
-  };
+exports.ethertype = function(buffer, obj) {
+  obj.ether.type = buffer.readUInt16BE(0);
 
   switch(obj.ether.type) {
   case 0x0800:
-    exports.ip4(buffer.slice(14), obj);
+    exports.ip4(buffer.slice(2), obj);
     break;
   case 0x86dd:
-    exports.ip6(buffer.slice(14), obj);
+    exports.ip6(buffer.slice(2), obj);
+    break;
+  case 0x8100: // VLAN
+    exports.ethertype(buffer.slice(4), obj);
     break;
   default:
     console.log("Unknown ether.type", obj);
     break;
   }
+};
+
+exports.ether = function (buffer, obj) {
+  obj.ether = {
+    length: buffer.length,
+    addr1:  buffer.slice(0, 6).toString('hex', 0, 6),
+    addr2:  buffer.slice(6, 12).toString('hex', 0, 6)
+  };
+  exports.ethertype(buffer.slice(12), obj);
 };
 
 

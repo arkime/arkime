@@ -66,7 +66,8 @@ uint64_t                     totalSessions = 0;
 /******************************************************************************/
 extern gchar   *interface;
 extern gchar   *pcapFile;
-extern gboolean fakepcap;
+extern gboolean fakePcap;
+extern gboolean dryRun;
 
 HASH_VAR(h_, sessions, MolochSessionHead_t, 199337);
 
@@ -107,7 +108,56 @@ int moloch_nids_session_cmp(const void *keyv, const void *elementv)
 }
 
 /******************************************************************************/
-#define int_ntoa(x)     inet_ntoa(*((struct in_addr *)&x))
+void moloch_nids_certs_free (MolochCertsInfo_t *certs) 
+{
+    MolochString_t *string;
+
+    while (DLL_POP_HEAD(s_, &certs->alt, string)) {
+        free(string->str);
+        free(string);
+    }
+
+    if (certs->issuer.commonName)
+        free(certs->issuer.commonName);
+    if (certs->issuer.orgName)
+        free(certs->issuer.orgName);
+    if (certs->subject.commonName)
+        free(certs->subject.commonName);
+    if (certs->subject.orgName)
+        free(certs->subject.orgName);
+    if (certs->serialNumber)
+        free(certs->serialNumber);
+}
+
+/******************************************************************************/
+uint32_t moloch_nids_certs_hash(const void *key)
+{
+    MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
+
+    return (ci->serialNumber[1] << 28 | 
+            ci->serialNumber[ci->serialNumberLen-1] << 24 |
+            (ci->issuer.commonName?ci->issuer.commonName[0] << 18:0) |
+            (ci->issuer.orgName?ci->issuer.orgName[0] << 12:0) |
+            (ci->subject.commonName?ci->subject.commonName[0] << 6:0) |
+            (ci->subject.orgName?ci->subject.orgName[0]:0));
+}
+
+/******************************************************************************/
+int moloch_nids_certs_cmp(const void *keyv, const void *elementv)
+{
+    MolochCertsInfo_t *key = (MolochCertsInfo_t *)keyv;
+    MolochCertsInfo_t *element = (MolochCertsInfo_t *)elementv;
+
+    return (key->serialNumberLen == element->serialNumberLen) &&
+           (memcmp(key->serialNumber, element->serialNumber, element->serialNumberLen) == 0) &&
+           (key->issuer.commonName == element->issuer.commonName || strcmp(key->issuer.commonName, element->issuer.commonName) == 0) &&
+           (key->issuer.orgName == element->issuer.orgName || strcmp(key->issuer.orgName, element->issuer.orgName) == 0) &&
+           (key->subject.commonName == element->subject.commonName || strcmp(key->subject.commonName, element->subject.commonName) == 0) &&
+           (key->subject.orgName == element->subject.orgName || strcmp(key->subject.orgName, element->subject.orgName) == 0);
+}
+
+/******************************************************************************/
+#define int_ntoa(x)     inet_ntoa(*((struct in_addr *)(int*)&x))
 
 char *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint32_t addr2, int port2)
 {
@@ -126,7 +176,6 @@ char *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint3
 }
 #define MOLOCH_SESSIONID_LEN 13
 /******************************************************************************/
-guint moloch_sessionid_hash(gconstpointer v);
 void moloch_session_id (char *buf, int protocol, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
     buf[0] = protocol;
@@ -256,16 +305,23 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     moloch_nids_initial_tag(session);
 }
 /******************************************************************************/
-char *filename;
+char *pcapFilename;
+
 void moloch_nids_file_create()
 {
     pcap_dumper_t        *dumper;
 
-    filename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, &dumperId);
-    dumper = pcap_dump_open(nids_params.pcap_desc, filename);
+    if (dryRun) {
+        pcapFilename = "dryrun.pcap";
+        dumperFd = 1;
+        return;
+    }
+
+    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, &dumperId);
+    dumper = pcap_dump_open(nids_params.pcap_desc, pcapFilename);
 
     if (!dumper) {
-        LOG("ERROR - pcap open failed - Couldn't open file: '%s'", filename);
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s'", pcapFilename);
         exit (1);
     }
     pcap_dump_close(dumper);
@@ -274,9 +330,9 @@ void moloch_nids_file_create()
     dumperBufPos = 0;
     dumperBufMax = config.pcapWriteSize - 24;
 
-    dumperFd = open(filename,  O_LARGEFILE | O_NOATIME | O_WRONLY );
+    dumperFd = open(pcapFilename,  O_LARGEFILE | O_NOATIME | O_WRONLY );
     if (dumperFd < 0) {
-        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %d", filename, errno);
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %d", pcapFilename, errno);
         exit (2);
     }
     lseek(dumperFd, 24, SEEK_SET);
@@ -286,6 +342,10 @@ void moloch_nids_file_flush(gboolean all)
 {
     int pos = 0;
     int amount;
+
+    if (dryRun) {
+        return;
+    }
 
     all |= (dumperBufPos <= dumperBufMax);
 
@@ -424,6 +484,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->userAgents, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(i_, session->xffs, moloch_int_hash, moloch_int_cmp);
+        HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
         HASH_ADD(h_, sessions, sessionId, session);
         session->lastSave = session->firstPacket = nids_last_pcap_header->ts.tv_sec;
         session->addr1 = packet->ip_src.s_addr;
@@ -462,7 +523,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     /* Save packet to file */
     if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
-        if (dumperFd > 0) {
+        if (dumperFd > 0 && !dryRun)  {
             moloch_nids_file_flush(TRUE);
             close(dumperFd);
         }
@@ -474,7 +535,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         g_array_append_val(session->fileNumArray, dumperId);
     }
 
-    if (fakepcap) {
+    if (dryRun) {
+    } else if (fakePcap) {
         dumperBuf[dumperBufPos] = 'P';
         dumperBufPos++;
     } else {
@@ -532,6 +594,260 @@ void moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag)
 }
 
 /******************************************************************************/
+unsigned char *
+moloch_nids_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int *alen)
+{
+    if (*len < 2) {
+        goto get_tlv_error;
+    }
+
+    int pos = 0;
+
+    *apc = ((*data)[0] >> 5) & 0x1;
+
+    if (((*data)[0] & 0x1f) ==  0x1f) {
+        for (pos = 1; pos < *len; pos++) {
+            (*atag) = ((*atag) << 7) | (*data)[pos];
+            if (((*data)[pos] & 0x80) == 0)
+                break;
+        }
+    } else {
+        *atag = (*data)[pos] & 0x1f;
+        pos++;
+    }
+
+
+    if ((*data)[pos] == 0x80) {
+        goto get_tlv_error;
+    }
+
+    if ((*data)[pos] & 0x80) {
+        int cnt = (*data)[pos] & 0x7f;
+        pos++;
+        (*alen) = 0;
+        while (cnt > 0) {
+            (*alen) = ((*alen) << 8) | (*data)[pos];
+            cnt--;
+            pos++;
+        }
+    } else {
+        (*alen) = (*data)[pos];
+        pos++;
+    }
+
+    (*len) -= pos;
+    (*data) += pos;
+    unsigned char *value = (*data);
+
+    if (*len < 0) {
+        goto get_tlv_error;
+    }
+
+    if (*alen < 0) {
+        goto get_tlv_error;
+    }
+
+    if ((*alen) > (*len)) {
+        (*alen) = (*len);
+    }
+    (*data) += (*alen);
+    (*len) -= (*alen);
+
+    return value;
+
+get_tlv_error:
+    (*apc)   = 0;
+    (*alen) = 0;
+    (*atag) = 0;
+    (*len)  = 0;
+    return 0;
+}
+/******************************************************************************/
+char *moloch_nids_asn_decode_oid(unsigned char *oid, int len) {
+    static char buf[1000];
+    int buflen = 0;
+    int pos = 0;
+    int first = TRUE;
+    int value = 0;
+
+    for (pos = 0; pos < len; pos++) {
+        value = (value << 7) | (oid[pos] & 0x7f);
+        if (oid[pos] & 0x80) {
+            continue;
+        } 
+
+        if (first) {
+            first = FALSE;
+            if (value > 40) /* two values in first byte */
+                buflen += sprintf(buf, "%d.%d", value/40, value % 40);
+            else /* one value in first byte */
+                buflen += sprintf(buf, "%d", value);
+        } else {
+            buflen += sprintf(buf+buflen, ".%d", value);
+        }
+
+        value = 0;
+    }
+
+    return buf;
+}
+/******************************************************************************/
+void
+moloch_nids_tls_certinfo_process(MolochCertInfo_t *ci, unsigned char *data, int len)
+{
+    int apc, atag, alen;
+    char *lastOid = NULL;
+
+    while (len > 0) {
+        unsigned char *value = moloch_nids_asn_get_tlv(&data, &len, &apc, &atag, &alen);
+        if (apc) {
+            moloch_nids_tls_certinfo_process(ci, value, alen);
+        } else if (atag  == 6)  {
+            lastOid = moloch_nids_asn_decode_oid(value, alen);
+        } else if (lastOid && (atag == 20 || atag == 19 || atag == 12))  {
+            if (strcmp(lastOid, "2.5.4.3") == 0) {
+                ci->commonName = g_ascii_strdown((char*)value, alen);
+            } else if (strcmp(lastOid, "2.5.4.10") == 0) {
+                ci->orgName = g_ascii_strdown((char*)value, alen);
+            }
+        }
+    }
+}
+/******************************************************************************/
+void
+moloch_nids_tls_alt_names(MolochCertsInfo_t *certs, unsigned char *data, int len)
+{
+    int apc, atag, alen;
+    static char *lastOid = NULL;
+
+    while (len >= 2) {
+        unsigned char *value = moloch_nids_asn_get_tlv(&data, &len, &apc, &atag, &alen);
+
+        if (apc) {
+            moloch_nids_tls_alt_names(certs, value, alen);
+            if (certs->alt.s_count > 0) {
+                return;
+            }
+        } else if (atag == 6)  {
+            lastOid = moloch_nids_asn_decode_oid(value, alen);
+            if (strcmp(lastOid, "2.5.29.17") != 0)
+                lastOid = NULL;
+        } else if (lastOid && atag == 4) {
+            moloch_nids_tls_alt_names(certs, value, alen);
+            return;
+        } else if (lastOid && atag == 2) {
+            MolochString_t *element = malloc(sizeof(*element));
+            element->str = g_ascii_strdown((char*)value, alen);
+            DLL_PUSH_TAIL(s_, &certs->alt, element);
+        }
+    }
+    return;
+}
+/******************************************************************************/
+void
+moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
+{
+    unsigned char *ssldata;
+    unsigned char *pdata;
+    unsigned char *cdata;
+    int            ssllen = 0;
+    int            plen = 0;
+    int            clen = 0;
+
+    for (ssldata = data;
+         ssldata < data + len; 
+         ssldata += ssllen + 5) {
+
+        ssllen = MIN(data+len-ssldata, ((ssldata[3]&0xff) << 8 | (ssldata[4]&0xff)));
+
+
+
+        for (pdata = ssldata + 5;
+             pdata < data + len && pdata < ssldata + ssllen; 
+             pdata += plen + 4) {
+
+            plen = MIN(data+len-pdata, ((pdata[2]&0xff) << 8 | (pdata[3]&0xff)));
+
+            if (pdata[0] != 0x0b)
+                continue;
+
+            for (cdata = pdata+7;
+                 cdata < data + len && cdata < pdata + plen;
+                 cdata += clen + 3)
+            {
+                clen = MIN(data+len-cdata, cdata[0] << 16 | cdata[1] << 8 | cdata[2]);
+
+                MolochCertsInfo_t *certs = malloc(sizeof(MolochCertsInfo_t));
+                memset(certs, 0, sizeof(*certs));
+                DLL_INIT(s_, &certs->alt);
+
+                unsigned char *asndata = cdata + 3;
+                int            asnlen  = clen;
+                int            atag, alen, apc;
+                unsigned char *value;
+
+                /* Certificate */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+                asndata = value;
+                asnlen = alen;
+
+                /* signedCertificate */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+                asndata = value;
+                asnlen = alen;
+
+                /* version */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+
+                /* serialNumber */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+                certs->serialNumberLen = alen;
+                certs->serialNumber = malloc(alen);
+                memcpy(certs->serialNumber, value, alen);
+
+                /* signature */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+
+                /* issuer */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+                moloch_nids_tls_certinfo_process(&certs->issuer, value, alen);
+
+                /* validity */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+
+                /* subject */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+                moloch_nids_tls_certinfo_process(&certs->subject, value, alen);
+
+                /* subjectPublicKeyInfo */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+
+                /* extensions */
+                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    break;
+                moloch_nids_tls_alt_names(certs, value, alen);
+
+                MolochCertsInfo_t *element;
+                HASH_FIND(t_, session->certs, certs, element);
+                if (element) {
+                    moloch_nids_certs_free(certs);
+                } else {
+                    HASH_ADD(t_, session->certs, certs, certs);
+                }
+            }
+        }
+    }
+}
+/******************************************************************************/
 void moloch_nids_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
 {
     unsigned char *data = (unsigned char *)hlf->data;
@@ -571,16 +887,9 @@ void moloch_nids_parse_classify(MolochSession_t *session, struct tcp_stream *UNU
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:pop3");
 
-    if (hlf->count > 30 && data[0] == 0x16 && data[1] == 0x03 && data[2] == 0x01) {
+    if (hlf->count != hlf->count_new && hlf->count > 30 && data[0] == 0x16 && data[1] == 0x03 && data[2] == 0x01) {
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:tls");
-
-        /*unsigned char *ssldata = data;
-        while (ssldata < data + hlf->count) {
-            int len = ((ssldata[3]&0xff) << 8 | (ssldata[4]&0xff));
-            if (ssldata[5] == 0x0b) {
-            }
-            ssldata += len;
-        }*/
+        moloch_nids_tls_process(session, data, hlf->count);
     }
 }
 /******************************************************************************/
@@ -785,6 +1094,10 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         }
     }
 
+    if (session->hostString) {
+        g_string_ascii_down(session->hostString);
+    }
+
     if (session->urlString && session->hostString) {
         MolochString_t *hstring;
 
@@ -978,6 +1291,11 @@ void moloch_nids_session_free (MolochSession_t *session)
         free(string);
     );
 
+    MolochCertsInfo_t *certs;
+    HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
+        moloch_nids_certs_free(certs);
+    );
+
     if (session->urlString)
         g_string_free(session->urlString, TRUE);
     if (session->hostString)
@@ -1005,10 +1323,10 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 	    strcpy(saddr, int_ntoa(iph->ip_src.s_addr));
 	    strcpy(daddr, int_ntoa(iph->ip_dst.s_addr));
 	    LOG("NIDSIP:%s %s, packet (apparently) from %s to %s",
-		   filename, nids_warnings[errnum], saddr, daddr);
+		   pcapFilename, nids_warnings[errnum], saddr, daddr);
 	} else
 	    LOG("NIDSIP:%s %s",
-		   filename, nids_warnings[errnum]);
+		   pcapFilename, nids_warnings[errnum]);
 	break;
 
     case NIDS_WARN_TCP:
@@ -1017,11 +1335,11 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
         if (errnum == NIDS_WARN_TCP_TOOMUCH || errnum == NIDS_WARN_TCP_BIGQUEUE) {
             /* ALW - Should do something with it */
 	} else if (errnum != NIDS_WARN_TCP_HDR)
-	    LOG("NIDSTCP:%s %s,from %s:%hu to  %s:%hu", filename, nids_warnings[errnum],
+	    LOG("NIDSTCP:%s %s,from %s:%hu to  %s:%hu", pcapFilename, nids_warnings[errnum],
 		saddr, ntohs(((struct tcphdr *) data)->source), daddr,
 		ntohs(((struct tcphdr *) data)->dest));
 	else
-	    LOG("NIDSTCP:%s %s,from %s to %s", filename,
+	    LOG("NIDSTCP:%s %s,from %s to %s", pcapFilename,
 		nids_warnings[errnum], saddr, daddr);
 	break;
 
@@ -1301,6 +1619,8 @@ void moloch_nids_exit() {
     );
 
     magic_close(cookie);
-    moloch_nids_file_flush(TRUE);
-    close(dumperFd);
+    if (!dryRun) {
+        moloch_nids_file_flush(TRUE);
+        close(dumperFd);
+    }
 }

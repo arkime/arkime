@@ -435,7 +435,7 @@ script(type='text/javascript')
       }
 
       if (tokens.length <= 1) {
-        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
+        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
       }
 
       if (/^(ip)/.test(tokens[tokens.length-2])) {
@@ -446,12 +446,12 @@ script(type='text/javascript')
         return callback(["!=", "==" , ">=", "<=", "<", ">"]);
       }
 
-      if (/^(tags|ua|header|country|asn|host|node|uri)/.test(tokens[tokens.length-2])) {
+      if (/^(tags|ua|header|country|asn|host|node|uri|tls)/.test(tokens[tokens.length-2])) {
         return callback(["!=", "=="]);
       }
 
       var item = tokens[tokens.length-3];
-      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri)/.test(item)) {
+      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri|tls)/.test(item)) {
         return callback([]);
       }
 
@@ -478,7 +478,7 @@ script(type='text/javascript')
         return;
       }
 
-      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host"]);
+      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
     };
   });
 

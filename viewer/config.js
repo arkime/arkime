@@ -135,7 +135,7 @@ exports.isHTTPS = function(node) {
 };
 
 exports.basePath = function(node) {
-  return exports.getFull(node || internals.nodeName, "webBasePath", "/")
+  return exports.getFull(node || internals.nodeName, "webBasePath", "/");
 };
 
 dropPrivileges();

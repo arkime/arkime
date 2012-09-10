@@ -112,6 +112,35 @@
         },
         "hh": {
           "type": "integer"
+        },
+        "tls" : {
+          "type" : "object",
+          "properties" : {
+            "iCn" : {
+              "type" : "string",
+              "index" : "not_analyzed"
+            },
+            "iOn" : {
+              "type" : "string",
+              "analyzer" : "snowball"
+            },
+            "sCn" : {
+              "type" : "string",
+              "index" : "not_analyzed"
+            },
+            "sOn" : {
+              "type" : "string",
+              "analyzer" : "snowball"
+            },
+            "sn" : {
+              "type" : "string",
+              "index" : "not_analyzed"
+            },
+            "alt" : {
+              "type" : "string",
+              "index" : "not_analyzed"
+            }
+          }
         }
       }
     }

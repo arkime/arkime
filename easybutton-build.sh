@@ -1,8 +1,9 @@
 #!/bin/sh
-# Use this script to install OS dependencies, downloading and compile moloch dependencies, and compile moloch.
+# Use this script to install OS dependencies, downloading and compile moloch dependencies, and compile moloch capture.
 
 # This script will 
-# * download known working versions of moloch dependancies, 
+# * use apt-get/yum to install OS dependancies
+# * download known working versions of moloch dependancies
 # * build them statically 
 # * configure moloch-capture to use them
 # * build moloch-capture
@@ -18,11 +19,11 @@ NIDS=1.24
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
-  yum -y install pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel
+  yum -y install curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  apt-get install git libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make
+  apt-get install curl git libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make
 fi
 
 
@@ -76,7 +77,7 @@ tar zxf libnids-$NIDS.tar.gz
 
 
 # Now build moloch
-echo "MOLOCH: Building moloch"
+echo "MOLOCH: Building capture"
 cd ..
 echo "./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
 ./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB

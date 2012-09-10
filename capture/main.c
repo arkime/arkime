@@ -36,12 +36,13 @@ GMainLoop             *mainLoop;
 
 /******************************************************************************/
 gchar   *pcapFile       = NULL;
-gboolean fakepcap       = FALSE;
+gboolean fakePcap       = FALSE;
 gchar   *nodeName       = NULL;
 gchar   *hostName       = NULL;
 gchar   *configFile     = NULL;
 gboolean showVersion    = FALSE;
 gboolean debug          = FALSE;
+gboolean dryRun         = FALSE;
 
 static GOptionEntry entries[] =
 {
@@ -50,7 +51,8 @@ static GOptionEntry entries[] =
     { "node",      'n',                    0, G_OPTION_ARG_STRING,   &nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,     &showVersion, "Show version number", NULL },
     { "debug",     'd',                    0, G_OPTION_ARG_NONE,     &debug,       "Turn on all debugging", NULL },
-    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,     &fakepcap,    "fake pcap", NULL },
+    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,     &fakePcap,    "fake pcap", NULL },
+    { "dryrun",      0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,     &dryRun,      "dry run", NULL },
     { NULL,          0, 0,                                    0, NULL, NULL, NULL }
 };
 

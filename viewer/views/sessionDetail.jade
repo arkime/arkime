@@ -76,6 +76,35 @@ div(id='sessionDetail#{session.id}')
         - if (session.asxff)
           a(href='#', onclick='return addExpression("asn.xff == \\\"#{session.asxff[i]}\\\"");') [#{session.asxff[i]}]
           | 
+  if (session.tls)
+    each cert in session.tls
+      div TLS: 
+        - if (cert.sn)
+          | Serial: 
+          a(href='#', onclick='return addExpression("tls.serial == #{cert.sn}");') #{cert.sn}
+          | 
+        - if (cert.iCn)
+          | Issuer Common: 
+          a(href='#', onclick='return addExpression("tls.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
+          | 
+        - if (cert.iOn)
+          | Issuer Org: 
+          a(href='#', onclick='return addExpression("tls.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
+          | 
+        - if (cert.sCn)
+          | Subject Common: 
+          a(href='#', onclick='return addExpression("tls.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
+          | 
+        - if (cert.sOn)
+          | Subject Org: 
+          a(href='#', onclick='return addExpression("tls.subject.on == \\\"#{cert.sOn}\\\"");') #{cert.sOn}
+          | 
+        if (cert.alt)
+          | [
+          each alt in cert.alt
+            a(href='#', onclick='return addExpression("tls.alt == \\\"#{alt}\\\"");') #{alt}
+            | 
+          | ]
   hr
   div
     if (session.pa > 200)

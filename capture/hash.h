@@ -7,9 +7,11 @@
  *
  * To Use:
  * Create item structure and optional head structure for use with a DLL
- * Create the key function and cmp function
+ * Create the key function and cmp function.
  * Use HASH_VAR to declare the actual variable.  Can be global or in a structure
  * Use HASH_INIT to initialze the hashtable
+ *
+ * A key can also just be the element
  *
  * The same WARNING in dll.h applies since hash.h just uses DLL
  */
