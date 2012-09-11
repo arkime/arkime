@@ -98,8 +98,8 @@ void parse_args(int argc, char **argv)
         hostName[100] = 0;
     }
     if (debug) {
-        LOG("nodeName = %s\n", nodeName);
-        LOG("hostName = %s\n", hostName);
+        LOG("nodeName = %s", nodeName);
+        LOG("hostName = %s", hostName);
     }
 }
 

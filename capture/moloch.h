@@ -9,7 +9,20 @@
 
 #define UNUSED(x) x __attribute((unused))
 
+typedef struct moloch_string {
+    struct moloch_string *s_next, *s_prev;
+    char                 *str;
+    short                 s_bucket;
+} MolochString_t;
+
+typedef struct {
+    struct moloch_string *s_next, *s_prev;
+    int s_count;
+} MolochStringHead_t;
+
 typedef struct moloch_config {
+    HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
+
     char     *nodeClass;
     char     *elasticsearch;
     char     *interface;
@@ -41,17 +54,6 @@ typedef struct moloch_config {
     char      logESRequests;
     char      logFileCreation;
 } MolochConfig_t;
-
-typedef struct moloch_string {
-    struct moloch_string *s_next, *s_prev;
-    char                 *str;
-    short                 s_bucket;
-} MolochString_t;
-
-typedef struct {
-    struct moloch_string *s_next, *s_prev;
-    int s_count;
-} MolochStringHead_t;
 
 typedef struct moloch_int {
     struct moloch_int    *i_next, *i_prev;
@@ -134,6 +136,7 @@ typedef struct moloch_session {
     uint8_t     inValue:1;
     uint8_t     inBody:1;
     uint8_t     needSave:1;
+    uint8_t     dontSave:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {

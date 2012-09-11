@@ -521,35 +521,36 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, len - 8 - 4 * packet->ip_hl);
     }
 
-    /* Save packet to file */
-    if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
-        if (dumperFd > 0 && !dryRun)  {
-            moloch_nids_file_flush(TRUE);
-            close(dumperFd);
+    if (!dryRun && !session->dontSave) {
+        /* Save packet to file */
+        if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
+            if (dumperFd > 0 && !dryRun)  {
+                moloch_nids_file_flush(TRUE);
+                close(dumperFd);
+            }
+            moloch_nids_file_create();
         }
-        moloch_nids_file_create();
-    }
-    uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
-    g_array_append_val(session->filePosArray, val);
-    if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
-        g_array_append_val(session->fileNumArray, dumperId);
-    }
+        uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
+        g_array_append_val(session->filePosArray, val);
+        if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
+            g_array_append_val(session->fileNumArray, dumperId);
+        }
 
-    if (dryRun) {
-    } else if (fakePcap) {
-        dumperBuf[dumperBufPos] = 'P';
-        dumperBufPos++;
-    } else {
-        moloch_nids_pcap_dump(nids_last_pcap_header, nids_last_pcap_data);
-        dumperFilePos += 16 + nids_last_pcap_header->caplen;
-    }
+        if (fakePcap) {
+            dumperBuf[dumperBufPos] = 'P';
+            dumperBufPos++;
+        } else {
+            moloch_nids_pcap_dump(nids_last_pcap_header, nids_last_pcap_data);
+            dumperFilePos += 16 + nids_last_pcap_header->caplen;
+        }
 
-    if (dumperBufPos > dumperBufMax) {
-        moloch_nids_file_flush(FALSE);
-    }
+        if (dumperBufPos > dumperBufMax) {
+            moloch_nids_file_flush(FALSE);
+        }
 
-    if (session->filePosArray->len >= config.maxPackets) {
-        moloch_nids_mid_save_session(session);
+        if (session->filePosArray->len >= config.maxPackets) {
+            moloch_nids_mid_save_session(session);
+        }
     }
 
     /* Clean up the Q, only 1 per incoming packet so we don't fall behind */
@@ -591,6 +592,15 @@ void moloch_nids_get_tag_cb(MolochSession_t *session, int tagtype, uint32_t tag)
 void moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag) {
     session->outstandingTags++;
     moloch_db_get_tag(session, tagtype, tag, moloch_nids_get_tag_cb);
+
+    if (!session->dontSave && HASH_COUNT(s_, config.dontSaveTags)) {
+        MolochString_t *tstring;
+
+        HASH_FIND(s_, config.dontSaveTags, tag, tstring);
+        if (tstring) {
+            session->dontSave = 1;
+        }
+    }
 }
 
 /******************************************************************************/

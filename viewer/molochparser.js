@@ -384,8 +384,8 @@ function parseIpPort(ipPortStr, which) {
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1  = {term: {a1: ip1>>>0}};
-        t2  = {term: {a2: ip1>>>0}};
+        t1.and.push({term: {a1: ip1>>>0}});
+        t2.and.push({term: {a2: ip1>>>0}});
         xff = {term: {xff: ip1>>>0}};
     } else {
         t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
@@ -399,14 +399,24 @@ function parseIpPort(ipPortStr, which) {
     t2.and.push({term: {p2: port}});
   }
 
+  if (t1.and.length === 1) {
+      t1 = t1.and[0];
+      t2 = t2.and[0];
+  }
+
   switch(which) {
   case 0:
-    return {or: [t1, t2, xff]};
+    if (xff)
+        return {or: [t1, t2, xff]};
+    else
+        return {or: [t1, t2]};
   case 1:
     return t1;
   case 2:
     return t2;
   case 3:
+    if (!xff)
+        throw "xff doesn't support port only";
     return xff;
   }
 }
@@ -707,8 +717,7 @@ break;
 lexer.rules = [/^(?:\s+)/,/^(?:[0-9]+\b)/,/^(?:([0-9]{1,3})?(\.[0-9]{1,3})?(\.[0-9]{1,3})?(\.[0-9]{1,3})?(\/[0-9]{1,2})?(:[0-9]{1,5})?\b)/,/^(?:bytes)/,/^(?:databytes)/,/^(?:packets)/,/^(?:protocol)/,/^(?:port\.src)/,/^(?:port\.dst)/,/^(?:port)/,/^(?:node)/,/^(?:country\.src)/,/^(?:country\.dst)/,/^(?:country\.xff)/,/^(?:country)/,/^(?:asn\.src)/,/^(?:asn\.dst)/,/^(?:asn\.xff)/,/^(?:asn)/,/^(?:ip\.src)/,/^(?:ip\.dst)/,/^(?:ip\.xff)/,/^(?:ip)/,/^(?:tls\.issuer\.cn)/,/^(?:tls\.issuer\.on)/,/^(?:tls\.subject\.cn)/,/^(?:tls\.subject\.on)/,/^(?:tls\.alt)/,/^(?:tls\.serial)/,/^(?:uri)/,/^(?:ua)/,/^(?:icmp)/,/^(?:tcp)/,/^(?:udp)/,/^(?:host)/,/^(?:header)/,/^(?:tags)/,/^(?:[\w*._:-]+)/,/^(?:"[^"]+")/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/];
 lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55],"inclusive":true}};
 return lexer;})()
-parser.lexer = lexer;
-function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
+parser.lexer = lexer;function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
 return new Parser;
 })();
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {

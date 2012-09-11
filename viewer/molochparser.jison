@@ -375,8 +375,8 @@ function parseIpPort(ipPortStr, which) {
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1  = {term: {a1: ip1>>>0}};
-        t2  = {term: {a2: ip1>>>0}};
+        t1.and.push({term: {a1: ip1>>>0}});
+        t2.and.push({term: {a2: ip1>>>0}});
         xff = {term: {xff: ip1>>>0}};
     } else {
         t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
@@ -390,14 +390,24 @@ function parseIpPort(ipPortStr, which) {
     t2.and.push({term: {p2: port}});
   }
 
+  if (t1.and.length === 1) {
+      t1 = t1.and[0];
+      t2 = t2.and[0];
+  }
+
   switch(which) {
   case 0:
-    return {or: [t1, t2, xff]};
+    if (xff)
+        return {or: [t1, t2, xff]};
+    else
+        return {or: [t1, t2]};
   case 1:
     return t1;
   case 2:
     return t2;
   case 3:
+    if (!xff)
+        throw "xff doesn't support port only";
     return xff;
   }
 }

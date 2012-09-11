@@ -24,6 +24,7 @@
 #include <netinet/udp.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "glib.h"
 #include "moloch.h"
 
@@ -52,6 +53,27 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
         return NULL;
 
     return g_strdup(d);
+}
+
+/******************************************************************************/
+gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
+{
+    if (g_key_file_has_key(keyfile, nodeName, key, NULL)) {
+        return g_key_file_get_string_list(keyfile, nodeName, key, NULL, NULL);
+    }
+
+    if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
+        return g_key_file_get_string_list(keyfile, config.nodeClass, key, NULL, NULL);
+    }
+
+    if (g_key_file_has_key(keyfile, "default", key, NULL)) {
+        return g_key_file_get_string_list(keyfile, "default", key, NULL, NULL);
+    }
+
+    if (!d)
+        return NULL;
+
+    return g_strsplit(d, ";", 0);
 }
 
 /******************************************************************************/
@@ -105,6 +127,29 @@ void moloch_config_load()
         exit(1);
     }
 
+    gchar **tags            = moloch_config_str_list(keyfile, "dontSaveTags", NULL);
+    if (tags) {
+        int i;
+        for (i = 0; tags[i]; i++) {
+            MolochString_t *tstring;
+            gchar *tag = tags[i];
+            while (isspace(*tag))
+                tag++;
+            g_strchomp(tag);
+
+            if (!(*tag))
+                continue;
+
+            HASH_FIND(s_, config.dontSaveTags, tag, tstring);
+            if (!tstring) {
+                tstring = malloc(sizeof(*tstring));
+                tstring->str = g_strdup(tag);
+                HASH_ADD(s_, config.dontSaveTags, tstring->str, tstring);
+            }
+        }
+        g_strfreev(tags);
+    }
+
     config.nodeClass        = moloch_config_str(keyfile, "nodeClass", NULL);
 
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
@@ -144,6 +189,8 @@ void moloch_config_load()
 /******************************************************************************/
 void moloch_config_init()
 {
+    HASH_INIT(s_, config.dontSaveTags, moloch_string_hash, moloch_string_cmp);
+
     moloch_config_load();
 
     if (debug) {
@@ -177,6 +224,11 @@ void moloch_config_init()
         LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));
         LOG("logFileCreation: %s", (config.logFileCreation?"true":"false"));
+
+        MolochString_t *tstring;
+        HASH_FORALL(s_, config.dontSaveTags, tstring, 
+          LOG("dontSaveTags: %s", tstring->str);
+        );
     }
 
     if (!config.interface && !pcapFile) {
