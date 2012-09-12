@@ -136,7 +136,7 @@ uint32_t moloch_nids_certs_hash(const void *key)
 {
     MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
 
-    return (ci->serialNumber[1] << 28 | 
+    return (ci->serialNumber[0] << 28 | 
             ci->serialNumber[ci->serialNumberLen-1] << 24 |
             (ci->issuer.commonName?ci->issuer.commonName[0] << 18:0) |
             (ci->issuer.orgName?ci->issuer.orgName[0] << 12:0) |
@@ -631,8 +631,7 @@ moloch_nids_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int
         pos++;
     }
 
-
-    if ((*data)[pos] == 0x80) {
+    if (pos >= (*len) || (*data)[pos] == 0x80) {
         goto get_tlv_error;
     }
 
@@ -640,7 +639,7 @@ moloch_nids_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int
         int cnt = (*data)[pos] & 0x7f;
         pos++;
         (*alen) = 0;
-        while (cnt > 0) {
+        while (cnt > 0 && pos < (*len)) {
             (*alen) = ((*alen) << 8) | (*data)[pos];
             cnt--;
             pos++;
@@ -654,11 +653,7 @@ moloch_nids_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int
     (*data) += pos;
     unsigned char *value = (*data);
 
-    if (*len < 0) {
-        goto get_tlv_error;
-    }
-
-    if (*alen < 0) {
+    if ((*len) < 0 || (*alen) < 0) {
         goto get_tlv_error;
     }
 
@@ -737,6 +732,9 @@ moloch_nids_tls_alt_names(MolochCertsInfo_t *certs, unsigned char *data, int len
 
     while (len >= 2) {
         unsigned char *value = moloch_nids_asn_get_tlv(&data, &len, &apc, &atag, &alen);
+
+        if (!value)
+            return;
 
         if (apc) {
             moloch_nids_tls_alt_names(certs, value, alen);
@@ -846,6 +844,7 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
                     break;
 
+                int basnlen = asnlen;
                 /* extensions */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
                     break;
@@ -1227,8 +1226,10 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
         session->header[0] = 0;
     }
 
-    if (length + strlen(session->header) < sizeof(session->header)+1)
-        strncat(session->header, at, length);
+    int remaining = sizeof(session->header) - strlen(session->header) - 1;
+    if (remaining > 0)
+        strncat(session->header, at, MIN(length, remaining));
+
     return 0;
 }
 

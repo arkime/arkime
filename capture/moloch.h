@@ -100,7 +100,7 @@ typedef struct moloch_session {
     HASH_VAR(i_, xffs, MolochIntHead_t, 11);
     HASH_VAR(t_, certs, MolochCertsInfoHead_t, 11);
 
-    char        header[32];
+    char        header[40];
     http_parser parsers[2];
 
 
