@@ -1028,5 +1028,6 @@ void moloch_db_exit()
 {
     if (!dryRun) {
         moloch_db_flush_gfunc((gpointer)1);
+        moloch_db_update_stats();
     }
 }

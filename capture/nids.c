@@ -40,6 +40,8 @@
 extern MolochConfig_t        config;
 extern GMainLoop            *mainLoop;
 extern gchar                *nodeName;
+extern gchar                *extraTag;
+extern gboolean              debug;
 static gchar                 nodeTag[100];
 static gchar                 classTag[100];
 
@@ -247,6 +249,9 @@ void moloch_nids_initial_tag(MolochSession_t *session)
     moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, nodeTag);
     if (config.nodeClass)
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, classTag);
+
+    if (extraTag)
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, extraTag);
 
     switch(session->protocol) {
     case IPPROTO_TCP:
@@ -897,7 +902,7 @@ void moloch_nids_parse_classify(MolochSession_t *session, struct tcp_stream *UNU
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:pop3");
 
-    if (hlf->count != hlf->count_new && hlf->count > 30 && data[0] == 0x16 && data[1] == 0x03 && data[2] == 0x01) {
+    if (hlf->count != hlf->count_new && hlf->count > 30 && data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:tls");
         moloch_nids_tls_process(session, data, hlf->count);
     }
@@ -1535,6 +1540,10 @@ void moloch_nids_init()
     if (config.nodeClass) {
         snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
         moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, classTag, NULL);
+    }
+
+    if (extraTag) {
+        moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, extraTag, NULL);
     }
 
     moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "tcp", NULL);
