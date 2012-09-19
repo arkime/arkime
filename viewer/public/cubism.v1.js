@@ -1,5 +1,5 @@
 (function(exports){
-var cubism = exports.cubism = {version: "1.2.1"};
+var cubism = exports.cubism = {version: "1.2.2"};
 var cubism_id = 0;
 function cubism_identity(d) { return d; }
 cubism.option = function(name, defaultValue) {
@@ -198,7 +198,7 @@ cubism_contextPrototype.graphite = function(host) {
 
       // Apply the summarize, if necessary.
       if (step !== 1e4) target = "summarize(" + target + ",'"
-          + (!(step % 36e5) ? step / 36e5 + "hour" : !(step % 6e4) ? step / 6e4 + "min" : step + "sec")
+          + (!(step % 36e5) ? step / 36e5 + "hour" : !(step % 6e4) ? step / 6e4 + "min" : step / 1e3 + "sec")
           + "','" + sum + "')";
 
       d3.text(host + "/render?format=raw"

@@ -89,12 +89,15 @@ script(type='text/javascript')
       var nTr = this.parentNode.parentNode;
       if ( this.src.match('details_close') )
       {
+        $(nTr).removeClass('opened');
+        $(nTr).removeClass('fixedrow');
         /* This row is already open - close it */
         this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
         sessionsTable.fnClose( nTr );
       }
       else
       {
+        $(nTr).addClass('opened');
         var aData = sessionsTable.fnGetData( nTr );
         this.src = "DataTables-1.9.1/examples/examples_support/details_close.png";
         $.ajax( {
@@ -129,7 +132,7 @@ script(type='text/javascript')
         "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
         "sLengthMenu": "_MENU_"
       },
-      "sDom": '<"H"lipr>t<"F"ip>',
+      "sDom": '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipr>t',
       "iDisplayLength": initialDisplayLength,
       "aLengthMenu": [100, 500, 1000, 5000],
       "bProcessing": true,
@@ -480,7 +483,62 @@ script(type='text/javascript')
 
       return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
     };
-  });
+
+
+    var searchStuffOffset = $('#searchStuff').offset();
+    var headerOffset = $('.ui-widget-header').offset();
+
+    $(window).scroll(function () {
+      var scrollTop = $(window).scrollTop(); // check the visible top of the browser  
+
+      if (searchStuffOffset.top < scrollTop) {
+        $('#searchStuff').addClass('fixedsearch');
+        $('#logo').hide();
+      } else {
+        $('#searchStuff').removeClass('fixedsearch');
+        $('#logo').show();
+      }
+
+      if (headerOffset.top -  $('#searchStuff').height() < scrollTop) {
+        $('.ui-widget-header').css("top", $('#searchStuff').height()-1);
+        $('.ui-widget-header').addClass('fixedheader');
+      } else {
+        $('.ui-widget-header').removeClass('fixedheader');
+      }
+
+      var height = $('#searchStuff').height() + $('.ui-widget-header').height();
+      $(".opened").each(function(a1, a2) {
+        var top;
+        var hasClass = $(a2).hasClass("fixedrow");
+
+        if (hasClass) {
+          top = $(a2).data('savedTopOffset');
+        } else {
+          top = $(a2).offset().top;
+        }
+
+        if ((top - height) < scrollTop) {
+          if (!hasClass) {
+            var widths = [];
+            $(a2).children("td").each(function (i, td) {
+              widths[i] = $(td).width();
+            });
+            $(a2).data('savedTopOffset', $(a2).offset().top);
+            $(a2).css("top", height-1);
+            $(a2).addClass('fixedrow');
+            $(a2).children("td").each(function (i, td) {
+              $(td).width(widths[i]);
+            });
+          }
+          height += $(a2).height();
+        } else {
+          if (hasClass) {
+            $(a2).removeClass('fixedrow');
+          }
+        }
+      });
+    });
+  }); // document ready
 
   setTimeout(function () {window.history.ready = true;}, 500);
 

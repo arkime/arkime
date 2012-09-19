@@ -844,7 +844,6 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
                     break;
 
-                int basnlen = asnlen;
                 /* extensions */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
                     break;
@@ -1226,7 +1225,7 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
         session->header[0] = 0;
     }
 
-    int remaining = sizeof(session->header) - strlen(session->header) - 1;
+    size_t remaining = sizeof(session->header) - strlen(session->header) - 1;
     if (remaining > 0)
         strncat(session->header, at, MIN(length, remaining));
 

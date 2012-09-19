@@ -35,6 +35,31 @@ body
 .ulist-side li a:hover
   text-decoration:underline
 
+.fixedsearch
+  position: fixed
+  top: 0px
+  right: 0px
+  left: 0px
+  background-color: #0f0 ! important;
+  background: #162758; /* Old browsers */
+  background: -moz-linear-gradient(top,  #162758 0%, #445b9a 50%, #445b9a 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#162758), color-stop(50%,#445b9a), color-stop(100%,#445b9a)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #162758 0%,#445b9a 50%,#445b9a 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #162758 0%,#445b9a 50%,#445b9a 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #162758 0%,#445b9a 50%,#445b9a 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #162758 0%,#445b9a 50%,#445b9a 100%) /* W3C */
+
+.fixedheader
+  position: fixed
+  right: 0px
+  left: 0px
+  background-color: #0f0 ! important;
+
+.fixedrow
+  position: fixed
+  right: 0px
+  left: 0px
+
 // layout.jade
 #header
   font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
@@ -73,6 +98,7 @@ body
 #searchStuff
   clear: both
   padding-left: 65px
+  z-index: 4
 
 
 #nav 
@@ -209,6 +235,7 @@ table#sessions td
   color:white
 
 .ui-widget-header
+  border: 0
   font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
   text-shadow: black 0.1em 0.1em 0.2em
   font-weight: normal
@@ -261,6 +288,14 @@ table#sessions td
   color: HighlightText
 
 // stats
+
+#statsGraphSelect
+  position: relative
+  top: -10px
+  left: 45%
+  margin: 0px
+  font-size: xx-small
+  z-index: 1
 
 #stats.display td
   padding: 3px 0px

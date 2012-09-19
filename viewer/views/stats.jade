@@ -2,6 +2,14 @@ script(type='text/javascript', src='d3.v2.js')
 script(type='text/javascript', src='cubism.v1.js')
 script(type='text/javascript', src='highlight.min.js')
 
+div(style="height:2px;")
+  select#statsGraphSelect
+    option(value="deltaPackets") Packets/Sec
+    option(value="deltaBytes") Bytes/Sec
+    option(value="deltaSessions") Sessions/Sec
+    option(value="deltaDropped") Dropped/Sec
+    option(value="monitoring") Active Sessions
+    option(value="freeSpaceM") Free Space
 div#statsGraph
 table#stats(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
   thead
@@ -45,46 +53,51 @@ script(type='text/javascript')
       .step(5e3)
       .size(1440);
 
-  function metric(name) {
-    return context.metric(function(startV, stopV, stepV, callback) {
-      $.ajax( {
-        "dataType": 'json',
-        "type": "GET",
-        "url": "#{basePath}dstats.json?nodeName=" + name +
-                      "&start=" + startV/1000 +
-                      "&stop=" + stopV/1000 +
-                      "&step=" + stepV/1000 +
-                      "&interval=5" +
-                      "&name=deltaPackets",
-        "success": function(data) {
-          callback(null, data);
-        }
-      });
-    }, name);
-  }
-
-  d3.select("#statsGraph").call(function(div) {
-    var nodes = !{JSON.stringify(nodes)};
-    var metrics = [];
-    for (var i = 0; i < nodes.length; i++) {
-      metrics.push(metric(nodes[i]));
+  function makeStatsGraph(metricName) {
+    function metric(name) {
+      return context.metric(function(startV, stopV, stepV, callback) {
+        $.ajax( {
+          "dataType": 'json',
+          "type": "GET",
+          "url": "#{basePath}dstats.json?nodeName=" + name +
+                        "&start=" + startV/1000 +
+                        "&stop=" + stopV/1000 +
+                        "&step=" + stepV/1000 +
+                        "&interval=5" +
+                        "&name=" + metricName,
+          "success": function(data) {
+            callback(null, data);
+          }
+        });
+      }, name);
     }
 
-    div.append("div")
-        .attr("class", "axis")
-        .call(context.axis().orient("top"));
+    $("#statsGraph").empty();
+    d3.select("#statsGraph").call(function(div) {
+      var nodes = !{JSON.stringify(nodes)};
+      var metrics = [];
+      for (var i = 0; i < nodes.length; i++) {
+        metrics.push(metric(nodes[i]));
+      }
 
-    div.selectAll(".horizon")
-        .data(metrics)
-      .enter().append("div")
-        .attr("class", "horizon")
-        .call(context.horizon());
+      div.append("div")
+          .attr("class", "axis")
+          .call(context.axis().orient("top"));
 
-    div.append("div")
-        .attr("class", "rule")
-        .call(context.rule());
+      div.selectAll(".horizon")
+          .data(metrics)
+        .enter().append("div")
+          .attr("class", "horizon")
+          .call(context.horizon());
 
-  });
+      div.append("div")
+          .attr("class", "rule")
+          .call(context.rule());
+
+    });
+  }
+
+  makeStatsGraph("deltaPackets");
 
   context.on("focus", function(i) {
       d3.selectAll(".value").style("right", i === null ? null : context.size() - i + "px");
@@ -268,6 +281,11 @@ script(type='text/javascript')
         }
       } );
     }
+
+    $('#statsGraphSelect').change(function() {
+      makeStatsGraph($('#statsGraphSelect').val());
+      return false;
+    });
 
     setInterval(reloadData, 5000);
     reloadData();
