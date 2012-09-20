@@ -489,6 +489,15 @@ app.get('/dstats.json', function(req, res) {
                      ]
                    }
                  }
+               },
+               fields: ["currentTime", req.query.name],
+               script_fields: {
+                 deltaBits: {script :"floor(_source.deltaBytes * 8.0)"},
+                 deltaBytesPerSec: {script :"floor(_source.deltaBytes * 1000.0/_source.deltaMS)"},
+                 deltaBitsPerSec: {script :"floor(_source.deltaBytes * 1000.0/_source.deltaMS * 8)"},
+                 deltaPacketsPerSec: {script :"floor(_source.deltaPackets * 1000.0/_source.deltaMS)"},
+                 deltaSessionsPerSec: {script :"floor(_source.deltaSessions * 1000.0/_source.deltaMS)"},
+                 deltaDroppedPerSec: {script :"floor(_source.deltaDropped * 1000.0/_source.deltaMS)"}
                }
               };
 
@@ -507,13 +516,9 @@ app.get('/dstats.json', function(req, res) {
       mult = 1000000;
     }
 
-    if (req.query.interval === 5) {
-      mult  = mult/5;
-    }
-
     for (i = 0; i < result.hits.hits.length; i++) {
-      var pos = Math.floor((result.hits.hits[i]._source.currentTime - req.query.start)/req.query.step);
-      data[pos] = mult*result.hits.hits[i]._source[req.query.name];
+      var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
+      data[pos] = mult*result.hits.hits[i].fields[req.query.name];
     }
     res.send(data);
   });

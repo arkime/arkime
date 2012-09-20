@@ -59,7 +59,7 @@ static char                  dumperBuf[0x1fffff + 4096];
 static uint32_t              dumperId;
 static http_parser_settings  parserSettings;
 static magic_t               cookie;
-static uint32_t              initialDropped;
+static uint32_t              initialDropped = 0;
 
 uint64_t                     totalPackets = 0;
 uint64_t                     totalBytes = 0;
@@ -452,14 +452,19 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     if (totalPackets == 1) {
         struct pcap_stat ps;
-        pcap_stats(nids_params.pcap_desc, &ps);
-        initialDropped = ps.ps_drop;
+        if (!pcap_stats(nids_params.pcap_desc, &ps)) {
+            initialDropped = ps.ps_drop;
+        }
         LOG("%ld Initial Dropped = %d", totalPackets, initialDropped);
     }
 
     if ((++totalPackets) % config.logEveryXPackets == 0) {
         struct pcap_stat ps;
-        pcap_stats(nids_params.pcap_desc, &ps);
+        if (pcap_stats(nids_params.pcap_desc, &ps)) {
+            ps.ps_drop = 0;
+            ps.ps_recv = totalPackets;
+            ps.ps_ifdrop = 0;
+        }
         headSession = DLL_PEEK_HEAD(q_, sessionsQ);
 
         LOG("packets: %lu current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d", 
@@ -612,7 +617,7 @@ void moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag)
 unsigned char *
 moloch_nids_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int *alen)
 {
-    if (*len < 2) {
+    if ((*len) < 2) {
         goto get_tlv_error;
     }
 
@@ -666,7 +671,7 @@ moloch_nids_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int
     return value;
 
 get_tlv_error:
-    (*apc)   = 0;
+    (*apc)  = 0;
     (*alen) = 0;
     (*atag) = 0;
     (*len)  = 0;
@@ -771,7 +776,7 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
          ssldata < data + len; 
          ssldata += ssllen + 5) {
 
-        ssllen = MIN(data+len-ssldata, ((ssldata[3]&0xff) << 8 | (ssldata[4]&0xff)));
+        ssllen = MIN(data+len-ssldata-5, ((ssldata[3]&0xff) << 8 | (ssldata[4]&0xff)));
 
 
 
@@ -779,7 +784,7 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
              pdata < data + len && pdata < ssldata + ssllen; 
              pdata += plen + 4) {
 
-            plen = MIN(data+len-pdata, ((pdata[2]&0xff) << 8 | (pdata[3]&0xff)));
+            plen = MIN(data+len-pdata-7, ((pdata[2]&0xff) << 8 | (pdata[3]&0xff)));
 
             if (pdata[0] != 0x0b)
                 continue;
@@ -788,7 +793,7 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
                  cdata < data + len && cdata < pdata + plen;
                  cdata += clen + 3)
             {
-                clen = MIN(data+len-cdata, cdata[0] << 16 | cdata[1] << 8 | cdata[2]);
+                clen = MIN(data+len-cdata-3, cdata[0] << 16 | cdata[1] << 8 | cdata[2]);
 
                 MolochCertsInfo_t *certs = malloc(sizeof(MolochCertsInfo_t));
                 memset(certs, 0, sizeof(*certs));

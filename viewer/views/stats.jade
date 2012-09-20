@@ -4,10 +4,11 @@ script(type='text/javascript', src='highlight.min.js')
 
 div(style="height:2px;")
   select#statsGraphSelect
-    option(value="deltaPackets") Packets/Sec
-    option(value="deltaBytes") Bytes/Sec
-    option(value="deltaSessions") Sessions/Sec
-    option(value="deltaDropped") Dropped/Sec
+    option(value="deltaPacketsPerSec") Packets/Sec
+    option(value="deltaBytesPerSec") Bytes/Sec
+    option(value="deltaBitsPerSec") Bits/Sec
+    option(value="deltaSessionsPerSec") Sessions/Sec
+    option(value="deltaDroppedPerSec") Dropped/Sec
     option(value="monitoring") Active Sessions
     option(value="freeSpaceM") Free Space
 div#statsGraph
