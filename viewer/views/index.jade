@@ -91,6 +91,11 @@ script(type='text/javascript')
       {
         $(nTr).removeClass('opened');
         $(nTr).removeClass('fixedrow');
+        var height = $('#searchStuff').height() + $('.ui-widget-header').height();
+        $(".opened.fixedrow").each(function(a1, a2) {
+          $(a2).css("top", height-1);
+          height += $(a2).height();
+        });
         /* This row is already open - close it */
         this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
         sessionsTable.fnClose( nTr );

@@ -1435,6 +1435,71 @@ app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
   });
 });
 
+function writeRawReturn(res, type, results, doneCb) {
+  for (var i = 0; i < results.length; i++) {
+    if ((i % 2 === 0 && type === 'src') ||
+        (i % 2 === 1 && type === 'dst')) {
+      res.write(results[i].data);
+    }
+  }
+  res.end();
+}
+
+
+function writeRaw(res, id, type, doneCb) {
+  var packets = [];
+  processSessionId(id, null, function (buffer, cb) {
+    var obj = {};
+    if (buffer.length > 16) {
+      decode.pcap(buffer, obj);
+    } else {
+      obj = {ip: {p: ""}};
+    }
+    packets.push(obj);
+    cb(null);
+  },
+  function(err, session) {
+    if (err) {
+      res.end("Error");
+      return;
+    }
+    if (packets.length === 0) {
+      res.end();
+    } else if (packets[0].ip.p === 1) {
+      decode.reassemble_icmp(packets, function(err, results) {
+        writeRawReturn(res, type, results, doneCb);
+      });
+    } else if (packets[0].ip.p === 6) {
+      decode.reassemble_tcp(packets, function(err, results) {
+        writeRawReturn(res, type, results, doneCb);
+      });
+    } else if (packets[0].ip.p === 17) {
+      decode.reassemble_udp(packets, function(err, results) {
+        writeRawReturn(res, type, results, doneCb);
+      });
+    } else {
+      res.end();
+    }
+  },
+  200);
+}
+
+app.get('/:nodeName/raw/:id', function(req, res) {
+  noCache(req, res);
+
+  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
+  res.statusCode = 200;
+
+  isLocalView(req.params.nodeName, function () {
+    writeRaw(res, req.params.id, req.query.type||"src", function () {
+      res.end();
+    });
+  },
+  function() {
+    proxyRequest(req, res);
+  });
+});
+
 app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
   noCache(req, res);
 
