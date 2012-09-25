@@ -142,8 +142,8 @@ case 84: var str = stripQuotes($$[$0]).toLowerCase();
             this.$ = {not: {query: {wildcard: {}}}};
             this.$.not.query.wildcard[$$[$0-2]] = str;
           } else {
-            this.$ = {not: {term: {}}};
-            this.$.not.term[$$[$0-2]] = str;
+            this.$ = {not: {query: {text: {}}}};
+            this.$.not.query.text[$$[$0-2]] = {query: str, type: "phrase", operator: "and"}
           }
         
 break;

@@ -244,8 +244,8 @@ e
             $$ = {not: {query: {wildcard: {}}}};
             $$.not.query.wildcard[$1] = str;
           } else {
-            $$ = {not: {term: {}}};
-            $$.not.term[$1] = str;
+            $$ = {not: {query: {text: {}}}};
+            $$.not.query.text[$1] = {query: str, type: "phrase", operator: "and"}
           }
         }
     | TEXTFIELD '==' STR
