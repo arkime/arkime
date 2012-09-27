@@ -983,7 +983,7 @@ app.get('/unique.txt', function(req, res) {
         query.query.filtered.filter = {and: [{exists: {field: req.query.field}}, query.query.filtered.filter]};
       }
     } else {
-      query.facets = {facets: { terms : {field : req.query.field, size: 100000}}};
+      query.facets = {facets: { terms : {field : req.query.field, size: 1000000}}};
       query.size = 0;
     }
 

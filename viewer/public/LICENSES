@@ -4,6 +4,8 @@ d3.v2.js - BSD - http://d3js.org/
 DataTables - BSD or GBLv2 - http://www.datatables.net
 flot - MIT - http://code.google.com/p/flot/
 highlight.min.js - BSD - http://code.google.com/p/testprogramming/source/browse/trunk/javascript/svg
+jquery-1.7.2.min.js - MIT - http://jquery.com
+jquery-ui.css - MIT or GPL - http://jqueryui.com
 jvectormap - MIT - http://jvectormap.com/
 jQuery-contextMenu - MIT or GPLv3 - http://medialize.github.com/jQuery-contextMenu/
 jquery.autocomplete.js - MIT or GPL - https://github.com/dyve/jquery-autocomplete

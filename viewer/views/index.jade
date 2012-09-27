@@ -5,7 +5,7 @@ script(src='jQuery-contextMenu/src/jquery.ui.position.js')
 script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
 link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
 
-div.context-menu-one(style="margin-bottom: 4px")
+div(style="margin-bottom: 4px")
 div#bsqErr
 div#sessionsInfo
   div#world-map-wrapper
@@ -15,21 +15,21 @@ div#sessionsInfo
     option(value="lpHisto") sessions
     option(value="paHisto") packets
     option(value="dbHisto") databytes
-table#sessions.context-menu-one(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
   thead
     tr
       th
       th Id
       th Start
       th Stop
-      th#a1 Src IP
+      th#a1.context-menu-one Src IP
       th Src Port
-      th#a2 Dst IP
+      th#a2.context-menu-one Dst IP
       th Dst Port
       th Packets
       th Bytes
       th Node
-      th#us Uris
+      th#us.context-menu-one Uris
   tbody
 br
 script(type='text/javascript')
@@ -89,15 +89,12 @@ script(type='text/javascript')
       var nTr = this.parentNode.parentNode;
       if ( this.src.match('details_close') )
       {
-        $(nTr).removeClass('opened');
-        $(nTr).removeClass('fixedrow');
-        var height = $('#searchStuff').height() + $('.ui-widget-header').height();
-        $(".opened.fixedrow").each(function(a1, a2) {
-          $(a2).css("top", height-1);
-          height += $(a2).height();
-        });
-        /* This row is already open - close it */
         this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
+
+        $(nTr).removeClass('opened');
+        unPinRow(nTr, true);
+
+        /* This row is already open - close it */
         sessionsTable.fnClose( nTr );
       }
       else
@@ -187,6 +184,7 @@ script(type='text/javascript')
           }
         },
         { "mDataProp" : "a1",
+          "sClass": "context-menu-one",
           "sWidth": "100",
           "fnRender" : function(oObj) {
             if (oObj.aData.g1) {
@@ -197,9 +195,11 @@ script(type='text/javascript')
           }
         },
         { "mDataProp" : "p1",
+          "sClass": "context-menu-one",
           "sWidth": "55px"
         },
         { "mDataProp" : "a2",
+          "sClass": "context-menu-one",
           "sWidth": "100",
           "fnRender" : function(oObj) {
             if (oObj.aData.g2) {
@@ -210,6 +210,7 @@ script(type='text/javascript')
           }
         },
         { "mDataProp" : "p2",
+          "sClass": "context-menu-one",
           "sWidth": "55px"
         },
         { "mDataProp" : "pa",
@@ -226,6 +227,7 @@ script(type='text/javascript')
         },
         { "bSortable": false,
           "mDataProp" : "us",
+          "sClass": "context-menu-one",
           "fnRender" : function(oObj) {
             return (oObj.aData.us.join("<br>"));
           }
@@ -371,7 +373,7 @@ script(type='text/javascript')
 
           var sData = sessionsTable.fnGetData( e.target );
           if (sData === null) {
-            return null;
+            return false;
           }
           var sPos = sessionsTable.fnGetPosition( e.target );
           var br;
@@ -402,7 +404,8 @@ script(type='text/javascript')
               andnotport: {name: "and NOT Node " + sData, exp: "node!=" + sData}
             };
           } else {
-            return null;
+            console.log("false");
+            return false;
           }
 
           return {
@@ -490,13 +493,13 @@ script(type='text/javascript')
     };
 
 
-    var searchStuffOffset = $('#searchStuff').offset();
-    var headerOffset = $('.ui-widget-header').offset();
+    var searchStuffOffset = $('#searchStuff').offset().top;
+    var headerOffset = $('.ui-widget-header').offset().top - $('#searchStuff').height();
 
     $(window).scroll(function () {
       var scrollTop = $(window).scrollTop(); // check the visible top of the browser  
 
-      if (searchStuffOffset.top < scrollTop) {
+      if (searchStuffOffset < scrollTop) {
         $('#searchStuff').addClass('fixedsearch');
         $('#logo').hide();
       } else {
@@ -504,46 +507,72 @@ script(type='text/javascript')
         $('#logo').show();
       }
 
-      if (headerOffset.top -  $('#searchStuff').height() < scrollTop) {
-        $('.ui-widget-header').css("top", $('#searchStuff').height()-1);
-        $('.ui-widget-header').addClass('fixedheader');
+      if (!$('.ui-widget-header').hasClass('fixedheader')) {
+        if (headerOffset < scrollTop) {
+          $('.ui-widget-header').css("top", $('#searchStuff').height()-1);
+          $('.ui-widget-header').addClass('fixedheader');
+          $(window).scrollTop(headerOffset - $('.ui-widget-header').height());
+        }
       } else {
-        $('.ui-widget-header').removeClass('fixedheader');
+        if (headerOffset - $('.ui-widget-header').height() > scrollTop) {
+          $('.ui-widget-header').removeClass('fixedheader');
+          $(window).scrollTop(headerOffset);
+        }
       }
 
       var height = $('#searchStuff').height() + $('.ui-widget-header').height();
-      $(".opened").each(function(a1, a2) {
-        var top;
-        var hasClass = $(a2).hasClass("fixedrow");
+      $(".opened").each(function(a1, nTr) {
+        var hasClass = $(nTr).hasClass("fixedrow");
 
-        if (hasClass) {
-          top = $(a2).data('savedTopOffset');
-        } else {
-          top = $(a2).offset().top;
-        }
+        if (!hasClass) {
+          if ($(nTr).offset().top - height < scrollTop) {
+            $(nTr).data('savedTopOffset', $(nTr).offset().top - height);
 
-        if ((top - height) < scrollTop) {
-          if (!hasClass) {
-            var widths = [];
-            $(a2).children("td").each(function (i, td) {
-              widths[i] = $(td).width();
+            $(nTr).css("top", height-1);
+            $(nTr).addClass('fixedrow');
+            var td = $(nTr).children("td");
+            $(td).each(function(i, e) {
+              $(e).html($(e).html().replace("<br>", "&nbsp;"));
             });
-            $(a2).data('savedTopOffset', $(a2).offset().top);
-            $(a2).css("top", height-1);
-            $(a2).addClass('fixedrow');
-            $(a2).children("td").each(function (i, td) {
-              $(td).width(widths[i]);
-            });
+            $(td[0]).width(50); // +-
+            $(td[1]).width(100); // Start
+            $(td[2]).width(100); // Stop
+            $(td[3]).width(160); // Src
+            $(td[4]).width(80);  // SPort
+            $(td[5]).width(160); // Dst
+            $(td[6]).width(80);  // DPort
+            $(td[7]).width(80);  // Packets
+            $(td[8]).width(150); // Bytes
+            $(td[9]).width(150); // Node
+            $(td[10]).hide();
+            $($(nTr).find(".protocolText")).hide();
           }
-          height += $(a2).height();
         } else {
-          if (hasClass) {
-            $(a2).removeClass('fixedrow');
+          if ($(nTr).data('savedTopOffset') - $(nTr).height() > scrollTop) {
+            unPinRow(nTr, false)
           }
         }
+        height += $(nTr).height();
       });
     });
   }); // document ready
+
+  function unPinRow(nTr, updateRows) {
+    $($(nTr).find(".protocolText")).show();
+    $($(nTr).children("td")[10]).show();
+    $(nTr).removeClass('fixedrow');
+    $($(nTr).children("td")).each(function(i, e) {
+      $(e).html($(e).html().replace("&nbsp;", "<br>"));
+    });
+
+    if (updateRows) {
+      var height = $('#searchStuff').height() + $('.ui-widget-header').height();
+      $(".opened.fixedrow").each(function(a1, a2) {
+        $(a2).css("top", height-1);
+        height += $(a2).height();
+      });
+    }
+  }
 
   setTimeout(function () {window.history.ready = true;}, 500);
 
