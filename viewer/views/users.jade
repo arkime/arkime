@@ -15,6 +15,7 @@ br
 hr
 <h2> Add User</h2>
 form#addUser
+  input(type='hidden', id='token', name='token', value='#{token}')
   label(for='userId') User ID
   input(type='text', id='userId', name='userId', size='30')
   label(for='userName') User Name
@@ -86,7 +87,8 @@ script(type='text/javascript')
           "bSortable" : false,
           "fnRender" : function(oObj) {
             //return "fred";
-            return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a>";
+            return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
+                   "<a href='/password?userId=" + oObj.aData.userId +"'>Set Password</a>";
           }
         }
       ]
@@ -98,11 +100,15 @@ script(type='text/javascript')
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
+        "data": [{name: "token", value: "#{token}"}],
         "url": "#{basePath}updateUser/" + aData.userId + "?" +
           "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
           "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
           "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
         "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          }
         }
       });
       return true;
@@ -116,7 +122,7 @@ script(type='text/javascript')
         "data": $("#addUser").serialize(),
         "success": function(data) {
           if (!data.success) {
-            alert(data);
+            alert(data.text);
           }
           usersTable.fnDraw();
         }
@@ -129,7 +135,11 @@ script(type='text/javascript')
       "dataType": 'json',
       "type": "POST",
       "url": "#{basePath}deleteUser/" + user,
+      "data": [{name: "token", value: "#{token}"}],
       "complete": function(data) {
+        if (!data.success) {
+          alert(data.text);
+        }
         usersTable.fnDraw();
       }
     });

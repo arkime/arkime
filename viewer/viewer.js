@@ -232,23 +232,38 @@ app.get('/files', function(req, res) {
 });
 
 app.get('/users', function(req, res) {
-  if (!req.user.webEnabled) {
+  if (!req.user.webEnabled || !req.user.createEnabled) {
     return res.end("Moloch Permision Denied");
   }
   res.render('users', {
     user: req.user,
-    title: 'Users'
+    title: 'Users',
+    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
   });
 });
 
 app.get('/password', function(req, res) {
+  function render(user, cp) {
+    res.render('password', {
+      user: req.user,
+      puser: user,
+      currentPassword: cp,
+      token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: user.userId, cp:cp}),
+      title: 'Change Password'
+    });
+  }
+
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
   }
-  res.render('password', {
-    user: req.user,
-    title: 'Change Password'
-  });
+
+  if (req.query.userId) {
+    Db.get("users", 'user', req.query.userId, function(err, user) {
+      render(user._source, 0);
+    });
+  } else {
+    render(req.user, 1);
+  }
 });
 
 app.get('/stats', function(req, res) {
@@ -1592,19 +1607,38 @@ app.post('/deleteUser/:userId', function(req, res) {
     return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
-  if (req.params.userId === req.user.userId) {
-    return res.end("Can not delete yourself");
+  if (!req.body.token) {
+    return res.end(JSON.stringify({success: false, text: "Missing token"}));
   }
 
-  console.log("Deleting ", req.params.userId);
+  var token = Config.auth2obj(req.body.token);
+  if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
+    console.log("bad token", token);
+    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
+  }
+
+  if (req.params.userId === req.user.userId) {
+    return res.end(JSON.stringify({success: false, text: "Can not delete yourself"}));
+  }
+
   Db.deleteDocument('users', 'user', req.params.userId, function(err, data) {
-    res.end("Success!");
+    return res.end(JSON.stringify({success: true, text: "User deleted"}));
   });
 });
 
 app.post('/addUser', function(req, res) {
   if (!req.user.createEnabled) {
     return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
+  }
+
+  if (!req.body.token) {
+    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+  }
+
+  var token = Config.auth2obj(req.body.token);
+  if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
+    console.log("bad token", token);
+    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
   }
 
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
@@ -1641,9 +1675,18 @@ app.post('/addUser', function(req, res) {
 });
 
 app.post('/updateUser/:userId', function(req, res) {
-  if (req.params.userId !== req.user.userId &&
-      !req.user.createEnabled) {
+  if (!req.user.createEnabled) {
     return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
+  }
+
+  if (!req.body.token) {
+    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+  }
+
+  var token = Config.auth2obj(req.body.token);
+  if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
+    console.log("bad token", token);
+    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
   }
 
   Db.get("users", 'user', req.params.userId, function(err, user) {
@@ -1671,19 +1714,38 @@ app.post('/updateUser/:userId', function(req, res) {
 });
 
 app.post('/changePassword', function(req, res) {
-  if (req.user.passStore !== Config.pass2store(req.user.userId, req.body.currentPassword)) {
-    res.end(JSON.stringify({success: false, text: "Current password mismatch"}));
-    return;
+
+  if (!req.body.newPassword || req.body.newPassword.length < 3) {
+    return res.end(JSON.stringify({success: false, text: "New password needs to be at least 2 characters"}));
   }
 
-  req.user.passStore = Config.pass2store(req.user.userId, req.body.newPassword);
-  Db.indexNow("users", "user", req.user.userId, req.user, function(err, info) {
-    if (!err) {
-      res.end(JSON.stringify({success: false, text: err}));
-      return;
-    }
+  if (!req.body.token) {
+    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+  }
 
-    res.end(JSON.stringify({success: true}));
+  var token = Config.auth2obj(req.body.token);
+  if (Math.abs(Date.now() - token.date) > 120000 || token.pid !== process.pid) { // Request has to be +- 120 seconds and same pid
+    console.log("bad token", token);
+    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
+  }
+
+  if (token.cp && (req.user.passStore !== Config.pass2store(req.user.userId, req.body.currentPassword) ||
+                   token.userId !== req.user.userId)) {
+    return res.end(JSON.stringify({success: false, text: "Current password mismatch"}));
+  }
+
+  Db.get("users", 'user', token.userId, function(err, user) {
+    user = user._source;
+    if (err) {
+      return res.end(JSON.stringify({success: false, text: err}));
+    }
+    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+      if (err) {
+        return res.end(JSON.stringify({success: false, text: err}));
+      }
+      return res.end(JSON.stringify({success: true, text: "Changed password successfully"}));
+    });
   });
 });
 //////////////////////////////////////////////////////////////////////////////////

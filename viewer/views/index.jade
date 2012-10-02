@@ -85,7 +85,19 @@ script(type='text/javascript')
   $(document).ready(function() {
     handleUrlParams();
 
-    $('#sessions tbody td img').live('click', function () {
+    $('#sessions tbody td.urlColumn img').live('click', function () {
+      var nTr = this.parentNode.parentNode;
+      var rowData = sessionsTable.fnGetData(nTr);
+      if ( this.src.match('up-arrow') ) {
+        rowData.usAll = 0;
+      } else {
+        rowData.usAll = 1;
+      }
+      rowData.isOpen = sessionsTable.fnIsOpen(nTr);
+      sessionsTable.fnUpdate(rowData, nTr, 0, false, false);
+    });
+
+    $('#sessions tbody td.sessionDetails img').live('click', function () {
       var nTr = this.parentNode.parentNode;
       if ( this.src.match('details_close') )
       {
@@ -152,7 +164,7 @@ script(type='text/javascript')
           "bSortable": false,
           "sClass": "sessionDetails",
           "fnRender" : function(oObj) {
-            var pr; 
+            var pr;
             switch (oObj.aData.pr) {
             case 1:
               pr = "icmp";
@@ -164,7 +176,11 @@ script(type='text/javascript')
               pr =  "udp";
               break;
             }
-            return '<img src="DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
+            if (oObj.aData.isOpen) {
+              return '<img src="DataTables-1.9.1/examples/examples_support/details_close.png"><div class="protocolText">' + pr + '</div>';
+            } else {
+              return '<img src="DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
+            }
           }
         },
         {
@@ -173,12 +189,14 @@ script(type='text/javascript')
         },
         { "mDataProp" : "fp",
           "sWidth": "50",
+          "bUseRendered": false,
           "fnRender" : function(oObj) {
             return dateString(oObj.aData.fp, "<br>");
           }
         },
         { "mDataProp" : "lp",
           "sWidth": "50",
+          "bUseRendered": false,
           "fnRender" : function(oObj) {
             return dateString(oObj.aData.lp, "<br>");
           }
@@ -186,6 +204,7 @@ script(type='text/javascript')
         { "mDataProp" : "a1",
           "sClass": "context-menu-one",
           "sWidth": "100",
+          "bUseRendered": false,
           "fnRender" : function(oObj) {
             if (oObj.aData.g1) {
               return ipString(oObj.aData.a1) + "<br>" + oObj.aData.g1;
@@ -201,6 +220,7 @@ script(type='text/javascript')
         { "mDataProp" : "a2",
           "sClass": "context-menu-one",
           "sWidth": "100",
+          "bUseRendered": false,
           "fnRender" : function(oObj) {
             if (oObj.aData.g2) {
               return ipString(oObj.aData.a2) + "<br>" + oObj.aData.g2;
@@ -218,18 +238,31 @@ script(type='text/javascript')
           },
         { "mDataProp" : "by",
           "sWidth": "80px",
+          "bUseRendered": false,
           "fnRender" : function(oObj) {
             return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
           }
         },
         { "mDataProp" : "no",
+          "sClass": "context-menu-one",
           "sWidth": "100px"
         },
         { "bSortable": false,
           "mDataProp" : "us",
-          "sClass": "context-menu-one",
+          "sClass": "urlColumn",
+          "bUseRendered": false,
           "fnRender" : function(oObj) {
-            return (oObj.aData.us.join("<br>"));
+            var data;
+            if (oObj.aData.usAll) {
+              data = oObj.aData.us.join("<br>");
+              data += '<br><img src="up-arrow.png">';
+            } else {
+              data = oObj.aData.us.slice(0, 5).join("<br>");
+              if (oObj.aData.us.length > 5) {
+                data += '<br><img src="down-arrow.png">';
+              }
+            }
+            return data;
           }
         }
       ],
@@ -371,20 +404,16 @@ script(type='text/javascript')
             };
           }
 
-          var sData = sessionsTable.fnGetData( e.target );
-          if (sData === null) {
+          var rowData = sessionsTable.fnGetData(e.target.parentNode);
+          if (rowData === null) {
             return false;
           }
           var sPos = sessionsTable.fnGetPosition( e.target );
-          var br;
+          var port;
           if (sPos[1] === 3 || sPos[1] === 5) {
-            br = sData.indexOf("<br>");
-            if (br === -1) {
-              br = sData.length;
-            }
-            var ip = sData.substr(0, br);
-            var country = sData.substr(br+4);
-            var port = sessionsTable.fnGetData(sPos[0], sPos[1]+2);
+            var ip = (sPos[1] === 3? ipString(rowData.a1):ipString(rowData.a2));
+            var country = (sPos[1] === 3? rowData.g1:rowData.g2);
+            port = (sPos[1] === 3? rowData.p1:rowData.p2);
             items = {
               andip: {name: "and " + ip, exp: "ip==" + ip},
               andnotip: {name: "and NOT " + ip, exp: "ip!=" + ip},
@@ -394,17 +423,17 @@ script(type='text/javascript')
               andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip!==" + ip + ":" + port}
             };
           } else if (sPos[1] === 4 || sPos[1] === 6)  {
+            port = (sPos[1] === 4? rowData.p1:rowData.p2);
             items = {
-              andport: {name: "and Port " + sData, exp: "port=" + sData},
-              andnotport: {name: "and NOT Port " + sData, exp: "port!=" + sData}
+              andport: {name: "and Port " + port, exp: "port=" + port},
+              andnotport: {name: "and NOT Port " + port, exp: "port!=" + port}
             };
           } else if (sPos[1] === 9)  {
             items = {
-              andport: {name: "and Node " + sData, exp: "node==" + sData},
-              andnotport: {name: "and NOT Node " + sData, exp: "node!=" + sData}
+              andport: {name: "and Node " + rowData.no, exp: "node==" + rowData.no},
+              andnotport: {name: "and NOT Node " + rowData.no, exp: "node!=" + rowData.no}
             };
           } else {
-            console.log("false");
             return false;
           }
 
@@ -416,9 +445,6 @@ script(type='text/javascript')
           };
         }
     });
-
-    /*$('.context-menu-one').on('click', function(e){
-    })*/
 
     $("#expression").autocomplete("", {
       useDelimiter: true,
@@ -497,7 +523,7 @@ script(type='text/javascript')
     var headerOffset = $('.ui-widget-header').offset().top - $('#searchStuff').height();
 
     $(window).scroll(function () {
-      var scrollTop = $(window).scrollTop(); // check the visible top of the browser  
+      var scrollTop = $(window).scrollTop(); // check the visible top of the browser
 
       if (searchStuffOffset < scrollTop) {
         $('#searchStuff').addClass('fixedsearch');
@@ -549,7 +575,7 @@ script(type='text/javascript')
           }
         } else {
           if ($(nTr).data('savedTopOffset') - $(nTr).height() > scrollTop) {
-            unPinRow(nTr, false)
+            unPinRow(nTr, false);
           }
         }
         height += $(nTr).height();

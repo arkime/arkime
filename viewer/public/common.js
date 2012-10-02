@@ -14,7 +14,7 @@ function twoDigitString(value) {
 
 function dateString(seconds, sep) {
   var d = new Date(seconds*1000);
-  var yearStr = (new Date().getFullYear() == d.getFullYear())?"":"/"+(d.getFullYear()%100);
+  var yearStr = (new Date().getFullYear() === d.getFullYear())?"":"/"+(d.getFullYear()%100);
   return (d.getMonth()+1) +
          "/" +
          d.getDate() +
