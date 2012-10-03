@@ -18,8 +18,8 @@
 
 
 
-ES=0.19.9
-NODEJS=0.8.8
+ES=0.19.10
+NODEJS=0.8.11
 # If you change TDIR you need to change TDIR in the single-host/*/* files
 TDIR=/data/moloch
 INSTALL_DIR=$PWD
@@ -119,6 +119,7 @@ chmod 755 ${TDIR}/bin/run*.sh
 
 cp -Rp ${INSTALL_DIR}/viewer ${TDIR}/
 cp -Rp ${INSTALL_DIR}/db ${TDIR}/
+cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,localhost:9200,g" > ${TDIR}/db/daily.sh
 
 
 echo "MOLOCH: Running npm install"
