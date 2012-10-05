@@ -260,117 +260,115 @@ void moloch_db_save_session(MolochSession_t *session)
 
     if (HASH_COUNT(t_, session->certs)) {
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"tls\":[");
-        i = 0;
 
         MolochCertsInfo_t *certs;
-        HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
-            int j = 0;
-            if (i != 0)
-                *(sJPtr++) = ',';
+        MolochString_t *string;
 
+        HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
             *(sJPtr++) = '{';
 
-            if (certs->issuer.commonName) {
-                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"iCn\":");
-                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->issuer.commonName);
-                free(certs->issuer.commonName);
-                j++;
+            if (certs->issuer.commonName.s_count > 0) {
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"iCn\":[");
+                while (certs->issuer.commonName.s_count > 0) {
+                    DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
+                    *(sJPtr++) = ',';
+                    free(string->str);
+                    free(string);
+                }
+                sJPtr--; // Remove last comma
+                *(sJPtr++) = ']';
+                *(sJPtr++) = ',';
             }
 
             if (certs->issuer.orgName) {
-                if (j != 0)
-                    *(sJPtr++) = ',';
                 sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"iOn\":");
                 sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->issuer.orgName);
-                free(certs->issuer.orgName);
-                j++;
+                *(sJPtr++) = ',';
             }
 
-            if (certs->subject.commonName) {
-                if (j != 0)
+            if (certs->subject.commonName.s_count) {
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sCn\":[");
+                while (certs->subject.commonName.s_count > 0) {
+                    DLL_POP_HEAD(s_, &certs->subject.commonName, string);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
                     *(sJPtr++) = ',';
-                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sCn\":");
-                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->subject.commonName);
-                free(certs->subject.commonName);
-                j++;
+                    free(string->str);
+                    free(string);
+                }
+                sJPtr--; // Remove last comma
+                *(sJPtr++) = ']';
+                *(sJPtr++) = ',';
             }
 
             if (certs->subject.orgName) {
-                if (j != 0)
-                    *(sJPtr++) = ',';
                 sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sOn\":");
                 sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->subject.orgName);
-                free(certs->subject.orgName);
-                j++;
+                *(sJPtr++) = ',';
             }
 
             if (certs->serialNumber) {
-                if (j != 0)
-                    *(sJPtr++) = ',';
                 int k;
                 sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"sn\":\"");
                 for (k = 0; k < certs->serialNumberLen; k++) {
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%02x", certs->serialNumber[k]);
                 }
                 *(sJPtr++) = '"';
+                *(sJPtr++) = ',';
             }
 
             if (certs->alt.s_count) {
-                int k = 0;
-                if (j != 0)
-                    *(sJPtr++) = ',';
                 sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"alt\":[");
                 while (certs->alt.s_count > 0) {
-                    MolochString_t *string;
                     DLL_POP_HEAD(s_, &certs->alt, string);
-                    if (k != 0)
-                        *(sJPtr++) = ',';
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
+                    *(sJPtr++) = ',';
                     free(string->str);
                     free(string);
-                    k++;
                 }
+                sJPtr--; // Remove last comma
                 *(sJPtr++) = ']';
+                *(sJPtr++) = ',';
             }
 
-            free(certs);
+            sJPtr--; // Remove last comma
+
+            moloch_nids_certs_free(certs);
             i++;
 
             *(sJPtr++) = '}';
+            *(sJPtr++) = ',';
         );
+
+        sJPtr--; // Remove last comma
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
     if (HASH_COUNT(s_, session->hosts)) {
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ho\":[");
-        i = 0;
-
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->hosts, hstring, 
-            if (i != 0)
-                *(sJPtr++) = ',';
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            *(sJPtr++) = ',';
             free(hstring->str);
             free(hstring);
-            i++;
         );
+        sJPtr--; // Remove last comma
 
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
     if (HASH_COUNT(s_, session->userAgents)) {
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ua\":[");
-        i = 0;
 
         MolochString_t *ustring;
         HASH_FORALL_POP_HEAD(s_, session->userAgents, ustring, 
-            if (i != 0)
-                *(sJPtr++) = ',';
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str);
+            *(sJPtr++) = ',';
             free(ustring->str);
             free(ustring);
-            i++;
         );
+        sJPtr--; // Remove last comma
 
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
@@ -381,47 +379,41 @@ void moloch_db_save_session(MolochSession_t *session)
 
         if (gi) {
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"gxff\":[");
-            i = 0;
             HASH_FORALL(i_, session->xffs, xff, 
-                if (i != 0)
-                    *(sJPtr++) = ',';
                 const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(xff->i));
                 if (g)
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"%s\"", g);
                 else
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"---\"");
-                i++;
+                *(sJPtr++) = ',';
             );
+            sJPtr--; // Remove last comma
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
         }
 
         if (giASN) {
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"asxff\":[");
-            i = 0;
             HASH_FORALL(i_, session->xffs, xff, 
-                if (i != 0)
-                    *(sJPtr++) = ',';
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
                     free(as);
                 } else
                     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"---\"");
-                i++;
+                *(sJPtr++) = ',';
             );
+            sJPtr--; // Remove last comma
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
         }
 
 
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"xff\":[");
-        i = 0;
         HASH_FORALL_POP_HEAD(i_, session->xffs, xff, 
-            if (i != 0)
-                *(sJPtr++) = ',';
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%u", htonl(xff->i));
+            *(sJPtr++) = ',';
             free(xff);
-            i++;
         );
+        sJPtr--; // Remove last comma
 
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
@@ -429,26 +421,22 @@ void moloch_db_save_session(MolochSession_t *session)
     if (g_hash_table_size(session->tags[0])) {
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ta\":[");
         g_hash_table_iter_init (&iter, session->tags[0]);
-        i = 0;
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            if (i != 0)
-                *(sJPtr++) = ',';
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%lu", (uint64_t)keyp);
-            i++;
+            *(sJPtr++) = ',';
         }
+        sJPtr--; // Remove last comma
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
     if (g_hash_table_size(session->tags[1])) {
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hh\":[");
         g_hash_table_iter_init (&iter, session->tags[1]);
-        i = 0;
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            if (i != 0)
-                *(sJPtr++) = ',';
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%lu", (uint64_t)keyp);
-            i++;
+            *(sJPtr++) = ',';
         }
+        sJPtr--; // Remove last comma
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
@@ -876,6 +864,9 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
         if (tag) {
             if (r->func)
                 r->func(r->session, r->tagtype, tag->tagValue);
+            g_free(r->escaped);
+            free(r->tag);
+            free(r);
             continue;
         }
 
@@ -990,6 +981,7 @@ void moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tagnam
     }
 }
 /******************************************************************************/
+guint timers[5];
 void moloch_db_init()
 {
     DLL_INIT(t_, &tagRequests);
@@ -1017,15 +1009,21 @@ void moloch_db_init()
     }
 
     if (!dryRun) {
-        g_timeout_add_seconds( 2, moloch_db_update_stats_gfunc, 0);
-        g_timeout_add_seconds( 5, moloch_db_update_stats_gfunc, (gpointer)1);
-        g_timeout_add_seconds(60, moloch_db_update_stats_gfunc, (gpointer)2);
-        g_timeout_add_seconds( 1, moloch_db_flush_gfunc, 0);
+        timers[0] = g_timeout_add_seconds( 2, moloch_db_update_stats_gfunc, 0);
+        timers[1] = g_timeout_add_seconds( 5, moloch_db_update_stats_gfunc, (gpointer)1);
+        timers[2] = g_timeout_add_seconds(60, moloch_db_update_stats_gfunc, (gpointer)2);
+        timers[3] = g_timeout_add_seconds( 1, moloch_db_flush_gfunc, 0);
     }
 }
 /******************************************************************************/
 void moloch_db_exit()
 {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        g_source_remove(timers[i]);
+    }
+
     if (!dryRun) {
         moloch_db_flush_gfunc((gpointer)1);
         moloch_db_update_stats();

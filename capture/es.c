@@ -308,6 +308,7 @@ void moloch_es_finish( MolochES_t *es, gboolean sync)
         int          b   = es->request->data[-8];
 
         DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+        es->request->data = 0;
     }
 
     while (sync) {
@@ -446,7 +447,7 @@ unsigned char *moloch_es_send(char *method, char *key, uint32_t key_len, char *d
             DLL_POP_HEAD(r_, &requestQ[q], es->request);
             if (es->request) {
                 if (!moloch_es_process_send(es, 0)) {
-                    LOG("ERROR - %p: Couldn't send %s", es, es->request->key);
+                    LOG("ERROR - %p: Couldn't send %.*s", es, es->request->key_len, es->request->key);
                     DLL_PUSH_HEAD(r_, &requestQ[q], es->request);
                     es->request = 0;
                     DLL_PUSH_TAIL(e_, &esQ, es);

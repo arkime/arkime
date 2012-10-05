@@ -87,7 +87,12 @@ div(id='sessionDetail#{session.id}')
           | Serial: 
           a(href='#', onclick='return addExpression("tls.serial == #{cert.sn}");') #{cert.sn}
           | 
-        - if (cert.iCn)
+        - if (cert.iCn && Array.isArray(cert.iCn))
+          | Issuer Common: 
+          each cn in cert.iCn
+            a(href='#', onclick='return addExpression("tls.issuer.cn == \\\"#{cn}\\\"");') #{cn}
+            | 
+        - else if (cert.iCn)
           | Issuer Common: 
           a(href='#', onclick='return addExpression("tls.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
           | 
@@ -95,7 +100,12 @@ div(id='sessionDetail#{session.id}')
           | Issuer Org: 
           a(href='#', onclick='return addExpression("tls.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
           | 
-        - if (cert.sCn)
+        - if (cert.sCn && Array.isArray(cert.sCn))
+          | Subject Common: 
+          each cn in cert.sCn
+            a(href='#', onclick='return addExpression("tls.subject.cn == \\\"#{cn}\\\"");') #{cn}
+            | 
+        - else if (cert.sCn)
           | Subject Common: 
           a(href='#', onclick='return addExpression("tls.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
           | 

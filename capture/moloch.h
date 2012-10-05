@@ -67,8 +67,8 @@ typedef struct {
 } MolochIntHead_t;
 
 typedef struct {
-    char *commonName; //2.5.4.3
-    char *orgName; // 2.5.4.10
+    MolochStringHead_t  commonName; //2.5.4.3
+    char               *orgName; // 2.5.4.10
 } MolochCertInfo_t;
 
 typedef struct moloch_tlsinfo{
@@ -229,6 +229,7 @@ int moloch_es_queue_length();
 void  moloch_nids_root_init();
 void  moloch_nids_init();
 void  moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag);
+void  moloch_nids_certs_free (MolochCertsInfo_t *certs);
 uint32_t moloch_nids_dropped_packets();
 uint32_t moloch_nids_monitoring_sessions();
 void  moloch_nids_exit();
