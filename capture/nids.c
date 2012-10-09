@@ -1,13 +1,13 @@
 /* nids.c  -- Functions for dealing with libnids and detection
  *
- * Copyright 2012 The AOL Moloch Authors.  All Rights Reserved.
- *
+ * Copyright 2012 AOL Inc. All rights reserved.
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -824,6 +824,7 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
                  cdata < data + len && cdata < pdata + plen;
                  cdata += clen + 3)
             {
+                int badreason = 0;
                 clen = MIN(data+len-cdata-3, cdata[0] << 16 | cdata[1] << 8 | cdata[2]);
 
                 MolochCertsInfo_t *certs = malloc(sizeof(MolochCertsInfo_t));
@@ -839,53 +840,56 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
 
                 /* Certificate */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 1; goto bad_cert;}
                 asndata = value;
                 asnlen = alen;
 
                 /* signedCertificate */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 2; goto bad_cert;}
                 asndata = value;
                 asnlen = alen;
 
-                /* version */
+                /* serialNumber or version*/
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 3; goto bad_cert;}
 
-                /* serialNumber */
-                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                if (apc) {
+                    if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                        {badreason = 4; goto bad_cert;}
+                }
                 certs->serialNumberLen = alen;
                 certs->serialNumber = malloc(alen);
                 memcpy(certs->serialNumber, value, alen);
 
                 /* signature */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 5; goto bad_cert;}
 
                 /* issuer */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 6; goto bad_cert;}
                 moloch_nids_tls_certinfo_process(&certs->issuer, value, alen);
 
                 /* validity */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 7; goto bad_cert;}
 
                 /* subject */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 8; goto bad_cert;}
                 moloch_nids_tls_certinfo_process(&certs->subject, value, alen);
 
                 /* subjectPublicKeyInfo */
                 if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
+                    {badreason = 9; goto bad_cert;}
 
                 /* extensions */
-                if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
-                    goto bad_cert;
-                moloch_nids_tls_alt_names(certs, value, alen);
+                if (asnlen) {
+                    if (!(value = moloch_nids_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                        {badreason = 10; goto bad_cert;}
+                    moloch_nids_tls_alt_names(certs, value, alen);
+                }
 
                 MolochCertsInfo_t *element;
                 HASH_FIND(t_, session->certs, certs, element);
@@ -898,6 +902,8 @@ moloch_nids_tls_process(MolochSession_t *session, unsigned char *data, int len)
                 continue;
 
             bad_cert:
+                if (debug)
+                    LOG("bad cert %d - %d %.*s", badreason, clen, clen, cdata);
                 moloch_nids_certs_free(certs);
                 break;
             }

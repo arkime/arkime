@@ -1,14 +1,14 @@
 /******************************************************************************/
 /* db.c  -- Functions dealing with database queries and updates
  *
- * Copyright 2012 The AOL Moloch Authors.  All Rights Reserved.
- *
+ * Copyright 2012 AOL Inc. All rights reserved.
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,8 +46,9 @@ static GeoIP         *gi = 0;
 static GeoIP         *giASN = 0;
 
 /******************************************************************************/
-extern MolochConfig_t config;
-extern gboolean dryRun;
+extern MolochConfig_t        config;
+extern gboolean              dryRun;
+extern gboolean              debug;
 
 /******************************************************************************/
 typedef struct moloch_tag {
@@ -155,14 +156,10 @@ void moloch_db_save_session(MolochSession_t *session)
 
 
     /* No Packets */
-    if (!session->filePosArray->len)
+    if (!dryRun && !session->filePosArray->len)
         return;
 
     totalSessions++;
-
-    if (dryRun) {
-        return;
-    }
 
     if (!sJson) {
         sJPtr = sJson = moloch_es_get_buffer(MOLOCH_ES_BUFFER_SIZE_L);
@@ -453,6 +450,13 @@ void moloch_db_save_session(MolochSession_t *session)
 
     if (sJPtr - sJson >= MOLOCH_ES_BUFFER_SIZE_L) {
         LOG("MEMORY OUT OF BOUNDS ERROR - %ld", (long)(sJPtr - sJson));
+    }
+
+    if (dryRun) {
+        if (debug)
+            LOG("%.*s\n", (int)(sJPtr - sJson), sJson);
+        sJPtr = sJson;
+        return;
     }
 
 
@@ -1020,11 +1024,11 @@ void moloch_db_exit()
 {
     int i;
 
-    for (i = 0; i < 4; i++) {
-        g_source_remove(timers[i]);
-    }
-
     if (!dryRun) {
+        for (i = 0; i < 4; i++) {
+            g_source_remove(timers[i]);
+        }
+
         moloch_db_flush_gfunc((gpointer)1);
         moloch_db_update_stats();
     }
