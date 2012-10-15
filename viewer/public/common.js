@@ -277,7 +277,7 @@ function addExpression (expression, op) {
 }
 
 $(document).ready(function() {
-  if ($("#expression")) {
+  if ($("#expression").length) {
     $("#expression").autocomplete("", {
       useDelimiter: true,
       delimiterChar: ' ',
@@ -462,7 +462,7 @@ function drawGraph(graphData) {
 function buildParams() {
   var params = [];
 
-  if ($("#data")) {
+  if ($("#date").length) {
     if ($("#date").val() === "-2") {
       params.push({name:'startTime', value:startTime});
       params.push({name:'stopTime', value:stopTime});
@@ -471,7 +471,7 @@ function buildParams() {
     }
   }
 
-  if ($("#expression")) {
+  if ($("#expression").length) {
     if ($("#expression").val()) {
       params.push({name:'expression', value:$("#expression").val()});
     }
