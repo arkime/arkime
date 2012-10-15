@@ -211,6 +211,17 @@ app.get("/", function(req, res) {
   });
 });
 
+app.get("/graph", function(req, res) {
+  if (!req.user.webEnabled) {
+    return res.end("Moloch Permision Denied");
+  }
+  res.render('graph', {
+    user: req.user,
+    title: 'Graph',
+    isIndex: true
+  });
+});
+
 app.get('/about', function(req, res) {
   if (!req.user.webEnabled) {
     return res.end("Moloch Permision Denied");
@@ -771,11 +782,13 @@ function buildSessionQuery(req, buildCb) {
     }
     query.query.filtered.query.range = {lp: {gte: req.query.startTime, lte: req.query.stopTime}};
   } else {
+    if (!req.query.date) {
+      req.query.date = 1;
+    }
     req.query.startTime = (Math.floor(Date.now() / 1000) - 60*60*parseInt(req.query.date, 10));
     req.query.stopTime = Date.now()/1000;
     query.query.filtered.query.range = {lp: {from: req.query.startTime}};
   }
-
 
   addSortToQuery(query, req.query, "fp");
 
@@ -907,6 +920,93 @@ app.get('/sessions.json', function(req, res) {
         res.send(r);
       } catch (c) {
       }
+    });
+  });
+});
+
+app.get('/graph.json', function(req, res) {
+
+  req.query.iDisplayLength = req.query.iDisplayLength || "5000";
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      var r = {};
+      res.send(r);
+      return;
+    }
+    console.log("graph.json query", JSON.stringify(query));
+
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err || result.error) {
+        console.log("sessions.json error", err);
+        res.send({});
+        return;
+      }
+
+      var nodesHash = {};
+      var nodes = [];
+      var connects = {};
+      var numNodes = 1;
+
+      var i;
+      for (i = 0; i < result.hits.hits.length; i++) {
+        if (!result.hits.hits[i] || !result.hits.hits[i].fields) {
+          continue;
+        }
+
+        var f = result.hits.hits[i].fields;
+        var a1, a2, n, g1, g2;
+        if (req.query.useDir === "1"|| f.a1 < f.a2) {
+          a1 = decode.inet_ntoa(f.a1);
+          a2 = decode.inet_ntoa(f.a2);
+          g1 = f.g1;
+          g2 = f.g2;
+          if (req.query.usePort === "1") {
+            a2 += ":" + f.p2;
+          }
+          if (req.query.useDir === "1") {
+            a1 = "src:" + a1;
+            a2 = "dst:" + a2;
+          }
+        } else {
+          a1 = decode.inet_ntoa(f.a2);
+          a2 = decode.inet_ntoa(f.a1);
+          g1 = f.g2;
+          g2 = f.g1;
+          if (req.query.usePort === "1") {
+            a1 += ":" + f.p2;
+          }
+        }
+
+        if (nodesHash[a1] === undefined) {
+          nodesHash[a1] = nodes.length;
+          nodes.push({id: a1, g: g1});
+        }
+
+        if (nodesHash[a2] === undefined) {
+          nodesHash[a2] = nodes.length;
+          nodes.push({id: a2, g: g2});
+        }
+
+        n = "" + a1 + "," + a2;
+        if (connects[n]) {
+          connects[n].value++;
+          connects[n].by += f.by;
+          connects[n].db += f.db;
+          connects[n].pa += f.pa;
+          connects[n].no[f.no] = 1;
+        } else {
+          connects[n] = {value: 1, source: nodesHash[a1], target: nodesHash[a2], pr: f.pr, by: f.by, db: f.db, pa: f.pa, no: {}};
+          connects[n].no[f.no] = 1;
+        }
+      }
+
+      var links = [];
+      for (var key in connects) {
+        links.push(connects[key]);
+      }
+
+      res.send({nodes: nodes, links: links});
+      res.end();
     });
   });
 });

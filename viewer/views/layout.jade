@@ -2,14 +2,14 @@
 html
   head
     title Moloch - #{title}
-    script(src='jquery-1.7.2.min.js')
-    script(src='DataTables-1.9.1/media/js/jquery.dataTables.min.js')
+    script(type='text/javascript', src='jquery-1.7.2.min.js')
+    script(type='text/javascript', src='DataTables-1.9.1/media/js/jquery.dataTables.min.js')
     <!--[if IE]><script language="javascript" type="text/javascript" src="flot-0.7/excanvas.min.js"></script><![endif]-->
-    script(src='flot-0.7/jquery.flot.min.js')
-    script(src='flot-0.7/jquery.flot.selection.min.js')
-    script(src='flot-0.7/jquery.flot.resize.min.js')
-    script(src='flot-0.7/jquery.flot.navigate.min.js')
-    script(src='common.js')
+    script(type='text/javascript', src='flot-0.7/jquery.flot.min.js')
+    script(type='text/javascript', src='flot-0.7/jquery.flot.selection.min.js')
+    script(type='text/javascript', src='flot-0.7/jquery.flot.resize.min.js')
+    script(type='text/javascript', src='flot-0.7/jquery.flot.navigate.min.js')
+    script(type='text/javascript', src='common.js')
 
     link(rel='stylesheet', type='text/css', href='DataTables-1.9.1/media/css/demo_table.css')
     link(rel='stylesheet', type='text/css', href='jquery-ui.css')
@@ -22,7 +22,9 @@ html
       div#nav
         ul.ulist-nav
           li
-            a(href='#{basePath}') Sessions
+            a#sessionsLink(href='#{basePath}') Sessions
+          li
+            a#connectionsLink(href='graph') Connections
           li
             a(href='files') Files
           if user.createEnabled
@@ -37,15 +39,27 @@ html
       - if (isIndex)
         form#searchForm
           div#searchStuff
-            select(id='date')
-              option(value=1,selected) Last 1 hr
-              option(value=6) Last 6 hrs
-              option(value=24) Last 24 hrs 
-              option(value=48) Last 48 hrs 
-              option(value=72) Last 3 days
-              option(value=168) Last Week
-              option(value=-1) All
-              option(value=-2) Graph
+            span#searchStuffLeft
+              select(id='graphSize')
+                option(value="100") 100
+                option(value="500") 500
+                option(value="1000",selected) 1000
+                option(value="5000") 5000
+                option(value="10000") 10000
+              select(id='graphType')
+                option(value="useDir=1&usePort=0") Directed/No Port
+                option(value="useDir=1&usePort=1") Directed/Port
+                option(value="useDir=0&usePort=0",selected) Indirect/No Port
+                option(value="useDir=0&usePort=1") Indirect/Port
+              select(id='date')
+                option(value=1,selected) Last 1 hr
+                option(value=6) Last 6 hrs
+                option(value=24) Last 24 hrs 
+                option(value=48) Last 48 hrs 
+                option(value=72) Last 3 days
+                option(value=168) Last Week
+                option(value=-1) All
+                option(value=-2) Graph
             input#expression(type='text', name='expression')
             button#search(type="submit") Search
             button#export(type="button") Export

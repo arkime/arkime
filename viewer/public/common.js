@@ -186,6 +186,46 @@ function splitExpression(input ) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// layout Functions
+//////////////////////////////////////////////////////////////////////////////////
+$(document).ready(function() {
+  $("#connectionsLink").click(function (e) {
+    var data;
+
+    if (typeof sessionsTable !== 'undefined') {
+      data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+    } else {
+      data = [];
+    }
+
+    var params = buildParams();
+    params = $.merge(data, params);
+
+    var url = "graph?" + $.param(params);
+
+    window.location = url;
+    return false;
+  });
+
+  $("#sessionsLink").click(function (e) {
+    var data;
+    if (typeof sessionsTable !== 'undefined') {
+      data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+    } else {
+      data = [];
+    }
+
+    var params = buildParams();
+    params = $.merge(data, params);
+
+    var url = "/?" + $.param(params);
+
+    window.location = url;
+    return false;
+  });
+});
+
+//////////////////////////////////////////////////////////////////////////////////
 // index Functions
 //////////////////////////////////////////////////////////////////////////////////
 function handleUrlParams() {
@@ -204,25 +244,113 @@ function handleUrlParams() {
   }
 
   initialDisplayLength = urlParams.iDisplayLength || 100;
+  $("#graphSize").val(String(initialDisplayLength));
+  $("#sessions_length").val(String(initialDisplayLength));
 
   if (urlParams.startTime && urlParams.startTime) {
     startTime = urlParams.startTime;
     stopTime = urlParams.stopTime;
     $("#date").val("-2");
   }
+  
+  if (urlParams.useDir=== "0" && urlParams.usePort === "0") {
+    $("#graphType").val("useDir=0&usePort=0");
+  } else if (urlParams.useDir=== "0" && urlParams.usePort === "1") {
+    $("#graphType").val("useDir=0&usePort=1");
+  } else if (urlParams.useDir=== "1" && urlParams.usePort === "0") {
+    $("#graphType").val("useDir=1&usePort=0");
+  } else if (urlParams.useDir=== "1" && urlParams.usePort === "1") {
+    $("#graphType").val("useDir=1&usePort=1");
+  }
 
   return urlParams;
 }
 
-function addExpression (expression) {
+function addExpression (expression, op) {
   var val = $("#expression").val();
   if (val === "") {
     $("#expression").val(expression);
   } else {
-    $("#expression").val(val + " && " + expression);
+    $("#expression").val(val + (op || " && ") + expression);
   }
   return false;
 }
+
+$(document).ready(function() {
+  if ($("#expression")) {
+    $("#expression").autocomplete("", {
+      useDelimiter: true,
+      delimiterChar: ' ',
+      minChars: 0,
+      maxItemsToShow: 100
+    });
+
+    $("#expression").data('autocompleter').fetchRemoteData = function(filter,callback) {
+      var cp = $("#expression").getCursorPosition();
+      var input = $("#expression").val();
+
+      var spaceCP = (cp > 0 && cp === input.length && input[cp-1] === " ");
+
+      for (var end = cp; end < input.length; end++) {
+        if (input[end] === " ") {
+          break;
+        }
+      }
+
+      input = input.substr(0, end);
+      var tokens = splitExpression(input);
+      if (spaceCP) {
+        tokens.push(" ");
+      }
+
+      if (tokens.length <= 1) {
+        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
+      }
+
+      if (/^(ip)/.test(tokens[tokens.length-2])) {
+        return callback(["!=", "=="]);
+      }
+
+      if (/^(bytes|databytes|protocol)/.test(tokens[tokens.length-2])) {
+        return callback(["!=", "==" , ">=", "<=", "<", ">"]);
+      }
+
+      if (/^(tags|ua|header|country|asn|host|node|uri|tls)/.test(tokens[tokens.length-2])) {
+        return callback(["!=", "=="]);
+      }
+
+      var item = tokens[tokens.length-3];
+      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri|tls)/.test(item)) {
+        return callback([]);
+      }
+
+      if (/^(country)/.test(item)) {
+        return callback(Object.keys($('#world-map').data('mapObject').countries));
+      }
+
+      if (/^[!<=>]/.test(item)) {
+        return callback(["&&", "||", ")"]);
+      }
+
+      if (/^(tags|header)/.test(item)) {
+        if (filter.length < 1) {
+          return callback([]);
+        }
+        $.ajax( {
+            "dataType": 'html',
+            "type": "GET",
+            "url": 'uniqueValue.json?type=' + item + '&filter=' + filter,
+            "success": function(data) {
+              return callback(JSON.parse(data));
+            }
+        } );
+        return;
+      }
+
+      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
+    };
+  }
+});
 
 function addSessionIPStr (ip) {
   return addExpression("ip == " + ip);
@@ -334,16 +462,25 @@ function drawGraph(graphData) {
 function buildParams() {
   var params = [];
 
-  if ($("#date").val() === "-2") {
-    params.push({name:'startTime', value:startTime});
-    params.push({name:'stopTime', value:stopTime});
-  } else if ($("#date").val()) {
-    params.push({name:'date', value:$("#date").val()});
+  if ($("#data")) {
+    if ($("#date").val() === "-2") {
+      params.push({name:'startTime', value:startTime});
+      params.push({name:'stopTime', value:stopTime});
+    } else if ($("#date").val()) {
+      params.push({name:'date', value:$("#date").val()});
+    }
   }
 
-  if ($("#expression").val()) {
-    params.push({name:'expression', value:$("#expression").val()});
+  if ($("#expression")) {
+    if ($("#expression").val()) {
+      params.push({name:'expression', value:$("#expression").val()});
+    }
   }
+
+  if (typeof sessionsTable === 'undefined') {
+    params.push({name: "iDisplayLength", value: initialDisplayLength});
+  }
+
   return params;
 }
 

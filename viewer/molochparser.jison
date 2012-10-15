@@ -184,6 +184,12 @@ e
         {$$ = {term: {pr: 6}};}
     | protocol '==' 'udp'
         {$$ = {term: {pr: 17}};}
+    | protocol '!=' 'icmp'
+        {$$ = {not: {term: {pr: 1}}};}
+    | protocol '!=' 'tcp'
+        {$$ = {not: {term: {pr: 6}}};}
+    | protocol '!=' 'udp'
+        {$$ = {not: {term: {pr: 17}}};}
     | RANGEFIELD GTLT NUMBER
         {$$ = {range: {}};
          $$.range[$1] = {};

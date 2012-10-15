@@ -78,6 +78,11 @@ body
   background: linear-gradient(to bottom,  #162758 0%,#445b9a 50%,#445b9a 100%) /* W3C */
   //filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#162758', endColorstr='#445b9a',GradientType=0 ); /* IE6-9 */
 
+#graphType
+  display: none
+
+#graphSize
+  display: none
 
 #logo
   position: absolute
@@ -99,7 +104,6 @@ body
   clear: both
   padding-left: 65px
   z-index: 4
-
 
 #nav 
   top: 0
@@ -395,3 +399,24 @@ table#sessions td
 
 .jvectormap-zoomout
   top: 30px
+
+// GRAPH
+.link
+  stroke: #ccc
+
+.node text
+  pointer-events: none
+  font: 10px sans-serif
+
+#networkLabel
+  position: absolute
+  display: none
+  border: solid 1px #CDCDCD
+  -webkit-border-radius: 3px
+  -moz-border-radius: 3px
+  border-radius: 3px
+  background: lightblue
+  color: black
+  font-family: sans-serif, Verdana
+  font-size: smaller
+  padding: 3px
