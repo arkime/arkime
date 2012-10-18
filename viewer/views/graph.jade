@@ -87,10 +87,40 @@ script(type='text/javascript')
     }
   }
 
+  function gAddTSIp(ip1, ip2, op) {
+    var ip1s = "ip";
+
+    if (ip1.slice(0, 4) === "dst:") {
+      ip1 = ip1.slice(4);
+      ip1s = "ip.dst";
+    }
+
+    if (ip1.slice(0, 4) === "src:") {
+      ip1 = ip1.slice(4);
+      ip1s = "ip.src";
+    }
+
+    var ip2s = "ip";
+    if (ip2.slice(0, 4) === "dst:") {
+      ip2 = ip2.slice(4);
+      ip2s = "ip.dst";
+    }
+
+    if (ip2.slice(0, 4) === "src:") {
+      ip2 = ip2.slice(4);
+      ip2s = "ip.src";
+    }
+
+    addExpression("(" + ip1s + " == " + ip1 + " && " + ip2s + " == " + ip2 + ")", op);
+  }
+
   function showNodePopup(that, d) {
     var content = "Address<br>" + 
-                   d.id + " (" + d.g + ")<br>" + 
-                  "Links:" + d.weight + "<br>" +
+                   d.id + (d.g?" (" + d.g + ")":"") + "<br>" + 
+                  "Links: " + d.weight + "<br>" +
+                  "Bytes: " + numberWithCommas(d.by) + "<br>" +
+                  "Databytes: " + numberWithCommas(d.db) + "<br>" +
+                  "Packets: " + numberWithCommas(d.pa) + "<br>" +
                   "Expression: <a href='javascript:gAddIp(\"" + d.id + "\", \" && \")'>&amp;&amp;</a> " +
                               "<a href='javascript:gAddIp(\"" + d.id + "\", \" || \")'>||</a><br>" +
                   "<a href='javascript:hideNode(\"" + d.id + "\")'>Hide Node</a>";
@@ -104,13 +134,15 @@ script(type='text/javascript')
 
   function showLinkPopup(that, d, mouse) {
     $('#networkLabel').html("Link<br>" + 
-                      d.source.id + " (" + d.source.g + ")<br>" + 
-                      d.target.id + " (" + d.target.g + ")<br>" +
-                      "Sessions:" + numberWithCommas(d.value) + "<br>" +
-                      "Protocol:" + d.pr + "<br>" +
-                      "Bytes:" + numberWithCommas(d.by) + "<br>" +
-                      "Databytes:" + numberWithCommas(d.db) + "<br>" +
-                      "Packets:" + numberWithCommas(d.pa) + "<br>" +
+                      d.source.id + (d.source.g?" (" + d.source.g + ")":"") + "<br>" + 
+                      d.target.id + (d.target.g?" (" + d.target.g + ")":"") + "<br>" + 
+                      "Sessions: " + numberWithCommas(d.value) + "<br>" +
+                      "Protocol: " + d.pr + "<br>" +
+                      "Bytes: " + numberWithCommas(d.by) + "<br>" +
+                      "Databytes: " + numberWithCommas(d.db) + "<br>" +
+                      "Packets: " + numberWithCommas(d.pa) + "<br>" +
+                      "Expression: <a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" && \")'>&amp;&amp;</a> " +
+                                  "<a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" || \")'>||</a><br>" +
                       "<a href='javascript:hideLink(\"" + d.source.id + "\",\"" + d.target.id + "\")'>Hide Link</a>")
                       .show()
                       .css({ left: trans[0] + (mouse[0]*scale) + 25,

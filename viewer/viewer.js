@@ -979,25 +979,34 @@ app.get('/graph.json', function(req, res) {
 
         if (nodesHash[a1] === undefined) {
           nodesHash[a1] = nodes.length;
-          nodes.push({id: a1, g: g1});
+          nodes.push({id: a1, g: g1, db: 0, by: 0, pa: 0});
         }
 
         if (nodesHash[a2] === undefined) {
           nodesHash[a2] = nodes.length;
-          nodes.push({id: a2, g: g2});
+          nodes.push({id: a2, g: g2, db: 0, by: 0, pa: 0});
         }
 
-        n = "" + a1 + "," + a2;
-        if (connects[n]) {
-          connects[n].value++;
-          connects[n].by += f.by;
-          connects[n].db += f.db;
-          connects[n].pa += f.pa;
-          connects[n].no[f.no] = 1;
-        } else {
-          connects[n] = {value: 1, source: nodesHash[a1], target: nodesHash[a2], pr: f.pr, by: f.by, db: f.db, pa: f.pa, no: {}};
-          connects[n].no[f.no] = 1;
+        var a1p = nodesHash[a1];
+        var a2p = nodesHash[a2];
+        nodes[a1p].by += f.by;
+        nodes[a1p].db += f.db;
+        nodes[a1p].pa += f.pa;
+        nodes[a2p].by += f.by;
+        nodes[a2p].db += f.db;
+        nodes[a2p].pa += f.pa;
+
+
+        var n = "" + a1 + "," + a2;
+        if (connects[n] === undefined) {
+          connects[n] = {value: 0, source: nodesHash[a1], target: nodesHash[a2], pr: 0, by: 0, db: 0, pa: 0, no: {}};
         }
+
+        connects[n].value++;
+        connects[n].by += f.by;
+        connects[n].db += f.db;
+        connects[n].pa += f.pa;
+        connects[n].no[f.no] = 1;
       }
 
       var links = [];
@@ -1095,7 +1104,7 @@ app.get('/unique.txt', function(req, res) {
       if (isEmptyObject(query.query.filtered.filter)) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
       } else {
-        query.query.filtered.filter = {and: [{exists: {field: req.query.field}}, query.query.filtered.filter]};
+        query.query.filtered.filter = {and: [query.query.filtered.filter, {exists: {field: req.query.field}}]};
       }
     } else {
       query.facets = {facets: { terms : {field : req.query.field, size: 1000000}}};
