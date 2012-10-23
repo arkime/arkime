@@ -342,7 +342,7 @@ WARNING: I can't seem to be able to run \`tar' with the given arguments.
     echo 1>&2 "\
 WARNING: \`$1' is needed, and is $msg.
          You might have modified some files without having the
-         proper tools for further handling them.  Check the \`README' file,
+         proper tools for further handling them.  Check the \`README.rst' file,
          it often tells you about the needed prerequisites for installing
          this package.  You may also peek at any GNU archive site, in case
          some other package would contain this missing \`$1' program."
