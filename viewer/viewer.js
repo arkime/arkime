@@ -954,7 +954,7 @@ app.get('/graph.json', function(req, res) {
         }
 
         var f = result.hits.hits[i].fields;
-        var a1, a2, n, g1, g2;
+        var a1, a2, g1, g2;
         if (req.query.useDir === "1"|| f.a1 < f.a2) {
           a1 = decode.inet_ntoa(f.a1);
           a2 = decode.inet_ntoa(f.a2);
@@ -1117,6 +1117,7 @@ app.get('/unique.txt', function(req, res) {
       //console.log("unique result", util.inspect(result, false, 100));
       if (req.query.field === "us") {
         var counts = {};
+        var keys = [];
         result.hits.hits.forEach(function (item) {
           if (!item.fields || !item.fields.us) {
             return;
@@ -1126,11 +1127,17 @@ app.get('/unique.txt', function(req, res) {
               counts[url]++;
             } else {
               counts[url] = 1;
+              keys.push(url);
             }
           });
         });
 
-        for (var key in counts) {
+        if (doCounts) {
+          keys = keys.sort(function(a,b) {return counts[b] - counts[a];});
+        }
+
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
           if (doCounts) {
             res.write(counts[key] + ", ");
           }
@@ -1263,23 +1270,27 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 function localSessionDetailReturnFull(req, res, session, results) {
   var i;
 
+  function safeStr(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
+  }
+
   if (req.query.base === "hex") {
     var format = {};
     format.numbering = (req.query.line === "true"?"hex_bytes":"none");
     for (i = 0; i < results.length; i++) {
-      results[i].data = '<pre>' + hexy.hexy(results[i].data, format).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+      results[i].data = '<pre>' + safeStr(hexy.hexy(results[i].data, format)) + '</pre>';
     }
   } else if (req.query.base === "ascii") {
     for (i = 0; i < results.length; i++) {
-      results[i].data = '<pre>' + results[i].data.toString("binary").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+      results[i].data = '<pre>' + safeStr(results[i].data.toString("binary")) + '</pre>';
     }
   } else if (req.query.base === "utf8") {
     for (i = 0; i < results.length; i++) {
-      results[i].data = '<pre>' + results[i].data.toString("utf8").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+      results[i].data = '<pre>' + safeStr(results[i].data.toString("utf8")) + '</pre>';
     }
   } else {
     for (i = 0; i < results.length; i++) {
-      results[i].data = results[i].data.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+      results[i].data = safeStr(results[i].data.toString()).replace(/\n/g, '<br>');
     }
   }
 

@@ -277,7 +277,7 @@ function addExpression (expression, op) {
 }
 
 $(document).ready(function() {
-  if ($("#expression").length) {
+  if ($("#expression").length && $("#expression").autocomplete) {
     $("#expression").autocomplete("", {
       useDelimiter: true,
       delimiterChar: ' ',

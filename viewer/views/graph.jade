@@ -125,10 +125,10 @@ script(type='text/javascript')
                               "<a href='javascript:gAddIp(\"" + d.id + "\", \" || \")'>||</a><br>" +
                   "<a href='javascript:hideNode(\"" + d.id + "\")'>Hide Node</a>";
     $('#networkLabel').html(content)
-                      .show()
-                      .css({ left: trans[0] + (d.px*scale),
-                              top: trans[1] + (d.py*scale) + $('#networkLabel').height() + 25
+                      .css({ left: trans[0] + (d.px*scale) + 25,
+                              top: trans[1] + (d.py*scale) + $('#networkLabel').height()/2 + 25
                           })
+                      .show()
                       ;
   }
 
@@ -144,10 +144,10 @@ script(type='text/javascript')
                       "Expression: <a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" && \")'>&amp;&amp;</a> " +
                                   "<a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" || \")'>||</a><br>" +
                       "<a href='javascript:hideLink(\"" + d.source.id + "\",\"" + d.target.id + "\")'>Hide Link</a>")
-                      .show()
                       .css({ left: trans[0] + (mouse[0]*scale) + 25,
                               top: trans[1] + (mouse[1]*scale) + $('#networkLabel').height()/2 + 25
                           })
+                      .show()
                       ;
   }
 
@@ -185,7 +185,7 @@ script(type='text/javascript')
             if (popupTimer) {
               window.clearTimeout(popupTimer);
             }
-            popupTimer = window.setTimeout(showLinkPopup, 500, this, d, d3.mouse(this));
+            popupTimer = window.setTimeout(showLinkPopup, 800, this, d, d3.mouse(this));
           }).on("mouseout",function(d){
             window.clearTimeout(popupTimer);
           })
@@ -203,7 +203,8 @@ script(type='text/javascript')
             if (popupTimer) {
               window.clearTimeout(popupTimer);
             }
-            popupTimer = window.setTimeout(showNodePopup, 500, this, d);
+            popupTimer = window.setTimeout(showNodePopup, 800, this, d);
+            d.fixed |= 1;
           }).on("mouseout",function(d){
             window.clearTimeout(popupTimer);
           })
