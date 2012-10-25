@@ -263,13 +263,14 @@ void moloch_nids_save_session(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_initial_tag(MolochSession_t *session)
 {
-    if (session->tags[0])
-        g_hash_table_destroy(session->tags[0]);
-    if (session->tags[1])
-        g_hash_table_destroy(session->tags[1]);
+    int i;
 
-    session->tags[0] = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
-    session->tags[1] = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+    for (i = 0; i < MOLOCH_TAG_MAX; i++)
+    {
+        if (session->tags[i])
+            g_hash_table_destroy(session->tags[i]);
+        session->tags[i] = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+    }
 
     moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, nodeTag);
     if (config.nodeClass)
@@ -986,25 +987,25 @@ void moloch_nids_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(
     moloch_yara_execute(session, hlf->data, hlf->count - hlf->offset, (hlf->offset == 0));
 }
 /******************************************************************************/
-void moloch_nids_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf, int which)
+void moloch_nids_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
 {
     int remaining = hlf->count_new;
     char *data    = hlf->data + (hlf->count - hlf->offset - hlf->count_new);
 
     while (remaining > 0) {
-        if ((session->wParsers & (1 << which)) == 0) {
+        if ((session->wParsers & (1 << session->which)) == 0) {
             if (hlf->offset == 0) {
-                http_parser_init(&session->parsers[which], HTTP_BOTH);
-                session->wParsers |= (1 << which);
-                session->parsers[which].data = session;
+                http_parser_init(&session->parsers[session->which], HTTP_BOTH);
+                session->wParsers |= (1 << session->which);
+                session->parsers[session->which].data = session;
             } else {
                 break;
             }
         }
 
-        int len = http_parser_execute(&session->parsers[which], &parserSettings, data, remaining);
+        int len = http_parser_execute(&session->parsers[session->which], &parserSettings, data, remaining);
         if (len <= 0) {
-            session->wParsers &= ~(1 << which);
+            session->wParsers &= ~(1 << session->which);
             break;
         }
         data += len;
@@ -1045,21 +1046,21 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             return;
         }
         if (a_tcp->client.count_new) {
-            //LOG("client: s: %s new: %d count: %d offset: %d len: %d oldoffset: %d", key, a_tcp->client.count_new, a_tcp->client.count, a_tcp->client.offset, (a_tcp->client.count - a_tcp->client.offset - a_tcp->client.count_new), session->offsets[0]);
-            moloch_nids_parse_http(session, a_tcp, &a_tcp->client, 0);
+            session->which = 1;
+            moloch_nids_parse_http(session, a_tcp, &a_tcp->client);
             moloch_nids_parse_classify(session, a_tcp, &a_tcp->client);
             moloch_nids_parse_yara(session, a_tcp, &a_tcp->client);
-            nids_discard(a_tcp, session->offsets[0]);
-            session->offsets[0] = a_tcp->client.count_new;
+            nids_discard(a_tcp, session->offsets[1]);
+            session->offsets[1] = a_tcp->client.count_new;
         }
 
         if (a_tcp->server.count_new) {
-            //LOG("server: s: %s new: %d count: %d offset: %d len: %d oldoffset: %d", key, a_tcp->server.count_new, a_tcp->server.count, a_tcp->server.offset, (a_tcp->server.count - a_tcp->server.offset - a_tcp->server.count_new), session->offsets[1]);
-            moloch_nids_parse_http(session, a_tcp, &a_tcp->server, 1);
+            session->which = 0;
+            moloch_nids_parse_http(session, a_tcp, &a_tcp->server);
             moloch_nids_parse_classify(session, a_tcp, &a_tcp->server);
             moloch_nids_parse_yara(session, a_tcp, &a_tcp->server);
-            nids_discard(a_tcp, session->offsets[1]);
-            session->offsets[1] = a_tcp->server.count_new;
+            nids_discard(a_tcp, session->offsets[0]);
+            session->offsets[0] = a_tcp->server.count_new;
         }
 
         session->databytes += a_tcp->server.count_new + a_tcp->client.count_new;
@@ -1094,8 +1095,8 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
 
-    session->inValue = 0;
-    session->inBody = 0;
+    session->inValue &= ~(1 << session->which);
+    session->inBody  &= ~(1 << session->which);
 
     return 0;
 }
@@ -1109,6 +1110,7 @@ moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
         session->urlString = g_string_new_len(at, length);
     else
         g_string_append_len(session->urlString, at, length);
+
     return 0;
 }
 
@@ -1132,7 +1134,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 {
     MolochSession_t *session = parser->data;
 
-    if (!session->inBody) {
+    if (!session->inBody & (1 << session->which)) {
         if (moloch_memstr(at, length, "password=", 9)) {
             moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "http:password");
         }
@@ -1147,7 +1149,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             } 
             moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tmp);
         }
-        session->inBody = 1;
+        session->inBody |= (1 << session->which);
     }
 
     return 0;
@@ -1169,7 +1171,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
     }
 
-    session->header[0] = 0;
+    session->header[0][0] = session->header[1][0] = 0;
 
     if (session->urlString) {
         char *ch = session->urlString->str;
@@ -1295,14 +1297,14 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
 {
     MolochSession_t *session = parser->data;
 
-    if (session->inValue) {
-        session->inValue = 0;
-        session->header[0] = 0;
+    if (session->inValue & (1 << session->which)) {
+        session->inValue &= ~(1 << session->which);
+        session->header[session->which][0] = 0;
     }
 
-    size_t remaining = sizeof(session->header) - strlen(session->header) - 1;
+    size_t remaining = sizeof(session->header[session->which]) - strlen(session->header[session->which]) - 1;
     if (remaining > 0)
-        strncat(session->header, at, MIN(length, remaining));
+        strncat(session->header[session->which], at, MIN(length, remaining));
 
     return 0;
 }
@@ -1314,29 +1316,29 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
     MolochSession_t *session = parser->data;
     char header[200];
 
-    if (!session->inValue) {
-        session->inValue = 1;
+    if ((session->inValue & (1 << session->which)) == 0) {
+        session->inValue |= (1 << session->which);
 
-        char *lower = g_ascii_strdown(session->header, -1);
+        char *lower = g_ascii_strdown(session->header[session->which], -1);
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);
-        moloch_nids_add_tag(session, MOLOCH_TAG_HTTP_HEADERS, header);
+        moloch_nids_add_tag(session, MOLOCH_TAG_HTTP_REQUEST+session->which, header);
     }
 
-    if (parser->method && strcasecmp("host", session->header) == 0) {
+    if (parser->method && strcasecmp("host", session->header[session->which]) == 0) {
         if (!session->hostString)
             session->hostString = g_string_new_len("//", 2);
         g_string_append_len(session->hostString, at, length);
     } 
 
-    if (parser->method && strcasecmp("user-agent", session->header) == 0) {
+    if (parser->method && strcasecmp("user-agent", session->header[session->which]) == 0) {
         if (!session->uaString)
             session->uaString = g_string_new_len(at, length);
         else
             g_string_append_len(session->uaString, at, length);
     } 
 
-    if (parser->method && strcasecmp("x-forwarded-for", session->header) == 0) {
+    if (parser->method && strcasecmp("x-forwarded-for", session->header[session->which]) == 0) {
         if (!session->xffString)
             session->xffString = g_string_new_len(at, length);
         else
@@ -1397,8 +1399,11 @@ void moloch_nids_session_free (MolochSession_t *session)
 
     if (session->rootId)
         g_free(session->rootId);
-    g_hash_table_destroy(session->tags[0]);
-    g_hash_table_destroy(session->tags[1]);
+
+    int i;
+    for (i = 0; i < MOLOCH_TAG_MAX; i++) {
+        g_hash_table_destroy(session->tags[i]);
+    }
     free(session);
 }
 /******************************************************************************/

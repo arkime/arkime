@@ -303,24 +303,26 @@ $(document).ready(function() {
         tokens.push(" ");
       }
 
+      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "tags", "tags.cnt", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt"];
+
       if (tokens.length <= 1) {
-        return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
+        return callback(commands);
       }
 
       if (/^(ip)/.test(tokens[tokens.length-2])) {
         return callback(["!=", "=="]);
       }
 
-      if (/^(bytes|databytes|protocol)/.test(tokens[tokens.length-2])) {
+      if (/^(bytes|databytes|protocol)/.test(tokens[tokens.length-2]) || /\.cnt$/.test(tokens[tokens.length-2])) {
         return callback(["!=", "==" , ">=", "<=", "<", ">"]);
       }
 
-      if (/^(tags|ua|header|country|asn|host|node|uri|tls)/.test(tokens[tokens.length-2])) {
+      if (/^(tags|ua|header|country|asn|host|node|uri|cert)/.test(tokens[tokens.length-2])) {
         return callback(["!=", "=="]);
       }
 
       var item = tokens[tokens.length-3];
-      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri|tls)/.test(item)) {
+      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri|cert)/.test(item)) {
         return callback([]);
       }
 
@@ -347,7 +349,7 @@ $(document).ready(function() {
         return;
       }
 
-      return callback(["(", "ip", "ip.src", "ip.dst", "ip.xff", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "tags", "header", "node", "packets", "port", "port.src", "port.dst", "uri", "host", "tls.issuer.cn", "tls.issuer.on", "tls.subject.cn", "tls.subject.on", "tls.serial", "tls.alt"]);
+      return callback(commands);
     };
   }
 });

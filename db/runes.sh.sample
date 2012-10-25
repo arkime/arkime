@@ -1,5 +1,5 @@
 #!/bin/sh
-cd /srv/moloch/elasticsearch-0.19.9
+cd /srv/moloch/elasticsearch-0.19.10
 ulimit -a
 export JAVA_OPTS="-XX:+UseCompressedOops"
 export ES_HOSTNAME=`hostname -s`a

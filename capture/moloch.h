@@ -87,8 +87,10 @@ typedef struct {
 } MolochCertsInfoHead_t;
 
 
-#define MOLOCH_TAG_TAGS         0
-#define MOLOCH_TAG_HTTP_HEADERS 1
+#define MOLOCH_TAG_TAGS          0
+#define MOLOCH_TAG_HTTP_REQUEST  1
+#define MOLOCH_TAG_HTTP_RESPONSE 2
+#define MOLOCH_TAG_MAX           3
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
@@ -100,7 +102,7 @@ typedef struct moloch_session {
     HASH_VAR(i_, xffs, MolochIntHead_t, 11);
     HASH_VAR(t_, certs, MolochCertsInfoHead_t, 11);
 
-    char        header[40];
+    char        header[2][40];
     http_parser parsers[2];
 
 
@@ -112,7 +114,7 @@ typedef struct moloch_session {
     GString    *hostString;
     GString    *uaString;
     GString    *xffString;
-    GHashTable *tags[2];
+    GHashTable *tags[MOLOCH_TAG_MAX];
 
     uint64_t    bytes;
     uint64_t    databytes;
@@ -133,10 +135,11 @@ typedef struct moloch_session {
     uint8_t     wParsers;
 
     uint8_t     haveNidsTcp:1;
-    uint8_t     inValue:1;
-    uint8_t     inBody:1;
+    uint8_t     inValue:2;
+    uint8_t     inBody:2;
     uint8_t     needSave:1;
     uint8_t     dontSave:1;
+    uint8_t     which:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {

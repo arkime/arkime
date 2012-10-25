@@ -246,6 +246,7 @@ void moloch_db_save_session(MolochSession_t *session)
     }
     sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     if (session->urlArray->len) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"uscnt\":%d,", session->urlArray->len);
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"us\":[");
         for(i = 0; i < session->urlArray->len; i++) {
             if (i != 0)
@@ -256,6 +257,7 @@ void moloch_db_save_session(MolochSession_t *session)
     }
 
     if (HASH_COUNT(t_, session->certs)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"tlscnt\":%d,", HASH_COUNT(t_, session->certs));
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"tls\":[");
 
         MolochCertsInfo_t *certs;
@@ -315,6 +317,7 @@ void moloch_db_save_session(MolochSession_t *session)
             }
 
             if (certs->alt.s_count) {
+                sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"altcnt\":%d,", certs->alt.s_count);
                 sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"alt\":[");
                 while (certs->alt.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->alt, string);
@@ -342,6 +345,7 @@ void moloch_db_save_session(MolochSession_t *session)
     }
 
     if (HASH_COUNT(s_, session->hosts)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hocnt\":%d,", HASH_COUNT(s_, session->hosts));
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ho\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->hosts, hstring, 
@@ -356,6 +360,7 @@ void moloch_db_save_session(MolochSession_t *session)
     }
 
     if (HASH_COUNT(s_, session->userAgents)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"uacnt\":%d,", HASH_COUNT(t_, session->userAgents));
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ua\":[");
 
         MolochString_t *ustring;
@@ -371,6 +376,8 @@ void moloch_db_save_session(MolochSession_t *session)
     }
 
     if (HASH_COUNT(i_, session->xffs)) {
+
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"xffscnt\":%d,", HASH_COUNT(t_, session->xffs));
 
         MolochInt_t *xff;
 
@@ -415,9 +422,10 @@ void moloch_db_save_session(MolochSession_t *session)
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
-    if (g_hash_table_size(session->tags[0])) {
+    if (g_hash_table_size(session->tags[MOLOCH_TAG_TAGS])) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"tacnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_TAGS]));
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"ta\":[");
-        g_hash_table_iter_init (&iter, session->tags[0]);
+        g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_TAGS]);
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%lu", (uint64_t)keyp);
             *(sJPtr++) = ',';
@@ -426,9 +434,22 @@ void moloch_db_save_session(MolochSession_t *session)
         sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
-    if (g_hash_table_size(session->tags[1])) {
-        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hh\":[");
-        g_hash_table_iter_init (&iter, session->tags[1]);
+    if (g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST])) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hh1cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST]));
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hh1\":[");
+        g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_HTTP_REQUEST]);
+        while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
+            sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%lu", (uint64_t)keyp);
+            *(sJPtr++) = ',';
+        }
+        sJPtr--; // Remove last comma
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+    }
+
+    if (g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE])) {
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hh2cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE]));
+        sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "\"hh2\":[");
+        g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_HTTP_RESPONSE]);
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
             sJPtr += snprintf(sJPtr, MOLOCH_ES_BUFFER_SIZE_L - (sJPtr-sJson), "%lu", (uint64_t)keyp);
             *(sJPtr++) = ',';

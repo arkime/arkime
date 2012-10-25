@@ -40,6 +40,52 @@ div(style="margin:10px")
       td integer
       td Number of raw bytes in session<br>Example:bytes &gt; 1000 && bytes &lt; 2000
     tr
+      td cert.issuer.cn
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the issuer common name
+    tr
+      td cert.issuer.on
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the issuer object name
+    tr
+      td cert.subject.cn
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the subject common name
+    tr
+      td cert.subject.on
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the subject object name
+    tr
+      td cert.serial
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the serial number
+    tr
+      td cert.alt
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the cert alternative names
+    tr
+      td cert.alt.cnt
+      td #{range}
+      td integer
+      td Number of unique alternative names for a cert
+    tr
+      td cert.cnt
+      td #{range}
+      td integer
+      td Number of unique certs for the session
+    tr
       td country
       td.
         ==, !=
@@ -75,11 +121,38 @@ div(style="margin:10px")
       td string or quoted string
       td Matches against the lowercased http request and response headers for the session<br>Examples: header == *length, header != content-length
     tr
+      td header.src
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the lowercased http request headers for the session<br>Examples: header.src == *length, header.src != content-length
+    tr
+      td header.src.cnt
+      td #{range}
+      td integer
+      td Number of unique http request headers
+    tr
+      td header.dst
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the lowercased http response headers for the session<br>Examples: header.src == *length, header.src != content-length
+    tr
+      td header.dst.cnt
+      td #{range}
+      td integer
+      td Number of unique http response headers
+    tr
       td host
       td.
         ==, !=
       td string
       td host from HTTP request Host header or DNS query<br>Example:host == *net
+    tr
+      td host.cnt
+      td #{range}
+      td integer
+      td Number of unique host header or DNS queries
     tr
       td ip
       td.
@@ -104,6 +177,11 @@ div(style="margin:10px")
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
       td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip.xff==10.10.10.10, ip.xff==10.10.10.0/24:80, ip.xff==10.10.10:80
+    tr
+      td ip.xff.cnt
+      td #{range}
+      td integer
+      td Number of unique xff ips
     tr
       td node
       td.
@@ -142,17 +220,32 @@ div(style="margin:10px")
       td string or quoted string
       td Matches against the tags for the session<br>Examples: tags != *gzip, tags == http:method:CONNECT
     tr
+      td tags.cnt
+      td #{range}
+      td integer
+      td Number of unique tags for the session
+    tr
       td ua
       td.
         ==, !=
       td string or quoted string
       td Matches against the User Agent for the http request<br>ua == Java
     tr
+      td ua.cnt
+      td #{range}
+      td integer
+      td Number of unique user agents for the session
+    tr
       td uri
       td.
         ==, !=
       td string or quoted string
       td Matches against the URIs for the session<br>Example:uri == facebook.com
+    tr
+      td uri.cnt
+      td #{range}
+      td integer
+      td Number of unique URIs for the session
 
   h2 Examples
   p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com

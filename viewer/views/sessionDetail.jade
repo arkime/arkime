@@ -53,10 +53,15 @@ div(id='sessionDetail#{session.id}')
       each tag in session.ta
         a(href='#', onclick='return addExpression("tags == \\\"#{tag}\\\"");') #{tag}
         | 
-  if (session.hh)
-    div Header:
-      each header in session.hh
-        a(href='#', onclick='return addExpression("header == \\\"#{header}\\\"");') #{header}
+  if (session.hh1)
+    div Request Header:
+      each header in session.hh1
+        a(href='#', onclick='return addExpression("header.src == \\\"#{header}\\\"");') #{header}
+        | 
+  if (session.hh2)
+    div Response Header:
+      each header in session.hh2
+        a(href='#', onclick='return addExpression("header.dst == \\\"#{header}\\\"");') #{header}
         | 
   if (session.ua)
     div User Agents:
@@ -82,41 +87,41 @@ div(id='sessionDetail#{session.id}')
           | 
   if (session.tls)
     each cert in session.tls
-      div TLS: 
+      div Certificates: 
         - if (cert.sn)
           | Serial: 
-          a(href='#', onclick='return addExpression("tls.serial == #{cert.sn}");') #{cert.sn}
+          a(href='#', onclick='return addExpression("cert.serial == #{cert.sn}");') #{cert.sn}
           | 
         - if (cert.iCn && Array.isArray(cert.iCn))
           | Issuer Common: 
           each cn in cert.iCn
-            a(href='#', onclick='return addExpression("tls.issuer.cn == \\\"#{cn}\\\"");') #{cn}
+            a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cn}\\\"");') #{cn}
             | 
         - else if (cert.iCn)
           | Issuer Common: 
-          a(href='#', onclick='return addExpression("tls.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
+          a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
           | 
         - if (cert.iOn)
           | Issuer Org: 
-          a(href='#', onclick='return addExpression("tls.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
+          a(href='#', onclick='return addExpression("cert.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
           | 
         - if (cert.sCn && Array.isArray(cert.sCn))
           | Subject Common: 
           each cn in cert.sCn
-            a(href='#', onclick='return addExpression("tls.subject.cn == \\\"#{cn}\\\"");') #{cn}
+            a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cn}\\\"");') #{cn}
             | 
         - else if (cert.sCn)
           | Subject Common: 
-          a(href='#', onclick='return addExpression("tls.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
+          a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
           | 
         - if (cert.sOn)
           | Subject Org: 
-          a(href='#', onclick='return addExpression("tls.subject.on == \\\"#{cert.sOn}\\\"");') #{cert.sOn}
+          a(href='#', onclick='return addExpression("cert.subject.on == \\\"#{cert.sOn}\\\"");') #{cert.sOn}
           | 
         if (cert.alt)
           | [
           each alt in cert.alt
-            a(href='#', onclick='return addExpression("tls.alt == \\\"#{alt}\\\"");') #{alt}
+            a(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
             | 
           | ]
   hr

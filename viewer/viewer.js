@@ -681,7 +681,7 @@ function lookupQueryTags(query, doneCb) {
   var finished = 0;
 
   function process(parent, obj, item) {
-    if ((item === "ta" || item === "hh") && typeof obj[item] === "string") {
+    if ((item === "ta" || item === "hh1" || item === "hh2") && typeof obj[item] === "string") {
       if (obj[item].indexOf("*") !== -1) {
         delete parent.term;
         outstanding++;
@@ -702,8 +702,10 @@ function lookupQueryTags(query, doneCb) {
           delete parent.term;
           if (item === "ta") {
             parent.terms = {ta: terms};
-          } else {
-            parent.terms = {hh: terms};
+          } else if (item === "hh1") {
+            parent.terms = {hh1: terms};
+          } else if (item === "hh2") {
+            parent.terms = {hh2: terms};
           }
           outstanding--;
           if (finished && outstanding === 0) {
@@ -712,7 +714,7 @@ function lookupQueryTags(query, doneCb) {
         });
       } else {
         outstanding++;
-        var tag = (item === "hh"?"http:header:" + obj[item].toLowerCase():obj[item]);
+        var tag = (item !== "ta"?"http:header:" + obj[item].toLowerCase():obj[item]);
 
         Db.tagNameToId(tag, function (id) {
           obj[item] = id;
@@ -1072,20 +1074,20 @@ app.get('/uniqueValue.json', function(req, res) {
                   must_not: {wildcard: {_id: "http:header:*"}}
                      }
           };
-  } else if (req.query.type === "header") {
+  } else {
     query = {wildcard: {_id: "http:header:" + req.query.filter + "*"}};
   }
 
   console.log("uniqueValue query", JSON.stringify(query));
   Db.search('tags', 'tag', {size:200, query: query}, function(err, result) {
     var terms = [];
-    if (req.query.type === "header") {
+    if (req.query.type === "tags") {
       result.hits.hits.forEach(function (hit) {
-        terms.push(hit._id.substring(12));
+        terms.push(hit._id);
       });
     } else {
       result.hits.hits.forEach(function (hit) {
-        terms.push(hit._id);
+        terms.push(hit._id.substring(12));
       });
     }
     res.send(terms);
@@ -1246,16 +1248,30 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
           });
         },
         function(parallelCb) {
-          if (!session._source.hh) {
+          if (!session._source.hh1) {
             return parallelCb(null);
           }
-          async.map(session._source.hh, function (item, cb) {
+          async.map(session._source.hh1, function (item, cb) {
             Db.tagIdToName(item, function (name) {
               cb(null, name.substring(12));
             });
           },
           function(err, results) {
-            session._source.hh = results;
+            session._source.hh1 = results;
+            parallelCb(null);
+          });
+        },
+        function(parallelCb) {
+          if (!session._source.hh2) {
+            return parallelCb(null);
+          }
+          async.map(session._source.hh2, function (item, cb) {
+            Db.tagIdToName(item, function (name) {
+              cb(null, name.substring(12));
+            });
+          },
+          function(err, results) {
+            session._source.hh2 = results;
             parallelCb(null);
           });
         }],
@@ -1432,8 +1448,11 @@ function localSessionDetail(req, res) {
     }
     session.id = req.params.id;
     session.ta = session.ta.sort();
-    if (session.hh) {
-      session.hh = session.hh.sort();
+    if (session.hh1) {
+      session.hh1 = session.hh1.sort();
+    }
+    if (session.hh2) {
+      session.hh2 = session.hh2.sort();
     }
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */

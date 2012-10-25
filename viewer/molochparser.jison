@@ -26,21 +26,32 @@
 "ip.src"                  return "ip.src"
 "ip.dst"                  return "ip.dst"
 "ip.xff"                  return "ip.xff"
+"ip.xff.cnt"              return "ip.xff.cnt"
 "ip"                      return "ip"
-"tls.issuer.cn"           return "tls.issuer.cn"
-"tls.issuer.on"           return "tls.issuer.on"
-"tls.subject.cn"          return "tls.subject.cn"
-"tls.subject.on"          return "tls.subject.on"
-"tls.alt"                 return "tls.alt"
-"tls.serial"              return "tls.serial"
+"cert.issuer.cn"          return "cert.issuer.cn"
+"cert.issuer.on"          return "cert.issuer.on"
+"cert.subject.cn"         return "cert.subject.cn"
+"cert.subject.on"         return "cert.subject.on"
+"cert.alt"                return "cert.alt"
+"cert.alt.cnt"            return "cert.alt.cnt"
+"cert.serial"             return "cert.serial"
+"cert.cnt"                return "cert.cnt"
 "uri"                     return "uri"
+"uri.cnt"                 return "uri.cnt"
 "ua"                      return "ua"
+"ua.cnt"                  return "ua.cnt"
 "icmp"                    return "icmp"
 "tcp"                     return "tcp"
 "udp"                     return "udp"
 "host"                    return "host"
+"host.cnt"                return "host.cnt"
 "header"                  return "header"
+"header.src"              return "header.src"
+"header.src.cnt"          return "header.src.cnt"
+"header.dst"              return "header.dst"
+"header.dst.cnt"          return "header.dst.cnt"
 "tags"                    return 'tags'
+"tags.cnt"                return 'tags.cnt'
 [/\w*._:-]+               return 'ID'
 \"[^"]+\"                 return 'QUOTEDSTR'
 "<="                      return 'lte'
@@ -95,20 +106,29 @@ IPNUM: IPMATCH
      | NUMBER
      ;
 
-RANGEFIELD: databytes   {$$ = 'db'}
-          | bytes       {$$ = 'by'}
-          | packets     {$$ = 'pa'}
-          | protocol    {$$ = 'pr'}
-          | 'port.src'  {$$ = 'p1'}
-          | 'port.dst'  {$$ = 'p2'}
+RANGEFIELD: databytes         {$$ = 'db'}
+          | bytes             {$$ = 'by'}
+          | packets           {$$ = 'pa'}
+          | protocol          {$$ = 'pr'}
+          | 'port.src'        {$$ = 'p1'}
+          | 'port.dst'        {$$ = 'p2'}
+          | 'uri.cnt'         {$$ = 'uscnt'}
+          | 'cert.cnt'        {$$ = 'tlscnt'}
+          | 'ip.xff.cnt'      {$$ = 'xffcnt'}
+          | 'ua.cnt'          {$$ = 'uacnt'}
+          | 'host.cnt'        {$$ = 'hocnt'}
+          | 'header.src.cnt'  {$$ = 'hh1cnt'}
+          | 'header.dst.cnt'  {$$ = 'hh2cnt'}
+          | 'tags.cnt'        {$$ = 'tacnt'}
+          | 'cert.alt.cnt'    {$$ = 'tls.altcnt'}
           ;
 
-TERMFIELD  : node             {$$ = 'no'}
-           | host             {$$ = 'ho'}
-           | 'tls.subject.cn' {$$ = 'tls.sCn'}
-           | 'tls.issuer.cn'  {$$ = 'tls.iCn'}
-           | 'tls.serial'     {$$ = 'tls.sn'}
-           | 'tls.alt'        {$$ = 'tls.alt'}
+TERMFIELD  : node              {$$ = 'no'}
+           | host              {$$ = 'ho'}
+           | 'cert.subject.cn' {$$ = 'tls.sCn'}
+           | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
+           | 'cert.serial'     {$$ = 'tls.sn'}
+           | 'cert.alt'        {$$ = 'tls.alt'}
            ;
 
 UPTERMFIELD  : 'country.src' {$$ = 'g1'}
@@ -116,11 +136,11 @@ UPTERMFIELD  : 'country.src' {$$ = 'g1'}
              | 'country.xff' {$$ = 'gxff'}
              ;
 
-TEXTFIELD  : 'asn.src'        {$$ = 'as1'}
-           | 'asn.dst'        {$$ = 'as2'}
-           | 'asn.xff'        {$$ = 'asxff'}
-           | 'tls.subject.on' {$$ = 'tls.sOn'}
-           | 'tls.issuer.on'  {$$ = 'tls.iOn'}
+TEXTFIELD  : 'asn.src'         {$$ = 'as1'}
+           | 'asn.dst'         {$$ = 'as2'}
+           | 'asn.xff'         {$$ = 'asxff'}
+           | 'cert.subject.on' {$$ = 'tls.sOn'}
+           | 'cert.issuer.on'  {$$ = 'tls.iOn'}
            ;
 
 STR : ID
@@ -138,16 +158,23 @@ STR : ID
     | asn.src
     | asn.dst
     | asn.xff
-    | tls.issuer.cn
-    | tls.issuer.on
-    | tls.subject.cn
-    | tls.subject.on
-    | tls.alt
-    | tls.serial
+    | cert.issuer.cn
+    | cert.issuer.on
+    | cert.subject.cn
+    | cert.subject.on
+    | cert.alt
+    | cert.alt.cnt
+    | cert.serial
+    | cert.cnt
     | QUOTEDSTR
     | node
     | host
+    | host.cnt
     | header
+    | header.src
+    | header.src.cnt
+    | header.dst
+    | header.dst.cnt
     | icmp
     | tcp
     | udp
@@ -155,8 +182,13 @@ STR : ID
     | ip.src
     | ip.dst
     | ip.xff
+    | ip.xff.cnt
     | uri
+    | uri.cnt
     | ua
+    | ua.cnt
+    | tags
+    | tags.cnt
     ;
  
 e
@@ -294,11 +326,27 @@ e
         }
     | header '==' STR
         { var tag = stripQuotes($3);
-          $$ = {term: {hh: tag}};
+          $$ = {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]};
+        }
+    | 'header.src' '==' STR
+        { var tag = stripQuotes($3);
+          $$ = {term: {hh1: tag}};
+        }
+    | 'header.dst' '==' STR
+        { var tag = stripQuotes($3);
+          $$ = {term: {hh2: tag}};
         }
     | header '!=' STR
         { var tag = stripQuotes($3);
-          $$ = {not: {term: {hh: tag}}};
+          $$ = {not: {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
+        }
+    | 'header.src' '!=' STR
+        { var tag = stripQuotes($3);
+          $$ = {not: {term: {hh1: tag}}};
+        }
+    | 'header.dst' '!=' STR
+        { var tag = stripQuotes($3);
+          $$ = {not: {term: {hh2: tag}}};
         }
     | country '==' STR 
         { var str = stripQuotes($3).toUpperCase();
