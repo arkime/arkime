@@ -108,6 +108,13 @@ dropGroup=_GROUPNAME_
 # WILL be saved for the session since tags usually aren't set until after several packets
 #dontSaveTags=
 
+# Header to use for determining the username to check in the database for instead of
+# using http digest.  Use this if apache or something else is doing the auth.  
+# Might need something like this in the httpd.conf
+# RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
+# RequestHeader set MOLOCH_USER %{ENV_RU}e
+#userNameHeader=moloch_user
+
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
 # stripe size.  Defaults to 256k
