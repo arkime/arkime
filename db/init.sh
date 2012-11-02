@@ -119,6 +119,9 @@ curl -XPUT "http://$ESHOST:9200/users_v1/?pretty=1" -d '
         "webEnabled": {
           "type": "boolean"
         },
+        "headerAuthEnabled": {
+          "type": "boolean"
+        },
         "passHash": {
           "type": "string",
           "index": "no"

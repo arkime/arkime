@@ -18,8 +18,8 @@
 
 
 
-ES=0.19.10
-NODEJS=0.8.11
+ES=0.19.11
+NODEJS=0.8.12
 # If you change TDIR you need to change TDIR in the single-host/*/* files
 TDIR=/data/moloch
 INSTALL_DIR=$PWD

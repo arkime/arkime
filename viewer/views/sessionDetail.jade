@@ -53,6 +53,11 @@ div(id='sessionDetail#{session.id}')
       each tag in session.ta
         a(href='#', onclick='return addExpression("tags == \\\"#{tag}\\\"");') #{tag}
         | 
+  if (session.hh)
+    div Old Header:
+      each header in session.hh
+        a(href='#', onclick='return addExpression("oldheader == \\\"#{header}\\\"");') #{header}
+        | 
   if (session.hh1)
     div Request Header:
       each header in session.hh1

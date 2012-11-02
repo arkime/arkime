@@ -182,11 +182,11 @@ Building Viewer
    from the `EPEL <http://fedoraproject.org/wiki/EPEL>`_ repository. Make sure
    ``python2.6`` is in your path before proceeding!
 
-2. Install `Node.js <http://nodejs.org/>`_ version 0.8.1 or higher.
+2. Install `Node.js <http://nodejs.org/>`_ version 0.8.11 or higher.
 
    - **Binary install:** Please see the `platform-specific instructions
      <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
-   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.8.3/node-v0.8.3.tar.gz>`_, build, and install.
+   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.8.12/node-v0.8.12.tar.gz>`_, build, and install.
 
 3. In the ``viewer`` directory run ``npm install``.
 

@@ -6,6 +6,7 @@
 #include "http_parser.h"
 #include "dll.h"
 #include "hash.h"
+#include "nids.h"
 
 #define UNUSED(x) x __attribute((unused))
 
@@ -206,6 +207,18 @@ char *moloch_db_create_file(time_t firstPacket, uint32_t *id);
 void  moloch_db_save_session(MolochSession_t *session);
 void  moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tag, MolochTag_cb func);
 void  moloch_db_exit();
+
+/******************************************************************************/
+/*
+ * detect.c
+ */
+void moloch_detect_init();
+void moloch_detect_initial_tag(MolochSession_t *session);
+void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len);
+void moloch_detect_exit();
 
 /******************************************************************************/
 /*

@@ -45,6 +45,7 @@
 "udp"                     return "udp"
 "host"                    return "host"
 "host.cnt"                return "host.cnt"
+"oldheader"               return "oldheader"
 "header"                  return "header"
 "header.src"              return "header.src"
 "header.src.cnt"          return "header.src.cnt"
@@ -324,6 +325,10 @@ e
         { var tag = stripQuotes($3);
           $$ = {not: {term: {ta: tag}}};
         }
+    | oldheader '==' STR
+        { var tag = stripQuotes($3);
+          $$ = {term: {hh: tag}};
+        }
     | header '==' STR
         { var tag = stripQuotes($3);
           $$ = {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]};
@@ -335,6 +340,10 @@ e
     | 'header.dst' '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {hh2: tag}};
+        }
+    | oldheader '!=' STR
+        { var tag = stripQuotes($3);
+          $$ = {not: {term: {hh1: tag}}};
         }
     | header '!=' STR
         { var tag = stripQuotes($3);

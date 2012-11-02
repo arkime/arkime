@@ -19,7 +19,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        @GEOIP_LIBS@ \
 	        thirdparty/http_parser.o -ldl
 
-C_FILES         = main.c db.c nids.c yara.c es.c config.c
+C_FILES         = main.c db.c nids.c yara.c es.c config.c detect.c
 O_FILES         = $(C_FILES:.c=.o)
 
 all:thirdparty/js0n.o thirdparty/http_parser.o

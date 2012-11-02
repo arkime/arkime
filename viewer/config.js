@@ -40,6 +40,9 @@ function processArgs() {
     if (process.argv[i] === "-c") {
       i++;
       internals.configFile = process.argv[i];
+    } else if (process.argv[i] === "-n") {
+      i++;
+      internals.nodeName = process.argv[i];
     } else {
       args.push(process.argv[i]);
     }

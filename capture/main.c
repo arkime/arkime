@@ -36,6 +36,7 @@ GMainLoop             *mainLoop;
 
 /******************************************************************************/
 gchar   *pcapFile       = NULL;
+gchar   *pcapDir        = NULL;
 gboolean fakePcap       = FALSE;
 gchar   *nodeName       = NULL;
 gchar   *hostName       = NULL;
@@ -49,6 +50,7 @@ static GOptionEntry entries[] =
 {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME, &configFile,  "Config file name, default './config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME, &pcapFile,    "Offline pcap file", NULL },
+    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME, &pcapDir,     "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,   &nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING,   &extraTag,    "Extra tag to add to all packets", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,     &showVersion, "Show version number", NULL },
@@ -110,6 +112,7 @@ void cleanup(int UNUSED(sig))
 {
 
     moloch_nids_exit();
+    moloch_detect_exit();
     moloch_yara_exit();
     moloch_db_exit();
     moloch_es_exit();
@@ -118,6 +121,8 @@ void cleanup(int UNUSED(sig))
 
     if (pcapFile)
         g_free(pcapFile);
+    if (pcapDir)
+        g_free(pcapDir);
     exit(0);
 }
 /******************************************************************************/
@@ -264,6 +269,7 @@ int main(int argc, char **argv)
     moloch_es_init();
     moloch_db_init();
     moloch_yara_init();
+    moloch_detect_init();
     moloch_nids_init();
 
     if (!config.pcapDir) {

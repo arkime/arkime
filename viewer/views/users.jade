@@ -8,6 +8,7 @@ table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="ta
       th Enabled?
       th Admin?
       th Web Interface?
+      th Web Auth Header?
       th Actions
   tbody
 br
@@ -18,18 +19,28 @@ form#addUser
   input(type='hidden', id='token', name='token', value='#{token}')
   label(for='userId') User ID
   input(type='text', id='userId', name='userId', size='30')
+  br
   label(for='userName') User Name
   input(type='text', id='userName', name='userName', size='30')
+  br
   label(for='Password') Password
   input(type='password', id='password', name='password', size='30')
+  br
   label(for='Expression') Expression
   input(type='expression', id='expression', name='expression', size='30')
+  br
   label(for='enabled') Enabled:
-  input(type='checkbox', id='enabled', name='enabled', value="true", CHECKED)
+  input(type='checkbox', id='enabled', name='enabled', CHECKED)
+  br
   label(for='createEnabled') Admin:
-  input(type='checkbox', id='createEnabled', name='createEnabled', value="true")
+  input(type='checkbox', id='createEnabled', name='createEnabled')
+  br
   label(for='webEnabled') Web Enabled:
-  input(type='checkbox', id='webEnabled', name='webEnabled', value="true", CHECKED)
+  input(type='checkbox', id='webEnabled', name='webEnabled', CHECKED)
+  br
+  label(for='headerAuthEnabled') Web Auth Header:
+  input(type='checkbox', id='headerAuthEnabled', name='headerAuthEnabled')
+  br
   button#create create
 
 script(type='text/javascript')
@@ -83,12 +94,16 @@ script(type='text/javascript')
             return "<input type='checkbox' id='" + oObj.aData.userId +"-webEnabled' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
           }
         },
+        { "mDataProp" : "headerAuthEnabled",
+          "fnRender" : function(oObj) {
+            return "<input type='checkbox' id='" + oObj.aData.userId +"-headerAuthEnabled' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
+          }
+        },
         { "mDataProp" : null,
           "bSortable" : false,
           "fnRender" : function(oObj) {
-            //return "fred";
             return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
-                   "<a href='/password?userId=" + oObj.aData.userId +"'>Set Password</a>";
+                   "<a href='password?userId=" + oObj.aData.userId +"'>Set Password</a>";
           }
         }
       ]
@@ -104,6 +119,7 @@ script(type='text/javascript')
         "url": "#{basePath}updateUser/" + aData.userId + "?" +
           "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
           "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
+          "&headerAuthEnabled=" + $("#" + aData.userId  + "-headerAuthEnabled").is(':checked') +
           "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
         "success": function(data) {
           if (!data.success) {

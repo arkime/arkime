@@ -127,6 +127,20 @@ app.configure(function() {
         return;
       }
 
+      // Header auth
+      if (req.headers[Config.get("userNameHeader")] !== undefined) {
+        var userName = req.headers[Config.get("userNameHeader")];
+        Db.get("users", "user", userName, function(err, suser) {
+          if (err) {return res.end("ERROR - " +  err);}
+          if (!suser || !suser.exists) {return res.end(userName + " doesn't exist");}
+          if (!suser._source.enabled) {return res.end(userName + " not enabled");}
+          if (!suser._source.headerAuthEnabled) {return res.end(userName + " header auth not enabled");}
+          req.user = suser._source;
+          return next();
+        });
+        return;
+      }
+
       // Browser auth
       req.url = req.url.replace("/", Config.basePath());
       passport.authenticate('digest', {session: false})(req, res, function (err) {
@@ -142,7 +156,7 @@ app.configure(function() {
   } else {
     /* Shared password isn't set, who cares about auth */
     app.use(function(req, res, next) {
-      req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true};
+      req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false};
       next();
     });
   }
@@ -606,7 +620,7 @@ app.get('/files.json', function(req, res) {
 });
 
 app.post('/users.json', function(req, res) {
-  var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled"];
+  var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
   var query = {fields: fields,
@@ -681,7 +695,7 @@ function lookupQueryTags(query, doneCb) {
   var finished = 0;
 
   function process(parent, obj, item) {
-    if ((item === "ta" || item === "hh1" || item === "hh2") && typeof obj[item] === "string") {
+    if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && typeof obj[item] === "string") {
       if (obj[item].indexOf("*") !== -1) {
         delete parent.term;
         outstanding++;
@@ -699,14 +713,8 @@ function lookupQueryTags(query, doneCb) {
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);
           });
-          delete parent.term;
-          if (item === "ta") {
-            parent.terms = {ta: terms};
-          } else if (item === "hh1") {
-            parent.terms = {hh1: terms};
-          } else if (item === "hh2") {
-            parent.terms = {hh2: terms};
-          }
+          parent.term = {};
+          parent.term[item] = terms;
           outstanding--;
           if (finished && outstanding === 0) {
             doneCb();
@@ -1248,6 +1256,20 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
           });
         },
         function(parallelCb) {
+          if (!session._source.hh) {
+            return parallelCb(null);
+          }
+          async.map(session._source.hh, function (item, cb) {
+            Db.tagIdToName(item, function (name) {
+              cb(null, name.substring(12));
+            });
+          },
+          function(err, results) {
+            session._source.hh = results;
+            parallelCb(null);
+          });
+        },
+        function(parallelCb) {
           if (!session._source.hh1) {
             return parallelCb(null);
           }
@@ -1448,6 +1470,9 @@ function localSessionDetail(req, res) {
     }
     session.id = req.params.id;
     session.ta = session.ta.sort();
+    if (session.hh) {
+      session.hh = session.hh.sort();
+    }
     if (session.hh1) {
       session.hh1 = session.hh1.sort();
     }
@@ -1794,12 +1819,13 @@ app.post('/addUser', function(req, res) {
       userName: req.body.userName,
       expression: req.body.expression,
       passStore: Config.pass2store(req.body.userId, req.body.password),
-      enabled: (req.body.enabled || "false") === "true",
-      webEnabled: (req.body.webEnabled || "true") === "true",
-      createEnabled: (req.body.createEnabled || "false") === "true"
+      enabled: req.body.enabled  === "on",
+      webEnabled: req.body.webEnabled  === "on",
+      headerAuthEnabled: req.body.headerAuthEnabled === "on",
+      createEnabled: req.body.createEnabled === "on"
     };
 
-    console.log("nuser", nuser);
+    console.log("Creating new user", nuser);
     Db.indexNow("users", "user", req.body.userId, nuser, function(err, info) {
       console.log("add user", err, info);
       if (!err) {
@@ -1840,6 +1866,10 @@ app.post('/updateUser/:userId', function(req, res) {
 
     if (req.query.webEnabled) {
       user.webEnabled = req.query.webEnabled === "true";
+    }
+
+    if (req.query.headerAuthEnabled) {
+      user.headerAuthEnabled = req.query.headerAuthEnabled === "true";
     }
 
     if (req.user.createEnabled && req.query.createEnabled) {

@@ -218,7 +218,7 @@ $(document).ready(function() {
     var params = buildParams();
     params = $.merge(data, params);
 
-    var url = "/?" + $.param(params);
+    var url = $("#sessionsLink").attr("href") + "?" + $.param(params);
 
     window.location = url;
     return false;
@@ -303,7 +303,7 @@ $(document).ready(function() {
         tokens.push(" ");
       }
 
-      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "tags", "tags.cnt", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt"];
+      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "tags", "tags.cnt", "oldheader", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt"];
 
       if (tokens.length <= 1) {
         return callback(commands);
@@ -317,7 +317,7 @@ $(document).ready(function() {
         return callback(["!=", "==" , ">=", "<=", "<", ">"]);
       }
 
-      if (/^(tags|ua|header|country|asn|host|node|uri|cert)/.test(tokens[tokens.length-2])) {
+      if (/^(tags|ua|oldheader|header|country|asn|host|node|uri|cert)/.test(tokens[tokens.length-2])) {
         return callback(["!=", "=="]);
       }
 
@@ -334,7 +334,7 @@ $(document).ready(function() {
         return callback(["&&", "||", ")"]);
       }
 
-      if (/^(tags|header)/.test(item)) {
+      if (/^(tags|oldheader|header)/.test(item)) {
         if (filter.length < 1) {
           return callback([]);
         }
