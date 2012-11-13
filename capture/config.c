@@ -235,6 +235,11 @@ void moloch_config_init()
         printf("Need to set interface or pcapfile\n");
         exit (1);
     }
+
+    if (!config.pcapDir) {
+        printf("Must set a pcapDir\n");
+        exit(1);
+    }
 }
 /******************************************************************************/
 void moloch_config_exit()

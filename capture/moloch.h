@@ -189,6 +189,8 @@ int moloch_string_cmp(const void *keyv, const void *elementv);
 uint32_t moloch_int_hash(const void *key);
 int moloch_int_cmp(const void *keyv, const void *elementv);
 
+void moloch_quit();
+
 
 /******************************************************************************/
 /*
@@ -203,6 +205,7 @@ void moloch_config_exit();
  */
 
 void  moloch_db_init();
+int   moloch_db_tags_loading();
 char *moloch_db_create_file(time_t firstPacket, uint32_t *id);
 void  moloch_db_save_session(MolochSession_t *session);
 void  moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tag, MolochTag_cb func);

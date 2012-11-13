@@ -331,6 +331,9 @@ script(type='text/javascript')
               $('#world-map').vectorMap('set', 'values', lastResult.map);
               fnCallback(json);
               stopBlink();
+            },
+            "error": function (json) {
+              alert("Error fetching session data, maybe network error or need to reload page?");
             }
         } );
       }

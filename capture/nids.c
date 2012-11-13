@@ -496,8 +496,17 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         switch (packet->ip_p) {
         case IPPROTO_TCP:
-            session->port1 = ntohs(tcphdr->source);
-            session->port2 = ntohs(tcphdr->dest);
+            /* If a syn & ack that means the first packet is actually the syn-ack 
+             * reply, the syn probably got dropped */
+            if ((tcphdr->syn) && (tcphdr->ack)) {
+                session->addr1 = packet->ip_dst.s_addr;
+                session->addr2 = packet->ip_src.s_addr;
+                session->port1 = ntohs(tcphdr->dest);
+                session->port2 = ntohs(tcphdr->source);
+            } else {
+                session->port1 = ntohs(tcphdr->source);
+                session->port2 = ntohs(tcphdr->dest);
+            }
             break;
         case IPPROTO_UDP:
             session->port1 = ntohs(udphdr->source);
@@ -787,7 +796,7 @@ gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
             return FALSE;
         }
 
-        g_main_loop_quit(mainLoop);
+        moloch_quit();
         return FALSE;
     }
     return TRUE;
@@ -998,6 +1007,7 @@ void moloch_nids_init()
 }
 /******************************************************************************/
 void moloch_nids_exit() {
+    LOG("exit");
     nids_exit();
 
     MolochSession_t *hsession;

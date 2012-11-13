@@ -870,6 +870,10 @@ static MolochTagRequest_t      tagRequests;
 void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw);
 
 /******************************************************************************/
+int moloch_db_tags_loading() {
+    return outstandingTagRequests + tagRequests.t_count;
+}
+/******************************************************************************/
 void moloch_db_free_tag_request(MolochTagRequest_t *r)
 {
     g_free(r->escaped);

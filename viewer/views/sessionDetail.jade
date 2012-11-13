@@ -146,6 +146,9 @@ div(id='sessionDetail#{session.id}')
     span
       input(id='format-gzip-#{session.id}', type="checkbox", checked=query.gzip=='true') 
       label Decode GZip
+    span
+      input(id='format-image-#{session.id}', type="checkbox", checked=query.image=='true') 
+      label Show Images
   table#textpacket
     tr
       th.textcol Source
@@ -166,10 +169,11 @@ div(id='sessionDetail#{session.id}')
       $('#stopTime-#{session.id}').html(dateString(#{session.lp}, " "));
       $('#a1-#{session.id}').html(ipString(#{session.a1}));
       $('#a2-#{session.id}').html(ipString(#{session.a2}));
-      $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, select#format-base-#{session.id}').on('change', function() {
+      $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, input#format-image-#{session.id}, select#format-base-#{session.id}').on('change', function() {
         var url = "#{session.no}/#{session.id}/sessionDetail" +
                    "?base=" + $('select#format-base-#{session.id} :selected').html() +
                    "&line=" + $('input#format-line-#{session.id}').is(':checked') + 
+                   "&image=" + $('input#format-image-#{session.id}').is(':checked') + 
                    "&gzip=" + $('input#format-gzip-#{session.id}').is(':checked');
 
         $("#sessionDetail#{session.id}").load(url);

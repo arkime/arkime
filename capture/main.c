@@ -254,6 +254,20 @@ void moloch_drop_privileges()
 
 }
 /******************************************************************************/
+gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
+{
+    if (moloch_db_tags_loading() == 0) {
+        g_main_loop_quit(mainLoop);
+        return FALSE;
+    }
+    return TRUE;
+}
+/******************************************************************************/
+void moloch_quit()
+{
+    g_timeout_add_seconds(1, moloch_quit_gfunc, 0);
+}
+/******************************************************************************/
 int main(int argc, char **argv)
 {
     signal(SIGINT, cleanup);
@@ -271,12 +285,6 @@ int main(int argc, char **argv)
     moloch_yara_init();
     moloch_detect_init();
     moloch_nids_init();
-
-    if (!config.pcapDir) {
-        printf("Must set a pcapDir\n");
-        exit(1);
-    }
-
 
     g_main_loop_run(mainLoop);
     cleanup(0);

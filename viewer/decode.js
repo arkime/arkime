@@ -208,18 +208,25 @@ exports.reassemble_udp = function (packets, cb) {
 
 exports.reassemble_tcp = function (packets, cb) {
 
+  // Remove syn, rst, 0 length packets
+  var packets2 = [];
+  for (var i = 0; i < packets.length; i++) {
+    if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
+      continue;
+    }
+    packets2.push(packets[i]);
+  }
+
+  packets = packets2;
+  packets2 = undefined;
+
+  if (packets.length === 0) {
+      return cb(null, packets);
+  }
+
   // Sort Packets
   var clientKey = packets[0].ip.addr1 + ':' + packets[0].tcp.sport;
   packets.sort(function(a,b) {
-
-    if (a.tcp.rstflag) {
-      return -1;
-    }
-
-    if (b.tcp.rstflag) {
-      return -1;
-    }
-
     if ((a.ip.addr1 === b.ip.addr1) && (a.tcp.sport === b.tcp.sport)) {
       return (a.tcp.seq - b.tcp.seq);
     }
@@ -231,9 +238,10 @@ exports.reassemble_tcp = function (packets, cb) {
     return (a.tcp.ack - (b.tcp.seq + b.tcp.data.length-1) );
   });
 
-  // Now divide up conversation, removing dups
+  // Now divide up conversation
   var clientSeq = 0;
   var hostSeq = 0;
+  var start = 0;
 
   var results = [];
   packets.forEach(function (item) {
@@ -251,15 +259,16 @@ exports.reassemble_tcp = function (packets, cb) {
     }
 
     if (results.length === 0 || key !== results[results.length-1].key) {
+      start = item.tcp.seq;
       var result = {
         key: key,
         data: item.tcp.data
       };
       results.push(result);
     } else {
-      var newBuf = new Buffer(results[results.length-1].data.length + item.tcp.data.length);
+      var newBuf = new Buffer(item.tcp.data.length + item.tcp.seq - start);
       results[results.length-1].data.copy(newBuf);
-      item.tcp.data.copy(newBuf, results[results.length-1].data.length);
+      item.tcp.data.copy(newBuf, item.tcp.seq - start);
       results[results.length-1].data = newBuf;
     }
   });

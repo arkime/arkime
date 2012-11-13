@@ -33,6 +33,7 @@ var Config         = require('./config.js'),
     async          = require('async'),
     hexy           = require('hexy'),
     url            = require('url'),
+    dns            = require('dns'),
     decode         = require('./decode.js'),
     Db             = require('./db.js'),
     os             = require('os'),
@@ -713,8 +714,8 @@ function lookupQueryTags(query, doneCb) {
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);
           });
-          parent.term = {};
-          parent.term[item] = terms;
+          parent.terms = {};
+          parent.terms[item] = terms;
           outstanding--;
           if (finished && outstanding === 0) {
             doneCb();
@@ -934,6 +935,16 @@ app.get('/sessions.json', function(req, res) {
   });
 });
 
+app.get('/dns.json', function(req, res) {
+  console.log("dns.json", req.query);
+  dns.reverse(req.query.ip, function (err, data) {
+    if (err) {
+      return res.send({hosts: []});
+    }
+    return res.send({hosts: data});
+  });
+});
+
 app.get('/graph.json', function(req, res) {
 
   req.query.iDisplayLength = req.query.iDisplayLength || "5000";
@@ -947,7 +958,7 @@ app.get('/graph.json', function(req, res) {
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
-        console.log("sessions.json error", err);
+        console.log("graph.json error", err);
         res.send({});
         return;
       }
@@ -1041,7 +1052,7 @@ app.get('/sessions.csv', function(req, res) {
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
-        console.log("sessions.json error", err);
+        console.log("sessions.csv error", err);
         res.send("#Error db\r\n");
         return;
       }
@@ -1312,23 +1323,22 @@ function localSessionDetailReturnFull(req, res, session, results) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
   }
 
-  if (req.query.base === "hex") {
-    var format = {};
-    format.numbering = (req.query.line === "true"?"hex_bytes":"none");
-    for (i = 0; i < results.length; i++) {
+  var format = {};
+  format.numbering = (req.query.line === "true"?"hex_bytes":"none");
+
+  for (i = 0; i < results.length; i++) {
+    if (req.query.base === "hex") {
       results[i].data = '<pre>' + safeStr(hexy.hexy(results[i].data, format)) + '</pre>';
-    }
-  } else if (req.query.base === "ascii") {
-    for (i = 0; i < results.length; i++) {
+    } else if (req.query.base === "ascii") {
       results[i].data = '<pre>' + safeStr(results[i].data.toString("binary")) + '</pre>';
-    }
-  } else if (req.query.base === "utf8") {
-    for (i = 0; i < results.length; i++) {
+    } else if (req.query.base === "utf8") {
       results[i].data = '<pre>' + safeStr(results[i].data.toString("utf8")) + '</pre>';
-    }
-  } else {
-    for (i = 0; i < results.length; i++) {
+    } else {
       results[i].data = safeStr(results[i].data.toString()).replace(/\n/g, '<br>');
+    }
+
+    if(results[i].bodyNum !== undefined) {
+      results[i].data += "<img src=\"" + req.params.nodeName + "/" + session.id + "/body/" + results[i].bodyNum + "\">";
     }
   }
 
@@ -1341,105 +1351,188 @@ function localSessionDetailReturnFull(req, res, session, results) {
   });
 }
 
+function gzipDecode(req, res, session, results) {
+  var parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
+
+  parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
+    var pos = this.pos;
+    //console.log(pos, "onBody slice (", start, start+len, ") gzip:", this.gzip);
+
+    // This isn't a gziped request
+    if (!this.gzip) {
+      return;
+    }
+
+    // Copy over the headers
+    if (!results[pos]) {
+      results[pos] = {data: buf.slice(0, start)};
+    }
+
+    if (!this.inflator) {
+      this.inflator = zlib.createGunzip()
+        .on("data", function (b) {
+          var tmp = Buffer.concat([results[pos].data, new Buffer(b)]);
+          results[pos].data = tmp;
+        })
+        .on("error", function (e) {
+        })
+        .on("end", function () {
+        });
+    }
+
+    this.inflator.write(buf.slice(start,start+len));
+  };
+
+  parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
+    var pos = this.pos;
+
+    //console.log("onMessageComplete", pos, this.gzip);
+    var nextCb = this.nextCb;
+    if (this.inflator) {
+      this.inflator.end(null, function () {
+        if (nextCb) {
+          process.nextTick(nextCb);
+        }
+      });
+      this.inflator = null;
+    } else {
+      results[pos] = origresults[pos];
+      if (nextCb) {
+        process.nextTick(nextCb);
+      }
+    }
+  };
+
+  parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
+    var h;
+    this.gzip = false;
+    for (h = 0; h < info.headers.length; h += 2) {
+      if (info.headers[h].match(/Content-Encoding/i)) {
+        if (info.headers[h+1].match(/gzip/i)) {
+          this.gzip = true;
+        }
+        break;
+      }
+    }
+  };
+
+  var origresults = results;
+  results = [];
+
+  var p = 0;
+  async.forEachSeries(origresults, function(item, nextCb) {
+    var pos = p;
+    p++;
+    parsers[(pos%2)].pos = pos;
+
+    if (!item) {
+    } else if (item.data.length === 0) {
+      results[pos] = {data: item.data};
+      process.nextTick(nextCb);
+    } else {
+      //console.log("Doing", pos/*, item.data.toString()*/);
+      //parsers[(pos%2)].nextCb = nextCb;
+      var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
+      process.nextTick(nextCb);
+    }
+  }, function (err) {
+    /*parsers[0].nextCb = null;
+    parsers[1].nextCb = null;
+    parsers[0].finish();
+    parsers[1].finish();*/
+    req.query.needgzip = "false";
+    process.nextTick(function() {localSessionDetailReturnFull(req, res, session, results);});
+  });
+}
+
+function imageDecode(req, res, session, results, findBody) {
+  var parsers;
+
+  if (results[0].data.slice(0,4).toString() === "HTTP") {
+    parsers = [new HTTPParser(HTTPParser.RESPONSE), new HTTPParser(HTTPParser.REQUEST)];
+  } else {
+    parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
+  }
+  
+  
+
+  var bodyNum = 0;
+  parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
+    if (findBody === bodyNum) {
+      return res.send(buf.slice(start));
+    }
+
+    var pos = this.pos;
+
+    // Copy over the headers
+    if (results[pos] === undefined) {
+      results[pos] = {data: buf.slice(0, start), bodyNum: bodyNum};
+    } else if (results[pos].data === undefined) {
+      results[pos] = {data: "", bodyNum: bodyNum};
+    }
+    bodyNum++;
+  };
+
+  parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
+    var pos = this.pos;
+
+    if (!results[pos]) {
+      results[pos] = origresults[pos];
+    }
+  };
+
+  parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
+    var pos = this.pos;
+
+    var h;
+    this.image = false;
+    for (h = 0; h < info.headers.length; h += 2) {
+      if (info.headers[h].match(/Content-Encoding/i)) {
+        if (info.headers[h+1].match(/image/i)) {
+          this.image = true;
+        }
+        break;
+      }
+    }
+  };
+
+  var origresults = results;
+  results = [];
+
+  var p = 0;
+  async.forEachSeries(origresults, function(item, nextCb) {
+    var pos = p;
+    p++;
+    parsers[(pos%2)].pos = pos;
+
+    if (!item) {
+    } else if (item.data.length === 0) {
+      results[pos] = {data: item.data};
+      process.nextTick(nextCb);
+    } else {
+      var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
+      process.nextTick(nextCb);
+    }
+  }, function (err) {
+    req.query.needimage = "false";
+    process.nextTick(function() {localSessionDetailReturn(req, res, session, results);});
+  });
+}
+
 function localSessionDetailReturn(req, res, session, results) {
   if (results.length > 200) {
     results.length = 200;
   }
 
-  if (req.query.gzip === "true") {
-    var parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
-
-    parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
-      var pos = this.pos;
-      //console.log(pos, "onBody slice (", start, start+len, ") gzip:", this.gzip);
-
-      // This isn't a gziped request
-      if (!this.gzip) {
-        return;
-      }
-
-      // Copy over the headers
-      if (!results[pos]) {
-        results[pos] = {data: buf.slice(0, start)};
-      }
-
-      if (!this.inflator) {
-        this.inflator = zlib.createGunzip()
-          .on("data", function (b) {
-            var tmp = Buffer.concat([results[pos].data, new Buffer(b)]);
-            results[pos].data = tmp;
-          })
-          .on("error", function (e) {
-          })
-          .on("end", function () {
-          });
-      }
-
-      this.inflator.write(buf.slice(start,start+len));
-    };
-
-    parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
-      var pos = this.pos;
-
-      //console.log("onMessageComplete", pos, this.gzip);
-      var nextCb = this.nextCb;
-      if (this.inflator) {
-        this.inflator.end(null, function () {
-          if (nextCb) {
-            process.nextTick(nextCb);
-          }
-        });
-        this.inflator = null;
-      } else {
-        results[pos] = origresults[pos];
-        if (nextCb) {
-          process.nextTick(nextCb);
-        }
-      }
-    };
-
-    parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
-      var h;
-      this.gzip = false;
-      for (h = 0; h < info.headers.length; h += 2) {
-        if (info.headers[h].match(/Content-Encoding/i)) {
-          if (info.headers[h+1].match(/gzip/i)) {
-            this.gzip = true;
-          }
-          break;
-        }
-      }
-    };
-
-    var origresults = results;
-    results = [];
-
-    var p = 0;
-    async.forEachSeries(origresults, function(item, nextCb) {
-      var pos = p;
-      p++;
-      parsers[(pos%2)].pos = pos;
-
-      if (!item) {
-      } else if (item.data.length === 0) {
-        results[pos] = {data: item.data};
-        process.nextTick(nextCb);
-      } else {
-        //console.log("Doing", pos/*, item.data.toString()*/);
-        //parsers[(pos%2)].nextCb = nextCb;
-        var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
-        process.nextTick(nextCb);
-      }
-    }, function (err) {
-      /*parsers[0].nextCb = null;
-      parsers[1].nextCb = null;
-      parsers[0].finish();
-      parsers[1].finish();*/
-      process.nextTick(function() {localSessionDetailReturnFull(req, res, session, results);});
-    });
-  } else {
-    localSessionDetailReturnFull(req, res, session, results);
+  if (req.query.needgzip === "true") {
+    return gzipDecode(req, res, session, results);
   }
+
+  if (req.query.needimage === "true") {
+    return imageDecode(req, res, session, results, -1);
+  }
+
+  localSessionDetailReturnFull(req, res, session, results);
 }
 
 
@@ -1448,9 +1541,10 @@ function localSessionDetail(req, res) {
     req.query = {gzip: false, line: false, base: "natural"};
   }
 
-  req.query.gzip = req.query.gzip || false;
-  req.query.line = req.query.line || false;
-  req.query.base = req.query.base || "hex";
+  req.query.needgzip  = req.query.gzip  || false;
+  req.query.needimage = req.query.image || false;
+  req.query.line  = req.query.line  || false;
+  req.query.base  = req.query.base  || "ascii";
 
   var packets = [];
   processSessionId(req.params.id, null, function (buffer, cb) {
@@ -1498,6 +1592,30 @@ function localSessionDetail(req, res) {
     } else {
       localSessionDetailReturn(req, res, session, [{data: "Unknown ip.p=" + packets[0].ip.p}]);
     }
+  },
+  200);
+}
+
+function localBody(req, res) {
+  var packets = [];
+  processSessionId(req.params.id, null, function (buffer, cb) {
+    var obj = {};
+    if (buffer.length > 16) {
+      decode.pcap(buffer, obj);
+    } else {
+      obj = {ip: {p: "Empty"}};
+    }
+    packets.push(obj);
+    cb(null);
+  },
+  function(err, session) {
+    if (err) {
+      res.end("Error");
+      return;
+    }
+    decode.reassemble_tcp(packets, function(err, results) {
+      return imageDecode(req, res, session, results, +req.params.bodyNum);
+    });
   },
   200);
 }
@@ -1564,6 +1682,16 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
 
   isLocalView(req.params.nodeName, function () {
     localSessionDetail(req, res);
+  },
+  function () {
+    proxyRequest(req, res);
+  });
+});
+
+
+app.get('/:nodeName/:id/body/:bodyNum', function(req, res) {
+  isLocalView(req.params.nodeName, function () {
+    localBody(req, res);
   },
   function () {
     proxyRequest(req, res);
