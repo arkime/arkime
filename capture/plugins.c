@@ -75,6 +75,9 @@ void moloch_plugins_init()
     if (!config.pluginsDir)
         return;
 
+    if (!config.plugins)
+        return;
+
     if (!g_module_supported ()) {
         LOG("ERROR - glib compiled without module support");
         return;
