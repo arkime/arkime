@@ -15,6 +15,11 @@ index all the network traffic in standard PCAP format, providing fast access.
 Moloch is built to be deployed across many systems and can scale to handle
 multiple gigabits/sec of traffic. 
 
+.. image:: https://raw.github.com/wiki/aol/moloch/MolochScreenShot.png
+    :width: 300px
+    :align: center
+    :alt: Sample screen shot
+
 .. _quick-start:
 
 Quick Start
