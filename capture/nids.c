@@ -40,6 +40,8 @@
 extern MolochConfig_t        config;
 extern GMainLoop            *mainLoop;
 extern gboolean              debug;
+extern uint32_t              pluginsCbs;
+extern void                 *esServer;
 
 static MolochSessionHead_t   tcpSessionQ;
 static MolochSessionHead_t   udpSessionQ;
@@ -188,6 +190,7 @@ int moloch_nids_certs_cmp(const void *keyv, const void *elementv)
 }
 
 /******************************************************************************/
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #define int_ntoa(x)     inet_ntoa(*((struct in_addr *)(int*)&x))
 
 char *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint32_t addr2, int port2)
@@ -229,7 +232,7 @@ void moloch_session_id (char *buf, int protocol, uint32_t addr1, uint16_t port1,
 /******************************************************************************/
 void moloch_nids_save_session(MolochSession_t *session) 
 {
-    if (session->outstandingTags > 0) {
+    if (session->outstandingQueries > 0) {
         session->needSave = 1;
 
         if (session->tcp_next) {
@@ -252,7 +255,7 @@ void moloch_nids_save_session(MolochSession_t *session)
         return;
     }
 
-    moloch_db_save_session(session);
+    moloch_db_save_session(session, TRUE);
 
     HASH_REMOVE(h_, sessions, session);
     moloch_nids_session_free(session);
@@ -264,7 +267,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
         session->rootId = "ROOT";
     }
 
-    moloch_db_save_session(session);
+    moloch_db_save_session(session, FALSE);
     g_array_free(session->filePosArray, TRUE);
     session->filePosArray = g_array_sized_new(FALSE, FALSE, 8, 1024);
 
@@ -435,6 +438,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     case IPPROTO_IPV6:
         return;
     default:
+        if (pluginsCbs & MOLOCH_PLUGIN_IP)
+            moloch_plugins_cb_ip(NULL, packet, len);
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", packet->ip_p);
         return;
@@ -467,7 +472,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
           ps.ps_recv, 
           ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*100.0/ps.ps_recv,
           ps.ps_ifdrop,
-          moloch_es_queue_length());
+          moloch_http_queue_length(esServer));
     }
     
     /* Get or Create Session */
@@ -484,6 +489,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
         session->urlArray = g_ptr_array_new_with_free_func(g_free);
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
+        HASH_INIT(s_, session->users, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->userAgents, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(i_, session->xffs, moloch_int_hash, moloch_int_cmp);
         HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
@@ -519,6 +525,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         }
 
         DLL_PUSH_TAIL(q_, sessionsQ, session);
+        if (pluginsCbs & MOLOCH_PLUGIN_NEW)
+            moloch_plugins_cb_new(session);
     } else {
         DLL_REMOVE(q_, sessionsQ, session);
         DLL_PUSH_TAIL(q_, sessionsQ, session);
@@ -526,6 +534,9 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     session->bytes += len;
     session->lastPacket = nids_last_pcap_header->ts.tv_sec;
+
+    if (pluginsCbs & MOLOCH_PLUGIN_IP)
+        moloch_plugins_cb_ip(session, packet, len);
 
     if (packet->ip_p == IPPROTO_UDP) {
         session->databytes += (len - 8);
@@ -590,18 +601,28 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
 
 /******************************************************************************/
-void moloch_nids_get_tag_cb(MolochSession_t *session, int tagtype, uint32_t tag)
+void moloch_nids_incr_outstanding(MolochSession_t *session)
 {
-    g_hash_table_insert(session->tags[tagtype], (void *)(long)tag, (void *)1);
-    session->outstandingTags--;
-    if (session->needSave && session->outstandingTags == 0) {
-        moloch_db_save_session(session);
+    session->outstandingQueries++;
+}
+/******************************************************************************/
+void moloch_nids_decr_outstanding(MolochSession_t *session)
+{
+    session->outstandingQueries--;
+    if (session->needSave && session->outstandingQueries == 0) {
+        moloch_db_save_session(session, TRUE);
         moloch_nids_session_free(session);
     }
 }
 /******************************************************************************/
+void moloch_nids_get_tag_cb(MolochSession_t *session, int tagtype, uint32_t tag)
+{
+    g_hash_table_insert(session->tags[tagtype], (void *)(long)tag, (void *)1);
+    moloch_nids_decr_outstanding(session);
+}
+/******************************************************************************/
 void moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag) {
-    session->outstandingTags++;
+    moloch_nids_incr_outstanding(session);
     moloch_db_get_tag(session, tagtype, tag, moloch_nids_get_tag_cb);
 
     if (!session->dontSave && HASH_COUNT(s_, config.dontSaveTags)) {
@@ -637,6 +658,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         } else {
             LOG("ERROR - no session for %s", moloch_friendly_session_id(IPPROTO_TCP, a_tcp->addr.saddr, a_tcp->addr.source, a_tcp->addr.daddr, a_tcp->addr.dest));
         }
+        if (pluginsCbs & MOLOCH_PLUGIN_TCP)
+            moloch_plugins_cb_tcp(session, a_tcp);
         return;
     case NIDS_DATA:
         session = a_tcp->user;
@@ -666,6 +689,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 
         session->databytes += a_tcp->server.count_new + a_tcp->client.count_new;
 
+        if (pluginsCbs & MOLOCH_PLUGIN_TCP)
+            moloch_plugins_cb_tcp(session, a_tcp);
         return;
     default:
         session = a_tcp->user;
@@ -686,6 +711,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         //LOG("TCP %d ", a_tcp->nids_state);
         moloch_nids_save_session(session);
         a_tcp->user = 0;
+        if (pluginsCbs & MOLOCH_PLUGIN_TCP)
+            moloch_plugins_cb_tcp(session, a_tcp);
         return;
     }
 }
@@ -720,7 +747,12 @@ void moloch_nids_session_free (MolochSession_t *session)
         free(string);
     );
 
-    HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
+    HASH_FORALL_POP_HEAD(s_, session->users, string, 
+        free(string->str);
+        free(string);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, session->userAgents, string, 
         free(string->str);
         free(string);
     );
@@ -866,10 +898,13 @@ uint32_t moloch_nids_monitoring_sessions()
     return HASH_COUNT(h_, sessions);
 }
 /******************************************************************************/
-void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *UNUSED(udphdr), unsigned char *data, int len)
+void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len)
 {
     if (session->port1 == 53 || session->port2 == 53)
         moloch_detect_dns(session, data, len);
+
+    if (pluginsCbs & MOLOCH_PLUGIN_UDP)
+        moloch_plugins_cb_udp(session, udphdr, data, len);
 }
 /******************************************************************************/
 GDir *pcapGDir = NULL;
@@ -884,6 +919,9 @@ int moloch_nids_next_file()
             LOG("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
             exit(0);
         }
+    }
+    if (nids_params.pcap_desc) {
+        pcap_close(nids_params.pcap_desc);
     }
     const gchar *filename;
     while (1) {
@@ -901,6 +939,7 @@ int moloch_nids_next_file()
         LOG ("Processing %s", fullfilename);
 
         nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
+        g_free(fullfilename);
         return 1;
     }
 }
@@ -1012,7 +1051,7 @@ void moloch_nids_exit() {
 
     MolochSession_t *hsession;
     HASH_FORALL_POP_HEAD(h_, sessions, hsession, 
-        moloch_db_save_session(hsession);
+        moloch_db_save_session(hsession, TRUE);
     );
 
     if (!dryRun) {

@@ -20,6 +20,11 @@ div(id='sessionDetail#{session.id}')
     | Stop Time:
     a(href='#', onclick='return setSessionStopTime(#{session.lp});')
       span(id='stopTime-#{session.id}')
+  if (session.user)
+    div Users:
+      each user in session.user
+        a(href='#', onclick='return addExpression("user == #{user}");') #{user}
+        | 
   div IP Protocol: 
     a(href='#', onclick='return addExpression("protocol == #{session.pr}");') #{session.pr}
   div IP/Port: 

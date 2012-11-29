@@ -557,9 +557,11 @@ app.get('/dstats.json', function(req, res) {
       mult = 1000000;
     }
 
-    for (i = 0; i < result.hits.hits.length; i++) {
-      var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
-      data[pos] = mult*result.hits.hits[i].fields[req.query.name];
+    if (result.hits) {
+      for (i = 0; i < result.hits.hits.length; i++) {
+        var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
+        data[pos] = mult*result.hits.hits[i].fields[req.query.name];
+      }
     }
     res.send(data);
   });
@@ -1114,6 +1116,10 @@ app.get('/uniqueValue.json', function(req, res) {
 });
 
 app.get('/unique.txt', function(req, res) {
+  if (req.query.field === undefined) {
+    return res.send("Missing field parameter");
+  }
+
   noCache(req, res);
   var doCounts = parseInt(req.query.counts, 10) || 0;
   var doIp =  (req.query.field === "a1" || req.query.field === "a2");

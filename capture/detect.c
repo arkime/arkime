@@ -43,6 +43,7 @@ extern gchar                *extraTag;
 extern gboolean              debug;
 static gchar                 nodeTag[100];
 static gchar                 classTag[100];
+extern uint32_t              pluginsCbs;
 
 static http_parser_settings  parserSettings;
 static magic_t               cookie;
@@ -161,11 +162,11 @@ char *moloch_detect_asn_decode_oid(unsigned char *oid, int len) {
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen += sprintf(buf, "%d.%d", value/40, value % 40);
+                buflen += snprintf(buf, sizeof(buf), "%d.%d", value/40, value % 40);
             else /* one value in first byte */
-                buflen += sprintf(buf, "%d", value);
+                buflen += snprintf(buf, sizeof(buf), "%d", value);
         } else {
-            buflen += sprintf(buf+buflen, ".%d", value);
+            buflen += snprintf(buf+buflen, sizeof(buf)-buflen, ".%d", value);
         }
 
         value = 0;
@@ -460,8 +461,12 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
 
-    session->inValue &= ~(1 << session->which);
-    session->inBody  &= ~(1 << session->which);
+    session->inHeader &= ~(1 << session->which);
+    session->inValue  &= ~(1 << session->which);
+    session->inBody   &= ~(1 << session->which);
+
+    if (pluginsCbs & MOLOCH_PLUGIN_HP_OMB)
+        moloch_plugins_cb_hp_omb(session, parser);
 
     return 0;
 }
@@ -517,6 +522,9 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
         session->inBody |= (1 << session->which);
     }
 
+    if (pluginsCbs & MOLOCH_PLUGIN_HP_OB)
+        moloch_plugins_cb_hp_ob(session, parser, at, length);
+
     return 0;
 }
 
@@ -525,6 +533,9 @@ int
 moloch_hp_cb_on_message_complete (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
+
+    if (pluginsCbs & MOLOCH_PLUGIN_HP_OMC)
+        moloch_plugins_cb_hp_omc(session, parser);
 
     char tag[200];
 
@@ -662,8 +673,16 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
 {
     MolochSession_t *session = parser->data;
 
+    if ((session->inHeader & (1 << session->which)) == 0) {
+        session->inValue |= (1 << session->which);
+        if (session->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
+            moloch_plugins_cb_hp_ou(session, parser, session->urlString->str, session->urlString->len);
+        }
+    }
+
     if (session->inValue & (1 << session->which)) {
         session->inValue &= ~(1 << session->which);
+
         session->header[session->which][0] = 0;
     }
 
@@ -685,10 +704,14 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         session->inValue |= (1 << session->which);
 
         char *lower = g_ascii_strdown(session->header[session->which], -1);
+        moloch_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
+
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);
         moloch_nids_add_tag(session, MOLOCH_TAG_HTTP_REQUEST+session->which, header);
     }
+
+    moloch_plugins_cb_hp_ohv(session, parser, at, length);
 
     if (parser->method && strcasecmp("host", session->header[session->which]) == 0) {
         if (!session->hostString)
@@ -709,6 +732,17 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         else
             g_string_append_len(session->xffString, at, length);
     } 
+
+    return 0;
+}
+/******************************************************************************/
+int
+moloch_hp_cb_on_headers_complete (http_parser *parser)
+{
+    MolochSession_t *session = parser->data;
+
+    if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
+        moloch_plugins_cb_hp_ohc(session, parser);
 
     return 0;
 }
@@ -801,6 +835,7 @@ void moloch_detect_init()
     parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;
     parserSettings.on_url = moloch_hp_cb_on_url;
     parserSettings.on_body = moloch_hp_cb_on_body;
+    parserSettings.on_headers_complete = moloch_hp_cb_on_headers_complete;
     parserSettings.on_message_complete = moloch_hp_cb_on_message_complete;
     parserSettings.on_header_field = moloch_hp_cb_on_header_field;
     parserSettings.on_header_value = moloch_hp_cb_on_header_value;

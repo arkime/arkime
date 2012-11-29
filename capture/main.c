@@ -112,10 +112,11 @@ void cleanup(int UNUSED(sig))
 {
 
     moloch_nids_exit();
+    moloch_plugins_exit();
     moloch_detect_exit();
     moloch_yara_exit();
     moloch_db_exit();
-    moloch_es_exit();
+    moloch_http_exit();
     moloch_config_exit();
 
 
@@ -280,10 +281,11 @@ int main(int argc, char **argv)
     moloch_config_init();
     moloch_nids_root_init();
     moloch_drop_privileges();
-    moloch_es_init();
+    moloch_http_init();
     moloch_db_init();
     moloch_yara_init();
     moloch_detect_init();
+    moloch_plugins_init();
     moloch_nids_init();
 
     g_main_loop_run(mainLoop);

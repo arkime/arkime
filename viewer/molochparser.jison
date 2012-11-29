@@ -40,6 +40,8 @@
 "uri.cnt"                 return "uri.cnt"
 "ua"                      return "ua"
 "ua.cnt"                  return "ua.cnt"
+"user"                    return "user"
+"user.cnt"                return "user.cnt"
 "icmp"                    return "icmp"
 "tcp"                     return "tcp"
 "udp"                     return "udp"
@@ -117,6 +119,7 @@ RANGEFIELD: databytes         {$$ = 'db'}
           | 'cert.cnt'        {$$ = 'tlscnt'}
           | 'ip.xff.cnt'      {$$ = 'xffcnt'}
           | 'ua.cnt'          {$$ = 'uacnt'}
+          | 'user.cnt'        {$$ = 'usercnt'}
           | 'host.cnt'        {$$ = 'hocnt'}
           | 'header.src.cnt'  {$$ = 'hh1cnt'}
           | 'header.dst.cnt'  {$$ = 'hh2cnt'}
@@ -126,6 +129,7 @@ RANGEFIELD: databytes         {$$ = 'db'}
 
 TERMFIELD  : node              {$$ = 'no'}
            | host              {$$ = 'ho'}
+           | user              {$$ = 'user'}
            | 'cert.subject.cn' {$$ = 'tls.sCn'}
            | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
            | 'cert.serial'     {$$ = 'tls.sn'}

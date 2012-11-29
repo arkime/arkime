@@ -114,6 +114,12 @@ dropGroup=_GROUPNAME_
 # RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
 # RequestHeader set MOLOCH_USER %{ENV_RU}e
 #userNameHeader=moloch_user
+ 
+# Plugin directory to load plugins from
+pluginsDir=plugins
+
+# Semicolon ';' seperated list of plugins to load and the order to load them
+#plugins=
 
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 

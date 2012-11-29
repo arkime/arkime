@@ -19,14 +19,14 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        @GEOIP_LIBS@ \
 	        thirdparty/http_parser.o -ldl
 
-C_FILES         = main.c db.c nids.c yara.c es.c config.c detect.c
+C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c
 O_FILES         = $(C_FILES:.c=.o)
 
 all:thirdparty/js0n.o thirdparty/http_parser.o
-	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
+	$(CC) -fPIC -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
-	$(CXX) -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
+	$(CC) -rdynamic -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic
@@ -44,4 +44,4 @@ thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o
 
 thirdparty/http_parser.o: thirdparty/http_parser.c
-	$(CC) -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o
+	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o

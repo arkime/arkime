@@ -3,10 +3,15 @@
  *
  */
 
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
 #include "http_parser.h"
 #include "dll.h"
 #include "hash.h"
 #include "nids.h"
+#include "glib.h"
 
 #define UNUSED(x) x __attribute((unused))
 
@@ -34,6 +39,9 @@ typedef struct moloch_config {
     char     *geoipASNFile;
     char     *dropUser;
     char     *dropGroup;
+    char     *pluginsDir;
+
+    char     **plugins;
 
     uint32_t  maxFileSizeG;
     uint32_t  minFreeSpaceG;
@@ -88,10 +96,13 @@ typedef struct {
 } MolochCertsInfoHead_t;
 
 
+#define MOLOCH_MAX_PLUGINS       10
+
 #define MOLOCH_TAG_TAGS          0
 #define MOLOCH_TAG_HTTP_REQUEST  1
 #define MOLOCH_TAG_HTTP_RESPONSE 2
 #define MOLOCH_TAG_MAX           3
+
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
@@ -102,9 +113,12 @@ typedef struct moloch_session {
     HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
     HASH_VAR(i_, xffs, MolochIntHead_t, 11);
     HASH_VAR(t_, certs, MolochCertsInfoHead_t, 11);
+    HASH_VAR(s_, users, MolochStringHead_t, 3);
 
     char        header[2][40];
     http_parser parsers[2];
+
+    void       *pluginData[MOLOCH_MAX_PLUGINS];
 
 
     GArray     *filePosArray;
@@ -131,11 +145,12 @@ typedef struct moloch_session {
     uint16_t    port2;
     uint16_t    protocol;
     uint16_t    offsets[2];
-    uint16_t    outstandingTags;
+    uint16_t    outstandingQueries;
 
     uint8_t     wParsers;
 
     uint8_t     haveNidsTcp:1;
+    uint8_t     inHeader:2;
     uint8_t     inValue:2;
     uint8_t     inBody:2;
     uint8_t     needSave:1;
@@ -153,7 +168,8 @@ typedef struct moloch_session_head {
     int                    h_count;
 } MolochSessionHead_t;
 
-typedef gboolean (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
+
+typedef int (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
 typedef void (*MolochResponse_cb)(unsigned char *data, int len, gpointer uw);
 
@@ -199,6 +215,13 @@ void moloch_quit();
 void moloch_config_init();
 void moloch_config_exit();
 
+gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
+gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
+uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);
+char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
+
+
+
 /******************************************************************************/
 /*
  * db.c
@@ -207,7 +230,7 @@ void moloch_config_exit();
 void  moloch_db_init();
 int   moloch_db_tags_loading();
 char *moloch_db_create_file(time_t firstPacket, uint32_t *id);
-void  moloch_db_save_session(MolochSession_t *session);
+void  moloch_db_save_session(MolochSession_t *session, int final);
 void  moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tag, MolochTag_cb func);
 void  moloch_db_exit();
 
@@ -225,20 +248,27 @@ void moloch_detect_exit();
 
 /******************************************************************************/
 /*
- * es.c
+ * http.c
  */
 
-#define MOLOCH_ES_BUFFER_SIZE_S 9999
-#define MOLOCH_ES_BUFFER_SIZE_M 99999
-#define MOLOCH_ES_BUFFER_SIZE_L 3000000
+#define MOLOCH_HTTP_BUFFER_SIZE_S 9999
+#define MOLOCH_HTTP_BUFFER_SIZE_M 99999
+#define MOLOCH_HTTP_BUFFER_SIZE_L 3000000
 
-void moloch_es_init();
-unsigned char *moloch_es_send(char *method, char *key, uint32_t key_len, char *data, size_t data_len, size_t *return_len, gboolean sync, MolochResponse_cb func, gpointer uw);
-void moloch_es_set(char *key, int key_len, char *data, size_t data_len, MolochResponse_cb func, gpointer uw);
-unsigned char *moloch_es_get(char *key, int key_len, size_t *mlen);
-char *moloch_es_get_buffer(int size);
-void moloch_es_exit();
-int moloch_es_queue_length();
+void moloch_http_init();
+
+unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, size_t data_len, size_t *return_len);
+gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, size_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw);
+
+
+gboolean moloch_http_set(void *server, char *key, int key_len, char *data, size_t data_len, MolochResponse_cb func, gpointer uw);
+unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
+char *moloch_http_get_buffer(int size);
+void moloch_http_exit();
+int moloch_http_queue_length(void *server);
+
+void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests);
+void moloch_http_free_server(void *serverV);
 
 /******************************************************************************/
 /*
@@ -252,6 +282,74 @@ void  moloch_nids_certs_free (MolochCertsInfo_t *certs);
 uint32_t moloch_nids_dropped_packets();
 uint32_t moloch_nids_monitoring_sessions();
 void  moloch_nids_exit();
+
+void moloch_nids_incr_outstanding(MolochSession_t *session);
+void moloch_nids_decr_outstanding(MolochSession_t *session);
+
+/******************************************************************************/
+/*
+ * plugins.c
+ */
+typedef void (* MolochPluginInitFunc) ();
+typedef void (* MolochPluginIpFunc) (MolochSession_t *session, struct ip *packet, int len);
+typedef void (* MolochPluginUdpFunc) (MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len);
+typedef void (* MolochPluginTcpFunc) (MolochSession_t *session, struct tcp_stream *a_tcp);
+typedef void (* MolochPluginSaveFunc) (MolochSession_t *session, int final);
+typedef void (* MolochPluginNewFunc) (MolochSession_t *session);
+typedef void (* MolochPluginExitFunc) ();
+
+typedef void (* MolochPluginHttpDataFunc) (MolochSession_t *session, http_parser *hp, const char *at, size_t length);
+typedef void (* MolochPluginHttpFunc) (MolochSession_t *session, http_parser *hp);
+
+#define MOLOCH_PLUGIN_SAVE    0x00000001
+#define MOLOCH_PLUGIN_IP      0x00000002
+#define MOLOCH_PLUGIN_UDP     0x00000004
+#define MOLOCH_PLUGIN_TCP     0x00000008
+#define MOLOCH_PLUGIN_EXIT    0x00000010
+#define MOLOCH_PLUGIN_NEW     0x00000020
+
+#define MOLOCH_PLUGIN_HP_OMB  0x00001000
+#define MOLOCH_PLUGIN_HP_OU   0x00002000
+#define MOLOCH_PLUGIN_HP_OHF  0x00004000
+#define MOLOCH_PLUGIN_HP_OHV  0x00008000
+#define MOLOCH_PLUGIN_HP_OHC  0x00010000
+#define MOLOCH_PLUGIN_HP_OB   0x00020000
+#define MOLOCH_PLUGIN_HP_OMC  0x00040000
+
+void moloch_plugins_init();
+int  moloch_plugins_register(const char *name, gboolean storeData);
+void moloch_plugins_set_cb(const char *            name,
+                           MolochPluginIpFunc      ipFunc,
+                           MolochPluginUdpFunc     udpFunc,
+                           MolochPluginTcpFunc     tcpFunc,
+                           MolochPluginSaveFunc    saveFunc,
+                           MolochPluginNewFunc     newFunc,
+                           MolochPluginExitFunc    exitFunc);
+
+void moloch_plugins_set_http_cb(const char *             name,
+                                MolochPluginHttpFunc     on_message_begin,
+                                MolochPluginHttpDataFunc on_url,
+                                MolochPluginHttpDataFunc on_header_field,
+                                MolochPluginHttpDataFunc on_header_value,
+                                MolochPluginHttpFunc     on_headers_complete,
+                                MolochPluginHttpDataFunc on_body,
+                                MolochPluginHttpFunc     on_message_complete);
+
+void moloch_plugins_cb_save(MolochSession_t *session, int final);
+void moloch_plugins_cb_new(MolochSession_t *session);
+void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len);
+void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len);
+void moloch_plugins_cb_tcp(MolochSession_t *session, struct tcp_stream *a_tcp);
+
+void moloch_plugins_cb_hp_omb(MolochSession_t *session, http_parser *parser);
+void moloch_plugins_cb_hp_ou(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
+void moloch_plugins_cb_hp_ohf(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
+void moloch_plugins_cb_hp_ohv(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
+void moloch_plugins_cb_hp_ohc(MolochSession_t *session, http_parser *parser);
+void moloch_plugins_cb_hp_ob(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
+void moloch_plugins_cb_hp_omc(MolochSession_t *session, http_parser *parser);
+
+void moloch_plugins_exit();
 
 /******************************************************************************/
 /*

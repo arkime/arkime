@@ -1,1 +1,1 @@
-SUBDIRS = capture
+SUBDIRS = capture capture/plugins
