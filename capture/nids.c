@@ -908,11 +908,11 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
         moloch_plugins_cb_udp(session, udphdr, data, len);
 }
 /******************************************************************************/
-GDir *pcapGDir = NULL;
 int moloch_nids_next_file()
 {
-    GError *error = 0;
-    char errbuf[1024];
+    static GDir *pcapGDir = NULL;
+    GError      *error = 0;
+    char         errbuf[1024];
 
     if (!pcapGDir) {
         pcapGDir = g_dir_open(pcapDir, 0, &error);
@@ -939,7 +939,13 @@ int moloch_nids_next_file()
         fullfilename = g_build_filename (pcapDir, filename, NULL);
         LOG ("Processing %s", fullfilename);
 
+        errbuf[0] = 0;
         nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
+        if (!nids_params.pcap_desc) {
+            LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
+            nids_params.pcap_desc = (void *)0x01; /* Stop lib nids from freeing desc, crazy */
+            return 0;
+        }
         g_free(fullfilename);
         return 1;
     }

@@ -30,6 +30,7 @@
 extern char          *configFile;
 extern char          *nodeName;
 extern gchar         *pcapFile;
+extern gchar         *pcapDir;
 extern gboolean       debug;
 extern MolochConfig_t config;
 
@@ -248,8 +249,8 @@ void moloch_config_init()
         );
     }
 
-    if (!config.interface && !pcapFile) {
-        printf("Need to set interface or pcapfile\n");
+    if (!config.interface && !pcapFile && !pcapDir) {
+        printf("Need to set interface, pcap file (-r) or pcap directory (-R) \n");
         exit (1);
     }
 

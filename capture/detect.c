@@ -39,7 +39,7 @@
 /******************************************************************************/
 extern MolochConfig_t        config;
 extern gchar                *nodeName;
-extern gchar                *extraTag;
+extern gchar               **extraTags;
 extern gboolean              debug;
 static gchar                 nodeTag[100];
 static gchar                 classTag[100];
@@ -65,8 +65,11 @@ void moloch_detect_initial_tag(MolochSession_t *session)
     if (config.nodeClass)
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, classTag);
 
-    if (extraTag)
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, extraTag);
+    if (extraTags) {
+        for (i = 0; extraTags[i]; i++) {
+            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, extraTags[i]);
+        }
+    }
 
     switch(session->protocol) {
     case IPPROTO_TCP:
@@ -827,8 +830,11 @@ void moloch_detect_init()
         moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, classTag, NULL);
     }
 
-    if (extraTag) {
-        moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, extraTag, NULL);
+    if (extraTags) {
+        int i;
+        for (i = 0; extraTags[i]; i++) {
+            moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, extraTags[i], NULL);
+        }
     }
 
     memset(&parserSettings, 0, sizeof(parserSettings));

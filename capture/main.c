@@ -44,20 +44,20 @@ gchar   *configFile     = NULL;
 gboolean showVersion    = FALSE;
 gboolean debug          = FALSE;
 gboolean dryRun         = FALSE;
-gchar   *extraTag       = NULL;
+gchar  **extraTags      = NULL;
 
 static GOptionEntry entries[] =
 {
-    { "config",    'c',                    0, G_OPTION_ARG_FILENAME, &configFile,  "Config file name, default './config.ini'", NULL },
-    { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME, &pcapFile,    "Offline pcap file", NULL },
-    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME, &pcapDir,     "Offline pcap directory, all *.pcap files will be processed", NULL },
-    { "node",      'n',                    0, G_OPTION_ARG_STRING,   &nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
-    { "tag",       't',                    0, G_OPTION_ARG_STRING,   &extraTag,    "Extra tag to add to all packets", NULL },
-    { "version",   'v',                    0, G_OPTION_ARG_NONE,     &showVersion, "Show version number", NULL },
-    { "debug",     'd',                    0, G_OPTION_ARG_NONE,     &debug,       "Turn on all debugging", NULL },
-    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,     &fakePcap,    "fake pcap", NULL },
-    { "dryrun",      0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,     &dryRun,      "dry run", NULL },
-    { NULL,          0, 0,                                    0, NULL, NULL, NULL }
+    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,     &configFile,  "Config file name, default './config.ini'", NULL },
+    { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME,     &pcapFile,    "Offline pcap file", NULL },
+    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME,     &pcapDir,     "Offline pcap directory, all *.pcap files will be processed", NULL },
+    { "node",      'n',                    0, G_OPTION_ARG_STRING,       &nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
+    { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY, &extraTags,   "Extra tag to add to all packets, can be used multiple times", NULL },
+    { "version",   'v',                    0, G_OPTION_ARG_NONE,         &showVersion, "Show version number", NULL },
+    { "debug",     'd',                    0, G_OPTION_ARG_NONE,         &debug,       "Turn on all debugging", NULL },
+    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &fakePcap,    "fake pcap", NULL },
+    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &dryRun,      "dry run, noting written to database", NULL },
+    { NULL,          0, 0,                                    0,         NULL, NULL, NULL }
 };
 
 
@@ -76,6 +76,11 @@ void parse_args(int argc, char **argv)
     }
 
     g_option_context_free(context);
+
+    if (pcapFile && pcapDir) {
+        printf("Use either -R or -r\n");
+        exit(0);
+    }
 
     if (!configFile)
         configFile = g_strdup("config.ini");
@@ -124,6 +129,8 @@ void cleanup(int UNUSED(sig))
         g_free(pcapFile);
     if (pcapDir)
         g_free(pcapDir);
+    if (extraTags)
+        g_strfreev(extraTags);
     exit(0);
 }
 /******************************************************************************/
@@ -280,7 +287,9 @@ int main(int argc, char **argv)
     parse_args(argc, argv);
     moloch_config_init();
     moloch_nids_root_init();
-    moloch_drop_privileges();
+    if (!pcapFile && !pcapDir) {
+        moloch_drop_privileges();
+    }
     moloch_http_init();
     moloch_db_init();
     moloch_yara_init();
