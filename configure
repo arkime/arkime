@@ -598,6 +598,7 @@ PACKAGE_VERSION='0.6.5'
 PACKAGE_STRING='moloch 0.6.5'
 PACKAGE_BUGREPORT=''
 
+ac_default_prefix="/data/moloch"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 GLIB2_LIBS
@@ -3866,6 +3867,7 @@ fi
 
 
 ac_config_headers="$ac_config_headers capture/molochconfig.h"
+
 
 ac_config_files="$ac_config_files Makefile capture/Makefile capture/plugins/Makefile viewer/version.js"
 

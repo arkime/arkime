@@ -813,6 +813,54 @@ char *moloch_db_create_file(time_t firstPacket, uint32_t *id)
     *id = num;
     return filename;
 }
+/******************************************************************************/
+void moloch_db_check() 
+{
+    size_t             datalen;
+    char               key[100];
+    int                key_len;
+    unsigned char     *data;
+
+    key_len = snprintf(key, sizeof(key), "/tags_v2/_aliases");
+    data = moloch_http_get(esServer, key, key_len, &datalen);
+
+    if (!data) {
+        LOG("ERROR - Couldn't load tag aliases, something wrong with db? - %s", key);
+        exit(1);
+    }
+
+    if (strcmp((char *)data, "{\"tags_v2\":{\"aliases\":{\"tags\":{}}}}") != 0) {
+        LOG("ERROR - No tags_v2, run db/init.sh >%s<", data);
+        exit(1);
+    }
+
+    key_len = snprintf(key, sizeof(key), "/files_v1/_aliases");
+    data = moloch_http_get(esServer, key, key_len, &datalen);
+
+    if (!data) {
+        LOG("ERROR - Couldn't load files aliases, something wrong with db? - %s", key);
+        exit(1);
+    }
+
+    if (strcmp((char *)data, "{\"files_v1\":{\"aliases\":{\"files\":{}}}}") != 0) {
+        LOG("ERROR - No files_v1, run db/init.sh >%s<", data);
+        exit(1);
+    }
+
+    key_len = snprintf(key, sizeof(key), "/sequence/_mapping");
+    data = moloch_http_get(esServer, key, key_len, &datalen);
+
+    if (!data) {
+        LOG("ERROR - Couldn't load sequence mapping, something wrong with db? - %s", key);
+        exit(1);
+    }
+
+    if (strcmp((char *)data, "{\"sequence\":{\"sequence\":{\"enabled\":false,\"_all\":{\"enabled\":false},\"_source\":{\"enabled\":false},\"_type\":{\"index\":\"no\"},\"properties\":{}}}}") != 0) {
+        LOG("ERROR - Sequence mapping is busted, run db/init.sh >%s<", data);
+        exit(1);
+    }
+
+}
 
 /******************************************************************************/
 void moloch_db_load_tags() 
@@ -1039,6 +1087,7 @@ void moloch_db_init()
     moloch_db_load_file_num();
     myPid = getpid();
     gettimeofday(&startTime, NULL);
+    moloch_db_check();
     moloch_db_load_tags();
     moloch_db_load_stats();
 

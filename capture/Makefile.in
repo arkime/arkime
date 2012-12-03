@@ -1,3 +1,5 @@
+INSTALL_DIR   = @INSTALL_DIR@
+
 CC            = @CC@
 CCX           = @CCX@
 
@@ -22,6 +24,9 @@ LIB_OTHER     = @NIDS_LIBS@ \
 C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c
 O_FILES         = $(C_FILES:.c=.o)
 
+INSTALL         = @INSTALL@
+bindir          = @prefix@/bin
+
 all:thirdparty/js0n.o thirdparty/http_parser.o
 	$(CC) -fPIC -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
@@ -45,3 +50,6 @@ thirdparty/js0n.o:thirdparty/js0n.c
 
 thirdparty/http_parser.o: thirdparty/http_parser.c
 	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o
+
+install:
+	$(INSTALL) moloch-capture $(bindir)

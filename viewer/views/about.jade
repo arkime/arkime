@@ -175,8 +175,8 @@ div(style="margin:10px")
       td ip.xff
       td.
         ==, !=
-      td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip.xff==10.10.10.10, ip.xff==10.10.10.0/24:80, ip.xff==10.10.10:80
+      td a[.b[.c[.d]]][/n]
+      td Matches ip addresses using short hand and/or /n notation for xff addresses.<br>Examples: ip.xff==10.10.10.10, ip.xff==10.10.10/24, ip.xff==10.10.10
     tr
       td ip.xff.cnt
       td #{range}
@@ -246,6 +246,12 @@ div(style="margin:10px")
       td #{range}
       td integer
       td Number of unique URIs for the session
+    tr
+      td user
+      td.
+        ==, !=
+      td string or quoted string
+      td If a user is set for the session<br>Example:user == andy
 
   h2 Examples
   p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com

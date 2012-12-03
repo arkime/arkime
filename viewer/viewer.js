@@ -1517,6 +1517,9 @@ function imageDecode(req, res, session, results, findBody) {
       process.nextTick(nextCb);
     } else {
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
+      if (typeof out === "object") {
+        results[pos] = {data: item.data};
+      }
       process.nextTick(nextCb);
     }
   }, function (err) {

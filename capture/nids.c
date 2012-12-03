@@ -889,7 +889,8 @@ fail:
 uint32_t moloch_nids_dropped_packets()
 {
     struct pcap_stat ps;
-    pcap_stats(nids_params.pcap_desc, &ps);
+    if (!nids_params.pcap_desc)
+        pcap_stats(nids_params.pcap_desc, &ps);
     return ps.ps_drop - initialDropped;
 }
 /******************************************************************************/
