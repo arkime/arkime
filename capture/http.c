@@ -35,6 +35,7 @@
 
 /******************************************************************************/
 MolochConfig_t         config;
+extern gboolean        debug;
 
 /******************************************************************************/
 static http_parser_settings  parserSettings;
@@ -572,15 +573,9 @@ void moloch_http_free_server(void *serverV)
 {
     MolochHttp_t *server = serverV;
 
-    int num = server->requestQ[1].r_count;
-
     int q;
-
     for (q = 0; q < 2; q++) {
         while (server->requestQ[q].r_count > 0 || server->connQ.e_count != server->maxConns) {
-            if (num >= 0 && (int)server->requestQ[q].r_count < num) {
-                num -= 100;
-            }
             g_main_context_iteration (g_main_context_default(), FALSE);
         }
     }

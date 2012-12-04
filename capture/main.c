@@ -262,6 +262,9 @@ void moloch_drop_privileges()
 
 }
 /******************************************************************************/
+/*
+ * Don't actually end main loop until all tags are loaded
+ */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
     if (moloch_db_tags_loading() == 0) {
@@ -274,6 +277,18 @@ gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 void moloch_quit()
 {
     g_timeout_add_seconds(1, moloch_quit_gfunc, 0);
+}
+/******************************************************************************/
+/*
+ * Don't actually init nids/pcap until all the pre tags are loaded
+ */
+gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
+{
+    if (moloch_db_tags_loading() == 0) {
+        moloch_nids_init();
+        return FALSE;
+    }
+    return TRUE;
 }
 /******************************************************************************/
 int main(int argc, char **argv)
@@ -295,7 +310,7 @@ int main(int argc, char **argv)
     moloch_yara_init();
     moloch_detect_init();
     moloch_plugins_init();
-    moloch_nids_init();
+    g_timeout_add_seconds(0, moloch_nids_init_gfunc, 0);
 
     g_main_loop_run(mainLoop);
     cleanup(0);
