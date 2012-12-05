@@ -557,7 +557,7 @@ app.get('/dstats.json', function(req, res) {
       mult = 1000000;
     }
 
-    if (result.hits) {
+    if (result && result.hits) {
       for (i = 0; i < result.hits.hits.length; i++) {
         var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
         data[pos] = mult*result.hits.hits[i].fields[req.query.name];

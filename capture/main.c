@@ -276,7 +276,7 @@ gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 void moloch_quit()
 {
-    g_timeout_add_seconds(1, moloch_quit_gfunc, 0);
+    g_timeout_add(100, moloch_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*
@@ -310,7 +310,7 @@ int main(int argc, char **argv)
     moloch_yara_init();
     moloch_detect_init();
     moloch_plugins_init();
-    g_timeout_add_seconds(0, moloch_nids_init_gfunc, 0);
+    g_timeout_add(10, moloch_nids_init_gfunc, 0);
 
     g_main_loop_run(mainLoop);
     cleanup(0);

@@ -816,15 +816,31 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 	LOG("NIDS: Unknown warning number %d", type);
     }
 }
+
+/******************************************************************************/
+gboolean moloch_nids_watch_cb(gint fd, GIOCondition cond, gpointer data);
+/******************************************************************************/
+/* When processing many pcap files we don't start the next file
+ * until there are less then 20 outstanding es requests
+ */
+gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
+{
+    if (moloch_http_queue_length(esServer) > 20)
+        return TRUE;
+
+    moloch_nids_init_nids();
+    /*nids_init();
+    moloch_watch_fd(nids_getfd(), MOLOCH_GIO_READ_COND, moloch_nids_watch_cb, NULL);
+    nids_register_tcp(moloch_nids_cb_tcp);
+    nids_register_ip(moloch_nids_cb_ip);*/
+    return FALSE;
+}
 /******************************************************************************/
 gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) {
     int r = nids_dispatch(config.packetsPerPoll);
     if (r <= 0 && (pcapFile || pcapDir)) {
         if (pcapDir && moloch_nids_next_file()) {
-            nids_init();
-            moloch_watch_fd(nids_getfd(), MOLOCH_GIO_READ_COND, moloch_nids_watch_cb, NULL);
-            nids_register_tcp(moloch_nids_cb_tcp);
-            nids_register_ip(moloch_nids_cb_ip);
+            g_timeout_add(100, moloch_nids_next_file_gfunc, 0);
             return FALSE;
         }
 
