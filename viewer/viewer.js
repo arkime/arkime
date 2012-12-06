@@ -1591,7 +1591,7 @@ function localSessionDetail(req, res) {
         localSessionDetailReturn(req, res, session, results);
       });
     } else if (packets[0].ip.p === 6) {
-      decode.reassemble_tcp(packets, function(err, results) {
+      decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
         localSessionDetailReturn(req, res, session, results);
       });
     } else if (packets[0].ip.p === 17) {
@@ -1622,7 +1622,7 @@ function localBody(req, res) {
       res.end("Error");
       return;
     }
-    decode.reassemble_tcp(packets, function(err, results) {
+    decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
       return imageDecode(req, res, session, results, +req.params.bodyNum);
     });
   },
@@ -1786,7 +1786,7 @@ function writeRaw(res, id, type, doneCb) {
         writeRawReturn(res, type, results, doneCb);
       });
     } else if (packets[0].ip.p === 6) {
-      decode.reassemble_tcp(packets, function(err, results) {
+      decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
         writeRawReturn(res, type, results, doneCb);
       });
     } else if (packets[0].ip.p === 17) {

@@ -490,6 +490,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->urlArray = g_ptr_array_new_with_free_func(g_free);
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->users, moloch_string_hash, moloch_string_cmp);
+        HASH_INIT(s_, session->sshver, moloch_string_hash, moloch_string_cmp);
+        HASH_INIT(s_, session->sshkey, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->userAgents, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(i_, session->xffs, moloch_int_hash, moloch_int_cmp);
         HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
@@ -675,6 +677,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             moloch_detect_parse_classify(session, a_tcp, &a_tcp->client);
             moloch_detect_parse_yara(session, a_tcp, &a_tcp->client);
             nids_discard(a_tcp, session->offsets[1]);
+            if (session->isSsh)
+                moloch_detect_parse_ssh(session, a_tcp, &a_tcp->client);
             session->offsets[1] = a_tcp->client.count_new;
         }
 
@@ -748,6 +752,16 @@ void moloch_nids_session_free (MolochSession_t *session)
     );
 
     HASH_FORALL_POP_HEAD(s_, session->users, string, 
+        free(string->str);
+        free(string);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, session->sshver, string, 
+        free(string->str);
+        free(string);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, session->sshkey, string, 
         free(string->str);
         free(string);
     );

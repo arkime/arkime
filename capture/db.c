@@ -379,6 +379,36 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "],");
     }
 
+    if (HASH_COUNT(s_, session->sshver)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "\"sshvercnt\":%d,", HASH_COUNT(s_, session->sshver));
+        sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "\"sshver\":[");
+        MolochString_t *hstring;
+        HASH_FORALL_POP_HEAD(s_, session->sshver, hstring, 
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            *(sJPtr++) = ',';
+            free(hstring->str);
+            free(hstring);
+        );
+        sJPtr--; // Remove last comma
+
+        sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+    }
+
+    if (HASH_COUNT(s_, session->sshkey)) {
+        sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "\"sshkeycnt\":%d,", HASH_COUNT(s_, session->sshkey));
+        sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "\"sshkey\":[");
+        MolochString_t *hstring;
+        HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring, 
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            *(sJPtr++) = ',';
+            free(hstring->str);
+            free(hstring);
+        );
+        sJPtr--; // Remove last comma
+
+        sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "],");
+    }
+
     if (HASH_COUNT(s_, session->userAgents)) {
         sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "\"uacnt\":%d,", HASH_COUNT(t_, session->userAgents));
         sJPtr += snprintf(sJPtr, MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson), "\"ua\":[");

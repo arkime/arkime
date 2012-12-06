@@ -367,8 +367,29 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
     if (hlf->count < 3)
         return;
 
-    if (memcmp("SSH", data, 3) == 0)
+    if (memcmp("SSH", data, 3) == 0) {
+        session->isSsh = 1;
         moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ssh");
+        unsigned char *n = memchr(data, 0x0a, hlf->count);
+        if (n && *(n-1) == 0x0d)
+            n--;
+
+        if (n) {
+            int len = (n - data);
+
+            MolochString_t *hstring;
+            char *str = g_ascii_strdown((char *)data, len);
+
+            HASH_FIND(s_, session->sshver, str, hstring);
+            if (!hstring) {
+                hstring = malloc(sizeof(*hstring));
+                hstring->str = str;
+                HASH_ADD(s_, session->sshver, hstring->str, hstring);
+            } else {
+                g_free(str);
+            }
+        }
+    }
 
     if (hlf->count < 4)
         return;
@@ -455,6 +476,51 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
         }
         data += len;
         remaining -= len;
+    }
+}
+
+/******************************************************************************/
+void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+{
+    int remaining = hlf->count_new;
+    unsigned char *data   = (unsigned char*)(hlf->data + (hlf->count - hlf->offset - hlf->count_new));
+
+    if (memcmp("SSH", data, 3) == 0)
+        return;
+
+    while (remaining > 0) {
+        if (session->sshLen == 0) {
+            session->sshLen = (data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3]) + 4;
+            session->sshCode = data[5];
+        }
+
+        if (session->sshCode == 33 && remaining > 8) {
+            int keyLen = data[6] << 24 | data[7] << 16 | data[8] << 8 | data[9];
+            session->isSsh = 0;
+            if (remaining > keyLen + 8) {
+                char *str = g_base64_encode(data+10, keyLen);
+                MolochString_t *hstring;
+                HASH_FIND(s_, session->sshkey, str, hstring);
+                if (!hstring) {
+                    hstring = malloc(sizeof(*hstring));
+                    hstring->str = str;
+                    HASH_ADD(s_, session->sshkey, hstring->str, hstring);
+                } else {
+                    free(str);
+                }
+            }
+            break;
+        }
+
+        if (remaining > session->sshLen) {
+            remaining -= session->sshLen;
+            session->sshLen = 0;
+            continue;
+        } else {
+            session->sshLen -= remaining;
+            remaining = 0;
+            continue;
+        }
     }
 }
 

@@ -225,6 +225,28 @@ div(style="margin:10px")
       td integer
       td Number of unique tags for the session
     tr
+      td ssh.key
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the base64 host key<br>Examples: ssh.key == "longbase64string"
+    tr
+      td ssh.key.cnt
+      td #{range}
+      td integer
+      td Number of unique ssh host keys for the session, should be 0 or 1
+    tr
+      td ssh.ver
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches against the client and server ssh banner protocol string 
+    tr
+      td ssh.key.cnt
+      td #{range}
+      td integer
+      td Number of unique ssh version strings, should be 1 or 2
+    tr
       td ua
       td.
         ==, !=

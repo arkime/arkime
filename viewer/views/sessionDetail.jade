@@ -59,17 +59,17 @@ div(id='sessionDetail#{session.id}')
         a(href='#', onclick='return addExpression("tags == \\\"#{tag}\\\"");') #{tag}
         | 
   if (session.hh)
-    div Old Header:
+    div Old Headers:
       each header in session.hh
         a(href='#', onclick='return addExpression("oldheader == \\\"#{header}\\\"");') #{header}
         | 
   if (session.hh1)
-    div Request Header:
+    div Request Headers:
       each header in session.hh1
         a(href='#', onclick='return addExpression("header.src == \\\"#{header}\\\"");') #{header}
         | 
   if (session.hh2)
-    div Response Header:
+    div Response Headers:
       each header in session.hh2
         a(href='#', onclick='return addExpression("header.dst == \\\"#{header}\\\"");') #{header}
         | 
@@ -134,6 +134,16 @@ div(id='sessionDetail#{session.id}')
             a(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
             | 
           | ]
+  if (session.sshkey)
+    div SSH Host Key: 
+      each key in session.sshkey
+          a(href='#', onclick='return addExpression("ssh.key == \\\"#{key}\\\"");') #{key}
+          | 
+  if (session.sshver)
+    div SSH Versions: 
+      each ver in session.sshver
+          a(href='#', onclick='return addExpression("ssh.ver == \\\"#{ver}\\\"");') #{ver}
+          | 
   hr
   div
     if (session.pa > 200)

@@ -206,7 +206,7 @@ exports.reassemble_udp = function (packets, cb) {
   cb(null, results);
 };
 
-exports.reassemble_tcp = function (packets, cb) {
+exports.reassemble_tcp = function (packets, a1, cb) {
 
   // Remove syn, rst, 0 length packets
   var packets2 = [];
@@ -273,5 +273,8 @@ exports.reassemble_tcp = function (packets, cb) {
     }
   });
 
+  if (a1 !== results[0].key) {
+    results.unshift({data: "", key: a1});
+  }
   cb(null, results);
 };

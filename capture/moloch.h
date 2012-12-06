@@ -112,8 +112,10 @@ typedef struct moloch_session {
     HASH_VAR(s_, hosts, MolochStringHead_t, 11);
     HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
     HASH_VAR(i_, xffs, MolochIntHead_t, 11);
-    HASH_VAR(t_, certs, MolochCertsInfoHead_t, 11);
-    HASH_VAR(s_, users, MolochStringHead_t, 3);
+    HASH_VAR(t_, certs, MolochCertsInfoHead_t, 5);
+    HASH_VAR(s_, users, MolochStringHead_t, 1);
+    HASH_VAR(s_, sshver, MolochStringHead_t, 1);
+    HASH_VAR(s_, sshkey, MolochStringHead_t, 1);
 
     char        header[2][40];
     http_parser parsers[2];
@@ -146,16 +148,19 @@ typedef struct moloch_session {
     uint16_t    protocol;
     uint16_t    offsets[2];
     uint16_t    outstandingQueries;
+    uint16_t    sshLen;
 
-    uint8_t     wParsers;
+    uint8_t     sshCode;
 
-    uint8_t     haveNidsTcp:1;
-    uint8_t     inHeader:2;
-    uint8_t     inValue:2;
-    uint8_t     inBody:2;
-    uint8_t     needSave:1;
-    uint8_t     dontSave:1;
-    uint8_t     which:1;
+    uint16_t    wParsers:1;
+    uint16_t    haveNidsTcp:1;
+    uint16_t    inHeader:2;
+    uint16_t    inValue:2;
+    uint16_t    inBody:2;
+    uint16_t    needSave:1;
+    uint16_t    dontSave:1;
+    uint16_t    which:1;
+    uint16_t    isSsh:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -242,6 +247,7 @@ void moloch_detect_init();
 void moloch_detect_initial_tag(MolochSession_t *session);
 void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len);
 void moloch_detect_exit();

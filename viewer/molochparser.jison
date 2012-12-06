@@ -55,6 +55,10 @@
 "header.dst.cnt"          return "header.dst.cnt"
 "tags"                    return 'tags'
 "tags.cnt"                return 'tags.cnt'
+"ssh.key"                 return "ssh.key"
+"ssh.key.cnt"             return "ssh.key.cnt"
+"ssh.ver"                 return "ssh.ver"
+"ssh.ver.cnt"             return "ssh.ver.cnt"
 [/\w*._:-]+               return 'ID'
 \"[^"]+\"                 return 'QUOTEDSTR'
 "<="                      return 'lte'
@@ -125,6 +129,8 @@ RANGEFIELD: databytes         {$$ = 'db'}
           | 'header.dst.cnt'  {$$ = 'hh2cnt'}
           | 'tags.cnt'        {$$ = 'tacnt'}
           | 'cert.alt.cnt'    {$$ = 'tls.altcnt'}
+          | 'ssh.key.cnt'     {$$ = 'sshkeycnt'}
+          | 'ssh.ver.cnt'     {$$ = 'sshvercnt'}
           ;
 
 TERMFIELD  : node              {$$ = 'no'}
@@ -134,6 +140,7 @@ TERMFIELD  : node              {$$ = 'no'}
            | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
            | 'cert.serial'     {$$ = 'tls.sn'}
            | 'cert.alt'        {$$ = 'tls.alt'}
+           | 'ssh.ver'         {$$ = 'sshver'}
            ;
 
 UPTERMFIELD  : 'country.src' {$$ = 'g1'}
@@ -194,6 +201,10 @@ STR : ID
     | ua.cnt
     | tags
     | tags.cnt
+    | ssh.key
+    | ssh.key.cnt
+    | ssh.ver
+    | ssh.ver.cnt
     ;
  
 e
@@ -401,8 +412,29 @@ e
                  }};
           }
         }
+    | "ssh.key" '!=' STR
+        { var str = stripQuotes($3);
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {query: {wildcard: {}}}};
+            $$.not.query.wildcard.sshkey = str;
+          } else {
+            $$ = {not: {term: {}}};
+            $$.not.term.sshkey = str;
+          }
+        }
+    | "ssh.key" '==' STR
+        { var str = stripQuotes($3);
+          if (str.indexOf("*") !== -1) {
+            $$ = {query: {wildcard: {}}};
+            $$.query.wildcard.sshkey = str;
+          } else {
+            $$ = {term: {}};
+            $$.term.sshkey = str;
+          }
+        }
     ;
 %%
+
 function parseIpPort(ipPortStr, which) {
   ipPortStr = ipPortStr.trim();
   // Support '10.10.10/16:4321'

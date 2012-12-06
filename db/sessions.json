@@ -162,30 +162,25 @@
             "iOn" : {
               "omit_norms": true,
               "type" : "string",
-              "type" : "string",
               "analyzer" : "snowball"
             },
             "sCn" : {
               "omit_norms": true,
-              "type" : "string",
               "type" : "string",
               "index" : "not_analyzed"
             },
             "sOn" : {
               "omit_norms": true,
               "type" : "string",
-              "type" : "string",
               "analyzer" : "snowball"
             },
             "sn" : {
               "omit_norms": true,
               "type" : "string",
-              "type" : "string",
               "index" : "not_analyzed"
             },
             "alt" : {
               "omit_norms": true,
-              "type" : "string",
               "type" : "string",
               "index" : "not_analyzed"
             }
@@ -193,6 +188,22 @@
         },
         "tlscnt": {
           "type": "integer"
+        },
+        "sshkey" : {
+          "omit_norms": true,
+          "type" : "string",
+          "index" : "not_analyzed"
+        },
+        "sshkeycnt": {
+          "type": "short"
+        },
+        "sshver" : {
+          "omit_norms": true,
+          "type" : "string",
+          "index" : "not_analyzed"
+        },
+        "sshvarcnt": {
+          "type": "short"
         }
       }
     }
