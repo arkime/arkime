@@ -35,28 +35,20 @@ MolochConfig_t         config;
 GMainLoop             *mainLoop;
 
 /******************************************************************************/
-gchar   *pcapFile       = NULL;
-gchar   *pcapDir        = NULL;
-gboolean fakePcap       = FALSE;
-gchar   *nodeName       = NULL;
-gchar   *hostName       = NULL;
-gchar   *configFile     = NULL;
 gboolean showVersion    = FALSE;
-gboolean debug          = FALSE;
-gboolean dryRun         = FALSE;
 gchar  **extraTags      = NULL;
 
 static GOptionEntry entries[] =
 {
-    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,     &configFile,  "Config file name, default './config.ini'", NULL },
-    { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME,     &pcapFile,    "Offline pcap file", NULL },
-    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME,     &pcapDir,     "Offline pcap directory, all *.pcap files will be processed", NULL },
-    { "node",      'n',                    0, G_OPTION_ARG_STRING,       &nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
+    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,     &config.configFile,  "Config file name, default './config.ini'", NULL },
+    { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadFile,    "Offline pcap file", NULL },
+    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadDir,     "Offline pcap directory, all *.pcap files will be processed", NULL },
+    { "node",      'n',                    0, G_OPTION_ARG_STRING,       &config.nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY, &extraTags,   "Extra tag to add to all packets, can be used multiple times", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,         &showVersion, "Show version number", NULL },
-    { "debug",     'd',                    0, G_OPTION_ARG_NONE,         &debug,       "Turn on all debugging", NULL },
-    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &fakePcap,    "fake pcap", NULL },
-    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &dryRun,      "dry run, noting written to database", NULL },
+    { "debug",     'd',                    0, G_OPTION_ARG_NONE,         &config.debug,       "Turn on all debugging", NULL },
+    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.fakePcap,    "fake pcap", NULL },
+    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &config.dryRun,      "dry run, noting written to database", NULL },
     { NULL,          0, 0,                                    0,         NULL, NULL, NULL }
 };
 
@@ -77,38 +69,38 @@ void parse_args(int argc, char **argv)
 
     g_option_context_free(context);
 
-    if (pcapFile && pcapDir) {
+    if (config.pcapReadFile && config.pcapReadDir) {
         printf("Use either -R or -r\n");
         exit(0);
     }
 
-    if (!configFile)
-        configFile = g_strdup("config.ini");
+    if (!config.configFile)
+        config.configFile = g_strdup("/data/moloch/etc/config.ini");
 
     if (showVersion) {
         printf("moloch-capture %s\n", PACKAGE_VERSION);
         exit(0);
     }
 
-    if (!nodeName) {
-        nodeName = malloc(101);
-        hostName = malloc(101);
-        gethostname(nodeName, 101);
-        gethostname(hostName, 101);
-        nodeName[100] = 0;
-        hostName[100] = 0;
-        char *dot = strchr(nodeName, '.');
+    if (!config.nodeName) {
+        config.nodeName = malloc(101);
+        config.hostName = malloc(101);
+        gethostname(config.nodeName, 101);
+        gethostname(config.hostName, 101);
+        config.nodeName[100] = 0;
+        config.hostName[100] = 0;
+        char *dot = strchr(config.nodeName, '.');
         if (dot)
             *dot = 0;
     }
-    if (!hostName) {
-        hostName = malloc(101);
-        gethostname(hostName, 101);
-        hostName[100] = 0;
+    if (!config.hostName) {
+        config.hostName = malloc(101);
+        gethostname(config.hostName, 101);
+        config.hostName[100] = 0;
     }
-    if (debug) {
-        LOG("nodeName = %s", nodeName);
-        LOG("hostName = %s", hostName);
+    if (config.debug) {
+        LOG("nodeName = %s", config.nodeName);
+        LOG("hostName = %s", config.hostName);
     }
 }
 
@@ -125,13 +117,18 @@ void cleanup(int UNUSED(sig))
     moloch_config_exit();
 
 
-    if (pcapFile)
-        g_free(pcapFile);
-    if (pcapDir)
-        g_free(pcapDir);
+    if (config.pcapReadFile)
+        g_free(config.pcapReadFile);
+    if (config.pcapReadDir)
+        g_free(config.pcapReadDir);
     if (extraTags)
         g_strfreev(extraTags);
     exit(0);
+}
+/******************************************************************************/
+void reload(int UNUSED(sig))
+{
+    moloch_plugins_reload();
 }
 /******************************************************************************/
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen)
@@ -293,6 +290,7 @@ gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 int main(int argc, char **argv)
 {
+    signal(SIGHUP, reload);
     signal(SIGINT, cleanup);
     signal(SIGUSR1, exit);
     signal(SIGCHLD, SIG_IGN);
@@ -302,7 +300,7 @@ int main(int argc, char **argv)
     parse_args(argc, argv);
     moloch_config_init();
     moloch_nids_root_init();
-    if (!pcapFile && !pcapDir) {
+    if (!config.pcapReadFile && !config.pcapReadDir) {
         moloch_drop_privileges();
     }
     moloch_http_init();

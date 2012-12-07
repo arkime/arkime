@@ -38,9 +38,7 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
-extern gchar                *nodeName;
 extern gchar               **extraTags;
-extern gboolean              debug;
 static gchar                 nodeTag[100];
 static gchar                 classTag[100];
 extern uint32_t              pluginsCbs;
@@ -151,7 +149,7 @@ get_tlv_error:
 /******************************************************************************/
 char *moloch_detect_asn_decode_oid(unsigned char *oid, int len) {
     static char buf[1000];
-    int buflen = 0;
+    uint32_t buflen = 0;
     int pos = 0;
     int first = TRUE;
     int value = 0;
@@ -165,10 +163,10 @@ char *moloch_detect_asn_decode_oid(unsigned char *oid, int len) {
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen += snprintf(buf, sizeof(buf), "%d.%d", value/40, value % 40);
+                buflen = snprintf(buf, sizeof(buf), "%d.%d", value/40, value % 40);
             else /* one value in first byte */
-                buflen += snprintf(buf, sizeof(buf), "%d", value);
-        } else {
+                buflen = snprintf(buf, sizeof(buf), "%d", value);
+        } else if (buflen < sizeof(buf)) {
             buflen += snprintf(buf+buflen, sizeof(buf)-buflen, ".%d", value);
         }
 
@@ -348,7 +346,7 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
                 continue;
 
             bad_cert:
-                if (debug)
+                if (config.debug)
                     LOG("bad cert %d - %d %.*s", badreason, clen, clen, cdata);
                 moloch_nids_certs_free(certs);
                 break;
@@ -482,20 +480,20 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
 /******************************************************************************/
 void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
 {
-    int remaining = hlf->count_new;
+    uint32_t remaining = hlf->count_new;
     unsigned char *data   = (unsigned char*)(hlf->data + (hlf->count - hlf->offset - hlf->count_new));
 
     if (memcmp("SSH", data, 3) == 0)
         return;
 
-    while (remaining > 0) {
+    while (remaining >= 6) {
         if (session->sshLen == 0) {
             session->sshLen = (data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3]) + 4;
             session->sshCode = data[5];
         }
 
         if (session->sshCode == 33 && remaining > 8) {
-            int keyLen = data[6] << 24 | data[7] << 16 | data[8] << 8 | data[9];
+            uint32_t keyLen = data[6] << 24 | data[7] << 16 | data[8] << 8 | data[9];
             session->isSsh = 0;
             if (remaining > keyLen + 8) {
                 char *str = g_base64_encode(data+10, keyLen);
@@ -888,7 +886,7 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
 /******************************************************************************/
 void moloch_detect_init()
 {
-    snprintf(nodeTag, sizeof(nodeTag), "node:%s", nodeName);
+    snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
     moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, nodeTag, NULL);
 
     if (config.nodeClass) {

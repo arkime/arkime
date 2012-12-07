@@ -27,11 +27,6 @@
 #include <ctype.h>
 #include "moloch.h"
 
-extern char          *configFile;
-extern char          *nodeName;
-extern gchar         *pcapFile;
-extern gchar         *pcapDir;
-extern gboolean       debug;
 extern MolochConfig_t config;
 
 static GKeyFile *molochKeyFile;
@@ -42,8 +37,8 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, nodeName, key, NULL)) {
-        return g_key_file_get_string(keyfile, nodeName, key, NULL);
+    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+        return g_key_file_get_string(keyfile, config.nodeName, key, NULL);
     }
 
     if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
@@ -66,8 +61,8 @@ gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, nodeName, key, NULL)) {
-        return g_key_file_get_string_list(keyfile, nodeName, key, NULL, NULL);
+    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+        return g_key_file_get_string_list(keyfile, config.nodeName, key, NULL, NULL);
     }
 
     if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
@@ -92,8 +87,8 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, nodeName, key, NULL)) {
-        value = g_key_file_get_integer(keyfile, nodeName, key, NULL);
+    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+        value = g_key_file_get_integer(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         value = g_key_file_get_integer(keyfile, config.nodeClass, key, NULL);
     } else if (g_key_file_has_key(keyfile, "default", key, NULL)) {
@@ -116,8 +111,8 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
     if (!keyfile)
         keyfile = molochKeyFile;
 
-    if (g_key_file_has_key(keyfile, nodeName, key, NULL)) {
-        value = g_key_file_get_boolean(keyfile, nodeName, key, NULL);
+    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+        value = g_key_file_get_boolean(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
         value = g_key_file_get_boolean(keyfile, config.nodeClass, key, NULL);
     } else if (g_key_file_has_key(keyfile, "default", key, NULL)) {
@@ -137,9 +132,9 @@ void moloch_config_load()
 
     keyfile = molochKeyFile = g_key_file_new();
 
-    status = g_key_file_load_from_file(keyfile, configFile, G_KEY_FILE_NONE, &error);
+    status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
     if (!status || error) {
-        printf("Couldn't load config file (%s) %s\n", configFile, (error?error->message:""));
+        printf("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
         exit(1);
     }
 
@@ -199,9 +194,9 @@ void moloch_config_load()
     config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x200000);
 
 
-    config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", debug);
-    config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", debug);
-    config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", debug);
+    config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
+    config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
+    config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
 }
 /******************************************************************************/
 void moloch_config_init()
@@ -210,7 +205,7 @@ void moloch_config_init()
 
     moloch_config_load();
 
-    if (debug) {
+    if (config.debug) {
         LOG("nodeClass: %s", config.nodeClass);
         LOG("elasticsearch: %s", config.elasticsearch);
         LOG("interface: %s", config.interface);
@@ -249,13 +244,13 @@ void moloch_config_init()
         );
     }
 
-    if (!config.interface && !pcapFile && !pcapDir) {
+    if (!config.interface && !config.pcapReadFile && !config.pcapReadDir) {
         printf("Need to set interface, pcap file (-r) or pcap directory (-R) \n");
         exit (1);
     }
 
     if (!config.pcapDir) {
-        printf("Must set a pcapDir\n");
+        printf("Must set a pcapDir to save files to\n");
         exit(1);
     }
 }

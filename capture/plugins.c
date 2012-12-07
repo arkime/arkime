@@ -35,8 +35,6 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
-extern gboolean              dryRun;
-extern gboolean              debug;
 
 uint32_t                     pluginsCbs = 0;
 int                          numPlugins = 0;
@@ -56,6 +54,7 @@ typedef struct moloch_plugin {
     MolochPluginSaveFunc     saveFunc;
     MolochPluginNewFunc      newFunc;
     MolochPluginExitFunc     exitFunc;
+    MolochPluginReloadFunc   reloadFunc;
 
     MolochPluginHttpFunc     on_message_begin;
     MolochPluginHttpDataFunc on_url;
@@ -141,7 +140,8 @@ void moloch_plugins_set_cb(const char *            name,
                            MolochPluginTcpFunc     tcpFunc,
                            MolochPluginSaveFunc    saveFunc,
                            MolochPluginNewFunc     newFunc,
-                           MolochPluginExitFunc    exitFunc)
+                           MolochPluginExitFunc    exitFunc,
+                           MolochPluginReloadFunc    reloadFunc)
 {
     MolochPlugin_t *plugin;
 
@@ -174,6 +174,10 @@ void moloch_plugins_set_cb(const char *            name,
     plugin->exitFunc = exitFunc;
     if (exitFunc)
         pluginsCbs |= MOLOCH_PLUGIN_EXIT;
+
+    plugin->reloadFunc = reloadFunc;
+    if (reloadFunc)
+        pluginsCbs |= MOLOCH_PLUGIN_RELOAD;
 }
 /******************************************************************************/
 void moloch_plugins_set_http_cb(const char *             name,
@@ -355,5 +359,15 @@ void moloch_plugins_exit()
     HASH_FORALL_POP_HEAD(p_, plugins, plugin, 
         free(plugin->name);
         free(plugin);
+    );
+}
+/******************************************************************************/
+void moloch_plugins_reload()
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FORALL(p_, plugins, plugin, 
+        if (plugin->reloadFunc)
+            plugin->reloadFunc();
     );
 }

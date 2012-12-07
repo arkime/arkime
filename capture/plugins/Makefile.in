@@ -6,5 +6,15 @@ INCLUDE_OTHER = -I.. -I../thirdparty \
                 @GLIB2_CFLAGS@ \
 	        @NIDS_CFLAGS@
 
-all:
+mkdir_p = @mkdir_p@
+INSTALL = @INSTALL@
+PLUGINDIR = @prefix@/plugins
 
+
+all:
+	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c tagger.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
+	$(CC) -shared -o tagger.so tagger.o
+
+install:
+	test -z "$(PLUGINDIR)" || $(mkdir_p) "$(PLUGINDIR)"
+	$(INSTALL) *.so $(PLUGINDIR)

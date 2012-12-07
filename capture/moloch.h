@@ -27,6 +27,15 @@ typedef struct {
 } MolochStringHead_t;
 
 typedef struct moloch_config {
+    char     *configFile;
+    char     *nodeName;
+    char     *hostName;
+    char     *pcapReadFile;
+    char     *pcapReadDir;
+    gboolean  debug;
+    gboolean  dryRun;
+    gboolean  fakePcap;
+
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
 
     char     *nodeClass;
@@ -303,6 +312,7 @@ typedef void (* MolochPluginTcpFunc) (MolochSession_t *session, struct tcp_strea
 typedef void (* MolochPluginSaveFunc) (MolochSession_t *session, int final);
 typedef void (* MolochPluginNewFunc) (MolochSession_t *session);
 typedef void (* MolochPluginExitFunc) ();
+typedef void (* MolochPluginReloadFunc) ();
 
 typedef void (* MolochPluginHttpDataFunc) (MolochSession_t *session, http_parser *hp, const char *at, size_t length);
 typedef void (* MolochPluginHttpFunc) (MolochSession_t *session, http_parser *hp);
@@ -313,6 +323,7 @@ typedef void (* MolochPluginHttpFunc) (MolochSession_t *session, http_parser *hp
 #define MOLOCH_PLUGIN_TCP     0x00000008
 #define MOLOCH_PLUGIN_EXIT    0x00000010
 #define MOLOCH_PLUGIN_NEW     0x00000020
+#define MOLOCH_PLUGIN_RELOAD  0x00000040
 
 #define MOLOCH_PLUGIN_HP_OMB  0x00001000
 #define MOLOCH_PLUGIN_HP_OU   0x00002000
@@ -323,6 +334,7 @@ typedef void (* MolochPluginHttpFunc) (MolochSession_t *session, http_parser *hp
 #define MOLOCH_PLUGIN_HP_OMC  0x00040000
 
 void moloch_plugins_init();
+void moloch_plugins_reload();
 int  moloch_plugins_register(const char *name, gboolean storeData);
 void moloch_plugins_set_cb(const char *            name,
                            MolochPluginIpFunc      ipFunc,
@@ -330,7 +342,8 @@ void moloch_plugins_set_cb(const char *            name,
                            MolochPluginTcpFunc     tcpFunc,
                            MolochPluginSaveFunc    saveFunc,
                            MolochPluginNewFunc     newFunc,
-                           MolochPluginExitFunc    exitFunc);
+                           MolochPluginExitFunc    exitFunc,
+                           MolochPluginExitFunc    reloadFunc);
 
 void moloch_plugins_set_http_cb(const char *             name,
                                 MolochPluginHttpFunc     on_message_begin,

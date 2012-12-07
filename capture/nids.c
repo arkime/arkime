@@ -39,7 +39,6 @@
 /******************************************************************************/
 extern MolochConfig_t        config;
 extern GMainLoop            *mainLoop;
-extern gboolean              debug;
 extern uint32_t              pluginsCbs;
 extern void                 *esServer;
 
@@ -62,11 +61,6 @@ uint64_t                     totalBytes = 0;
 uint64_t                     totalSessions = 0;
 
 /******************************************************************************/
-extern gchar   *interface;
-extern gchar   *pcapFile;
-extern gchar   *pcapDir;
-extern gboolean fakePcap;
-extern gboolean dryRun;
 
 HASH_VAR(h_, sessions, MolochSessionHead_t, 199337);
 
@@ -311,7 +305,7 @@ void moloch_nids_file_create()
 {
     pcap_dumper_t        *dumper;
 
-    if (dryRun) {
+    if (config.dryRun) {
         pcapFilename = "dryrun.pcap";
         dumperFd = 1;
         return;
@@ -343,7 +337,7 @@ void moloch_nids_file_flush(gboolean all)
     int pos = 0;
     int amount;
 
-    if (dryRun) {
+    if (config.dryRun) {
         return;
     }
 
@@ -545,10 +539,10 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, len - 8 - 4 * packet->ip_hl);
     }
 
-    if (!dryRun && !session->dontSave) {
+    if (!config.dryRun && !session->dontSave) {
         /* Save packet to file */
         if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
-            if (dumperFd > 0 && !dryRun)  {
+            if (dumperFd > 0 && !config.dryRun)  {
                 moloch_nids_file_flush(TRUE);
                 close(dumperFd);
             }
@@ -560,7 +554,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             g_array_append_val(session->fileNumArray, dumperId);
         }
 
-        if (fakePcap) {
+        if (config.fakePcap) {
             dumperBuf[dumperBufPos] = 'P';
             dumperBufPos++;
         } else {
@@ -852,8 +846,8 @@ gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) {
     int r = nids_dispatch(config.packetsPerPoll);
-    if (r <= 0 && (pcapFile || pcapDir)) {
-        if (pcapDir && moloch_nids_next_file()) {
+    if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
+        if (config.pcapReadDir && moloch_nids_next_file()) {
             g_timeout_add(100, moloch_nids_next_file_gfunc, 0);
             return FALSE;
         }
@@ -945,7 +939,7 @@ int moloch_nids_next_file()
     char         errbuf[1024];
 
     if (!pcapGDir) {
-        pcapGDir = g_dir_open(pcapDir, 0, &error);
+        pcapGDir = g_dir_open(config.pcapReadDir, 0, &error);
         if (error) {
             LOG("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
             exit(0);
@@ -966,7 +960,7 @@ int moloch_nids_next_file()
         }
 
         gchar *fullfilename;
-        fullfilename = g_build_filename (pcapDir, filename, NULL);
+        fullfilename = g_build_filename (config.pcapReadDir, filename, NULL);
         LOG ("Processing %s", fullfilename);
 
         errbuf[0] = 0;
@@ -984,11 +978,11 @@ int moloch_nids_next_file()
 void moloch_nids_root_init()
 {
     char errbuf[1024];
-    if (pcapDir) {
+    if (config.pcapReadDir) {
         moloch_nids_next_file();
     }
-    else if (pcapFile) {
-        nids_params.pcap_desc = pcap_open_offline(pcapFile, errbuf);
+    else if (config.pcapReadFile) {
+        nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
     } else {
 #ifdef SNF
         nids_params.pcap_desc = pcap_open_live(config.interface, 1600, 1, 500, errbuf);
@@ -1091,7 +1085,7 @@ void moloch_nids_exit() {
         moloch_db_save_session(hsession, TRUE);
     );
 
-    if (!dryRun) {
+    if (!config.dryRun) {
         moloch_nids_file_flush(TRUE);
         close(dumperFd);
     }
