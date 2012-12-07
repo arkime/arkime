@@ -606,6 +606,7 @@ void moloch_nids_decr_outstanding(MolochSession_t *session)
 {
     session->outstandingQueries--;
     if (session->needSave && session->outstandingQueries == 0) {
+        session->needSave = 0; /* Stop endless loop if plugins add tags */
         moloch_db_save_session(session, TRUE);
         moloch_nids_session_free(session);
     }
