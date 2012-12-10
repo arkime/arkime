@@ -154,6 +154,17 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
     return 0;
 }
 /******************************************************************************/
+char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key)
+{
+    uint32_t           value_len;
+    unsigned char     *value = 0;
+
+    value = moloch_js0n_get(data, len, key, &value_len);
+    if (!value)
+        return NULL;
+    return g_strndup((gchar*)value, value_len);
+}
+/******************************************************************************/
 uint32_t moloch_string_hash(const void *key)
 {
     char *p = (char *)key;

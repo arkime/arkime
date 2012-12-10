@@ -490,6 +490,9 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
         if (session->sshLen == 0) {
             session->sshLen = (data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3]) + 4;
             session->sshCode = data[5];
+            if (session->sshLen == 0) {
+                break;
+            }
         }
 
         if (session->sshCode == 33 && remaining > 8) {

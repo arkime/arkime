@@ -212,6 +212,7 @@ typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
 
 gint moloch_watch_fd(gint fd, GIOCondition cond, MolochWatchFd_func func, gpointer data);
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen);
+char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 
 uint32_t moloch_string_hash(const void *key);
 int moloch_string_cmp(const void *keyv, const void *elementv);

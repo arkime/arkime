@@ -1236,6 +1236,10 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
             return;
           }
           fs.open(fresult._source.name, "r", function (err, fd) {
+            if (err) {
+              console.log("ERROR - Couldn't open file ", err);
+              nextCb("ERROR - Couldn't open file " + err);
+            }
             if (lastFile === -1 && headerCb) {
               var hbuffer = new Buffer(24);
               fs.readSync(fd, hbuffer, 0, 24, 0);
