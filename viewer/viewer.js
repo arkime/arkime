@@ -1362,14 +1362,21 @@ function localSessionDetailReturnFull(req, res, session, results) {
 }
 
 function gzipDecode(req, res, session, results) {
-  var parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
+  var kind;
+
+  if (results[0].data.slice(0,4).toString() === "HTTP") {
+    kind = [HTTPParser.RESPONSE, HTTPParser.REQUEST];
+  } else {
+    kind = [HTTPParser.REQUEST, HTTPParser.RESPONSE];
+  }
+  var parsers = [new HTTPParser(kind[0]), new HTTPParser(kind[1])];
 
   parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
     var pos = this.pos;
-    //console.log(pos, "onBody slice (", start, start+len, ") gzip:", this.gzip);
 
     // This isn't a gziped request
     if (!this.gzip) {
+      results[pos] = {data: buf};
       return;
     }
 
@@ -1394,9 +1401,13 @@ function gzipDecode(req, res, session, results) {
   };
 
   parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
+    //console.log("onMessageComplete", this.pos, this.gzip);
     var pos = this.pos;
 
-    //console.log("onMessageComplete", pos, this.gzip);
+    if (this.pos > 0) {
+      parsers[(this.pos+1)%2].reinitialize(kind[(this.pos+1)%2]);
+    }
+
     var nextCb = this.nextCb;
     if (this.inflator) {
       this.inflator.end(null, function () {
@@ -1440,36 +1451,33 @@ function gzipDecode(req, res, session, results) {
       results[pos] = {data: item.data};
       process.nextTick(nextCb);
     } else {
-      //console.log("Doing", pos/*, item.data.toString()*/);
-      //parsers[(pos%2)].nextCb = nextCb;
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
+      if (typeof out === "object") {
+        results[pos] = {data: item.data};
+        console.log("ERROR", out);
+      }
       process.nextTick(nextCb);
     }
   }, function (err) {
-    /*parsers[0].nextCb = null;
-    parsers[1].nextCb = null;
-    parsers[0].finish();
-    parsers[1].finish();*/
     req.query.needgzip = "false";
     process.nextTick(function() {localSessionDetailReturnFull(req, res, session, results);});
   });
 }
 
 function imageDecode(req, res, session, results, findBody) {
-  var parsers;
+  var kind;
 
   if (results[0].data.slice(0,4).toString() === "HTTP") {
-    parsers = [new HTTPParser(HTTPParser.RESPONSE), new HTTPParser(HTTPParser.REQUEST)];
+    kind = [HTTPParser.RESPONSE, HTTPParser.REQUEST];
   } else {
-    parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
+    kind = [HTTPParser.REQUEST, HTTPParser.RESPONSE];
   }
-  
-  
+  var parsers = [new HTTPParser(kind[0]), new HTTPParser(kind[1])];
 
   var bodyNum = 0;
   parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
     if (findBody === bodyNum) {
-      return res.send(buf.slice(start));
+      return res.end(buf.slice(start));
     }
 
     var pos = this.pos;
@@ -1484,6 +1492,9 @@ function imageDecode(req, res, session, results, findBody) {
   };
 
   parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
+    if (this.pos > 0) {
+      parsers[(this.pos+1)%2].reinitialize(kind[(this.pos+1)%2]);
+    }
     var pos = this.pos;
 
     if (!results[pos]) {
@@ -1511,24 +1522,26 @@ function imageDecode(req, res, session, results, findBody) {
 
   var p = 0;
   async.forEachSeries(origresults, function(item, nextCb) {
-    var pos = p;
-    p++;
-    parsers[(pos%2)].pos = pos;
+    parsers[(p%2)].pos = p;
 
     if (!item) {
     } else if (item.data.length === 0) {
-      results[pos] = {data: item.data};
+      results[p] = {data: item.data};
       process.nextTick(nextCb);
     } else {
-      var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
+      var out = parsers[(p%2)].execute(item.data, 0, item.data.length);
       if (typeof out === "object") {
-        results[pos] = {data: item.data};
+        results[p] = {data: item.data};
+        console.log("ERROR", out);
       }
       process.nextTick(nextCb);
+      p++;
     }
   }, function (err) {
     req.query.needimage = "false";
-    process.nextTick(function() {localSessionDetailReturn(req, res, session, results);});
+    if (findBody === -1) {
+      process.nextTick(function() {localSessionDetailReturn(req, res, session, results);});
+    }
   });
 }
 
