@@ -2,13 +2,13 @@
 /* db.c  -- Functions dealing with database queries and updates
  *
  * Copyright 2012 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -120,7 +120,7 @@ int moloch_db_js0n_str(char *str, unsigned char *in)
             *(out++) = '/';
             break;
         default:
-            if(*in < 32) 
+            if(*in < 32)
                 out += sprintf(out, "\\u%04x", *in);
             else if(*in & 0x80) {
                 *(out++) = (0xc0 | (*in >> 6));
@@ -191,7 +191,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
 #define    SJREMAINING (sJPtr-sJson > MOLOCH_HTTP_BUFFER_SIZE_L?0:(MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson)))
-    
+
     sJPtr += snprintf(sJPtr, SJREMAINING, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
     sJPtr += snprintf(sJPtr, SJREMAINING, "{");
@@ -265,7 +265,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         MolochCertsInfo_t *certs;
         MolochString_t *string;
 
-        HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
+        HASH_FORALL_POP_HEAD(t_, session->certs, certs,
             *(sJPtr++) = '{';
 
             if (certs->issuer.commonName.s_count > 0) {
@@ -350,7 +350,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"hocnt\":%d,", HASH_COUNT(s_, session->hosts));
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"ho\":[");
         MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->hosts, hstring, 
+        HASH_FORALL_POP_HEAD(s_, session->hosts, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
             *(sJPtr++) = ',';
             free(hstring->str);
@@ -365,7 +365,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"usercnt\":%d,", HASH_COUNT(s_, session->users));
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"user\":[");
         MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->users, hstring, 
+        HASH_FORALL_POP_HEAD(s_, session->users, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
             *(sJPtr++) = ',';
             free(hstring->str);
@@ -380,7 +380,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshvercnt\":%d,", HASH_COUNT(s_, session->sshver));
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshver\":[");
         MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->sshver, hstring, 
+        HASH_FORALL_POP_HEAD(s_, session->sshver, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
             *(sJPtr++) = ',';
             free(hstring->str);
@@ -400,7 +400,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshkeycnt\":%d,", HASH_COUNT(s_, session->sshkey));
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshkey\":[");
         MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring, 
+        HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
             *(sJPtr++) = ',';
             free(hstring->str);
@@ -416,7 +416,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"ua\":[");
 
         MolochString_t *ustring;
-        HASH_FORALL_POP_HEAD(s_, session->userAgents, ustring, 
+        HASH_FORALL_POP_HEAD(s_, session->userAgents, ustring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str);
             *(sJPtr++) = ',';
             free(ustring->str);
@@ -435,7 +435,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         if (gi) {
             sJPtr += snprintf(sJPtr, SJREMAINING, "\"gxff\":[");
-            HASH_FORALL(i_, session->xffs, xff, 
+            HASH_FORALL(i_, session->xffs, xff,
                 const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(xff->i));
                 if (g)
                     sJPtr += snprintf(sJPtr, SJREMAINING, "\"%s\"", g);
@@ -449,7 +449,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         if (giASN) {
             sJPtr += snprintf(sJPtr, SJREMAINING, "\"asxff\":[");
-            HASH_FORALL(i_, session->xffs, xff, 
+            HASH_FORALL(i_, session->xffs, xff,
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
@@ -464,7 +464,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
 
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"xff\":[");
-        HASH_FORALL_POP_HEAD(i_, session->xffs, xff, 
+        HASH_FORALL_POP_HEAD(i_, session->xffs, xff,
             sJPtr += snprintf(sJPtr, SJREMAINING, "%u", htonl(xff->i));
             *(sJPtr++) = ',';
             free(xff);
@@ -606,7 +606,7 @@ void moloch_db_update_stats()
     dbTotalSessions += (totalSessions - lastSessions);
     dbTotalDropped += (totalDropped - lastDropped);
     dbTotalK += (totalBytes - lastBytes)/1024;
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, 
+    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S,
         "{"
         "\"hostname\": \"%s\", "
         "\"currentTime\": %" PRIu64 ", "
@@ -620,7 +620,7 @@ void moloch_db_update_stats()
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
         "\"deltaDropped\": %" PRIu64 ", "
-        "\"deltaMS\": %" PRIu64 
+        "\"deltaMS\": %" PRIu64
         "}",
         config.hostName,
         currentTime.tv_sec,
@@ -630,10 +630,10 @@ void moloch_db_update_stats()
         dbTotalK,
         dbTotalSessions,
         dbTotalDropped,
-        (totalPackets - lastPackets), 
-        (totalBytes - lastBytes), 
-        (totalSessions - lastSessions), 
-        (totalDropped - lastDropped), 
+        (totalPackets - lastPackets),
+        (totalBytes - lastBytes),
+        (totalSessions - lastSessions),
+        (totalDropped - lastDropped),
         (currentTime.tv_sec - dbLastTime.tv_sec)*1000 + (currentTime.tv_usec/1000 - dbLastTime.tv_usec/1000));
 
     dbLastTime   = currentTime;
@@ -671,7 +671,7 @@ void moloch_db_update_dstats(int n)
     struct statvfs vfs;
     statvfs(config.pcapDir, &vfs);
 
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, 
+    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S,
         "{"
         "\"nodeName\": \"%s\", "
         "\"interval\": %d, "
@@ -682,17 +682,17 @@ void moloch_db_update_dstats(int n)
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
         "\"deltaDropped\": %" PRIu64 ", "
-        "\"deltaMS\": %" PRIu64 
+        "\"deltaMS\": %" PRIu64
         "}",
         config.nodeName,
         intervals[n],
         currentTime.tv_sec,
         (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
         moloch_nids_monitoring_sessions(),
-        (totalPackets - lastPackets[n]), 
-        (totalBytes - lastBytes[n]), 
-        (totalSessions - lastSessions[n]), 
-        (totalDropped - lastDropped[n]), 
+        (totalPackets - lastPackets[n]),
+        (totalBytes - lastBytes[n]),
+        (totalSessions - lastSessions[n]),
+        (totalDropped - lastDropped[n]),
         (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000));
 
     lastTime[n]     = currentTime;
@@ -738,11 +738,12 @@ gboolean moloch_db_flush_gfunc (gpointer user_data )
 }
 /******************************************************************************/
 typedef struct moloch_seq_request {
+    char               *name;
     MolochSeqNum_cb     func;
     gpointer            uw;
-
 } MolochSeqRequest_t;
 
+void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw);
 void moloch_db_get_sequence_number_cb(unsigned char *data, int data_len, gpointer uw)
 {
     MolochSeqRequest_t *r = uw;
@@ -751,8 +752,8 @@ void moloch_db_get_sequence_number_cb(unsigned char *data, int data_len, gpointe
     unsigned char *version = moloch_js0n_get(data, data_len, "_version", &version_len);
 
     if (!version_len || !version) {
-        if (r->func)
-            r->func(1, r->uw);
+        LOG("ERROR - Couldn't fetch sequence: %.*s", data_len, data);
+        moloch_db_get_sequence_number(r->name, r->func, r->uw);
     } else {
         if (r->func)
             r->func(atoi((char*)version), r->uw);
@@ -760,13 +761,14 @@ void moloch_db_get_sequence_number_cb(unsigned char *data, int data_len, gpointe
     free(r);
 }
 /******************************************************************************/
-void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw) 
+void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw)
 {
     char                key[100];
     int                 key_len;
     MolochSeqRequest_t *r = malloc(sizeof(MolochSeqRequest_t));
     char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
 
+    r->name = name;
     r->func = func;
     r->uw   = uw;
 
@@ -826,7 +828,7 @@ char *moloch_db_create_file(time_t firstPacket, uint32_t *id)
     static char        filename[1024];
     struct tm         *tmp;
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
-    
+
     tmp = localtime(&firstPacket);
 
     strcpy(filename, config.pcapDir);
@@ -846,7 +848,7 @@ char *moloch_db_create_file(time_t firstPacket, uint32_t *id)
     return filename;
 }
 /******************************************************************************/
-void moloch_db_check() 
+void moloch_db_check()
 {
     size_t             datalen;
     char               key[100];
@@ -895,7 +897,7 @@ void moloch_db_check()
 }
 
 /******************************************************************************/
-void moloch_db_load_tags() 
+void moloch_db_load_tags()
 {
     size_t             datalen;
     char               key[100];
@@ -918,7 +920,7 @@ void moloch_db_load_tags()
     uint32_t           ahits_len;
     unsigned char     *ahits = 0;
     ahits = moloch_js0n_get(hits, hits_len, "hits", &ahits_len);
-    
+
     if (!ahits)
         return;
 

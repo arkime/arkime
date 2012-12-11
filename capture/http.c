@@ -65,7 +65,7 @@ typedef struct molochconn_t {
     struct timeval       startTime;
     struct timeval       sendTime;
     struct timeval       endTime;
-    char                 hp_data[400000];
+    char                 hp_data[1000000];
     uint32_t             sent;
     uint32_t             hp_len;
     uint16_t             hp_complete;

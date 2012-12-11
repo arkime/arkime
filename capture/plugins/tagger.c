@@ -327,7 +327,7 @@ void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer sync)
             continue;
         }
         g_free(id);
-        if (strncmp(file->md5, (char*)md5, md5_len) != 0) {
+        if (!file->md5 || strncmp(file->md5, (char*)md5, md5_len) != 0) {
             tagger_load_file(file, sync);
         }
     }

@@ -257,6 +257,11 @@ void moloch_nids_save_session(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_mid_save_session(MolochSession_t *session) 
 {
+    /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
+    while (session->outstandingQueries > 0 && (config.pcapReadDir || config.pcapReadFile)) {
+        g_main_context_iteration (g_main_context_default(), TRUE);
+    }
+
     if (!session->rootId) {
         session->rootId = "ROOT";
     }

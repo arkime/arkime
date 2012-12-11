@@ -30,8 +30,8 @@ echo curl -XDELETE http://$ESHOST:9200/dstats
 curl -XDELETE http://$ESHOST:9200/dstats
 echo
 
-echo curl -XDELETE "http://$ESHOST:9200/sessions"
-curl -XDELETE "http://$ESHOST:9200/sessions"
+echo curl -XDELETE "http://$ESHOST:9200/sessions*"
+curl -XDELETE "http://$ESHOST:9200/sessions*"
 echo
 
 sleep 1
