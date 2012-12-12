@@ -24,8 +24,18 @@ NODEJS=0.8.12
 TDIR=/data/moloch
 INSTALL_DIR=$PWD
 
+if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
+   echo "WARNING - a umask of 022 is STRONGLY recommended - $(umask) " 1>&2
+   sleep 2
+fi
+
+if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
+   echo "WARNING - looks like a umask 022 wasn't used for git clone, this might cause strange errors" 1>&2
+   sleep 2
+fi
+
 if [ "$(id -u)" != "0" ]; then
-   echo "This script must be run as root" 1>&2
+   echo "ERROR - This script must be run as root" 1>&2
    exit 1
 fi
 
@@ -34,7 +44,7 @@ JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
  echo
- echo "*** Please install Oracle Java before proceeding, OpenJDK doesn't seem to work.  Visit http://java.sun.com"
+ echo "ERROR - Please install Oracle Java before proceeding, OpenJDK doesn't seem to work.  Visit http://java.sun.com"
  echo
  exit 0
 fi
