@@ -58,7 +58,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.19.10** as of **2012-10-23**
+Tested with **0.19.12** as of **2012-12-10**
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors. On
    CentOS and others this is done by adding the following to bottom of
@@ -72,7 +72,7 @@ Tested with **0.19.10** as of **2012-10-23**
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.19.10 <http://www.elasticsearch.org/blog/2012/10/01/0.19.10-released.html>`_.
+   0.19.12 <http://www.elasticsearch.org/download/2012/12/04/0.19.12.html>`_.
 
 4. Uncompress the archive you downloaded.
 

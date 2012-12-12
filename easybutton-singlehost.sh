@@ -18,7 +18,7 @@
 
 
 
-ES=0.19.11
+ES=0.19.12
 NODEJS=0.8.12
 # If you change TDIR you need to change TDIR in the single-host/*/* files
 TDIR=/data/moloch
