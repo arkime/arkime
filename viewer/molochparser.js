@@ -696,158 +696,162 @@ case 1:return 15
 break;
 case 2:return 14
 break;
-case 3:return 54
+case 3:return 66
 break;
-case 4:return 66
+case 4:return 55
 break;
-case 5:return 53
+case 5:return 54
 break;
-case 6:return 'asn.xff'
+case 6:return 53
 break;
-case 7:return 18
+case 7:return 'asn.xff'
 break;
-case 8:return "cert.alt.cnt"
+case 8:return 18
 break;
-case 9:return "cert.alt"
+case 9:return "cert.alt.cnt"
 break;
-case 10:return "cert.cnt"
+case 10:return "cert.alt"
 break;
-case 11:return "cert.issuer.cn"
+case 11:return "cert.cnt"
 break;
-case 12:return "cert.issuer.on"
+case 12:return "cert.issuer.cn"
 break;
-case 13:return "cert.serial"
+case 13:return "cert.issuer.on"
 break;
-case 14:return "cert.subject.cn"
+case 14:return "cert.serial"
 break;
-case 15:return "cert.subject.on"
+case 15:return "cert.subject.cn"
 break;
-case 16:return 50
+case 16:return "cert.subject.on"
 break;
 case 17:return 79
 break;
-case 18:return 49
+case 18:return 51
 break;
-case 19:return 'country.xff'
+case 19:return 50
 break;
-case 20:return 17
+case 20:return 49
 break;
-case 21:return "header.dst.cnt"
+case 21:return 'country.xff'
 break;
-case 22:return "header.dst"
+case 22:return 17
 break;
-case 23:return "header"
+case 23:return "header.dst.cnt"
 break;
-case 24:return "header.src.cnt"
+case 24:return "header.dst"
 break;
-case 25:return "header.src"
+case 25:return "header"
 break;
-case 26:return "host.cnt"
+case 26:return "header.src.cnt"
 break;
-case 27:return "host"
+case 27:return "header.src"
 break;
-case 28:return "icmp"
+case 28:return "host.cnt"
 break;
-case 29:return "id"
+case 29:return "host"
 break;
-case 30:return "ip.dns.cnt"
+case 30:return "icmp"
 break;
-case 31:return "ip.dns"
+case 31:return "id"
 break;
-case 32:return "ip.dst"
+case 32:return "ip.dns.cnt"
 break;
-case 33:return "ip"
+case 33:return "ip.dns"
 break;
-case 34:return "ip.src"
+case 34:return "ip.dst"
 break;
-case 35:return "ip.xff.cnt"
+case 35:return "ip"
 break;
-case 36:return "ip.xff"
+case 36:return "ip.src"
 break;
-case 37:return 37
+case 37:return "ip.xff.cnt"
 break;
-case 38:return "oldheader"
+case 38:return "ip.xff"
 break;
-case 39:return 19
+case 39:return 37
 break;
-case 40:return 22
+case 40:return "oldheader"
 break;
-case 41:return 82
+case 41:return 19
 break;
-case 42:return 21
+case 42:return 22
 break;
-case 43:return 20
+case 43:return 82
 break;
-case 44:return "ssh.key.cnt"
+case 44:return 21
 break;
-case 45:return "ssh.key"
+case 45:return 20
 break;
-case 46:return "ssh.ver.cnt"
+case 46:return "ssh.key.cnt"
 break;
-case 47:return "ssh.ver"
+case 47:return "ssh.key"
 break;
-case 48:return 32
+case 48:return "ssh.ver.cnt"
 break;
-case 49:return 87
+case 49:return "ssh.ver"
 break;
-case 50:return "tcp"
+case 50:return 32
 break;
-case 51:return "ua.cnt"
+case 51:return 87
 break;
-case 52:return "ua"
+case 52:return "tcp"
 break;
-case 53:return "udp"
+case 53:return "ua.cnt"
 break;
-case 54:return "uri.cnt"
+case 54:return "ua"
 break;
-case 55:return "uri"
+case 55:return "udp"
 break;
-case 56:return "user.cnt"
+case 56:return "uri.cnt"
 break;
-case 57:return "user"
+case 57:return "uri"
 break;
-case 58:return 65
+case 58:return "user.cnt"
 break;
-case 59:return 83
+case 59:return "user"
 break;
-case 60:return 8
+case 60:return 65
 break;
-case 61:return 7
+case 61:return 83
 break;
-case 62:return 11
+case 62:return 8
 break;
-case 63:return 10
+case 63:return 7
 break;
-case 64:return 94
+case 64:return 11
 break;
-case 65:return 93
+case 65:return 10
 break;
-case 66:return 93
+case 66:return 94
 break;
-case 67:return 95
+case 67:return 93
 break;
-case 68:return 95
+case 68:return 93
 break;
-case 69:return 92
+case 69:return 95
 break;
-case 70:return 92
+case 70:return 95
 break;
-case 71:return 98
+case 71:return 92
 break;
-case 72:return 99
+case 72:return 92
 break;
-case 73:return 96
+case 73:return 98
 break;
-case 74:return 5
+case 74:return 99
 break;
-case 75:return 'INVALID'
+case 75:return 96
 break;
-case 76:console.log(yy_.yytext);
+case 76:return 5
+break;
+case 77:return 'INVALID'
+break;
+case 78:console.log(yy_.yytext);
 break;
 }
 };
-lexer.rules = [/^(?:\s+)/,/^(?:[0-9]+\b)/,/^(?:([0-9]{1,3})?(\.[0-9]{1,3})?(\.[0-9]{1,3})?(\.[0-9]{1,3})?(\/[0-9]{1,2})?(:[0-9]{1,5})?\b)/,/^(?:asn\.dst)/,/^(?:asn)/,/^(?:asn\.src)/,/^(?:asn\.xff)/,/^(?:bytes)/,/^(?:cert\.alt\.cnt)/,/^(?:cert\.alt)/,/^(?:cert\.cnt)/,/^(?:cert\.issuer\.cn)/,/^(?:cert\.issuer\.on)/,/^(?:cert\.serial)/,/^(?:cert\.subject\.cn)/,/^(?:cert\.subject\.on)/,/^(?:country\.dst)/,/^(?:country)/,/^(?:country\.src)/,/^(?:country\.xff)/,/^(?:databytes)/,/^(?:header\.dst\.cnt)/,/^(?:header\.dst)/,/^(?:header)/,/^(?:header\.src\.cnt)/,/^(?:header\.src)/,/^(?:host\.cnt)/,/^(?:host)/,/^(?:icmp)/,/^(?:id)/,/^(?:ip\.dns\.cnt)/,/^(?:ip\.dns)/,/^(?:ip\.dst)/,/^(?:ip)/,/^(?:ip\.src)/,/^(?:ip\.xff\.cnt)/,/^(?:ip\.xff)/,/^(?:node)/,/^(?:oldheader)/,/^(?:packets)/,/^(?:port\.dst)/,/^(?:port)/,/^(?:port\.src)/,/^(?:protocol)/,/^(?:ssh\.key\.cnt)/,/^(?:ssh\.key)/,/^(?:ssh\.ver\.cnt)/,/^(?:ssh\.ver)/,/^(?:tags\.cnt)/,/^(?:tags)/,/^(?:tcp)/,/^(?:ua\.cnt)/,/^(?:ua)/,/^(?:udp)/,/^(?:uri\.cnt)/,/^(?:uri)/,/^(?:user\.cnt)/,/^(?:user)/,/^(?:[/\w*._:-]+)/,/^(?:"[^"]+")/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76],"inclusive":true}};
+lexer.rules = [/^(?:\s+)/,/^(?:[0-9]+\b)/,/^(?:([0-9]{1,3})?(\.[0-9]{1,3})?(\.[0-9]{1,3})?(\.[0-9]{1,3})?(\/[0-9]{1,2})?(:[0-9]{1,5})?\b)/,/^(?:asn)/,/^(?:asn\.dns)/,/^(?:asn\.dst)/,/^(?:asn\.src)/,/^(?:asn\.xff)/,/^(?:bytes)/,/^(?:cert\.alt\.cnt)/,/^(?:cert\.alt)/,/^(?:cert\.cnt)/,/^(?:cert\.issuer\.cn)/,/^(?:cert\.issuer\.on)/,/^(?:cert\.serial)/,/^(?:cert\.subject\.cn)/,/^(?:cert\.subject\.on)/,/^(?:country)/,/^(?:country\.dns)/,/^(?:country\.dst)/,/^(?:country\.src)/,/^(?:country\.xff)/,/^(?:databytes)/,/^(?:header\.dst\.cnt)/,/^(?:header\.dst)/,/^(?:header)/,/^(?:header\.src\.cnt)/,/^(?:header\.src)/,/^(?:host\.cnt)/,/^(?:host)/,/^(?:icmp)/,/^(?:id)/,/^(?:ip\.dns\.cnt)/,/^(?:ip\.dns)/,/^(?:ip\.dst)/,/^(?:ip)/,/^(?:ip\.src)/,/^(?:ip\.xff\.cnt)/,/^(?:ip\.xff)/,/^(?:node)/,/^(?:oldheader)/,/^(?:packets)/,/^(?:port\.dst)/,/^(?:port)/,/^(?:port\.src)/,/^(?:protocol)/,/^(?:ssh\.key\.cnt)/,/^(?:ssh\.key)/,/^(?:ssh\.ver\.cnt)/,/^(?:ssh\.ver)/,/^(?:tags\.cnt)/,/^(?:tags)/,/^(?:tcp)/,/^(?:ua\.cnt)/,/^(?:ua)/,/^(?:udp)/,/^(?:uri\.cnt)/,/^(?:uri)/,/^(?:user\.cnt)/,/^(?:user)/,/^(?:[/\w*._:-]+)/,/^(?:"[^"]+")/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78],"inclusive":true}};
 return lexer;})()
 parser.lexer = lexer;function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
 return new Parser;

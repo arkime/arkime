@@ -15,71 +15,77 @@ div(style="margin:10px")
       td.
         ==, !=
       td Autonomous System Number String
-      td Maxmind GeoIP string of asn.src, asn.dst, or asn.xff<br>Examples:asn == as12345, asn == AOL
+      td Shorthand for the Maxmind GeoIP ASNum string from the asn.src, asn.dst, or asn.xff fields<br>Examples:asn == as12345, asn == AOL
     tr
       td asn.src
       td.
         ==, !=
       td Autonomous System Number String
-      td Maxmind GeoIP ASNum string of source ip address<br>Examples:asn.src == as12345, asn.src == AOL
+      td Maxmind GeoIP ASNum string calculated from the source ip address<br>Examples:asn.src == as12345, asn.src == AOL
     tr
       td asn.dst
       td.
         ==, !=
       td Autonomous System Number String
-      td Maxmind GeoIP ASNum string of destination ip address<br>Examples:asn.dst == as12345, asn.dst == AOL
+      td Maxmind GeoIP ASNum string calculated from the destination ip address<br>Examples:asn.dst == as12345, asn.dst == AOL
+    tr
+      td asn.dns
+      td.
+        ==, !=
+      td Autonomous System Number String
+      td Maxmind GeoIP ASNum string calculated from all the ip addresses in a DNS request<br>Examples:asn.dns == as12345, asn.dns == AOL
     tr
       td asn.xff
       td.
         ==, !=
       td Autonomous System Number String
-      td Maxmind GeoIP ASNum string of XFF ip addresses<br>Examples:asn.xff == as12345, asn.xff == AOL
+      td Maxmind GeoIP ASNum string calculated from all the ip addresses in a http XFF header<br>Examples:asn.xff == as12345, asn.xff == AOL
     tr
       td bytes
       td #{range}
       td integer
-      td Number of raw bytes in session<br>Example:bytes &gt; 1000 && bytes &lt; 2000
+      td Number of raw bytes sent/received in a session<br>Example:bytes &gt; 1000 && bytes &lt; 2000
     tr
       td cert.issuer.cn
       td.
         ==, !=
       td string or quoted string
-      td Matches against the issuer common name
+      td The issuer common name in the certs
     tr
       td cert.issuer.on
       td.
         ==, !=
       td string or quoted string
-      td Matches against the issuer object name
+      td The issuer object name in the certs
     tr
       td cert.subject.cn
       td.
         ==, !=
       td string or quoted string
-      td Matches against the subject common name
+      td The subject common name in the certs
     tr
       td cert.subject.on
       td.
         ==, !=
       td string or quoted string
-      td Matches against the subject object name
+      td The subject object name in the certs
     tr
       td cert.serial
       td.
         ==, !=
       td string or quoted string
-      td Matches against the serial number
+      td The serial number in the certs
     tr
       td cert.alt
       td.
         ==, !=
       td string or quoted string
-      td Matches against the cert alternative names
+      td The cert alternative names in the cert
     tr
       td cert.alt.cnt
       td #{range}
       td integer
-      td Number of unique alternative names for a cert
+      td Number of unique alternative names in a certs
     tr
       td cert.cnt
       td #{range}
@@ -90,42 +96,48 @@ div(style="margin:10px")
       td.
         ==, !=
       td 3 character country string
-      td Maxmind GeoIP string of country.src, country.dst, or country.xff<br>Examples:country == USA, country == *SA
+      td Shorthand for the Maxmind GeoIP string of country.src, country.dst, or country.xff<br>Examples:country == USA, country == *SA
     tr
       td country.src
       td.
         ==, !=
       td 3 character country string
-      td Maxmind GeoIP string of source ip country<br>Examples:country == USA, country != *SA
+      td Maxmind GeoIP country string calculated from the source ip<br>Examples:country.src == USA, country.src != *SA
     tr
       td country.dst
       td.
         ==, !=
       td 3 character country string
-      td Maxmind GeoIP string of destination ip country<br>Examples:country == USA, country != *SA
+      td Maxmind GeoIP country string calculated from the  destination ip<br>Examples:country.dst == USA, country.dst != *SA
+    tr
+      td country.dns
+      td.
+        ==, !=
+      td 3 character country string
+      td Maxmind GeoIP country string calculated from the ips in DNS requests<br>Examples:country.dns == USA, country.dns != *SA
     tr
       td country.xff
       td.
         ==, !=
       td 3 character country string
-      td Maxmind GeoIP string of XFF ip country<br>Examples:country == USA, country != *SA
+      td Maxmind GeoIP country string calculated from all the ip addresses in a http XFF header<br>Examples:country == USA, country != *SA
     tr
       td databytes
       td #{range}
       td integer
-      td Number of databytes in session<br>databytes &gt;= 2000
+      td Number of databytes sent/received in a session<br>databytes &gt;= 2000
     tr
       td header
       td.
         ==, !=
       td string or quoted string
-      td Matches against the lowercased http request and response headers for the session<br>Examples: header == *length, header != content-length
+      td Shorthand for the lowercased http request and response headers for the session<br>Examples: header == *length, header != content-length
     tr
       td header.src
       td.
         ==, !=
       td string or quoted string
-      td Matches against the lowercased http request headers for the session<br>Examples: header.src == *length, header.src != content-length
+      td The lowercased http request headers for the session<br>Examples: header.src == *length, header.src != content-length
     tr
       td header.src.cnt
       td #{range}
@@ -136,7 +148,7 @@ div(style="margin:10px")
       td.
         ==, !=
       td string or quoted string
-      td Matches against the lowercased http response headers for the session<br>Examples: header.src == *length, header.src != content-length
+      td The lowercased http response headers for the session<br>Examples: header.dst == *length, header.dst != content-length
     tr
       td header.dst.cnt
       td #{range}
@@ -171,6 +183,12 @@ div(style="margin:10px")
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
       td Matches ip addresses and optionally port using short hand and/or /n notation for address2.<br>Examples: ip.dst==10.10.10.10, ip.dst==10.10.10.0/24:80, ip.dst==10.10.10:80
+    tr
+      td ip.dns
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n]
+      td Matches ip addresses using short hand and/or /n notation for IPs found in DNS requests.<br>Examples: ip.dns==10.10.10.10, ip.dns==10.10.10.0/24, ip.dns==10.10.10
     tr
       td ip.xff
       td.

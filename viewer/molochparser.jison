@@ -7,8 +7,9 @@
 \s+                   /* skip whitespace */
 [0-9]+\b                  return 'NUMBER'
 ([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?\b return 'IPMATCH'
-"asn.dst"                 return 'asn.dst'
 "asn"                     return 'asn'
+"asn.dns"                 return 'asn.dns'
+"asn.dst"                 return 'asn.dst'
 "asn.src"                 return 'asn.src'
 "asn.xff"                 return 'asn.xff'
 "bytes"                   return 'bytes'
@@ -20,8 +21,9 @@
 "cert.serial"             return "cert.serial"
 "cert.subject.cn"         return "cert.subject.cn"
 "cert.subject.on"         return "cert.subject.on"
-"country.dst"             return 'country.dst'
 "country"                 return 'country'
+"country.dns"             return 'country.dns'
+"country.dst"             return 'country.dst'
 "country.src"             return 'country.src'
 "country.xff"             return 'country.xff'
 "databytes"               return 'databytes'

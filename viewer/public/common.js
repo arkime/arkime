@@ -303,7 +303,7 @@ $(document).ready(function() {
         tokens.push(" ");
       }
 
-      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.xff", "asn", "asn.src", "asn.dst", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "user", "user.cnt", "tags", "tags.cnt", "oldheader", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt", "ssh.key", "ssh.key.cnt", "ssh.ver", "ssh.ver.cnt"];
+      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.dns", "ip.dns.count", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.dns", "country.xff", "asn", "asn.src", "asn.dst", "asn.dns", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "user", "user.cnt", "tags", "tags.cnt", "oldheader", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt", "ssh.key", "ssh.key.cnt", "ssh.ver", "ssh.ver.cnt"];
 
       if (tokens.length <= 1) {
         return callback(commands);
