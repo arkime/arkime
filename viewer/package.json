@@ -13,7 +13,6 @@
     , "elasticsearchclient": ">= 0.0.1"
     , "fs-ext": "http://github.com/awick/node-fs-ext/tarball/master"
     , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
-    , "hexy": ">= 0.0.1"
     , "passport": ">= 0.0.1"
     , "passport-http": ">= 0.0.1"
   }

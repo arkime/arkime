@@ -9,7 +9,9 @@ div(id='sessionDetail#{session.id}')
     | 
     a(href='#{session.no}/raw/#{session.id}?type=src') Source Raw
     | 
-    a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw 
+    a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw
+    | 
+    a(href='?expression=id=#{session.id}&date=-1&openAll=1') Permalink
     br
   div Node: 
     a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
@@ -95,6 +97,18 @@ div(id='sessionDetail#{session.id}')
         - if (session.asxff)
           a(href='#', onclick='return addExpression("asn.xff == \\\"#{session.asxff[i]}\\\"");') [#{session.asxff[i]}]
           | 
+  if (session.dnsip)
+    div DNSs:
+      - var dnsIps = session.dnsip.map(function(ip) {return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff)});
+      each dns,i in dnsIps
+        a(href='#', onclick='return addExpression("ip.dns == #{dns}");') #{dns}
+        | 
+        - if (session.gdnsip)
+          a(href='#', onclick='return addExpression("country.dns == #{session.gdnsip[i]}");') (#{session.gdnsip[i]})
+          | 
+        - if (session.asdnsip)
+          a(href='#', onclick='return addExpression("asn.dns == \\\"#{session.asdnsip[i]}\\\"");') [#{session.asdnsip[i]}]
+          | 
   if (session.tls)
     each cert in session.tls
       div Certificates: 
@@ -172,11 +186,11 @@ div(id='sessionDetail#{session.id}')
     each item, i in data
       tr
         if i % 2 == 0
-          td !{item.data}
+          td.sessionsrc !{item.data}
           td
         else
           td
-          td !{item.data}
+          td.sessiondst !{item.data}
 
   script(type='text/javascript')
     $(function() {

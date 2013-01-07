@@ -31,10 +31,10 @@ var Config         = require('./config.js'),
     util           = require('util'),
     fs             = require('fs-ext'),
     async          = require('async'),
-    hexy           = require('hexy'),
     url            = require('url'),
     dns            = require('dns'),
     decode         = require('./decode.js'),
+    sprintf = require('./public/sprintf.js'),
     Db             = require('./db.js'),
     os             = require('os'),
     zlib           = require('zlib'),
@@ -111,11 +111,11 @@ app.configure(function() {
         var obj = Config.auth2obj(req.headers['x-moloch-auth']);
         if (obj.path !== req.url) {
           console.log("ERROR - mismatch url", obj.path, req.url);
-          return res.end("Unauthorized, bad url");
+          return res.end("Unauthorized based on bad url, check logs on ", os.hostname());
         }
         if (Math.abs(Date.now() - obj.date) > 60000) { // Request has to be +- 60 seconds
-          console.log("ERROR - Denying server to server, are clocks out of sync?");
-          return res.end("Unauthorized from time");
+          console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?");
+          return res.end("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
         }
 
         Db.get("users", "user", obj.user, function(err, suser) {
@@ -1326,19 +1326,52 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
   });
 }
 
+function safeStr(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
+}
+
+// Some ideas from hexy.js
+function toHex(input, offsets) {
+  var out = "";
+  var i;
+
+  for (var pos = 0; pos < input.length; pos += 16) {
+    var line = input.slice(pos, Math.min(pos+16, input.length));
+    if (offsets) {
+      out += sprintf.sprintf("<span class=\"sessionln\">%08d:</span> ", pos);
+    }
+
+    for (i = 0; i < 16; i++) {
+      if (i % 2 === 0 && i > 0) {
+        out += " ";
+      }
+      if (i < line.length) {
+        out += sprintf.sprintf("%02x", line[i]);
+      } else {
+        out += "  ";
+      }
+    }
+
+    out += " ";
+
+    for (i = 0; i < line.length; i++) {
+      if (line[i] <= 32 || line[i]  > 128) {
+        out += "."
+      } else {
+        out += safeStr(line.toString("ascii", i, i+1));
+      }
+    }
+    out += "\n";
+  }
+  return out;
+};
+
 function localSessionDetailReturnFull(req, res, session, results) {
   var i;
 
-  function safeStr(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
-  }
-
-  var format = {};
-  format.numbering = (req.query.line === "true"?"hex_bytes":"none");
-
   for (i = 0; i < results.length; i++) {
     if (req.query.base === "hex") {
-      results[i].data = '<pre>' + safeStr(hexy.hexy(results[i].data, format)) + '</pre>';
+      results[i].data = '<pre>' + toHex(results[i].data, req.query.line === "true") + '</pre>';
     } else if (req.query.base === "ascii") {
       results[i].data = '<pre>' + safeStr(results[i].data.toString("binary")) + '</pre>';
     } else if (req.query.base === "utf8") {
@@ -1360,6 +1393,7 @@ function localSessionDetailReturnFull(req, res, session, results) {
     query: req.query
   });
 }
+
 
 function gzipDecode(req, res, session, results) {
   var kind;
@@ -1409,18 +1443,15 @@ function gzipDecode(req, res, session, results) {
     }
 
     var nextCb = this.nextCb;
+    this.nextCb = null;
     if (this.inflator) {
       this.inflator.end(null, function () {
-        if (nextCb) {
-          process.nextTick(nextCb);
-        }
+        process.nextTick(nextCb);
       });
       this.inflator = null;
     } else {
       results[pos] = origresults[pos];
-      if (nextCb) {
-        process.nextTick(nextCb);
-      }
+      process.nextTick(nextCb);
     }
   };
 
@@ -1451,12 +1482,15 @@ function gzipDecode(req, res, session, results) {
       results[pos] = {data: item.data};
       process.nextTick(nextCb);
     } else {
+      parsers[(pos%2)].nextCb = nextCb;
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
       if (typeof out === "object") {
         results[pos] = {data: item.data};
         console.log("ERROR", out);
       }
-      process.nextTick(nextCb);
+      if (parsers[(pos%2)].nextCb) {
+        process.nextTick(parsers[(pos%2)].nextCb);
+      }
     }
   }, function (err) {
     req.query.needgzip = "false";
@@ -1932,7 +1966,7 @@ app.post('/deleteUser/:userId', function(req, res) {
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
+    return res.end(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   if (req.params.userId === req.user.userId) {
@@ -1956,7 +1990,7 @@ app.post('/addUser', function(req, res) {
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
+    return res.end(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
@@ -2005,7 +2039,7 @@ app.post('/updateUser/:userId', function(req, res) {
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
+    return res.end(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   Db.get("users", 'user', req.params.userId, function(err, user) {

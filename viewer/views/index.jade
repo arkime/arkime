@@ -95,7 +95,7 @@ script(type='text/javascript')
   }
 
   $(document).ready(function() {
-    handleUrlParams();
+    var initialParams = handleUrlParams();
 
     $('#sessions tbody td.urlColumn img').live('click', function () {
       var nTr = this.parentNode.parentNode;
@@ -109,6 +109,21 @@ script(type='text/javascript')
       sessionsTable.fnUpdate(rowData, nTr, 0, false, false);
     });
 
+    function openRow(nTr) {
+      $(nTr).addClass('opened');
+      var aData = sessionsTable.fnGetData(nTr);
+      $(nTr).find("td.sessionDetails img").attr("src", "DataTables-1.9.1/examples/examples_support/details_close.png");
+
+      $.ajax( {
+          "dataType": 'html',
+          "type": "GET",
+          "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
+          "success": function(data) {
+            sessionsTable.fnOpen( nTr, data, 'details' );
+          }
+      } );
+    }
+
     $('#sessions tbody td.sessionDetails img').live('click', function () {
       var nTr = this.parentNode.parentNode;
       if ( this.src.match('details_close') )
@@ -120,21 +135,8 @@ script(type='text/javascript')
 
         /* This row is already open - close it */
         sessionsTable.fnClose( nTr );
-      }
-      else
-      {
-        $(nTr).addClass('opened');
-        var aData = sessionsTable.fnGetData( nTr );
-        this.src = "DataTables-1.9.1/examples/examples_support/details_close.png";
-        $.ajax( {
-            "dataType": 'html',
-            "type": "GET",
-            "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
-            "success": function(data) {
-              sessionsTable.fnOpen( nTr, data, 'details' );
-            }
-        } );
-
+      } else {
+        openRow(nTr);
       }
     } );
 
@@ -188,6 +190,7 @@ script(type='text/javascript')
               pr =  "udp";
               break;
             }
+
             if (oObj.aData.isOpen) {
               return '<img src="DataTables-1.9.1/examples/examples_support/details_close.png"><div class="protocolText">' + pr + '</div>';
             } else {
@@ -330,6 +333,13 @@ script(type='text/javascript')
 
               $('#world-map').vectorMap('set', 'values', lastResult.map);
               fnCallback(json);
+              if (initialParams.openAll) {
+                nNodes = sessionsTable.fnGetNodes();
+                for (var i = 0; i < nNodes.length; i++) {
+                  openRow(nNodes[i]);
+                }
+              }
+              initialParams.openAll = 0;
               stopBlink();
             },
             "error": function (json) {

@@ -257,6 +257,9 @@ void moloch_nids_save_session(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_mid_save_session(MolochSession_t *session) 
 {
+    MolochString_t *string;
+    MolochInt_t    *mi;
+
     /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
     while (session->outstandingQueries > 0 && (config.pcapReadDir || config.pcapReadFile)) {
         g_main_context_iteration (g_main_context_default(), TRUE);
@@ -273,22 +276,26 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     g_array_free(session->fileNumArray, TRUE);
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
 
-    g_ptr_array_free(session->urlArray, TRUE);
-    session->urlArray = g_ptr_array_new_with_free_func(g_free);
+    if (session->http) {
+        g_ptr_array_free(session->http->urlArray, TRUE);
+        session->http->urlArray = g_ptr_array_new_with_free_func(g_free);
 
-    MolochString_t *string;
+        HASH_FORALL_POP_HEAD(s_, session->http->userAgents, string, 
+            free(string->str);
+            free(string);
+        );
+
+        HASH_FORALL_POP_HEAD(i_, session->http->xffs, mi, 
+            free(mi);
+        );
+    }
+
     HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
         free(string->str);
         free(string);
     );
 
-    HASH_FORALL_POP_HEAD(s_, session->userAgents, string, 
-        free(string->str);
-        free(string);
-    );
-
-    MolochInt_t *mi;
-    HASH_FORALL_POP_HEAD(i_, session->xffs, mi, 
+    HASH_FORALL_POP_HEAD(i_, session->dnsips, mi, 
         free(mi);
     );
 
@@ -399,6 +406,46 @@ moloch_nids_pcap_dump(const struct pcap_pkthdr *h, const u_char *sp)
     dumperBufPos += h->caplen;
 }
 /******************************************************************************/
+void moloch_nids_new_session_http(MolochSession_t *session)
+{
+    session->http = malloc(sizeof(MolochSessionHttp_t));
+    memset(session->http, 0, sizeof(MolochSessionHttp_t));
+
+    HASH_INIT(s_, session->http->userAgents, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(i_, session->http->xffs, moloch_int_hash, moloch_int_cmp);
+    session->http->urlArray = g_ptr_array_new_with_free_func(g_free);
+}
+/******************************************************************************/
+void moloch_nids_free_session_http(MolochSession_t *session)
+{
+    MolochString_t *string;
+    MolochInt_t    *mi;
+
+    g_ptr_array_free(session->http->urlArray, TRUE);
+
+    HASH_FORALL_POP_HEAD(s_, session->http->userAgents, string, 
+        free(string->str);
+        free(string);
+    );
+
+    HASH_FORALL_POP_HEAD(i_, session->http->xffs, mi, 
+        free(mi);
+    );
+
+    if (session->http->urlString)
+        g_string_free(session->http->urlString, TRUE);
+    if (session->http->hostString)
+        g_string_free(session->http->hostString, TRUE);
+    if (session->http->uaString)
+        g_string_free(session->http->uaString, TRUE);
+    if (session->http->xffString)
+        g_string_free(session->http->xffString, TRUE);
+
+    free(session->http);
+
+    session->http = 0;
+}
+/******************************************************************************/
 void moloch_nids_cb_ip(struct ip *packet, int len)
 {
     char             sessionId[MOLOCH_SESSIONID_LEN];
@@ -486,13 +533,11 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->protocol = packet->ip_p;
         session->filePosArray = g_array_sized_new(FALSE, FALSE, 8, 100);
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
-        session->urlArray = g_ptr_array_new_with_free_func(g_free);
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->users, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->sshver, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->sshkey, moloch_string_hash, moloch_string_cmp);
-        HASH_INIT(s_, session->userAgents, moloch_string_hash, moloch_string_cmp);
-        HASH_INIT(i_, session->xffs, moloch_int_hash, moloch_int_cmp);
+        HASH_INIT(i_, session->dnsips, moloch_int_hash, moloch_int_cmp);
         HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
         HASH_ADD(h_, sessions, sessionId, session);
         session->lastSave = session->firstPacket = nids_last_pcap_header->ts.tv_sec;
@@ -724,6 +769,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 /******************************************************************************/
 void moloch_nids_session_free (MolochSession_t *session)
 {
+    MolochString_t *string;
+
     if (session->q_next) {
         switch (session->protocol) {
         case IPPROTO_TCP:
@@ -743,9 +790,11 @@ void moloch_nids_session_free (MolochSession_t *session)
 
     g_array_free(session->filePosArray, TRUE);
     g_array_free(session->fileNumArray, TRUE);
-    g_ptr_array_free(session->urlArray, TRUE);
 
-    MolochString_t *string;
+    if (session->http) {
+        moloch_nids_free_session_http(session);
+    }
+
     HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
         free(string->str);
         free(string);
@@ -766,24 +815,10 @@ void moloch_nids_session_free (MolochSession_t *session)
         free(string);
     );
 
-    HASH_FORALL_POP_HEAD(s_, session->userAgents, string, 
-        free(string->str);
-        free(string);
-    );
-
     MolochCertsInfo_t *certs;
     HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
         moloch_nids_certs_free(certs);
     );
-
-    if (session->urlString)
-        g_string_free(session->urlString, TRUE);
-    if (session->hostString)
-        g_string_free(session->hostString, TRUE);
-    if (session->uaString)
-        g_string_free(session->uaString, TRUE);
-    if (session->xffString)
-        g_string_free(session->xffString, TRUE);
 
     if (session->rootId)
         g_free(session->rootId);

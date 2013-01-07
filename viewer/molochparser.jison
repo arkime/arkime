@@ -7,58 +7,61 @@
 \s+                   /* skip whitespace */
 [0-9]+\b                  return 'NUMBER'
 ([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?\b return 'IPMATCH'
-"bytes"                   return 'bytes'
-"databytes"               return 'databytes'
-"packets"                 return 'packets'
-"protocol"                return 'protocol'
-"port.src"                return 'port.src'
-"port.dst"                return 'port.dst'
-"port"                    return 'port'
-"node"                    return 'node'
-"country.src"             return 'country.src'
-"country.dst"             return 'country.dst'
-"country.xff"             return 'country.xff'
-"country"                 return 'country'
-"asn.src"                 return 'asn.src'
 "asn.dst"                 return 'asn.dst'
-"asn.xff"                 return 'asn.xff'
 "asn"                     return 'asn'
-"ip.src"                  return "ip.src"
-"ip.dst"                  return "ip.dst"
-"ip.xff"                  return "ip.xff"
-"ip.xff.cnt"              return "ip.xff.cnt"
-"ip"                      return "ip"
+"asn.src"                 return 'asn.src'
+"asn.xff"                 return 'asn.xff'
+"bytes"                   return 'bytes'
+"cert.alt.cnt"            return "cert.alt.cnt"
+"cert.alt"                return "cert.alt"
+"cert.cnt"                return "cert.cnt"
 "cert.issuer.cn"          return "cert.issuer.cn"
 "cert.issuer.on"          return "cert.issuer.on"
+"cert.serial"             return "cert.serial"
 "cert.subject.cn"         return "cert.subject.cn"
 "cert.subject.on"         return "cert.subject.on"
-"cert.alt"                return "cert.alt"
-"cert.alt.cnt"            return "cert.alt.cnt"
-"cert.serial"             return "cert.serial"
-"cert.cnt"                return "cert.cnt"
-"uri"                     return "uri"
-"uri.cnt"                 return "uri.cnt"
-"ua"                      return "ua"
-"ua.cnt"                  return "ua.cnt"
-"user"                    return "user"
-"user.cnt"                return "user.cnt"
-"icmp"                    return "icmp"
-"tcp"                     return "tcp"
-"udp"                     return "udp"
-"host"                    return "host"
-"host.cnt"                return "host.cnt"
-"oldheader"               return "oldheader"
-"header"                  return "header"
-"header.src"              return "header.src"
-"header.src.cnt"          return "header.src.cnt"
-"header.dst"              return "header.dst"
+"country.dst"             return 'country.dst'
+"country"                 return 'country'
+"country.src"             return 'country.src'
+"country.xff"             return 'country.xff'
+"databytes"               return 'databytes'
 "header.dst.cnt"          return "header.dst.cnt"
-"tags"                    return 'tags'
-"tags.cnt"                return 'tags.cnt'
-"ssh.key"                 return "ssh.key"
+"header.dst"              return "header.dst"
+"header"                  return "header"
+"header.src.cnt"          return "header.src.cnt"
+"header.src"              return "header.src"
+"host.cnt"                return "host.cnt"
+"host"                    return "host"
+"icmp"                    return "icmp"
+"id"                      return "id"
+"ip.dns.cnt"              return "ip.dns.cnt"
+"ip.dns"                  return "ip.dns"
+"ip.dst"                  return "ip.dst"
+"ip"                      return "ip"
+"ip.src"                  return "ip.src"
+"ip.xff.cnt"              return "ip.xff.cnt"
+"ip.xff"                  return "ip.xff"
+"node"                    return 'node'
+"oldheader"               return "oldheader"
+"packets"                 return 'packets'
+"port.dst"                return 'port.dst'
+"port"                    return 'port'
+"port.src"                return 'port.src'
+"protocol"                return 'protocol'
 "ssh.key.cnt"             return "ssh.key.cnt"
-"ssh.ver"                 return "ssh.ver"
+"ssh.key"                 return "ssh.key"
 "ssh.ver.cnt"             return "ssh.ver.cnt"
+"ssh.ver"                 return "ssh.ver"
+"tags.cnt"                return 'tags.cnt'
+"tags"                    return 'tags'
+"tcp"                     return "tcp"
+"ua.cnt"                  return "ua.cnt"
+"ua"                      return "ua"
+"udp"                     return "udp"
+"uri.cnt"                 return "uri.cnt"
+"uri"                     return "uri"
+"user.cnt"                return "user.cnt"
+"user"                    return "user"
 [/\w*._:-]+               return 'ID'
 \"[^"]+\"                 return 'QUOTEDSTR'
 "<="                      return 'lte'
@@ -122,6 +125,7 @@ RANGEFIELD: databytes         {$$ = 'db'}
           | 'uri.cnt'         {$$ = 'uscnt'}
           | 'cert.cnt'        {$$ = 'tlscnt'}
           | 'ip.xff.cnt'      {$$ = 'xffcnt'}
+          | 'ip.dns.cnt'      {$$ = 'dnsipcnt'}
           | 'ua.cnt'          {$$ = 'uacnt'}
           | 'user.cnt'        {$$ = 'usercnt'}
           | 'host.cnt'        {$$ = 'hocnt'}
@@ -133,78 +137,93 @@ RANGEFIELD: databytes         {$$ = 'db'}
           | 'ssh.ver.cnt'     {$$ = 'sshvercnt'}
           ;
 
-TERMFIELD  : node              {$$ = 'no'}
-           | host              {$$ = 'ho'}
-           | user              {$$ = 'user'}
-           | 'cert.subject.cn' {$$ = 'tls.sCn'}
-           | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
-           | 'cert.serial'     {$$ = 'tls.sn'}
-           | 'cert.alt'        {$$ = 'tls.alt'}
-           | 'ssh.ver'         {$$ = 'sshver'}
+LOTERMFIELD  : node              {$$ = 'no'}
+             | host              {$$ = 'ho'}
+             | user              {$$ = 'user'}
+             | 'cert.subject.cn' {$$ = 'tls.sCn'}
+             | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
+             | 'cert.serial'     {$$ = 'tls.sn'}
+             | 'cert.alt'        {$$ = 'tls.alt'}
+             | 'ssh.ver'         {$$ = 'sshver'}
+             ;
+
+TERMFIELD  : 'id' {$$ = '_id'}
+           | 'ssh.key' {$$ = 'sshkey'}
            ;
 
 UPTERMFIELD  : 'country.src' {$$ = 'g1'}
              | 'country.dst' {$$ = 'g2'}
-             | 'country.xff' {$$ = 'gxff'}
+             | 'country.dns' {$$ = 'gdnsip'}
              ;
 
 TEXTFIELD  : 'asn.src'         {$$ = 'as1'}
            | 'asn.dst'         {$$ = 'as2'}
-           | 'asn.xff'         {$$ = 'asxff'}
+           | 'asn.dns'         {$$ = 'asdnsip'}
            | 'cert.subject.on' {$$ = 'tls.sOn'}
            | 'cert.issuer.on'  {$$ = 'tls.iOn'}
            ;
 
+IPFIELD  : 'ip' {$$ = 0}
+         | 'ip.src' {$$ = 1}
+         | 'ip.dst' {$$ = 2}
+         | 'ip.xff' {$$ = 3}
+         | 'ip.dns' {$$ = 4}
+         ;
+
 STR : ID
-    | packets
-    | bytes
-    | protocol
-    | port
-    | port.src
-    | port.dst
-    | country
-    | country.src
-    | country.dst
-    | country.xff
     | asn
-    | asn.src
+    | asn.dns
     | asn.dst
+    | asn.src
     | asn.xff
-    | cert.issuer.cn
-    | cert.issuer.on
-    | cert.subject.cn
-    | cert.subject.on
+    | bytes
     | cert.alt
     | cert.alt.cnt
-    | cert.serial
     | cert.cnt
-    | QUOTEDSTR
-    | node
-    | host
-    | host.cnt
+    | cert.issuer.cn
+    | cert.issuer.on
+    | cert.serial
+    | cert.subject.cn
+    | cert.subject.on
+    | country
+    | country.dns
+    | country.dst
+    | country.src
+    | country.xff
     | header
-    | header.src
-    | header.src.cnt
     | header.dst
     | header.dst.cnt
+    | header.src
+    | header.src.cnt
+    | host
+    | host.cnt
     | icmp
-    | tcp
-    | udp
     | ip
-    | ip.src
+    | ip.dns
+    | ip.dns.cnt
     | ip.dst
+    | ip.src
     | ip.xff
     | ip.xff.cnt
-    | uri
-    | uri.cnt
-    | ua
-    | ua.cnt
-    | tags
-    | tags.cnt
+    | node
+    | packets
+    | port
+    | port.dst
+    | port.src
+    | protocol
+    | QUOTEDSTR
     | ssh.key
     | ssh.key.cnt
     | ssh.ver
     | ssh.ver.cnt
+    | tags
+    | tags.cnt
+    | tcp
+    | ua
+    | ua.cnt
+    | udp
+    | uri
+    | uri.cnt
     ;
  
 e
@@ -252,7 +271,7 @@ e
         {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
          $$.or[0].range.p1[$2] = $3;
          $$.or[1].range.p2[$2] = $3;}
-    | TERMFIELD '!=' STR
+    | LOTERMFIELD '!=' STR
         { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
             $$ = {not: {query: {wildcard: {}}}};
@@ -262,8 +281,28 @@ e
             $$.not.term[$1] = str;
           }
         }
-    | TERMFIELD '==' STR
+    | LOTERMFIELD '==' STR
         { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {query: {wildcard: {}}};
+            $$.query.wildcard[$1] = str;
+          } else {
+            $$ = {term: {}};
+            $$.term[$1] = str;
+          }
+        }
+    | TERMFIELD '!=' STR
+        { var str = stripQuotes($3);
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {query: {wildcard: {}}}};
+            $$.not.query.wildcard[$1] = str;
+          } else {
+            $$ = {not: {term: {}}};
+            $$.not.term[$1] = str;
+          }
+        }
+    | TERMFIELD '==' STR
+        { var str = stripQuotes($3);
           if (str.indexOf("*") !== -1) {
             $$ = {query: {wildcard: {}}};
             $$.query.wildcard[$1] = str;
@@ -316,22 +355,10 @@ e
         {$$ = {or: [{term: {p1: $3}}, {term: {p2: $3}}]};}
     | 'port' '!=' NUMBER
         {$$ = {not: {or: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
-    | 'ip' '==' IPNUM
-        {$$ = parseIpPort($3,0);}
-    | 'ip' '!=' IPNUM
-        {$$ = {not: parseIpPort($3,0)};}
-    | 'ip.src' '==' IPNUM
-        {$$ = parseIpPort($3,1);}
-    | 'ip.src' '!=' IPNUM
-        {$$ = {not: parseIpPort($3,1)};}
-    | 'ip.dst' '==' IPNUM
-        {$$ = parseIpPort($3,2);}
-    | 'ip.dst' '!=' IPNUM
-        {$$ = {not: parseIpPort($3,2)};}
-    | 'ip.xff' '==' IPNUM
-        {$$ = parseIpPort($3,3);}
-    | 'ip.xff' '!=' IPNUM
-        {$$ = {not: parseIpPort($3,3)};}
+    | IPFIELD '==' IPNUM
+        {$$ = parseIpPort($3,$1);}
+    | IPFIELD '!=' IPNUM
+        {$$ = {not: parseIpPort($3,$1)};}
     | tags '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {ta: tag}};
@@ -412,26 +439,6 @@ e
                  }};
           }
         }
-    | "ssh.key" '!=' STR
-        { var str = stripQuotes($3);
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {query: {wildcard: {}}}};
-            $$.not.query.wildcard.sshkey = str;
-          } else {
-            $$ = {not: {term: {}}};
-            $$.not.term.sshkey = str;
-          }
-        }
-    | "ssh.key" '==' STR
-        { var str = stripQuotes($3);
-          if (str.indexOf("*") !== -1) {
-            $$ = {query: {wildcard: {}}};
-            $$.query.wildcard.sshkey = str;
-          } else {
-            $$ = {term: {}};
-            $$.term.sshkey = str;
-          }
-        }
     ;
 %%
 
@@ -471,16 +478,19 @@ function parseIpPort(ipPortStr, which) {
   var t1 = {and: []};
   var t2 = {and: []};
   var xff;
+  var dns;
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
         t1.and.push({term: {a1: ip1>>>0}});
         t2.and.push({term: {a2: ip1>>>0}});
         xff = {term: {xff: ip1>>>0}};
+        dns = {term: {dnsip: ip1>>>0}};
     } else {
         t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
         t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
         xff =  {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
+        dns =  {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
     }
   }
 
@@ -508,6 +518,10 @@ function parseIpPort(ipPortStr, which) {
     if (!xff)
         throw "xff doesn't support port only";
     return xff;
+  case 4:
+    if (!dns)
+        throw "dns doesn't support port only";
+    return dns;
   }
 }
 

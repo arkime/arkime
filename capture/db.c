@@ -247,13 +247,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             sJPtr += snprintf(sJPtr, SJREMAINING, ",%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
     }
     sJPtr += snprintf(sJPtr, SJREMAINING, "],");
-    if (session->urlArray->len) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"uscnt\":%d,", session->urlArray->len);
+    if (session->http && session->http->urlArray->len) {
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"uscnt\":%d,", session->http->urlArray->len);
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"us\":[");
-        for(i = 0; i < session->urlArray->len; i++) {
+        for(i = 0; i < session->http->urlArray->len; i++) {
             if (i != 0)
                 *(sJPtr++) = ',';
-            sJPtr += moloch_db_js0n_str(sJPtr, g_ptr_array_index(session->urlArray, i));
+            sJPtr += moloch_db_js0n_str(sJPtr, g_ptr_array_index(session->http->urlArray, i));
         }
         sJPtr += snprintf(sJPtr, SJREMAINING, "],");
     }
@@ -411,12 +411,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "],");
     }
 
-    if (HASH_COUNT(s_, session->userAgents)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"uacnt\":%d,", HASH_COUNT(t_, session->userAgents));
+    if (session->http && HASH_COUNT(s_, session->http->userAgents)) {
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"uacnt\":%d,", HASH_COUNT(t_, session->http->userAgents));
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"ua\":[");
 
         MolochString_t *ustring;
-        HASH_FORALL_POP_HEAD(s_, session->userAgents, ustring,
+        HASH_FORALL_POP_HEAD(s_, session->http->userAgents, ustring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str);
             *(sJPtr++) = ',';
             free(ustring->str);
@@ -427,15 +427,15 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "],");
     }
 
-    if (HASH_COUNT(i_, session->xffs)) {
+    if (session->http && HASH_COUNT(i_, session->http->xffs)) {
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"xffscnt\":%d,", HASH_COUNT(t_, session->xffs));
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"xffscnt\":%d,", HASH_COUNT(t_, session->http->xffs));
 
         MolochInt_t *xff;
 
         if (gi) {
             sJPtr += snprintf(sJPtr, SJREMAINING, "\"gxff\":[");
-            HASH_FORALL(i_, session->xffs, xff,
+            HASH_FORALL(i_, session->http->xffs, xff,
                 const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(xff->i));
                 if (g)
                     sJPtr += snprintf(sJPtr, SJREMAINING, "\"%s\"", g);
@@ -449,7 +449,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         if (giASN) {
             sJPtr += snprintf(sJPtr, SJREMAINING, "\"asxff\":[");
-            HASH_FORALL(i_, session->xffs, xff,
+            HASH_FORALL(i_, session->http->xffs, xff,
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
@@ -464,10 +464,57 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
 
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"xff\":[");
-        HASH_FORALL_POP_HEAD(i_, session->xffs, xff,
+        HASH_FORALL_POP_HEAD(i_, session->http->xffs, xff,
             sJPtr += snprintf(sJPtr, SJREMAINING, "%u", htonl(xff->i));
             *(sJPtr++) = ',';
             free(xff);
+        );
+        sJPtr--; // Remove last comma
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+    }
+
+    if (HASH_COUNT(i_, session->dnsips)) {
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"dnsipcnt\":%d,", HASH_COUNT(t_, session->dnsips));
+
+        MolochInt_t *dnsip;
+
+        if (gi) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"gdnsip\":[");
+            HASH_FORALL(i_, session->dnsips, dnsip,
+                const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(dnsip->i));
+                if (g)
+                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"%s\"", g);
+                else
+                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
+                *(sJPtr++) = ',';
+            );
+            sJPtr--; // Remove last comma
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        if (giASN) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"asdnsip\":[");
+            HASH_FORALL(i_, session->dnsips, dnsip,
+                char *as = GeoIP_name_by_ipnum(giASN, htonl(dnsip->i));
+                if (as) {
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
+                    free(as);
+                } else
+                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
+                *(sJPtr++) = ',';
+            );
+            sJPtr--; // Remove last comma
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"dnsip\":[");
+        HASH_FORALL_POP_HEAD(i_, session->dnsips, dnsip,
+            sJPtr += snprintf(sJPtr, SJREMAINING, "%u", htonl(dnsip->i));
+            *(sJPtr++) = ',';
+            free(dnsip);
         );
         sJPtr--; // Remove last comma
 

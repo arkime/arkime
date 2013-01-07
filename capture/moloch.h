@@ -112,34 +112,48 @@ typedef struct {
 #define MOLOCH_TAG_HTTP_RESPONSE 2
 #define MOLOCH_TAG_MAX           3
 
+typedef struct moloch_session_http {
+    GPtrArray  *urlArray;
+    GString    *urlString;
+    GString    *hostString;
+    GString    *uaString;
+    GString    *xffString;
+
+    HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
+    HASH_VAR(i_, xffs, MolochIntHead_t, 11);
+
+    char        header[2][40];
+    http_parser parsers[2];
+
+    uint16_t    wParsers:1;
+    uint16_t    inHeader:2;
+    uint16_t    inValue:2;
+    uint16_t    inBody:2;
+} MolochSessionHttp_t;
+
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
     struct moloch_session *h_next, *h_prev;
     int                    h_bucket;
 
+
     HASH_VAR(s_, hosts, MolochStringHead_t, 11);
-    HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
-    HASH_VAR(i_, xffs, MolochIntHead_t, 11);
+    HASH_VAR(i_, dnsips, MolochIntHead_t, 11);
     HASH_VAR(t_, certs, MolochCertsInfoHead_t, 5);
     HASH_VAR(s_, users, MolochStringHead_t, 1);
     HASH_VAR(s_, sshver, MolochStringHead_t, 1);
     HASH_VAR(s_, sshkey, MolochStringHead_t, 1);
 
-    char        header[2][40];
-    http_parser parsers[2];
+
+    MolochSessionHttp_t   *http;
 
     void       *pluginData[MOLOCH_MAX_PLUGINS];
 
 
     GArray     *filePosArray;
     GArray     *fileNumArray;
-    GPtrArray  *urlArray;
-    GString    *urlString;
     char       *rootId;
-    GString    *hostString;
-    GString    *uaString;
-    GString    *xffString;
     GHashTable *tags[MOLOCH_TAG_MAX];
 
     uint64_t    bytes;
@@ -161,11 +175,7 @@ typedef struct moloch_session {
 
     uint8_t     sshCode;
 
-    uint16_t    wParsers:1;
     uint16_t    haveNidsTcp:1;
-    uint16_t    inHeader:2;
-    uint16_t    inValue:2;
-    uint16_t    inBody:2;
     uint16_t    needSave:1;
     uint16_t    dontSave:1;
     uint16_t    which:1;
@@ -301,6 +311,9 @@ void  moloch_nids_exit();
 
 void moloch_nids_incr_outstanding(MolochSession_t *session);
 void moloch_nids_decr_outstanding(MolochSession_t *session);
+
+void moloch_nids_new_session_http(MolochSession_t *session);
+void moloch_nids_free_session_http(MolochSession_t *session);
 
 /******************************************************************************/
 /*

@@ -116,12 +116,14 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     if (ti)
         tagger_add_tags(session, ti->files);
 
+    if (session->http) {
     MolochInt_t *xff;
-    HASH_FORALL(i_, session->xffs, xff, 
-        HASH_FIND(i_, allIps, (void*)(long)xff->i, ti);
-        if (ti)
-            tagger_add_tags(session, ti->files);
-    );
+        HASH_FORALL(i_, session->http->xffs, xff, 
+            HASH_FIND(i_, allIps, (void*)(long)xff->i, ti);
+            if (ti)
+                tagger_add_tags(session, ti->files);
+        );
+    }
 
     MolochString_t *hstring;
     HASH_FORALL(s_, session->hosts, hstring, 

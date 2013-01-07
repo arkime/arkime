@@ -78,7 +78,7 @@ void parse_args(int argc, char **argv)
         config.configFile = g_strdup("/data/moloch/etc/config.ini");
 
     if (showVersion) {
-        printf("moloch-capture %s\n", PACKAGE_VERSION);
+        printf("moloch-capture %s %ld\n", PACKAGE_VERSION, sizeof(MolochSession_t));
         exit(0);
     }
 
