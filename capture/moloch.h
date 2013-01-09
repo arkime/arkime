@@ -35,6 +35,7 @@ typedef struct moloch_config {
     gboolean  debug;
     gboolean  dryRun;
     gboolean  fakePcap;
+    gboolean  copyPcap;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
 
@@ -254,7 +255,7 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
 void  moloch_db_init();
 int   moloch_db_tags_loading();
-char *moloch_db_create_file(time_t firstPacket, uint32_t *id);
+char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id);
 void  moloch_db_save_session(MolochSession_t *session, int final);
 void  moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tag, MolochTag_cb func);
 void  moloch_db_exit();

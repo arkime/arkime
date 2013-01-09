@@ -55,6 +55,7 @@ static int                   dumperFd = -1;
 static char                  dumperBuf[0x1fffff + 4096];
 static uint32_t              dumperId;
 static uint32_t              initialDropped = 0;
+static char                  offlinePcapFilename[PATH_MAX+1];
 
 uint64_t                     totalPackets = 0;
 uint64_t                     totalBytes = 0;
@@ -323,7 +324,7 @@ void moloch_nids_file_create()
         return;
     }
 
-    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, &dumperId);
+    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, &dumperId);
     dumper = pcap_dump_open(nids_params.pcap_desc, pcapFilename);
 
     if (!dumper) {
@@ -342,6 +343,19 @@ void moloch_nids_file_create()
         exit (2);
     }
     lseek(dumperFd, 24, SEEK_SET);
+}
+/******************************************************************************/
+void moloch_nids_file_locked(char *filename)
+{
+    dumperFilePos = 24;
+    dumperFd = 1;
+
+    if (config.dryRun) {
+        pcapFilename = "dryrun.pcap";
+        return;
+    }
+
+    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, &dumperId);
 }
 /******************************************************************************/
 void moloch_nids_file_flush(gboolean all)
@@ -590,30 +604,44 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     }
 
     if (!config.dryRun && !session->dontSave) {
-        /* Save packet to file */
-        if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
-            if (dumperFd > 0 && !config.dryRun)  {
-                moloch_nids_file_flush(TRUE);
-                close(dumperFd);
+        if (config.copyPcap) {
+            /* Save packet to file */
+            if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
+                if (dumperFd > 0 && !config.dryRun)  {
+                    moloch_nids_file_flush(TRUE);
+                    close(dumperFd);
+                }
+                moloch_nids_file_create();
             }
-            moloch_nids_file_create();
-        }
-        uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
-        g_array_append_val(session->filePosArray, val);
-        if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
-            g_array_append_val(session->fileNumArray, dumperId);
-        }
 
-        if (config.fakePcap) {
-            dumperBuf[dumperBufPos] = 'P';
-            dumperBufPos++;
+            uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
+            g_array_append_val(session->filePosArray, val);
+            if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
+                g_array_append_val(session->fileNumArray, dumperId);
+            }
+
+            if (config.fakePcap) {
+                dumperBuf[dumperBufPos] = 'P';
+                dumperBufPos++;
+            } else {
+                moloch_nids_pcap_dump(nids_last_pcap_header, nids_last_pcap_data);
+                dumperFilePos += 16 + nids_last_pcap_header->caplen;
+            }
+
+            if (dumperBufPos > dumperBufMax) {
+                moloch_nids_file_flush(FALSE);
+            }
         } else {
-            moloch_nids_pcap_dump(nids_last_pcap_header, nids_last_pcap_data);
-            dumperFilePos += 16 + nids_last_pcap_header->caplen;
-        }
+            if (dumperFd == -1) {
+                moloch_nids_file_locked(offlinePcapFilename);
+            }
 
-        if (dumperBufPos > dumperBufMax) {
-            moloch_nids_file_flush(FALSE);
+            uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
+            g_array_append_val(session->filePosArray, val);
+            if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
+                g_array_append_val(session->fileNumArray, dumperId);
+            }
+            dumperFilePos += 16 + nids_last_pcap_header->caplen;
         }
 
         if (session->filePosArray->len >= config.maxPackets) {
@@ -1003,6 +1031,10 @@ int moloch_nids_next_file()
         gchar *fullfilename;
         fullfilename = g_build_filename (config.pcapReadDir, filename, NULL);
         LOG ("Processing %s", fullfilename);
+        realpath(fullfilename, offlinePcapFilename);
+        if (!config.copyPcap) {
+            dumperFd = -1;
+        }
 
         errbuf[0] = 0;
         nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
@@ -1024,6 +1056,7 @@ void moloch_nids_root_init()
     }
     else if (config.pcapReadFile) {
         nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
+        realpath(config.pcapReadFile, offlinePcapFilename);
     } else {
 #ifdef SNF
         nids_params.pcap_desc = pcap_open_live(config.interface, 1600, 1, 500, errbuf);
@@ -1126,7 +1159,7 @@ void moloch_nids_exit() {
         moloch_db_save_session(hsession, TRUE);
     );
 
-    if (!config.dryRun) {
+    if (!config.dryRun && config.copyPcap) {
         moloch_nids_file_flush(TRUE);
         close(dumperFd);
     }

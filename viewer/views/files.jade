@@ -5,6 +5,7 @@ table#files(cellpadding="0",cellspacing="0",border="0",class="display",style="ta
       th File Number
       th Node
       th Name
+      th Locked
       th First Date
       th File Size (MB)
   tbody
@@ -17,7 +18,7 @@ script(type='text/javascript')
   $(document).ready(function() {
     filesTable = $('#files').dataTable( {
       "oLanguage": {
-        "sProcessing": "<span class='blink'>I'm Hootin' :D</span>",
+        "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
         "sLengthMenu": "_MENU_"
       },
       "sDom": '<"H"lipr>t<"F"ip>',
@@ -36,6 +37,11 @@ script(type='text/javascript')
         { "mDataProp" : "node"
         },
         { "mDataProp" : "name"
+        },
+        { "mDataProp" : "locked",
+          "fnRender" : function(oObj) {
+            return oObj.aData.locked === 1?true:"false";
+          }
         },
         { "mDataProp" : "first",
           "fnRender" : function(oObj) {

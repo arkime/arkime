@@ -77,6 +77,10 @@ curl -XPUT "http://$ESHOST:9200/files_v1/?pretty=1" -d '
           "type": "long",
           "index": "no"
         },
+        "locked": {
+          "type": "short",
+          "index": "not_analyzed"
+        },
         "last": {
           "type": "long",
           "index": "not_analyzed"

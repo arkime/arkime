@@ -350,7 +350,10 @@ function expireOne (ourInfo, allInfo, minFreeG, pcapDir, nextCb) {
   var query = { fields: [ 'num', 'name', 'first', 'size', 'node' ],
                 from: '0',
                 size: 10,
-                query: { terms: {node: nodes}},
+                query: { bool: {
+                  must:     { terms: {node: nodes}},
+                  must_not: { term: {locked: 1}}
+                }},
                 sort: { num: { order: 'asc' } } };
 
   var done = false;
@@ -570,7 +573,7 @@ app.get('/dstats.json', function(req, res) {
 app.get('/files.json', function(req, res) {
   noCache(req, res);
 
-  var columns = ["num", "node", "name", "first", "size"];
+  var columns = ["num", "node", "name", "locked", "first", "size"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):500);
 
   var query = {fields: columns,
@@ -586,27 +589,30 @@ app.get('/files.json', function(req, res) {
         var i;
 
         if (err || result.error) {
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (i = 0; i < result.hits.hits.length; i++) {
-            result.hits.hits[i].fields.id = result.hits.hits[i]._id;
-            results.results.push(result.hits.hits[i].fields);
-          }
-
-          async.forEach(results.results, function (item, cb) {
-            fs.stat(item.name, function (err, stats) {
-              if (err || !stats) {
-                item.size = -1;
-              } else {
-                item.size = stats.size/1000000.0;
-              }
-              cb(null);
-            });
-          }, function (err) {
-            cb(null, results);
-          });
+          return cb(err || result.error);
         }
+
+        var results = {total: result.hits.total, results: []};
+        for (i = 0; i < result.hits.hits.length; i++) {
+          if (result.hits.hits[i].fields.locked === undefined) {
+            result.hits.hits[i].fields.locked = 0;
+          }
+          result.hits.hits[i].fields.id = result.hits.hits[i]._id;
+          results.results.push(result.hits.hits[i].fields);
+        }
+
+        async.forEach(results.results, function (item, cb) {
+          fs.stat(item.name, function (err, stats) {
+            if (err || !stats) {
+              item.size = -1;
+            } else {
+              item.size = stats.size/1000000.0;
+            }
+            cb(null);
+          });
+        }, function (err) {
+          cb(null, results);
+        });
       });
     },
     total: function (cb) {
@@ -614,6 +620,10 @@ app.get('/files.json', function(req, res) {
     }
   },
   function(err, results) {
+    if (err) {
+      return res.send({total: 0, results: []});
+    }
+
     var r = {sEcho: req.query.sEcho,
              iTotalRecords: results.total,
              iTotalDisplayRecords: results.files.total,
@@ -1356,7 +1366,7 @@ function toHex(input, offsets) {
 
     for (i = 0; i < line.length; i++) {
       if (line[i] <= 32 || line[i]  > 128) {
-        out += "."
+        out += ".";
       } else {
         out += safeStr(line.toString("ascii", i, i+1));
       }
@@ -1364,7 +1374,7 @@ function toHex(input, offsets) {
     out += "\n";
   }
   return out;
-};
+}
 
 function localSessionDetailReturnFull(req, res, session, results) {
   var i;
