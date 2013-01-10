@@ -80,7 +80,7 @@ int moloch_db_tag_cmp(const void *keyv, const void *elementv)
 }
 
 /******************************************************************************/
-int moloch_db_js0n_str(char *str, unsigned char *in)
+int moloch_db_js0n_str(char *str, unsigned char *in, gboolean utf8)
 {
     char *out = str;
 
@@ -120,13 +120,32 @@ int moloch_db_js0n_str(char *str, unsigned char *in)
             *(out++) = '/';
             break;
         default:
-            if(*in < 32)
+            if(*in < 32) {
                 out += sprintf(out, "\\u%04x", *in);
-            else if(*in & 0x80) {
-                *(out++) = (0xc0 | (*in >> 6));
-                *(out++) = (0x80 | (*in & 0x3f));
-            } else
-                *(out++) = *in;
+            } else if (utf8) {
+                if ((*in & 0xf0) == 0xf0) {
+                    *(out++) = *(in++);
+                    *(out++) = *(in++);
+                    *(out++) = *(in++);
+                    *(out++) = *in;
+                } else if ((*in & 0xf0) == 0xe0) {
+                    *(out++) = *(in++);
+                    *(out++) = *(in++);
+                    *(out++) = *in;
+                } else if ((*in & 0xf0) == 0xd0) {
+                    *(out++) = *(in++);
+                    *(out++) = *in;
+                } else {
+                    *(out++) = *in;
+                }
+            } else {
+                if(*in & 0x80) {
+                    *(out++) = (0xc0 | (*in >> 6));
+                    *(out++) = (0x80 | (*in & 0x3f));
+                } else {
+                    *(out++) = *in;
+                }
+            }
             break;
         }
         in++;
@@ -207,7 +226,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         char *as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
         if (as1) {
             sJPtr += snprintf(sJPtr, SJREMAINING, "\"as1\":");
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as1);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as1, TRUE);
             *(sJPtr++) = ',';
             free(as1);
         }
@@ -223,7 +242,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         char *as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
         if (as2) {
             sJPtr += snprintf(sJPtr, SJREMAINING, "\"as2\":");
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as2);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as2, TRUE);
             *(sJPtr++) = ',';
             free(as2);
         }
@@ -253,7 +272,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         for(i = 0; i < session->http->urlArray->len; i++) {
             if (i != 0)
                 *(sJPtr++) = ',';
-            sJPtr += moloch_db_js0n_str(sJPtr, g_ptr_array_index(session->http->urlArray, i));
+            sJPtr += moloch_db_js0n_str(sJPtr, g_ptr_array_index(session->http->urlArray, i), FALSE);
         }
         sJPtr += snprintf(sJPtr, SJREMAINING, "],");
     }
@@ -272,7 +291,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 sJPtr += snprintf(sJPtr, SJREMAINING, "\"iCn\":[");
                 while (certs->issuer.commonName.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
-                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str, string->utf8);
                     *(sJPtr++) = ',';
                     free(string->str);
                     free(string);
@@ -284,7 +303,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
             if (certs->issuer.orgName) {
                 sJPtr += snprintf(sJPtr, SJREMAINING, "\"iOn\":");
-                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->issuer.orgName);
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
                 *(sJPtr++) = ',';
             }
 
@@ -292,7 +311,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 sJPtr += snprintf(sJPtr, SJREMAINING, "\"sCn\":[");
                 while (certs->subject.commonName.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->subject.commonName, string);
-                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str, string->utf8);
                     *(sJPtr++) = ',';
                     free(string->str);
                     free(string);
@@ -304,7 +323,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
             if (certs->subject.orgName) {
                 sJPtr += snprintf(sJPtr, SJREMAINING, "\"sOn\":");
-                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->subject.orgName);
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
                 *(sJPtr++) = ',';
             }
 
@@ -323,7 +342,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 sJPtr += snprintf(sJPtr, SJREMAINING, "\"alt\":[");
                 while (certs->alt.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->alt, string);
-                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str, TRUE);
                     *(sJPtr++) = ',';
                     free(string->str);
                     free(string);
@@ -351,7 +370,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"ho\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->hosts, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, FALSE);
             *(sJPtr++) = ',';
             free(hstring->str);
             free(hstring);
@@ -366,7 +385,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"user\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->users, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, FALSE);
             *(sJPtr++) = ',';
             free(hstring->str);
             free(hstring);
@@ -381,7 +400,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshver\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->sshver, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, TRUE);
             *(sJPtr++) = ',';
             free(hstring->str);
             free(hstring);
@@ -401,7 +420,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshkey\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, TRUE);
             *(sJPtr++) = ',';
             free(hstring->str);
             free(hstring);
@@ -417,7 +436,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         MolochString_t *ustring;
         HASH_FORALL_POP_HEAD(s_, session->http->userAgents, ustring,
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
             *(sJPtr++) = ',';
             free(ustring->str);
             free(ustring);
@@ -452,7 +471,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             HASH_FORALL(i_, session->http->xffs, xff,
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
-                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as, TRUE);
                     free(as);
                 } else
                     sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
@@ -499,7 +518,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             HASH_FORALL(i_, session->dnsips, dnsip,
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(dnsip->i));
                 if (as) {
-                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as);
+                    sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char*)as, TRUE);
                     free(as);
                 } else
                     sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
@@ -1189,6 +1208,7 @@ void moloch_db_init()
             printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoipFile);
             exit(1);
         }
+        GeoIP_set_charset(gi, GEOIP_CHARSET_UTF8);
     }
 
     if (config.geoipASNFile) {
@@ -1197,6 +1217,7 @@ void moloch_db_init()
             printf("Couldn't initialize GeoIP ASN %s from %s", strerror(errno), config.geoipASNFile);
             exit(1);
         }
+        GeoIP_set_charset(giASN, GEOIP_CHARSET_UTF8);
     }
 
     if (!config.dryRun) {

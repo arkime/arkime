@@ -19,6 +19,7 @@ typedef struct moloch_string {
     struct moloch_string *s_next, *s_prev;
     char                 *str;
     short                 s_bucket;
+    char                  utf8;
 } MolochString_t;
 
 typedef struct {
@@ -88,6 +89,7 @@ typedef struct {
 typedef struct {
     MolochStringHead_t  commonName; //2.5.4.3
     char               *orgName; // 2.5.4.10
+    char                orgUtf8;
 } MolochCertInfo_t;
 
 typedef struct moloch_tlsinfo{

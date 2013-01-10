@@ -189,16 +189,28 @@ moloch_detect_tls_certinfo_process(MolochCertInfo_t *ci, unsigned char *data, in
         } else if (atag  == 6)  {
             lastOid = moloch_detect_asn_decode_oid(value, alen);
         } else if (lastOid && (atag == 20 || atag == 19 || atag == 12))  {
+            /* 20 == BER_UNI_TAG_TeletexString
+             * 19 == BER_UNI_TAG_PrintableString
+             * 12 == BER_UNI_TAG_UTF8String
+             */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
                 MolochString_t *element = malloc(sizeof(*element));
-                element->str = g_ascii_strdown((char*)value, alen);
+                element->utf8 = atag == 12;
+                if (element->utf8)
+                    element->str = g_utf8_strdown((char*)value, alen);
+                else
+                    element->str = g_ascii_strdown((char*)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);
             } else if (strcmp(lastOid, "2.5.4.10") == 0) {
                 if (ci->orgName) {
                     LOG("Multiple orgName %s => %.*s", ci->orgName, alen, value);
                     free(ci->orgName);
                 }
-                ci->orgName = g_ascii_strdown((char*)value, alen);
+                ci->orgUtf8 = atag == 12;
+                if (ci->orgUtf8)
+                    ci->orgName = g_utf8_strdown((char*)value, alen);
+                else
+                    ci->orgName = g_ascii_strdown((char*)value, alen);
             }
         }
     }
