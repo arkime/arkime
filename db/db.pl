@@ -659,7 +659,7 @@ sub sessionsUpdate
 
     esPut("/_template/template_1", $template);
 
-    my $status = esGet("/sessions-*/_status");
+    my $status = esGet("/sessions-*/_status", 1);
     foreach my $i (keys %{$status->{indices}}) {
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
     }

@@ -79,7 +79,7 @@ mkdir -p ${TDIR}/bin
 echo "MOLOCH: Downloading and installing elastic search"
 cd ${INSTALL_DIR}/thirdparty
 if [ ! -f "elasticsearch-${ES}.tar.gz" ]; then
-  wget https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-${ES}.tar.gz
+  wget http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ES}.tar.gz
 fi
 
 cd ${TDIR}
@@ -116,8 +116,11 @@ gunzip GeoIPASNum.dat.gz
 
 
 
+echo "MOLOCH: Installing"
+cd ${INSTALL_DIR}
+make install
+
 echo "MOLOCH: Copying single-host config files"
-cp ${INSTALL_DIR}/capture/moloch-capture ${TDIR}/bin/
 cp ${INSTALL_DIR}/single-host/etc/* ${TDIR}/etc
 cat ${INSTALL_DIR}/single-host/etc/elasticsearch.yml | sed -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/elasticsearch.yml
 
@@ -146,7 +149,6 @@ ${TDIR}/bin/run_es.sh
 sleep 10
 
 echo "MOLOCH: Building database"
-cat ${INSTALL_DIR}/db/sessions.json | sed -e 's/_CHANGE_ME_TO_NUMBER_OF_NODES_/1/g'  > ${TDIR}/db/sessions.json
 cd ${TDIR}/db
 ./db.pl localhost:9200 init
 

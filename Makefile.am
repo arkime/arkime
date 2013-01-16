@@ -1,1 +1,1 @@
-SUBDIRS = capture capture/plugins db
+SUBDIRS = capture capture/plugins db viewer
