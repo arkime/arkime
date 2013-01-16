@@ -430,10 +430,14 @@ void moloch_nids_new_session_http(MolochSession_t *session)
     session->http->urlArray = g_ptr_array_new_with_free_func(g_free);
 }
 /******************************************************************************/
-void moloch_nids_free_session_http(MolochSession_t *session)
+void moloch_nids_free_session_http(MolochSession_t *session, gboolean conditionally)
 {
     MolochString_t *string;
     MolochInt_t    *mi;
+
+    if (conditionally && (session->http->urlArray->len > 0 || HASH_COUNT(s_, session->http->userAgents) > 0 || HASH_COUNT(i_, session->http->xffs) > 0)) {
+        return;
+    }
 
     g_ptr_array_free(session->http->urlArray, TRUE);
 
@@ -528,7 +532,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
           totalPackets, 
           sessionsQ->q_count, 
           HASH_COUNT(h_, sessions),
-          (int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket + sessionTimeout)),
+          (int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket.tv_sec + sessionTimeout)),
           ps.ps_recv, 
           ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*100.0/ps.ps_recv,
           ps.ps_ifdrop,
@@ -554,7 +558,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         HASH_INIT(i_, session->dnsips, moloch_int_hash, moloch_int_cmp);
         HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
         HASH_ADD(h_, sessions, sessionId, session);
-        session->lastSave = session->firstPacket = nids_last_pcap_header->ts.tv_sec;
+        session->lastSave = nids_last_pcap_header->ts.tv_sec;
+        session->firstPacket = nids_last_pcap_header->ts;
         session->addr1 = packet->ip_src.s_addr;
         session->addr2 = packet->ip_dst.s_addr;
 
@@ -593,7 +598,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     }
 
     session->bytes += len;
-    session->lastPacket = nids_last_pcap_header->ts.tv_sec;
+    session->lastPacket = nids_last_pcap_header->ts;
 
     if (pluginsCbs & MOLOCH_PLUGIN_IP)
         moloch_plugins_cb_ip(session, packet, len);
@@ -651,11 +656,11 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     /* Clean up the Q, only 1 per incoming packet so we don't fall behind */
     if ((headSession = DLL_PEEK_HEAD(q_, sessionsQ)) &&
-           (headSession->lastPacket + sessionTimeout < nids_last_pcap_header->ts.tv_sec)) {
+           (headSession->lastPacket.tv_sec + sessionTimeout < nids_last_pcap_header->ts.tv_sec)) {
 
         if (packet->ip_p == IPPROTO_TCP && headSession->haveNidsTcp) {
             //LOG("Saving because of at head %s", moloch_friendly_session_id(headSession->protocol, headSession->addr1, headSession->port1, headSession->addr2, headSession->port2));
-            headSession->lastPacket = nids_last_pcap_header->ts.tv_sec;
+            headSession->lastPacket.tv_sec = nids_last_pcap_header->ts.tv_sec;
 
             DLL_REMOVE(q_, sessionsQ, headSession);
             DLL_PUSH_TAIL(q_, sessionsQ, headSession);
@@ -820,7 +825,7 @@ void moloch_nids_session_free (MolochSession_t *session)
     g_array_free(session->fileNumArray, TRUE);
 
     if (session->http) {
-        moloch_nids_free_session_http(session);
+        moloch_nids_free_session_http(session, FALSE);
     }
 
     HASH_FORALL_POP_HEAD(s_, session->hosts, string, 

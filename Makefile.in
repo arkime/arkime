@@ -48,7 +48,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/capture/molochconfig.h
 CONFIG_CLEAN_FILES = capture/Makefile capture/plugins/Makefile \
-	viewer/version.js
+	db/Makefile viewer/version.js
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -156,7 +156,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-SUBDIRS = capture capture/plugins
+SUBDIRS = capture capture/plugins db viewer
 all: all-recursive
 
 .SUFFIXES:
@@ -215,6 +215,8 @@ capture/Makefile: $(top_builddir)/config.status $(top_srcdir)/capture/Makefile.i
 capture/plugins/Makefile: $(top_builddir)/config.status $(top_srcdir)/capture/plugins/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 capture/plugins/Makefile: $(top_builddir)/config.status $(top_srcdir)/capture/plugins/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+db/Makefile: $(top_builddir)/config.status $(top_srcdir)/db/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 viewer/version.js: $(top_builddir)/config.status $(top_srcdir)/viewer/version.js.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -355,7 +357,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/capture $(distdir)/capture/plugins $(distdir)/viewer
+	$(mkdir_p) $(distdir)/capture $(distdir)/capture/plugins $(distdir)/db $(distdir)/viewer
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

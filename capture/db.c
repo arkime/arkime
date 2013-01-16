@@ -32,6 +32,8 @@
 #include "moloch.h"
 #include "GeoIP.h"
 
+#define MOLOCH_MIN_DB_VERSION 1
+
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
 extern uint64_t       totalSessions;
@@ -187,8 +189,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     static char     prefix[100];
     static time_t   prefix_time = 0;
 
-    if (prefix_time != session->lastPacket) {
-        prefix_time = session->lastPacket;
+    if (prefix_time != session->lastPacket.tv_sec) {
+        prefix_time = session->lastPacket.tv_sec;
         struct tm *tmp = gmtime(&prefix_time);
 
         snprintf(prefix, sizeof(prefix), "%02d%02d%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
@@ -213,10 +215,22 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     sJPtr += snprintf(sJPtr, SJREMAINING, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
-    sJPtr += snprintf(sJPtr, SJREMAINING, "{");
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"fp\":%u,", session->firstPacket);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"lp\":%u,", session->lastPacket);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"a1\":%u,", htonl(session->addr1));
+    sJPtr += snprintf(sJPtr, SJREMAINING, 
+                      "{\"fp\":%u,"
+                      "\"lp\":%u,"
+                      "\"a1\":%u,"
+                      "\"p1\":%u,"
+                      "\"a2\":%u,"
+                      "\"p2\":%u,"
+                      "\"pr\":%u,",
+                      (uint32_t)session->firstPacket.tv_sec,
+                      (uint32_t)session->lastPacket.tv_sec,
+                      htonl(session->addr1),
+                      session->port1,
+                      htonl(session->addr2),
+                      session->port2,
+                      session->protocol);
+
     if (gi) {
         const char *g1 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr1));
         if (g1)
@@ -231,8 +245,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             free(as1);
         }
     }
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"p1\":%u,", session->port1);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"a2\":%u,", htonl(session->addr2));
     if (gi) {
         const char *g2 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
         if (g2)
@@ -247,12 +259,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             free(as2);
         }
     }
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"p2\":%u,", session->port2);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"pr\":%u,", session->protocol);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"pa\":%u,", session->filePosArray->len);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"by\":%lu,", session->bytes);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"db\":%lu,", session->databytes);
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"no\":\"%s\",", config.nodeName);
+
+    sJPtr += snprintf(sJPtr, SJREMAINING, 
+                      "\"pa\":%u,"
+                      "\"by\":%lu,"
+                      "\"db\":%lu,"
+                      "\"no\":\"%s\",",
+                      session->filePosArray->len,
+                      session->bytes,
+                      session->databytes,
+                      config.nodeName);
+    
     if (session->rootId) {
         if (session->rootId[0] == 'R')
             session->rootId = g_strdup(id);
@@ -932,6 +949,34 @@ void moloch_db_check()
     int                key_len;
     unsigned char     *data;
 
+    key_len = snprintf(key, sizeof(key), "/dstats/version/version");
+    data = moloch_http_get(esServer, key, key_len, &datalen);
+
+    if (!data) {
+        LOG("ERROR - Couldn't load version information, database might out down or out of date.  Run \"db/db.pl host:port update\"");
+        exit(1);
+    }
+
+    uint32_t           source_len;
+    unsigned char     *source = 0;
+
+    source = moloch_js0n_get(data, datalen, "_source", &source_len);
+
+    if (!source) {
+        LOG("ERROR - Couldn't load version information, database might out down or out of date.  Run \"db/db.pl host:port update\"");
+        exit(1);
+    }
+
+    uint32_t           version_len;
+    unsigned char     *version = 0;
+
+    version = moloch_js0n_get(source, source_len, "version", &version_len);
+
+    if (atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
+        LOG("ERROR - Database version (%.*s) too old, needs to be at least (%d), run \"db/db.pl host:port update\"", version_len, version, MOLOCH_MIN_DB_VERSION);
+        exit(1);
+    }
+
     key_len = snprintf(key, sizeof(key), "/tags_v2/_aliases");
     data = moloch_http_get(esServer, key, key_len, &datalen);
 
@@ -941,11 +986,11 @@ void moloch_db_check()
     }
 
     if (strcmp((char *)data, "{\"tags_v2\":{\"aliases\":{\"tags\":{}}}}") != 0) {
-        LOG("ERROR - No tags_v2, run db/init.sh >%s<", data);
+        LOG("ERROR - No tags_v2, run db/db.pl >%s<", data);
         exit(1);
     }
 
-    key_len = snprintf(key, sizeof(key), "/files_v1/_aliases");
+    key_len = snprintf(key, sizeof(key), "/files_v2/_aliases");
     data = moloch_http_get(esServer, key, key_len, &datalen);
 
     if (!data) {
@@ -953,8 +998,8 @@ void moloch_db_check()
         exit(1);
     }
 
-    if (strcmp((char *)data, "{\"files_v1\":{\"aliases\":{\"files\":{}}}}") != 0) {
-        LOG("ERROR - No files_v1, run db/init.sh >%s<", data);
+    if (strcmp((char *)data, "{\"files_v2\":{\"aliases\":{\"files\":{}}}}") != 0) {
+        LOG("ERROR - No files_v2, run db/db.pl >%s<", data);
         exit(1);
     }
 
@@ -967,7 +1012,7 @@ void moloch_db_check()
     }
 
     if (strcmp((char *)data, "{\"sequence\":{\"sequence\":{\"enabled\":false,\"_all\":{\"enabled\":false},\"_source\":{\"enabled\":false},\"_type\":{\"index\":\"no\"},\"properties\":{}}}}") != 0) {
-        LOG("ERROR - Sequence mapping is busted, run db/init.sh >%s<", data);
+        LOG("ERROR - Sequence mapping is busted, run db/db.pl >%s<", data);
         exit(1);
     }
 

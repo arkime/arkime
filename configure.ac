@@ -8,6 +8,8 @@ AC_CONFIG_FILES([
   Makefile
   capture/Makefile
   capture/plugins/Makefile
+  db/Makefile
+  viewer/Makefile
   viewer/version.js
 ])
 

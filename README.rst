@@ -114,8 +114,8 @@ Tested with **0.19.12** as of **2012-12-10**
 9. Use ``elasticsearch-head`` to look at your cluster and make sure it is
    **GREEN**.
 
-10. Inside the *installed* ``$MOLOCH_PREFIX/db`` directory, edit the
-    ``sessions.json`` file and run the ``init.sh A_ES_HOSTNAME`` script.
+10. Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
+    ``db.pl A_ES_HOSTNAME init`` script.
 
 11. Check ``elasticsearch-head`` again and make sure it is still **GREEN** and
     now you should see some of the indexes.
@@ -129,7 +129,7 @@ Building Capture
 
    - CentOS::
 
-        yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel
+        yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel perl-JSON
 
    - Ubuntu::
     

@@ -1,0 +1,16 @@
+mkdir_p = @mkdir_p@
+INSTALL = @INSTALL@
+VIEWERDIR = @prefix@/viewer
+CP = cp
+
+
+all:
+
+install:
+	test -z "$(VIEWERDIR)" || $(mkdir_p) "$(VIEWERDIR)"
+	$(INSTALL) *.js package.json $(VIEWERDIR)
+	$(CP) -dpr views public $(VIEWERDIR)
+	(cd $(VIEWERDIR) ; npm install)
+
+distclean realclean clean:
+	rm -rf node_modules

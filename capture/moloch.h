@@ -128,7 +128,7 @@ typedef struct moloch_session_http {
     char        header[2][40];
     http_parser parsers[2];
 
-    uint16_t    wParsers:1;
+    uint16_t    wParsers:2;
     uint16_t    inHeader:2;
     uint16_t    inValue:2;
     uint16_t    inBody:2;
@@ -159,12 +159,13 @@ typedef struct moloch_session {
     char       *rootId;
     GHashTable *tags[MOLOCH_TAG_MAX];
 
+    struct timeval firstPacket;
+    struct timeval lastPacket;
+
     uint64_t    bytes;
     uint64_t    databytes;
 
 
-    uint32_t    firstPacket;
-    uint32_t    lastPacket;
     uint32_t    lastSave;
     uint32_t    addr1;
     uint32_t    addr2;
@@ -316,7 +317,7 @@ void moloch_nids_incr_outstanding(MolochSession_t *session);
 void moloch_nids_decr_outstanding(MolochSession_t *session);
 
 void moloch_nids_new_session_http(MolochSession_t *session);
-void moloch_nids_free_session_http(MolochSession_t *session);
+void moloch_nids_free_session_http(MolochSession_t *session, gboolean conditionally);
 
 /******************************************************************************/
 /*

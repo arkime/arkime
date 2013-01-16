@@ -18,3 +18,6 @@ all:
 install:
 	test -z "$(PLUGINDIR)" || $(mkdir_p) "$(PLUGINDIR)"
 	$(INSTALL) *.so $(PLUGINDIR)
+
+distclean realclean clean:
+	rm -f *.o *.so

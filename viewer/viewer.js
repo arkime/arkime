@@ -20,6 +20,8 @@
 */
 "use strict";
 
+var MIN_DB_VERSION = 1;
+
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
 var Config         = require('./config.js'),
@@ -197,10 +199,24 @@ function dbCheck() {
   ["stats", "dstats", "tags", "sequence", "files", "users"].forEach(function(index) {
     Db.status(index, function(err, status) {
       if (err || status.error) {
-        console.log("ERROR - Issue with index '" + index + "' make sure db/init.sh <eshost> has been run", err, status);
+        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
         process.exit(1);
       }
     });
+  });
+
+  Db.get("dstats", "version", "version", function(err, doc) {
+    var version;
+    if (!doc.exists) {
+      version = 0;
+    } else {
+      version = doc._source.version;
+    }
+
+    if (version < MIN_DB_VERSION) {
+        console.log("ERROR - Current database version (" + version + ") is less then required version (" + MIN_DB_VERSION + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
+        process.exit(1);
+    }
   });
 
   if (Config.get("passwordSecret")) {
@@ -452,9 +468,16 @@ function addSortToQuery(query, info, d) {
     }
 
     var obj = {};
-    obj[info["mDataProp_" + info["iSortCol_" + i]]] = {order: info["sSortDir_" + i]};
+    var field = info["mDataProp_" + info["iSortCol_" + i]];
+    obj[field] = {order: info["sSortDir_" + i]};
     query.sort.push(obj);
+    if (field === "fp") {
+      query.sort.push({fpms: {order: info["sSortDir_" + i]}});
+    } else if (field === "lp") {
+      query.sort.push({lpms: {order: info["sSortDir_" + i]}});
+    }
   }
+  console.log(query.sort);
 }
 
 function noCache(req, res) {

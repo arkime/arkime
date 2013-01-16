@@ -127,16 +127,10 @@ cat ${INSTALL_DIR}/single-host/bin/run_viewer.sh | sed -e "s,_TDIR_,${TDIR},g" >
 chmod 755 ${TDIR}/bin/run*.sh
 
 
-cp -Rp ${INSTALL_DIR}/viewer ${TDIR}/
-cp -Rp ${INSTALL_DIR}/db ${TDIR}/
 cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,localhost:9200,g" > ${TDIR}/db/daily.sh
 
 
-echo "MOLOCH: Running npm install"
-cd ${TDIR}/viewer
-${TDIR}/bin/npm install
-chmod a+w public
-
+chown daemon:daemon ${TDIR}/viewer/public
 chown daemon:daemon ${TDIR}/raw
 
 echo "MOLOCH: Running config script"
@@ -154,9 +148,7 @@ sleep 10
 echo "MOLOCH: Building database"
 cat ${INSTALL_DIR}/db/sessions.json | sed -e 's/_CHANGE_ME_TO_NUMBER_OF_NODES_/1/g'  > ${TDIR}/db/sessions.json
 cd ${TDIR}/db
-./init.sh localhost
-
-sleep 1
+./db.pl localhost:9200 init
 
 
 echo "MOLOCH: Adding user admin/admin"

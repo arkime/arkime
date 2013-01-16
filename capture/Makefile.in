@@ -53,3 +53,6 @@ thirdparty/http_parser.o: thirdparty/http_parser.c
 
 install:
 	$(INSTALL) moloch-capture $(bindir)
+
+distclean realclean clean:
+	rm -f *.o moloch-capture

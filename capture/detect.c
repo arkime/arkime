@@ -36,6 +36,8 @@
 #include "magic.h"
 #include "moloch.h"
 
+//#define HTTPDEBUG
+
 /******************************************************************************/
 extern MolochConfig_t        config;
 extern gchar               **extraTags;
@@ -465,15 +467,22 @@ void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSE
 /******************************************************************************/
 void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
 {
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: enter %d", session->which);
+#endif
+
     if (!session->http) {
         if (hlf->offset == 0) {
             moloch_nids_new_session_http(session);
-            http_parser_init(&session->http->parsers[session->which], HTTP_BOTH);
-            session->http->wParsers |= (1 << session->which);
-            session->http->parsers[session->which].data = session;
+            http_parser_init(&session->http->parsers[0], HTTP_BOTH);
+            http_parser_init(&session->http->parsers[1], HTTP_BOTH);
+            session->http->wParsers = 3;
+            session->http->parsers[0].data = session;
+            session->http->parsers[1].data = session;
         }
-        else
+        else {
             return;
+        }
     } else if ((session->http->wParsers & (1 << session->which)) == 0) {
         return;
     }
@@ -483,10 +492,13 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
 
     while (remaining > 0) {
         int len = http_parser_execute(&session->http->parsers[session->which], &parserSettings, data, remaining);
+#ifdef HTTPDEBUG
+            LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, session->http->parsers[session->which].http_errno);
+#endif
         if (len <= 0) {
             session->http->wParsers &= ~(1 << session->which);
             if (session->http->wParsers) {
-                moloch_nids_free_session_http(session);
+                moloch_nids_free_session_http(session, TRUE);
             }
             break;
         }
@@ -549,6 +561,10 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
 
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which: %d", session->which);
+#endif
+
     session->http->inHeader &= ~(1 << session->which);
     session->http->inValue  &= ~(1 << session->which);
     session->http->inBody   &= ~(1 << session->which);
@@ -563,6 +579,10 @@ int
 moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
 {
     MolochSession_t *session = parser->data;
+
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which:%d url %.*s", session->which, (int)length, at);
+#endif
 
     if (!session->http->urlString)
         session->http->urlString = g_string_new_len(at, length);
@@ -591,6 +611,10 @@ int
 moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 {
     MolochSession_t *session = parser->data;
+
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which: %d", session->which);
+#endif
 
     if (!(session->http->inBody & (1 << session->which))) {
         if (moloch_memstr(at, length, "password=", 9)) {
@@ -621,6 +645,10 @@ int
 moloch_hp_cb_on_message_complete (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
+
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which: %d", session->which);
+#endif
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMC)
         moloch_plugins_cb_hp_omc(session, parser);
@@ -760,6 +788,10 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
 {
     MolochSession_t *session = parser->data;
 
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which: %d field: %.*s", session->which, (int)length, at);
+#endif
+
     if ((session->http->inHeader & (1 << session->which)) == 0) {
         session->http->inValue |= (1 << session->which);
         if (session->http->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
@@ -786,6 +818,10 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 {
     MolochSession_t *session = parser->data;
     char header[200];
+
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which: %d value: %.*s", session->which, (int)length, at);
+#endif
 
     if ((session->http->inValue & (1 << session->which)) == 0) {
         session->http->inValue |= (1 << session->which);
@@ -827,6 +863,10 @@ int
 moloch_hp_cb_on_headers_complete (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
+
+#ifdef HTTPDEBUG
+    LOG("HTTPDEBUG: which: %d", session->which);
+#endif
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
         moloch_plugins_cb_hp_ohc(session, parser);

@@ -35,7 +35,7 @@ case 16:this.$ = 'uscnt'
 break;
 case 17:this.$ = 'tlscnt'
 break;
-case 18:this.$ = 'xffcnt'
+case 18:this.$ = 'xffscnt'
 break;
 case 19:this.$ = 'dnsipcnt'
 break;
