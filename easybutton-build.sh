@@ -23,7 +23,7 @@ if [ -f "/etc/redhat-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  apt-get install curl git libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make
+  apt-get install curl git libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl
 fi
 
 
