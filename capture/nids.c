@@ -54,6 +54,7 @@ static int                   dumperBufMax = 0;
 static int                   dumperFd = -1;
 static char                  dumperBuf[0x1fffff + 4096];
 static uint32_t              dumperId;
+static FILE                 *offlineFile = 0;
 static uint32_t              initialDropped = 0;
 static char                  offlinePcapFilename[PATH_MAX+1];
 
@@ -641,12 +642,12 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
                 moloch_nids_file_locked(offlinePcapFilename);
             }
 
+            dumperFilePos = ftell(offlineFile) - 16 - nids_last_pcap_header->caplen;
             uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
             g_array_append_val(session->filePosArray, val);
             if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
                 g_array_append_val(session->fileNumArray, dumperId);
             }
-            dumperFilePos += 16 + nids_last_pcap_header->caplen;
         }
 
         if (session->filePosArray->len >= config.maxPackets) {
@@ -1043,6 +1044,7 @@ int moloch_nids_next_file()
 
         errbuf[0] = 0;
         nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
+        offlineFile = pcap_file(nids_params.pcap_desc);
         if (!nids_params.pcap_desc) {
             LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
             nids_params.pcap_desc = (void *)0x01; /* Stop lib nids from freeing desc, crazy */
@@ -1061,6 +1063,7 @@ void moloch_nids_root_init()
     }
     else if (config.pcapReadFile) {
         nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
+        offlineFile = pcap_file(nids_params.pcap_desc);
         realpath(config.pcapReadFile, offlinePcapFilename);
     } else {
 #ifdef SNF
