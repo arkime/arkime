@@ -9,6 +9,7 @@ table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="ta
       th Admin?
       th Web Interface?
       th Web Auth Header?
+      th Email Search?
       th Actions
   tbody
 br
@@ -40,6 +41,9 @@ form#addUser
   br
   label(for='headerAuthEnabled') Web Auth Header:
   input(type='checkbox', id='headerAuthEnabled', name='headerAuthEnabled')
+  br
+  label(for='emailSearch') Allow Email Searches:
+  input(type='checkbox', id='emailSearch', name='emailSearch')
   br
   button#create create
 
@@ -99,6 +103,11 @@ script(type='text/javascript')
             return "<input type='checkbox' id='" + oObj.aData.userId +"-headerAuthEnabled' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
           }
         },
+        { "mDataProp" : "emailSearch",
+          "fnRender" : function(oObj) {
+            return "<input type='checkbox' id='" + oObj.aData.userId +"-emailSearch' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
+          }
+        },
         { "mDataProp" : null,
           "bSortable" : false,
           "fnRender" : function(oObj) {
@@ -120,6 +129,7 @@ script(type='text/javascript')
           "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
           "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
           "&headerAuthEnabled=" + $("#" + aData.userId  + "-headerAuthEnabled").is(':checked') +
+          "&emailSearch=" + $("#" + aData.userId  + "-emailSearch").is(':checked') +
           "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
         "success": function(data) {
           if (!data.success) {

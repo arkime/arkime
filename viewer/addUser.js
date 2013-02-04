@@ -30,7 +30,7 @@ var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
 Db.initialize({host : escInfo[0], port: escInfo[1]});
 
 if (process.argv.length < 4) {
-  console.log("addUser.js <user id> <user friendly name> <password> [-noweb] [-admin]");
+  console.log("addUser.js <user id> <user friendly name> <password> [-noweb] [-admin] [-email]");
   process.exit(0);
 }
 
@@ -40,6 +40,7 @@ var nuser = {
   passStore: Config.pass2store(process.argv[2], process.argv[4]),
   enabled: true,
   webEnabled: true,
+  emailSearch: false,
   createEnabled: false
 };
 
@@ -50,6 +51,9 @@ for (i = 0; i < process.argv.length; i++) {
   }
   if (process.argv[i] === "-noweb") {
     nuser.webEnabled = false;
+  }
+  if (process.argv[i] === "-email") {
+    nuser.emailSearch = true;
   }
 }
 

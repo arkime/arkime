@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 1;
+var MIN_DB_VERSION = 2;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -125,6 +125,7 @@ app.configure(function() {
           if (!suser || !suser.exists) {return res.end(obj.user + " doesn't exist");}
           if (!suser._source.enabled) {return res.end(obj.user + " not enabled");}
           req.user = suser._source;
+          if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
           return next();
         });
         return;
@@ -139,6 +140,7 @@ app.configure(function() {
           if (!suser._source.enabled) {return res.end(userName + " not enabled");}
           if (!suser._source.headerAuthEnabled) {return res.end(userName + " header auth not enabled");}
           req.user = suser._source;
+          if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
           return next();
         });
         return;
@@ -159,7 +161,7 @@ app.configure(function() {
   } else {
     /* Shared password isn't set, who cares about auth */
     app.use(function(req, res, next) {
-      req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false};
+      req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true};
       next();
     });
   }
@@ -656,7 +658,7 @@ app.get('/files.json', function(req, res) {
 });
 
 app.post('/users.json', function(req, res) {
-  var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled"];
+  var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
   var query = {fields: fields,
@@ -678,6 +680,8 @@ app.post('/users.json', function(req, res) {
           for (i = 0; i < result.hits.hits.length; i++) {
             result.hits.hits[i].fields.id = result.hits.hits[i]._id;
             result.hits.hits[i].fields.expression = result.hits.hits[i].fields.expression || "";
+            result.hits.hits[i].fields.headerAuthEnabled = result.hits.hits[i].fields.headerAuthEnabled || false;
+            result.hits.hits[i].fields.emailSearch = result.hits.hits[i].fields.emailSearch || false;
             results.results.push(result.hits.hits[i].fields);
           }
           cb(null, results);
@@ -839,6 +843,7 @@ function buildSessionQuery(req, buildCb) {
   addSortToQuery(query, req.query, "fp");
 
   var err = null;
+  molochparser.parser.yy = {emailSearch: req.user.emailSearch === true};
   if (req.query.expression) {
     try {
       query.query.filtered.filter = molochparser.parse(req.query.expression);
@@ -847,6 +852,8 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
+  // Expression was set by admin, so assume email search ok
+  molochparser.parser.yy = {emailSearch: true};
   if (req.user.expression && req.user.expression.length > 0) {
     try {
       var userExpression = molochparser.parse(req.user.expression);
@@ -2042,6 +2049,7 @@ app.post('/addUser', function(req, res) {
       passStore: Config.pass2store(req.body.userId, req.body.password),
       enabled: req.body.enabled  === "on",
       webEnabled: req.body.webEnabled  === "on",
+      emailSearch: req.body.emailSearch  === "on",
       headerAuthEnabled: req.body.headerAuthEnabled === "on",
       createEnabled: req.body.createEnabled === "on"
     };
@@ -2087,6 +2095,10 @@ app.post('/updateUser/:userId', function(req, res) {
 
     if (req.query.webEnabled) {
       user.webEnabled = req.query.webEnabled === "true";
+    }
+
+    if (req.query.emailSearch) {
+      user.emailSearch = req.query.emailSearch === "true";
     }
 
     if (req.query.headerAuthEnabled) {

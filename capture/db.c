@@ -32,7 +32,7 @@
 #include "moloch.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 1
+#define MOLOCH_MIN_DB_VERSION 2
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -310,7 +310,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str, string->utf8);
                     *(sJPtr++) = ',';
-                    free(string->str);
+                    g_free(string->str);
                     free(string);
                 }
                 sJPtr--; // Remove last comma
@@ -330,7 +330,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     DLL_POP_HEAD(s_, &certs->subject.commonName, string);
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str, string->utf8);
                     *(sJPtr++) = ',';
-                    free(string->str);
+                    g_free(string->str);
                     free(string);
                 }
                 sJPtr--; // Remove last comma
@@ -361,7 +361,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     DLL_POP_HEAD(s_, &certs->alt, string);
                     sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)string->str, TRUE);
                     *(sJPtr++) = ',';
-                    free(string->str);
+                    g_free(string->str);
                     free(string);
                 }
                 sJPtr--; // Remove last comma
@@ -389,7 +389,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         HASH_FORALL_POP_HEAD(s_, session->hosts, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, FALSE);
             *(sJPtr++) = ',';
-            free(hstring->str);
+            g_free(hstring->str);
             free(hstring);
         );
         sJPtr--; // Remove last comma
@@ -404,7 +404,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         HASH_FORALL_POP_HEAD(s_, session->users, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, FALSE);
             *(sJPtr++) = ',';
-            free(hstring->str);
+            g_free(hstring->str);
             free(hstring);
         );
         sJPtr--; // Remove last comma
@@ -417,9 +417,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshver\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->sshver, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, TRUE);
+            sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, FALSE);
             *(sJPtr++) = ',';
-            free(hstring->str);
+            g_free(hstring->str);
             free(hstring);
         );
         sJPtr--; // Remove last comma
@@ -439,7 +439,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)hstring->str, TRUE);
             *(sJPtr++) = ',';
-            free(hstring->str);
+            g_free(hstring->str);
             free(hstring);
         );
         sJPtr--; // Remove last comma
@@ -455,7 +455,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         HASH_FORALL_POP_HEAD(s_, session->http->userAgents, ustring,
             sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
             *(sJPtr++) = ',';
-            free(ustring->str);
+            g_free(ustring->str);
             free(ustring);
         );
         sJPtr--; // Remove last comma
@@ -601,7 +601,141 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         else
             sJPtr += snprintf(sJPtr, SJREMAINING, ",%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
     }
-    sJPtr += snprintf(sJPtr, SJREMAINING, "]");
+    sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+
+
+    if (session->email) {
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"euacnt\":%d,", HASH_COUNT(t_, session->email->userAgents));
+        if (HASH_COUNT(s_, session->email->userAgents)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"eua\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->userAgents, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+            sJPtr--; // Remove last comma
+
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"esrccnt\":%d,", HASH_COUNT(t_, session->email->src));
+        if (HASH_COUNT(s_, session->email->src)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"esrc\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->src, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+            sJPtr--; // Remove last comma
+
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"edstcnt\":%d,", HASH_COUNT(t_, session->email->dst));
+        if (HASH_COUNT(s_, session->email->dst)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"edst\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->dst, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+            sJPtr--; // Remove last comma
+
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"esubcnt\":%d,", HASH_COUNT(t_, session->email->subject));
+        if (HASH_COUNT(s_, session->email->subject)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"esub\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->subject, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+            sJPtr--; // Remove last comma
+
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"eidcnt\":%d,", HASH_COUNT(t_, session->email->ids));
+        if (HASH_COUNT(s_, session->email->ids)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"eid\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->ids, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+            sJPtr--; // Remove last comma
+
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"ectcnt\":%d,", HASH_COUNT(t_, session->email->contentTypes));
+        if (HASH_COUNT(s_, session->email->contentTypes)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"ect\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->contentTypes, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+            sJPtr--; // Remove last comma
+
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"emvcnt\":%d,", HASH_COUNT(t_, session->email->mimeVersions));
+        if (HASH_COUNT(s_, session->email->mimeVersions)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"emv\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->mimeVersions, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+
+            sJPtr--; // Remove last comma
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"efncnt\":%d,", HASH_COUNT(t_, session->email->filenames));
+        if (HASH_COUNT(s_, session->email->filenames)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"efn\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->filenames, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+
+            sJPtr--; // Remove last comma
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+    }
+
+    sJPtr--; // Remove last comma
     sJPtr += snprintf(sJPtr, SJREMAINING, "}\n");
 
     if (sJPtr - sJson >= MOLOCH_HTTP_BUFFER_SIZE_L) {

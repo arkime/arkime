@@ -40,7 +40,7 @@ gchar  **extraTags      = NULL;
 
 static GOptionEntry entries[] =
 {
-    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,     &config.configFile,  "Config file name, default './config.ini'", NULL },
+    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,     &config.configFile,  "Config file name, default '/data/moloch/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadFile,"Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadDir, "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,       &config.nodeName,    "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
@@ -164,6 +164,24 @@ char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key)
     if (!value)
         return NULL;
     return g_strndup((gchar*)value, value_len);
+}
+/******************************************************************************/
+gboolean moloch_string_add(MolochStringHash_t *hash, char *string, gboolean copy)
+{
+    MolochString_t *hstring;
+
+    HASH_FIND(s_, *hash, string, hstring);
+    if (hstring)
+        return FALSE;
+
+    hstring = malloc(sizeof(*hstring));
+    if (copy) {
+        hstring->str = g_strdup(string);
+    } else {
+        hstring->str = string;
+    }
+    HASH_ADD(s_, *hash, hstring->str, hstring);
+    return TRUE;
 }
 /******************************************************************************/
 uint32_t moloch_string_hash(const void *key)

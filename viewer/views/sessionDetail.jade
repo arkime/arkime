@@ -158,6 +158,47 @@ div(id='sessionDetail#{session.id}')
       each ver in session.sshver
           a(href='#', onclick='return addExpression("ssh.ver == \\\"#{ver}\\\"");') #{ver}
           | 
+  if (user.emailSearch)
+    if (session.esub)
+      div Email Subjects: 
+        each i in session.esub
+            a(href='#', onclick='return addExpression("email.subject == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.esrc)
+      div Email Senders: 
+        each i in session.esrc
+            a(href='#', onclick='return addExpression("email.src == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.edst)
+      div Email Destinations: 
+        each i in session.edst
+            a(href='#', onclick='return addExpression("email.dst == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.eua)
+      div Email User Agents: 
+        each i in session.eua
+            a(href='#', onclick='return addExpression("email.ua == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.eid)
+      div Email Message Ids: 
+        each i in session.eid
+            a(href='#', onclick='return addExpression("email.id == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.emv)
+      div Email Mime Versions: 
+        each i in session.emv
+            a(href='#', onclick='return addExpression("email.mv == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.ect)
+      div Email Content Types: 
+        each i in session.ect
+            a(href='#', onclick='return addExpression("email.ct == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.efn)
+      div Email Filenames: 
+        each i in session.efn
+            a(href='#', onclick='return addExpression("email.fn == \\\"#{i}\\\"");') #{i}
+            | 
   hr
   div
     if (session.pa > 200)

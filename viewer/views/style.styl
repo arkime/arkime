@@ -155,8 +155,15 @@ body
 #search, #export
   height: auto
 
+
+//From http://stackoverflow.com/a/248013
 #bsqErr
   clean: both
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
 
 .dataTables_processing
   color: red

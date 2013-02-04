@@ -27,6 +27,22 @@
 "country.src"             return 'country.src'
 "country.xff"             return 'country.xff'
 "databytes"               return 'databytes'
+"email.ct.cnt"            if (yy.emailSearch) return 'email.ct.cnt'
+"email.ct"                if (yy.emailSearch) return 'email.ct'
+"email.dst.cnt"           if (yy.emailSearch) return 'email.dst.cnt'
+"email.dst"               if (yy.emailSearch) return 'email.dst'
+"email.fn.cnt"            if (yy.emailSearch) return 'email.fn.cnt'
+"email.fn"                if (yy.emailSearch) return 'email.fn'
+"email.id.cnt"            if (yy.emailSearch) return 'email.id.cnt'
+"email.id"                if (yy.emailSearch) return 'email.id'
+"email.mv.cnt"            if (yy.emailSearch) return 'email.mv.cnt'
+"email.mv"                if (yy.emailSearch) return 'email.mv'
+"email.src.cnt"           if (yy.emailSearch) return 'email.src.cnt'
+"email.src"               if (yy.emailSearch) return 'email.src'
+"email.subject.cnt"       if (yy.emailSearch) return 'email.subject.cnt'
+"email.subject"           if (yy.emailSearch) return 'email.subject'
+"email.ua.cnt"            if (yy.emailSearch) return 'email.ua.cnt'
+"email.ua"                if (yy.emailSearch) return 'email.ua'
 "header.dst.cnt"          return "header.dst.cnt"
 "header.dst"              return "header.dst"
 "header"                  return "header"
@@ -118,30 +134,40 @@ IPNUM: IPMATCH
      | NUMBER
      ;
 
-RANGEFIELD: databytes         {$$ = 'db'}
-          | bytes             {$$ = 'by'}
-          | packets           {$$ = 'pa'}
-          | protocol          {$$ = 'pr'}
-          | 'port.src'        {$$ = 'p1'}
-          | 'port.dst'        {$$ = 'p2'}
-          | 'uri.cnt'         {$$ = 'uscnt'}
-          | 'cert.cnt'        {$$ = 'tlscnt'}
-          | 'ip.xff.cnt'      {$$ = 'xffscnt'}
-          | 'ip.dns.cnt'      {$$ = 'dnsipcnt'}
-          | 'ua.cnt'          {$$ = 'uacnt'}
-          | 'user.cnt'        {$$ = 'usercnt'}
-          | 'host.cnt'        {$$ = 'hocnt'}
-          | 'header.src.cnt'  {$$ = 'hh1cnt'}
-          | 'header.dst.cnt'  {$$ = 'hh2cnt'}
-          | 'tags.cnt'        {$$ = 'tacnt'}
-          | 'cert.alt.cnt'    {$$ = 'tls.altcnt'}
-          | 'ssh.key.cnt'     {$$ = 'sshkeycnt'}
-          | 'ssh.ver.cnt'     {$$ = 'sshvercnt'}
+RANGEFIELD: databytes           {$$ = 'db'}
+          | bytes               {$$ = 'by'}
+          | packets             {$$ = 'pa'}
+          | protocol            {$$ = 'pr'}
+          | 'port.src'          {$$ = 'p1'}
+          | 'port.dst'          {$$ = 'p2'}
+          | 'uri.cnt'           {$$ = 'uscnt'}
+          | 'cert.cnt'          {$$ = 'tlscnt'}
+          | 'ip.xff.cnt'        {$$ = 'xffscnt'}
+          | 'ip.dns.cnt'        {$$ = 'dnsipcnt'}
+          | 'ua.cnt'            {$$ = 'uacnt'}
+          | 'user.cnt'          {$$ = 'usercnt'}
+          | 'host.cnt'          {$$ = 'hocnt'}
+          | 'header.src.cnt'    {$$ = 'hh1cnt'}
+          | 'header.dst.cnt'    {$$ = 'hh2cnt'}
+          | 'tags.cnt'          {$$ = 'tacnt'}
+          | 'email.ct.cnt'      {$$ = 'ectcnt'}
+          | 'email.dst.cnt'     {$$ = 'edstcnt'}
+          | 'email.fn.cnt'      {$$ = 'efncnt'}
+          | 'email.id.cnt'      {$$ = 'eidcnt'}
+          | 'email.mv.cnt'      {$$ = 'emvcnt'}
+          | 'email.src.cnt'     {$$ = 'esrccnt'}
+          | 'email.subject.cnt' {$$ = 'esubcnt'}
+          | 'email.ua.cnt'      {$$ = 'euacnt'}
+          | 'cert.alt.cnt'      {$$ = 'tls.altcnt'}
+          | 'ssh.key.cnt'       {$$ = 'sshkeycnt'}
+          | 'ssh.ver.cnt'       {$$ = 'sshvercnt'}
           ;
 
 LOTERMFIELD  : node              {$$ = 'no'}
              | host              {$$ = 'ho'}
              | user              {$$ = 'user'}
+             | 'email.dst'       {$$ = 'edst'}
+             | 'email.src'       {$$ = 'esrc'}
              | 'cert.subject.cn' {$$ = 'tls.sCn'}
              | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
              | 'cert.serial'     {$$ = 'tls.sn'}
@@ -151,6 +177,10 @@ LOTERMFIELD  : node              {$$ = 'no'}
 
 TERMFIELD  : 'id' {$$ = '_id'}
            | 'ssh.key' {$$ = 'sshkey'}
+           | 'email.id' {$$ = 'eid'}
+           | 'email.mv' {$$ = 'emv'}
+           | 'email.fn' {$$ = 'efn'}
+           | 'email.ct' {$$ = 'ect'}
            ;
 
 UPTERMFIELD  : 'country.src' {$$ = 'g1'}
@@ -161,6 +191,8 @@ UPTERMFIELD  : 'country.src' {$$ = 'g1'}
 TEXTFIELD  : 'asn.src'         {$$ = 'as1'}
            | 'asn.dst'         {$$ = 'as2'}
            | 'asn.dns'         {$$ = 'asdnsip'}
+           | 'email.subject'   {$$ = 'esub'}
+           | 'email.ua'        {$$ = 'eua'}
            | 'cert.subject.on' {$$ = 'tls.sOn'}
            | 'cert.issuer.on'  {$$ = 'tls.iOn'}
            ;
@@ -192,6 +224,14 @@ STR : ID
     | country.dst
     | country.src
     | country.xff
+    | email.dst
+    | email.dst.cnt
+    | email.src
+    | email.src.cnt
+    | email.subject
+    | email.subject.cnt
+    | email.ua
+    | email.ua.cnt
     | header
     | header.dst
     | header.dst.cnt

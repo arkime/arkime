@@ -29,7 +29,7 @@ var ini    = require('iniparser'),
     crypto = require('crypto');
 
 var internals = {
-    configFile: "config.ini",
+    configFile: "/data/moloch/etc/config.ini",
     nodeName: os.hostname().substring(0, os.hostname().indexOf('.'))
   };
 

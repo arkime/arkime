@@ -7,7 +7,7 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-my $VERSION = 1;
+my $VERSION = 2;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -626,6 +626,70 @@ sub sessionsUpdate
       },
       sshvercnt: {
         type: "short"
+      },
+      euacnt: {
+        type: "short"
+      },
+      eua : {
+        omit_norms: true,
+        type : "string",
+        analyzer : "snowball"
+      },
+      esubcnt: {
+        type: "short"
+      },
+      esub : {
+        omit_norms: true,
+        type : "string",
+        analyzer : "snowball"
+      },
+      eidcnt: {
+        type: "short"
+      },
+      eid : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      ectcnt: {
+        type: "short"
+      },
+      ect : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      emvcnt: {
+        type: "short"
+      },
+      emv : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      efncnt: {
+        type: "short"
+      },
+      efn : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      esrccnt: {
+        type: "short"
+      },
+      esrc : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      edstcnt: {
+        type: "short"
+      },
+      edst : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
       }
     }
   }
@@ -714,6 +778,10 @@ sub usersUpdate
         type: "boolean",
         index: "no"
       },
+      emailSearch: {
+        type: "boolean",
+        index: "no"
+      },
       passStore: {
         type: "string",
         index: "no"
@@ -766,7 +834,7 @@ if ($version->{exists} == 0) {
 if ($ARGV[1] eq "init") {
     if ($main::versionNumber >= 0) {
         print "It appears this elastic search cluster already has moloch installed, this will delete ALL data!\n";
-        print "Type \"YES\" to continue, are you sure?\n";
+        print "Type \"YES\" to continue - do you want to erase everything?\n";
         waitFor("YES");
     }
     print "Starting Init Process\n";
@@ -798,7 +866,7 @@ if ($ARGV[1] eq "init") {
     print "Finished.  Have fun!\n";
 } elsif ($main::versionNumber == 0) {
     print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elastic search moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n";
-    print "Type \"YES\" to continue, are you sure?\n";
+    print "Type \"YES\" to continue - do you want to upgrade?\n";
     waitFor("YES");
     print "Starting Update\n";
 
@@ -819,14 +887,27 @@ if ($ARGV[1] eq "init") {
     esCopy("users_v1", "users_v2", "user");
 
     esCopy("dstats", "dstats_v1", "user");
+    sleep 1;
+
     esDelete("/dstats", 1);
+    sleep 1;
+
     esAlias("add", "dstats_v1", "dstats");
 
     print "users_v1 and files_v1 tables can be deleted now\n";
     print "Finished\n";
+} elsif ($main::versionNumber == 1) {
+    print "Trying to upgrade from version 1 to version $VERSION.\n";
+    print "Type \"YES\" to continue - do you want to upgrade?\n";
+    waitFor("YES");
+    print "Starting Update\n";
+    sessionsUpdate();
+    usersUpdate();
 } else {
     print "Updating sessions\n";
     sessionsUpdate();
+    usersUpdate();
 }
 
+sleep 1;
 esPost("/dstats/version/version", "{\"version\": $VERSION}");

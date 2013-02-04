@@ -144,7 +144,6 @@ void moloch_config_load()
     if (tags) {
         int i;
         for (i = 0; tags[i]; i++) {
-            MolochString_t *tstring;
             gchar *tag = tags[i];
             while (isspace(*tag))
                 tag++;
@@ -153,12 +152,7 @@ void moloch_config_load()
             if (!(*tag))
                 continue;
 
-            HASH_FIND(s_, config.dontSaveTags, tag, tstring);
-            if (!tstring) {
-                tstring = malloc(sizeof(*tstring));
-                tstring->str = g_strdup(tag);
-                HASH_ADD(s_, config.dontSaveTags, tstring->str, tstring);
-            }
+            moloch_string_add((MolochStringHash_t *)&config.dontSaveTags, tag, TRUE);
         }
         g_strfreev(tags);
     }
@@ -197,6 +191,7 @@ void moloch_config_load()
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
+    config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
 }
 /******************************************************************************/
 void moloch_config_init()
@@ -237,6 +232,7 @@ void moloch_config_init()
         LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));
         LOG("logFileCreation: %s", (config.logFileCreation?"true":"false"));
+        LOG("parseSMTP: %s", (config.parseSMTP?"true":"false"));
 
         MolochString_t *tstring;
         HASH_FORALL(s_, config.dontSaveTags, tstring, 

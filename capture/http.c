@@ -159,7 +159,7 @@ gboolean moloch_http_write_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
 
     if (gerror) {
         /* Should free stuff here */
-        LOG("ERROR: %p: Receive Error: %s", conn, gerror->message);
+        LOG("ERROR: %p: Receive Error: %s", (void*)conn, gerror->message);
         return FALSE;
     }
 
@@ -181,11 +181,11 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
 
     if (gerror || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (gerror)
-            LOG("ERROR: %p: Receive Error: %s", conn, gerror->message);
+            LOG("ERROR: %p: Receive Error: %s", (void*)conn, gerror->message);
         else if (cond & (G_IO_HUP | G_IO_ERR))
-            LOG("ERROR: %p: Lost connection to %s", conn, conn->server->name);
+            LOG("ERROR: %p: Lost connection to %s", (void*)conn, conn->server->name);
         else if (len <= 0)
-            LOG("ERROR: %p: len: %d cond: %x", conn, len, cond);
+            LOG("ERROR: %p: len: %d cond: %x", (void*)conn, len, cond);
 
         g_object_unref (conn->conn);
         conn->conn = 0;
@@ -242,13 +242,13 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
     GSocketAddress           *sockaddr;
 
     if (config.logESRequests)
-        LOG("Connecting %p", conn);
+        LOG("Connecting %p", (void*)conn);
 
 
     connectable = g_network_address_parse(name, defaultport, &error);
 
     if (error) {
-        LOG("%p: Couldn't parse connect string of %s", conn, name);
+        LOG("%p: Couldn't parse connect string of %s", (void*)conn, name);
         exit(0);
     }
 
@@ -273,7 +273,7 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
         if (error)
             g_error_free(error);
     } else if (error) {
-        LOG("%p: Error: %s", conn, error->message);
+        LOG("%p: Error: %s", (void*)conn, error->message);
     }
 
     if (error || !conn->conn) {
@@ -346,7 +346,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
 
     if (conn->conn == 0) {
         if (moloch_http_connect(conn, conn->server->name, conn->server->port)) {
-            LOG("%p: Couldn't connect from process", conn);
+            LOG("%p: Couldn't connect from process", (void*)conn);
             return FALSE;
         }
     }
@@ -369,7 +369,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
            conn->server->connQ.e_count,
            conn->server->requestQ[0].r_count,
            conn->server->requestQ[1].r_count,
-           conn,
+           (void*)conn,
            request->method,
            sync?"SYNC":"ASYNC",
            request->key_len,
@@ -398,7 +398,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
     gettimeofday(&conn->sendTime, NULL);
 
     if (gerror) {
-        LOG("%p: Send Error: %d %s", conn, sync, gerror->message);
+        LOG("%p: Send Error: %d %s", (void*)conn, sync, gerror->message);
         conn->conn = 0;
         return FALSE;
     }
@@ -467,7 +467,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
             DLL_POP_HEAD(r_, &server->requestQ[q], conn->request);
             if (conn->request) {
                 if (!moloch_http_process_send(conn, 0)) {
-                    LOG("ERROR - %p: Couldn't send %.*s", conn, conn->request->key_len, conn->request->key);
+                    LOG("ERROR - %p: Couldn't send %.*s", (void*)conn, conn->request->key_len, conn->request->key);
                     DLL_PUSH_HEAD(r_, &server->requestQ[q], conn->request);
                     conn->request = 0;
                     DLL_PUSH_TAIL(e_, &server->connQ, conn);

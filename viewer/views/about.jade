@@ -127,6 +127,83 @@ div(style="margin:10px")
       td integer
       td Number of databytes sent/received in a session<br>databytes &gt;= 2000
     tr
+      td email.ct
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the Content-Type header for all emails in a session
+    tr
+      td email.ct.cnt
+      td #{range}
+      td integer
+      td Number of unique content-type headers in a session
+    tr
+      td email.dst
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the various recipient headers for all emails in a session
+    tr
+      td email.dst.cnt
+      td #{range}
+      td integer
+      td Number of unique recipient addresses for all emails in a session
+    tr
+      td email.fn
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the unique filenames attached to mails
+    tr
+      td email.mv.cnt
+      td #{range}
+      td integer
+      td Number of unique filenames attached to mails
+    tr
+      td email.mv
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the Mime-Version header for all emails in a session
+    tr
+      td email.mv.cnt
+      td #{range}
+      td integer
+      td Number of unique Mime-Version headers in a session
+    tr
+      td email.src
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the various sender headers for all emails in a session
+    tr
+      td email.src.cnt
+      td #{range}
+      td integer
+      td Number of unique sender addresses for all emails in a session
+    tr
+      td email.subject
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the Subject header for all emails in a session
+    tr
+      td email.subject.cnt
+      td #{range}
+      td integer
+      td Number of unique Subject headers in a session
+    tr
+      td email.ua
+      td.
+        ==, !=
+      td string or quoted string
+      td Matches the X-Mailer header for all emails in a session
+    tr
+      td email.ua.cnt
+      td #{range}
+      td integer
+      td Number of unique X-Mailer headers in a session
+    tr
       td header
       td.
         ==, !=

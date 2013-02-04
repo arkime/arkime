@@ -25,14 +25,15 @@ typedef uint32_t (* HASH_KEY_FUNC)(const void *key);
 /* Given a key does it match the element */
 typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
+/* buckets is last on purpose so functions can be written */
 #define HASH_VAR(name, varname, elementtype, num) \
    struct \
    { \
-       elementtype buckets[num]; \
-       int size; \
-       int count; \
        HASH_KEY_FUNC hash; \
        HASH_CMP_FUNC cmp; \
+       int size; \
+       int count; \
+       elementtype buckets[num]; \
    } varname
 
 #define HASH_INIT(name, varname, hashfunc, cmpfunc) \

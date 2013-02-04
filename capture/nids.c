@@ -110,24 +110,24 @@ void moloch_nids_certs_free (MolochCertsInfo_t *certs)
     MolochString_t *string;
 
     while (DLL_POP_HEAD(s_, &certs->alt, string)) {
-        free(string->str);
+        g_free(string->str);
         free(string);
     }
 
     while (DLL_POP_HEAD(s_, &certs->issuer.commonName, string)) {
-        free(string->str);
+        g_free(string->str);
         free(string);
     }
 
     while (DLL_POP_HEAD(s_, &certs->subject.commonName, string)) {
-        free(string->str);
+        g_free(string->str);
         free(string);
     }
 
     if (certs->issuer.orgName)
-        free(certs->issuer.orgName);
+        g_free(certs->issuer.orgName);
     if (certs->subject.orgName)
-        free(certs->subject.orgName);
+        g_free(certs->subject.orgName);
     if (certs->serialNumber)
         free(certs->serialNumber);
 
@@ -283,7 +283,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
         session->http->urlArray = g_ptr_array_new_with_free_func(g_free);
 
         HASH_FORALL_POP_HEAD(s_, session->http->userAgents, string, 
-            free(string->str);
+            g_free(string->str);
             free(string);
         );
 
@@ -293,7 +293,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     }
 
     HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
-        free(string->str);
+        g_free(string->str);
         free(string);
     );
 
@@ -443,7 +443,7 @@ void moloch_nids_free_session_http(MolochSession_t *session, gboolean conditiona
     g_ptr_array_free(session->http->urlArray, TRUE);
 
     HASH_FORALL_POP_HEAD(s_, session->http->userAgents, string, 
-        free(string->str);
+        g_free(string->str);
         free(string);
     );
 
@@ -465,6 +465,82 @@ void moloch_nids_free_session_http(MolochSession_t *session, gboolean conditiona
     session->http = 0;
 }
 /******************************************************************************/
+void moloch_nids_new_session_email(MolochSession_t *session)
+{
+    if (!config.parseSMTP)
+        return;
+
+    session->email = malloc(sizeof(MolochSessionEmail_t));
+    memset(session->email, 0, sizeof(MolochSessionEmail_t));
+
+    HASH_INIT(s_, session->email->src, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->dst, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->subject, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->userAgents, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->mimeVersions, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->ids, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->contentTypes, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->filenames, moloch_string_hash, moloch_string_cmp);
+
+    session->email->line[0] = g_string_sized_new(100);
+    session->email->line[1] = g_string_sized_new(100);
+
+    DLL_INIT(s_, &(session->email->boundaries));
+}
+/******************************************************************************/
+void moloch_nids_free_session_email(MolochSession_t *session, gboolean conditionally)
+{
+    MolochString_t *string;
+
+    if (conditionally && (HASH_COUNT(s_, session->email->src) > 0 || HASH_COUNT(s_, session->email->dst) > 0)) {
+        return;
+    }
+
+    HASH_FORALL_POP_HEAD(s_, session->email->src, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->dst, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->subject, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->userAgents, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->mimeVersions, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->ids, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->contentTypes, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->filenames, string, 
+        g_free(string->str);
+        free(string);
+    );
+
+    g_string_free(session->email->line[0], TRUE);
+    g_string_free(session->email->line[1], TRUE);
+
+    while (DLL_POP_HEAD(s_, &session->email->boundaries, string)) {
+        g_free(string->str);
+        free(string);
+    }
+
+    free(session->email);
+    session->email = 0;
+}
+/******************************************************************************/
 void moloch_nids_cb_ip(struct ip *packet, int len)
 {
     char             sessionId[MOLOCH_SESSIONID_LEN];
@@ -479,7 +555,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         sessionsQ = &tcpSessionQ;
         sessionTimeout = config.tcpTimeout;
 
-        tcphdr = (struct tcphdr *)((void*)packet + 4 * packet->ip_hl);
+        tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
 
         moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, ntohs(tcphdr->source), 
                           packet->ip_dst.s_addr, ntohs(tcphdr->dest));
@@ -488,7 +564,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         sessionsQ = &udpSessionQ;
         sessionTimeout = config.udpTimeout;
 
-        udphdr = (struct udphdr *)((void*)packet + 4 * packet->ip_hl);
+        udphdr = (struct udphdr *)((char*)packet + 4 * packet->ip_hl);
 
         moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, ntohs(udphdr->source), 
                           packet->ip_dst.s_addr, ntohs(udphdr->dest));
@@ -755,6 +831,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             moloch_detect_parse_http(session, a_tcp, &a_tcp->client);
             moloch_detect_parse_classify(session, a_tcp, &a_tcp->client);
             moloch_detect_parse_yara(session, a_tcp, &a_tcp->client);
+            if (session->email)
+                moloch_detect_parse_email(session, a_tcp, &a_tcp->client);
             nids_discard(a_tcp, session->offsets[1]);
             if (session->isSsh)
                 moloch_detect_parse_ssh(session, a_tcp, &a_tcp->client);
@@ -765,6 +843,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             session->which = 0;
             moloch_detect_parse_http(session, a_tcp, &a_tcp->server);
             moloch_detect_parse_classify(session, a_tcp, &a_tcp->server);
+            if (session->email)
+                moloch_detect_parse_email(session, a_tcp, &a_tcp->server);
             moloch_detect_parse_yara(session, a_tcp, &a_tcp->server);
             nids_discard(a_tcp, session->offsets[0]);
             session->offsets[0] = a_tcp->server.count_new;
@@ -829,23 +909,27 @@ void moloch_nids_session_free (MolochSession_t *session)
         moloch_nids_free_session_http(session, FALSE);
     }
 
+    if (session->email) {
+        moloch_nids_free_session_email(session, FALSE);
+    }
+
     HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
-        free(string->str);
+        g_free(string->str);
         free(string);
     );
 
     HASH_FORALL_POP_HEAD(s_, session->users, string, 
-        free(string->str);
+        g_free(string->str);
         free(string);
     );
 
     HASH_FORALL_POP_HEAD(s_, session->sshver, string, 
-        free(string->str);
+        g_free(string->str);
         free(string);
     );
 
     HASH_FORALL_POP_HEAD(s_, session->sshkey, string, 
-        free(string->str);
+        g_free(string->str);
         free(string);
     );
 
@@ -988,9 +1072,12 @@ fail:
 uint32_t moloch_nids_dropped_packets()
 {
     struct pcap_stat ps;
-    if (!nids_params.pcap_desc)
+    if (!nids_params.pcap_desc) {
         pcap_stats(nids_params.pcap_desc, &ps);
-    return ps.ps_drop - initialDropped;
+        return ps.ps_drop - initialDropped;
+    }
+
+    return 0;
 }
 /******************************************************************************/
 uint32_t moloch_nids_monitoring_sessions()

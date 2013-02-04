@@ -19,7 +19,8 @@ typedef struct moloch_string {
     struct moloch_string *s_next, *s_prev;
     char                 *str;
     short                 s_bucket;
-    char                  utf8;
+    short                 len:15;
+    short                 utf8:1;
 } MolochString_t;
 
 typedef struct {
@@ -73,6 +74,7 @@ typedef struct moloch_config {
     char      logUnknownProtocols;
     char      logESRequests;
     char      logFileCreation;
+    char      parseSMTP;
 } MolochConfig_t;
 
 typedef struct moloch_int {
@@ -115,6 +117,21 @@ typedef struct {
 #define MOLOCH_TAG_HTTP_RESPONSE 2
 #define MOLOCH_TAG_MAX           3
 
+typedef struct moloch_session_email {
+    HASH_VAR(s_, src, MolochStringHead_t, 11);
+    HASH_VAR(s_, dst, MolochStringHead_t, 11);
+    HASH_VAR(s_, subject, MolochStringHead_t, 11);
+    HASH_VAR(s_, userAgents, MolochStringHead_t, 11);
+    HASH_VAR(s_, mimeVersions, MolochStringHead_t, 11);
+    HASH_VAR(s_, ids, MolochStringHead_t, 11);
+    HASH_VAR(s_, contentTypes, MolochStringHead_t, 11);
+    HASH_VAR(s_, filenames, MolochStringHead_t, 11);
+
+    MolochStringHead_t boundaries;
+    char               state[2];
+    GString           *line[2];
+} MolochSessionEmail_t;
+
 typedef struct moloch_session_http {
     GPtrArray  *urlArray;
     GString    *urlString;
@@ -150,6 +167,7 @@ typedef struct moloch_session {
 
 
     MolochSessionHttp_t   *http;
+    MolochSessionEmail_t  *email;
 
     void       *pluginData[MOLOCH_MAX_PLUGINS];
 
@@ -228,8 +246,12 @@ gint moloch_watch_fd(gint fd, GIOCondition cond, MolochWatchFd_func func, gpoint
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen);
 char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 
+typedef HASH_VAR(s_, MolochStringHash_t, MolochStringHead_t, 1);
+gboolean moloch_string_add(MolochStringHash_t *hash, char *string, gboolean copy);
+
 uint32_t moloch_string_hash(const void *key);
 int moloch_string_cmp(const void *keyv, const void *elementv);
+
 
 uint32_t moloch_int_hash(const void *key);
 int moloch_int_cmp(const void *keyv, const void *elementv);
@@ -271,6 +293,7 @@ void moloch_detect_init();
 void moloch_detect_initial_tag(MolochSession_t *session);
 void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len);
@@ -318,6 +341,9 @@ void moloch_nids_decr_outstanding(MolochSession_t *session);
 
 void moloch_nids_new_session_http(MolochSession_t *session);
 void moloch_nids_free_session_http(MolochSession_t *session, gboolean conditionally);
+
+void moloch_nids_new_session_email(MolochSession_t *session);
+void moloch_nids_free_session_email(MolochSession_t *session, gboolean conditionally);
 
 /******************************************************************************/
 /*

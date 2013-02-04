@@ -114,6 +114,9 @@ dropGroup=_GROUPNAME_
 # RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
 # RequestHeader set MOLOCH_USER %{ENV_RU}e
 #userNameHeader=moloch_user
+#
+# Should we parse extra smtp traffic info
+parseSMTP=true
  
 # Plugin directory to load plugins from
 pluginsDir=plugins
