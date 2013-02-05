@@ -9,11 +9,11 @@ Moloch is an open source, large scale IPv4 packet capturing (PCAP), indexing
 and database system. A simple web interface is provided for PCAP browsing,
 searching, and exporting. APIs are exposed that allow PCAP data and
 JSON-formatted session data to be downloaded directly. Simple security is
-implemented by using HTTPS and HTTP digest password support. Moloch is not
-meant to replace IDS engines but instead work along side them to store and
-index all the network traffic in standard PCAP format, providing fast access.
-Moloch is built to be deployed across many systems and can scale to handle
-multiple gigabits/sec of traffic. 
+implemented by using HTTPS and HTTP digest password support or by using apache
+in front. Moloch is not meant to replace IDS engines but instead work along side 
+them to store and index all the network traffic in standard PCAP format, providing 
+fast access.  Moloch is built to be deployed across many systems and can scale to 
+handle multiple gigabits/sec of traffic. 
 
 .. image:: https://raw.github.com/wiki/aol/moloch/MolochScreenShot.png
     :width: 300px
@@ -133,7 +133,7 @@ Building Capture
 
    - Ubuntu::
     
-        apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev
+        apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev libjson-perl
 
 2. Building ``capture`` can be a pain because of OS versions.
 
@@ -337,6 +337,11 @@ Important Considerations
 
 * It is possible to set up a Moloch ``viewer`` on a machine that doesn't
   capture any data that gateways all requests.
+
+  - It is also possible to place apache in front of moloch, so it can handle the
+    authentication and pass the username on to moloch
+  - This is how we deploy it
+
 * A shared password stored in the Moloch configuration file is used to encrypt
   password hashes AND for inter-Moloch communication. 
 
@@ -366,3 +371,25 @@ Wiki
 ----
 
 We use GitHub’s built-in wiki located at `https://github.com/aol/moloch/wiki <https://github.com/aol/moloch/wiki>`_.
+
+.. _wiki:
+
+Wiki
+----
+
+We use GitHub’s built-in wiki located at `https://github.com/aol/moloch/wiki <https://github.com/aol/moloch/wiki>`_.
+
+.. _upgrading:
+
+Upgrading
+=========
+
+Currently upgrading from previous versions of Moloch is a manual process, however recorded sessions and pcap files should be retained
+
+* Update the moloch repository from github
+* Build the moloch system using "make"
+* Shut down currently running capture and viewer processes
+* Optionally use "make install" to copy the new binaries and other items and/or push the new items to the capture hosts
+* Update the database using the "db/db.pl host:port upgrade" script
+* Start the new moloch system back up
+
