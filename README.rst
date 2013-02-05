@@ -372,13 +372,6 @@ Wiki
 
 We use GitHub’s built-in wiki located at `https://github.com/aol/moloch/wiki <https://github.com/aol/moloch/wiki>`_.
 
-.. _wiki:
-
-Wiki
-----
-
-We use GitHub’s built-in wiki located at `https://github.com/aol/moloch/wiki <https://github.com/aol/moloch/wiki>`_.
-
 .. _upgrading:
 
 Upgrading
