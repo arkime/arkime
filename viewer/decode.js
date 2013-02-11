@@ -68,7 +68,11 @@ exports.tcp = function (buffer, obj) {
     urp:        buffer.readUInt16BE(18)
   };
 
-  obj.tcp.data = buffer.slice(4*obj.tcp.off);
+  if (4*obj.tcp.off > buffer.length) {
+    obj.tcp.data = new Buffer(0);
+  } else {
+    obj.tcp.data = buffer.slice(4*obj.tcp.off);
+  }
 };
 
 exports.udp = function (buffer, obj) {

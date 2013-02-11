@@ -152,7 +152,7 @@ void moloch_config_load()
             if (!(*tag))
                 continue;
 
-            moloch_string_add((MolochStringHash_t *)&config.dontSaveTags, tag, TRUE);
+            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tag, TRUE);
         }
         g_strfreev(tags);
     }

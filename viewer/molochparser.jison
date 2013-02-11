@@ -35,6 +35,8 @@
 "email.fn"                if (yy.emailSearch) return 'email.fn'
 "email.id.cnt"            if (yy.emailSearch) return 'email.id.cnt'
 "email.id"                if (yy.emailSearch) return 'email.id'
+"email.md5.cnt"           if (yy.emailSearch) return 'email.md5.cnt'
+"email.md5"               if (yy.emailSearch) return 'email.md5'
 "email.mv.cnt"            if (yy.emailSearch) return 'email.mv.cnt'
 "email.mv"                if (yy.emailSearch) return 'email.mv'
 "email.src.cnt"           if (yy.emailSearch) return 'email.src.cnt'
@@ -66,6 +68,7 @@
 "port"                    return 'port'
 "port.src"                return 'port.src'
 "protocol"                return 'protocol'
+"rootId"                  return "rootId"
 "ssh.key.cnt"             return "ssh.key.cnt"
 "ssh.key"                 return "ssh.key"
 "ssh.ver.cnt"             return "ssh.ver.cnt"
@@ -154,6 +157,7 @@ RANGEFIELD: databytes           {$$ = 'db'}
           | 'email.dst.cnt'     {$$ = 'edstcnt'}
           | 'email.fn.cnt'      {$$ = 'efncnt'}
           | 'email.id.cnt'      {$$ = 'eidcnt'}
+          | 'email.md5.cnt'     {$$ = 'emd5cnt'}
           | 'email.mv.cnt'      {$$ = 'emvcnt'}
           | 'email.src.cnt'     {$$ = 'esrccnt'}
           | 'email.subject.cnt' {$$ = 'esubcnt'}
@@ -175,12 +179,14 @@ LOTERMFIELD  : node              {$$ = 'no'}
              | 'ssh.ver'         {$$ = 'sshver'}
              ;
 
-TERMFIELD  : 'id' {$$ = '_id'}
-           | 'ssh.key' {$$ = 'sshkey'}
-           | 'email.id' {$$ = 'eid'}
-           | 'email.mv' {$$ = 'emv'}
-           | 'email.fn' {$$ = 'efn'}
-           | 'email.ct' {$$ = 'ect'}
+TERMFIELD  : 'id'        {$$ = '_id'}
+           | 'ssh.key'   {$$ = 'sshkey'}
+           | 'email.id'  {$$ = 'eid'}
+           | 'email.md5' {$$ = 'emd5'}
+           | 'email.mv'  {$$ = 'emv'}
+           | 'email.fn'  {$$ = 'efn'}
+           | 'email.ct'  {$$ = 'ect'}
+           | 'rootId'    {$$ = 'ro'}
            ;
 
 UPTERMFIELD  : 'country.src' {$$ = 'g1'}

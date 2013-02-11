@@ -48,7 +48,7 @@ static MolochSessionHead_t   icmpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
 
 
-static int64_t               dumperFilePos = 0;
+static uint64_t              dumperFilePos = 0;
 static int                   dumperBufPos = 0;
 static int                   dumperBufMax = 0;
 static int                   dumperFd = -1;
@@ -273,7 +273,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
 
     moloch_db_save_session(session, FALSE);
     g_array_free(session->filePosArray, TRUE);
-    session->filePosArray = g_array_sized_new(FALSE, FALSE, 8, 1024);
+    session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 1024);
 
     g_array_free(session->fileNumArray, TRUE);
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
@@ -481,9 +481,13 @@ void moloch_nids_new_session_email(MolochSession_t *session)
     HASH_INIT(s_, session->email->ids, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, session->email->contentTypes, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, session->email->filenames, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->md5s, moloch_string_hash, moloch_string_cmp);
 
     session->email->line[0] = g_string_sized_new(100);
     session->email->line[1] = g_string_sized_new(100);
+
+    session->email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
+    session->email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
 
     DLL_INIT(s_, &(session->email->boundaries));
 }
@@ -529,8 +533,16 @@ void moloch_nids_free_session_email(MolochSession_t *session, gboolean condition
         free(string);
     );
 
+    HASH_FORALL_POP_HEAD(s_, session->email->md5s, string, 
+        g_free(string->str);
+        free(string);
+    );
+
     g_string_free(session->email->line[0], TRUE);
     g_string_free(session->email->line[1], TRUE);
+
+    g_checksum_free(session->email->checksum[0]);
+    g_checksum_free(session->email->checksum[1]);
 
     while (DLL_POP_HEAD(s_, &session->email->boundaries, string)) {
         g_free(string->str);
@@ -609,7 +621,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
           totalPackets, 
           sessionsQ->q_count, 
           HASH_COUNT(h_, sessions),
-          (int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket.tv_sec + sessionTimeout)),
+          (headSession?(int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket.tv_sec + sessionTimeout)):0),
           ps.ps_recv, 
           ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*100.0/ps.ps_recv,
           ps.ps_ifdrop,
@@ -626,7 +638,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session = malloc(sizeof(MolochSession_t));
         memset(session, 0, sizeof(MolochSession_t));
         session->protocol = packet->ip_p;
-        session->filePosArray = g_array_sized_new(FALSE, FALSE, 8, 100);
+        session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
         HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
         HASH_INIT(s_, session->users, moloch_string_hash, moloch_string_cmp);
@@ -688,7 +700,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     if (!config.dryRun && !session->dontSave) {
         if (config.copyPcap) {
             /* Save packet to file */
-            if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeG*1024LL*1024LL*1024LL) {
+            if (dumperFd == -1 || dumperFilePos >= (uint64_t)config.maxFileSizeG*1024LL*1024LL*1024LL) {
                 if (dumperFd > 0 && !config.dryRun)  {
                     moloch_nids_file_flush(TRUE);
                     close(dumperFd);
@@ -698,6 +710,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
             uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
             g_array_append_val(session->filePosArray, val);
+            //LOG("ALW POS %d %llx", dumperFilePos, val);
             if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
                 g_array_append_val(session->fileNumArray, dumperId);
             }
@@ -720,6 +733,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
             dumperFilePos = ftell(offlineFile) - 16 - nids_last_pcap_header->caplen;
             uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
+            //LOG("ALW POS %d %llx", dumperFilePos, val);
             g_array_append_val(session->filePosArray, val);
             if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
                 g_array_append_val(session->fileNumArray, dumperId);
@@ -996,10 +1010,6 @@ gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
         return TRUE;
 
     moloch_nids_init_nids();
-    /*nids_init();
-    moloch_watch_fd(nids_getfd(), MOLOCH_GIO_READ_COND, moloch_nids_watch_cb, NULL);
-    nids_register_tcp(moloch_nids_cb_tcp);
-    nids_register_ip(moloch_nids_cb_ip);*/
     return FALSE;
 }
 /******************************************************************************/
@@ -1096,50 +1106,89 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
 /******************************************************************************/
 int moloch_nids_next_file()
 {
-    static GDir *pcapGDir = NULL;
+    static GDir *pcapGDir[21];
+    static char *pcapBase[21];
+    static int   pcapGDirLevel = -1;
     GError      *error = 0;
     char         errbuf[1024];
 
-    if (!pcapGDir) {
-        pcapGDir = g_dir_open(config.pcapReadDir, 0, &error);
+    if (pcapGDirLevel == -1) {
+        pcapGDirLevel = 0;
+        pcapBase[0] = config.pcapReadDir;
+    }
+
+    if (!pcapGDir[pcapGDirLevel]) {
+        pcapGDir[pcapGDirLevel] = g_dir_open(pcapBase[pcapGDirLevel], 0, &error);
         if (error) {
             LOG("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
             exit(0);
         }
     }
-    if (nids_params.pcap_desc) {
-        pcap_close(nids_params.pcap_desc);
-    }
     const gchar *filename;
     while (1) {
-        filename = g_dir_read_name(pcapGDir);
+        filename = g_dir_read_name(pcapGDir[pcapGDirLevel]);
+
+        // No more files, stop processing this directory
         if (!filename) {
-            return 0;
+            break;
         }
 
-        if (filename[0] == '.' || strcmp(".pcap", filename + strlen(filename)-5) != 0) {
+        // Skip hidden files/directories
+        if (filename[0] == '.')
+            continue;
+
+        gchar *fullfilename;
+        fullfilename = g_build_filename (pcapBase[pcapGDirLevel], filename, NULL);
+
+        // If recursive option and a directory then process all the files in that dir
+        if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+            if (pcapGDirLevel >= 20)
+                continue;
+            pcapBase[pcapGDirLevel+1] = fullfilename;
+            pcapGDirLevel++;
+            return moloch_nids_next_file();
+        }
+
+        // If it doesn't end with pcap we ignore it
+        if (strcmp(".pcap", filename + strlen(filename)-5) != 0) {
+            g_free(fullfilename);
             continue;
         }
 
-        gchar *fullfilename;
-        fullfilename = g_build_filename (config.pcapReadDir, filename, NULL);
+        if (!realpath(fullfilename, offlinePcapFilename)) {
+            g_free(fullfilename);
+            continue;
+        }
         LOG ("Processing %s", fullfilename);
-        realpath(fullfilename, offlinePcapFilename);
+
+
         if (!config.copyPcap) {
             dumperFd = -1;
         }
 
         errbuf[0] = 0;
+        if (nids_params.pcap_desc)
+            pcap_close(nids_params.pcap_desc);
         nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
-        offlineFile = pcap_file(nids_params.pcap_desc);
         if (!nids_params.pcap_desc) {
             LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
-            nids_params.pcap_desc = (void *)0x01; /* Stop lib nids from freeing desc, crazy */
-            return 0;
+            g_free(fullfilename);
+            continue;
         }
+        offlineFile = pcap_file(nids_params.pcap_desc);
         g_free(fullfilename);
         return 1;
     }
+    g_dir_close(pcapGDir[pcapGDirLevel]);
+    pcapGDir[pcapGDirLevel] = 0;
+
+    if (pcapGDirLevel > 0) {
+        g_free(pcapBase[pcapGDirLevel]);
+        pcapGDirLevel--;
+        return moloch_nids_next_file();
+    }
+
+    return 0;
 }
 /******************************************************************************/
 void moloch_nids_root_init()
@@ -1150,8 +1199,10 @@ void moloch_nids_root_init()
     }
     else if (config.pcapReadFile) {
         nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
-        offlineFile = pcap_file(nids_params.pcap_desc);
-        realpath(config.pcapReadFile, offlinePcapFilename);
+        if (nids_params.pcap_desc) {
+            offlineFile = pcap_file(nids_params.pcap_desc);
+            realpath(config.pcapReadFile, offlinePcapFilename);
+        }
     } else {
 #ifdef SNF
         nids_params.pcap_desc = pcap_open_live(config.interface, 1600, 1, 500, errbuf);
@@ -1169,6 +1220,8 @@ void moloch_nids_root_init()
 /******************************************************************************/
 void moloch_nids_init_nids()
 {
+    nids_unregister_tcp(moloch_nids_cb_tcp);
+    nids_unregister_ip(moloch_nids_cb_ip);
     nids_init();
 
     if (nids_getfd() == -1) {

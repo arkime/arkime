@@ -102,7 +102,7 @@ void moloch_plugins_init()
 
         MolochPluginInitFunc plugin_init;
 
-        if (!g_module_symbol(plugin, "moloch_plugin_init", (gpointer *)&plugin_init) || plugin_init == NULL) {
+        if (!g_module_symbol(plugin, "moloch_plugin_init", (gpointer *)(char*)&plugin_init) || plugin_init == NULL) {
             LOG("ERROR - Module %s doesn't have a moloch_plugin_init", name);
             continue;
         }

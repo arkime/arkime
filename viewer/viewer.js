@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 2;
+var MIN_DB_VERSION = 3;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -802,8 +802,7 @@ function buildSessionQuery(req, buildCb) {
   var query = {fields: columns,
                from: req.query.iDisplayStart || 0,
                size: limit,
-               query: {filtered: {query: {},
-                                  filter: {}}}
+               query: {filtered: {query: {}}}
               };
 
   if (req.query.facets) {
@@ -857,7 +856,7 @@ function buildSessionQuery(req, buildCb) {
   if (req.user.expression && req.user.expression.length > 0) {
     try {
       var userExpression = molochparser.parse(req.user.expression);
-      if (isEmptyObject(query.query.filtered.filter)) {
+      if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = userExpression;
       } else {
         query.query.filtered.filter = {and: [userExpression, query.query.filtered.filter]};
@@ -1168,7 +1167,7 @@ app.get('/unique.txt', function(req, res) {
     query.fields = [req.query.field];
     if (req.query.field === "us") {
       query.size = 200000;
-      if (isEmptyObject(query.query.filtered.filter)) {
+      if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
       } else {
         query.query.filtered.filter = {and: [query.query.filtered.filter, {exists: {field: req.query.field}}]};
@@ -1435,6 +1434,7 @@ function localSessionDetailReturnFull(req, res, session, results) {
 }
 
 
+// Needs to be rewritten, this sucks
 function gzipDecode(req, res, session, results) {
   var kind;
 
@@ -1534,7 +1534,9 @@ function gzipDecode(req, res, session, results) {
     }
   }, function (err) {
     req.query.needgzip = "false";
-    process.nextTick(function() {localSessionDetailReturnFull(req, res, session, results);});
+    parsers[0].finish();
+    parsers[1].finish();
+    setTimeout(function() {localSessionDetailReturnFull(req, res, session, results);}, 100);
   });
 }
 

@@ -38,6 +38,7 @@ typedef struct moloch_config {
     gboolean  dryRun;
     gboolean  fakePcap;
     gboolean  copyPcap;
+    gboolean  pcapRecursive;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
 
@@ -126,10 +127,16 @@ typedef struct moloch_session_email {
     HASH_VAR(s_, ids, MolochStringHead_t, 11);
     HASH_VAR(s_, contentTypes, MolochStringHead_t, 11);
     HASH_VAR(s_, filenames, MolochStringHead_t, 11);
+    HASH_VAR(s_, md5s, MolochStringHead_t, 11);
 
     MolochStringHead_t boundaries;
     char               state[2];
     GString           *line[2];
+    gint               state64[2];
+    guint              save64[2];
+    GChecksum         *checksum[2];
+
+    uint16_t           base64Decode:2;
 } MolochSessionEmail_t;
 
 typedef struct moloch_session_http {
@@ -247,7 +254,7 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
 char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 
 typedef HASH_VAR(s_, MolochStringHash_t, MolochStringHead_t, 1);
-gboolean moloch_string_add(MolochStringHash_t *hash, char *string, gboolean copy);
+gboolean moloch_string_add(void *hash, char *string, gboolean copy);
 
 uint32_t moloch_string_hash(const void *key);
 int moloch_string_cmp(const void *keyv, const void *elementv);

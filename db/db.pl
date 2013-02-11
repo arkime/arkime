@@ -7,7 +7,7 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-my $VERSION = 2;
+my $VERSION = 3;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -25,11 +25,11 @@ sub waitFor
 {
     my ($str) = @_;
 
-    my $answer = <STDIN>;
-    chomp $answer;
-    if ($answer ne $str) {
-        print "Not doing anything.  You didn't type \"$str\", for some reason you typed \"$answer\"\n";
-        exit 1;
+    while (1) {
+        my $answer = <STDIN>;
+        chomp $answer;
+        last if ($answer eq $str);
+        print "You didn't type \"$str\", for some reason you typed \"$answer\"\n";
     }
 }
 
@@ -675,6 +675,14 @@ sub sessionsUpdate
         type : "string",
         index : "not_analyzed"
       },
+      emd5cnt: {
+        type: "short"
+      },
+      emd5 : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
       esrccnt: {
         type: "short"
       },
@@ -820,12 +828,10 @@ my $version = esGet("/dstats/version/version", 1);
 if (!exists $version->{exists}) {
     print "This is a fresh Moloch install\n";
     $main::versionNumber = -1;
-    if ($ARGV[1] eq "upgrade") {
-        die "Looks like moloch wasn't installed, must do init instead of upgrade"
+    if ($ARGV[1] ne "init") {
+        die "Looks like moloch wasn't installed, must do init"
     }
-}
-
-if ($version->{exists} == 0) {
+} elsif ($version->{exists} == 0) {
     $main::versionNumber = 0;
 } else {
     $main::versionNumber = $version->{_source}->{version};
@@ -833,7 +839,7 @@ if ($version->{exists} == 0) {
 
 if ($ARGV[1] eq "init") {
     if ($main::versionNumber >= 0) {
-        print "It appears this elastic search cluster already has moloch installed, this will delete ALL data!\n";
+        print "It appears this elastic search cluster already has moloch installed, this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         print "Type \"YES\" to continue - do you want to erase everything?\n";
         waitFor("YES");
     }
@@ -865,10 +871,10 @@ if ($ARGV[1] eq "init") {
     usersCreate();
     print "Finished.  Have fun!\n";
 } elsif ($main::versionNumber == 0) {
-    print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elastic search moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n";
+    print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elastic search moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
     print "Type \"YES\" to continue - do you want to upgrade?\n";
     waitFor("YES");
-    print "Starting Update\n";
+    print "Starting Upgrade\n";
 
     esDelete("/stats", 1);
 
@@ -896,17 +902,15 @@ if ($ARGV[1] eq "init") {
 
     print "users_v1 and files_v1 tables can be deleted now\n";
     print "Finished\n";
-} elsif ($main::versionNumber == 1) {
-    print "Trying to upgrade from version 1 to version $VERSION.\n";
+} elsif ($main::versionNumber >= 1 && $main::versionNumber <= 3) {
+    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"YES\" to continue - do you want to upgrade?\n";
     waitFor("YES");
-    print "Starting Update\n";
+    print "Starting Upgrade\n";
     sessionsUpdate();
     usersUpdate();
 } else {
-    print "Updating sessions\n";
-    sessionsUpdate();
-    usersUpdate();
+    print "db.pl is hosed\n";
 }
 
 sleep 1;

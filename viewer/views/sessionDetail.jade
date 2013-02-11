@@ -1,6 +1,8 @@
 div(id='sessionDetail#{session.id}')
   div Actions:
     if (session.ro)
+      a(href='#', onclick='return addExpression("rootId == #{session.ro}");') All Sessions
+      | &nbsp;
       a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
       | &nbsp;
       a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
@@ -195,9 +197,14 @@ div(id='sessionDetail#{session.id}')
             a(href='#', onclick='return addExpression("email.ct == \\\"#{i}\\\"");') #{i}
             | 
     if (session.efn)
-      div Email Filenames: 
+      div Email Attachment Filenames: 
         each i in session.efn
             a(href='#', onclick='return addExpression("email.fn == \\\"#{i}\\\"");') #{i}
+            | 
+    if (session.emd5)
+      div Email Attachment MD5s: 
+        each i in session.emd5
+            a(href='#', onclick='return addExpression("email.md5 == \\\"#{i}\\\"");') #{i}
             | 
   hr
   div

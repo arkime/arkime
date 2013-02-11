@@ -389,7 +389,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
 
             char *str = g_ascii_strdown((char *)data, len);
 
-            if (!moloch_string_add((MolochStringHash_t *)&session->sshver, str, FALSE)) {
+            if (!moloch_string_add(&session->sshver, str, FALSE)) {
                 g_free(str);
             }
         }
@@ -532,7 +532,7 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
             if (remaining > keyLen + 8) {
                 char *str = g_base64_encode(data+10, keyLen);
 
-                if (!moloch_string_add((MolochStringHash_t *)&session->sshkey, str, FALSE)) {
+                if (!moloch_string_add(&session->sshkey, str, FALSE)) {
                     free(str);
                 }
             }
@@ -696,7 +696,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
     }
 
     if (session->http->urlString && session->http->hostString) {
-        moloch_string_add((MolochStringHash_t *)&session->hosts, session->http->hostString->str+2, TRUE);
+        moloch_string_add(&session->hosts, session->http->hostString->str+2, TRUE);
 
         if (session->http->urlString->str[0] != '/') {
             char *result = strstr(session->http->urlString->str, session->http->hostString->str+2);
@@ -731,14 +731,14 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
         session->http->urlString = NULL;
     } else if (session->http->hostString) {
-        moloch_string_add((MolochStringHash_t *)&session->hosts, session->http->hostString->str+2, TRUE);
+        moloch_string_add(&session->hosts, session->http->hostString->str+2, TRUE);
 
         g_string_free(session->http->hostString, TRUE);
         session->http->hostString = NULL;
     }
 
     if (session->http->uaString) {
-        moloch_string_add((MolochStringHash_t *)&session->http->userAgents, session->http->uaString->str, TRUE);
+        moloch_string_add(&session->http->userAgents, session->http->uaString->str, TRUE);
         g_string_free(session->http->uaString, TRUE);
         session->http->uaString = NULL;
     }
@@ -976,7 +976,7 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
 
         char *lower = g_ascii_strdown((char*)name, -1);
 
-        if (!moloch_string_add((MolochStringHash_t *)&session->hosts, lower, FALSE)) {
+        if (*lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
             g_free(lower);
         }
     }
@@ -1015,7 +1015,7 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
 
             char *lower = g_ascii_strdown((char*)name, -1);
 
-            if (!moloch_string_add((MolochStringHash_t *)&session->hosts, lower, FALSE)) {
+            if (*lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
                 g_free(lower);
             }
         }
@@ -1077,6 +1077,8 @@ void moloch_detect_exit() {
 #define EMAIL_MIME                11
 #define EMAIL_MIME_RETURN         12
 #define EMAIL_MIME_DONE           13
+#define EMAIL_MIME_DATA           14
+#define EMAIL_MIME_DATA_RETURN    15
 /******************************************************************************/
 char *moloch_detect_remove_matching(char *str, char start, char stop) 
 {
@@ -1095,7 +1097,7 @@ char *moloch_detect_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
-void moloch_detect_parse_email_addresses(MolochStringHash_t *hash, char *data, int len)
+void moloch_detect_parse_email_addresses(void *hashv, char *data, int len)
 {
     char *end = data+len;
 
@@ -1121,7 +1123,7 @@ void moloch_detect_parse_email_addresses(MolochStringHash_t *hash, char *data, i
         }
 
         char *lower = g_ascii_strdown(start, data - start);
-        if (!moloch_string_add((MolochStringHash_t *)hash, lower, FALSE)) {
+        if (!moloch_string_add(hashv, lower, FALSE)) {
             g_free(lower);
         }
 
@@ -1158,12 +1160,12 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
             if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
                 char *lower = g_ascii_strdown(moloch_detect_remove_matching(line->str+11, '<', '>'), -1);
-                if (!moloch_string_add((MolochStringHash_t *)&session->email->src, lower, FALSE)) {
+                if (!moloch_string_add(&session->email->src, lower, FALSE)) {
                     g_free(lower);
                 }
             } else if (strncasecmp(line->str, "RCPT TO:", 8) == 0) {
                 char *lower = g_ascii_strdown(moloch_detect_remove_matching(line->str+9, '<', '>'), -1);
-                if (!moloch_string_add((MolochStringHash_t *)&session->email->dst, lower, FALSE)) {
+                if (!moloch_string_add(&session->email->dst, lower, FALSE)) {
                     g_free(lower);
                 }
                 *state = EMAIL_CMD;
@@ -1221,28 +1223,28 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 char *s = line->str + 8;
                 while(isspace(*s)) s++;
 
-                moloch_string_add((MolochStringHash_t *)&session->email->subject, s, TRUE);
+                moloch_string_add(&session->email->subject, s, TRUE);
             } else if (strncasecmp(line->str, "CC:", 3) == 0) {
-                moloch_detect_parse_email_addresses((MolochStringHash_t *)&session->email->dst, line->str+3, line->len-3);
+                moloch_detect_parse_email_addresses(&session->email->dst, line->str+3, line->len-3);
             } else if (strncasecmp(line->str, "To:", 3) == 0) {
-                moloch_detect_parse_email_addresses((MolochStringHash_t *)&session->email->dst, line->str+3, line->len-3);
+                moloch_detect_parse_email_addresses(&session->email->dst, line->str+3, line->len-3);
             } else if (strncasecmp(line->str, "From:", 5) == 0) {
-                moloch_detect_parse_email_addresses((MolochStringHash_t *)&session->email->src, line->str+5, line->len-5);
+                moloch_detect_parse_email_addresses(&session->email->src, line->str+5, line->len-5);
             } else if (strncasecmp(line->str, "X-Mailer:", 9) == 0) {
                 char *s = line->str + 9;
                 while(isspace(*s)) s++;
 
-                moloch_string_add((MolochStringHash_t *)&session->email->userAgents, s, TRUE);
+                moloch_string_add(&session->email->userAgents, s, TRUE);
             } else if (strncasecmp(line->str, "Mime-Version:", 13) == 0) {
                 char *s = line->str + 13;
                 while(isspace(*s)) s++;
-                moloch_string_add((MolochStringHash_t *)&session->email->mimeVersions, s, TRUE);
+                moloch_string_add(&session->email->mimeVersions, s, TRUE);
             } else if (strncasecmp(line->str, "Message-ID:", 11) == 0) {
-                moloch_string_add((MolochStringHash_t *)&session->email->ids, moloch_detect_remove_matching(line->str+11, '<', '>'), TRUE);
+                moloch_string_add(&session->email->ids, moloch_detect_remove_matching(line->str+11, '<', '>'), TRUE);
             } else if (strncasecmp(line->str, "Content-Type:", 13) == 0) {
                 char *s = line->str + 13;
                 while(isspace(*s)) s++;
-                moloch_string_add((MolochStringHash_t *)&session->email->contentTypes, s, TRUE);
+                moloch_string_add(&session->email->contentTypes, s, TRUE);
                 char *boundary = (char *)moloch_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
                     MolochString_t *string = malloc(sizeof(*string));
@@ -1257,17 +1259,19 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 continue;
             break;
         }
+        case EMAIL_MIME_DATA:
         case EMAIL_DATA: {
             if (*data == '\r') {
-                *state = EMAIL_DATA_RETURN;
+                (*state)++;
                 break;
             }
             g_string_append_c(line, *data);
             break;
         }
+        case EMAIL_MIME_DATA_RETURN:
         case EMAIL_DATA_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d data => %s\n", session->which, *state, line->str);
+            printf("%d %d %sdata => %s\n", session->which, *state, (*state == EMAIL_MIME_DATA_RETURN?"mime ": ""), line->str);
 #endif
             if (strcmp(line->str, ".") == 0) {
                 *state = EMAIL_CMD;
@@ -1283,7 +1287,27 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 }
 
                 if (found) {
+                    if (session->email->base64Decode & (1 << session->which)) {
+                        const char *md5 = g_checksum_get_string(session->email->checksum[session->which]);
+                        moloch_string_add(&session->email->md5s, (char*)md5, TRUE);
+                    }
+                    session->email->base64Decode &= ~(1 << session->which);
+                    session->email->state64[session->which] = 0;
+                    session->email->save64[session->which] = 0;
+                    g_checksum_reset(session->email->checksum[session->which]);
                     *state = EMAIL_MIME;
+                } else if (*state == EMAIL_MIME_DATA_RETURN) {
+                    if (session->email->base64Decode & (1 << session->which)) {
+                        guchar buf[20000];
+                        if (sizeof(buf) > line->len) {
+                            gsize  b = g_base64_decode_step (line->str, line->len, buf, 
+                                                            &(session->email->state64[session->which]),
+                                                            &(session->email->save64[session->which]));
+                            g_checksum_update(session->email->checksum[session->which], buf, b);
+                        }
+
+                    }
+                    *state = EMAIL_MIME_DATA;
                 } else {
                     *state = EMAIL_DATA;
                 }
@@ -1321,6 +1345,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
             return;
         }
         case EMAIL_MIME: {
+
             if (*data == '\r') {
                 *state = EMAIL_MIME_RETURN;
                 break;
@@ -1333,7 +1358,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
             printf("%d %d mime => %s\n", session->which, *state, line->str);
 #endif
             if (*line->str == 0) {
-                *state = EMAIL_DATA;
+                *state = EMAIL_MIME_DATA;
             } else {
                 *state = EMAIL_MIME_DONE;
             }
@@ -1368,7 +1393,11 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 while(isspace(*s)) s++;
                 char *filename = (char *)moloch_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
-                    moloch_string_add((MolochStringHash_t *)&session->email->filenames, moloch_detect_remove_matching(filename+9, '"', '"'), TRUE);
+                    moloch_string_add(&session->email->filenames, moloch_detect_remove_matching(filename+9, '"', '"'), TRUE);
+                }
+            } else if (strncasecmp(line->str, "Content-Transfer-Encoding:", 26) == 0) {
+                if(moloch_memcasestr(line->str+26, line->len - 26, "base64", 6)) {
+                    session->email->base64Decode |= (1 << session->which);
                 }
             }
 

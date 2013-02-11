@@ -32,7 +32,7 @@
 #include "moloch.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 2
+#define MOLOCH_MIN_DB_VERSION 3
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -724,6 +724,22 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->filenames, ustring,
+                sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
+                *(sJPtr++) = ',';
+                g_free(ustring->str);
+                free(ustring);
+            );
+
+            sJPtr--; // Remove last comma
+            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        }
+
+        sJPtr += snprintf(sJPtr, SJREMAINING, "\"emd5cnt\":%d,", HASH_COUNT(t_, session->email->md5s));
+        if (HASH_COUNT(s_, session->email->md5s)) {
+            sJPtr += snprintf(sJPtr, SJREMAINING, "\"emd5\":[");
+
+            MolochString_t *ustring;
+            HASH_FORALL_POP_HEAD(s_, session->email->md5s, ustring,
                 sJPtr += moloch_db_js0n_str(sJPtr, (unsigned char *)ustring->str, FALSE);
                 *(sJPtr++) = ',';
                 g_free(ustring->str);
