@@ -45,9 +45,7 @@ exports.get = function (index, type, query, cb) {
 };
 
 exports.index = function (index, type, id, document, cb) {
-  document.id = id;
-
-  internals.elasticSearchClient.index(index, type, document)
+  internals.elasticSearchClient.index(index, type, document, id)
     .on('data', function(data) {
       cb(null, JSON.parse(data));
     })
@@ -58,9 +56,7 @@ exports.index = function (index, type, id, document, cb) {
 };
 
 exports.indexNow = function (index, type, id, document, cb) {
-  document.id = id;
-
-  internals.elasticSearchClient.index(index, type, document, {refresh: 1})
+  internals.elasticSearchClient.index(index, type, document, id, {refresh: 1})
     .on('data', function(data) {
       cb(null, JSON.parse(data));
     })

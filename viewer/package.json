@@ -10,7 +10,7 @@
     , "connect": "< 2.0.0"
     , "request": ">= 0.0.1"
     , "connect-timeout": ">= 0.0.1"
-    , "elasticsearchclient": ">= 0.0.1"
+    , "elasticsearchclient": ">= 0.3.0"
     , "fs-ext": "http://github.com/awick/node-fs-ext/tarball/master"
     , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
     , "passport": ">= 0.0.1"
