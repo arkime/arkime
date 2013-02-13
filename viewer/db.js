@@ -44,27 +44,56 @@ exports.get = function (index, type, query, cb) {
     .exec();
 };
 
-exports.index = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.index(index, type, document, id)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
-};
+/* Work around a breaking change where document.id is nolonger used for the id */
+if (typeof ESC.prototype.multisearch === "function") {
+  exports.index = function (index, type, id, document, cb) {
+    internals.elasticSearchClient.index(index, type, document, id)
+      .on('data', function(data) {
+        cb(null, JSON.parse(data));
+      })
+      .on('error', function(error) {
+        cb(error, null);
+      })
+      .exec();
+  };
 
-exports.indexNow = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.index(index, type, document, id, {refresh: 1})
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
-};
+  exports.indexNow = function (index, type, id, document, cb) {
+    internals.elasticSearchClient.index(index, type, document, id, {refresh: 1})
+      .on('data', function(data) {
+        cb(null, JSON.parse(data));
+      })
+      .on('error', function(error) {
+        cb(error, null);
+      })
+      .exec();
+  };
+} else {
+  exports.index = function (index, type, id, document, cb) {
+    document.id = id;
+
+    internals.elasticSearchClient.index(index, type, document)
+      .on('data', function(data) {
+        cb(null, JSON.parse(data));
+      })
+      .on('error', function(error) {
+        cb(error, null);
+      })
+      .exec();
+  };
+
+  exports.indexNow = function (index, type, id, document, cb) {
+    document.id = id;
+
+    internals.elasticSearchClient.index(index, type, document, {refresh: 1})
+      .on('data', function(data) {
+        cb(null, JSON.parse(data));
+      })
+      .on('error', function(error) {
+        cb(error, null);
+      })
+      .exec();
+  };
+}
 
 exports.search =  function (index, type, query, cb) {
   internals.elasticSearchClient.search(index, type, query)

@@ -383,6 +383,7 @@ Currently upgrading from previous versions of Moloch is a manual process, howeve
 * Build the moloch system using "make"
 * Shut down currently running capture and viewer processes
 * Optionally use "make install" to copy the new binaries and other items and/or push the new items to the capture hosts
+* Run "npm update" in the viewer directory if not using "make install"
 * Update the database using the "db/db.pl host:port upgrade" script
 * Start the new moloch system back up
 

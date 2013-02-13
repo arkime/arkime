@@ -313,7 +313,7 @@ void moloch_detect_exit();
 
 #define MOLOCH_HTTP_BUFFER_SIZE_S 9999
 #define MOLOCH_HTTP_BUFFER_SIZE_M 99999
-#define MOLOCH_HTTP_BUFFER_SIZE_L 3000000
+#define MOLOCH_HTTP_BUFFER_SIZE_L 10000000
 
 void moloch_http_init();
 

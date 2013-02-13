@@ -27,24 +27,24 @@
 "country.src"             return 'country.src'
 "country.xff"             return 'country.xff'
 "databytes"               return 'databytes'
-"email.ct.cnt"            if (yy.emailSearch) return 'email.ct.cnt'
-"email.ct"                if (yy.emailSearch) return 'email.ct'
-"email.dst.cnt"           if (yy.emailSearch) return 'email.dst.cnt'
-"email.dst"               if (yy.emailSearch) return 'email.dst'
-"email.fn.cnt"            if (yy.emailSearch) return 'email.fn.cnt'
-"email.fn"                if (yy.emailSearch) return 'email.fn'
-"email.id.cnt"            if (yy.emailSearch) return 'email.id.cnt'
-"email.id"                if (yy.emailSearch) return 'email.id'
-"email.md5.cnt"           if (yy.emailSearch) return 'email.md5.cnt'
-"email.md5"               if (yy.emailSearch) return 'email.md5'
-"email.mv.cnt"            if (yy.emailSearch) return 'email.mv.cnt'
-"email.mv"                if (yy.emailSearch) return 'email.mv'
-"email.src.cnt"           if (yy.emailSearch) return 'email.src.cnt'
-"email.src"               if (yy.emailSearch) return 'email.src'
-"email.subject.cnt"       if (yy.emailSearch) return 'email.subject.cnt'
-"email.subject"           if (yy.emailSearch) return 'email.subject'
-"email.ua.cnt"            if (yy.emailSearch) return 'email.ua.cnt'
-"email.ua"                if (yy.emailSearch) return 'email.ua'
+"email.ct.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ct.cnt'
+"email.ct"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ct'
+"email.dst.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.dst.cnt'
+"email.dst"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.dst'
+"email.fn.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.fn.cnt'
+"email.fn"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.fn'
+"email.id.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.id.cnt'
+"email.id"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.id'
+"email.md5.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.md5.cnt'
+"email.md5"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.md5'
+"email.mv.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mv.cnt'
+"email.mv"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mv'
+"email.src.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.src.cnt'
+"email.src"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.src'
+"email.subject.cnt"       if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject.cnt'
+"email.subject"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject'
+"email.ua.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ua.cnt'
+"email.ua"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ua'
 "header.dst.cnt"          return "header.dst.cnt"
 "header.dst"              return "header.dst"
 "header"                  return "header"
@@ -191,12 +191,14 @@ TERMFIELD  : 'id'        {$$ = '_id'}
 
 UPTERMFIELD  : 'country.src' {$$ = 'g1'}
              | 'country.dst' {$$ = 'g2'}
+             | 'country.xff' {$$ = 'gxff'}
              | 'country.dns' {$$ = 'gdnsip'}
              ;
 
 TEXTFIELD  : 'asn.src'         {$$ = 'as1'}
            | 'asn.dst'         {$$ = 'as2'}
            | 'asn.dns'         {$$ = 'asdnsip'}
+           | 'asn.xff'         {$$ = 'asxff'}
            | 'email.subject'   {$$ = 'esub'}
            | 'email.ua'        {$$ = 'eua'}
            | 'cert.subject.on' {$$ = 'tls.sOn'}
@@ -450,27 +452,28 @@ e
     | country '==' STR 
         { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}]};
+            $$ = {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}]};
           } else {
-            $$ = {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}]};
+            $$ = {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}]};
           }
         }
     | country '!=' STR 
         { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}]}};
+            $$ = {not: {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}]}};
           } else {
-            $$ = {not: {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}]}};
+            $$ = {not: {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}]}};
           }
         }
     | asn '==' STR 
         { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}]};
+            $$ = {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}]};
           } else {
             $$ = {or: [{query: {text: {as1:   {query: str, type: "phrase", operator: "and"}}}}, 
                        {query: {text: {as2:   {query: str, type: "phrase", operator: "and"}}}}, 
-                       {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}}
+                       {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}},
+                       {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}}
                       ]
                  };
           }
@@ -478,11 +481,12 @@ e
     | asn '!=' STR 
         { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}]}};
+            $$ = {not: {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}]}};
           } else {
             $$ = {not: {or: [{query: {text: {as1:   {query: str, type: "phrase", operator: "and"}}}}, 
                              {query: {text: {as2:   {query: str, type: "phrase", operator: "and"}}}}, 
-                             {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}}
+                             {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}},
+                             {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}}
                             ]
                  }};
           }
@@ -554,10 +558,14 @@ function parseIpPort(ipPortStr, which) {
 
   switch(which) {
   case 0:
+    var ors = [t1, t2];
+
     if (xff)
-        return {or: [t1, t2, xff]};
-    else
-        return {or: [t1, t2]};
+        ors.push(xff);
+    if (dns)
+        ors.push(dns);
+
+    return {or: ors};
   case 1:
     return t1;
   case 2:
