@@ -18,14 +18,25 @@
 
 
 
+# This is where everything is installed
+TDIR=/data/moloch
+
 ES=0.19.12
 NODEJS=0.8.12
-# If you change TDIR you need to change TDIR in the single-host/*/* files
-TDIR=/data/moloch
 INSTALL_DIR=$PWD
 
+if [ "$(id -u)" != "0" ]; then
+   echo "ERROR - This script must be run as root" 1>&2
+   exit 1
+fi
+
+pver=`python -c 'import sys; print("%i" % (sys.hexversion>=0x02060000))'`
+if [ $pver -eq 0 ]; then
+    echo "ERROR - node.js requires python 2.6 or higher to build"
+fi
+
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
-   echo "WARNING - a umask of 022 is STRONGLY recommended - $(umask) " 1>&2
+   echo "WARNING - Using a umask of 022 is STRONGLY recommended - $(umask) " 1>&2
    sleep 2
 fi
 
@@ -34,10 +45,6 @@ if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
    sleep 2
 fi
 
-if [ "$(id -u)" != "0" ]; then
-   echo "ERROR - This script must be run as root" 1>&2
-   exit 1
-fi
 
 which java
 JAVA_VAL=$?

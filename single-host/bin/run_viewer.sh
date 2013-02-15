@@ -1,6 +1,6 @@
 #!/bin/sh
 # Add to /etc/inittab something like 
-# v1:2345:respawn:/data/moloch/bin/run_viewer.sh
+# v1:2345:respawn:_TDIR_/bin/run_viewer.sh
 
 TDIR=_TDIR_
 

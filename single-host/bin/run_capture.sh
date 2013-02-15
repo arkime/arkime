@@ -1,6 +1,6 @@
 #!/bin/sh
 # Add to /etc/inittab something like 
-# m1:2345:respawn:/data/moloch/bin/run_capture.sh
+# m1:2345:respawn:_TDIR_/bin/run_capture.sh
 
 TDIR=_TDIR_
 
