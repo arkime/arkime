@@ -129,11 +129,11 @@ Building Capture
 
    - CentOS::
 
-        yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel perl-JSON
+        yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel perl-JSON bzip2-libs bzip2-devel
 
    - Ubuntu::
     
-        apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev libjson-perl
+        apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev libjson-perl libbz2-dev
 
 2. Building ``capture`` can be a pain because of OS versions.
 
