@@ -1233,15 +1233,20 @@ app.get('/unique.txt', function(req, res) {
 function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
   function processFile(fd, pos, nextCb) {
     var buffer = new Buffer(5000);
-    fs.read(fd, buffer, 0, 16, pos, function (err, bytesRead, buffer) {
-      if (bytesRead !== 16) {
-        return packetCb(buffer.slice(0,0), nextCb);
-      }
-      var len = buffer.readInt32LE(8);
-      fs.read(fd, buffer, 16, len, pos+16, function (err, bytesRead, buffer) {
-        return packetCb(buffer.slice(0,16+len), nextCb);
+    try {
+      fs.read(fd, buffer, 0, 16, pos, function (err, bytesRead, buffer) {
+        if (bytesRead !== 16) {
+          return packetCb(buffer.slice(0,0), nextCb);
+        }
+        var len = buffer.readInt32LE(8);
+        fs.read(fd, buffer, 16, len, pos+16, function (err, bytesRead, buffer) {
+          return packetCb(buffer.slice(0,16+len), nextCb);
+        });
       });
-    });
+    } catch (e) {
+      console.log("Error ", e, "for id", id);
+      endCb("Error loading data for session " + id, null);
+    }
   }
 
   Db.get('sessions-' + id.substr(0,6), 'session', id, function(err, session) {
