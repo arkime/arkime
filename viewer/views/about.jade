@@ -15,7 +15,7 @@ div(style="margin:10px")
       td.
         ==, !=
       td Autonomous System Number String
-      td Shorthand for the Maxmind GeoIP ASNum string from the asn.src, asn.dst, asn.dns, or asn.xff fields<br>Examples:asn == as12345, asn == AOL
+      td Shorthand for the Maxmind GeoIP ASNum string from the asn.src, asn.dst, asn.dns, asn.email, or asn.xff fields<br>Examples:asn == as12345, asn == AOL
     tr
       td asn.src
       td.
@@ -34,6 +34,12 @@ div(style="margin:10px")
         ==, !=
       td Autonomous System Number String
       td Maxmind GeoIP ASNum string calculated from all the ip addresses in a DNS request<br>Examples:asn.dns == as12345, asn.dns == AOL
+    tr
+      td asn.email
+      td.
+        ==, !=
+      td Autonomous System Number String
+      td Maxmind GeoIP ASNum string calculated from all the ip addresses in a email request<br>Examples:asn.email == as12345, asn.email == AOL
     tr
       td asn.xff
       td.
@@ -96,7 +102,7 @@ div(style="margin:10px")
       td.
         ==, !=
       td 3 character country string
-      td Shorthand for the Maxmind GeoIP string of country.src, country.dst, country.dns, or country.xff<br>Examples:country == USA, country == *SA
+      td Shorthand for the Maxmind GeoIP string of country.src, country.dst, country.dns, country.email, or country.xff<br>Examples:country == USA, country == *SA
     tr
       td country.src
       td.
@@ -115,6 +121,12 @@ div(style="margin:10px")
         ==, !=
       td 3 character country string
       td Maxmind GeoIP country string calculated from the ips in DNS requests<br>Examples:country.dns == USA, country.dns != *SA
+    tr
+      td country.email
+      td.
+        ==, !=
+      td 3 character country string
+      td Maxmind GeoIP country string calculated from the ips in email requests<br>Examples:country.email == USA, country.email != *SA
     tr
       td country.xff
       td.
@@ -258,7 +270,7 @@ div(style="margin:10px")
       td.
         ==, !=
       td a[.b[.c[.d]]][/n][:port]
-      td Matches ip addresses and optionally port using short hand and/or /n notation for src, dst, xff, and dns.<br>Examples: ip==10.10.10.10, ip!=10.10.10.0/24:80, ip==10.10.10:80
+      td Matches ip addresses and optionally port using short hand and/or /n notation for ip.src, ip.dst, ip.dns, ip.email, and ip.xff.<br>Examples: ip==10.10.10.10, ip!=10.10.10.0/24:80, ip==10.10.10:80
     tr
       td ip.src
       td.
@@ -282,6 +294,17 @@ div(style="margin:10px")
       td #{range}
       td integer
       td Number of unique dns ips
+    tr
+      td ip.email
+      td.
+        ==, !=
+      td a[.b[.c[.d]]][/n]
+      td Matches ip addresses using short hand and/or /n notation for IPs found in email requests.<br>Examples: ip.email==10.10.10.10, ip.email==10.10.10.0/24, ip.email==10.10.10
+    tr
+      td ip.email.cnt
+      td #{range}
+      td integer
+      td Number of unique email ips
     tr
       td ip.xff
       td.

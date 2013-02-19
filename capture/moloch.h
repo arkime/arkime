@@ -55,6 +55,7 @@ typedef struct moloch_config {
     char     *pluginsDir;
 
     char     **plugins;
+    char     **smtpIpHeaders;
 
     uint32_t  maxFileSizeG;
     uint32_t  minFreeSpaceG;
@@ -128,6 +129,8 @@ typedef struct moloch_session_email {
     HASH_VAR(s_, contentTypes, MolochStringHead_t, 11);
     HASH_VAR(s_, filenames, MolochStringHead_t, 11);
     HASH_VAR(s_, md5s, MolochStringHead_t, 11);
+    HASH_VAR(s_, hosts, MolochStringHead_t, 11);
+    HASH_VAR(i_, ips, MolochIntHead_t, 11);
 
     MolochStringHead_t boundaries;
     char               state[2];

@@ -482,6 +482,8 @@ void moloch_nids_new_session_email(MolochSession_t *session)
     HASH_INIT(s_, session->email->contentTypes, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, session->email->filenames, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, session->email->md5s, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, session->email->hosts, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(i_, session->email->ips, moloch_int_hash, moloch_int_cmp);
 
     session->email->line[0] = g_string_sized_new(100);
     session->email->line[1] = g_string_sized_new(100);
@@ -495,6 +497,7 @@ void moloch_nids_new_session_email(MolochSession_t *session)
 void moloch_nids_free_session_email(MolochSession_t *session, gboolean conditionally)
 {
     MolochString_t *string;
+    MolochInt_t    *mi;
 
     if (conditionally && (HASH_COUNT(s_, session->email->src) > 0 || HASH_COUNT(s_, session->email->dst) > 0)) {
         return;
@@ -532,10 +535,16 @@ void moloch_nids_free_session_email(MolochSession_t *session, gboolean condition
         g_free(string->str);
         free(string);
     );
-
     HASH_FORALL_POP_HEAD(s_, session->email->md5s, string, 
         g_free(string->str);
         free(string);
+    );
+    HASH_FORALL_POP_HEAD(s_, session->email->hosts, string, 
+        g_free(string->str);
+        free(string);
+    );
+    HASH_FORALL_POP_HEAD(i_, session->email->ips, mi, 
+        free(mi);
     );
 
     g_string_free(session->email->line[0], TRUE);
@@ -1017,7 +1026,7 @@ gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
     int r = nids_dispatch(config.packetsPerPoll);
     if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
         if (config.pcapReadDir && moloch_nids_next_file()) {
-            g_timeout_add(100, moloch_nids_next_file_gfunc, 0);
+            g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
             return FALSE;
         }
 
@@ -1300,6 +1309,9 @@ void moloch_nids_init()
 /******************************************************************************/
 void moloch_nids_exit() {
     LOG("exit");
+
+    nids_unregister_tcp(moloch_nids_cb_tcp);
+    nids_unregister_ip(moloch_nids_cb_ip);
     nids_exit();
 
     MolochSession_t *hsession;

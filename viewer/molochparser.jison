@@ -12,6 +12,7 @@
 "asn.dst"                 return 'asn.dst'
 "asn.src"                 return 'asn.src'
 "asn.xff"                 return 'asn.xff'
+"asn.email"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'asn.email'
 "bytes"                   return 'bytes'
 "cert.alt.cnt"            return "cert.alt.cnt"
 "cert.alt"                return "cert.alt"
@@ -26,6 +27,7 @@
 "country.dst"             return 'country.dst'
 "country.src"             return 'country.src'
 "country.xff"             return 'country.xff'
+"country.email"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'country.email'
 "databytes"               return 'databytes'
 "email.ct.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ct.cnt'
 "email.ct"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ct'
@@ -61,6 +63,8 @@
 "ip.src"                  return "ip.src"
 "ip.xff.cnt"              return "ip.xff.cnt"
 "ip.xff"                  return "ip.xff"
+"ip.email.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return "ip.email.cnt"
+"ip.email"                if (!yy.emailSearch) throw "email searches disabled for user"; return "ip.email"
 "node"                    return 'node'
 "oldheader"               return "oldheader"
 "packets"                 return 'packets'
@@ -145,8 +149,9 @@ RANGEFIELD: databytes           {$$ = 'db'}
           | 'port.dst'          {$$ = 'p2'}
           | 'uri.cnt'           {$$ = 'uscnt'}
           | 'cert.cnt'          {$$ = 'tlscnt'}
-          | 'ip.xff.cnt'        {$$ = 'xffscnt'}
           | 'ip.dns.cnt'        {$$ = 'dnsipcnt'}
+          | 'ip.email.cnt'      {$$ = 'eipcnt'}
+          | 'ip.xff.cnt'        {$$ = 'xffscnt'}
           | 'ua.cnt'            {$$ = 'uacnt'}
           | 'user.cnt'          {$$ = 'usercnt'}
           | 'host.cnt'          {$$ = 'hocnt'}
@@ -189,33 +194,37 @@ TERMFIELD  : 'id'        {$$ = '_id'}
            | 'rootId'    {$$ = 'ro'}
            ;
 
-UPTERMFIELD  : 'country.src' {$$ = 'g1'}
-             | 'country.dst' {$$ = 'g2'}
-             | 'country.xff' {$$ = 'gxff'}
-             | 'country.dns' {$$ = 'gdnsip'}
+UPTERMFIELD  : 'country.src'   {$$ = 'g1'}
+             | 'country.dst'   {$$ = 'g2'}
+             | 'country.xff'   {$$ = 'gxff'}
+             | 'country.email' {$$ = 'geip'}
+             | 'country.dns'   {$$ = 'gdnsip'}
              ;
 
 TEXTFIELD  : 'asn.src'         {$$ = 'as1'}
            | 'asn.dst'         {$$ = 'as2'}
            | 'asn.dns'         {$$ = 'asdnsip'}
            | 'asn.xff'         {$$ = 'asxff'}
+           | 'asn.email'       {$$ = 'aseip'}
            | 'email.subject'   {$$ = 'esub'}
            | 'email.ua'        {$$ = 'eua'}
            | 'cert.subject.on' {$$ = 'tls.sOn'}
            | 'cert.issuer.on'  {$$ = 'tls.iOn'}
            ;
 
-IPFIELD  : 'ip' {$$ = 0}
-         | 'ip.src' {$$ = 1}
-         | 'ip.dst' {$$ = 2}
-         | 'ip.xff' {$$ = 3}
-         | 'ip.dns' {$$ = 4}
+IPFIELD  : 'ip'       {$$ = 0}
+         | 'ip.src'   {$$ = 1}
+         | 'ip.dst'   {$$ = 2}
+         | 'ip.xff'   {$$ = 3}
+         | 'ip.dns'   {$$ = 4}
+         | 'ip.email' {$$ = 5}
          ;
 
 STR : ID
     | asn
     | asn.dns
     | asn.dst
+    | asn.email
     | asn.src
     | asn.xff
     | bytes
@@ -230,6 +239,7 @@ STR : ID
     | country
     | country.dns
     | country.dst
+    | country.email
     | country.src
     | country.xff
     | email.dst
@@ -252,6 +262,8 @@ STR : ID
     | ip.dns
     | ip.dns.cnt
     | ip.dst
+    | ip.email
+    | ip.email.cnt
     | ip.src
     | ip.xff
     | ip.xff.cnt
@@ -406,9 +418,9 @@ e
     | 'port' '!=' NUMBER
         {$$ = {not: {or: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
     | IPFIELD '==' IPNUM
-        {$$ = parseIpPort($3,$1);}
+        {$$ = parseIpPort(yy, $3,$1);}
     | IPFIELD '!=' IPNUM
-        {$$ = {not: parseIpPort($3,$1)};}
+        {$$ = {not: parseIpPort(yy, $3,$1)};}
     | tags '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {ta: tag}};
@@ -452,28 +464,29 @@ e
     | country '==' STR 
         { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}]};
+            $$ = {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}, {query: {wildcard: {geip: str}}}]};
           } else {
-            $$ = {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}]};
+            $$ = {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}, {term: {geip: str}}]};
           }
         }
     | country '!=' STR 
         { var str = stripQuotes($3).toUpperCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}]}};
+            $$ = {not: {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}, {query: {wildcard: {geip: str}}}]}};
           } else {
-            $$ = {not: {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}]}};
+            $$ = {not: {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}, {term: {geip: str}}]}};
           }
         }
     | asn '==' STR 
         { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}]};
+            $$ = {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}, {query: {wildcard: {aseip: str}}}]};
           } else {
-            $$ = {or: [{query: {text: {as1:   {query: str, type: "phrase", operator: "and"}}}}, 
-                       {query: {text: {as2:   {query: str, type: "phrase", operator: "and"}}}}, 
-                       {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}},
-                       {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}}
+            $$ = {or: [{query: {text: {as1:     {query: str, type: "phrase", operator: "and"}}}}, 
+                       {query: {text: {as2:     {query: str, type: "phrase", operator: "and"}}}}, 
+                       {query: {text: {asxff:   {query: str, type: "phrase", operator: "and"}}}},
+                       {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}},
+                       {query: {text: {aseip:   {query: str, type: "phrase", operator: "and"}}}}
                       ]
                  };
           }
@@ -481,12 +494,13 @@ e
     | asn '!=' STR 
         { var str = stripQuotes($3).toLowerCase();
           if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}]}};
+            $$ = {not: {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}, {query: {wildcard: {aseip: str}}}]}};
           } else {
-            $$ = {not: {or: [{query: {text: {as1:   {query: str, type: "phrase", operator: "and"}}}}, 
-                             {query: {text: {as2:   {query: str, type: "phrase", operator: "and"}}}}, 
-                             {query: {text: {asxff: {query: str, type: "phrase", operator: "and"}}}},
-                             {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}}
+            $$ = {not: {or: [{query: {text: {as1:     {query: str, type: "phrase", operator: "and"}}}}, 
+                             {query: {text: {as2:     {query: str, type: "phrase", operator: "and"}}}}, 
+                             {query: {text: {asxff:   {query: str, type: "phrase", operator: "and"}}}},
+                             {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}},
+                             {query: {text: {aseip:   {query: str, type: "phrase", operator: "and"}}}}
                             ]
                  }};
           }
@@ -494,7 +508,7 @@ e
     ;
 %%
 
-function parseIpPort(ipPortStr, which) {
+function parseIpPort(yy, ipPortStr, which) {
   ipPortStr = ipPortStr.trim();
   // Support '10.10.10/16:4321'
 
@@ -531,18 +545,21 @@ function parseIpPort(ipPortStr, which) {
   var t2 = {and: []};
   var xff;
   var dns;
+  var email;
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
         t1.and.push({term: {a1: ip1>>>0}});
         t2.and.push({term: {a2: ip1>>>0}});
-        xff = {term: {xff: ip1>>>0}};
-        dns = {term: {dnsip: ip1>>>0}};
+        dns   = {term: {dnsip: ip1>>>0}};
+        email = {term: {eip: ip1>>>0}};
+        xff   = {term: {xff: ip1>>>0}};
     } else {
         t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
         t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
-        xff =  {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
-        dns =  {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
+        dns =    {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
+        email =  {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
+        xff =    {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
     }
   }
 
@@ -564,6 +581,8 @@ function parseIpPort(ipPortStr, which) {
         ors.push(xff);
     if (dns)
         ors.push(dns);
+    if (yy.emailSearch === true && email)
+        ors.push(email);
 
     return {or: ors};
   case 1:
@@ -578,6 +597,10 @@ function parseIpPort(ipPortStr, which) {
     if (!dns)
         throw "dns doesn't support port only";
     return dns;
+  case 5:
+    if (!email)
+        throw "email doesn't support port only";
+    return email;
   }
 }
 

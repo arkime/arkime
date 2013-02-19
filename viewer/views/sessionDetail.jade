@@ -206,6 +206,18 @@ div(id='sessionDetail#{session.id}')
         each i in session.emd5
             a(href='#', onclick='return addExpression("email.md5 == \\\"#{i}\\\"");') #{i}
             | 
+    if (session.eip)
+      div Email IPs:
+        - var emailIps = session.eip.map(function(ip) {return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff)});
+        each eip,i in emailIps
+          a(href='#', onclick='return addExpression("ip.email == #{eip}");') #{eip}
+          | 
+          - if (session.geip)
+            a(href='#', onclick='return addExpression("country.email == #{session.geip[i]}");') (#{session.geip[i]})
+            | 
+          - if (session.aseip)
+            a(href='#', onclick='return addExpression("asn.email == \\\"#{session.aseip[i]}\\\"");') [#{session.aseip[i]}]
+            | 
   hr
   div
     if (session.pa > 200)

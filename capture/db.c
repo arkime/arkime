@@ -30,9 +30,10 @@
 #include <sys/statvfs.h>
 #include "glib.h"
 #include "moloch.h"
+#include "bsb.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 3
+#define MOLOCH_MIN_DB_VERSION 4
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -82,102 +83,68 @@ int moloch_db_tag_cmp(const void *keyv, const void *elementv)
 }
 
 /******************************************************************************/
-int moloch_db_js0n_str(char *str, int remaining, unsigned char *in, gboolean utf8)
+void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
 {
-    char *out = str;
-
-    remaining -= 1;
-    if (remaining < 0) return out-str+1;
-    *(out++) = '"';
+    BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
         switch(*in) {
         case '\b':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = 'b';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, 'b');
             break;
         case '\n':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = 'n';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, 'n');
             break;
         case '\r':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = 'r';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, 'r');
             break;
         case '\f':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = 'f';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, 'f');
             break;
         case '\t':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = 't';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, 't');
             break;
         case '"':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = '"';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, '"');
             break;
         case '\\':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = '\\';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, '\\');
             break;
         case '/':
-            remaining -= 2;
-            if (remaining < 0) return out-str+2;
-            *(out++) = '\\';
-            *(out++) = '/';
+            BSB_EXPORT_u08(*bsb, '\\');
+            BSB_EXPORT_u08(*bsb, '/');
             break;
         default:
             if(*in < 32) {
-                remaining -= 6;
-                if (remaining < 0) return out-str+6;
-                out += sprintf(out, "\\u%04x", *in);
+                BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
                 if ((*in & 0xf0) == 0xf0) {
-                    remaining -= 4;
-                    if (remaining < 0) return out-str+4;
-                    *(out++) = *(in++);
-                    *(out++) = *(in++);
-                    *(out++) = *(in++);
-                    *(out++) = *in;
+                    BSB_EXPORT_u08(*bsb, *(in++));
+                    BSB_EXPORT_u08(*bsb, *(in++));
+                    BSB_EXPORT_u08(*bsb, *(in++));
+                    BSB_EXPORT_u08(*bsb, *in);
                 } else if ((*in & 0xf0) == 0xe0) {
-                    remaining -= 3;
-                    if (remaining < 0) return out-str+3;
-                    *(out++) = *(in++);
-                    *(out++) = *(in++);
-                    *(out++) = *in;
+                    BSB_EXPORT_u08(*bsb, *(in++));
+                    BSB_EXPORT_u08(*bsb, *(in++));
+                    BSB_EXPORT_u08(*bsb, *in);
                 } else if ((*in & 0xf0) == 0xd0) {
-                    remaining -= 2;
-                    if (remaining < 0) return out-str+2;
-                    *(out++) = *(in++);
-                    *(out++) = *in;
+                    BSB_EXPORT_u08(*bsb, *(in++));
+                    BSB_EXPORT_u08(*bsb, *in);
                 } else {
-                    remaining -= 1;
-                    if (remaining < 0) return out-str+1;
-                    *(out++) = *in;
+                    BSB_EXPORT_u08(*bsb, *in);
                 }
             } else {
                 if(*in & 0x80) {
-                    remaining -= 2;
-                    if (remaining < 0) return out-str+2;
-                    *(out++) = (0xc0 | (*in >> 6));
-                    *(out++) = (0x80 | (*in & 0x3f));
+                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
                 } else {
-                    remaining -= 1;
-                    if (remaining < 0) return out-str+1;
-                    *(out++) = *in;
+                    BSB_EXPORT_u08(*bsb, *in);
                 }
             }
             break;
@@ -185,16 +152,11 @@ int moloch_db_js0n_str(char *str, int remaining, unsigned char *in, gboolean utf
         in++;
     }
 
-
-    remaining -= 2;
-    if (remaining < 0) return out-str+2;
-    *(out++) = '"';
-    *out = 0;
-    return out-str;
+    BSB_EXPORT_u08(*bsb, '"');
 }
 /******************************************************************************/
 static char *sJson = 0;
-static char *sJPtr;
+static BSB jbsb;
 
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
@@ -217,7 +179,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     totalSessions++;
 
     if (!sJson) {
-        sJPtr = sJson = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_L);
+        sJson = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_L);
+        BSB_INIT(jbsb, sJson, MOLOCH_HTTP_BUFFER_SIZE_L);
     }
 
     static char     prefix[100];
@@ -245,11 +208,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
-#define    SJREMAINING (sJPtr-sJson > MOLOCH_HTTP_BUFFER_SIZE_L?0:(MOLOCH_HTTP_BUFFER_SIZE_L - (sJPtr-sJson)))
+    BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
-    sJPtr += snprintf(sJPtr, SJREMAINING, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
-
-    sJPtr += snprintf(sJPtr, SJREMAINING, 
+    BSB_EXPORT_sprintf(jbsb, 
                       "{\"fp\":%u,"
                       "\"lp\":%u,"
                       "\"a1\":%u,"
@@ -268,33 +229,33 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (gi) {
         const char *g1 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr1));
         if (g1)
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"g1\":\"%s\",", g1);
+            BSB_EXPORT_sprintf(jbsb, "\"g1\":\"%s\",", g1);
     }
     if (giASN) {
         char *as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
         if (as1) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"as1\":");
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char*)as1, TRUE);
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "\"as1\":");
+            moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
+            BSB_EXPORT_u08(jbsb, ',');
             free(as1);
         }
     }
     if (gi) {
         const char *g2 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
         if (g2)
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"g2\":\"%s\",", g2);
+            BSB_EXPORT_sprintf(jbsb, "\"g2\":\"%s\",", g2);
     }
     if (giASN) {
         char *as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
         if (as2) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"as2\":");
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char*)as2, TRUE);
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "\"as2\":");
+            moloch_db_js0n_str(&jbsb, (unsigned char*)as2, TRUE);
+            BSB_EXPORT_u08(jbsb, ',');
             free(as2);
         }
     }
 
-    sJPtr += snprintf(sJPtr, SJREMAINING, 
+    BSB_EXPORT_sprintf(jbsb, 
                       "\"pa\":%u,"
                       "\"by\":%lu,"
                       "\"db\":%lu,"
@@ -307,503 +268,565 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (session->rootId) {
         if (session->rootId[0] == 'R')
             session->rootId = g_strdup(id);
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"ro\":\"%s\",", session->rootId);
+        BSB_EXPORT_sprintf(jbsb, "\"ro\":\"%s\",", session->rootId);
     }
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"ps\":[");
+    BSB_EXPORT_sprintf(jbsb, "\"ps\":[");
     for(i = 0; i < session->filePosArray->len; i++) {
         if (i == 0)
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
+            BSB_EXPORT_sprintf(jbsb, "%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
         else
-            sJPtr += snprintf(sJPtr, SJREMAINING, ",%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
+            BSB_EXPORT_sprintf(jbsb, ",%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
     }
-    sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+    BSB_EXPORT_sprintf(jbsb, "],");
     if (session->http && session->http->urlArray->len) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"uscnt\":%d,", session->http->urlArray->len);
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"us\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"uscnt\":%d,", session->http->urlArray->len);
+        BSB_EXPORT_sprintf(jbsb, "\"us\":[");
         for(i = 0; i < session->http->urlArray->len; i++) {
             if (i != 0)
-                *(sJPtr++) = ',';
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, g_ptr_array_index(session->http->urlArray, i), FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
+            moloch_db_js0n_str(&jbsb, g_ptr_array_index(session->http->urlArray, i), FALSE);
         }
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (HASH_COUNT(t_, session->certs)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"tlscnt\":%d,", HASH_COUNT(t_, session->certs));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"tls\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, session->certs));
+        BSB_EXPORT_sprintf(jbsb, "\"tls\":[");
 
         MolochCertsInfo_t *certs;
         MolochString_t *string;
 
         HASH_FORALL_POP_HEAD(t_, session->certs, certs,
-            *(sJPtr++) = '{';
+            BSB_EXPORT_u08(jbsb, '{');
 
             if (certs->issuer.commonName.s_count > 0) {
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"iCn\":[");
+                BSB_EXPORT_sprintf(jbsb, "\"iCn\":[");
                 while (certs->issuer.commonName.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
-                    sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)string->str, string->utf8);
-                    *(sJPtr++) = ',';
+                    moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
+                    BSB_EXPORT_u08(jbsb, ',');
                     g_free(string->str);
                     free(string);
                 }
-                sJPtr--; // Remove last comma
-                *(sJPtr++) = ']';
-                *(sJPtr++) = ',';
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_u08(jbsb, ']');
+                BSB_EXPORT_u08(jbsb, ',');
             }
 
             if (certs->issuer.orgName) {
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"iOn\":");
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
-                *(sJPtr++) = ',';
+                BSB_EXPORT_sprintf(jbsb, "\"iOn\":");
+                moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
+                BSB_EXPORT_u08(jbsb, ',');
             }
 
             if (certs->subject.commonName.s_count) {
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"sCn\":[");
+                BSB_EXPORT_sprintf(jbsb, "\"sCn\":[");
                 while (certs->subject.commonName.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->subject.commonName, string);
-                    sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)string->str, string->utf8);
-                    *(sJPtr++) = ',';
+                    moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
+                    BSB_EXPORT_u08(jbsb, ',');
                     g_free(string->str);
                     free(string);
                 }
-                sJPtr--; // Remove last comma
-                *(sJPtr++) = ']';
-                *(sJPtr++) = ',';
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_u08(jbsb, ']');
+                BSB_EXPORT_u08(jbsb, ',');
             }
 
             if (certs->subject.orgName) {
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"sOn\":");
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
-                *(sJPtr++) = ',';
+                BSB_EXPORT_sprintf(jbsb, "\"sOn\":");
+                moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
+                BSB_EXPORT_u08(jbsb, ',');
             }
 
             if (certs->serialNumber) {
                 int k;
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"sn\":\"");
+                BSB_EXPORT_sprintf(jbsb, "\"sn\":\"");
                 for (k = 0; k < certs->serialNumberLen; k++) {
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "%02x", certs->serialNumber[k]);
+                    BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
                 }
-                *(sJPtr++) = '"';
-                *(sJPtr++) = ',';
+                BSB_EXPORT_u08(jbsb, '"');
+                BSB_EXPORT_u08(jbsb, ',');
             }
 
             if (certs->alt.s_count) {
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"altcnt\":%d,", certs->alt.s_count);
-                sJPtr += snprintf(sJPtr, SJREMAINING, "\"alt\":[");
+                BSB_EXPORT_sprintf(jbsb, "\"altcnt\":%d,", certs->alt.s_count);
+                BSB_EXPORT_sprintf(jbsb, "\"alt\":[");
                 while (certs->alt.s_count > 0) {
                     DLL_POP_HEAD(s_, &certs->alt, string);
-                    sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)string->str, TRUE);
-                    *(sJPtr++) = ',';
+                    moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
+                    BSB_EXPORT_u08(jbsb, ',');
                     g_free(string->str);
                     free(string);
                 }
-                sJPtr--; // Remove last comma
-                *(sJPtr++) = ']';
-                *(sJPtr++) = ',';
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_u08(jbsb, ']');
+                BSB_EXPORT_u08(jbsb, ',');
             }
 
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
             moloch_nids_certs_free(certs);
             i++;
 
-            *(sJPtr++) = '}';
-            *(sJPtr++) = ',';
+            BSB_EXPORT_u08(jbsb, '}');
+            BSB_EXPORT_u08(jbsb, ',');
         );
 
-        sJPtr--; // Remove last comma
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (HASH_COUNT(s_, session->hosts)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"hocnt\":%d,", HASH_COUNT(s_, session->hosts));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"ho\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"hocnt\":%d,", HASH_COUNT(s_, session->hosts));
+        BSB_EXPORT_sprintf(jbsb, "\"ho\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->hosts, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)hstring->str, FALSE);
-            *(sJPtr++) = ',';
+            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
+            BSB_EXPORT_u08(jbsb, ',');
             g_free(hstring->str);
             free(hstring);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (HASH_COUNT(s_, session->users)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"usercnt\":%d,", HASH_COUNT(s_, session->users));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"user\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"usercnt\":%d,", HASH_COUNT(s_, session->users));
+        BSB_EXPORT_sprintf(jbsb, "\"user\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->users, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)hstring->str, FALSE);
-            *(sJPtr++) = ',';
+            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
+            BSB_EXPORT_u08(jbsb, ',');
             g_free(hstring->str);
             free(hstring);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (HASH_COUNT(s_, session->sshver)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshvercnt\":%d,", HASH_COUNT(s_, session->sshver));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshver\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"sshvercnt\":%d,", HASH_COUNT(s_, session->sshver));
+        BSB_EXPORT_sprintf(jbsb, "\"sshver\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->sshver, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)hstring->str, FALSE);
-            *(sJPtr++) = ',';
+            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
+            BSB_EXPORT_u08(jbsb, ',');
             g_free(hstring->str);
             free(hstring);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
 
         /* If we have versions but no keys set the key count to 0 */
         if (HASH_COUNT(s_, session->sshkey) == 0) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshkeycnt\":0,");
+            BSB_EXPORT_sprintf(jbsb, "\"sshkeycnt\":0,");
         }
     }
 
     if (HASH_COUNT(s_, session->sshkey)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshkeycnt\":%d,", HASH_COUNT(s_, session->sshkey));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"sshkey\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"sshkeycnt\":%d,", HASH_COUNT(s_, session->sshkey));
+        BSB_EXPORT_sprintf(jbsb, "\"sshkey\":[");
         MolochString_t *hstring;
         HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring,
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)hstring->str, TRUE);
-            *(sJPtr++) = ',';
+            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, TRUE);
+            BSB_EXPORT_u08(jbsb, ',');
             g_free(hstring->str);
             free(hstring);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (session->http && HASH_COUNT(s_, session->http->userAgents)) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"uacnt\":%d,", HASH_COUNT(t_, session->http->userAgents));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"ua\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"uacnt\":%d,", HASH_COUNT(t_, session->http->userAgents));
+        BSB_EXPORT_sprintf(jbsb, "\"ua\":[");
 
         MolochString_t *ustring;
         HASH_FORALL_POP_HEAD(s_, session->http->userAgents, ustring,
-            sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-            *(sJPtr++) = ',';
+            moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+            BSB_EXPORT_u08(jbsb, ',');
             g_free(ustring->str);
             free(ustring);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (session->http && HASH_COUNT(i_, session->http->xffs)) {
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"xffscnt\":%d,", HASH_COUNT(t_, session->http->xffs));
+        BSB_EXPORT_sprintf(jbsb, "\"xffscnt\":%d,", HASH_COUNT(t_, session->http->xffs));
 
         MolochInt_t *xff;
 
         if (gi) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"gxff\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"gxff\":[");
             HASH_FORALL(i_, session->http->xffs, xff,
                 const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(xff->i));
                 if (g)
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"%s\"", g);
+                    BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
                 else
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
-                *(sJPtr++) = ',';
+                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                BSB_EXPORT_u08(jbsb, ',');
             );
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
         if (giASN) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"asxff\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"asxff\":[");
             HASH_FORALL(i_, session->http->xffs, xff,
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
                 if (as) {
-                    sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char*)as, TRUE);
+                    moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
                     free(as);
                 } else
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
-                *(sJPtr++) = ',';
+                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                BSB_EXPORT_u08(jbsb, ',');
             );
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"xff\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"xff\":[");
         HASH_FORALL_POP_HEAD(i_, session->http->xffs, xff,
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%u", htonl(xff->i));
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "%u", htonl(xff->i));
+            BSB_EXPORT_u08(jbsb, ',');
             free(xff);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (HASH_COUNT(i_, session->dnsips)) {
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"dnsipcnt\":%d,", HASH_COUNT(t_, session->dnsips));
+        BSB_EXPORT_sprintf(jbsb, "\"dnsipcnt\":%d,", HASH_COUNT(t_, session->dnsips));
 
         MolochInt_t *dnsip;
 
         if (gi) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"gdnsip\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"gdnsip\":[");
             HASH_FORALL(i_, session->dnsips, dnsip,
                 const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(dnsip->i));
                 if (g)
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"%s\"", g);
+                    BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
                 else
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
-                *(sJPtr++) = ',';
+                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                BSB_EXPORT_u08(jbsb, ',');
             );
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
         if (giASN) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"asdnsip\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"asdnsip\":[");
             HASH_FORALL(i_, session->dnsips, dnsip,
                 char *as = GeoIP_name_by_ipnum(giASN, htonl(dnsip->i));
                 if (as) {
-                    sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char*)as, TRUE);
+                    moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
                     free(as);
                 } else
-                    sJPtr += snprintf(sJPtr, SJREMAINING, "\"---\"");
-                *(sJPtr++) = ',';
+                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                BSB_EXPORT_u08(jbsb, ',');
             );
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"dnsip\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"dnsip\":[");
         HASH_FORALL_POP_HEAD(i_, session->dnsips, dnsip,
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%u", htonl(dnsip->i));
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "%u", htonl(dnsip->i));
+            BSB_EXPORT_u08(jbsb, ',');
             free(dnsip);
         );
-        sJPtr--; // Remove last comma
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (g_hash_table_size(session->tags[MOLOCH_TAG_TAGS])) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"tacnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_TAGS]));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"ta\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"tacnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_TAGS]));
+        BSB_EXPORT_sprintf(jbsb, "\"ta\":[");
         g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_TAGS]);
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%lu", (uint64_t)keyp);
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "%lu", (uint64_t)keyp);
+            BSB_EXPORT_u08(jbsb, ',');
         }
-        sJPtr--; // Remove last comma
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST])) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"hh1cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST]));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"hh1\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"hh1cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST]));
+        BSB_EXPORT_sprintf(jbsb, "\"hh1\":[");
         g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_HTTP_REQUEST]);
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%lu", (uint64_t)keyp);
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "%lu", (uint64_t)keyp);
+            BSB_EXPORT_u08(jbsb, ',');
         }
-        sJPtr--; // Remove last comma
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
     if (g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE])) {
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"hh2cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE]));
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"hh2\":[");
+        BSB_EXPORT_sprintf(jbsb, "\"hh2cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE]));
+        BSB_EXPORT_sprintf(jbsb, "\"hh2\":[");
         g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_HTTP_RESPONSE]);
         while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%lu", (uint64_t)keyp);
-            *(sJPtr++) = ',';
+            BSB_EXPORT_sprintf(jbsb, "%lu", (uint64_t)keyp);
+            BSB_EXPORT_u08(jbsb, ',');
         }
-        sJPtr--; // Remove last comma
-        sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_sprintf(jbsb, "],");
     }
 
 
-    sJPtr += snprintf(sJPtr, SJREMAINING, "\"fs\":[");
+    BSB_EXPORT_sprintf(jbsb, "\"fs\":[");
     for(i = 0; i < session->fileNumArray->len; i++) {
         if (i == 0)
-            sJPtr += snprintf(sJPtr, SJREMAINING, "%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
+            BSB_EXPORT_sprintf(jbsb, "%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
         else
-            sJPtr += snprintf(sJPtr, SJREMAINING, ",%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
+            BSB_EXPORT_sprintf(jbsb, ",%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
     }
-    sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+    BSB_EXPORT_sprintf(jbsb, "],");
 
 
     if (session->email) {
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"euacnt\":%d,", HASH_COUNT(t_, session->email->userAgents));
+        BSB_EXPORT_sprintf(jbsb, "\"euacnt\":%d,", HASH_COUNT(t_, session->email->userAgents));
         if (HASH_COUNT(s_, session->email->userAgents)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"eua\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"eua\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->userAgents, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"esrccnt\":%d,", HASH_COUNT(t_, session->email->src));
+        BSB_EXPORT_sprintf(jbsb, "\"esrccnt\":%d,", HASH_COUNT(t_, session->email->src));
         if (HASH_COUNT(s_, session->email->src)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"esrc\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"esrc\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->src, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"edstcnt\":%d,", HASH_COUNT(t_, session->email->dst));
+        BSB_EXPORT_sprintf(jbsb, "\"edstcnt\":%d,", HASH_COUNT(t_, session->email->dst));
         if (HASH_COUNT(s_, session->email->dst)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"edst\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"edst\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->dst, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"esubcnt\":%d,", HASH_COUNT(t_, session->email->subject));
+        BSB_EXPORT_sprintf(jbsb, "\"esubcnt\":%d,", HASH_COUNT(t_, session->email->subject));
         if (HASH_COUNT(s_, session->email->subject)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"esub\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"esub\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->subject, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"eidcnt\":%d,", HASH_COUNT(t_, session->email->ids));
+        BSB_EXPORT_sprintf(jbsb, "\"eidcnt\":%d,", HASH_COUNT(t_, session->email->ids));
         if (HASH_COUNT(s_, session->email->ids)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"eid\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"eid\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->ids, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"ectcnt\":%d,", HASH_COUNT(t_, session->email->contentTypes));
+        BSB_EXPORT_sprintf(jbsb, "\"ectcnt\":%d,", HASH_COUNT(t_, session->email->contentTypes));
         if (HASH_COUNT(s_, session->email->contentTypes)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"ect\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"ect\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->contentTypes, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
-            sJPtr--; // Remove last comma
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"emvcnt\":%d,", HASH_COUNT(t_, session->email->mimeVersions));
+        BSB_EXPORT_sprintf(jbsb, "\"emvcnt\":%d,", HASH_COUNT(t_, session->email->mimeVersions));
         if (HASH_COUNT(s_, session->email->mimeVersions)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"emv\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"emv\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->mimeVersions, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
 
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"efncnt\":%d,", HASH_COUNT(t_, session->email->filenames));
+        BSB_EXPORT_sprintf(jbsb, "\"efncnt\":%d,", HASH_COUNT(t_, session->email->filenames));
         if (HASH_COUNT(s_, session->email->filenames)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"efn\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"efn\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->filenames, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
 
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
 
-        sJPtr += snprintf(sJPtr, SJREMAINING, "\"emd5cnt\":%d,", HASH_COUNT(t_, session->email->md5s));
+        BSB_EXPORT_sprintf(jbsb, "\"emd5cnt\":%d,", HASH_COUNT(t_, session->email->md5s));
         if (HASH_COUNT(s_, session->email->md5s)) {
-            sJPtr += snprintf(sJPtr, SJREMAINING, "\"emd5\":[");
+            BSB_EXPORT_sprintf(jbsb, "\"emd5\":[");
 
             MolochString_t *ustring;
             HASH_FORALL_POP_HEAD(s_, session->email->md5s, ustring,
-                sJPtr += moloch_db_js0n_str(sJPtr, SJREMAINING, (unsigned char *)ustring->str, FALSE);
-                *(sJPtr++) = ',';
+                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
                 g_free(ustring->str);
                 free(ustring);
             );
 
-            sJPtr--; // Remove last comma
-            sJPtr += snprintf(sJPtr, SJREMAINING, "],");
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_sprintf(jbsb, "],");
+        }
+
+
+        BSB_EXPORT_sprintf(jbsb, "\"eipcnt\":%d,", HASH_COUNT(t_, session->email->ips));
+        if (HASH_COUNT(i_, session->email->ips)) {
+            MolochInt_t *eip;
+
+            if (gi) {
+                BSB_EXPORT_sprintf(jbsb, "\"geip\":[");
+                HASH_FORALL(i_, session->email->ips, eip,
+                    const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(eip->i));
+                    if (g)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                    BSB_EXPORT_u08(jbsb, ',');
+                );
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_sprintf(jbsb, "],");
+            }
+
+            if (giASN) {
+                BSB_EXPORT_sprintf(jbsb, "\"aseip\":[");
+                HASH_FORALL(i_, session->email->ips, eip,
+                    char *as = GeoIP_name_by_ipnum(giASN, htonl(eip->i));
+                    if (as) {
+                        moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
+                        free(as);
+                    } else
+                        BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                    BSB_EXPORT_u08(jbsb, ',');
+                );
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_sprintf(jbsb, "],");
+            }
+
+
+            BSB_EXPORT_sprintf(jbsb, "\"eip\":[");
+            HASH_FORALL_POP_HEAD(i_, session->email->ips, eip,
+                BSB_EXPORT_sprintf(jbsb, "%u", htonl(eip->i));
+                BSB_EXPORT_u08(jbsb, ',');
+                free(eip);
+            );
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+
+            BSB_EXPORT_sprintf(jbsb, "],");
+        }
+
+        BSB_EXPORT_sprintf(jbsb, "\"ehocnt\":%d,", HASH_COUNT(s_, session->email->hosts));
+        if (HASH_COUNT(s_, session->email->hosts)) {
+            BSB_EXPORT_sprintf(jbsb, "\"eho\":[");
+            MolochString_t *hstring;
+            HASH_FORALL_POP_HEAD(s_, session->email->hosts, hstring,
+                moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
+                BSB_EXPORT_u08(jbsb, ',');
+                g_free(hstring->str);
+                free(hstring);
+            );
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+
+            BSB_EXPORT_sprintf(jbsb, "],");
         }
     }
 
-    sJPtr--; // Remove last comma
-    sJPtr += snprintf(sJPtr, SJREMAINING, "}\n");
+    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+    BSB_EXPORT_sprintf(jbsb, "}\n");
 
-    if (sJPtr - sJson >= MOLOCH_HTTP_BUFFER_SIZE_L) {
-        LOG("MEMORY OUT OF BOUNDS ERROR - %ld", (long)(sJPtr - sJson));
+    if (BSB_IS_ERROR(jbsb)) {
+        LOG("ERROR - Ran out of memory creating DB record");
+        return;
     }
 
     if (config.dryRun) {
         if (config.debug)
-            LOG("%.*s\n", (int)(sJPtr - sJson), sJson);
-        sJPtr = sJson;
+            LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson);
+        BSB_INIT(jbsb, sJson, MOLOCH_HTTP_BUFFER_SIZE_L);
         return;
     }
 
 
-    if (sJPtr - sJson > config.dbBulkSize) {
+    if (BSB_LENGTH(jbsb) > config.dbBulkSize) {
         //printf("Sending: %ld %ld\n", sJPtr - sessionJson, totalSessions);
         //printf("%.*s", sJPtr - sessionJson, sessionJson);
-        moloch_http_set(esServer, key, key_len, sJson, sJPtr - sJson, NULL, NULL);
+        moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
         sJson = 0;
 
         struct timeval currentTime;
@@ -987,7 +1010,7 @@ gboolean moloch_db_flush_gfunc (gpointer user_data )
     char            key[100];
     int             key_len;
 
-    if (!sJson || sJPtr == sJson)
+    if (!sJson || BSB_LENGTH(jbsb) == 0)
         return TRUE;
 
     struct timeval currentTime;
@@ -997,7 +1020,7 @@ gboolean moloch_db_flush_gfunc (gpointer user_data )
         return TRUE;
 
     key_len = snprintf(key, sizeof(key), "/_bulk");
-    moloch_http_set(esServer, key, key_len, sJson, sJPtr - sJson, NULL, NULL);
+    moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
     sJson = 0;
     dbLastSave = currentTime.tv_sec;
 

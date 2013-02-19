@@ -7,7 +7,7 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-my $VERSION = 3;
+my $VERSION = 4;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -17,8 +17,16 @@ sub MAX ($$) { $_[$_[0] < $_[1]] }
 sub showHelp($)
 {
     my ($str) = @_;
-    print $str,"\n";
-    die "$0 ESHOST:ESPORT (init|upgrade)";
+    print "\n", $str,"\n\n";
+    print "$0 <ESHOST:ESPORT> <command> [<options>]\n";
+    print "\n";
+    print "Commands:\n";
+    print "  init             - Clear ALL elasticsearch moloch data and create schema\n";
+    print "  wipe             - Same as init, but leaves user database untouched\n";
+    print "  upgrade          - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "  usersexport <fn> - Save the users info to <fn>\n";
+    print "  usersimport <fn> - Load the users info from <fn>\n";
+    exit 1;
 }
 ################################################################################
 sub waitFor
@@ -698,6 +706,30 @@ sub sessionsUpdate
         omit_norms: true,
         type : "string",
         index : "not_analyzed"
+      },
+      eho: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      ehocnt: {
+        type: "integer"
+      },
+      eip: {
+        type: "long"
+      },
+      eipcnt: {
+        type: "integer"
+      },
+      geip: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      aseip: {
+        omit_norms: true,
+        type: "string",
+        analyzer: "snowball"
       }
     }
   }
@@ -806,10 +838,29 @@ sub usersUpdate
 }
 
 ################################################################################
+showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Must be init or upgrade for command instead of $ARGV[1]") if ($ARGV[1] ne "init" && $ARGV[1] ne "upgrade");
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|wipe|upgrade|usersimport|usersexport)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /(usersimport|usersexport)/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 10);
+
+if ($ARGV[1] eq "usersimport") {
+    open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
+    my $data = do { local $/; <$fh> };
+    esPost("/_bulk", $data);
+    close($fh);
+    exit 0;
+} elsif ($ARGV[1] eq "usersexport") {
+    open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
+    my $users = esGet("/users/_search?size=1000");
+    foreach my $hit (@{$users->{hits}->{hits}}) {
+        print $fh "{\"index\": {\"_index\": \"users\", \"_type\": \"user\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
+        print $fh to_json($hit->{_source}) . "\n";
+    }
+    close($fh);
+    exit 0;
+}
 
 
 
@@ -837,13 +888,22 @@ if (!exists $version->{exists}) {
     $main::versionNumber = $version->{_source}->{version};
 }
 
-if ($ARGV[1] eq "init") {
-    if ($main::versionNumber >= 0) {
+if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
+    die "Can only use wipe if schema is up to date.  Use upgrade first.";
+}
+
+if ($ARGV[1] =~ /(init|wipe)/) {
+
+    if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
         print "It appears this elastic search cluster already has moloch installed, this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         print "Type \"YES\" to continue - do you want to erase everything?\n";
         waitFor("YES");
+    } elsif ($ARGV[1] eq "wipe") {
+        print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
+        print "Type \"YES\" to continue - do you want to wipe everything?\n";
+        waitFor("YES");
     }
-    print "Starting Init Process\n";
+    print "Erasing\n";
     esDelete("/tags_v2", 1);
     esDelete("/tags", 1);
     esDelete("/sequence", 1);
@@ -855,23 +915,28 @@ if ($ARGV[1] eq "init") {
     esDelete("/dstats_v1", 1);
     esDelete("/sessions*", 1);
     esDelete("/template_1", 1);
-    esDelete("/users_v1", 1);
-    esDelete("/users_v2", 1);
-    esDelete("/users", 1);
+    if ($ARGV[1] eq "init") {
+        esDelete("/users_v1", 1);
+        esDelete("/users_v2", 1);
+        esDelete("/users", 1);
+    }
     esDelete("/tagger", 1);
 
     sleep(1);
 
+    print "Creating\n";
     tagsCreate();
     sequenceCreate();
     filesCreate();
     statsCreate();
     dstatsCreate();
     sessionsUpdate();
-    usersCreate();
+    if ($ARGV[1] eq "init") {
+        usersCreate();
+    }
     print "Finished.  Have fun!\n";
 } elsif ($main::versionNumber == 0) {
-    print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elastic search moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
+    print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elasticsearch moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
     print "Type \"YES\" to continue - do you want to upgrade?\n";
     waitFor("YES");
     print "Starting Upgrade\n";
@@ -902,7 +967,7 @@ if ($ARGV[1] eq "init") {
 
     print "users_v1 and files_v1 tables can be deleted now\n";
     print "Finished\n";
-} elsif ($main::versionNumber >= 1 && $main::versionNumber <= 3) {
+} elsif ($main::versionNumber >= 1 && $main::versionNumber <= 4) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"YES\" to continue - do you want to upgrade?\n";
     waitFor("YES");

@@ -1,7 +1,6 @@
 INSTALL_DIR   = @INSTALL_DIR@
 
 CC            = @CC@
-CCX           = @CCX@
 
 INCLUDE_PCAP  = @PCAP_CFLAGS@
 INCLUDE_SNF   = -I/opt/snf/include/

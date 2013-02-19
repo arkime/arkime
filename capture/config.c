@@ -159,6 +159,7 @@ void moloch_config_load()
 
     
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);
+    config.smtpIpHeaders    = moloch_config_str_list(keyfile, "smtpIpHeaders", NULL);
 
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = moloch_config_str(keyfile, "interface", NULL);
@@ -269,4 +270,6 @@ void moloch_config_exit()
         g_free(config.pcapDir);
     if (config.plugins)
         g_strfreev(config.plugins);
+    if (config.smtpIpHeaders)
+        g_strfreev(config.smtpIpHeaders);
 }

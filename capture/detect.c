@@ -35,6 +35,7 @@
 #include "pcap.h"
 #include "magic.h"
 #include "moloch.h"
+#include "bsb.h"
 
 //#define HTTPDEBUG
 //#define EMAILDEBUG
@@ -85,60 +86,61 @@ void moloch_detect_initial_tag(MolochSession_t *session)
     }
 }
 
+
+/*############################## ASN ##############################*/
+
 /******************************************************************************/
 unsigned char *
-moloch_detect_asn_get_tlv(unsigned char **data, int *len, int *apc, int *atag, int *alen)
+moloch_detect_asn_get_tlv(BSB *bsb, int *apc, int *atag, int *alen)
 {
-    if ((*len) < 2) {
+
+    if (BSB_REMAINING(*bsb) < 2)
         goto get_tlv_error;
-    }
 
-    int pos = 0;
+    u_char ch = 0;
+    BSB_IMPORT_u08(*bsb, ch);
 
-    *apc = ((*data)[0] >> 5) & 0x1;
+    *apc = (ch >> 5) & 0x1;
 
-    if (((*data)[0] & 0x1f) ==  0x1f) {
-        for (pos = 1; pos < *len; pos++) {
-            (*atag) = ((*atag) << 7) | (*data)[pos];
-            if (((*data)[pos] & 0x80) == 0)
+    if ((ch & 0x1f) ==  0x1f) {
+        while (BSB_REMAINING(*bsb)) {
+            BSB_IMPORT_u08(*bsb, ch);
+            (*atag) = ((*atag) << 7) | ch;
+            if ((ch & 0x80) == 0)
                 break;
         }
     } else {
-        *atag = (*data)[pos] & 0x1f;
-        pos++;
+        *atag = ch & 0x1f;
+        BSB_IMPORT_u08(*bsb, ch);
     }
 
-    if (pos >= (*len) || (*data)[pos] == 0x80) {
+    if (BSB_IS_ERROR(*bsb) || ch == 0x80) {
         goto get_tlv_error;
     }
 
-    if ((*data)[pos] & 0x80) {
-        int cnt = (*data)[pos] & 0x7f;
-        pos++;
+    if (ch & 0x80) {
+        int cnt = ch & 0x7f;
         (*alen) = 0;
-        while (cnt > 0 && pos < (*len)) {
-            (*alen) = ((*alen) << 8) | (*data)[pos];
+        while (cnt > 0 && BSB_REMAINING(*bsb)) {
+            BSB_IMPORT_u08(*bsb, ch);
+            (*alen) = ((*alen) << 8) | ch;
             cnt--;
-            pos++;
         }
     } else {
-        (*alen) = (*data)[pos];
-        pos++;
+        (*alen) = ch;
     }
 
-    (*len) -= pos;
-    (*data) += pos;
-    unsigned char *value = (*data);
+    if (*alen < 0)
+        goto get_tlv_error;
 
-    if ((*len) < 0 || (*alen) < 0) {
+    if (*alen > BSB_REMAINING(*bsb))
+        *alen = BSB_REMAINING(*bsb);
+
+    unsigned char *value;
+    BSB_IMPORT_ptr(*bsb, value, *alen);
+    if (BSB_IS_ERROR(*bsb)) {
         goto get_tlv_error;
     }
-
-    if ((*alen) > (*len)) {
-        (*alen) = (*len);
-    }
-    (*data) += (*alen);
-    (*len) -= (*alen);
 
     return value;
 
@@ -146,7 +148,6 @@ get_tlv_error:
     (*apc)  = 0;
     (*alen) = 0;
     (*atag) = 0;
-    (*len)  = 0;
     return 0;
 }
 /******************************************************************************/
@@ -178,17 +179,25 @@ char *moloch_detect_asn_decode_oid(unsigned char *oid, int len) {
 
     return buf;
 }
+
+/*############################## TLS ##############################*/
+
 /******************************************************************************/
 void
-moloch_detect_tls_certinfo_process(MolochCertInfo_t *ci, unsigned char *data, int len)
+moloch_detect_tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 {
     int apc, atag, alen;
     char *lastOid = NULL;
 
-    while (len > 0) {
-        unsigned char *value = moloch_detect_asn_get_tlv(&data, &len, &apc, &atag, &alen);
+    while (BSB_REMAINING(*bsb)) {
+        unsigned char *value = moloch_detect_asn_get_tlv(bsb, &apc, &atag, &alen);
+        if (!value)
+            return;
+
         if (apc) {
-            moloch_detect_tls_certinfo_process(ci, value, alen);
+            BSB tbsb;
+            BSB_INIT(tbsb, value, alen);
+            moloch_detect_tls_certinfo_process(ci, &tbsb);
         } else if (atag  == 6)  {
             lastOid = moloch_detect_asn_decode_oid(value, alen);
         } else if (lastOid && (atag == 20 || atag == 19 || atag == 12))  {
@@ -217,19 +226,21 @@ moloch_detect_tls_certinfo_process(MolochCertInfo_t *ci, unsigned char *data, in
 }
 /******************************************************************************/
 void
-moloch_detect_tls_alt_names(MolochCertsInfo_t *certs, unsigned char *data, int len)
+moloch_detect_tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb)
 {
     int apc, atag, alen;
     static char *lastOid = NULL;
 
-    while (len >= 2) {
-        unsigned char *value = moloch_detect_asn_get_tlv(&data, &len, &apc, &atag, &alen);
+    while (BSB_REMAINING(*bsb) >= 2) {
+        unsigned char *value = moloch_detect_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (!value)
             return;
 
         if (apc) {
-            moloch_detect_tls_alt_names(certs, value, alen);
+            BSB tbsb;
+            BSB_INIT(tbsb, value, alen);
+            moloch_detect_tls_alt_names(certs, &tbsb);
             if (certs->alt.s_count > 0) {
                 return;
             }
@@ -238,7 +249,9 @@ moloch_detect_tls_alt_names(MolochCertsInfo_t *certs, unsigned char *data, int l
             if (strcmp(lastOid, "2.5.29.17") != 0)
                 lastOid = NULL;
         } else if (lastOid && atag == 4) {
-            moloch_detect_tls_alt_names(certs, value, alen);
+            BSB tbsb;
+            BSB_INIT(tbsb, value, alen);
+            moloch_detect_tls_alt_names(certs, &tbsb);
             return;
         } else if (lastOid && atag == 2) {
             MolochString_t *element = malloc(sizeof(*element));
@@ -252,36 +265,33 @@ moloch_detect_tls_alt_names(MolochCertsInfo_t *certs, unsigned char *data, int l
 void
 moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len)
 {
-    unsigned char *ssldata;
-    unsigned char *pdata;
-    unsigned char *cdata;
-    int            ssllen = 0;
-    int            plen = 0;
-    int            clen = 0;
+    BSB sslbsb;
 
-    for (ssldata = data;
-         ssldata < data + len; 
-         ssldata += ssllen + 5) {
+    BSB_INIT(sslbsb, data, len);
 
-        ssllen = MIN(data+len-ssldata-5, ((ssldata[3]&0xff) << 8 | (ssldata[4]&0xff)));
+    while (BSB_REMAINING(sslbsb) > 5) {
+        unsigned char *ssldata = BSB_WORK_PTR(sslbsb);
+        int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
+        BSB pbsb;
+        BSB_INIT(pbsb, ssldata+5, ssllen);
 
+        while (BSB_REMAINING(pbsb) > 7) {
+            unsigned char *pdata = BSB_WORK_PTR(pbsb);
+            int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
 
-        for (pdata = ssldata + 5;
-             pdata < data + len && pdata < ssldata + ssllen; 
-             pdata += plen + 4) {
-
-            plen = MIN(data+len-pdata-7, ((pdata[2]&0xff) << 8 | (pdata[3]&0xff)));
-
-            if (pdata[0] != 0x0b)
+            if (pdata[0] != 0x0b) {
+                BSB_IMPORT_skip(pbsb, plen + 4);
                 continue;
+            }
 
-            for (cdata = pdata+7;
-                 cdata < data + len && cdata < pdata + plen;
-                 cdata += clen + 3)
-            {
-                int badreason = 0;
-                clen = MIN(data+len-cdata-3, cdata[0] << 16 | cdata[1] << 8 | cdata[2]);
+            BSB cbsb;
+            BSB_INIT(cbsb, pdata+7, plen);
+
+            while(BSB_REMAINING(cbsb) > 3) {
+                int            badreason = 0;
+                unsigned char *cdata = BSB_WORK_PTR(cbsb);
+                int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
                 MolochCertsInfo_t *certs = malloc(sizeof(MolochCertsInfo_t));
                 memset(certs, 0, sizeof(*certs));
@@ -289,29 +299,28 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
                 DLL_INIT(s_, &certs->subject.commonName);
                 DLL_INIT(s_, &certs->issuer.commonName);
 
-                unsigned char *asndata = cdata + 3;
-                int            asnlen  = clen;
                 int            atag, alen, apc;
                 unsigned char *value;
 
+                BSB            bsb;
+                BSB_INIT(bsb, cdata + 3, clen);
+
                 /* Certificate */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 1; goto bad_cert;}
-                asndata = value;
-                asnlen = alen;
+                BSB_INIT(bsb, value, alen);
 
                 /* signedCertificate */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 2; goto bad_cert;}
-                asndata = value;
-                asnlen = alen;
+                BSB_INIT(bsb, value, alen);
 
                 /* serialNumber or version*/
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 3; goto bad_cert;}
 
                 if (apc) {
-                    if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                    if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                         {badreason = 4; goto bad_cert;}
                 }
                 certs->serialNumberLen = alen;
@@ -319,32 +328,37 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
                 memcpy(certs->serialNumber, value, alen);
 
                 /* signature */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 5; goto bad_cert;}
 
                 /* issuer */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 6; goto bad_cert;}
-                moloch_detect_tls_certinfo_process(&certs->issuer, value, alen);
+                BSB tbsb;
+                BSB_INIT(tbsb, value, alen);
+                moloch_detect_tls_certinfo_process(&certs->issuer, &tbsb);
 
                 /* validity */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 7; goto bad_cert;}
 
                 /* subject */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 8; goto bad_cert;}
-                moloch_detect_tls_certinfo_process(&certs->subject, value, alen);
+                BSB_INIT(tbsb, value, alen);
+                moloch_detect_tls_certinfo_process(&certs->subject, &tbsb);
 
                 /* subjectPublicKeyInfo */
-                if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                     {badreason = 9; goto bad_cert;}
 
                 /* extensions */
-                if (asnlen) {
-                    if (!(value = moloch_detect_asn_get_tlv(&asndata, &asnlen, &apc, &atag, &alen)))
+                if (BSB_REMAINING(bsb)) {
+                    if (!(value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen)))
                         {badreason = 10; goto bad_cert;}
-                    moloch_detect_tls_alt_names(certs, value, alen);
+                    BSB tbsb;
+                    BSB_INIT(tbsb, value, alen);
+                    moloch_detect_tls_alt_names(certs, &tbsb);
                 }
 
                 MolochCertsInfo_t *element;
@@ -355,6 +369,8 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
                     HASH_ADD(t_, session->certs, certs, certs);
                 }
 
+                BSB_IMPORT_skip(cbsb, clen + 3);
+
                 continue;
 
             bad_cert:
@@ -363,108 +379,16 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
                 moloch_nids_certs_free(certs);
                 break;
             }
+
+            BSB_IMPORT_skip(pbsb, plen + 4);
         }
+
+        BSB_IMPORT_skip(sslbsb, ssllen + 5);
     }
 }
-/******************************************************************************/
-void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
-{
-    unsigned char *data = (unsigned char *)hlf->data;
 
-    if (hlf->offset != 0)
-        return;
+/*############################## HTTP ##############################*/
 
-    if (hlf->count < 3)
-        return;
-
-    if (memcmp("SSH", data, 3) == 0) {
-        session->isSsh = 1;
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ssh");
-        unsigned char *n = memchr(data, 0x0a, hlf->count);
-        if (n && *(n-1) == 0x0d)
-            n--;
-
-        if (n) {
-            int len = (n - data);
-
-            char *str = g_ascii_strdown((char *)data, len);
-
-            if (!moloch_string_add(&session->sshver, str, FALSE)) {
-                g_free(str);
-            }
-        }
-    }
-
-    if (hlf->count < 4)
-        return;
-
-    if (memcmp("220 ", data, 4) == 0) {
-        if (g_strstr_len((char *)data, hlf->count_new, "LMTP") != 0)
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:lmtp");
-        else if (g_strstr_len((char *)data, hlf->count_new, "SMTP") != 0) {
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
-            if (!session->email)
-                moloch_nids_new_session_email(session);
-        }
-        else
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ftp");
-    }
-
-    if (hlf->count < 5)
-        return;
-
-    if (memcmp("HELO ", data, 5) == 0) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
-        if (!session->email)
-            moloch_nids_new_session_email(session);
-    }
-
-    if (memcmp("EHLO ", data, 5) == 0) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
-        if (!session->email)
-            moloch_nids_new_session_email(session);
-    }
-
-
-
-    if (hlf->count < 9)
-        return;
-
-    if (memcmp("+OK POP3 ", data, 9) == 0)
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:pop3");
-
-
-    if (hlf->count < 14)
-        return;
-
-
-    if (data[13] == 0x78 &&  
-        (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << 8 | (data[5]&0xff)) == hlf->count)) ||  // Windows
-         ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << 8 | (data[8]&0xff)) == hlf->count)))) { // Mac
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:gh0st");
-     }else if (data[7] == 0 && data[8] == 0 && data[11] == 0 && data[12] == 0 && data[13] == 0x78 && data[14] == 0x9c) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:gh0st-improved");
-    }
-
-    if (hlf->count < 19)
-        return;
-
-    if (memcmp("BitTorrent protocol", data, 19) == 0)
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:bittorrent");
-
-    if (hlf->count < 30)
-        return;
-
-    if (hlf->count != hlf->count_new && data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:tls");
-        moloch_detect_tls_process(session, data, hlf->count);
-    }
-}
-/******************************************************************************/
-void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
-{
-    moloch_yara_execute(session, hlf->data, hlf->count - hlf->offset, (hlf->offset == 0));
-}
 /******************************************************************************/
 void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
 {
@@ -866,80 +790,83 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
     return 0;
 }
-/******************************************************************************/
-unsigned char *moloch_detect_dns_name_element(unsigned char **data, int *len, unsigned char *nptr)
-{
-    unsigned char *start = *data;
-    int nlen = **data;
 
-    (*data)++;
-    if (nlen == 0 || nlen > *len) {
-        return 0;
+
+/*############################## DNS ##############################*/
+
+/******************************************************************************/
+int moloch_detect_dns_name_element(BSB *nbsb, BSB *bsb)
+{
+    int nlen = 0;
+    BSB_IMPORT_u08(*bsb, nlen);
+
+    if (nlen == 0 || nlen > BSB_REMAINING(*bsb)) {
+        return 1;
     }
 
     int j;
     for (j = 0; j < nlen; j++) {
-        register u_char c = (*data)[j];
+        register u_char c = 0;
+        BSB_IMPORT_u08(*bsb, c);
 
         if (!isascii(c)) {
-            *(nptr++) = 'M';
-            *(nptr++) = '-';
+            BSB_EXPORT_u08(*nbsb, 'M');
+            BSB_EXPORT_u08(*nbsb, '-');
             c = toascii(c);
         }
         if (!isprint(c)) {
-            *(nptr++) = '^';
+            BSB_EXPORT_u08(*nbsb, '^');
             c ^= 0x40;
         } 
 
-        *(nptr++) = c;
+        BSB_EXPORT_u08(*nbsb, c);
     }
-    (*data) += nlen;
 
-    (*len) -= (*data) - start;
-    *nptr  =0;
-
-    return nptr;
+    return 0;
 }
 /******************************************************************************/
-unsigned char *moloch_detect_dns_name(unsigned char *full, unsigned char *data, int len, int *olen)
+unsigned char *moloch_detect_dns_name(unsigned char *full, int fulllen, BSB *inbsb)
 {
     static unsigned char  name[8000];
-    unsigned char *nptr = name;
-    int didPointer = 0;
+    BSB  nbsb;
+    int  didPointer = 0;
+    BSB  tmpbsb;
+    BSB *curbsb;
 
-    *olen = 0;
+    BSB_INIT(nbsb, name, sizeof(name));
 
-    while (len > 0) {
-        unsigned char *result;
-        if (*data & 0xc0) {
-            if (didPointer > 5) {
-                return 0;
-            }
-            didPointer++;
-            int tlen = (*data & 0x3f) << 8 | *(data + 1);
+    curbsb = inbsb;
 
-            len = data + len - full - tlen;
-            data = full + tlen;
-            *olen += 2;
-            continue;
-        } else {
-            if (nptr != name) {
-                *(nptr++) = '.';
-            }
-            if (!didPointer) {
-                *olen += 1 + *data;
-            }
-            result = moloch_detect_dns_name_element(&data, &len, nptr);
-        }
+    while (BSB_REMAINING(*curbsb)) {
+        unsigned char ch = 0;
+        BSB_IMPORT_u08(*curbsb, ch);
 
-
-        if (result == 0) {
-            if (nptr != name)
-                *(nptr - 1) = 0; /* Remove last . */
+        if (ch == 0)
             break;
+
+        BSB_EXPORT_rewind(*curbsb, 1);
+
+        if (ch & 0xc0) {
+            if (didPointer > 5)
+                return 0;
+            didPointer++;
+            int tpos = 0;
+            BSB_IMPORT_u16(*curbsb, tpos);
+            tpos &= 0x3fff;
+
+            BSB_INIT(tmpbsb, full+tpos, fulllen - tpos);
+            curbsb = &tmpbsb;
+            continue;
+        } 
+
+        if (BSB_LENGTH(nbsb)) {
+            BSB_EXPORT_u08(nbsb, '.');
         }
-        nptr = result;
+
+        if (moloch_detect_dns_name_element(&nbsb, curbsb) && BSB_LENGTH(nbsb))
+            BSB_EXPORT_rewind(nbsb, 1); // Remove last .
     }
+    BSB_EXPORT_u08(nbsb, 0);
     return name;
 }
 /******************************************************************************/
@@ -958,25 +885,24 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
     int qdcount = (data[4] << 8) | data[5];
     int ancount = (data[6] << 8) | data[7];
 
-    unsigned char *ptr = data + 12;
-
     if (qdcount > 10 || qdcount <= 0)
         return;
 
+    BSB bsb;
+    BSB_INIT(bsb, data + 12, len - 12);
+
     /* QD Section */
     int i;
-    for (i = 0; (ptr < data + len) && i < qdcount; i++) {
-        int   olen;
-        unsigned char *name = moloch_detect_dns_name(data, ptr, (data + len - ptr), &olen);
+    for (i = 0; BSB_NOT_ERROR(bsb) && i < qdcount; i++) {
+        unsigned char *name = moloch_detect_dns_name(data, len, &bsb);
 
-        if (!name)
+        if (!name || BSB_IS_ERROR(bsb))
             break;
-        ptr += olen;
-        ptr += 4; // qtype && qclass
+        BSB_IMPORT_skip(bsb, 4); // qtype && qclass
 
         char *lower = g_ascii_strdown((char*)name, -1);
 
-        if (*lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
+        if (lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
             g_free(lower);
         }
     }
@@ -985,22 +911,24 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
     if (qr == 0)
         return;
 
-    for (i = 0; (ptr < data + len) && i < ancount; i++) {
-        int   olen;
-        unsigned char *name = moloch_detect_dns_name(data, ptr, (data + len - ptr), &olen);
+    for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
+        unsigned char *name = moloch_detect_dns_name(data, len, &bsb);
 
-        if (!name)
+        if (!name || BSB_IS_ERROR(bsb))
             break;
-        ptr += olen;
-        int antype = (ptr[0] << 8) | ptr[1];
-        int anclass = (ptr[2] << 8) | ptr[3];
-        ptr += 8; // type, class, ttl
 
-        int rdlength = (ptr[0] << 8) | ptr[1];
-        ptr += 2;
 
-        if (antype == 1 && anclass == 1 && rdlength == 4) {
+        uint16_t antype = 0;
+        BSB_IMPORT_u16 (bsb, antype);
+        uint16_t anclass = 0;
+        BSB_IMPORT_u16 (bsb, anclass);
+        BSB_IMPORT_skip(bsb, 4); // ttl
+        uint16_t rdlength = 0;
+        BSB_IMPORT_u16 (bsb, rdlength);
+
+        if (antype == 1 && anclass == 1 && rdlength == 4 && BSB_REMAINING(bsb) >= 4) {
             struct in_addr in;
+            unsigned char *ptr = BSB_WORK_PTR(bsb);
             in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
 
             MolochInt_t *mi;
@@ -1010,58 +938,26 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
                 mi->i = in.s_addr;
                 HASH_ADD(i_, session->dnsips, (void *)(long)mi->i, mi);
             }
-        } else if (antype == 5 && anclass == 1) {
-            unsigned char *name = moloch_detect_dns_name(data, ptr, rdlength, &olen);
+        } else if (antype == 5 && anclass == 1 && BSB_REMAINING(bsb) >= rdlength) {
+            BSB rdbsb;
+            BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
+            unsigned char *name = moloch_detect_dns_name(data, len, &rdbsb);
+
+            if (!name || BSB_IS_ERROR(rdbsb))
+                continue;
 
             char *lower = g_ascii_strdown((char*)name, -1);
 
-            if (*lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
+            if (lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
                 g_free(lower);
             }
         }
-
-        ptr += rdlength;
+        BSB_IMPORT_skip(bsb, rdlength);
     }
 }
 
-/******************************************************************************/
-void moloch_detect_init()
-{
-    snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, nodeTag, NULL);
+/*############################## EMAIL ##############################*/
 
-    if (config.nodeClass) {
-        snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
-        moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, classTag, NULL);
-    }
-
-    if (extraTags) {
-        int i;
-        for (i = 0; extraTags[i]; i++) {
-            moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, extraTags[i], NULL);
-        }
-    }
-
-    memset(&parserSettings, 0, sizeof(parserSettings));
-    parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;
-    parserSettings.on_url = moloch_hp_cb_on_url;
-    parserSettings.on_body = moloch_hp_cb_on_body;
-    parserSettings.on_headers_complete = moloch_hp_cb_on_headers_complete;
-    parserSettings.on_message_complete = moloch_hp_cb_on_message_complete;
-    parserSettings.on_header_field = moloch_hp_cb_on_header_field;
-    parserSettings.on_header_value = moloch_hp_cb_on_header_value;
-
-    cookie = magic_open(MAGIC_MIME);
-    if (!cookie) {
-        LOG("Error with libmagic %s", magic_error(cookie));
-    } else {
-        magic_load(cookie, NULL);
-    }
-}
-/******************************************************************************/
-void moloch_detect_exit() {
-    magic_close(cookie);
-}
 /******************************************************************************/
 #define EMAIL_CMD                  0
 #define EMAIL_CMD_RETURN           1
@@ -1252,6 +1148,24 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                     string->len = strlen(string->str);
                     DLL_PUSH_TAIL(s_, &session->email->boundaries, string);
                 }
+            } else {
+                int i;
+                for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
+                    int l = strlen(config.smtpIpHeaders[i]);
+                    if (strncasecmp(line->str, config.smtpIpHeaders[i], l) == 0) {
+                        char *ip = moloch_detect_remove_matching(line->str+l, '[', ']');
+                        in_addr_t ia = inet_addr(ip);
+                        if (ia == 0 || ia == 0xffffffff)
+                            break;
+                        MolochInt_t *mi;
+                        HASH_FIND(i_, session->email->ips, (void*)(long)ia, mi);
+                        if (!mi) {
+                            mi = malloc(sizeof(*mi));
+                            mi->i = ia;
+                            HASH_ADD(i_, session->email->ips, (void *)(long)mi->i, mi);
+                        }
+                    }
+                }
             }
 
             g_string_truncate(line, 0);
@@ -1410,4 +1324,145 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
         data++;
         remaining--;
     }
+}
+
+/*############################## SHARED ##############################*/
+
+/******************************************************************************/
+void moloch_detect_init()
+{
+    snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
+    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, nodeTag, NULL);
+
+    if (config.nodeClass) {
+        snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
+        moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, classTag, NULL);
+    }
+
+    if (extraTags) {
+        int i;
+        for (i = 0; extraTags[i]; i++) {
+            moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, extraTags[i], NULL);
+        }
+    }
+
+    memset(&parserSettings, 0, sizeof(parserSettings));
+    parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;
+    parserSettings.on_url = moloch_hp_cb_on_url;
+    parserSettings.on_body = moloch_hp_cb_on_body;
+    parserSettings.on_headers_complete = moloch_hp_cb_on_headers_complete;
+    parserSettings.on_message_complete = moloch_hp_cb_on_message_complete;
+    parserSettings.on_header_field = moloch_hp_cb_on_header_field;
+    parserSettings.on_header_value = moloch_hp_cb_on_header_value;
+
+    cookie = magic_open(MAGIC_MIME);
+    if (!cookie) {
+        LOG("Error with libmagic %s", magic_error(cookie));
+    } else {
+        magic_load(cookie, NULL);
+    }
+}
+/******************************************************************************/
+void moloch_detect_exit() {
+    magic_close(cookie);
+}
+
+/******************************************************************************/
+void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+{
+    unsigned char *data = (unsigned char *)hlf->data;
+
+    if (hlf->offset != 0)
+        return;
+
+    if (hlf->count < 3)
+        return;
+
+    if (memcmp("SSH", data, 3) == 0) {
+        session->isSsh = 1;
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ssh");
+        unsigned char *n = memchr(data, 0x0a, hlf->count);
+        if (n && *(n-1) == 0x0d)
+            n--;
+
+        if (n) {
+            int len = (n - data);
+
+            char *str = g_ascii_strdown((char *)data, len);
+
+            if (!moloch_string_add(&session->sshver, str, FALSE)) {
+                g_free(str);
+            }
+        }
+    }
+
+    if (hlf->count < 4)
+        return;
+
+    if (memcmp("220 ", data, 4) == 0) {
+        if (g_strstr_len((char *)data, hlf->count_new, "LMTP") != 0)
+            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:lmtp");
+        else if (g_strstr_len((char *)data, hlf->count_new, "SMTP") != 0) {
+            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
+            if (!session->email)
+                moloch_nids_new_session_email(session);
+        }
+        else
+            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ftp");
+    }
+
+    if (hlf->count < 5)
+        return;
+
+    if (memcmp("HELO ", data, 5) == 0) {
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
+        if (!session->email)
+            moloch_nids_new_session_email(session);
+    }
+
+    if (memcmp("EHLO ", data, 5) == 0) {
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
+        if (!session->email)
+            moloch_nids_new_session_email(session);
+    }
+
+
+
+    if (hlf->count < 9)
+        return;
+
+    if (memcmp("+OK POP3 ", data, 9) == 0)
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:pop3");
+
+
+    if (hlf->count < 14)
+        return;
+
+
+    if (data[13] == 0x78 &&  
+        (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << 8 | (data[5]&0xff)) == hlf->count)) ||  // Windows
+         ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << 8 | (data[8]&0xff)) == hlf->count)))) { // Mac
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:gh0st");
+     }else if (data[7] == 0 && data[8] == 0 && data[11] == 0 && data[12] == 0 && data[13] == 0x78 && data[14] == 0x9c) {
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:gh0st-improved");
+    }
+
+    if (hlf->count < 19)
+        return;
+
+    if (memcmp("BitTorrent protocol", data, 19) == 0)
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:bittorrent");
+
+    if (hlf->count < 30)
+        return;
+
+    if (hlf->count != hlf->count_new && data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:tls");
+        moloch_detect_tls_process(session, data, hlf->count);
+    }
+}
+/******************************************************************************/
+void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+{
+    moloch_yara_execute(session, hlf->data, hlf->count - hlf->offset, (hlf->offset == 0));
 }
