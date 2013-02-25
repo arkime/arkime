@@ -4035,7 +4035,7 @@ else
      GEOIP_LIBS="-lGeoIP"
   else
     TMP=$LIBS
-    LIBS="-lyara $LIBS"
+    LIBS="-lGeoIP $LIBS"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <GeoIP.h>
