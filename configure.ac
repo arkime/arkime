@@ -183,7 +183,7 @@ esac ], [
      GEOIP_LIBS="-lGeoIP"
   else
     TMP=$LIBS
-    LIBS="-lyara $LIBS"
+    LIBS="-lGeoIP $LIBS"
     AC_TRY_LINK([#include <GeoIP.h>], GeoIP_open(NULL, GEOIP_MEMORY_CACHE), LIBGEOIP_FOUND=1,LIBGEOIP_FOUND=0)
     LIBS=$TMP
     if test $LIBGEOIP_FOUND = 1 ; then
