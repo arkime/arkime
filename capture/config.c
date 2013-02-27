@@ -138,6 +138,20 @@ void moloch_config_load()
         exit(1);
     }
 
+    char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
+
+    if (strcmp(rotateIndex, "daily") == 0)
+        config.rotate = MOLOCH_ROTATE_DAILY;
+    else if (strcmp(rotateIndex, "weekly") == 0)
+        config.rotate = MOLOCH_ROTATE_WEEKLY;
+    else if (strcmp(rotateIndex, "monthly") == 0)
+        config.rotate = MOLOCH_ROTATE_MONTHLY;
+    else {
+        printf("Unknown rotateIndex '%s'\n", rotateIndex);
+        exit(1);
+    }
+
+
     config.nodeClass        = moloch_config_str(keyfile, "nodeClass", NULL);
 
     gchar **tags            = moloch_config_str_list(keyfile, "dontSaveTags", NULL);

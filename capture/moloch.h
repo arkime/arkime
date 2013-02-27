@@ -28,6 +28,8 @@ typedef struct {
     int s_count;
 } MolochStringHead_t;
 
+enum MolochRotate { MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
+
 typedef struct moloch_config {
     char     *configFile;
     char     *nodeName;
@@ -39,6 +41,8 @@ typedef struct moloch_config {
     gboolean  fakePcap;
     gboolean  copyPcap;
     gboolean  pcapRecursive;
+
+    enum MolochRotate rotate;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
 
@@ -197,6 +201,7 @@ typedef struct moloch_session {
     uint32_t    lastSave;
     uint32_t    addr1;
     uint32_t    addr2;
+    uint32_t    packets;
 
     uint16_t    port1;
     uint16_t    port2;

@@ -22,7 +22,7 @@
 TDIR=/data/moloch
 
 ES=0.19.12
-NODEJS=0.8.12
+NODEJS=0.8.21
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
@@ -37,12 +37,12 @@ fi
 
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
    echo "WARNING - Using a umask of 022 is STRONGLY recommended - $(umask) " 1>&2
-   sleep 2
+   sleep 3
 fi
 
 if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
    echo "WARNING - looks like a umask 022 wasn't used for git clone, this might cause strange errors" 1>&2
-   sleep 2
+   sleep 3
 fi
 
 
@@ -127,11 +127,17 @@ echo "MOLOCH: Installing"
 cd ${INSTALL_DIR}
 make install
 
+
+
+echo -n "Memory to give to elasticsearch, box MUST have more then this available: [512M] "
+read ESMEM
+if [ -z $ESMEM ]; then ESMEM="512M"; fi
+
 echo "MOLOCH: Copying single-host config files"
 cp ${INSTALL_DIR}/single-host/etc/* ${TDIR}/etc
 cat ${INSTALL_DIR}/single-host/etc/elasticsearch.yml | sed -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/elasticsearch.yml
 
-cat ${INSTALL_DIR}/single-host/bin/run_es.sh | sed -e "s,_TDIR_,${TDIR},g" -e "s/_ES_/${ES}/g" > ${TDIR}/bin/run_es.sh
+cat ${INSTALL_DIR}/single-host/bin/run_es.sh | sed -e "s,_TDIR_,${TDIR},g" -e "s/_ES_/${ES}/g" -e "s/_ESMEM_/${ESMEM}/g" > ${TDIR}/bin/run_es.sh
 cat ${INSTALL_DIR}/single-host/bin/run_capture.sh | sed -e "s,_TDIR_,${TDIR},g" > ${TDIR}/bin/run_capture.sh
 cat ${INSTALL_DIR}/single-host/bin/run_viewer.sh | sed -e "s,_TDIR_,${TDIR},g" > ${TDIR}/bin/run_viewer.sh
 chmod 755 ${TDIR}/bin/run*.sh

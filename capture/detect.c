@@ -286,7 +286,7 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
             }
 
             BSB cbsb;
-            BSB_INIT(cbsb, pdata+7, plen);
+            BSB_INIT(cbsb, pdata+7, plen-3); // The - 4 for plen is done above, confusing
 
             while(BSB_REMAINING(cbsb) > 3) {
                 int            badreason = 0;

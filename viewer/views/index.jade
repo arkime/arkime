@@ -29,7 +29,7 @@ table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style=
       th Packets
       th Bytes
       th Node
-      th#us.context-menu-one Uris
+      th#info.context-menu-one Info
   tbody
 br
 script(type='text/javascript')
@@ -101,9 +101,9 @@ script(type='text/javascript')
       var nTr = this.parentNode.parentNode;
       var rowData = sessionsTable.fnGetData(nTr);
       if ( this.src.match('up-arrow') ) {
-        rowData.usAll = 0;
+        rowData.infoAll = 0;
       } else {
-        rowData.usAll = 1;
+        rowData.infoAll = 1;
       }
       rowData.isOpen = sessionsTable.fnIsOpen(nTr);
       sessionsTable.fnUpdate(rowData, nTr, 0, false, false);
@@ -263,21 +263,42 @@ script(type='text/javascript')
           "sWidth": "100px"
         },
         { "bSortable": false,
-          "mDataProp" : "us",
+          "mDataProp" : null,
           "sClass": "urlColumn",
           "bUseRendered": false,
           "fnRender" : function(oObj) {
             var data;
-            if (oObj.aData.usAll) {
-              data = oObj.aData.us.join("<br>");
-              data += '<br><img src="up-arrow.png">';
-            } else {
-              data = oObj.aData.us.slice(0, 5).join("<br>");
-              if (oObj.aData.us.length > 5) {
-                data += '<br><img src="down-arrow.png">';
+            if (oObj.aData.us) {
+              if (oObj.aData.infoAll) {
+                data = oObj.aData.us.join("<br>");
+                data += '<br><img src="up-arrow.png">';
+              } else {
+                data = oObj.aData.us.slice(0, 5).join("<br>");
+                if (oObj.aData.us.length > 5) {
+                  data += '<br><img src="down-arrow.png">';
+                }
               }
+              return data;
+            } 
+            
+            if (oObj.aData.esrc) {
+              data = "From: "
+              data += oObj.aData.esrc.join(", ");
+              data += "<br>";
+              if (oObj.aData.esub) {
+                data += "Subject: "
+                data += oObj.aData.esub.join(", ");
+                data += "<br>";
+              }
+              if (oObj.aData.efn) {
+                data += "Files: "
+                data += oObj.aData.efn.join(", ");
+                data += "<br>";
+              }
+              return data;
             }
-            return data;
+
+            return "";
           }
         }
       ],
@@ -401,16 +422,24 @@ script(type='text/javascript')
         build: function($trigger, e) {
           var items = {};
 
-          if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'us') {
-            if (e.target.id === 'us') {
+          if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'info') {
+            if (e.target.id === 'info') {
               items = {
-                items: {name: "Export Unique URLs", counts:0},
-                itemcounts: {name: "Export Unique URLs with Counts", counts:1}
+                usitems: {name: "Export Unique URLs", counts:0, field: 'us'},
+                usitemcounts: {name: "Export Unique URLs with Counts", counts:1, field: 'us'},
+                esubitems: {name: "Export Unique Email Subjects", counts:0, field: 'esub'},
+                esubitemcounts: {name: "Export Unique Email Subjects with Counts", counts:1, field: 'esub'},
+                esrcitems: {name: "Export Unique Email Source", counts:0, field: 'esrc'},
+                esrcitemcounts: {name: "Export Unique Email Source with Counts", counts:1, field: 'esrc'},
+                esrcitems: {name: "Export Unique Email Destination", counts:0, field: 'edst'},
+                esrcitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
+                efnitems: {name: "Export Unique Email Files", counts:0, field: 'efn'},
+                efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'}
               };
             } else {
               items = {
-                items: {name: "Export Unique IPs", counts:0},
-                itemcounts: {name: "Export Unique IPs with Counts", counts:1}
+                items: {name: "Export Unique IPs", counts:0, field: e.target.id},
+                itemcounts: {name: "Export Unique IPs with Counts", counts:1, field: e.target.id}
               };
             }
             return {
@@ -419,7 +448,7 @@ script(type='text/javascript')
                 var params = buildParams();
                 params = $.merge(data, params);
 
-                params.push({name:'field', value:e.target.id});
+                params.push({name:'field', value:items[key].field});
                 params.push({name:'counts', value:items[key].counts});
                 var url = "unique.txt?" + $.param(params);
 

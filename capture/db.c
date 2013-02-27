@@ -33,7 +33,7 @@
 #include "bsb.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 4
+#define MOLOCH_MIN_DB_VERSION 5
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -190,7 +190,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         prefix_time = session->lastPacket.tv_sec;
         struct tm *tmp = gmtime(&prefix_time);
 
-        snprintf(prefix, sizeof(prefix), "%02d%02d%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
+        switch(config.rotate) {
+        case MOLOCH_ROTATE_DAILY:
+            snprintf(prefix, sizeof(prefix), "%02d%02d%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
+            break;
+        case MOLOCH_ROTATE_WEEKLY:
+            snprintf(prefix, sizeof(prefix), "%02dw%02d", tmp->tm_year%100, tmp->tm_yday/7);
+            break;
+        case MOLOCH_ROTATE_MONTHLY:
+            snprintf(prefix, sizeof(prefix), "%02dm%02d", tmp->tm_year%100, tmp->tm_mon+1);
+            break;
+        }
     }
     uint32_t id_len = snprintf(id, sizeof(id), "%s-", prefix);
 
@@ -260,7 +270,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       "\"by\":%lu,"
                       "\"db\":%lu,"
                       "\"no\":\"%s\",",
-                      session->filePosArray->len,
+                      session->packets,
                       session->bytes,
                       session->databytes,
                       config.nodeName);
@@ -272,10 +282,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_sprintf(jbsb, "\"ps\":[");
     for(i = 0; i < session->filePosArray->len; i++) {
-        if (i == 0)
-            BSB_EXPORT_sprintf(jbsb, "%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
-        else
-            BSB_EXPORT_sprintf(jbsb, ",%lu", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
+        if (i != 0)
+            BSB_EXPORT_u08(jbsb, ',');
+        BSB_EXPORT_sprintf(jbsb, "%ld", (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
     }
     BSB_EXPORT_sprintf(jbsb, "],");
     if (session->http && session->http->urlArray->len) {

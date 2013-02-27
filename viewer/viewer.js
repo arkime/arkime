@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 4;
+var MIN_DB_VERSION = 5;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -94,11 +94,8 @@ app.configure(function() {
   app.use(express.bodyParser());
   app.use(connectTimeout({ time: 30*60*1000 }));
   app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
+  app.use(express.compress());
   app.use(express.methodOverride());
-  app.use(stylus.middleware({
-    src: __dirname + '/views',
-    dest: __dirname + '/public'
-  }));
   app.use("/", express['static'](__dirname + '/public', { maxAge: 60 * 1000}));
   if (Config.get("passwordSecret")) {
     app.use(function(req, res, next) {
@@ -113,17 +110,17 @@ app.configure(function() {
         var obj = Config.auth2obj(req.headers['x-moloch-auth']);
         if (obj.path !== req.url) {
           console.log("ERROR - mismatch url", obj.path, req.url);
-          return res.end("Unauthorized based on bad url, check logs on ", os.hostname());
+          return res.send("Unauthorized based on bad url, check logs on ", os.hostname());
         }
         if (Math.abs(Date.now() - obj.date) > 60000) { // Request has to be +- 60 seconds
           console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?");
-          return res.end("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
+          return res.send("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
         }
 
         Db.get("users", "user", obj.user, function(err, suser) {
-          if (err) {return res.end("ERROR - " +  err);}
-          if (!suser || !suser.exists) {return res.end(obj.user + " doesn't exist");}
-          if (!suser._source.enabled) {return res.end(obj.user + " not enabled");}
+          if (err) {return res.send("ERROR - " +  err);}
+          if (!suser || !suser.exists) {return res.send(obj.user + " doesn't exist");}
+          if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
           req.user = suser._source;
           if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
           return next();
@@ -135,10 +132,10 @@ app.configure(function() {
       if (req.headers[Config.get("userNameHeader")] !== undefined) {
         var userName = req.headers[Config.get("userNameHeader")];
         Db.get("users", "user", userName, function(err, suser) {
-          if (err) {return res.end("ERROR - " +  err);}
-          if (!suser || !suser.exists) {return res.end(userName + " doesn't exist");}
-          if (!suser._source.enabled) {return res.end(userName + " not enabled");}
-          if (!suser._source.headerAuthEnabled) {return res.end(userName + " header auth not enabled");}
+          if (err) {return res.send("ERROR - " +  err);}
+          if (!suser || !suser.exists) {return res.send(userName + " doesn't exist");}
+          if (!suser._source.enabled) {return res.send(userName + " not enabled");}
+          if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
           req.user = suser._source;
           if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
           return next();
@@ -151,7 +148,7 @@ app.configure(function() {
       passport.authenticate('digest', {session: false})(req, res, function (err) {
         req.url = req.url.replace(Config.basePath(), "/");
         if (err) {
-          res.end(JSON.stringify({success: false, text: err}));
+          res.send(JSON.stringify({success: false, text: err}));
           return;
         } else {
           return next();
@@ -235,7 +232,7 @@ function dbCheck() {
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/", function(req, res) {
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
   res.render('index', {
     user: req.user,
@@ -246,7 +243,7 @@ app.get("/", function(req, res) {
 
 app.get("/graph", function(req, res) {
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
   res.render('graph', {
     user: req.user,
@@ -257,7 +254,7 @@ app.get("/graph", function(req, res) {
 
 app.get('/about', function(req, res) {
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
   res.render('about', {
     user: req.user,
@@ -267,7 +264,7 @@ app.get('/about', function(req, res) {
 
 app.get('/files', function(req, res) {
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
   res.render('files', {
     user: req.user,
@@ -277,7 +274,7 @@ app.get('/files', function(req, res) {
 
 app.get('/users', function(req, res) {
   if (!req.user.webEnabled || !req.user.createEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
   res.render('users', {
     user: req.user,
@@ -298,7 +295,7 @@ app.get('/password', function(req, res) {
   }
 
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
 
   if (req.query.userId) {
@@ -312,7 +309,7 @@ app.get('/password', function(req, res) {
 
 app.get('/stats', function(req, res) {
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
 
   var query = {size: 100};
@@ -334,12 +331,29 @@ app.get('/stats', function(req, res) {
 
 app.get('/:nodeName/statsDetail', function(req, res) {
   if (!req.user.webEnabled) {
-    return res.end("Moloch Permision Denied");
+    return res.send("Moloch Permision Denied");
   }
   res.render('statsDetail', {
     user: req.user,
     layout: false,
     nodeName: req.params.nodeName
+  });
+});
+
+fs.unlink("./public/style.css"); // Remove old style.css file
+app.get('/style.css', function(req, res) {
+  fs.readFile("./views/style.styl", 'utf8', function(err, str) {
+    if (err) return next('ENOENT' == err.code ? null : err);
+    var style = stylus(str, "./views");
+    style.render(function(err, css){
+      if (err) return next(err);
+      var date = new Date().toUTCString();
+      res.setHeader('Content-Type', 'text/css');
+      res.setHeader('Date', date);
+      res.setHeader('Cache-Control', 'public, max-age=600');
+      res.setHeader('Last-Modified', date);
+      res.send(css);
+    });
   });
 });
 
@@ -711,16 +725,31 @@ function getIndices(startTime, stopTime, cb) {
   Db.status("sessions-*", function(err, status) {
 
     if (err || status.error) {
-    return cb("");
+      return cb("");
     }
 
+    var rotateIndex = Config.get("rotateIndex", "daily");
+
     while (startTime < stopTime) {
+      var iname;
       var d = new Date(startTime*1000);
-      var iname = "sessions-" +
-        twoDigitString(d.getUTCFullYear()%100) +
-        twoDigitString(d.getUTCMonth()+1) +
-        twoDigitString(d.getUTCDate());
-      if (status.indices[iname]) {
+      var jan = new Date(d.getUTCFullYear(), 0, 0);
+      if (rotateIndex === "monthly") {
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) + 'm' +
+          twoDigitString(d.getUTCMonth()+1);
+      } else if (rotateIndex === "weekly") {
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) + 'w' +
+          twoDigitString(Math.floor((d - jan) / 604800000));
+      } else {
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) +
+          twoDigitString(d.getUTCMonth()+1) +
+          twoDigitString(d.getUTCDate());
+      }
+
+      if (status.indices[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
         indices.push(iname);
       }
       startTime += 86400;
@@ -794,7 +823,7 @@ function lookupQueryTags(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2"];
+  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "efn"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
   var i;
 
@@ -946,9 +975,6 @@ app.get('/sessions.json', function(req, res) {
             }
             result.hits.hits[i].fields.index = result.hits.hits[i]._index;
             result.hits.hits[i].fields.id = result.hits.hits[i]._id;
-            if (!result.hits.hits[i].fields.us) {
-              result.hits.hits[i].fields.us = [];
-            }
             results.results.push(result.hits.hits[i].fields);
           }
           sessionsCb(null, results);
@@ -1077,7 +1103,6 @@ app.get('/graph.json', function(req, res) {
       }
 
       res.send({nodes: nodes, links: links});
-      res.end();
     });
   });
 });
@@ -1165,7 +1190,7 @@ app.get('/unique.txt', function(req, res) {
 
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = [req.query.field];
-    if (req.query.field === "us") {
+    if (req.query.field.match(/^(us|esub)$/)) {
       query.size = 200000;
       if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
@@ -1181,19 +1206,19 @@ app.get('/unique.txt', function(req, res) {
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       //console.log("unique result", util.inspect(result, false, 100));
-      if (req.query.field === "us") {
+      if (req.query.field.match(/^(us|esub)$/)) {
         var counts = {};
         var keys = [];
         result.hits.hits.forEach(function (item) {
-          if (!item.fields || !item.fields.us) {
+          if (!item.fields || !item.fields[req.query.field]) {
             return;
           }
-          item.fields.us.forEach(function (url) {
-            if (counts[url]) {
-              counts[url]++;
+          item.fields[req.query.field].forEach(function (aitem) {
+            if (counts[aitem]) {
+              counts[aitem]++;
             } else {
-              counts[url] = 1;
-              keys.push(url);
+              counts[aitem] = 1;
+              keys.push(aitem);
             }
           });
         });
@@ -1249,27 +1274,41 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
     }
   }
 
-  Db.get('sessions-' + id.substr(0,6), 'session', id, function(err, session) {
+  Db.get('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, function(err, session) {
     if (err || !session.exists) {
       endCb("Not Found", null);
       return;
     }
-    var lastFile = -1;
-    var fileHandle = null;
 
     if (maxPackets && session._source.ps.length > maxPackets) {
       session._source.ps.length = maxPackets;
     }
 
+    /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
+     * New Format: Negative numbers are file numbers until next neg number, otherwise file pos */
+    var newFormat = false;
+    var file;
+    var openFile = -1;
+    var openHandle = null;
     async.forEachSeries(session._source.ps, function(item, nextCb) {
-      // javascript doesn't have 64bit bitwise operations
-      var file = Math.floor(item / 0xfffffffff);
-      var pos  = item % 0x1000000000;
+      var pos;
 
-      if (file !== lastFile) {
-        if (lastFile !== -1) {
-          if (fileHandle) {
-            fs.close(fileHandle);
+      if (item < 0) {
+        newFormat = true;
+        file = item * -1;
+        return nextCb();
+      } else if (newFormat) {
+        pos  = item;
+      } else  {
+        // javascript doesn't have 64bit bitwise operations
+        file = Math.floor(item / 0xfffffffff);
+        pos  = item % 0x1000000000;
+      }
+
+      if (file !== openFile) {
+        if (openFile !== -1) {
+          if (openHandle) {
+            fs.close(openHandle);
           }
         }
 
@@ -1284,24 +1323,24 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
               console.log("ERROR - Couldn't open file ", err);
               nextCb("ERROR - Couldn't open file " + err);
             }
-            if (lastFile === -1 && headerCb) {
+            if (openFile === -1 && headerCb) {
               var hbuffer = new Buffer(24);
               fs.readSync(fd, hbuffer, 0, 24, 0);
               headerCb(hbuffer);
             }
-            fileHandle = fd;
-            processFile(fileHandle, pos, nextCb);
-            lastFile = file;
+            openHandle = fd;
+            processFile(openHandle, pos, nextCb);
+            openFile = file;
           });
         });
       } else {
-        processFile(fileHandle, pos, nextCb);
+        processFile(openHandle, pos, nextCb);
       }
     },
     function (err, results)
     {
-      if (fileHandle) {
-        fs.close(fileHandle);
+      if (openHandle) {
+        fs.close(openHandle);
       }
 
       async.parallel([
@@ -1666,7 +1705,7 @@ function localSessionDetail(req, res) {
   },
   function(err, session) {
     if (err) {
-      res.end("Error");
+      res.send("Error");
       return;
     }
     session.id = req.params.id;
@@ -1717,7 +1756,7 @@ function localBody(req, res) {
   },
   function(err, session) {
     if (err) {
-      res.end("Error");
+      res.send("Error");
       return;
     }
     decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
@@ -1760,7 +1799,7 @@ function proxyRequest (req, res) {
   getViewUrl(req.params.nodeName, function(err, viewUrl, agent) {
     if (err) {
       console.log(err);
-      res.end("Check logs on " + os.hostname());
+      res.send("Check logs on " + os.hostname());
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
@@ -1778,7 +1817,7 @@ function proxyRequest (req, res) {
 
     preq.on('error', function (e) {
       console.log("error = ", e);
-      res.end("Unknown error, check logs on " + os.hostname());
+      res.send("Unknown error, check logs on " + os.hostname());
     });
     preq.end();
   });
@@ -1874,7 +1913,7 @@ function writeRaw(res, id, type, doneCb) {
   },
   function(err, session) {
     if (err) {
-      res.end("Error");
+      res.send("Error");
       return;
     }
     if (packets.length === 0) {
@@ -2003,50 +2042,50 @@ app.get('/sessions.pcap', function(req, res) {
 
 app.post('/deleteUser/:userId', function(req, res) {
   if (!req.user.createEnabled) {
-    return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
   if (!req.body.token) {
-    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+    return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   if (req.params.userId === req.user.userId) {
-    return res.end(JSON.stringify({success: false, text: "Can not delete yourself"}));
+    return res.send(JSON.stringify({success: false, text: "Can not delete yourself"}));
   }
 
   Db.deleteDocument('users', 'user', req.params.userId, function(err, data) {
-    return res.end(JSON.stringify({success: true, text: "User deleted"}));
+    return res.send(JSON.stringify({success: true, text: "User deleted"}));
   });
 });
 
 app.post('/addUser', function(req, res) {
   if (!req.user.createEnabled) {
-    return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
   if (!req.body.token) {
-    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+    return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return res.end(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
+    return res.send(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
   }
 
   Db.get("users", 'user', req.body.userId, function(err, user) {
     if (err || user.exists) {
-      return res.end(JSON.stringify({success: false, text: "User already exists"}));
+      return res.send(JSON.stringify({success: false, text: "User already exists"}));
     }
 
     var nuser = {
@@ -2065,9 +2104,9 @@ app.post('/addUser', function(req, res) {
     Db.indexNow("users", "user", req.body.userId, nuser, function(err, info) {
       console.log("add user", err, info);
       if (!err) {
-        return res.end(JSON.stringify({success: true}));
+        return res.send(JSON.stringify({success: true}));
       } else {
-        return res.end(JSON.stringify({success: false, text: err}));
+        return res.send(JSON.stringify({success: false, text: err}));
       }
     });
   });
@@ -2077,22 +2116,22 @@ app.post('/addUser', function(req, res) {
 
 app.post('/updateUser/:userId', function(req, res) {
   if (!req.user.createEnabled) {
-    return res.end(JSON.stringify({success: false, text: "Need admin privileges"}));
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
   if (!req.body.token) {
-    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+    return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   Db.get("users", 'user', req.params.userId, function(err, user) {
     if (err || !user.exists) {
-      return res.end(JSON.stringify({success: false, text: "User not found"}));
+      return res.send(JSON.stringify({success: false, text: "User not found"}));
     }
     user = user._source;
 
@@ -2117,7 +2156,7 @@ app.post('/updateUser/:userId', function(req, res) {
     }
 
     Db.indexNow("users", "user", req.params.userId, user, function(err, info) {
-      return res.end(JSON.stringify({success: true}));
+      return res.send(JSON.stringify({success: true}));
     });
   });
 });
@@ -2125,35 +2164,35 @@ app.post('/updateUser/:userId', function(req, res) {
 app.post('/changePassword', function(req, res) {
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return res.end(JSON.stringify({success: false, text: "New password needs to be at least 2 characters"}));
+    return res.send(JSON.stringify({success: false, text: "New password needs to be at least 2 characters"}));
   }
 
   if (!req.body.token) {
-    return res.end(JSON.stringify({success: false, text: "Missing token"}));
+    return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 120000 || token.pid !== process.pid) { // Request has to be +- 120 seconds and same pid
     console.log("bad token", token);
-    return res.end(JSON.stringify({success: false, text: "Try reloading page"}));
+    return res.send(JSON.stringify({success: false, text: "Try reloading page"}));
   }
 
   if (token.cp && (req.user.passStore !== Config.pass2store(req.user.userId, req.body.currentPassword) ||
                    token.userId !== req.user.userId)) {
-    return res.end(JSON.stringify({success: false, text: "Current password mismatch"}));
+    return res.send(JSON.stringify({success: false, text: "Current password mismatch"}));
   }
 
   Db.get("users", 'user', token.userId, function(err, user) {
     user = user._source;
     if (err) {
-      return res.end(JSON.stringify({success: false, text: err}));
+      return res.send(JSON.stringify({success: false, text: err}));
     }
     user.passStore = Config.pass2store(user.userId, req.body.newPassword);
     Db.indexNow("users", "user", user.userId, user, function(err, info) {
       if (err) {
-        return res.end(JSON.stringify({success: false, text: err}));
+        return res.send(JSON.stringify({success: false, text: err}));
       }
-      return res.end(JSON.stringify({success: true, text: "Changed password successfully"}));
+      return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
     });
   });
 });

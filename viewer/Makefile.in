@@ -1,13 +1,14 @@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
 VIEWERDIR = @prefix@/viewer
-CP = cp
+CP = /bin/cp
 
 
 all:
 
 install:
 	test -z "$(VIEWERDIR)" || $(mkdir_p) "$(VIEWERDIR)"
+	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
 	$(CP) -dpr views public $(VIEWERDIR)
 	(cd $(VIEWERDIR) ; npm install)

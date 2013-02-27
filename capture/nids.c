@@ -309,6 +309,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->lastSave = nids_last_pcap_header->ts.tv_sec;
     session->bytes = 0;
     session->databytes = 0;
+    session->packets = 0;
 
     moloch_detect_initial_tag(session);
 }
@@ -706,6 +707,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, len - 8 - 4 * packet->ip_hl);
     }
 
+    session->packets++;
     if (!config.dryRun && !session->dontSave) {
         if (config.copyPcap) {
             /* Save packet to file */
@@ -717,12 +719,13 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
                 moloch_nids_file_create();
             }
 
-            uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
-            g_array_append_val(session->filePosArray, val);
             //LOG("ALW POS %d %llx", dumperFilePos, val);
             if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
                 g_array_append_val(session->fileNumArray, dumperId);
+                int64_t val = -1LL * dumperId;
+                g_array_append_val(session->filePosArray, val);
             }
+            g_array_append_val(session->filePosArray, dumperFilePos);
 
             if (config.fakePcap) {
                 dumperBuf[dumperBufPos] = 'P';
@@ -741,15 +744,15 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             }
 
             dumperFilePos = ftell(offlineFile) - 16 - nids_last_pcap_header->caplen;
-            uint64_t val = dumperFilePos | ((uint64_t)dumperId << 36);
-            //LOG("ALW POS %d %llx", dumperFilePos, val);
-            g_array_append_val(session->filePosArray, val);
             if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
                 g_array_append_val(session->fileNumArray, dumperId);
+                int64_t val = -1LL * dumperId;
+                g_array_append_val(session->filePosArray, val);
             }
+            g_array_append_val(session->filePosArray, dumperFilePos);
         }
 
-        if (session->filePosArray->len >= config.maxPackets) {
+        if (session->packets >= config.maxPackets) {
             moloch_nids_mid_save_session(session);
         }
     }

@@ -1,13 +1,25 @@
 #!/usr/bin/perl 
-# This script can upgrade or init the elastic search db
+# This script can initialize, upgrade or provide simple maintenance for the 
+# moloch elastic search db
+#
+# Schema Versions
+#  0 - Before this script existed
+#  1 - First version of script; turned on strict schema; added lpms, fpms; added
+#      many missing items that were dynamically created by mistake
+#  2 - Added email items
+#  3 - Added email md5
+#  4 - Added email host and ip; added help, usersimport, usersexport, wipe commands
+#  5 - No schema change, new rotate command, encoding of file pos is different.  
+#      Negative is file num, positive is file pos
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
+use POSIX;
 use strict;
 
-my $VERSION = 4;
+my $VERSION = 5;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -21,11 +33,14 @@ sub showHelp($)
     print "$0 <ESHOST:ESPORT> <command> [<options>]\n";
     print "\n";
     print "Commands:\n";
-    print "  init             - Clear ALL elasticsearch moloch data and create schema\n";
-    print "  wipe             - Same as init, but leaves user database untouched\n";
-    print "  upgrade          - Upgrade Moloch's schema in elasticsearch from previous versions\n";
-    print "  usersexport <fn> - Save the users info to <fn>\n";
-    print "  usersimport <fn> - Load the users info from <fn>\n";
+    print "  init                  - Clear ALL elasticsearch moloch data and create schema\n";
+    print "  wipe                  - Same as init, but leaves user database untouched\n";
+    print "  upgrade               - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "  usersexport <fn>      - Save the users info to <fn>\n";
+    print "  usersimport <fn>      - Load the users info from <fn>\n";
+    print "  rotate <type> <num>   - Perform daily maintenance\n";
+    print "       type             - Same as rotateIndex in ini file = daily,weekly,monthly\n";
+    print "       num              - number indexes to keep\n";
     exit 1;
 }
 ################################################################################
@@ -763,8 +778,8 @@ sub sessionsUpdate
 
     esPut("/_template/template_1", $template);
 
-    my $status = esGet("/sessions-*/_status", 1);
-    foreach my $i (keys %{$status->{indices}}) {
+    my $status = esGet("/sessions-*/_stats?clear=1", 1);
+    foreach my $i (keys %{$status->{_all}->{indices}}) {
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
     }
 }
@@ -838,10 +853,29 @@ sub usersUpdate
 }
 
 ################################################################################
+sub time2index
+{
+my($type, $t) = @_;
+
+    my @t = localtime($t);
+    if ($type eq "daily") {
+        return sprintf("sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
+    } 
+    
+    if ($type eq "weekly") {
+        return sprintf("sessions-%02dw%02d", $t[5] % 100, int($t[7]/7));
+    } 
+    
+    if ($type eq "monthly") {
+        return sprintf("sessions-%02dm%02d", $t[5] % 100, $t[4]+1);
+    }
+}
+################################################################################
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|wipe|upgrade|usersimport|usersexport)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /(usersimport|usersexport)/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|wipe|upgrade|usersimport|usersexport|rotate)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
+showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate)/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 10);
 
@@ -859,6 +893,39 @@ if ($ARGV[1] eq "usersimport") {
         print $fh to_json($hit->{_source}) . "\n";
     }
     close($fh);
+    exit 0;
+} elsif ($ARGV[1] eq "rotate") {
+    showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(daily|weekly|monthly)$/);
+    my $indices = esGet("/sessions-*/_stats?clear=1", 1)->{_all}->{indices};
+
+    my $endTime = time();
+    my $endTimeIndex = time2index($ARGV[2], $endTime);
+    my @startTime = localtime;
+    if ($ARGV[2] eq "daily") {
+        $startTime[3] -= int($ARGV[3]);
+    } elsif ($ARGV[2] eq "weekly") {
+        $startTime[3] -= 7*int($ARGV[3]);
+    } elsif ($ARGV[2] eq "monthly") {
+        $startTime[4] -= int($ARGV[3]);
+    }
+
+    my $startTime = mktime(@startTime);
+    while ($startTime <= $endTime) {
+        my $iname = time2index($ARGV[2], $startTime);
+        if (exists $indices->{$iname}) {
+            $indices->{$iname}->{OPTIMIZEIT} = 1;
+        }
+        $startTime += 24*60*60;
+    }
+
+    foreach my $i (sort (keys %{$indices})) {
+        next if ($endTimeIndex eq $i);
+        if (exists $indices->{$i}->{OPTIMIZEIT}) {
+            esGet("/$i/_optimize?max_num_segments=4");
+        } else {
+            esDelete("/$i", 1);
+        }
+    }
     exit 0;
 }
 
