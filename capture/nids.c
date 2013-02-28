@@ -1213,7 +1213,10 @@ void moloch_nids_root_init()
         nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
         if (nids_params.pcap_desc) {
             offlineFile = pcap_file(nids_params.pcap_desc);
-            realpath(config.pcapReadFile, offlinePcapFilename);
+            if (realpath(config.pcapReadFile, offlinePcapFilename) == NULL) {
+                LOG("pcap open realpath failed! %d", errno);
+                exit(1);
+            }
         }
     } else {
 #ifdef SNF
