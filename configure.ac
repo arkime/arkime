@@ -81,6 +81,14 @@ AC_ARG_WITH(libnids,
       fi
       NIDS_CFLAGS="-I$withval/src"
       NIDS_LIBS="$withval/src/libnids.a"
+    elif test -f $withval/include/nids.h -a -f $withval/lib/libnids.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      NIDS_CFLAGS="-I$withval/include"
+      NIDS_LIBS="$withval/lib/libnids.a"
     else
       AC_ERROR(nids.h or libnids.a not found in $withval)
     fi
@@ -125,6 +133,14 @@ AC_ARG_WITH(yara,
       fi
       YARA_CFLAGS="-I$withval/libyara"
       YARA_LIBS="$withval/libyara/.libs/libyara.a"
+    elif test -f $withval/include/yara.h -a -f $withval/lib/libyara.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      YARA_CFLAGS="-I$withval/include"
+      YARA_LIBS="$withval/lib/libyara.a"
     else
       AC_ERROR(yara.h or yara.a not found in $withval)
     fi
