@@ -1025,7 +1025,8 @@ gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
     return FALSE;
 }
 /******************************************************************************/
-gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) {
+gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) 
+{
     int r = nids_dispatch(config.packetsPerPoll);
     if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
         if (config.pcapReadDir && moloch_nids_next_file()) {
@@ -1039,8 +1040,18 @@ gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
     return TRUE;
 }
 /******************************************************************************/
-gboolean moloch_nids_poll_cb(gpointer UNUSED(uw)) {
-    nids_dispatch(config.packetsPerPoll);
+gboolean moloch_nids_poll_cb(gpointer UNUSED(uw)) 
+{
+    int r = nids_dispatch(config.packetsPerPoll);
+    if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
+        if (config.pcapReadDir && moloch_nids_next_file()) {
+            g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
+            return FALSE;
+        }
+
+        moloch_quit();
+        return FALSE;
+    }
     return TRUE;
 }
 
