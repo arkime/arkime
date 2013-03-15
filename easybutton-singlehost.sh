@@ -33,6 +33,7 @@ fi
 pver=`python -c 'import sys; print("%i" % (sys.hexversion>=0x02060000))'`
 if [ $pver -eq 0 ]; then
     echo "ERROR - node.js requires python 2.6 or higher to build"
+    exit 1
 fi
 
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
@@ -125,6 +126,7 @@ gunzip GeoIPASNum.dat.gz
 
 echo "MOLOCH: Installing"
 cd ${INSTALL_DIR}
+PATH=${TDIR}/bin:${PATH}
 make install
 
 
