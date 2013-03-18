@@ -376,25 +376,31 @@ typedef void (* MolochPluginReloadFunc) ();
 typedef void (* MolochPluginHttpDataFunc) (MolochSession_t *session, http_parser *hp, const char *at, size_t length);
 typedef void (* MolochPluginHttpFunc) (MolochSession_t *session, http_parser *hp);
 
-#define MOLOCH_PLUGIN_SAVE    0x00000001
-#define MOLOCH_PLUGIN_IP      0x00000002
-#define MOLOCH_PLUGIN_UDP     0x00000004
-#define MOLOCH_PLUGIN_TCP     0x00000008
-#define MOLOCH_PLUGIN_EXIT    0x00000010
-#define MOLOCH_PLUGIN_NEW     0x00000020
-#define MOLOCH_PLUGIN_RELOAD  0x00000040
+typedef void (* MolochPluginSMTPHeaderFunc) (MolochSession_t *session, const char *field, size_t field_len, const char *value, size_t value_len);
+typedef void (* MolochPluginSMTPFunc) (MolochSession_t *session);
 
-#define MOLOCH_PLUGIN_HP_OMB  0x00001000
-#define MOLOCH_PLUGIN_HP_OU   0x00002000
-#define MOLOCH_PLUGIN_HP_OHF  0x00004000
-#define MOLOCH_PLUGIN_HP_OHV  0x00008000
-#define MOLOCH_PLUGIN_HP_OHC  0x00010000
-#define MOLOCH_PLUGIN_HP_OB   0x00020000
-#define MOLOCH_PLUGIN_HP_OMC  0x00040000
+#define MOLOCH_PLUGIN_SAVE         0x00000001
+#define MOLOCH_PLUGIN_IP           0x00000002
+#define MOLOCH_PLUGIN_UDP          0x00000004
+#define MOLOCH_PLUGIN_TCP          0x00000008
+#define MOLOCH_PLUGIN_EXIT         0x00000010
+#define MOLOCH_PLUGIN_NEW          0x00000020
+#define MOLOCH_PLUGIN_RELOAD       0x00000040
+
+#define MOLOCH_PLUGIN_HP_OMB       0x00001000
+#define MOLOCH_PLUGIN_HP_OU        0x00002000
+#define MOLOCH_PLUGIN_HP_OHF       0x00004000
+#define MOLOCH_PLUGIN_HP_OHV       0x00008000
+#define MOLOCH_PLUGIN_HP_OHC       0x00010000
+#define MOLOCH_PLUGIN_HP_OB        0x00020000
+#define MOLOCH_PLUGIN_HP_OMC       0x00040000
+
+#define MOLOCH_PLUGIN_SMTP_OH      0x00100000
+#define MOLOCH_PLUGIN_SMTP_OHC     0x00200000
 
 void moloch_plugins_init();
 void moloch_plugins_reload();
-int  moloch_plugins_register(const char *name, gboolean storeData);
+int  moloch_plugins_register(const char *name, size_t sizeofmolochsession, gboolean storeData);
 void moloch_plugins_set_cb(const char *            name,
                            MolochPluginIpFunc      ipFunc,
                            MolochPluginUdpFunc     udpFunc,
@@ -413,6 +419,10 @@ void moloch_plugins_set_http_cb(const char *             name,
                                 MolochPluginHttpDataFunc on_body,
                                 MolochPluginHttpFunc     on_message_complete);
 
+void moloch_plugins_set_smtp_cb(const char *                name,
+                                MolochPluginSMTPHeaderFunc  on_header,
+                                MolochPluginSMTPFunc        on_header_complete);
+
 void moloch_plugins_cb_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_new(MolochSession_t *session);
 void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len);
@@ -426,6 +436,9 @@ void moloch_plugins_cb_hp_ohv(MolochSession_t *session, http_parser *parser, con
 void moloch_plugins_cb_hp_ohc(MolochSession_t *session, http_parser *parser);
 void moloch_plugins_cb_hp_ob(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
 void moloch_plugins_cb_hp_omc(MolochSession_t *session, http_parser *parser);
+
+void moloch_plugins_cb_smtp_oh(MolochSession_t *session, const char *field, size_t field_len, const char *value, size_t value_len);
+void moloch_plugins_cb_smtp_ohc(MolochSession_t *session);
 
 void moloch_plugins_exit();
 

@@ -9,10 +9,13 @@ html
     script(type='text/javascript', src='flot-0.7/jquery.flot.selection.min.js')
     script(type='text/javascript', src='flot-0.7/jquery.flot.resize.min.js')
     script(type='text/javascript', src='flot-0.7/jquery.flot.navigate.min.js')
+    script(type='text/javascript', src='jquery.qtip.min.js')
+    script(type='text/javascript', src='d3.v2.js')
     script(type='text/javascript', src='common.js')
 
     link(rel='stylesheet', type='text/css', href='DataTables-1.9.1/media/css/demo_table.css')
     link(rel='stylesheet', type='text/css', href='jquery-ui.css')
+    link(rel='stylesheet', type='text/css', href='jquery.qtip.min.css')
     link(rel='stylesheet', type='text/css', href='style.css')
   body
     #header
@@ -34,6 +37,9 @@ html
             a(href='stats') Stats
           li.last
             a.config(href='password') Change Password
+      - if (isIndex && user.createEnabled)
+        a(href="#{elasticBase}/_plugin/head/",target="_blank")
+          div#esstatus.tooltip
       div#version 
         p moloch v#{molochversion}
       - if (isIndex)
@@ -61,11 +67,18 @@ html
                 option(value=720) Last Month
                 option(value=4380) Last 6 Months
                 option(value=-1) All
-                option(value=-2) Graph
-            input#expression(type='text', name='expression')
+                option(value=-2) Custom
+            input#expression(type='search', name='expression')
             button#search(type="submit") Search
             button#export(type="button") Export
             //button#info(type="button") I
+    - if (isIndex)
+      div#customDate
+        center
+        span Beginning Time:
+        input#startDate
+        span Ending Time:
+        input#stopDate
         
     #pageBody
       != body

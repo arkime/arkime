@@ -852,6 +852,14 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             a_tcp->server.collect = 0;
             return;
         }
+
+        if (a_tcp->client.count > 0x7fff0000 || a_tcp->server.count > 0x7fff0000) {
+            LOG("ERROR - Almost 2G in tcp session, preventing libnids crash for %s", moloch_friendly_session_id(IPPROTO_TCP, a_tcp->addr.saddr, a_tcp->addr.source, a_tcp->addr.daddr, a_tcp->addr.dest));
+            a_tcp->client.collect = 0;
+            a_tcp->server.collect = 0;
+            return;
+        }
+
         if (a_tcp->client.count_new) {
             session->which = 1;
             moloch_detect_parse_http(session, a_tcp, &a_tcp->client);

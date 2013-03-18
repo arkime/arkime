@@ -1,10 +1,8 @@
-script(type='text/javascript', src='d3.v2.js')
 script(type='text/javascript', src='jquery.autocomplete.js')
 
 div#networkLabel
 div#network
 script(type='text/javascript')
-  var startTime, stopTime;
   var initialDisplayLength = 100;
   var doPushState = 1;
   var svg;
@@ -172,6 +170,7 @@ script(type='text/javascript')
 
     console.log("Fetching", url);
     d3.json(url, function(json) {
+      updateHealth(json.health);
       force
           .nodes(json.nodes)
           .links(json.links)
@@ -191,7 +190,6 @@ script(type='text/javascript')
             window.clearTimeout(popupTimer);
           })
           ;  
-          ;
 
       var node = svg.selectAll(".node")
           .data(json.nodes)
@@ -221,7 +219,7 @@ script(type='text/javascript')
       node.append("text")
           .attr("dx", 12)
           .attr("dy", ".35em")
-          .text(function(d) { return d.id });
+          .text(function(d) { return d.id;});
 
       force.on("tick", function() {
         link.attr("x1", function(d) { return d.source.x; })
@@ -236,17 +234,33 @@ script(type='text/javascript')
   }
 
   $(document).ready(function() {
+    $('#date').change(function() {
+      var hours = parseInt($("#date").val(), 10);
+      if (hours === -2) {
+        $("#customDate").show();
+      } else {
+        if (hours !== -1) {
+          $("#startDate").val(dateString(new Date()/1000 - 60*60*hours, ' '));
+          $("#stopDate").val(dateString(new Date()/1000, ' '));
+        } else {
+          $("#startDate").val(dateString(0, ' '));
+          $("#stopDate").val(dateString(new Date()/1000, ' '));
+        }
+        $("#customDate").hide();
+      }
+      return false;
+    });
+
     handleUrlParams();
 
     var width = $(window).width(),
-        height = $(window).height()-100
+        height = $(window).height()-100;
 
     zoom = d3.behavior.zoom()
         .translate([0,0])
         .scale(1)
         .scaleExtent([0.25,6])
         .on("zoom", redraw);
-        ;
 
     svg = d3.select("#network").append("svg:svg")
         .attr("width", width)
@@ -267,7 +281,7 @@ script(type='text/javascript')
       ;
 
     force = d3.layout.force()
-        .gravity(.05)
+        .gravity(0.05)
         .distance(150)
         .charge(-100)
         .size([width, height])

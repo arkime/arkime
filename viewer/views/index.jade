@@ -5,7 +5,7 @@ script(src='jQuery-contextMenu/src/jquery.ui.position.js')
 script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
 link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
 
-div(style="margin-bottom: 4px")
+div(style="margin-bottom: 12px")
 div#bsqErr
 div#sessionsInfo
   div#world-map-wrapper
@@ -33,12 +33,10 @@ table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style=
   tbody
 br
 script(type='text/javascript')
-  var startTime, stopTime;
   var sessionsTable;
   var lastResult;
   var initialDisplayLength;
   var doPushState = 1;
-
 
   $(window).bind('popstate', function(e) {
     if (window.history.ready) {
@@ -95,6 +93,26 @@ script(type='text/javascript')
   }
 
   $(document).ready(function() {
+    $('#date').change(function() {
+      var hours = parseInt($("#date").val(), 10);
+      if (hours === -2) {
+        $("#customDate").show();
+      } else {
+        if (hours !== -1) {
+          $("#startDate").val(dateString(new Date()/1000 - 60*60*hours, ' '));
+          $("#stopDate").val(dateString(new Date()/1000, ' '));
+        } else {
+          $("#startDate").val(dateString(0, ' '));
+          $("#stopDate").val(dateString(new Date()/1000, ' '));
+        }
+        $("#customDate").hide();
+      }
+      if (sessionsTable) {
+        sessionsTable.fnDraw();
+      }
+      return false;
+    });
+
     var initialParams = handleUrlParams();
 
     $('#sessions tbody td.urlColumn img').live('click', function () {
@@ -141,11 +159,6 @@ script(type='text/javascript')
     } );
 
     $('#searchForm').submit(function() {
-      sessionsTable.fnDraw();
-      return false;
-    });
-
-    $('#date').change(function() {
       sessionsTable.fnDraw();
       return false;
     });
@@ -282,16 +295,21 @@ script(type='text/javascript')
             } 
             
             if (oObj.aData.esrc) {
-              data = "From: "
+              data = "<b>From:</b> ";
               data += oObj.aData.esrc.join(", ");
               data += "<br>";
+              if (oObj.aData.edst) {
+                data += "<b>To:</b> ";
+                data += oObj.aData.edst.join(", ");
+                data += "<br>";
+              }
               if (oObj.aData.esub) {
-                data += "Subject: "
+                data += "<b>Subject:</b> ";
                 data += oObj.aData.esub.join(", ");
                 data += "<br>";
               }
               if (oObj.aData.efn) {
-                data += "Files: "
+                data += "<b>Files:</b> ";
                 data += oObj.aData.efn.join(", ");
                 data += "<br>";
               }
@@ -327,12 +345,16 @@ script(type='text/javascript')
             "url": sSource,
             "data": aoData,
             "success": function (json) {
+              updateHealth(json.health);
+
               if (json.lpHisto && json.lpHisto[0]) {
-                startTime = json.lpHisto[0][0]/1000;
-                stopTime = (json.lpHisto[json.lpHisto.length-1][0]/1000) + 59;
+                if ($("#startDate").val() === "") {
+                  $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
+                }
+                if ($("#stopDate").val() === "") {
+                  $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
+                }
               }
-              // What a hack
-              //$("#sessionGraph").width($("#sessionsInfo").outerWidth(true) - $("#world-map").outerWidth()-25);
 
               lastResult = json;
               drawGraph(json[$('#sessionGraphSelect').val()]);
@@ -350,6 +372,12 @@ script(type='text/javascript')
                 $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
               } else {
                 $("#bsqErr").hide();
+              }
+
+              if ($("#date").val() === "-2") {
+                $("#customDate").show();
+              } else {
+                $("#customDate").hide();
               }
 
               $('#world-map').vectorMap('set', 'values', lastResult.map);
@@ -431,8 +459,8 @@ script(type='text/javascript')
                 esubitemcounts: {name: "Export Unique Email Subjects with Counts", counts:1, field: 'esub'},
                 esrcitems: {name: "Export Unique Email Source", counts:0, field: 'esrc'},
                 esrcitemcounts: {name: "Export Unique Email Source with Counts", counts:1, field: 'esrc'},
-                esrcitems: {name: "Export Unique Email Destination", counts:0, field: 'edst'},
-                esrcitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
+                edstitems: {name: "Export Unique Email Destination", counts:0, field: 'edst'},
+                edstitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
                 efnitems: {name: "Export Unique Email Files", counts:0, field: 'efn'},
                 efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'}
               };
@@ -452,7 +480,7 @@ script(type='text/javascript')
                 params.push({name:'counts', value:items[key].counts});
                 var url = "unique.txt?" + $.param(params);
 
-                window.location = url;
+                window.open(url);
               },
               items: items
             };

@@ -41,28 +41,31 @@ int                          numPlugins = 0;
 
 /******************************************************************************/
 typedef struct moloch_plugin {
-    struct moloch_plugin    *p_next, *p_prev;
-    char                    *name;
-    short                    p_bucket;
-    short                    p_count;
+    struct moloch_plugin        *p_next, *p_prev;
+    char                        *name;
+    short                        p_bucket;
+    short                        p_count;
 
-    int                      num;
+    int                          num;
 
-    MolochPluginIpFunc       ipFunc;
-    MolochPluginUdpFunc      udpFunc;
-    MolochPluginTcpFunc      tcpFunc;
-    MolochPluginSaveFunc     saveFunc;
-    MolochPluginNewFunc      newFunc;
-    MolochPluginExitFunc     exitFunc;
-    MolochPluginReloadFunc   reloadFunc;
+    MolochPluginIpFunc           ipFunc;
+    MolochPluginUdpFunc          udpFunc;
+    MolochPluginTcpFunc          tcpFunc;
+    MolochPluginSaveFunc         saveFunc;
+    MolochPluginNewFunc          newFunc;
+    MolochPluginExitFunc         exitFunc;
+    MolochPluginReloadFunc       reloadFunc;
 
-    MolochPluginHttpFunc     on_message_begin;
-    MolochPluginHttpDataFunc on_url;
-    MolochPluginHttpDataFunc on_header_field;
-    MolochPluginHttpDataFunc on_header_value;
-    MolochPluginHttpFunc     on_headers_complete;
-    MolochPluginHttpDataFunc on_body;
-    MolochPluginHttpFunc     on_message_complete;
+    MolochPluginHttpFunc         on_message_begin;
+    MolochPluginHttpDataFunc     on_url;
+    MolochPluginHttpDataFunc     on_header_field;
+    MolochPluginHttpDataFunc     on_header_value;
+    MolochPluginHttpFunc         on_headers_complete;
+    MolochPluginHttpDataFunc     on_body;
+    MolochPluginHttpFunc         on_message_complete;
+
+    MolochPluginSMTPHeaderFunc   smtp_on_header;
+    MolochPluginSMTPFunc         smtp_on_header_complete;
 } MolochPlugin_t;
 
 HASH_VAR(p_, plugins, MolochPlugin_t, 11);
@@ -112,9 +115,15 @@ void moloch_plugins_init()
 }
 /******************************************************************************/
 int moloch_plugins_register(const char *            name,
+                            size_t                  sizeofmolochsession,
                             gboolean                storeData)
 {
     MolochPlugin_t *plugin;
+
+    if (sizeof(MolochSession_t) != sizeofmolochsession) {
+        LOG("Plugin '%s' built with different version of moloch.h", name);
+        exit(-1);
+    }
 
     HASH_FIND(p_, plugins, name, plugin);
     if (plugin) {
@@ -225,6 +234,27 @@ void moloch_plugins_set_http_cb(const char *             name,
     if (on_message_complete)
         pluginsCbs |= MOLOCH_PLUGIN_HP_OMC;
 
+}
+/******************************************************************************/
+void moloch_plugins_set_smtp_cb(const char *                name,
+                                MolochPluginSMTPHeaderFunc  on_header,
+                                MolochPluginSMTPFunc        on_header_complete)
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FIND(p_, plugins, name, plugin);
+    if (!plugin) {
+        LOG("Can't find plugin with name %s", name);
+        return;
+    }
+
+    plugin->smtp_on_header = on_header;
+    if (on_header)
+        pluginsCbs |= MOLOCH_PLUGIN_SMTP_OH;
+
+    plugin->smtp_on_header_complete = on_header_complete;
+    if (on_header_complete)
+        pluginsCbs |= MOLOCH_PLUGIN_SMTP_OHC;
 }
 /******************************************************************************/
 void moloch_plugins_cb_save(MolochSession_t *session, int final)
@@ -344,6 +374,26 @@ void moloch_plugins_cb_hp_omc(MolochSession_t *session, http_parser *parser)
     HASH_FORALL(p_, plugins, plugin, 
         if (plugin->on_message_complete)
             plugin->on_message_complete(session, parser);
+    );
+}
+/******************************************************************************/
+void moloch_plugins_cb_smtp_oh(MolochSession_t *session, const char *field, size_t field_len, const char *value, size_t value_len)
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FORALL(p_, plugins, plugin, 
+        if (plugin->smtp_on_header)
+            plugin->smtp_on_header(session, field, field_len, value, value_len);
+    );
+}
+/******************************************************************************/
+void moloch_plugins_cb_smtp_ohc(MolochSession_t *session)
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FORALL(p_, plugins, plugin, 
+        if (plugin->smtp_on_header_complete)
+            plugin->smtp_on_header_complete(session);
     );
 }
 /******************************************************************************/

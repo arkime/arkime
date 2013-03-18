@@ -16,7 +16,7 @@
 /*jshint
   browser: true, jquery: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true, globalstrict: true
 */
-/*global startTime:true, stopTime:true, initialDisplayLength:true*/
+/*global initialDisplayLength:true*/
 "use strict";
 
 
@@ -185,10 +185,33 @@ function splitExpression(input ) {
   return output;
 }
 
+function updateHealth(health)
+{
+  if (health === undefined || health.status === undefined) {
+    return $("#esstatus").hide();
+  }
+
+  $("#esstatus").show();
+  $("#esstatus").css("background", health.status);
+  $("#esstatus").qtip({content: 
+     "Elasticsearch:<br>" +
+     " Status: " + health.status + "<br>" +
+     " Nodes: " + health.number_of_data_nodes + "<br>" +
+     " Shards: " + health.active_shards + "<br>" +
+     " Relocating Shards: " + health.relocating_shards + "<br>" +
+     " Unassigned Shards: " + health.unassigned_shards + "<br>",
+     position: {
+       my: 'top right',
+       at: 'bottom left'
+     }});
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // layout Functions
 //////////////////////////////////////////////////////////////////////////////////
 $(document).ready(function() {
+  $('.tooltip').qtip();
+
   $("#connectionsLink").click(function (e) {
     var data;
 
@@ -228,13 +251,16 @@ $(document).ready(function() {
 //////////////////////////////////////////////////////////////////////////////////
 // index Functions
 //////////////////////////////////////////////////////////////////////////////////
+  
+//2013-02-27 18:14:41 UTC
+var utcParser = d3.time.format.utc("%Y-%m-%d %X UTC").parse;
 function handleUrlParams() {
   var urlParams = parseUrlParams();
 
   if (urlParams.date) {
-    $("#date").val(urlParams.date);
+    $("#date").val(urlParams.date).change();
   } else {
-    $("#date").val("");
+    $("#date").val("").change();
   }
 
   if (urlParams.expression) {
@@ -247,10 +273,29 @@ function handleUrlParams() {
   $("#graphSize").val(String(initialDisplayLength));
   $("#sessions_length").val(String(initialDisplayLength));
 
-  if (urlParams.startTime && urlParams.startTime) {
-    startTime = urlParams.startTime;
-    stopTime = urlParams.stopTime;
-    $("#date").val("-2");
+  if (urlParams.startTime && urlParams.stopTime) {
+
+    if (! /^[0-9]+$/.test(urlParams.startTime)) {
+      var st;
+      st = Date.parse(urlParams.startTime.replace("+", " "))/1000;
+      if (isNaN(st) || st === null) {
+        st = utcParser(urlParams.startTime).getTime()/1000;
+      }
+      urlParams.startTime = st;
+    }
+
+    if (! /^[0-9]+$/.test(urlParams.stopTime)) {
+      var st;
+      st = Date.parse(urlParams.stopTime.replace("+", " "))/1000;
+      if (isNaN(st) || st === null) {
+        st = utcParser(urlParams.stopTime).getTime()/1000;
+      }
+      urlParams.stopTime = st;
+    }
+
+    $("#startDate").val(dateString(urlParams.startTime, ' '));
+    $("#stopDate").val(dateString(urlParams.stopTime, ' '));
+    $("#date").val("-2").change();
   }
   
   if (urlParams.useDir=== "0" && urlParams.usePort === "0") {
@@ -363,14 +408,14 @@ function addSessionIP (ip) {
 }
 
 function setSessionStartTime (t) {
-  startTime = t;
-  $("#date").val("-2");
+  $("#startDate").val(dateString(t, ' '));
+  $("#date").val("-2").change();
   return false;
 }
 
 function setSessionStopTime (t) {
-  stopTime = t;
-  $("#date").val("-2");
+  $("#stopDate").val(dateString(t, ' '));
+  $("#date").val("-2").change();
   return false;
 }
 
@@ -466,8 +511,14 @@ function buildParams() {
 
   if ($("#date").length) {
     if ($("#date").val() === "-2") {
-      params.push({name:'startTime', value:startTime});
-      params.push({name:'stopTime', value:stopTime});
+      /* Date madness because of firefox on windows */
+      var d = new Date($("#startDate").val());
+      if (d < 0) d.setFullYear(d.getFullYear() + 100);
+      params.push({name:'startTime', value:d/1000});
+
+      d = new Date($("#stopDate").val());
+      if (d < 0) d.setFullYear(d.getFullYear() + 100);
+      params.push({name:'stopTime', value:d/1000});
     } else if ($("#date").val()) {
       params.push({name:'date', value:$("#date").val()});
     }
@@ -527,18 +578,18 @@ function setupSessionGraphBinds(sessionsTable) {
   });
 
   $('#sessionGraph').bind("plotselected", function (event, ranges) {
-    startTime = Math.floor(ranges.xaxis.from/1000);
-    stopTime = Math.floor(ranges.xaxis.to/1000);
-    $("#date").val("-2");
+    $("#startDate").val(dateString(ranges.xaxis.from/1000, ' '));
+    $("#stopDate").val(dateString(ranges.xaxis.to/1000, ' '));
+    $("#date").val("-2").change();
     sessionsTable.fnDraw();
   });
 
   $("#sessionGraph").bind('plotpan plotzoom', function (event, plot) {
-      var axes = plot.getAxes();
-      startTime = Math.floor(axes.xaxis.min/1000)-1;
-      stopTime = Math.ceil(axes.xaxis.max/1000)+1;
-      $("#date").val("-2");
-      sessionsTable.fnDraw();
+    var axes = plot.getAxes();
+    $("#startDate").val(dateString((axes.xaxis.min/1000)-1, ' '));
+    $("#stopDate").val(dateString((axes.xaxis.max/1000)+1, ' '));
+    $("#date").val("-2").change();
+    sessionsTable.fnDraw();
   });
 }
 

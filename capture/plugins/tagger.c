@@ -369,7 +369,7 @@ void moloch_plugin_init()
     HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(i_, allIps, moloch_int_hash, moloch_int_cmp);
 
-    moloch_plugins_register("tagger", FALSE);
+    moloch_plugins_register("tagger", sizeof(MolochSession_t), FALSE);
 
     moloch_plugins_set_cb("tagger",
       NULL,
