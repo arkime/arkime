@@ -52,7 +52,7 @@ JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
  echo
- echo "ERROR - Please install Oracle Java before proceeding, OpenJDK doesn't seem to work.  Visit http://java.sun.com"
+ echo "ERROR - Please install Java before proceeding.  Visit http://java.sun.com"
  echo
  exit 0
 fi
