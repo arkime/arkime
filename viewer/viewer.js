@@ -185,7 +185,7 @@ function deleteFile(node, id, path, cb) {
 }
 
 function isLocalView(node, yesCB, noCB) {
-  Db.nodeStatsCache(node, function(err, stat) {
+  Db.molochNodeStatsCache(node, function(err, stat) {
     if (err || stat.hostname !== os.hostname()) {
       noCB();
     } else {
@@ -501,6 +501,31 @@ function addSortToQuery(query, info, d) {
 function noCache(req, res) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 }
+
+app.get('/esstats.json', function(req, res) {
+  var stats = [];
+
+  Db.nodesStats({"jvm": 1}, function(err, info) {
+    var nodes = Object.keys(info.nodes);
+    for (var n = 0; n < nodes.length; n++) {
+      var node = info.nodes[nodes[n]];
+      stats.push({
+        name: node.name,
+        storeSize: node.indices.store.size_in_bytes,
+        docs: node.indices.docs.count,
+        searches: node.indices.search.query_total,
+        searchesTime: node.indices.search.query_time_in_millis,
+        heapSize: node.jvm.mem.heap_used_in_bytes,
+        nonHeapSize: node.jvm.mem.non_heap_used_in_bytes
+      });
+    }
+    var r = {sEcho: req.query.sEcho,
+             iTotalRecords: stats.length,
+             iTotalDisplayRecords: stats.length,
+             aaData: stats};
+    res.send(r);
+  });
+});
 
 app.get('/stats.json', function(req, res) {
   noCache(req, res);
@@ -2016,7 +2041,7 @@ function getViewUrl(node, cb) {
     return;
   }
 
-  Db.nodeStatsCache(node, function(err, stat) {
+  Db.molochNodeStatsCache(node, function(err, stat) {
     if (Config.isHTTPS(node)) {
       cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), httpsAgent);
     } else {

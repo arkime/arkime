@@ -1132,7 +1132,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id)
 
     if (name) {
         json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, "{\"num\":%d, \"name\":\"%s\", \"first\":%ld, \"node\":\"%s\", \"locked\":1}", num, name, firstPacket, config.nodeName);
-        key_len = snprintf(key, sizeof(key), "/files/file/%s-%d", config.nodeName,num);
+        key_len = snprintf(key, sizeof(key), "/files/file/%s-%d?refresh=true", config.nodeName,num);
     } else {
         tmp = localtime(&firstPacket);
 
@@ -1142,7 +1142,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id)
         snprintf(filename+strlen(filename), sizeof(filename) - strlen(filename), "%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
         json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, "{\"num\":%d, \"name\":\"%s\", \"first\":%ld, \"node\":\"%s\", \"locked\":0}", num, filename, firstPacket, config.nodeName);
-        key_len = snprintf(key, sizeof(key), "/files/file/%s-%d", config.nodeName,num);
+        key_len = snprintf(key, sizeof(key), "/files/file/%s-%d?refresh=true", config.nodeName,num);
     }
 
     moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
