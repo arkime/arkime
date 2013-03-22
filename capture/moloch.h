@@ -325,11 +325,11 @@ void moloch_detect_exit();
 
 void moloch_http_init();
 
-unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, size_t data_len, size_t *return_len);
-gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, size_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw);
+unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, size_t *return_len);
+gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw);
 
 
-gboolean moloch_http_set(void *server, char *key, int key_len, char *data, size_t data_len, MolochResponse_cb func, gpointer uw);
+gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
 char *moloch_http_get_buffer(int size);
 void moloch_http_exit();

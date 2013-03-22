@@ -408,13 +408,13 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
     return TRUE;
 }
 /******************************************************************************/
-gboolean moloch_http_set(void *server, char *key, int key_len, char *data, size_t data_len, MolochResponse_cb func, gpointer uw)
+gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochResponse_cb func, gpointer uw)
 {
     // If no func then this request is dropable
     return moloch_http_send(server, "POST", key, key_len, data, data_len, func == 0, func, uw);
 }
 /******************************************************************************/
-unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, size_t data_len, size_t *return_len)
+unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, size_t *return_len)
 {
     MolochRequest_t     *request;
     gboolean             sent = FALSE;
@@ -444,7 +444,7 @@ unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uin
     return 0;
 }
 /******************************************************************************/
-gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, size_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw)
+gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw)
 {
     MolochRequest_t     *request;
     MolochConn_t        *conn;
@@ -492,7 +492,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
     } else {
         request->data = data;
         if (dropable && server->requestQ[q].r_count > server->maxOutstandingRequests) {
-            LOG("ERROR - Dropping request %.*s of size %ld queue[%d] %d is too big", key_len, key, data_len, q, server->requestQ[q].r_count);
+            LOG("ERROR - Dropping request %.*s of size %d queue[%d] %d is too big", key_len, key, data_len, q, server->requestQ[q].r_count);
 
             if (data) {
                 MolochMem_t *mem = (MolochMem_t *)(data-8);

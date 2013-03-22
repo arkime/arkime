@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include "glib.h"
 #include "nids.h"
 #include "pcap.h"
@@ -615,7 +616,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         if (!pcap_stats(nids_params.pcap_desc, &ps)) {
             initialDropped = ps.ps_drop;
         }
-        LOG("%ld Initial Dropped = %d", totalPackets, initialDropped);
+        LOG("%" PRIu64 " Initial Dropped = %d", totalPackets, initialDropped);
     }
 
     if ((++totalPackets) % config.logEveryXPackets == 0) {
@@ -627,13 +628,13 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         }
         headSession = DLL_PEEK_HEAD(q_, sessionsQ);
 
-        LOG("packets: %lu current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d", 
+        LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d", 
           totalPackets, 
           sessionsQ->q_count, 
           HASH_COUNT(h_, sessions),
           (headSession?(int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket.tv_sec + sessionTimeout)):0),
           ps.ps_recv, 
-          ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*100.0/ps.ps_recv,
+          ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*(double)100.0/ps.ps_recv,
           ps.ps_ifdrop,
           moloch_http_queue_length(esServer));
     }
@@ -759,7 +760,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     /* Clean up the Q, only 1 per incoming packet so we don't fall behind */
     if ((headSession = DLL_PEEK_HEAD(q_, sessionsQ)) &&
-           (headSession->lastPacket.tv_sec + sessionTimeout < nids_last_pcap_header->ts.tv_sec)) {
+           ((uint64_t)headSession->lastPacket.tv_sec + sessionTimeout < (uint64_t)nids_last_pcap_header->ts.tv_sec)) {
 
         if (packet->ip_p == IPPROTO_TCP && headSession->haveNidsTcp) {
             //LOG("Saving because of at head %s", moloch_friendly_session_id(headSession->protocol, headSession->addr1, headSession->port1, headSession->addr2, headSession->port2));
@@ -774,7 +775,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     }
 
     if ((headSession = DLL_PEEK_HEAD(tcp_, &tcpWriteQ)) &&
-           (headSession->lastSave + config.tcpSaveTimeout < nids_last_pcap_header->ts.tv_sec)) {
+           (headSession->lastSave + config.tcpSaveTimeout < (uint64_t)nids_last_pcap_header->ts.tv_sec)) {
 
             //LOG("Saving because of timeout %s", moloch_friendly_session_id(headSession->protocol, headSession->addr1, headSession->port1, headSession->addr2, headSession->port2));
             moloch_nids_mid_save_session(headSession);
@@ -1135,6 +1136,7 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
         moloch_plugins_cb_udp(session, udphdr, data, len);
 }
 /******************************************************************************/
+pcap_t *closeNextOpen = 0;
 int moloch_nids_next_file()
 {
     static GDir *pcapGDir[21];
@@ -1199,7 +1201,7 @@ int moloch_nids_next_file()
 
         errbuf[0] = 0;
         if (nids_params.pcap_desc)
-            pcap_close(nids_params.pcap_desc);
+            closeNextOpen = nids_params.pcap_desc;
         nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
         if (!nids_params.pcap_desc) {
             LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
@@ -1254,6 +1256,12 @@ void moloch_nids_init_nids()
     nids_unregister_tcp(moloch_nids_cb_tcp);
     nids_unregister_ip(moloch_nids_cb_ip);
     nids_init();
+
+    /* Have to do this after nids_init, libnids has issues */
+    if (closeNextOpen) {
+        pcap_close(closeNextOpen);
+        closeNextOpen = 0;
+    }
 
     if (nids_getfd() == -1) {
         g_timeout_add(0, moloch_nids_poll_cb, NULL);
