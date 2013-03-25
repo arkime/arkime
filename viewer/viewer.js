@@ -61,6 +61,7 @@ if (Config.isHTTPS()) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
+var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
 
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.getFull("default", "httpRealm", "Moloch")},
   function(userid, done) {
@@ -83,7 +84,11 @@ app.configure(function() {
   app.enable("jsonp callback");
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.set('view options', {molochversion: molochversion.version, isIndex: false, basePath: Config.basePath()});
+  app.set('view options', {molochversion: molochversion.version,
+                           isIndex: false,
+                           basePath: Config.basePath(),
+                           elasticBase: "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1]
+                          });
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
@@ -169,9 +174,6 @@ function isEmptyObject(object) { for(var i in object) { return false; } return t
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
-
-
-var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
 Db.initialize({host : escInfo[0], port: escInfo[1]});
 
 function deleteFile(node, id, path, cb) {
@@ -183,7 +185,7 @@ function deleteFile(node, id, path, cb) {
 }
 
 function isLocalView(node, yesCB, noCB) {
-  Db.nodeStatsCache(node, function(err, stat) {
+  Db.molochNodeStatsCache(node, function(err, stat) {
     if (err || stat.hostname !== os.hostname()) {
       noCB();
     } else {
@@ -343,10 +345,10 @@ app.get('/:nodeName/statsDetail', function(req, res) {
 fs.unlink("./public/style.css"); // Remove old style.css file
 app.get('/style.css', function(req, res) {
   fs.readFile("./views/style.styl", 'utf8', function(err, str) {
-    if (err) return next('ENOENT' == err.code ? null : err);
+    if (err) {return console.log(err);}
     var style = stylus(str, "./views");
     style.render(function(err, css){
-      if (err) return next(err);
+      if (err) {return console.log(err);}
       var date = new Date().toUTCString();
       res.setHeader('Content-Type', 'text/css');
       res.setHeader('Date', date);
@@ -499,6 +501,31 @@ function addSortToQuery(query, info, d) {
 function noCache(req, res) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 }
+
+app.get('/esstats.json', function(req, res) {
+  var stats = [];
+
+  Db.nodesStats({"jvm": 1}, function(err, info) {
+    var nodes = Object.keys(info.nodes);
+    for (var n = 0; n < nodes.length; n++) {
+      var node = info.nodes[nodes[n]];
+      stats.push({
+        name: node.name,
+        storeSize: node.indices.store.size_in_bytes,
+        docs: node.indices.docs.count,
+        searches: node.indices.search.query_total,
+        searchesTime: node.indices.search.query_time_in_millis,
+        heapSize: node.jvm.mem.heap_used_in_bytes,
+        nonHeapSize: node.jvm.mem.non_heap_used_in_bytes
+      });
+    }
+    var r = {sEcho: req.query.sEcho,
+             iTotalRecords: stats.length,
+             iTotalDisplayRecords: stats.length,
+             aaData: stats};
+    res.send(r);
+  });
+});
 
 app.get('/stats.json', function(req, res) {
   noCache(req, res);
@@ -754,6 +781,11 @@ function getIndices(startTime, stopTime, cb) {
       }
       startTime += 86400;
     }
+
+    if (indices.length === 0) {
+      return cb("sessions-*");
+    }
+
     return cb(indices.join());
   });
 }
@@ -823,7 +855,7 @@ function lookupQueryTags(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "efn"];
+  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
   var i;
 
@@ -843,7 +875,7 @@ function buildSessionQuery(req, buildCb) {
                    };
   }
 
-  
+
   if (req.query.date && req.query.date === '-1') {
     query.query.filtered.query.match_all = {};
   } else if (req.query.startTime && req.query.stopTime) {
@@ -982,6 +1014,9 @@ app.get('/sessions.json', function(req, res) {
       },
       total: function (totalCb) {
         Db.numberOfDocuments('sessions-*', totalCb);
+      },
+      health: function (healthCb) {
+        Db.healthCache(healthCb);
       }
     },
     function(err, results) {
@@ -992,6 +1027,7 @@ app.get('/sessions.json', function(req, res) {
                lpHisto: lpHisto,
                dbHisto: dbHisto,
                paHisto: paHisto,
+               health: results.health,
                map: map,
                aaData: (results.sessions?results.sessions.results:[])};
       try {
@@ -1021,11 +1057,19 @@ app.get('/graph.json', function(req, res) {
       res.send(r);
       return;
     }
-    console.log("graph.json query", JSON.stringify(query));
+    console.log("graph.json indices", indices, " query", JSON.stringify(query));
 
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
-      if (err || result.error) {
-        console.log("graph.json error", err);
+    async.parallel({
+      health: function (healthCb) {
+        Db.healthCache(healthCb);
+      },
+      graph: function (graphCb) {
+        Db.searchPrimary(indices, 'session', query, graphCb);
+      }
+    },
+    function(err, results) {
+      if (err || results.graph.error) {
+        console.log("graph.json error", err, results.graph.error);
         res.send({});
         return;
       }
@@ -1036,12 +1080,12 @@ app.get('/graph.json', function(req, res) {
       var numNodes = 1;
 
       var i;
-      for (i = 0; i < result.hits.hits.length; i++) {
-        if (!result.hits.hits[i] || !result.hits.hits[i].fields) {
+      for (i = 0; i < results.graph.hits.hits.length; i++) {
+        if (!results.graph.hits.hits[i] || !results.graph.hits.hits[i].fields) {
           continue;
         }
 
-        var f = result.hits.hits[i].fields;
+        var f = results.graph.hits.hits[i].fields;
         var a1, a2, g1, g2;
         if (req.query.useDir === "1"|| f.a1 < f.a2) {
           a1 = decode.inet_ntoa(f.a1);
@@ -1102,7 +1146,7 @@ app.get('/graph.json', function(req, res) {
         links.push(connects[key]);
       }
 
-      res.send({nodes: nodes, links: links});
+      res.send({health: results.health, nodes: nodes, links: links});
     });
   });
 });
@@ -1190,7 +1234,9 @@ app.get('/unique.txt', function(req, res) {
 
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = [req.query.field];
-    if (req.query.field.match(/^(us|esub)$/)) {
+
+    /* Any multi value string field must be uniqued here or elastic 0.18/0.19/0.20 will blow up */
+    if (req.query.field.match(/^(us|esub|edst|esrc|efn)$/)) {
       query.size = 200000;
       if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
@@ -1206,7 +1252,7 @@ app.get('/unique.txt', function(req, res) {
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       //console.log("unique result", util.inspect(result, false, 100));
-      if (req.query.field.match(/^(us|esub)$/)) {
+      if (req.query.field.match(/^(us|esub|edst|esrc|efn)$/)) {
         var counts = {};
         var keys = [];
         result.hits.hits.forEach(function (item) {
@@ -1449,22 +1495,34 @@ function toHex(input, offsets) {
   return out;
 }
 
-function localSessionDetailReturnFull(req, res, session, results) {
-  var i;
+function localSessionDetailReturnFull(req, res, session, incoming) {
+  var outgoing = [];
+  for (var r = 0; r < incoming.length; r++) {
+    outgoing[r]= {html: ""};
+    for (var p = 0; p < incoming[r].pieces.length; p++) {
+      if (req.query.base === "hex") {
+        outgoing[r].html += '<pre>' + toHex(incoming[r].pieces[p].raw, req.query.line === "true") + '</pre>';
+      } else if (req.query.base === "ascii") {
+        outgoing[r].html += '<pre>' + safeStr(incoming[r].pieces[p].raw.toString("binary")) + '</pre>';
+      } else if (req.query.base === "utf8") {
+        outgoing[r].html += '<pre>' + safeStr(incoming[r].pieces[p].raw.toString("utf8")) + '</pre>';
+      } else {
+        outgoing[r].html += safeStr(incoming[r].pieces[p].raw.toString()).replace(/\r?\n/g, '<br>');
+      }
 
-  for (i = 0; i < results.length; i++) {
-    if (req.query.base === "hex") {
-      results[i].data = '<pre>' + toHex(results[i].data, req.query.line === "true") + '</pre>';
-    } else if (req.query.base === "ascii") {
-      results[i].data = '<pre>' + safeStr(results[i].data.toString("binary")) + '</pre>';
-    } else if (req.query.base === "utf8") {
-      results[i].data = '<pre>' + safeStr(results[i].data.toString("utf8")) + '</pre>';
-    } else {
-      results[i].data = safeStr(results[i].data.toString()).replace(/\n/g, '<br>');
-    }
+      if(incoming[r].pieces[p].bodyNum !== undefined) {
+        var url = req.params.nodeName + "/" + 
+                  session.id + "/body/" + 
+                  incoming[r].pieces[p].bodyType + "/" + 
+                  incoming[r].pieces[p].bodyNum + "/" + 
+                  incoming[r].pieces[p].bodyName + ".pellet";
 
-    if(results[i].bodyNum !== undefined) {
-      results[i].data += "<img src=\"" + req.params.nodeName + "/" + session.id + "/body/" + results[i].bodyNum + "\">";
+        if (incoming[r].pieces[p].bodyType === "image") {
+          outgoing[r].html += "<img src=\"" + url + "\">";
+        } else {
+          outgoing[r].html += "<a href=\"" + url + "\">" + incoming[r].pieces[p].bodyName + "</a>";
+        }
+      }
     }
   }
 
@@ -1472,17 +1530,19 @@ function localSessionDetailReturnFull(req, res, session, results) {
     user: req.user,
     layout: false,
     session: session,
-    data: results,
+    data: outgoing,
     query: req.query
   });
 }
 
 
 // Needs to be rewritten, this sucks
-function gzipDecode(req, res, session, results) {
+function gzipDecode(req, res, session, incoming) {
   var kind;
 
-  if (results[0].data.slice(0,4).toString() === "HTTP") {
+  var outgoing = [];
+
+  if (incoming[0].data.slice(0,4).toString() === "HTTP") {
     kind = [HTTPParser.RESPONSE, HTTPParser.REQUEST];
   } else {
     kind = [HTTPParser.REQUEST, HTTPParser.RESPONSE];
@@ -1494,20 +1554,20 @@ function gzipDecode(req, res, session, results) {
 
     // This isn't a gziped request
     if (!this.gzip) {
-      results[pos] = {data: buf};
+      outgoing[pos] = {pieces:[{raw: buf}]};
       return;
     }
 
     // Copy over the headers
-    if (!results[pos]) {
-      results[pos] = {data: buf.slice(0, start)};
+    if (!outgoing[pos]) {
+      outgoing[pos] = {pieces:[{raw: buf.slice(0, start)}]};
     }
 
     if (!this.inflator) {
       this.inflator = zlib.createGunzip()
         .on("data", function (b) {
-          var tmp = Buffer.concat([results[pos].data, new Buffer(b)]);
-          results[pos].data = tmp;
+          var tmp = Buffer.concat([outgoing[pos].pieces[0].raw, new Buffer(b)]);
+          outgoing[pos].pieces[0].raw = tmp;
         })
         .on("error", function (e) {
         })
@@ -1534,7 +1594,7 @@ function gzipDecode(req, res, session, results) {
       });
       this.inflator = null;
     } else {
-      results[pos] = origresults[pos];
+      outgoing[pos] = {pieces: [{raw: incoming[pos].data}]};
       process.nextTick(nextCb);
     }
   };
@@ -1552,24 +1612,21 @@ function gzipDecode(req, res, session, results) {
     }
   };
 
-  var origresults = results;
-  results = [];
-
   var p = 0;
-  async.forEachSeries(origresults, function(item, nextCb) {
+  async.forEachSeries(incoming, function(item, nextCb) {
     var pos = p;
     p++;
     parsers[(pos%2)].pos = pos;
 
     if (!item) {
     } else if (item.data.length === 0) {
-      results[pos] = {data: item.data};
+      outgoing[pos] = {pieces:[{raw: item.data}]};
       process.nextTick(nextCb);
     } else {
       parsers[(pos%2)].nextCb = nextCb;
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
       if (typeof out === "object") {
-        results[pos] = {data: item.data};
+        outgoing[pos] = {pieces:[{raw: item.data}]};
         console.log("ERROR", out);
       }
       if (parsers[(pos%2)].nextCb) {
@@ -1580,14 +1637,14 @@ function gzipDecode(req, res, session, results) {
     req.query.needgzip = "false";
     parsers[0].finish();
     parsers[1].finish();
-    setTimeout(function() {localSessionDetailReturnFull(req, res, session, results);}, 100);
+    setTimeout(function() {localSessionDetailReturnFull(req, res, session, outgoing);}, 100);
   });
 }
 
-function imageDecode(req, res, session, results, findBody) {
+function imageDecodeHTTP(req, res, session, incoming, findBody) {
   var kind;
 
-  if (results[0].data.slice(0,4).toString() === "HTTP") {
+  if (incoming[0].data.slice(0,4).toString() === "HTTP") {
     kind = [HTTPParser.RESPONSE, HTTPParser.REQUEST];
   } else {
     kind = [HTTPParser.REQUEST, HTTPParser.RESPONSE];
@@ -1595,6 +1652,7 @@ function imageDecode(req, res, session, results, findBody) {
   var parsers = [new HTTPParser(kind[0]), new HTTPParser(kind[1])];
 
   var bodyNum = 0;
+  var bodyType = "file";
   parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
     if (findBody === bodyNum) {
       return res.end(buf.slice(start));
@@ -1602,34 +1660,40 @@ function imageDecode(req, res, session, results, findBody) {
 
     var pos = this.pos;
 
+    if (this.image) {
+      outgoing[pos] = {pieces: [{bodyNum: bodyNum, bodyType:"image", bodyName:"image" + bodyNum}]};
+    } else {
+      outgoing[pos] = {pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
+    }
     // Copy over the headers
-    if (results[pos] === undefined) {
-      results[pos] = {data: buf.slice(0, start), bodyNum: bodyNum};
-    } else if (results[pos].data === undefined) {
-      results[pos] = {data: "", bodyNum: bodyNum};
+    if (outgoing[pos] === undefined) {
+      outgoing[pos].pieces[0].raw = buf.slice(0, start);
+    } else if (outgoing[pos].data === undefined) {
+      outgoing[pos].pieces[0].raw = "";
     }
     bodyNum++;
   };
 
   parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
-    if (this.pos > 0) {
+    if (this.pos > 0 && this.hinfo && this.hinfo.statusCode !== 100) {
       parsers[(this.pos+1)%2].reinitialize(kind[(this.pos+1)%2]);
     }
     var pos = this.pos;
 
-    if (!results[pos]) {
-      results[pos] = origresults[pos];
+    if (!outgoing[pos]) {
+      outgoing[pos] = {pieces: [{raw: incoming[pos].data}]};
     }
   };
 
   parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
     var pos = this.pos;
+    this.hinfo = info;
 
     var h;
     this.image = false;
     for (h = 0; h < info.headers.length; h += 2) {
-      if (info.headers[h].match(/Content-Encoding/i)) {
-        if (info.headers[h+1].match(/image/i)) {
+      if (info.headers[h].match(/Content-Type/i)) {
+        if (info.headers[h+1].match(/^image/i)) {
           this.image = true;
         }
         break;
@@ -1637,48 +1701,249 @@ function imageDecode(req, res, session, results, findBody) {
     }
   };
 
-  var origresults = results;
-  results = [];
+  var outgoing = [];
 
   var p = 0;
-  async.forEachSeries(origresults, function(item, nextCb) {
+  async.forEachSeries(incoming, function(item, nextCb) {
     parsers[(p%2)].pos = p;
 
     if (!item) {
     } else if (item.data.length === 0) {
-      results[p] = {data: item.data};
-      process.nextTick(nextCb);
+      outgoing[p] = {pieces:[{raw: item.data}]};
     } else {
       var out = parsers[(p%2)].execute(item.data, 0, item.data.length);
       if (typeof out === "object") {
-        results[p] = {data: item.data};
+        outgoing[p] = {pieces:[{raw: item.data}]};
         console.log("ERROR", out);
       }
-      process.nextTick(nextCb);
-      p++;
+
+      if (!outgoing[p]) {
+        outgoing[p] = {pieces: [{raw: incoming[p].data}]};
+      }
     }
+
+    if (res.finished === true) {
+      return nextCb("Done!");
+    } else {
+      process.nextTick(nextCb);
+    }
+    p++;
   }, function (err) {
-    req.query.needimage = "false";
     if (findBody === -1) {
-      process.nextTick(function() {localSessionDetailReturn(req, res, session, results);});
+      process.nextTick(function() {localSessionDetailReturnFull(req, res, session, outgoing);});
     }
   });
 }
 
-function localSessionDetailReturn(req, res, session, results) {
-  if (results.length > 200) {
-    results.length = 200;
+function imageDecodeSMTP(req, res, session, incoming, findBody) {
+  var outgoing = [];
+
+  var STATES = {
+    cmd: 1,
+    header: 2,
+    data: 3,
+    mime: 4,
+    mime_data: 5,
+    ignore: 6
+  };
+
+  var states = [STATES.cmd, STATES.cmd];
+  var bodyNum = 0;
+  var bodyType = "file";
+  var bodyName = "unknown";
+
+  function parse(data, p) {
+    var lines = data.toString("binary").replace(/\r?\n$/, '').split(/\r?\n|\r/);
+    var state = states[p%2];
+    var header = "";
+    var mime;
+    var boundaries = [];
+    var pieces = [{raw: ""}];
+    var b;
+    var matches;
+
+    linesloop:
+    for (var l = 0; l < lines.length; l++) {
+      switch (state) {
+      case STATES.cmd:
+        pieces[pieces.length-1].raw += lines[l] + "\n";
+
+        if (lines[l].toUpperCase() === "DATA") {
+          state = STATES.header;
+          header = "";
+          boundaries = [];
+        } else if (lines[l].toUpperCase() === "STARTTLS") {
+          state = STATES.ignore;
+        }
+        break;
+      case STATES.header:
+        pieces[pieces.length-1].raw += lines[l] + "\n";
+        if (lines[l][0] === " " || lines[l][0] === "\t") {
+          header += lines[l];
+          continue;
+        }
+        if (header.substr(0, 13).toLowerCase() === "content-type:") {
+          if ((matches = header.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
+            boundaries.push(matches[2]);
+          }
+        }
+        if (lines[l] === "") {
+          state = STATES.data;
+          continue;
+        }
+        header = lines[l];
+        break;
+      case STATES.data:
+        pieces[pieces.length-1].raw += lines[l] + "\n";
+        if (lines[l] === ".") {
+          state = STATES.cmd;
+          continue;
+        }
+
+        if (lines[l][0] === '-') {
+          for (b = 0; b < boundaries.length; b++) {
+            if (lines[l].substr(2, boundaries[b].length) === boundaries[b]) {
+              state = STATES.mime;
+              mime = {line:"", base64:0};
+              continue linesloop;
+            }
+          }
+        }
+        break;
+      case STATES.mime:
+        if (lines[l] === ".") {
+          state = STATES.cmd;
+          continue;
+        }
+
+        pieces[pieces.length-1].raw += lines[l] + "\n";
+
+        if (lines[l][0] === " " || lines[l][0] === "\t") {
+          mime.line += lines[l];
+          continue;
+        }
+        if (mime.line.substr(0, 13).toLowerCase() === "content-type:") {
+          if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
+            boundaries.push(matches[2]);
+          }
+          if ((matches = mime.line.match(/name\s*=\s*("?)([^"]*)\1/))) {
+            bodyName = matches[2];
+          }
+
+          if (mime.line.match(/content-type: image/i)) {
+            bodyType = "image";
+          }
+
+        } else if (mime.line.match(/content-disposition:/i)) {
+          if ((matches = mime.line.match(/filename\s*=\s*("?)([^"]*)\1/))) {
+            bodyName = matches[2];
+          }
+        } else if (mime.line.match(/content-transfer-encoding:.*base64/i)) {
+          mime.base64 = 1;
+          mime.doit = 1;
+        }
+        if (lines[l] === "") {
+          if (mime.doit) {
+            pieces[pieces.length-1].bodyNum = bodyNum+1;
+            pieces[pieces.length-1].bodyType = bodyType;
+            pieces[pieces.length-1].bodyName = bodyName;
+            pieces.push({raw: ""});
+            bodyType = "file";
+            bodyName = "unknown";
+            bodyNum++;
+          }
+          state = STATES.mimedata;
+          continue;
+        }
+        mime.line = lines[l];
+        break;
+      case STATES.mimedata:
+        if (lines[l] === ".") {
+          if (findBody !== -1) {
+            return res.end();
+          }
+          state = STATES.cmd;
+          continue;
+        }
+
+        if (lines[l][0] === '-') {
+          for (b = 0; b < boundaries.length; b++) {
+            if (lines[l].substr(2, boundaries[b].length) === boundaries[b]) {
+              if (findBody === bodyNum) {
+                return res.end();
+              }
+              state = STATES.mime;
+              mime = {line:"", base64:0};
+              continue linesloop;
+            }
+          }
+        }
+
+        if (!mime.doit) {
+          pieces[pieces.length-1].raw += lines[l] + "\n";
+        } else if (findBody === bodyNum) {
+          res.write(new Buffer(lines[l], 'base64'));
+        }
+        break;
+      }
+    }
+    states[p%2] = state;
+
+    return pieces;
+  }
+
+  var p = 0;
+  for (var p = 0; p < incoming.length; p++) {
+    if (incoming[p].data.length === 0) {
+      outgoing[p] = {pieces:[{raw: incoming[p].data}]};
+    } else {
+      outgoing[p] = {pieces: parse(incoming[p].data, p)};
+    }
+    if (res.finished === true) {
+      break;
+    }
+  }
+
+  if (findBody === -1) {
+    process.nextTick(function() {localSessionDetailReturnFull(req, res, session, outgoing);});
+  }
+}
+
+function imageDecode(req, res, session, results, findBody) {
+  if (results[0].data.slice(0,4).toString() === "HTTP" || (results[1] && results[1].data.slice(0,4).toString() === "HTTP")) {
+    return imageDecodeHTTP(req, res, session, results, findBody);
+  }
+
+  if (results[0].data.slice(0,4).toString().match(/(HELO|EHLO)/) ||
+      (results[1] && results[1].data.slice(0,4).toString().match(/(HELO|EHLO)/)) ||
+      (results[2] && results[2].data.slice(0,4).toString().match(/(HELO|EHLO)/))) {
+    return imageDecodeSMTP(req, res, session, results, findBody);
+  }
+
+  req.query.needimage = "false";
+  if (findBody === -1) {
+    process.nextTick(function() {localSessionDetailReturn(req, res, session, results);});
+  }
+}
+
+function localSessionDetailReturn(req, res, session, incoming) {
+  if (incoming.length > 200) {
+    incoming.length = 200;
   }
 
   if (req.query.needgzip === "true") {
-    return gzipDecode(req, res, session, results);
+    return gzipDecode(req, res, session, incoming);
   }
 
   if (req.query.needimage === "true") {
-    return imageDecode(req, res, session, results, -1);
+    return imageDecode(req, res, session, incoming, -1);
   }
 
-  localSessionDetailReturnFull(req, res, session, results);
+  var outgoing = [];
+  for (var r = 0; r < incoming.length; r++) {
+    outgoing.push({pieces: [{raw: incoming[r].data}]});
+  }
+  localSessionDetailReturnFull(req, res, session, outgoing);
 }
 
 
@@ -1739,11 +2004,14 @@ function localSessionDetail(req, res) {
       localSessionDetailReturn(req, res, session, [{data: "Unknown ip.p=" + packets[0].ip.p}]);
     }
   },
-  200);
+  req.query.needimage === "true"?10000:400);
 }
 
 function localBody(req, res) {
   var packets = [];
+  if (req.params.bodyType === "file") {
+    res.setHeader("Content-Type", "application/force-download");
+  }
   processSessionId(req.params.id, null, function (buffer, cb) {
     var obj = {};
     if (buffer.length > 16) {
@@ -1763,7 +2031,7 @@ function localBody(req, res) {
       return imageDecode(req, res, session, results, +req.params.bodyNum);
     });
   },
-  200);
+  10000);
 }
 
 function getViewUrl(node, cb) {
@@ -1773,7 +2041,7 @@ function getViewUrl(node, cb) {
     return;
   }
 
-  Db.nodeStatsCache(node, function(err, stat) {
+  Db.molochNodeStatsCache(node, function(err, stat) {
     if (Config.isHTTPS(node)) {
       cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), httpsAgent);
     } else {
@@ -1835,7 +2103,7 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
 });
 
 
-app.get('/:nodeName/:id/body/:bodyNum', function(req, res) {
+app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', function(req, res) {
   isLocalView(req.params.nodeName, function () {
     localBody(req, res);
   },
@@ -1934,7 +2202,7 @@ function writeRaw(res, id, type, doneCb) {
       res.end();
     }
   },
-  200);
+  10000);
 }
 
 app.get('/:nodeName/raw/:id', function(req, res) {
@@ -1967,7 +2235,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
 
     res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
     res.statusCode = 200;
-    
+
     Db.searchPrimary('sessions*', 'session', query, function(err, data) {
       var firstHeader = 1;
 

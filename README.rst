@@ -129,11 +129,11 @@ Building Capture
 
    - CentOS::
 
-        yum install pcre pcre-devel libuuid-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl
+        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl
 
    - Ubuntu::
     
-        apt-get install libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib-dev libffi-dev gettext libgeoip-dev libjson-perl libbz2-dev libwww-perl
+        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl
 
 2. Building ``capture`` can be a pain because of OS versions.
 
@@ -253,10 +253,13 @@ Advanced Configuration
 Hardware Requirements
 ---------------------
 
-Moloch is built to run across many machines for large deployments. What follows
-are rough guidelines for folks capturing large amounts of data with high bit
-rates, obviously tailor for the situation. It is not 
-recommended to run the ``capture`` and ``elasticsearch`` processes on the same machines.
+Moloch is built to run across many machines for large deployments. 
+What follows are rough guidelines for folks capturing large amounts 
+of data with high bit rates, obviously tailor for the situation. 
+It is not recommended to run the ``capture`` and ``elasticsearch`` 
+processes on the same machines for highly utilized GigE networks.
+For demo, small network, or home installations everything on a 
+single machine is fine.
 
 1. Moloch ``capture``/``viewer`` systems
 
@@ -267,15 +270,15 @@ recommended to run the ``capture`` and ``elasticsearch`` processes on the same m
      interface, and an additional 5G memory (or more depending on IDS
      requirements)
    * Disk space to store the PCAP files: We recommend at least 10TB, xfs (with
-     inode64 option set in fstab), RAID 5, at least 4 spindles)
+     inode64 option set in fstab), RAID 5, at least 5 spindles)
    * Disable swap by removing it from fstab
    * If networks are highly utilized and running IDS then CPU affinity is required
 
 2. Moloch ``elasticsearch`` systems (some black magic here!)
 
-   * ``1/3 * Number_Highly_Utilized_Interfaces * Number_of_Days_of_History`` is
+   * ``1/4 * Number_Highly_Utilized_Interfaces * Number_of_Days_of_History`` is
      a **ROUGH** guideline for number of ``elasticsearch`` instances (nodes)
-     required. (Example: 1/3 * 8 interfaces * 7 days = 18 nodes)
+     required. (Example: 1/4 * 8 interfaces * 7 days = 14 nodes)
    * Each ``elasticsearch`` node should have ~30G-40G memory (20G-30G [no
      more!] for the java process, at least 10G for the OS disk cache)
    * You can have multiple nodes per machine (Example 64G machine can have 2 ES
@@ -288,7 +291,7 @@ recommended to run the ``capture`` and ``elasticsearch`` processes on the same m
 Example Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
-Here is an example system setup for monitoring 8x GigE highly-utilized networks for 7 days.
+Here is an example system setup for monitoring 8x GigE highly-utilized networks, with an average of ~5 Gigabit/sec, with ~7 days of pcap storage.
 
 * ``capture``/``viewer`` machines
  

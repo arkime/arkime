@@ -963,12 +963,12 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
         print "It appears this elastic search cluster already has moloch installed, this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
-        print "Type \"YES\" to continue - do you want to erase everything?\n";
-        waitFor("YES");
+        print "Type \"INIT\" to continue - do you want to erase everything?\n";
+        waitFor("INIT");
     } elsif ($ARGV[1] eq "wipe") {
         print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
-        print "Type \"YES\" to continue - do you want to wipe everything?\n";
-        waitFor("YES");
+        print "Type \"WIPE\" to continue - do you want to wipe everything?\n";
+        waitFor("WIPE");
     }
     print "Erasing\n";
     esDelete("/tags_v2", 1);
@@ -1004,8 +1004,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     print "Finished.  Have fun!\n";
 } elsif ($main::versionNumber == 0) {
     print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elasticsearch moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
-    print "Type \"YES\" to continue - do you want to upgrade?\n";
-    waitFor("YES");
+    print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
+    waitFor("UPGRADE");
     print "Starting Upgrade\n";
 
     esDelete("/stats", 1);
@@ -1034,10 +1034,10 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     print "users_v1 and files_v1 tables can be deleted now\n";
     print "Finished\n";
-} elsif ($main::versionNumber >= 1 && $main::versionNumber <= 4) {
+} elsif ($main::versionNumber >= 1 && $main::versionNumber <= 5) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    print "Type \"YES\" to continue - do you want to upgrade?\n";
-    waitFor("YES");
+    print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
+    waitFor("UPGRADE");
     print "Starting Upgrade\n";
     sessionsUpdate();
     usersUpdate();

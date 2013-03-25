@@ -150,29 +150,68 @@ exports.status = function(index, cb) {
     .exec();
 };
 
+exports.health = function(cb) {
+  internals.elasticSearchClient.health()
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
+exports.nodesStats = function (options, cb) {
+  internals.elasticSearchClient.nodesStats(null, options)
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
-internals.nodeStatsCache = {};
-exports.nodeStats = function (name, cb) {
+internals.molochNodeStatsCache = {};
+exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
     if (err) {
       cb(err, null);
     } else {
-      internals.nodeStatsCache[name] = stat._source;
-      internals.nodeStatsCache[name]._timeStamp = Date.now();
+      internals.molochNodeStatsCache[name] = stat._source;
+      internals.molochNodeStatsCache[name]._timeStamp = Date.now();
 
       cb(null, stat._source);
     }
   });
 };
 
-exports.nodeStatsCache = function (name, cb) {
-  if (internals.nodeStatsCache[name] && internals.nodeStatsCache[name]._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.nodeStatsCache[name]);
+exports.molochNodeStatsCache = function (name, cb) {
+  if (internals.molochNodeStatsCache[name] && internals.molochNodeStatsCache[name]._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.molochNodeStatsCache[name]);
   }
 
-  return exports.nodeStats(name, cb);
+  return exports.molochNodeStats(name, cb);
+};
+
+
+internals.healthCache = {};
+exports.healthCache = function (cb) {
+  if (internals.healthCache._timeStamp !== undefined && internals.healthCache._timeStamp > Date.now() - 10000) {
+    return cb(null, internals.healthCache);
+  }
+
+  return exports.health(function(err, health) {
+      if (err) {return cb(err, null);}
+
+      internals.healthCache = health;
+      internals.healthCache._timeStamp = Date.now();
+
+      cb(null, health);
+  });
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {

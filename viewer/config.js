@@ -96,6 +96,12 @@ exports.auth2obj = function(auth) {
 
 internals.config = ini.parseSync(internals.configFile);
 
+
+if (internals.config["default"] === undefined) {
+  console.log("ERROR - [default] section missing from", internals.configFile);
+  process.exit(1);
+}
+
 exports.getFull = function(node, key, defaultValue) {
   if (internals.config[node] && internals.config[node][key] !== undefined ) {
     return internals.config[node][key];

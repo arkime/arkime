@@ -592,16 +592,6 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMC)
         moloch_plugins_cb_hp_omc(session, parser);
 
-    char tag[200];
-
-    if (parser->status_code == 0) {
-        snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
-    } else {
-        snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
-    }
-
     session->http->header[0][0] = session->http->header[1][0] = 0;
 
     if (session->http->urlString) {
@@ -780,10 +770,20 @@ int
 moloch_hp_cb_on_headers_complete (http_parser *parser)
 {
     MolochSession_t *session = parser->data;
+    char             tag[200];
+
 
 #ifdef HTTPDEBUG
-    LOG("HTTPDEBUG: which: %d", session->which);
+    LOG("HTTPDEBUG: which: %d code: %d method: %d", session->which, parser->status_code, parser->method);
 #endif
+
+    if (parser->status_code == 0) {
+        snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
+    } else {
+        snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
+        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
+    }
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
         moloch_plugins_cb_hp_ohc(session, parser);
@@ -1096,6 +1096,9 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 *state = EMAIL_CMD;
             } else if (*line->str == 0) {
                 *state = EMAIL_DATA;
+                if (pluginsCbs & MOLOCH_PLUGIN_SMTP_OHC) {
+                    moloch_plugins_cb_smtp_ohc(session);
+                }
             } else {
                 *state = EMAIL_DATA_HEADER_DONE;
             }
@@ -1168,6 +1171,13 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 }
             }
 
+            if (pluginsCbs & MOLOCH_PLUGIN_SMTP_OH) {
+                char *colon = strchr(line->str, ':');
+                if (colon) {
+                    moloch_plugins_cb_smtp_oh(session, line->str, colon - line->str, colon + 1, line->len - (colon - line->str) - 1);
+                }
+            }
+
             g_string_truncate(line, 0);
             if (*data != '\n')
                 continue;
@@ -1193,10 +1203,12 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 MolochString_t *string;
                 gboolean        found = FALSE;
 
-                DLL_FOREACH(s_,&session->email->boundaries,string) {
-                    if ((int)line->len >= (int)(string->len + 2) && memcmp(line->str+2, string->str, string->len) == 0) {
-                        found = TRUE;
-                        break;
+                if (line->str[0] == '-') {
+                    DLL_FOREACH(s_,&session->email->boundaries,string) {
+                        if ((int)line->len >= (int)(string->len + 2) && memcmp(line->str+2, string->str, string->len) == 0) {
+                            found = TRUE;
+                            break;
+                        }
                     }
                 }
 

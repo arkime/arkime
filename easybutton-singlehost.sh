@@ -33,6 +33,7 @@ fi
 pver=`python -c 'import sys; print("%i" % (sys.hexversion>=0x02060000))'`
 if [ $pver -eq 0 ]; then
     echo "ERROR - node.js requires python 2.6 or higher to build"
+    exit 1
 fi
 
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
@@ -51,7 +52,7 @@ JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
  echo
- echo "ERROR - Please install Oracle Java before proceeding, OpenJDK doesn't seem to work.  Visit http://java.sun.com"
+ echo "ERROR - Please install Java before proceeding.  Visit http://java.sun.com"
  echo
  exit 0
 fi
@@ -125,6 +126,7 @@ gunzip GeoIPASNum.dat.gz
 
 echo "MOLOCH: Installing"
 cd ${INSTALL_DIR}
+PATH=${TDIR}/bin:${PATH}
 make install
 
 

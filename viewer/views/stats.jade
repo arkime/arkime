@@ -2,6 +2,7 @@ script(type='text/javascript', src='d3.v2.js')
 script(type='text/javascript', src='cubism.v1.js')
 script(type='text/javascript', src='highlight.min.js')
 
+div(style="margin-bottom: 12px")
 div(style="height:2px;")
   select#statsGraphSelect
     option(value="deltaPacketsPerSec") Packets/Sec
@@ -43,10 +44,40 @@ table#stats(cellpadding="0",cellspacing="0",border="0",class="display",style="ta
       th
       th
 br
-#stats
+h1 Elasticsearch Stats
+table#esstats(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+  thead
+    tr
+      th Node
+      th Documents
+      th Disk Storage (MB)
+      th Heap Size (MB)
+      th Non-Heap Size (MB)
+      th Searches
+      th Search Time (s)
+  tbody
+  tfoot
+    tr#avg
+      th Average
+      th
+      th
+      th
+      th
+      th
+      th
+    tr#tot
+      th Total
+      th
+      th
+      th
+      th
+      th
+      th
+br
 
 script(type='text/javascript')
   var statsTable;
+  var esstatsTable;
 
   var context = cubism.context()
       .serverDelay(0)
@@ -228,6 +259,99 @@ script(type='text/javascript')
       }
     } );
 
+    esstatsTable = $('#esstats').dataTable( {
+      "oLanguage": {
+        "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+        "sLengthMenu": "_MENU_",
+        "sInfo" : "Showing _START_ - _END_ of _TOTAL_",
+        "sInfoFiltered" : "(_MAX_ total)"
+      },
+      "sDom": '<"H"lipr>t<"F"ip>',
+      "iDisplayLength": 500,
+      "aLengthMenu": [100, 500, 1000, 5000],
+      "bRetrieve": true,
+      "bFilter": false,
+      "bScrollCollapse": true,
+      "bAutoWidth": false,
+      "aoColumns": [
+        { "mDataProp" : "name",
+          "sClass": "right",
+          "sType": "string"
+        },
+        { "mDataProp" : "docs",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(oObj.aData[oObj.mDataProp]);
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        },
+        { "mDataProp" : "storeSize",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(Math.floor(oObj.aData[oObj.mDataProp]/1000000));
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        },
+        { "mDataProp" : "heapSize",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(Math.floor(oObj.aData[oObj.mDataProp]/1000000));
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        },
+        { "mDataProp" : "nonHeapSize",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(Math.floor(oObj.aData[oObj.mDataProp]/1000000));
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        },
+        { "mDataProp" : "searches",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(oObj.aData[oObj.mDataProp]);
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        },
+        { "mDataProp" : "searchesTime",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(Math.floor(oObj.aData[oObj.mDataProp]/1000));
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        }
+      ],
+      "aaSorting": [[3, "desc"]],
+      "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+        var totals = {docs: 0, storeSize: 0, heapSize:0, nonHeapSize:0, searches:0 , searchesTime: 0};
+        for (var r = 0; r < aaData.length; r++) {
+            totals.docs += parseInt(aaData[r].docs.replace(/\,/g,''), 10);
+            totals.storeSize += parseInt(aaData[r].storeSize.replace(/\,/g,''), 10);
+            totals.heapSize += parseInt(aaData[r].heapSize.replace(/\,/g,''), 10);
+            totals.nonHeapSize += parseInt(aaData[r].nonHeapSize.replace(/\,/g,''), 10);
+            totals.searches += parseInt(aaData[r].searches.replace(/\,/g,''), 10);
+            totals.searchesTime += parseInt(aaData[r].searchesTime.replace(/\,/g,''), 10);
+        }
+
+        var avgCells = $('tr#avg > th');
+        var totCells = $('tr#tot > th');
+
+        $(totCells[1]).html(numberWithCommas(totals.docs));
+        $(totCells[2]).html(numberWithCommas(totals.storeSize));
+        $(totCells[3]).html(numberWithCommas(totals.heapSize));
+        $(totCells[4]).html(numberWithCommas(totals.nonHeapSize));
+        $(totCells[5]).html(numberWithCommas(totals.searches));
+        $(totCells[6]).html(numberWithCommas(totals.searchesTime));
+
+        $(avgCells[1]).html(numberWithCommas(Math.floor(totals.docs/aaData.length)));
+        $(avgCells[2]).html(numberWithCommas(Math.floor(totals.storeSize/aaData.length)));
+        $(avgCells[3]).html(numberWithCommas(Math.floor(totals.heapSize/aaData.length)));
+        $(avgCells[4]).html(numberWithCommas(Math.floor(totals.nonHeapSize/aaData.length)));
+        $(avgCells[5]).html(numberWithCommas(Math.floor(totals.searches/aaData.length)));
+        $(avgCells[6]).html(numberWithCommas(Math.floor(totals.searchesTime/aaData.length)));
+      }
+    } );
+
     $('#stats tbody td img').live('click', function () {
       var nTr = this.parentNode.parentNode;
       var aData = statsTable.fnGetData( nTr );
@@ -279,6 +403,30 @@ script(type='text/javascript')
             }
           }
           statsTable.fnDraw();
+        }
+      } );
+
+      $.ajax( {
+        "dataType": 'json',
+        "type": "GET",
+        "url": '#{basePath}esstats.json',
+        "success": function(data) {
+          var nNodes = esstatsTable.fnGetNodes();
+          for (var i = 0; i < data.aaData.length; i++) {
+            var found = false;
+            for (var n = 0 ; n < nNodes.length; n++) {
+              var name = esstatsTable.fnGetData(n, 0);
+              if (name === data.aaData[i].name) {
+                found = true;
+                esstatsTable.fnUpdate(data.aaData[i], n, 0, false, false);
+                break;
+              }
+            }
+            if (!found) {
+              esstatsTable.fnAddData(data.aaData[i], false);
+            }
+          }
+          esstatsTable.fnDraw();
         }
       } );
     }
