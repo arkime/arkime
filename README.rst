@@ -58,10 +58,11 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.20.5** and **0.19.12** as of **2013-2-28**
+Tested with **0.20.6** and **0.19.12** as of **2013-3-29**
 
-1. Prep the ``elasticsearch`` machines by increasing max file descriptors. On
-   CentOS and others this is done by adding the following to bottom of
+1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
+   allowing memory locking. 
+   On CentOS and others this is done by adding the following to bottom of
    ``/etc/security/limits.conf``::
 
     *                -      nofile          128000
@@ -72,7 +73,7 @@ Tested with **0.20.5** and **0.19.12** as of **2013-2-28**
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.20.5 <http://www.elasticsearch.org/download/2013/02/14/0.20.5.html>`_.
+   0.20.6 <http://www.elasticsearch.org/downloads/0-20-6/>`_.
 
 4. Uncompress the archive you downloaded.
 
