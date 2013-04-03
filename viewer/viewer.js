@@ -302,6 +302,10 @@ app.get('/password', function(req, res) {
 
   if (req.query.userId) {
     Db.get("users", 'user', req.query.userId, function(err, user) {
+      if (err || !user.exists) {
+        console.log("/password error", err, user);
+        return res.send("Unknown user");
+      }
       render(user._source, 0);
     });
   } else {
@@ -720,9 +724,10 @@ app.post('/users.json', function(req, res) {
           var results = {total: result.hits.total, results: []};
           for (i = 0; i < result.hits.hits.length; i++) {
             result.hits.hits[i].fields.id = result.hits.hits[i]._id;
-            result.hits.hits[i].fields.expression = result.hits.hits[i].fields.expression || "";
+            result.hits.hits[i].fields.expression = safeStr(result.hits.hits[i].fields.expression || "");
             result.hits.hits[i].fields.headerAuthEnabled = result.hits.hits[i].fields.headerAuthEnabled || false;
             result.hits.hits[i].fields.emailSearch = result.hits.hits[i].fields.emailSearch || false;
+            result.hits.hits[i].fields.userName = safeStr(result.hits.hits[i].fields.userName || "");
             results.results.push(result.hits.hits[i].fields);
           }
           cb(null, results);
@@ -1322,6 +1327,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 
   Db.get('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, function(err, session) {
     if (err || !session.exists) {
+      console.log("session get error", err, session);
       endCb("Not Found", null);
       return;
     }
@@ -1359,7 +1365,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
         }
 
         Db.get('files', 'file', session._source.no + '-' + file, function (err, fresult) {
-          if (err || !fresult._source) {
+          if (err || !fresult.exists || !fresult._source) {
             console.log("ERROR - Not found", session._source.no + '-' + file, fresult);
             nextCb("ERROR - Not found", session._source.no + '-' + file);
             return;
@@ -2341,6 +2347,10 @@ app.post('/addUser', function(req, res) {
     return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
+  if (req.body.userId.match(/[^\w.-]/)) {
+    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
+  }
+
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
     console.log("bad token", token);
@@ -2353,6 +2363,7 @@ app.post('/addUser', function(req, res) {
 
   Db.get("users", 'user', req.body.userId, function(err, user) {
     if (err || user.exists) {
+      console.log("Adding duplicate user", err, user);
       return res.send(JSON.stringify({success: false, text: "User already exists"}));
     }
 
@@ -2399,6 +2410,7 @@ app.post('/updateUser/:userId', function(req, res) {
 
   Db.get("users", 'user', req.params.userId, function(err, user) {
     if (err || !user.exists) {
+      console.log("update user failed", err, user);
       return res.send(JSON.stringify({success: false, text: "User not found"}));
     }
     user = user._source;
@@ -2430,35 +2442,40 @@ app.post('/updateUser/:userId', function(req, res) {
 });
 
 app.post('/changePassword', function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return res.send(JSON.stringify({success: false, text: "New password needs to be at least 2 characters"}));
+    return error("New password needs to be at least 2 characters");
   }
 
   if (!req.body.token) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
+    return error("Missing token");
   }
 
   var token = Config.auth2obj(req.body.token);
   if (Math.abs(Date.now() - token.date) > 120000 || token.pid !== process.pid) { // Request has to be +- 120 seconds and same pid
     console.log("bad token", token);
-    return res.send(JSON.stringify({success: false, text: "Try reloading page"}));
+    return error("Try reloading page");
   }
 
   if (token.cp && (req.user.passStore !== Config.pass2store(req.user.userId, req.body.currentPassword) ||
                    token.userId !== req.user.userId)) {
-    return res.send(JSON.stringify({success: false, text: "Current password mismatch"}));
+    return error("Current password mismatch");
   }
 
   Db.get("users", 'user', token.userId, function(err, user) {
-    user = user._source;
-    if (err) {
-      return res.send(JSON.stringify({success: false, text: err}));
+    if (err || !user.exists) {
+      console.log("changePassword failed", err, user);
+      return error("Unknown user");
     }
+    user = user._source;
     user.passStore = Config.pass2store(user.userId, req.body.newPassword);
     Db.indexNow("users", "user", user.userId, user, function(err, info) {
       if (err) {
-        return res.send(JSON.stringify({success: false, text: err}));
+        console.log(err, info);
+        return error("Update failed");
       }
       return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
     });
