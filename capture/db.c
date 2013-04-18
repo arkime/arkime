@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.c  -- Functions dealing with database queries and updates
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -21,7 +21,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include <string.h>
 #include <netdb.h>
 #include <uuid/uuid.h>
 #include <unistd.h>
@@ -33,7 +32,7 @@
 #include "bsb.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 5
+#define MOLOCH_MIN_DB_VERSION 7
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -54,6 +53,7 @@ extern MolochConfig_t        config;
 typedef struct moloch_tag {
     struct moloch_tag *tag_next, *tag_prev;
     char              *tagName;
+    uint32_t           tag_hash;
     int                tagValue;
     short              tag_bucket;
     short              tag_count;
@@ -160,14 +160,20 @@ static BSB jbsb;
 
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
-    GHashTableIter  iter;
-    gpointer        keyp, valuep;
-    uint32_t        i;
-    char            id[100];
-    char            key[100];
-    int             key_len;
-    uuid_t          uuid;
+    uint32_t               i;
+    char                   id[100];
+    char                   key[100];
+    int                    key_len;
+    uuid_t                 uuid;
+    MolochString_t        *hstring;
+    MolochInt_t           *hint;
+    MolochStringHashStd_t *shash;
+    MolochIntHashStd_t    *ihash;
+    unsigned char         *startPtr;
 
+
+    /* jsonSize is an estimate of how much space it will take to encode */
+    session->jsonSize += 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
 
     moloch_plugins_cb_save(session, final);
 
@@ -177,11 +183,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
 
     totalSessions++;
-
-    if (!sJson) {
-        sJson = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_L);
-        BSB_INIT(jbsb, sJson, MOLOCH_HTTP_BUFFER_SIZE_L);
-    }
 
     static char     prefix[100];
     static time_t   prefix_time = 0;
@@ -218,6 +219,25 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
+    /* If no room left to add, send the buffer */
+    if (sJson && BSB_REMAINING(jbsb) < session->jsonSize) {
+        moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
+        sJson = 0;
+
+        struct timeval currentTime;
+        gettimeofday(&currentTime, NULL);
+        dbLastSave = currentTime.tv_sec;
+    }
+
+    /* Allocate a new buffer using the max of the bulk size or estimated size. */
+    if (!sJson) {
+        int size = MAX(config.dbBulkSize, session->jsonSize);
+        sJson = moloch_http_get_buffer(size);
+        BSB_INIT(jbsb, sJson, size);
+    }
+
+    startPtr = BSB_WORK_PTR(jbsb);
+
     BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
     BSB_EXPORT_sprintf(jbsb, 
@@ -240,6 +260,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         const char *g1 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr1));
         if (g1)
             BSB_EXPORT_sprintf(jbsb, "\"g1\":\"%s\",", g1);
+
+        const char *g2 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
+        if (g2)
+            BSB_EXPORT_sprintf(jbsb, "\"g2\":\"%s\",", g2);
     }
     if (giASN) {
         char *as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
@@ -249,13 +273,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_u08(jbsb, ',');
             free(as1);
         }
-    }
-    if (gi) {
-        const char *g2 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
-        if (g2)
-            BSB_EXPORT_sprintf(jbsb, "\"g2\":\"%s\",", g2);
-    }
-    if (giASN) {
+
         char *as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
         if (as2) {
             BSB_EXPORT_sprintf(jbsb, "\"as2\":");
@@ -287,16 +305,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_sprintf(jbsb, "%" PRId64, (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
     }
     BSB_EXPORT_sprintf(jbsb, "],");
-    if (session->http && session->http->urlArray->len) {
-        BSB_EXPORT_sprintf(jbsb, "\"uscnt\":%d,", session->http->urlArray->len);
-        BSB_EXPORT_sprintf(jbsb, "\"us\":[");
-        for(i = 0; i < session->http->urlArray->len; i++) {
-            if (i != 0)
-                BSB_EXPORT_u08(jbsb, ',');
-            moloch_db_js0n_str(&jbsb, g_ptr_array_index(session->http->urlArray, i), FALSE);
-        }
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
 
     if (HASH_COUNT(t_, session->certs)) {
         BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, session->certs));
@@ -386,220 +394,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_sprintf(jbsb, "],");
     }
 
-    if (HASH_COUNT(s_, session->hosts)) {
-        BSB_EXPORT_sprintf(jbsb, "\"hocnt\":%d,", HASH_COUNT(s_, session->hosts));
-        BSB_EXPORT_sprintf(jbsb, "\"ho\":[");
-        MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->hosts, hstring,
-            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
-            BSB_EXPORT_u08(jbsb, ',');
-            g_free(hstring->str);
-            free(hstring);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (HASH_COUNT(s_, session->users)) {
-        BSB_EXPORT_sprintf(jbsb, "\"usercnt\":%d,", HASH_COUNT(s_, session->users));
-        BSB_EXPORT_sprintf(jbsb, "\"user\":[");
-        MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->users, hstring,
-            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
-            BSB_EXPORT_u08(jbsb, ',');
-            g_free(hstring->str);
-            free(hstring);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (HASH_COUNT(s_, session->sshver)) {
-        BSB_EXPORT_sprintf(jbsb, "\"sshvercnt\":%d,", HASH_COUNT(s_, session->sshver));
-        BSB_EXPORT_sprintf(jbsb, "\"sshver\":[");
-        MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->sshver, hstring,
-            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
-            BSB_EXPORT_u08(jbsb, ',');
-            g_free(hstring->str);
-            free(hstring);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-
-        /* If we have versions but no keys set the key count to 0 */
-        if (HASH_COUNT(s_, session->sshkey) == 0) {
-            BSB_EXPORT_sprintf(jbsb, "\"sshkeycnt\":0,");
-        }
-    }
-
-    if (HASH_COUNT(s_, session->sshkey)) {
-        BSB_EXPORT_sprintf(jbsb, "\"sshkeycnt\":%d,", HASH_COUNT(s_, session->sshkey));
-        BSB_EXPORT_sprintf(jbsb, "\"sshkey\":[");
-        MolochString_t *hstring;
-        HASH_FORALL_POP_HEAD(s_, session->sshkey, hstring,
-            moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, TRUE);
-            BSB_EXPORT_u08(jbsb, ',');
-            g_free(hstring->str);
-            free(hstring);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (session->http && HASH_COUNT(s_, session->http->userAgents)) {
-        BSB_EXPORT_sprintf(jbsb, "\"uacnt\":%d,", HASH_COUNT(t_, session->http->userAgents));
-        BSB_EXPORT_sprintf(jbsb, "\"ua\":[");
-
-        MolochString_t *ustring;
-        HASH_FORALL_POP_HEAD(s_, session->http->userAgents, ustring,
-            moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-            BSB_EXPORT_u08(jbsb, ',');
-            g_free(ustring->str);
-            free(ustring);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (session->http && HASH_COUNT(i_, session->http->xffs)) {
-
-        BSB_EXPORT_sprintf(jbsb, "\"xffscnt\":%d,", HASH_COUNT(t_, session->http->xffs));
-
-        MolochInt_t *xff;
-
-        if (gi) {
-            BSB_EXPORT_sprintf(jbsb, "\"gxff\":[");
-            HASH_FORALL(i_, session->http->xffs, xff,
-                const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(xff->i));
-                if (g)
-                    BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
-                else
-                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
-                BSB_EXPORT_u08(jbsb, ',');
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        if (giASN) {
-            BSB_EXPORT_sprintf(jbsb, "\"asxff\":[");
-            HASH_FORALL(i_, session->http->xffs, xff,
-                char *as = GeoIP_name_by_ipnum(giASN, htonl(xff->i));
-                if (as) {
-                    moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
-                    free(as);
-                } else
-                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
-                BSB_EXPORT_u08(jbsb, ',');
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-
-        BSB_EXPORT_sprintf(jbsb, "\"xff\":[");
-        HASH_FORALL_POP_HEAD(i_, session->http->xffs, xff,
-            BSB_EXPORT_sprintf(jbsb, "%u", htonl(xff->i));
-            BSB_EXPORT_u08(jbsb, ',');
-            free(xff);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (HASH_COUNT(i_, session->dnsips)) {
-
-        BSB_EXPORT_sprintf(jbsb, "\"dnsipcnt\":%d,", HASH_COUNT(t_, session->dnsips));
-
-        MolochInt_t *dnsip;
-
-        if (gi) {
-            BSB_EXPORT_sprintf(jbsb, "\"gdnsip\":[");
-            HASH_FORALL(i_, session->dnsips, dnsip,
-                const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(dnsip->i));
-                if (g)
-                    BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
-                else
-                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
-                BSB_EXPORT_u08(jbsb, ',');
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        if (giASN) {
-            BSB_EXPORT_sprintf(jbsb, "\"asdnsip\":[");
-            HASH_FORALL(i_, session->dnsips, dnsip,
-                char *as = GeoIP_name_by_ipnum(giASN, htonl(dnsip->i));
-                if (as) {
-                    moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
-                    free(as);
-                } else
-                    BSB_EXPORT_sprintf(jbsb, "\"---\"");
-                BSB_EXPORT_u08(jbsb, ',');
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-
-        BSB_EXPORT_sprintf(jbsb, "\"dnsip\":[");
-        HASH_FORALL_POP_HEAD(i_, session->dnsips, dnsip,
-            BSB_EXPORT_sprintf(jbsb, "%u", htonl(dnsip->i));
-            BSB_EXPORT_u08(jbsb, ',');
-            free(dnsip);
-        );
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (g_hash_table_size(session->tags[MOLOCH_TAG_TAGS])) {
-        BSB_EXPORT_sprintf(jbsb, "\"tacnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_TAGS]));
-        BSB_EXPORT_sprintf(jbsb, "\"ta\":[");
-        g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_TAGS]);
-        while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            int ivalue = (int)(long)keyp;
-            BSB_EXPORT_sprintf(jbsb, "%u", ivalue);
-            BSB_EXPORT_u08(jbsb, ',');
-        }
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST])) {
-        BSB_EXPORT_sprintf(jbsb, "\"hh1cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_REQUEST]));
-        BSB_EXPORT_sprintf(jbsb, "\"hh1\":[");
-        g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_HTTP_REQUEST]);
-        while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            int ivalue = (int)(long)keyp;
-            BSB_EXPORT_sprintf(jbsb, "%u", ivalue);
-            BSB_EXPORT_u08(jbsb, ',');
-        }
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-    if (g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE])) {
-        BSB_EXPORT_sprintf(jbsb, "\"hh2cnt\":%d,", g_hash_table_size(session->tags[MOLOCH_TAG_HTTP_RESPONSE]));
-        BSB_EXPORT_sprintf(jbsb, "\"hh2\":[");
-        g_hash_table_iter_init (&iter, session->tags[MOLOCH_TAG_HTTP_RESPONSE]);
-        while (g_hash_table_iter_next (&iter, &keyp, &valuep)) {
-            int ivalue = (int)(long)keyp;
-            BSB_EXPORT_sprintf(jbsb, "%u", ivalue);
-            BSB_EXPORT_u08(jbsb, ',');
-        }
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
 
     BSB_EXPORT_sprintf(jbsb, "\"fs\":[");
     for(i = 0; i < session->fileNumArray->len; i++) {
@@ -610,212 +404,113 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_sprintf(jbsb, "],");
 
-
-    if (session->email) {
-
-        BSB_EXPORT_sprintf(jbsb, "\"euacnt\":%d,", HASH_COUNT(t_, session->email->userAgents));
-        if (HASH_COUNT(s_, session->email->userAgents)) {
-            BSB_EXPORT_sprintf(jbsb, "\"eua\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->userAgents, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
+    int pos;
+    for (pos = 0; pos < config.maxField; pos++) {
+        if (session->fields[pos]) {
+            switch(config.fields[pos]->type) {
+            case MOLOCH_FIELD_TYPE_STR:
+                BSB_EXPORT_sprintf(jbsb, "\"%s\":", config.fields[pos]->name);
+                moloch_db_js0n_str(&jbsb, 
+                                   (unsigned char *)session->fields[pos]->str, 
+                                   config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"esrccnt\":%d,", HASH_COUNT(t_, session->email->src));
-        if (HASH_COUNT(s_, session->email->src)) {
-            BSB_EXPORT_sprintf(jbsb, "\"esrc\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->src, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"edstcnt\":%d,", HASH_COUNT(t_, session->email->dst));
-        if (HASH_COUNT(s_, session->email->dst)) {
-            BSB_EXPORT_sprintf(jbsb, "\"edst\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->dst, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"esubcnt\":%d,", HASH_COUNT(t_, session->email->subject));
-        if (HASH_COUNT(s_, session->email->subject)) {
-            BSB_EXPORT_sprintf(jbsb, "\"esub\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->subject, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"eidcnt\":%d,", HASH_COUNT(t_, session->email->ids));
-        if (HASH_COUNT(s_, session->email->ids)) {
-            BSB_EXPORT_sprintf(jbsb, "\"eid\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->ids, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"ectcnt\":%d,", HASH_COUNT(t_, session->email->contentTypes));
-        if (HASH_COUNT(s_, session->email->contentTypes)) {
-            BSB_EXPORT_sprintf(jbsb, "\"ect\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->contentTypes, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"emvcnt\":%d,", HASH_COUNT(t_, session->email->mimeVersions));
-        if (HASH_COUNT(s_, session->email->mimeVersions)) {
-            BSB_EXPORT_sprintf(jbsb, "\"emv\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->mimeVersions, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"efncnt\":%d,", HASH_COUNT(t_, session->email->filenames));
-        if (HASH_COUNT(s_, session->email->filenames)) {
-            BSB_EXPORT_sprintf(jbsb, "\"efn\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->filenames, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"emd5cnt\":%d,", HASH_COUNT(t_, session->email->md5s));
-        if (HASH_COUNT(s_, session->email->md5s)) {
-            BSB_EXPORT_sprintf(jbsb, "\"emd5\":[");
-
-            MolochString_t *ustring;
-            HASH_FORALL_POP_HEAD(s_, session->email->md5s, ustring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)ustring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(ustring->str);
-                free(ustring);
-            );
-
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-
-        BSB_EXPORT_sprintf(jbsb, "\"eipcnt\":%d,", HASH_COUNT(t_, session->email->ips));
-        if (HASH_COUNT(i_, session->email->ips)) {
-            MolochInt_t *eip;
-
-            if (gi) {
-                BSB_EXPORT_sprintf(jbsb, "\"geip\":[");
-                HASH_FORALL(i_, session->email->ips, eip,
-                    const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(eip->i));
-                    if (g)
-                        BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
-                    else
-                        BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                g_free(session->fields[pos]->str);
+                break;
+            case MOLOCH_FIELD_TYPE_STR_ARRAY:
+                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
+                for(i = 0; i < session->fields[pos]->sarray->len; i++) {
+                    moloch_db_js0n_str(&jbsb, 
+                                       g_ptr_array_index(session->fields[pos]->sarray, i), 
+                                       config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                     BSB_EXPORT_u08(jbsb, ',');
-                );
+                }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
-            }
-
-            if (giASN) {
-                BSB_EXPORT_sprintf(jbsb, "\"aseip\":[");
-                HASH_FORALL(i_, session->email->ips, eip,
-                    char *as = GeoIP_name_by_ipnum(giASN, htonl(eip->i));
-                    if (as) {
-                        moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
-                        free(as);
-                    } else
-                        BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                g_ptr_array_free(session->fields[pos]->sarray, TRUE);
+                break;
+            case MOLOCH_FIELD_TYPE_STR_HASH:
+                shash = session->fields[pos]->shash;
+                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, HASH_COUNT(s_, *shash));
+                }
+                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
+                HASH_FORALL_POP_HEAD(s_, *shash, hstring,
+                    moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                     BSB_EXPORT_u08(jbsb, ',');
+                    g_free(hstring->str);
+                    free(hstring);
                 );
+                free(shash);
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
+                break;
+            case MOLOCH_FIELD_TYPE_INT_HASH:
+                ihash = session->fields[pos]->ihash;
+                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
+                }
+                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
+                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                    BSB_EXPORT_sprintf(jbsb, "%u", hint->i_hash);
+                    BSB_EXPORT_u08(jbsb, ',');
+                    free(hint);
+                );
+                free(ihash);
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_sprintf(jbsb, "],");
+                break;
+            case MOLOCH_FIELD_TYPE_IP_HASH:
+                ihash = session->fields[pos]->ihash;
+                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
+                }
+                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_SCNT) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%sscnt\":%d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
+                }
+
+                if (gi) {
+                    BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->name);
+                    HASH_FORALL(i_, *ihash, hint,
+                        const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(hint->i_hash));
+                        if (g)
+                            BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
+                        else
+                            BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                        BSB_EXPORT_u08(jbsb, ',');
+                    );
+                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                    BSB_EXPORT_sprintf(jbsb, "],");
+                }
+
+                if (giASN) {
+                    BSB_EXPORT_sprintf(jbsb, "\"as%s\":[", config.fields[pos]->name);
+                    HASH_FORALL(i_, *ihash, hint,
+                        char *as = GeoIP_name_by_ipnum(giASN, htonl(hint->i_hash));
+                        if (as) {
+                            moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
+                            free(as);
+                        } else
+                            BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                        BSB_EXPORT_u08(jbsb, ',');
+                    );
+                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                    BSB_EXPORT_sprintf(jbsb, "],");
+                }
+
+
+                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
+                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                    BSB_EXPORT_sprintf(jbsb, "%u", htonl(hint->i_hash));
+                    BSB_EXPORT_u08(jbsb, ',');
+                    free(hint);
+                );
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+
+                BSB_EXPORT_sprintf(jbsb, "],");
+                free(ihash);
             }
-
-
-            BSB_EXPORT_sprintf(jbsb, "\"eip\":[");
-            HASH_FORALL_POP_HEAD(i_, session->email->ips, eip,
-                BSB_EXPORT_sprintf(jbsb, "%u", htonl(eip->i));
-                BSB_EXPORT_u08(jbsb, ',');
-                free(eip);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
-        }
-
-        BSB_EXPORT_sprintf(jbsb, "\"ehocnt\":%d,", HASH_COUNT(s_, session->email->hosts));
-        if (HASH_COUNT(s_, session->email->hosts)) {
-            BSB_EXPORT_sprintf(jbsb, "\"eho\":[");
-            MolochString_t *hstring;
-            HASH_FORALL_POP_HEAD(s_, session->email->hosts, hstring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, FALSE);
-                BSB_EXPORT_u08(jbsb, ',');
-                g_free(hstring->str);
-                free(hstring);
-            );
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            BSB_EXPORT_sprintf(jbsb, "],");
+            free(session->fields[pos]);
+            session->fields[pos] = 0;
         }
     }
 
@@ -823,27 +518,21 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb, "}\n");
 
     if (BSB_IS_ERROR(jbsb)) {
-        LOG("ERROR - Ran out of memory creating DB record");
+        LOG("ERROR - Ran out of memory creating DB record supposed to be %d", session->jsonSize);
         return;
     }
 
     if (config.dryRun) {
         if (config.debug)
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson);
-        BSB_INIT(jbsb, sJson, MOLOCH_HTTP_BUFFER_SIZE_L);
+        BSB_INIT(jbsb, sJson, BSB_SIZE(jbsb));
         return;
     }
 
-
-    if ((uint32_t)BSB_LENGTH(jbsb) > config.dbBulkSize) {
-        //printf("Sending: %ld %ld\n", sJPtr - sessionJson, totalSessions);
-        //printf("%.*s", sJPtr - sessionJson, sessionJson);
-        moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
-        sJson = 0;
-
-        struct timeval currentTime;
-        gettimeofday(&currentTime, NULL);
-        dbLastSave = currentTime.tv_sec;
+    if (session->jsonSize < BSB_WORK_PTR(jbsb) - startPtr) {
+        LOG("WARNING - BIGGER then expected json %d %d\n", session->jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
+        if (config.debug)
+            LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
 }
 /******************************************************************************/
@@ -1214,7 +903,7 @@ void moloch_db_check()
         exit(1);
     }
 
-    key_len = snprintf(key, sizeof(key), "/files_v2/_aliases");
+    key_len = snprintf(key, sizeof(key), "/files_v3/_aliases");
     data = moloch_http_get(esServer, key, key_len, &datalen);
 
     if (!data) {
@@ -1222,8 +911,8 @@ void moloch_db_check()
         exit(1);
     }
 
-    if (strcmp((char *)data, "{\"files_v2\":{\"aliases\":{\"files\":{}}}}") != 0) {
-        LOG("ERROR - No files_v2, run db/db.pl >%s<", data);
+    if (strcmp((char *)data, "{\"files_v3\":{\"aliases\":{\"files\":{}}}}") != 0) {
+        LOG("ERROR - No files_v3, run db/db.pl >%s<", data);
         exit(1);
     }
 

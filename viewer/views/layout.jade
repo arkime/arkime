@@ -17,6 +17,9 @@ html
     link(rel='stylesheet', type='text/css', href='jquery-ui.css')
     link(rel='stylesheet', type='text/css', href='jquery.qtip.min.css')
     link(rel='stylesheet', type='text/css', href='style.css')
+    if (typeof titleLink === "string")
+      style(type='text/css')
+        ##{titleLink} { color:white}
   body
     #header
       div#logo
@@ -25,18 +28,21 @@ html
       div#nav
         ul.ulist-nav
           li
-            a#sessionsLink(href='#{basePath}') Sessions
+            a#sessionsLink.expressionsLink(href='#{basePath}') Sessions
+          if (spiData)
+            li
+              a#spiLink.expressionsLink(href='spiview') SPI View
           li
-            a#connectionsLink(href='graph') Connections
+            a#connectionsLink.expressionsLink(href='graph') Connections
           li
-            a(href='files') Files
+            a#filesLink(href='files') Files
           if user.createEnabled
             li
-              a(href='users') Users
+              a#usersLink(href='users') Users
           li
-            a(href='stats') Stats
+            a#statsLink(href='stats') Stats
           li.last
-            a.config(href='password') Change Password
+            a.config#changePasswordLink(href='password') Change Password
       - if (isIndex && user.createEnabled)
         a(href="#{elasticBase}/_plugin/head/",target="_blank")
           div#esstatus.tooltip
@@ -54,8 +60,8 @@ html
                 option(value="10000") 10000
               select(id='graphType')
                 option(value="useDir=1&usePort=0") Directed/No Port
-                option(value="useDir=1&usePort=1",selected) Directed/Port
-                option(value="useDir=0&usePort=0") Indirect/No Port
+                option(value="useDir=1&usePort=1") Directed/Port
+                option(value="useDir=0&usePort=0",selected) Indirect/No Port
                 option(value="useDir=0&usePort=1") Indirect/Port
               select(id='date')
                 option(value=1,selected) Last 1 hr

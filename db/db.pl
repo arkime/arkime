@@ -11,6 +11,9 @@
 #  4 - Added email host and ip; added help, usersimport, usersexport, wipe commands
 #  5 - No schema change, new rotate command, encoding of file pos is different.  
 #      Negative is file num, positive is file pos
+#  6 - Multi fields for spi view, added xffcnt, 0.90 fixes, need to type INIT/UPGRADE
+#      instead of YES
+#  7 - files_v3
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -19,7 +22,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 5;
+my $VERSION = 7;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -60,6 +63,7 @@ sub waitFor
 sub esGet
 {
     my ($url, $dontcheck) = @_;
+    #print "url = http://$ARGV[0]$url\n";
     my $response = $main::userAgent->get("http://$ARGV[0]$url");
     if ($response->code != 200 && !$dontcheck) {
       die "Couldn't get $url with code " . $response->code;
@@ -217,8 +221,8 @@ sub filesCreate
   }
 }';
 
-    esPut("/files_v2", $settings);
-    esAlias("add", "files_v2", "files");
+    esPut("/files_v3", $settings);
+    esAlias("add", "files_v3", "files");
     filesUpdate();
 }
 ################################################################################
@@ -245,7 +249,7 @@ sub filesUpdate
       },
       name: {
         type: "string",
-        index: "no"
+        index: "not_analyzed"
       },
       size: {
         type: "long",
@@ -263,7 +267,7 @@ sub filesUpdate
   }
 }';
 
-    esPut("/files_v2/file/_mapping", $mapping);
+    esPut("/files_v3/file/_mapping", $mapping);
 }
 ################################################################################
 sub statsCreate
@@ -443,9 +447,13 @@ sub sessionsUpdate
         type: "integer"
       },
       ua: {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type: "string",
-        analyzer: "url_analyzer"
+        fields: {
+          ua: {type: "string", analyzer: "url_analyzer"},
+          rawua: {type: "string", index: "not_analyzed"}
+        }
       },
       uacnt: {
         type: "integer"
@@ -478,9 +486,13 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       as1: {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type: "string",
-        analyzer: "snowball"
+        fields: {
+          as1: {type: "string", analyzer: "snowball"},
+          rawas1: {type: "string", index: "not_analyzed"}
+        }
       },
       p1: {
         type: "integer"
@@ -494,12 +506,19 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       as2: {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type: "string",
-        analyzer: "snowball"
+        fields: {
+          as2: {type: "string", analyzer: "snowball"},
+          rawas2: {type: "string", index: "not_analyzed"}
+        }
       },
       xff: {
         type: "long"
+      },
+      xffcnt: {
+        type: "integer"
       },
       xffscnt: {
         type: "integer"
@@ -510,9 +529,21 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       asxff: {
+        type: "multi_field",
+        path: "just_name",
+        omit_norms: true,
+        fields: {
+          asxff: {type: "string", analyzer: "snowball"},
+          rawasxff: {type: "string", index: "not_analyzed"}
+        }
+      },
+      dnshocnt: {
+        type: "integer"
+      },
+      dnsho: {
         omit_norms: true,
         type: "string",
-        analyzer: "snowball"
+        index: "not_analyzed"
       },
       dnsip: {
         type: "long"
@@ -526,9 +557,13 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       asdnsip: {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type: "string",
-        analyzer: "snowball"
+        fields: {
+          asdnsip: {type: "string", analyzer: "snowball"},
+          rawasdnsip: {type: "string", index: "not_analyzed"}
+        }
       },
       p2: {
         type: "integer"
@@ -602,9 +637,12 @@ sub sessionsUpdate
             index : "not_analyzed"
           },
           iOn : {
+            type: "multi_field",
             omit_norms: true,
-            type : "string",
-            analyzer : "snowball"
+            fields: {
+              "iOn": {type: "string", analyzer: "snowball"},
+              "rawiOn": {type: "string", index: "not_analyzed"}
+            }
           },
           sCn : {
             omit_norms: true,
@@ -612,9 +650,12 @@ sub sessionsUpdate
             index : "not_analyzed"
           },
           sOn : {
+            type: "multi_field",
             omit_norms: true,
-            type : "string",
-            analyzer : "snowball"
+            fields: {
+              "sOn": {type: "string", analyzer: "snowball"},
+              "rawsOn": {type: "string", index: "not_analyzed"}
+            }
           },
           sn : {
             omit_norms: true,
@@ -654,17 +695,25 @@ sub sessionsUpdate
         type: "short"
       },
       eua : {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type : "string",
-        analyzer : "snowball"
+        fields: {
+          eua: {type: "string", analyzer: "snowball"},
+          raweua: {type: "string", index: "not_analyzed"}
+        }
       },
       esubcnt: {
         type: "short"
       },
       esub : {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type : "string",
-        analyzer : "snowball"
+        fields: {
+          esub: {type: "string", analyzer: "snowball"},
+          rawesub: {type: "string", index: "not_analyzed"}
+        }
       },
       eidcnt: {
         type: "short"
@@ -742,9 +791,13 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       aseip: {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type: "string",
-        analyzer: "snowball"
+        fields: {
+          aseip: {type: "string", analyzer: "snowball"},
+          rawaseip: {type: "string", index: "not_analyzed"}
+        }
       }
     }
   }
@@ -755,6 +808,7 @@ sub sessionsUpdate
 {
   template: "session*",
   settings: {
+    "index.fielddata.cache": "soft",
     "index.cache.field.type": "soft",
     index: {
       "routing.allocation.total_shards_per_node": 1,
@@ -779,8 +833,12 @@ sub sessionsUpdate
     esPut("/_template/template_1", $template);
 
     my $status = esGet("/sessions-*/_stats?clear=1", 1);
-    foreach my $i (keys %{$status->{_all}->{indices}}) {
+    my $indices = $status->{indices} || $status->{_all}->{indices};
+    foreach my $i (keys %{$indices}) {
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
+        esPost("/$i/_close", "");
+        esPut("/$i/_settings", '{"index.fielddata.cache": "soft"}');
+        esPost("/$i/_open", "");
     }
 }
 
@@ -896,7 +954,8 @@ if ($ARGV[1] eq "usersimport") {
     exit 0;
 } elsif ($ARGV[1] eq "rotate") {
     showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(daily|weekly|monthly)$/);
-    my $indices = esGet("/sessions-*/_stats?clear=1", 1)->{_all}->{indices};
+    my $json = esGet("/sessions-*/_stats?clear=1", 1);
+    my $indices = $json->{indices} || $json->{_all}->{indices};
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], $endTime);
@@ -921,7 +980,7 @@ if ($ARGV[1] eq "usersimport") {
     foreach my $i (sort (keys %{$indices})) {
         next if ($endTimeIndex eq $i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
-            esGet("/$i/_optimize?max_num_segments=4");
+            esGet("/$i/_optimize?max_num_segments=4", 1);
         } else {
             esDelete("/$i", 1);
         }
@@ -974,6 +1033,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/tags_v2", 1);
     esDelete("/tags", 1);
     esDelete("/sequence", 1);
+    esDelete("/files_v3", 1);
     esDelete("/files_v2", 1);
     esDelete("/files_v1", 1);
     esDelete("/files", 1);
@@ -1019,7 +1079,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     usersCreate();
 
     esAlias("remove", "files_v1", "files");
-    esCopy("files_v1", "files_v2", "file");
+    esCopy("files_v1", "files_v3", "file");
 
     esAlias("remove", "users_v1", "users");
     esCopy("users_v1", "users_v2", "user");
@@ -1034,11 +1094,27 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     print "users_v1 and files_v1 tables can be deleted now\n";
     print "Finished\n";
-} elsif ($main::versionNumber >= 1 && $main::versionNumber <= 5) {
+} elsif ($main::versionNumber >= 1 && $main::versionNumber < 7) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");
     print "Starting Upgrade\n";
+
+    filesCreate();
+    esAlias("remove", "files_v2", "files");
+    esCopy("files_v2", "files_v3", "file");
+
+    sessionsUpdate();
+    usersUpdate();
+
+    print "files_v2 table can be deleted now\n";
+    print "Finished\n";
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 7) {
+    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
+    print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
+    waitFor("UPGRADE");
+    print "Starting Upgrade\n";
+
     sessionsUpdate();
     usersUpdate();
 } else {

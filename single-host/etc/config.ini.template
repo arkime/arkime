@@ -129,7 +129,11 @@ smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
 pluginsDir=plugins
 
 # Semicolon ';' seperated list of plugins to load and the order to load them
-#plugins=
+#plugins=tagger.so
+
+# Specify the max number of indices we calculate spidata for.
+# ES will blow up if we allow the spiData to search too many indices.
+spiDataMaxIndices=3
 
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 

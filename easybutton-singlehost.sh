@@ -21,8 +21,8 @@
 # This is where everything is installed
 TDIR=/data/moloch
 
-ES=0.20.6
-NODEJS=0.8.21
+ES=0.90.0.RC2
+NODEJS=0.8.23
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then

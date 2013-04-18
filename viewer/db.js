@@ -20,10 +20,13 @@
 */
 "use strict";
 
-var ESC            = require('elasticsearchclient');
+var ESC            = require('elasticsearchclient'),
+    util           = require('util');
 
 var internals = {tagId2Name: {},
-                 tagName2Id: {}};
+                 tagName2Id: {},
+                 fileId2File: {},
+                 fileName2File: {}};
 
 exports.initialize = function (info) {
   internals.elasticSearchClient = new ESC(info);
@@ -172,6 +175,16 @@ exports.nodesStats = function (options, cb) {
     .exec();
 };
 
+exports.esVersion = function (cb) {
+  internals.elasticSearchClient.createCall({data:"",path:"/",method: "GET"}, internals.elasticSearchClient.clientOptions)
+    .on('data', function(data) {
+      data = JSON.parse(data);
+      var matches = data.version.number.match(/^(\d+).(\d+).(\d+)/);
+      cb(((+matches[1]) << 16) | ((+matches[2]) << 8) | (+matches[3]));
+    })
+    .exec();
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
@@ -230,8 +243,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
 
 exports.tagIdToName = function (id, cb) {
   if (internals.tagId2Name[id]) {
-    cb(internals.tagId2Name[id]);
-    return;
+    return cb(internals.tagId2Name[id]);
   }
 
   var query = {query: {term: {n:id}}};
@@ -239,10 +251,48 @@ exports.tagIdToName = function (id, cb) {
     if (!err && tdata.hits.hits[0]) {
       internals.tagId2Name[id] = tdata.hits.hits[0]._id;
       internals.tagName2Id[tdata.hits.hits[0]._id] = id;
-      cb(internals.tagId2Name[id]);
-    } else {
-      cb(null);
+      return cb(internals.tagId2Name[id]);
+    } 
+
+    return cb(null);
+  });
+};
+
+exports.fileIdToFile = function (node, num, cb) {
+  var key = node + "!" + num;
+  if (internals.fileId2File[key]) {
+    return cb(internals.fileId2File[key]);
+  }
+
+  var query = {query: {bool: {must: [{term: {node: node}}, {term: {num: num}}]}}};
+  exports.search('files', 'file', query, function(err, data) {
+    if (!err && data.hits.hits[0]) {
+      var file = data.hits.hits[0]._source;
+      internals.fileId2File[key] = file;
+      internals.fileName2File[file.name] = file;
+      return cb(file);
     }
+
+    return cb(null);
+  });
+};
+
+exports.fileNameToFile = function (name, cb) {
+  if (internals.fileName2File[name]) {
+    return cb(internals.fileName2File[name]);
+  }
+
+  var query = {query: {term: {name: name}}};
+  exports.search('files', 'file', query, function(err, data) {
+    if (!err && data.hits.hits[0]) {
+      var file = data.hits.hits[0]._source;
+      var key = file.node + "!" + file.num;
+      internals.fileId2File[key] = file;
+      internals.fileName2File[file.name] = file;
+      return cb(file);
+    }
+
+    return cb(null);
   });
 };
 
@@ -257,18 +307,16 @@ exports.syncTagNameToId = function (name) {
 
 exports.tagNameToId = function (name, cb) {
   if (internals.tagName2Id[name]) {
-    cb(internals.tagName2Id[name]);
-    return;
+    return cb(internals.tagName2Id[name]);
   }
 
   exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
     if (!err && tdata.exists) {
       internals.tagName2Id[name] = tdata._source.n;
       internals.tagId2Name[tdata._source.n] = name;
-      cb(internals.tagName2Id[name]);
-    } else {
-      cb(-1);
+      return cb(internals.tagName2Id[name]);
     }
+    return cb(-1);
   });
 };
 

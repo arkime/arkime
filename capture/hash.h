@@ -42,6 +42,7 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
        (varname).size = sizeof((varname).buckets)/sizeof((varname).buckets[0]); \
        (varname).hash = hashfunc; \
        (varname).cmp = cmpfunc; \
+       (varname).count = 0; \
        for (i = 0; i < (varname).size; i++) { \
            DLL_INIT(name, &((varname).buckets[i])); \
        } \
@@ -50,7 +51,8 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_ADD(name, varname, key, element) \
   do { \
-      element->name##bucket = (varname).hash(key) % (varname).size; \
+      element->name##hash = (varname).hash(key); \
+      element->name##bucket = element->name##hash % (varname).size; \
       DLL_PUSH_TAIL(name, &((varname).buckets[element->name##bucket]), element); \
       (varname).count++; \
   } while(0)
@@ -61,15 +63,20 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
       (varname).count--; \
   } while(0)
 
-#define HASH_FIND(name, varname, key, element) \
+#define HASH_FIND_HASH(name, varname, h, key, element) \
   do { \
-      int b = (varname).hash(key) % (varname).size; \
+      uint32_t hh = h; \
+      int b = hh % (varname).size; \
       for (element = (varname).buckets[b].name##next; element != (void*)&((varname).buckets[b]); element = element->name##next) { \
-          if ((varname).cmp(key, element)) \
+          if (hh == element->name##hash && (varname).cmp(key, element)) \
               break; \
       } \
       if (element == (void *)&((varname).buckets[b])) element = 0; \
   } while(0)
+
+#define HASH_FIND_INT(name, varname, key, element) HASH_FIND_HASH(name, varname, (uint32_t)key, (void*)(long)key, element)
+
+#define HASH_FIND(name, varname, key, element) HASH_FIND_HASH(name, varname, (varname).hash(key), key, element)
 
 #define HASH_COUNT(name, varname) ((varname).count)
 

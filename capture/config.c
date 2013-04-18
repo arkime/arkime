@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* config.c  -- Functions dealing with the config file
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -150,6 +150,7 @@ void moloch_config_load()
         printf("Unknown rotateIndex '%s'\n", rotateIndex);
         exit(1);
     }
+    g_free(rotateIndex);
 
 
     config.nodeClass        = moloch_config_str(keyfile, "nodeClass", NULL);
@@ -180,6 +181,7 @@ void moloch_config_load()
     config.pcapDir          = moloch_config_str(keyfile, "pcapDir", NULL);
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
+    config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
     config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
     config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
@@ -194,7 +196,7 @@ void moloch_config_load()
     config.maxStreams       = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets       = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
     config.minFreeSpaceG    = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
-    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, 1, 1000000);
+    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE_S+100, MOLOCH_HTTP_BUFFER_SIZE_L-100);
     config.maxESConns       = moloch_config_int(keyfile, "maxESConns", 100, 10, 1000);
     config.maxESRequests    = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
@@ -280,6 +282,8 @@ void moloch_config_exit()
         g_free(config.bpf);
     if (config.yara)
         g_free(config.yara);
+    if (config.emailYara)
+        g_free(config.emailYara);
     if (config.pcapDir)
         g_free(config.pcapDir);
     if (config.plugins)

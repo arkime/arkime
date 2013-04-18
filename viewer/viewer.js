@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 5;
+var MIN_DB_VERSION = 7;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +47,10 @@ var Config         = require('./config.js'),
     molochversion  = require('./version'),
     httpAgent      = require('http'),
     httpsAgent     = require('https');
+
+try {
+  var Png = require('png').Png;
+} catch (e) {console.log("WARNING - No png support, maybe need to 'npm install'", e);}
 
 var app;
 if (Config.isHTTPS()) {
@@ -87,7 +91,8 @@ app.configure(function() {
   app.set('view options', {molochversion: molochversion.version,
                            isIndex: false,
                            basePath: Config.basePath(),
-                           elasticBase: "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1]
+                           elasticBase: "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1],
+                           spiData: false
                           });
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
@@ -170,11 +175,32 @@ app.configure(function() {
 });
 
 
+//////////////////////////////////////////////////////////////////////////////////
+//// Utility
+//////////////////////////////////////////////////////////////////////////////////
 function isEmptyObject(object) { for(var i in object) { return false; } return true; }
+function safeStr(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
+}
+
+//http://garethrees.org/2007/11/14/pngcrush/
+var emptyPNG = new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64');
+var PNG_LINE_WIDTH = 256;
+
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host : escInfo[0], port: escInfo[1]});
+Db.esVersion(function (ver) {
+  // SPI View requires 0.90.0 or later
+  if (ver >= (90 << 8)) {
+    var vo = app.set("view options");
+    vo.spiData = true;
+    app.set("view options", vo);
+  } else {
+    console.log("SPI View display requires Elasticsearch 0.90 RC1 or newer");
+  }
+});
 
 function deleteFile(node, id, path, cb) {
   fs.unlink(path, function() {
@@ -236,9 +262,26 @@ app.get("/", function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
+  console.log("locals = \n", util.inspect(res.locals, false, 12));
   res.render('index', {
     user: req.user,
     title: 'Home',
+    titleLink: 'sessionsLink',
+    isIndex: true
+  });
+});
+
+app.get("/spiview", function(req, res) {
+  if (!req.user.webEnabled) {
+    return res.send("Moloch Permision Denied");
+  }
+  if (!app.set("view options").spiData) {
+    return res.send("Elastic Search 0.90.0 RC1 requried");
+  }
+  res.render('spiview', {
+    user: req.user,
+    title: 'SPI View',
+    titleLink: 'spiLink',
     isIndex: true
   });
 });
@@ -250,6 +293,7 @@ app.get("/graph", function(req, res) {
   res.render('graph', {
     user: req.user,
     title: 'Graph',
+    titleLink: 'connectionsLink',
     isIndex: true
   });
 });
@@ -270,7 +314,8 @@ app.get('/files', function(req, res) {
   }
   res.render('files', {
     user: req.user,
-    title: 'Files'
+    title: 'Files',
+    titleLink: 'filesLink'
   });
 });
 
@@ -281,6 +326,7 @@ app.get('/users', function(req, res) {
   res.render('users', {
     user: req.user,
     title: 'Users',
+    titleLink: 'usersLink',
     token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
   });
 });
@@ -292,7 +338,8 @@ app.get('/password', function(req, res) {
       puser: user,
       currentPassword: cp,
       token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: user.userId, cp:cp}),
-      title: 'Change Password'
+      title: 'Change Password',
+      titleLink: 'changePasswordLink'
     });
   }
 
@@ -330,6 +377,7 @@ app.get('/stats', function(req, res) {
     res.render('stats', {
       user: req.user,
       title: 'Stats',
+      titleLink: 'statsLink',
       nodes: nodes
     });
   });
@@ -346,7 +394,7 @@ app.get('/:nodeName/statsDetail', function(req, res) {
   });
 });
 
-fs.unlink("./public/style.css"); // Remove old style.css file
+fs.unlink("./public/style.css", function () {}); // Remove old style.css file
 app.get('/style.css', function(req, res) {
   fs.readFile("./views/style.styl", 'utf8', function(err, str) {
     if (err) {return console.log(err);}
@@ -796,9 +844,10 @@ function getIndices(startTime, stopTime, cb) {
 }
 
 /* async convert tag strings to numbers in an already built query */
-function lookupQueryTags(query, doneCb) {
+function lookupQueryItems(query, doneCb) {
   var outstanding = 0;
   var finished = 0;
+  var err = null;
 
   function process(parent, obj, item) {
     if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && typeof obj[item] === "string") {
@@ -823,7 +872,7 @@ function lookupQueryTags(query, doneCb) {
           parent.terms[item] = terms;
           outstanding--;
           if (finished && outstanding === 0) {
-            doneCb();
+            doneCb(err);
           }
         });
       } else {
@@ -831,19 +880,36 @@ function lookupQueryTags(query, doneCb) {
         var tag = (item !== "ta"?"http:header:" + obj[item].toLowerCase():obj[item]);
 
         Db.tagNameToId(tag, function (id) {
-          obj[item] = id;
           outstanding--;
+          if (id === null) {
+            err = "Tag '" + tag + "' not found";
+          } else {
+            obj[item] = id;
+          }
           if (finished && outstanding === 0) {
-            doneCb();
+            doneCb(err);
           }
         });
       }
+    } else if (item === "fileand" && typeof obj[item] === "string") {
+      var name = obj.fileand;
+      delete obj.fileand;
+      outstanding++;
+      Db.fileNameToFile(name, function (file) {
+        outstanding--;
+        if (file === null) {
+          err = "File '" + name + "' not found";
+        } else {
+          obj.and = [{term: {no: file.node}}, {term: {fs: file.num}}];
+        }
+        if (finished && outstanding === 0) {
+          doneCb(err);
+        }
+      });
     } else if (typeof obj[item] === "object") {
       convert(obj, obj[item]);
     }
   }
-
-
 
   function convert(parent, obj) {
     for (var item in obj) {
@@ -853,7 +919,7 @@ function lookupQueryTags(query, doneCb) {
 
   convert(null, query);
   if (outstanding === 0) {
-    return doneCb();
+    return doneCb(err);
   }
 
   finished = 1;
@@ -871,17 +937,9 @@ function buildSessionQuery(req, buildCb) {
                query: {filtered: {query: {}}}
               };
 
-  if (req.query.facets) {
-    query.facets = {
-                     dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: 60, size:1440}},
-                     paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: 60, size:1440}},
-                     map1: {terms : {field: "g1", size:1000}},
-                     map2: {terms : {field: "g2", size:1000}}
-                   };
-  }
-
-
+  var interval;
   if (req.query.date && req.query.date === '-1') {
+    interval = 60*60; // Hour to be safe
     query.query.filtered.query.match_all = {};
   } else if (req.query.startTime && req.query.stopTime) {
     if (! /^[0-9]+$/.test(req.query.startTime)) {
@@ -896,6 +954,14 @@ function buildSessionQuery(req, buildCb) {
       req.query.stopTime = parseInt(req.query.stopTime, 10);
     }
     query.query.filtered.query.range = {lp: {gte: req.query.startTime, lte: req.query.stopTime}};
+    var diff = req.query.stopTime - req.query.startTime;
+    if (diff < 30*60) {
+      interval = 1; // second
+    } else if (diff <= 5*24*60*60) {
+      interval = 60; // minute
+    } else {
+      interval = 60*60; // hour
+    }
   } else {
     if (!req.query.date) {
       req.query.date = 1;
@@ -903,6 +969,20 @@ function buildSessionQuery(req, buildCb) {
     req.query.startTime = (Math.floor(Date.now() / 1000) - 60*60*parseInt(req.query.date, 10));
     req.query.stopTime = Date.now()/1000;
     query.query.filtered.query.range = {lp: {from: req.query.startTime}};
+    if (req.query.date <= 5*24) {
+      interval = 60; // minute
+    } else {
+      interval = 60*60; // hour
+    }
+  }
+
+  if (req.query.facets) {
+    query.facets = {
+                     dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: interval, size:1440}},
+                     paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: interval, size:1440}},
+                     map1: {terms : {field: "g1", size:1000}},
+                     map2: {terms : {field: "g2", size:1000}}
+                   };
   }
 
   addSortToQuery(query, req.query, "fp");
@@ -932,37 +1012,43 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
-  lookupQueryTags(query.query.filtered, function () {
+  lookupQueryItems(query.query.filtered, function (lerr) {
     if (req.query.date && req.query.date === '-1') {
-      return buildCb(err, query, "sessions*");
+      return buildCb(err || lerr, query, "sessions*");
     }
 
     getIndices(req.query.startTime, req.query.stopTime, function(indices) {
-      return buildCb(err, query, indices);
+      return buildCb(err || lerr, query, indices);
     });
   });
 }
 
 app.get('/sessions.json', function(req, res) {
-  var map = {};
-  var lpHisto = [];
-  var dbHisto = [];
-  var paHisto = [];
   var i;
 
+  var graph = {
+        interval: 60,
+        lpHisto: [],
+        dbHisto: [],
+        paHisto: []
+      };
+  var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {sEcho: req.query.sEcho,
                iTotalRecords: 0,
                iTotalDisplayRecords: 0,
-               lpHisto: {entries: []},
-               dbHisto: {entries: []},
+               graph: graph,
+               map: map,
                bsqErr: bsqErr.toString(),
-               map: [],
                aaData:[]};
       res.send(r);
       return;
     }
+    if (query.facets && query.facets.dbHisto) {
+      graph.interval = query.facets.dbHisto.histogram.interval;
+    }
+
     console.log("sessions.json query", JSON.stringify(query));
 
     async.parallel({
@@ -970,7 +1056,7 @@ app.get('/sessions.json', function(req, res) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
           //console.log("sessions query = ", util.inspect(result, false, 50));
           if (err || result.error) {
-            console.log("sessions.json error", err);
+            console.log("sessions.json error", err, result.error);
             sessionsCb(null, {total: 0, results: []});
             return;
           }
@@ -980,12 +1066,12 @@ app.get('/sessions.json', function(req, res) {
           }
 
           result.facets.dbHisto.entries.forEach(function (item) {
-            lpHisto.push([item.key*1000, item.count]);
-            dbHisto.push([item.key*1000, item.total]);
+            graph.lpHisto.push([item.key*1000, item.count]);
+            graph.dbHisto.push([item.key*1000, item.total]);
           });
 
           result.facets.paHisto.entries.forEach(function (item) {
-            paHisto.push([item.key*1000, item.total]);
+            graph.paHisto.push([item.key*1000, item.total]);
           });
 
           result.facets.map1.terms.forEach(function (item) {
@@ -1029,9 +1115,7 @@ app.get('/sessions.json', function(req, res) {
       var r = {sEcho: req.query.sEcho,
                iTotalRecords: results.total,
                iTotalDisplayRecords: (results.sessions?results.sessions.total:0),
-               lpHisto: lpHisto,
-               dbHisto: dbHisto,
-               paHisto: paHisto,
+               graph: graph,
                health: results.health,
                map: map,
                aaData: (results.sessions?results.sessions.results:[])};
@@ -1039,6 +1123,156 @@ app.get('/sessions.json', function(req, res) {
         res.send(r);
       } catch (c) {
       }
+    });
+  });
+});
+
+app.get('/spiview.json', function(req, res) {
+  if (req.query.spi === undefined) {
+    return res.send({spi:{}});
+  }
+
+  if (req.query.date === '-1') {
+    return res.send({spi: {}, bsqErr: "'All' date range not allowed for spiview query"});
+  }
+
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      var r = {spi: {},
+               bsqErr: bsqErr.toString()
+               };
+      return res.send(r);
+    }
+
+    delete query.fields;
+    delete query.sort;
+
+    if (!query.facets) {
+      query.facets = {};
+    }
+
+    req.query.spi.split(",").forEach(function (item) {
+      var parts = item.split(":");
+      query.facets[parts[0]] = {terms: {field: parts[0], size:parseInt(parts[1], 10)}};
+    });
+    query.size = 0;
+
+    console.log("spiview.json query", JSON.stringify(query), "indices", indices);
+
+    var graph;
+    var map;
+
+    var indicesa = indices.split(",");
+    if (indicesa.length > Config.get("spiDataMaxIndices", 1)) {
+      bsqErr = "To save ES from blowing up, reducing number of spi data indices searched from " + indicesa.length + " to " + Config.get("spiDataMaxIndices", 1) + ".  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ";
+      indices = indicesa.slice(-Config.get("spiDataMaxIndices", 1)).join(",");
+      bsqErr += indices;
+    }
+
+    async.parallel({
+      spi: function (sessionsCb) {
+        Db.searchPrimary(indices, 'session', query, function(err, result) {
+          if (err || result.error) {
+            console.log("sessions.json error", err, result.error);
+            sessionsCb(null, {});
+            return;
+          }
+
+          if (result.facets.pr) {
+            result.facets.pr.terms.forEach(function (item) {
+              item.term = decode.protocol2Name(item.term);
+            });
+          }
+
+          if (result.facets.dbHisto) {
+            graph = {
+              interval: query.facets.dbHisto.histogram.interval,
+              lpHisto: [],
+              dbHisto: [],
+              paHisto: []
+            };
+            map = {};
+            result.facets.dbHisto.entries.forEach(function (item) {
+              graph.lpHisto.push([item.key*1000, item.count]);
+              graph.dbHisto.push([item.key*1000, item.total]);
+            });
+            delete result.facets.dbHisto;
+
+            result.facets.paHisto.entries.forEach(function (item) {
+              graph.paHisto.push([item.key*1000, item.total]);
+            });
+            delete result.facets.paHisto;
+
+            result.facets.map1.terms.forEach(function (item) {
+              if (item.count < 0) {
+                item.count = 0x7fffffff;
+              }
+              map[item.term] = item.count;
+            });
+            delete result.facets.map1;
+
+            result.facets.map2.terms.forEach(function (item) {
+              if (item.count < 0) {
+                item.count = 0x7fffffff;
+              }
+              if (!map[item.term]) {
+                map[item.term] = 0;
+              }
+              map[item.term] += item.count;
+            });
+            delete result.facets.map2;
+          }
+
+          sessionsCb(null, result.facets);
+        });
+      },
+      health: function (healthCb) {
+        Db.healthCache(healthCb);
+      }
+    },
+    function(err, results) {
+      function tags(container, field, doneCb, offset) {
+        if (!container[field]) {
+          return doneCb(null);
+        }
+        async.map(container[field].terms, function (item, cb) {
+          Db.tagIdToName(item.term, function (name) {
+            item.term = name.substring(offset);
+            cb(null, item);
+          });
+        },
+        function(err, tagsResults) {
+          container[field].terms = tagsResults;
+          doneCb(err);
+        });
+      }
+
+      async.parallel([
+        function(parallelCb) {
+          tags(results.spi, "ta", parallelCb, 0);
+        },
+        function(parallelCb) {
+          tags(results.spi, "hh", parallelCb, 12);
+        },
+        function(parallelCb) {
+          tags(results.spi, "hh1", parallelCb, 12);
+        },
+        function(parallelCb) {
+          tags(results.spi, "hh2", parallelCb, 12);
+        }],
+        function() {
+          r = {health: results.health,
+               spi: results.spi,
+               graph: graph,
+               map: map,
+               bsqErr: bsqErr
+          };
+          try {
+            res.send(r);
+          } catch (c) {
+          }
+        }
+      );
     });
   });
 });
@@ -1167,7 +1401,7 @@ app.get('/sessions.csv', function(req, res) {
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
-        console.log("sessions.csv error", err);
+        console.log("sessions.csv error", err, result.error);
         res.send("#Error db\r\n");
         return;
       }
@@ -1235,7 +1469,7 @@ app.get('/unique.txt', function(req, res) {
 
   noCache(req, res);
   var doCounts = parseInt(req.query.counts, 10) || 0;
-  var doIp =  (req.query.field === "a1" || req.query.field === "a2");
+  var doIp =  req.query.field.match(/^(a1|a2|xff|dnsip|eip)$/) !== null;
 
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = [req.query.field];
@@ -1293,7 +1527,7 @@ app.get('/unique.txt', function(req, res) {
         if (doIp) {
           res.write(decode.inet_ntoa(item.term));
         } else {
-          res.write(item.term);
+          res.write(""+item.term);
         }
 
         if (doCounts) {
@@ -1395,62 +1629,51 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
         fs.close(openHandle);
       }
 
+      function tags(container, field, doneCb, offset) {
+        if (!container[field]) {
+          return doneCb(null);
+        }
+        async.map(container[field], function (item, cb) {
+          Db.tagIdToName(item, function (name) {
+            cb(null, name.substring(offset));
+          });
+        },
+        function(err, results) {
+          container[field] = results;
+          doneCb(err);
+        });
+      }
+
       async.parallel([
         function(parallelCb) {
           if (!session._source.ta) {
             session._source.ta = [];
             return parallelCb(null);
           }
-          async.map(session._source.ta, function (item, cb) {
-            Db.tagIdToName(item, function (name) {
-              cb(null, name);
-            });
-          },
-          function(err, results) {
-            session._source.ta = results;
-            parallelCb(null);
-          });
+          tags(session._source, "ta", parallelCb, 0);
         },
         function(parallelCb) {
-          if (!session._source.hh) {
-            return parallelCb(null);
-          }
-          async.map(session._source.hh, function (item, cb) {
-            Db.tagIdToName(item, function (name) {
-              cb(null, name.substring(12));
-            });
-          },
-          function(err, results) {
-            session._source.hh = results;
-            parallelCb(null);
-          });
+          tags(session._source, "hh", parallelCb, 12);
         },
         function(parallelCb) {
-          if (!session._source.hh1) {
-            return parallelCb(null);
-          }
-          async.map(session._source.hh1, function (item, cb) {
-            Db.tagIdToName(item, function (name) {
-              cb(null, name.substring(12));
-            });
-          },
-          function(err, results) {
-            session._source.hh1 = results;
-            parallelCb(null);
-          });
+          tags(session._source, "hh1", parallelCb, 12);
         },
         function(parallelCb) {
-          if (!session._source.hh2) {
-            return parallelCb(null);
-          }
-          async.map(session._source.hh2, function (item, cb) {
-            Db.tagIdToName(item, function (name) {
-              cb(null, name.substring(12));
+          tags(session._source, "hh2", parallelCb, 12);
+        },
+        function(parallelCb) {
+          var files = [];
+          async.forEachSeries(session._source.fs, function (item, cb) {
+            Db.fileIdToFile(session._source.no, item, function (file) {
+              if (file && file.locked === 1) {
+                files.push(file.name);
+              }
+              cb(null);
             });
           },
-          function(err, results) {
-            session._source.hh2 = results;
-            parallelCb(null);
+          function(err) {
+            session._source.fs = files;
+            parallelCb(err);
           });
         }],
         function(err, results) {
@@ -1461,8 +1684,41 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
   });
 }
 
-function safeStr(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
+function processSessionIdAndDecode(id, numPackets, doneCb) {
+  var packets = [];
+  processSessionId(id, null, function (buffer, cb) {
+    var obj = {};
+    if (buffer.length > 16) {
+      decode.pcap(buffer, obj);
+    } else {
+      obj = {ip: {p: ""}};
+    }
+    packets.push(obj);
+    cb(null);
+  },
+  function(err, session) {
+    if (err) {
+      return doneCb("error");
+    }
+    if (packets.length === 0) {
+      return doneCb(null, session, []);
+    } else if (packets[0].ip.p === 1) {
+      decode.reassemble_icmp(packets, function(err, results) {
+        return doneCb(err, session, results);
+      });
+    } else if (packets[0].ip.p === 6) {
+      decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
+        return doneCb(err, session, results);
+      });
+    } else if (packets[0].ip.p === 17) {
+      decode.reassemble_udp(packets, function(err, results) {
+        return doneCb(err, session, results);
+      });
+    } else {
+      return doneCb(null, session, []);
+    }
+  },
+  numPackets);
 }
 
 // Some ideas from hexy.js
@@ -1504,8 +1760,9 @@ function toHex(input, offsets) {
 function localSessionDetailReturnFull(req, res, session, incoming) {
   var outgoing = [];
   for (var r = 0; r < incoming.length; r++) {
-    outgoing[r]= {html: ""};
+    outgoing[r]= {ts: incoming[r].ts, html: "", bytes:0};
     for (var p = 0; p < incoming[r].pieces.length; p++) {
+      outgoing[r].bytes += incoming[r].pieces[p].raw.length;
       if (req.query.base === "hex") {
         outgoing[r].html += '<pre>' + toHex(incoming[r].pieces[p].raw, req.query.line === "true") + '</pre>';
       } else if (req.query.base === "ascii") {
@@ -1517,16 +1774,16 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
       }
 
       if(incoming[r].pieces[p].bodyNum !== undefined) {
-        var url = req.params.nodeName + "/" + 
-                  session.id + "/body/" + 
-                  incoming[r].pieces[p].bodyType + "/" + 
-                  incoming[r].pieces[p].bodyNum + "/" + 
+        var url = req.params.nodeName + "/" +
+                  session.id + "/body/" +
+                  incoming[r].pieces[p].bodyType + "/" +
+                  incoming[r].pieces[p].bodyNum + "/" +
                   incoming[r].pieces[p].bodyName + ".pellet";
 
         if (incoming[r].pieces[p].bodyType === "image") {
           outgoing[r].html += "<img src=\"" + url + "\">";
         } else {
-          outgoing[r].html += "<a href=\"" + url + "\">" + incoming[r].pieces[p].bodyName + "</a>";
+          outgoing[r].html += "<a class=\"imagetag-" + session.id + "\" href=\"" + url + "\">" + incoming[r].pieces[p].bodyName + "</a>";
         }
       }
     }
@@ -1560,13 +1817,13 @@ function gzipDecode(req, res, session, incoming) {
 
     // This isn't a gziped request
     if (!this.gzip) {
-      outgoing[pos] = {pieces:[{raw: buf}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: buf}]};
       return;
     }
 
     // Copy over the headers
     if (!outgoing[pos]) {
-      outgoing[pos] = {pieces:[{raw: buf.slice(0, start)}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: buf.slice(0, start)}]};
     }
 
     if (!this.inflator) {
@@ -1600,7 +1857,7 @@ function gzipDecode(req, res, session, incoming) {
       });
       this.inflator = null;
     } else {
-      outgoing[pos] = {pieces: [{raw: incoming[pos].data}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
       process.nextTick(nextCb);
     }
   };
@@ -1626,13 +1883,13 @@ function gzipDecode(req, res, session, incoming) {
 
     if (!item) {
     } else if (item.data.length === 0) {
-      outgoing[pos] = {pieces:[{raw: item.data}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: item.data}]};
       process.nextTick(nextCb);
     } else {
       parsers[(pos%2)].nextCb = nextCb;
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
       if (typeof out === "object") {
-        outgoing[pos] = {pieces:[{raw: item.data}]};
+        outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: item.data}]};
         console.log("ERROR", out);
       }
       if (parsers[(pos%2)].nextCb) {
@@ -1667,9 +1924,9 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
     var pos = this.pos;
 
     if (this.image) {
-      outgoing[pos] = {pieces: [{bodyNum: bodyNum, bodyType:"image", bodyName:"image" + bodyNum}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"image", bodyName:"image" + bodyNum}]};
     } else {
-      outgoing[pos] = {pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
     }
     // Copy over the headers
     if (outgoing[pos] === undefined) {
@@ -1687,7 +1944,7 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
     var pos = this.pos;
 
     if (!outgoing[pos]) {
-      outgoing[pos] = {pieces: [{raw: incoming[pos].data}]};
+      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
     }
   };
 
@@ -1715,16 +1972,16 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
 
     if (!item) {
     } else if (item.data.length === 0) {
-      outgoing[p] = {pieces:[{raw: item.data}]};
+      outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: item.data}]};
     } else {
       var out = parsers[(p%2)].execute(item.data, 0, item.data.length);
       if (typeof out === "object") {
-        outgoing[p] = {pieces:[{raw: item.data}]};
+        outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: item.data}]};
         console.log("ERROR", out);
       }
 
       if (!outgoing[p]) {
-        outgoing[p] = {pieces: [{raw: incoming[p].data}]};
+        outgoing[p] = {ts: incoming[p].ts, pieces: [{raw: incoming[p].data}]};
       }
     }
 
@@ -1865,7 +2122,7 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
         break;
       case STATES.mimedata:
         if (lines[l] === ".") {
-          if (findBody !== -1) {
+          if (findBody === bodyNum) {
             return res.end();
           }
           state = STATES.cmd;
@@ -1899,11 +2156,11 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
   }
 
   var p = 0;
-  for (var p = 0; p < incoming.length; p++) {
+  for (p = 0; p < incoming.length; p++) {
     if (incoming[p].data.length === 0) {
-      outgoing[p] = {pieces:[{raw: incoming[p].data}]};
+      outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: incoming[p].data}]};
     } else {
-      outgoing[p] = {pieces: parse(incoming[p].data, p)};
+      outgoing[p] = {ts: incoming[p].ts, pieces: parse(incoming[p].data, p)};
     }
     if (res.finished === true) {
       break;
@@ -1916,13 +2173,14 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
 }
 
 function imageDecode(req, res, session, results, findBody) {
-  if (results[0].data.slice(0,4).toString() === "HTTP" || (results[1] && results[1].data.slice(0,4).toString() === "HTTP")) {
+  if ((results[0].data.length >= 4 && results[0].data.slice(0,4).toString() === "HTTP") ||
+      (results[1] && results[1].data.length >= 4 && results[1].data.slice(0,4).toString() === "HTTP")) {
     return imageDecodeHTTP(req, res, session, results, findBody);
   }
 
-  if (results[0].data.slice(0,4).toString().match(/(HELO|EHLO)/) ||
-      (results[1] && results[1].data.slice(0,4).toString().match(/(HELO|EHLO)/)) ||
-      (results[2] && results[2].data.slice(0,4).toString().match(/(HELO|EHLO)/))) {
+  if ((results[0].data.length >= 4 && results[0].data.slice(0,4).toString().match(/(HELO|EHLO)/)) ||
+      (results[1] && results[1].data.length >= 4 && results[1].data.slice(0,4).toString().match(/(HELO|EHLO)/)) ||
+      (results[2] && results[1].data.length >= 4 && results[2].data.slice(0,4).toString().match(/(HELO|EHLO)/))) {
     return imageDecodeSMTP(req, res, session, results, findBody);
   }
 
@@ -1947,7 +2205,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
 
   var outgoing = [];
   for (var r = 0; r < incoming.length; r++) {
-    outgoing.push({pieces: [{raw: incoming[r].data}]});
+    outgoing.push({pieces: [{raw: incoming[r].data}], ts: incoming[r].ts});
   }
   localSessionDetailReturnFull(req, res, session, outgoing);
 }
@@ -1990,6 +2248,9 @@ function localSessionDetail(req, res) {
     if (session.hh2) {
       session.hh2 = session.hh2.sort();
     }
+    if (session.pr) {
+      session.pr = decode.protocol2Name(session.pr);
+    }
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
@@ -2011,33 +2272,6 @@ function localSessionDetail(req, res) {
     }
   },
   req.query.needimage === "true"?10000:400);
-}
-
-function localBody(req, res) {
-  var packets = [];
-  if (req.params.bodyType === "file") {
-    res.setHeader("Content-Type", "application/force-download");
-  }
-  processSessionId(req.params.id, null, function (buffer, cb) {
-    var obj = {};
-    if (buffer.length > 16) {
-      decode.pcap(buffer, obj);
-    } else {
-      obj = {ip: {p: "Empty"}};
-    }
-    packets.push(obj);
-    cb(null);
-  },
-  function(err, session) {
-    if (err) {
-      res.send("Error");
-      return;
-    }
-    decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
-      return imageDecode(req, res, session, results, +req.params.bodyNum);
-    });
-  },
-  10000);
 }
 
 function getViewUrl(node, cb) {
@@ -2111,7 +2345,51 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
 
 app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', function(req, res) {
   isLocalView(req.params.nodeName, function () {
-    localBody(req, res);
+    processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+      if (err) {
+        return res.send("Error");
+      }
+      if (req.params.bodyType === "file") {
+        res.setHeader("Content-Type", "application/force-download");
+      }
+      return imageDecode(req, res, session, results, +req.params.bodyNum);
+    });
+  },
+  function () {
+    proxyRequest(req, res);
+  });
+});
+
+app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', function(req, res) {
+  isLocalView(req.params.nodeName, function () {
+    if (!Png) {
+      return res.send (emptyPNG);
+    }
+    processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+      if (err) {
+        return res.send (emptyPNG);
+      }
+      res.setHeader("Content-Type", "image/png");
+      var newres = {
+        finished: false,
+        fullbuf: new Buffer(0),
+        write: function(buf) {
+          this.fullbuf = Buffer.concat([this.fullbuf, buf]);
+        },
+        end: function(buf) {
+          this.finished = true;
+          if (buf) {this.write(buf);}
+          if (this.fullbuf.length === 0) {
+            return res.send (emptyPNG);
+          }
+          var png = new Png(this.fullbuf, PNG_LINE_WIDTH, Math.ceil(this.fullbuf.length/PNG_LINE_WIDTH), 'gray');
+          var png_image = png.encodeSync();
+
+          res.send(png_image);
+        }
+      };
+      return imageDecode(req, newres, session, results, +req.params.bodyNum);
+    });
   },
   function () {
     proxyRequest(req, res);
@@ -2162,54 +2440,50 @@ app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
   });
 });
 
-function writeRawReturn(res, type, results, doneCb) {
-  for (var i = 0; i < results.length; i++) {
-    if ((i % 2 === 0 && type === 'src') ||
-        (i % 2 === 1 && type === 'dst')) {
-      res.write(results[i].data);
-    }
-  }
-  res.end();
-}
+app.get('/:nodeName/raw/:id.png', function(req, res) {
+  noCache(req, res);
 
+  res.setHeader("Content-Type", "image/png");
 
-function writeRaw(res, id, type, doneCb) {
-  var packets = [];
-  processSessionId(id, null, function (buffer, cb) {
-    var obj = {};
-    if (buffer.length > 16) {
-      decode.pcap(buffer, obj);
-    } else {
-      obj = {ip: {p: ""}};
+  var PNG_LINE_WIDTH = 256;
+
+  isLocalView(req.params.nodeName, function () {
+    if (!Png) {
+      return res.send (emptyPNG);
     }
-    packets.push(obj);
-    cb(null);
+
+    processSessionIdAndDecode(req.params.id, 100, function(err, session, results) {
+      if (err) {
+        return res.send (emptyPNG);
+      }
+      var size = 0;
+      var i;
+      for (i = (req.query.type !== 'dst'?0:1); i < results.length; i+=2) {
+        size += results[i].data.length + 2*PNG_LINE_WIDTH - (results[i].data.length % PNG_LINE_WIDTH);
+      }
+      var buffer = new Buffer(size);
+      var pos = 0;
+      if (size === 0) {
+        return res.send (emptyPNG);
+      }
+      for (i = (req.query.type !== 'dst'?0:1); i < results.length; i+=2) {
+        results[i].data.copy(buffer, pos);
+        pos += results[i].data.length;
+        var fillpos = pos;
+        pos += 2*PNG_LINE_WIDTH - (results[i].data.length % PNG_LINE_WIDTH);
+        buffer.fill(0xff, fillpos, pos);
+      }
+
+      var png = new Png(buffer, PNG_LINE_WIDTH, (size/PNG_LINE_WIDTH)-1, 'gray');
+      var png_image = png.encodeSync();
+
+      res.send(png_image);
+    });
   },
-  function(err, session) {
-    if (err) {
-      res.send("Error");
-      return;
-    }
-    if (packets.length === 0) {
-      res.end();
-    } else if (packets[0].ip.p === 1) {
-      decode.reassemble_icmp(packets, function(err, results) {
-        writeRawReturn(res, type, results, doneCb);
-      });
-    } else if (packets[0].ip.p === 6) {
-      decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
-        writeRawReturn(res, type, results, doneCb);
-      });
-    } else if (packets[0].ip.p === 17) {
-      decode.reassemble_udp(packets, function(err, results) {
-        writeRawReturn(res, type, results, doneCb);
-      });
-    } else {
-      res.end();
-    }
-  },
-  10000);
-}
+  function() {
+    proxyRequest(req, res);
+  });
+});
 
 app.get('/:nodeName/raw/:id', function(req, res) {
   noCache(req, res);
@@ -2218,7 +2492,13 @@ app.get('/:nodeName/raw/:id', function(req, res) {
   res.statusCode = 200;
 
   isLocalView(req.params.nodeName, function () {
-    writeRaw(res, req.params.id, req.query.type||"src", function () {
+    processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+      if (err) {
+        return res.send("Error");
+      }
+      for (var i = (req.query.type !== 'dst'?0:1); i < results.length; i+=2) {
+        res.write(results[i].data);
+      }
       res.end();
     });
   },

@@ -1,270 +1,273 @@
-div(id='sessionDetail#{session.id}')
-  div Actions:
+//- Standard method to print an array of values with commas
+mixin arrayList(values, title, expr)
+  if (values)
+    dt #{title}
+    dd
+      each value,i in values 
+        if (i > 0)
+          |, 
+        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+
+//- Standard method to print ip, port, geo, and asn info
+mixin ipPrint(ip,port,geo,as,expr)
+  - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
+  a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");') #{ipstr}
+  - if (port)
+    | :
+    a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
+
+  - if (geo)
+    |  (
+    a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");') #{geo}
+    |)
+  - if (as)
+    |  [
+    a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");') #{as}
+    |]
+
+//- Standard method to print ip info with commas
+mixin ipArrayList(values, geos, ass, title, expr)
+  if (values)
+    dt #{title}
+    dd
+      each ip,i in values 
+        if (i > 0)
+          |, 
+        mixin ipPrint(values[i], undefined, geos[i], ass[i], expr)
+
+//- Start of page
+div.sessionDetail(id='sessionDetail#{session.id}')
+  div.sessionDetailToolbar 
+    li Actions
     if (session.ro)
-      a(href='#', onclick='return addExpression("rootId == #{session.ro}");') All Sessions
-      | &nbsp;
-      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
-      | &nbsp;
-      a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
+      li 
+        a(href='#', onclick='return addExpression("rootId == #{session.ro}");') All Sessions
+      li 
+        a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
+      li 
+        a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
     else
-      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
-    | 
-    a(href='#{session.no}/raw/#{session.id}?type=src') Source Raw
-    | 
-    a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw
-    | 
-    a(href='?expression=id=#{session.id}&date=-1&openAll=1') Permalink
-    br
-  div Node: 
-    a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
-  div Start Time: 
-    a(href='#', onclick='return setSessionStartTime(#{session.fp});')
-      span(id='startTime-#{session.id}')
-    | &nbsp;
-    | Stop Time:
-    a(href='#', onclick='return setSessionStopTime(#{session.lp});')
-      span(id='stopTime-#{session.id}')
-  if (session.user)
-    div Users:
-      each user in session.user
-        a(href='#', onclick='return addExpression("user == #{user}");') #{user}
-        | 
-  div IP Protocol: 
-    a(href='#', onclick='return addExpression("protocol == #{session.pr}");') #{session.pr}
-  div IP/Port: 
-    a(href='#', onclick='return addSessionIP(#{session.a1});')
-      span(id='a1-#{session.id}')
-    | :
-    a(href='#', onclick='return addExpression("port.src == #{session.p1}");') #{session.p1}
-    if (session.g1)
-      |  (
-      a(href='#', onclick='return addExpression("country.src == #{session.g1}");') #{session.g1}
-      | )
-    if (session.as1)
-      |  [
-      a(href='#', onclick='return addExpression("asn.src == \\\"#{session.as1}\\\"");') #{session.as1}
-      | ]
-    | &nbsp; &nbsp;
-    a(href='#', onclick='return addSessionIP(#{session.a2});')
-      span(id='a2-#{session.id}')
-    | :
-    a(href='#', onclick='return addExpression("port.dst == #{session.p2}");') #{session.p2}
-    if (session.g2)
-      |  (
-      a(href='#', onclick='return addExpression("country.dst == #{session.g2}");') #{session.g2}
-      | )
-    if (session.as2)
-      |  [
-      a(href='#', onclick='return addExpression("asn.dst == \\\"#{session.as2}\\\"");') #{session.as2}
-      | ]
-  if (session.ta)
-    div Tags:
-      each tag in session.ta
-        a(href='#', onclick='return addExpression("tags == \\\"#{tag}\\\"");') #{tag}
-        | 
-  if (session.hh)
-    div Old Headers:
-      each header in session.hh
-        a(href='#', onclick='return addExpression("oldheader == \\\"#{header}\\\"");') #{header}
-        | 
-  if (session.hh1)
-    div Request Headers:
-      each header in session.hh1
-        a(href='#', onclick='return addExpression("header.src == \\\"#{header}\\\"");') #{header}
-        | 
-  if (session.hh2)
-    div Response Headers:
-      each header in session.hh2
-        a(href='#', onclick='return addExpression("header.dst == \\\"#{header}\\\"");') #{header}
-        | 
-  if (session.ua)
-    div User Agents:
-      each ua in session.ua
-        a(href='#', onclick='return addExpression("ua == \\\"#{ua}\\\"");') '#{ua}'
-        | 
-  if (session.ho)
-    div Hosts:
-      each host in session.ho
-        a(href='#', onclick='return addExpression("host == #{host}");') #{host}
-        | 
-  if (session.xff)
-    div XFFs:
-      - var xffIps = session.xff.map(function(ip) {return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff)});
-      each xff,i in xffIps
-        a(href='#', onclick='return addExpression("ip.xff == #{xff}");') #{xff}
-        | 
-        - if (session.gxff)
-          a(href='#', onclick='return addExpression("country.xff == #{session.gxff[i]}");') (#{session.gxff[i]})
-          | 
-        - if (session.asxff)
-          a(href='#', onclick='return addExpression("asn.xff == \\\"#{session.asxff[i]}\\\"");') [#{session.asxff[i]}]
-          | 
-  if (session.dnsip)
-    div DNSs:
-      - var dnsIps = session.dnsip.map(function(ip) {return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff)});
-      each dns,i in dnsIps
-        a(href='#', onclick='return addExpression("ip.dns == #{dns}");') #{dns}
-        | 
-        - if (session.gdnsip)
-          a(href='#', onclick='return addExpression("country.dns == #{session.gdnsip[i]}");') (#{session.gdnsip[i]})
-          | 
-        - if (session.asdnsip)
-          a(href='#', onclick='return addExpression("asn.dns == \\\"#{session.asdnsip[i]}\\\"");') [#{session.asdnsip[i]}]
-          | 
+      li 
+        a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
+    li
+      a(href='#{session.no}/raw/#{session.id}?type=src') Source Raw
+    li
+      a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw
+    li
+      a(href='?expression=id=#{session.id}&date=-1&openAll=1') Permalink
+  dl.sessionDetailMeta
+    dt Start
+    dd
+      a(href='#', onclick='return setSessionStartTime(#{session.fp});')
+        span(id='startTime-#{session.id}')
+      | &nbsp;
+      | Stop: 
+      a(href='#', onclick='return setSessionStopTime(#{session.lp});')
+        span(id='stopTime-#{session.id}')
+      | &nbsp;
+      | Node: 
+      a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
+      | &nbsp;
+      | IP Protocol: 
+      a(href='#', onclick='return addExpression("protocol == #{session.pr}");') #{session.pr}
+    mixin arrayList(session.user, "Users", "user")
+
+
+    dt Src IP/Port
+    dd
+      mixin ipPrint(session.a1, session.p1, session.g1, session.as1, "src")
+      |  Dst IP/Port: 
+      mixin ipPrint(session.a2, session.p2, session.g2, session.as2, "dst")
+    mixin arrayList(session.ta, "Tags", "tags")
+    if (session.fs && session.fs.length > 0)
+      mixin arrayList(session.fs, "Files", "file")
+
+
+  if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
+    div.sessionDetailMeta.bold HTTP
+    dl.sessionDetailMeta
+      mixin arrayList(session.ho, "Hosts", "host.http")
+      mixin arrayList(session.ua, "User Agents", "ua")
+      mixin ipArrayList(session.xff, session.gxff, session.asxff, "XFFs", "xff")
+      mixin arrayList(session.hh1, "Request Headers", "header.src")
+      mixin arrayList(session.hh2, "Response Headers", "header.dst")
+
+
+  if (session.dnsip || session.dnsho)
+    div.sessionDetailMeta.bold DNS
+    dl.sessionDetailMeta
+      mixin ipArrayList(session.dnsip, session.gdnsip, session.asdnsip, "IPs", "dns")
+      mixin arrayList(session.dnsho, "Hosts", "host.dns")
+
   if (session.tls)
-    each cert in session.tls
-      div Certificates: 
-        - if (cert.sn)
-          | Serial: 
-          a(href='#', onclick='return addExpression("cert.serial == #{cert.sn}");') #{cert.sn}
-          | 
-        - if (cert.iCn && Array.isArray(cert.iCn))
-          | Issuer Common: 
-          each cn in cert.iCn
-            a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cn}\\\"");') #{cn}
-            | 
-        - else if (cert.iCn)
-          | Issuer Common: 
-          a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
-          | 
-        - if (cert.iOn)
-          | Issuer Org: 
-          a(href='#', onclick='return addExpression("cert.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
-          | 
-        - if (cert.sCn && Array.isArray(cert.sCn))
-          | Subject Common: 
-          each cn in cert.sCn
-            a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cn}\\\"");') #{cn}
-            | 
-        - else if (cert.sCn)
-          | Subject Common: 
-          a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
-          | 
-        - if (cert.sOn)
-          | Subject Org: 
-          a(href='#', onclick='return addExpression("cert.subject.on == \\\"#{cert.sOn}\\\"");') #{cert.sOn}
-          | 
-        if (cert.alt)
-          | [
-          each alt in cert.alt
-            a(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
-            | 
-          | ]
-  if (session.sshkey)
-    div SSH Host Key: 
-      each key in session.sshkey
-          a(href='#', onclick='return addExpression("ssh.key == \\\"#{key}\\\"");') #{key}
-          | 
-  if (session.sshver)
-    div SSH Versions: 
-      each ver in session.sshver
-          a(href='#', onclick='return addExpression("ssh.ver == \\\"#{ver}\\\"");') #{ver}
-          | 
-  if (user.emailSearch)
-    if (session.esub)
-      div Email Subjects: 
-        each i in session.esub
-            a(href='#', onclick='return addExpression("email.subject == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.esrc)
-      div Email Senders: 
-        each i in session.esrc
-            a(href='#', onclick='return addExpression("email.src == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.edst)
-      div Email Destinations: 
-        each i in session.edst
-            a(href='#', onclick='return addExpression("email.dst == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.eua)
-      div Email User Agents: 
-        each i in session.eua
-            a(href='#', onclick='return addExpression("email.ua == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.eid)
-      div Email Message Ids: 
-        each i in session.eid
-            a(href='#', onclick='return addExpression("email.id == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.emv)
-      div Email Mime Versions: 
-        each i in session.emv
-            a(href='#', onclick='return addExpression("email.mv == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.ect)
-      div Email Content Types: 
-        each i in session.ect
-            a(href='#', onclick='return addExpression("email.ct == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.efn)
-      div Email Attachment Filenames: 
-        each i in session.efn
-            a(href='#', onclick='return addExpression("email.fn == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.emd5)
-      div Email Attachment MD5s: 
-        each i in session.emd5
-            a(href='#', onclick='return addExpression("email.md5 == \\\"#{i}\\\"");') #{i}
-            | 
-    if (session.eip)
-      div Email IPs:
-        - var emailIps = session.eip.map(function(ip) {return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff)});
-        each eip,i in emailIps
-          a(href='#', onclick='return addExpression("ip.email == #{eip}");') #{eip}
-          | 
-          - if (session.geip)
-            a(href='#', onclick='return addExpression("country.email == #{session.geip[i]}");') (#{session.geip[i]})
-            | 
-          - if (session.aseip)
-            a(href='#', onclick='return addExpression("asn.email == \\\"#{session.aseip[i]}\\\"");') [#{session.aseip[i]}]
-            | 
-  hr
-  div
-    if (session.pa > 200)
-      p 
-        b Only showing first 200 packets
-    span
-      select(id='format-base-#{session.id}')
-        options = ['natural', 'ascii', 'utf8', 'hex']
-        for item in options
-          option(selected=query.base==item) #{item}
-      label Base
-    span
+    div.sessionDetailMeta.bold TLS
+    dl.sessionDetailMeta
+      each cert in session.tls
+        dt Certificate
+        dd
+          - if (cert.sn)
+            | Serial: 
+            a(href='#', onclick='return addExpression("cert.serial == #{cert.sn}");') #{cert.sn}
+          - if (cert.iCn && Array.isArray(cert.iCn))
+            |  Issuer Common: 
+            each cn,i in cert.iCn
+              if (i > 0)
+                |, 
+              a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cn}\\\"");') #{cn}
+          - else if (cert.iCn)
+            |  Issuer Common: 
+            a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
+          - if (cert.iOn)
+            |  Issuer Org: 
+            a(href='#', onclick='return addExpression("cert.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
+          - if (cert.sCn && Array.isArray(cert.sCn))
+            |  Subject Common: 
+            each cn,i in cert.sCn
+              if (i > 0)
+                |, 
+              a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cn}\\\"");') #{cn}
+          - else if (cert.sCn)
+            | Subject Common: 
+            a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
+          - if (cert.sOn)
+            |  Subject Org: 
+            a(href='#', onclick='return addExpression("cert.subject.on == \\\"#{cert.sOn}\\\"");') #{cert.sOn}
+          if (cert.alt)
+            |  [
+            each alt,i in cert.alt
+              if (i > 0)
+                |, 
+              a(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
+            | ]
+
+
+  if (session.sshkey || session.sshver)
+    div.sessionDetailMeta.bold SSH
+    dl.sessionDetailMeta
+      mixin arrayList(session.sshkey, "Host Keys", "ssh.key")
+      mixin arrayList(session.sshver, "Versions", "ssh.ver")
+  if (user.emailSearch && (session.esub || session.esrc || session.edst || session.eua || session.eid || session.emv || session.ect || session.efn || session.emd5 || session.eip))
+    div.sessionDetailMeta.bold Email
+    dl.sessionDetailMeta
+      mixin ipArrayList(session.eip, session.geip, session.aseip, "IPs", "email")
+      mixin arrayList(session.esub, "Subjects", "email.subject")
+      mixin arrayList(session.esrc, "Senders", "email.src")
+      mixin arrayList(session.edst, "Destinations", "email.dst")
+      mixin arrayList(session.eua, "User Agents", "email.ua")
+      mixin arrayList(session.eid, "Message Ids", "email.id")
+      mixin arrayList(session.emv, "Mime Versions", "email.mv")
+      mixin arrayList(session.ect, "Content Types", "email.ct")
+      mixin arrayList(session.efn, "Filenames", "email.fn")
+      mixin arrayList(session.emd5, "Attachment MD5s", "email.md5")
+    br
+  div.sessionDetailToolbar
+    li
+      options = ['natural', 'ascii', 'utf8', 'hex']
+      for item in options
+        input(type="radio",id="format-base-#{session.id}-#{item}",name="format-base-#{session.id}",value=item,checked=query.base==item) 
+        label(for="format-base-#{session.id}-#{item}") #{item}
       input(id='format-line-#{session.id}', type="checkbox", checked=query.line=='true') 
-      label Line Numbers
-    span
+      label(for='format-line-#{session.id}') Line Numbers
+    li
       input(id='format-gzip-#{session.id}', type="checkbox", checked=query.gzip=='true') 
-      label Decode GZip
-    span
+      label(for='format-gzip-#{session.id}') Decode GZip
+    li
       input(id='format-image-#{session.id}', type="checkbox", checked=query.image=='true') 
-      label Show Images &amp; Files
+      label(for='format-image-#{session.id}') Show Images &amp; Files
+    li
+      input(id='format-ts-#{session.id}', type="checkbox", checked=query.ts=='true')
+      label(for='format-ts-#{session.id}') Show Timestamps
+  br
+  if (session.pa > 200)
+    p 
+      b Only showing first 200 packets
   table#textpacket
     tr
-      th.textcol Source
-      th.textcol Destination
+      th.textcol(id='srccol-#{session.id}') Source
+      th.textcol(id='dstcol-#{session.id}') Destination
 
     each item, i in data
       tr
         if i % 2 == 0
-          td.sessionsrc !{item.html}
+          td.sessionsrc 
+            if (item.ts)
+              span(class="timestamp-#{session.id} sessionDetailTS", ts="#{item.ts}", bytes="#{item.bytes}")
+            !{item.html}
           td
         else
           td
-          td.sessiondst !{item.html}
+          td.sessiondst
+            if (item.ts)
+              span(class="timestamp-#{session.id} sessionDetailTS", ts="#{item.ts}", bytes="#{item.bytes}")
+            !{item.html}
 
-  script(type='text/javascript')
-    $(function() {
-      $('#startTime-#{session.id}').html(dateString(#{session.fp}, " "));
-      $('#stopTime-#{session.id}').html(dateString(#{session.lp}, " "));
-      $('#a1-#{session.id}').html(ipString(#{session.a1}));
-      $('#a2-#{session.id}').html(ipString(#{session.a2}));
-      $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, input#format-image-#{session.id}, select#format-base-#{session.id}').on('change', function() {
-        var url = "#{session.no}/#{session.id}/sessionDetail" +
-                   "?base=" + $('select#format-base-#{session.id} :selected').html() +
-                   "&line=" + $('input#format-line-#{session.id}').is(':checked') + 
-                   "&image=" + $('input#format-image-#{session.id}').is(':checked') + 
-                   "&gzip=" + $('input#format-gzip-#{session.id}').is(':checked');
+script(type='text/javascript')
+  $(function() {
+    if ($('input[name=format-base-#{session.id}]:checked').val() === "hex") {
+      $('input#format-line-#{session.id}').removeAttr("disabled");
+      $('label[for=format-line-#{session.id}]').css("color", "black");
+    } else {
+      $('input#format-line-#{session.id}').attr("disabled", true);
+      $('label[for=format-line-#{session.id}]').css("color", "gray");
+    }
 
-        $("#sessionDetail#{session.id}").load(url);
+    $("#srccol-#{session.id}").each( function() {
+      $(this).qtip({
+        content: 'Source Bytes:<br><img src="#{session.no}/raw/#{session.id}.png?type=src">',
+        style: 'light qtip-moloch',
+        position: {
+          my: 'top center',
+          at: 'bottom center'
+        }
       });
     });
+    $("#dstcol-#{session.id}").each( function() {
+      $(this).qtip({
+        content: 'Destination Bytes:<br><img src="#{session.no}/raw/#{session.id}.png?type=dst">',
+        style: 'light qtip-moloch',
+        position: {
+          my: 'top center',
+          at: 'bottom center'
+        }
+      });
+    });
+    $(".imagetag-#{session.id}").each( function() {
+      $(this).qtip({
+        content: 'File Bytes:<br><img src="' + $(this).attr('href').replace("body", "bodypng") + '">',
+        style: 'light qtip-moloch',
+        position: {
+          viewport: $(window)
+        }
+      });
+    });
+    $('#startTime-#{session.id}').html(dateString(#{session.fp}, " "));
+    $('#stopTime-#{session.id}').html(dateString(#{session.lp}, " "));
+    $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, input#format-image-#{session.id}, input[name=format-base-#{session.id}]').on('change', function(e) {
+      var base = $('input[name=format-base-#{session.id}]:checked').val();
+      var url = "#{session.no}/#{session.id}/sessionDetail" +
+                 "?base=" + base +
+                 "&line=" + $('input#format-line-#{session.id}').is(':checked') + 
+                 "&image=" + $('input#format-image-#{session.id}').is(':checked') + 
+                 "&gzip=" + $('input#format-gzip-#{session.id}').is(':checked') +
+                 "&ts=" + $('input#format-ts-#{session.id}').is(':checked');
+
+      $("#sessionDetail#{session.id}").load(url);
+    });
+    function showTimestamps() {
+      if ( $('#format-ts-#{session.id}').is(':checked')) {
+        $('.timestamp-#{session.id}').each(function(index, item) {
+          if ($(item).attr("ts")) {
+            var val = +$(item).attr("ts");
+            var str = dateString(val/1000, " ") + "." + val%1000;
+            str += " <span style='float:right;'>" + $(item).attr("bytes") + " bytes</span>";
+            $(item).html(str + "<hr>");
+          }
+          return item;
+        }).show();
+      } else {
+        $('.timestamp-#{session.id}').hide();
+      }
+    }
+    $('#format-ts-#{session.id}').on('change', showTimestamps);
+    showTimestamps();
+  });

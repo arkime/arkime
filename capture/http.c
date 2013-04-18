@@ -1,6 +1,6 @@
 /* http.c  -- Functions dealing with http connections.
  * 
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -317,7 +317,11 @@ void moloch_http_finish( MolochConn_t *conn, gboolean sync)
         MolochMem_t *mem = (MolochMem_t *)(conn->request->data-8);
         int          b   = conn->request->data[-8];
 
-        DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+        if (b < 3 && bufferQ[b].m_count < 100) {
+            DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+        } else {
+            free(mem);
+        }
         conn->request->data = 0;
     }
 
@@ -497,7 +501,12 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
             if (data) {
                 MolochMem_t *mem = (MolochMem_t *)(data-8);
                 int          b   = data[-8];
-                DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+
+                if (b < 3 && bufferQ[b].m_count < 100) {
+                    DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+                } else {
+                    free(mem);
+                }
             }
             free(request);
             return 1;
@@ -619,25 +628,31 @@ char *moloch_http_get_buffer(int size)
     int   i;
     if (size <= MOLOCH_HTTP_BUFFER_SIZE_S)
         i = 0;
-    else if (size <= MOLOCH_HTTP_BUFFER_SIZE_M)
+    else if (size <= (int)config.dbBulkSize)
         i = 1;
-    else
+    else if (size <= MOLOCH_HTTP_BUFFER_SIZE_L)
         i = 2;
+    else 
+        i = 3;
 
-    if (DLL_POP_HEAD(m_, &bufferQ[i], mem)) {
+    if (i < 3 && DLL_POP_HEAD(m_, &bufferQ[i], mem)) {
         buf = (char *)mem;
         buf[0] = i;
         return buf + 8;
     }
 
-    if (i == 0)
+    switch (i) {
+    case 0:
         buf = malloc(MOLOCH_HTTP_BUFFER_SIZE_S + 9);
-    else if (i == 1)
-        buf = malloc(MOLOCH_HTTP_BUFFER_SIZE_M + 9);
-    else if (i == 2)
+        break;
+    case 1:
+        buf = malloc(config.dbBulkSize+100 + 9);
+        break;
+    case 2:
         buf = malloc(MOLOCH_HTTP_BUFFER_SIZE_L + 9);
-    else {
-        LOG("ERROR - bad i %d\n", i);
+        break;
+    default:
+        buf = malloc(size + 9);
     }
 
 

@@ -1,6 +1,10 @@
 // general
 body
   margin: 0 auto
+  font-family: Arial, sans-serif
+
+.qtip-moloch
+  font-size 14px
 
 .bold
   font-weight: bold
@@ -17,23 +21,10 @@ body
 
 .ulist-nav li a
   text-decoration:none
-  color:white
+  color:rgb(160,167,214)
 
 .ulist-nav li a:hover
-  text-decoration:underline
-
-.ulist-side li
-  list-style:none
-  font-size:1em
-  margin-right:1em
-  padding-right:1em
-
-.ulist-side li a
-  text-decoration:none
-  color:black
-
-.ulist-side li a:hover
-  text-decoration:underline
+  color:rgb(193,198,228)
 
 .fixedsearch
   position: fixed
@@ -62,7 +53,7 @@ body
 
 // layout.jade
 #header
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
+  font-family: Arial, sans-serif
   margin-bottom:0px
   line-height: 0px
   text-shadow: black 0.1em 0.1em 0.2em
@@ -161,9 +152,6 @@ body
   text-shadow: none
   background-color: white
 
-.urlColumn
-  font-size: small
-
 #search, #export
   height: auto
 
@@ -182,7 +170,7 @@ body
   clear: both
   padding-left: 65px
   z-index: 4
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
+  font-family: Arial, sans-serif
   text-shadow: black 0.1em 0.1em 0.2em
   font-weight: normal
   font-size: 12px
@@ -197,18 +185,30 @@ body
   //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
 .dataTables_processing
+  border: 0px
   color: red
   font-size: 24px
   height: 140px
   width: 180px
-  background-color: lightblue
+  background-color: rgba(255, 255, 255, 0)
 
 #sessions
   word-wrap:break-word
   table-layout:fixed
+  font-family: Arial, sans-serif
+
+table#sessions th
+  font-size: 80%
 
 table#sessions td
   padding: 2px 2px
+  font-size: 14px
+
+table#sessions td.urlColumn
+  font-size: 12px
+
+table#sessions td.dateColumn
+  font-size: 12px
 
 .sessionDetails
   text-align: center
@@ -225,7 +225,7 @@ table#sessions td
 
 .protocolText
   padding-top:0px
-  font-size: small
+  font-size: 12px
 
 
 #sessionsInfo
@@ -247,6 +247,7 @@ table#sessions td
   right: 270px
   height: 150px
   z-index: 0
+  font-family: Arial, sans-serif
 
 #sessionGraph .button
   position: absolute
@@ -278,7 +279,7 @@ table#sessions td
 
 .ui-widget-header
   border: 0
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif
+  font-family: Arial, sans-serif
   text-shadow: black 0.1em 0.1em 0.2em
   font-weight: normal
   color:white
@@ -335,13 +336,86 @@ table#sessions td
   width: 45%
 
 .sessionsrc
-  color: #990000
+  color: rgb(202, 4, 4)
 
 .sessiondst
   color: blue
 
 .sessionln
   color: darkgreen
+
+.sessionDetail
+  font-family: Arial, sans-serif
+  font-size: 18px
+  background-color: rgb(240, 240, 240)
+
+.sessionDetail a
+  text-decoration:none
+  font-size: 0.75em
+
+.sessionDetail a:hover
+  text-decoration:underline
+
+.sessionDetail hr
+  margin-top: 0px
+  margin-bottom: 0px
+
+.sessionDetailMeta
+  background-color: rgb(210, 210, 210)
+  padding-left: 10px
+  padding-bottom: 5px
+  padding-top: 5px
+  margin-bottom: 0px
+  margin-top: 0px
+
+.sessionDetailMeta dt
+  float: left
+  clear: left
+  width: 160px
+  text-align: right
+
+.sessionDetailMeta dt:after
+  content: ":"
+
+.sessionDetailMeta dd
+  margin: 0 0 0 165px
+  padding: 0 0 1px 0
+
+.sessionDetailTS
+  display: none
+  color: black
+
+.sessionDetailToolbar
+  height: 30px
+  line-height: 30px
+  border-top:1px solid black
+  border-bottom:1px solid black
+  padding-left: 10px
+  background: #ffffff
+  background: -moz-linear-gradient(top,  #ffffff 0%, #b0b0b0 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#b0b0b0)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #ffffff 0%,#b0b0b0 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #ffffff 0%,#b0b0b0 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #ffffff 0%,#b0b0b0 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #ffffff 0%,#b0b0b0 100%) /* W3C */
+
+.sessionDetailToolbar input, .sessionDetailToolbar select
+  vertical-align: middle
+  margin-bottom: 0px
+  margin-top: 0px
+
+.sessionDetailToolbar li
+  display:inline-block
+  font-size:1em
+  border-right:1px solid black
+  margin-right:1em
+  padding-right:1em
+
+.sessionDetailToolbar a
+  font-size:1em
+
+.sessionDetailToolbar li.last
+  border-right:none
 
 // stats
 
@@ -409,14 +483,14 @@ table#sessions td
 #stats td.right
   text-align: right
 
-#stats th
-  padding: 3px 10px
+#stats tfoot th
+  padding: 3px 0px
   text-align: right
 
 #esstats td.right
   text-align: right
 
-#esstats th
+#esstats tfoot th
   padding: 3px 10px
   text-align: right
 
@@ -431,7 +505,7 @@ table#sessions td
   border-radius: 3px
   background: #292929
   color: white
-  font-family: sans-serif, Verdana
+  font-family: Arial, sans-serif
   font-size: smaller
   padding: 3px
 
@@ -473,7 +547,49 @@ table#sessions td
   border-radius: 3px
   background: lightblue
   color: black
-  font-family: sans-serif, Verdana
+  font-family: Arial, sans-serif
   font-size: smaller
   padding: 3px
   width: 200px
+
+// spiview
+
+#spiview
+  padding-left: 10px
+  font-family: Arial, sans-serif
+  background-color: rgb(220, 220, 220)
+
+#spiview a
+  text-decoration: none
+  font-size: 0.75em
+
+#spiview a:hover
+  text-decoration:underline
+
+.spicount
+  font-size: 0.50em
+  vertical-align: top
+
+#spiview input[type="checkbox"]
+  vertical-align: middle
+
+// http://www.the-art-of-web.com/css/format-dl
+#spiview dl
+  border: 3px double #ccc
+  padding: 0.5em
+
+#spiview dt
+  float: left
+  clear: left
+  width: 180px
+  text-align: right
+  font-weight: bold
+  color: #666666
+
+#spiview dt:after
+  content: ":"
+
+#spiview dd
+  margin: 0 0 0 185px
+  padding: 0 0 0.5em 0;
+

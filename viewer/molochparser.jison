@@ -47,14 +47,24 @@
 "email.subject"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject'
 "email.ua.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ua.cnt'
 "email.ua"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ua'
+"file"                    return "file"
 "header.dst.cnt"          return "header.dst.cnt"
 "header.dst"              return "header.dst"
 "header"                  return "header"
 "header.src.cnt"          return "header.src.cnt"
 "header.src"              return "header.src"
-"host.cnt"                return "host.cnt"
+"host.dns.cnt"            return "host.dns.cnt"
+"host.dns"                return "host.dns"
+"host.email.cnt"          return "host.email.cnt"
+"host.email"              return "host.email"
+"host.http.cnt"           return "host.http.cnt"
+"host.http"               return "host.http"
 "host"                    return "host"
+"http.uri.cnt"            return "http.uri.cnt"
+"http.uri"                return "http.uri"
+"http.ua"                 return "http.ua"
 "icmp"                    return "icmp"
+"\"icmp\""                return "icmp"
 "id"                      return "id"
 "ip.dns.cnt"              return "ip.dns.cnt"
 "ip.dns"                  return "ip.dns"
@@ -80,11 +90,13 @@
 "tags.cnt"                return 'tags.cnt'
 "tags"                    return 'tags'
 "tcp"                     return "tcp"
-"ua.cnt"                  return "ua.cnt"
-"ua"                      return "ua"
+"\"tcp\""                 return "tcp"
+"ua.cnt"                  return "http.ua.cnt"
+"ua"                      return "http.ua"
 "udp"                     return "udp"
-"uri.cnt"                 return "uri.cnt"
-"uri"                     return "uri"
+"\"udp\""                 return "udp"
+"uri.cnt"                 return "http.uri.cnt"
+"uri"                     return "http.uri"
 "user.cnt"                return "user.cnt"
 "user"                    return "user"
 [/\w*._:-]+               return 'ID'
@@ -144,7 +156,6 @@ IPNUM: IPMATCH
 RANGEFIELD: databytes           {$$ = 'db'}
           | bytes               {$$ = 'by'}
           | packets             {$$ = 'pa'}
-          | protocol            {$$ = 'pr'}
           | 'port.src'          {$$ = 'p1'}
           | 'port.dst'          {$$ = 'p2'}
           | 'uri.cnt'           {$$ = 'uscnt'}
@@ -152,9 +163,11 @@ RANGEFIELD: databytes           {$$ = 'db'}
           | 'ip.dns.cnt'        {$$ = 'dnsipcnt'}
           | 'ip.email.cnt'      {$$ = 'eipcnt'}
           | 'ip.xff.cnt'        {$$ = 'xffscnt'}
-          | 'ua.cnt'            {$$ = 'uacnt'}
+          | 'http.ua.cnt'       {$$ = 'uacnt'}
           | 'user.cnt'          {$$ = 'usercnt'}
-          | 'host.cnt'          {$$ = 'hocnt'}
+          | 'host.dns.cnt'      {$$ = 'dnshocnt'}
+          | 'host.email.cnt'    {$$ = 'ehocnt'}
+          | 'host.http.cnt'     {$$ = 'hocnt'}
           | 'header.src.cnt'    {$$ = 'hh1cnt'}
           | 'header.dst.cnt'    {$$ = 'hh2cnt'}
           | 'tags.cnt'          {$$ = 'tacnt'}
@@ -173,7 +186,9 @@ RANGEFIELD: databytes           {$$ = 'db'}
           ;
 
 LOTERMFIELD  : node              {$$ = 'no'}
-             | host              {$$ = 'ho'}
+             | 'host.dns'        {$$ = 'dnsho'}
+             | 'host.email'      {$$ = 'eho'}
+             | 'host.http'       {$$ = 'ho'}
              | user              {$$ = 'user'}
              | 'email.dst'       {$$ = 'edst'}
              | 'email.src'       {$$ = 'esrc'}
@@ -257,6 +272,10 @@ STR : ID
     | header.src.cnt
     | host
     | host.cnt
+    | http.ua
+    | http.ua.cnt
+    | http.uri
+    | http.uri.cnt
     | icmp
     | ip
     | ip.dns
@@ -291,13 +310,13 @@ STR : ID
 e
     : e '&&' e
         {$$ = {and: [$1, $3]};}
-    | 'uri' '==' STR
+    | 'http.uri' '==' STR
         {$$ = {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}};}
-    | 'uri' '!=' STR
+    | 'http.uri' '!=' STR
         {$$ = {not: {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}}};}
-    | 'ua' '==' STR
+    | 'http.ua' '==' STR
         {$$ = {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}};}
-    | 'ua' '!=' STR
+    | 'http.ua' '!=' STR
         {$$ = {not: {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}}};}
     | e '||' e
         {$$ = {or: [$1, $3]};}
@@ -307,18 +326,6 @@ e
         {$$ = -$2;}
     | '(' e ')'
         {$$ = $2;}
-    | protocol '==' 'icmp'
-        {$$ = {term: {pr: 1}};}
-    | protocol '==' 'tcp'
-        {$$ = {term: {pr: 6}};}
-    | protocol '==' 'udp'
-        {$$ = {term: {pr: 17}};}
-    | protocol '!=' 'icmp'
-        {$$ = {not: {term: {pr: 1}}};}
-    | protocol '!=' 'tcp'
-        {$$ = {not: {term: {pr: 6}}};}
-    | protocol '!=' 'udp'
-        {$$ = {not: {term: {pr: 17}}};}
     | RANGEFIELD GTLT NUMBER
         {$$ = {range: {}};
          $$.range[$1] = {};
@@ -329,6 +336,22 @@ e
     | RANGEFIELD '!=' NUMBER
         {$$ = {not: {term: {}}};
          $$.not.term[$1] = $3;}
+    | protocol '==' 'icmp'
+        {$$ = {term: {pr: 1}};}
+    | protocol '==' 'tcp'
+        {$$ = {term: {pr: 6}};}
+    | protocol '==' 'udp'
+        {$$ = {term: {pr: 17}};}
+    | protocol '==' NUMBER
+        {$$ = {term: {pr: $3}};}
+    | protocol '!=' 'icmp'
+        {$$ = {not: {term: {pr: 1}}};}
+    | protocol '!=' 'tcp'
+        {$$ = {not: {term: {pr: 6}}};}
+    | protocol '!=' 'udp'
+        {$$ = {not: {term: {pr: 17}}};}
+    | protocol '!=' NUMBER
+        {$$ = {not: {term: {pr: $3}}};}
     | 'port' GTLT NUMBER
         {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
          $$.or[0].range.p1[$2] = $3;
@@ -429,6 +452,14 @@ e
         { var tag = stripQuotes($3);
           $$ = {not: {term: {ta: tag}}};
         }
+    | file '==' STR
+        { var file = stripQuotes($3);
+          $$ = {fileand: file};
+        }
+    | file '!=' STR
+        { var file = stripQuotes($3);
+          $$ = {not: {fileand: file}};
+        }
     | oldheader '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {hh: tag}};
@@ -503,6 +534,40 @@ e
                              {query: {text: {aseip:   {query: str, type: "phrase", operator: "and"}}}}
                             ]
                  }};
+          }
+        }
+    | host '!=' STR
+        { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {not: {or: [{query: {wildcard: {ho: str}}},
+                             {query: {wildcard: {dnsho: str}}},
+                             {query: {wildcard: {eho: str}}}
+                            ]
+                       }
+                 };
+          } else {
+            $$ = {not: {or: [{query: {term: {ho: str}}},
+                             {query: {term: {dnsho: str}}},
+                             {query: {term: {eho: str}}}
+                            ]
+                       }
+                 };
+          }
+        }
+    | host '==' STR
+        { var str = stripQuotes($3).toLowerCase();
+          if (str.indexOf("*") !== -1) {
+            $$ = {or: [{query: {wildcard: {ho: str}}},
+                       {query: {wildcard: {dnsho: str}}},
+                       {query: {wildcard: {eho: str}}}
+                      ]
+                 };
+          } else {
+            $$ = {or: [{query: {term: {ho: str}}},
+                       {query: {term: {dnsho: str}}},
+                       {query: {term: {eho: str}}}
+                      ]
+                 };
           }
         }
     ;

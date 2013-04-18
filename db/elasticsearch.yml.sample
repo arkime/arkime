@@ -118,6 +118,7 @@ node.max_local_storage_nodes: 2
 
 #MOLOCH 
 index.cache.field.type: soft
+index.fielddata.cache: soft
 
 # These settings directly affect the performance of index and search operations
 # in your cluster. Assuming you have enough machines to hold shards and

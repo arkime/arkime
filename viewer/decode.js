@@ -26,7 +26,18 @@
 //// Decode pcap buffers and build up simple objects
 //////////////////////////////////////////////////////////////////////////////////
 
-var internals = {};
+var internals = {
+  pr2name: {
+    1:  "icmp",
+    6:  "tcp",
+    17: "udp",
+    58: "icmpv6"
+  }
+};
+
+exports.protocol2Name = function(num) {
+  return internals.pr2name[num] || "" + num;
+};
 
 exports.inet_ntoa = function(num) {
   return (num >> 24 & 0xff) + '.' + (num>>16 & 0xff) + '.' + (num>>8 & 0xff) + '.' + (num & 0xff);
@@ -177,7 +188,8 @@ exports.reassemble_icmp = function (packets, cb) {
     if (results.length === 0 || key !== results[results.length-1].key) {
       var result = {
         key: key,
-        data: item.icmp.data
+        data: item.icmp.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
       };
       results.push(result);
     } else {
@@ -197,7 +209,8 @@ exports.reassemble_udp = function (packets, cb) {
     if (results.length === 0 || key !== results[results.length-1].key) {
       var result = {
         key: key,
-        data: item.udp.data
+        data: item.udp.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
       };
       results.push(result);
     } else {
@@ -266,7 +279,8 @@ exports.reassemble_tcp = function (packets, a1, cb) {
       start = item.tcp.seq;
       var result = {
         key: key,
-        data: item.tcp.data
+        data: item.tcp.data,
+        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
       };
       results.push(result);
     } else {
@@ -278,7 +292,7 @@ exports.reassemble_tcp = function (packets, a1, cb) {
   });
 
   if (a1 !== results[0].key) {
-    results.unshift({data: "", key: a1});
+    results.unshift({data: new Buffer(0), key: a1});
   }
   cb(null, results);
 };

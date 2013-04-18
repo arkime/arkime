@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* plugins.c  -- Functions dealing with plugins
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -43,6 +43,7 @@ int                          numPlugins = 0;
 typedef struct moloch_plugin {
     struct moloch_plugin        *p_next, *p_prev;
     char                        *name;
+    uint32_t                     p_hash;
     short                        p_bucket;
     short                        p_count;
 
@@ -114,13 +115,19 @@ void moloch_plugins_init()
     }
 }
 /******************************************************************************/
-int moloch_plugins_register(const char *            name,
-                            size_t                  sizeofmolochsession,
-                            gboolean                storeData)
+int moloch_plugins_register_internal(const char *            name,
+                                     gboolean                storeData,
+                                     size_t                  sessionsize,
+                                     int                     apiversion)
 {
     MolochPlugin_t *plugin;
 
-    if (sizeof(MolochSession_t) != sizeofmolochsession) {
+    if (sizeof(MolochSession_t) != sessionsize) {
+        LOG("Plugin '%s' built with different version of moloch.h", name);
+        exit(-1);
+    }
+
+    if (MOLOCH_API_VERSION != apiversion) {
         LOG("Plugin '%s' built with different version of moloch.h", name);
         exit(-1);
     }

@@ -1,6 +1,6 @@
 /* detect.c  -- Functions for dealing with detection
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -56,32 +56,25 @@ void moloch_detect_initial_tag(MolochSession_t *session)
 {
     int i;
 
-    for (i = 0; i < MOLOCH_TAG_MAX; i++)
-    {
-        if (session->tags[i])
-            g_hash_table_destroy(session->tags[i]);
-        session->tags[i] = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
-    }
-
-    moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, nodeTag);
+    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, nodeTag);
     if (config.nodeClass)
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, classTag);
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, classTag);
 
     if (extraTags) {
         for (i = 0; extraTags[i]; i++) {
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, extraTags[i]);
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, extraTags[i]);
         }
     }
 
     switch(session->protocol) {
     case IPPROTO_TCP:
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "tcp");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "tcp");
         break;
     case IPPROTO_UDP:
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "udp");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "udp");
         break;
     case IPPROTO_ICMP:
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "ICMP");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "ICMP");
         break;
     }
 }
@@ -385,6 +378,8 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
 
         BSB_IMPORT_skip(sslbsb, ssllen + 5);
     }
+
+    session->jsonSize += len*2;
 }
 
 /*############################## HTTP ##############################*/
@@ -423,7 +418,7 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
         if (len <= 0) {
             session->http->wParsers &= ~(1 << session->which);
             if (session->http->wParsers) {
-                moloch_nids_free_session_http(session, TRUE);
+                moloch_nids_free_session_http(session);
             }
             break;
         }
@@ -456,7 +451,7 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
             if (remaining > keyLen + 8) {
                 char *str = g_base64_encode(data+10, keyLen);
 
-                if (!moloch_string_add(&session->sshkey, str, FALSE)) {
+                if (!moloch_field_string_add(MOLOCH_FIELD_SSH_KEY, session, str, (keyLen/3+1)*4, FALSE)) {
                     free(str);
                 }
             }
@@ -557,7 +552,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 
     if (!(session->http->inBody & (1 << session->which))) {
         if (moloch_memstr(at, length, "password=", 9)) {
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "http:password");
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:password");
         }
 
         const char *m = magic_buffer(cookie, at, length);
@@ -568,7 +563,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             if (semi) {
                 *semi = 0;
             } 
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tmp);
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tmp);
         }
         session->http->inBody |= (1 << session->which);
     }
@@ -598,7 +593,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         char *ch = session->http->urlString->str;
         while (*ch) {
             if (*ch < 32) {
-                moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "http:control-char");
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:control-char");
                 break;
             }
             ch++;
@@ -610,50 +605,53 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
     }
 
     if (session->http->urlString && session->http->hostString) {
-        moloch_string_add(&session->hosts, session->http->hostString->str+2, TRUE);
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, session->http->hostString->str+2, session->http->hostString->len-2, TRUE);
 
         if (session->http->urlString->str[0] != '/') {
             char *result = strstr(session->http->urlString->str, session->http->hostString->str+2);
 
             /* If the host header is in the first 8 bytes of url then just use the url */
             if (result && result - session->http->urlString->str <= 8) {
-                g_ptr_array_add(session->http->urlArray, g_string_free(session->http->urlString, FALSE));
+                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->urlString->str, session->http->urlString->len, FALSE);
+                g_string_free(session->http->urlString, FALSE);
                 g_string_free(session->http->hostString, TRUE);
             } else {
                 /* Host header doesn't match the url */
                 g_string_append(session->http->hostString, ";");
                 g_string_append(session->http->hostString, session->http->urlString->str);
-                g_ptr_array_add(session->http->urlArray, g_string_free(session->http->hostString, FALSE));
+                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->hostString->str, session->http->hostString->len, FALSE);
                 g_string_free(session->http->urlString, TRUE);
+                g_string_free(session->http->hostString, FALSE);
             }
         } else {
             /* Normal case, url starts with /, so no extra host in url */
             g_string_append(session->http->hostString, session->http->urlString->str);
-            g_ptr_array_add(session->http->urlArray, g_string_free(session->http->hostString, FALSE));
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->hostString->str, session->http->hostString->len, FALSE);
             g_string_free(session->http->urlString, TRUE);
+            g_string_free(session->http->hostString, FALSE);
         }
 
-        if (session->http->urlArray->len == 1)
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:http");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
 
         session->http->urlString = NULL;
         session->http->hostString = NULL;
     } else if (session->http->urlString) {
-        g_ptr_array_add(session->http->urlArray, g_string_free(session->http->urlString, FALSE));
-        if (session->http->urlArray->len == 1)
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:http");
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->urlString->str, session->http->urlString->len, FALSE);
+        g_string_free(session->http->urlString, FALSE);
+
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
 
         session->http->urlString = NULL;
     } else if (session->http->hostString) {
-        moloch_string_add(&session->hosts, session->http->hostString->str+2, TRUE);
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, session->http->hostString->str+2, session->http->hostString->len-2, TRUE);
 
         g_string_free(session->http->hostString, TRUE);
         session->http->hostString = NULL;
     }
 
     if (session->http->uaString) {
-        moloch_string_add(&session->http->userAgents, session->http->uaString->str, TRUE);
-        g_string_free(session->http->uaString, TRUE);
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_UA, session, session->http->uaString->str, session->http->uaString->len, FALSE);
+        g_string_free(session->http->uaString, FALSE);
         session->http->uaString = NULL;
     }
 
@@ -668,18 +666,12 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
-                moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "http:bad-xff");
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:bad-xff");
                 LOG("ERROR - Didn't understand ip: %s %s %d", session->http->xffString->str, ip, ia);
                 continue;
             }
 
-            MolochInt_t *mi;
-            HASH_FIND(i_, session->http->xffs, (void*)(long)ia, mi);
-            if (!mi) {
-                mi = malloc(sizeof(*mi));
-                mi->i = ia;
-                HASH_ADD(i_, session->http->xffs, (void *)(long)mi->i, mi);
-            }
+            moloch_field_int_add(MOLOCH_FIELD_HTTP_XFF, session, ia);
         }
 
         g_strfreev(parts);
@@ -738,7 +730,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);
-        moloch_nids_add_tag(session, MOLOCH_TAG_HTTP_REQUEST+session->which, header);
+        moloch_nids_add_tag(session, MOLOCH_FIELD_HTTP_TAGS_REQ+session->which, header);
     }
 
     moloch_plugins_cb_hp_ohv(session, parser, at, length);
@@ -779,10 +771,10 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
     if (parser->status_code == 0) {
         snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
     } else {
         snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tag);
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
     }
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
@@ -825,7 +817,7 @@ int moloch_detect_dns_name_element(BSB *nbsb, BSB *bsb)
     return 0;
 }
 /******************************************************************************/
-unsigned char *moloch_detect_dns_name(unsigned char *full, int fulllen, BSB *inbsb)
+unsigned char *moloch_detect_dns_name(unsigned char *full, int fulllen, BSB *inbsb, int *namelen)
 {
     static unsigned char  name[8000];
     BSB  nbsb;
@@ -866,6 +858,7 @@ unsigned char *moloch_detect_dns_name(unsigned char *full, int fulllen, BSB *inb
         if (moloch_detect_dns_name_element(&nbsb, curbsb) && BSB_LENGTH(nbsb))
             BSB_EXPORT_rewind(nbsb, 1); // Remove last .
     }
+    *namelen = BSB_LENGTH(nbsb);
     BSB_EXPORT_u08(nbsb, 0);
     return name;
 }
@@ -894,27 +887,29 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
     /* QD Section */
     int i;
     for (i = 0; BSB_NOT_ERROR(bsb) && i < qdcount; i++) {
-        unsigned char *name = moloch_detect_dns_name(data, len, &bsb);
+        int namelen;
+        unsigned char *name = moloch_detect_dns_name(data, len, &bsb, &namelen);
 
-        if (!name || BSB_IS_ERROR(bsb))
+        if (!namelen || BSB_IS_ERROR(bsb))
             break;
         BSB_IMPORT_skip(bsb, 4); // qtype && qclass
 
-        char *lower = g_ascii_strdown((char*)name, -1);
+        char *lower = g_ascii_strdown((char*)name, namelen);
 
-        if (lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
+        if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
             g_free(lower);
         }
     }
-    moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:dns");
+    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:dns");
 
     if (qr == 0)
         return;
 
     for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
-        unsigned char *name = moloch_detect_dns_name(data, len, &bsb);
+        int namelen;
+        moloch_detect_dns_name(data, len, &bsb, &namelen);
 
-        if (!name || BSB_IS_ERROR(bsb))
+        if (BSB_IS_ERROR(bsb))
             break;
 
 
@@ -931,24 +926,20 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
             unsigned char *ptr = BSB_WORK_PTR(bsb);
             in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
 
-            MolochInt_t *mi;
-            HASH_FIND(i_, session->dnsips, (void*)(long)in.s_addr, mi);
-            if (!mi) {
-                mi = malloc(sizeof(*mi));
-                mi->i = in.s_addr;
-                HASH_ADD(i_, session->dnsips, (void *)(long)mi->i, mi);
-            }
+            moloch_field_int_add(MOLOCH_FIELD_DNS_IP, session, in.s_addr);
         } else if (antype == 5 && anclass == 1 && BSB_REMAINING(bsb) >= rdlength) {
             BSB rdbsb;
             BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
-            unsigned char *name = moloch_detect_dns_name(data, len, &rdbsb);
 
-            if (!name || BSB_IS_ERROR(rdbsb))
+            int namelen;
+            unsigned char *name = moloch_detect_dns_name(data, len, &rdbsb, &namelen);
+
+            if (!namelen || BSB_IS_ERROR(rdbsb))
                 continue;
 
-            char *lower = g_ascii_strdown((char*)name, -1);
+            char *lower = g_ascii_strdown((char*)name, namelen);
 
-            if (lower && !moloch_string_add(&session->hosts, lower, FALSE)) {
+            if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
                 g_free(lower);
             }
         }
@@ -993,7 +984,7 @@ char *moloch_detect_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
-void moloch_detect_parse_email_addresses(void *hashv, char *data, int len)
+void moloch_detect_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
 {
     char *end = data+len;
 
@@ -1019,7 +1010,7 @@ void moloch_detect_parse_email_addresses(void *hashv, char *data, int len)
         }
 
         char *lower = g_ascii_strdown(start, data - start);
-        if (!moloch_string_add(hashv, lower, FALSE)) {
+        if (!moloch_field_string_add(field, session, lower, data - start, FALSE)) {
             g_free(lower);
         }
 
@@ -1056,12 +1047,12 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
             if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
                 char *lower = g_ascii_strdown(moloch_detect_remove_matching(line->str+11, '<', '>'), -1);
-                if (!moloch_string_add(&session->email->src, lower, FALSE)) {
+                if (!moloch_field_string_add(MOLOCH_FIELD_EMAIL_SRC, session, lower, -1, FALSE)) {
                     g_free(lower);
                 }
             } else if (strncasecmp(line->str, "RCPT TO:", 8) == 0) {
                 char *lower = g_ascii_strdown(moloch_detect_remove_matching(line->str+9, '<', '>'), -1);
-                if (!moloch_string_add(&session->email->dst, lower, FALSE)) {
+                if (!moloch_field_string_add(MOLOCH_FIELD_EMAIL_DST, session, lower, -1, FALSE)) {
                     g_free(lower);
                 }
                 *state = EMAIL_CMD;
@@ -1122,28 +1113,29 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 char *s = line->str + 8;
                 while(isspace(*s)) s++;
 
-                moloch_string_add(&session->email->subject, s, TRUE);
+                moloch_field_string_add(MOLOCH_FIELD_EMAIL_SUB, session, s, -1, TRUE);
             } else if (strncasecmp(line->str, "CC:", 3) == 0) {
-                moloch_detect_parse_email_addresses(&session->email->dst, line->str+3, line->len-3);
+                moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_DST, session, line->str+3, line->len-3);
             } else if (strncasecmp(line->str, "To:", 3) == 0) {
-                moloch_detect_parse_email_addresses(&session->email->dst, line->str+3, line->len-3);
+                moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_DST, session, line->str+3, line->len-3);
             } else if (strncasecmp(line->str, "From:", 5) == 0) {
-                moloch_detect_parse_email_addresses(&session->email->src, line->str+5, line->len-5);
+                moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_SRC, session, line->str+5, line->len-5);
             } else if (strncasecmp(line->str, "X-Mailer:", 9) == 0) {
                 char *s = line->str + 9;
                 while(isspace(*s)) s++;
 
-                moloch_string_add(&session->email->userAgents, s, TRUE);
+                moloch_field_string_add(MOLOCH_FIELD_EMAIL_UA, session, s, -1, TRUE);
             } else if (strncasecmp(line->str, "Mime-Version:", 13) == 0) {
                 char *s = line->str + 13;
                 while(isspace(*s)) s++;
-                moloch_string_add(&session->email->mimeVersions, s, TRUE);
+                moloch_field_string_add(MOLOCH_FIELD_EMAIL_MV, session, s, -1, TRUE);
             } else if (strncasecmp(line->str, "Message-ID:", 11) == 0) {
-                moloch_string_add(&session->email->ids, moloch_detect_remove_matching(line->str+11, '<', '>'), TRUE);
+                moloch_field_string_add(MOLOCH_FIELD_EMAIL_ID, session, moloch_detect_remove_matching(line->str+11, '<', '>'), -1, TRUE);
             } else if (strncasecmp(line->str, "Content-Type:", 13) == 0) {
                 char *s = line->str + 13;
                 while(isspace(*s)) s++;
-                moloch_string_add(&session->email->contentTypes, s, TRUE);
+
+                moloch_field_string_add(MOLOCH_FIELD_EMAIL_CT, session, s, -1, TRUE);
                 char *boundary = (char *)moloch_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
                     MolochString_t *string = malloc(sizeof(*string));
@@ -1160,13 +1152,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                         in_addr_t ia = inet_addr(ip);
                         if (ia == 0 || ia == 0xffffffff)
                             break;
-                        MolochInt_t *mi;
-                        HASH_FIND(i_, session->email->ips, (void*)(long)ia, mi);
-                        if (!mi) {
-                            mi = malloc(sizeof(*mi));
-                            mi->i = ia;
-                            HASH_ADD(i_, session->email->ips, (void *)(long)mi->i, mi);
-                        }
+                        moloch_field_int_add(MOLOCH_FIELD_EMAIL_IP, session, ia);
                     }
                 }
             }
@@ -1215,7 +1201,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 if (found) {
                     if (session->email->base64Decode & (1 << session->which)) {
                         const char *md5 = g_checksum_get_string(session->email->checksum[session->which]);
-                        moloch_string_add(&session->email->md5s, (char*)md5, TRUE);
+                        moloch_field_string_add(MOLOCH_FIELD_EMAIL_MD5, session, (char*)md5, 32, TRUE);
                     }
                     session->email->base64Decode &= ~(1 << session->which);
                     session->email->state64[session->which] = 0;
@@ -1267,7 +1253,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
         case EMAIL_TLS: {
             *state = EMAIL_IGNORE;
             moloch_detect_tls_process(session, (unsigned char*)data, remaining);
-            moloch_nids_free_session_email(session, TRUE);
+            moloch_nids_free_session_email(session);
             return;
         }
         case EMAIL_MIME: {
@@ -1319,7 +1305,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 while(isspace(*s)) s++;
                 char *filename = (char *)moloch_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
-                    moloch_string_add(&session->email->filenames, moloch_detect_remove_matching(filename+9, '"', '"'), TRUE);
+                    moloch_field_string_add(MOLOCH_FIELD_EMAIL_FN, session, moloch_detect_remove_matching(filename+9, '"', '"'), -1, TRUE);
                 }
             } else if (strncasecmp(line->str, "Content-Transfer-Encoding:", 26) == 0) {
                 if(moloch_memcasestr(line->str+26, line->len - 26, "base64", 6)) {
@@ -1343,18 +1329,47 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
 /******************************************************************************/
 void moloch_detect_init()
 {
+    moloch_field_define_internal(MOLOCH_FIELD_USER,          "user",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_TAGS,          "ta",     MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_HOST,     "ho",     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_URLS,     "us",     MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_XFF,      "xff",    MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_SCNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_UA,       "ua",     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_REQ, "hh1",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_RES, "hh2",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_SSH_VER,       "sshver", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SSH_KEY,       "sshkey", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_DNS_IP,        "dnsip",  MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_DNS_HOST,      "dnsho",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_HOST,    "eho",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_UA,      "eua",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_SRC,     "esrc",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_DST,     "edst",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_SUB,     "esub",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_ID,      "eid",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_CT,      "ect",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_MV,      "emv",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_FN,      "efn",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_MD5,     "emd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_FCT,     "efct",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_IP,      "eip",    MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT);
+
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, nodeTag, NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, nodeTag, NULL);
 
     if (config.nodeClass) {
         snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
-        moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, classTag, NULL);
+        moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, classTag, NULL);
     }
 
     if (extraTags) {
         int i;
         for (i = 0; extraTags[i]; i++) {
-            moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, extraTags[i], NULL);
+            moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, extraTags[i], NULL);
         }
     }
 
@@ -1392,7 +1407,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
 
     if (memcmp("SSH", data, 3) == 0) {
         session->isSsh = 1;
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ssh");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:ssh");
         unsigned char *n = memchr(data, 0x0a, hlf->count);
         if (n && *(n-1) == 0x0d)
             n--;
@@ -1402,8 +1417,8 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
 
             char *str = g_ascii_strdown((char *)data, len);
 
-            if (!moloch_string_add(&session->sshver, str, FALSE)) {
-                g_free(str);
+            if (!moloch_field_string_add(MOLOCH_FIELD_SSH_VER, session, str, len, FALSE)) {
+                free(str);
             }
         }
     }
@@ -1413,27 +1428,27 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
 
     if (memcmp("220 ", data, 4) == 0) {
         if (g_strstr_len((char *)data, hlf->count_new, "LMTP") != 0)
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:lmtp");
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:lmtp");
         else if (g_strstr_len((char *)data, hlf->count_new, "SMTP") != 0) {
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smtp");
             if (!session->email)
                 moloch_nids_new_session_email(session);
         }
         else
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:ftp");
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:ftp");
     }
 
     if (hlf->count < 5)
         return;
 
     if (memcmp("HELO ", data, 5) == 0) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smtp");
         if (!session->email)
             moloch_nids_new_session_email(session);
     }
 
     if (memcmp("EHLO ", data, 5) == 0) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:smtp");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smtp");
         if (!session->email)
             moloch_nids_new_session_email(session);
     }
@@ -1444,7 +1459,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
         return;
 
     if (memcmp("+OK POP3 ", data, 9) == 0)
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:pop3");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:pop3");
 
 
     if (hlf->count < 14)
@@ -1454,22 +1469,22 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
     if (data[13] == 0x78 &&  
         (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << 8 | (data[5]&0xff)) == hlf->count)) ||  // Windows
          ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << 8 | (data[8]&0xff)) == hlf->count)))) { // Mac
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:gh0st");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:gh0st");
      }else if (data[7] == 0 && data[8] == 0 && data[11] == 0 && data[12] == 0 && data[13] == 0x78 && data[14] == 0x9c) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:gh0st-improved");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:gh0st-improved");
     }
 
     if (hlf->count < 19)
         return;
 
     if (memcmp("BitTorrent protocol", data, 19) == 0)
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:bittorrent");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:bittorrent");
 
     if (hlf->count < 30)
         return;
 
     if (hlf->count != hlf->count_new && data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, "protocol:tls");
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:tls");
         moloch_detect_tls_process(session, data, hlf->count);
     }
 }

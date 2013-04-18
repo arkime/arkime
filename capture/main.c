@@ -1,6 +1,6 @@
 /* main.c  -- Initialization of components
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -117,6 +117,7 @@ void cleanup(int UNUSED(sig))
     moloch_db_exit();
     moloch_http_exit();
     moloch_config_exit();
+    moloch_field_exit();
 
 
     if (config.pcapReadFile)
@@ -214,10 +215,10 @@ uint32_t moloch_int_hash(const void *key)
 /******************************************************************************/
 int moloch_int_cmp(const void *keyv, const void *elementv)
 {
-    int key = (int)((long)keyv);
+    uint32_t key = (uint32_t)((long)keyv);
     MolochInt_t *element = (MolochInt_t *)elementv;
 
-    return key == element->i;
+    return key == element->i_hash;
 }
 /******************************************************************************/
 typedef struct {
@@ -336,6 +337,7 @@ int main(int argc, char **argv)
         moloch_drop_privileges();
         config.copyPcap = 1;
     }
+    moloch_field_init();
     moloch_http_init();
     moloch_db_init();
     moloch_yara_init();

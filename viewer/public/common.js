@@ -1,12 +1,12 @@
 /*
  * Copyright 2012 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,11 +29,11 @@ function twoDigitString(value) {
 
 function dateString(seconds, sep) {
   var d = new Date(seconds*1000);
-  return (d.getMonth()+1) +
+  return d.getFullYear() +
          "/" +
-         d.getDate() +
+         twoDigitString(d.getMonth()+ 1) +
          "/" +
-         twoDigitString(d.getFullYear()%100) +
+         twoDigitString(d.getDate()) +
          sep +
          twoDigitString(d.getHours()) +
          ":" +
@@ -72,7 +72,7 @@ $.fn.dataTableExt.oApi.fnLengthChange = function ( oSettings, iDisplay )
 {
     oSettings._iDisplayLength = iDisplay;
     oSettings.oApi._fnCalculateEnd( oSettings );
-      
+
     /* If we have space to show extra rows (backing up from the end point - then do so */
     if ( oSettings._iDisplayEnd === oSettings.aiDisplay.length )
     {
@@ -82,14 +82,14 @@ $.fn.dataTableExt.oApi.fnLengthChange = function ( oSettings, iDisplay )
             oSettings._iDisplayStart = 0;
         }
     }
-      
+
     if ( oSettings._iDisplayLength === -1 )
     {
         oSettings._iDisplayStart = 0;
     }
-      
+
     oSettings.oApi._fnDraw( oSettings );
-      
+
     if ( oSettings.aanFeatures.l )
     {
         $('select', oSettings.aanFeatures.l).val( iDisplay );
@@ -102,11 +102,11 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         a = (a==="-") ? 0 : a.replace( /[^\d\-\.]/g, "" );
         return parseFloat( a );
     },
- 
+
     "formatted-num-asc": function ( a, b ) {
         return a - b;
     },
- 
+
     "formatted-num-desc": function ( a, b ) {
         return b - a;
     }
@@ -193,7 +193,7 @@ function updateHealth(health)
 
   $("#esstatus").show();
   $("#esstatus").css("background", health.status);
-  $("#esstatus").qtip({content: 
+  $("#esstatus").qtip({content:
      "Elasticsearch:<br>" +
      " Status: " + health.status + "<br>" +
      " Nodes: " + health.number_of_data_nodes + "<br>" +
@@ -203,7 +203,19 @@ function updateHealth(health)
      position: {
        my: 'top right',
        at: 'bottom left'
+     },
+     style: {
+       classes: 'qtip-moloch'
      }});
+}
+
+function startBlink() {
+  $(".blink").animate({opacity:0},500,"linear")
+             .animate({opacity:1},500,"linear",startBlink);
+}
+
+function stopBlink() {
+  $(".blink").stop(true,true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -212,9 +224,8 @@ function updateHealth(health)
 $(document).ready(function() {
   $('.tooltip').qtip();
 
-  $("#connectionsLink").click(function (e) {
+  $(".expressionsLink").click(function (e) {
     var data;
-
     if (typeof sessionsTable !== 'undefined') {
       data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
     } else {
@@ -224,13 +235,32 @@ $(document).ready(function() {
     var params = buildParams();
     params = $.merge(data, params);
 
-    var url = "graph?" + $.param(params);
+    var url = $(e.target).attr("href") + "?" + $.param(params);
 
     window.location = url;
     return false;
   });
 
-  $("#sessionsLink").click(function (e) {
+  $('#date').change(function() {
+    var hours = parseInt($("#date").val(), 10);
+    if (hours === -2) {
+      $("#customDate").show();
+    } else {
+      if (hours !== -1) {
+        $("#startDate").val(dateString(new Date()/1000 - 60*60*hours, ' '));
+        $("#stopDate").val(dateString(new Date()/1000, ' '));
+      } else {
+        $("#startDate").val(dateString(0, ' '));
+        $("#stopDate").val(dateString(new Date()/1000, ' '));
+      }
+      $("#customDate").hide();
+    }
+
+    $('#searchForm').submit();
+    return false;
+  });
+
+  $("#export").click(function (e) {
     var data;
     if (typeof sessionsTable !== 'undefined') {
       data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
@@ -241,26 +271,29 @@ $(document).ready(function() {
     var params = buildParams();
     params = $.merge(data, params);
 
-    var url = $("#sessionsLink").attr("href") + "?" + $.param(params);
+    var url = "sessions.pcap?" + $.param(params);
 
     window.location = url;
     return false;
   });
 });
 
-//////////////////////////////////////////////////////////////////////////////////
-// index Functions
-//////////////////////////////////////////////////////////////////////////////////
-  
 //2013-02-27 18:14:41 UTC
 var utcParser = d3.time.format.utc("%Y-%m-%d %X UTC").parse;
 function handleUrlParams() {
   var urlParams = parseUrlParams();
 
   if (urlParams.date) {
-    $("#date").val(urlParams.date).change();
+    $("#date").val(urlParams.date);
+    if (urlParams.date !== -1) {
+      $("#startDate").val(dateString(new Date()/1000 - 60*60*urlParams.date, ' '));
+      $("#stopDate").val(dateString(new Date()/1000, ' '));
+    } else {
+      $("#startDate").val(dateString(0, ' '));
+      $("#stopDate").val(dateString(new Date()/1000, ' '));
+    }
   } else {
-    $("#date").val("").change();
+    $("#date").val("");
   }
 
   if (urlParams.expression) {
@@ -275,8 +308,8 @@ function handleUrlParams() {
 
   if (urlParams.startTime && urlParams.stopTime) {
 
+    var st;
     if (! /^[0-9]+$/.test(urlParams.startTime)) {
-      var st;
       st = Date.parse(urlParams.startTime.replace("+", " "))/1000;
       if (isNaN(st) || st === null) {
         st = utcParser(urlParams.startTime).getTime()/1000;
@@ -285,7 +318,6 @@ function handleUrlParams() {
     }
 
     if (! /^[0-9]+$/.test(urlParams.stopTime)) {
-      var st;
       st = Date.parse(urlParams.stopTime.replace("+", " "))/1000;
       if (isNaN(st) || st === null) {
         st = utcParser(urlParams.stopTime).getTime()/1000;
@@ -295,9 +327,9 @@ function handleUrlParams() {
 
     $("#startDate").val(dateString(urlParams.startTime, ' '));
     $("#stopDate").val(dateString(urlParams.stopTime, ' '));
-    $("#date").val("-2").change();
+    $("#date").val("-2");
   }
-  
+
   if (urlParams.useDir=== "0" && urlParams.usePort === "0") {
     $("#graphType").val("useDir=0&usePort=0");
   } else if (urlParams.useDir=== "0" && urlParams.usePort === "1") {
@@ -348,7 +380,7 @@ $(document).ready(function() {
         tokens.push(" ");
       }
 
-      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.dns", "ip.dns.count", "ip.email", "ip.email.cnt", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.dns", "country.email", "country.xff", "asn", "asn.src", "asn.dst", "asn.dns", "asn.email", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "user", "user.cnt", "tags", "tags.cnt", "oldheader", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt", "ssh.key", "ssh.key.cnt", "ssh.ver", "ssh.ver.cnt", "email.src", "email.src.cnt", "email.dst", "email.dst.cnt", "email.subject", "email.subject.cnt", "email.ua", "email.ua.cnt", "email.fn", "email.fn.cnt", "email.md5", "email.md5.cnt", "email.mv", "email.mv.cnt", "email.ct", "email.ct.cnt", "email.id", "email.id.cnt"];
+      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.dns", "ip.dns.count", "ip.email", "ip.email.cnt", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.dns", "country.email", "country.xff", "asn", "asn.src", "asn.dst", "asn.dns", "asn.email", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "user", "user.cnt", "tags", "tags.cnt", "oldheader", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "host.dns", "host.dns.cnt", "host.email", "host.email.cnt", "host.http", "host.http.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt", "ssh.key", "ssh.key.cnt", "ssh.ver", "ssh.ver.cnt", "email.src", "email.src.cnt", "email.dst", "email.dst.cnt", "email.subject", "email.subject.cnt", "email.ua", "email.ua.cnt", "email.fn", "email.fn.cnt", "email.md5", "email.md5.cnt", "email.mv", "email.mv.cnt", "email.ct", "email.ct.cnt", "email.id", "email.id.cnt"];
 
       if (tokens.length <= 1) {
         return callback(commands);
@@ -419,12 +451,57 @@ function setSessionStopTime (t) {
   return false;
 }
 
-function drawGraph(graphData) {
+function buildParams() {
+  var params = [];
+
+  if ($("#date").length) {
+    if ($("#date").val() === "-2") {
+      /* Date madness because of firefox on windows */
+      var d = new Date($("#startDate").val());
+      if (d < 0) {d.setFullYear(d.getFullYear() + 100);}
+      params.push({name:'startTime', value:d/1000});
+
+      d = new Date($("#stopDate").val());
+      if (d < 0) {d.setFullYear(d.getFullYear() + 100);}
+      params.push({name:'stopTime', value:d/1000});
+    } else if ($("#date").val()) {
+      params.push({name:'date', value:$("#date").val()});
+    }
+  }
+
+  if ($("#expression").length) {
+    if ($("#expression").val()) {
+      params.push({name:'expression', value:$("#expression").val()});
+    }
+  }
+
+  if (typeof sessionsTable === 'undefined') {
+    params.push({name: "iDisplayLength", value: initialDisplayLength});
+  }
+
+  return params;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Graph Functions
+//////////////////////////////////////////////////////////////////////////////////
+
+function updateGraph(allGraphData) {
+  if (!allGraphData) {
+    return;
+  }
+  $('#sessionGraphSelect').data("molochGraphData", allGraphData);
+  drawGraph($('#sessionGraphSelect').val());
+}
+
+function drawGraph(graphName) {
+  var allGraphData = $('#sessionGraphSelect').data("molochGraphData");
+  var graphData = allGraphData[graphName];
   if (!graphData) {
     return;
   }
+  var interval = allGraphData.interval * 1000;
 
-  var interval = 60*1000;
   var color = "#000000";
   var plot = $.plot(
   $("#sessionGraph"), [{
@@ -448,7 +525,6 @@ function drawGraph(graphData) {
     },
     xaxis: {
       mode: "time",
-      Atimeformat: "%H:%M:%S<br>%m/%d",
       label: "Datetime",
       color: "#000",
       tickFormatter: function(v, axis) {
@@ -506,37 +582,6 @@ function drawGraph(graphData) {
   addArrow('right', 85, 5, { left: 100 });
 }
 
-function buildParams() {
-  var params = [];
-
-  if ($("#date").length) {
-    if ($("#date").val() === "-2") {
-      /* Date madness because of firefox on windows */
-      var d = new Date($("#startDate").val());
-      if (d < 0) d.setFullYear(d.getFullYear() + 100);
-      params.push({name:'startTime', value:d/1000});
-
-      d = new Date($("#stopDate").val());
-      if (d < 0) d.setFullYear(d.getFullYear() + 100);
-      params.push({name:'stopTime', value:d/1000});
-    } else if ($("#date").val()) {
-      params.push({name:'date', value:$("#date").val()});
-    }
-  }
-
-  if ($("#expression").length) {
-    if ($("#expression").val()) {
-      params.push({name:'expression', value:$("#expression").val()});
-    }
-  }
-
-  if (typeof sessionsTable === 'undefined') {
-    params.push({name: "iDisplayLength", value: initialDisplayLength});
-  }
-
-  return params;
-}
-
     // Code from Kibana
 function showTooltip(x, y, contents) {
   $('<div id="tooltip">' + contents + '</div>').css({
@@ -553,7 +598,7 @@ function showTooltip(x, y, contents) {
   }).appendTo("body").fadeIn(200);
 }
 
-function setupSessionGraphBinds(sessionsTable) {
+function setupGraph() {
   // Pieces from Kibana
   var previousPoint = null;
   $("#sessionGraph").bind("plothover", function (event, pos, item) {
@@ -569,7 +614,7 @@ function setupSessionGraphBinds(sessionsTable) {
             y = Math.round(item.datapoint[1]*100)/100,
             d = dateString(x/1000, " ");
 
-        showTooltip(item.pageX, item.pageY, numberWithCommas(y) + " at " + d.substr(0, d.length-3));
+        showTooltip(item.pageX, item.pageY, numberWithCommas(y) + " at " + d.substr(0, d.length));
       }
     } else {
       $("#tooltip").remove();
@@ -581,7 +626,6 @@ function setupSessionGraphBinds(sessionsTable) {
     $("#startDate").val(dateString(ranges.xaxis.from/1000, ' '));
     $("#stopDate").val(dateString(ranges.xaxis.to/1000, ' '));
     $("#date").val("-2").change();
-    sessionsTable.fnDraw();
   });
 
   $("#sessionGraph").bind('plotpan plotzoom', function (event, plot) {
@@ -589,10 +633,137 @@ function setupSessionGraphBinds(sessionsTable) {
     $("#startDate").val(dateString((axes.xaxis.min/1000)-1, ' '));
     $("#stopDate").val(dateString((axes.xaxis.max/1000)+1, ' '));
     $("#date").val("-2").change();
-    sessionsTable.fnDraw();
+  });
+
+  $('#sessionGraphSelect').change(function() {
+    drawGraph($('#sessionGraphSelect').val());
+    return false;
   });
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-// users Functions
+// Map Functions
 //////////////////////////////////////////////////////////////////////////////////
+function updateMap(data) {
+  if (!data) {
+    return;
+  }
+  // Hack to clear colors
+  var map = $('#world-map').data('mapObject');
+  if (map.countries) {
+    for(var key in map.countries) {
+      map.countries[key].setFill('#ffffff');
+    }
+  }
+  $('#world-map').data('molochData', data);
+  $('#world-map').vectorMap('set', 'values', data);
+}
+
+function setupMap() {
+  $('#world-map').vectorMap({
+    map: 'world_en',
+    //backgroundColor: '#686868',
+    //scaleColors: ['#C8EEFF', '#0042A4'],
+    //backgroundColor: '#bdd7e7',
+    //backgroundColor: '#162758',
+    backgroundColor: '#445b9a',
+    scaleColors: ['#bae4b3', '#006d2c'],
+    hoverColor: 'black',
+    normalizeFunction: 'polynomial',
+    hoverOpacity: 0.7,
+    onLabelShow: function(e, el, code){
+      el.html(el.html() + ' - ' + numberWithCommas($('#world-map').data('molochData')[code] || 0));
+    },
+    onRegionClick: function(e, code){
+      addExpression("country == " + code);
+    }
+  });
+
+  $('#world-map').hoverIntent (
+    function() {
+      $(this).css({
+        position: "fixed",
+        right: 0,
+        top: $(this).offset().top,
+        width: $(window).width()*0.75,
+        height: $(window).height()*0.75
+      });
+      $(this).resize();
+    },
+    function(e) {
+      if (e.relatedTarget && e.relatedTarget.className === "jvectormap-label") {
+        return;
+      }
+
+      $(this).css({
+        position: "relative",
+        right: 0,
+        top: 0,
+        width: "250px",
+        height: "150px"
+      });
+      $(this).resize();
+    }
+  );
+}
+
+/*
+* jQuery.ajaxQueue - A queue for ajax requests
+*
+* (c) 2011 Corey Frang
+* Dual licensed under the MIT and GPL licenses.
+*
+* Requires jQuery 1.5+
+*/
+(function($) {
+
+$.ajaxQueue = function(theQueue, ajaxOpts ) {
+    var jqXHR,
+        dfd = $.Deferred(),
+        promise = dfd.promise();
+
+    // queue our ajax request
+    theQueue.queue( doRequest );
+
+    // add the abort method
+    promise.abort = function( statusText ) {
+
+        // proxy abort to the jqXHR if it is active
+        if ( jqXHR ) {
+            return jqXHR.abort( statusText );
+        }
+
+        // if there wasn't already a jqXHR we need to remove from queue
+        var queue = theQueue.queue(),
+            index = $.inArray( doRequest, queue );
+
+        if ( index > -1 ) {
+            queue.splice( index, 1 );
+        }
+
+        // and then reject the deferred
+        dfd.rejectWith( ajaxOpts.context || ajaxOpts, [ promise, statusText, "" ] );
+        return promise;
+    };
+
+    // run the actual query
+    function doRequest( next ) {
+        jqXHR = $.ajax( ajaxOpts )
+            .done( dfd.resolve )
+            .fail( dfd.reject )
+            .then( next, next );
+    }
+
+    return promise;
+};
+
+})(jQuery);
+
+/*!
+ * hoverIntent r7 // 2013.03.11 // jQuery 1.9.1+
+ * http://cherne.net/brian/resources/jquery.hoverIntent.html
+ *
+ * You may use hoverIntent under the terms of the MIT license.
+ * Copyright 2007, 2013 Brian Cherne
+ */
+(function(e){e.fn.hoverIntent=function(t,n,r){var i={interval:100,sensitivity:7,timeout:0};if(typeof t==="object"){i=e.extend(i,t)}else if(e.isFunction(n)){i=e.extend(i,{over:t,out:n,selector:r})}else{i=e.extend(i,{over:t,out:t,selector:n})}var s,o,u,a;var f=function(e){s=e.pageX;o=e.pageY};var l=function(t,n){n.hoverIntent_t=clearTimeout(n.hoverIntent_t);if(Math.abs(u-s)+Math.abs(a-o)<i.sensitivity){e(n).off("mousemove.hoverIntent",f);n.hoverIntent_s=1;return i.over.apply(n,[t])}else{u=s;a=o;n.hoverIntent_t=setTimeout(function(){l(t,n)},i.interval)}};var c=function(e,t){t.hoverIntent_t=clearTimeout(t.hoverIntent_t);t.hoverIntent_s=0;return i.out.apply(t,[e])};var h=function(t){var n=jQuery.extend({},t);var r=this;if(r.hoverIntent_t){r.hoverIntent_t=clearTimeout(r.hoverIntent_t)}if(t.type=="mouseenter"){u=n.pageX;a=n.pageY;e(r).on("mousemove.hoverIntent",f);if(r.hoverIntent_s!=1){r.hoverIntent_t=setTimeout(function(){l(n,r)},i.interval)}}else{e(r).off("mousemove.hoverIntent",f);if(r.hoverIntent_s==1){r.hoverIntent_t=setTimeout(function(){c(n,r)},i.timeout)}}};return this.on({"mouseenter.hoverIntent":h,"mouseleave.hoverIntent":h},i.selector)}})(jQuery)

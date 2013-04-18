@@ -1,6 +1,6 @@
 /* nids.c  -- Functions for dealing with libnids
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -260,9 +260,6 @@ void moloch_nids_save_session(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_mid_save_session(MolochSession_t *session) 
 {
-    MolochString_t *string;
-    MolochInt_t    *mi;
-
     /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
     while (session->outstandingQueries > 0 && (config.pcapReadDir || config.pcapReadFile)) {
         g_main_context_iteration (g_main_context_default(), TRUE);
@@ -279,29 +276,6 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     g_array_free(session->fileNumArray, TRUE);
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
 
-    if (session->http) {
-        g_ptr_array_free(session->http->urlArray, TRUE);
-        session->http->urlArray = g_ptr_array_new_with_free_func(g_free);
-
-        HASH_FORALL_POP_HEAD(s_, session->http->userAgents, string, 
-            g_free(string->str);
-            free(string);
-        );
-
-        HASH_FORALL_POP_HEAD(i_, session->http->xffs, mi, 
-            free(mi);
-        );
-    }
-
-    HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
-        g_free(string->str);
-        free(string);
-    );
-
-    HASH_FORALL_POP_HEAD(i_, session->dnsips, mi, 
-        free(mi);
-    );
-
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ, session);
         DLL_PUSH_TAIL(tcp_, &tcpWriteQ, session);
@@ -311,6 +285,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->bytes = 0;
     session->databytes = 0;
     session->packets = 0;
+    session->jsonSize = 0;
 
     moloch_detect_initial_tag(session);
 }
@@ -427,32 +402,10 @@ void moloch_nids_new_session_http(MolochSession_t *session)
 {
     session->http = malloc(sizeof(MolochSessionHttp_t));
     memset(session->http, 0, sizeof(MolochSessionHttp_t));
-
-    HASH_INIT(s_, session->http->userAgents, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(i_, session->http->xffs, moloch_int_hash, moloch_int_cmp);
-    session->http->urlArray = g_ptr_array_new_with_free_func(g_free);
 }
 /******************************************************************************/
-void moloch_nids_free_session_http(MolochSession_t *session, gboolean conditionally)
+void moloch_nids_free_session_http(MolochSession_t *session)
 {
-    MolochString_t *string;
-    MolochInt_t    *mi;
-
-    if (conditionally && (session->http->urlArray->len > 0 || HASH_COUNT(s_, session->http->userAgents) > 0 || HASH_COUNT(i_, session->http->xffs) > 0)) {
-        return;
-    }
-
-    g_ptr_array_free(session->http->urlArray, TRUE);
-
-    HASH_FORALL_POP_HEAD(s_, session->http->userAgents, string, 
-        g_free(string->str);
-        free(string);
-    );
-
-    HASH_FORALL_POP_HEAD(i_, session->http->xffs, mi, 
-        free(mi);
-    );
-
     if (session->http->urlString)
         g_string_free(session->http->urlString, TRUE);
     if (session->http->hostString)
@@ -475,18 +428,6 @@ void moloch_nids_new_session_email(MolochSession_t *session)
     session->email = malloc(sizeof(MolochSessionEmail_t));
     memset(session->email, 0, sizeof(MolochSessionEmail_t));
 
-    HASH_INIT(s_, session->email->src, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->dst, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->subject, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->userAgents, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->mimeVersions, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->ids, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->contentTypes, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->filenames, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->md5s, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, session->email->hosts, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(i_, session->email->ips, moloch_int_hash, moloch_int_cmp);
-
     session->email->line[0] = g_string_sized_new(100);
     session->email->line[1] = g_string_sized_new(100);
 
@@ -496,58 +437,9 @@ void moloch_nids_new_session_email(MolochSession_t *session)
     DLL_INIT(s_, &(session->email->boundaries));
 }
 /******************************************************************************/
-void moloch_nids_free_session_email(MolochSession_t *session, gboolean conditionally)
+void moloch_nids_free_session_email(MolochSession_t *session)
 {
     MolochString_t *string;
-    MolochInt_t    *mi;
-
-    if (conditionally && (HASH_COUNT(s_, session->email->src) > 0 || HASH_COUNT(s_, session->email->dst) > 0)) {
-        return;
-    }
-
-    HASH_FORALL_POP_HEAD(s_, session->email->src, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->dst, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->subject, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->userAgents, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->mimeVersions, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->ids, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->contentTypes, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->filenames, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->md5s, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(s_, session->email->hosts, string, 
-        g_free(string->str);
-        free(string);
-    );
-    HASH_FORALL_POP_HEAD(i_, session->email->ips, mi, 
-        free(mi);
-    );
 
     g_string_free(session->email->line[0], TRUE);
     g_string_free(session->email->line[1], TRUE);
@@ -651,17 +543,14 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->protocol = packet->ip_p;
         session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
-        HASH_INIT(s_, session->hosts, moloch_string_hash, moloch_string_cmp);
-        HASH_INIT(s_, session->users, moloch_string_hash, moloch_string_cmp);
-        HASH_INIT(s_, session->sshver, moloch_string_hash, moloch_string_cmp);
-        HASH_INIT(s_, session->sshkey, moloch_string_hash, moloch_string_cmp);
-        HASH_INIT(i_, session->dnsips, moloch_int_hash, moloch_int_cmp);
         HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
         HASH_ADD(h_, sessions, sessionId, session);
         session->lastSave = nids_last_pcap_header->ts.tv_sec;
         session->firstPacket = nids_last_pcap_header->ts;
         session->addr1 = packet->ip_src.s_addr;
         session->addr2 = packet->ip_dst.s_addr;
+        session->fields = malloc(sizeof(MolochField_t *)*config.maxField);
+        memset(session->fields, 0, sizeof(MolochField_t *)*config.maxField);
 
         moloch_detect_initial_tag(session);
 
@@ -801,7 +690,7 @@ void moloch_nids_decr_outstanding(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_get_tag_cb(MolochSession_t *session, int tagtype, uint32_t tag)
 {
-    g_hash_table_insert(session->tags[tagtype], (void *)(long)tag, (void *)1);
+    moloch_field_int_add(tagtype, session, tag);
     moloch_nids_decr_outstanding(session);
 }
 /******************************************************************************/
@@ -906,11 +795,11 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             moloch_detect_parse_yara(session, a_tcp, &a_tcp->server);
         }
     
+        if (pluginsCbs & MOLOCH_PLUGIN_TCP)
+            moloch_plugins_cb_tcp(session, a_tcp);
         //LOG("TCP %d ", a_tcp->nids_state);
         moloch_nids_save_session(session);
         a_tcp->user = 0;
-        if (pluginsCbs & MOLOCH_PLUGIN_TCP)
-            moloch_plugins_cb_tcp(session, a_tcp);
         return;
     }
 }
@@ -918,8 +807,6 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 /******************************************************************************/
 void moloch_nids_session_free (MolochSession_t *session)
 {
-    MolochString_t *string;
-
     if (session->q_next) {
         switch (session->protocol) {
         case IPPROTO_TCP:
@@ -941,32 +828,12 @@ void moloch_nids_session_free (MolochSession_t *session)
     g_array_free(session->fileNumArray, TRUE);
 
     if (session->http) {
-        moloch_nids_free_session_http(session, FALSE);
+        moloch_nids_free_session_http(session);
     }
 
     if (session->email) {
-        moloch_nids_free_session_email(session, FALSE);
+        moloch_nids_free_session_email(session);
     }
-
-    HASH_FORALL_POP_HEAD(s_, session->hosts, string, 
-        g_free(string->str);
-        free(string);
-    );
-
-    HASH_FORALL_POP_HEAD(s_, session->users, string, 
-        g_free(string->str);
-        free(string);
-    );
-
-    HASH_FORALL_POP_HEAD(s_, session->sshver, string, 
-        g_free(string->str);
-        free(string);
-    );
-
-    HASH_FORALL_POP_HEAD(s_, session->sshkey, string, 
-        g_free(string->str);
-        free(string);
-    );
 
     MolochCertsInfo_t *certs;
     HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
@@ -976,10 +843,7 @@ void moloch_nids_session_free (MolochSession_t *session)
     if (session->rootId)
         g_free(session->rootId);
 
-    int i;
-    for (i = 0; i < MOLOCH_TAG_MAX; i++) {
-        g_hash_table_destroy(session->tags[i]);
-    }
+    moloch_field_free(session);
     free(session);
 }
 /******************************************************************************/
@@ -1285,36 +1149,36 @@ void moloch_nids_init()
 
     LOG("%s", pcap_lib_version());
 
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "tcp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "udp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:http", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:ssh", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:smtp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:ftp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:pop3", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:gh0st", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "protocol:dns", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "tcp", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "udp", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:http", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:ssh", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:smtp", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:ftp", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:pop3", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:gh0st", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:dns", NULL);
 
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:200", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:204", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:301", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:302", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:304", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:400", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:404", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:statuscode:500", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:200", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:204", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:301", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:302", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:304", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:400", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:404", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:500", NULL);
 
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:method:GET", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:method:POST", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:method:HEAD", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:method:GET", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:method:POST", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:method:HEAD", NULL);
 
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:application/octet-stream", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:text/plain", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:text/html", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:application/x-gzip", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:application/x-shockwave-flash", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:image/gif", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, "http:content:image/jpg", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:application/octet-stream", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:text/plain", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:text/html", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:application/x-gzip", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:application/x-shockwave-flash", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:image/gif", NULL);
+    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:image/jpg", NULL);
 
     HASH_INIT(h_, sessions, moloch_nids_session_hash, moloch_nids_session_cmp);
     DLL_INIT(tcp_, &tcpWriteQ);
