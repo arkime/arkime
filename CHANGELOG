@@ -3,6 +3,9 @@
   - Support RAW link type pcap files
   - renamed decode.js to pcap.js
   - Setting spiDataMaxIndices to -1 allows all for spiview
+  - Log userId for requests
+  - fixed uri.cnt
+  - don't exit moloch-capture until all file creates finish
 
 
 0.8.0 2013/04/17

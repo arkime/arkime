@@ -103,7 +103,7 @@ app.configure(function() {
   });
   app.use(express.bodyParser());
   app.use(connectTimeout({ time: 30*60*1000 }));
-  app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
+  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(express.compress());
   app.use(express.methodOverride());
   app.use("/", express['static'](__dirname + '/public', { maxAge: 60 * 1000}));
@@ -176,6 +176,8 @@ app.configure(function() {
       next();
     });
   }
+
+  express.logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 });
 
 

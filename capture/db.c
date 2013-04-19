@@ -814,6 +814,12 @@ void moloch_db_load_file_num()
         exit (0);
     }
 }
+static int                     outstandingFileRequests = 0;
+/******************************************************************************/
+void moloch_db_create_file_cb(unsigned char UNUSED(*data), int UNUSED(data_len), gpointer UNUSED(uw))
+{
+    outstandingFileRequests--;
+}
 /******************************************************************************/
 char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id)
 {
@@ -842,7 +848,8 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id)
         key_len = snprintf(key, sizeof(key), "/files/file/%s-%d?refresh=true", config.nodeName,num);
     }
 
-    moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
+    outstandingFileRequests++;
+    moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_create_file_cb, NULL);
 
     if (config.logFileCreation)
         LOG("Creating file %d with key >%s< using >%s<", num, key, json);
@@ -1008,7 +1015,7 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw);
 
 /******************************************************************************/
 int moloch_db_tags_loading() {
-    return outstandingTagRequests + tagRequests.t_count;
+    return outstandingTagRequests + outstandingFileRequests + tagRequests.t_count;
 }
 /******************************************************************************/
 void moloch_db_free_tag_request(MolochTagRequest_t *r)
