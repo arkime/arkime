@@ -16,6 +16,7 @@ fast access.  Moloch is built to be deployed across many systems and can scale t
 handle multiple gigabits/sec of traffic. 
 
 Sessions Tab
+
 .. image:: https://raw.github.com/wiki/aol/moloch/sessions.png
     :width: 300px
     :align: center
@@ -23,6 +24,7 @@ Sessions Tab
 
 
 SPI View Tab
+
 .. image:: https://raw.github.com/wiki/aol/moloch/spiview.png
     :width: 300px
     :align: center
