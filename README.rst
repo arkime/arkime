@@ -15,10 +15,18 @@ them to store and index all the network traffic in standard PCAP format, providi
 fast access.  Moloch is built to be deployed across many systems and can scale to 
 handle multiple gigabits/sec of traffic. 
 
-.. image:: https://raw.github.com/wiki/aol/moloch/MolochScreenShot.png
+Sessions Tab
+.. image:: https://raw.github.com/wiki/aol/moloch/sessions.png
     :width: 300px
     :align: center
-    :alt: Sample screen shot
+    :alt: Sample sessions screen shot
+
+
+SPI View Tab
+.. image:: https://raw.github.com/wiki/aol/moloch/spiview.png
+    :width: 300px
+    :align: center
+    :alt: Sample spiview screen shot
 
 .. _quick-start:
 
