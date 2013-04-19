@@ -2,6 +2,7 @@
   - Should support nodejs 0.10.3, but still use 0.8.23 for now
   - Support RAW link type pcap files
   - renamed decode.js to pcap.js
+  - Setting spiDataMaxIndices to -1 allows all for spiview
 
 
 0.8.0 2013/04/17

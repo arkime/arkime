@@ -1136,7 +1136,9 @@ app.get('/spiview.json', function(req, res) {
     return res.send({spi:{}});
   }
 
-  if (req.query.date === '-1') {
+  var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 1);
+
+  if (req.query.date === '-1' && spiDataMaxIndices !== -1) {
     return res.send({spi: {}, bsqErr: "'All' date range not allowed for spiview query"});
   }
 
@@ -1167,9 +1169,9 @@ app.get('/spiview.json', function(req, res) {
     var map;
 
     var indicesa = indices.split(",");
-    if (indicesa.length > Config.get("spiDataMaxIndices", 1)) {
-      bsqErr = "To save ES from blowing up, reducing number of spi data indices searched from " + indicesa.length + " to " + Config.get("spiDataMaxIndices", 1) + ".  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ";
-      indices = indicesa.slice(-Config.get("spiDataMaxIndices", 1)).join(",");
+    if (spiDataMaxIndices !== -1 && indicesa.length > spiDataMaxIndices) {
+      bsqErr = "To save ES from blowing up, reducing number of spi data indices searched from " + indicesa.length + " to " + spiDataMaxIndices + ".  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ";
+      indices = indicesa.slice(-spiDataMaxIndices).join(",");
       bsqErr += indices;
     }
 
