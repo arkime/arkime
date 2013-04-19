@@ -1,3 +1,9 @@
+0.8.1 2013/04/19
+  - Should support nodejs 0.10.3, but still use 0.8.23 for now
+  - Support RAW link type pcap files
+  - renamed decode.js to pcap.js
+
+
 0.8.0 2013/04/17
   - New spidata tab, requires elasticsearch 0.90 or later 
   - config spiDataMaxIndices controls how many indices to run against since

@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.js -- Lowlevel and highlevel functions dealing with the database
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -264,10 +264,9 @@ exports.fileIdToFile = function (node, num, cb) {
     return cb(internals.fileId2File[key]);
   }
 
-  var query = {query: {bool: {must: [{term: {node: node}}, {term: {num: num}}]}}};
-  exports.search('files', 'file', query, function(err, data) {
-    if (!err && data.hits.hits[0]) {
-      var file = data.hits.hits[0]._source;
+  exports.get('files', 'file', node + '-' + num, function (err, fresult) {
+    if (!err && fresult.exists) {
+      var file = fresult._source;
       internals.fileId2File[key] = file;
       internals.fileName2File[file.name] = file;
       return cb(file);

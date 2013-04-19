@@ -58,7 +58,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.20.6** and **0.19.12** as of **2013-3-29**
+Tested with **0.20.6** and **0.90.0 RC2** as of **2013-4-17**
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 

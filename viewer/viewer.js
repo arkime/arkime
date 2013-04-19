@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* viewer.js  -- The main moloch app
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -35,7 +35,7 @@ var Config         = require('./config.js'),
     async          = require('async'),
     url            = require('url'),
     dns            = require('dns'),
-    decode         = require('./decode.js'),
+    Pcap           = require('./pcap.js'),
     sprintf = require('./public/sprintf.js'),
     Db             = require('./db.js'),
     os             = require('os'),
@@ -109,9 +109,13 @@ app.configure(function() {
   app.use("/", express['static'](__dirname + '/public', { maxAge: 60 * 1000}));
   if (Config.get("passwordSecret")) {
     app.use(function(req, res, next) {
+      // 200 for NS
+      if (req.url === "/_ns_/nstest.html") {
+        return res.end();
+      }
 
-      // No auth for stats
-      if (req.url.indexOf("/stats.json") === 0 || req.url.indexOf("/dstats.json") === 0) {
+      // No auth for stats.json, dstats.json, esstats.json
+      if (req.url.match(/^\/[e]*[ds]*stats.json/)) {
         return next();
       }
 
@@ -1180,7 +1184,7 @@ app.get('/spiview.json', function(req, res) {
 
           if (result.facets.pr) {
             result.facets.pr.terms.forEach(function (item) {
-              item.term = decode.protocol2Name(item.term);
+              item.term = Pcap.protocol2Name(item.term);
             });
           }
 
@@ -1327,8 +1331,8 @@ app.get('/graph.json', function(req, res) {
         var f = results.graph.hits.hits[i].fields;
         var a1, a2, g1, g2;
         if (req.query.useDir === "1"|| f.a1 < f.a2) {
-          a1 = decode.inet_ntoa(f.a1);
-          a2 = decode.inet_ntoa(f.a2);
+          a1 = Pcap.inet_ntoa(f.a1);
+          a2 = Pcap.inet_ntoa(f.a2);
           g1 = f.g1;
           g2 = f.g2;
           if (req.query.usePort === "1") {
@@ -1339,8 +1343,8 @@ app.get('/graph.json', function(req, res) {
             a2 = "dst:" + a2;
           }
         } else {
-          a1 = decode.inet_ntoa(f.a2);
-          a2 = decode.inet_ntoa(f.a1);
+          a1 = Pcap.inet_ntoa(f.a2);
+          a2 = Pcap.inet_ntoa(f.a1);
           g1 = f.g2;
           g2 = f.g1;
           if (req.query.usePort === "1") {
@@ -1426,7 +1430,7 @@ app.get('/sessions.csv', function(req, res) {
           break;
         }
 
-        res.write(pr + ", " + f.fp + ", " + f.lp + ", " + decode.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + decode.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
+        res.write(pr + ", " + f.fp + ", " + f.lp + ", " + Pcap.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + Pcap.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
       }
       res.end();
     });
@@ -1525,7 +1529,7 @@ app.get('/unique.txt', function(req, res) {
 
       result.facets.facets.terms.forEach(function (item) {
         if (doIp) {
-          res.write(decode.inet_ntoa(item.term));
+          res.write(Pcap.inet_ntoa(item.term));
         } else {
           res.write(""+item.term);
         }
@@ -1541,22 +1545,13 @@ app.get('/unique.txt', function(req, res) {
 });
 
 function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
-  function processFile(fd, pos, nextCb) {
-    var buffer = new Buffer(5000);
-    try {
-      fs.read(fd, buffer, 0, 16, pos, function (err, bytesRead, buffer) {
-        if (bytesRead !== 16) {
-          return packetCb(buffer.slice(0,0), nextCb);
-        }
-        var len = buffer.readInt32LE(8);
-        fs.read(fd, buffer, 16, len, pos+16, function (err, bytesRead, buffer) {
-          return packetCb(buffer.slice(0,16+len), nextCb);
-        });
-      });
-    } catch (e) {
-      console.log("Error ", e, "for id", id);
-      endCb("Error loading data for session " + id, null);
-    }
+  function processFile(pcap, pos, nextCb) {
+    pcap.readPacket(pos, function(packet) {
+      if (!packet) {
+        return endCb("Error loading data for session " + id, null);
+      }
+      return packetCb(pcap, packet, nextCb);
+    });
   }
 
   Db.get('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, function(err, session) {
@@ -1573,60 +1568,56 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
     /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
      * New Format: Negative numbers are file numbers until next neg number, otherwise file pos */
     var newFormat = false;
-    var file;
-    var openFile = -1;
-    var openHandle = null;
+    var pcap = null;
+    var fileNum;
     async.forEachSeries(session._source.ps, function(item, nextCb) {
       var pos;
 
       if (item < 0) {
         newFormat = true;
-        file = item * -1;
+        fileNum = item * -1;
         return nextCb();
       } else if (newFormat) {
         pos  = item;
       } else  {
         // javascript doesn't have 64bit bitwise operations
-        file = Math.floor(item / 0xfffffffff);
+        fileNum = Math.floor(item / 0xfffffffff);
         pos  = item % 0x1000000000;
       }
 
-      if (file !== openFile) {
-        if (openFile !== -1) {
-          if (openHandle) {
-            fs.close(openHandle);
-          }
+      if (pcap === null || pcap.fileNum !== fileNum) {
+        if (pcap) {
+          pcap.close();
         }
 
-        Db.get('files', 'file', session._source.no + '-' + file, function (err, fresult) {
-          if (err || !fresult.exists || !fresult._source) {
-            console.log("ERROR - Not found", session._source.no + '-' + file, fresult);
-            nextCb("ERROR - Not found", session._source.no + '-' + file);
+        Db.fileIdToFile(session._source.no, fileNum, function(file) {
+          if (!file) {
+            console.log("ERROR - Not found", session._source.no + '-' + fileNum);
+            nextCb("ERROR - Not found", session._source.no + '-' + fileNum);
             return;
           }
-          fs.open(fresult._source.name, "r", function (err, fd) {
+          pcap = new Pcap(file.name);
+          pcap.fileNum = fileNum;
+          pcap.open(function (err) {
             if (err) {
               console.log("ERROR - Couldn't open file ", err);
               nextCb("ERROR - Couldn't open file " + err);
             }
-            if (openFile === -1 && headerCb) {
-              var hbuffer = new Buffer(24);
-              fs.readSync(fd, hbuffer, 0, 24, 0);
-              headerCb(hbuffer);
+            if (headerCb) {
+              pcap.readHeader(headerCb);
+              headerCb = null;
             }
-            openHandle = fd;
-            processFile(openHandle, pos, nextCb);
-            openFile = file;
+            processFile(pcap, pos, nextCb);
           });
         });
       } else {
-        processFile(openHandle, pos, nextCb);
+        processFile(pcap, pos, nextCb);
       }
     },
     function (err, results)
     {
-      if (openHandle) {
-        fs.close(openHandle);
+      if (pcap) {
+        pcap.close();
       }
 
       function tags(container, field, doneCb, offset) {
@@ -1686,10 +1677,10 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 
 function processSessionIdAndDecode(id, numPackets, doneCb) {
   var packets = [];
-  processSessionId(id, null, function (buffer, cb) {
+  processSessionId(id, null, function (pcap, buffer, cb) {
     var obj = {};
     if (buffer.length > 16) {
-      decode.pcap(buffer, obj);
+      pcap.decode(buffer, obj);
     } else {
       obj = {ip: {p: ""}};
     }
@@ -1703,15 +1694,15 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
     if (packets.length === 0) {
       return doneCb(null, session, []);
     } else if (packets[0].ip.p === 1) {
-      decode.reassemble_icmp(packets, function(err, results) {
+      Pcap.reassemble_icmp(packets, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 6) {
-      decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
+      Pcap.reassemble_tcp(packets, Pcap.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 17) {
-      decode.reassemble_udp(packets, function(err, results) {
+      Pcap.reassemble_udp(packets, function(err, results) {
         return doneCb(err, session, results);
       });
     } else {
@@ -2222,10 +2213,10 @@ function localSessionDetail(req, res) {
   req.query.base  = req.query.base  || "ascii";
 
   var packets = [];
-  processSessionId(req.params.id, null, function (buffer, cb) {
+  processSessionId(req.params.id, null, function (pcap, buffer, cb) {
     var obj = {};
     if (buffer.length > 16) {
-      decode.pcap(buffer, obj);
+      pcap.decode(buffer, obj);
     } else {
       obj = {ip: {p: "Empty"}};
     }
@@ -2249,22 +2240,22 @@ function localSessionDetail(req, res) {
       session.hh2 = session.hh2.sort();
     }
     if (session.pr) {
-      session.pr = decode.protocol2Name(session.pr);
+      session.pr = Pcap.protocol2Name(session.pr);
     }
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
       localSessionDetailReturn(req, res, session, [{data: "No pcap data found"}]);
     } else if (packets[0].ip.p === 1) {
-      decode.reassemble_icmp(packets, function(err, results) {
+      Pcap.reassemble_icmp(packets, function(err, results) {
         localSessionDetailReturn(req, res, session, results);
       });
     } else if (packets[0].ip.p === 6) {
-      decode.reassemble_tcp(packets, decode.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
+      Pcap.reassemble_tcp(packets, Pcap.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
         localSessionDetailReturn(req, res, session, results);
       });
     } else if (packets[0].ip.p === 17) {
-      decode.reassemble_udp(packets, function(err, results) {
+      Pcap.reassemble_udp(packets, function(err, results) {
         localSessionDetailReturn(req, res, session, results);
       });
     } else {
@@ -2406,7 +2397,7 @@ function writePcap(res, id, writeHeader, doneCb) {
       writeHeader = 0;
     }
   },
-  function (buffer, cb) {
+  function (pcap, buffer, cb) {
     if (boffset + buffer.length > b.length) {
       res.write(b.slice(0, boffset));
       boffset = 0;

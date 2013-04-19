@@ -1,9 +1,7 @@
 /******************************************************************************/
-/* decode.js -- The pcap decoding functions
+/* pcap.js -- represent a pcap file
  *
- * Copyright 2012 The AOL Moloch Authors.  All Rights Reserved.
- *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -22,8 +20,71 @@
 */
 "use strict";
 
+var fs             = require('fs-ext');
+
+var Pcap = module.exports = exports = function Pcap (filename) {
+  this.filename = filename;
+  return this;
+};
+
 //////////////////////////////////////////////////////////////////////////////////
-//// Decode pcap buffers and build up simple objects
+//// High Level
+//////////////////////////////////////////////////////////////////////////////////
+Pcap.prototype.open = function(cb) {
+  var self = this;
+  fs.open(this.filename, "r", function (err, fd) {
+    self.fd = fd;
+    cb(err);
+  });
+};
+
+Pcap.prototype.close = function() {
+  fs.close(this.fd);
+};
+
+Pcap.prototype.readHeader = function(cb) {
+  if (this.headBuffer) {
+    if (cb) {
+      cb(this.headBuffer);
+    }
+    return;
+  }
+
+  this.headBuffer = new Buffer(24);
+  fs.readSync(this.fd, this.headBuffer, 0, 24, 0);
+  this.linkType =  this.headBuffer.readUInt32LE(20);
+
+  if (cb) {
+    cb(this.headBuffer);
+  }
+};
+
+Pcap.prototype.readPacket = function(pos, cb) {
+  var self = this;
+  var buffer = new Buffer(5000);
+  try {
+    fs.read(self.fd, buffer, 0, 16, pos, function (err, bytesRead, buffer) {
+      if (bytesRead !== 16) {
+        return cb(null);
+      }
+      var len = buffer.readInt32LE(8);
+      try {
+        fs.read(self.fd, buffer, 16, len, pos+16, function (err, bytesRead, buffer) {
+          return cb(buffer.slice(0,16+len));
+        });
+      } catch (e) {
+        console.log("Error ", e, "for file", self.filename);
+        return cb (null);
+      }
+    });
+  } catch (e) {
+    console.log("Error ", e, "for file", self.filename);
+    return cb (null);
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Utilities
 //////////////////////////////////////////////////////////////////////////////////
 
 var internals = {
@@ -43,8 +104,12 @@ exports.inet_ntoa = function(num) {
   return (num >> 24 & 0xff) + '.' + (num>>16 & 0xff) + '.' + (num>>8 & 0xff) + '.' + (num & 0xff);
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+//// Decode pcap buffers and build up simple objects
+//////////////////////////////////////////////////////////////////////////////////
 
-exports.icmp = function (buffer, obj) {
+
+Pcap.prototype.icmp = function (buffer, obj) {
   obj.icmp = {
     length:    buffer.length,
     type:      buffer[0],
@@ -57,7 +122,7 @@ exports.icmp = function (buffer, obj) {
   obj.icmp.data = buffer.slice(8);
 };
 
-exports.tcp = function (buffer, obj) {
+Pcap.prototype.tcp = function (buffer, obj) {
   obj.tcp = {
     length:     buffer.length,
     sport:      buffer.readUInt16BE(0),
@@ -86,7 +151,7 @@ exports.tcp = function (buffer, obj) {
   }
 };
 
-exports.udp = function (buffer, obj) {
+Pcap.prototype.udp = function (buffer, obj) {
   obj.udp = {
     length:     buffer.length,
     sport:      buffer.readUInt16BE(0),
@@ -98,7 +163,7 @@ exports.udp = function (buffer, obj) {
   obj.udp.data = buffer.slice(8);
 };
 
-exports.ip4 = function (buffer, obj) {
+Pcap.prototype.ip4 = function (buffer, obj) {
   obj.ip = {
     length: buffer.length,
     hl:     (buffer[0] & 0xf),
@@ -116,20 +181,20 @@ exports.ip4 = function (buffer, obj) {
 
   switch(obj.ip.p) {
   case 1:
-    exports.icmp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
+    this.icmp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
     break;
   case 6:
-    exports.tcp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
+    this.tcp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
     break;
   case 17:
-    exports.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
+    this.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
     break;
   default:
     console.log("Unknown ip.p", obj);
   }
 };
 
-exports.ip6 = function (buffer, obj) {
+Pcap.prototype.ip6 = function (buffer, obj) {
   obj.ip = {
     length: buffer.length,
     v:      ((buffer[0] >> 4) & 0xf),
@@ -141,18 +206,18 @@ exports.ip6 = function (buffer, obj) {
   };
 };
 
-exports.ethertype = function(buffer, obj) {
+Pcap.prototype.ethertype = function(buffer, obj) {
   obj.ether.type = buffer.readUInt16BE(0);
 
   switch(obj.ether.type) {
   case 0x0800:
-    exports.ip4(buffer.slice(2), obj);
+    this.ip4(buffer.slice(2), obj);
     break;
   case 0x86dd:
-    exports.ip6(buffer.slice(2), obj);
+    this.ip6(buffer.slice(2), obj);
     break;
   case 0x8100: // VLAN
-    exports.ethertype(buffer.slice(4), obj);
+    this.ethertype(buffer.slice(4), obj);
     break;
   default:
     console.log("Unknown ether.type", obj);
@@ -160,17 +225,17 @@ exports.ethertype = function(buffer, obj) {
   }
 };
 
-exports.ether = function (buffer, obj) {
+Pcap.prototype.ether = function (buffer, obj) {
   obj.ether = {
     length: buffer.length,
     addr1:  buffer.slice(0, 6).toString('hex', 0, 6),
     addr2:  buffer.slice(6, 12).toString('hex', 0, 6)
   };
-  exports.ethertype(buffer.slice(12), obj);
+  this.ethertype(buffer.slice(12), obj);
 };
 
 
-exports.pcap = function (buffer, obj) {
+Pcap.prototype.pcap = function (buffer, obj) {
   obj.pcap = {
     ts_sec:   buffer.readUInt32LE(0),
     ts_usec:  buffer.readUInt32LE(4),
@@ -178,8 +243,27 @@ exports.pcap = function (buffer, obj) {
     orig_len: buffer.readUInt32LE(12)
   };
 
-  exports.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj);
+  switch(this.linkType) {
+  case 1: // Ether
+    this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj);
+    break;
+  case 12: // Raw
+    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj);
+    break;
+  default:
+    console.log("Unsupported pcap file", this.filename, "link type", this.linkType);
+    break;
+  }
 };
+
+Pcap.prototype.decode = function (buffer, obj) {
+  this.readHeader();
+  this.pcap(buffer, obj);
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Reassembly array of packets
+//////////////////////////////////////////////////////////////////////////////////
 
 exports.reassemble_icmp = function (packets, cb) {
   var results = [];
