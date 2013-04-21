@@ -51,9 +51,19 @@ which java
 JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
- echo
- echo "ERROR - Please install Java before proceeding.  Visit http://java.sun.com"
- echo
+    echo -n "java command not found, install openjdk 7 now? [yes] "
+    read INSTALLJAVA
+    if [ -n "$INSTALLJAVA" -a "x$INSTALLJAVA" != "xyes" ]; then 
+        echo "Install java and try again"
+        exit;
+    fi
+
+    if [ -f "/etc/debian_version" ]; then
+        apt get install openjdk-7-jdk
+        
+    elif [ -f "/etc/redhat-release" ]; then
+        yum install java-1.7.0-openjdk
+    fi
  exit 0
 fi
 
