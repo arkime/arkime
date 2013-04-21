@@ -55,16 +55,17 @@ if [ $JAVA_VAL -ne 0 ]; then
     read INSTALLJAVA
     if [ -n "$INSTALLJAVA" -a "x$INSTALLJAVA" != "xyes" ]; then 
         echo "Install java and try again"
-        exit;
+        exit
     fi
 
     if [ -f "/etc/debian_version" ]; then
         apt get install openjdk-7-jdk
-        
     elif [ -f "/etc/redhat-release" ]; then
         yum install java-1.7.0-openjdk
+    else
+        echo "ERROR - Not sure how to install java for this OS"
+        exit
     fi
- exit 0
 fi
 
 umask 022
