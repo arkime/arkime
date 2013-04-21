@@ -248,6 +248,19 @@ script(type='text/javascript')
               return data;
             }
 
+            if (oObj.aData.dnsho) {
+              if (oObj.aData.infoAll) {
+                data = oObj.aData.dnsho.join("<br>");
+                data += '<br><img src="up-arrow.png">';
+              } else {
+                data = oObj.aData.dnsho.slice(0, 5).join("<br>");
+                if (oObj.aData.dnsho.length > 5) {
+                  data += '<br><img src="down-arrow.png">';
+                }
+              }
+              return data;
+            } 
+
             return "";
           }
         }

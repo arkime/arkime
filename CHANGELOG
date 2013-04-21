@@ -1,4 +1,4 @@
-0.8.1 2013/04/19
+0.8.1 2013/04/21
   - Should support nodejs 0.10.3, but still use 0.8.23 for now
   - Support RAW link type pcap files
   - renamed decode.js to pcap.js
@@ -6,6 +6,7 @@
   - Log userId for requests
   - fixed uri.cnt
   - don't exit moloch-capture until all file creates finish
+  - display dns hostname in session view
 
 
 0.8.0 2013/04/17

@@ -932,7 +932,7 @@ function lookupQueryItems(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn"];
+  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
   var i;
 
