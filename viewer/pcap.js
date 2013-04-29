@@ -39,7 +39,9 @@ Pcap.prototype.open = function(cb) {
 };
 
 Pcap.prototype.close = function() {
-  fs.close(this.fd);
+  if (this.fd) {
+    fs.close(this.fd);
+  }
 };
 
 Pcap.prototype.readHeader = function(cb) {

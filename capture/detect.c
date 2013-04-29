@@ -199,7 +199,7 @@ moloch_detect_tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
              * 12 == BER_UNI_TAG_UTF8String
              */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
-                MolochString_t *element = malloc(sizeof(*element));
+                MolochString_t *element = MOLOCH_TYPE_ALLOC(MolochString_t);
                 element->utf8 = atag == 12;
                 if (element->utf8)
                     element->str = g_utf8_strdown((char*)value, alen);
@@ -247,7 +247,7 @@ moloch_detect_tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb)
             moloch_detect_tls_alt_names(certs, &tbsb);
             return;
         } else if (lastOid && atag == 2) {
-            MolochString_t *element = malloc(sizeof(*element));
+            MolochString_t *element = MOLOCH_TYPE_ALLOC(MolochString_t);
             element->str = g_ascii_strdown((char*)value, alen);
             DLL_PUSH_TAIL(s_, &certs->alt, element);
         }
@@ -286,8 +286,7 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
                 unsigned char *cdata = BSB_WORK_PTR(cbsb);
                 int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
-                MolochCertsInfo_t *certs = malloc(sizeof(MolochCertsInfo_t));
-                memset(certs, 0, sizeof(*certs));
+                MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
                 DLL_INIT(s_, &certs->alt);
                 DLL_INIT(s_, &certs->subject.commonName);
                 DLL_INIT(s_, &certs->issuer.commonName);
@@ -387,23 +386,26 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
 /******************************************************************************/
 void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
 {
+    MolochSessionHttp_t   *http = session->http;
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: enter %d", session->which);
 #endif
 
-    if (!session->http) {
+    if (!http) {
         if (hlf->offset == 0) {
             moloch_nids_new_session_http(session);
-            http_parser_init(&session->http->parsers[0], HTTP_BOTH);
-            http_parser_init(&session->http->parsers[1], HTTP_BOTH);
-            session->http->wParsers = 3;
-            session->http->parsers[0].data = session;
-            session->http->parsers[1].data = session;
+            http = session->http;
+
+            http_parser_init(&http->parsers[0], HTTP_BOTH);
+            http_parser_init(&http->parsers[1], HTTP_BOTH);
+            http->wParsers = 3;
+            http->parsers[0].data = session;
+            http->parsers[1].data = session;
         }
         else {
             return;
         }
-    } else if ((session->http->wParsers & (1 << session->which)) == 0) {
+    } else if ((http->wParsers & (1 << session->which)) == 0) {
         return;
     }
 
@@ -411,13 +413,13 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
     char *data    = hlf->data + (hlf->count - hlf->offset - hlf->count_new);
 
     while (remaining > 0) {
-        int len = http_parser_execute(&session->http->parsers[session->which], &parserSettings, data, remaining);
+        int len = http_parser_execute(&http->parsers[session->which], &parserSettings, data, remaining);
 #ifdef HTTPDEBUG
-            LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, session->http->parsers[session->which].http_errno);
+            LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, http->parsers[session->which].http_errno);
 #endif
         if (len <= 0) {
-            session->http->wParsers &= ~(1 << session->which);
-            if (session->http->wParsers) {
+            http->wParsers &= ~(1 << session->which);
+            if (http->wParsers) {
                 moloch_nids_free_session_http(session);
             }
             break;
@@ -474,15 +476,16 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
 int
 moloch_hp_cb_on_message_begin (http_parser *parser)
 {
-    MolochSession_t *session = parser->data;
+    MolochSession_t       *session = parser->data;
+    MolochSessionHttp_t   *http = session->http;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d", session->which);
 #endif
 
-    session->http->inHeader &= ~(1 << session->which);
-    session->http->inValue  &= ~(1 << session->which);
-    session->http->inBody   &= ~(1 << session->which);
+    http->inHeader &= ~(1 << session->which);
+    http->inValue  &= ~(1 << session->which);
+    http->inBody   &= ~(1 << session->which);
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMB)
         moloch_plugins_cb_hp_omb(session, parser);
@@ -493,16 +496,17 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
 int
 moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
 {
-    MolochSession_t *session = parser->data;
+    MolochSession_t       *session = parser->data;
+    MolochSessionHttp_t   *http = session->http;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which:%d url %.*s", session->which, (int)length, at);
 #endif
 
-    if (!session->http->urlString)
-        session->http->urlString = g_string_new_len(at, length);
+    if (!http->urlString)
+        http->urlString = g_string_new_len(at, length);
     else
-        g_string_append_len(session->http->urlString, at, length);
+        g_string_append_len(http->urlString, at, length);
 
     return 0;
 }
@@ -578,7 +582,8 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 int
 moloch_hp_cb_on_message_complete (http_parser *parser)
 {
-    MolochSession_t *session = parser->data;
+    MolochSession_t       *session = parser->data;
+    MolochSessionHttp_t   *http = session->http;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d", session->which);
@@ -587,10 +592,10 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMC)
         moloch_plugins_cb_hp_omc(session, parser);
 
-    session->http->header[0][0] = session->http->header[1][0] = 0;
+    http->header[0][0] = http->header[1][0] = 0;
 
-    if (session->http->urlString) {
-        char *ch = session->http->urlString->str;
+    if (http->urlString) {
+        char *ch = http->urlString->str;
         while (*ch) {
             if (*ch < 32) {
                 moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:control-char");
@@ -600,64 +605,74 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         }
     }
 
-    if (session->http->hostString) {
-        g_string_ascii_down(session->http->hostString);
+    if (http->hostString) {
+        g_string_ascii_down(http->hostString);
     }
 
-    if (session->http->urlString && session->http->hostString) {
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, session->http->hostString->str+2, session->http->hostString->len-2, TRUE);
+    if (http->urlString && http->hostString) {
+        char *colon = strchr(http->hostString->str+2, ':');
+        if (colon) {
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+        } else {
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+        }
 
-        if (session->http->urlString->str[0] != '/') {
-            char *result = strstr(session->http->urlString->str, session->http->hostString->str+2);
+        if (http->urlString->str[0] != '/') {
+            char *result = strstr(http->urlString->str, http->hostString->str+2);
 
             /* If the host header is in the first 8 bytes of url then just use the url */
-            if (result && result - session->http->urlString->str <= 8) {
-                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->urlString->str, session->http->urlString->len, FALSE);
-                g_string_free(session->http->urlString, FALSE);
-                g_string_free(session->http->hostString, TRUE);
+            if (result && result - http->urlString->str <= 8) {
+                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->urlString->str, http->urlString->len, FALSE);
+                g_string_free(http->urlString, FALSE);
+                g_string_free(http->hostString, TRUE);
             } else {
                 /* Host header doesn't match the url */
-                g_string_append(session->http->hostString, ";");
-                g_string_append(session->http->hostString, session->http->urlString->str);
-                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->hostString->str, session->http->hostString->len, FALSE);
-                g_string_free(session->http->urlString, TRUE);
-                g_string_free(session->http->hostString, FALSE);
+                g_string_append(http->hostString, ";");
+                g_string_append(http->hostString, http->urlString->str);
+                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->hostString->str, http->hostString->len, FALSE);
+                g_string_free(http->urlString, TRUE);
+                g_string_free(http->hostString, FALSE);
             }
         } else {
             /* Normal case, url starts with /, so no extra host in url */
-            g_string_append(session->http->hostString, session->http->urlString->str);
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->hostString->str, session->http->hostString->len, FALSE);
-            g_string_free(session->http->urlString, TRUE);
-            g_string_free(session->http->hostString, FALSE);
+            g_string_append(http->hostString, http->urlString->str);
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->hostString->str, http->hostString->len, FALSE);
+            g_string_free(http->urlString, TRUE);
+            g_string_free(http->hostString, FALSE);
         }
 
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
 
-        session->http->urlString = NULL;
-        session->http->hostString = NULL;
-    } else if (session->http->urlString) {
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, session->http->urlString->str, session->http->urlString->len, FALSE);
-        g_string_free(session->http->urlString, FALSE);
+        http->urlString = NULL;
+        http->hostString = NULL;
+    } else if (http->urlString) {
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->urlString->str, http->urlString->len, FALSE);
+        g_string_free(http->urlString, FALSE);
 
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
 
-        session->http->urlString = NULL;
-    } else if (session->http->hostString) {
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, session->http->hostString->str+2, session->http->hostString->len-2, TRUE);
+        http->urlString = NULL;
+    } else if (http->hostString) {
+        char *colon = strchr(http->hostString->str+2, ':');
+        if (colon) {
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+        } else {
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+        }
 
-        g_string_free(session->http->hostString, TRUE);
-        session->http->hostString = NULL;
+        g_string_free(http->hostString, TRUE);
+        http->hostString = NULL;
     }
 
-    if (session->http->uaString) {
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_UA, session, session->http->uaString->str, session->http->uaString->len, FALSE);
-        g_string_free(session->http->uaString, FALSE);
-        session->http->uaString = NULL;
+    if (http->uaString) {
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_UA, session, http->uaString->str, http->uaString->len, FALSE);
+        g_string_free(http->uaString, FALSE);
+        http->uaString = NULL;
     }
 
-    if (session->http->xffString) {
+    if (http->xffString) {
         int i;
-        gchar **parts = g_strsplit(session->http->xffString->str, ",", 0);
+        gchar **parts = g_strsplit(http->xffString->str, ",", 0);
 
         for (i = 0; parts[i]; i++) {
             gchar *ip = parts[i];
@@ -667,7 +682,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
                 moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:bad-xff");
-                LOG("ERROR - Didn't understand ip: %s %s %d", session->http->xffString->str, ip, ia);
+                LOG("ERROR - Didn't understand ip: %s %s %d", http->xffString->str, ip, ia);
                 continue;
             }
 
@@ -675,8 +690,8 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         }
 
         g_strfreev(parts);
-        g_string_free(session->http->xffString, TRUE);
-        session->http->xffString = NULL;
+        g_string_free(http->xffString, TRUE);
+        http->xffString = NULL;
     }
     return 0;
 }
@@ -685,28 +700,29 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 int
 moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
 {
-    MolochSession_t *session = parser->data;
+    MolochSession_t       *session = parser->data;
+    MolochSessionHttp_t   *http = session->http;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d field: %.*s", session->which, (int)length, at);
 #endif
 
-    if ((session->http->inHeader & (1 << session->which)) == 0) {
-        session->http->inValue |= (1 << session->which);
-        if (session->http->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
-            moloch_plugins_cb_hp_ou(session, parser, session->http->urlString->str, session->http->urlString->len);
+    if ((http->inHeader & (1 << session->which)) == 0) {
+        http->inValue |= (1 << session->which);
+        if (http->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
+            moloch_plugins_cb_hp_ou(session, parser, http->urlString->str, http->urlString->len);
         }
     }
 
-    if (session->http->inValue & (1 << session->which)) {
-        session->http->inValue &= ~(1 << session->which);
+    if (http->inValue & (1 << session->which)) {
+        http->inValue &= ~(1 << session->which);
 
-        session->http->header[session->which][0] = 0;
+        http->header[session->which][0] = 0;
     }
 
-    size_t remaining = sizeof(session->http->header[session->which]) - strlen(session->http->header[session->which]) - 1;
+    size_t remaining = sizeof(http->header[session->which]) - strlen(http->header[session->which]) - 1;
     if (remaining > 0)
-        strncat(session->http->header[session->which], at, MIN(length, remaining));
+        strncat(http->header[session->which], at, MIN(length, remaining));
 
     return 0;
 }
@@ -715,17 +731,18 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
 int
 moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length)
 {
-    MolochSession_t *session = parser->data;
-    char header[200];
+    MolochSession_t       *session = parser->data;
+    MolochSessionHttp_t   *http = session->http;
+    char                   header[200];
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d value: %.*s", session->which, (int)length, at);
 #endif
 
-    if ((session->http->inValue & (1 << session->which)) == 0) {
-        session->http->inValue |= (1 << session->which);
+    if ((http->inValue & (1 << session->which)) == 0) {
+        http->inValue |= (1 << session->which);
 
-        char *lower = g_ascii_strdown(session->http->header[session->which], -1);
+        char *lower = g_ascii_strdown(http->header[session->which], -1);
         moloch_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
 
         snprintf(header, sizeof(header), "http:header:%s", lower);
@@ -735,24 +752,24 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 
     moloch_plugins_cb_hp_ohv(session, parser, at, length);
 
-    if (parser->method && strcasecmp("host", session->http->header[session->which]) == 0) {
-        if (!session->http->hostString)
-            session->http->hostString = g_string_new_len("//", 2);
-        g_string_append_len(session->http->hostString, at, length);
+    if (parser->method && strcasecmp("host", http->header[session->which]) == 0) {
+        if (!http->hostString)
+            http->hostString = g_string_new_len("//", 2);
+        g_string_append_len(http->hostString, at, length);
     } 
 
-    if (parser->method && strcasecmp("user-agent", session->http->header[session->which]) == 0) {
-        if (!session->http->uaString)
-            session->http->uaString = g_string_new_len(at, length);
+    if (parser->method && strcasecmp("user-agent", http->header[session->which]) == 0) {
+        if (!http->uaString)
+            http->uaString = g_string_new_len(at, length);
         else
-            g_string_append_len(session->http->uaString, at, length);
+            g_string_append_len(http->uaString, at, length);
     } 
 
-    if (parser->method && strcasecmp("x-forwarded-for", session->http->header[session->which]) == 0) {
-        if (!session->http->xffString)
-            session->http->xffString = g_string_new_len(at, length);
+    if (parser->method && strcasecmp("x-forwarded-for", http->header[session->which]) == 0) {
+        if (!http->xffString)
+            http->xffString = g_string_new_len(at, length);
         else
-            g_string_append_len(session->http->xffString, at, length);
+            g_string_append_len(http->xffString, at, length);
     } 
 
     return 0;
@@ -1025,10 +1042,11 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
     LOG("EMAILDEBUG: enter %d", session->which);
 #endif
 
-    int      remaining = hlf->count_new;
-    char    *data      = hlf->data + (hlf->count - hlf->offset - hlf->count_new);
-    GString *line      = session->email->line[session->which];
-    char    *state     = &session->email->state[session->which];
+    MolochSessionEmail_t *email     = session->email;
+    int                   remaining = hlf->count_new;
+    char                 *data      = hlf->data + (hlf->count - hlf->offset - hlf->count_new);
+    GString              *line      = email->line[session->which];
+    char                 *state     = &email->state[session->which];
 
     while (remaining > 0) {
         switch (*state) {
@@ -1060,7 +1078,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 *state = EMAIL_DATA_HEADER;
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
                 *state = EMAIL_IGNORE;
-                session->email->state[(session->which+1)%2] = EMAIL_TLS_OK;
+                email->state[(session->which+1)%2] = EMAIL_TLS_OK;
                 return;
             } else {
                 *state = EMAIL_CMD;
@@ -1138,10 +1156,10 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 moloch_field_string_add(MOLOCH_FIELD_EMAIL_CT, session, s, -1, TRUE);
                 char *boundary = (char *)moloch_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
-                    MolochString_t *string = malloc(sizeof(*string));
+                    MolochString_t *string = MOLOCH_TYPE_ALLOC(MolochString_t);
                     string->str = g_strdup(moloch_detect_remove_matching(boundary+9, '"', '"'));
                     string->len = strlen(string->str);
-                    DLL_PUSH_TAIL(s_, &session->email->boundaries, string);
+                    DLL_PUSH_TAIL(s_, &email->boundaries, string);
                 }
             } else {
                 int i;
@@ -1190,7 +1208,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 gboolean        found = FALSE;
 
                 if (line->str[0] == '-') {
-                    DLL_FOREACH(s_,&session->email->boundaries,string) {
+                    DLL_FOREACH(s_,&email->boundaries,string) {
                         if ((int)line->len >= (int)(string->len + 2) && memcmp(line->str+2, string->str, string->len) == 0) {
                             found = TRUE;
                             break;
@@ -1199,23 +1217,23 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 }
 
                 if (found) {
-                    if (session->email->base64Decode & (1 << session->which)) {
-                        const char *md5 = g_checksum_get_string(session->email->checksum[session->which]);
+                    if (email->base64Decode & (1 << session->which)) {
+                        const char *md5 = g_checksum_get_string(email->checksum[session->which]);
                         moloch_field_string_add(MOLOCH_FIELD_EMAIL_MD5, session, (char*)md5, 32, TRUE);
                     }
-                    session->email->base64Decode &= ~(1 << session->which);
-                    session->email->state64[session->which] = 0;
-                    session->email->save64[session->which] = 0;
-                    g_checksum_reset(session->email->checksum[session->which]);
+                    email->base64Decode &= ~(1 << session->which);
+                    email->state64[session->which] = 0;
+                    email->save64[session->which] = 0;
+                    g_checksum_reset(email->checksum[session->which]);
                     *state = EMAIL_MIME;
                 } else if (*state == EMAIL_MIME_DATA_RETURN) {
-                    if (session->email->base64Decode & (1 << session->which)) {
+                    if (email->base64Decode & (1 << session->which)) {
                         guchar buf[20000];
                         if (sizeof(buf) > line->len) {
                             gsize  b = g_base64_decode_step (line->str, line->len, buf, 
-                                                            &(session->email->state64[session->which]),
-                                                            &(session->email->save64[session->which]));
-                            g_checksum_update(session->email->checksum[session->which], buf, b);
+                                                            &(email->state64[session->which]),
+                                                            &(email->save64[session->which]));
+                            g_checksum_update(email->checksum[session->which], buf, b);
                         }
 
                     }
@@ -1295,10 +1313,10 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 while(isspace(*s)) s++;
                 char *boundary = (char *)moloch_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
-                    MolochString_t *string = malloc(sizeof(*string));
+                    MolochString_t *string = MOLOCH_TYPE_ALLOC(MolochString_t);
                     string->str = g_strdup(moloch_detect_remove_matching(boundary+9, '"', '"'));
                     string->len = strlen(string->str);
-                    DLL_PUSH_TAIL(s_, &session->email->boundaries, string);
+                    DLL_PUSH_TAIL(s_, &email->boundaries, string);
                 }
             } else if (strncasecmp(line->str, "Content-Disposition:", 20) == 0) {
                 char *s = line->str + 13;
@@ -1309,7 +1327,7 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
                 }
             } else if (strncasecmp(line->str, "Content-Transfer-Encoding:", 26) == 0) {
                 if(moloch_memcasestr(line->str+26, line->len - 26, "base64", 6)) {
-                    session->email->base64Decode |= (1 << session->which);
+                    email->base64Decode |= (1 << session->which);
                 }
             }
 

@@ -22,13 +22,12 @@
 #include "glib.h"
 #include "moloch.h"
 
-extern MolochConfig_t config;
+extern MolochConfig_t        config;
 
 /******************************************************************************/
 int moloch_field_define(char *name, int type, int flags)
 {
-    MolochFieldInfo_t *info = malloc(sizeof(*info));
-    memset(info, 0, sizeof(*info));
+    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
     info->name  = name;
     info->type  = type;
     info->flags = flags;
@@ -41,8 +40,7 @@ int moloch_field_define(char *name, int type, int flags)
 /******************************************************************************/
 void moloch_field_define_internal(int pos, char *name, int type, int flags)
 {
-    MolochFieldInfo_t *info = malloc(sizeof(*info));
-    memset(info, 0, sizeof(*info));
+    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
     info->name  = name;
     info->len   = strlen(name);
     info->type  = type;
@@ -62,8 +60,9 @@ void moloch_field_exit()
 {
     int i;
 
-    for (i = 0; i < config.maxField; i++)
-        free(config.fields[i]);
+    for (i = 0; i < config.maxField; i++) {
+        MOLOCH_TYPE_FREE(MolochFieldInfo_t, config.fields[i]);
+    }
 }
 /******************************************************************************/
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string, int len, gboolean copy)
@@ -73,7 +72,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
     MolochString_t        *hstring;
 
     if (!session->fields[pos]) {
-        field = malloc(sizeof(*field));
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
         if (len == -1)
             len = strlen(string);
@@ -89,10 +88,10 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
             g_ptr_array_add(field->sarray, string);
             return TRUE;
         case MOLOCH_FIELD_TYPE_STR_HASH:
-            hash = malloc(sizeof(*hash));
+            hash = MOLOCH_TYPE_ALLOC(MolochStringHashStd_t);
             HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_cmp);
             field->shash = hash;
-            hstring = malloc(sizeof(*hstring));
+            hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
             hstring->str = string;
             HASH_ADD(s_, *hash, hstring->str, hstring);
             return TRUE;
@@ -123,7 +122,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
         HASH_FIND(s_, *(field->shash), string, hstring);
         if (hstring)
             return FALSE;
-        hstring = malloc(sizeof(*hstring));
+        hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
         if (copy) {
             hstring->str = g_strndup(string, len);
         } else {
@@ -144,7 +143,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     MolochInt_t          *hint;
 
     if (!session->fields[pos]) {
-        field = malloc(sizeof(*field));
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
         session->jsonSize += 3 + config.fields[pos]->len + 10;
         switch (config.fields[pos]->type) {
@@ -158,10 +157,10 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         case MOLOCH_FIELD_TYPE_IP_HASH:
             session->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT_HASH:
-            hash = malloc(sizeof(*hash));
+            hash = MOLOCH_TYPE_ALLOC(MolochIntHashStd_t);
             HASH_INIT(i_, *hash, moloch_int_hash, moloch_int_cmp);
             field->ihash = hash;
-            hint = malloc(sizeof(*hint));
+            hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
             HASH_ADD(i_, *hash, (void *)(long)i, hint);
             return TRUE;
         default:
@@ -185,7 +184,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         HASH_FIND_INT(i_, *(field->ihash), i, hint);
         if (hint)
             return FALSE;
-        hint = malloc(sizeof(*hint));
+        hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
         HASH_ADD(i_, *(field->ihash), (void *)(long)i, hint);
         return TRUE;
     default:
@@ -218,9 +217,9 @@ void moloch_field_free(MolochSession_t *session)
             shash = session->fields[pos]->shash;
             HASH_FORALL_POP_HEAD(s_, *shash, hstring,
                 g_free(hstring->str);
-                free(hstring);
+                MOLOCH_TYPE_FREE(MolochString_t, hstring);
             );
-            free(shash);
+            MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
             break;
         case MOLOCH_FIELD_TYPE_INT:
             break;
@@ -231,12 +230,13 @@ void moloch_field_free(MolochSession_t *session)
         case MOLOCH_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
             HASH_FORALL_POP_HEAD(i_, *ihash, hint,
-                free(hint);
+                MOLOCH_TYPE_FREE(MolochInt_t, hint);
             );
-            free(ihash);
+            MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
             break;
         }
-        free(session->fields[pos]);
+        MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
     }
-    free(session->fields);
+    MOLOCH_SIZE_FREE(fields, session->fields);
+    session->fields = 0;
 }

@@ -158,13 +158,13 @@ void tagger_plugin_exit()
     HASH_FORALL_POP_HEAD(s_, allDomains, tstring, 
         free(tstring->str);
         g_ptr_array_free(tstring->files, TRUE);
-        free(tstring);
+        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
     );
 
     TaggerInt_t *ti;
     HASH_FORALL_POP_HEAD(i_, allIps, ti, 
         g_ptr_array_free(ti->files, TRUE);
-        free(ti);
+        MOLOCH_TYPE_FREE(TaggerInt_t, ti);
     );
 
     TaggerFile_t *file;
@@ -174,7 +174,7 @@ void tagger_plugin_exit()
         g_free(file->type);
         g_strfreev(file->tags);
         g_strfreev(file->elements);
-        free(file);
+        MOLOCH_TYPE_FREE(TaggerFile_t, file);
     );
 }
 
@@ -228,7 +228,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
     if (!source_len || !source) {
         HASH_REMOVE(s_, allFiles, file);
         free(file->str);
-        free(file);
+        MOLOCH_TYPE_FREE(TaggerFile_t, file);
         return;
     }
 
@@ -259,7 +259,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
             TaggerInt_t *ti;
             HASH_FIND_INT(i_, allIps, ip, ti);
             if (!ti) {
-                ti = malloc(sizeof(*ti));
+                ti = MOLOCH_TYPE_ALLOC(TaggerInt_t);
                 ti->files = g_ptr_array_new();
                 HASH_ADD(i_, allIps, (void *)(long)ip, ti);
             }
@@ -269,7 +269,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
             if (!tstring) {
-                tstring = malloc(sizeof(*tstring));
+                tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
                 tstring->str = strdup(file->elements[i]);
                 tstring->files = g_ptr_array_new();
                 HASH_ADD(s_, allDomains, tstring->str, tstring);
@@ -335,8 +335,7 @@ void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer sync)
         TaggerFile_t *file;
         HASH_FIND(s_, allFiles, id, file);
         if (!file) {
-            file = malloc(sizeof(*file));
-            memset(file, 0, sizeof(*file));
+            file = MOLOCH_TYPE_ALLOC0(TaggerFile_t);
             file->str = id;
             HASH_ADD(s_, allFiles, file->str, file);
             tagger_load_file(file, sync);

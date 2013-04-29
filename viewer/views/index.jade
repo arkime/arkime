@@ -79,8 +79,7 @@ script(type='text/javascript')
 
     $('#sessions tbody td.sessionDetails img').live('click', function () {
       var nTr = this.parentNode.parentNode;
-      if ( this.src.match('details_close') )
-      {
+      if ( this.src.match('details_close') ) {
         this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
 
         $(nTr).removeClass('opened');
@@ -260,6 +259,26 @@ script(type='text/javascript')
               }
               return data;
             } 
+
+            if (oObj.aData.tls) {
+              data = ""
+              oObj.aData.tls.forEach(function(tls) {
+                data += tls.sCn;
+                if (tls.alt) {
+                  data += " [";
+                  var i;
+                  for(i = 0; i < tls.alt.length; i++) {
+                    if (i > 0) {
+                      data += ", ";
+                    }
+                    data += tls.alt[i];
+                  }
+                  data += "]";
+                }
+                data += "<br>"
+              });
+              return data;
+            }
 
             return "";
           }

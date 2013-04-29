@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <sys/stat.h>
 #include "glib.h"
 #include "nids.h"
 #include "pcap.h"
@@ -57,6 +58,7 @@ static char                  dumperBuf[0x1fffff + 4096];
 static uint32_t              dumperId;
 static FILE                 *offlineFile = 0;
 static uint32_t              initialDropped = 0;
+struct timeval               initialPacket;
 static char                  offlinePcapFilename[PATH_MAX+1];
 
 uint64_t                     totalPackets = 0;
@@ -112,17 +114,17 @@ void moloch_nids_certs_free (MolochCertsInfo_t *certs)
 
     while (DLL_POP_HEAD(s_, &certs->alt, string)) {
         g_free(string->str);
-        free(string);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
     while (DLL_POP_HEAD(s_, &certs->issuer.commonName, string)) {
         g_free(string->str);
-        free(string);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
     while (DLL_POP_HEAD(s_, &certs->subject.commonName, string)) {
         g_free(string->str);
-        free(string);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
     if (certs->issuer.orgName)
@@ -132,7 +134,7 @@ void moloch_nids_certs_free (MolochCertsInfo_t *certs)
     if (certs->serialNumber)
         free(certs->serialNumber);
 
-    free(certs);
+    MOLOCH_TYPE_FREE(MolochCertsInfo_t, certs);
 }
 
 /******************************************************************************/
@@ -270,11 +272,8 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     }
 
     moloch_db_save_session(session, FALSE);
-    g_array_free(session->filePosArray, TRUE);
-    session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 1024);
-
-    g_array_free(session->fileNumArray, TRUE);
-    session->fileNumArray = g_array_new(FALSE, FALSE, 4);
+    g_array_set_size(session->filePosArray, 0);
+    g_array_set_size(session->fileNumArray, 0);
 
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ, session);
@@ -302,7 +301,7 @@ void moloch_nids_file_create()
         return;
     }
 
-    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, &dumperId);
+    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, 0, &dumperId);
     dumper = pcap_dump_open(nids_params.pcap_desc, pcapFilename);
 
     if (!dumper) {
@@ -325,6 +324,10 @@ void moloch_nids_file_create()
 /******************************************************************************/
 void moloch_nids_file_locked(char *filename)
 {
+    struct stat st;
+
+    fstat(fileno(offlineFile), &st);
+
     dumperFilePos = 24;
     dumperFd = 1;
 
@@ -333,7 +336,7 @@ void moloch_nids_file_locked(char *filename)
         return;
     }
 
-    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, &dumperId);
+    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, st.st_size, &dumperId);
 }
 /******************************************************************************/
 void moloch_nids_file_flush(gboolean all)
@@ -400,8 +403,7 @@ moloch_nids_pcap_dump(const struct pcap_pkthdr *h, const u_char *sp)
 /******************************************************************************/
 void moloch_nids_new_session_http(MolochSession_t *session)
 {
-    session->http = malloc(sizeof(MolochSessionHttp_t));
-    memset(session->http, 0, sizeof(MolochSessionHttp_t));
+    session->http = MOLOCH_TYPE_ALLOC0(MolochSessionHttp_t);
 }
 /******************************************************************************/
 void moloch_nids_free_session_http(MolochSession_t *session)
@@ -415,8 +417,7 @@ void moloch_nids_free_session_http(MolochSession_t *session)
     if (session->http->xffString)
         g_string_free(session->http->xffString, TRUE);
 
-    free(session->http);
-
+    MOLOCH_TYPE_FREE(MolochSessionHttp_t, session->http);
     session->http = 0;
 }
 /******************************************************************************/
@@ -425,8 +426,7 @@ void moloch_nids_new_session_email(MolochSession_t *session)
     if (!config.parseSMTP)
         return;
 
-    session->email = malloc(sizeof(MolochSessionEmail_t));
-    memset(session->email, 0, sizeof(MolochSessionEmail_t));
+    session->email = MOLOCH_TYPE_ALLOC0(MolochSessionEmail_t);
 
     session->email->line[0] = g_string_sized_new(100);
     session->email->line[1] = g_string_sized_new(100);
@@ -449,10 +449,10 @@ void moloch_nids_free_session_email(MolochSession_t *session)
 
     while (DLL_POP_HEAD(s_, &session->email->boundaries, string)) {
         g_free(string->str);
-        free(string);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
-    free(session->email);
+    MOLOCH_TYPE_FREE(MolochSessionEmail_t, session->email);
     session->email = 0;
 }
 /******************************************************************************/
@@ -508,6 +508,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         if (!pcap_stats(nids_params.pcap_desc, &ps)) {
             initialDropped = ps.ps_drop;
         }
+        initialPacket = nids_last_pcap_header->ts;
+        LOG("Initial Packet = %ld", initialPacket.tv_sec); 
         LOG("%" PRIu64 " Initial Dropped = %d", totalPackets, initialDropped);
     }
 
@@ -538,8 +540,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     if (!session) {
         //LOG ("New session: %s", sessionId);
-        session = malloc(sizeof(MolochSession_t));
-        memset(session, 0, sizeof(MolochSession_t));
+        session = MOLOCH_TYPE_ALLOC0(MolochSession_t);
         session->protocol = packet->ip_p;
         session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
@@ -549,8 +550,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->firstPacket = nids_last_pcap_header->ts;
         session->addr1 = packet->ip_src.s_addr;
         session->addr2 = packet->ip_dst.s_addr;
-        session->fields = malloc(sizeof(MolochField_t *)*config.maxField);
-        memset(session->fields, 0, sizeof(MolochField_t *)*config.maxField);
+        session->ip_tos = packet->ip_tos;
+        session->fields = MOLOCH_SIZE_ALLOC0(fields, sizeof(MolochField_t *)*config.maxField);
 
         moloch_detect_initial_tag(session);
 
@@ -592,9 +593,14 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     if (pluginsCbs & MOLOCH_PLUGIN_IP)
         moloch_plugins_cb_ip(session, packet, len);
 
-    if (packet->ip_p == IPPROTO_UDP) {
+    switch (packet->ip_p) {
+    case IPPROTO_UDP:
         session->databytes += (len - 8);
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, len - 8 - 4 * packet->ip_hl);
+        break;
+    case IPPROTO_TCP:
+        session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
+        break;
     }
 
     session->packets++;
@@ -844,7 +850,7 @@ void moloch_nids_session_free (MolochSession_t *session)
         g_free(session->rootId);
 
     moloch_field_free(session);
-    free(session);
+    MOLOCH_TYPE_FREE(MolochSession_t, session);
 }
 /******************************************************************************/
 void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
@@ -978,7 +984,7 @@ fail:
 uint32_t moloch_nids_dropped_packets()
 {
     struct pcap_stat ps;
-    if (!nids_params.pcap_desc) {
+    if (nids_params.pcap_desc) {
         pcap_stats(nids_params.pcap_desc, &ps);
         return ps.ps_drop - initialDropped;
     }
@@ -1202,8 +1208,6 @@ void moloch_nids_init()
 }
 /******************************************************************************/
 void moloch_nids_exit() {
-    LOG("exit");
-
     nids_unregister_tcp(moloch_nids_cb_tcp);
     nids_unregister_ip(moloch_nids_cb_ip);
     nids_exit();

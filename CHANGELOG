@@ -1,4 +1,18 @@
-0.8.1 2013/04/21
+0.8.2 2013/04/29
+  - Install ES 0.90
+  - fixed dropped packet stats
+  - netflow plugin (issue #27)
+  - memory capture improvements
+  - record capture memory in stats
+  - record filesize for offline pcap
+  - remove port from http host header (issue #63)
+  - db.pl prints more info by default,  multiple -v even more 
+    information, and new info command
+  - fixed viewer crashes if pcap can't be read (issue #67)
+  - minor css cleanup
+  - Display CERT info in session view
+
+0.8.1 2013/04/19
   - Should support nodejs 0.10.3, but still use 0.8.23 for now
   - Support RAW link type pcap files
   - renamed decode.js to pcap.js
@@ -6,7 +20,7 @@
   - Log userId for requests
   - fixed uri.cnt
   - don't exit moloch-capture until all file creates finish
-  - display dns hostname in session view
+  - display DNS hostname in session view
 
 
 0.8.0 2013/04/17

@@ -14,6 +14,7 @@
 #  6 - Multi fields for spi view, added xffcnt, 0.90 fixes, need to type INIT/UPGRADE
 #      instead of YES
 #  7 - files_v3
+#  8 - fileSize, memory to stats/dstats and -v flag
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -22,23 +23,33 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 7;
+my $VERSION = 8;
+my $verbose = 0;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
 sub MAX ($$) { $_[$_[0] < $_[1]] }
+
+sub commify {
+    scalar reverse join ',',
+    unpack '(A3)*',
+    scalar reverse shift
+}
 
 ################################################################################
 sub showHelp($)
 {
     my ($str) = @_;
     print "\n", $str,"\n\n";
-    print "$0 <ESHOST:ESPORT> <command> [<options>]\n";
+    print "$0 [-v] <ESHOST:ESPORT> <command> [<options>]\n";
+    print "\n";
+    print "  -v                    - Verbose, multiple increases level\n";
     print "\n";
     print "Commands:\n";
     print "  init                  - Clear ALL elasticsearch moloch data and create schema\n";
     print "  wipe                  - Same as init, but leaves user database untouched\n";
     print "  upgrade               - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "  info                  - Information about the database\n";
     print "  usersexport <fn>      - Save the users info to <fn>\n";
     print "  usersimport <fn>      - Load the users info from <fn>\n";
     print "  rotate <type> <num>   - Perform daily maintenance\n";
@@ -63,7 +74,7 @@ sub waitFor
 sub esGet
 {
     my ($url, $dontcheck) = @_;
-    #print "url = http://$ARGV[0]$url\n";
+    print "GET http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("http://$ARGV[0]$url");
     if ($response->code != 200 && !$dontcheck) {
       die "Couldn't get $url with code " . $response->code;
@@ -76,6 +87,7 @@ sub esGet
 sub esPost
 {
     my ($url, $content, $dontcheck) = @_;
+    print "POST http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->post("http://$ARGV[0]$url", Content => $content);
     if ($response->code != 200 && $response->code != 201 && !$dontcheck) {
       die "Couldn't post $url with code " . $response->code . $response->content;
@@ -88,6 +100,7 @@ sub esPost
 sub esPut
 {
     my ($url, $content, $dontcheck) = @_;
+    print "PUT http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]$url", Content => $content));
     if ($response->code != 200 && !$dontcheck) {
       die "Couldn't put $url with code " . $response->code . $response->content;
@@ -100,6 +113,7 @@ sub esPut
 sub esDelete
 {
     my ($url, $dontcheck) = @_;
+    print "DELETE http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ARGV[0]$url"));
     if ($response->code != 200 && !$dontcheck) {
       die "Couldn't delete $url with code " . $response->code;
@@ -112,11 +126,19 @@ sub esDelete
 sub esCopy
 {
     my ($srci, $dsti, $type) = @_;
+
+    my $status = esGet("/_status", 1);
+    print "Copying " . $status->{indices}->{$srci}->{docs}->{num_docs} . " elements from $srci/$type to $dsti/$type\n";
+
     my $id = "";
     while (1) {
+        if ($verbose > 0) {
+            local $| = 1;
+            print ".";
+        }
         my $url;
         if ($id eq "") {
-            $url = "/$srci/$type/_search?scroll=10m&scroll_id=$id&size=100";
+            $url = "/$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
@@ -135,11 +157,14 @@ sub esCopy
 
         esPost("/_bulk", $out);
     }
+    print "\n"
 }
 ################################################################################
 sub esAlias
 {
     my ($cmd, $index, $alias) = @_;
+
+    print "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
     esPost("/_aliases", '{ actions: [ { ' . $cmd . ': { index: "' . $index . '", alias : "'. $alias .'" } } ] }', 1);
 }
 
@@ -155,6 +180,7 @@ sub tagsCreate
   }
 }';
 
+    print "Creating tags_v2 index\n" if ($verbose > 0);
     esPut("/tags_v2/", $settings);
     esAlias("add", "tags_v2", "tags");
     tagsUpdate();
@@ -176,6 +202,7 @@ sub tagsUpdate
   }
 }';
 
+    print "Setting tags_v2 mapping\n" if ($verbose > 0);
     esPut("/tags_v2/tag/_mapping", $mapping);
 }
 ################################################################################
@@ -190,6 +217,7 @@ sub sequenceCreate
   }
 }';
 
+    print "Creating sequence index\n" if ($verbose > 0);
     esPut("/sequence", $settings);
     sequenceUpdate();
 }
@@ -207,6 +235,7 @@ sub sequenceUpdate
   }
 }';
 
+    print "Setting sequence mapping\n" if ($verbose > 0);
     esPut("/sequence/sequence/_mapping", $mapping);
 }
 ################################################################################
@@ -221,6 +250,7 @@ sub filesCreate
   }
 }';
 
+    print "Creating files_v3 index\n" if ($verbose > 0);
     esPut("/files_v3", $settings);
     esAlias("add", "files_v3", "files");
     filesUpdate();
@@ -231,8 +261,8 @@ sub filesUpdate
     my $mapping = '
 {
   file: {
-    _all : {"enabled" : false},
-    _source : {"enabled" : true},
+    _all : {enabled : 0},
+    _source : {enabled : 1},
     dynamic: "strict",
     properties: {
       num: {
@@ -251,9 +281,8 @@ sub filesUpdate
         type: "string",
         index: "not_analyzed"
       },
-      size: {
-        type: "long",
-        index: "no"
+      filesize: {
+        type: "long"
       },
       locked: {
         type: "short",
@@ -267,6 +296,7 @@ sub filesUpdate
   }
 }';
 
+    print "Setting files_v3 mapping\n" if ($verbose > 0);
     esPut("/files_v3/file/_mapping", $mapping);
 }
 ################################################################################
@@ -286,6 +316,7 @@ sub statsCreate
   }
 }';
 
+    print "Creating stats index\n" if ($verbose > 0);
     esPut("/stats", $settings);
     statsUpdate();
 }
@@ -350,12 +381,17 @@ my $mapping = '
       deltaDropped: {
         type: "long",
         index: "no"
+      },
+      memory: {
+        type: "long",
+        index: "no"
       }
     }
   }
 }';
 
-    esPut("/stats/stat/_mapping", $mapping, 1);
+    print "Setting stats mapping\n" if ($verbose > 0);
+    esPut("/stats/stat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -369,6 +405,7 @@ sub dstatsCreate
   }
 }';
 
+    print "Creating dstats_v1 index\n" if ($verbose > 0);
     esPut("/dstats_v1", $settings);
     esAlias("add", "dstats_v1", "dstats");
     dstatsUpdate();
@@ -421,12 +458,17 @@ my $mapping = '
       monitoring: {
         type: "long",
         index: "no"
+      },
+      memory: {
+        type: "long",
+        index: "no"
       }
     }
   }
 }';
 
-    esPut("/dstats_v1/dstat/_mapping", $mapping, 1);
+    print "Setting dstats_v1 mapping\n" if ($verbose > 0);
+    esPut("/dstats_v1/dstat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
 }
 
 ################################################################################
@@ -830,16 +872,27 @@ sub sessionsUpdate
   mappings:' . $mapping . '
 }';
 
+    print "Creating sessions template\n" if ($verbose > 0);
     esPut("/_template/template_1", $template);
 
     my $status = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $status->{indices} || $status->{_all}->{indices};
+
+    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n";
     foreach my $i (keys %{$indices}) {
+        if ($verbose == 1) {
+            local $| = 1;
+            print ".";
+        } elsif ($verbose  > 1) {
+            print "  Updating sessions mapping for $i\n";
+        }
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
         esPost("/$i/_close", "");
         esPut("/$i/_settings", '{"index.fielddata.cache": "soft"}');
         esPost("/$i/_open", "");
     }
+
+    print "\n";
 }
 
 ################################################################################
@@ -854,6 +907,7 @@ sub usersCreate
   }
 }';
 
+    print "Creating users_v2 index\n" if ($verbose > 0);
     esPut("/users_v2", $settings);
     esAlias("add", "users_v2", "users");
     usersUpdate();
@@ -907,6 +961,7 @@ sub usersUpdate
   }
 }';
 
+    print "Setting users_v2 mapping\n" if ($verbose > 0);
     esPut("/users_v2/user/_mapping?pretty&ignore_conflicts=true", $mapping);
 }
 
@@ -929,9 +984,34 @@ my($type, $t) = @_;
     }
 }
 ################################################################################
+sub dbVersion {
+my ($loud) = @_;
+
+    my $version = esGet("/dstats/version/version", 1);
+
+    if (!exists $version->{exists}) {
+        print "This is a fresh Moloch install\n" if ($loud);
+        $main::versionNumber = -1;
+        if ($loud && $ARGV[1] ne "init") {
+            die "Looks like moloch wasn't installed, must do init"
+        }
+    } elsif ($version->{exists} == 0) {
+        $main::versionNumber = 0;
+    } else {
+        $main::versionNumber = $version->{_source}->{version};
+    }
+}
+################################################################################
+while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
+    if ($ARGV[0] eq "-v") {
+        $verbose++;
+        shift @ARGV;
+    }
+}
+
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|wipe|upgrade|usersimport|usersexport|rotate)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|rotate)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate)/);
 
@@ -986,6 +1066,38 @@ if ($ARGV[1] eq "usersimport") {
         }
     }
     exit 0;
+} elsif ($ARGV[1] eq "info") {
+    dbVersion(0);
+    my $esversion = esGet("/");
+    my $nodes = esGet("/_nodes");
+    my $status = esGet("/_status", 1);
+    my $sessions = 0;
+    my $sessionsBytes = 0;
+    my @sessions = grep /^session/, keys %{$status->{indices}};
+    foreach my $index (@sessions) {
+        $sessions += $status->{indices}->{$index}->{docs}->{num_docs};
+        $sessionsBytes += $status->{indices}->{$index}->{index}->{primary_size_in_bytes};
+    }
+
+sub printIndex {
+    my ($index, $name) = @_;
+    return if (!$index);
+    printf "%-20s %s (%s bytes)\n", $name . ":", commify($index->{docs}->{num_docs}), commify($index->{index}->{primary_size_in_bytes});
+}
+
+    printf "ES Version:          %s\n", $esversion->{version}->{number};
+    printf "DB Version:          %s\n", $main::versionNumber;
+    printf "Nodes:               %s\n", commify(scalar(keys %{$nodes->{nodes}}));
+    printf "Session Indices:     %s\n", commify(scalar(@sessions));
+    printf "Sessions:            %s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
+    printIndex($status->{indices}->{files_v3}, "files_v3");
+    printIndex($status->{indices}->{files_v2}, "files_v2");
+    printIndex($status->{indices}->{files_v1}, "files_v1");
+    printIndex($status->{indices}->{tags_v2}, "tags_v2");
+    printIndex($status->{indices}->{tags_v1}, "tags_v1");
+    printIndex($status->{indices}->{users_v2}, "users_v2");
+    printIndex($status->{indices}->{users_v1}, "users_v1");
+    exit 0;
 }
 
 
@@ -999,20 +1111,7 @@ if ($main::numberOfNodes == 1) {
     print "There are $main::numberOfNodes elastic search nodes, if you expect more please fix first before proceeding.\n\n";
 }
 
-
-my $version = esGet("/dstats/version/version", 1);
-
-if (!exists $version->{exists}) {
-    print "This is a fresh Moloch install\n";
-    $main::versionNumber = -1;
-    if ($ARGV[1] ne "init") {
-        die "Looks like moloch wasn't installed, must do init"
-    }
-} elsif ($version->{exists} == 0) {
-    $main::versionNumber = 0;
-} else {
-    $main::versionNumber = $version->{_source}->{version};
-}
+dbVersion(1);
 
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
     die "Can only use wipe if schema is up to date.  Use upgrade first.";
@@ -1109,14 +1208,17 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     print "files_v2 table can be deleted now\n";
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 7) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 8) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");
     print "Starting Upgrade\n";
 
+    filesUpdate();
     sessionsUpdate();
     usersUpdate();
+    statsUpdate();
+    dstatsUpdate();
 } else {
     print "db.pl is hosed\n";
 }

@@ -21,7 +21,7 @@
 # This is where everything is installed
 TDIR=/data/moloch
 
-ES=0.90.0.RC2
+ES=0.90.0
 NODEJS=0.8.23
 INSTALL_DIR=$PWD
 

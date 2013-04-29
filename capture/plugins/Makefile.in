@@ -14,6 +14,8 @@ PLUGINDIR = @prefix@/plugins
 all:
 	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c tagger.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
 	$(CC) -shared -o tagger.so tagger.o
+	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c netflow.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
+	$(CC) -shared -o netflow.so netflow.o
 
 install:
 	test -z "$(PLUGINDIR)" || $(mkdir_p) "$(PLUGINDIR)"

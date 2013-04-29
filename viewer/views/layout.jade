@@ -20,7 +20,7 @@ html
     if (typeof titleLink === "string")
       style(type='text/css')
         ##{titleLink} { color:white}
-  body
+  body(id="body-#{titleLink}")
     #header
       div#logo
         a(href='about')
@@ -82,9 +82,9 @@ html
       div#customDate
         center
         span Beginning Time:
-        input#startDate
+        input#startDate(size=21)
         span Ending Time:
-        input#stopDate
+        input#stopDate(size=21)
         
-    #pageBody
+    div.pageBody(id="pageBody-#{titleLink}")
       != body

@@ -29,7 +29,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 1
+#define MOLOCH_API_VERSION 2
 
 /******************************************************************************/
 /*
@@ -47,7 +47,7 @@ typedef struct {
 } MolochIntHead_t;
 
 typedef HASH_VAR(s_, MolochIntHash_t, MolochIntHead_t, 1);
-typedef HASH_VAR(s_, MolochIntHashStd_t, MolochIntHead_t, 23);
+typedef HASH_VAR(s_, MolochIntHashStd_t, MolochIntHead_t, 13);
 
 typedef struct moloch_string {
     struct moloch_string *s_next, *s_prev;
@@ -63,7 +63,7 @@ typedef struct {
     int s_count;
 } MolochStringHead_t;
 typedef HASH_VAR(s_, MolochStringHash_t, MolochStringHead_t, 1);
-typedef HASH_VAR(s_, MolochStringHashStd_t, MolochStringHead_t, 23);
+typedef HASH_VAR(s_, MolochStringHashStd_t, MolochStringHead_t, 13);
 
 
 /******************************************************************************/
@@ -92,12 +92,12 @@ typedef struct {
 } MolochFieldInfo_t;
 
 typedef union {
-        char                  *str;
-        GPtrArray             *sarray;
-        MolochStringHashStd_t *shash;
-        int                    i;
-        GArray                *iarray;
-        MolochIntHashStd_t    *ihash;
+    char                  *str;
+    GPtrArray             *sarray;
+    MolochStringHashStd_t *shash;
+    int                    i;
+    GArray                *iarray;
+    MolochIntHashStd_t    *ihash;
 } MolochField_t;
 
 /******************************************************************************/
@@ -258,6 +258,8 @@ typedef struct moloch_session {
     uint16_t    outstandingQueries;
     uint16_t    sshLen;
 
+    uint8_t     ip_tos;
+    uint8_t     tcp_flags;
     uint8_t     sshCode;
 
     uint16_t    haveNidsTcp:1;
@@ -276,6 +278,17 @@ typedef struct moloch_session_head {
     int                    q_count;
     int                    h_count;
 } MolochSessionHead_t;
+
+
+#define MOLOCH_TYPE_ALLOC(type) (type *)(g_slice_alloc(sizeof(type)))
+#define MOLOCH_TYPE_ALLOC0(type) (type *)(g_slice_alloc0(sizeof(type)))
+#define MOLOCH_TYPE_FREE(type,mem) g_slice_free1(sizeof(type),mem)
+
+void *moloch_size_alloc(int size, int zero);
+int   moloch_size_free(void *mem);
+#define MOLOCH_SIZE_ALLOC(name, s)  moloch_size_alloc(s, 0)
+#define MOLOCH_SIZE_ALLOC0(name, s) moloch_size_alloc(s, 1)
+#define MOLOCH_SIZE_FREE(name, mem) moloch_size_free(mem)
 
 
 /******************************************************************************/
@@ -346,7 +359,7 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
 void  moloch_db_init();
 int   moloch_db_tags_loading();
-char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id);
+char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id);
 void  moloch_db_save_session(MolochSession_t *session, int final);
 void  moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tag, MolochTag_cb func);
 void  moloch_db_exit();
@@ -370,8 +383,8 @@ void moloch_detect_exit();
  * http.c
  */
 
-#define MOLOCH_HTTP_BUFFER_SIZE_S 9999
-#define MOLOCH_HTTP_BUFFER_SIZE_L 10000000
+
+#define MOLOCH_HTTP_BUFFER_SIZE 10000
 
 void moloch_http_init();
 
@@ -381,7 +394,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
 
 gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
-char *moloch_http_get_buffer(int size);
+#define moloch_http_get_buffer(s) MOLOCH_SIZE_ALLOC(buffer, s)
 void moloch_http_exit();
 int moloch_http_queue_length(void *server);
 

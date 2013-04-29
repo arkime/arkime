@@ -6,7 +6,10 @@ mixin arrayList(values, title, expr)
       each value,i in values 
         if (i > 0)
           |, 
-        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+        if (value.length == 0)
+          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
+        else
+          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
 
 //- Standard method to print ip, port, geo, and asn info
 mixin ipPrint(ip,port,geo,as,expr)
@@ -70,8 +73,8 @@ div.sessionDetail(id='sessionDetail#{session.id}')
       | &nbsp;
       | IP Protocol: 
       a(href='#', onclick='return addExpression("protocol == #{session.pr}");') #{session.pr}
-    mixin arrayList(session.user, "Users", "user")
 
+    mixin arrayList(session.user, "Users", "user")
 
     dt Src IP/Port
     dd

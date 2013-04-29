@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 7;
+var MIN_DB_VERSION = 8;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -217,6 +217,10 @@ function deleteFile(node, id, path, cb) {
 }
 
 function isLocalView(node, yesCB, noCB) {
+  if (node === Config.nodeName()) {
+    return yesCB();
+  }
+
   Db.molochNodeStatsCache(node, function(err, stat) {
     if (err || stat.hostname !== os.hostname()) {
       noCB();
@@ -310,7 +314,8 @@ app.get('/about', function(req, res) {
   }
   res.render('about', {
     user: req.user,
-    title: 'About'
+    title: 'About',
+    titleLink: 'aboutLink'
   });
 });
 
@@ -351,6 +356,10 @@ app.get('/password', function(req, res) {
 
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
+  }
+
+  if (Config.get("disableChangePassword", false)) {
+    return res.send("Disabled");
   }
 
   if (req.query.userId) {
@@ -588,7 +597,7 @@ app.get('/esstats.json', function(req, res) {
 app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
-  var columns = ["", "_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
+  var columns = ["", "_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):500);
 
   var query = {fields: columns,
@@ -694,10 +703,26 @@ app.get('/dstats.json', function(req, res) {
   });
 });
 
+app.get('/:nodeName/:fileNum/filesize.json', function(req, res) {
+  Db.fileIdToFile(req.params.nodeName, req.params.fileNum, function(file) {
+    if (!file) {
+      return res.send({filesize: -1});
+    }
+
+    fs.stat(file.name, function (err, stats) {
+      if (err || !stats) {
+        return res.send({filesize: -1});
+      } else {
+        return res.send({filesize: stats.size});
+      }
+    });
+  });
+});
+
 app.get('/files.json', function(req, res) {
   noCache(req, res);
 
-  var columns = ["num", "node", "name", "locked", "first", "size"];
+  var columns = ["num", "node", "name", "locked", "first", "filesize"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):500);
 
   var query = {fields: columns,
@@ -726,12 +751,24 @@ app.get('/files.json', function(req, res) {
         }
 
         async.forEach(results.results, function (item, cb) {
-          fs.stat(item.name, function (err, stats) {
-            if (err || !stats) {
-              item.size = -1;
-            } else {
-              item.size = stats.size/1000000.0;
-            }
+          if (item.filesize && item.filesize !== 0) {
+            return cb(null);
+          }
+
+          isLocalView(item.node, function () {
+            fs.stat(item.name, function (err, stats) {
+              if (err || !stats) {
+                item.filesize = -1;
+              } else {
+                item.filesize = stats.size;
+                if (item.locked) {
+                  Db.updateFileSize(item, stats.size);
+                }
+              }
+              cb(null);
+            });
+          }, function () {
+            item.filesize = -2;
             cb(null);
           });
         }, function (err) {
@@ -932,7 +969,7 @@ function lookupQueryItems(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho"];
+  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
   var i;
 
@@ -1561,8 +1598,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
   Db.get('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, function(err, session) {
     if (err || !session.exists) {
       console.log("session get error", err, session);
-      endCb("Not Found", null);
-      return;
+      return endCb("Not Found", null);
     }
 
     if (maxPackets && session._source.ps.length > maxPackets) {
@@ -1580,7 +1616,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
       if (item < 0) {
         newFormat = true;
         fileNum = item * -1;
-        return nextCb();
+        return nextCb(null);
       } else if (newFormat) {
         pos  = item;
       } else  {
@@ -1596,16 +1632,15 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 
         Db.fileIdToFile(session._source.no, fileNum, function(file) {
           if (!file) {
-            console.log("ERROR - Not found", session._source.no + '-' + fileNum);
-            nextCb("ERROR - Not found", session._source.no + '-' + fileNum);
-            return;
+            console.log("ERROR - File mapping not found in DB", session._source.no + '-' + fileNum);
+            return nextCb("File mapping not found in DB " + session._source.no + '-' + fileNum);
           }
           pcap = new Pcap(file.name);
           pcap.fileNum = fileNum;
           pcap.open(function (err) {
             if (err) {
               console.log("ERROR - Couldn't open file ", err);
-              nextCb("ERROR - Couldn't open file " + err);
+              return nextCb("Couldn't open file " + err);
             }
             if (headerCb) {
               pcap.readHeader(headerCb);
@@ -1618,7 +1653,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
         processFile(pcap, pos, nextCb);
       }
     },
-    function (err, results)
+    function (pcapErr, results)
     {
       if (pcap) {
         pcap.close();
@@ -1672,7 +1707,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
           });
         }],
         function(err, results) {
-          endCb(null, session._source);
+          endCb(pcapErr, session._source);
         }
       );
     });
@@ -2228,9 +2263,8 @@ function localSessionDetail(req, res) {
     cb(null);
   },
   function(err, session) {
-    if (err) {
-      res.send("Error");
-      return;
+    if (err && session === null) {
+      return res.send("Error " +  err);
     }
     session.id = req.params.id;
     session.ta = session.ta.sort();
@@ -2249,7 +2283,7 @@ function localSessionDetail(req, res) {
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
-      localSessionDetailReturn(req, res, session, [{data: "No pcap data found"}]);
+      localSessionDetailReturn(req, res, session, [{data: err || "No pcap data found"}]);
     } else if (packets[0].ip.p === 1) {
       Pcap.reassemble_icmp(packets, function(err, results) {
         localSessionDetailReturn(req, res, session, results);
@@ -2719,6 +2753,10 @@ app.post('/updateUser/:userId', function(req, res) {
 app.post('/changePassword', function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (Config.get("disableChangePassword", false)) {
+    return error("Disabled");
   }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {

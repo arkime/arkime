@@ -147,4 +147,8 @@ exports.basePath = function(node) {
   return exports.getFull(node || internals.nodeName, "webBasePath", "/");
 };
 
+exports.nodeName = function() {
+  return internals.nodeName;
+};
+
 dropPrivileges();

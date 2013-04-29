@@ -80,7 +80,7 @@ void parse_args(int argc, char **argv)
         config.configFile = g_strdup("/data/moloch/etc/config.ini");
 
     if (showVersion) {
-        printf("moloch-capture %s %zd\n", PACKAGE_VERSION, sizeof(MolochSession_t));
+        printf("moloch-capture %s session size=%zd\n", PACKAGE_VERSION, sizeof(MolochSession_t));
         exit(0);
     }
 
@@ -105,7 +105,24 @@ void parse_args(int argc, char **argv)
         LOG("hostName = %s", config.hostName);
     }
 }
+/******************************************************************************/
+void *moloch_size_alloc(int size, int zero)
+{
+    size += 8;
+    void *mem = (zero?g_slice_alloc0(size):g_slice_alloc(size));
+    memcpy(mem, &size, 4);
+    return mem + 8;
+}
+/******************************************************************************/
+int moloch_size_free(void *mem)
+{
+    int size;
+    mem -= 8;
 
+    memcpy(&size, mem, 4);
+    g_slice_free1(size, mem);
+    return size - 8;
+}
 /******************************************************************************/
 void cleanup(int UNUSED(sig))
 {
@@ -177,7 +194,7 @@ gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
     if (hstring)
         return FALSE;
 
-    hstring = malloc(sizeof(*hstring));
+    hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
     if (copy) {
         hstring->str = g_strdup(string);
     } else {
@@ -320,6 +337,7 @@ gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
     }
     return TRUE;
 }
+/******************************************************************************/
 /******************************************************************************/
 int main(int argc, char **argv)
 {

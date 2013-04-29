@@ -196,7 +196,7 @@ void moloch_config_load()
     config.maxStreams       = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets       = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
     config.minFreeSpaceG    = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
-    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE_S+100, MOLOCH_HTTP_BUFFER_SIZE_L-100);
+    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
     config.maxESConns       = moloch_config_int(keyfile, "maxESConns", 100, 10, 1000);
     config.maxESRequests    = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);

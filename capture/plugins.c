@@ -138,8 +138,7 @@ int moloch_plugins_register_internal(const char *            name,
         exit(-1);
     }
     
-    plugin = malloc(sizeof(MolochPlugin_t));
-    memset(plugin, 0, sizeof(*plugin));
+    plugin = MOLOCH_TYPE_ALLOC0(MolochPlugin_t);
     plugin->name = strdup(name);
     if (storeData) {
         plugin->num  = numPlugins++;
@@ -415,7 +414,7 @@ void moloch_plugins_exit()
 
     HASH_FORALL_POP_HEAD(p_, plugins, plugin, 
         free(plugin->name);
-        free(plugin);
+        MOLOCH_TYPE_FREE(MolochPlugin_t, plugin);
     );
 }
 /******************************************************************************/

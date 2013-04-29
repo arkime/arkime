@@ -32,7 +32,7 @@
 #include "bsb.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 7
+#define MOLOCH_MIN_DB_VERSION 8
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -323,7 +323,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
                     BSB_EXPORT_u08(jbsb, ',');
                     g_free(string->str);
-                    free(string);
+                    MOLOCH_TYPE_FREE(MolochString_t, string);
                 }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_u08(jbsb, ']');
@@ -343,7 +343,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
                     BSB_EXPORT_u08(jbsb, ',');
                     g_free(string->str);
-                    free(string);
+                    MOLOCH_TYPE_FREE(MolochString_t, string);
                 }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_u08(jbsb, ']');
@@ -374,7 +374,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
                     BSB_EXPORT_u08(jbsb, ',');
                     g_free(string->str);
-                    free(string);
+                    MOLOCH_TYPE_FREE(MolochString_t, string);
                 }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_u08(jbsb, ']');
@@ -438,9 +438,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                     BSB_EXPORT_u08(jbsb, ',');
                     g_free(hstring->str);
-                    free(hstring);
+                    MOLOCH_TYPE_FREE(MolochString_t, hstring);
                 );
-                free(shash);
+                MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
                 break;
@@ -453,9 +453,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 HASH_FORALL_POP_HEAD(i_, *ihash, hint,
                     BSB_EXPORT_sprintf(jbsb, "%u", hint->i_hash);
                     BSB_EXPORT_u08(jbsb, ',');
-                    free(hint);
+                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
                 );
-                free(ihash);
+                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
                 break;
@@ -502,14 +502,14 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 HASH_FORALL_POP_HEAD(i_, *ihash, hint,
                     BSB_EXPORT_sprintf(jbsb, "%u", htonl(hint->i_hash));
                     BSB_EXPORT_u08(jbsb, ',');
-                    free(hint);
+                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
                 );
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
                 BSB_EXPORT_sprintf(jbsb, "],");
-                free(ihash);
+                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
             }
-            free(session->fields[pos]);
+            MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
             session->fields[pos] = 0;
         }
     }
@@ -580,7 +580,7 @@ void moloch_db_update_stats()
     static uint64_t lastSessions = 0;
     static uint64_t lastDropped = 0;
 
-    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
+    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
 
     gettimeofday(&currentTime, NULL);
@@ -597,13 +597,15 @@ void moloch_db_update_stats()
     dbTotalSessions += (totalSessions - lastSessions);
     dbTotalDropped += (totalDropped - lastDropped);
     dbTotalK += (totalBytes - lastBytes)/1024;
+    uint64_t mem = (uint64_t)sbrk(0);
     int diffms = (currentTime.tv_sec - dbLastTime.tv_sec)*1000 + (currentTime.tv_usec/1000 - dbLastTime.tv_usec/1000);
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S,
+    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
         "\"hostname\": \"%s\", "
         "\"currentTime\": %u, "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
+        "\"memory\": %" PRIu64 ", "
         "\"totalPackets\": %" PRIu64 ", "
         "\"totalK\": %" PRIu64 ", "
         "\"totalSessions\": %" PRIu64 ", "
@@ -618,6 +620,7 @@ void moloch_db_update_stats()
         (uint32_t)currentTime.tv_sec,
         (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
         moloch_nids_monitoring_sessions(),
+        mem,
         dbTotalPackets,
         dbTotalK,
         dbTotalSessions,
@@ -648,7 +651,7 @@ void moloch_db_update_dstats(int n)
     char key[200];
     int  key_len = 0;
 
-    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
+    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
 
     gettimeofday(&currentTime, NULL);
@@ -665,14 +668,16 @@ void moloch_db_update_dstats(int n)
 
     const uint64_t cursec = currentTime.tv_sec;
     const uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000);
+    uint64_t mem = (uint64_t)sbrk(0);
 
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S,
+    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
         "\"nodeName\": \"%s\", "
         "\"interval\": %d, "
         "\"currentTime\": %" PRIu64 ", "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
+        "\"memory\": %" PRIu64 ", "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
@@ -684,6 +689,7 @@ void moloch_db_update_dstats(int n)
         cursec,
         (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
         moloch_nids_monitoring_sessions(),
+        mem,
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),
@@ -753,22 +759,22 @@ void moloch_db_get_sequence_number_cb(unsigned char *data, int data_len, gpointe
         if (r->func)
             r->func(atoi((char*)version), r->uw);
     }
-    free(r);
+    MOLOCH_TYPE_FREE(MolochSeqRequest_t, r);
 }
 /******************************************************************************/
 void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw)
 {
     char                key[100];
     int                 key_len;
-    MolochSeqRequest_t *r = malloc(sizeof(MolochSeqRequest_t));
-    char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
+    MolochSeqRequest_t *r = MOLOCH_TYPE_ALLOC(MolochSeqRequest_t);
+    char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
 
     r->name = name;
     r->func = func;
     r->uw   = uw;
 
     key_len = snprintf(key, sizeof(key), "/sequence/sequence/%s", name);
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, "{}");
+    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{}");
     moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_get_sequence_number_cb, r);
 }
 
@@ -821,20 +827,20 @@ void moloch_db_create_file_cb(unsigned char UNUSED(*data), int UNUSED(data_len),
     outstandingFileRequests--;
 }
 /******************************************************************************/
-char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id)
+char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id)
 {
     char               key[100];
     int                key_len;
     int                num = ++lastFileNum;
     static char        filename[1024];
     struct tm         *tmp;
-    char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
+    char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     int                json_len;
     const uint64_t     fp = firstPacket;
 
 
     if (name) {
-        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":1}", num, name, fp, config.nodeName);
+        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":1}", num, name, fp, config.nodeName, size);
         key_len = snprintf(key, sizeof(key), "/files/file/%s-%d?refresh=true", config.nodeName,num);
     } else {
         tmp = localtime(&firstPacket);
@@ -844,7 +850,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint32_t *id)
             strcat(filename, "/");
         snprintf(filename+strlen(filename), sizeof(filename) - strlen(filename), "%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
-        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":0}", num, filename, fp, config.nodeName);
+        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":0}", num, filename, fp, config.nodeName);
         key_len = snprintf(key, sizeof(key), "/files/file/%s-%d?refresh=true", config.nodeName,num);
     }
 
@@ -988,7 +994,7 @@ void moloch_db_load_tags()
 
 
         if (id && n) {
-            MolochTag_t *tag = malloc(sizeof(MolochTag_t));
+            MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
             tag->tagName = g_strndup((char*)id, (int)id_len);
             tag->tagValue = atol((char*)n);
             HASH_ADD(tag_, tags, tag->tagName, tag);
@@ -1022,7 +1028,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
 {
     g_free(r->escaped);
     free(r->tag);
-    free(r);
+    MOLOCH_TYPE_FREE(MolochTagRequest_t, r);
     outstandingTagRequests--;
 
     while (tagRequests.t_count > 0) {
@@ -1039,7 +1045,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
                 r->func(r->session, r->tagtype, tag->tagValue);
             g_free(r->escaped);
             free(r->tag);
-            free(r);
+            MOLOCH_TYPE_FREE(MolochTagRequest_t, r);
             continue;
         }
 
@@ -1063,7 +1069,7 @@ void moloch_db_tag_create_cb(unsigned char *data, int UNUSED(data_len), gpointer
         return;
     }
 
-    MolochTag_t *tag = malloc(sizeof(MolochTag_t));
+    MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
     tag->tagName = g_strdup(r->tag);
     tag->tagValue = r->newSeq;
     HASH_ADD(tag_, tags, tag->tagName, tag);
@@ -1078,12 +1084,12 @@ void moloch_db_tag_seq_cb(uint32_t newSeq, gpointer uw)
     MolochTagRequest_t *r = uw;
     char                key[500];
     int                 key_len;
-    char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE_S);
+    char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
 
     r->newSeq = newSeq;
 
     key_len = snprintf(key, sizeof(key), "/tags/tag/%s?op_type=create", r->escaped);
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE_S, "{\"n\":%u}", newSeq);
+    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"n\":%u}", newSeq);
 
     moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_tag_create_cb, r);
 }
@@ -1108,7 +1114,7 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
         unsigned char     *n = 0;
         n = moloch_js0n_get(fields, fields_len, "n", &n_len);
 
-        MolochTag_t *tag = malloc(sizeof(MolochTag_t));
+        MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
         tag->tagName = g_strdup(r->tag);
         tag->tagValue = atol((char*)n);
         HASH_ADD(tag_, tags, tag->tagName, tag);
@@ -1133,7 +1139,7 @@ void moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tagnam
         return;
     }
 
-    MolochTagRequest_t *r = malloc(sizeof(MolochTagRequest_t));
+    MolochTagRequest_t *r = MOLOCH_TYPE_ALLOC(MolochTagRequest_t);
     r->session = session;
     r->func    = func;
     r->tag     = strdup(tagname);

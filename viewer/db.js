@@ -191,8 +191,8 @@ exports.esVersion = function (cb) {
 internals.molochNodeStatsCache = {};
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
-    if (err) {
-      cb(err, null);
+    if (err || !stat.exists) {
+      cb(err || "Unknown node " + name, null);
     } else {
       internals.molochNodeStatsCache[name] = stat._source;
       internals.molochNodeStatsCache[name]._timeStamp = Date.now();
@@ -252,7 +252,7 @@ exports.tagIdToName = function (id, cb) {
       internals.tagId2Name[id] = tdata.hits.hits[0]._id;
       internals.tagName2Id[tdata.hits.hits[0]._id] = id;
       return cb(internals.tagId2Name[id]);
-    } 
+    }
 
     return cb(null);
   });
@@ -334,4 +334,15 @@ exports.numberOfDocuments = function (index, cb) {
     }
     cb(null, num);
   });
+};
+
+exports.updateFileSize = function (item, filesize) {
+  // _update has bug so do ourselves
+  internals.elasticSearchClient.createCall({data:JSON.stringify({script: "ctx._source.filesize = " + filesize}),
+                                            path:"/files/file/" + item.id + "/_update",
+                                            method: "POST"}, internals.elasticSearchClient.clientOptions)
+    .on('error', function(error) {
+      console.log("ERROR - updateFileSize", error);
+    })
+    .exec();
 };

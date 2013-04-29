@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.20.6** and **0.90.0 RC2** as of **2013-4-17**
+Tested with **0.20.6** and **0.90.0** as of **2013-4-29**
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -83,7 +83,7 @@ Tested with **0.20.6** and **0.90.0 RC2** as of **2013-4-17**
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.20.6 <http://www.elasticsearch.org/downloads/0-20-6/>`_.
+   0.90.0 <http://www.elasticsearch.org/downloads/0-90-0/>`_.
 
 4. Uncompress the archive you downloaded.
 
