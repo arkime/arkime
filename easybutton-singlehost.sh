@@ -59,7 +59,7 @@ if [ $JAVA_VAL -ne 0 ]; then
     fi
 
     if [ -f "/etc/debian_version" ]; then
-        apt get install openjdk-7-jdk
+        apt-get install openjdk-7-jdk
     elif [ -f "/etc/redhat-release" ]; then
         yum install java-1.7.0-openjdk
     else
