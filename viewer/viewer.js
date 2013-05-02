@@ -622,7 +622,8 @@ app.get('/stats.json', function(req, res) {
         } else {
           var results = {total: result.hits.total, results: []};
           for (i = 0; i < result.hits.hits.length; i++) {
-            result.hits.hits[i].fields.id = result.hits.hits[i]._id;
+            result.hits.hits[i].fields.id     = result.hits.hits[i]._id;
+            result.hits.hits[i].fields.memory = result.hits.hits[i].fields.memory || 0;
             results.results.push(result.hits.hits[i].fields);
           }
           cb(null, results);
