@@ -1202,11 +1202,13 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     filesCreate();
     esAlias("remove", "files_v2", "files");
     esCopy("files_v2", "files_v3", "file");
+    print "files_v2 table can be deleted now\n";
 
     sessionsUpdate();
     usersUpdate();
+    statsUpdate();
+    dstatsUpdate();
 
-    print "files_v2 table can be deleted now\n";
     print "Finished\n";
 } elsif ($main::versionNumber >= 7 && $main::versionNumber <= 8) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
@@ -1219,6 +1221,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     usersUpdate();
     statsUpdate();
     dstatsUpdate();
+
+    print "Finished\n";
 } else {
     print "db.pl is hosed\n";
 }
