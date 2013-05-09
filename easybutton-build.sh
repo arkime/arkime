@@ -39,7 +39,7 @@ cd thirdparty
 if [ ! -f "glib-$GLIB.tar.gz" ]; then
   wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-$GLIB.tar.xz
 fi
-xzcat glib-$GLIB.tar.gz | tar xf -
+xzcat glib-$GLIB.tar.xz | tar xf -
 (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; make)
 
 # yara
