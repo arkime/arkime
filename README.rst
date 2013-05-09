@@ -394,7 +394,7 @@ Upgrading
 Currently upgrading from previous versions of Moloch is a manual process, however recorded sessions and pcap files should be retained
 
 * Update the moloch repository from github
-* Build the moloch system using "make"
+* Build the moloch system using "easybutton-build.sh"
 * Shut down currently running capture and viewer processes
 * Optionally use "make install" to copy the new binaries and other items and/or push the new items to the capture hosts
 * Run "npm update" in the viewer directory if not using "make install"

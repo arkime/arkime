@@ -15,6 +15,10 @@ GEOIP=1.4.8
 PCAP=1.3.0
 NIDS=1.24
 
+TDIR="/data/moloch"
+if [ "$#" -gt 0 ]; then
+    TDIR="$1"
+fi
 
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"

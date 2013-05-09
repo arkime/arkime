@@ -82,7 +82,7 @@ umask 022
 
 
 # Building thirdparty libraries and moloch
-./easybutton-build.sh
+./easybutton-build.sh "$TDIR"
 
 # Increase limits
 grep -q "hard.*nofile.*128000" /etc/security/limits.conf
@@ -178,7 +178,7 @@ chown daemon:daemon ${TDIR}/raw
 echo "MOLOCH: Running config script"
 
 
-${INSTALL_DIR}/easybutton-config.sh
+${INSTALL_DIR}/easybutton-config.sh "$TDIR"
 
 
 echo "MOLOCH: Starting ElasticSearch"
