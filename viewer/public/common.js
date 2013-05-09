@@ -328,6 +328,23 @@ function handleUrlParams() {
     $("#startDate").val(dateString(urlParams.startTime, ' '));
     $("#stopDate").val(dateString(urlParams.stopTime, ' '));
     $("#date").val("-2");
+  } else if (urlParams.centerTime && urlParams.timeWindow) {
+    var ct;
+    if (! /^[0-9]+$/.test(urlParams.centerTime)) {
+      ct = Date.parse(urlParams.centerTime.replace("+", " "))/1000;
+      if (isNaN(st) || st === null) {
+        ct = utcParser(urlParams.centerTime).getTime()/1000;
+      }
+    } else {
+      ct = urlParams.centerTime;
+    }
+
+    urlParams.startTime = ct - parseInt(urlParams.timeWindow,10)*60;
+    urlParams.stopTime = ct + parseInt(urlParams.timeWindow,10)*60;
+
+    $("#startDate").val(dateString(urlParams.startTime, ' '));
+    $("#stopDate").val(dateString(urlParams.stopTime, ' '));
+    $("#date").val("-2");
   }
 
   if (urlParams.useDir=== "0" && urlParams.usePort === "0") {

@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 var ini    = require('iniparser'),
     os     = require('os'),
+    fs     = require('fs'),
     crypto = require('crypto');
 
 var internals = {
@@ -94,6 +95,10 @@ exports.auth2obj = function(auth) {
 // Config File & Dropping Privileges
 //////////////////////////////////////////////////////////////////////////////////
 
+if (!fs.existsSync(internals.configFile)) {
+  console.log("ERROR - Couldn't open config file '" + internals.configFile + "' maybe use the -c <configfile> option");
+  process.exit(1);
+}
 internals.config = ini.parseSync(internals.configFile);
 
 

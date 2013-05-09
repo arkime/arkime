@@ -60,8 +60,11 @@
 "host.http.cnt"           return "host.http.cnt"
 "host.http"               return "host.http"
 "host"                    return "host"
+"http.md5.cnt"            return "http.md5.cnt"
+"http.md5"                return "http.md5"
 "http.uri.cnt"            return "http.uri.cnt"
 "http.uri"                return "http.uri"
+"http.ua.cnt"             return "http.ua.cnt"
 "http.ua"                 return "http.ua"
 "icmp"                    return "icmp"
 "\"icmp\""                return "icmp"
@@ -100,7 +103,8 @@
 "user.cnt"                return "user.cnt"
 "user"                    return "user"
 [/\w*._:-]+               return 'ID'
-\"[^"]+\"                 return 'QUOTEDSTR'
+\"[^"\\]*(?:\\.[^"\\]*)*\" return 'QUOTEDSTR'
+\/[^/\\]*(?:\\.[^/\\]*)*\/ return 'REGEXSTR'
 "<="                      return 'lte'
 "<"                       return 'lt'
 ">="                      return 'gte'
@@ -163,6 +167,7 @@ RANGEFIELD: databytes           {$$ = 'db'}
           | 'ip.dns.cnt'        {$$ = 'dnsipcnt'}
           | 'ip.email.cnt'      {$$ = 'eipcnt'}
           | 'ip.xff.cnt'        {$$ = 'xffscnt'}
+          | 'http.md5.cnt'      {$$ = 'hmd5cnt'}
           | 'http.ua.cnt'       {$$ = 'uacnt'}
           | 'user.cnt'          {$$ = 'usercnt'}
           | 'host.dns.cnt'      {$$ = 'dnshocnt'}
@@ -206,6 +211,7 @@ TERMFIELD  : 'id'        {$$ = '_id'}
            | 'email.mv'  {$$ = 'emv'}
            | 'email.fn'  {$$ = 'efn'}
            | 'email.ct'  {$$ = 'ect'}
+           | 'http.md5'  {$$ = 'hmd5'}
            | 'rootId'    {$$ = 'ro'}
            ;
 
@@ -216,15 +222,19 @@ UPTERMFIELD  : 'country.src'   {$$ = 'g1'}
              | 'country.dns'   {$$ = 'gdnsip'}
              ;
 
-TEXTFIELD  : 'asn.src'         {$$ = 'as1'}
-           | 'asn.dst'         {$$ = 'as2'}
-           | 'asn.dns'         {$$ = 'asdnsip'}
-           | 'asn.xff'         {$$ = 'asxff'}
-           | 'asn.email'       {$$ = 'aseip'}
-           | 'email.subject'   {$$ = 'esub'}
-           | 'email.ua'        {$$ = 'eua'}
-           | 'cert.subject.on' {$$ = 'tls.sOn'}
-           | 'cert.issuer.on'  {$$ = 'tls.iOn'}
+LOTEXTFIELD  : 'asn.src'         {$$ = 'as1'}
+             | 'asn.dst'         {$$ = 'as2'}
+             | 'asn.dns'         {$$ = 'asdnsip'}
+             | 'asn.xff'         {$$ = 'asxff'}
+             | 'asn.email'       {$$ = 'aseip'}
+             | 'email.subject'   {$$ = 'esub'}
+             | 'email.ua'        {$$ = 'eua'}
+             | 'cert.subject.on' {$$ = 'tls.sOn'}
+             | 'cert.issuer.on'  {$$ = 'tls.iOn'}
+             ;
+
+TEXTFIELD  : 'http.uri'        {$$ = 'us'}
+           | 'http.ua'         {$$ = 'ua'}
            ;
 
 IPFIELD  : 'ip'       {$$ = 0}
@@ -272,6 +282,8 @@ STR : ID
     | header.src.cnt
     | host
     | host.cnt
+    | http.md5
+    | http.md5.cnt
     | http.ua
     | http.ua.cnt
     | http.uri
@@ -293,6 +305,7 @@ STR : ID
     | port.src
     | protocol
     | QUOTEDSTR
+    | REGEXSTR
     | ssh.key
     | ssh.key.cnt
     | ssh.ver
@@ -310,14 +323,6 @@ STR : ID
 e
     : e '&&' e
         {$$ = {and: [$1, $3]};}
-    | 'http.uri' '==' STR
-        {$$ = {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}};}
-    | 'http.uri' '!=' STR
-        {$$ = {not: {query: {text: {us: {query: $3, type: "phrase", operator: "and"}}}}};}
-    | 'http.ua' '==' STR
-        {$$ = {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}};}
-    | 'http.ua' '!=' STR
-        {$$ = {not: {query: {text: {ua: {query: $3, type: "phrase", operator: "and"}}}}};}
     | e '||' e
         {$$ = {or: [$1, $3]};}
     | '!' e %prec UMINUS
@@ -357,85 +362,25 @@ e
          $$.or[0].range.p1[$2] = $3;
          $$.or[1].range.p2[$2] = $3;}
     | LOTERMFIELD '!=' STR
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {query: {wildcard: {}}}};
-            $$.not.query.wildcard[$1] = str;
-          } else {
-            $$ = {not: {term: {}}};
-            $$.not.term[$1] = str;
-          }
-        }
+        {$$ = {not: str2Query($1, "term", $3.toLowerCase())};}
     | LOTERMFIELD '==' STR
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {query: {wildcard: {}}};
-            $$.query.wildcard[$1] = str;
-          } else {
-            $$ = {term: {}};
-            $$.term[$1] = str;
-          }
-        }
+        {$$ = str2Query($1, "term", $3.toLowerCase());}
     | TERMFIELD '!=' STR
-        { var str = stripQuotes($3);
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {query: {wildcard: {}}}};
-            $$.not.query.wildcard[$1] = str;
-          } else {
-            $$ = {not: {term: {}}};
-            $$.not.term[$1] = str;
-          }
-        }
+        {$$ = {not: str2Query($1, "term", $3)};}
     | TERMFIELD '==' STR
-        { var str = stripQuotes($3);
-          if (str.indexOf("*") !== -1) {
-            $$ = {query: {wildcard: {}}};
-            $$.query.wildcard[$1] = str;
-          } else {
-            $$ = {term: {}};
-            $$.term[$1] = str;
-          }
-        }
+        {$$ = str2Query($1, "term", $3);}
     | UPTERMFIELD '!=' STR
-        { var str = stripQuotes($3).toUpperCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {query: {wildcard: {}}}};
-            $$.not.query.wildcard[$1] = str;
-          } else {
-            $$ = {not: {term: {}}};
-            $$.not.term[$1] = str;
-          }
-        }
+        {$$ = {not: str2Query($1, "term", $3.toUpperCase())};}
     | UPTERMFIELD '==' STR
-        { var str = stripQuotes($3).toUpperCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {query: {wildcard: {}}};
-            $$.query.wildcard[$1] = str;
-          } else {
-            $$ = {term: {}};
-            $$.term[$1] = str;
-          }
-        }
+        {$$ = str2Query($1, "term", $3.toUpperCase());}
+    | LOTEXTFIELD '!=' STR
+        {$$ = {not: str2Query($1, "text", $3.toLowerCase())};}
+    | LOTEXTFIELD '==' STR
+        {$$ = str2Query($1, "text", $3.toLowerCase());}
     | TEXTFIELD '!=' STR
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {query: {wildcard: {}}}};
-            $$.not.query.wildcard[$1] = str;
-          } else {
-            $$ = {not: {query: {text: {}}}};
-            $$.not.query.text[$1] = {query: str, type: "phrase", operator: "and"}
-          }
-        }
+        {$$ = {not: str2Query($1, "text", $3)};}
     | TEXTFIELD '==' STR
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {query: {wildcard: {}}};
-            $$.query.wildcard[$1] = str;
-          } else {
-            $$ = {query: {text: {}}};
-            $$.query.text[$1] = {query: str, type: "phrase", operator: "and"}
-          }
-        }
+        {$$ = str2Query($1, "text", $3);}
     | 'port' '==' NUMBER
         {$$ = {or: [{term: {p1: $3}}, {term: {p2: $3}}]};}
     | 'port' '!=' NUMBER
@@ -493,82 +438,66 @@ e
           $$ = {not: {term: {hh2: tag}}};
         }
     | country '==' STR 
-        { var str = stripQuotes($3).toUpperCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}, {query: {wildcard: {geip: str}}}]};
-          } else {
-            $$ = {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}, {term: {geip: str}}]};
-          }
+        { var str = $3.toUpperCase();
+          $$ = {or: [str2Query("g1", "term", str),
+                     str2Query("g2", "term", str),
+                     str2Query("gxff", "term", str),
+                     str2Query("gdnsip", "term", str),
+                     str2Query("geip", "term", str)
+                    ]
+               };
         }
     | country '!=' STR 
-        { var str = stripQuotes($3).toUpperCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {g1: str}}}, {query: {wildcard: {g2: str}}}, {query: {wildcard: {gxff: str}}}, {query: {wildcard: {gdnsip: str}}}, {query: {wildcard: {geip: str}}}]}};
-          } else {
-            $$ = {not: {or: [{term: {g1: str}}, {term: {g2: str}}, {term: {gxff: str}}, {term: {gdnsip: str}}, {term: {geip: str}}]}};
-          }
+        { var str = $3.toUpperCase();
+          $$ = {or: [str2Query("g1", "term", str),
+                     str2Query("g2", "term", str),
+                     str2Query("gxff", "term", str),
+                     str2Query("gdnsip", "term", str),
+                     str2Query("geip", "term", str)
+                    ]
+               };
+          $$ = {not: $$};
         }
     | asn '==' STR 
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}, {query: {wildcard: {aseip: str}}}]};
-          } else {
-            $$ = {or: [{query: {text: {as1:     {query: str, type: "phrase", operator: "and"}}}}, 
-                       {query: {text: {as2:     {query: str, type: "phrase", operator: "and"}}}}, 
-                       {query: {text: {asxff:   {query: str, type: "phrase", operator: "and"}}}},
-                       {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}},
-                       {query: {text: {aseip:   {query: str, type: "phrase", operator: "and"}}}}
-                      ]
-                 };
-          }
+        { var str = $3.toLowerCase();
+          
+          $$ = {or: [str2Query("as1", "text", str),
+                     str2Query("as2", "text", str),
+                     str2Query("asxff", "text", str),
+                     str2Query("asdnsip", "text", str),
+                     str2Query("aseip", "text", str)
+                    ]
+               };
         }
     | asn '!=' STR 
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {as1: str}}}, {query: {wildcard: {as2: str}}}, {query: {wildcard: {asxff: str}}}, {query: {wildcard: {asdnsip: str}}}, {query: {wildcard: {aseip: str}}}]}};
-          } else {
-            $$ = {not: {or: [{query: {text: {as1:     {query: str, type: "phrase", operator: "and"}}}}, 
-                             {query: {text: {as2:     {query: str, type: "phrase", operator: "and"}}}}, 
-                             {query: {text: {asxff:   {query: str, type: "phrase", operator: "and"}}}},
-                             {query: {text: {asdnsip: {query: str, type: "phrase", operator: "and"}}}},
-                             {query: {text: {aseip:   {query: str, type: "phrase", operator: "and"}}}}
-                            ]
-                 }};
-          }
+        { var str = $3.toLowerCase();
+          $$ = {or: [str2Query("as1", "text", str),
+                     str2Query("as2", "text", str),
+                     str2Query("asxff", "text", str),
+                     str2Query("asdnsip", "text", str),
+                     str2Query("aseip", "text", str)
+                    ]
+               };
+          $$ = {not: $$};
         }
     | host '!=' STR
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {not: {or: [{query: {wildcard: {ho: str}}},
-                             {query: {wildcard: {dnsho: str}}},
-                             {query: {wildcard: {eho: str}}}
-                            ]
-                       }
-                 };
-          } else {
-            $$ = {not: {or: [{query: {term: {ho: str}}},
-                             {query: {term: {dnsho: str}}},
-                             {query: {term: {eho: str}}}
-                            ]
-                       }
-                 };
-          }
+        { var str = $3.toLowerCase();
+
+          $$ = {or: [str2Query("ho", "term", str),
+                     str2Query("dnsho", "term", str),
+                     str2Query("eho", "term", str)
+                    ]
+               };
+          $$ = {not: $$};
         }
     | host '==' STR
-        { var str = stripQuotes($3).toLowerCase();
-          if (str.indexOf("*") !== -1) {
-            $$ = {or: [{query: {wildcard: {ho: str}}},
-                       {query: {wildcard: {dnsho: str}}},
-                       {query: {wildcard: {eho: str}}}
-                      ]
-                 };
-          } else {
-            $$ = {or: [{query: {term: {ho: str}}},
-                       {query: {term: {dnsho: str}}},
-                       {query: {term: {eho: str}}}
-                      ]
-                 };
-          }
+        { var str = $3.toLowerCase();
+
+          $$ = {or: [str2Query("ho", "term", str),
+                     str2Query("dnsho", "term", str),
+                     str2Query("eho", "term", str)
+                    ]
+               };
         }
     ;
 %%
@@ -674,4 +603,46 @@ function stripQuotes (str) {
     str =  str.substring(1, str.length-1);
   }
   return str;
+}
+
+var field2RawField = {
+    us: "rawus",
+    ua: "rawua",
+    as1: "rawas1",
+    as2: "rawas2",
+    asxff: "rawasff",
+    asdnsip: "rawasdnsip",
+    iOn: "rawiOn",
+    eua: "raweua",
+    esub: "rawesub",
+    aseip: "rawaseip"
+}
+
+function str2Query(field, kind, str)
+{
+    var obj;
+
+    if (str[0] === "/" && str[str.length -1] === "/") {
+        field = field2RawField[field] || field;
+        obj = {query: {regexp: {}}};
+        obj.query.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        return obj;
+    }
+
+    if (str[0] === "\"" && str[str.length -1] === "\"") {
+        str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+    }
+
+    if (str.indexOf("*") !== -1) {
+        field = field2RawField[field] || field;
+        obj = {query: {wildcard: {}}};
+        obj.query.wildcard[field] = str;
+    } else if (kind === "text") {
+        obj = {query: {text: {}}};
+        obj.query.text[field] = {query: str, type: "phrase", operator: "and"}
+    } else if (kind === "term") {
+        obj = {term: {}};
+        obj.term[field] = str;
+    }
+    return obj;
 }

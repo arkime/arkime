@@ -20,6 +20,11 @@
 
 # This is where everything is installed
 TDIR=/data/moloch
+if [ "$#" -gt 0 ]; then
+    TDIR="$1"
+    echo "Installing to ${TDIR}"
+fi
+
 
 ES=0.90.0
 NODEJS=0.8.23
@@ -43,6 +48,11 @@ fi
 
 if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
    echo "WARNING - looks like a umask 022 wasn't used for git clone, this might cause strange errors" 1>&2
+   sleep 3
+fi
+
+if [ -d "${TDIR}/logs" ]; then
+   echo "WARNING - looks like moloch was already installed on this host, make sure elasticsearch and capture aren't running" 1>&2
    sleep 3
 fi
 
@@ -81,6 +91,8 @@ if [ $LIMIT_VAL -ne 0 ]; then
   echo "MOLOCH: Adding entries to /etc/security/limits.conf"
   echo "* hard nofile 128000" >> /etc/security/limits.conf
   echo "* soft nofile 128000" >> /etc/security/limits.conf
+  echo "root hard nofile 128000" >> /etc/security/limits.conf
+  echo "root soft nofile 128000" >> /etc/security/limits.conf
 fi
 
 

@@ -66,11 +66,24 @@ script(type='text/javascript')
       $(nTr).addClass('opened');
       var aData = sessionsTable.fnGetData(nTr);
       $(nTr).find("td.sessionDetails img").attr("src", "DataTables-1.9.1/examples/examples_support/details_close.png");
+      var data = [];
+      if (localStorage) {
+        if (localStorage['moloch-line'] !== undefined) {
+          data.push({name: "line", value: localStorage['moloch-line']});
+        }
+        if (localStorage['moloch-base'] !== undefined) {
+          data.push({name: "base", value: localStorage['moloch-base']});
+        }
+        if (localStorage['moloch-ts'] !== undefined) {
+          data.push({name: "ts", value: localStorage['moloch-ts']});
+        }
+      }
 
       $.ajax( {
           "dataType": 'html',
           "type": "GET",
           "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
+          "data": data,
           "success": function(data) {
             sessionsTable.fnOpen( nTr, data, 'details' );
           }

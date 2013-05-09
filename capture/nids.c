@@ -403,21 +403,31 @@ moloch_nids_pcap_dump(const struct pcap_pkthdr *h, const u_char *sp)
 /******************************************************************************/
 void moloch_nids_new_session_http(MolochSession_t *session)
 {
-    session->http = MOLOCH_TYPE_ALLOC0(MolochSessionHttp_t);
+    MolochSessionHttp_t *http;
+
+    http = session->http = MOLOCH_TYPE_ALLOC0(MolochSessionHttp_t);
+
+    http->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
+    http->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
 }
 /******************************************************************************/
 void moloch_nids_free_session_http(MolochSession_t *session)
 {
-    if (session->http->urlString)
-        g_string_free(session->http->urlString, TRUE);
-    if (session->http->hostString)
-        g_string_free(session->http->hostString, TRUE);
-    if (session->http->uaString)
-        g_string_free(session->http->uaString, TRUE);
-    if (session->http->xffString)
-        g_string_free(session->http->xffString, TRUE);
+    MolochSessionHttp_t *http = session->http;
 
-    MOLOCH_TYPE_FREE(MolochSessionHttp_t, session->http);
+    if (http->urlString)
+        g_string_free(http->urlString, TRUE);
+    if (http->hostString)
+        g_string_free(http->hostString, TRUE);
+    if (http->uaString)
+        g_string_free(http->uaString, TRUE);
+    if (http->xffString)
+        g_string_free(http->xffString, TRUE);
+
+    g_checksum_free(http->checksum[0]);
+    g_checksum_free(http->checksum[1]);
+
+    MOLOCH_TYPE_FREE(MolochSessionHttp_t, http);
     session->http = 0;
 }
 /******************************************************************************/
@@ -426,33 +436,36 @@ void moloch_nids_new_session_email(MolochSession_t *session)
     if (!config.parseSMTP)
         return;
 
-    session->email = MOLOCH_TYPE_ALLOC0(MolochSessionEmail_t);
+    MolochSessionEmail_t *email;
 
-    session->email->line[0] = g_string_sized_new(100);
-    session->email->line[1] = g_string_sized_new(100);
+    email = session->email = MOLOCH_TYPE_ALLOC0(MolochSessionEmail_t);
 
-    session->email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
-    session->email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
+    email->line[0] = g_string_sized_new(100);
+    email->line[1] = g_string_sized_new(100);
 
-    DLL_INIT(s_, &(session->email->boundaries));
+    email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
+    email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
+
+    DLL_INIT(s_, &(email->boundaries));
 }
 /******************************************************************************/
 void moloch_nids_free_session_email(MolochSession_t *session)
 {
+    MolochSessionEmail_t *email = session->email;
     MolochString_t *string;
 
-    g_string_free(session->email->line[0], TRUE);
-    g_string_free(session->email->line[1], TRUE);
+    g_string_free(email->line[0], TRUE);
+    g_string_free(email->line[1], TRUE);
 
-    g_checksum_free(session->email->checksum[0]);
-    g_checksum_free(session->email->checksum[1]);
+    g_checksum_free(email->checksum[0]);
+    g_checksum_free(email->checksum[1]);
 
-    while (DLL_POP_HEAD(s_, &session->email->boundaries, string)) {
+    while (DLL_POP_HEAD(s_, &email->boundaries, string)) {
         g_free(string->str);
         MOLOCH_TYPE_FREE(MolochString_t, string);
     }
 
-    MOLOCH_TYPE_FREE(MolochSessionEmail_t, session->email);
+    MOLOCH_TYPE_FREE(MolochSessionEmail_t, email);
     session->email = 0;
 }
 /******************************************************************************/
@@ -1104,7 +1117,10 @@ void moloch_nids_root_init()
         nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
         if (nids_params.pcap_desc) {
             offlineFile = pcap_file(nids_params.pcap_desc);
-            realpath(config.pcapReadFile, offlinePcapFilename);
+            if (!realpath(config.pcapReadFile, offlinePcapFilename)) {
+                LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", config.pcapReadFile, errno);
+                exit(1);
+            }
         }
     } else {
 #ifdef SNF

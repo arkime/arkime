@@ -50,6 +50,9 @@ extern uint32_t              pluginsCbs;
 static http_parser_settings  parserSettings;
 static magic_t               cookie;
 
+static char                 *qclasses[256];
+static char                 *qtypes[256];
+
 
 /******************************************************************************/
 void moloch_detect_initial_tag(MolochSession_t *session)
@@ -486,6 +489,7 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
     http->inHeader &= ~(1 << session->which);
     http->inValue  &= ~(1 << session->which);
     http->inBody   &= ~(1 << session->which);
+    g_checksum_reset(http->checksum[session->which]);
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMB)
         moloch_plugins_cb_hp_omb(session, parser);
@@ -548,13 +552,14 @@ const char *moloch_memcasestr(const char *haystack, int haysize, const char *nee
 int
 moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 {
-    MolochSession_t *session = parser->data;
+    MolochSession_t     *session = parser->data;
+    MolochSessionHttp_t *http = session->http;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d", session->which);
 #endif
 
-    if (!(session->http->inBody & (1 << session->which))) {
+    if (!(http->inBody & (1 << session->which))) {
         if (moloch_memstr(at, length, "password=", 9)) {
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:password");
         }
@@ -569,8 +574,10 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             } 
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tmp);
         }
-        session->http->inBody |= (1 << session->which);
+        http->inBody |= (1 << session->which);
     }
+
+    g_checksum_update(http->checksum[session->which], (guchar *)at, length);
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OB)
         moloch_plugins_cb_hp_ob(session, parser, at, length);
@@ -693,6 +700,12 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         g_string_free(http->xffString, TRUE);
         http->xffString = NULL;
     }
+
+    if (http->inBody & (1 << session->which)) {
+        const char *md5 = g_checksum_get_string(http->checksum[session->which]);
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_MD5, session, (char*)md5, 32, TRUE);
+    }
+
     return 0;
 }
 
@@ -909,9 +922,20 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
 
         if (!namelen || BSB_IS_ERROR(bsb))
             break;
-        BSB_IMPORT_skip(bsb, 4); // qtype && qclass
+
+        short qtype = 0 , qclass = 0 ;
+        BSB_IMPORT_u16(bsb, qtype);
+        BSB_IMPORT_u16(bsb, qclass);
 
         char *lower = g_ascii_strdown((char*)name, namelen);
+
+        if (qclass <= 255 && qclasses[qclass]) {
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, qclasses[qclass]);
+        }
+
+        if (qtype <= 255 && qtypes[qtype]) {
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, qtypes[qtype]);
+        }
 
         if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
             g_free(lower);
@@ -1356,6 +1380,7 @@ void moloch_detect_init()
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_UA,       "ua",     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_REQ, "hh1",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_RES, "hh2",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_MD5,      "hmd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
 
     moloch_field_define_internal(MOLOCH_FIELD_SSH_VER,       "sshver", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_SSH_KEY,       "sshkey", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
@@ -1406,6 +1431,33 @@ void moloch_detect_init()
     } else {
         magic_load(cookie, NULL);
     }
+
+    qclasses[1]   = "dns:qclass:IN";
+    qclasses[2]   = "dns:qclass:CS";
+    qclasses[3]   = "dns:qclass:CH";
+    qclasses[4]   = "dns:qclass:HS";
+    qclasses[255] = "dns:qclass:ANY";
+
+    qtypes[1]   = "dns:qtype:A";
+    qtypes[2]   = "dns:qtype:NS";
+    qtypes[3]   = "dns:qtype:MD";
+    qtypes[4]   = "dns:qtype:MF";
+    qtypes[5]   = "dns:qtype:CNAME";
+    qtypes[6]   = "dns:qtype:SOA";
+    qtypes[7]   = "dns:qtype:MB";
+    qtypes[8]   = "dns:qtype:MG";
+    qtypes[9]   = "dns:qtype:MR";
+    qtypes[10]  = "dns:qtype:NULL";
+    qtypes[11]  = "dns:qtype:WKS";
+    qtypes[12]  = "dns:qtype:PTR";
+    qtypes[13]  = "dns:qtype:HINFO";
+    qtypes[14]  = "dns:qtype:MINFO";
+    qtypes[15]  = "dns:qtype:MX";
+    qtypes[16]  = "dns:qtype:TXT";
+    qtypes[252] = "dns:qtype:AXFR";
+    qtypes[253] = "dns:qtype:MAILB";
+    qtypes[254] = "dns:qtype:MAILA";
+    qtypes[255] = "dns:qtype:ANY";
 }
 /******************************************************************************/
 void moloch_detect_exit() {

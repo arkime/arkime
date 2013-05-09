@@ -15,6 +15,7 @@
 #      instead of YES
 #  7 - files_v3
 #  8 - fileSize, memory to stats/dstats and -v flag
+#  9 - http body hash, rawus
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -23,7 +24,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 8;
+my $VERSION = 9;
 my $verbose = 0;
 
 ################################################################################
@@ -481,9 +482,13 @@ sub sessionsUpdate
     dynamic: "strict",
     properties: {
       us: {
+        type: "multi_field",
+        path: "just_name",
         omit_norms: true,
-        type: "string",
-        analyzer: "url_analyzer"
+        fields: {
+          us: {type: "string", analyzer: "url_analyzer"},
+          rawus: {type: "string", index: "not_analyzed"}
+        }
       },
       uscnt: {
         type: "integer"
@@ -578,6 +583,14 @@ sub sessionsUpdate
           asxff: {type: "string", analyzer: "snowball"},
           rawasxff: {type: "string", index: "not_analyzed"}
         }
+      },
+      hmd5cnt: {
+        type: "short"
+      },
+      hmd5 : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
       },
       dnshocnt: {
         type: "integer"
@@ -1210,7 +1223,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 8) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 9) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

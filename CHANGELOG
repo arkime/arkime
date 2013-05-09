@@ -1,3 +1,21 @@
+0.8.3 2013/05/09 
+  - full text for uri is now available
+  - regex searches using == /REGEXHERE/
+    regex can be slow so be careful
+  - regex and wildcard searches full text instead of tokenized
+  - fixed bug with uri.cnt not be recorded
+  - filenumber generation rewritten, can now deal with
+    multiple instances running and other edge cases
+  - http body content is md5, although the encoded
+    and non encoded version will get different md5s
+  - detect when npm install needs to be run
+  - quoted strings and regex strings detect better
+  - new centerTime=time&timeWindow=minutes option to do +- views
+  - show tags names in unique views
+  - remember view setting for future session views
+  - DNS qclass and qtype tags
+  - Upgrade yara and glib version
+
 0.8.2 2013/04/29
   - Install ES 0.90
   - fixed dropped packet stats
@@ -20,7 +38,6 @@
   - Log userId for requests
   - fixed uri.cnt
   - don't exit moloch-capture until all file creates finish
-  - display DNS hostname in session view
 
 
 0.8.0 2013/04/17

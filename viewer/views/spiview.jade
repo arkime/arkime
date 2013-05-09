@@ -52,6 +52,7 @@ dl#spiview
   hr
   mixin title("HTTP", "http")
   mixin spi("Host", "ho", "host.http", "http")
+  mixin spi("URI", "rawus", "uri", "http")
   mixin spi("URI Token", "us", "uri", "http")
   mixin spi("User Agent", "rawua", "http.ua", "http")
   mixin spi("User Agent Token", "ua", "http.ua", "http")
@@ -63,6 +64,8 @@ dl#spiview
 
   mixin spi("Request Header", "hh1", "header.src", "http")
   mixin spi("Response Header", "hh2", "header.dst", "http")
+
+  mixin spi("Body MD5", "hmd5", "http.md5", "http")
   br
   hr
   mixin title("DNS", "dns")

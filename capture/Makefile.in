@@ -33,7 +33,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o
 	$(CC) -rdynamic -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
-	    -lrt -lm -lpcre -lresolv -luuid -lmagic
+	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
 
 snf:thirdparty/js0n.o thirdparty/http_parser.o
 	gcc -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
@@ -42,7 +42,7 @@ snf:thirdparty/js0n.o thirdparty/http_parser.o
 	g++ -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
 	    $(LIB_SNF) \
 	    $(LIB_OTHER) \
-	    -lrt -lm -lpcre -lresolv -luuid -lmagic
+	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o

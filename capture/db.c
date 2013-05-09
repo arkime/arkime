@@ -32,7 +32,7 @@
 #include "bsb.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 8
+#define MOLOCH_MIN_DB_VERSION 9
 
 extern uint64_t       totalPackets;
 extern uint64_t       totalBytes;
@@ -417,6 +417,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 g_free(session->fields[pos]->str);
                 break;
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
+                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, session->fields[pos]->sarray->len);
+                }
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
                 for(i = 0; i < session->fields[pos]->sarray->len; i++) {
                     moloch_db_js0n_str(&jbsb, 
@@ -777,66 +780,123 @@ void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{}");
     moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_get_sequence_number_cb, r);
 }
-
 /******************************************************************************/
-static int         lastFileNum = 0;
+uint32_t moloch_db_get_sequence_number_sync(char *name)
+{
+    char                key[100];
+    int                 key_len;
+    unsigned char      *data;
+    size_t              data_len;
+    unsigned char      *version;
+    uint32_t            version_len;
+
+    key_len = snprintf(key, sizeof(key), "/sequence/sequence/%s", name);
+
+    data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, &data_len);
+    version = moloch_js0n_get(data, data_len, "_version", &version_len);
+
+    if (!version_len || !version) {
+        LOG("ERROR - Couldn't fetch sequence: %.*s", (int)data_len, data);
+        return moloch_db_get_sequence_number_sync(name);
+    } else {
+        return atoi((char *)version);
+    }
+}
+/******************************************************************************/
+uint32_t nextFileNum;
+void moloch_db_fn_seq_cb(uint32_t newSeq, gpointer UNUSED(uw))
+{
+    nextFileNum = newSeq;
+}
+/******************************************************************************/
 void moloch_db_load_file_num()
 {
     char               key[200];
     int                key_len;
     size_t             data_len;
+    unsigned char     *data;
     uint32_t           len;
     unsigned char     *value;
+    uint32_t           source_len;
+    unsigned char     *source = 0;
+    uint32_t           exists_len;
+    unsigned char     *exists = 0;
 
-    lastFileNum = 0;
+    /* First see if we have the new style number or not */
+    key_len = snprintf(key, sizeof(key), "/sequence/sequence/fn-%s", config.nodeName);
+    data = moloch_http_get(esServer, key, key_len, &data_len);
 
+    exists = moloch_js0n_get(data, data_len, "exists", &exists_len);
+    if (exists && memcmp("true", exists, 4) == 0) {
+        goto fetch_file_num;
+        return;
+    }
+
+
+    /* Don't have new style numbers, go create them */
     key_len = snprintf(key, sizeof(key), "/files/file/_search?size=1&sort=num:desc&q=node:%s", config.nodeName);
 
-    unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
+    data = moloch_http_get(esServer, key, key_len, &data_len);
 
     uint32_t           hits_len;
     unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
 
     if (!hits_len || !hits)
-        return;
+        goto fetch_file_num;
 
     uint32_t           hit_len;
     unsigned char     *hit = moloch_js0n_get(hits, hits_len, "hits", &hit_len);
 
     if (!hit_len || !hit)
-        return;
+        goto fetch_file_num;
 
     /* Remove array wrapper */
-    uint32_t           source_len;
-    unsigned char     *source = moloch_js0n_get(hit+1, hit_len-2, "_source", &source_len);
+    source = moloch_js0n_get(hit+1, hit_len-2, "_source", &source_len);
 
     if (!source_len || !source)
-        return;
+        goto fetch_file_num;
 
+    int fileNum;
     if ((value = moloch_js0n_get(source, source_len, "num", &len))) {
-        lastFileNum = atoi((char*)value);
+        fileNum = atoi((char*)value);
     } else {
         LOG("ERROR - No num field in %.*s", source_len, source);
         exit (0);
     }
-}
-static int                     outstandingFileRequests = 0;
-/******************************************************************************/
-void moloch_db_create_file_cb(unsigned char UNUSED(*data), int UNUSED(data_len), gpointer UNUSED(uw))
-{
-    outstandingFileRequests--;
+
+    /* Now create the new style */
+    key_len = snprintf(key, sizeof(key), "/sequence/sequence/fn-%s?version_type=external&version=%d", config.nodeName, fileNum + 100);
+    moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL);
+
+fetch_file_num:
+    if (!(config.pcapReadFile || config.pcapReadDir)) {
+        /* If doing a live file create a file number now */
+        snprintf(key, sizeof(key), "fn-%s", config.nodeName);
+        nextFileNum = moloch_db_get_sequence_number_sync(key);
+    }
 }
 /******************************************************************************/
 char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id)
 {
     char               key[100];
     int                key_len;
-    int                num = ++lastFileNum;
+    uint32_t           num;
     static char        filename[1024];
     struct tm         *tmp;
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     int                json_len;
     const uint64_t     fp = firstPacket;
+
+    snprintf(key, sizeof(key), "fn-%s", config.nodeName);
+    if (nextFileNum == 0) {
+        /* If doing an offline file OR the last async call hasn't returned, just get a sync filenum */
+        num = moloch_db_get_sequence_number_sync(key);
+    } else {
+        /* If doing a live file, use current file num and schedule the next one */
+        num = nextFileNum;
+        nextFileNum = 0; /* Don't reuse number */
+        moloch_db_get_sequence_number(key, moloch_db_fn_seq_cb, 0);
+    }
 
 
     if (name) {
@@ -854,8 +914,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
         key_len = snprintf(key, sizeof(key), "/files/file/%s-%d?refresh=true", config.nodeName,num);
     }
 
-    outstandingFileRequests++;
-    moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_create_file_cb, NULL);
+    moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
 
     if (config.logFileCreation)
         LOG("Creating file %d with key >%s< using >%s<", num, key, json);
@@ -1021,7 +1080,7 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw);
 
 /******************************************************************************/
 int moloch_db_tags_loading() {
-    return outstandingTagRequests + outstandingFileRequests + tagRequests.t_count;
+    return outstandingTagRequests + tagRequests.t_count;
 }
 /******************************************************************************/
 void moloch_db_free_tag_request(MolochTagRequest_t *r)

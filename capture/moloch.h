@@ -211,6 +211,8 @@ typedef struct moloch_session_http {
     char        header[2][40];
     http_parser parsers[2];
 
+    GChecksum  *checksum[2];
+
     uint16_t    wParsers:2;
     uint16_t    inHeader:2;
     uint16_t    inValue:2;
@@ -532,6 +534,7 @@ MOLOCH_FIELD_HTTP_XFF,
 MOLOCH_FIELD_HTTP_UA,
 MOLOCH_FIELD_HTTP_TAGS_REQ,
 MOLOCH_FIELD_HTTP_TAGS_RES, // Must be right after REQ
+MOLOCH_FIELD_HTTP_MD5,
 
 MOLOCH_FIELD_SSH_VER,
 MOLOCH_FIELD_SSH_KEY,

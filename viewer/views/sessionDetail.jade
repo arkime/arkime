@@ -94,6 +94,7 @@ div.sessionDetail(id='sessionDetail#{session.id}')
       mixin ipArrayList(session.xff, session.gxff, session.asxff, "XFFs", "xff")
       mixin arrayList(session.hh1, "Request Headers", "header.src")
       mixin arrayList(session.hh2, "Response Headers", "header.dst")
+      mixin arrayList(session.hmd5, "Body MD5s", "http.md5")
 
 
   if (session.dnsip || session.dnsho)
@@ -254,8 +255,15 @@ script(type='text/javascript')
                  "&ts=" + $('input#format-ts-#{session.id}').is(':checked');
 
       $("#sessionDetail#{session.id}").load(url);
+      if (localStorage) {
+        localStorage['moloch-line'] = $('input#format-line-#{session.id}').is(':checked');
+        localStorage['moloch-base'] = base;
+      }
     });
     function showTimestamps() {
+      if (localStorage) {
+        localStorage['moloch-ts'] = $('input#format-ts-#{session.id}').is(':checked');
+      }
       if ( $('#format-ts-#{session.id}').is(':checked')) {
         $('.timestamp-#{session.id}').each(function(index, item) {
           if ($(item).attr("ts")) {

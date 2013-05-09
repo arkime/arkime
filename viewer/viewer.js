@@ -24,6 +24,7 @@ var MIN_DB_VERSION = 8;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
+try {
 var Config         = require('./config.js'),
     express        = require('express'),
     connect        = require('connect'),
@@ -47,6 +48,10 @@ var Config         = require('./config.js'),
     molochversion  = require('./version'),
     httpAgent      = require('http'),
     httpsAgent     = require('https');
+} catch (e) {
+  console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm install' inside viewer directory", e);
+  process.exit(1);
+}
 
 try {
   var Png = require('png').Png;
@@ -1515,7 +1520,6 @@ app.get('/unique.txt', function(req, res) {
 
   noCache(req, res);
   var doCounts = parseInt(req.query.counts, 10) || 0;
-  var doIp =  req.query.field.match(/^(a1|a2|xff|dnsip|eip)$/) !== null;
 
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = [req.query.field];
@@ -1569,19 +1573,32 @@ app.get('/unique.txt', function(req, res) {
         return;
       }
 
-      result.facets.facets.terms.forEach(function (item) {
-        if (doIp) {
-          res.write(Pcap.inet_ntoa(item.term));
-        } else {
-          res.write(""+item.term);
-        }
+      /* Need the nextTick so we don't blow max stack frames */
+      var eachCb = function (item, cb) {process.nextTick(cb);};
+      if (req.query.field.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
+        eachCb = function(item, cb) {
+          item.term = Pcap.inet_ntoa(item.term);
+          process.nextTick(cb);
+        };
+      } else if (req.query.field.match(/^(ta|hh1|hh2)$/) !== null) {
+        eachCb = function(item, cb) {
+          Db.tagIdToName(item.term, function (name) {
+            item.term = name;
+            process.nextTick(cb);
+          });
+        };
+      }
 
-        if (doCounts) {
-          res.write(", " + item.count);
-        }
-        res.write("\n");
+      async.forEachSeries(result.facets.facets.terms, eachCb, function () {
+        result.facets.facets.terms.forEach(function(item) {
+          res.write(""+item.term);
+          if (doCounts) {
+            res.write(", " + item.count);
+          }
+          res.write("\n");
+        });
+        res.end();
       });
-      res.end();
     });
   });
 });
