@@ -103,6 +103,7 @@ mkdir -p ${TDIR}/logs
 mkdir -p ${TDIR}/raw
 mkdir -p ${TDIR}/etc
 mkdir -p ${TDIR}/bin
+mkdir -p ${TDIR}/db
 
 
 

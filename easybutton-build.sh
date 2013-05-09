@@ -36,7 +36,7 @@ fi
 cd thirdparty
 
 # glib
-if [ ! -f "glib-$GLIB.tar.gz" ]; then
+if [ ! -f "glib-$GLIB.tar.xz" ]; then
   wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-$GLIB.tar.xz
 fi
 xzcat glib-$GLIB.tar.xz | tar xf -
