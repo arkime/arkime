@@ -77,8 +77,8 @@ sub esGet
     my ($url, $dontcheck) = @_;
     print "GET http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("http://$ARGV[0]$url");
-    if ($response->code != 200 && !$dontcheck) {
-      die "Couldn't get $url with code " . $response->code;
+    if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+      die "Couldn't GET http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -90,9 +90,10 @@ sub esPost
     my ($url, $content, $dontcheck) = @_;
     print "POST http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->post("http://$ARGV[0]$url", Content => $content);
-    if ($response->code != 200 && $response->code != 201 && !$dontcheck) {
-      die "Couldn't post $url with code " . $response->code . $response->content;
+    if ($response->code == 500 || ($response->code != 200 && response->code != 201 && !$dontcheck)) {
+      die "Couldn't POST http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
+
     my $json = from_json($response->content);
     return $json
 }
@@ -103,8 +104,8 @@ sub esPut
     my ($url, $content, $dontcheck) = @_;
     print "PUT http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]$url", Content => $content));
-    if ($response->code != 200 && !$dontcheck) {
-      die "Couldn't put $url with code " . $response->code . $response->content;
+    if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+      die "Couldn't PUT http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -116,8 +117,8 @@ sub esDelete
     my ($url, $dontcheck) = @_;
     print "DELETE http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ARGV[0]$url"));
-    if ($response->code != 200 && !$dontcheck) {
-      die "Couldn't delete $url with code " . $response->code;
+    if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+      die "Couldn't DELETE http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -1103,6 +1104,8 @@ sub printIndex {
     printf "Nodes:               %s\n", commify(scalar(keys %{$nodes->{nodes}}));
     printf "Session Indices:     %s\n", commify(scalar(@sessions));
     printf "Sessions:            %s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
+    printf "Session Density:     %s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))), 
+                                                   commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
     printIndex($status->{indices}->{files_v3}, "files_v3");
     printIndex($status->{indices}->{files_v2}, "files_v2");
     printIndex($status->{indices}->{files_v1}, "files_v1");
