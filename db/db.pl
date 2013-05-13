@@ -90,7 +90,7 @@ sub esPost
     my ($url, $content, $dontcheck) = @_;
     print "POST http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->post("http://$ARGV[0]$url", Content => $content);
-    if ($response->code == 500 || ($response->code != 200 && response->code != 201 && !$dontcheck)) {
+    if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
       die "Couldn't POST http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
 
@@ -1104,8 +1104,10 @@ sub printIndex {
     printf "Nodes:               %s\n", commify(scalar(keys %{$nodes->{nodes}}));
     printf "Session Indices:     %s\n", commify(scalar(@sessions));
     printf "Sessions:            %s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
-    printf "Session Density:     %s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))), 
-                                                   commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
+    if (scalar(@sessions) > 0) {
+        printf "Session Density:     %s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))), 
+                                                       commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
+    }
     printIndex($status->{indices}->{files_v3}, "files_v3");
     printIndex($status->{indices}->{files_v2}, "files_v2");
     printIndex($status->{indices}->{files_v1}, "files_v1");
