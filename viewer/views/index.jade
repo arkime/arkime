@@ -7,10 +7,10 @@ link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.cont
 
 div(style="margin-bottom: 12px")
 div#bsqErr
-div#sessionsInfo
-  div#world-map-wrapper
-    div#world-map
-  div#sessionGraph
+div#sessionsInfo.sessionsInfo
+  div#world-map-wrapper.world-map-wrapper
+    div#world-map.world-map
+  div#sessionGraph.sessionGraph
   select#sessionGraphSelect
     option(value="lpHisto") sessions
     option(value="paHisto") packets
@@ -274,7 +274,7 @@ script(type='text/javascript')
             } 
 
             if (oObj.aData.tls) {
-              data = ""
+              data = "";
               oObj.aData.tls.forEach(function(tls) {
                 data += tls.sCn;
                 if (tls.alt) {
@@ -288,7 +288,7 @@ script(type='text/javascript')
                   }
                   data += "]";
                 }
-                data += "<br>"
+                data += "<br>";
               });
               return data;
             }

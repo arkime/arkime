@@ -51,6 +51,24 @@ body
   right: 0px
   left: 0px
 
+#processing
+  text-align: center
+  max-width: 100%
+  max-height: 100%
+  position: absolute
+  top:0 
+  left:0 
+  right:0 
+  bottom:0
+  margin:auto
+  border: 0px
+  color: red
+  font-size: 24px
+  height: 140px
+  width: 180px
+  background-color: rgba(255, 255, 255, 0)
+  z-index: 5
+
 // layout.jade
 #header
   font-family: Arial, sans-serif
@@ -102,6 +120,7 @@ body
   padding-right:10px
   margin:0 auto
   font-weight: normal
+  display: none
   
 #searchStuff
   clear: both
@@ -228,7 +247,7 @@ table#sessions td.dateColumn
   font-size: 12px
 
 
-#sessionsInfo
+.sessionsInfo
   padding-bottom: 10px
   position: relative
   height: 150px
@@ -240,7 +259,7 @@ table#sessions td.dateColumn
   font-size: xx-small
   z-index: 0
 
-#sessionGraph
+.sessionGraph
   position: absolute
   top: 0
   left: 10px
@@ -249,17 +268,17 @@ table#sessions td.dateColumn
   z-index: 0
   font-family: Arial, sans-serif
 
-#sessionGraph .button
+.sessionGraph .button
   position: absolute
   cursor: pointer
 
-#sessionGraph div.button
+.sessionGraph div.button
   font-size: smaller
   color: #999
   background-color: #eee
   padding: 2px
 
-#world-map-wrapper
+.world-map-wrapper
   position: absolute
   width: 250px
   height: 150px
@@ -267,12 +286,12 @@ table#sessions td.dateColumn
   right: 0
   z-index: 2
 
-#world-map
+.world-map
   width: 250px
   height: 150px
 
 .jvectormap-label
-  z-index: 3
+  z-index: 4
 
 .ui-widget-header a
   color:white
@@ -614,3 +633,36 @@ table#sessions td.dateColumn
   margin: 0 0 0 185px
   padding: 0 0 0.5em 0;
 
+
+// SPI Graph
+#sessionGraphs
+  background-color: rgb(220, 220, 220)
+  font-family: Arial, sans-serif
+
+#sessionGraphs h3
+  margin-top: 0px
+  margin-left: 10px
+
+#spiGraphSelect
+  clear: both
+  padding-left: 65px
+  z-index: 4
+  font-family: Arial, sans-serif
+  text-shadow: black 0.1em 0.1em 0.2em
+  font-weight: normal
+  font-size: 12px
+  color:white
+  background: #16285a /* Old browsers */
+  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
+  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
+
+// users.jade
+#addUser label
+  width: 14em
+  text-align: right
+  display: inline-block

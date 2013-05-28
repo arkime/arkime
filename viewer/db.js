@@ -98,7 +98,7 @@ if (typeof ESC.prototype.multisearch === "function") {
   };
 }
 
-exports.search =  function (index, type, query, cb) {
+exports.search = function (index, type, query, cb) {
   internals.elasticSearchClient.search(index, type, query)
     .on('data', function(data) {
       cb(null, JSON.parse(data));
@@ -109,8 +109,27 @@ exports.search =  function (index, type, query, cb) {
     .exec();
 };
 
-exports.searchPrimary =  function (index, type, query, cb) {
+exports.searchPrimary = function (index, type, query, cb) {
   internals.elasticSearchClient.search(index, type, query, {preference: "_primary_first"})
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
+exports.msearch = function (index, type, queries, cb) {
+  var path = '/' + index + "/" + type + "/_msearch";
+
+  var buf='';
+  for(var i=0; i<queries.length;i++){
+    buf += "{}\n";
+    buf += queries[i] + "\n";
+  }
+
+  internals.elasticSearchClient.createCall({data:buf, path:path, method: "POST"}, internals.elasticSearchClient.clientOptions)
     .on('data', function(data) {
       cb(null, JSON.parse(data));
     })

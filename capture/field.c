@@ -93,6 +93,8 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
             field->shash = hash;
             hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
             hstring->str = string;
+            hstring->len = len;
+            hstring->utf8 = 0;
             HASH_ADD(s_, *hash, hstring->str, hstring);
             return TRUE;
         default:
@@ -125,8 +127,12 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
         hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
         if (copy) {
             hstring->str = g_strndup(string, len);
+            hstring->len = len;
+            hstring->utf8 = 0;
         } else {
             hstring->str = string;
+            hstring->len = len;
+            hstring->utf8 = 0;
         }
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
         return TRUE;

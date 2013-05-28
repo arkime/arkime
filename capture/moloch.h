@@ -29,7 +29,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 2
+#define MOLOCH_API_VERSION 3
 
 /******************************************************************************/
 /*
@@ -82,6 +82,7 @@ typedef HASH_VAR(s_, MolochStringHashStd_t, MolochStringHead_t, 13);
 #define MOLOCH_FIELD_FLAG_CNT         0x0001
 #define MOLOCH_FIELD_FLAG_SCNT        0x0002
 #define MOLOCH_FIELD_FLAG_FORCE_UTF8  0x0004
+#define MOLOCH_FIELD_FLAG_HEADERS     0x0008
 
 typedef struct {
     char                 *name;
@@ -161,6 +162,13 @@ typedef struct moloch_config {
     char      parseSMTP;
 } MolochConfig_t;
 
+typedef struct {
+    char     *country;
+    char     *asn;
+    int       numtags;
+    int       tags[10];
+} MolochIpInfo_t;
+
 /******************************************************************************/
 /*
  * SPI Data Storage
@@ -205,10 +213,11 @@ typedef struct moloch_session_email {
 typedef struct moloch_session_http {
     GString    *urlString;
     GString    *hostString;
-    GString    *uaString;
-    GString    *xffString;
+
+    GString    *valueString[2];
 
     char        header[2][40];
+    short       pos[2];
     http_parser parsers[2];
 
     GChecksum  *checksum[2];
@@ -301,7 +310,7 @@ typedef int (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
 typedef void (*MolochResponse_cb)(unsigned char *data, int len, gpointer uw);
 
-typedef void (*MolochTag_cb)(MolochSession_t *session, int tagtype, uint32_t tag);
+typedef void (*MolochTag_cb)(void *uw, int tagtype, uint32_t tag);
 
 typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
 
@@ -345,12 +354,15 @@ void moloch_quit();
  * config.c
  */
 void moloch_config_init();
+void moloch_config_load_local_ips();
+void moloch_config_load_headers();
 void moloch_config_exit();
 
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
 gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
+void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 
 
 
@@ -363,7 +375,7 @@ void  moloch_db_init();
 int   moloch_db_tags_loading();
 char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id);
 void  moloch_db_save_session(MolochSession_t *session, int final);
-void  moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tag, MolochTag_cb func);
+void  moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
 void  moloch_db_exit();
 
 /******************************************************************************/
@@ -526,7 +538,6 @@ void moloch_yara_exit();
 
 enum {
 MOLOCH_FIELD_USER,
-MOLOCH_FIELD_TAGS,
 
 MOLOCH_FIELD_HTTP_HOST,
 MOLOCH_FIELD_HTTP_URLS,
@@ -554,10 +565,12 @@ MOLOCH_FIELD_EMAIL_FN,
 MOLOCH_FIELD_EMAIL_MD5,
 MOLOCH_FIELD_EMAIL_FCT,
 MOLOCH_FIELD_EMAIL_IP,
+
+MOLOCH_FIELD_TAGS, // Must be last
 };
 
 void moloch_field_init();
-int moloch_field_define_pos(char *name, int type, int flags);
+int moloch_field_define(char *name, int type, int flags);
 void moloch_field_define_internal(int pos, char *name, int type, int flags);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);

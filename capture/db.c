@@ -30,21 +30,24 @@
 #include "glib.h"
 #include "moloch.h"
 #include "bsb.h"
+#include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 9
+#define MOLOCH_MIN_DB_VERSION 10
 
-extern uint64_t       totalPackets;
-extern uint64_t       totalBytes;
-extern uint64_t       totalSessions;
-static uint16_t       myPid;
-static time_t         dbLastSave;
+extern uint64_t         totalPackets;
+extern uint64_t         totalBytes;
+extern uint64_t         totalSessions;
+static uint16_t         myPid;
+static time_t           dbLastSave;
 
-struct timeval        startTime;
-static GeoIP         *gi = 0;
-static GeoIP         *giASN = 0;
+struct timeval          startTime;
+static GeoIP           *gi = 0;
+static GeoIP           *giASN = 0;
 
-void *                esServer = 0;
+void *                  esServer = 0;
+
+static patricia_tree_t *ipTree;
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -61,6 +64,39 @@ typedef struct moloch_tag {
 
 HASH_VAR(tag_, tags, MolochTag_t, 9337);
 
+/******************************************************************************/
+void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii) 
+{
+    patricia_node_t *node;
+    if (!ipTree) {
+        ipTree = New_Patricia(32);
+    }
+    node = make_and_lookup(ipTree, str);
+    node->data = ii;
+}
+/******************************************************************************/
+#define int_ntoa(x)     inet_ntoa(*((struct in_addr *)(int*)&x))
+MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip) 
+{
+    prefix_t prefix;
+    patricia_node_t *node;
+
+    prefix.family = AF_INET;
+    prefix.bitlen = 32;
+    prefix.add.sin.s_addr = ip;
+
+    if ((node = patricia_search_best (ipTree, &prefix)) == NULL)
+        return 0;
+
+    MolochIpInfo_t *ii = node->data;
+    int t;
+
+    for (t = 0; t < ii->numtags; t++) {
+        moloch_field_int_add(MOLOCH_FIELD_TAGS, session, ii->tags[t]);
+    }
+
+    return ii;
+}
 /******************************************************************************/
 uint32_t moloch_db_tag_hash(const void *key)
 {
@@ -154,6 +190,7 @@ void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
 
     BSB_EXPORT_u08(*bsb, '"');
 }
+
 /******************************************************************************/
 static char *sJson = 0;
 static BSB jbsb;
@@ -256,31 +293,56 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       session->port2,
                       session->protocol);
 
-    if (gi) {
-        const char *g1 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr1));
-        if (g1)
-            BSB_EXPORT_sprintf(jbsb, "\"g1\":\"%s\",", g1);
+    MolochIpInfo_t *ii1 = 0, *ii2 = 0;
+    char *g1 = 0, *g2 = 0, *as1 = 0, *as2 = 0;
+    if (ipTree) {
+        if ((ii1 = moloch_db_get_local_ip(session, session->addr1))) {
+            g1 = ii1->country;
+            as1 = ii1->asn;
+        }
 
-        const char *g2 = GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
-        if (g2)
-            BSB_EXPORT_sprintf(jbsb, "\"g2\":\"%s\",", g2);
+        if ((ii2 = moloch_db_get_local_ip(session, session->addr2))) {
+            g2 = ii2->country;
+            as2 = ii2->asn;
+        }
     }
+
+    if (gi) {
+        if (!g1)
+            g1 = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(session->addr1));
+
+        if (!g2)
+            g2 = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
+    }
+
+    if (g1)
+        BSB_EXPORT_sprintf(jbsb, "\"g1\":\"%s\",", g1);
+    if (g2)
+        BSB_EXPORT_sprintf(jbsb, "\"g2\":\"%s\",", g2);
+
     if (giASN) {
-        char *as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
-        if (as1) {
-            BSB_EXPORT_sprintf(jbsb, "\"as1\":");
-            moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
-            BSB_EXPORT_u08(jbsb, ',');
-            free(as1);
+        if (!as1) {
+            as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
         }
 
-        char *as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
-        if (as2) {
-            BSB_EXPORT_sprintf(jbsb, "\"as2\":");
-            moloch_db_js0n_str(&jbsb, (unsigned char*)as2, TRUE);
-            BSB_EXPORT_u08(jbsb, ',');
-            free(as2);
+        if (!as2) {
+            as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
         }
+    }
+    if (as1) {
+        BSB_EXPORT_sprintf(jbsb, "\"as1\":");
+        moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
+        BSB_EXPORT_u08(jbsb, ',');
+        if (!ii1 || !ii1->asn)
+            free(as1);
+    }
+
+    if (as2) {
+        BSB_EXPORT_sprintf(jbsb, "\"as2\":");
+        moloch_db_js0n_str(&jbsb, (unsigned char*)as2, TRUE);
+        BSB_EXPORT_u08(jbsb, ',');
+        if (!ii2 || !ii2->asn)
+            free(as2);
     }
 
     BSB_EXPORT_sprintf(jbsb, 
@@ -405,8 +467,18 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb, "],");
 
     int pos;
+    int inHeaders = 0;
     for (pos = 0; pos < config.maxField; pos++) {
         if (session->fields[pos]) {
+            if (!inHeaders && config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) {
+                BSB_EXPORT_sprintf(jbsb, "\"hdrs\": {");
+                inHeaders = 1;
+            } else if (inHeaders && (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) == 0) {
+                inHeaders = 0;
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_sprintf(jbsb, "},");
+            }
+
             switch(config.fields[pos]->type) {
             case MOLOCH_FIELD_TYPE_STR:
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":", config.fields[pos]->name);
@@ -418,7 +490,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 break;
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
                 if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, session->fields[pos]->sarray->len);
+                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, session->fields[pos]->sarray->len);
                 }
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
                 for(i = 0; i < session->fields[pos]->sarray->len; i++) {
@@ -434,7 +506,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             case MOLOCH_FIELD_TYPE_STR_HASH:
                 shash = session->fields[pos]->shash;
                 if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, HASH_COUNT(s_, *shash));
+                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, HASH_COUNT(s_, *shash));
                 }
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
                 HASH_FORALL_POP_HEAD(s_, *shash, hstring,
@@ -471,29 +543,54 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_sprintf(jbsb, "\"%sscnt\":%d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
                 }
 
-                if (gi) {
+                if (gi || ipTree) {
+                    MolochIpInfo_t *ii;
+
                     BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->name);
                     HASH_FORALL(i_, *ihash, hint,
-                        const char *g = GeoIP_country_code3_by_ipnum(gi, htonl(hint->i_hash));
-                        if (g)
+                        const char *g = NULL;
+                        if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                            g = ii->country;
+                        }
+                        
+                        if (!g) {
+                            g = GeoIP_country_code3_by_ipnum(gi, htonl(hint->i_hash));
+                        }
+
+                        if (g) {
                             BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
-                        else
+                        } else {
                             BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                        }
                         BSB_EXPORT_u08(jbsb, ',');
                     );
                     BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                     BSB_EXPORT_sprintf(jbsb, "],");
                 }
 
-                if (giASN) {
+                if (giASN || ipTree) {
+                    MolochIpInfo_t *ii = 0;
+
                     BSB_EXPORT_sprintf(jbsb, "\"as%s\":[", config.fields[pos]->name);
                     HASH_FORALL(i_, *ihash, hint,
-                        char *as = GeoIP_name_by_ipnum(giASN, htonl(hint->i_hash));
+                        char *as = NULL;
+
+                        if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                            as = ii->asn;
+                        }
+
+                        if (!as) {
+                            as = GeoIP_name_by_ipnum(giASN, htonl(hint->i_hash));
+                        }
+
                         if (as) {
                             moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
-                            free(as);
-                        } else
+                            if (!ii || !ii->asn) {
+                                free(as);
+                            }
+                        } else {
                             BSB_EXPORT_sprintf(jbsb, "\"---\"");
+                        }
                         BSB_EXPORT_u08(jbsb, ',');
                     );
                     BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
@@ -515,6 +612,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
             session->fields[pos] = 0;
         }
+    }
+
+    if (inHeaders) {
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_sprintf(jbsb, "},");
     }
 
     BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
@@ -1065,7 +1167,7 @@ void moloch_db_load_tags()
 typedef struct moloch_tag_request {
     struct moloch_tag_request *t_next, *t_prev;
     int                        t_count;
-    MolochSession_t           *session;
+    void                      *uw;
     MolochTag_cb               func;
     int                        tagtype;
     char                      *tag;
@@ -1101,7 +1203,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
 
         if (tag) {
             if (r->func)
-                r->func(r->session, r->tagtype, tag->tagValue);
+                r->func(r->uw, r->tagtype, tag->tagValue);
             g_free(r->escaped);
             free(r->tag);
             MOLOCH_TYPE_FREE(MolochTagRequest_t, r);
@@ -1134,7 +1236,7 @@ void moloch_db_tag_create_cb(unsigned char *data, int UNUSED(data_len), gpointer
     HASH_ADD(tag_, tags, tag->tagName, tag);
 
     if (r->func)
-        r->func(r->session, r->tagtype, r->newSeq);
+        r->func(r->uw, r->tagtype, r->newSeq);
     moloch_db_free_tag_request(r);
 }
 /******************************************************************************/
@@ -1159,7 +1261,7 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
 
     if (!data) {
         if (r->func)
-            r->func(r->session, r->tagtype, 0);
+            r->func(r->uw, r->tagtype, 0);
         moloch_db_free_tag_request(r);
         return;
     }
@@ -1179,7 +1281,7 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
         HASH_ADD(tag_, tags, tag->tagName, tag);
 
         if (r->func)
-            r->func(r->session, r->tagtype, atol((char *)n));
+            r->func(r->uw, r->tagtype, atol((char *)n));
         moloch_db_free_tag_request(r);
         return;
     }
@@ -1187,19 +1289,19 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
     moloch_db_get_sequence_number("tags", moloch_db_tag_seq_cb, r) ;
 }
 /******************************************************************************/
-void moloch_db_get_tag(MolochSession_t *session, int tagtype, const char *tagname, MolochTag_cb func)
+void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb func)
 {
     MolochTag_t *tag;
     HASH_FIND(tag_, tags, tagname, tag);
 
     if (tag) {
         if (func)
-            func(session, tagtype, tag->tagValue);
+            func(uw, tagtype, tag->tagValue);
         return;
     }
 
     MolochTagRequest_t *r = MOLOCH_TYPE_ALLOC(MolochTagRequest_t);
-    r->session = session;
+    r->uw = uw;
     r->func    = func;
     r->tag     = strdup(tagname);
     r->tagtype = tagtype;

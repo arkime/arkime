@@ -31,6 +31,59 @@ by jeremie miller - 2010
 public domain, contributions/improvements welcome via github
 
 ================================================================================
+capture/thirdparty/patricia.* 
+
+/*
+ * $Id: patricia.c 6811 2009-07-06 20:41:10Z robin $
+ * Dave Plonka <plonka@doit.wisc.edu>
+ *
+ * This product includes software developed by the University of Michigan,
+ * Merit Network, Inc., and their contributors. 
+ *
+ * This file had been called "radix.c" in the MRT sources.
+ *
+ * I renamed it to "patricia.c" since it's not an implementation of a general
+ * radix trie.  Also I pulled in various requirements from "prefix.c" and
+ * "demo.c" so that it could be used as a standalone API.
+ */
+
+/* From copyright.txt:
+ * 
+ * Copyright (c) 1997, 1998, 1999
+ * 
+ * 
+ * The Regents of the University of Michigan ("The Regents") and Merit Network,
+ * Inc.  All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1.  Redistributions of source code must retain the above 
+ *     copyright notice, this list of conditions and the 
+ *     following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above 
+ *     copyright notice, this list of conditions and the 
+ *     following disclaimer in the documentation and/or other 
+ *     materials provided with the distribution.
+ * 3.  All advertising materials mentioning features or use of 
+ *     this software must display the following acknowledgement:  
+ * This product includes software developed by the University of Michigan, Merit
+ * Network, Inc., and their contributors. 
+ * 4.  Neither the name of the University, Merit Network, nor the
+ *     names of their contributors may be used to endorse or 
+ *     promote products derived from this software without 
+ *     specific prior written permission.
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
+ */
+
+================================================================================
 viewer/public/cubmism.v1.js - Apache License 2.0 - http://square.github.com/cubism/
 
 Copyright 2012 Square, Inc.

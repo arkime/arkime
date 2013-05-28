@@ -194,7 +194,7 @@ gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
     if (hstring)
         return FALSE;
 
-    hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
+    hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
     if (copy) {
         hstring->str = g_strdup(string);
     } else {
@@ -358,9 +358,11 @@ int main(int argc, char **argv)
     moloch_field_init();
     moloch_http_init();
     moloch_db_init();
+    moloch_config_load_local_ips();
     moloch_yara_init();
     moloch_detect_init();
     moloch_plugins_init();
+    moloch_config_load_headers();
     g_timeout_add(10, moloch_nids_init_gfunc, 0);
 
     g_main_loop_run(mainLoop);

@@ -419,10 +419,10 @@ void moloch_nids_free_session_http(MolochSession_t *session)
         g_string_free(http->urlString, TRUE);
     if (http->hostString)
         g_string_free(http->hostString, TRUE);
-    if (http->uaString)
-        g_string_free(http->uaString, TRUE);
-    if (http->xffString)
-        g_string_free(http->xffString, TRUE);
+    if (http->valueString[0])
+        g_string_free(http->valueString[0], TRUE);
+    if (http->valueString[1])
+        g_string_free(http->valueString[1], TRUE);
 
     g_checksum_free(http->checksum[0]);
     g_checksum_free(http->checksum[1]);
@@ -707,7 +707,7 @@ void moloch_nids_decr_outstanding(MolochSession_t *session)
     }
 }
 /******************************************************************************/
-void moloch_nids_get_tag_cb(MolochSession_t *session, int tagtype, uint32_t tag)
+void moloch_nids_get_tag_cb(void *session, int tagtype, uint32_t tag)
 {
     moloch_field_int_add(tagtype, session, tag);
     moloch_nids_decr_outstanding(session);

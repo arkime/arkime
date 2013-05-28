@@ -16,6 +16,7 @@
 #  7 - files_v3
 #  8 - fileSize, memory to stats/dstats and -v flag
 #  9 - http body hash, rawus
+# 10 - dynamic fields for http and email headers
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -24,7 +25,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 9;
+my $VERSION = 10;
 my $verbose = 0;
 
 ################################################################################
@@ -105,7 +106,7 @@ sub esPut
     print "PUT http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]$url", Content => $content));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't PUT http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't PUT http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
     }
     my $json = from_json($response->content);
     return $json
@@ -481,6 +482,22 @@ sub sessionsUpdate
   session: {
     _all : {enabled : false},
     dynamic: "strict",
+    dynamic_templates: [
+      {
+        template_1: {
+          path_match: "hdrs.*",
+          match_mapping_type: "string",
+          mapping: {
+            type: "multi_field",
+            path: "full",
+            fields: {
+              "snow" : {"type": "string", "analyzer" : "snowball"},
+              "raw" : {"type": "string", "index" : "not_analyzed"}
+            }
+          }
+        }
+      }
+    ],
     properties: {
       us: {
         type: "multi_field",
@@ -499,7 +516,7 @@ sub sessionsUpdate
         path: "just_name",
         omit_norms: true,
         fields: {
-          ua: {type: "string", analyzer: "url_analyzer"},
+          ua: {type: "string", analyzer: "snowball"},
           rawua: {type: "string", index: "not_analyzed"}
         }
       },
@@ -854,6 +871,10 @@ sub sessionsUpdate
           aseip: {type: "string", analyzer: "snowball"},
           rawaseip: {type: "string", index: "not_analyzed"}
         }
+      },
+      hdrs: {
+        type: "object",
+        dynamic: "true"
       }
     }
   }
@@ -1228,7 +1249,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 9) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 10) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

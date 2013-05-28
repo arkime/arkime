@@ -7,6 +7,27 @@
 \s+                   /* skip whitespace */
 [0-9]+\b                  return 'NUMBER'
 ([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?\b return 'IPMATCH'
+
+/* Backwards Names, to be removed */
+"email.ct.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type.cnt'
+"email.ct"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type'
+"email.mv.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mime-version.cnt'
+"email.mv"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mime-version'
+"email.id.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.message-id.cnt'
+"email.id"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.message-id'
+"email.ua.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer.cnt'
+"email.ua"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer'
+"header.dst.cnt"          return "http.hasheader.dst.cnt"
+"header.dst"              return "http.hasheader.dst"
+"header"                  return "http.hasheader"
+"header.src.cnt"          return "http.hasheader.src.cnt"
+"header.src"              return "http.hasheader.src"
+"http.ua.cnt"             return "http.user-agent.cnt"
+"http.ua"                 return "http.user-agent"
+"ua.cnt"                  return "http.user-agent.cnt"
+"ua"                      return "http.user-agent"
+
+/* Search Elements*/
 "asn"                     return 'asn'
 "asn.dns"                 return 'asn.dns'
 "asn.dst"                 return 'asn.dst'
@@ -29,30 +50,31 @@
 "country.xff"             return 'country.xff'
 "country.email"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'country.email'
 "databytes"               return 'databytes'
-"email.ct.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ct.cnt'
-"email.ct"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ct'
+"email.content-type.cnt"  if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type.cnt'
+"email.content-type"      if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type'
 "email.dst.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.dst.cnt'
 "email.dst"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.dst'
 "email.fn.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.fn.cnt'
 "email.fn"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.fn'
-"email.id.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.id.cnt'
-"email.id"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.id'
+"email.message-id.cnt"    if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.message-id.cnt'
+"email.message-id"        if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.message-id'
 "email.md5.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.md5.cnt'
 "email.md5"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.md5'
-"email.mv.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mv.cnt'
-"email.mv"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mv'
+"email.mime-version.cnt"  if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mime-version.cnt'
+"email.mime-version"      if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.mime-version'
 "email.src.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.src.cnt'
 "email.src"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.src'
 "email.subject.cnt"       if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject.cnt'
 "email.subject"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject'
-"email.ua.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ua.cnt'
-"email.ua"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.ua'
+"email.x-mailer.cnt"      if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer.cnt'
+"email.x-mailer"          if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer'
+email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled for user"; return 'EMAIL_HEADER'
 "file"                    return "file"
-"header.dst.cnt"          return "header.dst.cnt"
-"header.dst"              return "header.dst"
-"header"                  return "header"
-"header.src.cnt"          return "header.src.cnt"
-"header.src"              return "header.src"
+"http.hasheader.dst.cnt"  return "http.hasheader.dst.cnt"
+"http.hasheader.dst"      return "http.hasheader.dst"
+"http.hasheader"          return "http.hasheader"
+"http.hasheader.src.cnt"  return "http.hasheader.src.cnt"
+"http.hasheader.src"      return "http.hasheader.src"
 "host.dns.cnt"            return "host.dns.cnt"
 "host.dns"                return "host.dns"
 "host.email.cnt"          return "host.email.cnt"
@@ -64,8 +86,11 @@
 "http.md5"                return "http.md5"
 "http.uri.cnt"            return "http.uri.cnt"
 "http.uri"                return "http.uri"
-"http.ua.cnt"             return "http.ua.cnt"
-"http.ua"                 return "http.ua"
+"http.user-agent.cnt"     return "http.user-agent.cnt"
+"http.user-agent"         return "http.user-agent"
+"http.host.cnt"           return "host.http.cnt"
+"http.host"               return "host.http"
+http\.[^\s!=><.]*         return "HTTP_HEADER"
 "icmp"                    return "icmp"
 "\"icmp\""                return "icmp"
 "id"                      return "id"
@@ -79,7 +104,6 @@
 "ip.email.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return "ip.email.cnt"
 "ip.email"                if (!yy.emailSearch) throw "email searches disabled for user"; return "ip.email"
 "node"                    return 'node'
-"oldheader"               return "oldheader"
 "packets"                 return 'packets'
 "port.dst"                return 'port.dst'
 "port"                    return 'port'
@@ -94,8 +118,6 @@
 "tags"                    return 'tags'
 "tcp"                     return "tcp"
 "\"tcp\""                 return "tcp"
-"ua.cnt"                  return "http.ua.cnt"
-"ua"                      return "http.ua"
 "udp"                     return "udp"
 "\"udp\""                 return "udp"
 "uri.cnt"                 return "http.uri.cnt"
@@ -157,62 +179,66 @@ IPNUM: IPMATCH
      | NUMBER
      ;
 
-RANGEFIELD: databytes           {$$ = 'db'}
-          | bytes               {$$ = 'by'}
-          | packets             {$$ = 'pa'}
-          | 'port.src'          {$$ = 'p1'}
-          | 'port.dst'          {$$ = 'p2'}
-          | 'http.uri.cnt'      {$$ = 'uscnt'}
-          | 'cert.cnt'          {$$ = 'tlscnt'}
-          | 'ip.dns.cnt'        {$$ = 'dnsipcnt'}
-          | 'ip.email.cnt'      {$$ = 'eipcnt'}
-          | 'ip.xff.cnt'        {$$ = 'xffscnt'}
-          | 'http.md5.cnt'      {$$ = 'hmd5cnt'}
-          | 'http.ua.cnt'       {$$ = 'uacnt'}
-          | 'user.cnt'          {$$ = 'usercnt'}
-          | 'host.dns.cnt'      {$$ = 'dnshocnt'}
-          | 'host.email.cnt'    {$$ = 'ehocnt'}
-          | 'host.http.cnt'     {$$ = 'hocnt'}
-          | 'header.src.cnt'    {$$ = 'hh1cnt'}
-          | 'header.dst.cnt'    {$$ = 'hh2cnt'}
-          | 'tags.cnt'          {$$ = 'tacnt'}
-          | 'email.ct.cnt'      {$$ = 'ectcnt'}
-          | 'email.dst.cnt'     {$$ = 'edstcnt'}
-          | 'email.fn.cnt'      {$$ = 'efncnt'}
-          | 'email.id.cnt'      {$$ = 'eidcnt'}
-          | 'email.md5.cnt'     {$$ = 'emd5cnt'}
-          | 'email.mv.cnt'      {$$ = 'emvcnt'}
-          | 'email.src.cnt'     {$$ = 'esrccnt'}
-          | 'email.subject.cnt' {$$ = 'esubcnt'}
-          | 'email.ua.cnt'      {$$ = 'euacnt'}
-          | 'cert.alt.cnt'      {$$ = 'tls.altcnt'}
-          | 'ssh.key.cnt'       {$$ = 'sshkeycnt'}
-          | 'ssh.ver.cnt'       {$$ = 'sshvercnt'}
+HEADER: EMAIL_HEADER
+      | HTTP_HEADER
+      ;
+
+RANGEFIELD: databytes                {$$ = 'db'}
+          | bytes                    {$$ = 'by'}
+          | packets                  {$$ = 'pa'}
+          | 'port.src'               {$$ = 'p1'}
+          | 'port.dst'               {$$ = 'p2'}
+          | 'http.uri.cnt'           {$$ = 'uscnt'}
+          | 'cert.cnt'               {$$ = 'tlscnt'}
+          | 'ip.dns.cnt'             {$$ = 'dnsipcnt'}
+          | 'ip.email.cnt'           {$$ = 'eipcnt'}
+          | 'ip.xff.cnt'             {$$ = 'xffscnt'}
+          | 'http.md5.cnt'           {$$ = 'hmd5cnt'}
+          | 'http.user-agent.cnt'    {$$ = 'uacnt'}
+          | 'user.cnt'               {$$ = 'usercnt'}
+          | 'host.dns.cnt'           {$$ = 'dnshocnt'}
+          | 'host.email.cnt'         {$$ = 'ehocnt'}
+          | 'host.http.cnt'          {$$ = 'hocnt'}
+          | 'http.hasheader.src.cnt' {$$ = 'hh1cnt'}
+          | 'http.hasheader.dst.cnt' {$$ = 'hh2cnt'}
+          | 'tags.cnt'               {$$ = 'tacnt'}
+          | 'email.content-type.cnt' {$$ = 'ectcnt'}
+          | 'email.dst.cnt'          {$$ = 'edstcnt'}
+          | 'email.fn.cnt'           {$$ = 'efncnt'}
+          | 'email.message-id.cnt'   {$$ = 'eidcnt'}
+          | 'email.md5.cnt'          {$$ = 'emd5cnt'}
+          | 'email.mime-version.cnt' {$$ = 'emvcnt'}
+          | 'email.src.cnt'          {$$ = 'esrccnt'}
+          | 'email.subject.cnt'      {$$ = 'esubcnt'}
+          | 'email.x-mailer.cnt'     {$$ = 'euacnt'}
+          | 'cert.alt.cnt'           {$$ = 'tls.altcnt'}
+          | 'ssh.key.cnt'            {$$ = 'sshkeycnt'}
+          | 'ssh.ver.cnt'            {$$ = 'sshvercnt'}
           ;
 
-LOTERMFIELD  : node              {$$ = 'no'}
-             | 'host.dns'        {$$ = 'dnsho'}
-             | 'host.email'      {$$ = 'eho'}
-             | 'host.http'       {$$ = 'ho'}
-             | user              {$$ = 'user'}
-             | 'email.dst'       {$$ = 'edst'}
-             | 'email.src'       {$$ = 'esrc'}
-             | 'cert.subject.cn' {$$ = 'tls.sCn'}
-             | 'cert.issuer.cn'  {$$ = 'tls.iCn'}
-             | 'cert.serial'     {$$ = 'tls.sn'}
-             | 'cert.alt'        {$$ = 'tls.alt'}
-             | 'ssh.ver'         {$$ = 'sshver'}
+LOTERMFIELD  : node               {$$ = 'no'}
+             | 'host.dns'         {$$ = 'dnsho'}
+             | 'host.email'       {$$ = 'eho'}
+             | 'host.http'        {$$ = 'ho'}
+             | user               {$$ = 'user'}
+             | 'email.dst'        {$$ = 'edst'}
+             | 'email.src'        {$$ = 'esrc'}
+             | 'cert.subject.cn'  {$$ = 'tls.sCn'}
+             | 'cert.issuer.cn'   {$$ = 'tls.iCn'}
+             | 'cert.serial'      {$$ = 'tls.sn'}
+             | 'cert.alt'         {$$ = 'tls.alt'}
+             | 'ssh.ver'          {$$ = 'sshver'}
              ;
 
-TERMFIELD  : 'id'        {$$ = '_id'}
-           | 'ssh.key'   {$$ = 'sshkey'}
-           | 'email.id'  {$$ = 'eid'}
-           | 'email.md5' {$$ = 'emd5'}
-           | 'email.mv'  {$$ = 'emv'}
-           | 'email.fn'  {$$ = 'efn'}
-           | 'email.ct'  {$$ = 'ect'}
-           | 'http.md5'  {$$ = 'hmd5'}
-           | 'rootId'    {$$ = 'ro'}
+TERMFIELD  : 'id'                 {$$ = '_id'}
+           | 'ssh.key'            {$$ = 'sshkey'}
+           | 'email.message-id'   {$$ = 'eid'}
+           | 'email.md5'          {$$ = 'emd5'}
+           | 'email.mime-version' {$$ = 'emv'}
+           | 'email.fn'           {$$ = 'efn'}
+           | 'email.content-type' {$$ = 'ect'}
+           | 'http.md5'           {$$ = 'hmd5'}
+           | 'rootId'             {$$ = 'ro'}
            ;
 
 UPTERMFIELD  : 'country.src'   {$$ = 'g1'}
@@ -228,13 +254,13 @@ LOTEXTFIELD  : 'asn.src'         {$$ = 'as1'}
              | 'asn.xff'         {$$ = 'asxff'}
              | 'asn.email'       {$$ = 'aseip'}
              | 'email.subject'   {$$ = 'esub'}
-             | 'email.ua'        {$$ = 'eua'}
+             | 'email.x-mailer'  {$$ = 'eua'}
              | 'cert.subject.on' {$$ = 'tls.sOn'}
              | 'cert.issuer.on'  {$$ = 'tls.iOn'}
              ;
 
 TEXTFIELD  : 'http.uri'        {$$ = 'us'}
-           | 'http.ua'         {$$ = 'ua'}
+           | 'http.user-agent' {$$ = 'ua'}
            ;
 
 IPFIELD  : 'ip'       {$$ = 0}
@@ -381,6 +407,23 @@ e
         {$$ = {not: str2Query($1, "text", $3)};}
     | TEXTFIELD '==' STR
         {$$ = str2Query($1, "text", $3);}
+    | HEADER '==' STR
+        {$$ = str2Query(str2Header(yy, $1) + ".snow", "text", $3);}
+    | HEADER '!=' STR
+        {$$ = {not: str2Query(str2Header(yy, $1) + ".snow", "text", $3)};}
+    | HEADER '==' NUMBER
+        {
+        $$ = {term: {}};
+        $$.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER '!=' NUMBER
+        { $$ = {not: {term: {}}};
+          $$.not.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER GTLT NUMBER
+        {$$ = {range: {}};
+         $$.range[str2Header(yy, $1)] = {};
+         $$.range[str2Header(yy, $1)][$2] = $3;}
     | 'port' '==' NUMBER
         {$$ = {or: [{term: {p1: $3}}, {term: {p2: $3}}]};}
     | 'port' '!=' NUMBER
@@ -405,35 +448,27 @@ e
         { var file = stripQuotes($3);
           $$ = {not: {fileand: file}};
         }
-    | oldheader '==' STR
-        { var tag = stripQuotes($3);
-          $$ = {term: {hh: tag}};
-        }
-    | header '==' STR
+    | 'http.hasheader' '==' STR
         { var tag = stripQuotes($3);
           $$ = {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]};
         }
-    | 'header.src' '==' STR
+    | 'http.hasheader.src' '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {hh1: tag}};
         }
-    | 'header.dst' '==' STR
+    | 'http.hasheader.dst' '==' STR
         { var tag = stripQuotes($3);
           $$ = {term: {hh2: tag}};
         }
-    | oldheader '!=' STR
-        { var tag = stripQuotes($3);
-          $$ = {not: {term: {hh1: tag}}};
-        }
-    | header '!=' STR
+    | 'http.hasheader' '!=' STR
         { var tag = stripQuotes($3);
           $$ = {not: {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
         }
-    | 'header.src' '!=' STR
+    | 'http.hasheader.src' '!=' STR
         { var tag = stripQuotes($3);
           $$ = {not: {term: {hh1: tag}}};
         }
-    | 'header.dst' '!=' STR
+    | 'http.hasheader.dst' '!=' STR
         { var tag = stripQuotes($3);
           $$ = {not: {term: {hh2: tag}}};
         }
@@ -622,6 +657,10 @@ function str2Query(field, kind, str)
 {
     var obj;
 
+    if (field2RawField[field] === undefined && field.indexOf(".snow", field.length - 5) !== -1) {
+        field2RawField[field] = field.substring(0, field.length - 5) + ".raw";
+    }
+
     if (str[0] === "/" && str[str.length -1] === "/") {
         field = field2RawField[field] || field;
         obj = {query: {regexp: {}}};
@@ -646,3 +685,10 @@ function str2Query(field, kind, str)
     }
     return obj;
 }
+function str2Header(yy, name) {
+    var field = yy.fieldsMap[name];
+    if (field === undefined) throw "Unknown field " + name;
+
+    return field.db;
+}
+

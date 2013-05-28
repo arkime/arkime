@@ -32,8 +32,10 @@ html
           if (spiData)
             li
               a#spiLink.expressionsLink(href='spiview') SPI View
+            li
+              a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
           li
-            a#connectionsLink.expressionsLink(href='graph') Connections
+            a#connectionsLink.expressionsLink(href='connections') Connections
           li
             a#filesLink(href='files') Files
           if user.createEnabled
@@ -43,7 +45,7 @@ html
             a#statsLink(href='stats') Stats
           li.last
             a.config#changePasswordLink(href='password') Change Password
-      - if (isIndex && user.createEnabled)
+      - if (user.createEnabled)
         a(href="#{elasticBase}/_plugin/head/",target="_blank")
           div#esstatus.tooltip
       div#version 
@@ -88,3 +90,7 @@ html
         
     div.pageBody(id="pageBody-#{titleLink}")
       != body
+
+script(type='text/javascript')
+  var molochFields = !{fieldsMap};
+  var molochFieldsExp = Object.keys(molochFields);

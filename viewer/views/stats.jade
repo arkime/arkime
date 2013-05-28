@@ -423,6 +423,7 @@ script(type='text/javascript')
         "type": "GET",
         "url": '#{basePath}esstats.json',
         "success": function(data) {
+          updateHealth(data.health);
           var nNodes = esstatsTable.fnGetNodes();
           for (var i = 0; i < data.aaData.length; i++) {
             var found = false;

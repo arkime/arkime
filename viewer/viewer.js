@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 8;
+var MIN_DB_VERSION = 10;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,8 @@ app.configure(function() {
                            isIndex: false,
                            basePath: Config.basePath(),
                            elasticBase: "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1],
-                           spiData: false
+                           spiData: false,
+                           fieldsMap: JSON.stringify(Config.getFieldsMap())
                           });
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
@@ -277,7 +278,6 @@ app.get("/", function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
-  console.log("locals = \n", util.inspect(res.locals, false, 12));
   res.render('index', {
     user: req.user,
     title: 'Home',
@@ -293,21 +293,40 @@ app.get("/spiview", function(req, res) {
   if (!app.set("view options").spiData) {
     return res.send("Elastic Search 0.90.0 RC1 requried");
   }
+
   res.render('spiview', {
     user: req.user,
     title: 'SPI View',
     titleLink: 'spiLink',
-    isIndex: true
+    isIndex: true,
+    reqFields: Config.headers("headers-http-request"),
+    resFields: Config.headers("headers-http-response"),
+    emailFields: Config.headers("headers-email")
   });
 });
 
-app.get("/graph", function(req, res) {
+app.get("/spigraph", function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
-  res.render('graph', {
+  var fields = Config.getFields();
+  fields = fields.sort(function(a,b) {return (a.exp > b.exp?1:-1);});
+  res.render('spigraph', {
     user: req.user,
-    title: 'Graph',
+    title: 'SPI Graph',
+    titleLink: 'spigraphLink',
+    isIndex: true,
+    fields: fields
+  });
+});
+
+app.get("/connections", function(req, res) {
+  if (!req.user.webEnabled) {
+    return res.send("Moloch Permision Denied");
+  }
+  res.render('connections', {
+    user: req.user,
+    title: 'Connections',
     titleLink: 'connectionsLink',
     isIndex: true
   });
@@ -317,10 +336,13 @@ app.get('/about', function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
+  var fields = Config.getFields();
+  fields = fields.sort(function(a,b) {return (a.exp > b.exp?1:-1);});
   res.render('about', {
     user: req.user,
     title: 'About',
-    titleLink: 'aboutLink'
+    titleLink: 'aboutLink',
+    fields: fields
   });
 });
 
@@ -370,7 +392,7 @@ app.get('/password', function(req, res) {
   if (req.query.userId) {
     Db.get("users", 'user', req.query.userId, function(err, user) {
       if (err || !user.exists) {
-        console.log("/password error", err, user);
+        console.log("ERROR - /password error", err, user);
         return res.send("Unknown user");
       }
       render(user._source, 0);
@@ -417,10 +439,10 @@ app.get('/:nodeName/statsDetail', function(req, res) {
 fs.unlink("./public/style.css", function () {}); // Remove old style.css file
 app.get('/style.css', function(req, res) {
   fs.readFile("./views/style.styl", 'utf8', function(err, str) {
-    if (err) {return console.log(err);}
+    if (err) {return console.log("ERROR - ", err);}
     var style = stylus(str, "./views");
     style.render(function(err, css){
-      if (err) {return console.log(err);}
+      if (err) {return console.log("ERROR - ", err);}
       var date = new Date().toUTCString();
       res.setHeader('Content-Type', 'text/css');
       res.setHeader('Date', date);
@@ -567,7 +589,6 @@ function addSortToQuery(query, info, d) {
       query.sort.push({lpms: {order: info["sSortDir_" + i]}});
     }
   }
-  console.log(query.sort);
 }
 
 function noCache(req, res) {
@@ -577,10 +598,18 @@ function noCache(req, res) {
 app.get('/esstats.json', function(req, res) {
   var stats = [];
 
-  Db.nodesStats({"jvm": 1}, function(err, info) {
-    var nodes = Object.keys(info.nodes);
+  async.parallel({
+    nodes: function(nodesCb) {
+      Db.nodesStats({"jvm": 1}, nodesCb);
+    },
+    health: function (healthCb) {
+      Db.healthCache(healthCb);
+    }
+  },
+  function(err, results) {
+    var nodes = Object.keys(results.nodes.nodes);
     for (var n = 0; n < nodes.length; n++) {
-      var node = info.nodes[nodes[n]];
+      var node = results.nodes.nodes[nodes[n]];
       stats.push({
         name: node.name,
         storeSize: node.indices.store.size_in_bytes,
@@ -592,6 +621,7 @@ app.get('/esstats.json', function(req, res) {
       });
     }
     var r = {sEcho: req.query.sEcho,
+             health: results.health,
              iTotalRecords: stats.length,
              iTotalDisplayRecords: stats.length,
              aaData: stats};
@@ -616,7 +646,6 @@ app.get('/stats.json', function(req, res) {
                }
               };
   addSortToQuery(query, req.query, "_uid");
-  console.log("stats query", JSON.stringify(query));
 
   async.parallel({
     stats: function (cb) {
@@ -1037,7 +1066,7 @@ function buildSessionQuery(req, buildCb) {
   addSortToQuery(query, req.query, "fp");
 
   var err = null;
-  molochparser.parser.yy = {emailSearch: req.user.emailSearch === true};
+  molochparser.parser.yy = {emailSearch: req.user.emailSearch === true, fieldsMap: Config.getFieldsMap()};
   if (req.query.expression) {
     try {
       query.query.filtered.filter = molochparser.parse(req.query.expression);
@@ -1070,6 +1099,47 @@ function buildSessionQuery(req, buildCb) {
       return buildCb(err || lerr, query, indices);
     });
   });
+}
+
+function mapMerge(facets) {
+  var map = {};
+
+  facets.map1.terms.forEach(function (item) {
+    if (item.count < 0) {
+      item.count = 0x7fffffff;
+    }
+    map[item.term] = item.count;
+  });
+
+  facets.map2.terms.forEach(function (item) {
+    if (item.count < 0) {
+      item.count = 0x7fffffff;
+    }
+    if (!map[item.term]) {
+      map[item.term] = 0;
+    }
+    map[item.term] += item.count;
+  });
+  return map;
+}
+
+function histoMerge(req, query, facets, graph) {
+  graph.lpHisto = [];
+  graph.dbHisto = [];
+  graph.paHisto = [];
+  graph.xmin = req.query.startTime  * 1000|| null;
+  graph.xmax = req.query.stopTime * 1000 || null;
+  graph.interval = query.facets.dbHisto.histogram.interval || 60;
+
+  facets.paHisto.entries.forEach(function (item) {
+    graph.lpHisto.push([item.key*1000, item.count]);
+    graph.paHisto.push([item.key*1000, item.total]);
+  });
+
+  facets.dbHisto.entries.forEach(function (item) {
+    graph.dbHisto.push([item.key*1000, item.total]);
+  });
+
 }
 
 app.get('/sessions.json', function(req, res) {
@@ -1105,7 +1175,7 @@ app.get('/sessions.json', function(req, res) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
           //console.log("sessions query = ", util.inspect(result, false, 50));
           if (err || result.error) {
-            console.log("sessions.json error", err, result.error);
+            console.log("sessions.json error", err, (result?result.error:null));
             sessionsCb(null, {total: 0, results: []});
             return;
           }
@@ -1114,31 +1184,8 @@ app.get('/sessions.json', function(req, res) {
             result.facets = {map1: {terms: []}, map2: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}};
           }
 
-          result.facets.dbHisto.entries.forEach(function (item) {
-            graph.lpHisto.push([item.key*1000, item.count]);
-            graph.dbHisto.push([item.key*1000, item.total]);
-          });
-
-          result.facets.paHisto.entries.forEach(function (item) {
-            graph.paHisto.push([item.key*1000, item.total]);
-          });
-
-          result.facets.map1.terms.forEach(function (item) {
-            if (item.count < 0) {
-              item.count = 0x7fffffff;
-            }
-            map[item.term] = item.count;
-          });
-
-          result.facets.map2.terms.forEach(function (item) {
-            if (item.count < 0) {
-              item.count = 0x7fffffff;
-            }
-            if (!map[item.term]) {
-              map[item.term] = 0;
-            }
-            map[item.term] += item.count;
-          });
+          histoMerge(req, query, result.facets, graph);
+          map = mapMerge(result.facets);
 
           var results = {total: result.hits.total, results: []};
           for (i = 0; i < result.hits.hits.length; i++) {
@@ -1160,7 +1207,6 @@ app.get('/sessions.json', function(req, res) {
       }
     },
     function(err, results) {
-      console.log("total = ", results.total, "display total = ", (results.sessions?results.sessions.total:0));
       var r = {sEcho: req.query.sEcho,
                iTotalRecords: results.total,
                iTotalDisplayRecords: (results.sessions?results.sessions.total:0),
@@ -1172,6 +1218,99 @@ app.get('/sessions.json', function(req, res) {
         res.send(r);
       } catch (c) {
       }
+    });
+  });
+});
+
+app.get('/spigraph.json', function(req, res) {
+  req.query.facets = 1;
+  buildSessionQuery(req, function(bsqErr, query, indices) {
+    if (bsqErr) {
+      var r = {sEcho: req.query.sEcho,
+               iTotalRecords: 0,
+               iTotalDisplayRecords: 0,
+               graph: {},
+               map: {},
+               bsqErr: bsqErr.toString(),
+               items:[]};
+      res.send(r);
+      return;
+    }
+
+    delete query.fields;
+    delete query.sort;
+    query.size = 0;
+    var size = +req.query.size || 20;
+
+    var field = req.query.field || "no";
+    query.facets.field = {terms: {field: field, size: size}};
+
+    /* Need the nextTick so we don't blow max stack frames */
+    var eachCb = function (item, cb) {process.nextTick(cb);};
+    if (field.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
+      eachCb = function(item, cb) {
+        item.name = Pcap.inet_ntoa(item.name);
+        process.nextTick(cb);
+      };
+    } else if (field.match(/^(ta|hh1|hh2)$/) !== null) {
+      eachCb = function(item, cb) {
+        Db.tagIdToName(item.name, function (name) {
+          item.name = name;
+          process.nextTick(cb);
+        });
+      };
+    }
+
+    Db.searchPrimary(indices, 'session', query, function(err, result) {
+      var results = {bsqErr: bsqErr, items: [], graph: {}};
+      if (err || result.error) {
+        results.bsqErr = "Error performing query";
+        console.log("spigraph.json error", err, (result?result.error:null));
+        return res.send(results);
+      }
+      results.map = mapMerge(result.facets);
+
+      histoMerge(req, query, result.facets, results.graph);
+      results.map = mapMerge(result.facets);
+
+      var facets = result.facets.field.terms;
+      var interval = query.facets.dbHisto.histogram.interval;
+      var filter;
+
+      if (query.query.filtered.filter === undefined) {
+        query.query.filtered.filter = {term: {}};
+        filter = query.query.filtered.filter;
+      } else {
+        query.query.filtered.filter = {and: [{term: {}}, query.query.filtered.filter]};
+        filter = query.query.filtered.filter.and[0];
+      }
+
+      delete query.facets.field;
+
+      var queries = [];
+      facets.forEach(function(item) {
+        filter.term[field] = item.term;
+        queries.push(JSON.stringify(query));
+      });
+
+      Db.msearch(indices, 'session', queries, function(err, result) {
+        for (var i = 0; i < result.responses.length; i++) {
+          var r = {name: facets[i].term, count: facets[i].count, graph: {lpHisto: [], dbHisto: [], paHisto: []}};
+
+          histoMerge(req, query, result.responses[i].facets, r.graph);
+          if (r.graph.xmin === null) {
+            r.graph.xmin = results.graph.xmin || results.graph.paHisto[0][0];
+          }
+
+          if (r.graph.xmax === null) {
+            r.graph.xmax = results.graph.xmax || results.graph.paHisto[results.graph.paHisto.length-1][0];
+          }
+
+          r.map = mapMerge(result.responses[i].facets);
+          results.items.push(r);
+        }
+        res.send(results);
+      });
     });
   });
 });
@@ -1208,7 +1347,7 @@ app.get('/spiview.json', function(req, res) {
     });
     query.size = 0;
 
-    console.log("spiview.json query", JSON.stringify(query), "indices", indices);
+    //console.log("spiview.json query", JSON.stringify(query), "indices", indices);
 
     var graph;
     var map;
@@ -1224,7 +1363,7 @@ app.get('/spiview.json', function(req, res) {
       spi: function (sessionsCb) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
           if (err || result.error) {
-            console.log("sessions.json error", err, result.error);
+            console.log("spiview.json error", err, (result?result.error:null));
             sessionsCb(null, {});
             return;
           }
@@ -1242,35 +1381,12 @@ app.get('/spiview.json', function(req, res) {
               dbHisto: [],
               paHisto: []
             };
-            map = {};
-            result.facets.dbHisto.entries.forEach(function (item) {
-              graph.lpHisto.push([item.key*1000, item.count]);
-              graph.dbHisto.push([item.key*1000, item.total]);
-            });
+
+            histoMerge(req, query, result.facets, graph);
+            map = mapMerge(result.facets);
             delete result.facets.dbHisto;
-
-            result.facets.paHisto.entries.forEach(function (item) {
-              graph.paHisto.push([item.key*1000, item.total]);
-            });
             delete result.facets.paHisto;
-
-            result.facets.map1.terms.forEach(function (item) {
-              if (item.count < 0) {
-                item.count = 0x7fffffff;
-              }
-              map[item.term] = item.count;
-            });
             delete result.facets.map1;
-
-            result.facets.map2.terms.forEach(function (item) {
-              if (item.count < 0) {
-                item.count = 0x7fffffff;
-              }
-              if (!map[item.term]) {
-                map[item.term] = 0;
-              }
-              map[item.term] += item.count;
-            });
             delete result.facets.map2;
           }
 
@@ -1338,7 +1454,7 @@ app.get('/dns.json', function(req, res) {
   });
 });
 
-app.get('/graph.json', function(req, res) {
+app.get('/connections.json', function(req, res) {
 
   req.query.iDisplayLength = req.query.iDisplayLength || "5000";
   buildSessionQuery(req, function(bsqErr, query, indices) {
@@ -1347,7 +1463,6 @@ app.get('/graph.json', function(req, res) {
       res.send(r);
       return;
     }
-    console.log("graph.json indices", indices, " query", JSON.stringify(query));
 
     async.parallel({
       health: function (healthCb) {
@@ -1359,7 +1474,7 @@ app.get('/graph.json', function(req, res) {
     },
     function(err, results) {
       if (err || results.graph.error) {
-        console.log("graph.json error", err, results.graph.error);
+        console.log("connections.json error", err, results.graph.error);
         res.send({});
         return;
       }
@@ -1452,7 +1567,7 @@ app.get('/sessions.csv', function(req, res) {
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
-        console.log("sessions.csv error", err, result.error);
+        console.log("sessions.csv error", err, (result?result.error:null));
         res.send("#Error db\r\n");
         return;
       }

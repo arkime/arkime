@@ -18,7 +18,10 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
 	        @GEOIP_LIBS@ \
-	        thirdparty/http_parser.o -ldl
+	        thirdparty/http_parser.o \
+	        thirdparty/js0n.o \
+	        thirdparty/patricia.o \
+		-ldl
 
 C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c field.c
 O_FILES         = $(C_FILES:.c=.o)
@@ -26,26 +29,29 @@ O_FILES         = $(C_FILES:.c=.o)
 INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
 
-all:thirdparty/js0n.o thirdparty/http_parser.o
+all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fPIC -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
-	$(CC) -rdynamic -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
+	$(CC) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
 
-snf:thirdparty/js0n.o thirdparty/http_parser.o
+snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	gcc -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_SNF) -DSNF \
 	    $(INCLUDE_OTHER) 
-	g++ -ggdb $(O_FILES) thirdparty/js0n.o -o moloch-capture \
+	g++ -ggdb $(O_FILES) -o moloch-capture \
 	    $(LIB_SNF) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o
+
+thirdparty/patricia.o:thirdparty/patricia.c
+	$(CC) -c thirdparty/patricia.c -o thirdparty/patricia.o
 
 thirdparty/http_parser.o: thirdparty/http_parser.c
 	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o

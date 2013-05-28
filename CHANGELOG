@@ -1,3 +1,27 @@
+0.8.4 2013/05/28
+  - NOTICE: Last version to support 0.20 ES
+  - NOTICE: Changed some expressions, old versions are supported for now
+        email.ct* => email.content-type*
+        email.mv* => email.content-type*
+        email.id* => email.message-id*
+        email.ua* => email.x-mailer*
+        header*   => http.hasheader*
+        ua*       => http.user-agent*
+        http.ua*  => http.user-agent*
+  - valgrind fixes and memory reduction
+  - New SPI Graph tab which lets you graph an expression per field
+  - Now possible to chose which http request, response and smtp headers
+    to index using headers-http-request, headers-http-response,
+    headers-email sections
+  - Session Graph now shows the full queried range instead of data 
+    available range
+  - Fixed db.pl wipe error
+  - Added density to db.pl info
+  - Added override-ips config section that allows overriding of
+    country, tag, asn for ips and cidr ips
+  - Clean up add users UI a little, and clear fields on successful add
+
+
 0.8.3 2013/05/09 
   - full text for uri is now available
   - regex searches using == /REGEXHERE/

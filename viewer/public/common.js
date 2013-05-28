@@ -332,7 +332,7 @@ function handleUrlParams() {
     var ct;
     if (! /^[0-9]+$/.test(urlParams.centerTime)) {
       ct = Date.parse(urlParams.centerTime.replace("+", " "))/1000;
-      if (isNaN(st) || st === null) {
+      if (isNaN(ct) || ct === null) {
         ct = utcParser(urlParams.centerTime).getTime()/1000;
       }
     } else {
@@ -397,45 +397,45 @@ $(document).ready(function() {
         tokens.push(" ");
       }
 
-      var commands = ["(", "ip", "ip.src", "ip.dst", "ip.dns", "ip.dns.count", "ip.email", "ip.email.cnt", "ip.xff", "ip.xff.cnt", "country", "country.src", "country.dst", "country.dns", "country.email", "country.xff", "asn", "asn.src", "asn.dst", "asn.dns", "asn.email", "asn.xff", "bytes", "databytes", "protocol", "ua", "ua.cnt", "user", "user.cnt", "tags", "tags.cnt", "oldheader", "header", "header.src", "header.src.cnt", "header.dst", "header.dst.cnt", "node", "packets", "port", "port.src", "port.dst", "uri", "uri.cnt", "host", "host.cnt", "host.dns", "host.dns.cnt", "host.email", "host.email.cnt", "host.http", "host.http.cnt", "cert.issuer.cn", "cert.issuer.on", "cert.subject.cn", "cert.subject.on", "cert.serial", "cert.alt", "cert.alt.cnt", "cert.cnt", "ssh.key", "ssh.key.cnt", "ssh.ver", "ssh.ver.cnt", "email.src", "email.src.cnt", "email.dst", "email.dst.cnt", "email.subject", "email.subject.cnt", "email.ua", "email.ua.cnt", "email.fn", "email.fn.cnt", "email.md5", "email.md5.cnt", "email.mv", "email.mv.cnt", "email.ct", "email.ct.cnt", "email.id", "email.id.cnt"];
-
       if (tokens.length <= 1) {
-        return callback(commands);
+        return callback(molochFieldsExp);
       }
 
-      if (/^(ip)/.test(tokens[tokens.length-2])) {
-        return callback(["!=", "=="]);
+      // Operator
+      var token = tokens[tokens.length-2];
+      var field = molochFields[token];
+      if (field !== undefined) {
+        if (field.type === "integer")  {
+          return callback(["!=", "==" , ">=", "<=", "<", ">"]);
+        } else {
+          return callback(["!=", "=="]);
+        }
       }
 
-      if (/^(bytes|databytes|protocol)/.test(tokens[tokens.length-2]) || /\.cnt$/.test(tokens[tokens.length-2])) {
-        return callback(["!=", "==" , ">=", "<=", "<", ">"]);
+      // Values
+      token = tokens[tokens.length-3];
+      field = molochFields[token];
+
+      if (!field) {
+        if (/^[!<=>]/.test(token)) {
+          return callback(["&&", "||", ")"]);
+        }
+        return callback(molochFieldsExp);
       }
 
-      if (/^(tags|ua|oldheader|header|country|asn|host|node|uri|cert|email)/.test(tokens[tokens.length-2])) {
-        return callback(["!=", "=="]);
+      if (/^(country)/.test(token)) {
+        return callback(Object.keys($(document).data("countries")));
       }
 
-      var item = tokens[tokens.length-3];
-      if (/^(ip|bytes|databytes|protocol|packets|node|ua|uri|cert)/.test(item)) {
-        return callback([]);
-      }
 
-      if (/^(country)/.test(item)) {
-        return callback(Object.keys($('#world-map').data('mapObject').countries));
-      }
-
-      if (/^[!<=>]/.test(item)) {
-        return callback(["&&", "||", ")"]);
-      }
-
-      if (/^(tags|oldheader|header)/.test(item)) {
+      if (/^(tags|http.hasheader)/.test(token)) {
         if (filter.length < 1) {
           return callback([]);
         }
         $.ajax( {
             "dataType": 'html',
             "type": "GET",
-            "url": 'uniqueValue.json?type=' + item + '&filter=' + filter,
+            "url": 'uniqueValue.json?type=' + token + '&filter=' + filter,
             "success": function(data) {
               return callback(JSON.parse(data));
             }
@@ -443,7 +443,7 @@ $(document).ready(function() {
         return;
       }
 
-      return callback(commands);
+      return callback([]);
     };
   }
 });
@@ -503,16 +503,20 @@ function buildParams() {
 // Graph Functions
 //////////////////////////////////////////////////////////////////////////////////
 
-function updateGraph(allGraphData) {
+function updateGraph(allGraphData, graphId) {
+  graphId = graphId || "#sessionGraph";
+
   if (!allGraphData) {
     return;
   }
-  $('#sessionGraphSelect').data("molochGraphData", allGraphData);
-  drawGraph($('#sessionGraphSelect').val());
+  $(graphId).data("molochGraphData", allGraphData);
+  drawGraph($('#sessionGraphSelect').val(), graphId);
 }
 
-function drawGraph(graphName) {
-  var allGraphData = $('#sessionGraphSelect').data("molochGraphData");
+function drawGraph(graphName, graphId) {
+  graphId = graphId || "#sessionGraph";
+
+  var allGraphData = $(graphId).data("molochGraphData");
   var graphData = allGraphData[graphName];
   if (!graphData) {
     return;
@@ -521,7 +525,7 @@ function drawGraph(graphName) {
 
   var color = "#000000";
   var plot = $.plot(
-  $("#sessionGraph"), [{
+  $(graphId), [{
     data: graphData
   }], {
     series: {
@@ -546,7 +550,9 @@ function drawGraph(graphName) {
       color: "#000",
       tickFormatter: function(v, axis) {
         return dateString(v/1000, "<br>");
-      }
+      },
+      min: allGraphData.xmin || null,
+      max: allGraphData.xmax || null
     },
     yaxis: {
       min: 0,
@@ -583,13 +589,13 @@ function drawGraph(graphName) {
   });
 
   // code from flot - add zoom out button
-  $('<div class="button" style="right:20px;top:5px">zoom out</div>').appendTo($("#sessionGraph")).click(function (e) {
+  $('<div class="button" style="right:20px;top:5px">zoom out</div>').appendTo($(graphId)).click(function (e) {
       e.preventDefault();
       plot.zoomOut();
   });
 
   function addArrow(dir, right, top, offset) {
-      $('<img class="button" src="flot-0.7/examples/arrow-' + dir + '.gif" style="right:' + right + 'px;top:' + top + 'px">').appendTo($("#sessionGraph")).click(function (e) {
+      $('<img class="button" src="flot-0.7/examples/arrow-' + dir + '.gif" style="right:' + right + 'px;top:' + top + 'px">').appendTo($(graphId)).click(function (e) {
         e.preventDefault();
         plot.pan(offset);
       });
@@ -615,10 +621,12 @@ function showTooltip(x, y, contents) {
   }).appendTo("body").fadeIn(200);
 }
 
-function setupGraph() {
+function setupGraph(graphId) {
+  graphId = graphId || "#sessionGraph";
+
   // Pieces from Kibana
   var previousPoint = null;
-  $("#sessionGraph").bind("plothover", function (event, pos, item) {
+  $(graphId).bind("plothover", function (event, pos, item) {
     $("#x").text(pos.x.toFixed(2));
     $("#y").text(pos.y.toFixed(2));
 
@@ -639,13 +647,13 @@ function setupGraph() {
     }
   });
 
-  $('#sessionGraph').bind("plotselected", function (event, ranges) {
+  $(graphId).bind("plotselected", function (event, ranges) {
     $("#startDate").val(dateString(ranges.xaxis.from/1000, ' '));
     $("#stopDate").val(dateString(ranges.xaxis.to/1000, ' '));
     $("#date").val("-2").change();
   });
 
-  $("#sessionGraph").bind('plotpan plotzoom', function (event, plot) {
+  $(graphId).bind('plotpan plotzoom', function (event, plot) {
     var axes = plot.getAxes();
     $("#startDate").val(dateString((axes.xaxis.min/1000)-1, ' '));
     $("#stopDate").val(dateString((axes.xaxis.max/1000)+1, ' '));
@@ -653,7 +661,9 @@ function setupGraph() {
   });
 
   $('#sessionGraphSelect').change(function() {
-    drawGraph($('#sessionGraphSelect').val());
+    $(".sessionGraph").each(function(index, item) {
+      drawGraph($('#sessionGraphSelect').val(), "#" + item.id);
+    });
     return false;
   });
 }
@@ -661,23 +671,25 @@ function setupGraph() {
 //////////////////////////////////////////////////////////////////////////////////
 // Map Functions
 //////////////////////////////////////////////////////////////////////////////////
-function updateMap(data) {
+function updateMap(data, mapId) {
+  mapId = mapId || '#world-map';
+
   if (!data) {
     return;
   }
   // Hack to clear colors
-  var map = $('#world-map').data('mapObject');
-  if (map.countries) {
-    for(var key in map.countries) {
-      map.countries[key].setFill('#ffffff');
-    }
+  var map = $(mapId).data('mapObject');
+  for(var key in $(document).data("countries")) {
+    map.countries[key].setFill('#ffffff');
   }
-  $('#world-map').data('molochData', data);
-  $('#world-map').vectorMap('set', 'values', data);
+  $(mapId).data('molochData', data);
+  $(mapId).vectorMap('set', 'values', data);
 }
 
-function setupMap() {
-  $('#world-map').vectorMap({
+function setupMap(mapId) {
+  mapId = mapId || '#world-map';
+
+  $(mapId).vectorMap({
     map: 'world_en',
     //backgroundColor: '#686868',
     //scaleColors: ['#C8EEFF', '#0042A4'],
@@ -689,19 +701,28 @@ function setupMap() {
     normalizeFunction: 'polynomial',
     hoverOpacity: 0.7,
     onLabelShow: function(e, el, code){
-      el.html(el.html() + ' - ' + numberWithCommas($('#world-map').data('molochData')[code] || 0));
+      el.html(el.html() + ' - ' + numberWithCommas($(mapId).data('molochData')[code] || 0));
     },
     onRegionClick: function(e, code){
       addExpression("country == " + code);
     }
   });
 
-  $('#world-map').hoverIntent (
+  if ($(document).data("countries") === undefined) {
+    var map = $(mapId).data('mapObject');
+    $(document).data("countries", jQuery.extend(true, {}, map.countries));
+  }
+
+  $(mapId).hoverIntent (
     function() {
+      $(this).parent().css({
+        'z-index': 3
+      });
+      var top = Math.max($(this).offset().top - $(window).scrollTop(), 0);
       $(this).css({
         position: "fixed",
         right: 0,
-        top: $(this).offset().top,
+        top: Math.min(top, $(window).height() * 0.25),
         width: $(window).width()*0.75,
         height: $(window).height()*0.75
       });
@@ -712,6 +733,9 @@ function setupMap() {
         return;
       }
 
+      $(this).parent().css({
+        'z-index': 2
+      });
       $(this).css({
         position: "relative",
         right: 0,

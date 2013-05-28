@@ -22,10 +22,10 @@ link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.cont
 
 div(style="margin-bottom: 12px")
 div#bsqErr
-div#sessionsInfo
-  div#world-map-wrapper
-    div#world-map
-  div#sessionGraph
+div#sessionsInfo.sessionsInfo
+  div#world-map-wrapper.world-map-wrapper
+    div#world-map.world-map
+  div#sessionGraph.sessionGraph
   select#sessionGraphSelect
     option(value="lpHisto") sessions
     option(value="paHisto") packets
@@ -54,16 +54,28 @@ dl#spiview
   mixin spi("Host", "ho", "host.http", "http")
   mixin spi("URI", "rawus", "uri", "http")
   mixin spi("URI Token", "us", "uri", "http")
-  mixin spi("User Agent", "rawua", "http.ua", "http")
-  mixin spi("User Agent Token", "ua", "http.ua", "http")
+  mixin spi("User Agent", "rawua", "http.user-agent", "http")
+  mixin spi("User Agent Token", "ua", "http.user-agent", "http")
 
   mixin spi("XFF IP", "xff", "ip.xff", "http")
   mixin spi("XFF GEO", "gxff", "country.xff", "http")
   mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
   mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
 
-  mixin spi("Request Header", "hh1", "header.src", "http")
-  mixin spi("Response Header", "hh2", "header.dst", "http")
+  mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
+  each value,i in reqFields 
+    if (value.type === "string")
+      mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
+      mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
+    else
+      mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
+  mixin spi("Response Header", "hh2", "http.hasheader.dst", "http")
+  each value,i in resFields 
+    if (value.type === "string")
+      mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
+      mixin spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
+    else
+      mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
 
   mixin spi("Body MD5", "hmd5", "http.md5", "http")
   br
@@ -108,12 +120,18 @@ dl#spiview
     mixin spi("Subject Token", "esub", "email.subject", "email")
     mixin spi("Source", "esrc", "email.src", "email")
     mixin spi("Destination", "edst", "email.dst", "email")
-    mixin spi("User Agent", "raweua", "email.ua", "email")
-    mixin spi("User Agent Token", "eua", "email.ua", "email")
-    mixin spi("Message Id", "eid", "email.id", "email")
-    mixin spi("Mime Version", "emv", "email.mv", "email")
+    mixin spi("X-Mailer", "raweua", "email.x-mailer", "email")
+    mixin spi("X-Mailer Token", "eua", "email.x-mailer", "email")
+    mixin spi("Message Id", "eid", "email.message-id", "email")
+    mixin spi("Mime Version", "emv", "email.mime-version", "email")
     mixin spi("Filename", "efn", "email.fn", "email")
     mixin spi("Attachment MD5", "emd5", "email.md5", "email")
+    each value,i in emailFields 
+      if (value.type === "string")
+        mixin spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
+        mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
+      else
+        mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
 
 script(type='text/javascript')
   var initialDisplayLength = 100;
@@ -126,6 +144,7 @@ script(type='text/javascript')
     if (window.history.ready) {
       doPushState = 0;
       handleUrlParams();
+      loadData();
     }
   });
 
@@ -182,14 +201,14 @@ script(type='text/javascript')
           }
 
           $.each(json.spi, function(spii, spi) {
-            var spida = $("#SPIda-" + spii);
+            var spida = $("[id='SPIda-" + spii + "']");
             if (spi.terms.length !== 0) {
               spida.text("");
             } else {
               spida.html("&nbsp;");
             }
 
-            if (spii === "a1" || spii === "a2" || spii === "dnsip" || spii === "xff" || spii === "eip") {
+            if (spii.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
               $.each(spi.terms, function(i, term) {
                 if (i !== 0) {
                   spida.append(", ");
@@ -223,12 +242,14 @@ script(type='text/javascript')
   function fetchState(item, append) {
     var field = item.attr('id').substring(6);
     var state = "";
+
+    var spida = $("[id='SPIda-" + field + "']");
     if (item.prop("indeterminate")) {
       state = field + ":10";
       if (append) {
-        $("#SPIda-" + field).append(" <img src=\"spinning.gif\">");
+        spida.append(" <img src=\"spinning.gif\">");
       } else {
-        $("#SPIda-" + field).html("<img src=\"spinning.gif\">");
+        spida.html("<img src=\"spinning.gif\">");
       }
     } else if (item.attr("checked")) {
       if (!fetchSize[field]) {
@@ -236,13 +257,13 @@ script(type='text/javascript')
       }
       state = field + ":" + fetchSize[field];
       if (append) {
-        $("#SPIda-" + field).append(" <img src=\"spinning.gif\">");
+        spida.append(" <img src=\"spinning.gif\">");
       } else {
-        $("#SPIda-" + field).html("<img src=\"spinning.gif\">");
+        spida.html("<img src=\"spinning.gif\">");
       }
     } else {
       delete fetchSize[field];
-      $("#SPIda-" + field).html("&nbsp;");
+      spida.html("&nbsp;");
     }
     return state;
   }
@@ -278,15 +299,15 @@ script(type='text/javascript')
   }
 
   function moreSPI(spii) {
-    var item = $("#SPIck-" + spii);
-    if ($(item).prop("indeterminate")) {
-      $(item).prop("indeterminate", null);
-      $(item).attr("checked", "checked");
+    var spick = $("[id='SPIck-" + spii + "']");
+    if (spick.prop("indeterminate")) {
+      spick.prop("indeterminate", null);
+      spick.attr("checked", "checked");
     }
     if (fetchSize[spii]) {
       fetchSize[spii] += 100;
     }
-    var state = fetchState(item, true);
+    var state = fetchState(spick, true);
     fetchData(clickQueue, "spi=" + state);
     return false;
   }
@@ -328,12 +349,13 @@ script(type='text/javascript')
     if (initialParams.spi) {
       initialParams.spi.split(",").forEach(function (item) {
         var parts = item.split(":");
+        var spick = $("[id='SPIck-" + parts[0] + "']");
         if (parts[1] === "10") {
-          $("#SPIck-" + parts[0]).prop("indeterminate");
+          spick.prop("indeterminate");
         } else {
           fetchSize[parts[0]] = +parts[1];
-          $("#SPIck-" + parts[0]).prop("indeterminate", null);
-          $("#SPIck-" + parts[0]).attr("checked", "checked");
+          spick.prop("indeterminate", null);
+          spick.attr("checked", "checked");
         }
       });
     }
@@ -349,16 +371,23 @@ script(type='text/javascript')
         build: function($trigger, e) {
           var checkbox = $(e.target).find("input");
           items = {
-            items: {name: "Export Unique " + $(e.target).text(), counts:0, field: checkbox.attr("id").substring(6)},
-            itemcounts: {name: "Export Unique" + $(e.target).text() + " with Counts", counts:1, field: checkbox.attr("id").substring(6)}
+            spigraph: {name: "Open SPI Graph " + $(e.target).text(), mtype:0, field: checkbox.attr("id").substring(6)},
+            items: {name: "Export Unique " + $(e.target).text(), mtype:1, counts:0, field: checkbox.attr("id").substring(6)},
+            itemcounts: {name: "Export Unique" + $(e.target).text() + " with Counts", mtype:1, counts:1, field: checkbox.attr("id").substring(6)}
           };
           return {
             callback: function(key, options) {
               var params = buildParams();
+              var url;
 
-              params.push({name:'field', value:items[key].field});
-              params.push({name:'counts', value:items[key].counts});
-              var url = "unique.txt?" + $.param(params);
+              if (items[key].mtype === 0) {
+                params.push({name:'field', value:items[key].field});
+                url = "spigraph?" + $.param(params);
+              } else {
+                params.push({name:'field', value:items[key].field});
+                params.push({name:'counts', value:items[key].counts});
+                url = "unique.txt?" + $.param(params);
+              }
 
               window.open(url);
             },
