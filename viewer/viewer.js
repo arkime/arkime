@@ -1294,6 +1294,10 @@ app.get('/spigraph.json', function(req, res) {
       });
 
       Db.msearch(indices, 'session', queries, function(err, result) {
+        if (!result.responses) {
+          return res.send(results);
+        }
+
         for (var i = 0; i < result.responses.length; i++) {
           var r = {name: facets[i].term, count: facets[i].count, graph: {lpHisto: [], dbHisto: [], paHisto: []}};
 
@@ -1309,7 +1313,7 @@ app.get('/spigraph.json', function(req, res) {
           r.map = mapMerge(result.responses[i].facets);
           results.items.push(r);
         }
-        res.send(results);
+        return res.send(results);
       });
     });
   });
