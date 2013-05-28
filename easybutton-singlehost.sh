@@ -115,7 +115,7 @@ if [ ! -f "elasticsearch-${ES}.tar.gz" ]; then
 fi
 
 cd ${TDIR}
-tar xvfz ${INSTALL_DIR}/thirdparty/elasticsearch-${ES}.tar.gz
+tar xfz ${INSTALL_DIR}/thirdparty/elasticsearch-${ES}.tar.gz
 cd elasticsearch-${ES}
 ./bin/plugin -install mobz/elasticsearch-head
 ./bin/plugin -install lukas-vlcek/bigdesk
@@ -128,7 +128,7 @@ if [ ! -f "node-v${NODEJS}.tar.gz" ]; then
   wget http://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}.tar.gz
 fi
 
-tar xvfz node-v${NODEJS}.tar.gz
+tar xfz node-v${NODEJS}.tar.gz
 cd node-v${NODEJS}
 ./configure 
 make
