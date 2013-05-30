@@ -252,6 +252,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
   case 12: // Raw
     this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj);
     break;
+  case 113: // SLL
+    this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj);
+    break;
   default:
     console.log("Unsupported pcap file", this.filename, "link type", this.linkType);
     break;
