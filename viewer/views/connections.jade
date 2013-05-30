@@ -1,0 +1,274 @@
+script(type='text/javascript', src='jquery.autocomplete.js')
+
+div#networkLabel
+div#network
+script(type='text/javascript')
+  var initialDisplayLength = 100;
+  var doPushState = 1;
+  var svg;
+  var force;
+  var zoom;
+  var trans=[0,0];
+  var scale=1;
+  var popupTimer;
+
+  $("#graphType, #graphSize").show();
+  $("#graphType,#graphSize").change (function() {
+    initialDisplayLength = +$("#graphSize").val();
+    loadData();
+    return false;
+  });
+
+
+  $(window).bind('popstate', function(e) {
+    if (window.history.ready) {
+      doPushState = 0;
+      handleUrlParams();
+
+      loadData();
+      return false;
+    }
+  });
+
+  setTimeout(function () {window.history.ready = true;}, 500);
+
+  $(window).resize(function(e) {
+    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+
+    svg.attr("width", $(window).width())
+       .attr("height", $(window).height()-100)
+       ;
+
+    if (force) {
+      force.size([$(window).width(), $(window).height()-100]);
+    }
+  });
+
+  $('#searchForm').submit(function() {
+    loadData();
+    return false;
+  });
+
+  function redraw() {
+    //store the last event data
+    trans=d3.event.translate;
+    scale=d3.event.scale;  
+
+    //transform the vis
+     svg.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");  
+  }
+
+  function hideNode(node) {
+    $('#networkLabel').hide();
+    svg.select("#id"+node.replace(/[:\.]/g,"_")).remove();
+    svg.selectAll(".link")
+       .filter(function(d, i) {
+         return d.source.id === node || d.target.id === node;
+       })
+       .remove();
+  }
+
+  function hideLink(t,s) {
+    $('#networkLabel').hide();
+    svg.selectAll(".link")
+       .filter(function(d, i) {
+         return d.source.id === t && d.target.id === s;
+       })
+       .remove();
+  }
+  function gAddIp(ip, op) {
+    if (ip.slice(0, 4) === "dst:") {
+      addExpression("ip.dst == " + ip.slice(4), op);
+    } else if (ip.slice(0, 4) === "src:") {
+      addExpression("ip.src == " + ip.slice(4), op);
+    } else {
+      addExpression("ip == " + ip, op);
+    }
+  }
+
+  function gAddTSIp(ip1, ip2, op) {
+    var ip1s = "ip";
+
+    if (ip1.slice(0, 4) === "dst:") {
+      ip1 = ip1.slice(4);
+      ip1s = "ip.dst";
+    }
+
+    if (ip1.slice(0, 4) === "src:") {
+      ip1 = ip1.slice(4);
+      ip1s = "ip.src";
+    }
+
+    var ip2s = "ip";
+    if (ip2.slice(0, 4) === "dst:") {
+      ip2 = ip2.slice(4);
+      ip2s = "ip.dst";
+    }
+
+    if (ip2.slice(0, 4) === "src:") {
+      ip2 = ip2.slice(4);
+      ip2s = "ip.src";
+    }
+
+    addExpression("(" + ip1s + " == " + ip1 + " && " + ip2s + " == " + ip2 + ")", op);
+  }
+
+  function showNodePopup(that, d) {
+    var content = "Address<br>" + 
+                   d.id + (d.g?" (" + d.g + ")":"") + "<br>" + 
+                  "Links: " + d.weight + "<br>" +
+                  "Bytes: " + numberWithCommas(d.by) + "<br>" +
+                  "Databytes: " + numberWithCommas(d.db) + "<br>" +
+                  "Packets: " + numberWithCommas(d.pa) + "<br>" +
+                  "Expression: <a href='javascript:gAddIp(\"" + d.id + "\", \" && \")'>&amp;&amp;</a> " +
+                              "<a href='javascript:gAddIp(\"" + d.id + "\", \" || \")'>||</a><br>" +
+                  "<a href='javascript:hideNode(\"" + d.id + "\")'>Hide Node</a>";
+    $('#networkLabel').html(content)
+                      .css({ left: trans[0] + (d.px*scale) + 25,
+                              top: trans[1] + (d.py*scale) + $('#networkLabel').height()/2 + 25
+                          })
+                      .show()
+                      ;
+  }
+
+  function showLinkPopup(that, d, mouse) {
+    $('#networkLabel').html("Link<br>" + 
+                      d.source.id + (d.source.g?" (" + d.source.g + ")":"") + "<br>" + 
+                      d.target.id + (d.target.g?" (" + d.target.g + ")":"") + "<br>" + 
+                      "Sessions: " + numberWithCommas(d.value) + "<br>" +
+                      "Protocol: " + d.pr + "<br>" +
+                      "Bytes: " + numberWithCommas(d.by) + "<br>" +
+                      "Databytes: " + numberWithCommas(d.db) + "<br>" +
+                      "Packets: " + numberWithCommas(d.pa) + "<br>" +
+                      "Expression: <a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" && \")'>&amp;&amp;</a> " +
+                                  "<a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" || \")'>||</a><br>" +
+                      "<a href='javascript:hideLink(\"" + d.source.id + "\",\"" + d.target.id + "\")'>Hide Link</a>")
+                      .css({ left: trans[0] + (mouse[0]*scale) + 25,
+                              top: trans[1] + (mouse[1]*scale) + $('#networkLabel').height()/2 + 25
+                          })
+                      .show()
+                      ;
+  }
+
+  function loadData() {
+    $('#networkLabel').hide();
+
+    svg.selectAll(".link")
+        .remove();
+
+    svg.selectAll(".node")
+        .remove();
+
+    var params = buildParams();
+    var state = $("#graphType").val() + "&" + $.param(params);
+    var url = "connections.json?" + state;
+    if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
+      history.pushState({}, this.title || '', "connections?" + state);
+    } else {
+      doPushState = 1;
+    }
+
+    d3.json(url, function(json) {
+      updateHealth(json.health);
+      force
+          .nodes(json.nodes)
+          .links(json.links)
+          .start();
+
+      var link = svg.selectAll(".link")
+          .data(json.links)
+          .enter().append("line")
+          .attr("class", "link")
+          .style("stroke-width", function(d) { return Math.sqrt(d.value);})
+          .on("mouseover",function(d) {
+            if (popupTimer) {
+              window.clearTimeout(popupTimer);
+            }
+            popupTimer = window.setTimeout(showLinkPopup, 800, this, d, d3.mouse(this));
+          }).on("mouseout",function(d){
+            window.clearTimeout(popupTimer);
+          })
+          ;  
+
+      var node = svg.selectAll(".node")
+          .data(json.nodes)
+          .enter().append("g")
+          .attr("class", "node")
+          .attr("id", function(d) {return "id" + d.id.replace(/[:\.]/g,"_");})
+          .attr("y", function (d,i) {return i;})
+          .call(force.drag)
+          .on("mouseover",function(d) {
+            if (popupTimer) {
+              window.clearTimeout(popupTimer);
+            }
+            popupTimer = window.setTimeout(showNodePopup, 800, this, d);
+            d.fixed |= 1;
+          }).on("mouseout",function(d){
+            window.clearTimeout(popupTimer);
+          })
+          ;  
+
+      node.append("image")
+          .attr("xlink:href", "favicon.ico")
+          .attr("x", -8)
+          .attr("y", -8)
+          .attr("width", 16)
+          .attr("height", 16);
+
+      node.append("text")
+          .attr("dx", 12)
+          .attr("dy", ".35em")
+          .text(function(d) { return d.id;});
+
+      force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+      });
+      svg.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");
+    });
+  }
+
+  $(document).ready(function() {
+    handleUrlParams();
+
+    var width = $(window).width(),
+        height = $(window).height()-100;
+
+    zoom = d3.behavior.zoom()
+        .translate([0,0])
+        .scale(1)
+        .scaleExtent([0.25,6])
+        .on("zoom", redraw);
+
+    svg = d3.select("#network").append("svg:svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append('svg:g')
+        .call(zoom)
+        .append('svg:g')
+        ;
+
+    svg.append('svg:rect')
+      .attr('width', $("#network").width() + 1000)
+      .attr('height', $("#network").height() + 1000)
+      .attr('fill', 'white')
+      .attr('id', 'zoomCanvas')
+      .on("mousedown", function(){
+        $('#networkLabel').hide();
+      })
+      ;
+
+    force = d3.layout.force()
+        .gravity(0.05)
+        .distance(150)
+        .charge(-100)
+        .size([width, height])
+        ;
+
+    loadData();
+    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+  });
