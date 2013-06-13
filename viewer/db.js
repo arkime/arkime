@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.js -- Lowlevel and highlevel functions dealing with the database
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,10 +20,13 @@
 */
 "use strict";
 
-var ESC            = require('elasticsearchclient');
+var ESC            = require('elasticsearchclient'),
+    util           = require('util');
 
 var internals = {tagId2Name: {},
-                 tagName2Id: {}};
+                 tagName2Id: {},
+                 fileId2File: {},
+                 fileName2File: {}};
 
 exports.initialize = function (info) {
   internals.elasticSearchClient = new ESC(info);
@@ -95,7 +98,7 @@ if (typeof ESC.prototype.multisearch === "function") {
   };
 }
 
-exports.search =  function (index, type, query, cb) {
+exports.search = function (index, type, query, cb) {
   internals.elasticSearchClient.search(index, type, query)
     .on('data', function(data) {
       cb(null, JSON.parse(data));
@@ -106,8 +109,27 @@ exports.search =  function (index, type, query, cb) {
     .exec();
 };
 
-exports.searchPrimary =  function (index, type, query, cb) {
+exports.searchPrimary = function (index, type, query, cb) {
   internals.elasticSearchClient.search(index, type, query, {preference: "_primary_first"})
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
+exports.msearch = function (index, type, queries, cb) {
+  var path = '/' + index + "/" + type + "/_msearch";
+
+  var buf='';
+  for(var i=0; i<queries.length;i++){
+    buf += "{}\n";
+    buf += queries[i] + "\n";
+  }
+
+  internals.elasticSearchClient.createCall({data:buf, path:path, method: "POST"}, internals.elasticSearchClient.clientOptions)
     .on('data', function(data) {
       cb(null, JSON.parse(data));
     })
@@ -172,14 +194,24 @@ exports.nodesStats = function (options, cb) {
     .exec();
 };
 
+exports.esVersion = function (cb) {
+  internals.elasticSearchClient.createCall({data:"",path:"/",method: "GET"}, internals.elasticSearchClient.clientOptions)
+    .on('data', function(data) {
+      data = JSON.parse(data);
+      var matches = data.version.number.match(/^(\d+).(\d+).(\d+)/);
+      cb(((+matches[1]) << 16) | ((+matches[2]) << 8) | (+matches[3]));
+    })
+    .exec();
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
 internals.molochNodeStatsCache = {};
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
-    if (err) {
-      cb(err, null);
+    if (err || !stat.exists) {
+      cb(err || "Unknown node " + name, null);
     } else {
       internals.molochNodeStatsCache[name] = stat._source;
       internals.molochNodeStatsCache[name]._timeStamp = Date.now();
@@ -230,8 +262,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
 
 exports.tagIdToName = function (id, cb) {
   if (internals.tagId2Name[id]) {
-    cb(internals.tagId2Name[id]);
-    return;
+    return cb(internals.tagId2Name[id]);
   }
 
   var query = {query: {term: {n:id}}};
@@ -239,10 +270,47 @@ exports.tagIdToName = function (id, cb) {
     if (!err && tdata.hits.hits[0]) {
       internals.tagId2Name[id] = tdata.hits.hits[0]._id;
       internals.tagName2Id[tdata.hits.hits[0]._id] = id;
-      cb(internals.tagId2Name[id]);
-    } else {
-      cb(null);
+      return cb(internals.tagId2Name[id]);
     }
+
+    return cb(null);
+  });
+};
+
+exports.fileIdToFile = function (node, num, cb) {
+  var key = node + "!" + num;
+  if (internals.fileId2File[key]) {
+    return cb(internals.fileId2File[key]);
+  }
+
+  exports.get('files', 'file', node + '-' + num, function (err, fresult) {
+    if (!err && fresult.exists) {
+      var file = fresult._source;
+      internals.fileId2File[key] = file;
+      internals.fileName2File[file.name] = file;
+      return cb(file);
+    }
+
+    return cb(null);
+  });
+};
+
+exports.fileNameToFile = function (name, cb) {
+  if (internals.fileName2File[name]) {
+    return cb(internals.fileName2File[name]);
+  }
+
+  var query = {query: {term: {name: name}}};
+  exports.search('files', 'file', query, function(err, data) {
+    if (!err && data.hits.hits[0]) {
+      var file = data.hits.hits[0]._source;
+      var key = file.node + "!" + file.num;
+      internals.fileId2File[key] = file;
+      internals.fileName2File[file.name] = file;
+      return cb(file);
+    }
+
+    return cb(null);
   });
 };
 
@@ -257,18 +325,16 @@ exports.syncTagNameToId = function (name) {
 
 exports.tagNameToId = function (name, cb) {
   if (internals.tagName2Id[name]) {
-    cb(internals.tagName2Id[name]);
-    return;
+    return cb(internals.tagName2Id[name]);
   }
 
   exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
     if (!err && tdata.exists) {
       internals.tagName2Id[name] = tdata._source.n;
       internals.tagId2Name[tdata._source.n] = name;
-      cb(internals.tagName2Id[name]);
-    } else {
-      cb(-1);
+      return cb(internals.tagName2Id[name]);
     }
+    return cb(-1);
   });
 };
 
@@ -287,4 +353,15 @@ exports.numberOfDocuments = function (index, cb) {
     }
     cb(null, num);
   });
+};
+
+exports.updateFileSize = function (item, filesize) {
+  // _update has bug so do ourselves
+  internals.elasticSearchClient.createCall({data:JSON.stringify({script: "ctx._source.filesize = " + filesize}),
+                                            path:"/files/file/" + item.id + "/_update",
+                                            method: "POST"}, internals.elasticSearchClient.clientOptions)
+    .on('error', function(error) {
+      console.log("ERROR - updateFileSize", error);
+    })
+    .exec();
 };

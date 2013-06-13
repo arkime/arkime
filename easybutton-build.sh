@@ -9,21 +9,25 @@
 # * build moloch-capture
 
 
-GLIB=2.22.5
-YARA=1.6
+GLIB=2.34.3
+YARA=1.7
 GEOIP=1.4.8
 PCAP=1.3.0
 NIDS=1.24
 
+TDIR="/data/moloch"
+if [ "$#" -gt 0 ]; then
+    TDIR="$1"
+fi
 
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
-  yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl
+  yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl
+  apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev
 fi
 
 
@@ -36,11 +40,11 @@ fi
 cd thirdparty
 
 # glib
-if [ ! -f "glib-$GLIB.tar.gz" ]; then
-  wget http://ftp.acc.umu.se/pub/gnome/sources/glib/2.22/glib-$GLIB.tar.gz
+if [ ! -f "glib-$GLIB.tar.xz" ]; then
+  wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-$GLIB.tar.xz
 fi
-tar zxf glib-$GLIB.tar.gz
-(cd glib-$GLIB ; ./configure --disable-xattr --disable-selinux --enable-static; make)
+xzcat glib-$GLIB.tar.xz | tar xf -
+(cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; make)
 
 # yara
 if [ ! -f "yara-$YARA.tar.gz" ]; then
@@ -79,8 +83,8 @@ tar zxf libnids-$NIDS.tar.gz
 # Now build moloch
 echo "MOLOCH: Building capture"
 cd ..
-echo "./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
-./configure --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
+echo "./configure --prefix=$TDIR --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
+./configure --prefix=$TDIR --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
 make
 
 

@@ -1,6 +1,6 @@
 /* http.c  -- Functions dealing with http connections.
  * 
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -34,7 +34,7 @@
 #include "moloch.h"
 
 /******************************************************************************/
-MolochConfig_t         config;
+extern MolochConfig_t        config;
 
 /******************************************************************************/
 static http_parser_settings  parserSettings;
@@ -80,11 +80,6 @@ typedef struct {
     uint32_t           e_count;
 } MolochConnHead_t;
 
-typedef struct molochmem_t {
-    struct molochmem_t *m_next, *m_prev;
-    int                 m_count;
-} MolochMem_t;
-
 typedef struct molochhttp_t {
     MolochConn_t         *syncConn;
     char                 *name;
@@ -98,8 +93,6 @@ typedef struct molochhttp_t {
 
 
 
-
-static MolochMem_t           bufferQ[3];
 
 gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync);
 /******************************************************************************/
@@ -205,7 +198,7 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
         MolochResponse_cb  func = conn->request->func;
         gpointer           uw = conn->request->uw;
 
-        free(conn->request);
+        MOLOCH_TYPE_FREE(MolochRequest_t, conn->request);
 
         if (func) {
             func((unsigned char*)conn->hp_data, conn->hp_len, uw);
@@ -314,10 +307,7 @@ void moloch_http_finish( MolochConn_t *conn, gboolean sync)
     http_parser_init(&conn->parser, HTTP_RESPONSE);
 
     if (!sync && conn->request->data) {
-        MolochMem_t *mem = (MolochMem_t *)(conn->request->data-8);
-        int          b   = conn->request->data[-8];
-
-        DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+        MOLOCH_SIZE_FREE(buffer, conn->request->data);
         conn->request->data = 0;
     }
 
@@ -420,7 +410,7 @@ unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uin
     gboolean             sent = FALSE;
     MolochHttp_t        *server = serverV;
 
-    request = malloc(sizeof(MolochRequest_t));
+    request = MOLOCH_TYPE_ALLOC(MolochRequest_t);
     memcpy(request->key, key, MIN(key_len, sizeof(request->key)));
     strncpy(request->method, method, sizeof(request->method));
     request->key_len  = key_len;
@@ -450,7 +440,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
     MolochConn_t        *conn;
     MolochHttp_t        *server = serverV;
 
-    request = malloc(sizeof(MolochRequest_t));
+    request = MOLOCH_TYPE_ALLOC(MolochRequest_t);
     memcpy(request->key, key, MIN(key_len, sizeof(request->key)));
     strncpy(request->method, method, sizeof(request->method));
     request->key_len  = key_len;
@@ -459,7 +449,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
     request->func     = func;
     request->uw       = uw;
 
-    int q = data_len > MOLOCH_HTTP_BUFFER_SIZE_S?1:0;
+    int q = data_len > MOLOCH_HTTP_BUFFER_SIZE?1:0;
 
     // Already have outstanding requests, see if we can process them
     if (server->requestQ[q].r_count && server->connQ.e_count && time(0) - server->lastFailedConnect > 0 ) {
@@ -495,11 +485,9 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
             LOG("ERROR - Dropping request %.*s of size %d queue[%d] %d is too big", key_len, key, data_len, q, server->requestQ[q].r_count);
 
             if (data) {
-                MolochMem_t *mem = (MolochMem_t *)(data-8);
-                int          b   = data[-8];
-                DLL_PUSH_TAIL(m_, &bufferQ[b], mem);
+                MOLOCH_SIZE_FREE(buffer, data);
             }
-            free(request);
+            MOLOCH_TYPE_FREE(MolochRequest_t, request);
             return 1;
         } else {
             DLL_PUSH_TAIL(r_, &server->requestQ[q], request);
@@ -518,8 +506,7 @@ MolochConn_t *
 moloch_http_create(MolochHttp_t *server) {
     MolochConn_t *conn;
 
-    conn = malloc(sizeof(MolochConn_t));
-    memset(conn, 0, sizeof(MolochConn_t));
+    conn = MOLOCH_TYPE_ALLOC0(MolochConn_t);
     conn->parser.data = conn;
     conn->server = server;
 
@@ -532,8 +519,7 @@ moloch_http_create(MolochHttp_t *server) {
 /******************************************************************************/
 void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests)
 {
-    MolochHttp_t *server = malloc(sizeof(*server));
-    memset(server, 0, sizeof(*server));
+    MolochHttp_t *server = MOLOCH_TYPE_ALLOC0(MolochHttp_t);
 
     DLL_INIT(r_, &server->requestQ[0]);
     DLL_INIT(r_, &server->requestQ[1]);
@@ -562,10 +548,6 @@ void moloch_http_init()
     parserSettings.on_message_begin    = moloch_http_hp_cb_on_message_begin;
     parserSettings.on_body             = moloch_http_hp_cb_on_body;
     parserSettings.on_message_complete = moloch_http_hp_cb_on_message_complete;
-
-    DLL_INIT(m_,&bufferQ[0]);
-    DLL_INIT(m_,&bufferQ[1]);
-    DLL_INIT(m_,&bufferQ[2]);
 }
 /******************************************************************************/
 void moloch_http_free_server(void *serverV)
@@ -579,24 +561,16 @@ void moloch_http_free_server(void *serverV)
         }
     }
 
-    int i;
-    for (i = 0; i < 3; i++) {
-        MolochMem_t *mem = 0;
-
-        while (DLL_POP_HEAD(m_, &bufferQ[i], mem))
-            free(mem);
-    }
-
-
     MolochConn_t *es = 0;
     while (DLL_POP_HEAD(e_, &server->connQ, es)) {
-        free(es);
+        MOLOCH_TYPE_FREE(MolochConn_t, es);
     }
 
-    free(server->syncConn);
+    MOLOCH_TYPE_FREE(MolochConn_t, server->syncConn);
     server->syncConn = 0;
     free(server->name);
-    free(server);
+
+    MOLOCH_TYPE_FREE(MolochHttp_t, server);
 }
 /******************************************************************************/
 void moloch_http_exit()
@@ -608,40 +582,4 @@ int moloch_http_queue_length(void *serverV)
     MolochHttp_t *server = serverV;
 
     return server->requestQ[0].r_count + server->requestQ[1].r_count;
-}
-/******************************************************************************/
-
-char *moloch_http_get_buffer(int size) 
-{
-    MolochMem_t *mem;
-    char        *buf = 0;
-
-    int   i;
-    if (size <= MOLOCH_HTTP_BUFFER_SIZE_S)
-        i = 0;
-    else if (size <= MOLOCH_HTTP_BUFFER_SIZE_M)
-        i = 1;
-    else
-        i = 2;
-
-    if (DLL_POP_HEAD(m_, &bufferQ[i], mem)) {
-        buf = (char *)mem;
-        buf[0] = i;
-        return buf + 8;
-    }
-
-    if (i == 0)
-        buf = malloc(MOLOCH_HTTP_BUFFER_SIZE_S + 9);
-    else if (i == 1)
-        buf = malloc(MOLOCH_HTTP_BUFFER_SIZE_M + 9);
-    else if (i == 2)
-        buf = malloc(MOLOCH_HTTP_BUFFER_SIZE_L + 9);
-    else {
-        LOG("ERROR - bad i %d\n", i);
-    }
-
-
-    buf[0] = i;
-
-    return buf + 8;
 }

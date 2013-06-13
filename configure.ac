@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.7.4])
+AC_INIT([moloch], [0.8.4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -37,6 +37,15 @@ AC_ARG_WITH(libpcap,
 
       PCAP_CFLAGS="-I$withval"
       PCAP_LIBS="$withval/libpcap.a"
+    elif test -f $withval/include/pcap.h -a -f $withval/lib/libpcap.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+
+      PCAP_CFLAGS="-I$withval/include"
+      PCAP_LIBS="$withval/lib/libpcap.a"
     else
       AC_ERROR(pcap.h or libpcap.a not found in $withval)
     fi
@@ -186,6 +195,14 @@ AC_ARG_WITH(GeoIP,
       fi
       GEOIP_CFLAGS="-I$withval/libGeoIP"
       GEOIP_LIBS="$withval/libGeoIP/.libs/libGeoIP.a"
+    elif test -f $withval/include/GeoIP.h -a -f $withval/lib/libGeoIP.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      GEOIP_CFLAGS="-I$withval/include"
+      GEOIP_LIBS="$withval/lib/libGeoIP.a"
     else
       AC_ERROR(GeoIP.h or GeoIP.a not found in $withval)
     fi

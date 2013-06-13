@@ -7,10 +7,10 @@ link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.cont
 
 div(style="margin-bottom: 12px")
 div#bsqErr
-div#sessionsInfo
-  div#world-map-wrapper
-    div#world-map
-  div#sessionGraph
+div#sessionsInfo.sessionsInfo
+  div#world-map-wrapper.world-map-wrapper
+    div#world-map.world-map
+  div#sessionGraph.sessionGraph
   select#sessionGraphSelect
     option(value="lpHisto") sessions
     option(value="paHisto") packets
@@ -33,8 +33,7 @@ table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style=
   tbody
 br
 script(type='text/javascript')
-  var sessionsTable;
-  var lastResult;
+  var sessionsTable = null;
   var initialDisplayLength;
   var doPushState = 1;
 
@@ -48,71 +47,7 @@ script(type='text/javascript')
     }
   });
 
-  $("#connectionsLink").click(function (e) {
-    var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
-
-    var params = buildParams();
-    params = $.merge(data, params);
-
-    var url = "graph?" + $.param(params);
-
-    window.location = url;
-    return false;
-  });
-
-  $("#export").click(function (e) {
-    var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
-
-    var params = buildParams();
-    params = $.merge(data, params);
-
-    var url = "sessions.pcap?" + $.param(params);
-
-    window.location = url;
-    return false;
-  });
-
-
-
-  var isBlinking = 0;
-  function startBlink(loop) {
-    if (isBlinking && !loop) {
-      return;
-    }
-    isBlinking = 1;
-    $(".blink").animate({opacity:0},500,"linear",function() {
-      $(this).animate({opacity:1},500, function() {
-        if (isBlinking) {
-          startBlink(1);
-        }
-      });
-    });
-  }
-  function stopBlink() {
-    isBlinking = 0;
-  }
-
   $(document).ready(function() {
-    $('#date').change(function() {
-      var hours = parseInt($("#date").val(), 10);
-      if (hours === -2) {
-        $("#customDate").show();
-      } else {
-        if (hours !== -1) {
-          $("#startDate").val(dateString(new Date()/1000 - 60*60*hours, ' '));
-          $("#stopDate").val(dateString(new Date()/1000, ' '));
-        } else {
-          $("#startDate").val(dateString(0, ' '));
-          $("#stopDate").val(dateString(new Date()/1000, ' '));
-        }
-        $("#customDate").hide();
-      }
-      if (sessionsTable) {
-        sessionsTable.fnDraw();
-      }
-      return false;
-    });
-
     var initialParams = handleUrlParams();
 
     $('#sessions tbody td.urlColumn img').live('click', function () {
@@ -131,11 +66,24 @@ script(type='text/javascript')
       $(nTr).addClass('opened');
       var aData = sessionsTable.fnGetData(nTr);
       $(nTr).find("td.sessionDetails img").attr("src", "DataTables-1.9.1/examples/examples_support/details_close.png");
+      var data = [];
+      if (localStorage) {
+        if (localStorage['moloch-line'] !== undefined) {
+          data.push({name: "line", value: localStorage['moloch-line']});
+        }
+        if (localStorage['moloch-base'] !== undefined) {
+          data.push({name: "base", value: localStorage['moloch-base']});
+        }
+        if (localStorage['moloch-ts'] !== undefined) {
+          data.push({name: "ts", value: localStorage['moloch-ts']});
+        }
+      }
 
       $.ajax( {
           "dataType": 'html',
           "type": "GET",
           "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
+          "data": data,
           "success": function(data) {
             sessionsTable.fnOpen( nTr, data, 'details' );
           }
@@ -144,8 +92,7 @@ script(type='text/javascript')
 
     $('#sessions tbody td.sessionDetails img').live('click', function () {
       var nTr = this.parentNode.parentNode;
-      if ( this.src.match('details_close') )
-      {
+      if ( this.src.match('details_close') ) {
         this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
 
         $(nTr).removeClass('opened');
@@ -160,11 +107,6 @@ script(type='text/javascript')
 
     $('#searchForm').submit(function() {
       sessionsTable.fnDraw();
-      return false;
-    });
-
-    $('#sessionGraphSelect').change(function() {
-      drawGraph(lastResult[$('#sessionGraphSelect').val()]);
       return false;
     });
 
@@ -216,6 +158,7 @@ script(type='text/javascript')
           "bVisible": false
         },
         { "mDataProp" : "fp",
+          "sClass": "dateColumn",
           "sWidth": "50",
           "bUseRendered": false,
           "fnRender" : function(oObj) {
@@ -223,6 +166,7 @@ script(type='text/javascript')
           }
         },
         { "mDataProp" : "lp",
+          "sClass": "dateColumn",
           "sWidth": "50",
           "bUseRendered": false,
           "fnRender" : function(oObj) {
@@ -316,6 +260,39 @@ script(type='text/javascript')
               return data;
             }
 
+            if (oObj.aData.dnsho) {
+              if (oObj.aData.infoAll) {
+                data = oObj.aData.dnsho.join("<br>");
+                data += '<br><img src="up-arrow.png">';
+              } else {
+                data = oObj.aData.dnsho.slice(0, 5).join("<br>");
+                if (oObj.aData.dnsho.length > 5) {
+                  data += '<br><img src="down-arrow.png">';
+                }
+              }
+              return data;
+            } 
+
+            if (oObj.aData.tls) {
+              data = "";
+              oObj.aData.tls.forEach(function(tls) {
+                data += tls.sCn;
+                if (tls.alt) {
+                  data += " [";
+                  var i;
+                  for(i = 0; i < tls.alt.length; i++) {
+                    if (i > 0) {
+                      data += ", ";
+                    }
+                    data += tls.alt[i];
+                  }
+                  data += "]";
+                }
+                data += "<br>";
+              });
+              return data;
+            }
+
             return "";
           }
         }
@@ -338,7 +315,6 @@ script(type='text/javascript')
         }
 
         startBlink();
-
         $.ajax( {
            "dataType": 'json',
             "type": "GET",
@@ -356,16 +332,8 @@ script(type='text/javascript')
                 }
               }
 
-              lastResult = json;
-              drawGraph(json[$('#sessionGraphSelect').val()]);
-
-              // Hack to clear colors
-              var map = $('#world-map').data('mapObject');
-              if (map.countries) {
-                for(var key in map.countries) {
-                  map.countries[key].setFill('#ffffff');
-                }
-              }
+              updateGraph(json.graph);
+              updateMap(json.map);
 
               if (json.bsqErr) {
                 $("#bsqErr").show();
@@ -380,7 +348,6 @@ script(type='text/javascript')
                 $("#customDate").hide();
               }
 
-              $('#world-map').vectorMap('set', 'values', lastResult.map);
               fnCallback(json);
               if (initialParams.openAll) {
                 nNodes = sessionsTable.fnGetNodes();
@@ -391,59 +358,23 @@ script(type='text/javascript')
               initialParams.openAll = 0;
               stopBlink();
             },
-            "error": function (json) {
-              alert("Error fetching session data, maybe network error or need to reload page?");
+            "error": function (jqXHR, textStatus, errorThrown) {
+              if ($('#sessions').data('unloading') !== true) {
+                alert("Sessions: Error fetching session data, maybe network error or need to reload page?");
+              }
             }
         } );
       }
     } );
 
-    setupSessionGraphBinds(sessionsTable);
-    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
-
-    $('#world-map').vectorMap({
-      map: 'world_en',
-      //backgroundColor: '#686868',
-      //scaleColors: ['#C8EEFF', '#0042A4'],
-      backgroundColor: '#bdd7e7',
-      scaleColors: ['#bae4b3', '#006d2c'],
-      hoverColor: 'black',
-      normalizeFunction: 'polynomial',
-      hoverOpacity: 0.7,
-      onLabelShow: function(e, el, code){
-        el.html(el.html() + ' - ' + numberWithCommas(lastResult.map[code] || 0));
-      },
-      onRegionClick: function(e, code){
-        addExpression("country == " + code);
-      }
+    $('#sessions').unload(function() {
+      $('#sessions').data('unloading', true);
     });
 
-    $('#world-map').hover (
-      function() {
-        $(this).css({
-          position: "fixed",
-          right: 0,
-          top: $(this).offset().top,
-          width: $(window).width()*0.75,
-          height: $(window).height()*0.75
-        });
-        $(this).resize();
-      },
-      function(e) {
-        if (e.relatedTarget && e.relatedTarget.className === "jvectormap-label") {
-          return;
-        }
+    setupGraph();
+    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
 
-        $(this).css({
-          position: "relative",
-          right: 0,
-          top: 0,
-          width: "250px",
-          height: "150px"
-        });
-        $(this).resize();
-      }
-    );
+    setupMap();
 
     $.contextMenu({
         selector: '.context-menu-one',
@@ -570,8 +501,8 @@ script(type='text/javascript')
               $(e).html($(e).html().replace("<br>", "&nbsp;"));
             });
             $(td[0]).width(50); // +-
-            $(td[1]).width(100); // Start
-            $(td[2]).width(100); // Stop
+            $(td[1]).width(105); // Start
+            $(td[2]).width(105); // Stop
             $(td[3]).width(160); // Src
             $(td[4]).width(80);  // SPort
             $(td[5]).width(160); // Dst

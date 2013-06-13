@@ -1,6 +1,6 @@
 /* yara.c  -- Functions dealing with yara library
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -26,6 +26,7 @@
 #include "moloch.h"
 
 static YARA_CONTEXT *yContext = 0;
+static YARA_CONTEXT *yEmailContext = 0;
 
 /******************************************************************************/
 extern MolochConfig_t config;
@@ -36,21 +37,22 @@ void moloch_yara_report_error(const char* file_name, int line_number, const char
     LOG("%s:%d: %s\n", file_name, line_number, error_message);
 }
 /******************************************************************************/
-void moloch_yara_init()
+YARA_CONTEXT *moloch_yara_open(char *filename) 
 {
-    yr_init();
-    yContext = yr_create_context();
-    yContext->error_report_function = moloch_yara_report_error;
+    YARA_CONTEXT *context;
 
-    if (config.yara) {
+    context = yr_create_context();
+    context->error_report_function = moloch_yara_report_error;
+
+    if (filename) {
         FILE *rule_file;
 
-        rule_file = fopen(config.yara, "r");
+        rule_file = fopen(filename, "r");
 
         if (rule_file != NULL) {
-            yr_push_file_name(yContext, config.yara);
+            yr_push_file_name(context, filename);
                                     
-            int errors = yr_compile_file(rule_file, yContext);
+            int errors = yr_compile_file(rule_file, context);
             
             fclose(rule_file);
             
@@ -58,10 +60,19 @@ void moloch_yara_init()
                 exit (0);
             }
         } else {
-            printf("yara could not open file: %s\n", config.yara);
+            printf("yara could not open file: %s\n", filename);
             exit(1);
         }
     }
+    return context;
+}
+/******************************************************************************/
+void moloch_yara_init()
+{
+    yr_init();
+
+    yContext = moloch_yara_open(config.yara);
+    yEmailContext = moloch_yara_open(config.emailYara);
 }
 
 #ifdef DEBUG
@@ -236,12 +247,12 @@ int moloch_yara_callback(RULE* rule, MolochSession_t* session)
 
     if (rule->flags & RULE_FLAGS_MATCH) {
         snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier); 
-        moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tagname);
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
         tag = rule->tag_list_head;
         while(tag != NULL) {
             if (tag->identifier) {
                 snprintf(tagname, sizeof(tagname), "yara:%s", tag->identifier); 
-                moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, tagname);
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
             }
             tag = tag->next;
         }
@@ -275,6 +286,32 @@ void  moloch_yara_execute(MolochSession_t *session, char *data, int len, int fir
     block.next = NULL;
     
     yr_scan_mem_blocks(&block, yContext, (YARACALLBACK)moloch_yara_callback, session);
+    return;
+}
+/******************************************************************************/
+void  moloch_yara_email_execute(MolochSession_t *session, char *data, int len, int first)
+{
+    MEMORY_BLOCK block;
+
+    if (!config.emailYara)
+        return;
+    
+    if (first) {
+        block.data = (unsigned char *)data;
+        block.size = len;
+        block.base = 0;
+    } else if (len == 1) {
+        block.data = (unsigned char *)data+1;
+        block.size = len-1;
+        block.base = 1;
+    } else {
+        block.data = (unsigned char *)data+2;
+        block.size = len-2;
+        block.base = 2;
+    }
+    block.next = NULL;
+    
+    yr_scan_mem_blocks(&block, yEmailContext, (YARACALLBACK)moloch_yara_callback, session);
     return;
 }
 /******************************************************************************/

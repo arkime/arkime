@@ -12,6 +12,7 @@ div(style="height:2px;")
     option(value="deltaDroppedPerSec") Dropped/Sec
     option(value="monitoring") Active Sessions
     option(value="freeSpaceM") Free Space
+    option(value="memory") Memory
 div#statsGraph
 table#stats(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
   thead
@@ -24,15 +25,17 @@ table#stats(cellpadding="0",cellspacing="0",border="0",class="display",style="ta
       th Sessions Saved
       th Active Sessions
       th Free Space MB
-      th Packets/Sec
-      th Bytes/Sec
-      th Sessions/Sec
-      th Dropped/Sec
+      th Memory MB
+      th Packets / Sec
+      th Bytes / Sec
+      th Sessions / Sec
+      th Drops / Sec
   tbody
   tfoot
     tr
       th
       th Total
+      th
       th
       th
       th
@@ -203,6 +206,13 @@ script(type='text/javascript')
           "sClass": "right",
           "sType": "formatted-num"
         },
+        { "mDataProp" : "memory",
+          "fnRender" : function(oObj) {
+            return numberWithCommas(Math.ceil(oObj.aData[oObj.mDataProp]/1000000));
+          },
+          "sClass": "right",
+          "sType": "formatted-num"
+        },
         { "mDataProp" : "deltaPacketsPerSec",
           "fnRender" : function(oObj) {
             return numberWithCommas(oObj.aData[oObj.mDataProp]);
@@ -234,7 +244,7 @@ script(type='text/javascript')
       ],
       "aaSorting": [[1, "asc"]],
       "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
-        var totals = {totalPackets: 0, totalK: 0, totalSessions:0, deltaPacketsPerSec:0, deltaBytesPerSec:0 , deltaSessionsPerSec: 0, deltaDroppedPerSec: 0, monitoring: 0};
+        var totals = {totalPackets: 0, totalK: 0, totalSessions:0, deltaPacketsPerSec:0, deltaBytesPerSec:0 , deltaSessionsPerSec: 0, deltaDroppedPerSec: 0, monitoring: 0, memory: 0};
         for (var r = 0; r < aaData.length; r++) {
             totals.totalPackets += parseInt(aaData[r].totalPackets.replace(/\,/g,''), 10);
             totals.totalK += parseInt(aaData[r].totalK.replace(/\,/g,''), 10);
@@ -245,6 +255,7 @@ script(type='text/javascript')
             totals.deltaPacketsPerSec += parseInt(aaData[r].deltaPacketsPerSec.replace(/\,/g,''), 10);
             totals.deltaBytesPerSec += parseInt(aaData[r].deltaBytesPerSec.replace(/\,/g,''), 10);
             totals.monitoring += parseInt(aaData[r].monitoring.replace(/\,/g,''), 10);
+            totals.memory += parseInt(aaData[r].memory.replace(/\,/g,''), 10);
         }
 
         var nCells = nRow.getElementsByTagName('th');
@@ -252,10 +263,11 @@ script(type='text/javascript')
         nCells[4].innerHTML = numberWithCommas(totals.totalK);
         nCells[5].innerHTML = numberWithCommas(totals.totalSessions);
         nCells[6].innerHTML = numberWithCommas(totals.monitoring);
-        nCells[8].innerHTML = numberWithCommas(totals.deltaPacketsPerSec);
-        nCells[9].innerHTML = numberWithCommas(totals.deltaBytesPerSec);
-        nCells[10].innerHTML = numberWithCommas(totals.deltaSessionsPerSec);
-        nCells[11].innerHTML = numberWithCommas(totals.deltaDroppedPerSec);
+        nCells[8].innerHTML = numberWithCommas(totals.memory);
+        nCells[9].innerHTML = numberWithCommas(totals.deltaPacketsPerSec);
+        nCells[10].innerHTML = numberWithCommas(totals.deltaBytesPerSec);
+        nCells[11].innerHTML = numberWithCommas(totals.deltaSessionsPerSec);
+        nCells[12].innerHTML = numberWithCommas(totals.deltaDroppedPerSec);
       }
     } );
 
@@ -411,6 +423,7 @@ script(type='text/javascript')
         "type": "GET",
         "url": '#{basePath}esstats.json',
         "success": function(data) {
+          updateHealth(data.health);
           var nNodes = esstatsTable.fnGetNodes();
           for (var i = 0; i < data.aaData.length; i++) {
             var found = false;

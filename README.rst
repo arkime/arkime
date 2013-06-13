@@ -15,10 +15,20 @@ them to store and index all the network traffic in standard PCAP format, providi
 fast access.  Moloch is built to be deployed across many systems and can scale to 
 handle multiple gigabits/sec of traffic. 
 
-.. image:: https://raw.github.com/wiki/aol/moloch/MolochScreenShot.png
+Sessions Tab
+
+.. image:: https://raw.github.com/wiki/aol/moloch/sessions.png
     :width: 300px
     :align: center
-    :alt: Sample screen shot
+    :alt: Sample sessions screen shot
+
+
+SPI View Tab
+
+.. image:: https://raw.github.com/wiki/aol/moloch/spiview.png
+    :width: 300px
+    :align: center
+    :alt: Sample spiview screen shot
 
 .. _quick-start:
 
@@ -58,10 +68,11 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.20.5** and **0.19.12** as of **2013-2-28**
+Tested with **0.20.6** and **0.90.0** as of **2013-4-29**
 
-1. Prep the ``elasticsearch`` machines by increasing max file descriptors. On
-   CentOS and others this is done by adding the following to bottom of
+1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
+   allowing memory locking. 
+   On CentOS and others this is done by adding the following to bottom of
    ``/etc/security/limits.conf``::
 
     *                -      nofile          128000
@@ -72,7 +83,7 @@ Tested with **0.20.5** and **0.19.12** as of **2013-2-28**
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.20.5 <http://www.elasticsearch.org/download/2013/02/14/0.20.5.html>`_.
+   0.90.0 <http://www.elasticsearch.org/downloads/0-90-0/>`_.
 
 4. Uncompress the archive you downloaded.
 
@@ -129,11 +140,11 @@ Building Capture
 
    - CentOS::
 
-        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl
+        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel
 
    - Ubuntu::
     
-        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl
+        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev
 
 2. Building ``capture`` can be a pain because of OS versions.
 
@@ -383,7 +394,7 @@ Upgrading
 Currently upgrading from previous versions of Moloch is a manual process, however recorded sessions and pcap files should be retained
 
 * Update the moloch repository from github
-* Build the moloch system using "make"
+* Build the moloch system using "easybutton-build.sh"
 * Shut down currently running capture and viewer processes
 * Optionally use "make install" to copy the new binaries and other items and/or push the new items to the capture hosts
 * Run "npm update" in the viewer directory if not using "make install"

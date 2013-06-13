@@ -20,9 +20,14 @@
 
 # This is where everything is installed
 TDIR=/data/moloch
+if [ "$#" -gt 0 ]; then
+    TDIR="$1"
+    echo "Installing to ${TDIR}"
+fi
 
-ES=0.20.5
-NODEJS=0.8.21
+
+ES=0.90.0
+NODEJS=0.8.23
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
@@ -46,22 +51,38 @@ if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
    sleep 3
 fi
 
+if [ -d "${TDIR}/logs" ]; then
+   echo "WARNING - looks like moloch was already installed on this host, make sure elasticsearch and capture aren't running" 1>&2
+   sleep 3
+fi
+
 
 which java
 JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
- echo
- echo "ERROR - Please install Java before proceeding.  Visit http://java.sun.com"
- echo
- exit 0
+    echo -n "java command not found, install openjdk 7 now? [yes] "
+    read INSTALLJAVA
+    if [ -n "$INSTALLJAVA" -a "x$INSTALLJAVA" != "xyes" ]; then 
+        echo "Install java and try again"
+        exit
+    fi
+
+    if [ -f "/etc/debian_version" ]; then
+        apt-get install openjdk-7-jdk
+    elif [ -f "/etc/redhat-release" ]; then
+        yum install java-1.7.0-openjdk
+    else
+        echo "ERROR - Not sure how to install java for this OS"
+        exit
+    fi
 fi
 
 umask 022
 
 
 # Building thirdparty libraries and moloch
-./easybutton-build.sh
+./easybutton-build.sh "$TDIR"
 
 # Increase limits
 grep -q "hard.*nofile.*128000" /etc/security/limits.conf
@@ -70,6 +91,8 @@ if [ $LIMIT_VAL -ne 0 ]; then
   echo "MOLOCH: Adding entries to /etc/security/limits.conf"
   echo "* hard nofile 128000" >> /etc/security/limits.conf
   echo "* soft nofile 128000" >> /etc/security/limits.conf
+  echo "root hard nofile 128000" >> /etc/security/limits.conf
+  echo "root soft nofile 128000" >> /etc/security/limits.conf
 fi
 
 
@@ -80,6 +103,7 @@ mkdir -p ${TDIR}/logs
 mkdir -p ${TDIR}/raw
 mkdir -p ${TDIR}/etc
 mkdir -p ${TDIR}/bin
+mkdir -p ${TDIR}/db
 
 
 
@@ -91,7 +115,7 @@ if [ ! -f "elasticsearch-${ES}.tar.gz" ]; then
 fi
 
 cd ${TDIR}
-tar xvfz ${INSTALL_DIR}/thirdparty/elasticsearch-${ES}.tar.gz
+tar xfz ${INSTALL_DIR}/thirdparty/elasticsearch-${ES}.tar.gz
 cd elasticsearch-${ES}
 ./bin/plugin -install mobz/elasticsearch-head
 ./bin/plugin -install lukas-vlcek/bigdesk
@@ -104,7 +128,7 @@ if [ ! -f "node-v${NODEJS}.tar.gz" ]; then
   wget http://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}.tar.gz
 fi
 
-tar xvfz node-v${NODEJS}.tar.gz
+tar xfz node-v${NODEJS}.tar.gz
 cd node-v${NODEJS}
 ./configure 
 make
@@ -154,7 +178,7 @@ chown daemon:daemon ${TDIR}/raw
 echo "MOLOCH: Running config script"
 
 
-${INSTALL_DIR}/easybutton-config.sh
+${INSTALL_DIR}/easybutton-config.sh "$TDIR"
 
 
 echo "MOLOCH: Starting ElasticSearch"

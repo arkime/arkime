@@ -27,16 +27,16 @@ form#addUser
   label(for='Password') Password
   input(type='password', id='password', name='password', size='30')
   br
-  label(for='Expression') Expression
-  input(type='expression', id='expression', name='expression', size='30')
+  label(for='Expression') Forced Search Expression
+  input(type='expression', id='expression', name='expression', size='60')
   br
   label(for='enabled') Enabled:
   input(type='checkbox', id='enabled', name='enabled', CHECKED)
   br
-  label(for='createEnabled') Admin:
+  label(for='createEnabled') Admin User:
   input(type='checkbox', id='createEnabled', name='createEnabled')
   br
-  label(for='webEnabled') Web Enabled:
+  label(for='webEnabled') Web Enabled User:
   input(type='checkbox', id='webEnabled', name='webEnabled', CHECKED)
   br
   label(for='headerAuthEnabled') Web Auth Header:
@@ -149,6 +149,10 @@ script(type='text/javascript')
         "success": function(data) {
           if (!data.success) {
             alert(data.text);
+          } else {
+            $("#userId").val("");
+            $("#userName").val("");
+            $("#password").val("");
           }
           usersTable.fnDraw();
         }

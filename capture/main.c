@@ -1,6 +1,6 @@
 /* main.c  -- Initialization of components
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -80,7 +80,7 @@ void parse_args(int argc, char **argv)
         config.configFile = g_strdup("/data/moloch/etc/config.ini");
 
     if (showVersion) {
-        printf("moloch-capture %s %zd\n", PACKAGE_VERSION, sizeof(MolochSession_t));
+        printf("moloch-capture %s session size=%zd\n", PACKAGE_VERSION, sizeof(MolochSession_t));
         exit(0);
     }
 
@@ -105,7 +105,24 @@ void parse_args(int argc, char **argv)
         LOG("hostName = %s", config.hostName);
     }
 }
+/******************************************************************************/
+void *moloch_size_alloc(int size, int zero)
+{
+    size += 8;
+    void *mem = (zero?g_slice_alloc0(size):g_slice_alloc(size));
+    memcpy(mem, &size, 4);
+    return mem + 8;
+}
+/******************************************************************************/
+int moloch_size_free(void *mem)
+{
+    int size;
+    mem -= 8;
 
+    memcpy(&size, mem, 4);
+    g_slice_free1(size, mem);
+    return size - 8;
+}
 /******************************************************************************/
 void cleanup(int UNUSED(sig))
 {
@@ -117,6 +134,7 @@ void cleanup(int UNUSED(sig))
     moloch_db_exit();
     moloch_http_exit();
     moloch_config_exit();
+    moloch_field_exit();
 
 
     if (config.pcapReadFile)
@@ -176,7 +194,7 @@ gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
     if (hstring)
         return FALSE;
 
-    hstring = malloc(sizeof(*hstring));
+    hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
     if (copy) {
         hstring->str = g_strdup(string);
     } else {
@@ -214,10 +232,10 @@ uint32_t moloch_int_hash(const void *key)
 /******************************************************************************/
 int moloch_int_cmp(const void *keyv, const void *elementv)
 {
-    int key = (int)((long)keyv);
+    uint32_t key = (uint32_t)((long)keyv);
     MolochInt_t *element = (MolochInt_t *)elementv;
 
-    return key == element->i;
+    return key == element->i_hash;
 }
 /******************************************************************************/
 typedef struct {
@@ -320,6 +338,7 @@ gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
+/******************************************************************************/
 int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
@@ -336,11 +355,14 @@ int main(int argc, char **argv)
         moloch_drop_privileges();
         config.copyPcap = 1;
     }
+    moloch_field_init();
     moloch_http_init();
     moloch_db_init();
+    moloch_config_load_local_ips();
     moloch_yara_init();
     moloch_detect_init();
     moloch_plugins_init();
+    moloch_config_load_headers();
     g_timeout_add(10, moloch_nids_init_gfunc, 0);
 
     g_main_loop_run(mainLoop);

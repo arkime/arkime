@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* config.c  -- Functions dealing with the config file
  *
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2013 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -27,9 +27,13 @@
 #include <ctype.h>
 #include "moloch.h"
 
-extern MolochConfig_t config;
+extern MolochConfig_t        config;
 
-static GKeyFile *molochKeyFile;
+static GKeyFile             *molochKeyFile;
+
+MolochStringHashStd_t        httpReqHeaders;
+MolochStringHashStd_t        httpResHeaders;
+MolochStringHashStd_t        emailHeaders;
 
 /******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
@@ -150,6 +154,7 @@ void moloch_config_load()
         printf("Unknown rotateIndex '%s'\n", rotateIndex);
         exit(1);
     }
+    g_free(rotateIndex);
 
 
     config.nodeClass        = moloch_config_str(keyfile, "nodeClass", NULL);
@@ -180,6 +185,7 @@ void moloch_config_load()
     config.pcapDir          = moloch_config_str(keyfile, "pcapDir", NULL);
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
+    config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
     config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
     config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
@@ -194,7 +200,7 @@ void moloch_config_load()
     config.maxStreams       = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets       = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
     config.minFreeSpaceG    = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
-    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, 1, 1000000);
+    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
     config.maxESConns       = moloch_config_int(keyfile, "maxESConns", 100, 10, 1000);
     config.maxESRequests    = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
@@ -207,6 +213,139 @@ void moloch_config_load()
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
+
+}
+/******************************************************************************/
+void moloch_config_get_tag_cb(MolochIpInfo_t *ii, int UNUSED(tagtype), uint32_t tag)
+{
+    if (ii->numtags >= 10) return;
+
+    ii->tags[ii->numtags++] = tag;
+}
+/******************************************************************************/
+void moloch_config_load_local_ips()
+{
+    GError   *error = 0;
+
+    if (!g_key_file_has_group(molochKeyFile, "override-ips"))
+        return;
+
+    gsize keys_len;
+    gchar **keys = g_key_file_get_keys (molochKeyFile, "override-ips", &keys_len, &error);
+    if (error) {
+        LOG("Error with override-ips: %s", error->message);
+        exit(1);
+    }
+
+    gsize k, v;
+    for (k = 0 ; k < keys_len; k++) {
+        gsize values_len;
+        gchar **values = g_key_file_get_string_list(molochKeyFile,
+                                                   "override-ips",
+                                                   keys[k],
+                                                  &values_len,
+                                                   NULL);
+        MolochIpInfo_t *ii = MOLOCH_TYPE_ALLOC0(MolochIpInfo_t);
+        for (v = 0; v < values_len; v++) {
+            if (strncmp(values[v], "asn:", 4) == 0) {
+                ii->asn = g_strdup(values[v]+4);
+            } else if (strncmp(values[v], "tag:", 4) == 0) {
+                moloch_db_get_tag(ii, 0, values[v]+4, (MolochTag_cb)moloch_config_get_tag_cb);
+            } else if (strncmp(values[v], "country:", 8) == 0) {
+                ii->country = g_strdup(values[v]+8);
+            }
+        }
+        moloch_db_add_local_ip(keys[k], ii);
+        g_strfreev(values);
+    }
+    g_strfreev(keys);
+}
+/******************************************************************************/
+void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos)
+{
+    MolochString_t *hstring;
+
+    hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+    hstring->str = key;
+    hstring->len = pos;
+    HASH_ADD(s_, *hash, hstring->str, hstring);
+}
+/******************************************************************************/
+void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t *hash)
+{
+    GError   *error = 0;
+    char      name[100];
+
+    if (!g_key_file_has_group(molochKeyFile, section))
+        return;
+
+    gsize keys_len;
+    gchar **keys = g_key_file_get_keys (molochKeyFile, section, &keys_len, &error);
+    if (error) {
+        LOG("Error with %s: %s", section, error->message);
+        exit(1);
+    }
+
+    gsize k, v;
+    for (k = 0 ; k < keys_len; k++) {
+        gsize values_len;
+        gchar **values = g_key_file_get_string_list(molochKeyFile,
+                                                   section,
+                                                   keys[k],
+                                                  &values_len,
+                                                   NULL);
+        snprintf(name, sizeof(name), "%s%s", base, keys[k]);
+        int type = 0;
+        int unique = 1;
+        int count  = 0;
+        for (v = 0; v < values_len; v++) {
+            if (strcmp(values[v], "type:integer") == 0) {
+                type = 1;
+            } else if (strcmp(values[v], "type:ip") == 0) {
+                type = 2;
+            } else if (strcmp(values[v], "unique:false") == 0) {
+                unique = 0;
+            } else if (strcmp(values[v], "count:true") == 0) {
+                count = 1;
+            }
+        }
+        g_strfreev(values);
+
+        int flags = MOLOCH_FIELD_FLAG_HEADERS;
+
+        if (count)
+            flags |= MOLOCH_FIELD_FLAG_CNT;
+
+        switch (type) {
+        case 0:
+            if (unique)
+                type = MOLOCH_FIELD_TYPE_STR_HASH;
+            else
+                type = MOLOCH_FIELD_TYPE_STR_ARRAY;
+            break;
+        case 1:
+            if (unique)
+                type = MOLOCH_FIELD_TYPE_INT_HASH;
+            else
+                type = MOLOCH_FIELD_TYPE_INT_ARRAY;
+            break;
+        case 2:
+            type = MOLOCH_FIELD_TYPE_IP_HASH;
+            break;
+        }
+
+
+
+        MolochString_t *hstring;
+
+        HASH_FIND(s_, *hash, keys[k], hstring);
+        if (hstring) {
+            LOG("WARNING - ignoring field %s for %s", keys[k], section);
+            continue;
+        }
+        moloch_config_add_header(hash, g_strdup(keys[k]), moloch_field_define(g_strdup(name), type, flags));
+    }
+    g_strfreev(keys);
 }
 /******************************************************************************/
 void moloch_config_init()
@@ -266,6 +405,26 @@ void moloch_config_init()
     }
 }
 /******************************************************************************/
+void moloch_config_load_headers()
+{
+    HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, httpResHeaders, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, emailHeaders, moloch_string_hash, moloch_string_cmp);
+
+    moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", MOLOCH_FIELD_HTTP_XFF);
+    moloch_config_add_header(&httpReqHeaders, "user-agent", MOLOCH_FIELD_HTTP_UA);
+    moloch_config_add_header(&httpReqHeaders, "host", MOLOCH_FIELD_HTTP_HOST);
+    moloch_config_load_header("headers-http-request", "hreq-", &httpReqHeaders);
+
+    moloch_config_load_header("headers-http-response", "hres-", &httpResHeaders);
+
+
+    moloch_config_add_header(&emailHeaders, "subject", MOLOCH_FIELD_EMAIL_SUB);
+    moloch_config_add_header(&emailHeaders, "x-mailer", MOLOCH_FIELD_EMAIL_UA);
+    moloch_config_add_header(&emailHeaders, "mime-version", MOLOCH_FIELD_EMAIL_MV);
+    moloch_config_load_header("headers-email", "ehead-", &emailHeaders);
+}
+/******************************************************************************/
 void moloch_config_exit()
 {
     g_key_file_free(molochKeyFile);
@@ -280,6 +439,8 @@ void moloch_config_exit()
         g_free(config.bpf);
     if (config.yara)
         g_free(config.yara);
+    if (config.emailYara)
+        g_free(config.emailYara);
     if (config.pcapDir)
         g_free(config.pcapDir);
     if (config.plugins)

@@ -161,14 +161,13 @@ script(type='text/javascript')
 
     var params = buildParams();
     var state = $("#graphType").val() + "&" + $.param(params);
-    var url = "graph.json?" + state;
+    var url = "connections.json?" + state;
     if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
-      history.pushState({}, this.title || '', "graph?" + state);
+      history.pushState({}, this.title || '', "connections?" + state);
     } else {
       doPushState = 1;
     }
 
-    console.log("Fetching", url);
     d3.json(url, function(json) {
       updateHealth(json.health);
       force
@@ -234,23 +233,6 @@ script(type='text/javascript')
   }
 
   $(document).ready(function() {
-    $('#date').change(function() {
-      var hours = parseInt($("#date").val(), 10);
-      if (hours === -2) {
-        $("#customDate").show();
-      } else {
-        if (hours !== -1) {
-          $("#startDate").val(dateString(new Date()/1000 - 60*60*hours, ' '));
-          $("#stopDate").val(dateString(new Date()/1000, ' '));
-        } else {
-          $("#startDate").val(dateString(0, ' '));
-          $("#stopDate").val(dateString(new Date()/1000, ' '));
-        }
-        $("#customDate").hide();
-      }
-      return false;
-    });
-
     handleUrlParams();
 
     var width = $(window).width(),

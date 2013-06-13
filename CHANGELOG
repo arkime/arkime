@@ -1,0 +1,92 @@
+0.8.4 2013/05/28
+  - NOTICE: Last version to support 0.20 ES
+  - NOTICE: Changed some expressions, old versions are supported for now
+        email.ct* => email.content-type*
+        email.mv* => email.content-type*
+        email.id* => email.message-id*
+        email.ua* => email.x-mailer*
+        header*   => http.hasheader*
+        ua*       => http.user-agent*
+        http.ua*  => http.user-agent*
+  - valgrind fixes and memory reduction
+  - New SPI Graph tab which lets you graph an expression per field
+  - Now possible to chose which http request, response and smtp headers
+    to index using headers-http-request, headers-http-response,
+    headers-email sections
+  - Session Graph now shows the full queried range instead of data 
+    available range
+  - Fixed db.pl wipe error
+  - Added density to db.pl info
+  - Added override-ips config section that allows overriding of
+    country, tag, asn for ips and cidr ips
+  - Clean up add users UI a little, and clear fields on successful add
+
+
+0.8.3 2013/05/09 
+  - full text for uri is now available
+  - regex searches using == /REGEXHERE/
+    regex can be slow so be careful
+  - regex and wildcard searches full text instead of tokenized
+  - fixed bug with uri.cnt not be recorded
+  - filenumber generation rewritten, can now deal with
+    multiple instances running and other edge cases
+  - http body content is md5, although the encoded
+    and non encoded version will get different md5s
+  - detect when npm install needs to be run
+  - quoted strings and regex strings detect better
+  - new centerTime=time&timeWindow=minutes option to do +- views
+  - show tags names in unique views
+  - remember view setting for future session views
+  - DNS qclass and qtype tags
+  - Upgrade yara and glib version
+
+0.8.2 2013/04/29
+  - Install ES 0.90
+  - fixed dropped packet stats
+  - netflow plugin (issue #27)
+  - memory capture improvements
+  - record capture memory in stats
+  - record filesize for offline pcap
+  - remove port from http host header (issue #63)
+  - db.pl prints more info by default,  multiple -v even more 
+    information, and new info command
+  - fixed viewer crashes if pcap can't be read (issue #67)
+  - minor css cleanup
+  - Display CERT info in session view
+
+0.8.1 2013/04/19
+  - Should support nodejs 0.10.3, but still use 0.8.23 for now
+  - Support RAW link type pcap files
+  - renamed decode.js to pcap.js
+  - Setting spiDataMaxIndices to -1 allows all for spiview
+  - Log userId for requests
+  - fixed uri.cnt
+  - don't exit moloch-capture until all file creates finish
+
+
+0.8.0 2013/04/17
+  - New SPI View tab, REQUIRES elasticsearch 0.90 RC2 or later 
+  - config spiDataMaxIndices controls how many indices to run against since
+    spiview feature can cause elastic search to blowup memory.
+  - display date as year/mon/day
+  - Lots of UI cleanup, slighly less ugly as before hopefully
+  - 32 bit builds should work
+  - Fixed bug where status codes/http methods weren't always recorded
+  - New SMTP plugin callbacks, more to come
+  - offline capture reading should work better with old libpcap versions
+  - DB now stores full and tokenized version of user agents, ASNs, and cert info
+  - verify the config file has a defaults section
+  - display elastic search health for admin users on pages
+  - display elastic search stats on stats page
+  - display ip protocol friendly name 
+  - display simple png view of raw session data and attachments on mouseover,
+    requires "npm install" in viewer directory
+  - new much more accurate world map [thanks Dave]
+  - fixed user name XSS issue [thanks z0mbiehunt3r]
+  - fixed many viewer exits
+  - timestamp display option in sessionDetail
+  - graph now uses seconds if less then 30 minutes and hours if more
+    then 5 days.  This makes display faster
+  - Refactored how capture stores spi data in memory
+  - Refactored hash table code
+  - Added host.dns, host.http, host.email

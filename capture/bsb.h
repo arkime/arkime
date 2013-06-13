@@ -24,6 +24,7 @@ do {                                              \
 #define BSB_IS_ERROR(b)  ((b).end == NULL)
 #define BSB_NOT_ERROR(b) ((b).end != NULL)
 #define BSB_LENGTH(b)    ((b).ptr - (b).buf)
+#define BSB_SIZE(b)      ((b).end - (b).buf)
 #define BSB_REMAINING(b) ((b).end?(b).end-(b).ptr:0)
 #define BSB_WORK_PTR(b)  ((b).ptr)
 

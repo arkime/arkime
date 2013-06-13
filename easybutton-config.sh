@@ -3,6 +3,9 @@
 # This script is auto run by easybutton-singlehost.sh
 
 TDIR="/data/moloch"
+if [ "$#" -gt 0 ]; then
+    TDIR="$1"
+fi
 
 clear
 

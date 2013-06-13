@@ -42,6 +42,7 @@ extern void                 *esServer;
 typedef struct tagger_string {
     struct tagger_string *s_next, *s_prev;
     char                 *str;
+    uint32_t              s_hash;
     short                 s_bucket;
     GPtrArray            *files;
 } TaggerString_t;
@@ -55,7 +56,7 @@ typedef struct {
 
 typedef struct tagger_int {
     struct tagger_int    *i_next, *i_prev;
-    int                   i;
+    uint32_t              i_hash;
     short                 i_bucket;
     GPtrArray            *files;
 } TaggerInt_t;
@@ -70,6 +71,7 @@ typedef struct {
 typedef struct tagger_file {
     struct tagger_file   *s_next, *s_prev;
     char                 *str;
+    uint32_t              s_hash;
     short                 s_bucket;
     char                 *md5;
     char                 *type;
@@ -95,7 +97,7 @@ void tagger_add_tags(MolochSession_t *session, GPtrArray *files)
     for (f = 0; f < files->len; f++) {
         TaggerFile_t *file = files->pdata[f];
         for (t = 0; file->tags[t]; t++) {
-            moloch_nids_add_tag(session, MOLOCH_TAG_TAGS, file->tags[t]);
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, file->tags[t]);
         }
     }
 }
@@ -108,29 +110,42 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     TaggerInt_t    *ti;
     TaggerString_t *tstring;
 
-    HASH_FIND(i_, allIps, (void*)(long)session->addr1, ti);
+    HASH_FIND_INT(i_, allIps, session->addr1, ti);
     if (ti)
         tagger_add_tags(session, ti->files);
 
-    HASH_FIND(i_, allIps, (void*)(long)session->addr2, ti);
+    HASH_FIND_INT(i_, allIps, session->addr2, ti);
     if (ti)
         tagger_add_tags(session, ti->files);
 
-    if (session->http) {
-    MolochInt_t *xff;
-        HASH_FORALL(i_, session->http->xffs, xff, 
-            HASH_FIND(i_, allIps, (void*)(long)xff->i, ti);
+    if (session->fields[MOLOCH_FIELD_HTTP_XFF]) {
+        MolochIntHashStd_t *ihash = session->fields[MOLOCH_FIELD_HTTP_XFF]->ihash;
+        MolochInt_t        *xff;
+
+        HASH_FORALL(i_, *ihash, xff, 
+            HASH_FIND_INT(i_, allIps, xff->i_hash, ti);
             if (ti)
                 tagger_add_tags(session, ti->files);
         );
     }
 
     MolochString_t *hstring;
-    HASH_FORALL(s_, session->hosts, hstring, 
-        HASH_FIND(s_, allDomains, hstring->str, tstring);
-        if (tstring)
-            tagger_add_tags(session, tstring->files);
-    );
+    if (session->fields[MOLOCH_FIELD_HTTP_HOST]) {
+        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_HTTP_HOST]->shash;
+        HASH_FORALL(s_, *shash, hstring, 
+            HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_add_tags(session, tstring->files);
+        );
+    }
+    if (session->fields[MOLOCH_FIELD_DNS_HOST]) {
+        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_DNS_HOST]->shash;
+        HASH_FORALL(s_, *shash, hstring, 
+            HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_add_tags(session, tstring->files);
+        );
+    }
 }
 
 /******************************************************************************/
@@ -143,13 +158,13 @@ void tagger_plugin_exit()
     HASH_FORALL_POP_HEAD(s_, allDomains, tstring, 
         free(tstring->str);
         g_ptr_array_free(tstring->files, TRUE);
-        free(tstring);
+        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
     );
 
     TaggerInt_t *ti;
     HASH_FORALL_POP_HEAD(i_, allIps, ti, 
         g_ptr_array_free(ti->files, TRUE);
-        free(ti);
+        MOLOCH_TYPE_FREE(TaggerInt_t, ti);
     );
 
     TaggerFile_t *file;
@@ -159,7 +174,7 @@ void tagger_plugin_exit()
         g_free(file->type);
         g_strfreev(file->tags);
         g_strfreev(file->elements);
-        free(file);
+        MOLOCH_TYPE_FREE(TaggerFile_t, file);
     );
 }
 
@@ -175,7 +190,7 @@ void tagger_unload_file(TaggerFile_t *file) {
             if (ip == 0xffffffff)
                 continue;
             TaggerInt_t *ti;
-            HASH_FIND(i_, allIps, (void*)(long)ip, ti);
+            HASH_FIND_INT(i_, allIps, ip, ti);
             if (ti) {
                 g_ptr_array_remove(ti->files, file);
             }
@@ -213,7 +228,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
     if (!source_len || !source) {
         HASH_REMOVE(s_, allFiles, file);
         free(file->str);
-        free(file);
+        MOLOCH_TYPE_FREE(TaggerFile_t, file);
         return;
     }
 
@@ -225,7 +240,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 
     int tag = 0;
     for (tag = 0; file->tags[tag]; tag++) {
-        moloch_db_get_tag(NULL, MOLOCH_TAG_TAGS, file->tags[tag], NULL);
+        moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, file->tags[tag], NULL);
     }
 
     file->type = moloch_js0n_get_str(source, source_len, "type");
@@ -242,12 +257,11 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
                 continue;
 
             TaggerInt_t *ti;
-            HASH_FIND(i_, allIps, (void*)(long)ip, ti);
+            HASH_FIND_INT(i_, allIps, ip, ti);
             if (!ti) {
-                ti = malloc(sizeof(*ti));
-                ti->i = ip;
+                ti = MOLOCH_TYPE_ALLOC(TaggerInt_t);
                 ti->files = g_ptr_array_new();
-                HASH_ADD(i_, allIps, (void *)(long)ti->i, ti);
+                HASH_ADD(i_, allIps, (void *)(long)ip, ti);
             }
             g_ptr_array_add(ti->files, file);
         } else {
@@ -255,7 +269,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
             if (!tstring) {
-                tstring = malloc(sizeof(*tstring));
+                tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
                 tstring->str = strdup(file->elements[i]);
                 tstring->files = g_ptr_array_new();
                 HASH_ADD(s_, allDomains, tstring->str, tstring);
@@ -321,8 +335,7 @@ void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer sync)
         TaggerFile_t *file;
         HASH_FIND(s_, allFiles, id, file);
         if (!file) {
-            file = malloc(sizeof(*file));
-            memset(file, 0, sizeof(*file));
+            file = MOLOCH_TYPE_ALLOC0(TaggerFile_t);
             file->str = id;
             HASH_ADD(s_, allFiles, file->str, file);
             tagger_load_file(file, sync);
@@ -369,7 +382,7 @@ void moloch_plugin_init()
     HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(i_, allIps, moloch_int_hash, moloch_int_cmp);
 
-    moloch_plugins_register("tagger", sizeof(MolochSession_t), FALSE);
+    moloch_plugins_register("tagger", FALSE);
 
     moloch_plugins_set_cb("tagger",
       NULL,

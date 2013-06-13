@@ -11,8 +11,9 @@
     , "request": ">= 0.0.1"
     , "connect-timeout": ">= 0.0.1"
     , "elasticsearchclient": ">= 0.3.0"
-    , "fs-ext": "http://github.com/awick/node-fs-ext/tarball/master"
+    , "fs-ext": ">= 0.3.0"
     , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
+    , "png": "http://github.com/pkrumins/node-png/tarball/master"
     , "passport": ">= 0.0.1"
     , "passport-http": ">= 0.0.1"
   }
