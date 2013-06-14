@@ -87,6 +87,9 @@ umask 022
 
 # Building thirdparty libraries and moloch
 ./easybutton-build.sh "$TDIR"
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 
 # Increase limits
 grep -q "hard.*nofile.*128000" /etc/security/limits.conf
