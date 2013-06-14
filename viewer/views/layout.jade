@@ -90,6 +90,21 @@ html
         
     div.pageBody(id="pageBody-#{titleLink}")
       != body
+    div(style="display:none")
+      form#exportForm
+        div#export-opened-div
+          input(type="radio",id="export-opened",name="export-type",value="opened")  
+          label(for="export-opened") Export <span id="export-opened-cnt">0</span> opened items
+        div#export-visible-div
+          input(type="radio",id="export-visible",name="export-type",value="visible",checked) 
+          label(for="export-visible") Export <span id="export-visible-cnt">0</span> visible items
+        div#export-all-div
+          input(type="radio",id="export-all",name="export-type",value="all") 
+          label(for="export-all") Export <span id="export-all-cnt">0</span> query matching items
+        label(for="exportfilename") Filename:
+        input#exportfilename(size=45, value="sessions.pcap")
+        br
+        button Export
 
 script(type='text/javascript')
   var molochFields = !{fieldsMap};

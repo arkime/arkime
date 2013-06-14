@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.20.6** and **0.90.0** as of **2013-4-29**
+Tested with **0.90.1** as of **2013-6-01** requires at least 0.90.1
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -83,7 +83,7 @@ Tested with **0.20.6** and **0.90.0** as of **2013-4-29**
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.90.0 <http://www.elasticsearch.org/downloads/0-90-0/>`_.
+   0.90.1 <http://www.elasticsearch.org/downloads/0-90-1/>`_.
 
 4. Uncompress the archive you downloaded.
 
@@ -101,7 +101,8 @@ Tested with **0.20.6** and **0.90.0** as of **2013-4-29**
    - set ``cluster.name`` to something unique
    - set ``node.name`` to ``${ES_HOSTNAME}``
    - set ``node.max_local_storage_nodes`` to number of nodes per machine
-   - add ``index.cache.field.type: soft``
+   - set ``index.fielddata.cache: node``
+   - set ``indices.fielddata.cache.size: 40%``
    - set ``path.data`` and ``path.logs``
    - set ``gateway.type: local``
    - set ``gateway.recover_after_nodes`` should match the number of nodes you
@@ -116,7 +117,7 @@ Tested with **0.20.6** and **0.90.0** as of **2013-4-29**
 
    - Make sure you call ``ulimit -a`` first 
    - set ``ES_HEAP_SIZE=20G`` (or whatever number you are using, less then 32G) 
-   - set ``JAVA_OPTS="-XX:+UseCompressedOops"``
+   - set ``JAVA_OPTS="-XX:+UseCompressedOops"`` if using real Java
    - set ``ES_HOSTNAME`` to ```hostname -s```
 
 8. Start the cluster, waiting ~5s between starting each node to give them time

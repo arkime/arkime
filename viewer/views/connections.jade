@@ -169,6 +169,9 @@ script(type='text/javascript')
     }
 
     d3.json(url, function(json) {
+
+      $("#exportForm").data("moloch-visible", +$("#graphSize").val())
+                      .data("moloch-all", json.iTotalDisplayRecords);
       updateHealth(json.health);
       force
           .nodes(json.nodes)

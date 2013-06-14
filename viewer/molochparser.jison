@@ -68,6 +68,7 @@
 "email.subject"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject'
 "email.x-mailer.cnt"      if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer.cnt'
 "email.x-mailer"          if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer'
+email\.[^\s!=><.]*\.cnt   if (!yy.emailSearch) throw "email searches disabled for user"; return 'EMAIL_HEADER_CNT'
 email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled for user"; return 'EMAIL_HEADER'
 "file"                    return "file"
 "http.hasheader.dst.cnt"  return "http.hasheader.dst.cnt"
@@ -90,6 +91,7 @@ email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled fo
 "http.user-agent"         return "http.user-agent"
 "http.host.cnt"           return "host.http.cnt"
 "http.host"               return "host.http"
+http\.[^\s!=><.]*\.cnt    return "HTTP_HEADER_CNT"
 http\.[^\s!=><.]*         return "HTTP_HEADER"
 "icmp"                    return "icmp"
 "\"icmp\""                return "icmp"
@@ -182,6 +184,10 @@ IPNUM: IPMATCH
 HEADER: EMAIL_HEADER
       | HTTP_HEADER
       ;
+
+HEADER_CNT: EMAIL_HEADER_CNT
+          | HTTP_HEADER_CNT
+          ;
 
 RANGEFIELD: databytes                {$$ = 'db'}
           | bytes                    {$$ = 'by'}
@@ -408,9 +414,9 @@ e
     | TEXTFIELD '==' STR
         {$$ = str2Query($1, "text", $3);}
     | HEADER '==' STR
-        {$$ = str2Query(str2Header(yy, $1) + ".snow", "text", $3);}
+        {$$ = str2Query(str2Header(yy, $1), "text", $3);}
     | HEADER '!=' STR
-        {$$ = {not: str2Query(str2Header(yy, $1) + ".snow", "text", $3)};}
+        {$$ = {not: str2Query(str2Header(yy, $1), "text", $3)};}
     | HEADER '==' NUMBER
         {
         $$ = {term: {}};
@@ -421,6 +427,19 @@ e
           $$.not.term[str2Header(yy, $1)] = $3;
         }
     | HEADER GTLT NUMBER
+        {$$ = {range: {}};
+         $$.range[str2Header(yy, $1)] = {};
+         $$.range[str2Header(yy, $1)][$2] = $3;}
+    | HEADER_CNT '==' NUMBER
+        {
+        $$ = {term: {}};
+        $$.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER_CNT '!=' NUMBER
+        { $$ = {not: {term: {}}};
+          $$.not.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER_CNT GTLT NUMBER
         {$$ = {range: {}};
          $$.range[str2Header(yy, $1)] = {};
          $$.range[str2Header(yy, $1)][$2] = $3;}

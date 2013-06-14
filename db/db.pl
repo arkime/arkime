@@ -17,6 +17,7 @@
 #  8 - fileSize, memory to stats/dstats and -v flag
 #  9 - http body hash, rawus
 # 10 - dynamic fields for http and email headers
+# 11 - Require 0.90.1, switch from soft to node, new fpd field, removed fpms field
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -25,7 +26,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 10;
+my $VERSION = 11;
 my $verbose = 0;
 
 ################################################################################
@@ -533,14 +534,14 @@ sub sessionsUpdate
       lp: {
         type: "long"
       },
-      lpms: {
-        type: "short"
+      lpd: {
+        type: "date"
       },
       fp: {
         type: "long"
       },
-      fpms: {
-        type: "short"
+      fpd: {
+        type: "date"
       },
       a1: {
         type: "long"
@@ -885,8 +886,6 @@ sub sessionsUpdate
 {
   template: "session*",
   settings: {
-    "index.fielddata.cache": "soft",
-    "index.cache.field.type": "soft",
     index: {
       "routing.allocation.total_shards_per_node": 1,
       refresh_interval: 60,
@@ -913,7 +912,7 @@ sub sessionsUpdate
     my $status = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $status->{indices} || $status->{_all}->{indices};
 
-    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n";
+    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         if ($verbose == 1) {
             local $| = 1;
@@ -923,7 +922,7 @@ sub sessionsUpdate
         }
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
         esPost("/$i/_close", "");
-        esPut("/$i/_settings", '{"index.fielddata.cache": "soft"}');
+        esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
         esPost("/$i/_open", "");
     }
 
@@ -1037,6 +1036,58 @@ my ($loud) = @_;
     }
 }
 ################################################################################
+sub dbCheck {
+    my $esversion = esGet("/");
+    my @parts = split(/\./, $esversion->{version}->{number});
+    my $version = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
+
+    if ($version < 9001) {
+        print("Elasticsearch version 0.90.1 or later is required.\n",
+              "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n");
+        exit (1);
+
+    }
+
+    my $error = 0;
+    my $nodes = esGet("/_nodes?settings&process");
+    foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
+        my $node = $nodes->{nodes}->{$key};
+        my $errstr;
+
+        if (exists $node->{settings}->{"index.cache.field.type"}) {
+            $errstr .= sprintf ("    REMOVE 'index.cache.field.type'\n");
+        }
+
+        if (!(exists $node->{settings}->{"index.fielddata.cache"})) {
+            $errstr .= sprintf ("       ADD 'index.fielddata.cache: node'\n");
+        } elsif ($node->{settings}->{"index.fielddata.cache"} ne  "node") {
+            $errstr .= sprintf ("    CHANGE 'index.fielddata.cache' to 'node'\n");
+        }
+
+        if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
+            $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
+        }
+
+        if (!(exists $node->{process}->{max_file_descriptors}) || int($node->{process}->{max_file_descriptors}) < 4000) {
+            $errstr .= sprintf ("  INCREASE max file descriptors in /etc/security/limits.conf and restart all ES node\n");
+            $errstr .= sprintf ("                (change root to the user that runs ES)\n");
+            $errstr .= sprintf ("          root hard nofile 128000\n");
+            $errstr .= sprintf ("          root soft nofile 128000\n");
+        }
+
+        if ($errstr) {
+            $error = 1;
+            print ("\nOn node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
+            print($errstr);
+        }
+    }
+
+    if ($error) {
+        print "\nFix above errors before proceeding\n";
+        exit (1);
+    }
+}
+################################################################################
 while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
     if ($ARGV[0] eq "-v") {
         $verbose++;
@@ -1050,7 +1101,7 @@ showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate)/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 10);
+$main::userAgent = LWP::UserAgent->new(timeout => 20);
 
 if ($ARGV[1] eq "usersimport") {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
@@ -1092,6 +1143,7 @@ if ($ARGV[1] eq "usersimport") {
         $startTime += 24*60*60;
     }
 
+    $main::userAgent->timeout(600);
     foreach my $i (sort (keys %{$indices})) {
         next if ($endTimeIndex eq $i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
@@ -1155,6 +1207,8 @@ dbVersion(1);
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
     die "Can only use wipe if schema is up to date.  Use upgrade first.";
 }
+
+dbCheck();
 
 if ($ARGV[1] =~ /(init|wipe)/) {
 
@@ -1249,7 +1303,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 10) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 11) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

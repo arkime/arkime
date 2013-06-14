@@ -250,7 +250,7 @@ addField("hocnt", "host.http.cnt", "http", "integer", "Unique number of HTTP hos
 addField("dnsho", "host.dns", "dns", "lotermfield", "DNS host response");
 addField("dnshocnt", "host.dns.cnt", "dns", "integer", "Unique number DNS host responses");
 addField("eho", "host.email", "email", "lotermfield", "EMAIL host proxy");
-addField("ehocnt", "host.emai.cntl", "email", "integer", "Unique number of EMAIL host proxies");
+addField("ehocnt", "host.email.cnt", "email", "integer", "Unique number of EMAIL host proxies");
 
 addField("tls.iCn", "cert.issuer.cn", "cert", "lotermfield", "Issuer's common name");
 addField("tls.iOn", "cert.issuer.on", "cert", "lotextfield", "Issuer's organization name");
@@ -275,7 +275,7 @@ addField("emd5", "email.md5", "email", "lotermfield", "Email md5 of attachments 
 addField("emd5cnt", "email.md5.cnt", "email", "integer", "Unique number of md5s of attachments");
 addField("emv", "email.mime-version", "email", "lotermfield", "Email mime-version header");
 addField("emvcnt", "email.mime-version.cnt", "email", "integer", "Unique number of mime-version header values");
-addField("esub", "email.subject", "email", "lotermfield", "Email subject header");
+addField("esub", "email.subject", "email", "lotextfield", "Email subject header");
 addField("esubcnt", "email.subject.cnt", "email", "integer", "Unique number of subject header values");
 addField("eua", "email.x-mailer", "email", "lotextfield", "Email x-mailer header");
 addField("euacnt", "email.x-mailer.cnt", "email", "integer", "Unique number of x-mailer header values");

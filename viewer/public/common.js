@@ -218,6 +218,16 @@ function stopBlink() {
   $(".blink").stop(true,true);
 }
 
+function updateParam(param, n, v) {
+  for (var i = 0; i < param.length; i++) {
+    if (param[i].name === n) {
+      param[i].value = v;
+      return;
+    }
+  }
+  param.push({name: n, value: v});
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // layout Functions
 //////////////////////////////////////////////////////////////////////////////////
@@ -261,20 +271,109 @@ $(document).ready(function() {
   });
 
   $("#export").click(function (e) {
-    var data;
     if (typeof sessionsTable !== 'undefined') {
-      data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+      $("#export-opened-div").show();
+      $("#export-opened-cnt").text(numberWithCommas($("tr.opened").length));
     } else {
-      data = [];
+      $("#export-opened-div").hide();
     }
 
-    var params = buildParams();
-    params = $.merge(data, params);
+    if ($("#exportForm").data("moloch-visible") === -1) {
+      $("#export-visible-div").hide();
+      $("#export-all").prop("checked", true);
+    } else {
+      $("#export-visible-div").show();
+      $("#export-visible").prop("checked", true);
+      $("#export-visible-cnt").text(numberWithCommas($("#exportForm").data("moloch-visible")));
+    }
 
-    var url = "sessions.pcap?" + $.param(params);
+    $("#export-all-cnt").text(numberWithCommas($("#exportForm").data("moloch-all")));
 
-    window.location = url;
+    $('<div/>').qtip({
+      id: "exportDialog",
+      content: {
+        text: $('#exportForm'),
+        title: {
+          text: "Export PCAP",
+          button: true
+        }
+      },
+      position: {
+        my: 'center', // ...at the center of the viewport
+        at: 'top center',
+        target: $(window),
+        adjust: {
+          y: 100
+        }
+      },
+      show: {
+        event: 'click', // Show it on click...
+        ready: true, // Show it immediately on page load.. force them to login!
+        modal: {
+          on: true,
+
+          // Don't let users exit the modal in any way
+          blur: false, escape: false
+        }
+      },
+      hide: false,
+      style: {
+        classes: 'qtip-light qtip-rounded',
+        tip: false
+      },
+      events: {
+        render: function(event, api) {
+          // Capture the form submission
+          setTimeout(function () {
+            $("#exportfilename").select().focus();
+          }, 100);
+          $('form', this).bind('submit', function(event) {
+            $(this).parents('.qtip').qtip("hide");
+            // Prevent normal form submission
+            event.preventDefault();
+
+            var type = $('input[name=export-type]:checked').val();
+            var data;
+
+            if (typeof sessionsTable !== 'undefined') {
+              data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+              if (type === "all") {
+                updateParam(data, "iDisplayStart", 0);
+                updateParam(data, "iDisplayLength", sessionsTable.fnSettings().fnRecordsDisplay());
+              } else if (type === "opened") {
+                var ids = [];
+                $("tr.opened").each(function(nTr, n) {
+                  var rowData = sessionsTable.fnGetData(nTr);
+                  ids.push(rowData.id);
+                });
+                data = [{name: "ids", value: ids}];
+              }
+            } else {
+              data = [];
+              if (type === "visible") {
+                updateParam(data, "iDisplayLength", $("#exportForm").data("moloch-visible"));
+              } else  {
+                updateParam(data, "iDisplayLength", $("#exportForm").data("moloch-all"));
+              }
+            }
+
+            var url;
+            if (type === "opened") {
+              url = "sessionIds.pcap/" + $("#exportfilename").val() + "?" + $.param(data);
+            } else {
+              var params = buildParams();
+              params = $.merge(data, params);
+
+              url = "sessions.pcap/" + $("#exportfilename").val() + "?" + $.param(params);
+            }
+
+            window.location = url;
+          });
+        }
+      }
+    });
     return false;
+
   });
 });
 
@@ -677,13 +776,12 @@ function updateMap(data, mapId) {
   if (!data) {
     return;
   }
-  // Hack to clear colors
-  var map = $(mapId).data('mapObject');
-  for(var key in $(document).data("countries")) {
-    map.countries[key].setFill('#ffffff');
-  }
-  $(mapId).data('molochData', data);
-  $(mapId).vectorMap('set', 'values', data);
+
+  var map = $(mapId).children('.jvectormap-container').data('mapObject');
+  map.series.regions[0].clear();
+  delete map.series.regions[0].params.min;
+  delete map.series.regions[0].params.max;
+  map.series.regions[0].setValues(data);
 }
 
 function setupMap(mapId) {
@@ -691,59 +789,60 @@ function setupMap(mapId) {
 
   $(mapId).vectorMap({
     map: 'world_en',
-    //backgroundColor: '#686868',
-    //scaleColors: ['#C8EEFF', '#0042A4'],
-    //backgroundColor: '#bdd7e7',
-    //backgroundColor: '#162758',
     backgroundColor: '#445b9a',
-    scaleColors: ['#bae4b3', '#006d2c'],
     hoverColor: 'black',
-    normalizeFunction: 'polynomial',
     hoverOpacity: 0.7,
-    onLabelShow: function(e, el, code){
-      el.html(el.html() + ' - ' + numberWithCommas($(mapId).data('molochData')[code] || 0));
+    onRegionLabelShow: function(e, el, code){
+      var map = $(mapId).children('.jvectormap-container').data('mapObject');
+      el.html(el.html() + ' - ' + numberWithCommas(map.series.regions[0].values[code] || 0));
     },
     onRegionClick: function(e, code){
       addExpression("country == " + code);
+    },
+    series: {
+      regions: [{
+        scale: ['#bae4b3', '#006d2c'],
+        normalizeFunction: 'polynomial'
+      }]
     }
   });
 
   if ($(document).data("countries") === undefined) {
-    var map = $(mapId).data('mapObject');
-    $(document).data("countries", jQuery.extend(true, {}, map.countries));
+    var map = $(mapId).children('.jvectormap-container').data('mapObject');
+    $(document).data("countries", map.regions);
   }
 
-  $(mapId).hoverIntent (
+  $(mapId).children().hoverIntent (
     function() {
-      $(this).parent().css({
+      $(this).parent().parent().css({
         'z-index': 3
       });
       var top = Math.max($(this).offset().top - $(window).scrollTop(), 0);
-      $(this).css({
+      $(this).parent().css({
         position: "fixed",
         right: 0,
         top: Math.min(top, $(window).height() * 0.25),
         width: $(window).width()*0.75,
         height: $(window).height()*0.75
       });
-      $(this).resize();
+      $(this).parent().resize();
     },
     function(e) {
       if (e.relatedTarget && e.relatedTarget.className === "jvectormap-label") {
         return;
       }
 
-      $(this).parent().css({
+      $(this).parent().parent().css({
         'z-index': 2
       });
-      $(this).css({
+      $(this).parent().css({
         position: "relative",
         right: 0,
         top: 0,
         width: "250px",
         height: "150px"
       });
-      $(this).resize();
+      $(this).parent().resize();
     }
   );
 }
@@ -807,4 +906,4 @@ $.ajaxQueue = function(theQueue, ajaxOpts ) {
  * You may use hoverIntent under the terms of the MIT license.
  * Copyright 2007, 2013 Brian Cherne
  */
-(function(e){e.fn.hoverIntent=function(t,n,r){var i={interval:100,sensitivity:7,timeout:0};if(typeof t==="object"){i=e.extend(i,t)}else if(e.isFunction(n)){i=e.extend(i,{over:t,out:n,selector:r})}else{i=e.extend(i,{over:t,out:t,selector:n})}var s,o,u,a;var f=function(e){s=e.pageX;o=e.pageY};var l=function(t,n){n.hoverIntent_t=clearTimeout(n.hoverIntent_t);if(Math.abs(u-s)+Math.abs(a-o)<i.sensitivity){e(n).off("mousemove.hoverIntent",f);n.hoverIntent_s=1;return i.over.apply(n,[t])}else{u=s;a=o;n.hoverIntent_t=setTimeout(function(){l(t,n)},i.interval)}};var c=function(e,t){t.hoverIntent_t=clearTimeout(t.hoverIntent_t);t.hoverIntent_s=0;return i.out.apply(t,[e])};var h=function(t){var n=jQuery.extend({},t);var r=this;if(r.hoverIntent_t){r.hoverIntent_t=clearTimeout(r.hoverIntent_t)}if(t.type=="mouseenter"){u=n.pageX;a=n.pageY;e(r).on("mousemove.hoverIntent",f);if(r.hoverIntent_s!=1){r.hoverIntent_t=setTimeout(function(){l(n,r)},i.interval)}}else{e(r).off("mousemove.hoverIntent",f);if(r.hoverIntent_s==1){r.hoverIntent_t=setTimeout(function(){c(n,r)},i.timeout)}}};return this.on({"mouseenter.hoverIntent":h,"mouseleave.hoverIntent":h},i.selector)}})(jQuery)
+(function(e){e.fn.hoverIntent=function(t,n,r){var i={interval:100,sensitivity:7,timeout:0};if(typeof t==="object"){i=e.extend(i,t)}else if(e.isFunction(n)){i=e.extend(i,{over:t,out:n,selector:r})}else{i=e.extend(i,{over:t,out:t,selector:n})}var s,o,u,a;var f=function(e){s=e.pageX;o=e.pageY};var l=function(t,n){n.hoverIntent_t=clearTimeout(n.hoverIntent_t);if(Math.abs(u-s)+Math.abs(a-o)<i.sensitivity){e(n).off("mousemove.hoverIntent",f);n.hoverIntent_s=1;return i.over.apply(n,[t])}else{u=s;a=o;n.hoverIntent_t=setTimeout(function(){l(t,n)},i.interval)}};var c=function(e,t){t.hoverIntent_t=clearTimeout(t.hoverIntent_t);t.hoverIntent_s=0;return i.out.apply(t,[e])};var h=function(t){var n=jQuery.extend({},t);var r=this;if(r.hoverIntent_t){r.hoverIntent_t=clearTimeout(r.hoverIntent_t)}if(t.type=="mouseenter"){u=n.pageX;a=n.pageY;e(r).on("mousemove.hoverIntent",f);if(r.hoverIntent_s!=1){r.hoverIntent_t=setTimeout(function(){l(n,r)},i.interval)}}else{e(r).off("mousemove.hoverIntent",f);if(r.hoverIntent_s==1){r.hoverIntent_t=setTimeout(function(){c(n,r)},i.timeout)}}};return this.on({"mouseenter.hoverIntent":h,"mouseleave.hoverIntent":h},i.selector)}})(jQuery);

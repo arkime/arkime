@@ -998,7 +998,9 @@ uint32_t moloch_nids_dropped_packets()
 {
     struct pcap_stat ps;
     if (nids_params.pcap_desc) {
-        pcap_stats(nids_params.pcap_desc, &ps);
+        if (pcap_stats(nids_params.pcap_desc, &ps))
+            return 0;
+
         return ps.ps_drop - initialDropped;
     }
 
@@ -1066,7 +1068,7 @@ int moloch_nids_next_file()
         }
 
         // If it doesn't end with pcap we ignore it
-        if (strcmp(".pcap", filename + strlen(filename)-5) != 0) {
+        if (strcasecmp(".pcap", filename + strlen(filename)-5) != 0) {
             g_free(fullfilename);
             continue;
         }
@@ -1224,6 +1226,13 @@ void moloch_nids_init()
 }
 /******************************************************************************/
 void moloch_nids_exit() {
+    config.exiting = 1;
+    LOG("sessions: %d tcp: %d udp: %d icmp: %d", 
+            HASH_COUNT(h_, sessions), 
+            tcpSessionQ.q_count,
+            udpSessionQ.q_count,
+            icmpSessionQ.q_count);
+
     nids_unregister_tcp(moloch_nids_cb_tcp);
     nids_unregister_ip(moloch_nids_cb_ip);
     nids_exit();

@@ -51,6 +51,16 @@ void moloch_field_define_internal(int pos, char *name, int type, int flags)
         config.maxField = pos+1;
 }
 /******************************************************************************/
+int moloch_field_get(char *name)
+{
+    int i;
+    for (i = 0; i < config.maxField; i++) {
+        if (strcmp(config.fields[i]->name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+/******************************************************************************/
 void moloch_field_init()
 {
     config.maxField = 0;

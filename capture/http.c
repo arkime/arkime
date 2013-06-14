@@ -481,7 +481,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
         }
     } else {
         request->data = data;
-        if (dropable && server->requestQ[q].r_count > server->maxOutstandingRequests) {
+        if (!config.exiting && dropable && server->requestQ[q].r_count > server->maxOutstandingRequests) {
             LOG("ERROR - Dropping request %.*s of size %d queue[%d] %d is too big", key_len, key, data_len, q, server->requestQ[q].r_count);
 
             if (data) {

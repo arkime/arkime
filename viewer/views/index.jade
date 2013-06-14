@@ -1,4 +1,4 @@
-script(src='jvectormap/jquery-jvectormap.js')
+script(src='jquery-jvectormap-1.2.2.min.js')
 script(src='jquery-jvectormap-world-en.js')
 script(src='jquery.autocomplete.js')
 script(src='jQuery-contextMenu/src/jquery.ui.position.js')
@@ -349,6 +349,8 @@ script(type='text/javascript')
               }
 
               fnCallback(json);
+              $("#exportForm").data("moloch-visible", sessionsTable.fnSettings().aiDisplay.length)
+                              .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());
               if (initialParams.openAll) {
                 nNodes = sessionsTable.fnGetNodes();
                 for (var i = 0; i < nNodes.length; i++) {

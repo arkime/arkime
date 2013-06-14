@@ -33,7 +33,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 10
+#define MOLOCH_MIN_DB_VERSION 11
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -257,7 +257,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
     /* If no room left to add, send the buffer */
-    if (sJson && BSB_REMAINING(jbsb) < session->jsonSize) {
+    if (sJson && (uint32_t)BSB_REMAINING(jbsb) < session->jsonSize) {
         moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
         sJson = 0;
 
@@ -280,6 +280,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb, 
                       "{\"fp\":%u,"
                       "\"lp\":%u,"
+                      "\"fpd\":%" PRIu64 ","
+                      "\"lpd\":%" PRIu64 ","
                       "\"a1\":%u,"
                       "\"p1\":%u,"
                       "\"a2\":%u,"
@@ -287,6 +289,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       "\"pr\":%u,",
                       (uint32_t)session->firstPacket.tv_sec,
                       (uint32_t)session->lastPacket.tv_sec,
+                      (uint64_t)(session->firstPacket.tv_sec*1000 + session->firstPacket.tv_usec/1000),
+                      (uint64_t)(session->lastPacket.tv_sec*1000 + session->lastPacket.tv_usec/1000),
                       htonl(session->addr1),
                       session->port1,
                       htonl(session->addr2),
@@ -634,7 +638,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
     }
 
-    if (session->jsonSize < BSB_WORK_PTR(jbsb) - startPtr) {
+    if (session->jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
         LOG("WARNING - BIGGER then expected json %d %d\n", session->jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);

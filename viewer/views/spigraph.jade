@@ -1,4 +1,4 @@
-script(src='jvectormap/jquery-jvectormap.js')
+script(src='jquery-jvectormap-1.2.2.min.js')
 script(src='jquery-jvectormap-world-en.js')
 script(src='jquery.autocomplete.js')
 script(src='jQuery-contextMenu/src/jquery.ui.position.js')
@@ -38,6 +38,11 @@ div#spiGraphSelect
     option(value="20", selected) 20
     option(value="50") 50
     option(value="100") 100
+  label Sort by:
+  select(id='sort')
+    option(value="name") Name
+    option(value="count", selected) Count
+  span#recordsText
 div#sessionGraphs
 script(type='text/javascript')
   var initialDisplayLength;
@@ -101,6 +106,11 @@ script(type='text/javascript')
             $("#bsqErr").hide();
           }
 
+          $("#exportForm").data("moloch-visible", -1)
+                          .data("moloch-all", json.iTotalDisplayRecords);
+
+          $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
+
           if ($("#date").val() === "-2") {
             $("#customDate").show();
           } else {
@@ -109,12 +119,15 @@ script(type='text/javascript')
 
           $('#sessionGraphs').empty();
           json.items.forEach(function(item, i) {
-            $('#sessionGraphs').append("<h3>" + $('<div />').text(item.name).html() + " (" + item.count + ")</h3>");
-            $('#sessionGraphs').append("<div class='sessionsInfo'>" +
-                                         "<div class='world-map-wrapper' id='world-map-wrapper-" + i + "'>" +
-                                           "<div class='world-map' id='world-map-" + i + "'></div>" +
+            var name = $('<div />').text(item.name).html();
+            $('#sessionGraphs').append("<div name=\"" +name + "\" count= " + item.count + ">" +
+                                           "<h3 class='context-menu-one'>" + name + " <span class=\"spicount\">(" + item.count + ")</span></h3>" + 
+                                           "<div class='sessionsInfo'>" +
+                                             "<div class='world-map-wrapper' id='world-map-wrapper-" + i + "'>" +
+                                               "<div class='world-map' id='world-map-" + i + "'></div>" +
+                                             "</div>" +
+                                           "<div class='sessionGraph' id='sessionGraph-" + i + "'></div>" +
                                          "</div>" +
-                                         "<div class='sessionGraph' id='sessionGraph-" + i + "'></div>" +
                                        "</div>");
 
             setupGraph("#sessionGraph-" + i);
@@ -139,6 +152,22 @@ script(type='text/javascript')
     return false;
   });
 
+  $("#sort").change (function() {
+    var divs = $("#sessionGraphs").children();
+    divs.detach();
+    if ($("#sort").val() === "count") {
+      divs = divs.sort(function (a, b) {
+        return parseInt($(b).attr("count"), 10) - parseInt($(a).attr("count"), 10);
+      });
+    } else {
+      divs = divs.sort(function (a, b) {
+        return $(a).attr("name").localeCompare($(b).attr("name"));
+      });
+    }
+    divs = $("#sessionGraphs").append(divs);
+    return false;
+  });
+
   $('#searchForm').submit(function() {
     loadData();
     return false;
@@ -155,6 +184,24 @@ script(type='text/javascript')
       $("#size").val(initialParams.size);
     }
     loadData();
+
+    $.contextMenu({
+        selector: '.context-menu-one',
+        build: function($trigger, e) {
+          var text = $(e.target).text();
+          text = text.substring(0, text.lastIndexOf("(") - 1);
+          exp = $("#field option:selected").text() + " == " + text;
+          items = {
+            and: {name: "and " + exp, exp: exp}
+          };
+          return {
+            callback: function(key, options) {
+              addExpression(items[key].exp);
+            },
+            items: items
+          };
+        }
+    });
   });
 
   setupGraph();

@@ -27,7 +27,7 @@ fi
 
 
 ES=0.90.0
-NODEJS=0.8.23
+NODEJS=0.8.25
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
@@ -70,6 +70,10 @@ if [ $JAVA_VAL -ne 0 ]; then
 
     if [ -f "/etc/debian_version" ]; then
         apt-get install openjdk-7-jdk
+        if [ $? -ne 0 ]; then
+            echo "MOLOCH - apt-get failed"
+        exit
+        fi
     elif [ -f "/etc/redhat-release" ]; then
         yum install java-1.7.0-openjdk
     else

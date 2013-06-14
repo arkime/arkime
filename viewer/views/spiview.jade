@@ -13,7 +13,7 @@ mixin title(name, c)
   h1 #{name}
     input(id="SPItck-#{c}-group", type="checkbox")
 
-script(src='jvectormap/jquery-jvectormap.js')
+script(src='jquery-jvectormap-1.2.2.min.js')
 script(src='jquery-jvectormap-world-en.js')
 script(src='jquery.autocomplete.js')
 script(src='jQuery-contextMenu/src/jquery.ui.position.js')
@@ -30,108 +30,108 @@ div#sessionsInfo.sessionsInfo
     option(value="lpHisto") sessions
     option(value="paHisto") packets
     option(value="dbHisto") databytes
-dl#spiview
+div#spiViewInfo
+  span#recordsText
+div#spiview
   mixin title("General", "general")
-  mixin spion("IP Protocol", "pr", "protocol", "general")
-  mixin spion("Src IP", "a1", "ip.src", "general")
-  mixin spion("Src Port", "p1", "port.src", "general")
-  mixin spion("Src GEO", "g1", "country.src", "general")
-  mixin spion("Src ASN", "rawas1", "asn.src", "general")
-  mixin spi("Src ASN Token", "as1", "asn.src", "general")
+  dl
+    mixin spion("IP Protocol", "pr", "protocol", "general")
+    mixin spion("Src IP", "a1", "ip.src", "general")
+    mixin spion("Src Port", "p1", "port.src", "general")
+    mixin spion("Src GEO", "g1", "country.src", "general")
+    mixin spion("Src ASN", "rawas1", "asn.src", "general")
+    mixin spi("Src ASN Token", "as1", "asn.src", "general")
 
-  mixin spion("Dst IP", "a2", "ip.dst", "general")
-  mixin spion("Dst Port", "p2", "port.dst", "general")
-  mixin spion("Dst GEO", "g2", "country.dst", "general")
-  mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
-  mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
+    mixin spion("Dst IP", "a2", "ip.dst", "general")
+    mixin spion("Dst Port", "p2", "port.dst", "general")
+    mixin spion("Dst GEO", "g2", "country.dst", "general")
+    mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
+    mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
 
-  mixin spi("Node", "no", "node", "general")
-  mixin spi("Tag", "ta", "tags", "general")
-  mixin spi("User", "user", "user", "general")
-  br
-  hr
+    mixin spi("Node", "no", "node", "general")
+    mixin spi("Tag", "ta", "tags", "general")
+    mixin spi("User", "user", "user", "general")
+
   mixin title("HTTP", "http")
-  mixin spi("Host", "ho", "host.http", "http")
-  mixin spi("URI", "rawus", "uri", "http")
-  mixin spi("URI Token", "us", "uri", "http")
-  mixin spi("User Agent", "rawua", "http.user-agent", "http")
-  mixin spi("User Agent Token", "ua", "http.user-agent", "http")
+  dl
+    mixin spi("Host", "ho", "host.http", "http")
+    mixin spi("URI", "rawus", "uri", "http")
+    mixin spi("URI Token", "us", "uri", "http")
+    mixin spi("User Agent", "rawua", "http.user-agent", "http")
+    mixin spi("User Agent Token", "ua", "http.user-agent", "http")
 
-  mixin spi("XFF IP", "xff", "ip.xff", "http")
-  mixin spi("XFF GEO", "gxff", "country.xff", "http")
-  mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
-  mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
+    mixin spi("XFF IP", "xff", "ip.xff", "http")
+    mixin spi("XFF GEO", "gxff", "country.xff", "http")
+    mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
+    mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
 
-  mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
-  each value,i in reqFields 
-    if (value.type === "string")
-      mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
-      mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
-    else
-      mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
-  mixin spi("Response Header", "hh2", "http.hasheader.dst", "http")
-  each value,i in resFields 
-    if (value.type === "string")
-      mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
-      mixin spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
-    else
-      mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
-
-  mixin spi("Body MD5", "hmd5", "http.md5", "http")
-  br
-  hr
-  mixin title("DNS", "dns")
-  mixin spi("Host", "dnsho", "host.ho", "dns")
-  mixin spi("IP", "dnsip", "ip.dns", "dns")
-  mixin spi("GEO", "gdnsip", "country.dns", "dns")
-  mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
-  mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
-
-  br
-  hr
-  mixin title("Certificates", "cert")
-  mixin spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
-  mixin spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
-  mixin spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
-
-  mixin spi("Subject CN", "sCn", "cert.subject.cn", "cert")
-  mixin spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
-  mixin spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
-
-  mixin spi("Serial Number", "sn", "cert.serial", "cert")
-  mixin spi("Alt Name", "alt", "cert.alt", "cert")
-
-
-  br
-  hr
-  mixin title("SSH", "ssh")
-  mixin spi("Version", "sshver", "ssh.ver", "ssh")
-  mixin spi("Key", "sshkey", "ssh.key", "ssh")
-  if (user.emailSearch)
-    br
-    hr
-    mixin title("Email", "email")
-    mixin spi("IP", "eip", "ip.email", "email")
-    mixin spi("GEO", "geip", "country.email", "email")
-    mixin spi("ASN", "rawaseip", "asn.email", "email")
-    mixin spi("ASN Token", "aseip", "asn.email", "email")
-
-    mixin spi("Subject", "rawesub", "email.subject", "email")
-    mixin spi("Subject Token", "esub", "email.subject", "email")
-    mixin spi("Source", "esrc", "email.src", "email")
-    mixin spi("Destination", "edst", "email.dst", "email")
-    mixin spi("X-Mailer", "raweua", "email.x-mailer", "email")
-    mixin spi("X-Mailer Token", "eua", "email.x-mailer", "email")
-    mixin spi("Message Id", "eid", "email.message-id", "email")
-    mixin spi("Mime Version", "emv", "email.mime-version", "email")
-    mixin spi("Filename", "efn", "email.fn", "email")
-    mixin spi("Attachment MD5", "emd5", "email.md5", "email")
-    each value,i in emailFields 
+    mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
+    each value,i in reqFields 
       if (value.type === "string")
-        mixin spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
-        mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
+        mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
+        mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
       else
-        mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
+        mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
+    mixin spi("Response Header", "hh2", "http.hasheader.dst", "http")
+    each value,i in resFields 
+      if (value.type === "string")
+        mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
+        mixin spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
+      else
+        mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
+
+    mixin spi("Body MD5", "hmd5", "http.md5", "http")
+  mixin title("DNS", "dns")
+  dl
+    mixin spi("Host", "dnsho", "host.ho", "dns")
+    mixin spi("IP", "dnsip", "ip.dns", "dns")
+    mixin spi("GEO", "gdnsip", "country.dns", "dns")
+    mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
+    mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
+
+  mixin title("Certificates", "cert")
+  dl
+    mixin spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
+    mixin spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
+    mixin spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
+
+    mixin spi("Subject CN", "sCn", "cert.subject.cn", "cert")
+    mixin spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
+    mixin spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
+
+    mixin spi("Serial Number", "sn", "cert.serial", "cert")
+    mixin spi("Alt Name", "alt", "cert.alt", "cert")
+
+
+  mixin title("SSH", "ssh")
+  dl
+    mixin spi("Version", "sshver", "ssh.ver", "ssh")
+    mixin spi("Key", "sshkey", "ssh.key", "ssh")
+
+  if (user.emailSearch)
+    mixin title("Email", "email")
+    dl 
+      mixin spi("IP", "eip", "ip.email", "email")
+      mixin spi("GEO", "geip", "country.email", "email")
+      mixin spi("ASN", "rawaseip", "asn.email", "email")
+      mixin spi("ASN Token", "aseip", "asn.email", "email")
+
+      mixin spi("Subject", "rawesub", "email.subject", "email")
+      mixin spi("Subject Token", "esub", "email.subject", "email")
+      mixin spi("Source", "esrc", "email.src", "email")
+      mixin spi("Destination", "edst", "email.dst", "email")
+      mixin spi("X-Mailer", "raweua", "email.x-mailer", "email")
+      mixin spi("X-Mailer Token", "eua", "email.x-mailer", "email")
+      mixin spi("Message Id", "eid", "email.message-id", "email")
+      mixin spi("Mime Version", "emv", "email.mime-version", "email")
+      mixin spi("Filename", "efn", "email.fn", "email")
+      mixin spi("Attachment MD5", "emd5", "email.md5", "email")
+      each value,i in emailFields 
+        if (value.type === "string")
+          mixin spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
+          mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
+        else
+          mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
 
 script(type='text/javascript')
   var initialDisplayLength = 100;
@@ -199,6 +199,10 @@ script(type='text/javascript')
           } else {
             $("#customDate").hide();
           }
+
+          $("#exportForm").data("moloch-visible", -1)
+                          .data("moloch-all", json.iTotalDisplayRecords);
+          $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
 
           $.each(json.spi, function(spii, spi) {
             var spida = $("[id='SPIda-" + spii + "']");

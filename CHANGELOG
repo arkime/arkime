@@ -1,3 +1,16 @@
+0.8.5 2013/06/14
+  - NOTICE: Requires at least 0.90.1 ES 
+  - New export dialog that asks for filename and number selection
+  - spigraph shows health, decodes tags/ips, has sort by name
+  - spigraph/spiview show total counts
+  - upgrade to jvectormap 1.2.2 which fixes spigraph issues
+  - deal with 113 (SLL) pcap type
+  - header search and header cnt search didn't always work
+  - ignore case of trailing .pcap when processing a directory
+  - fixed bad bug with exporting large files corrupting pcap
+  - HTTP file decoding works better
+  - On exit ignore http queue limits
+
 0.8.4 2013/05/28
   - NOTICE: Last version to support 0.20 ES
   - NOTICE: Changed some expressions, old versions are supported for now

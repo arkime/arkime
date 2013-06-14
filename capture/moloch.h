@@ -107,6 +107,7 @@ typedef union {
  */
 enum MolochRotate { MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
 typedef struct moloch_config {
+    gboolean  exiting;
     char     *configFile;
     char     *nodeName;
     char     *hostName;
@@ -572,6 +573,7 @@ MOLOCH_FIELD_TAGS, // Must be last
 void moloch_field_init();
 int moloch_field_define(char *name, int type, int flags);
 void moloch_field_define_internal(int pos, char *name, int type, int flags);
+int moloch_field_get(char *name);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 void moloch_field_free(MolochSession_t *session);

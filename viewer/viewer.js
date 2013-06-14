@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 10;
+var MIN_DB_VERSION = 11;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -584,9 +584,9 @@ function addSortToQuery(query, info, d) {
     obj[field] = {order: info["sSortDir_" + i]};
     query.sort.push(obj);
     if (field === "fp") {
-      query.sort.push({fpms: {order: info["sSortDir_" + i]}});
+      query.sort.push({fpd: {order: info["sSortDir_" + i]}});
     } else if (field === "lp") {
-      query.sort.push({lpms: {order: info["sSortDir_" + i]}});
+      query.sort.push({lpd: {order: info["sSortDir_" + i]}});
     }
   }
 }
@@ -633,7 +633,7 @@ app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
   var columns = ["", "_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
-  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):500);
+  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),1000000):500);
 
   var query = {fields: columns,
                from: req.query.iDisplayStart || 0,
@@ -1004,13 +1004,11 @@ function lookupQueryItems(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var columns = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
   var i;
 
 
-  var query = {fields: columns,
-               from: req.query.iDisplayStart || 0,
+  var query = {from: req.query.iDisplayStart || 0,
                size: limit,
                query: {filtered: {query: {}}}
               };
@@ -1129,7 +1127,7 @@ function histoMerge(req, query, facets, graph) {
   graph.paHisto = [];
   graph.xmin = req.query.startTime  * 1000|| null;
   graph.xmax = req.query.stopTime * 1000 || null;
-  graph.interval = query.facets.dbHisto.histogram.interval || 60;
+  graph.interval = query.facets?query.facets.dbHisto.histogram.interval || 60 : 60;
 
   facets.paHisto.entries.forEach(function (item) {
     graph.lpHisto.push([item.key*1000, item.count]);
@@ -1164,6 +1162,8 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
+    query.fields = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls"];
+
     if (query.facets && query.facets.dbHisto) {
       graph.interval = query.facets.dbHisto.histogram.interval;
     }
@@ -1188,13 +1188,14 @@ app.get('/sessions.json', function(req, res) {
           map = mapMerge(result.facets);
 
           var results = {total: result.hits.total, results: []};
-          for (i = 0; i < result.hits.hits.length; i++) {
-            if (!result.hits.hits[i] || !result.hits.hits[i].fields) {
+          var hits = result.hits.hits;
+          for (i = 0; i < hits.length; i++) {
+            if (!hits[i] || !hits[i].fields) {
               continue;
             }
-            result.hits.hits[i].fields.index = result.hits.hits[i]._index;
-            result.hits.hits[i].fields.id = result.hits.hits[i]._id;
-            results.results.push(result.hits.hits[i].fields);
+            hits[i].fields.index = hits[i]._index;
+            hits[i].fields.id = hits[i]._id;
+            results.results.push(hits[i].fields);
           }
           sessionsCb(null, results);
         });
@@ -1225,19 +1226,13 @@ app.get('/sessions.json', function(req, res) {
 app.get('/spigraph.json', function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
+    var results = {items: [], graph: {}, map: {}, iTotalReords: 0};
     if (bsqErr) {
-      var r = {sEcho: req.query.sEcho,
-               iTotalRecords: 0,
-               iTotalDisplayRecords: 0,
-               graph: {},
-               map: {},
-               bsqErr: bsqErr.toString(),
-               items:[]};
-      res.send(r);
+      results.bsqErr = bsqErr.toString();
+      res.send(results);
       return;
     }
 
-    delete query.fields;
     delete query.sort;
     query.size = 0;
     var size = +req.query.size || 20;
@@ -1261,13 +1256,15 @@ app.get('/spigraph.json', function(req, res) {
       };
     }
 
+    Db.healthCache(function(err, health) {results.health = health;});
+    Db.numberOfDocuments('sessions-*', function (err, total) {results.iTotalRecords = total});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
-      var results = {bsqErr: bsqErr, items: [], graph: {}};
       if (err || result.error) {
         results.bsqErr = "Error performing query";
         console.log("spigraph.json error", err, (result?result.error:null));
         return res.send(results);
       }
+      results.iTotalDisplayRecords = result.hits.total;
       results.map = mapMerge(result.facets);
 
       histoMerge(req, query, result.facets, results.graph);
@@ -1298,7 +1295,8 @@ app.get('/spigraph.json', function(req, res) {
           return res.send(results);
         }
 
-        for (var i = 0; i < result.responses.length; i++) {
+
+        result.responses.forEach(function(item, i) {
           var r = {name: facets[i].term, count: facets[i].count, graph: {lpHisto: [], dbHisto: [], paHisto: []}};
 
           histoMerge(req, query, result.responses[i].facets, r.graph);
@@ -1311,9 +1309,14 @@ app.get('/spigraph.json', function(req, res) {
           }
 
           r.map = mapMerge(result.responses[i].facets);
-          results.items.push(r);
-        }
-        return res.send(results);
+          eachCb(r, function () {
+            results.items.push(r);
+            if (results.items.length === result.responses.length) {
+              results.items = results.items.sort(function(a,b) {return b.count - a.count;});
+              return res.send(results);
+            }
+          });
+        });
       });
     });
   });
@@ -1338,7 +1341,6 @@ app.get('/spiview.json', function(req, res) {
       return res.send(r);
     }
 
-    delete query.fields;
     delete query.sort;
 
     if (!query.facets) {
@@ -1363,6 +1365,8 @@ app.get('/spiview.json', function(req, res) {
       bsqErr += indices;
     }
 
+    var iTotalDisplayRecords = 0;
+
     async.parallel({
       spi: function (sessionsCb) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
@@ -1371,6 +1375,8 @@ app.get('/spiview.json', function(req, res) {
             sessionsCb(null, {});
             return;
           }
+
+          iTotalDisplayRecords = result.hits.total;
 
           if (result.facets.pr) {
             result.facets.pr.terms.forEach(function (item) {
@@ -1396,6 +1402,9 @@ app.get('/spiview.json', function(req, res) {
 
           sessionsCb(null, result.facets);
         });
+      },
+      total: function (totalCb) {
+        Db.numberOfDocuments('sessions-*', totalCb);
       },
       health: function (healthCb) {
         Db.healthCache(healthCb);
@@ -1433,7 +1442,9 @@ app.get('/spiview.json', function(req, res) {
         }],
         function() {
           r = {health: results.health,
+               iTotalRecords: results.total,
                spi: results.spi,
+               iTotalDisplayRecords: iTotalDisplayRecords,
                graph: graph,
                map: map,
                bsqErr: bsqErr
@@ -1467,6 +1478,8 @@ app.get('/connections.json', function(req, res) {
       res.send(r);
       return;
     }
+
+    query.fields = ["a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
     async.parallel({
       health: function (healthCb) {
@@ -1537,10 +1550,9 @@ app.get('/connections.json', function(req, res) {
         nodes[a2p].db += f.db;
         nodes[a2p].pa += f.pa;
 
-
         var n = "" + a1 + "," + a2;
         if (connects[n] === undefined) {
-          connects[n] = {value: 0, source: nodesHash[a1], target: nodesHash[a2], pr: 0, by: 0, db: 0, pa: 0, no: {}};
+          connects[n] = {value: 0, source: nodesHash[a1], target: nodesHash[a2], by: 0, db: 0, pa: 0, no: {}};
         }
 
         connects[n].value++;
@@ -1555,7 +1567,7 @@ app.get('/connections.json', function(req, res) {
         links.push(connects[key]);
       }
 
-      res.send({health: results.health, nodes: nodes, links: links});
+      res.send({health: results.health, nodes: nodes, links: links, iTotalDisplayRecords: results.graph.hits.total});
     });
   });
 });
@@ -1568,6 +1580,8 @@ app.get('/sessions.csv', function(req, res) {
       res.send("#Error " + bsqErr.toString() + "\r\n");
       return;
     }
+
+    query.fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
@@ -1595,6 +1609,7 @@ app.get('/sessions.csv', function(req, res) {
           pr =  "udp";
           break;
         }
+
 
         res.write(pr + ", " + f.fp + ", " + f.lp + ", " + Pcap.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + Pcap.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
       }
@@ -1869,6 +1884,8 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
     }
     if (packets.length === 0) {
       return doneCb(null, session, []);
+    } else if (packets[0].ip === undefined) {
+      return doneCb(null, session, []);
     } else if (packets[0].ip.p === 1) {
       Pcap.reassemble_icmp(packets, function(err, results) {
         return doneCb(err, session, results);
@@ -1961,7 +1978,10 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
     layout: false,
     session: session,
     data: outgoing,
-    query: req.query
+    query: req.query,
+    reqFields: Config.headers("headers-http-request"),
+    resFields: Config.headers("headers-http-response"),
+    emailFields: Config.headers("headers-email")
   });
 }
 
@@ -2084,22 +2104,23 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
   var bodyNum = 0;
   var bodyType = "file";
   parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
+    //console.log("onBody", this.pos, start, len);
     if (findBody === bodyNum) {
       return res.end(buf.slice(start));
     }
 
     var pos = this.pos;
 
-    if (this.image) {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"image", bodyName:"image" + bodyNum}]};
-    } else {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
-    }
     // Copy over the headers
     if (outgoing[pos] === undefined) {
+      if (this.image) {
+        outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"image", bodyName:"image" + bodyNum}]};
+      } else {
+        outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
+      }
       outgoing[pos].pieces[0].raw = buf.slice(0, start);
     } else if (outgoing[pos].data === undefined) {
-      outgoing[pos].pieces[0].raw = "";
+      outgoing[pos].pieces[0].raw = new Buffer(0);
     }
     bodyNum++;
   };
@@ -2110,6 +2131,8 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
     }
     var pos = this.pos;
 
+    //console.log("onMessageComplete", this.pos);
+
     if (!outgoing[pos]) {
       outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
     }
@@ -2118,6 +2141,8 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
   parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
     var pos = this.pos;
     this.hinfo = info;
+
+    //console.log("onHeadersComplete", this.pos, info);
 
     var h;
     this.image = false;
@@ -2136,6 +2161,7 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
   var p = 0;
   async.forEachSeries(incoming, function(item, nextCb) {
     parsers[(p%2)].pos = p;
+    //console.log("for", p);
 
     if (!item) {
     } else if (item.data.length === 0) {
@@ -2421,6 +2447,8 @@ function localSessionDetail(req, res) {
     /* Now reassembly the packets */
     if (packets.length === 0) {
       localSessionDetailReturn(req, res, session, [{data: err || "No pcap data found"}]);
+    } else if (packets[0].ip === undefined) {
+      localSessionDetailReturn(req, res, session, [{data: "Couldn't decode pcap file, check viewer log"}]);
     } else if (packets[0].ip.p === 1) {
       Pcap.reassemble_icmp(packets, function(err, results) {
         localSessionDetailReturn(req, res, session, results);
@@ -2563,7 +2591,7 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', function(req, res
 });
 
 function writePcap(res, id, writeHeader, doneCb) {
-  var b = new Buffer(100000);
+  var b = new Buffer(0xfffe);
   var boffset = 0;
 
   processSessionId(id, function (buffer) {
@@ -2576,6 +2604,7 @@ function writePcap(res, id, writeHeader, doneCb) {
     if (boffset + buffer.length > b.length) {
       res.write(b.slice(0, boffset));
       boffset = 0;
+      b = new Buffer(0xfffe);
     }
     buffer.copy(b, boffset, 0, buffer.length);
     boffset += buffer.length;
@@ -2706,7 +2735,59 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
   });
 });
 
-app.get('/sessions.pcap', function(req, res) {
+app.get(/\/sessionIds.pcap.*/, function(req, res) {
+  noCache(req, res);
+
+  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
+  res.statusCode = 200;
+
+  var ids = req.query.ids.split(",");
+  var firstHeader = 1;
+
+  async.forEachSeries(ids, function(id, nextCb) {
+    Db.get('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, function(err, session) {
+      isLocalView(session._source.no, function () {
+        // Get from our DISK
+        writePcap(res, session._id, firstHeader, function (err, stillNeedWriteHeader) {
+          firstHeader = stillNeedWriteHeader;
+          nextCb(err);
+        });
+      },
+      function () {
+        // Get from remote DISK
+        getViewUrl(session._source.no, function(err, viewUrl, agent) {
+          var info = url.parse(viewUrl);
+
+          if (firstHeader) {
+            info.path = Config.basePath(session._source.no) + session._source.no + "/pcap/" + session._id + ".pcap";
+          } else {
+            info.path = Config.basePath(session._source.no) + session._source.no + "/pcap/" + session._id + ".pcap?noHeader=true";
+          }
+
+          addAuth(info, req.user, session._source.no);
+          var preq = agent.request(info, function(pres) {
+            pres.on('data', function (chunk) {
+              firstHeader = 0; // Don't reset until we actually get data
+              res.write(chunk);
+            });
+            pres.on('end', function () {
+              nextCb(null);
+            });
+          });
+          preq.on('error', function (e) {
+            console.log("error = ", e);
+            nextCb(null);
+          });
+          preq.end();
+        });
+      });
+    });
+  }, function(err) {
+    res.end();
+  });
+});
+
+app.get(/\/sessions.pcap.*/, function(req, res) {
   noCache(req, res);
 
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
