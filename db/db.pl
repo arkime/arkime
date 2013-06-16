@@ -1051,6 +1051,7 @@ sub dbCheck {
     my $error = 0;
     my $nodes = esGet("/_nodes?settings&process");
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
+        next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
         my $node = $nodes->{nodes}->{$key};
         my $errstr;
 
@@ -1174,7 +1175,7 @@ sub printIndex {
 
     printf "ES Version:          %s\n", $esversion->{version}->{number};
     printf "DB Version:          %s\n", $main::versionNumber;
-    printf "Nodes:               %s\n", commify(scalar(keys %{$nodes->{nodes}}));
+    printf "ES Nodes:            %s/%s\n", commify(dataNodes($nodes->{nodes})), commify(scalar(keys %{$nodes->{nodes}}));
     printf "Session Indices:     %s\n", commify(scalar(@sessions));
     printf "Sessions:            %s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
@@ -1191,15 +1192,27 @@ sub printIndex {
     exit 0;
 }
 
+sub dataNodes
+{
+my ($nodes) = @_;
+    my $total = 0;
+
+    foreach my $key (keys %{$nodes}) {
+        next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
+        $total++;
+    }
+    return $total;
+}
+
 
 
 my $nodes = esGet("/_nodes");
-$main::numberOfNodes = keys %{$nodes->{nodes}};
+$main::numberOfNodes = dataNodes($nodes->{nodes});
 print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n\n";
 if ($main::numberOfNodes == 1) {
-    print "There is $main::numberOfNodes elastic search node, if you expect more please fix first before proceeding.\n\n";
+    print "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
-    print "There are $main::numberOfNodes elastic search nodes, if you expect more please fix first before proceeding.\n\n";
+    print "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
 }
 
 dbVersion(1);

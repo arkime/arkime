@@ -1,3 +1,6 @@
+0.8.6
+  - Deal with non data ES nodes
+
 0.8.5 2013/06/14
   - NOTICE: Requires at least 0.90.1 ES 
   - New export dialog that asks for filename and number selection
