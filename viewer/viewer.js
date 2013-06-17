@@ -540,11 +540,17 @@ function expireCheckAll () {
     // Find all the pcap dirs for local nodes
     async.map(nodes, function (node, cb) {
       var pcapDir = Config.getFull(node, "pcapDir");
+      if (typeof pcapDir !== "string") {
+        return cb("ERROR - couldn't find pcapDir setting for node: " + node);
+      }
       fs.stat(pcapDir, function(err,stat) {
         cb(null, {node: node, stat: stat});
       });
     },
     function (err, allInfo) {
+      if (err) {
+        return console.log(err);
+      }
       // Now gow through all the local nodes and check them
       async.forEachSeries(allInfo, function (info, cb) {
         expireCheckOne(info, allInfo, cb);
@@ -1257,7 +1263,7 @@ app.get('/spigraph.json', function(req, res) {
     }
 
     Db.healthCache(function(err, health) {results.health = health;});
-    Db.numberOfDocuments('sessions-*', function (err, total) {results.iTotalRecords = total});
+    Db.numberOfDocuments('sessions-*', function (err, total) {results.iTotalRecords = total;});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
         results.bsqErr = "Error performing query";
