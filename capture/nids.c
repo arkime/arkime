@@ -514,7 +514,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         return;
     }
 
-    totalBytes += len;
+    totalBytes += nids_last_pcap_header->caplen;
 
     if (totalPackets == 1) {
         struct pcap_stat ps;
@@ -600,7 +600,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         DLL_PUSH_TAIL(q_, sessionsQ, session);
     }
 
-    session->bytes += len;
+    session->bytes += nids_last_pcap_header->caplen;
     session->lastPacket = nids_last_pcap_header->ts;
 
     if (pluginsCbs & MOLOCH_PLUGIN_IP)
@@ -608,8 +608,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     switch (packet->ip_p) {
     case IPPROTO_UDP:
-        session->databytes += (len - 8);
-        moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, len - 8 - 4 * packet->ip_hl);
+        session->databytes += (nids_last_pcap_header->caplen - 8);
+        moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
         break;
     case IPPROTO_TCP:
         session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);

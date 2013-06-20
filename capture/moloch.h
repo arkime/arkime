@@ -29,7 +29,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 3
+#define MOLOCH_API_VERSION 4
 
 /******************************************************************************/
 /*
@@ -150,6 +150,7 @@ typedef struct moloch_config {
     uint32_t  maxStreams;
     uint32_t  maxPackets;
     uint32_t  dbBulkSize;
+    uint32_t  dbFlushTimeout;
     uint32_t  maxESConns;
     uint32_t  maxESRequests;
     uint32_t  logEveryXPackets;
@@ -161,6 +162,7 @@ typedef struct moloch_config {
     char      logESRequests;
     char      logFileCreation;
     char      parseSMTP;
+    char      compressES;
 } MolochConfig_t;
 
 typedef struct {
@@ -413,7 +415,7 @@ unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mle
 void moloch_http_exit();
 int moloch_http_queue_length(void *server);
 
-void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests);
+void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests, int compress);
 void moloch_http_free_server(void *serverV);
 
 /******************************************************************************/

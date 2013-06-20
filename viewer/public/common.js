@@ -342,7 +342,7 @@ $(document).ready(function() {
                 updateParam(data, "iDisplayLength", sessionsTable.fnSettings().fnRecordsDisplay());
               } else if (type === "opened") {
                 var ids = [];
-                $("tr.opened").each(function(nTr, n) {
+                $("tr.opened").each(function(n, nTr) {
                   var rowData = sessionsTable.fnGetData(nTr);
                   ids.push(rowData.id);
                 });
@@ -373,7 +373,13 @@ $(document).ready(function() {
       }
     });
     return false;
+  });
 
+  $('#startDate,#stopDate').keypress(function (e) {
+    if ((e.keyCode ? e.keyCode : e.which) === 13) {
+      $('#searchForm').submit();
+      return false;
+    }
   });
 });
 

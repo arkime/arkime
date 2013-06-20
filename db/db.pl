@@ -79,7 +79,7 @@ sub esGet
     my ($url, $dontcheck) = @_;
     print "GET http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("http://$ARGV[0]$url");
-    if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+    if (($response->code == 500 && $ARGV[1] ne "init") || ($response->code != 200 && !$dontcheck)) {
       die "Couldn't GET http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);

@@ -1,6 +1,14 @@
-0.8.6
+0.8.6 2013/06/20
   - Deal with non data ES nodes
   - Viewer prints error if it can't find pcapDir setting
+  - New setting dbFlushTimeout that controls how often we flush to ES
+  - New setting compressES that turns on compresesion to ES, requires
+    http.compression: true in elasticsearch yml file
+  - libnids was overreporting traffic, switch to libpcap stats,
+    bytes/sec and total bytes/sec in stats will be lower
+  - Fixed recent jade warnings
+  - Fixed openned export
+  - minor ui improvements
 
 0.8.5 2013/06/14
   - NOTICE: Requires at least 0.90.1 ES 

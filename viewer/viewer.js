@@ -541,7 +541,7 @@ function expireCheckAll () {
     async.map(nodes, function (node, cb) {
       var pcapDir = Config.getFull(node, "pcapDir");
       if (typeof pcapDir !== "string") {
-        return cb("ERROR - couldn't find pcapDir setting for node: " + node);
+        return cb("ERROR - couldn't find pcapDir setting for node: " + node + "\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm install iniparser");
       }
       fs.stat(pcapDir, function(err,stat) {
         cb(null, {node: node, stat: stat});
@@ -1743,7 +1743,7 @@ app.get('/unique.txt', function(req, res) {
   });
 });
 
-function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
+function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets) {
   function processFile(pcap, pos, nextCb) {
     pcap.readPacket(pos, function(packet) {
       if (!packet) {
@@ -1753,14 +1753,28 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
     });
   }
 
-  Db.get('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, function(err, session) {
+  var options;
+  if (!fullSession) {
+    options  = {fields: "no,ps"};
+  }
+
+  Db.getWithOptions('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, options, function(err, session) {
+    var fields;
+
     if (err || !session.exists) {
       console.log("session get error", err, session);
       return endCb("Not Found", null);
     }
 
-    if (maxPackets && session._source.ps.length > maxPackets) {
-      session._source.ps.length = maxPackets;
+    if (fullSession) {
+      fields = session._source;
+    } else {
+      fields = session.fields;
+    }
+
+
+    if (maxPackets && fields.ps.length > maxPackets) {
+      fields.ps.length = maxPackets;
     }
 
     /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
@@ -1768,7 +1782,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
     var newFormat = false;
     var pcap = null;
     var fileNum;
-    async.forEachSeries(session._source.ps, function(item, nextCb) {
+    async.forEachSeries(fields.ps, function(item, nextCb) {
       var pos;
 
       if (item < 0) {
@@ -1788,10 +1802,10 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
           pcap.close();
         }
 
-        Db.fileIdToFile(session._source.no, fileNum, function(file) {
+        Db.fileIdToFile(fields.no, fileNum, function(file) {
           if (!file) {
-            console.log("ERROR - File mapping not found in DB", session._source.no + '-' + fileNum);
-            return nextCb("File mapping not found in DB " + session._source.no + '-' + fileNum);
+            console.log("ERROR - File mapping not found in DB", fields.no + '-' + fileNum);
+            return nextCb("File mapping not found in DB " + fields.no + '-' + fileNum);
           }
           pcap = new Pcap(file.name);
           pcap.fileNum = fileNum;
@@ -1834,25 +1848,29 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 
       async.parallel([
         function(parallelCb) {
-          if (!session._source.ta) {
-            session._source.ta = [];
+          if (!fields.ta) {
+            fields.ta = [];
             return parallelCb(null);
           }
-          tags(session._source, "ta", parallelCb, 0);
+          tags(fields, "ta", parallelCb, 0);
         },
         function(parallelCb) {
-          tags(session._source, "hh", parallelCb, 12);
+          tags(fields, "hh", parallelCb, 12);
         },
         function(parallelCb) {
-          tags(session._source, "hh1", parallelCb, 12);
+          tags(fields, "hh1", parallelCb, 12);
         },
         function(parallelCb) {
-          tags(session._source, "hh2", parallelCb, 12);
+          tags(fields, "hh2", parallelCb, 12);
         },
         function(parallelCb) {
           var files = [];
-          async.forEachSeries(session._source.fs, function (item, cb) {
-            Db.fileIdToFile(session._source.no, item, function (file) {
+          if (!fields.fs) {
+            fields.fs = [];
+            return parallelCb(null);
+          }
+          async.forEachSeries(fields.fs, function (item, cb) {
+            Db.fileIdToFile(fields.no, item, function (file) {
               if (file && file.locked === 1) {
                 files.push(file.name);
               }
@@ -1860,12 +1878,12 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
             });
           },
           function(err) {
-            session._source.fs = files;
+            fields.fs = files;
             parallelCb(err);
           });
         }],
         function(err, results) {
-          endCb(pcapErr, session._source);
+          endCb(pcapErr, fields);
         }
       );
     });
@@ -1874,7 +1892,7 @@ function processSessionId(id, headerCb, packetCb, endCb, maxPackets) {
 
 function processSessionIdAndDecode(id, numPackets, doneCb) {
   var packets = [];
-  processSessionId(id, null, function (pcap, buffer, cb) {
+  processSessionId(id, true, null, function (pcap, buffer, cb) {
     var obj = {};
     if (buffer.length > 16) {
       pcap.decode(buffer, obj);
@@ -2421,7 +2439,7 @@ function localSessionDetail(req, res) {
   req.query.base  = req.query.base  || "ascii";
 
   var packets = [];
-  processSessionId(req.params.id, null, function (pcap, buffer, cb) {
+  processSessionId(req.params.id, true, null, function (pcap, buffer, cb) {
     var obj = {};
     if (buffer.length > 16) {
       pcap.decode(buffer, obj);
@@ -2600,7 +2618,7 @@ function writePcap(res, id, writeHeader, doneCb) {
   var b = new Buffer(0xfffe);
   var boffset = 0;
 
-  processSessionId(id, function (buffer) {
+  processSessionId(id, false, function (buffer) {
     if (writeHeader) {
       res.write(buffer);
       writeHeader = 0;
@@ -2830,7 +2848,7 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
                 res.write(chunk);
               });
               pres.on('end', function () {
-                nextCb(null);
+                process.nextTick(nextCb);
               });
             });
             preq.on('error', function (e) {

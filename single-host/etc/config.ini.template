@@ -156,6 +156,13 @@ pcapBufferSize = 30000000
 # ADVANCED - Number of bytes to bulk index at a time
 dbBulkSize = 300000
 
+# ADVANCED - Number of seconds before we force a flush to ES
+dbFlushTimeout = 5
+
+# ADVANCED - Compress requests to ES, reduces ES bandwidth by ~80% at the cost
+# of increased CPU. MUST have "http.compression: true" in elasticsearch.yml file
+compressES = false
+
 # ADVANCED - Max number of connections to elastic search
 maxESConns = 30
 

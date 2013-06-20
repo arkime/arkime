@@ -47,6 +47,17 @@ exports.get = function (index, type, query, cb) {
     .exec();
 };
 
+exports.getWithOptions = function (index, type, query, options, cb) {
+  internals.elasticSearchClient.get(index, type, query, options)
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
 /* Work around a breaking change where document.id is nolonger used for the id */
 if (typeof ESC.prototype.multisearch === "function") {
   exports.index = function (index, type, id, document, cb) {

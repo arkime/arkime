@@ -18,7 +18,7 @@ html
     link(rel='stylesheet', type='text/css', href='jquery.qtip.min.css')
     link(rel='stylesheet', type='text/css', href='style.css')
     if (typeof titleLink === "string")
-      style(type='text/css')
+      style(type='text/css').
         ##{titleLink} { color:white}
   body(id="body-#{titleLink}")
     #header
@@ -106,6 +106,6 @@ html
         br
         button Export
 
-script(type='text/javascript')
+script(type='text/javascript').
   var molochFields = !{fieldsMap};
   var molochFieldsExp = Object.keys(molochFields);

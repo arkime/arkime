@@ -83,7 +83,7 @@ div#spiview
     mixin spi("Body MD5", "hmd5", "http.md5", "http")
   mixin title("DNS", "dns")
   dl
-    mixin spi("Host", "dnsho", "host.ho", "dns")
+    mixin spi("Host", "dnsho", "host.dns", "dns")
     mixin spi("IP", "dnsip", "ip.dns", "dns")
     mixin spi("GEO", "gdnsip", "country.dns", "dns")
     mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
@@ -133,7 +133,7 @@ div#spiview
         else
           mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
 
-script(type='text/javascript')
+script(type='text/javascript').
   var initialDisplayLength = 100;
   var doPushState = 1;
   var fetchSize = {};

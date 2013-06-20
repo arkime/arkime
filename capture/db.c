@@ -836,7 +836,7 @@ gboolean moloch_db_flush_gfunc (gpointer user_data )
     struct timeval currentTime;
     gettimeofday(&currentTime, NULL);
 
-    if (user_data == 0 && (currentTime.tv_sec - dbLastSave) < 5)
+    if (user_data == 0 && (currentTime.tv_sec - dbLastSave) < config.dbFlushTimeout)
         return TRUE;
 
     key_len = snprintf(key, sizeof(key), "/_bulk");
@@ -1040,20 +1040,10 @@ void moloch_db_check()
     int                key_len;
     unsigned char     *data;
 
-    key_len = snprintf(key, sizeof(key), "/dstats/version/version");
+    key_len = snprintf(key, sizeof(key), "/dstats/version/version/_source");
     data = moloch_http_get(esServer, key, key_len, &datalen);
 
     if (!data) {
-        LOG("ERROR - Couldn't load version information, database might out down or out of date.  Run \"db/db.pl host:port update\"");
-        exit(1);
-    }
-
-    uint32_t           source_len;
-    unsigned char     *source = 0;
-
-    source = moloch_js0n_get(data, datalen, "_source", &source_len);
-
-    if (!source) {
         LOG("ERROR - Couldn't load version information, database might out down or out of date.  Run \"db/db.pl host:port update\"");
         exit(1);
     }
@@ -1061,52 +1051,21 @@ void moloch_db_check()
     uint32_t           version_len;
     unsigned char     *version = 0;
 
-    version = moloch_js0n_get(source, source_len, "version", &version_len);
+    version = moloch_js0n_get(data, datalen, "version", &version_len);
 
     if (atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
         LOG("ERROR - Database version (%.*s) too old, needs to be at least (%d), run \"db/db.pl host:port update\"", version_len, version, MOLOCH_MIN_DB_VERSION);
         exit(1);
     }
 
-    key_len = snprintf(key, sizeof(key), "/tags_v2/_aliases");
-    data = moloch_http_get(esServer, key, key_len, &datalen);
-
-    if (!data) {
-        LOG("ERROR - Couldn't load tag aliases, something wrong with db? - %s", key);
-        exit(1);
+    if (config.compressES) {
+        key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process");
+        data = moloch_http_get(esServer, key, key_len, &datalen);
+        if (strstr((char *)data, "\"http.compression\":\"true\"") == NULL) {
+            LOG("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
+            exit(1);
+        }
     }
-
-    if (strcmp((char *)data, "{\"tags_v2\":{\"aliases\":{\"tags\":{}}}}") != 0) {
-        LOG("ERROR - No tags_v2, run db/db.pl >%s<", data);
-        exit(1);
-    }
-
-    key_len = snprintf(key, sizeof(key), "/files_v3/_aliases");
-    data = moloch_http_get(esServer, key, key_len, &datalen);
-
-    if (!data) {
-        LOG("ERROR - Couldn't load files aliases, something wrong with db? - %s", key);
-        exit(1);
-    }
-
-    if (strcmp((char *)data, "{\"files_v3\":{\"aliases\":{\"files\":{}}}}") != 0) {
-        LOG("ERROR - No files_v3, run db/db.pl >%s<", data);
-        exit(1);
-    }
-
-    key_len = snprintf(key, sizeof(key), "/sequence/_mapping");
-    data = moloch_http_get(esServer, key, key_len, &datalen);
-
-    if (!data) {
-        LOG("ERROR - Couldn't load sequence mapping, something wrong with db? - %s", key);
-        exit(1);
-    }
-
-    if (strcmp((char *)data, "{\"sequence\":{\"sequence\":{\"enabled\":false,\"_all\":{\"enabled\":false},\"_source\":{\"enabled\":false},\"_type\":{\"index\":\"no\"},\"properties\":{}}}}") != 0) {
-        LOG("ERROR - Sequence mapping is busted, run db/db.pl >%s<", data);
-        exit(1);
-    }
-
 }
 
 /******************************************************************************/
@@ -1328,7 +1287,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
 guint timers[5];
 void moloch_db_init()
 {
-    esServer = moloch_http_create_server(config.elasticsearch, 9200, config.maxESConns, config.maxESRequests);
+    esServer = moloch_http_create_server(config.elasticsearch, 9200, config.maxESConns, config.maxESRequests, config.compressES);
     DLL_INIT(t_, &tagRequests);
     HASH_INIT(tag_, tags, moloch_db_tag_hash, moloch_db_tag_cmp);
     moloch_db_load_file_num();

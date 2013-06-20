@@ -212,7 +212,7 @@ div.sessionDetail(id='sessionDetail#{session.id}')
               span(class="timestamp-#{session.id} sessionDetailTS", ts="#{item.ts}", bytes="#{item.bytes}")
             !{item.html}
 
-script(type='text/javascript')
+script(type='text/javascript').
   $(function() {
     if ($('input[name=format-base-#{session.id}]:checked').val() === "hex") {
       $('input#format-line-#{session.id}').removeAttr("disabled");
