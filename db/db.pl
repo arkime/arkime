@@ -55,7 +55,8 @@ sub showHelp($)
     print "  info                  - Information about the database\n";
     print "  usersexport <fn>      - Save the users info to <fn>\n";
     print "  usersimport <fn>      - Load the users info from <fn>\n";
-    print "  rotate <type> <num>   - Perform daily maintenance\n";
+    print "  optimize              - Optimize all indices\n";
+    print "  rotate <type> <num>   - Perform daily maintenance and optimize all indices\n";
     print "       type             - Same as rotateIndex in ini file = daily,weekly,monthly\n";
     print "       num              - number indexes to keep\n";
     exit 1;
@@ -1098,7 +1099,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|rotate)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|rotate|optimize)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate)/);
 
@@ -1153,6 +1154,21 @@ if ($ARGV[1] eq "usersimport") {
             esDelete("/$i", 1);
         }
     }
+    exit 0;
+} elsif ($ARGV[1] eq "optimize") {
+    my $json = esGet("/sessions-*/_stats?clear=1", 1);
+    my $indices = $json->{indices} || $json->{_all}->{indices};
+
+    $main::userAgent->timeout(600);
+    printf "Optimizing %s Indices\n", commify(scalar(keys %{$indices}));
+    foreach my $i (sort (keys %{$indices})) {
+        if ($verbose > 0) {
+            local $| = 1;
+            print ".";
+        }
+        esGet("/$i/_optimize?max_num_segments=4", 1);
+    }
+    print "\n";
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
