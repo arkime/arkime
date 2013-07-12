@@ -3157,8 +3157,6 @@ app.post('/changePassword', function(req, res) {
 });
 
 app.post('/upload', function(req, res) {
-  console.log(req);
-
   var exec = require('child_process').exec,
       child;
 
