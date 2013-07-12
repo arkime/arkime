@@ -12,6 +12,7 @@ html
     script(type='text/javascript', src='jquery.qtip.min.js')
     script(type='text/javascript', src='d3.v2.js')
     script(type='text/javascript', src='common.js')
+    block scripts
 
     link(rel='stylesheet', type='text/css', href='DataTables-1.9.1/media/css/demo_table.css')
     link(rel='stylesheet', type='text/css', href='jquery-ui.css')
@@ -29,13 +30,15 @@ html
         ul.ulist-nav
           li
             a#sessionsLink.expressionsLink(href='#{basePath}') Sessions
-          if (spiData)
-            li
-              a#spiLink.expressionsLink(href='spiview') SPI View
-            li
-              a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
+          li
+            a#spiLink.expressionsLink(href='spiview') SPI View
+          li
+            a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
           li
             a#connectionsLink.expressionsLink(href='connections') Connections
+          if allowUploads
+            li
+              a#uploadLink(href='upload') Upload
           li
             a#filesLink(href='files') Files
           if user.createEnabled
@@ -89,7 +92,7 @@ html
         input#stopDate(size=21)
         
     div.pageBody(id="pageBody-#{titleLink}")
-      != body
+      block content
     div(style="display:none")
       form#exportForm
         div#export-opened-div

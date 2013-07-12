@@ -167,9 +167,9 @@ case 86:this.$ = 4
 break;
 case 87:this.$ = 5
 break;
-case 161:this.$ = {and: [$$[$0-2], $$[$0]]};
+case 161:this.$ = {bool: {must: [$$[$0-2], $$[$0]]}};
 break;
-case 162:this.$ = {or: [$$[$0-2], $$[$0]]};
+case 162:this.$ = {bool: {should: [$$[$0-2], $$[$0]]}};
 break;
 case 163:this.$ = {not: $$[$0]};
 break;
@@ -203,9 +203,9 @@ case 175:this.$ = {not: {term: {pr: 17}}};
 break;
 case 176:this.$ = {not: {term: {pr: $$[$0]}}};
 break;
-case 177:this.$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
-         this.$.or[0].range.p1[$$[$0-1]] = $$[$0];
-         this.$.or[1].range.p2[$$[$0-1]] = $$[$0];
+case 177:this.$ = {bool: {should: [{range: {p1: {}}}, {range: {p2: {}}}]}};
+         this.$.bool.should[0].range.p1[$$[$0-1]] = $$[$0];
+         this.$.bool.should[1].range.p2[$$[$0-1]] = $$[$0];
 break;
 case 178:this.$ = {not: str2Query($$[$0-2], "term", $$[$0].toLowerCase())};
 break;
@@ -257,9 +257,9 @@ case 195:this.$ = {range: {}};
          this.$.range[str2Header(yy, $$[$0-2])] = {};
          this.$.range[str2Header(yy, $$[$0-2])][$$[$0-1]] = $$[$0];
 break;
-case 196:this.$ = {or: [{term: {p1: $$[$0]}}, {term: {p2: $$[$0]}}]};
+case 196:this.$ = {bool: {should: [{term: {p1: $$[$0]}}, {term: {p2: $$[$0]}}]}};
 break;
-case 197:this.$ = {not: {or: [{term: {p1: $$[$0]}}, {term: {p2: $$[$0]}}]}};
+case 197:this.$ = {bool: {must_not: [{term: {p1: $$[$0]}}, {term: {p2: $$[$0]}}]}};
 break;
 case 198:this.$ = parseIpPort(yy, $$[$0],$$[$0-2]);
 break;
@@ -282,7 +282,7 @@ case 203: var file = stripQuotes($$[$0]);
         
 break;
 case 204: var tag = stripQuotes($$[$0]);
-          this.$ = {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]};
+          this.$ = {bool: {should: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
         
 break;
 case 205: var tag = stripQuotes($$[$0]);
@@ -294,7 +294,7 @@ case 206: var tag = stripQuotes($$[$0]);
         
 break;
 case 207: var tag = stripQuotes($$[$0]);
-          this.$ = {not: {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
+          this.$ = {bool: {must_not: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
         
 break;
 case 208: var tag = stripQuotes($$[$0]);
@@ -306,65 +306,61 @@ case 209: var tag = stripQuotes($$[$0]);
         
 break;
 case 210: var str = $$[$0].toUpperCase();
-          this.$ = {or: [str2Query("g1", "term", str),
-                     str2Query("g2", "term", str),
-                     str2Query("gxff", "term", str),
-                     str2Query("gdnsip", "term", str),
-                     str2Query("geip", "term", str)
-                    ]
-               };
+          this.$ = [str2Query("g1", "term", str),
+                str2Query("g2", "term", str),
+                str2Query("gxff", "term", str),
+                str2Query("gdnsip", "term", str),
+                str2Query("geip", "term", str)
+               ];
+          this.$ = {bool: {should: this.$}};
         
 break;
 case 211: var str = $$[$0].toUpperCase();
-          this.$ = {or: [str2Query("g1", "term", str),
-                     str2Query("g2", "term", str),
-                     str2Query("gxff", "term", str),
-                     str2Query("gdnsip", "term", str),
-                     str2Query("geip", "term", str)
-                    ]
-               };
-          this.$ = {not: this.$};
+          this.$ = [str2Query("g1", "term", str),
+                str2Query("g2", "term", str),
+                str2Query("gxff", "term", str),
+                str2Query("gdnsip", "term", str),
+                str2Query("geip", "term", str)
+               ];
+          this.$ = {bool: {must_not: this.$}};
         
 break;
 case 212: var str = $$[$0].toLowerCase();
-          
-          this.$ = {or: [str2Query("as1", "text", str),
-                     str2Query("as2", "text", str),
-                     str2Query("asxff", "text", str),
-                     str2Query("asdnsip", "text", str),
-                     str2Query("aseip", "text", str)
-                    ]
-               };
+          this.$ = [str2Query("as1", "text", str),
+                str2Query("as2", "text", str),
+                str2Query("asxff", "text", str),
+                str2Query("asdnsip", "text", str),
+                str2Query("aseip", "text", str)
+               ];
+          this.$ = {bool: {should: this.$}};
         
 break;
 case 213: var str = $$[$0].toLowerCase();
-          this.$ = {or: [str2Query("as1", "text", str),
-                     str2Query("as2", "text", str),
-                     str2Query("asxff", "text", str),
-                     str2Query("asdnsip", "text", str),
-                     str2Query("aseip", "text", str)
-                    ]
-               };
-          this.$ = {not: this.$};
+          this.$ = [str2Query("as1", "text", str),
+                str2Query("as2", "text", str),
+                str2Query("asxff", "text", str),
+                str2Query("asdnsip", "text", str),
+                str2Query("aseip", "text", str)
+               ];
+          this.$ = {bool: {must_not: this.$}};
         
 break;
 case 214: var str = $$[$0].toLowerCase();
 
-          this.$ = {or: [str2Query("ho", "term", str),
-                     str2Query("dnsho", "term", str),
-                     str2Query("eho", "term", str)
-                    ]
-               };
-          this.$ = {not: this.$};
+          this.$ = [str2Query("ho", "term", str),
+                str2Query("dnsho", "term", str),
+                str2Query("eho", "term", str)
+               ];
+          this.$ = {bool: {must_not: this.$}};
         
 break;
 case 215: var str = $$[$0].toLowerCase();
 
-          this.$ = {or: [str2Query("ho", "term", str),
-                     str2Query("dnsho", "term", str),
-                     str2Query("eho", "term", str)
-                    ]
-               };
+          this.$ = [str2Query("ho", "term", str),
+                str2Query("dnsho", "term", str),
+                str2Query("eho", "term", str)
+               ];
+          this.$ = {bool: {should: this.$}};
         
 break;
 }
@@ -513,22 +509,22 @@ function parseIpPort(yy, ipPortStr, which) {
      ip2 = ip2 | (0xffffffff >>> s);
   }
 
-  var t1 = {and: []};
-  var t2 = {and: []};
+  var t1 = {bool: {must: []}};
+  var t2 = {bool: {must: []}};
   var xff;
   var dns;
   var email;
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1.and.push({term: {a1: ip1>>>0}});
-        t2.and.push({term: {a2: ip1>>>0}});
+        t1.bool.must.push({term: {a1: ip1>>>0}});
+        t2.bool.must.push({term: {a2: ip1>>>0}});
         dns   = {term: {dnsip: ip1>>>0}};
         email = {term: {eip: ip1>>>0}};
         xff   = {term: {xff: ip1>>>0}};
     } else {
-        t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-        t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+        t1.bool.must.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
+        t2.bool.must.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
         dns =    {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
         email =  {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
         xff =    {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
@@ -536,13 +532,13 @@ function parseIpPort(yy, ipPortStr, which) {
   }
 
   if (port !== -1) {
-    t1.and.push({term: {p1: port}});
-    t2.and.push({term: {p2: port}});
+    t1.bool.must.push({term: {p1: port}});
+    t2.bool.must.push({term: {p2: port}});
   }
 
-  if (t1.and.length === 1) {
-      t1 = t1.and[0];
-      t2 = t2.and[0];
+  if (t1.bool.must.length === 1) {
+      t1 = t1.bool.must[0];
+      t2 = t2.bool.must[0];
   }
 
   switch(which) {
@@ -556,7 +552,7 @@ function parseIpPort(yy, ipPortStr, which) {
     if (yy.emailSearch === true && email)
         ors.push(email);
 
-    return {or: ors};
+    return {bool: {should: ors}};
   case 1:
     return t1;
   case 2:
@@ -606,8 +602,8 @@ function str2Query(field, kind, str)
 
     if (str[0] === "/" && str[str.length -1] === "/") {
         field = field2RawField[field] || field;
-        obj = {query: {regexp: {}}};
-        obj.query.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        obj = {regexp: {}};
+        obj.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
         return obj;
     }
 

@@ -131,7 +131,8 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
         g_ptr_array_add(field->sarray, string);
         return TRUE;
     case MOLOCH_FIELD_TYPE_STR_HASH:
-        HASH_FIND(s_, *(field->shash), string, hstring);
+        HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(string, len), string, hstring);
+
         if (hstring)
             return FALSE;
         hstring = MOLOCH_TYPE_ALLOC(MolochString_t);

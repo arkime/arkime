@@ -49,7 +49,7 @@ Pcap.prototype.readHeader = function(cb) {
     if (cb) {
       cb(this.headBuffer);
     }
-    return;
+    return this.headBuffer;
   }
 
   this.headBuffer = new Buffer(24);
@@ -59,6 +59,7 @@ Pcap.prototype.readHeader = function(cb) {
   if (cb) {
     cb(this.headBuffer);
   }
+  return this.headBuffer;
 };
 
 Pcap.prototype.readPacket = function(pos, cb) {
@@ -264,6 +265,33 @@ Pcap.prototype.pcap = function (buffer, obj) {
 Pcap.prototype.decode = function (buffer, obj) {
   this.readHeader();
   this.pcap(buffer, obj);
+};
+
+Pcap.prototype.getHeaderNg = function () {
+
+  var buffer = this.readHeader();
+  var b = new Buffer(32 + 24);
+
+  b.writeUInt32LE(0x0A0D0D0A, 0);  // Block Type
+  b.writeUInt32LE(32, 4);          // Block Len 1
+  b.writeUInt32LE(0x1A2B3C4D, 8);  // Byte Order Magic
+  b.writeUInt16LE(1, 12);          // Major
+  b.writeUInt16LE(0, 14);          // Minor
+  b.writeUInt32LE(0xffffffff, 16); // Unknown Section Length 1
+  b.writeUInt32LE(0xffffffff, 20); // Unknown Section Length 2
+  b.writeUInt32LE(0, 24);          // Options
+  b.writeUInt32LE(32, 28);         // Block Len 2
+
+
+  b.writeUInt32LE(0x00000001, 32);              // Block Type
+  b.writeUInt32LE(24, 36);                      // Block Len 1
+  b.writeUInt16LE(buffer.readUInt32LE(20), 40); // Link Type
+  b.writeUInt16LE(0, 42);                       // Reserved
+  b.writeUInt32LE(buffer.readUInt32LE(16), 44); // SnapLen
+  b.writeUInt32LE(0, 48);                       // Options
+  b.writeUInt32LE(24, 52);                      // Block Len 2
+
+  return b;
 };
 
 //////////////////////////////////////////////////////////////////////////////////

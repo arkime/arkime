@@ -126,7 +126,7 @@ parseSMTP=true
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
  
 # Plugin directory to load plugins from
-pluginsDir=plugins
+pluginsDir=_TDIR_/plugins
 
 # Semicolon ';' seperated list of plugins to load and the order to load them
 #plugins=tagger.so; netflow.so
@@ -145,6 +145,8 @@ pluginsDir=plugins
 # ES will blow up if we allow the spiData to search too many indices.
 spiDataMaxIndices=3
 
+# Uncomment the following to allow direct uploads.  This is experimental
+#uploadCommand=/data/moloch/bin/moloch-capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG}
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
 # stripe size.  Defaults to 256k

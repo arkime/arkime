@@ -145,6 +145,10 @@ function dropPrivileges() {
   }
 }
 
+exports.getConfigFile = function() {
+  return internals.configFile;
+};
+
 exports.isHTTPS = function(node) {
   return exports.getFull(node || internals.nodeName, "keyFile") &&
          exports.getFull(node || internals.nodeName, "certFile");

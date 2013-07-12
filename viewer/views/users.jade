@@ -1,177 +1,180 @@
-<h2> System Users</h2>
-table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
-  thead
-    tr
-      th User Id
-      th Name
-      th Forced Expression
-      th Enabled?
-      th Admin?
-      th Web Interface?
-      th Web Auth Header?
-      th Email Search?
-      th Actions
-  tbody
-br
-#users
-hr
-<h2> Add User</h2>
-form#addUser
-  input(type='hidden', id='token', name='token', value='#{token}')
-  label(for='userId') User ID
-  input(type='text', id='userId', name='userId', size='30')
-  br
-  label(for='userName') User Name
-  input(type='text', id='userName', name='userName', size='30')
-  br
-  label(for='Password') Password
-  input(type='password', id='password', name='password', size='30')
-  br
-  label(for='Expression') Forced Search Expression
-  input(type='expression', id='expression', name='expression', size='60')
-  br
-  label(for='enabled') Enabled:
-  input(type='checkbox', id='enabled', name='enabled', CHECKED)
-  br
-  label(for='createEnabled') Admin User:
-  input(type='checkbox', id='createEnabled', name='createEnabled')
-  br
-  label(for='webEnabled') Web Enabled User:
-  input(type='checkbox', id='webEnabled', name='webEnabled', CHECKED)
-  br
-  label(for='headerAuthEnabled') Web Auth Header:
-  input(type='checkbox', id='headerAuthEnabled', name='headerAuthEnabled')
-  br
-  label(for='emailSearch') Allow Email Searches:
-  input(type='checkbox', id='emailSearch', name='emailSearch')
-  br
-  button#create create
+extends layout
 
-script(type='text/javascript').
-  var usersTable;
+block content
+  h2 System Users
+  table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+    thead
+      tr
+        th User Id
+        th Name
+        th Forced Expression
+        th Enabled?
+        th Admin?
+        th Web Interface?
+        th Web Auth Header?
+        th Email Search?
+        th Actions
+    tbody
+  br
+  #users
+  hr
+  <h2> Add User</h2>
+  form#addUser
+    input(type='hidden', id='token', name='token', value='#{token}')
+    label(for='userId') User ID
+    input(type='text', id='userId', name='userId', size='30')
+    br
+    label(for='userName') User Name
+    input(type='text', id='userName', name='userName', size='30')
+    br
+    label(for='Password') Password
+    input(type='password', id='password', name='password', size='30')
+    br
+    label(for='Expression') Forced Search Expression
+    input(type='expression', id='expression', name='expression', size='60')
+    br
+    label(for='enabled') Enabled:
+    input(type='checkbox', id='enabled', name='enabled', CHECKED)
+    br
+    label(for='createEnabled') Admin User:
+    input(type='checkbox', id='createEnabled', name='createEnabled')
+    br
+    label(for='webEnabled') Web Enabled User:
+    input(type='checkbox', id='webEnabled', name='webEnabled', CHECKED)
+    br
+    label(for='headerAuthEnabled') Web Auth Header:
+    input(type='checkbox', id='headerAuthEnabled', name='headerAuthEnabled')
+    br
+    label(for='emailSearch') Allow Email Searches:
+    input(type='checkbox', id='emailSearch', name='emailSearch')
+    br
+    button#create create
 
-  $(document).ready(function() {
-    usersTable = $('#users').dataTable( {
-      "oLanguage": {
-        "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
-        "sLengthMenu": "_MENU_"
-      },
-      "sDom": '<"H"lipr>t<"F"ip>',
-      "iDisplayLength": 500,
-      "aLengthMenu": [100, 500, 1000, 5000],
-      "bProcessing": true,
-      "bServerSide": true,
-      "sAjaxSource": "#{basePath}users.json",
-      "fnServerData": function ( sSource, aoData, fnCallback ) {
+  script(type='text/javascript').
+    var usersTable;
+
+    $(document).ready(function() {
+      usersTable = $('#users').dataTable( {
+        "oLanguage": {
+          "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+          "sLengthMenu": "_MENU_"
+        },
+        "sDom": '<"H"lipr>t<"F"ip>',
+        "iDisplayLength": 500,
+        "aLengthMenu": [100, 500, 1000, 5000],
+        "bProcessing": true,
+        "bServerSide": true,
+        "sAjaxSource": "#{basePath}users.json",
+        "fnServerData": function ( sSource, aoData, fnCallback ) {
+          $.ajax( {
+           "dataType": 'json',
+            "type": "POST",
+            "url": sSource,
+            "data": aoData,
+            "success": fnCallback
+          } );
+        },
+        "bRetrieve": true,
+        "bFilter": false,
+        "bScrollCollapse": true,
+        "bAutoWidth": false,
+        "aoColumns": [
+          { "mDataProp" : "userId"
+          },
+          { "mDataProp" : "userName",
+            "bSortable" : false
+          },
+          { "mDataProp" : "expression"
+          },
+          { "mDataProp" : "enabled",
+            "fnRender" : function(oObj) {
+              return "<input type='checkbox' id='" + oObj.aData.userId +"-enabled' " + (oObj.aData.enabled?"CHECKED":"") + ">";
+            }
+          },
+          { "mDataProp" : "createEnabled",
+            "fnRender" : function(oObj) {
+              return "<input type='checkbox' id='" + oObj.aData.userId +"-createEnabled' " + (oObj.aData.createEnabled?"CHECKED":"") + ">";
+            }
+          },
+          { "mDataProp" : "webEnabled",
+            "fnRender" : function(oObj) {
+              return "<input type='checkbox' id='" + oObj.aData.userId +"-webEnabled' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
+            }
+          },
+          { "mDataProp" : "headerAuthEnabled",
+            "fnRender" : function(oObj) {
+              return "<input type='checkbox' id='" + oObj.aData.userId +"-headerAuthEnabled' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
+            }
+          },
+          { "mDataProp" : "emailSearch",
+            "fnRender" : function(oObj) {
+              return "<input type='checkbox' id='" + oObj.aData.userId +"-emailSearch' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
+            }
+          },
+          { "mDataProp" : null,
+            "bSortable" : false,
+            "fnRender" : function(oObj) {
+              return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
+                     "<a href='password?userId=" + oObj.aData.userId +"'>Set Password</a>";
+            }
+          }
+        ]
+      } );
+
+      $('#users tbody td input').live('change', function () {
+        var nTr = this.parentNode.parentNode;
+        var aData = usersTable.fnGetData( nTr );
         $.ajax( {
-         "dataType": 'json',
+          "dataType": 'json',
           "type": "POST",
-          "url": sSource,
-          "data": aoData,
-          "success": fnCallback
-        } );
-      },
-      "bRetrieve": true,
-      "bFilter": false,
-      "bScrollCollapse": true,
-      "bAutoWidth": false,
-      "aoColumns": [
-        { "mDataProp" : "userId"
-        },
-        { "mDataProp" : "userName",
-          "bSortable" : false
-        },
-        { "mDataProp" : "expression"
-        },
-        { "mDataProp" : "enabled",
-          "fnRender" : function(oObj) {
-            return "<input type='checkbox' id='" + oObj.aData.userId +"-enabled' " + (oObj.aData.enabled?"CHECKED":"") + ">";
+          "data": [{name: "token", value: "#{token}"}],
+          "url": "#{basePath}updateUser/" + aData.userId + "?" +
+            "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
+            "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
+            "&headerAuthEnabled=" + $("#" + aData.userId  + "-headerAuthEnabled").is(':checked') +
+            "&emailSearch=" + $("#" + aData.userId  + "-emailSearch").is(':checked') +
+            "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
+          "success": function(data) {
+            if (!data.success) {
+              alert(data.text);
+            }
           }
-        },
-        { "mDataProp" : "createEnabled",
-          "fnRender" : function(oObj) {
-            return "<input type='checkbox' id='" + oObj.aData.userId +"-createEnabled' " + (oObj.aData.createEnabled?"CHECKED":"") + ">";
-          }
-        },
-        { "mDataProp" : "webEnabled",
-          "fnRender" : function(oObj) {
-            return "<input type='checkbox' id='" + oObj.aData.userId +"-webEnabled' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
-          }
-        },
-        { "mDataProp" : "headerAuthEnabled",
-          "fnRender" : function(oObj) {
-            return "<input type='checkbox' id='" + oObj.aData.userId +"-headerAuthEnabled' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
-          }
-        },
-        { "mDataProp" : "emailSearch",
-          "fnRender" : function(oObj) {
-            return "<input type='checkbox' id='" + oObj.aData.userId +"-emailSearch' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
-          }
-        },
-        { "mDataProp" : null,
-          "bSortable" : false,
-          "fnRender" : function(oObj) {
-            return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
-                   "<a href='password?userId=" + oObj.aData.userId +"'>Set Password</a>";
-          }
-        }
-      ]
-    } );
+        });
+        return true;
+      } );
 
-    $('#users tbody td input').live('change', function () {
-      var nTr = this.parentNode.parentNode;
-      var aData = usersTable.fnGetData( nTr );
-      $.ajax( {
-        "dataType": 'json',
-        "type": "POST",
-        "data": [{name: "token", value: "#{token}"}],
-        "url": "#{basePath}updateUser/" + aData.userId + "?" +
-          "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
-          "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
-          "&headerAuthEnabled=" + $("#" + aData.userId  + "-headerAuthEnabled").is(':checked') +
-          "&emailSearch=" + $("#" + aData.userId  + "-emailSearch").is(':checked') +
-          "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
-        "success": function(data) {
-          if (!data.success) {
-            alert(data.text);
+      $('#addUser').submit(function() {
+        $.ajax( {
+          "dataType": 'json',
+          "type": "POST",
+          "url": "#{basePath}addUser",
+          "data": $("#addUser").serialize(),
+          "success": function(data) {
+            if (!data.success) {
+              alert(data.text);
+            } else {
+              $("#userId").val("");
+              $("#userName").val("");
+              $("#password").val("");
+            }
+            usersTable.fnDraw();
           }
-        }
+        });
+        return false;
       });
-      return true;
     } );
-
-    $('#addUser').submit(function() {
+    function deleteUser(user) {
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
-        "url": "#{basePath}addUser",
-        "data": $("#addUser").serialize(),
-        "success": function(data) {
+        "url": "#{basePath}deleteUser/" + user,
+        "data": [{name: "token", value: "#{token}"}],
+        "complete": function(data) {
           if (!data.success) {
             alert(data.text);
-          } else {
-            $("#userId").val("");
-            $("#userName").val("");
-            $("#password").val("");
           }
           usersTable.fnDraw();
         }
       });
       return false;
-    });
-  } );
-  function deleteUser(user) {
-    $.ajax( {
-      "dataType": 'json',
-      "type": "POST",
-      "url": "#{basePath}deleteUser/" + user,
-      "data": [{name: "token", value: "#{token}"}],
-      "complete": function(data) {
-        if (!data.success) {
-          alert(data.text);
-        }
-        usersTable.fnDraw();
-      }
-    });
-    return false;
-  }
+    }

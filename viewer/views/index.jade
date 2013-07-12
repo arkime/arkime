@@ -1,554 +1,558 @@
-script(src='jquery-jvectormap-1.2.2.min.js')
-script(src='jquery-jvectormap-world-en.js')
-script(src='jquery.autocomplete.js')
-script(src='jQuery-contextMenu/src/jquery.ui.position.js')
-script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
-link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
+extends layout
 
-div(style="margin-bottom: 12px")
-div#bsqErr
-div#sessionsInfo.sessionsInfo
-  div#world-map-wrapper.world-map-wrapper
-    div#world-map.world-map
-  div#sessionGraph.sessionGraph
-  select#sessionGraphSelect
-    option(value="lpHisto") sessions
-    option(value="paHisto") packets
-    option(value="dbHisto") databytes
-table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
-  thead
-    tr
-      th
-      th Id
-      th Start
-      th Stop
-      th#a1.context-menu-one Src IP
-      th Src Port
-      th#a2.context-menu-one Dst IP
-      th Dst Port
-      th Packets
-      th Bytes
-      th Node
-      th#info.context-menu-one Info
-  tbody
-br
-script(type='text/javascript').
-  var sessionsTable = null;
-  var initialDisplayLength;
-  var doPushState = 1;
+block scripts
+  script(src='jquery-jvectormap-1.2.2.min.js')
+  script(src='jquery-jvectormap-world-en.js')
+  script(src='jquery.autocomplete.js')
+  script(src='jQuery-contextMenu/src/jquery.ui.position.js')
+  script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
+  link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
 
-  $(window).bind('popstate', function(e) {
-    if (window.history.ready) {
-      doPushState = 0;
-      handleUrlParams();
+block content
+  div(style="margin-bottom: 12px")
+  div#bsqErr
+  div#sessionsInfo.sessionsInfo
+    div#world-map-wrapper.world-map-wrapper
+      div#world-map.world-map
+    div#sessionGraph.sessionGraph
+    select#sessionGraphSelect
+      option(value="lpHisto") sessions
+      option(value="paHisto") packets
+      option(value="dbHisto") databytes
+  table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+    thead
+      tr
+        th
+        th Id
+        th Start
+        th Stop
+        th#a1.context-menu-one Src IP
+        th Src Port
+        th#a2.context-menu-one Dst IP
+        th Dst Port
+        th Packets
+        th Bytes
+        th Node
+        th#info.context-menu-one Info
+    tbody
+  br
+  script(type='text/javascript').
+    var sessionsTable = null;
+    var initialDisplayLength;
+    var doPushState = 1;
 
-      sessionsTable.fnLengthChange(initialDisplayLength);
-      sessionsTable.fnDraw();
-    }
-  });
+    $(window).bind('popstate', function(e) {
+      if (window.history.ready) {
+        doPushState = 0;
+        handleUrlParams();
 
-  $(document).ready(function() {
-    var initialParams = handleUrlParams();
-
-    $('#sessions tbody td.urlColumn img').live('click', function () {
-      var nTr = this.parentNode.parentNode;
-      var rowData = sessionsTable.fnGetData(nTr);
-      if ( this.src.match('up-arrow') ) {
-        rowData.infoAll = 0;
-      } else {
-        rowData.infoAll = 1;
+        sessionsTable.fnLengthChange(initialDisplayLength);
+        sessionsTable.fnDraw();
       }
-      rowData.isOpen = sessionsTable.fnIsOpen(nTr);
-      sessionsTable.fnUpdate(rowData, nTr, 0, false, false);
     });
 
-    function openRow(nTr) {
-      $(nTr).addClass('opened');
-      var aData = sessionsTable.fnGetData(nTr);
-      $(nTr).find("td.sessionDetails img").attr("src", "DataTables-1.9.1/examples/examples_support/details_close.png");
-      var data = [];
-      if (localStorage) {
-        if (localStorage['moloch-line'] !== undefined) {
-          data.push({name: "line", value: localStorage['moloch-line']});
-        }
-        if (localStorage['moloch-base'] !== undefined) {
-          data.push({name: "base", value: localStorage['moloch-base']});
-        }
-        if (localStorage['moloch-ts'] !== undefined) {
-          data.push({name: "ts", value: localStorage['moloch-ts']});
-        }
-      }
+    $(document).ready(function() {
+      var initialParams = handleUrlParams();
 
-      $.ajax( {
-          "dataType": 'html',
-          "type": "GET",
-          "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
-          "data": data,
-          "success": function(data) {
-            sessionsTable.fnOpen( nTr, data, 'details' );
-          }
-      } );
-    }
-
-    $('#sessions tbody td.sessionDetails img').live('click', function () {
-      var nTr = this.parentNode.parentNode;
-      if ( this.src.match('details_close') ) {
-        this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
-
-        $(nTr).removeClass('opened');
-        unPinRow(nTr, true);
-
-        /* This row is already open - close it */
-        sessionsTable.fnClose( nTr );
-      } else {
-        openRow(nTr);
-      }
-    } );
-
-    $('#searchForm').submit(function() {
-      sessionsTable.fnDraw();
-      return false;
-    });
-
-    sessionsTable = $('#sessions').dataTable( {
-      "oLanguage": {
-        "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
-        "sLengthMenu": "_MENU_"
-      },
-      "sDom": '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipr>t',
-      "iDisplayLength": initialDisplayLength,
-      "aLengthMenu": [100, 500, 1000, 5000],
-      "bProcessing": true,
-      "bServerSide": true,
-      "sAjaxSource": "#{basePath}sessions.json",
-      "bRetrieve": true,
-      "bFilter": false,
-      "bScrollCollapse": true,
-      "bAutoWidth": false,
-      "sPaginationType": "full_numbers",
-      "aoColumns": [
-        {
-          "mDataProp" : null,
-          "sWidth": "10px",
-          "bSortable": false,
-          "sClass": "sessionDetails",
-          "fnRender" : function(oObj) {
-            var pr;
-            switch (oObj.aData.pr) {
-            case 1:
-              pr = "icmp";
-              break;
-            case 6:
-              pr = "tcp";
-              break;
-            case 17:
-              pr =  "udp";
-              break;
-            }
-
-            if (oObj.aData.isOpen) {
-              return '<img src="DataTables-1.9.1/examples/examples_support/details_close.png"><div class="protocolText">' + pr + '</div>';
-            } else {
-              return '<img src="DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
-            }
-          }
-        },
-        {
-          "mDataProp" : "id",
-          "bVisible": false
-        },
-        { "mDataProp" : "fp",
-          "sClass": "dateColumn",
-          "sWidth": "50",
-          "bUseRendered": false,
-          "fnRender" : function(oObj) {
-            return dateString(oObj.aData.fp, "<br>");
-          }
-        },
-        { "mDataProp" : "lp",
-          "sClass": "dateColumn",
-          "sWidth": "50",
-          "bUseRendered": false,
-          "fnRender" : function(oObj) {
-            return dateString(oObj.aData.lp, "<br>");
-          }
-        },
-        { "mDataProp" : "a1",
-          "sClass": "context-menu-one",
-          "sWidth": "100",
-          "bUseRendered": false,
-          "fnRender" : function(oObj) {
-            if (oObj.aData.g1) {
-              return ipString(oObj.aData.a1) + "<br>" + oObj.aData.g1;
-            } else {
-              return ipString(oObj.aData.a1);
-            }
-          }
-        },
-        { "mDataProp" : "p1",
-          "sClass": "context-menu-one",
-          "sWidth": "55px"
-        },
-        { "mDataProp" : "a2",
-          "sClass": "context-menu-one",
-          "sWidth": "100",
-          "bUseRendered": false,
-          "fnRender" : function(oObj) {
-            if (oObj.aData.g2) {
-              return ipString(oObj.aData.a2) + "<br>" + oObj.aData.g2;
-            } else {
-              return ipString(oObj.aData.a2);
-            }
-          }
-        },
-        { "mDataProp" : "p2",
-          "sClass": "context-menu-one",
-          "sWidth": "55px"
-        },
-        { "mDataProp" : "pa",
-          "sWidth": "55px"
-          },
-        { "mDataProp" : "by",
-          "sWidth": "80px",
-          "bUseRendered": false,
-          "fnRender" : function(oObj) {
-            return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
-          }
-        },
-        { "mDataProp" : "no",
-          "sClass": "context-menu-one",
-          "sWidth": "100px"
-        },
-        { "bSortable": false,
-          "mDataProp" : null,
-          "sClass": "urlColumn",
-          "bUseRendered": false,
-          "fnRender" : function(oObj) {
-            var data;
-            if (oObj.aData.us) {
-              if (oObj.aData.infoAll) {
-                data = oObj.aData.us.join("<br>");
-                data += '<br><img src="up-arrow.png">';
-              } else {
-                data = oObj.aData.us.slice(0, 5).join("<br>");
-                if (oObj.aData.us.length > 5) {
-                  data += '<br><img src="down-arrow.png">';
-                }
-              }
-              return data;
-            } 
-            
-            if (oObj.aData.esrc) {
-              data = "<b>From:</b> ";
-              data += oObj.aData.esrc.join(", ");
-              data += "<br>";
-              if (oObj.aData.edst) {
-                data += "<b>To:</b> ";
-                data += oObj.aData.edst.join(", ");
-                data += "<br>";
-              }
-              if (oObj.aData.esub) {
-                data += "<b>Subject:</b> ";
-                data += oObj.aData.esub.join(", ");
-                data += "<br>";
-              }
-              if (oObj.aData.efn) {
-                data += "<b>Files:</b> ";
-                data += oObj.aData.efn.join(", ");
-                data += "<br>";
-              }
-              return data;
-            }
-
-            if (oObj.aData.dnsho) {
-              if (oObj.aData.infoAll) {
-                data = oObj.aData.dnsho.join("<br>");
-                data += '<br><img src="up-arrow.png">';
-              } else {
-                data = oObj.aData.dnsho.slice(0, 5).join("<br>");
-                if (oObj.aData.dnsho.length > 5) {
-                  data += '<br><img src="down-arrow.png">';
-                }
-              }
-              return data;
-            } 
-
-            if (oObj.aData.tls) {
-              data = "";
-              oObj.aData.tls.forEach(function(tls) {
-                data += tls.sCn;
-                if (tls.alt) {
-                  data += " [";
-                  var i;
-                  for(i = 0; i < tls.alt.length; i++) {
-                    if (i > 0) {
-                      data += ", ";
-                    }
-                    data += tls.alt[i];
-                  }
-                  data += "]";
-                }
-                data += "<br>";
-              });
-              return data;
-            }
-
-            return "";
-          }
-        }
-      ],
-      "aaSorting": [[2, "asc"]],
-      "fnServerData": function ( sSource, aoData, fnCallback ) {
-        var params = buildParams();
-        aoData = $.merge(aoData, params);
-        aoData.push({name: "facets", value: "1"});
-
-        if (this.fnSettings()._iDisplayLength !== 100) {
-          params.push({name: "iDisplayLength", value: this.fnSettings()._iDisplayLength});
-        }
-
-        var state = $.param(params);
-        if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
-          history.pushState({}, this.title || '', '?' + state);
+      $('#sessions tbody td.urlColumn img').live('click', function () {
+        var nTr = this.parentNode.parentNode;
+        var rowData = sessionsTable.fnGetData(nTr);
+        if ( this.src.match('up-arrow') ) {
+          rowData.infoAll = 0;
         } else {
-          doPushState = 1;
+          rowData.infoAll = 1;
+        }
+        rowData.isOpen = sessionsTable.fnIsOpen(nTr);
+        sessionsTable.fnUpdate(rowData, nTr, 0, false, false);
+      });
+
+      function openRow(nTr) {
+        $(nTr).addClass('opened');
+        var aData = sessionsTable.fnGetData(nTr);
+        $(nTr).find("td.sessionDetails img").attr("src", "DataTables-1.9.1/examples/examples_support/details_close.png");
+        var data = [];
+        if (localStorage) {
+          if (localStorage['moloch-line'] !== undefined) {
+            data.push({name: "line", value: localStorage['moloch-line']});
+          }
+          if (localStorage['moloch-base'] !== undefined) {
+            data.push({name: "base", value: localStorage['moloch-base']});
+          }
+          if (localStorage['moloch-ts'] !== undefined) {
+            data.push({name: "ts", value: localStorage['moloch-ts']});
+          }
         }
 
-        startBlink();
         $.ajax( {
-           "dataType": 'json',
+            "dataType": 'html',
             "type": "GET",
-            "url": sSource,
-            "data": aoData,
-            "success": function (json) {
-              updateHealth(json.health);
-
-              if (json.lpHisto && json.lpHisto[0]) {
-                if ($("#startDate").val() === "") {
-                  $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
-                }
-                if ($("#stopDate").val() === "") {
-                  $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
-                }
-              }
-
-              updateGraph(json.graph);
-              updateMap(json.map);
-
-              if (json.bsqErr) {
-                $("#bsqErr").show();
-                $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
-              } else {
-                $("#bsqErr").hide();
-              }
-
-              if ($("#date").val() === "-2") {
-                $("#customDate").show();
-              } else {
-                $("#customDate").hide();
-              }
-
-              fnCallback(json);
-              $("#exportForm").data("moloch-visible", sessionsTable.fnSettings().aiDisplay.length)
-                              .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());
-              if (initialParams.openAll) {
-                nNodes = sessionsTable.fnGetNodes();
-                for (var i = 0; i < nNodes.length; i++) {
-                  openRow(nNodes[i]);
-                }
-              }
-              initialParams.openAll = 0;
-              stopBlink();
-            },
-            "error": function (jqXHR, textStatus, errorThrown) {
-              if ($('#sessions').data('unloading') !== true) {
-                alert("Sessions: Error fetching session data, maybe network error or need to reload page?");
-              }
+            "url": '#{basePath}' + aData.no + '/' + aData.id + '/sessionDetail',
+            "data": data,
+            "success": function(data) {
+              sessionsTable.fnOpen( nTr, data, 'details' );
             }
         } );
       }
-    } );
 
-    $('#sessions').unload(function() {
-      $('#sessions').data('unloading', true);
-    });
+      $('#sessions tbody td.sessionDetails img').live('click', function () {
+        var nTr = this.parentNode.parentNode;
+        if ( this.src.match('details_close') ) {
+          this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
 
-    setupGraph();
-    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+          $(nTr).removeClass('opened');
+          unPinRow(nTr, true);
 
-    setupMap();
+          /* This row is already open - close it */
+          sessionsTable.fnClose( nTr );
+        } else {
+          openRow(nTr);
+        }
+      } );
 
-    $.contextMenu({
-        selector: '.context-menu-one',
-        build: function($trigger, e) {
-          var items = {};
+      $('#searchForm').submit(function() {
+        sessionsTable.fnDraw();
+        return false;
+      });
 
-          if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'info') {
-            if (e.target.id === 'info') {
-              items = {
-                usitems: {name: "Export Unique URLs", counts:0, field: 'us'},
-                usitemcounts: {name: "Export Unique URLs with Counts", counts:1, field: 'us'},
-                esubitems: {name: "Export Unique Email Subjects", counts:0, field: 'esub'},
-                esubitemcounts: {name: "Export Unique Email Subjects with Counts", counts:1, field: 'esub'},
-                esrcitems: {name: "Export Unique Email Source", counts:0, field: 'esrc'},
-                esrcitemcounts: {name: "Export Unique Email Source with Counts", counts:1, field: 'esrc'},
-                edstitems: {name: "Export Unique Email Destination", counts:0, field: 'edst'},
-                edstitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
-                efnitems: {name: "Export Unique Email Files", counts:0, field: 'efn'},
-                efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'}
-              };
-            } else {
-              items = {
-                items: {name: "Export Unique IPs", counts:0, field: e.target.id},
-                itemcounts: {name: "Export Unique IPs with Counts", counts:1, field: e.target.id}
+      sessionsTable = $('#sessions').dataTable( {
+        "oLanguage": {
+          "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+          "sLengthMenu": "_MENU_"
+        },
+        "sDom": '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipr>t',
+        "iDisplayLength": initialDisplayLength,
+        "aLengthMenu": [100, 500, 1000, 5000],
+        "bProcessing": true,
+        "bServerSide": true,
+        "sAjaxSource": "#{basePath}sessions.json",
+        "bRetrieve": true,
+        "bFilter": false,
+        "bScrollCollapse": true,
+        "bAutoWidth": false,
+        "sPaginationType": "full_numbers",
+        "aoColumns": [
+          {
+            "mDataProp" : null,
+            "sWidth": "10px",
+            "bSortable": false,
+            "sClass": "sessionDetails",
+            "fnRender" : function(oObj) {
+              var pr;
+              switch (oObj.aData.pr) {
+              case 1:
+                pr = "icmp";
+                break;
+              case 6:
+                pr = "tcp";
+                break;
+              case 17:
+                pr =  "udp";
+                break;
+              }
+
+              if (oObj.aData.isOpen) {
+                return '<img src="DataTables-1.9.1/examples/examples_support/details_close.png"><div class="protocolText">' + pr + '</div>';
+              } else {
+                return '<img src="DataTables-1.9.1/examples/examples_support/details_open.png"><div class="protocolText">' + pr + '</div>';
+              }
+            }
+          },
+          {
+            "mDataProp" : "id",
+            "bVisible": false
+          },
+          { "mDataProp" : "fp",
+            "sClass": "dateColumn",
+            "sWidth": "50",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              return dateString(oObj.aData.fp, "<br>");
+            }
+          },
+          { "mDataProp" : "lp",
+            "sClass": "dateColumn",
+            "sWidth": "50",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              return dateString(oObj.aData.lp, "<br>");
+            }
+          },
+          { "mDataProp" : "a1",
+            "sClass": "context-menu-one",
+            "sWidth": "100",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              if (oObj.aData.g1) {
+                return ipString(oObj.aData.a1) + "<br>" + oObj.aData.g1;
+              } else {
+                return ipString(oObj.aData.a1);
+              }
+            }
+          },
+          { "mDataProp" : "p1",
+            "sClass": "context-menu-one",
+            "sWidth": "55px"
+          },
+          { "mDataProp" : "a2",
+            "sClass": "context-menu-one",
+            "sWidth": "100",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              if (oObj.aData.g2) {
+                return ipString(oObj.aData.a2) + "<br>" + oObj.aData.g2;
+              } else {
+                return ipString(oObj.aData.a2);
+              }
+            }
+          },
+          { "mDataProp" : "p2",
+            "sClass": "context-menu-one",
+            "sWidth": "55px"
+          },
+          { "mDataProp" : "pa",
+            "sWidth": "55px"
+            },
+          { "mDataProp" : "by",
+            "sWidth": "80px",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
+            }
+          },
+          { "mDataProp" : "no",
+            "sClass": "context-menu-one",
+            "sWidth": "100px"
+          },
+          { "bSortable": false,
+            "mDataProp" : null,
+            "sClass": "urlColumn",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              var data;
+              if (oObj.aData.us) {
+                if (oObj.aData.infoAll) {
+                  data = oObj.aData.us.join("<br>");
+                  data += '<br><img src="up-arrow.png">';
+                } else {
+                  data = oObj.aData.us.slice(0, 5).join("<br>");
+                  if (oObj.aData.us.length > 5) {
+                    data += '<br><img src="down-arrow.png">';
+                  }
+                }
+                return data;
+              } 
+              
+              if (oObj.aData.esrc) {
+                data = "<b>From:</b> ";
+                data += oObj.aData.esrc.join(", ");
+                data += "<br>";
+                if (oObj.aData.edst) {
+                  data += "<b>To:</b> ";
+                  data += oObj.aData.edst.join(", ");
+                  data += "<br>";
+                }
+                if (oObj.aData.esub) {
+                  data += "<b>Subject:</b> ";
+                  data += oObj.aData.esub.join(", ");
+                  data += "<br>";
+                }
+                if (oObj.aData.efn) {
+                  data += "<b>Files:</b> ";
+                  data += oObj.aData.efn.join(", ");
+                  data += "<br>";
+                }
+                return data;
+              }
+
+              if (oObj.aData.dnsho) {
+                if (oObj.aData.infoAll) {
+                  data = oObj.aData.dnsho.join("<br>");
+                  data += '<br><img src="up-arrow.png">';
+                } else {
+                  data = oObj.aData.dnsho.slice(0, 5).join("<br>");
+                  if (oObj.aData.dnsho.length > 5) {
+                    data += '<br><img src="down-arrow.png">';
+                  }
+                }
+                return data;
+              } 
+
+              if (oObj.aData.tls) {
+                data = "";
+                oObj.aData.tls.forEach(function(tls) {
+                  data += tls.sCn;
+                  if (tls.alt) {
+                    data += " [";
+                    var i;
+                    for(i = 0; i < tls.alt.length; i++) {
+                      if (i > 0) {
+                        data += ", ";
+                      }
+                      data += tls.alt[i];
+                    }
+                    data += "]";
+                  }
+                  data += "<br>";
+                });
+                return data;
+              }
+
+              return "";
+            }
+          }
+        ],
+        "aaSorting": [[2, "asc"]],
+        "fnServerData": function ( sSource, aoData, fnCallback ) {
+          var params = buildParams();
+          aoData = $.merge(aoData, params);
+          aoData.push({name: "facets", value: "1"});
+
+          if (this.fnSettings()._iDisplayLength !== 100) {
+            params.push({name: "iDisplayLength", value: this.fnSettings()._iDisplayLength});
+          }
+
+          var state = $.param(params);
+          if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
+            history.pushState({}, this.title || '', '?' + state);
+          } else {
+            doPushState = 1;
+          }
+
+          startBlink();
+          $.ajax( {
+             "dataType": 'json',
+              "type": "GET",
+              "url": sSource,
+              "data": aoData,
+              "success": function (json) {
+                updateHealth(json.health);
+
+                if (json.lpHisto && json.lpHisto[0]) {
+                  if ($("#startDate").val() === "") {
+                    $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
+                  }
+                  if ($("#stopDate").val() === "") {
+                    $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
+                  }
+                }
+
+                updateGraph(json.graph);
+                updateMap(json.map);
+
+                if (json.bsqErr) {
+                  $("#bsqErr").show();
+                  $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
+                } else {
+                  $("#bsqErr").hide();
+                }
+
+                if ($("#date").val() === "-2") {
+                  $("#customDate").show();
+                } else {
+                  $("#customDate").hide();
+                }
+
+                fnCallback(json);
+                $("#exportForm").data("moloch-visible", sessionsTable.fnSettings().aiDisplay.length)
+                                .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());
+                if (initialParams.openAll) {
+                  nNodes = sessionsTable.fnGetNodes();
+                  for (var i = 0; i < nNodes.length; i++) {
+                    openRow(nNodes[i]);
+                  }
+                }
+                initialParams.openAll = 0;
+                stopBlink();
+              },
+              "error": function (jqXHR, textStatus, errorThrown) {
+                if ($('#sessions').data('unloading') !== true) {
+                  alert("Sessions: Error fetching session data, maybe network error or need to reload page?");
+                }
+              }
+          } );
+        }
+      } );
+
+      $('#sessions').unload(function() {
+        $('#sessions').data('unloading', true);
+      });
+
+      setupGraph();
+      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+
+      setupMap();
+
+      $.contextMenu({
+          selector: '.context-menu-one',
+          build: function($trigger, e) {
+            var items = {};
+
+            if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'info') {
+              if (e.target.id === 'info') {
+                items = {
+                  usitems: {name: "Export Unique URLs", counts:0, field: 'us'},
+                  usitemcounts: {name: "Export Unique URLs with Counts", counts:1, field: 'us'},
+                  esubitems: {name: "Export Unique Email Subjects", counts:0, field: 'esub'},
+                  esubitemcounts: {name: "Export Unique Email Subjects with Counts", counts:1, field: 'esub'},
+                  esrcitems: {name: "Export Unique Email Source", counts:0, field: 'esrc'},
+                  esrcitemcounts: {name: "Export Unique Email Source with Counts", counts:1, field: 'esrc'},
+                  edstitems: {name: "Export Unique Email Destination", counts:0, field: 'edst'},
+                  edstitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
+                  efnitems: {name: "Export Unique Email Files", counts:0, field: 'efn'},
+                  efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'}
+                };
+              } else {
+                items = {
+                  items: {name: "Export Unique IPs", counts:0, field: e.target.id},
+                  itemcounts: {name: "Export Unique IPs with Counts", counts:1, field: e.target.id}
+                };
+              }
+              return {
+                callback: function(key, options) {
+                  var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+                  var params = buildParams();
+                  params = $.merge(data, params);
+
+                  params.push({name:'field', value:items[key].field});
+                  params.push({name:'counts', value:items[key].counts});
+                  var url = "unique.txt?" + $.param(params);
+
+                  window.open(url);
+                },
+                items: items
               };
             }
+
+            var rowData = sessionsTable.fnGetData(e.target.parentNode);
+            if (rowData === null) {
+              return false;
+            }
+            var sPos = sessionsTable.fnGetPosition( e.target );
+            var port;
+            if (sPos[1] === 3 || sPos[1] === 5) {
+              var ip = (sPos[1] === 3? ipString(rowData.a1):ipString(rowData.a2));
+              var country = (sPos[1] === 3? rowData.g1:rowData.g2);
+              port = (sPos[1] === 3? rowData.p1:rowData.p2);
+              items = {
+                andip: {name: "and " + ip, exp: "ip==" + ip},
+                andnotip: {name: "and NOT " + ip, exp: "ip!=" + ip},
+                andcountry: {name: "and Country " + country, exp: "country==" + country},
+                andnotcountry: {name: "and NOT Country " + country, exp: "country!=" + country},
+                andipport: {name: "and " + ip + ":" + port, exp: "ip=" + ip + ":" + port},
+                andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip!==" + ip + ":" + port}
+              };
+            } else if (sPos[1] === 4 || sPos[1] === 6)  {
+              port = (sPos[1] === 4? rowData.p1:rowData.p2);
+              items = {
+                andport: {name: "and Port " + port, exp: "port=" + port},
+                andnotport: {name: "and NOT Port " + port, exp: "port!=" + port}
+              };
+            } else if (sPos[1] === 9)  {
+              items = {
+                andport: {name: "and Node " + rowData.no, exp: "node==" + rowData.no},
+                andnotport: {name: "and NOT Node " + rowData.no, exp: "node!=" + rowData.no}
+              };
+            } else {
+              return false;
+            }
+
             return {
               callback: function(key, options) {
-                var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
-                var params = buildParams();
-                params = $.merge(data, params);
-
-                params.push({name:'field', value:items[key].field});
-                params.push({name:'counts', value:items[key].counts});
-                var url = "unique.txt?" + $.param(params);
-
-                window.open(url);
+                addExpression(items[key].exp);
               },
               items: items
             };
           }
+      });
 
-          var rowData = sessionsTable.fnGetData(e.target.parentNode);
-          if (rowData === null) {
-            return false;
-          }
-          var sPos = sessionsTable.fnGetPosition( e.target );
-          var port;
-          if (sPos[1] === 3 || sPos[1] === 5) {
-            var ip = (sPos[1] === 3? ipString(rowData.a1):ipString(rowData.a2));
-            var country = (sPos[1] === 3? rowData.g1:rowData.g2);
-            port = (sPos[1] === 3? rowData.p1:rowData.p2);
-            items = {
-              andip: {name: "and " + ip, exp: "ip==" + ip},
-              andnotip: {name: "and NOT " + ip, exp: "ip!=" + ip},
-              andcountry: {name: "and Country " + country, exp: "country==" + country},
-              andnotcountry: {name: "and NOT Country " + country, exp: "country!=" + country},
-              andipport: {name: "and " + ip + ":" + port, exp: "ip=" + ip + ":" + port},
-              andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip!==" + ip + ":" + port}
-            };
-          } else if (sPos[1] === 4 || sPos[1] === 6)  {
-            port = (sPos[1] === 4? rowData.p1:rowData.p2);
-            items = {
-              andport: {name: "and Port " + port, exp: "port=" + port},
-              andnotport: {name: "and NOT Port " + port, exp: "port!=" + port}
-            };
-          } else if (sPos[1] === 9)  {
-            items = {
-              andport: {name: "and Node " + rowData.no, exp: "node==" + rowData.no},
-              andnotport: {name: "and NOT Node " + rowData.no, exp: "node!=" + rowData.no}
-            };
-          } else {
-            return false;
-          }
+      var searchStuffOffset = $('#searchStuff').offset().top;
+      var headerOffset = $('.ui-widget-header').offset().top - $('#searchStuff').height();
 
-          return {
-            callback: function(key, options) {
-              addExpression(items[key].exp);
-            },
-            items: items
-          };
+      $(window).scroll(function () {
+        var scrollTop = $(window).scrollTop(); // check the visible top of the browser
+
+        if (searchStuffOffset < scrollTop) {
+          $('#searchStuff').addClass('fixedsearch');
+          $('#logo').hide();
+        } else {
+          $('#searchStuff').removeClass('fixedsearch');
+          $('#logo').show();
         }
-    });
 
-    var searchStuffOffset = $('#searchStuff').offset().top;
-    var headerOffset = $('.ui-widget-header').offset().top - $('#searchStuff').height();
-
-    $(window).scroll(function () {
-      var scrollTop = $(window).scrollTop(); // check the visible top of the browser
-
-      if (searchStuffOffset < scrollTop) {
-        $('#searchStuff').addClass('fixedsearch');
-        $('#logo').hide();
-      } else {
-        $('#searchStuff').removeClass('fixedsearch');
-        $('#logo').show();
-      }
-
-      if (!$('.ui-widget-header').hasClass('fixedheader')) {
-        if (headerOffset < scrollTop) {
-          $('.ui-widget-header').css("top", $('#searchStuff').height()-1);
-          $('.ui-widget-header').addClass('fixedheader');
-          $(window).scrollTop(headerOffset - $('.ui-widget-header').height());
-        }
-      } else {
-        if (headerOffset - $('.ui-widget-header').height() > scrollTop) {
-          $('.ui-widget-header').removeClass('fixedheader');
-          $(window).scrollTop(headerOffset);
-        }
-      }
-
-      var height = $('#searchStuff').height() + $('.ui-widget-header').height();
-      $(".opened").each(function(a1, nTr) {
-        var hasClass = $(nTr).hasClass("fixedrow");
-
-        if (!hasClass) {
-          if ($(nTr).offset().top - height < scrollTop) {
-            $(nTr).data('savedTopOffset', $(nTr).offset().top - height);
-
-            $(nTr).css("top", height-1);
-            $(nTr).addClass('fixedrow');
-            var td = $(nTr).children("td");
-            $(td).each(function(i, e) {
-              $(e).html($(e).html().replace("<br>", "&nbsp;"));
-            });
-            $(td[0]).width(50); // +-
-            $(td[1]).width(105); // Start
-            $(td[2]).width(105); // Stop
-            $(td[3]).width(160); // Src
-            $(td[4]).width(80);  // SPort
-            $(td[5]).width(160); // Dst
-            $(td[6]).width(80);  // DPort
-            $(td[7]).width(80);  // Packets
-            $(td[8]).width(150); // Bytes
-            $(td[9]).width(150); // Node
-            $(td[10]).hide();
-            $($(nTr).find(".protocolText")).hide();
+        if (!$('.ui-widget-header').hasClass('fixedheader')) {
+          if (headerOffset < scrollTop) {
+            $('.ui-widget-header').css("top", $('#searchStuff').height()-1);
+            $('.ui-widget-header').addClass('fixedheader');
+            $(window).scrollTop(headerOffset - $('.ui-widget-header').height());
           }
         } else {
-          if ($(nTr).data('savedTopOffset') - $(nTr).height() > scrollTop) {
-            unPinRow(nTr, false);
+          if (headerOffset - $('.ui-widget-header').height() > scrollTop) {
+            $('.ui-widget-header').removeClass('fixedheader');
+            $(window).scrollTop(headerOffset);
           }
         }
-        height += $(nTr).height();
+
+        var height = $('#searchStuff').height() + $('.ui-widget-header').height();
+        $(".opened").each(function(a1, nTr) {
+          var hasClass = $(nTr).hasClass("fixedrow");
+
+          if (!hasClass) {
+            if ($(nTr).offset().top - height < scrollTop) {
+              $(nTr).data('savedTopOffset', $(nTr).offset().top - height);
+
+              $(nTr).css("top", height-1);
+              $(nTr).addClass('fixedrow');
+              var td = $(nTr).children("td");
+              $(td).each(function(i, e) {
+                $(e).html($(e).html().replace("<br>", "&nbsp;"));
+              });
+              $(td[0]).width(50); // +-
+              $(td[1]).width(105); // Start
+              $(td[2]).width(105); // Stop
+              $(td[3]).width(160); // Src
+              $(td[4]).width(80);  // SPort
+              $(td[5]).width(160); // Dst
+              $(td[6]).width(80);  // DPort
+              $(td[7]).width(80);  // Packets
+              $(td[8]).width(150); // Bytes
+              $(td[9]).width(150); // Node
+              $(td[10]).hide();
+              $($(nTr).find(".protocolText")).hide();
+            }
+          } else {
+            if ($(nTr).data('savedTopOffset') - $(nTr).height() > scrollTop) {
+              unPinRow(nTr, false);
+            }
+          }
+          height += $(nTr).height();
+        });
       });
-    });
-  }); // document ready
+    }); // document ready
 
-  function unPinRow(nTr, updateRows) {
-    $($(nTr).find(".protocolText")).show();
-    $($(nTr).children("td")[10]).show();
-    $(nTr).removeClass('fixedrow');
-    $($(nTr).children("td")).each(function(i, e) {
-      $(e).html($(e).html().replace("&nbsp;", "<br>"));
-    });
-
-    if (updateRows) {
-      var height = $('#searchStuff').height() + $('.ui-widget-header').height();
-      $(".opened.fixedrow").each(function(a1, a2) {
-        $(a2).css("top", height-1);
-        height += $(a2).height();
+    function unPinRow(nTr, updateRows) {
+      $($(nTr).find(".protocolText")).show();
+      $($(nTr).children("td")[10]).show();
+      $(nTr).removeClass('fixedrow');
+      $($(nTr).children("td")).each(function(i, e) {
+        $(e).html($(e).html().replace("&nbsp;", "<br>"));
       });
-    }
-  }
 
-  setTimeout(function () {window.history.ready = true;}, 500);
-
-  $(window).resize(function(e) {
-    if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
-      return;
+      if (updateRows) {
+        var height = $('#searchStuff').height() + $('.ui-widget-header').height();
+        $(".opened.fixedrow").each(function(a1, a2) {
+          $(a2).css("top", height-1);
+          height += $(a2).height();
+        });
+      }
     }
-    // What a hack
-    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
-  });
+
+    setTimeout(function () {window.history.ready = true;}, 500);
+
+    $(window).resize(function(e) {
+      if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
+        return;
+      }
+      // What a hack
+      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+    });
 

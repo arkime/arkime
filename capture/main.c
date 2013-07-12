@@ -214,6 +214,18 @@ uint32_t moloch_string_hash(const void *key)
     }
     return n;
 }
+/******************************************************************************/
+uint32_t moloch_string_hash_len(const void *key, int len)
+{
+    char *p = (char *)key;
+    uint32_t n = 0;
+    while (len) {
+        n = (n << 5) - n + *p;
+        p++;
+        len--;
+    }
+    return n;
+}
 
 /******************************************************************************/
 int moloch_string_cmp(const void *keyv, const void *elementv)

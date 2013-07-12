@@ -1,32 +1,36 @@
-- var operator = {ip: "==, !=", integer: "<, <=, ==, >=, >, !=", lotextfield: "==, !=", textfield: "==, !=", lotermfield: "==, !=", termfield: "==, !=", uptermfield: "==, !="};
-- var datatype = {ip: "ip", integer: "integer", lotextfield: "lower cased tokenized string", textfield: "tokenized string", lotermfield: "lower case non tokenized string", termfield: "non tokenized string", uptermfield: "upper case non tokenized string"};
-div(style="margin:10px")
-  p Moloch is a open source large scale IPv4 PCAP capturing, indexing and database system.  A simple web interface is provided for PCAP browsing, searching, and exporting.  APIs are exposed that allow PCAP data and JSON formatted session data to be downloaded directly. Simple security is implemented by using https and HTTP digest password support.  Moloch is not meant to replace IDS engines but instead work along side them to store and index all the network traffic in standard PCAP format, providing fast access.  Moloch is built to be deployed across many machines and can scale to handle multiple megabits/sec of traffic.
-  p Moloch uses a very simple query language for building expresions.  It supports grouping using parenthesis and logical AND and OR using && and || respectively.  Fields can be accessed directly using the field names and operators described in the table below. String fields are special since they can be search several different ways.  Before fields are index their case may or may not be normalized, which is documented in the table below also.  The types of string searches are:
-    ul
-      dt Token
-      dd Some string fields are tokenized for faster searching.  Multiple tokens can be search by using quotes around the tokens.
-      dt Wildcard
-      dd If a * appears in a expression, it is assumed a wildcard match is being used.  Supported wildcards are *, which matches any character sequence (including the empty one), and ?, which matches any single character.  The wildcard query is run against the full text strings, after case normalization if enabled for the field. For example 'http.uri == "www.f*k.com"'
-      dt Regex
-      dd A regex query needs to be surrounded by forward slashes, and currently always anchored because of an elasticsearch/lucene limitation.  This means you will almost always want to include a leading and trailing ".*".  The regex query is run agaisnt the full text strings, after case normalization if enabled for the field.  For example 'http.uri == /.*www\.f.*k\.com.*/'
+extends layout
 
-  
-  table(border=1)
-    tr
-      th Name
-      th Operators
-      th Data type
-      th What?
-    each value in fields 
+block content
+  - var operator = {ip: "==, !=", integer: "<, <=, ==, >=, >, !=", lotextfield: "==, !=", textfield: "==, !=", lotermfield: "==, !=", termfield: "==, !=", uptermfield: "==, !="};
+  - var datatype = {ip: "ip", integer: "integer", lotextfield: "lower cased tokenized string", textfield: "tokenized string", lotermfield: "lower case non tokenized string", termfield: "non tokenized string", uptermfield: "upper case non tokenized string"};
+  div(style="margin:10px")
+    p Moloch is a open source large scale IPv4 PCAP capturing, indexing and database system.  A simple web interface is provided for PCAP browsing, searching, and exporting.  APIs are exposed that allow PCAP data and JSON formatted session data to be downloaded directly. Simple security is implemented by using https and HTTP digest password support.  Moloch is not meant to replace IDS engines but instead work along side them to store and index all the network traffic in standard PCAP format, providing fast access.  Moloch is built to be deployed across many machines and can scale to handle multiple megabits/sec of traffic.
+    p Moloch uses a very simple query language for building expresions.  It supports grouping using parenthesis and logical AND and OR using && and || respectively.  Fields can be accessed directly using the field names and operators described in the table below. String fields are special since they can be search several different ways.  Before fields are index their case may or may not be normalized, which is documented in the table below also.  The types of string searches are:
+      ul
+        dt Token
+        dd Some string fields are tokenized for faster searching.  Multiple tokens can be search by using quotes around the tokens.
+        dt Wildcard
+        dd If a * appears in a expression, it is assumed a wildcard match is being used.  Supported wildcards are *, which matches any character sequence (including the empty one), and ?, which matches any single character.  The wildcard query is run against the full text strings, after case normalization if enabled for the field. For example 'http.uri == "www.f*k.com"'
+        dt Regex
+        dd A regex query needs to be surrounded by forward slashes, and currently always anchored because of an elasticsearch/lucene limitation.  This means you will almost always want to include a leading and trailing ".*".  The regex query is run agaisnt the full text strings, after case normalization if enabled for the field.  For example 'http.uri == /.*www\.f.*k\.com.*/'
+    p IP searching is very flexible and can be performed using the full ip address, a partial ip address, or using CIDR representation.  For fields that include a matching port number, it is possible to follow any of the ip representations with a colon and then the port number.  Ports are also first class search able and may be searched for directly.
+
+    
+    table(border=1)
       tr
-        td #{value.exp}
-        td #{operator[value.type]}
-        td #{datatype[value.type]}
-        td #{value.help}
+        th Name
+        th Operators
+        th Data type
+        th What?
+      each value in fields 
+        tr
+          td #{value.exp}
+          td #{operator[value.type]}
+          td #{datatype[value.type]}
+          td #{value.help}
 
-  h2 Examples
-  p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com
-  code (country == rus || country == chn) && port == 80 && host == *com
-  p 2) Context type of text/plain, involving Canda, and less then 20 packets
-  code tags == "http:content:text/plain" && country == CAN && packets < 20
+    h2 Examples
+    p 1) Find all the sessions involving RUS or CHN and on port 80 and the hostname contains com
+    code (country == rus || country == chn) && port == 80 && host == *com
+    p 2) Context type of text/plain, involving Canda, and less then 20 packets
+    code tags == "http:content:text/plain" && country == CAN && packets < 20

@@ -1,0 +1,10 @@
+extends layout
+
+block scripts
+
+block content
+  div(style="margin-bottom: 12px")
+  form(action="upload",method="post", enctype="multipart/form-data")
+    input(type="file", name="file",style="width:100%")
+    br
+    button(type="submit")  Upload

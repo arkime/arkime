@@ -27,9 +27,7 @@ var MIN_DB_VERSION = 11;
 try {
 var Config         = require('./config.js'),
     express        = require('express'),
-    connect        = require('connect'),
     connectTimeout = require('connect-timeout'),
-    request        = require('request'),
     stylus         = require('stylus'),
     util           = require('util'),
     fs             = require('fs-ext'),
@@ -57,15 +55,11 @@ try {
   var Png = require('png').Png;
 } catch (e) {console.log("WARNING - No png support, maybe need to 'npm install'", e);}
 
-var app;
-if (Config.isHTTPS()) {
-  app = express.createServer({
-    key: fs.readFileSync(Config.get("keyFile")),
-    cert: fs.readFileSync(Config.get("certFile"))
-  });
-} else {
-  app = express.createServer();
+if (typeof express !== "function") {
+    console.log("ERROR - Need to run 'npm install' in viewer directory");
+    process.exit(1);
 }
+var app = express();
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Config
@@ -93,13 +87,12 @@ app.configure(function() {
   app.enable("jsonp callback");
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.set('view options', {molochversion: molochversion.version,
-                           isIndex: false,
-                           basePath: Config.basePath(),
-                           elasticBase: "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1],
-                           spiData: false,
-                           fieldsMap: JSON.stringify(Config.getFieldsMap())
-                          });
+  app.locals.molochversion =  molochversion.version;
+  app.locals.isIndex = false;
+  app.locals.basePath = Config.basePath();
+  app.locals.elasticBase = "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1];
+  app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
+  app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
@@ -112,7 +105,7 @@ app.configure(function() {
   app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(express.compress());
   app.use(express.methodOverride());
-  app.use("/", express['static'](__dirname + '/public', { maxAge: 60 * 1000}));
+  app.use("/", express['static'](__dirname + '/public', { maxAge: 600 * 1000}));
   if (Config.get("passwordSecret")) {
     app.use(function(req, res, next) {
       // 200 for NS
@@ -203,16 +196,6 @@ var PNG_LINE_WIDTH = 256;
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host : escInfo[0], port: escInfo[1]});
-Db.esVersion(function (ver) {
-  // SPI View requires 0.90.0 or later
-  if (ver >= (90 << 8)) {
-    var vo = app.set("view options");
-    vo.spiData = true;
-    app.set("view options", vo);
-  } else {
-    console.log("SPI View display requires Elasticsearch 0.90 RC1 or newer");
-  }
-});
 
 function deleteFile(node, id, path, cb) {
   fs.unlink(path, function() {
@@ -290,9 +273,6 @@ app.get("/spiview", function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
-  if (!app.set("view options").spiData) {
-    return res.send("Elastic Search 0.90.0 RC1 requried");
-  }
 
   res.render('spiview', {
     user: req.user,
@@ -329,6 +309,18 @@ app.get("/connections", function(req, res) {
     title: 'Connections',
     titleLink: 'connectionsLink',
     isIndex: true
+  });
+});
+
+app.get("/upload", function(req, res) {
+  if (!req.user.webEnabled) {
+    return res.send("Moloch Permision Denied");
+  }
+  res.render('upload', {
+    user: req.user,
+    title: 'Upload',
+    titleLink: 'uploadLink',
+    isIndex: false
   });
 });
 
@@ -431,7 +423,6 @@ app.get('/:nodeName/statsDetail', function(req, res) {
   }
   res.render('statsDetail', {
     user: req.user,
-    layout: false,
     nodeName: req.params.nodeName
   });
 });
@@ -458,6 +449,7 @@ app.get('/style.css', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 function statG(dir, func) {
   fs.statVFS(dir, function(err,stat) {
+    if (err) {return console.log("ERROR with statVFS", dir, err);}
     var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
     func(freeG);
   });
@@ -601,18 +593,31 @@ function noCache(req, res) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 }
 
+var previousNodeStats = [];
+Db.nodesStats({fs: 1}, function (err, info) {
+  info.nodes.timestamp = new Date().getTime();
+  previousNodeStats.push(info.nodes);
+});
+
+
 app.get('/esstats.json', function(req, res) {
   var stats = [];
 
   async.parallel({
     nodes: function(nodesCb) {
-      Db.nodesStats({"jvm": 1}, nodesCb);
+      Db.nodesStats({jvm: 1, process: 1, fs: 1, search: 1, os: 1}, nodesCb);
     },
     health: function (healthCb) {
       Db.healthCache(healthCb);
     }
   },
   function(err, results) {
+
+    var now = new Date().getTime();
+    while (previousNodeStats.length > 1 && previousNodeStats[1].timestamp + 10000 < now) {
+      previousNodeStats.shift();
+    }
+
     var nodes = Object.keys(results.nodes.nodes);
     for (var n = 0; n < nodes.length; n++) {
       var node = results.nodes.nodes[nodes[n]];
@@ -620,12 +625,34 @@ app.get('/esstats.json', function(req, res) {
         name: node.name,
         storeSize: node.indices.store.size_in_bytes,
         docs: node.indices.docs.count,
-        searches: node.indices.search.query_total,
+        searches: node.indices.search.query_current,
         searchesTime: node.indices.search.query_time_in_millis,
         heapSize: node.jvm.mem.heap_used_in_bytes,
-        nonHeapSize: node.jvm.mem.non_heap_used_in_bytes
+        nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
+        cpu: node.process.cpu.percent,
+        read: 0,
+        write: 0,
+        load: node.os.load_average
       });
+
+      var oldnode = previousNodeStats[0][nodes[n]];
+      if (oldnode) {
+        var olddisk = [0, 0], newdisk = [0, 0];
+        for (var i = 0; i < oldnode.fs.data.length; i++) {
+          olddisk[0] += oldnode.fs.data[i].disk_read_size_in_bytes;
+          olddisk[1] += oldnode.fs.data[i].disk_write_size_in_bytes;
+          newdisk[0] += node.fs.data[i].disk_read_size_in_bytes;
+          newdisk[1] += node.fs.data[i].disk_write_size_in_bytes;
+        }
+
+        stats[stats.length-1].read  = Math.ceil((newdisk[0] - olddisk[0])/(node.timestamp - oldnode.timestamp));
+        stats[stats.length-1].write = Math.ceil((newdisk[1] - olddisk[1])/(node.timestamp - oldnode.timestamp));
+      }
     }
+
+    results.nodes.nodes.timestamp = new Date().getTime();
+    previousNodeStats.push(results.nodes.nodes);
+
     var r = {sEcho: req.query.sEcho,
              health: results.health,
              iTotalRecords: stats.length,
@@ -984,7 +1011,7 @@ function lookupQueryItems(query, doneCb) {
         if (file === null) {
           err = "File '" + name + "' not found";
         } else {
-          obj.and = [{term: {no: file.node}}, {term: {fs: file.num}}];
+          obj.bool = {must: [{term: {no: file.node}}, {term: {fs: file.num}}]};
         }
         if (finished && outstanding === 0) {
           doneCb(err);
@@ -1087,7 +1114,7 @@ function buildSessionQuery(req, buildCb) {
       if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = userExpression;
       } else {
-        query.query.filtered.filter = {and: [userExpression, query.query.filtered.filter]};
+        query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
       }
     } catch (e) {
       console.log("ERR - User expression doesn't compile", req.user.expression, e);
@@ -1284,8 +1311,8 @@ app.get('/spigraph.json', function(req, res) {
         query.query.filtered.filter = {term: {}};
         filter = query.query.filtered.filter;
       } else {
-        query.query.filtered.filter = {and: [{term: {}}, query.query.filtered.filter]};
-        filter = query.query.filtered.filter.and[0];
+        query.query.filtered.filter = {bool: {must: [{term: {}}, query.query.filtered.filter]}};
+        filter = query.query.filtered.filter.bool.must[0];
       }
 
       delete query.facets.field;
@@ -1670,7 +1697,7 @@ app.get('/unique.txt', function(req, res) {
       if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = {exists: {field: req.query.field}};
       } else {
-        query.query.filtered.filter = {and: [query.query.filtered.filter, {exists: {field: req.query.field}}]};
+        query.query.filtered.filter = {bool: {must: [query.query.filtered.filter, {exists: {field: req.query.field}}]}};
       }
     } else {
       query.facets = {facets: { terms : {field : req.query.field, size: 1000000}}};
@@ -1815,7 +1842,9 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
               return nextCb("Couldn't open file " + err);
             }
             if (headerCb) {
-              pcap.readHeader(headerCb);
+              pcap.readHeader(function (header) {
+                headerCb(pcap, header);
+              });
               headerCb = null;
             }
             processFile(pcap, pos, nextCb);
@@ -1999,7 +2028,6 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
 
   res.render('sessionDetail', {
     user: req.user,
-    layout: false,
     session: session,
     data: outgoing,
     query: req.query,
@@ -2412,11 +2440,11 @@ function localSessionDetailReturn(req, res, session, incoming) {
     incoming.length = 200;
   }
 
-  if (req.query.needgzip === "true") {
+  if (req.query.needgzip === "true" && incoming.length > 0) {
     return gzipDecode(req, res, session, incoming);
   }
 
-  if (req.query.needimage === "true") {
+  if (req.query.needimage === "true" && incoming.length > 0) {
     return imageDecode(req, res, session, incoming, -1);
   }
 
@@ -2618,7 +2646,7 @@ function writePcap(res, id, writeHeader, doneCb) {
   var b = new Buffer(0xfffe);
   var boffset = 0;
 
-  processSessionId(id, false, function (buffer) {
+  processSessionId(id, false, function (pcap, buffer) {
     if (writeHeader) {
       res.write(buffer);
       writeHeader = 0;
@@ -2642,6 +2670,88 @@ function writePcap(res, id, writeHeader, doneCb) {
     doneCb(err, writeHeader);
   });
 }
+
+function writePcapNg(res, id, writeHeader, doneCb) {
+  var b = new Buffer(0xfffe);
+  var boffset = 0;
+
+  processSessionId(id, true, function (pcap, buffer) {
+    if (writeHeader) {
+      res.write(pcap.getHeaderNg());
+      writeHeader = 0;
+    }
+  },
+  function (pcap, buffer, cb) {
+    if (boffset + buffer.length + 20 > b.length) {
+      res.write(b.slice(0, boffset));
+      boffset = 0;
+      b = new Buffer(0xfffe);
+    }
+
+    /* Need to write the ng block, and conver the old timestamp */
+
+    b.writeUInt32LE(0x00000006, boffset);               // Block Type
+    var len = ((buffer.length + 20 + 3) >> 2) << 2;
+    b.writeUInt32LE(len, boffset + 4);                  // Block Len 1
+    b.writeUInt32LE(0, boffset + 8);                    // Interface Id
+
+    // js has 53 bit numbers, this will over flow on Jun 05 2255
+    var time = buffer.readUInt32LE(0)*1000000 + buffer.readUInt32LE(4);
+    b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12);         // Block Len 1
+    b.writeUInt32LE(time % 0x100000000, boffset + 16);   // Interface Id
+
+    buffer.copy(b, boffset + 20, 8, buffer.length - 8);     // cap_len, packet_len
+    b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length%4)) % 4);   // padding
+    boffset += len - 8;
+
+    b.writeUInt32LE(0, boffset);                        // Options
+    b.writeUInt32LE(len, boffset+4);                    // Block Len 2
+    boffset += 8;
+
+    cb(null);
+  },
+  function(err, session) {
+    if (err) {
+      console.log("writePcapNg", err);
+      return;
+    }
+    res.write(b.slice(0, boffset));
+
+    session.version = molochversion.version;
+    delete session.ps;
+    var json = JSON.stringify(session);
+
+    var len = ((json.length + 20 + 3) >> 2) << 2;
+    b = new Buffer(len);
+
+    b.writeUInt32LE(0x80808080, 0);               // Block Type
+    b.writeUInt32LE(len, 4);                      // Block Len 1
+    b.write("MOWL", 8);                           // Magic
+    b.writeUInt32LE(json.length, 12);             // Block Len 1
+    b.write(json, 16);                            // Magic
+    b.fill(0, 16 + json.length, 16 + json.length + (4 - (json.length%4)) % 4);   // padding
+    b.writeUInt32LE(len, len-4);                  // Block Len 2
+    res.write(b);
+
+    doneCb(err, writeHeader);
+  });
+}
+
+app.get('/:nodeName/pcapng/:id.pcapng', function(req, res) {
+  noCache(req, res);
+
+  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
+  res.statusCode = 200;
+
+  isLocalView(req.params.nodeName, function () {
+    writePcapNg(res, req.params.id, !req.query || !req.query.noHeader || req.query.noHeader !== "true", function () {
+      res.end();
+    });
+  },
+  function() {
+    proxyRequest(req, res);
+  });
+});
 
 app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
   noCache(req, res);
@@ -2811,7 +2921,7 @@ app.get(/\/sessionIds.pcap.*/, function(req, res) {
   });
 });
 
-app.get(/\/sessions.pcap.*/, function(req, res) {
+function sessionsPcap(req, res, pcapWriter, extension) {
   noCache(req, res);
 
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
@@ -2825,7 +2935,7 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
       async.forEachSeries(result.hits.hits, function(item, nextCb) {
         isLocalView(item.fields.no, function () {
           // Get from our DISK
-          writePcap(res, item._id, firstHeader, function (err, stillNeedWriteHeader) {
+          pcapWriter(res, item._id, firstHeader, function (err, stillNeedWriteHeader) {
             firstHeader = stillNeedWriteHeader;
             nextCb(err);
           });
@@ -2836,9 +2946,9 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
             var info = url.parse(viewUrl);
 
             if (firstHeader) {
-              info.path = Config.basePath(item.fields.no) + item.fields.no + "/pcap/" + item._id + ".pcap";
+              info.path = Config.basePath(item.fields.no) + item.fields.no + "/" + extension + "/" + item._id + "." + extension;
             } else {
-              info.path = Config.basePath(item.fields.no) + item.fields.no + "/pcap/" + item._id + ".pcap?noHeader=true";
+              info.path = Config.basePath(item.fields.no) + item.fields.no + "/" + extension + "/" + item._id + "." + extension + "?noHeader=true";
             }
 
             addAuth(info, req.user, item.fields.no);
@@ -2863,7 +2973,16 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
       });
     });
   });
+}
+
+app.get(/\/sessions.pcapng.*/, function(req, res) {
+  return sessionsPcap(req, res, writePcapNg, "pcapng");
 });
+
+app.get(/\/sessions.pcap.*/, function(req, res) {
+  return sessionsPcap(req, res, writePcap, "pcap");
+});
+
 
 app.post('/deleteUser/:userId', function(req, res) {
   if (!req.user.createEnabled) {
@@ -3036,12 +3155,48 @@ app.post('/changePassword', function(req, res) {
     });
   });
 });
+
+app.post('/upload', function(req, res) {
+  console.log(req);
+
+  var exec = require('child_process').exec,
+      child;
+
+  var cmd = Config.get("uploadCommand")
+              .replace("{NODE}", Config.nodeName())
+              .replace("{TMPFILE}", req.files.file.path)
+              .replace("{CONFIG}", Config.getConfigFile());
+  child = exec(cmd, function (error, stdout, stderr) {
+    res.write("<b>" + cmd + "</b><br>");
+    res.write("<pre>");
+    res.write(stdout);
+    res.end("</pre>");
+    if (error !== null) {
+      console.log('exec error: ' + error);
+    }
+    fs.unlink(req.files.file.path);
+  });
+});
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
 dbCheck();
 expireCheckAll();
 setInterval(expireCheckAll, 5*60*1000);
-app.listen(Config.get("viewPort", "8005"));
-console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+
+var server;
+if (Config.isHTTPS()) {
+ server = httpsAgent.createServer({key: fs.readFileSync(Config.get("keyFile")),
+                             cert: fs.readFileSync(Config.get("certFile"))}, app).listen(Config.get("viewPort", "8005"));
+
+} else {
+  server = httpAgent.createServer(app).listen(Config.get("viewPort", "8005"));
+}
+
+if (server.address() === null) {
+  console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
+  process.exit(1);
+}
+
+console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
 

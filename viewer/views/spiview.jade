@@ -1,416 +1,419 @@
-//- 
-mixin spi(name, field, expr, c)
-  dt.context-menu-one #{name}
-    input(id="SPIck-#{field}", type="checkbox", class="#{c}-group") 
-  dd(id="SPIda-#{field}", molochexpr=expr)
+extends layout
 
-mixin spion(name, field, expr, c)
-  dt.context-menu-one #{name}
-    input.spion(id="SPIck-#{field}", type="checkbox", class="#{c}-group") 
-  dd(id="SPIda-#{field}", molochexpr=expr)
+block content
+  //- 
+  mixin spi(name, field, expr, c)
+    dt.context-menu-one #{name}
+      input(id="SPIck-#{field}", type="checkbox", class="#{c}-group") 
+    dd(id="SPIda-#{field}", molochexpr=expr)
 
-mixin title(name, c)
-  h1 #{name}
-    input(id="SPItck-#{c}-group", type="checkbox")
+  mixin spion(name, field, expr, c)
+    dt.context-menu-one #{name}
+      input.spion(id="SPIck-#{field}", type="checkbox", class="#{c}-group") 
+    dd(id="SPIda-#{field}", molochexpr=expr)
 
-script(src='jquery-jvectormap-1.2.2.min.js')
-script(src='jquery-jvectormap-world-en.js')
-script(src='jquery.autocomplete.js')
-script(src='jQuery-contextMenu/src/jquery.ui.position.js')
-script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
-link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
+  mixin title(name, c)
+    h1 #{name}
+      input(id="SPItck-#{c}-group", type="checkbox")
 
-div(style="margin-bottom: 12px")
-div#bsqErr
-div#sessionsInfo.sessionsInfo
-  div#world-map-wrapper.world-map-wrapper
-    div#world-map.world-map
-  div#sessionGraph.sessionGraph
-  select#sessionGraphSelect
-    option(value="lpHisto") sessions
-    option(value="paHisto") packets
-    option(value="dbHisto") databytes
-div#spiViewInfo
-  span#recordsText
-div#spiview
-  mixin title("General", "general")
-  dl
-    mixin spion("IP Protocol", "pr", "protocol", "general")
-    mixin spion("Src IP", "a1", "ip.src", "general")
-    mixin spion("Src Port", "p1", "port.src", "general")
-    mixin spion("Src GEO", "g1", "country.src", "general")
-    mixin spion("Src ASN", "rawas1", "asn.src", "general")
-    mixin spi("Src ASN Token", "as1", "asn.src", "general")
+  script(src='jquery-jvectormap-1.2.2.min.js')
+  script(src='jquery-jvectormap-world-en.js')
+  script(src='jquery.autocomplete.js')
+  script(src='jQuery-contextMenu/src/jquery.ui.position.js')
+  script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
+  link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
 
-    mixin spion("Dst IP", "a2", "ip.dst", "general")
-    mixin spion("Dst Port", "p2", "port.dst", "general")
-    mixin spion("Dst GEO", "g2", "country.dst", "general")
-    mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
-    mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
+  div(style="margin-bottom: 12px")
+  div#bsqErr
+  div#sessionsInfo.sessionsInfo
+    div#world-map-wrapper.world-map-wrapper
+      div#world-map.world-map
+    div#sessionGraph.sessionGraph
+    select#sessionGraphSelect
+      option(value="lpHisto") sessions
+      option(value="paHisto") packets
+      option(value="dbHisto") databytes
+  div#spiViewInfo
+    span#recordsText
+  div#spiview
+    mixin title("General", "general")
+    dl
+      mixin spion("IP Protocol", "pr", "protocol", "general")
+      mixin spion("Src IP", "a1", "ip.src", "general")
+      mixin spion("Src Port", "p1", "port.src", "general")
+      mixin spion("Src GEO", "g1", "country.src", "general")
+      mixin spion("Src ASN", "rawas1", "asn.src", "general")
+      mixin spi("Src ASN Token", "as1", "asn.src", "general")
 
-    mixin spi("Node", "no", "node", "general")
-    mixin spi("Tag", "ta", "tags", "general")
-    mixin spi("User", "user", "user", "general")
+      mixin spion("Dst IP", "a2", "ip.dst", "general")
+      mixin spion("Dst Port", "p2", "port.dst", "general")
+      mixin spion("Dst GEO", "g2", "country.dst", "general")
+      mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
+      mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
 
-  mixin title("HTTP", "http")
-  dl
-    mixin spi("Host", "ho", "host.http", "http")
-    mixin spi("URI", "rawus", "uri", "http")
-    mixin spi("URI Token", "us", "uri", "http")
-    mixin spi("User Agent", "rawua", "http.user-agent", "http")
-    mixin spi("User Agent Token", "ua", "http.user-agent", "http")
+      mixin spi("Node", "no", "node", "general")
+      mixin spi("Tag", "ta", "tags", "general")
+      mixin spi("User", "user", "user", "general")
 
-    mixin spi("XFF IP", "xff", "ip.xff", "http")
-    mixin spi("XFF GEO", "gxff", "country.xff", "http")
-    mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
-    mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
+    mixin title("HTTP", "http")
+    dl
+      mixin spi("Host", "ho", "host.http", "http")
+      mixin spi("URI", "rawus", "uri", "http")
+      mixin spi("URI Token", "us", "uri", "http")
+      mixin spi("User Agent", "rawua", "http.user-agent", "http")
+      mixin spi("User Agent Token", "ua", "http.user-agent", "http")
 
-    mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
-    each value,i in reqFields 
-      if (value.type === "string")
-        mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
-        mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
-      else
-        mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
-    mixin spi("Response Header", "hh2", "http.hasheader.dst", "http")
-    each value,i in resFields 
-      if (value.type === "string")
-        mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
-        mixin spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
-      else
-        mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
+      mixin spi("XFF IP", "xff", "ip.xff", "http")
+      mixin spi("XFF GEO", "gxff", "country.xff", "http")
+      mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
+      mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
 
-    mixin spi("Body MD5", "hmd5", "http.md5", "http")
-  mixin title("DNS", "dns")
-  dl
-    mixin spi("Host", "dnsho", "host.dns", "dns")
-    mixin spi("IP", "dnsip", "ip.dns", "dns")
-    mixin spi("GEO", "gdnsip", "country.dns", "dns")
-    mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
-    mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
-
-  mixin title("Certificates", "cert")
-  dl
-    mixin spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
-    mixin spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
-    mixin spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
-
-    mixin spi("Subject CN", "sCn", "cert.subject.cn", "cert")
-    mixin spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
-    mixin spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
-
-    mixin spi("Serial Number", "sn", "cert.serial", "cert")
-    mixin spi("Alt Name", "alt", "cert.alt", "cert")
-
-
-  mixin title("SSH", "ssh")
-  dl
-    mixin spi("Version", "sshver", "ssh.ver", "ssh")
-    mixin spi("Key", "sshkey", "ssh.key", "ssh")
-
-  if (user.emailSearch)
-    mixin title("Email", "email")
-    dl 
-      mixin spi("IP", "eip", "ip.email", "email")
-      mixin spi("GEO", "geip", "country.email", "email")
-      mixin spi("ASN", "rawaseip", "asn.email", "email")
-      mixin spi("ASN Token", "aseip", "asn.email", "email")
-
-      mixin spi("Subject", "rawesub", "email.subject", "email")
-      mixin spi("Subject Token", "esub", "email.subject", "email")
-      mixin spi("Source", "esrc", "email.src", "email")
-      mixin spi("Destination", "edst", "email.dst", "email")
-      mixin spi("X-Mailer", "raweua", "email.x-mailer", "email")
-      mixin spi("X-Mailer Token", "eua", "email.x-mailer", "email")
-      mixin spi("Message Id", "eid", "email.message-id", "email")
-      mixin spi("Mime Version", "emv", "email.mime-version", "email")
-      mixin spi("Filename", "efn", "email.fn", "email")
-      mixin spi("Attachment MD5", "emd5", "email.md5", "email")
-      each value,i in emailFields 
+      mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
+      each value,i in reqFields 
         if (value.type === "string")
-          mixin spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
-          mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
+          mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
+          mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
         else
-          mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
+          mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
+      mixin spi("Response Header", "hh2", "http.hasheader.dst", "http")
+      each value,i in resFields 
+        if (value.type === "string")
+          mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
+          mixin spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
+        else
+          mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
 
-script(type='text/javascript').
-  var initialDisplayLength = 100;
-  var doPushState = 1;
-  var fetchSize = {};
+      mixin spi("Body MD5", "hmd5", "http.md5", "http")
+    mixin title("DNS", "dns")
+    dl
+      mixin spi("Host", "dnsho", "host.dns", "dns")
+      mixin spi("IP", "dnsip", "ip.dns", "dns")
+      mixin spi("GEO", "gdnsip", "country.dns", "dns")
+      mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
+      mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
 
-  $(".spion").prop("indeterminate", true);
+    mixin title("Certificates", "cert")
+    dl
+      mixin spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
+      mixin spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
+      mixin spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
 
-  $(window).bind('popstate', function(e) {
-    if (window.history.ready) {
-      doPushState = 0;
-      handleUrlParams();
-      loadData();
-    }
-  });
+      mixin spi("Subject CN", "sCn", "cert.subject.cn", "cert")
+      mixin spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
+      mixin spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
 
-  function fetchData(theQueue, state) {
-    var params = buildParams();
-    state += "&" + $.param(params);
-    var url = "spiview.json?" + state;
-    if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
-      var fullstate = "";
-      $("[id^=SPIck]").each(function(index, item) {
-        var field = item.id.substring(6);
-        if ($(item).prop("indeterminate")) {
-          fullstate += "," + field + ":10";
-        } else if ($(item).attr("checked")) {
-          fullstate += "," + field + ":100";
-        }
-      });
-      fullstate += "&" + $.param(params);
-      history.pushState({}, this.title || '', "spiview?spi=" + fullstate.substring(1));
-    } else {
-      doPushState = 1;
-    }
+      mixin spi("Serial Number", "sn", "cert.serial", "cert")
+      mixin spi("Alt Name", "alt", "cert.alt", "cert")
 
-    $.ajaxQueue(theQueue, {
-       "dataType": 'json',
-        "type": "GET",
-        "url": url,
-        "success": function (json) {
-          updateHealth(json.health);
 
-          if (json.lpHisto && json.lpHisto[0]) {
-            if ($("#startDate").val() === "") {
-              $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
-            }
-            if ($("#stopDate").val() === "") {
-              $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
-            }
-          }
+    mixin title("SSH", "ssh")
+    dl
+      mixin spi("Version", "sshver", "ssh.ver", "ssh")
+      mixin spi("Key", "sshkey", "ssh.key", "ssh")
 
-          updateGraph(json.graph);
-          updateMap(json.map);
+    if (user.emailSearch)
+      mixin title("Email", "email")
+      dl 
+        mixin spi("IP", "eip", "ip.email", "email")
+        mixin spi("GEO", "geip", "country.email", "email")
+        mixin spi("ASN", "rawaseip", "asn.email", "email")
+        mixin spi("ASN Token", "aseip", "asn.email", "email")
 
-          if (json.bsqErr) {
-            $("#bsqErr").show();
-            $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
-          } else {
-            $("#bsqErr").hide();
-          }
+        mixin spi("Subject", "rawesub", "email.subject", "email")
+        mixin spi("Subject Token", "esub", "email.subject", "email")
+        mixin spi("Source", "esrc", "email.src", "email")
+        mixin spi("Destination", "edst", "email.dst", "email")
+        mixin spi("X-Mailer", "raweua", "email.x-mailer", "email")
+        mixin spi("X-Mailer Token", "eua", "email.x-mailer", "email")
+        mixin spi("Message Id", "eid", "email.message-id", "email")
+        mixin spi("Mime Version", "emv", "email.mime-version", "email")
+        mixin spi("Filename", "efn", "email.fn", "email")
+        mixin spi("Attachment MD5", "emd5", "email.md5", "email")
+        each value,i in emailFields 
+          if (value.type === "string")
+            mixin spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
+            mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
+          else
+            mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
 
-          if ($("#date").val() === "-2") {
-            $("#customDate").show();
-          } else {
-            $("#customDate").hide();
-          }
+  script(type='text/javascript').
+    var initialDisplayLength = 100;
+    var doPushState = 1;
+    var fetchSize = {};
 
-          $("#exportForm").data("moloch-visible", -1)
-                          .data("moloch-all", json.iTotalDisplayRecords);
-          $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
+    $(".spion").prop("indeterminate", true);
 
-          $.each(json.spi, function(spii, spi) {
-            var spida = $("[id='SPIda-" + spii + "']");
-            if (spi.terms.length !== 0) {
-              spida.text("");
-            } else {
-              spida.html("&nbsp;");
-            }
-
-            if (spii.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
-              $.each(spi.terms, function(i, term) {
-                if (i !== 0) {
-                  spida.append(", ");
-                }
-                spida.append("<a href=\"#\" onclick='return addExpression(\"" + spida.attr("molochexpr") + "==" + ipString(term.term) + "\");'</a>" + ipString(term.term) + "</a>");
-                spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
-              });
-            } else {
-              $.each(spi.terms, function(i, term) {
-                if (i !== 0) {
-                  spida.append(", ");
-                }
-                var quote = (typeof term.term == "string" && term.term.match(/[^\w]/))?"\\\"":"";
-                spida.append("<a href=\"#\" onclick='return addExpression(\"" + 
-                             spida.attr("molochexpr") + 
-                             "==" + quote + term.term + quote + "\");'</a>" + term.term + "</a>");
-                spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
-              });
-            }
-            if (spi.other > 0) {
-                spida.append(", <a href=\"#\" onclick='return moreSPI(\"" + 
-                             spii + 
-                             "\");'</a> &hellip;</a>");
-                spida.append("<span class=\"spicount\">(" + spi.other + ")</span>");
-            }
-          });
-        }
-    });
-  }
-
-  function fetchState(item, append) {
-    var field = item.attr('id').substring(6);
-    var state = "";
-
-    var spida = $("[id='SPIda-" + field + "']");
-    if (item.prop("indeterminate")) {
-      state = field + ":10";
-      if (append) {
-        spida.append(" <img src=\"spinning.gif\">");
-      } else {
-        spida.html("<img src=\"spinning.gif\">");
-      }
-    } else if (item.attr("checked")) {
-      if (!fetchSize[field]) {
-        fetchSize[field] = 100;
-      }
-      state = field + ":" + fetchSize[field];
-      if (append) {
-        spida.append(" <img src=\"spinning.gif\">");
-      } else {
-        spida.html("<img src=\"spinning.gif\">");
-      }
-    } else {
-      delete fetchSize[field];
-      spida.html("&nbsp;");
-    }
-    return state;
-  }
-  var loadQueue = $({});
-  var clickQueue = $({});
-
-  function loadData() {
-    loadQueue.clearQueue();
-    clickQueue.clearQueue();
-
-    var state = "facets=1&spi=";
-    var num = 0;
-    $("[id^=SPIck]").each(function(index, item) {
-      var istate = fetchState($(item), false);
-
-      if (istate !== "") {
-        if (num > 0) {
-          state += ",";
-        }
-        num++;
-        state += istate;
-        if (num === 3) {
-          fetchData(loadQueue, state);
-          num = 0;
-          state = "spi=";
-        }
+    $(window).bind('popstate', function(e) {
+      if (window.history.ready) {
+        doPushState = 0;
+        handleUrlParams();
+        loadData();
       }
     });
 
-    if (num > 0) {
-      fetchData(loadQueue, state);
-    }
-  }
-
-  function moreSPI(spii) {
-    var spick = $("[id='SPIck-" + spii + "']");
-    if (spick.prop("indeterminate")) {
-      spick.prop("indeterminate", null);
-      spick.attr("checked", "checked");
-    }
-    if (fetchSize[spii]) {
-      fetchSize[spii] += 100;
-    }
-    var state = fetchState(spick, true);
-    fetchData(clickQueue, "spi=" + state);
-    return false;
-  }
-
-  $('#searchForm').submit(function() {
-    loadData();
-    return false;
-  });
-
-  $(window).resize(function(e) {
-    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
-  });
-
-  $(":checkbox").on('change', function(e) {
-    if (e.target.id.match(/SPItck/)) {
-      var item = $(e.target);
-      if (item.attr("checked")) {
-        $("." + e.target.id.substring(7)).each(function() {
-          $(this).prop("indeterminate", null);
-          $(this).attr("checked", "checked").triggerHandler('change');
+    function fetchData(theQueue, state) {
+      var params = buildParams();
+      state += "&" + $.param(params);
+      var url = "spiview.json?" + state;
+      if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
+        var fullstate = "";
+        $("[id^=SPIck]").each(function(index, item) {
+          var field = item.id.substring(6);
+          if ($(item).prop("indeterminate")) {
+            fullstate += "," + field + ":10";
+          } else if ($(item).attr("checked")) {
+            fullstate += "," + field + ":100";
+          }
         });
+        fullstate += "&" + $.param(params);
+        history.pushState({}, this.title || '', "spiview?spi=" + fullstate.substring(1));
       } else {
-        $("." + e.target.id.substring(7)).each(function() {
-          $(this).prop("indeterminate", null);
-          $(this).attr("checked", false).triggerHandler('change');
-        });
+        doPushState = 1;
       }
-      return true;
-    }
-    var state = fetchState($(e.target), true);
-    if (state !== "") {
-      fetchData(clickQueue, "spi=" + state);
-    }
-    return false;
-  });
 
-  $(document).ready(function() {
-    var initialParams = handleUrlParams();
-    if (initialParams.spi) {
-      initialParams.spi.split(",").forEach(function (item) {
-        var parts = item.split(":");
-        var spick = $("[id='SPIck-" + parts[0] + "']");
-        if (parts[1] === "10") {
-          spick.prop("indeterminate");
-        } else {
-          fetchSize[parts[0]] = +parts[1];
-          spick.prop("indeterminate", null);
-          spick.attr("checked", "checked");
-        }
-      });
-    }
+      $.ajaxQueue(theQueue, {
+         "dataType": 'json',
+          "type": "GET",
+          "url": url,
+          "success": function (json) {
+            updateHealth(json.health);
 
-    loadData();
+            if (json.lpHisto && json.lpHisto[0]) {
+              if ($("#startDate").val() === "") {
+                $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
+              }
+              if ($("#stopDate").val() === "") {
+                $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
+              }
+            }
 
-    setupGraph();
-    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
-    setupMap();
+            updateGraph(json.graph);
+            updateMap(json.map);
 
-    $.contextMenu({
-        selector: '.context-menu-one',
-        build: function($trigger, e) {
-          var checkbox = $(e.target).find("input");
-          items = {
-            spigraph: {name: "Open SPI Graph " + $(e.target).text(), mtype:0, field: checkbox.attr("id").substring(6)},
-            items: {name: "Export Unique " + $(e.target).text(), mtype:1, counts:0, field: checkbox.attr("id").substring(6)},
-            itemcounts: {name: "Export Unique" + $(e.target).text() + " with Counts", mtype:1, counts:1, field: checkbox.attr("id").substring(6)}
-          };
-          return {
-            callback: function(key, options) {
-              var params = buildParams();
-              var url;
+            if (json.bsqErr) {
+              $("#bsqErr").show();
+              $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
+            } else {
+              $("#bsqErr").hide();
+            }
 
-              if (items[key].mtype === 0) {
-                params.push({name:'field', value:items[key].field});
-                url = "spigraph?" + $.param(params);
+            if ($("#date").val() === "-2") {
+              $("#customDate").show();
+            } else {
+              $("#customDate").hide();
+            }
+
+            $("#exportForm").data("moloch-visible", -1)
+                            .data("moloch-all", json.iTotalDisplayRecords);
+            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
+
+            $.each(json.spi, function(spii, spi) {
+              var spida = $("[id='SPIda-" + spii + "']");
+              if (spi.terms.length !== 0) {
+                spida.text("");
               } else {
-                params.push({name:'field', value:items[key].field});
-                params.push({name:'counts', value:items[key].counts});
-                url = "unique.txt?" + $.param(params);
+                spida.html("&nbsp;");
               }
 
-              window.open(url);
-            },
-            items: items
-          };
+              if (spii.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
+                $.each(spi.terms, function(i, term) {
+                  if (i !== 0) {
+                    spida.append(", ");
+                  }
+                  spida.append("<a href=\"#\" onclick='return addExpression(\"" + spida.attr("molochexpr") + "==" + ipString(term.term) + "\");'</a>" + ipString(term.term) + "</a>");
+                  spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
+                });
+              } else {
+                $.each(spi.terms, function(i, term) {
+                  if (i !== 0) {
+                    spida.append(", ");
+                  }
+                  var quote = (typeof term.term == "string" && term.term.match(/[^\w]/))?"\\\"":"";
+                  spida.append("<a href=\"#\" onclick='return addExpression(\"" + 
+                               spida.attr("molochexpr") + 
+                               "==" + quote + term.term + quote + "\");'</a>" + term.term + "</a>");
+                  spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
+                });
+              }
+              if (spi.other > 0) {
+                  spida.append(", <a href=\"#\" onclick='return moreSPI(\"" + 
+                               spii + 
+                               "\");'</a> &hellip;</a>");
+                  spida.append("<span class=\"spicount\">(" + spi.other + ")</span>");
+              }
+            });
+          }
+      });
+    }
+
+    function fetchState(item, append) {
+      var field = item.attr('id').substring(6);
+      var state = "";
+
+      var spida = $("[id='SPIda-" + field + "']");
+      if (item.prop("indeterminate")) {
+        state = field + ":10";
+        if (append) {
+          spida.append(" <img src=\"spinning.gif\">");
+        } else {
+          spida.html("<img src=\"spinning.gif\">");
         }
-    });
-
-    var searchStuffOffset = $('#searchStuff').offset().top;
-    $(window).scroll(function () {
-      var scrollTop = $(window).scrollTop(); // check the visible top of the browser
-
-      if (searchStuffOffset < scrollTop) {
-        $('#searchStuff').addClass('fixedsearch');
-        $('#logo').hide();
+      } else if (item.attr("checked")) {
+        if (!fetchSize[field]) {
+          fetchSize[field] = 100;
+        }
+        state = field + ":" + fetchSize[field];
+        if (append) {
+          spida.append(" <img src=\"spinning.gif\">");
+        } else {
+          spida.html("<img src=\"spinning.gif\">");
+        }
       } else {
-        $('#searchStuff').removeClass('fixedsearch');
-        $('#logo').show();
+        delete fetchSize[field];
+        spida.html("&nbsp;");
       }
+      return state;
+    }
+    var loadQueue = $({});
+    var clickQueue = $({});
+
+    function loadData() {
+      loadQueue.clearQueue();
+      clickQueue.clearQueue();
+
+      var state = "facets=1&spi=";
+      var num = 0;
+      $("[id^=SPIck]").each(function(index, item) {
+        var istate = fetchState($(item), false);
+
+        if (istate !== "") {
+          if (num > 0) {
+            state += ",";
+          }
+          num++;
+          state += istate;
+          if (num === 3) {
+            fetchData(loadQueue, state);
+            num = 0;
+            state = "spi=";
+          }
+        }
+      });
+
+      if (num > 0) {
+        fetchData(loadQueue, state);
+      }
+    }
+
+    function moreSPI(spii) {
+      var spick = $("[id='SPIck-" + spii + "']");
+      if (spick.prop("indeterminate")) {
+        spick.prop("indeterminate", null);
+        spick.attr("checked", "checked");
+      }
+      if (fetchSize[spii]) {
+        fetchSize[spii] += 100;
+      }
+      var state = fetchState(spick, true);
+      fetchData(clickQueue, "spi=" + state);
+      return false;
+    }
+
+    $('#searchForm').submit(function() {
+      loadData();
+      return false;
     });
-  });
+
+    $(window).resize(function(e) {
+      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+    });
+
+    $(":checkbox").on('change', function(e) {
+      if (e.target.id.match(/SPItck/)) {
+        var item = $(e.target);
+        if (item.attr("checked")) {
+          $("." + e.target.id.substring(7)).each(function() {
+            $(this).prop("indeterminate", null);
+            $(this).attr("checked", "checked").triggerHandler('change');
+          });
+        } else {
+          $("." + e.target.id.substring(7)).each(function() {
+            $(this).prop("indeterminate", null);
+            $(this).attr("checked", false).triggerHandler('change');
+          });
+        }
+        return true;
+      }
+      var state = fetchState($(e.target), true);
+      if (state !== "") {
+        fetchData(clickQueue, "spi=" + state);
+      }
+      return false;
+    });
+
+    $(document).ready(function() {
+      var initialParams = handleUrlParams();
+      if (initialParams.spi) {
+        initialParams.spi.split(",").forEach(function (item) {
+          var parts = item.split(":");
+          var spick = $("[id='SPIck-" + parts[0] + "']");
+          if (parts[1] === "10") {
+            spick.prop("indeterminate");
+          } else {
+            fetchSize[parts[0]] = +parts[1];
+            spick.prop("indeterminate", null);
+            spick.attr("checked", "checked");
+          }
+        });
+      }
+
+      loadData();
+
+      setupGraph();
+      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      setupMap();
+
+      $.contextMenu({
+          selector: '.context-menu-one',
+          build: function($trigger, e) {
+            var checkbox = $(e.target).find("input");
+            items = {
+              spigraph: {name: "Open SPI Graph " + $(e.target).text(), mtype:0, field: checkbox.attr("id").substring(6)},
+              items: {name: "Export Unique " + $(e.target).text(), mtype:1, counts:0, field: checkbox.attr("id").substring(6)},
+              itemcounts: {name: "Export Unique" + $(e.target).text() + " with Counts", mtype:1, counts:1, field: checkbox.attr("id").substring(6)}
+            };
+            return {
+              callback: function(key, options) {
+                var params = buildParams();
+                var url;
+
+                if (items[key].mtype === 0) {
+                  params.push({name:'field', value:items[key].field});
+                  url = "spigraph?" + $.param(params);
+                } else {
+                  params.push({name:'field', value:items[key].field});
+                  params.push({name:'counts', value:items[key].counts});
+                  url = "unique.txt?" + $.param(params);
+                }
+
+                window.open(url);
+              },
+              items: items
+            };
+          }
+      });
+
+      var searchStuffOffset = $('#searchStuff').offset().top;
+      $(window).scroll(function () {
+        var scrollTop = $(window).scrollTop(); // check the visible top of the browser
+
+        if (searchStuffOffset < scrollTop) {
+          $('#searchStuff').addClass('fixedsearch');
+          $('#logo').hide();
+        } else {
+          $('#searchStuff').removeClass('fixedsearch');
+          $('#logo').show();
+        }
+      });
+    });
 

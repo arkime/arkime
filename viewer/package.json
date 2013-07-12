@@ -1,19 +1,17 @@
 {
-    "name": "application-name"
-  , "version": "0.0.1"
+    "name": "moloch"
+  , "version": "0.8.6"
   , "private": true
   , "dependencies": {
       "jade": ">= 0.0.1"
-    , "express": "== 2.5.10"
+    , "express": ">= 3.0.0"
     , "async": ">= 0.0.1"
     , "stylus": ">= 0.0.1"
-    , "connect": "< 2.0.0"
-    , "request": ">= 0.0.1"
     , "connect-timeout": ">= 0.0.1"
     , "elasticsearchclient": ">= 0.3.0"
     , "fs-ext": ">= 0.3.0"
     , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
-    , "png": "http://github.com/pkrumins/node-png/tarball/master"
+    , "png": ">= 3.0.0"
     , "passport": ">= 0.0.1"
     , "passport-http": ">= 0.0.1"
   }

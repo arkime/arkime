@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.8.6])
+AC_INIT([moloch], [0.8.7])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX

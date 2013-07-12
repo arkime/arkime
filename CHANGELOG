@@ -1,3 +1,15 @@
+0.8.7 2013/07/12
+  - Use recent versions of express which REQUIRES "npm install" in viewer directory
+  - Use recent version of jade which requires extra spaces, use "git diff -w" to 
+  - Now index Host headers with and without port
+  - pcapng exporting with meta data
+  - Basic upload feature, doesn't support transfers of meta data yet
+  - addUser.js has better help and error reporting
+  - ES optimizations to use bool instead of and/or, also use regexp filter
+    instead of regexp query
+  - Changed ES stats shown to hopefully more useful ones
+  - Fixed viewer exit on empty data gzip decode
+
 0.8.6 2013/06/20
   - Deal with non data ES nodes
   - Viewer prints error if it can't find pcapDir setting

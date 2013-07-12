@@ -354,9 +354,9 @@ STR : ID
  
 e
     : e '&&' e
-        {$$ = {and: [$1, $3]};}
+        {$$ = {bool: {must: [$1, $3]}};}
     | e '||' e
-        {$$ = {or: [$1, $3]};}
+        {$$ = {bool: {should: [$1, $3]}};}
     | '!' e %prec UMINUS
         {$$ = {not: $2};}
     | '-' e %prec UMINUS
@@ -390,9 +390,9 @@ e
     | protocol '!=' NUMBER
         {$$ = {not: {term: {pr: $3}}};}
     | 'port' GTLT NUMBER
-        {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
-         $$.or[0].range.p1[$2] = $3;
-         $$.or[1].range.p2[$2] = $3;}
+        {$$ = {bool: {should: [{range: {p1: {}}}, {range: {p2: {}}}]}};
+         $$.bool.should[0].range.p1[$2] = $3;
+         $$.bool.should[1].range.p2[$2] = $3;}
     | LOTERMFIELD '!=' STR
         {$$ = {not: str2Query($1, "term", $3.toLowerCase())};}
     | LOTERMFIELD '==' STR
@@ -444,9 +444,9 @@ e
          $$.range[str2Header(yy, $1)] = {};
          $$.range[str2Header(yy, $1)][$2] = $3;}
     | 'port' '==' NUMBER
-        {$$ = {or: [{term: {p1: $3}}, {term: {p2: $3}}]};}
+        {$$ = {bool: {should: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
     | 'port' '!=' NUMBER
-        {$$ = {not: {or: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
+        {$$ = {bool: {must_not: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
     | IPFIELD '==' IPNUM
         {$$ = parseIpPort(yy, $3,$1);}
     | IPFIELD '!=' IPNUM
@@ -469,7 +469,7 @@ e
         }
     | 'http.hasheader' '==' STR
         { var tag = stripQuotes($3);
-          $$ = {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]};
+          $$ = {bool: {should: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
         }
     | 'http.hasheader.src' '==' STR
         { var tag = stripQuotes($3);
@@ -481,7 +481,7 @@ e
         }
     | 'http.hasheader' '!=' STR
         { var tag = stripQuotes($3);
-          $$ = {not: {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
+          $$ = {bool: {must_not: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
         }
     | 'http.hasheader.src' '!=' STR
         { var tag = stripQuotes($3);
@@ -493,65 +493,61 @@ e
         }
     | country '==' STR 
         { var str = $3.toUpperCase();
-          $$ = {or: [str2Query("g1", "term", str),
-                     str2Query("g2", "term", str),
-                     str2Query("gxff", "term", str),
-                     str2Query("gdnsip", "term", str),
-                     str2Query("geip", "term", str)
-                    ]
-               };
+          $$ = [str2Query("g1", "term", str),
+                str2Query("g2", "term", str),
+                str2Query("gxff", "term", str),
+                str2Query("gdnsip", "term", str),
+                str2Query("geip", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
         }
     | country '!=' STR 
         { var str = $3.toUpperCase();
-          $$ = {or: [str2Query("g1", "term", str),
-                     str2Query("g2", "term", str),
-                     str2Query("gxff", "term", str),
-                     str2Query("gdnsip", "term", str),
-                     str2Query("geip", "term", str)
-                    ]
-               };
-          $$ = {not: $$};
+          $$ = [str2Query("g1", "term", str),
+                str2Query("g2", "term", str),
+                str2Query("gxff", "term", str),
+                str2Query("gdnsip", "term", str),
+                str2Query("geip", "term", str)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | asn '==' STR 
         { var str = $3.toLowerCase();
-          
-          $$ = {or: [str2Query("as1", "text", str),
-                     str2Query("as2", "text", str),
-                     str2Query("asxff", "text", str),
-                     str2Query("asdnsip", "text", str),
-                     str2Query("aseip", "text", str)
-                    ]
-               };
+          $$ = [str2Query("as1", "text", str),
+                str2Query("as2", "text", str),
+                str2Query("asxff", "text", str),
+                str2Query("asdnsip", "text", str),
+                str2Query("aseip", "text", str)
+               ];
+          $$ = {bool: {should: $$}};
         }
     | asn '!=' STR 
         { var str = $3.toLowerCase();
-          $$ = {or: [str2Query("as1", "text", str),
-                     str2Query("as2", "text", str),
-                     str2Query("asxff", "text", str),
-                     str2Query("asdnsip", "text", str),
-                     str2Query("aseip", "text", str)
-                    ]
-               };
-          $$ = {not: $$};
+          $$ = [str2Query("as1", "text", str),
+                str2Query("as2", "text", str),
+                str2Query("asxff", "text", str),
+                str2Query("asdnsip", "text", str),
+                str2Query("aseip", "text", str)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | host '!=' STR
         { var str = $3.toLowerCase();
 
-          $$ = {or: [str2Query("ho", "term", str),
-                     str2Query("dnsho", "term", str),
-                     str2Query("eho", "term", str)
-                    ]
-               };
-          $$ = {not: $$};
+          $$ = [str2Query("ho", "term", str),
+                str2Query("dnsho", "term", str),
+                str2Query("eho", "term", str)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | host '==' STR
         { var str = $3.toLowerCase();
 
-          $$ = {or: [str2Query("ho", "term", str),
-                     str2Query("dnsho", "term", str),
-                     str2Query("eho", "term", str)
-                    ]
-               };
+          $$ = [str2Query("ho", "term", str),
+                str2Query("dnsho", "term", str),
+                str2Query("eho", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
         }
     ;
 %%
@@ -589,22 +585,22 @@ function parseIpPort(yy, ipPortStr, which) {
      ip2 = ip2 | (0xffffffff >>> s);
   }
 
-  var t1 = {and: []};
-  var t2 = {and: []};
+  var t1 = {bool: {must: []}};
+  var t2 = {bool: {must: []}};
   var xff;
   var dns;
   var email;
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1.and.push({term: {a1: ip1>>>0}});
-        t2.and.push({term: {a2: ip1>>>0}});
+        t1.bool.must.push({term: {a1: ip1>>>0}});
+        t2.bool.must.push({term: {a2: ip1>>>0}});
         dns   = {term: {dnsip: ip1>>>0}};
         email = {term: {eip: ip1>>>0}};
         xff   = {term: {xff: ip1>>>0}};
     } else {
-        t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-        t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+        t1.bool.must.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
+        t2.bool.must.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
         dns =    {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
         email =  {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
         xff =    {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
@@ -612,13 +608,13 @@ function parseIpPort(yy, ipPortStr, which) {
   }
 
   if (port !== -1) {
-    t1.and.push({term: {p1: port}});
-    t2.and.push({term: {p2: port}});
+    t1.bool.must.push({term: {p1: port}});
+    t2.bool.must.push({term: {p2: port}});
   }
 
-  if (t1.and.length === 1) {
-      t1 = t1.and[0];
-      t2 = t2.and[0];
+  if (t1.bool.must.length === 1) {
+      t1 = t1.bool.must[0];
+      t2 = t2.bool.must[0];
   }
 
   switch(which) {
@@ -632,7 +628,7 @@ function parseIpPort(yy, ipPortStr, which) {
     if (yy.emailSearch === true && email)
         ors.push(email);
 
-    return {or: ors};
+    return {bool: {should: ors}};
   case 1:
     return t1;
   case 2:
@@ -682,8 +678,8 @@ function str2Query(field, kind, str)
 
     if (str[0] === "/" && str[str.length -1] === "/") {
         field = field2RawField[field] || field;
-        obj = {query: {regexp: {}}};
-        obj.query.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        obj = {regexp: {}};
+        obj.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
         return obj;
     }
 

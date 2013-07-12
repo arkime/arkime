@@ -1,222 +1,226 @@
-script(src='jquery-jvectormap-1.2.2.min.js')
-script(src='jquery-jvectormap-world-en.js')
-script(src='jquery.autocomplete.js')
-script(src='jQuery-contextMenu/src/jquery.ui.position.js')
-script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
-link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
+extends layout
 
-div(style="margin-bottom: 12px")
-div#processing
-  img(src="watching.gif")
-  div.blink I'm Hootin' :D
-div#bsqErr
-div#sessionsInfo.sessionsInfo
-  div#world-map-wrapper.world-map-wrapper
-    div#world-map.world-map
-  div#sessionGraph.sessionGraph
-  select#sessionGraphSelect
-    option(value="lpHisto") sessions
-    option(value="paHisto") packets
-    option(value="dbHisto") databytes
-div#spiGraphSelect
-  label SPI Graph:
-  select(id='field')
-    each value in fields 
-      if (value.db !== null)
-        if (value.type.match(/textfield$/))
-          if (value.db.match(/.snow$/))
-            - var tmp = value.db.replace(".snow", ".raw");
-            option(value="#{tmp}") #{value.exp}
+block scripts
+  script(src='jquery-jvectormap-1.2.2.min.js')
+  script(src='jquery-jvectormap-world-en.js')
+  script(src='jquery.autocomplete.js')
+  script(src='jQuery-contextMenu/src/jquery.ui.position.js')
+  script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
+  link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
+
+block content
+  div(style="margin-bottom: 12px")
+  div#processing
+    img(src="watching.gif")
+    div.blink I'm Hootin' :D
+  div#bsqErr
+  div#sessionsInfo.sessionsInfo
+    div#world-map-wrapper.world-map-wrapper
+      div#world-map.world-map
+    div#sessionGraph.sessionGraph
+    select#sessionGraphSelect
+      option(value="lpHisto") sessions
+      option(value="paHisto") packets
+      option(value="dbHisto") databytes
+  div#spiGraphSelect
+    label SPI Graph:
+    select(id='field')
+      each value in fields 
+        if (value.db !== null)
+          if (value.type.match(/textfield$/))
+            if (value.db.match(/.snow$/))
+              - var tmp = value.db.replace(".snow", ".raw");
+              option(value="#{tmp}") #{value.exp}
+            else
+              option(value="raw#{value.db}") #{value.exp}
+            option(value="#{value.db}") #{value.exp} Tokens
           else
-            option(value="raw#{value.db}") #{value.exp}
-          option(value="#{value.db}") #{value.exp} Tokens
-        else
-          option(value="#{value.db}") #{value.exp}
-  label Max Elements:
-  select(id='size')
-    option(value="10") 10
-    option(value="20", selected) 20
-    option(value="50") 50
-    option(value="100") 100
-  label Sort by:
-  select(id='sort')
-    option(value="name") Name
-    option(value="count", selected) Count
-  span#recordsText
-div#sessionGraphs
-script(type='text/javascript').
-  var initialDisplayLength;
-  var doPushState = 1;
+            option(value="#{value.db}") #{value.exp}
+    label Max Elements:
+    select(id='size')
+      option(value="10") 10
+      option(value="20", selected) 20
+      option(value="50") 50
+      option(value="100") 100
+    label Sort by:
+    select(id='sort')
+      option(value="name") Name
+      option(value="count", selected) Count
+    span#recordsText
+  div#sessionGraphs
+  script(type='text/javascript').
+    var initialDisplayLength;
+    var doPushState = 1;
 
-  $(window).bind('popstate', function(e) {
-    if (window.history.ready) {
-      doPushState = 0;
-      var params = handleUrlParams();
-      if (params.field !== undefined) {
-        $("#field").val(params.field);
+    $(window).bind('popstate', function(e) {
+      if (window.history.ready) {
+        doPushState = 0;
+        var params = handleUrlParams();
+        if (params.field !== undefined) {
+          $("#field").val(params.field);
+        } else {
+          $("#field").val("no");
+        }
+        if (params.size !== undefined) {
+          $("#size").val(params.size);
+        }
+
+        loadData();
+      }
+    });
+
+    function loadData() {
+      $("#processing").show();
+      startBlink();
+      var params = buildParams();
+      params.push({name:'size', value:+$("#size").val()});
+      params.push({name:'field', value:$("#field").val()});
+      var state = $.param(params);
+      var url = "spigraph.json?" + state;
+
+      if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
+        history.pushState({}, this.title || '', "spigraph?" + state);
+      } else {
+        doPushState = 1;
+      }
+
+      $.ajax( {
+         "dataType": 'json',
+          "type": "GET",
+          "url": url,
+          "success": function (json) {
+            updateHealth(json.health);
+
+            if (json.lpHisto && json.lpHisto[0]) {
+              if ($("#startDate").val() === "") {
+                $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
+              }
+              if ($("#stopDate").val() === "") {
+                $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
+              }
+            }
+
+            updateGraph(json.graph);
+            updateMap(json.map);
+
+            if (json.bsqErr) {
+              $("#bsqErr").show();
+              $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
+            } else {
+              $("#bsqErr").hide();
+            }
+
+            $("#exportForm").data("moloch-visible", -1)
+                            .data("moloch-all", json.iTotalDisplayRecords);
+
+            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
+
+            if ($("#date").val() === "-2") {
+              $("#customDate").show();
+            } else {
+              $("#customDate").hide();
+            }
+
+            $('#sessionGraphs').empty();
+            json.items.forEach(function(item, i) {
+              var name = $('<div />').text(item.name).html();
+              $('#sessionGraphs').append("<div name=\"" +name + "\" count= " + item.count + ">" +
+                                             "<h3 class='context-menu-one'>" + name + " <span class=\"spicount\">(" + item.count + ")</span></h3>" + 
+                                             "<div class='sessionsInfo'>" +
+                                               "<div class='world-map-wrapper' id='world-map-wrapper-" + i + "'>" +
+                                                 "<div class='world-map' id='world-map-" + i + "'></div>" +
+                                               "</div>" +
+                                             "<div class='sessionGraph' id='sessionGraph-" + i + "'></div>" +
+                                           "</div>" +
+                                         "</div>");
+
+              setupGraph("#sessionGraph-" + i);
+              updateGraph(item.graph, "#sessionGraph-" + i);
+              setupMap("#world-map-" + i);
+              updateMap(item.map, "#world-map-" + i);
+            });
+
+            stopBlink();
+            $("#processing").hide();
+          },
+          "error": function (jqXHR, textStatus, errorThrown) {
+            if ($('#sessions').data('unloading') !== true) {
+              alert("Sessions: Error fetching session data, maybe network error or need to reload page?");
+            }
+          }
+      } );
+    }
+
+    $("#field,#size").change (function() {
+      loadData();
+      return false;
+    });
+
+    $("#sort").change (function() {
+      var divs = $("#sessionGraphs").children();
+      divs.detach();
+      if ($("#sort").val() === "count") {
+        divs = divs.sort(function (a, b) {
+          return parseInt($(b).attr("count"), 10) - parseInt($(a).attr("count"), 10);
+        });
+      } else {
+        divs = divs.sort(function (a, b) {
+          return $(a).attr("name").localeCompare($(b).attr("name"));
+        });
+      }
+      divs = $("#sessionGraphs").append(divs);
+      return false;
+    });
+
+    $('#searchForm').submit(function() {
+      loadData();
+      return false;
+    });
+
+    $(document).ready(function() {
+      var initialParams = handleUrlParams();
+      if (initialParams.field !== undefined) {
+        $("#field").val(initialParams.field);
       } else {
         $("#field").val("no");
       }
-      if (params.size !== undefined) {
-        $("#size").val(params.size);
+      if (initialParams.size !== undefined) {
+        $("#size").val(initialParams.size);
       }
-
       loadData();
-    }
-  });
 
-  function loadData() {
-    $("#processing").show();
-    startBlink();
-    var params = buildParams();
-    params.push({name:'size', value:+$("#size").val()});
-    params.push({name:'field', value:$("#field").val()});
-    var state = $.param(params);
-    var url = "spigraph.json?" + state;
-
-    if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
-      history.pushState({}, this.title || '', "spigraph?" + state);
-    } else {
-      doPushState = 1;
-    }
-
-    $.ajax( {
-       "dataType": 'json',
-        "type": "GET",
-        "url": url,
-        "success": function (json) {
-          updateHealth(json.health);
-
-          if (json.lpHisto && json.lpHisto[0]) {
-            if ($("#startDate").val() === "") {
-              $("#startDate").val(dateString(json.lpHisto[0][0]/1000, ' '));
-            }
-            if ($("#stopDate").val() === "") {
-              $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
-            }
+      $.contextMenu({
+          selector: '.context-menu-one',
+          build: function($trigger, e) {
+            var text = $(e.target).text();
+            text = text.substring(0, text.lastIndexOf("(") - 1);
+            exp = $("#field option:selected").text() + " == " + text;
+            items = {
+              and: {name: "and " + exp, exp: exp}
+            };
+            return {
+              callback: function(key, options) {
+                addExpression(items[key].exp);
+              },
+              items: items
+            };
           }
-
-          updateGraph(json.graph);
-          updateMap(json.map);
-
-          if (json.bsqErr) {
-            $("#bsqErr").show();
-            $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
-          } else {
-            $("#bsqErr").hide();
-          }
-
-          $("#exportForm").data("moloch-visible", -1)
-                          .data("moloch-all", json.iTotalDisplayRecords);
-
-          $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
-
-          if ($("#date").val() === "-2") {
-            $("#customDate").show();
-          } else {
-            $("#customDate").hide();
-          }
-
-          $('#sessionGraphs').empty();
-          json.items.forEach(function(item, i) {
-            var name = $('<div />').text(item.name).html();
-            $('#sessionGraphs').append("<div name=\"" +name + "\" count= " + item.count + ">" +
-                                           "<h3 class='context-menu-one'>" + name + " <span class=\"spicount\">(" + item.count + ")</span></h3>" + 
-                                           "<div class='sessionsInfo'>" +
-                                             "<div class='world-map-wrapper' id='world-map-wrapper-" + i + "'>" +
-                                               "<div class='world-map' id='world-map-" + i + "'></div>" +
-                                             "</div>" +
-                                           "<div class='sessionGraph' id='sessionGraph-" + i + "'></div>" +
-                                         "</div>" +
-                                       "</div>");
-
-            setupGraph("#sessionGraph-" + i);
-            updateGraph(item.graph, "#sessionGraph-" + i);
-            setupMap("#world-map-" + i);
-            updateMap(item.map, "#world-map-" + i);
-          });
-
-          stopBlink();
-          $("#processing").hide();
-        },
-        "error": function (jqXHR, textStatus, errorThrown) {
-          if ($('#sessions').data('unloading') !== true) {
-            alert("Sessions: Error fetching session data, maybe network error or need to reload page?");
-          }
-        }
-    } );
-  }
-
-  $("#field,#size").change (function() {
-    loadData();
-    return false;
-  });
-
-  $("#sort").change (function() {
-    var divs = $("#sessionGraphs").children();
-    divs.detach();
-    if ($("#sort").val() === "count") {
-      divs = divs.sort(function (a, b) {
-        return parseInt($(b).attr("count"), 10) - parseInt($(a).attr("count"), 10);
       });
-    } else {
-      divs = divs.sort(function (a, b) {
-        return $(a).attr("name").localeCompare($(b).attr("name"));
-      });
-    }
-    divs = $("#sessionGraphs").append(divs);
-    return false;
-  });
-
-  $('#searchForm').submit(function() {
-    loadData();
-    return false;
-  });
-
-  $(document).ready(function() {
-    var initialParams = handleUrlParams();
-    if (initialParams.field !== undefined) {
-      $("#field").val(initialParams.field);
-    } else {
-      $("#field").val("no");
-    }
-    if (initialParams.size !== undefined) {
-      $("#size").val(initialParams.size);
-    }
-    loadData();
-
-    $.contextMenu({
-        selector: '.context-menu-one',
-        build: function($trigger, e) {
-          var text = $(e.target).text();
-          text = text.substring(0, text.lastIndexOf("(") - 1);
-          exp = $("#field option:selected").text() + " == " + text;
-          items = {
-            and: {name: "and " + exp, exp: exp}
-          };
-          return {
-            callback: function(key, options) {
-              addExpression(items[key].exp);
-            },
-            items: items
-          };
-        }
     });
-  });
 
-  setupGraph();
-  $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
-
-  setupMap();
-
-
-  setTimeout(function () {window.history.ready = true;}, 500);
-
-  $(window).resize(function(e) {
-    if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
-      return;
-    }
-    // What a hack
+    setupGraph();
     $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
-  });
+
+    setupMap();
+
+
+    setTimeout(function () {window.history.ready = true;}, 500);
+
+    $(window).resize(function(e) {
+      if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
+        return;
+      }
+      // What a hack
+      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+    });
 
