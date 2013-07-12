@@ -3162,7 +3162,18 @@ app.post('/upload', function(req, res) {
   var exec = require('child_process').exec,
       child;
 
+  var tags = "";
+  if (req.body.tag) {
+    var t = req.body.tag.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
+    t.forEach(function(tag) {
+      if (tag.length > 0) {
+        tags += " --tag " + tag;
+      }
+    });
+  }
+
   var cmd = Config.get("uploadCommand")
+              .replace("{TAGS}", tags)
               .replace("{NODE}", Config.nodeName())
               .replace("{TMPFILE}", req.files.file.path)
               .replace("{CONFIG}", Config.getConfigFile());
