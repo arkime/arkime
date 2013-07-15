@@ -340,22 +340,66 @@ exports.reassemble_udp = function (packets, cb) {
   cb(null, results);
 };
 
+// Needs to be rewritten since its possible for packets to be
+// dropped by windowing and other things to actually be displayed allowed.
 exports.reassemble_tcp = function (packets, a1, cb) {
 
-  // Remove syn, rst, 0 length packets
+  // Remove syn, rst, 0 length packets and figure out min/max seq number
   var packets2 = [];
-  for (var i = 0; i < packets.length; i++) {
+  var info = {};
+  var keys = [];
+  var key, i;
+  for (i = 0; i < packets.length; i++) {
     if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
       continue;
     }
+    key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
+    if (!info[key]) {
+      info[key] = {min: packets[i].tcp.seq, max: packets[i].tcp.seq, wrapseq: false, wrapack: false};
+      keys.push(key);
+    }
+    else if (info[key].min > packets[i].tcp.seq) {
+      info[key].min = packets[i].tcp.seq;
+    } else if (info[key].max < packets[i].tcp.seq) {
+      info[key].max = packets[i].tcp.seq;
+    }
+
     packets2.push(packets[i]);
   }
-
   packets = packets2;
   packets2 = undefined;
 
   if (packets.length === 0) {
       return cb(null, packets);
+  }
+
+  // Do we need to wrap the packets
+  var needwrap = false;
+  if (info[keys[0]].max - info[keys[0]].min > 0x7fffffff) {
+    info[keys[0]].wrapseq = true;
+    info[keys[1]].wrapack = true;
+    needwrap = true;
+  }
+
+  if (info[keys[1]].max - info[keys[1]].min > 0x7fffffff) {
+    info[keys[1]].wrapseq = true;
+    info[keys[0]].wrapack = true;
+    needwrap = true;
+  }
+
+
+  // Wrap the packets
+  if (needwrap) {
+    for (i = 0; i < packets.length; i++) {
+      key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
+      if (info[key].wrapseq && packets[i].tcp.seq < 0x7fffffff) {
+        packets[i].tcp.seq += 0xffffffff;
+      }
+
+      if (info[key].wrapack && packets[i].tcp.ack < 0x7fffffff) {
+        packets[i].tcp.ack += 0xffffffff;
+      }
+    }
   }
 
   // Sort Packets
