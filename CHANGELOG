@@ -1,3 +1,7 @@
+0.8.8 ???
+  - 32bit fix for lpd/fpd
+
+
 0.8.7 2013/07/12
   - Use recent versions of express which REQUIRES "npm install" in viewer directory
   - Use recent version of jade which requires extra spaces, use "git diff -w" to 
