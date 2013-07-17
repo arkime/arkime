@@ -375,13 +375,13 @@ exports.reassemble_tcp = function (packets, a1, cb) {
 
   // Do we need to wrap the packets
   var needwrap = false;
-  if (info[keys[0]].max - info[keys[0]].min > 0x7fffffff) {
+  if (info[keys[0]] && info[keys[0]].max - info[keys[0]].min > 0x7fffffff) {
     info[keys[0]].wrapseq = true;
     info[keys[1]].wrapack = true;
     needwrap = true;
   }
 
-  if (info[keys[1]].max - info[keys[1]].min > 0x7fffffff) {
+  if (info[keys[1]] && info[keys[1]].max - info[keys[1]].min > 0x7fffffff) {
     info[keys[1]].wrapseq = true;
     info[keys[0]].wrapack = true;
     needwrap = true;
