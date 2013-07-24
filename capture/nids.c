@@ -49,12 +49,23 @@ static MolochSessionHead_t   udpSessionQ;
 static MolochSessionHead_t   icmpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
 
+typedef struct moloch_output {
+    struct moloch_output *mo_next, *mo_prev;
+    uint16_t   mo_count;
+
+    char      *buf;
+    uint64_t   max;
+    uint64_t   pos;
+    int        fd;
+    char       close;
+} MolochOutput_t;
+
+
+static MolochOutput_t        outputQ;
+static MolochOutput_t       *output;
 
 static uint64_t              dumperFilePos = 0;
-static int                   dumperBufPos = 0;
-static int                   dumperBufMax = 0;
 static int                   dumperFd = -1;
-static char                  dumperBuf[0x1fffff + 4096];
 static uint32_t              dumperId;
 static FILE                 *offlineFile = 0;
 static uint32_t              initialDropped = 0;
@@ -311,10 +322,12 @@ void moloch_nids_file_create()
     pcap_dump_close(dumper);
 
     dumperFilePos = 24;
-    dumperBufPos = 0;
-    dumperBufMax = config.pcapWriteSize - 24;
+    output = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
+    output->max = config.pcapWriteSize - 24;
+    output->buf = MOLOCH_SIZE_ALLOC(pcapbuf, config.pcapWriteSize + 4096);
 
-    dumperFd = open(pcapFilename,  O_LARGEFILE | O_NOATIME | O_WRONLY );
+    LOG("Opening %s", pcapFilename);
+    dumperFd = open(pcapFilename,  O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK);
     if (dumperFd < 0) {
         LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %d", pcapFilename, errno);
         exit (2);
@@ -339,40 +352,81 @@ void moloch_nids_file_locked(char *filename)
     pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, st.st_size, &dumperId);
 }
 /******************************************************************************/
+gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) 
+{
+    if (config.exiting)
+        return FALSE;
+
+    MolochOutput_t *out = DLL_PEEK_HEAD(mo_, &outputQ);
+    int len = write(out->fd, out->buf+out->pos, (out->max - out->pos));
+
+    if (len < 0) {
+        LOG("ERROR - Write failed with %d %d\n", len, errno);
+        exit (0);
+    }
+    out->pos += len;
+
+    // Still more to write out
+    if (out->pos < out->max) {
+        return TRUE;
+    }
+
+    // The last write for this fd
+    char needClose = out->close;
+    if (out->close) {
+        close(out->fd);
+    }
+
+    // Cleanup buffer
+    MOLOCH_SIZE_FREE(pcapbuf, out->buf);
+    DLL_REMOVE(mo_, &outputQ, out);
+    MOLOCH_TYPE_FREE(MolochOutput_t, out);
+
+    // More waiting to write on different fd, setup a new watch
+    if (needClose && DLL_COUNT(mo_, &outputQ) > 0) {
+        out = DLL_PEEK_HEAD(mo_, &outputQ);
+        moloch_watch_fd(out->fd, MOLOCH_GIO_WRITE_COND, moloch_nids_output_cb, NULL);
+        return FALSE;
+    }
+
+    return DLL_COUNT(mo_, &outputQ) > 0;
+}
+/******************************************************************************/
 void moloch_nids_file_flush(gboolean all)
 {
-    int pos = 0;
-    int amount;
-
     if (config.dryRun) {
         return;
     }
 
-    all |= (dumperBufPos <= dumperBufMax);
+    output->close = all;
+    output->fd    = dumperFd;
+
+    MolochOutput_t *noutput = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
+    noutput->max = config.pcapWriteSize;
+    noutput->buf = MOLOCH_SIZE_ALLOC(pcapbuf, config.pcapWriteSize + 4096);
+
+
+    all |= (output->pos <= output->max);
 
     if (all) {
-        amount = dumperBufPos;
+        output->max = output->pos;
     } else {
-        amount = dumperBufMax;
+        noutput->pos = output->pos - output->max;
+        memcpy(noutput->buf, output->buf + output->max, noutput->pos);
+    }
+    output->pos = 0;
+
+    DLL_PUSH_TAIL(mo_, &outputQ, output);
+
+    if (DLL_COUNT(mo_, &outputQ) == 1) {
+        moloch_watch_fd(dumperFd, MOLOCH_GIO_WRITE_COND, moloch_nids_output_cb, NULL);
     }
 
-    while (pos < amount) {
-        int len = write(dumperFd, dumperBuf+pos, amount-pos);
-        if (len < 0) {
-            LOG("ERROR - Write failed with %d %d\n", len, errno);
-            exit (0);
-        }
-        pos += len;
+    if (DLL_COUNT(mo_, &outputQ) >= 100 && DLL_COUNT(mo_, &outputQ) % 50 == 0) {
+        LOG("WARNING - %d output buffers waiting, disk IO system too slow?", DLL_COUNT(mo_, &outputQ));
     }
 
-    if (all) {
-        dumperBufPos = 0;
-    } else {
-        dumperBufPos = dumperBufPos - dumperBufMax;
-        memmove(dumperBuf, dumperBuf+dumperBufMax, dumperBufPos);
-    }
-    dumperBufMax = config.pcapWriteSize;
-
+    output = noutput;
 }
 /******************************************************************************/
 struct pcap_timeval {
@@ -394,11 +448,11 @@ moloch_nids_pcap_dump(const struct pcap_pkthdr *h, const u_char *sp)
     hdr.caplen     = h->caplen;
     hdr.len        = h->len;
 
-    memcpy(dumperBuf+dumperBufPos, (char *)&hdr, sizeof(hdr));
-    dumperBufPos += sizeof(hdr);
+    memcpy(output->buf + output->pos, (char *)&hdr, sizeof(hdr));
+    output->pos += sizeof(hdr);
 
-    memcpy(dumperBuf+dumperBufPos, sp, h->caplen);
-    dumperBufPos += h->caplen;
+    memcpy(output->buf + output->pos, sp, h->caplen);
+    output->pos += h->caplen;
 }
 /******************************************************************************/
 void moloch_nids_new_session_http(MolochSession_t *session)
@@ -535,7 +589,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         }
         headSession = DLL_PEEK_HEAD(q_, sessionsQ);
 
-        LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d", 
+        LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d disk: %d", 
           totalPackets, 
           sessionsQ->q_count, 
           HASH_COUNT(h_, sessions),
@@ -543,7 +597,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
           ps.ps_recv, 
           ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*(double)100.0/ps.ps_recv,
           ps.ps_ifdrop,
-          moloch_http_queue_length(esServer));
+          moloch_http_queue_length(esServer),
+          DLL_COUNT(mo_,  &outputQ));
     }
     
     /* Get or Create Session */
@@ -623,7 +678,6 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             if (dumperFd == -1 || dumperFilePos >= (uint64_t)config.maxFileSizeG*1024LL*1024LL*1024LL) {
                 if (dumperFd > 0 && !config.dryRun)  {
                     moloch_nids_file_flush(TRUE);
-                    close(dumperFd);
                 }
                 moloch_nids_file_create();
             }
@@ -637,14 +691,14 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             g_array_append_val(session->filePosArray, dumperFilePos);
 
             if (config.fakePcap) {
-                dumperBuf[dumperBufPos] = 'P';
-                dumperBufPos++;
+                output->buf[output->pos] = 'P';
+                output->pos++;
             } else {
                 moloch_nids_pcap_dump(nids_last_pcap_header, nids_last_pcap_data);
                 dumperFilePos += 16 + nids_last_pcap_header->caplen;
             }
 
-            if (dumperBufPos > dumperBufMax) {
+            if (output->pos > output->max) {
                 moloch_nids_file_flush(FALSE);
             }
         } else {
@@ -903,8 +957,6 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 }
 
 /******************************************************************************/
-gboolean moloch_nids_watch_cb(gint fd, GIOCondition cond, gpointer data);
-/******************************************************************************/
 /* When processing many pcap files we don't start the next file
  * until there are less then 20 outstanding es requests
  */
@@ -919,6 +971,10 @@ gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) 
 {
+    if (DLL_COUNT(mo_, &outputQ) > config.maxWriteBuffers) {
+        return TRUE;
+    }
+
     int r = nids_dispatch(config.packetsPerPoll);
     if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
         if (config.pcapReadDir && moloch_nids_next_file()) {
@@ -934,6 +990,10 @@ gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
 /******************************************************************************/
 gboolean moloch_nids_poll_cb(gpointer UNUSED(uw)) 
 {
+    if (DLL_COUNT(mo_, &outputQ) > config.maxWriteBuffers) {
+        return TRUE;
+    }
+
     int r = nids_dispatch(config.packetsPerPoll);
     if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
         if (config.pcapReadDir && moloch_nids_next_file()) {
@@ -1137,6 +1197,8 @@ void moloch_nids_root_init()
         LOG("pcap open live failed! %s", errbuf);
         exit(1);
     }
+
+    config.maxWriteBuffers = (config.pcapReadDir || config.pcapReadFile)?10:2000;
 }
 /******************************************************************************/
 void moloch_nids_init_nids()
@@ -1210,6 +1272,8 @@ void moloch_nids_init()
     DLL_INIT(q_, &udpSessionQ);
     DLL_INIT(q_, &icmpSessionQ);
 
+    DLL_INIT(mo_, &outputQ);
+
     nids_params.n_hosts = 1024;
     nids_params.tcp_workarounds = 1;
     nids_params.one_loop_less = 0;
@@ -1244,6 +1308,27 @@ void moloch_nids_exit() {
 
     if (!config.dryRun && config.copyPcap) {
         moloch_nids_file_flush(TRUE);
-        close(dumperFd);
+        MOLOCH_SIZE_FREE(pcapbuf, output->buf);
+        MOLOCH_TYPE_FREE(MolochOutput_t, output);
+
+        // Write out all the buffers
+        while (DLL_COUNT(mo_, &outputQ) > 0) {
+            output = DLL_PEEK_HEAD(mo_, &outputQ);
+            int len = write(output->fd, output->buf+output->pos, output->max - output->pos);
+            if (len < 0) {
+                LOG("ERROR - Write failed with %d %d\n", len, errno);
+                exit (0);
+            }
+            output->pos += len;
+            if (output->pos < output->max) {
+                continue;
+            } else {
+                if (output->close)
+                    close(output->fd);
+                MOLOCH_SIZE_FREE(pcapbuf, output->buf);
+                DLL_REMOVE(mo_, &outputQ, output);
+                MOLOCH_TYPE_FREE(MolochOutput_t, output);
+            }
+        }
     }
 }

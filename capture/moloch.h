@@ -157,6 +157,7 @@ typedef struct moloch_config {
     uint32_t  packetsPerPoll;
     uint32_t  pcapBufferSize;
     uint32_t  pcapWriteSize;
+    uint32_t  maxWriteBuffers;
 
     char      logUnknownProtocols;
     char      logESRequests;

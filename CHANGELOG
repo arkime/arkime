@@ -2,6 +2,8 @@
   - 32bit fix for lpd/fpd
   - easybutton now uses nodejs 0.10, 0.8 is still supported for now
   - Work around for tcp seq number wrapping causing viewer exit
+  - dns parsing core fix
+  - switch to nonblocking pcap saves
 
 
 0.8.7 2013/07/12

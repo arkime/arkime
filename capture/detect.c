@@ -965,7 +965,7 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
         if (!namelen || BSB_IS_ERROR(bsb))
             break;
 
-        short qtype = 0 , qclass = 0 ;
+        unsigned short qtype = 0 , qclass = 0 ;
         BSB_IMPORT_u16(bsb, qtype);
         BSB_IMPORT_u16(bsb, qclass);
 
