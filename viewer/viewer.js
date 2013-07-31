@@ -2553,7 +2553,7 @@ function proxyRequest (req, res) {
   getViewUrl(req.params.nodeName, function(err, viewUrl, agent) {
     if (err) {
       console.log(err);
-      res.send("Check logs on " + os.hostname());
+      res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
@@ -2570,8 +2570,8 @@ function proxyRequest (req, res) {
     });
 
     preq.on('error', function (e) {
-      console.log("error = ", e);
-      res.send("Unknown error, check logs on " + os.hostname());
+      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
+      res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + os.hostname());
     });
     preq.end();
   });
@@ -2909,7 +2909,7 @@ app.get(/\/sessionIds.pcap.*/, function(req, res) {
             });
           });
           preq.on('error', function (e) {
-            console.log("error = ", e);
+            console.log("ERROR - Couldn't proxy sessionIds request=", info, "\nerror=", e);
             nextCb(null);
           });
           preq.end();
@@ -2962,7 +2962,7 @@ function sessionsPcap(req, res, pcapWriter, extension) {
               });
             });
             preq.on('error', function (e) {
-              console.log("error = ", e);
+              console.log("ERROR - Couldn't proxy pcap request=", info, "\nerror=", e);
               nextCb(null);
             });
             preq.end();

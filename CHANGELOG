@@ -4,6 +4,7 @@
   - Work around for tcp seq number wrapping causing viewer exit
   - dns parsing core fix
   - switch to nonblocking pcap saves
+  - more debuging info on proxy failure
 
 
 0.8.7 2013/07/12
