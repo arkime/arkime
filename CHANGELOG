@@ -5,6 +5,7 @@
   - dns parsing core fix
   - switch to nonblocking pcap saves
   - more debuging info on proxy failure
+  - Fixed bug when setting viewUrl
 
 
 0.8.7 2013/07/12

@@ -2523,7 +2523,7 @@ function localSessionDetail(req, res) {
 function getViewUrl(node, cb) {
   var url = Config.getFull(node, "viewUrl");
   if (url) {
-    cb(null, url);
+    cb(null, url, url.slice(0, 5) === "https"?httpsAgent:httpAgent);
     return;
   }
 
