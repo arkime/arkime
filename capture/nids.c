@@ -922,19 +922,31 @@ void moloch_nids_session_free (MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 {
+    static int count[100];
+
+    if (count[errnum] == 100)
+        return;
+
     char saddr[20], daddr[20];
 
     switch (type) {
-
     case NIDS_WARN_IP:
 	if (errnum != NIDS_WARN_IP_HDR) {
 	    strcpy(saddr, int_ntoa(iph->ip_src.s_addr));
 	    strcpy(daddr, int_ntoa(iph->ip_dst.s_addr));
 	    LOG("NIDSIP:%s %s, packet (apparently) from %s to %s",
 		   pcapFilename, nids_warnings[errnum], saddr, daddr);
-	} else
-	    LOG("NIDSIP:%s %s",
-		   pcapFilename, nids_warnings[errnum]);
+	} else {
+            if (iph->ip_hl < 5) {
+                LOG("NIDSIP:%s %s - %d (iph->ip_hl) < 5", pcapFilename, nids_warnings[errnum], iph->ip_hl);
+            } else if (iph->ip_v != 4) {
+                LOG("NIDSIP:%s %s - %d (iph->ip_v) != 4", pcapFilename, nids_warnings[errnum], iph->ip_v);
+            } else if (ntohs(iph->ip_len) < iph->ip_hl << 2) {
+                LOG("NIDSIP:%s %s - %d < %d (iph->ip_len < iph->ip_hl)", pcapFilename, nids_warnings[errnum], ntohs(iph->ip_len), iph->ip_hl << 2);
+            } else {
+                LOG("NIDSIP:%s %s - Length issue, was packet truncated?", pcapFilename, nids_warnings[errnum]);
+            }
+        }
 	break;
 
     case NIDS_WARN_TCP:
@@ -952,7 +964,12 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 	break;
 
     default:
-	LOG("NIDS: Unknown warning number %d", type);
+	LOG("NIDS: Unknown error type:%d errnum:%d", type, errnum);
+    }
+
+    count[errnum]++;
+    if (count[errnum] == 100) {
+        LOG("NIDS: No longer displaying above error");
     }
 }
 

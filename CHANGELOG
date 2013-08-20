@@ -6,6 +6,8 @@
   - switch to nonblocking pcap saves
   - more debuging info on proxy failure
   - Fixed bug when setting viewUrl
+  - Limit number of libnids errors
+  - Display possible reasons for libnids IP Header error
 
 
 0.8.7 2013/07/12
