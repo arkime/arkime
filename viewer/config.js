@@ -31,7 +31,7 @@ var ini    = require('iniparser'),
 
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
-    nodeName: os.hostname().substring(0, os.hostname().indexOf('.')),
+    nodeName: os.hostname().split(".")[0],
     fields: [],
     fieldsMap: {}
   };
