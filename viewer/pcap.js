@@ -22,26 +22,84 @@
 
 var fs             = require('fs-ext');
 
-var Pcap = module.exports = exports = function Pcap (filename) {
-  this.filename = filename;
+var Pcap = module.exports = exports = function Pcap (key) {
+  this.key     = key;
+  this.count   = 0;
+  this.closing = false;
   return this;
+};
+
+var internals = {
+  pr2name: {
+    1:  "icmp",
+    6:  "tcp",
+    17: "udp",
+    58: "icmpv6"
+  },
+  pcaps: {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////
 //// High Level
 //////////////////////////////////////////////////////////////////////////////////
-Pcap.prototype.open = function(cb) {
-  var self = this;
-  fs.open(this.filename, "r", function (err, fd) {
-    self.fd = fd;
-    cb(err);
-  });
+Pcap.prototype.ref = function() {
+  this.count++;
 };
 
-Pcap.prototype.close = function() {
-  if (this.fd) {
-    fs.close(this.fd);
+exports.get = function(key) {
+  if (internals.pcaps[key]) {
+    return internals.pcaps[key];
   }
+
+  var pcap = new Pcap(key);
+  internals.pcaps[key] = pcap;
+  return pcap;
+};
+
+Pcap.prototype.isOpen = function() {
+  return this.fd !== undefined;
+};
+
+Pcap.prototype.open = function(filename) {
+  if (this.fd) {
+    return;
+  }
+  this.filename = filename;
+  this.fd = fs.openSync(filename, "r");
+};
+
+Pcap.prototype.openReadWrite = function(filename) {
+  if (this.fd) {
+    return;
+  }
+  this.filename = filename;
+  this.fd = fs.openSync(filename, "r+");
+};
+
+Pcap.prototype.unref = function() {
+  this.count--;
+  if (this.count > 0) {
+    return;
+  }
+
+  if (this.closing === true) {
+    return;
+  }
+
+  var self = this;
+  self.closing = true;
+
+  setTimeout(function() {
+    if (self.closing && self.count === 0) {
+      delete internals.pcaps[self.key];
+      if (self.fd) {
+        fs.close(self.fd);
+      }
+      delete self.fd;
+    } else {
+      self.closing = false;
+    }
+  }, 500);
 };
 
 Pcap.prototype.readHeader = function(cb) {
@@ -64,15 +122,34 @@ Pcap.prototype.readHeader = function(cb) {
 
 Pcap.prototype.readPacket = function(pos, cb) {
   var self = this;
+
+  // Hacky!! File isn't actually opened, try again soon
+  if (!self.fd) {
+    setTimeout(function() {self.readPacket(pos, cb);}, 10);
+    return;
+  }
+
   var buffer = new Buffer(5000);
   try {
-    fs.read(self.fd, buffer, 0, 16, pos, function (err, bytesRead, buffer) {
-      if (bytesRead !== 16) {
+
+    // Try and read full packet and header in one read
+    fs.read(self.fd, buffer, 0, 1550, pos, function (err, bytesRead, buffer) {
+      if (bytesRead < 16) {
         return cb(null);
       }
       var len = buffer.readInt32LE(8);
+
+      if (len < 0 || len > 0xffff) {
+        return cb(undefined);
+      }
+
+      // Full packet fit
+      if (16 + len <= bytesRead) {
+          return cb(buffer.slice(0,16+len));
+      }
+      // Full packet didn't fit, get what was missed
       try {
-        fs.read(self.fd, buffer, 16, len, pos+16, function (err, bytesRead, buffer) {
+        fs.read(self.fd, buffer, bytesRead, (16+len)-bytesRead, pos+bytesRead, function (err, bytesRead, buffer) {
           return cb(buffer.slice(0,16+len));
         });
       } catch (e) {
@@ -86,18 +163,38 @@ Pcap.prototype.readPacket = function(pos, cb) {
   }
 };
 
+Pcap.prototype.scrubPacket = function(packet, pos, buf, entire) {
+
+  var len = packet.pcap.incl_len + 16; // 16 = pcap header length
+  if (entire) {
+    pos += 16; // Don't delete pcap header
+    len -= 16;
+  } else {
+    switch(packet.ip.p) {
+    case 1:
+      pos += (packet.icmp._pos + 8);
+      len -= (packet.icmp._pos + 8);
+      break;
+    case 6:
+      pos += (packet.tcp._pos + 4*packet.tcp.off);
+      len -= (packet.tcp._pos + 4*packet.tcp.off);
+      break;
+    case 17:
+      pos += (packet.udp._pos + 8);
+      len -= (packet.udp._pos + 8);
+      break;
+    default:
+      throw "Unknown packet type, can't scrub";
+    }
+  }
+
+  fs.writeSync(this.fd, buf, 0, len, pos);
+  fs.fsyncSync(this.fd);
+};
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Utilities
 //////////////////////////////////////////////////////////////////////////////////
-
-var internals = {
-  pr2name: {
-    1:  "icmp",
-    6:  "tcp",
-    17: "udp",
-    58: "icmpv6"
-  }
-};
 
 exports.protocol2Name = function(num) {
   return internals.pr2name[num] || "" + num;
@@ -112,8 +209,9 @@ exports.inet_ntoa = function(num) {
 //////////////////////////////////////////////////////////////////////////////////
 
 
-Pcap.prototype.icmp = function (buffer, obj) {
+Pcap.prototype.icmp = function (buffer, obj, pos) {
   obj.icmp = {
+    _pos:      pos,
     length:    buffer.length,
     type:      buffer[0],
     code:      buffer[1],
@@ -125,8 +223,9 @@ Pcap.prototype.icmp = function (buffer, obj) {
   obj.icmp.data = buffer.slice(8);
 };
 
-Pcap.prototype.tcp = function (buffer, obj) {
+Pcap.prototype.tcp = function (buffer, obj, pos) {
   obj.tcp = {
+    _pos:       pos,
     length:     buffer.length,
     sport:      buffer.readUInt16BE(0),
     dport:      buffer.readUInt16BE(2),
@@ -154,8 +253,9 @@ Pcap.prototype.tcp = function (buffer, obj) {
   }
 };
 
-Pcap.prototype.udp = function (buffer, obj) {
+Pcap.prototype.udp = function (buffer, obj, pos) {
   obj.udp = {
+    _pos:       pos,
     length:     buffer.length,
     sport:      buffer.readUInt16BE(0),
     dport:      buffer.readUInt16BE(2),
@@ -166,7 +266,7 @@ Pcap.prototype.udp = function (buffer, obj) {
   obj.udp.data = buffer.slice(8);
 };
 
-Pcap.prototype.ip4 = function (buffer, obj) {
+Pcap.prototype.ip4 = function (buffer, obj, pos) {
   obj.ip = {
     length: buffer.length,
     hl:     (buffer[0] & 0xf),
@@ -184,20 +284,20 @@ Pcap.prototype.ip4 = function (buffer, obj) {
 
   switch(obj.ip.p) {
   case 1:
-    this.icmp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
+    this.icmp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   case 6:
-    this.tcp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
+    this.tcp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   case 17:
-    this.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj);
+    this.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   default:
     console.log("Unknown ip.p", obj);
   }
 };
 
-Pcap.prototype.ip6 = function (buffer, obj) {
+Pcap.prototype.ip6 = function (buffer, obj, pos) {
   obj.ip = {
     length: buffer.length,
     v:      ((buffer[0] >> 4) & 0xf),
@@ -209,32 +309,32 @@ Pcap.prototype.ip6 = function (buffer, obj) {
   };
 };
 
-Pcap.prototype.ethertype = function(buffer, obj) {
+Pcap.prototype.ethertype = function(buffer, obj, pos) {
   obj.ether.type = buffer.readUInt16BE(0);
 
   switch(obj.ether.type) {
   case 0x0800:
-    this.ip4(buffer.slice(2), obj);
+    this.ip4(buffer.slice(2), obj, pos+2);
     break;
   case 0x86dd:
-    this.ip6(buffer.slice(2), obj);
+    this.ip6(buffer.slice(2), obj, pos+2);
     break;
   case 0x8100: // VLAN
-    this.ethertype(buffer.slice(4), obj);
+    this.ethertype(buffer.slice(4), obj, pos+4);
     break;
   default:
-    console.log("Unknown ether.type", obj);
+    console.trace("Unknown ether.type", obj);
     break;
   }
 };
 
-Pcap.prototype.ether = function (buffer, obj) {
+Pcap.prototype.ether = function (buffer, obj, pos) {
   obj.ether = {
     length: buffer.length,
     addr1:  buffer.slice(0, 6).toString('hex', 0, 6),
     addr2:  buffer.slice(6, 12).toString('hex', 0, 6)
   };
-  this.ethertype(buffer.slice(12), obj);
+  this.ethertype(buffer.slice(12), obj, pos+12);
 };
 
 
@@ -248,13 +348,13 @@ Pcap.prototype.pcap = function (buffer, obj) {
 
   switch(this.linkType) {
   case 1: // Ether
-    this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj);
+    this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 12: // Raw
-    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj);
+    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 113: // SLL
-    this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj);
+    this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);
     break;
   default:
     console.log("Unsupported pcap file", this.filename, "link type", this.linkType);
@@ -320,6 +420,7 @@ exports.reassemble_icmp = function (packets, cb) {
 };
 
 exports.reassemble_udp = function (packets, cb) {
+  try {
   var results = [];
   packets.forEach(function (item) {
     var key = item.ip.addr1 + ':' + item.udp.sport;
@@ -338,122 +439,142 @@ exports.reassemble_udp = function (packets, cb) {
     }
   });
   cb(null, results);
+  } catch (e) {
+    cb(e, results);
+  }
 };
 
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
+// If multiple tcp sessions in one moloch session display can be wacky/wrong.
 exports.reassemble_tcp = function (packets, a1, cb) {
+  try {
 
-  // Remove syn, rst, 0 length packets and figure out min/max seq number
-  var packets2 = [];
-  var info = {};
-  var keys = [];
-  var key, i;
-  for (i = 0; i < packets.length; i++) {
-    if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
-      continue;
-    }
-    key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
-    if (!info[key]) {
-      info[key] = {min: packets[i].tcp.seq, max: packets[i].tcp.seq, wrapseq: false, wrapack: false};
-      keys.push(key);
-    }
-    else if (info[key].min > packets[i].tcp.seq) {
-      info[key].min = packets[i].tcp.seq;
-    } else if (info[key].max < packets[i].tcp.seq) {
-      info[key].max = packets[i].tcp.seq;
-    }
-
-    packets2.push(packets[i]);
-  }
-  packets = packets2;
-  packets2 = undefined;
-
-  if (packets.length === 0) {
-      return cb(null, packets);
-  }
-
-  // Do we need to wrap the packets
-  var needwrap = false;
-  if (info[keys[0]] && info[keys[0]].max - info[keys[0]].min > 0x7fffffff) {
-    info[keys[0]].wrapseq = true;
-    info[keys[1]].wrapack = true;
-    needwrap = true;
-  }
-
-  if (info[keys[1]] && info[keys[1]].max - info[keys[1]].min > 0x7fffffff) {
-    info[keys[1]].wrapseq = true;
-    info[keys[0]].wrapack = true;
-    needwrap = true;
-  }
-
-
-  // Wrap the packets
-  if (needwrap) {
+    // Remove syn, rst, 0 length packets and figure out min/max seq number
+    var packets2 = [];
+    var info = {};
+    var keys = [];
+    var key, i;
     for (i = 0; i < packets.length; i++) {
+      if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
+        continue;
+      }
       key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
-      if (info[key].wrapseq && packets[i].tcp.seq < 0x7fffffff) {
-        packets[i].tcp.seq += 0xffffffff;
+      if (!info[key]) {
+        info[key] = {min: packets[i].tcp.seq, max: packets[i].tcp.seq, wrapseq: false, wrapack: false};
+        keys.push(key);
+      }
+      else if (info[key].min > packets[i].tcp.seq) {
+        info[key].min = packets[i].tcp.seq;
+      } else if (info[key].max < packets[i].tcp.seq) {
+        info[key].max = packets[i].tcp.seq;
       }
 
-      if (info[key].wrapack && packets[i].tcp.ack < 0x7fffffff) {
-        packets[i].tcp.ack += 0xffffffff;
+      packets2.push(packets[i]);
+    }
+    packets = packets2;
+    packets2 = [];
+
+    if (packets.length === 0) {
+        return cb(null, packets);
+    }
+
+    // Do we need to wrap the packets
+    var needwrap = false;
+    if (info[keys[0]] && info[keys[0]].max - info[keys[0]].min > 0x7fffffff) {
+      info[keys[0]].wrapseq = true;
+      info[keys[1]].wrapack = true;
+      needwrap = true;
+    }
+
+    if (info[keys[1]] && info[keys[1]].max - info[keys[1]].min > 0x7fffffff) {
+      info[keys[1]].wrapseq = true;
+      info[keys[0]].wrapack = true;
+      needwrap = true;
+    }
+
+    // Wrap the packets
+    if (needwrap) {
+      for (i = 0; i < packets.length; i++) {
+        key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
+        if (info[key].wrapseq && packets[i].tcp.seq < 0x7fffffff) {
+          packets[i].tcp.seq += 0xffffffff;
+        }
+
+        if (info[key].wrapack && packets[i].tcp.ack < 0x7fffffff) {
+          packets[i].tcp.ack += 0xffffffff;
+        }
       }
     }
+
+    // Sort Packets
+    var clientKey = packets[0].ip.addr1 + ':' + packets[0].tcp.sport;
+    packets.sort(function(a,b) {
+      if ((a.ip.addr1 === b.ip.addr1) && (a.tcp.sport === b.tcp.sport)) {
+        return (a.tcp.seq - b.tcp.seq);
+      }
+
+      if (clientKey === a.ip.addr1 + ':' + a.tcp.sport) {
+        return ((a.tcp.seq + a.tcp.data.length-1) - b.tcp.ack);
+      }
+
+      return (a.tcp.ack - (b.tcp.seq + b.tcp.data.length-1) );
+    });
+
+    // Now divide up conversation
+    var clientSeq = 0;
+    var hostSeq = 0;
+    var start = 0;
+    var previous = 0;
+
+    var results = [];
+    packets.forEach(function (item) {
+      var key = item.ip.addr1 + ':' + item.tcp.sport;
+      if (key === clientKey) {
+        if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
+          return;
+        }
+        clientSeq = (item.tcp.seq + item.tcp.data.length);
+      } else {
+        if (hostSeq >= (item.tcp.seq + item.tcp.data.length)) {
+          return;
+        }
+        hostSeq = (item.tcp.seq + item.tcp.data.length);
+      }
+
+      var result;
+      if (results.length === 0 || key !== results[results.length-1].key) {
+        previous = start = item.tcp.seq;
+        result = {
+          key: key,
+          data: item.tcp.data,
+          ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+        };
+        results.push(result);
+      } else if (item.tcp.seq - previous > 0xffff) {
+        results.push({key: "", data: new Buffer(0), ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)});
+        // Larger then max window size packets missing
+        previous = start = item.tcp.seq;
+        result = {
+          key: key,
+          data: item.tcp.data,
+          ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
+        };
+        results.push(result);
+      } else {
+        previous = item.tcp.seq;
+        var newBuf = new Buffer(item.tcp.data.length + item.tcp.seq - start);
+        results[results.length-1].data.copy(newBuf);
+        item.tcp.data.copy(newBuf, item.tcp.seq - start);
+        results[results.length-1].data = newBuf;
+      }
+    });
+
+    if (a1 !== results[0].key) {
+      results.unshift({data: new Buffer(0), key: a1});
+    }
+    cb(null, results);
+  } catch (e) {
+    cb(e, null);
   }
-
-  // Sort Packets
-  var clientKey = packets[0].ip.addr1 + ':' + packets[0].tcp.sport;
-  packets.sort(function(a,b) {
-    if ((a.ip.addr1 === b.ip.addr1) && (a.tcp.sport === b.tcp.sport)) {
-      return (a.tcp.seq - b.tcp.seq);
-    }
-
-    if (clientKey === a.ip.addr1 + ':' + a.tcp.sport) {
-      return ((a.tcp.seq + a.tcp.data.length-1) - b.tcp.ack);
-    }
-
-    return (a.tcp.ack - (b.tcp.seq + b.tcp.data.length-1) );
-  });
-
-  // Now divide up conversation
-  var clientSeq = 0;
-  var hostSeq = 0;
-  var start = 0;
-
-  var results = [];
-  packets.forEach(function (item) {
-    var key = item.ip.addr1 + ':' + item.tcp.sport;
-    if (key === clientKey) {
-      if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
-        return;
-      }
-      clientSeq = (item.tcp.seq + item.tcp.data.length);
-    } else {
-      if (hostSeq >= (item.tcp.seq + item.tcp.data.length)) {
-        return;
-      }
-      hostSeq = (item.tcp.seq + item.tcp.data.length);
-    }
-
-    if (results.length === 0 || key !== results[results.length-1].key) {
-      start = item.tcp.seq;
-      var result = {
-        key: key,
-        data: item.tcp.data,
-        ts: item.pcap.ts_sec*1000 + Math.round(item.pcap.ts_usec/1000)
-      };
-      results.push(result);
-    } else {
-      var newBuf = new Buffer(item.tcp.data.length + item.tcp.seq - start);
-      results[results.length-1].data.copy(newBuf);
-      item.tcp.data.copy(newBuf, item.tcp.seq - start);
-      results[results.length-1].data = newBuf;
-    }
-  });
-
-  if (a1 !== results[0].key) {
-    results.unshift({data: new Buffer(0), key: a1});
-  }
-  cb(null, results);
 };

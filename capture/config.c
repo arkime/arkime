@@ -144,7 +144,9 @@ void moloch_config_load()
 
     char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
 
-    if (strcmp(rotateIndex, "daily") == 0)
+    if (strcmp(rotateIndex, "hourly") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY;
+    else if (strcmp(rotateIndex, "daily") == 0)
         config.rotate = MOLOCH_ROTATE_DAILY;
     else if (strcmp(rotateIndex, "weekly") == 0)
         config.rotate = MOLOCH_ROTATE_WEEKLY;
@@ -207,7 +209,7 @@ void moloch_config_load()
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
     config.packetsPerPoll   = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
     config.pcapBufferSize   = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x200000);
+    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x400000);
 
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);

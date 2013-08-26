@@ -86,7 +86,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
         session->fields[pos] = field;
         if (len == -1)
             len = strlen(string);
-        session->jsonSize += 6 + config.fields[pos]->len + 2*len;
+        field->jsonSize = 6 + config.fields[pos]->len + 2*len;
         if (copy)
             string = g_strndup(string, len);
         switch (config.fields[pos]->type) {
@@ -115,9 +115,10 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
 
     if (len == -1)
         len = strlen(string);
-    session->jsonSize += 6 + 2*len;
 
     field = session->fields[pos];
+    field->jsonSize += 6 + 2*len;
+
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_STR:
         if (copy)
@@ -162,7 +163,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        session->jsonSize += 3 + config.fields[pos]->len + 10;
+        field->jsonSize = 3 + config.fields[pos]->len + 10;
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_INT:
             field->i = i;
@@ -172,7 +173,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             g_array_append_val(field->iarray, i);
             return TRUE;
         case MOLOCH_FIELD_TYPE_IP_HASH:
-            session->jsonSize += 100;
+            field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT_HASH:
             hash = MOLOCH_TYPE_ALLOC(MolochIntHashStd_t);
             HASH_INIT(i_, *hash, moloch_int_hash, moloch_int_cmp);
@@ -187,7 +188,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     }
 
     field = session->fields[pos];
-    session->jsonSize += 3 + 10;
+    field->jsonSize += 3 + 10;
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_INT:
         field->i = i;
@@ -196,7 +197,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         g_array_append_val(field->iarray, i);
         return TRUE;
     case MOLOCH_FIELD_TYPE_IP_HASH:
-        session->jsonSize += 100;
+        field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT_HASH:
         HASH_FIND_INT(i_, *(field->ihash), i, hint);
         if (hint)

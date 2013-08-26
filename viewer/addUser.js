@@ -45,7 +45,8 @@ var nuser = {
   enabled: true,
   webEnabled: true,
   emailSearch: false,
-  createEnabled: false
+  createEnabled: false,
+  removeEnabeld: false
 };
 
 var i;
@@ -54,6 +55,11 @@ for (i = 5; i < process.argv.length; i++) {
   case "--admin":
   case "-admin":
     nuser.createEnabled = true;
+    break;
+
+  case "--remove":
+  case "-remove":
+    nuser.removeEnabled = true;
     break;
 
   case "--noweb":

@@ -205,6 +205,20 @@ exports.nodesStats = function (options, cb) {
     .exec();
 };
 
+exports.update = function (indexName, typeName, documentId, document, cb) {
+    var path = '/' + indexName + '/' + typeName + '/' + documentId + '/_update';
+    return internals.elasticSearchClient.createCall({data: JSON.stringify(document),
+                                                     path: path,
+                                                     method: 'POST'}, internals.elasticSearchClient.clientOptions)
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
+
 exports.esVersion = function (cb) {
   internals.elasticSearchClient.createCall({data:"",path:"/",method: "GET"}, internals.elasticSearchClient.clientOptions)
     .on('data', function(data) {
@@ -219,10 +233,17 @@ exports.esVersion = function (cb) {
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
 internals.molochNodeStatsCache = {};
+
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
     if (err || !stat.exists) {
-      cb(err || "Unknown node " + name, null);
+
+      // Even if an error, if we have a cached value use it
+      if (err && internals.molochNodeStatsCache[name]) {
+        return cb(null, internals.molochNodeStatsCache[name]);
+      }
+
+      cb(err || "Unknown node " + name, internals.molochNodeStatsCache[name]);
     } else {
       internals.molochNodeStatsCache[name] = stat._source;
       internals.molochNodeStatsCache[name]._timeStamp = Date.now();
@@ -248,7 +269,13 @@ exports.healthCache = function (cb) {
   }
 
   return exports.health(function(err, health) {
-      if (err) {return cb(err, null);}
+      if (err) {
+        // Even if an error, if we have a cache use it
+        if (internals.healthCache._timeStamp !== undefined) {
+          return cb(null, internals.healthCache);
+        }
+        return cb(err, null);
+      }
 
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
@@ -346,6 +373,16 @@ exports.tagNameToId = function (name, cb) {
       return cb(internals.tagName2Id[name]);
     }
     return cb(-1);
+  });
+};
+
+exports.createTag = function (name, cb) {
+  exports.index("sequence", "sequence", "tags", {}, function (err, sinfo) {
+    exports.index("tags", "tag", name, {n: sinfo._version}, function (err, tinfo) {
+      internals.tagId2Name[sinfo._version] = name;
+      internals.tagName2Id[name] = sinfo._version;
+      cb(sinfo._version);
+    });
   });
 };
 

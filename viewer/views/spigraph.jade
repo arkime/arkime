@@ -46,11 +46,36 @@ block content
     select(id='sort')
       option(value="name") Name
       option(value="count", selected) Count
+    label Refresh:
+    input(type='text', id='refresh', size=3, value='0')
     span#recordsText
   div#sessionGraphs
   script(type='text/javascript').
     var initialDisplayLength;
     var doPushState = 1;
+    var refreshInterval;
+
+    $("#refresh").live("change", function () {
+      if (refreshInterval) {
+        window.clearInterval(refreshInterval);
+        refreshInterval = undefined;
+      }
+
+      var secs = +$("#refresh").val();
+      if (secs !== 0 && secs < 10) {
+        secs = 10;
+        $("#refresh").val("10");
+      }
+      if (secs !== 0) {
+        refreshInterval = window.setInterval(function () {
+          if ($("#processing").css('display') !== 'none') {
+          }
+          doPushState = 0;
+          loadData();
+        }, secs * 1000);
+      }
+
+    });
 
     $(window).bind('popstate', function(e) {
       if (window.history.ready) {
@@ -110,10 +135,10 @@ block content
               $("#bsqErr").hide();
             }
 
-            $("#exportForm").data("moloch-visible", -1)
-                            .data("moloch-all", json.iTotalDisplayRecords);
+            $("#actionsForm").data("moloch-visible", -1)
+                             .data("moloch-all", json.iTotalDisplayRecords);
 
-            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
+            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords || 0) + " total entries");
 
             if ($("#date").val() === "-2") {
               $("#customDate").show();
@@ -209,7 +234,7 @@ block content
     });
 
     setupGraph();
-    $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+    expressionResize();
 
     setupMap();
 
@@ -220,7 +245,6 @@ block content
       if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
         return;
       }
-      // What a hack
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
     });
 

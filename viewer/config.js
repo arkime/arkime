@@ -265,6 +265,11 @@ addField("tls.alt",  "cert.alt", "cert", "lotermfield", "Alternative names");
 addField("tls.altcnt", "cert.alt.cnt", "cert", "integer", "Number of unique alternative names");
 addField("tlscnt", "cert.cnt", "cert", "integer", "Number of unique certificates in session");
 
+addField("ircnck",  "irc.nick", "irc", "termfield", "Nicknames set");
+addField("ircnckcnt",  "irc.nick.cnt", "irc", "integer", "Unique number of nicknames set");
+addField("ircch",  "irc.channel", "irc", "termfield", "Channels joined ");
+addField("ircchcnt",  "irc.channel.cnt", "irc", "integer", "Unique number of channels joined");
+
 addField("ect", "email.content-type", "email", "termfield", "Content-Type header of message");
 addField("ectcnt", "email.content-type.cnt", "email", "integer", "Unique number of content-type headers");
 addField("eid", "email.message-id", "email", "termfield", "Message-Id header of message");
@@ -284,7 +289,7 @@ addField("esubcnt", "email.subject.cnt", "email", "integer", "Unique number of s
 addField("eua", "email.x-mailer", "email", "lotextfield", "Email x-mailer header");
 addField("euacnt", "email.x-mailer.cnt", "email", "integer", "Unique number of x-mailer header values");
 
-addField(null, "http.hasheader", "http", "lotermfield", "Shorthand for http.hasheader.src, http.hasheader.dst");
+addField(null, "http.hasheader", "http", "lotermfield", "Shorthand for http.hasheader.src or http.hasheader.dst");
 addField("hh1", "http.hasheader.src", "http", "lotermfield", "Check if the request has a header present");
 addField("hh1cnt", "http.hasheader.src.cnt", "http", "integer", "Unique number of headers the request has");
 addField("hh2", "http.hasheader.dst", "http", "lotermfield", "Check if the response has a header present");
@@ -292,6 +297,11 @@ addField("hh2cnt", "http.hasheader.dst.cnt", "http", "integer", "Unique number o
 
 addField("hmd5", "http.md5", "http", "termfield", "MD5 of http body response");
 addField("hmd5cnt", "http.md5.cnt", "http", "integer", "Unique number of MD5 of http body responses");
+addField(null, "http.version", "http", "termfield", "Shorthand for http.version.src or http.version.dst");
+addField("hsver", "http.version.src", "http", "termfield", "Request HTTP version number");
+addField("hsvercnt", "http.version.src.cnt", "http", "integer", "Unique number of request HTTP versions");
+addField("hdver", "http.version.dst", "http", "termfield", "Response HTTP version number");
+addField("hdvercnt", "http.version.src.cnt", "http", "integer", "Unique number of response HTTP versions");
 addField("ua", "http.user-agent", "http", "textfield", "User-Agent header");
 addField("uacnt", "http.user-agent.cnt", "http", "integer", "Unique number of User-Agent headers");
 addField("us", "http.uri", "http", "textfield", "URIs for request");

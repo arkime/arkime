@@ -29,6 +29,20 @@ function twoDigitString(value) {
 
 function dateString(seconds, sep) {
   var d = new Date(seconds*1000);
+  if (molochSettings.timezone === "gmt") {
+    return d.getUTCFullYear() +
+           "/" +
+           twoDigitString(d.getUTCMonth()+ 1) +
+           "/" +
+           twoDigitString(d.getUTCDate()) +
+           sep +
+           twoDigitString(d.getUTCHours()) +
+           ":" +
+           twoDigitString(d.getUTCMinutes()) +
+           ":" +
+           twoDigitString(d.getUTCSeconds());
+  }
+
   return d.getFullYear() +
          "/" +
          twoDigitString(d.getMonth()+ 1) +
@@ -231,6 +245,10 @@ function updateParam(param, n, v) {
 //////////////////////////////////////////////////////////////////////////////////
 // layout Functions
 //////////////////////////////////////////////////////////////////////////////////
+function expressionResize() {
+  $("#expression").width($("#nav").width() - ($("#logo").width() + $("#searchStuffRight").outerWidth(true) + $("#searchStuffLeft").outerWidth(true) - 2));
+}
+
 $(document).ready(function() {
   $('.tooltip').qtip();
 
@@ -270,111 +288,461 @@ $(document).ready(function() {
     return false;
   });
 
-  $("#export").click(function (e) {
-    if (typeof sessionsTable !== 'undefined') {
-      $("#export-opened-div").show();
-      $("#export-opened-cnt").text(numberWithCommas($("tr.opened").length));
-    } else {
-      $("#export-opened-div").hide();
-    }
+  //////////////////////////////////////////////////////////////////////////////////
+  // actionsDialog
+  //////////////////////////////////////////////////////////////////////////////////
+  var actionsDialog;
+  $('#actionsForm').bind('submit', function(event) {
+    actionsDialog.hide();
 
-    if ($("#exportForm").data("moloch-visible") === -1) {
-      $("#export-visible-div").hide();
-      $("#export-all").prop("checked", true);
-    } else {
-      $("#export-visible-div").show();
-      $("#export-visible").prop("checked", true);
-      $("#export-visible-cnt").text(numberWithCommas($("#exportForm").data("moloch-visible")));
-    }
+    var qs = [];
+    var ids = null;
 
-    $("#export-all-cnt").text(numberWithCommas($("#exportForm").data("moloch-all")));
+    if ($("#actions-all-div").is(":visible")) {
+      var type = $('input[name=actions-type]:checked').val();
 
-    $('<div/>').qtip({
-      id: "exportDialog",
-      content: {
-        text: $('#exportForm'),
-        title: {
-          text: "Export PCAP",
-          button: true
-        }
-      },
-      position: {
-        my: 'center', // ...at the center of the viewport
-        at: 'top center',
-        target: $(window),
-        adjust: {
-          y: 100
-        }
-      },
-      show: {
-        event: 'click', // Show it on click...
-        ready: true, // Show it immediately on page load.. force them to login!
-        modal: {
-          on: true,
-
-          // Don't let users exit the modal in any way
-          blur: false, escape: false
-        }
-      },
-      hide: false,
-      style: {
-        classes: 'qtip-light qtip-rounded',
-        tip: false
-      },
-      events: {
-        render: function(event, api) {
-          // Capture the form submission
-          setTimeout(function () {
-            $("#exportfilename").select().focus();
-          }, 100);
-          $('form', this).bind('submit', function(event) {
-            $(this).parents('.qtip').qtip("hide");
-            // Prevent normal form submission
-            event.preventDefault();
-
-            var type = $('input[name=export-type]:checked').val();
-            var data;
-
-            if (typeof sessionsTable !== 'undefined') {
-              data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
-              if (type === "all") {
-                updateParam(data, "iDisplayStart", 0);
-                updateParam(data, "iDisplayLength", sessionsTable.fnSettings().fnRecordsDisplay());
-              } else if (type === "opened") {
-                var ids = [];
-                $("tr.opened").each(function(n, nTr) {
-                  var rowData = sessionsTable.fnGetData(nTr);
-                  ids.push(rowData.id);
-                });
-                data = [{name: "ids", value: ids}];
-              }
-            } else {
-              data = [];
-              if (type === "visible") {
-                updateParam(data, "iDisplayLength", $("#exportForm").data("moloch-visible"));
-              } else  {
-                updateParam(data, "iDisplayLength", $("#exportForm").data("moloch-all"));
-              }
-            }
-
-            var url;
-            if (type === "opened") {
-              url = "sessionIds.pcap/" + $("#exportfilename").val() + "?" + $.param(data);
-            } else {
-              var params = buildParams();
-              params = $.merge(data, params);
-
-              url = "sessions.pcap/" + $("#exportfilename").val() + "?" + $.param(params);
-            }
-
-            window.location = url;
+      if (typeof sessionsTable !== 'undefined') {
+        qs = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+        if (type === "all") {
+          updateParam(qs, "iDisplayStart", 0);
+          updateParam(qs, "iDisplayLength", sessionsTable.fnSettings().fnRecordsDisplay());
+        } else if (type === "opened") {
+          ids = [];
+          $("tr.opened").each(function(n, nTr) {
+            var rowData = sessionsTable.fnGetData(nTr);
+            ids.push(rowData.id);
           });
         }
+      } else {
+        if (type === "visible") {
+          updateParam(qs, "iDisplayLength", $("#actionsForm").data("moloch-visible"));
+        } else  {
+          updateParam(qs, "iDisplayLength", $("#actionsForm").data("moloch-all"));
+        }
       }
+      if (type === "opened") {
+        addDateParams(qs);
+      } else {
+        buildParams(qs);
+      }
+    } else {
+      addDateParams(qs);
+    }
+
+    if ($("#actions-linked").val() !== "false") {
+      qs.push({name: "segments", value: $("#addTags-linked").val()});
+    }
+
+    // Prevent normal form submission
+    event.preventDefault();
+
+    actionsDialog.molochInputs[actionsDialog.get("content.title.text")] = $("#actions-input").val();
+    actionsDialog.molochCb(qs, ids, $("#actions-input").val());
+
+    return false;
+  });
+
+  actionsDialog = $('<div/>').qtip({
+    id: "actionsDialog",
+    content: {
+      text: $('#actionsForm'),
+      title: {
+        button: true
+      }
+    },
+    position: {
+      my: 'center', // ...at the center of the viewport
+      at: 'top center',
+      target: $(window),
+      adjust: {
+        y: 100
+      }
+    },
+    show: {
+      event: 'click',
+      ready: false,
+      modal: {
+        on: true,
+        blur: false,
+        escape: false
+      }
+    },
+    hide: false,
+    style: {
+      classes: 'qtip-light qtip-rounded',
+      tip: false
+    }
+  }).qtip('api');
+
+
+  function showActionsDialog(options, cb) {
+    actionsMenu.hide();
+    sessionActionsMenu.hide();
+    actionsDialog.set('content.title.text', options.title);
+    if (options.message) {
+      $("#actions-message").show();
+      $("#actions-message").html(options.message);
+    } else {
+      $("#actions-message").hide();
+    }
+    
+    if (options.input) {
+      $("#actions-input-div").show();
+      $("label[for='actions-input']").html(options.input);
+    } else {
+      $("#actions-input-div").hide();
+    }
+
+    if (options.query) {
+      if (typeof sessionsTable !== 'undefined') {
+        $("#actions-opened-div").show();
+        $("label[for='actions-opened']").html(options.query + " " + numberWithCommas($("tr.opened").length) + " opened items");
+      } else {
+        $("#actions-opened-div").hide();
+      }
+
+
+      if ($("#actionsForm").data("moloch-visible") === -1) {
+        $("#actions-visible-div").hide();
+        $("#actions-all").prop("checked", true);
+      } else {
+        $("#actions-visible-div").show();
+        $("#actions-visible").prop("checked", true);
+        $("label[for='actions-visible']").html(options.query + " " + numberWithCommas($("#actionsForm").data("moloch-visible")) + " visible items");
+      }
+
+      $("label[for='actions-all']").html(options.query + " " + numberWithCommas($("#actionsForm").data("moloch-all")) + " query matching items");
+      $("#actions-all-div").show();
+    } else {
+      $("#actions-opened-div").hide();
+      $("#actions-visible-div").hide();
+      $("#actions-all-div").hide();
+    }
+
+    if (options.submit) {
+      $("#actions-button").text(options.submit);
+    } else {
+      $("#actions-button").text("Go");
+    }
+
+    if (options.input) {
+      setTimeout(function () {
+        $("#actions-input").select().focus();
+      }, 100);
+    }
+
+    if (!actionsDialog.molochInputs) {
+      actionsDialog.molochInputs = [];
+    }
+    $("#actions-input").val(actionsDialog.molochInputs[options.title] || options.defaultInput || "");
+
+    actionsDialog.show();
+    actionsDialog.molochCb = cb;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Sessions Actions Menu
+  //////////////////////////////////////////////////////////////////////////////////
+  var sessionActionsMenu = $('<div/>').qtip({
+    id: "sessionActionsMenu",
+    content: {
+      text: $('#sessionActionsMenu')
+    },
+    position: {
+      my: 'top right',
+      at: 'bottom right',
+      target: "event"
+    },
+    hide: {
+      fixed: true,
+      delay: 300
+    },
+    style: {
+      classes: 'qtip-light qtip-rounded',
+      tip: false
+    },
+    adjust: {
+      screen: true
+    } 
+  }).qtip('api');
+
+  $(document).on("mouseover", ".sessionActionsMenu", function (e) {
+    $("#sessionActionsMenu").attr("sessionid", $(e.target).parents("div[sessionid]").attr("sessionid"));
+    sessionActionsMenu.show(e);
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Actions Menu
+  //////////////////////////////////////////////////////////////////////////////////
+  var actionsMenu = $('#actionsButton').qtip({
+    id: "actionsMenu",
+    content: {
+      text: $('#actionsMenu')
+    },
+    position: {
+      my: 'top right',
+      at: 'bottom right',
+    },
+    hide: {
+      fixed: true,
+      delay: 300
+    },
+    style: {
+      classes: 'qtip-light qtip-rounded',
+      tip: false
+    }
+  }).qtip('api');
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Tags Dialogs
+  //////////////////////////////////////////////////////////////////////////////////
+  $(document).on("click", ".addTagsAction", function (e) {
+    showActionsDialog({
+      submit: "Add Tags",
+      title: "Add Tags",
+      input: "Tags",
+      message: "Provide a comma seperate list of tags to add"
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}, {name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "addTags?" + $.param(qs),
+        "success": function(data) {
+          if (!data.success) {
+            return alert(data.text);
+          }
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  $("#addTagsButton").click(function (e) {
+    showActionsDialog({
+      submit: "Add Tags",
+      title: "Add Tags",
+      input: "Tags",
+      message: "Provide a comma seperate list of tags to add",
+      query: "Add tag"
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}];
+      if (ids) {
+        data.push({name: "ids", value: ids});
+      }
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "addTags?" + $.param(qs),
+        "success": function(data) {
+          if (!data.success) {
+            return alert(data.text);
+          }
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  $(document).on("click", ".removeTagsAction", function (e) {
+    showActionsDialog({
+      submit: "Remove Tags",
+      title: "Remove Tags",
+      input: "Tags",
+      message: "Provide a comma seperate list of tags to remove"
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}, {name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "removeTags?" + $.param(qs),
+        "success": function(data) {
+          if (!data.success) {
+            return alert(data.text);
+          }
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  $("#removeTagsButton").click(function (e) {
+    showActionsDialog({
+      submit: "Remove Tags",
+      title: "Remove Tags",
+      input: "Tags",
+      message: "Provide a comma seperate list of tags to remove",
+      query: "Remove Tag"
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}];
+      if (ids) {
+        data.push({name: "ids", value: ids});
+      }
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "removeTags?" + $.param(qs),
+        "success": function(data) {
+          if (!data.success) {
+            return alert(data.text);
+          }
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Scrub Dialog
+  //////////////////////////////////////////////////////////////////////////////////
+  $(document).on("click", ".scrubAction", function (e) {
+    showActionsDialog({
+      submit: "Destructively Scrub Data",
+      title: "Scrub Data",
+      message: "This will perform a three pass overwrite of all packet payloads for matching packets.  Packet headers and SPI data will remain."
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}, {name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "scrub?" + $.param(qs),
+        "success": function(data) {
+          alert(data.text);
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  $("#scrubButton").click(function (e) {
+    showActionsDialog({
+      submit: "Destructively Scrub Data",
+      query: "Scrub",
+      title: "Scrub Data",
+      message: "This will perform a three pass overwrite of all packet payloads for matching packets.  Packet headers and SPI data will remain."
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}];
+      if (ids) {
+        data.push({name: "ids", value: ids});
+      }
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "scrub?" + $.param(qs),
+        "success": function(data) {
+          alert(data.text);
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Delete Dialog
+  //////////////////////////////////////////////////////////////////////////////////
+  $(document).on("click", ".deleteAction", function (e) {
+    showActionsDialog({
+      submit: "Destructively Delete Data",
+      title: "Delete Data",
+      message: "This will perform a three pass overwrite of all packet data for matching packets.  SPI data will be non forensically removed for matching sessions."
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}, {name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "delete?" + $.param(qs),
+        "success": function(data) {
+          alert(data.text);
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  $("#deleteButton").click(function (e) {
+    showActionsDialog({
+      submit: "Destructively Delete Data",
+      query: "Delete",
+      title: "Delete Data",
+      message: "This will perform a three pass overwrite of all packet data for matching packets.  SPI data will be non forensically removed for matching sessions."
+    }, function(qs, ids, tags) {
+      var data = [{name: "tags", value: tags}];
+      if (ids) {
+        data.push({name: "ids", value: ids});
+      }
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "delete?" + $.param(qs),
+        "success": function(data) {
+          alert(data.text);
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Export PCAP
+  //////////////////////////////////////////////////////////////////////////////////
+  $(".exportAction").click(function (e) {
+    showActionsDialog({
+      submit: "Export PCAP",
+      title: "Export PCAP",
+      input: "Filename",
+      defaultInput: "sessions.pcap"
+    }, function(qs, ids, filename) {
+      qs.push({name: "ids", value: $("#sessionActionsMenu").attr("sessionid")});
+
+      window.location = "sessions.pcap/" + filename + "?" + $.param(qs);
     });
     return false;
   });
 
+  $("#exportButton").click(function (e) {
+    showActionsDialog({
+      submit: "Export PCAP",
+      title: "Export PCAP",
+      input: "Filename",
+      query: "Export",
+      defaultInput: "sessions.pcap"
+    }, function(qs, ids, filename) {
+      if (ids) {
+        qs.push({name: "ids", value: ids});
+      }
+
+      window.location = "sessions.pcap/" + filename + "?" + $.param(qs);
+    });
+    return false;
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // startDate/stopDate
+  //////////////////////////////////////////////////////////////////////////////////
   $('#startDate,#stopDate').keypress(function (e) {
     if ((e.keyCode ? e.keyCode : e.which) === 13) {
       $('#searchForm').submit();
@@ -382,6 +750,7 @@ $(document).ready(function() {
     }
   });
 });
+
 
 //2013-02-27 18:14:41 UTC
 var utcParser = d3.time.format.utc("%Y-%m-%d %X UTC").parse;
@@ -573,24 +942,28 @@ function setSessionStopTime (t) {
   return false;
 }
 
-function buildParams() {
-  var params = [];
-
+function addDateParams(params) {
   if ($("#date").length) {
     if ($("#date").val() === "-2") {
       /* Date madness because of firefox on windows */
-      var d = new Date($("#startDate").val());
+      var extra = (molochSettings.timezone === "gmt"?" UTC":"");
+      var d = new Date($("#startDate").val() + extra);
       if (d < 0) {d.setFullYear(d.getFullYear() + 100);}
       params.push({name:'startTime', value:d/1000});
 
-      d = new Date($("#stopDate").val());
+      d = new Date($("#stopDate").val() + extra);
       if (d < 0) {d.setFullYear(d.getFullYear() + 100);}
       params.push({name:'stopTime', value:d/1000});
     } else if ($("#date").val()) {
       params.push({name:'date', value:$("#date").val()});
     }
   }
+}
 
+function buildParams(params) {
+  params = params || [];
+
+  addDateParams(params);
   if ($("#expression").length) {
     if ($("#expression").val()) {
       params.push({name:'expression', value:$("#expression").val()});
@@ -913,3 +1286,21 @@ $.ajaxQueue = function(theQueue, ajaxOpts ) {
  * Copyright 2007, 2013 Brian Cherne
  */
 (function(e){e.fn.hoverIntent=function(t,n,r){var i={interval:100,sensitivity:7,timeout:0};if(typeof t==="object"){i=e.extend(i,t)}else if(e.isFunction(n)){i=e.extend(i,{over:t,out:n,selector:r})}else{i=e.extend(i,{over:t,out:t,selector:n})}var s,o,u,a;var f=function(e){s=e.pageX;o=e.pageY};var l=function(t,n){n.hoverIntent_t=clearTimeout(n.hoverIntent_t);if(Math.abs(u-s)+Math.abs(a-o)<i.sensitivity){e(n).off("mousemove.hoverIntent",f);n.hoverIntent_s=1;return i.over.apply(n,[t])}else{u=s;a=o;n.hoverIntent_t=setTimeout(function(){l(t,n)},i.interval)}};var c=function(e,t){t.hoverIntent_t=clearTimeout(t.hoverIntent_t);t.hoverIntent_s=0;return i.out.apply(t,[e])};var h=function(t){var n=jQuery.extend({},t);var r=this;if(r.hoverIntent_t){r.hoverIntent_t=clearTimeout(r.hoverIntent_t)}if(t.type=="mouseenter"){u=n.pageX;a=n.pageY;e(r).on("mousemove.hoverIntent",f);if(r.hoverIntent_s!=1){r.hoverIntent_t=setTimeout(function(){l(n,r)},i.interval)}}else{e(r).off("mousemove.hoverIntent",f);if(r.hoverIntent_s==1){r.hoverIntent_t=setTimeout(function(){c(n,r)},i.timeout)}}};return this.on({"mouseenter.hoverIntent":h,"mouseleave.hoverIntent":h},i.selector)}})(jQuery);
+
+// From http://stackoverflow.com/a/1186309
+$.fn.serializeObject = function()
+{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};

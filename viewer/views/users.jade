@@ -13,6 +13,7 @@ block content
         th Web Interface?
         th Web Auth Header?
         th Email Search?
+        th Can Remove Data?
         th Actions
     tbody
   br
@@ -47,6 +48,9 @@ block content
     br
     label(for='emailSearch') Allow Email Searches:
     input(type='checkbox', id='emailSearch', name='emailSearch')
+    br
+    label(for='removeEnabled') Can Scrub/Delete data:
+    input(type='checkbox', id='removeEnabled', name='removeEnabled')
     br
     button#create create
 
@@ -111,11 +115,16 @@ block content
               return "<input type='checkbox' id='" + oObj.aData.userId +"-emailSearch' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
             }
           },
+          { "mDataProp" : "removeEnabled",
+            "fnRender" : function(oObj) {
+              return "<input type='checkbox' id='" + oObj.aData.userId +"-removeEnabled' " + (oObj.aData.removeEnabled?"CHECKED":"") + ">";
+            }
+          },
           { "mDataProp" : null,
             "bSortable" : false,
             "fnRender" : function(oObj) {
               return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
-                     "<a href='password?userId=" + oObj.aData.userId +"'>Set Password</a>";
+                     "<a href='settings?userId=" + oObj.aData.userId +"'>Settings</a>";
             }
           }
         ]
@@ -133,6 +142,7 @@ block content
             "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
             "&headerAuthEnabled=" + $("#" + aData.userId  + "-headerAuthEnabled").is(':checked') +
             "&emailSearch=" + $("#" + aData.userId  + "-emailSearch").is(':checked') +
+            "&removeEnabled=" + $("#" + aData.userId  + "-removeEnabled").is(':checked') +
             "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
           "success": function(data) {
             if (!data.success) {

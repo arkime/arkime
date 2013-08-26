@@ -6,6 +6,9 @@ body
 .qtip-moloch
   font-size 14px
 
+.qtip
+  max-width:300px
+
 .bold
   font-weight: bold
 
@@ -127,6 +130,9 @@ body
   padding-left: 65px
   z-index: 4
 
+#searchStuffRight
+  display: inline-block
+
 #nav 
   top: 0
   padding:5px 0px
@@ -175,9 +181,38 @@ body
   text-shadow: none
   background-color: white
 
-#search, #export
+#searchButton, #exportButton, #tagButton
   height: auto
 
+#actionsButton
+  font-size: 14px
+  padding-left: 5px
+
+#actionsButtonArrow
+  position: relative
+  top: 2px
+
+#actionsMenu ul
+  display: inline
+  list-style: none
+  font-size: 14px
+  line-height: 18px
+  padding: 0px
+  cursor: pointer
+
+#actionsMenu li a:hover
+  text-decoration:underline; 
+
+#sessionActionsMenu ul
+  display: inline
+  list-style: none
+  font-size: 14px
+  line-height: 18px
+  padding: 0px
+  cursor: pointer
+
+#sessionActionsMenu li a:hover
+  text-decoration:underline; 
 
 //From http://stackoverflow.com/a/248013
 #bsqErr
@@ -440,6 +475,9 @@ table#sessions td.dateColumn
 .sessionDetailToolbar li.last
   border-right:none
 
+.tagadd
+  height: 15px
+
 // Files
 
 #pageBody-filesLink
@@ -542,6 +580,16 @@ table#sessions td.dateColumn
 
 #pageBody-changePasswordLink
   margin: 10px
+
+// Settings
+
+#pageBody-settingsLink
+  margin: 10px
+
+#pageBody-settingsLink label
+  display: inline-block
+  width: 14em
+  text-align: right
 
 // map
 

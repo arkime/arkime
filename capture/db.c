@@ -33,7 +33,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 11
+#define MOLOCH_MIN_DB_VERSION 12
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -207,13 +207,20 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     MolochStringHashStd_t *shash;
     MolochIntHashStd_t    *ihash;
     unsigned char         *startPtr;
+    uint32_t               jsonSize;
+    int                    pos;
 
-
-    /* jsonSize is an estimate of how much space it will take to encode */
-    session->jsonSize += 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
-
+    /* Let the plugins finish */
     moloch_plugins_cb_save(session, final);
 
+
+    /* jsonSize is an estimate of how much space it will take to encode the session */
+    jsonSize = 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len + session->certJsonSize;
+    for (pos = 0; pos < config.maxField; pos++) {
+        if (session->fields[pos]) {
+            jsonSize += session->fields[pos]->jsonSize;
+        }
+    }
 
     /* No Packets */
     if (!config.dryRun && !session->filePosArray->len)
@@ -229,6 +236,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         struct tm *tmp = gmtime(&prefix_time);
 
         switch(config.rotate) {
+        case MOLOCH_ROTATE_HOURLY:
+            snprintf(prefix, sizeof(prefix), "%02d%02d%02dh%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, tmp->tm_hour);
+            break;
         case MOLOCH_ROTATE_DAILY:
             snprintf(prefix, sizeof(prefix), "%02d%02d%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
             break;
@@ -257,7 +267,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
     /* If no room left to add, send the buffer */
-    if (sJson && (uint32_t)BSB_REMAINING(jbsb) < session->jsonSize) {
+    if (sJson && (uint32_t)BSB_REMAINING(jbsb) < jsonSize) {
         moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
         sJson = 0;
 
@@ -268,7 +278,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     /* Allocate a new buffer using the max of the bulk size or estimated size. */
     if (!sJson) {
-        int size = MAX(config.dbBulkSize, session->jsonSize);
+        int size = MAX(config.dbBulkSize, jsonSize);
         sJson = moloch_http_get_buffer(size);
         BSB_INIT(jbsb, sJson, size);
     }
@@ -470,10 +480,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_sprintf(jbsb, "],");
 
-    int pos;
     int inHeaders = 0;
     for (pos = 0; pos < config.maxField; pos++) {
         if (session->fields[pos]) {
+            int freeField = final || ((config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CONTINUE) == 0);
+
             if (!inHeaders && config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) {
                 BSB_EXPORT_sprintf(jbsb, "\"hdrs\": {");
                 inHeaders = 1;
@@ -490,7 +501,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                                    (unsigned char *)session->fields[pos]->str, 
                                    config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
-                g_free(session->fields[pos]->str);
+                if (freeField) {
+                    g_free(session->fields[pos]->str);
+                }
                 break;
             case MOLOCH_FIELD_TYPE_STR_ARRAY:
                 if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
@@ -505,7 +518,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
-                g_ptr_array_free(session->fields[pos]->sarray, TRUE);
+                if (freeField) {
+                    g_ptr_array_free(session->fields[pos]->sarray, TRUE);
+                }
                 break;
             case MOLOCH_FIELD_TYPE_STR_HASH:
                 shash = session->fields[pos]->shash;
@@ -513,13 +528,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, HASH_COUNT(s_, *shash));
                 }
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
-                HASH_FORALL_POP_HEAD(s_, *shash, hstring,
+                HASH_FORALL(s_, *shash, hstring,
                     moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                     BSB_EXPORT_u08(jbsb, ',');
-                    g_free(hstring->str);
-                    MOLOCH_TYPE_FREE(MolochString_t, hstring);
                 );
-                MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
+                if (freeField) {
+                    HASH_FORALL_POP_HEAD(s_, *shash, hstring,
+                        g_free(hstring->str);
+                        MOLOCH_TYPE_FREE(MolochString_t, hstring);
+                    );
+                    MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
+                }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
                 break;
@@ -529,12 +548,16 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
                 }
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
-                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                HASH_FORALL(i_, *ihash, hint,
                     BSB_EXPORT_sprintf(jbsb, "%u", hint->i_hash);
                     BSB_EXPORT_u08(jbsb, ',');
-                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
                 );
-                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
+                if (freeField) {
+                    HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                        MOLOCH_TYPE_FREE(MolochInt_t, hint);
+                    );
+                    MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
+                }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_sprintf(jbsb, "],");
                 break;
@@ -603,18 +626,24 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
 
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
-                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                HASH_FORALL(i_, *ihash, hint,
                     BSB_EXPORT_sprintf(jbsb, "%u", htonl(hint->i_hash));
                     BSB_EXPORT_u08(jbsb, ',');
-                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
                 );
+                if (freeField) {
+                    HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                        MOLOCH_TYPE_FREE(MolochInt_t, hint);
+                    );
+                    MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
+                }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
                 BSB_EXPORT_sprintf(jbsb, "],");
-                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
             }
-            MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
-            session->fields[pos] = 0;
+            if (freeField) {
+                MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
+                session->fields[pos] = 0;
+            }
         }
     }
 
@@ -627,7 +656,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb, "}\n");
 
     if (BSB_IS_ERROR(jbsb)) {
-        LOG("ERROR - Ran out of memory creating DB record supposed to be %d", session->jsonSize);
+        LOG("ERROR - Ran out of memory creating DB record supposed to be %d", jsonSize);
         return;
     }
 
@@ -638,8 +667,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
     }
 
-    if (session->jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
-        LOG("WARNING - BIGGER then expected json %d %d\n", session->jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
+    if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
+        LOG("WARNING - BIGGER then expected json %d %d\n", jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
@@ -715,6 +744,7 @@ void moloch_db_update_stats()
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
+        "\"diskQueue\": %u, " 
         "\"totalPackets\": %" PRIu64 ", "
         "\"totalK\": %" PRIu64 ", "
         "\"totalSessions\": %" PRIu64 ", "
@@ -730,6 +760,7 @@ void moloch_db_update_stats()
         (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
         moloch_nids_monitoring_sessions(),
         mem,
+        moloch_nids_disk_queue(),
         dbTotalPackets,
         dbTotalK,
         dbTotalSessions,
@@ -787,6 +818,7 @@ void moloch_db_update_dstats(int n)
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
+        "\"diskQueue\": %u, " 
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
@@ -799,6 +831,7 @@ void moloch_db_update_dstats(int n)
         (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
         moloch_nids_monitoring_sessions(),
         mem,
+        moloch_nids_disk_queue(),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),

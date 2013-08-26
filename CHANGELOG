@@ -1,4 +1,4 @@
-0.8.8 ???
+0.9.0 2013/08/26
   - 32bit fix for lpd/fpd
   - easybutton now uses nodejs 0.10, 0.8 is still supported for now
   - Work around for tcp seq number wrapping causing viewer exit
@@ -6,9 +6,22 @@
   - switch to nonblocking pcap saves
   - more debuging info on proxy failure
   - Fixed bug when setting viewUrl
-  - Limit number of libnids errors
+  - Limit number of libnids errors (issue #115)
   - Display possible reasons for libnids IP Header error
   - Another domainless hostname fix (issue #116)
+  - Exports should be between 2x-5x faster
+  - Added actions menu for search/sessions
+  - Scrub and Delete actions, user must have remove right enabled) (issue #119, issue #89)
+  - Add/Remove(remove right required) tags actions
+  - Hourly rotation (issue #122)
+  - unique.txt fixes (issue #123)
+  - Actions can be done on linked sessions (issue #120)
+  - SPI Graph auto refresh (issue #111)
+  - Better error handling for SPI data display (issue #109)
+  - List queries using [] syntax (issue #106)
+  - user prefs with timezone display (issue #95)
+  - Basic IRC searches
+  - Disk Queue stats display
 
 
 0.8.7 2013/07/12

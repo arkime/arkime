@@ -385,7 +385,7 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
         BSB_IMPORT_skip(sslbsb, ssllen + 5);
     }
 
-    session->jsonSize += len*2;
+    session->certJsonSize += len*2;
 }
 
 /*############################## HTTP ##############################*/
@@ -475,6 +475,54 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
             session->sshLen -= remaining;
             remaining = 0;
             continue;
+        }
+    }
+}
+
+/******************************************************************************/
+void moloch_detect_parse_irc(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+{
+    uint32_t remaining = hlf->count_new;
+    unsigned char *data   = (unsigned char*)(hlf->data + (hlf->count - hlf->offset - hlf->count_new));
+
+    while (remaining) {
+        if (session->ircState & 0x1) {
+            unsigned char *newline = memchr(data, '\n', remaining);
+            if (newline) {
+                remaining -= (newline - data) +1;
+                data = newline+1;
+                session->ircState &= ~ 0x1;
+            } else {
+                data += remaining;
+                remaining = 0;
+                break;
+            }
+        }
+
+        if (remaining > 5 && memcmp("JOIN ", data, 5) == 0) {
+            unsigned char *end = data + remaining;
+            unsigned char *ptr = data + 5;
+
+            while (ptr < end && *ptr != ' ' && *ptr != '\r' && *ptr != '\n') {
+                ptr++;
+            }
+
+            moloch_field_string_add(MOLOCH_FIELD_IRC_CHANNELS, session, (char*)data + 5, ptr - data - 5, TRUE);
+        }
+
+        if (remaining > 5 && memcmp("NICK ", data, 5) == 0) {
+            unsigned char *end = data + remaining;
+            unsigned char *ptr = data + 5;
+
+            while (ptr < end && *ptr != ' ' && *ptr != '\r' && *ptr != '\n') {
+                ptr++;
+            }
+
+            moloch_field_string_add(MOLOCH_FIELD_IRC_NICK, session, (char*)data + 5, ptr - data - 5, TRUE);
+        }
+
+        if (remaining > 0) {
+            session->ircState |=  0x1;
         }
     }
 }
@@ -831,18 +879,23 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
     MolochSession_t       *session = parser->data;
     MolochSessionHttp_t   *http = session->http;
     char                   tag[200];
+    char                   version[20];
 
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d code: %d method: %d", session->which, parser->status_code, parser->method);
 #endif
 
+    int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
+
     if (parser->status_code == 0) {
         snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_VER_REQ, session, version, len, TRUE);
     } else {
         snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
+        moloch_field_string_add(MOLOCH_FIELD_HTTP_VER_RES, session, version, len, TRUE);
     }
 
     if (http->inValue & (1 << session->which) && http->pos[session->which]) {
@@ -1456,8 +1509,8 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
 /******************************************************************************/
 void moloch_detect_init()
 {
-    moloch_field_define_internal(MOLOCH_FIELD_USER,          "user",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_TAGS,          "ta",     MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_USER,          "user",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_CONTINUE);
+    moloch_field_define_internal(MOLOCH_FIELD_TAGS,          "ta",     MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_CONTINUE);
 
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_HOST,     "ho",     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_URLS,     "us",     MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT);
@@ -1466,6 +1519,8 @@ void moloch_detect_init()
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_REQ, "hh1",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_RES, "hh2",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_MD5,      "hmd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_VER_REQ,  "hsver",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_VER_RES,  "hdver",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
 
     moloch_field_define_internal(MOLOCH_FIELD_SSH_VER,       "sshver", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_SSH_KEY,       "sshkey", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
@@ -1485,6 +1540,9 @@ void moloch_detect_init()
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_MD5,     "emd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_FCT,     "efct",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_IP,      "eip",    MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_IRC_NICK,      "ircnck", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_IRC_CHANNELS,  "ircch",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
 
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
     moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, nodeTag, NULL);
@@ -1608,13 +1666,22 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
             moloch_nids_new_session_email(session);
     }
 
-
-
     if (hlf->count < 9)
         return;
 
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:pop3");
+
+    if (hlf->count < 11)
+        return;
+
+    if ((data[0] == ':' && moloch_memstr((char *)data, hlf->count, " NOTICE ", 8)) ||
+         memcmp("NOTICE AUTH", data, 11) == 0 ||
+         memcmp("NICK ", data, 5) == 0 ||
+         memcmp("PASS ", data, 5) == 0) {
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:irc");
+        session->isIrc = 1;
+    }
 
 
     if (hlf->count < 14)

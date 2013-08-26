@@ -18,6 +18,7 @@
 #  9 - http body hash, rawus
 # 10 - dynamic fields for http and email headers
 # 11 - Require 0.90.1, switch from soft to node, new fpd field, removed fpms field
+# 12 - Added hsver, hdver fields, diskQueue, user settings, scrub* fields, user removeEnabled
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -26,7 +27,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 11;
+my $VERSION = 12;
 my $verbose = 0;
 
 ################################################################################
@@ -390,6 +391,10 @@ my $mapping = '
       memory: {
         type: "long",
         index: "no"
+      },
+      diskQueue: {
+        type: "long",
+        index: "no"
       }
     }
   }
@@ -465,6 +470,10 @@ my $mapping = '
         index: "no"
       },
       memory: {
+        type: "long",
+        index: "no"
+      },
+      diskQueue: {
         type: "long",
         index: "no"
       }
@@ -694,6 +703,22 @@ sub sessionsUpdate
       hh2cnt: {
         type: "integer"
       },
+      hsver: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hsvercnt: {
+        type: "integer"
+      },
+      hdver: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hdvercnt: {
+        type: "integer"
+      },
       user: {
         omit_norms: true,
         type: "string",
@@ -874,9 +899,33 @@ sub sessionsUpdate
           rawaseip: {type: "string", index: "not_analyzed"}
         }
       },
+      ircnck: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      ircnckcnt: {
+        type: "integer"
+      },
+      ircch: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      ircchcnt: {
+        type: "integer"
+      },
       hdrs: {
         type: "object",
         dynamic: "true"
+      },
+      scrubat: {
+        type: "date"
+      },
+      scrubby: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
       }
     }
   }
@@ -923,6 +972,7 @@ sub sessionsUpdate
         }
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
         esPost("/$i/_close", "");
+        #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
         esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
         esPost("/$i/_open", "");
     }
@@ -984,6 +1034,10 @@ sub usersUpdate
         type: "boolean",
         index: "no"
       },
+      removeEnabled: {
+        type: "boolean",
+        index: "no"
+      },
       passStore: {
         type: "string",
         index: "no"
@@ -991,6 +1045,10 @@ sub usersUpdate
       expression: {
         type: "string",
         index: "no"
+      },
+      settings : {
+        type : "object",
+        dynamic: "true"
       }
     }
   }
@@ -1005,7 +1063,11 @@ sub time2index
 {
 my($type, $t) = @_;
 
-    my @t = localtime($t);
+    my @t = gmtime($t);
+    if ($type eq "hourly") {
+        return sprintf("sessions-%02d%02d%02dh%0d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+    } 
+
     if ($type eq "daily") {
         return sprintf("sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
     } 
@@ -1121,14 +1183,16 @@ if ($ARGV[1] eq "usersimport") {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] eq "rotate") {
-    showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(daily|weekly|monthly)$/);
+    showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
     my $json = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $json->{indices} || $json->{_all}->{indices};
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], $endTime);
-    my @startTime = localtime;
-    if ($ARGV[2] eq "daily") {
+    my @startTime = gmtime;
+    if ($ARGV[2] eq "hourly") {
+        $startTime[2] -= int($ARGV[3]);
+    } elsif ($ARGV[2] eq "daily") {
         $startTime[3] -= int($ARGV[3]);
     } elsif ($ARGV[2] eq "weekly") {
         $startTime[3] -= 7*int($ARGV[3]);
@@ -1332,7 +1396,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 11) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 12) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

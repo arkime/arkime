@@ -71,16 +71,30 @@ block content
         var aData = sessionsTable.fnGetData(nTr);
         $(nTr).find("td.sessionDetails img").attr("src", "DataTables-1.9.1/examples/examples_support/details_close.png");
         var data = [];
+
+        var base = molochSettings.detailFormat; 
+        var ts = molochSettings.showTimestamps;
+
         if (localStorage) {
           if (localStorage['moloch-line'] !== undefined) {
             data.push({name: "line", value: localStorage['moloch-line']});
           }
-          if (localStorage['moloch-base'] !== undefined) {
-            data.push({name: "base", value: localStorage['moloch-base']});
+
+          if (!base || base === "last") {
+            base = localStorage['moloch-base'];
           }
-          if (localStorage['moloch-ts'] !== undefined) {
-            data.push({name: "ts", value: localStorage['moloch-ts']});
+
+          if (!ts || ts === "last") {
+            ts = localStorage['moloch-ts'];
           }
+        }
+
+        if (ts !== undefined) {
+          data.push({name: "ts", value: ts});
+        }
+
+        if (base !== undefined) {
+          data.push({name: "base", value: base});
         }
 
         $.ajax( {
@@ -228,15 +242,19 @@ block content
             "sClass": "urlColumn",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              var data;
+              var data = "";
               if (oObj.aData.us) {
                 if (oObj.aData.infoAll) {
-                  data = oObj.aData.us.join("<br>");
-                  data += '<br><img src="up-arrow.png">';
+                  oObj.aData.us.forEach(function(item) {
+                    data += "<div class=\"context-menu-url\">" + item + "</div>"
+                  });
+                  data += '<img src="up-arrow.png">';
                 } else {
-                  data = oObj.aData.us.slice(0, 5).join("<br>");
+                  oObj.aData.us.slice(0,5).forEach(function(item) {
+                    data += "<div class=\"context-menu-url\">" + item + "</div>"
+                  });
                   if (oObj.aData.us.length > 5) {
-                    data += '<br><img src="down-arrow.png">';
+                    data += '<img src="down-arrow.png">';
                   }
                 }
                 return data;
@@ -353,8 +371,8 @@ block content
                 }
 
                 fnCallback(json);
-                $("#exportForm").data("moloch-visible", sessionsTable.fnSettings().aiDisplay.length)
-                                .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());
+                $("#actionsForm").data("moloch-visible", sessionsTable.fnSettings().aiDisplay.length)
+                                 .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());
                 if (initialParams.openAll) {
                   nNodes = sessionsTable.fnGetNodes();
                   for (var i = 0; i < nNodes.length; i++) {
@@ -378,7 +396,7 @@ block content
       });
 
       setupGraph();
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
 
       setupMap();
 
@@ -459,6 +477,31 @@ block content
             return {
               callback: function(key, options) {
                 addExpression(items[key].exp);
+              },
+              items: items
+            };
+          }
+      });
+
+      $.contextMenu({
+          selector: '.context-menu-url',
+          build: function($trigger, e) {
+            var text = $(e.target).text();
+            var vt = text.indexOf('?') === -1?text:text.substring(0, text.indexOf('?'));
+            items = {
+              and: {name: "<b>and</b> " + text, exp: "http.uri == \"" + text + "\""},
+              andnot: {name: "<b>and not</b> " + text, exp: "http.uri != \"" + text + "\""},
+              open: {name: "<b>open</b> " + text, url: "http:" + text},
+              vt: {name: "<b>virus total</b> " + vt, url: "https://www.virustotal.com/latest-scan/" + encodeURIComponent("http:" + vt)}
+            };
+            return {
+              callback: function(key, options) {
+                if (items[key].exp) {
+                  addExpression(items[key].exp);
+                } else {
+                  console.log(items[key].url);
+                  window.open(items[key].url);
+                }
               },
               items: items
             };
@@ -552,7 +595,6 @@ block content
       if (e.target.id === "sessionGraph" || e.target.id === "world-map") {
         return;
       }
-      // What a hack
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
     });
 

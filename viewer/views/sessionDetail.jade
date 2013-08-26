@@ -1,6 +1,6 @@
 //- Standard method to print an array of values with commas
-mixin arrayList(values, title, expr)
-  if (values)
+mixin arrayList(values, title, expr, extra)
+  if (values || extra)
     dt #{title}
     dd
       each value,i in values 
@@ -10,6 +10,10 @@ mixin arrayList(values, title, expr)
           a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
         else
           a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+      if (extra)
+        if (values)
+          |, 
+        !{extra}
 
 //- Standard method to print ip, port, geo, and asn info
 mixin ipPrint(ip,port,geo,as,expr)
@@ -39,9 +43,8 @@ mixin ipArrayList(values, geos, ass, title, expr)
         mixin ipPrint(values[i], undefined, geos[i], ass[i], expr)
 
 //- Start of page
-div.sessionDetail(id='sessionDetail#{session.id}')
+div.sessionDetail(id='sessionDetail#{session.id}',sessionid='#{session.id}')
   div.sessionDetailToolbar 
-    li Actions
     if (session.ro)
       li 
         a(href='#', onclick='return addExpression("rootId == #{session.ro}");') All Sessions
@@ -58,6 +61,9 @@ div.sessionDetail(id='sessionDetail#{session.id}')
       a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw
     li
       a(href='?expression=id=#{session.id}&date=-1&openAll=1') Permalink
+    li
+      label.sessionActionsMenu Actions 
+        img#actionsButtonArrow(src="down-arrow.png")
   dl.sessionDetailMeta
     dt Start
     dd
@@ -81,9 +87,12 @@ div.sessionDetail(id='sessionDetail#{session.id}')
       mixin ipPrint(session.a1, session.p1, session.g1, session.as1, "src")
       |  Dst IP/Port: 
       mixin ipPrint(session.a2, session.p2, session.g2, session.as2, "dst")
-    mixin arrayList(session.ta, "Tags", "tags")
+    mixin arrayList(session.ta, "Tags", "tags", "<img class=\"addTagsAction\" src=\"DataTables-1.9.1/examples/examples_support/details_open.png\">")
     if (session.fs && session.fs.length > 0)
       mixin arrayList(session.fs, "Files", "file")
+    if (session.scrubby)
+      dt Scrubbed
+      dd By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
 
 
   if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
@@ -93,7 +102,9 @@ div.sessionDetail(id='sessionDetail#{session.id}')
       mixin arrayList(session.ua, "User Agents", "ua")
       mixin ipArrayList(session.xff, session.gxff, session.asxff, "XFFs", "xff")
       mixin arrayList(session.hh1, "Request Headers", "header.src")
-      mixin arrayList(session.hh2, "Response Headers", "header.dst")
+      mixin arrayList(session.hsver, "Request Versions", "http.version.src")
+      mixin arrayList(session.hh2, "Resp Headers", "header.dst")
+      mixin arrayList(session.hdver, "Resp Versions", "http.version.dst")
       mixin arrayList(session.hmd5, "Body MD5s", "http.md5")
       if (session.hdrs)
         each value,i in reqFields 
@@ -107,6 +118,12 @@ div.sessionDetail(id='sessionDetail#{session.id}')
     dl.sessionDetailMeta
       mixin ipArrayList(session.dnsip, session.gdnsip, session.asdnsip, "IPs", "dns")
       mixin arrayList(session.dnsho, "Hosts", "host.dns")
+
+  if (session.ircnck || session.ircch)
+    div.sessionDetailMeta.bold IRC
+    dl.sessionDetailMeta
+      mixin arrayList(session.ircnck, "Nicks", "irc.nick")
+      mixin arrayList(session.ircch, "Channels", "irc.channel")
 
   if (session.tls)
     div.sessionDetailMeta.bold TLS

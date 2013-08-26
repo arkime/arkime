@@ -37,7 +37,7 @@ block content
     setTimeout(function () {window.history.ready = true;}, 500);
 
     $(window).resize(function(e) {
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
 
       svg.attr("width", $(window).width())
          .attr("height", $(window).height()-100)
@@ -174,8 +174,8 @@ block content
 
       d3.json(url, function(json) {
 
-        $("#exportForm").data("moloch-visible", +$("#graphSize").val())
-                        .data("moloch-all", json.iTotalDisplayRecords);
+        $("#actionsForm").data("moloch-visible", +$("#graphSize").val())
+                         .data("moloch-all", json.iTotalDisplayRecords);
         updateHealth(json.health);
         force
             .nodes(json.nodes)
@@ -277,5 +277,5 @@ block content
           ;
 
       loadData();
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
     });

@@ -69,13 +69,15 @@ block content
       mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
 
       mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
+      mixin spi("Request Version", "hsver", "http.version.src", "http")
       each value,i in reqFields 
         if (value.type === "string")
           mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
           mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
         else
           mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
-      mixin spi("Response Header", "hh2", "http.hasheader.dst", "http")
+      mixin spi("Resp Header", "hh2", "http.hasheader.dst", "http")
+      mixin spi("Resp Version", "hdver", "http.version.dst", "http")
       each value,i in resFields 
         if (value.type === "string")
           mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
@@ -84,6 +86,7 @@ block content
           mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
 
       mixin spi("Body MD5", "hmd5", "http.md5", "http")
+
     mixin title("DNS", "dns")
     dl
       mixin spi("Host", "dnsho", "host.dns", "dns")
@@ -91,6 +94,11 @@ block content
       mixin spi("GEO", "gdnsip", "country.dns", "dns")
       mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
       mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
+
+    mixin title("IRC", "irc")
+    dl
+      mixin spi("Nick", "ircnck", "irc.nick", "irc")
+      mixin spi("Channel", "ircch", "irc.channel", "irc")
 
     mixin title("Certificates", "cert")
     dl
@@ -203,8 +211,8 @@ block content
               $("#customDate").hide();
             }
 
-            $("#exportForm").data("moloch-visible", -1)
-                            .data("moloch-all", json.iTotalDisplayRecords);
+            $("#actionsForm").data("moloch-visible", -1)
+                             .data("moloch-all", json.iTotalDisplayRecords);
             $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
 
             $.each(json.spi, function(spii, spi) {
@@ -325,7 +333,7 @@ block content
     });
 
     $(window).resize(function(e) {
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
     });
 
     $(":checkbox").on('change', function(e) {
@@ -370,7 +378,7 @@ block content
       loadData();
 
       setupGraph();
-      $("#expression").width($("#nav").outerWidth(true) - $("#logo").width() - $("#search").outerWidth(true) - $("#export").outerWidth(true) - $("#searchStuffLeft").outerWidth(true)-25);
+      expressionResize();
       setupMap();
 
       $.contextMenu({

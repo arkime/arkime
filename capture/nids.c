@@ -295,17 +295,14 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->bytes = 0;
     session->databytes = 0;
     session->packets = 0;
-    session->jsonSize = 0;
-
-    moloch_detect_initial_tag(session);
+    session->certJsonSize = 0;
 }
 /******************************************************************************/
 char *pcapFilename;
 
+int dlt_to_linktype(int dlt);
 void moloch_nids_file_create()
 {
-    pcap_dumper_t        *dumper;
-
     if (config.dryRun) {
         pcapFilename = "dryrun.pcap";
         dumperFd = 1;
@@ -313,26 +310,30 @@ void moloch_nids_file_create()
     }
 
     pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, 0, &dumperId);
-    dumper = pcap_dump_open(nids_params.pcap_desc, pcapFilename);
-
-    if (!dumper) {
-        LOG("ERROR - pcap open failed - Couldn't open file: '%s'", pcapFilename);
-        exit (1);
-    }
-    pcap_dump_close(dumper);
-
     dumperFilePos = 24;
     output = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
-    output->max = config.pcapWriteSize - 24;
+    output->max = config.pcapWriteSize;
     output->buf = MOLOCH_SIZE_ALLOC(pcapbuf, config.pcapWriteSize + 4096);
+    output->pos = 24;
+
+    struct pcap_file_header hdr;
+    hdr.magic = 0xa1b2c3d4;
+    hdr.version_major = PCAP_VERSION_MAJOR;
+    hdr.version_minor = PCAP_VERSION_MINOR;
+
+    hdr.thiszone = 0;
+    hdr.snaplen = pcap_snapshot(nids_params.pcap_desc);
+    hdr.sigfigs = 0;
+    hdr.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
+
+    memcpy(output->buf, &hdr, 24);
 
     LOG("Opening %s", pcapFilename);
-    dumperFd = open(pcapFilename,  O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK);
+    dumperFd = open(pcapFilename,  O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
     if (dumperFd < 0) {
-        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %d", pcapFilename, errno);
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", pcapFilename, strerror(errno), errno);
         exit (2);
     }
-    lseek(dumperFd, 24, SEEK_SET);
 }
 /******************************************************************************/
 void moloch_nids_file_locked(char *filename)
@@ -845,6 +846,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             moloch_detect_parse_yara(session, a_tcp, &a_tcp->server);
             nids_discard(a_tcp, session->offsets[0]);
             session->offsets[0] = a_tcp->server.count_new;
+            if (session->isIrc)
+                moloch_detect_parse_irc(session, a_tcp, &a_tcp->server);
         }
 
         session->databytes += a_tcp->server.count_new + a_tcp->client.count_new;
@@ -986,33 +989,30 @@ gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
     return FALSE;
 }
 /******************************************************************************/
-gboolean moloch_nids_watch_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) 
+/* Used when reading packets from an interface thru libnids/libpcap */
+gboolean moloch_nids_interface_dispatch()
 {
-    if (DLL_COUNT(mo_, &outputQ) > config.maxWriteBuffers) {
-        return TRUE;
-    }
-
-    int r = nids_dispatch(config.packetsPerPoll);
-    if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
-        if (config.pcapReadDir && moloch_nids_next_file()) {
-            g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
-            return FALSE;
-        }
-
-        moloch_quit();
-        return FALSE;
-    }
+    nids_dispatch(config.packetsPerPoll);
     return TRUE;
 }
 /******************************************************************************/
-gboolean moloch_nids_poll_cb(gpointer UNUSED(uw)) 
+/* Used when reading packets from a file thru libnids/libpcap */
+gboolean moloch_nids_file_dispatch() 
 {
-    if (DLL_COUNT(mo_, &outputQ) > config.maxWriteBuffers) {
+    // pause reading if too many waiting disk operations
+    if (DLL_COUNT(mo_, &outputQ) > 10) {
+        return TRUE;
+    }
+
+    // pause reading if too many waiting ES operations
+    if (moloch_http_queue_length(esServer) > 100) {
         return TRUE;
     }
 
     int r = nids_dispatch(config.packetsPerPoll);
-    if (r <= 0 && (config.pcapReadFile || config.pcapReadDir)) {
+
+    // Some kind of failure, move to the next file or quit
+    if (r <= 0) {
         if (config.pcapReadDir && moloch_nids_next_file()) {
             g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
             return FALSE;
@@ -1021,6 +1021,7 @@ gboolean moloch_nids_poll_cb(gpointer UNUSED(uw))
         moloch_quit();
         return FALSE;
     }
+
     return TRUE;
 }
 
@@ -1087,6 +1088,11 @@ uint32_t moloch_nids_dropped_packets()
 uint32_t moloch_nids_monitoring_sessions()
 {
     return HASH_COUNT(h_, sessions);
+}
+/******************************************************************************/
+uint32_t moloch_nids_disk_queue()
+{
+    return DLL_COUNT(mo_, &outputQ);
 }
 /******************************************************************************/
 void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len)
@@ -1230,10 +1236,16 @@ void moloch_nids_init_nids()
         closeNextOpen = 0;
     }
 
+    GVoidFunc dispatch;
+    if (config.pcapReadDir || config.pcapReadFile)
+        dispatch = (GVoidFunc)&moloch_nids_file_dispatch;
+    else 
+        dispatch = (GVoidFunc)&moloch_nids_interface_dispatch;
+
     if (nids_getfd() == -1) {
-        g_timeout_add(0, moloch_nids_poll_cb, NULL);
+        g_timeout_add(0, (GSourceFunc)dispatch, NULL);
     } else {
-        moloch_watch_fd(nids_getfd(), MOLOCH_GIO_READ_COND, moloch_nids_watch_cb, NULL);
+        moloch_watch_fd(nids_getfd(), MOLOCH_GIO_READ_COND, (MolochWatchFd_func)dispatch, NULL);
     }
 
 

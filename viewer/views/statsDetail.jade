@@ -32,7 +32,7 @@ script(type='text/javascript').
         .call(dcontext.axis().orient("top"));
 
     div.selectAll(".horizon")
-        .data([dmetric("Packets/Min", "deltaPackets"), dmetric("Bytes/Min", "deltaBytes"), dmetric("Sessions/Min", "deltaSessions"), dmetric("Dropped/Min", "deltaDropped"), dmetric("Active Sessions", "monitoring"), dmetric("Free Space", "freeSpaceM"), dmetric("Memory", "memory")])
+        .data([dmetric("Packets/Min", "deltaPackets"), dmetric("Bytes/Min", "deltaBytes"), dmetric("Sessions/Min", "deltaSessions"), dmetric("Dropped/Min", "deltaDropped"), dmetric("Active Sessions", "monitoring"), dmetric("Free Space", "freeSpaceM"), dmetric("Memory", "memory"), dmetric("Disk Queue", "diskQueue")])
       .enter().append("div")
         .attr("class", "horizon")
         .call(dcontext.horizon());
