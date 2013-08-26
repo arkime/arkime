@@ -3551,7 +3551,7 @@ app.get('/:nodeName/scrub/:id', function(req, res) {
   res.statusCode = 200;
 
   isLocalView(req.params.nodeName, function () {
-    pcapScrub(req, res, false, req.params.id, function(err) {
+    pcapScrub(req, res, req.params.id, false, function(err) {
       res.end();
     });
   },
@@ -3569,7 +3569,7 @@ app.get('/:nodeName/delete/:id', function(req, res) {
   res.statusCode = 200;
 
   isLocalView(req.params.nodeName, function () {
-    pcapScrub(req, res, true, req.params.id, function(err) {
+    pcapScrub(req, res, req.params.id, true, function(err) {
       res.end();
     });
   },

@@ -11,7 +11,7 @@
   - Another domainless hostname fix (issue #116)
   - Exports should be between 2x-5x faster
   - Added actions menu for search/sessions
-  - Scrub and Delete actions, user must have remove right enabled) (issue #119, issue #89)
+  - Scrub and Delete actions, user must have remove right enabled (issue #119, issue #89)
   - Add/Remove(remove right required) tags actions
   - Hourly rotation (issue #122)
   - unique.txt fixes (issue #123)
