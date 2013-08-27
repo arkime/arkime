@@ -46,7 +46,7 @@ var nuser = {
   webEnabled: true,
   emailSearch: false,
   createEnabled: false,
-  removeEnabeld: false
+  removeEnabled: false
 };
 
 var i;
