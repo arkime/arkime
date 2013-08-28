@@ -463,7 +463,7 @@ $(document).ready(function() {
     },
     adjust: {
       screen: true
-    } 
+    }
   }).qtip('api');
 
   $(document).on("mouseover", ".sessionActionsMenu", function (e) {
