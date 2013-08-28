@@ -21,7 +21,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
-		-ldl -lnet
+		-ldl -lpthread
 
 C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c field.c
 O_FILES         = $(C_FILES:.c=.o)
