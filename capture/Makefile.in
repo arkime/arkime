@@ -56,8 +56,11 @@ thirdparty/patricia.o:thirdparty/patricia.c
 thirdparty/http_parser.o: thirdparty/http_parser.c
 	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o
 
-install:
-	$(INSTALL) moloch-capture $(bindir)
+install: installdirs
+	$(INSTALL) moloch-capture $(bindir)/moloch-capture
+
+installdirs:
+	$(INSTALL) -d $(bindir)
 
 distclean realclean clean:
 	rm -f *.o moloch-capture
