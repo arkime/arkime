@@ -6,6 +6,9 @@ body
 .qtip-moloch
   font-size 14px
 
+.qtip
+  max-width:300px
+
 .bold
   font-weight: bold
 
@@ -127,6 +130,9 @@ body
   padding-left: 65px
   z-index: 4
 
+#searchStuffRight
+  display: inline-block
+
 #nav 
   top: 0
   padding:5px 0px
@@ -136,6 +142,10 @@ body
 #nav h3
   position:absolute
   left:-100000em
+
+#qtip-exportDialog
+  min-width: 350px
+  max-width: 500px
 
 // index
 .dataTables_length
@@ -171,9 +181,38 @@ body
   text-shadow: none
   background-color: white
 
-#search, #export
+#searchButton, #exportButton, #tagButton
   height: auto
 
+#actionsButton
+  font-size: 14px
+  padding-left: 5px
+
+#actionsButtonArrow
+  position: relative
+  top: 2px
+
+#actionsMenu ul
+  display: inline
+  list-style: none
+  font-size: 14px
+  line-height: 18px
+  padding: 0px
+  cursor: pointer
+
+#actionsMenu li a:hover
+  text-decoration:underline; 
+
+#sessionActionsMenu ul
+  display: inline
+  list-style: none
+  font-size: 14px
+  line-height: 18px
+  padding: 0px
+  cursor: pointer
+
+#sessionActionsMenu li a:hover
+  text-decoration:underline; 
 
 //From http://stackoverflow.com/a/248013
 #bsqErr
@@ -436,6 +475,9 @@ table#sessions td.dateColumn
 .sessionDetailToolbar li.last
   border-right:none
 
+.addTagsAction
+  height: 15px
+
 // Files
 
 #pageBody-filesLink
@@ -444,6 +486,11 @@ table#sessions td.dateColumn
 // Users
 
 #pageBody-usersLink
+  margin: 10px
+
+// Upload
+
+#pageBody-uploadLink
   margin: 10px
 
 // Stats
@@ -534,6 +581,16 @@ table#sessions td.dateColumn
 #pageBody-changePasswordLink
   margin: 10px
 
+// Settings
+
+#pageBody-settingsLink
+  margin: 10px
+
+#pageBody-settingsLink label
+  display: inline-block
+  width: 14em
+  text-align: right
+
 // map
 
 .jvectormap-label
@@ -606,6 +663,25 @@ table#sessions td.dateColumn
 #spiview a:hover
   text-decoration:underline
 
+#spiViewInfo
+  clear: both
+  padding-left: 65px
+  z-index: 4
+  font-family: Arial, sans-serif
+  text-shadow: black 0.1em 0.1em 0.2em
+  font-weight: normal
+  font-size: 14px
+  min-height: 22px;
+  color:white
+  background: #16285a /* Old browsers */
+  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
+  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
+
 .spicount
   font-size: 0.50em
   vertical-align: top
@@ -613,9 +689,11 @@ table#sessions td.dateColumn
 #spiview input[type="checkbox"]
   vertical-align: middle
 
+#spiViewInfo span
+  vertical-align: middle
+
 // http://www.the-art-of-web.com/css/format-dl
 #spiview dl
-  border: 3px double #ccc
   padding: 0.5em
 
 #spiview dt
@@ -632,6 +710,9 @@ table#sessions td.dateColumn
 #spiview dd
   margin: 0 0 0 185px
   padding: 0 0 0.5em 0;
+
+#spiview h1
+  margin-top: 0px
 
 
 // SPI Graph
@@ -651,6 +732,7 @@ table#sessions td.dateColumn
   text-shadow: black 0.1em 0.1em 0.2em
   font-weight: normal
   font-size: 12px
+  min-height: 22px;
   color:white
   background: #16285a /* Old browsers */
   background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */

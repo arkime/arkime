@@ -29,6 +29,7 @@
 #include <netdb.h>
 #include <netdb.h>
 #include "glib.h"
+#include "zlib.h"
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "moloch.h"
@@ -42,13 +43,14 @@ static http_parser_settings  parserSettings;
 typedef struct molochrequest_t {
     struct molochrequest_t *r_next, *r_prev;
 
+    MolochResponse_cb       func;
+    gpointer                uw;
     char                    key[200];
-    char                    method[20];
+    char                    method[16];
     int                     key_len;
     char                   *data;
     uint32_t                data_len;
-    MolochResponse_cb       func;
-    gpointer                uw;
+    char                    compress;
 } MolochRequest_t;
 
 typedef struct {
@@ -83,6 +85,7 @@ typedef struct {
 typedef struct molochhttp_t {
     MolochConn_t         *syncConn;
     char                 *name;
+    char                  compress;
     int                   port;
     uint16_t              maxConns;
     uint16_t              maxOutstandingRequests;
@@ -345,12 +348,14 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
                           "%s %.*s HTTP/1.1\r\n"
                           "Host: this.host\r\n"
                           "Content-Type: application/json\r\n"
+                          "%s"
                           "Content-Length: %d\r\n"
                           "Connection: keep-alive\r\n"
                           "\r\n",
                           request->method,
                           request->key_len,
                           request->key,
+                          request->compress?"Content-Encoding: deflate\r\n":"",
                           (int)request->data_len);
 
     gettimeofday(&conn->startTime, NULL);
@@ -418,6 +423,7 @@ unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uin
     request->data     = data;
     request->func     = 0;
     request->uw       = 0;
+    request->compress = 0;
 
     if (return_len)
         *return_len = 0;
@@ -434,6 +440,7 @@ unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uin
     return 0;
 }
 /******************************************************************************/
+static z_stream z_strm;
 gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw)
 {
     MolochRequest_t     *request;
@@ -444,6 +451,29 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
     memcpy(request->key, key, MIN(key_len, sizeof(request->key)));
     strncpy(request->method, method, sizeof(request->method));
     request->key_len  = key_len;
+    request->compress = 0;
+
+    if (server->compress && data && data_len > 1000) {
+        char            *buf = moloch_http_get_buffer(data_len);
+        int              ret;
+
+        z_strm.avail_in   = data_len;
+        z_strm.next_in    = (unsigned char *)data;
+        z_strm.avail_out  = data_len;
+        z_strm.next_out   = (unsigned char *)buf;
+        ret = deflate(&z_strm, Z_FINISH);
+        if (ret == Z_STREAM_END) {
+            request->compress = 1;
+            MOLOCH_SIZE_FREE(buffer, data);
+            data_len = data_len - z_strm.avail_out;
+            data     = buf;
+        } else {
+            MOLOCH_SIZE_FREE(buffer, buf);
+        }
+
+        deflateReset(&z_strm);
+    }
+
     request->data_len = data_len;
     request->data     = data;
     request->func     = func;
@@ -481,7 +511,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
         }
     } else {
         request->data = data;
-        if (dropable && server->requestQ[q].r_count > server->maxOutstandingRequests) {
+        if (!config.exiting && dropable && server->requestQ[q].r_count > server->maxOutstandingRequests) {
             LOG("ERROR - Dropping request %.*s of size %d queue[%d] %d is too big", key_len, key, data_len, q, server->requestQ[q].r_count);
 
             if (data) {
@@ -517,7 +547,7 @@ moloch_http_create(MolochHttp_t *server) {
     return conn;
 }
 /******************************************************************************/
-void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests)
+void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
 {
     MolochHttp_t *server = MOLOCH_TYPE_ALLOC0(MolochHttp_t);
 
@@ -528,6 +558,7 @@ void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, i
     server->port = defaultPort;
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;
+    server->compress = compress;
 
     server->syncConn = moloch_http_create(server);
     uint32_t i;
@@ -542,6 +573,11 @@ void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, i
 void moloch_http_init()
 {
     g_type_init();
+
+    z_strm.zalloc = Z_NULL;
+    z_strm.zfree  = Z_NULL;
+    z_strm.opaque = Z_NULL;
+    deflateInit(&z_strm, Z_DEFAULT_COMPRESSION);
 
     memset(&parserSettings, 0, sizeof(parserSettings));
 
@@ -575,6 +611,7 @@ void moloch_http_free_server(void *serverV)
 /******************************************************************************/
 void moloch_http_exit()
 {
+    deflateEnd(&z_strm);
 }
 /******************************************************************************/
 int moloch_http_queue_length(void *serverV) 

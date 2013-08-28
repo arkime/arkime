@@ -144,7 +144,9 @@ void moloch_config_load()
 
     char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
 
-    if (strcmp(rotateIndex, "daily") == 0)
+    if (strcmp(rotateIndex, "hourly") == 0)
+        config.rotate = MOLOCH_ROTATE_HOURLY;
+    else if (strcmp(rotateIndex, "daily") == 0)
         config.rotate = MOLOCH_ROTATE_DAILY;
     else if (strcmp(rotateIndex, "weekly") == 0)
         config.rotate = MOLOCH_ROTATE_WEEKLY;
@@ -201,18 +203,20 @@ void moloch_config_load()
     config.maxPackets       = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
     config.minFreeSpaceG    = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
     config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
+    config.dbFlushTimeout   = moloch_config_int(keyfile, "dbFlushTimeout", 1, 60*30, 5);
     config.maxESConns       = moloch_config_int(keyfile, "maxESConns", 100, 10, 1000);
     config.maxESRequests    = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
     config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
     config.packetsPerPoll   = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
     config.pcapBufferSize   = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x200000);
+    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x400000);
 
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
+    config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
 
 }
 /******************************************************************************/
@@ -376,6 +380,7 @@ void moloch_config_init()
         LOG("maxPackets: %u", config.maxPackets);
         LOG("minFreeSpaceG: %u", config.minFreeSpaceG);
         LOG("dbBulkSize: %u", config.dbBulkSize);
+        LOG("dbFlushTimeout: %u", config.dbFlushTimeout);
         LOG("maxESConns: %u", config.maxESConns);
         LOG("maxESRequests: %u", config.maxESRequests);
         LOG("logEveryXPackets: %u", config.logEveryXPackets);
@@ -387,6 +392,7 @@ void moloch_config_init()
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));
         LOG("logFileCreation: %s", (config.logFileCreation?"true":"false"));
         LOG("parseSMTP: %s", (config.parseSMTP?"true":"false"));
+        LOG("compressES: %s", (config.compressES?"true":"false"));
 
         MolochString_t *tstring;
         HASH_FORALL(s_, config.dontSaveTags, tstring, 

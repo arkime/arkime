@@ -29,9 +29,13 @@ var crypto = require('crypto');
 var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
 Db.initialize({host : escInfo[0], port: escInfo[1]});
 
-if (process.argv.length < 4) {
+function help() {
   console.log("addUser.js <user id> <user friendly name> <password> [-noweb] [-admin] [-email]");
   process.exit(0);
+}
+
+if (process.argv.length < 5) {
+  help();
 }
 
 var nuser = {
@@ -41,23 +45,43 @@ var nuser = {
   enabled: true,
   webEnabled: true,
   emailSearch: false,
-  createEnabled: false
+  createEnabled: false,
+  removeEnabled: false
 };
 
 var i;
-for (i = 0; i < process.argv.length; i++) {
-  if (process.argv[i] === "-admin") {
+for (i = 5; i < process.argv.length; i++) {
+  switch(process.argv[i]) {
+  case "--admin":
+  case "-admin":
     nuser.createEnabled = true;
-  }
-  if (process.argv[i] === "-noweb") {
+    break;
+
+  case "--remove":
+  case "-remove":
+    nuser.removeEnabled = true;
+    break;
+
+  case "--noweb":
+  case "-noweb":
     nuser.webEnabled = false;
-  }
-  if (process.argv[i] === "-email") {
+    break;
+
+  case "--email":
+  case "-email":
     nuser.emailSearch = true;
+    break;
+
+  default:
+    console.log("Unknown option", process.argv[i]);
+    help();
   }
 }
 
-console.log(nuser);
 Db.indexNow("users", "user", process.argv[2], nuser, function(err, info) {
-  console.log("add user", err, info);
+  if (info.ok !== true) {
+    console.log("Failed to add user\n", nuser, "\nError\n", info);
+  } else {
+    console.log("Added");
+  }
 });

@@ -5,7 +5,7 @@
 TDIR=_TDIR_
 
 cd ${TDIR}/bin
-/bin/rm -f ${TDIR}/capture.log.old
+/bin/rm -f ${TDIR}/logs/capture.log.old
 /bin/mv ${TDIR}/logs/capture.log ${TDIR}/logs/capture.log.old
 
 ${TDIR}/bin/moloch-capture -c ${TDIR}/etc/config.ini > ${TDIR}/logs/capture.log 2>&1

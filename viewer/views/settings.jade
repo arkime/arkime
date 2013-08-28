@@ -1,0 +1,78 @@
+extends layout
+
+block content
+  h2 Change settings for #{suser.userId} (#{suser.userName})
+  form#changeSettings
+    input(type='hidden', id='token', name='token', value='#{token}')
+    label(for='timezone') Timezone format:
+    select#timezone.setting(name="timezone")
+      option(value="local", selected=suser.settings.timezone=="local") local time
+      option(value="gmt", selected=suser.settings.timezone=="gmt") gmt time
+    br
+    label(for='detailFormat') Session Detail Format:
+    select#detailFormat.setting(name="detailFormat")
+      option(value="last", selected=suser.settings.detailFormat=="last") last used
+      option(value="natural", selected=suser.settings.detailFormat=="natural") natural
+      option(value="ascii", selected=suser.settings.detailFormat=="ascii") ascii
+      option(value="utf8", selected=suser.settings.detailFormat=="utf8") utf8
+      option(value="hex", selected=suser.settings.detailFormat=="hex") hex
+    br
+    label(for='showTimestamps') Show Timestamps:
+    select#showTimestamps.setting(name="showTimestamps")
+      option(value="last", selected=suser.settings.showTimestamps=="last") last used
+      option(value="true", selected=suser.settings.showTimestamps=="true") on
+      option(value="false", selected=suser.settings.showTimestamps=="false") off
+
+  h2 Change password for #{suser.userId} (#{suser.userName})
+  form#changePassword
+    - if (currentPassword)
+      label(for='currentPassword') Current Password:
+      input(type='password', id='currentPassword', name='currentPassword', size='30')
+      br 
+    label(for='newPassword') New Password:
+    input(type='password', id='newPassword', name='newPassword', size='30')
+    br
+    label(for='newPassword2') New Password:
+    input(type='password', id='newPassword2', name='newPassword2', size='30')
+    input(type='hidden', id='token', name='token', value='#{token}')
+    br 
+    button#change Change
+
+  script(type='text/javascript').
+
+    $('#changePassword').submit(function() {
+      if ($("#newPassword").val() != $("#newPassword2").val()) {
+        alert("New passwords don't match");
+        return false;
+      }
+
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}changePassword",
+        "data": $("#changePassword").serialize(),
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          } else {
+            alert("Password changed.");
+            history.back();
+          }
+        }
+      });
+      return false;
+    });
+
+    $('.setting').live('change', function (e) {
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}changeSettings",
+        "data": $("#changeSettings").serialize(),
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          }
+        }
+      });
+    });

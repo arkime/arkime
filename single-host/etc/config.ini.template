@@ -17,7 +17,7 @@
 # help spread load on high volume clusters
 elasticsearch=localhost:9200
 
-# How often to create a new elasticsearch index. daily,weekly,monthly
+# How often to create a new elasticsearch index. hourly,daily,weekly,monthly
 # Changing the value will cause previous sessions to be unreachable
 rotateIndex=daily
 
@@ -126,7 +126,7 @@ parseSMTP=true
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
  
 # Plugin directory to load plugins from
-pluginsDir=plugins
+pluginsDir=_TDIR_/plugins
 
 # Semicolon ';' seperated list of plugins to load and the order to load them
 #plugins=tagger.so; netflow.so
@@ -145,6 +145,8 @@ pluginsDir=plugins
 # ES will blow up if we allow the spiData to search too many indices.
 spiDataMaxIndices=3
 
+# Uncomment the following to allow direct uploads.  This is experimental
+#uploadCommand=/data/moloch/bin/moloch-capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
 # stripe size.  Defaults to 256k
@@ -155,6 +157,13 @@ pcapBufferSize = 30000000
 
 # ADVANCED - Number of bytes to bulk index at a time
 dbBulkSize = 300000
+
+# ADVANCED - Number of seconds before we force a flush to ES
+dbFlushTimeout = 5
+
+# ADVANCED - Compress requests to ES, reduces ES bandwidth by ~80% at the cost
+# of increased CPU. MUST have "http.compression: true" in elasticsearch.yml file
+compressES = false
 
 # ADVANCED - Max number of connections to elastic search
 maxESConns = 30

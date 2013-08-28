@@ -26,8 +26,8 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=0.90.0
-NODEJS=0.8.23
+ES=0.90.3
+NODEJS=0.10.17
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
@@ -42,9 +42,11 @@ if [ $pver -eq 0 ]; then
 fi
 
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
-   echo "WARNING - Using a umask of 022 is STRONGLY recommended - $(umask) " 1>&2
+   echo "WARNING - Using a umask of 022 is STRONGLY recommended - $(umask) - script will try setting to 022 before proceeding" 1>&2
    sleep 3
 fi
+
+umask 022
 
 if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
    echo "WARNING - looks like a umask 022 wasn't used for git clone, this might cause strange errors" 1>&2
@@ -61,7 +63,7 @@ which java
 JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
-    echo -n "java command not found, install openjdk 7 now? [yes] "
+    echo -n "java command not found, real Java 7 is recommended for large install, however would you like to install openjdk 7 now? [yes] "
     read INSTALLJAVA
     if [ -n "$INSTALLJAVA" -a "x$INSTALLJAVA" != "xyes" ]; then 
         echo "Install java and try again"
@@ -70,19 +72,27 @@ if [ $JAVA_VAL -ne 0 ]; then
 
     if [ -f "/etc/debian_version" ]; then
         apt-get install openjdk-7-jdk
+        if [ $? -ne 0 ]; then
+            echo "ERROR - 'apt-get install openjdk-7-jdk' failed"
+            exit
+        fi
     elif [ -f "/etc/redhat-release" ]; then
         yum install java-1.7.0-openjdk
+        if [ $? -ne 0 ]; then
+            echo "ERROR - 'yum install java-1.7.0-openjdk' failed"
+            exit
+        fi
     else
-        echo "ERROR - Not sure how to install java for this OS"
+        echo "ERROR - Not sure how to install java for this OS, please install and run again"
         exit
     fi
 fi
 
-umask 022
-
-
 # Building thirdparty libraries and moloch
 ./easybutton-build.sh "$TDIR"
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 
 # Increase limits
 grep -q "hard.*nofile.*128000" /etc/security/limits.conf

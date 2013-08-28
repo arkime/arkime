@@ -6,7 +6,9 @@
 
 \s+                   /* skip whitespace */
 [0-9]+\b                  return 'NUMBER'
+\[[0-9,'"]+\]             return 'NUMBERLIST'
 ([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?\b return 'IPMATCH'
+\[(?:([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?[ ,]{0,1})+\] return 'IPMATCHLIST'
 
 /* Backwards Names, to be removed */
 "email.ct.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type.cnt'
@@ -68,6 +70,7 @@
 "email.subject"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.subject'
 "email.x-mailer.cnt"      if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer.cnt'
 "email.x-mailer"          if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.x-mailer'
+email\.[^\s!=><.]*\.cnt   if (!yy.emailSearch) throw "email searches disabled for user"; return 'EMAIL_HEADER_CNT'
 email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled for user"; return 'EMAIL_HEADER'
 "file"                    return "file"
 "http.hasheader.dst.cnt"  return "http.hasheader.dst.cnt"
@@ -86,10 +89,16 @@ email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled fo
 "http.md5"                return "http.md5"
 "http.uri.cnt"            return "http.uri.cnt"
 "http.uri"                return "http.uri"
+"http.version"            return "http.version"
+"http.version.src"        return "http.version.src"
+"http.version.src.cnt"    return "http.version.src.cnt"
+"http.version.dst"        return "http.version.dst"
+"http.version.dst.cnt"    return "http.version.dst.cnt"
 "http.user-agent.cnt"     return "http.user-agent.cnt"
 "http.user-agent"         return "http.user-agent"
 "http.host.cnt"           return "host.http.cnt"
 "http.host"               return "host.http"
+http\.[^\s!=><.]*\.cnt    return "HTTP_HEADER_CNT"
 http\.[^\s!=><.]*         return "HTTP_HEADER"
 "icmp"                    return "icmp"
 "\"icmp\""                return "icmp"
@@ -103,6 +112,10 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "ip.xff"                  return "ip.xff"
 "ip.email.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return "ip.email.cnt"
 "ip.email"                if (!yy.emailSearch) throw "email searches disabled for user"; return "ip.email"
+"irc.nick"                return "irc.nick"
+"irc.nick.cnt"            return "irc.nick.cnt"
+"irc.channel"             return "irc.channel"
+"irc.channel.cnt"         return "irc.channel.cnt"
 "node"                    return 'node'
 "packets"                 return 'packets'
 "port.dst"                return 'port.dst'
@@ -127,6 +140,8 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 [/\w*._:-]+               return 'ID'
 \"[^"\\]*(?:\\.[^"\\]*)*\" return 'QUOTEDSTR'
 \/[^/\\]*(?:\\.[^/\\]*)*\/ return 'REGEXSTR'
+\[[0-9a-z,"]+\]           return 'LOWERLIST'
+\[[^\]]+\]                return 'ANYLIST'
 "<="                      return 'lte'
 "<"                       return 'lt'
 ">="                      return 'gte'
@@ -176,12 +191,18 @@ GTLT: LTA
     ;
 
 IPNUM: IPMATCH
+     | IPMATCHLIST
      | NUMBER
+     | NUMBERLIST
      ;
 
 HEADER: EMAIL_HEADER
       | HTTP_HEADER
       ;
+
+HEADER_CNT: EMAIL_HEADER_CNT
+          | HTTP_HEADER_CNT
+          ;
 
 RANGEFIELD: databytes                {$$ = 'db'}
           | bytes                    {$$ = 'by'}
@@ -195,6 +216,8 @@ RANGEFIELD: databytes                {$$ = 'db'}
           | 'ip.xff.cnt'             {$$ = 'xffscnt'}
           | 'http.md5.cnt'           {$$ = 'hmd5cnt'}
           | 'http.user-agent.cnt'    {$$ = 'uacnt'}
+          | 'http.version.src.cnt'   {$$ = 'hsvercnt'}
+          | 'http.version.dst.cnt'   {$$ = 'hdvercnt'}
           | 'user.cnt'               {$$ = 'usercnt'}
           | 'host.dns.cnt'           {$$ = 'dnshocnt'}
           | 'host.email.cnt'         {$$ = 'ehocnt'}
@@ -214,6 +237,8 @@ RANGEFIELD: databytes                {$$ = 'db'}
           | 'cert.alt.cnt'           {$$ = 'tls.altcnt'}
           | 'ssh.key.cnt'            {$$ = 'sshkeycnt'}
           | 'ssh.ver.cnt'            {$$ = 'sshvercnt'}
+          | 'irc.nick.cnt'           {$$ = 'ircnckcnt'}
+          | 'irc.channel.cnt'        {$$ = 'ircchcnt'}
           ;
 
 LOTERMFIELD  : node               {$$ = 'no'}
@@ -238,6 +263,10 @@ TERMFIELD  : 'id'                 {$$ = '_id'}
            | 'email.fn'           {$$ = 'efn'}
            | 'email.content-type' {$$ = 'ect'}
            | 'http.md5'           {$$ = 'hmd5'}
+           | 'http.version.src'   {$$ = 'hsver'}
+           | 'http.version.dst'   {$$ = 'hdver'}
+           | 'irc.nick'           {$$ = 'ircnck'}
+           | 'irc.channel'        {$$ = 'ircch'}
            | 'rootId'             {$$ = 'ro'}
            ;
 
@@ -344,13 +373,29 @@ STR : ID
     | udp
     | uri
     | uri.cnt
+    | LOWERLIST
+    | ANYLIST
+    | NUMBERLIST
+    | IPMATCH
+    | IPMATCHLIST
     ;
+
+PROTOCOLNUMBER : NUMBER
+               | icmp
+               | tcp
+               | udp
+               ;
+
+PROTOCOLLIST : NUMBERLIST
+             | LOWERLIST
+             ;
+  
  
 e
     : e '&&' e
-        {$$ = {and: [$1, $3]};}
+        {$$ = {bool: {must: [$1, $3]}};}
     | e '||' e
-        {$$ = {or: [$1, $3]};}
+        {$$ = {bool: {should: [$1, $3]}};}
     | '!' e %prec UMINUS
         {$$ = {not: $2};}
     | '-' e %prec UMINUS
@@ -367,26 +412,24 @@ e
     | RANGEFIELD '!=' NUMBER
         {$$ = {not: {term: {}}};
          $$.not.term[$1] = $3;}
-    | protocol '==' 'icmp'
-        {$$ = {term: {pr: 1}};}
-    | protocol '==' 'tcp'
-        {$$ = {term: {pr: 6}};}
-    | protocol '==' 'udp'
-        {$$ = {term: {pr: 17}};}
-    | protocol '==' NUMBER
-        {$$ = {term: {pr: $3}};}
-    | protocol '!=' 'icmp'
-        {$$ = {not: {term: {pr: 1}}};}
-    | protocol '!=' 'tcp'
-        {$$ = {not: {term: {pr: 6}}};}
-    | protocol '!=' 'udp'
-        {$$ = {not: {term: {pr: 17}}};}
-    | protocol '!=' NUMBER
-        {$$ = {not: {term: {pr: $3}}};}
+    | RANGEFIELD '==' NUMBERLIST
+        {$$ = {terms: {}};
+         $$.terms[$1] = CSVtoArray($3);}
+    | RANGEFIELD '!=' NUMBERLIST
+        {$$ = {not: {term: {}}};
+         $$.not.term[$1] = CSVtoArray($3);}
+    | protocol '==' PROTOCOLNUMBER
+        {$$ = {term: {pr: protocolLookup($3)}};}
+    | protocol '==' PROTOCOLLIST
+        {$$ = {terms: {pr: protocolLookup(CSVtoArray($3))}};}
+    | protocol '!=' PROTOCOLNUMBER
+        {$$ = {not: {term: {pr: protocolLookup($3)}}};}
+    | protocol '!=' PROTOCOLLIST
+        {$$ = {not: {terms: {pr: protocolLookup(CSVtoArray($3))}}};}
     | 'port' GTLT NUMBER
-        {$$ = {or: [{range: {p1: {}}}, {range: {p2: {}}}]};
-         $$.or[0].range.p1[$2] = $3;
-         $$.or[1].range.p2[$2] = $3;}
+        {$$ = {bool: {should: [{range: {p1: {}}}, {range: {p2: {}}}]}};
+         $$.bool.should[0].range.p1[$2] = $3;
+         $$.bool.should[1].range.p2[$2] = $3;}
     | LOTERMFIELD '!=' STR
         {$$ = {not: str2Query($1, "term", $3.toLowerCase())};}
     | LOTERMFIELD '==' STR
@@ -408,9 +451,9 @@ e
     | TEXTFIELD '==' STR
         {$$ = str2Query($1, "text", $3);}
     | HEADER '==' STR
-        {$$ = str2Query(str2Header(yy, $1) + ".snow", "text", $3);}
+        {$$ = str2Query(str2Header(yy, $1), "text", $3);}
     | HEADER '!=' STR
-        {$$ = {not: str2Query(str2Header(yy, $1) + ".snow", "text", $3)};}
+        {$$ = {not: str2Query(str2Header(yy, $1), "text", $3)};}
     | HEADER '==' NUMBER
         {
         $$ = {term: {}};
@@ -424,21 +467,47 @@ e
         {$$ = {range: {}};
          $$.range[str2Header(yy, $1)] = {};
          $$.range[str2Header(yy, $1)][$2] = $3;}
+    | HEADER_CNT '==' NUMBER
+        {
+        $$ = {term: {}};
+        $$.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER_CNT '!=' NUMBER
+        { $$ = {not: {term: {}}};
+          $$.not.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER_CNT '==' NUMBERLIST
+        {
+        $$ = {terms: {}};
+        $$.terms[str2Header(yy, $1)] = $3;
+        }
+    | HEADER_CNT '!=' NUMBERLIST
+        { $$ = {not: {terms: {}}};
+          $$.not.term[str2Header(yy, $1)] = $3;
+        }
+    | HEADER_CNT GTLT NUMBER
+        {$$ = {range: {}};
+         $$.range[str2Header(yy, $1)] = {};
+         $$.range[str2Header(yy, $1)][$2] = $3;}
     | 'port' '==' NUMBER
-        {$$ = {or: [{term: {p1: $3}}, {term: {p2: $3}}]};}
+        {$$ = {bool: {should: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
+    | 'port' '==' NUMBERLIST
+        {$$ = {bool: {should: [{terms: {p1: CSVtoArray($3)}}, {terms: {p2: CSVtoArray($3)}}]}};}
     | 'port' '!=' NUMBER
-        {$$ = {not: {or: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
+        {$$ = {bool: {must_not: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
+    | 'port' '!=' NUMBERLIST
+        {$$ = {bool: {must_not: [{term: {p1: CSVtoArray($3)}}, {term: {p2: CSVtoArray($3)}}]}};}
     | IPFIELD '==' IPNUM
         {$$ = parseIpPort(yy, $3,$1);}
     | IPFIELD '!=' IPNUM
         {$$ = {not: parseIpPort(yy, $3,$1)};}
     | tags '==' STR
         { var tag = stripQuotes($3);
-          $$ = {term: {ta: tag}};
+          $$ = termOrTerms("ta", tag);
         }
     | tags '!=' STR
         { var tag = stripQuotes($3);
-          $$ = {not: {term: {ta: tag}}};
+          $$ = {not: termOrTerms("ta", tag)};
         }
     | file '==' STR
         { var file = stripQuotes($3);
@@ -450,95 +519,117 @@ e
         }
     | 'http.hasheader' '==' STR
         { var tag = stripQuotes($3);
-          $$ = {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]};
+          $$ = {bool: {should: [termOrTerms("hh1", tag), termOrTerms("hh2", tag)]}};
         }
     | 'http.hasheader.src' '==' STR
         { var tag = stripQuotes($3);
-          $$ = {term: {hh1: tag}};
+          $$ = termOrTerms("hh1", tag);
         }
     | 'http.hasheader.dst' '==' STR
         { var tag = stripQuotes($3);
-          $$ = {term: {hh2: tag}};
+          $$ = termOrTerms("hh2", tag);
         }
     | 'http.hasheader' '!=' STR
         { var tag = stripQuotes($3);
-          $$ = {not: {or: [{term: {hh1: tag}}, {term:{hh2: tag}}]}};
+          $$ = {bool: {must_not: [termOrTerms("hh1", tag), termOrTerms("hh2", tag)]}};
         }
     | 'http.hasheader.src' '!=' STR
         { var tag = stripQuotes($3);
-          $$ = {not: {term: {hh1: tag}}};
+          $$ = {not: termOrTerms("hh1", tag)};
         }
     | 'http.hasheader.dst' '!=' STR
         { var tag = stripQuotes($3);
-          $$ = {not: {term: {hh2: tag}}};
+          $$ = {not: termOrTerms("hh2", tag)};
+        }
+    | 'http.version' '==' STR 
+        {
+          $$ = [str2Query("hsver", "term", $3),
+                str2Query("hdver", "term", $3)
+               ];
+          $$ = {bool: {should: $$}};
+        }
+    | 'http.version' '!=' STR 
+        {
+          $$ = [str2Query("hsver", "term", $3),
+                str2Query("hdver", "term", $3)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | country '==' STR 
         { var str = $3.toUpperCase();
-          $$ = {or: [str2Query("g1", "term", str),
-                     str2Query("g2", "term", str),
-                     str2Query("gxff", "term", str),
-                     str2Query("gdnsip", "term", str),
-                     str2Query("geip", "term", str)
-                    ]
-               };
+          $$ = [str2Query("g1", "term", str),
+                str2Query("g2", "term", str),
+                str2Query("gxff", "term", str),
+                str2Query("gdnsip", "term", str),
+                str2Query("geip", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
         }
     | country '!=' STR 
         { var str = $3.toUpperCase();
-          $$ = {or: [str2Query("g1", "term", str),
-                     str2Query("g2", "term", str),
-                     str2Query("gxff", "term", str),
-                     str2Query("gdnsip", "term", str),
-                     str2Query("geip", "term", str)
-                    ]
-               };
-          $$ = {not: $$};
+          $$ = [str2Query("g1", "term", str),
+                str2Query("g2", "term", str),
+                str2Query("gxff", "term", str),
+                str2Query("gdnsip", "term", str),
+                str2Query("geip", "term", str)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | asn '==' STR 
         { var str = $3.toLowerCase();
-          
-          $$ = {or: [str2Query("as1", "text", str),
-                     str2Query("as2", "text", str),
-                     str2Query("asxff", "text", str),
-                     str2Query("asdnsip", "text", str),
-                     str2Query("aseip", "text", str)
-                    ]
-               };
+          $$ = [str2Query("as1", "text", str),
+                str2Query("as2", "text", str),
+                str2Query("asxff", "text", str),
+                str2Query("asdnsip", "text", str),
+                str2Query("aseip", "text", str)
+               ];
+          $$ = {bool: {should: $$}};
         }
     | asn '!=' STR 
         { var str = $3.toLowerCase();
-          $$ = {or: [str2Query("as1", "text", str),
-                     str2Query("as2", "text", str),
-                     str2Query("asxff", "text", str),
-                     str2Query("asdnsip", "text", str),
-                     str2Query("aseip", "text", str)
-                    ]
-               };
-          $$ = {not: $$};
+          $$ = [str2Query("as1", "text", str),
+                str2Query("as2", "text", str),
+                str2Query("asxff", "text", str),
+                str2Query("asdnsip", "text", str),
+                str2Query("aseip", "text", str)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | host '!=' STR
         { var str = $3.toLowerCase();
 
-          $$ = {or: [str2Query("ho", "term", str),
-                     str2Query("dnsho", "term", str),
-                     str2Query("eho", "term", str)
-                    ]
-               };
-          $$ = {not: $$};
+          $$ = [str2Query("ho", "term", str),
+                str2Query("dnsho", "term", str),
+                str2Query("eho", "term", str)
+               ];
+          $$ = {bool: {must_not: $$}};
         }
     | host '==' STR
         { var str = $3.toLowerCase();
 
-          $$ = {or: [str2Query("ho", "term", str),
-                     str2Query("dnsho", "term", str),
-                     str2Query("eho", "term", str)
-                    ]
-               };
+          $$ = [str2Query("ho", "term", str),
+                str2Query("dnsho", "term", str),
+                str2Query("eho", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
         }
     ;
 %%
 
+var    util           = require('util');
+
 function parseIpPort(yy, ipPortStr, which) {
   ipPortStr = ipPortStr.trim();
+
+// We really have a list of them
+  if (ipPortStr[0] === "[" && ipPortStr[ipPortStr.length -1] === "]") {
+      var obj =  {bool: {should: []}};
+      CSVtoArray(ipPortStr).forEach(function(str) {
+          obj.bool.should.push(parseIpPort(yy, str, which));
+      });
+      return obj;
+  }
+
   // Support '10.10.10/16:4321'
 
   var ip1 = -1, ip2 = -1;
@@ -570,22 +661,22 @@ function parseIpPort(yy, ipPortStr, which) {
      ip2 = ip2 | (0xffffffff >>> s);
   }
 
-  var t1 = {and: []};
-  var t2 = {and: []};
+  var t1 = {bool: {must: []}};
+  var t2 = {bool: {must: []}};
   var xff;
   var dns;
   var email;
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1.and.push({term: {a1: ip1>>>0}});
-        t2.and.push({term: {a2: ip1>>>0}});
+        t1.bool.must.push({term: {a1: ip1>>>0}});
+        t2.bool.must.push({term: {a2: ip1>>>0}});
         dns   = {term: {dnsip: ip1>>>0}};
         email = {term: {eip: ip1>>>0}};
         xff   = {term: {xff: ip1>>>0}};
     } else {
-        t1.and.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-        t2.and.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
+        t1.bool.must.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
+        t2.bool.must.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
         dns =    {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
         email =  {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
         xff =    {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
@@ -593,13 +684,13 @@ function parseIpPort(yy, ipPortStr, which) {
   }
 
   if (port !== -1) {
-    t1.and.push({term: {p1: port}});
-    t2.and.push({term: {p2: port}});
+    t1.bool.must.push({term: {p1: port}});
+    t2.bool.must.push({term: {p2: port}});
   }
 
-  if (t1.and.length === 1) {
-      t1 = t1.and[0];
-      t2 = t2.and[0];
+  if (t1.bool.must.length === 1) {
+      t1 = t1.bool.must[0];
+      t2 = t2.bool.must[0];
   }
 
   switch(which) {
@@ -613,7 +704,7 @@ function parseIpPort(yy, ipPortStr, which) {
     if (yy.emailSearch === true && email)
         ors.push(email);
 
-    return {or: ors};
+    return {bool: {should: ors}};
   case 1:
     return t1;
   case 2:
@@ -663,13 +754,28 @@ function str2Query(field, kind, str)
 
     if (str[0] === "/" && str[str.length -1] === "/") {
         field = field2RawField[field] || field;
-        obj = {query: {regexp: {}}};
-        obj.query.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        obj = {regexp: {}};
+        obj.regexp[field] = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
         return obj;
     }
 
+    var strs;
     if (str[0] === "\"" && str[str.length -1] === "\"") {
         str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+    } else if (str[0] === "[" && str[str.length -1] === "]") {
+        strs = CSVtoArray(str);
+        if (kind === "term") {
+            obj = {terms: {}};
+            obj.terms[field] = strs;
+        } else if (kind === "text") {
+            var obj =  {query: {bool: {should: []}}};
+            strs.forEach(function(str) {
+              var should = {text: {}};
+              should.text[field] = {query: str, type: "phrase", operator: "and"}
+              obj.query.bool.should.push(should);
+            });
+        }
+        return obj;
     }
 
     if (str.indexOf("*") !== -1) {
@@ -685,6 +791,7 @@ function str2Query(field, kind, str)
     }
     return obj;
 }
+
 function str2Header(yy, name) {
     var field = yy.fieldsMap[name];
     if (field === undefined) throw "Unknown field " + name;
@@ -692,3 +799,54 @@ function str2Header(yy, name) {
     return field.db;
 }
 
+// http://stackoverflow.com/a/8497474
+// Return array of string values, or NULL if CSV string not well formed.
+function CSVtoArray(text) {
+    text = text.substring(1, text.length-1);
+    var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
+    var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
+    // Return NULL if input string is not well formed CSV string.
+    if (!re_valid.test(text)) return null;
+    var a = [];                     // Initialize array to receive values.
+    text.replace(re_value, // "Walk" the string using replace with callback.
+        function(m0, m1, m2, m3) {
+            // Remove backslash from \' in single quoted values.
+            if      (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
+            // Remove backslash from \" in double quoted values.
+            else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
+            else if (m3 !== undefined) a.push(m3);
+            return ''; // Return empty string.
+        });
+    // Handle special case of empty last value.
+    if (/,\s*$/.test(text)) a.push('');
+    return a;
+};
+
+var protocols = {
+    icmp: 1,
+    tcp:  6,
+    udp:  17
+};
+
+function protocolLookup(text) {
+    if (typeof text !== "string") {
+        for (var i = 0; i < text.length; i++) {
+            text[i] = protocols[text[i]] || +text[i];
+        }
+        return text;
+    } else {
+        return protocols[text] || +text;
+    }
+}
+
+function termOrTerms(field, str) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {terms: {}};
+    obj.terms[field] = CSVtoArray(str);
+  } else {
+    obj = {term: {}};
+    obj.term[field] = str;
+  }
+  return obj;
+}

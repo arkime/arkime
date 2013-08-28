@@ -12,13 +12,14 @@ html
     script(type='text/javascript', src='jquery.qtip.min.js')
     script(type='text/javascript', src='d3.v2.js')
     script(type='text/javascript', src='common.js')
+    block scripts
 
     link(rel='stylesheet', type='text/css', href='DataTables-1.9.1/media/css/demo_table.css')
     link(rel='stylesheet', type='text/css', href='jquery-ui.css')
     link(rel='stylesheet', type='text/css', href='jquery.qtip.min.css')
     link(rel='stylesheet', type='text/css', href='style.css')
     if (typeof titleLink === "string")
-      style(type='text/css')
+      style(type='text/css').
         ##{titleLink} { color:white}
   body(id="body-#{titleLink}")
     #header
@@ -29,13 +30,15 @@ html
         ul.ulist-nav
           li
             a#sessionsLink.expressionsLink(href='#{basePath}') Sessions
-          if (spiData)
-            li
-              a#spiLink.expressionsLink(href='spiview') SPI View
-            li
-              a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
+          li
+            a#spiLink.expressionsLink(href='spiview') SPI View
+          li
+            a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
           li
             a#connectionsLink.expressionsLink(href='connections') Connections
+          if allowUploads
+            li
+              a#uploadLink(href='upload') Upload
           li
             a#filesLink(href='files') Files
           if user.createEnabled
@@ -44,7 +47,7 @@ html
           li
             a#statsLink(href='stats') Stats
           li.last
-            a.config#changePasswordLink(href='password') Change Password
+            a.config#settingsLinke(href='settings') Settings
       - if (user.createEnabled)
         a(href="#{elasticBase}/_plugin/head/",target="_blank")
           div#esstatus.tooltip
@@ -77,8 +80,10 @@ html
                 option(value=-1) All
                 option(value=-2) Custom
             input#expression(type='search', name='expression')
-            button#search(type="submit") Search
-            button#export(type="button") Export
+            span#searchStuffRight
+              button#searchButton(type="submit") Search
+              label#actionsButton Actions 
+                img#actionsButtonArrow(src="down-arrow.png")
             //button#info(type="button") I
     - if (isIndex)
       div#customDate
@@ -89,8 +94,84 @@ html
         input#stopDate(size=21)
         
     div.pageBody(id="pageBody-#{titleLink}")
-      != body
+      block content
+    div#wrapper(style="display:none")
+      form#actionsForm
+        div#actions-message
+        div#actions-opened-div
+          input(type="radio",id="actions-opened",name="actions-type",value="opened")  
+          label(for="actions-opened")
+        div#actions-visible-div
+          input(type="radio",id="actions-visible",name="actions-type",value="visible",checked) 
+          label(for="actions-visible")
+        div#actions-all-div
+          input(type="radio",id="actions-all",name="actions-type",value="all") 
+          label(for="actions-all")
+        div#actions-linked-div
+          label(for='actions-linked') Include 
+          select(id='actions-linked',name="actions-linked")
+            option(value="false",selected) no
+            option(value="time") same time period
+            option(value="all") all
+          | linked segments (slow)
+        div#actions-input-div
+          label(for="actions-input")
+          input#actions-input(size=45)
+        br
+        button#actions-button Go
+      form#exportForm
+        div#export-opened-div
+          input(type="radio",id="export-opened",name="export-type",value="opened")  
+          label(for="export-opened") Export <span id="export-opened-cnt">0</span> opened items
+        div#export-visible-div
+          input(type="radio",id="export-visible",name="export-type",value="visible",checked) 
+          label(for="export-visible") Export <span id="export-visible-cnt">0</span> visible items
+        div#export-all-div
+          input(type="radio",id="export-all",name="export-type",value="all") 
+          label(for="export-all") Export <span id="export-all-cnt">0</span> query matching items
+        div#export-linked-div
+          label(for='export-linked') Include 
+          select(id='export-linked',name="export-linked")
+            option(value="false",selected) no
+            option(value="time") same time period
+            option(value="all") all
+          | linked segments (slow)
+        label(for="exportfilename") Filename:
+        input#exportfilename(size=45, value="sessions.pcap")
+        br
+        button Export
+      div#actionsMenu
+        ul
+          li
+            label(style='font-weight:bold') Search Result Actions
+          li 
+            a#exportButton Export PCAP
+          li
+            a#addTagsButton Add Tags
+          - if (user.removeEnabled)
+            li
+              a#removeTagsButton Remove Tags
+            li
+              a#scrubButton Scrub PCAP Storage
+            li
+              a#deleteButton Delete SPI &amp; PCAP
+      div#sessionActionsMenu
+        ul
+          li
+            label(style='font-weight:bold') Session Actions
+          li 
+            a#sessionExportButton.exportAction Export PCAP
+          li
+            a#sessionAddTagsButton.addTagsAction Add Tags
+          - if (user.removeEnabled)
+            li
+              a#sessionRemoveTagsButton.removeTagsAction Remove Tags
+            li
+              a#sessionScrubButton.scrubAction Scrub PCAP Storage
+            li
+              a#sessionDeleteButton.deleteAction Delete SPI &amp; PCAP
 
-script(type='text/javascript')
+script(type='text/javascript').
   var molochFields = !{fieldsMap};
   var molochFieldsExp = Object.keys(molochFields);
+  var molochSettings  = !{JSON.stringify(user.settings)};

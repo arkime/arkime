@@ -29,7 +29,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 3
+#define MOLOCH_API_VERSION 5
 
 /******************************************************************************/
 /*
@@ -83,6 +83,7 @@ typedef HASH_VAR(s_, MolochStringHashStd_t, MolochStringHead_t, 13);
 #define MOLOCH_FIELD_FLAG_SCNT        0x0002
 #define MOLOCH_FIELD_FLAG_FORCE_UTF8  0x0004
 #define MOLOCH_FIELD_FLAG_HEADERS     0x0008
+#define MOLOCH_FIELD_FLAG_CONTINUE    0x0010
 
 typedef struct {
     char                 *name;
@@ -92,21 +93,25 @@ typedef struct {
     uint16_t              flags;
 } MolochFieldInfo_t;
 
-typedef union {
-    char                  *str;
-    GPtrArray             *sarray;
-    MolochStringHashStd_t *shash;
-    int                    i;
-    GArray                *iarray;
-    MolochIntHashStd_t    *ihash;
+typedef struct {
+    union {
+        char                  *str;
+        GPtrArray             *sarray;
+        MolochStringHashStd_t *shash;
+        int                    i;
+        GArray                *iarray;
+        MolochIntHashStd_t    *ihash;
+    };
+    uint32_t                   jsonSize;
 } MolochField_t;
 
 /******************************************************************************/
 /*
  * Configuration Information
  */
-enum MolochRotate { MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
+enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
 typedef struct moloch_config {
+    gboolean  exiting;
     char     *configFile;
     char     *nodeName;
     char     *hostName;
@@ -149,17 +154,20 @@ typedef struct moloch_config {
     uint32_t  maxStreams;
     uint32_t  maxPackets;
     uint32_t  dbBulkSize;
+    uint32_t  dbFlushTimeout;
     uint32_t  maxESConns;
     uint32_t  maxESRequests;
     uint32_t  logEveryXPackets;
     uint32_t  packetsPerPoll;
     uint32_t  pcapBufferSize;
     uint32_t  pcapWriteSize;
+    uint32_t  maxWriteBuffers;
 
     char      logUnknownProtocols;
     char      logESRequests;
     char      logFileCreation;
     char      parseSMTP;
+    char      compressES;
 } MolochConfig_t;
 
 typedef struct {
@@ -256,11 +264,11 @@ typedef struct moloch_session {
     uint64_t    databytes;
 
 
-    uint32_t    jsonSize;
     uint32_t    lastSave;
     uint32_t    addr1;
     uint32_t    addr2;
     uint32_t    packets;
+    uint32_t    certJsonSize;
 
     uint16_t    port1;
     uint16_t    port2;
@@ -272,12 +280,14 @@ typedef struct moloch_session {
     uint8_t     ip_tos;
     uint8_t     tcp_flags;
     uint8_t     sshCode;
+    uint8_t     ircState;
 
     uint16_t    haveNidsTcp:1;
     uint16_t    needSave:1;
     uint16_t    dontSave:1;
     uint16_t    which:1;
     uint16_t    isSsh:1;
+    uint16_t    isIrc:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -340,6 +350,7 @@ char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 gboolean moloch_string_add(void *hash, char *string, gboolean copy);
 
 uint32_t moloch_string_hash(const void *key);
+uint32_t moloch_string_hash_len(const void *key, int len);
 int moloch_string_cmp(const void *keyv, const void *elementv);
 
 
@@ -388,6 +399,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
 void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_parse_irc(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
 void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len);
 void moloch_detect_exit();
@@ -412,7 +424,7 @@ unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mle
 void moloch_http_exit();
 int moloch_http_queue_length(void *server);
 
-void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests);
+void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests, int compress);
 void moloch_http_free_server(void *serverV);
 
 /******************************************************************************/
@@ -426,6 +438,7 @@ void  moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag
 void  moloch_nids_certs_free (MolochCertsInfo_t *certs);
 uint32_t moloch_nids_dropped_packets();
 uint32_t moloch_nids_monitoring_sessions();
+uint32_t moloch_nids_disk_queue();
 void  moloch_nids_exit();
 
 void moloch_nids_incr_outstanding(MolochSession_t *session);
@@ -543,9 +556,11 @@ MOLOCH_FIELD_HTTP_HOST,
 MOLOCH_FIELD_HTTP_URLS,
 MOLOCH_FIELD_HTTP_XFF,
 MOLOCH_FIELD_HTTP_UA,
-MOLOCH_FIELD_HTTP_TAGS_REQ,
+MOLOCH_FIELD_HTTP_TAGS_REQ, // Must be right before RES
 MOLOCH_FIELD_HTTP_TAGS_RES, // Must be right after REQ
 MOLOCH_FIELD_HTTP_MD5,
+MOLOCH_FIELD_HTTP_VER_REQ,
+MOLOCH_FIELD_HTTP_VER_RES,
 
 MOLOCH_FIELD_SSH_VER,
 MOLOCH_FIELD_SSH_KEY,
@@ -566,12 +581,16 @@ MOLOCH_FIELD_EMAIL_MD5,
 MOLOCH_FIELD_EMAIL_FCT,
 MOLOCH_FIELD_EMAIL_IP,
 
+MOLOCH_FIELD_IRC_NICK,
+MOLOCH_FIELD_IRC_CHANNELS,
+
 MOLOCH_FIELD_TAGS, // Must be last
 };
 
 void moloch_field_init();
 int moloch_field_define(char *name, int type, int flags);
 void moloch_field_define_internal(int pos, char *name, int type, int flags);
+int moloch_field_get(char *name);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 void moloch_field_free(MolochSession_t *session);

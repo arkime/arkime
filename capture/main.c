@@ -126,7 +126,7 @@ int moloch_size_free(void *mem)
 /******************************************************************************/
 void cleanup(int UNUSED(sig))
 {
-
+    LOG("exiting");
     moloch_nids_exit();
     moloch_plugins_exit();
     moloch_detect_exit();
@@ -211,6 +211,18 @@ uint32_t moloch_string_hash(const void *key)
     while (*p) {
         n = (n << 5) - n + *p;
         p++;
+    }
+    return n;
+}
+/******************************************************************************/
+uint32_t moloch_string_hash_len(const void *key, int len)
+{
+    char *p = (char *)key;
+    uint32_t n = 0;
+    while (len) {
+        n = (n << 5) - n + *p;
+        p++;
+        len--;
     }
     return n;
 }
@@ -361,8 +373,8 @@ int main(int argc, char **argv)
     moloch_config_load_local_ips();
     moloch_yara_init();
     moloch_detect_init();
-    moloch_plugins_init();
     moloch_config_load_headers();
+    moloch_plugins_init();
     g_timeout_add(10, moloch_nids_init_gfunc, 0);
 
     g_main_loop_run(mainLoop);

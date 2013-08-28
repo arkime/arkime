@@ -17,6 +17,8 @@
 #  8 - fileSize, memory to stats/dstats and -v flag
 #  9 - http body hash, rawus
 # 10 - dynamic fields for http and email headers
+# 11 - Require 0.90.1, switch from soft to node, new fpd field, removed fpms field
+# 12 - Added hsver, hdver fields, diskQueue, user settings, scrub* fields, user removeEnabled
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -25,7 +27,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 10;
+my $VERSION = 12;
 my $verbose = 0;
 
 ################################################################################
@@ -54,7 +56,8 @@ sub showHelp($)
     print "  info                  - Information about the database\n";
     print "  usersexport <fn>      - Save the users info to <fn>\n";
     print "  usersimport <fn>      - Load the users info from <fn>\n";
-    print "  rotate <type> <num>   - Perform daily maintenance\n";
+    print "  optimize              - Optimize all indices\n";
+    print "  rotate <type> <num>   - Perform daily maintenance and optimize all indices\n";
     print "       type             - Same as rotateIndex in ini file = daily,weekly,monthly\n";
     print "       num              - number indexes to keep\n";
     exit 1;
@@ -78,7 +81,7 @@ sub esGet
     my ($url, $dontcheck) = @_;
     print "GET http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("http://$ARGV[0]$url");
-    if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+    if (($response->code == 500 && $ARGV[1] ne "init") || ($response->code != 200 && !$dontcheck)) {
       die "Couldn't GET http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
@@ -388,6 +391,10 @@ my $mapping = '
       memory: {
         type: "long",
         index: "no"
+      },
+      diskQueue: {
+        type: "long",
+        index: "no"
       }
     }
   }
@@ -465,6 +472,10 @@ my $mapping = '
       memory: {
         type: "long",
         index: "no"
+      },
+      diskQueue: {
+        type: "long",
+        index: "no"
       }
     }
   }
@@ -533,14 +544,14 @@ sub sessionsUpdate
       lp: {
         type: "long"
       },
-      lpms: {
-        type: "short"
+      lpd: {
+        type: "date"
       },
       fp: {
         type: "long"
       },
-      fpms: {
-        type: "short"
+      fpd: {
+        type: "date"
       },
       a1: {
         type: "long"
@@ -690,6 +701,22 @@ sub sessionsUpdate
         type: "integer"
       },
       hh2cnt: {
+        type: "integer"
+      },
+      hsver: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hsvercnt: {
+        type: "integer"
+      },
+      hdver: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hdvercnt: {
         type: "integer"
       },
       user: {
@@ -872,9 +899,33 @@ sub sessionsUpdate
           rawaseip: {type: "string", index: "not_analyzed"}
         }
       },
+      ircnck: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      ircnckcnt: {
+        type: "integer"
+      },
+      ircch: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      ircchcnt: {
+        type: "integer"
+      },
       hdrs: {
         type: "object",
         dynamic: "true"
+      },
+      scrubat: {
+        type: "date"
+      },
+      scrubby: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
       }
     }
   }
@@ -885,8 +936,6 @@ sub sessionsUpdate
 {
   template: "session*",
   settings: {
-    "index.fielddata.cache": "soft",
-    "index.cache.field.type": "soft",
     index: {
       "routing.allocation.total_shards_per_node": 1,
       refresh_interval: 60,
@@ -913,7 +962,7 @@ sub sessionsUpdate
     my $status = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $status->{indices} || $status->{_all}->{indices};
 
-    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n";
+    print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         if ($verbose == 1) {
             local $| = 1;
@@ -923,7 +972,8 @@ sub sessionsUpdate
         }
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
         esPost("/$i/_close", "");
-        esPut("/$i/_settings", '{"index.fielddata.cache": "soft"}');
+        #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
+        esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
         esPost("/$i/_open", "");
     }
 
@@ -984,6 +1034,10 @@ sub usersUpdate
         type: "boolean",
         index: "no"
       },
+      removeEnabled: {
+        type: "boolean",
+        index: "no"
+      },
       passStore: {
         type: "string",
         index: "no"
@@ -991,6 +1045,10 @@ sub usersUpdate
       expression: {
         type: "string",
         index: "no"
+      },
+      settings : {
+        type : "object",
+        dynamic: "true"
       }
     }
   }
@@ -1005,7 +1063,11 @@ sub time2index
 {
 my($type, $t) = @_;
 
-    my @t = localtime($t);
+    my @t = gmtime($t);
+    if ($type eq "hourly") {
+        return sprintf("sessions-%02d%02d%02dh%0d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+    } 
+
     if ($type eq "daily") {
         return sprintf("sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
     } 
@@ -1037,6 +1099,59 @@ my ($loud) = @_;
     }
 }
 ################################################################################
+sub dbCheck {
+    my $esversion = esGet("/");
+    my @parts = split(/\./, $esversion->{version}->{number});
+    my $version = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
+
+    if ($version < 9001) {
+        print("Elasticsearch version 0.90.1 or later is required.\n",
+              "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n");
+        exit (1);
+
+    }
+
+    my $error = 0;
+    my $nodes = esGet("/_nodes?settings&process");
+    foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
+        next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
+        my $node = $nodes->{nodes}->{$key};
+        my $errstr;
+
+        if (exists $node->{settings}->{"index.cache.field.type"}) {
+            $errstr .= sprintf ("    REMOVE 'index.cache.field.type'\n");
+        }
+
+        if (!(exists $node->{settings}->{"index.fielddata.cache"})) {
+            $errstr .= sprintf ("       ADD 'index.fielddata.cache: node'\n");
+        } elsif ($node->{settings}->{"index.fielddata.cache"} ne  "node") {
+            $errstr .= sprintf ("    CHANGE 'index.fielddata.cache' to 'node'\n");
+        }
+
+        if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
+            $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
+        }
+
+        if (!(exists $node->{process}->{max_file_descriptors}) || int($node->{process}->{max_file_descriptors}) < 4000) {
+            $errstr .= sprintf ("  INCREASE max file descriptors in /etc/security/limits.conf and restart all ES node\n");
+            $errstr .= sprintf ("                (change root to the user that runs ES)\n");
+            $errstr .= sprintf ("          root hard nofile 128000\n");
+            $errstr .= sprintf ("          root soft nofile 128000\n");
+        }
+
+        if ($errstr) {
+            $error = 1;
+            print ("\nOn node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
+            print($errstr);
+        }
+    }
+
+    if ($error) {
+        print "\nFix above errors before proceeding\n";
+        exit (1);
+    }
+}
+################################################################################
 while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
     if ($ARGV[0] eq "-v") {
         $verbose++;
@@ -1046,11 +1161,11 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|rotate)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|rotate|optimize)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate)/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 10);
+$main::userAgent = LWP::UserAgent->new(timeout => 20);
 
 if ($ARGV[1] eq "usersimport") {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
@@ -1068,14 +1183,16 @@ if ($ARGV[1] eq "usersimport") {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] eq "rotate") {
-    showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(daily|weekly|monthly)$/);
+    showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
     my $json = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $json->{indices} || $json->{_all}->{indices};
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], $endTime);
-    my @startTime = localtime;
-    if ($ARGV[2] eq "daily") {
+    my @startTime = gmtime;
+    if ($ARGV[2] eq "hourly") {
+        $startTime[2] -= int($ARGV[3]);
+    } elsif ($ARGV[2] eq "daily") {
         $startTime[3] -= int($ARGV[3]);
     } elsif ($ARGV[2] eq "weekly") {
         $startTime[3] -= 7*int($ARGV[3]);
@@ -1092,6 +1209,7 @@ if ($ARGV[1] eq "usersimport") {
         $startTime += 24*60*60;
     }
 
+    $main::userAgent->timeout(600);
     foreach my $i (sort (keys %{$indices})) {
         next if ($endTimeIndex eq $i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
@@ -1100,6 +1218,21 @@ if ($ARGV[1] eq "usersimport") {
             esDelete("/$i", 1);
         }
     }
+    exit 0;
+} elsif ($ARGV[1] eq "optimize") {
+    my $json = esGet("/sessions-*/_stats?clear=1", 1);
+    my $indices = $json->{indices} || $json->{_all}->{indices};
+
+    $main::userAgent->timeout(600);
+    printf "Optimizing %s Indices\n", commify(scalar(keys %{$indices}));
+    foreach my $i (sort (keys %{$indices})) {
+        if ($verbose > 0) {
+            local $| = 1;
+            print ".";
+        }
+        esGet("/$i/_optimize?max_num_segments=4", 1);
+    }
+    print "\n";
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
@@ -1122,7 +1255,7 @@ sub printIndex {
 
     printf "ES Version:          %s\n", $esversion->{version}->{number};
     printf "DB Version:          %s\n", $main::versionNumber;
-    printf "Nodes:               %s\n", commify(scalar(keys %{$nodes->{nodes}}));
+    printf "ES Nodes:            %s/%s\n", commify(dataNodes($nodes->{nodes})), commify(scalar(keys %{$nodes->{nodes}}));
     printf "Session Indices:     %s\n", commify(scalar(@sessions));
     printf "Sessions:            %s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
@@ -1139,15 +1272,27 @@ sub printIndex {
     exit 0;
 }
 
+sub dataNodes
+{
+my ($nodes) = @_;
+    my $total = 0;
+
+    foreach my $key (keys %{$nodes}) {
+        next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
+        $total++;
+    }
+    return $total;
+}
+
 
 
 my $nodes = esGet("/_nodes");
-$main::numberOfNodes = keys %{$nodes->{nodes}};
+$main::numberOfNodes = dataNodes($nodes->{nodes});
 print "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n\n";
 if ($main::numberOfNodes == 1) {
-    print "There is $main::numberOfNodes elastic search node, if you expect more please fix first before proceeding.\n\n";
+    print "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
-    print "There are $main::numberOfNodes elastic search nodes, if you expect more please fix first before proceeding.\n\n";
+    print "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
 }
 
 dbVersion(1);
@@ -1155,6 +1300,8 @@ dbVersion(1);
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
     die "Can only use wipe if schema is up to date.  Use upgrade first.";
 }
+
+dbCheck();
 
 if ($ARGV[1] =~ /(init|wipe)/) {
 
@@ -1249,7 +1396,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 10) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 12) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

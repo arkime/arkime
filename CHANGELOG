@@ -1,3 +1,66 @@
+0.9.0 2013/08/26
+  - 32bit fix for lpd/fpd
+  - easybutton now uses nodejs 0.10, 0.8 is still supported for now
+  - Work around for tcp seq number wrapping causing viewer exit
+  - dns parsing core fix
+  - switch to nonblocking pcap saves
+  - more debuging info on proxy failure
+  - Fixed bug when setting viewUrl
+  - Limit number of libnids errors (issue #115)
+  - Display possible reasons for libnids IP Header error
+  - Another domainless hostname fix (issue #116)
+  - Exports should be between 2x-5x faster
+  - Added actions menu for search/sessions
+  - Scrub and Delete actions, user must have remove right enabled (issue #119, issue #89)
+  - Add/Remove(remove right required) tags actions
+  - Hourly rotation (issue #122)
+  - unique.txt fixes (issue #123)
+  - Actions can be done on linked sessions (issue #120)
+  - SPI Graph auto refresh (issue #111)
+  - Better error handling for SPI data display (issue #109)
+  - List queries using [] syntax (issue #106)
+  - user prefs with timezone display (issue #95)
+  - Basic IRC searches
+  - Disk Queue stats display
+
+
+0.8.7 2013/07/12
+  - Use recent versions of express which REQUIRES "npm install" in viewer directory
+  - Use recent version of jade which requires extra spaces, use "git diff -w" to 
+  - Now index Host headers with and without port
+  - pcapng exporting with meta data
+  - Basic upload feature, doesn't support transfers of meta data yet
+  - addUser.js has better help and error reporting
+  - ES optimizations to use bool instead of and/or, also use regexp filter
+    instead of regexp query
+  - Changed ES stats shown to hopefully more useful ones
+  - Fixed viewer exit on empty data gzip decode
+
+0.8.6 2013/06/20
+  - Deal with non data ES nodes
+  - Viewer prints error if it can't find pcapDir setting
+  - New setting dbFlushTimeout that controls how often we flush to ES
+  - New setting compressES that turns on compresesion to ES, requires
+    http.compression: true in elasticsearch yml file
+  - libnids was overreporting traffic, switch to libpcap stats,
+    bytes/sec and total bytes/sec in stats will be lower
+  - Fixed recent jade warnings
+  - Fixed openned export
+  - minor ui improvements
+
+0.8.5 2013/06/14
+  - NOTICE: Requires at least 0.90.1 ES 
+  - New export dialog that asks for filename and number selection
+  - spigraph shows health, decodes tags/ips, has sort by name
+  - spigraph/spiview show total counts
+  - upgrade to jvectormap 1.2.2 which fixes spigraph issues
+  - deal with 113 (SLL) pcap type
+  - header search and header cnt search didn't always work
+  - ignore case of trailing .pcap when processing a directory
+  - fixed bad bug with exporting large files corrupting pcap
+  - HTTP file decoding works better
+  - On exit ignore http queue limits
+
 0.8.4 2013/05/28
   - NOTICE: Last version to support 0.20 ES
   - NOTICE: Changed some expressions, old versions are supported for now
