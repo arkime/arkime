@@ -138,6 +138,7 @@ am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
 build_alias = @build_alias@
+datarootdir = @datarootdir@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 host_alias = @host_alias@
