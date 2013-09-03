@@ -1,3 +1,6 @@
+0.9.x 2013/xx/xx
+  - Make sure at least one stats record is written per run
+
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd
   - easybutton now uses nodejs 0.10, 0.8 is still supported for now

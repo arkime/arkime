@@ -723,7 +723,7 @@ void moloch_db_update_stats()
 
     gettimeofday(&currentTime, NULL);
 
-    if (currentTime.tv_sec == dbLastTime.tv_sec)
+    if (lastPackets != 0 && currentTime.tv_sec == dbLastTime.tv_sec)
         return;
 
     uint64_t totalDropped = moloch_nids_dropped_packets();
@@ -776,6 +776,7 @@ void moloch_db_update_stats()
     lastPackets  = totalPackets;
     lastSessions = totalSessions;
     lastDropped  = totalDropped;
+
     moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
 }
 
