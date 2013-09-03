@@ -1101,7 +1101,6 @@ app.get('/dstats.json', function(req, res) {
   Db.search('dstats', 'dstat', query, function(err, result) {
     var i;
     var data = [];
-    data[query.size] = 0;
     var num = (req.query.stop - req.query.start)/req.query.step;
 
     for (i = 0; i < num; i++) {
@@ -1116,7 +1115,7 @@ app.get('/dstats.json', function(req, res) {
     if (result && result.hits) {
       for (i = 0; i < result.hits.hits.length; i++) {
         var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
-        data[pos] = mult*result.hits.hits[i].fields[req.query.name];
+        data[pos] = mult * (result.hits.hits[i].fields[req.query.name] || 0);
       }
     }
     res.send(data);
@@ -1322,7 +1321,7 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
-    query.fields = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls"];
+    query.fields = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
 
     if (query.facets && query.facets.dbHisto) {
       graph.interval = query.facets.dbHisto.histogram.interval;

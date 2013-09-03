@@ -1,5 +1,7 @@
 0.9.x 2013/xx/xx
   - Make sure at least one stats record is written per run
+  - Display IRC channel in sessions view
+  - Fix right click on sessions view info column
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd
