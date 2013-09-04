@@ -2,6 +2,7 @@
   - Make sure at least one stats record is written per run
   - Display IRC channel in sessions view
   - Fix right click on sessions view info column
+  - Fixed post increment issue in js0n code (issue #128)
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd
