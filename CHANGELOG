@@ -3,6 +3,7 @@
   - Display IRC channel in sessions view
   - Fix right click on sessions view info column
   - Fixed post increment issue in js0n code (issue #128)
+  - Fixed broken hourly rotateIndex in viewer (issue #130)
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd

@@ -602,7 +602,6 @@ function addSortToQuery(query, info, d) {
 
 function getIndices(startTime, stopTime, cb) {
   var indices = [];
-  startTime = Math.floor(startTime/86400)*86400;
   Db.status("sessions-*", function(err, status) {
 
     if (err || status.error) {
@@ -611,35 +610,49 @@ function getIndices(startTime, stopTime, cb) {
 
     var rotateIndex = Config.get("rotateIndex", "daily");
 
+
+    var offset = 86400;
+    if (rotateIndex === "hourly") {
+      offset = 3600;
+    }
+
+    startTime = Math.floor(startTime/offset)*offset;
+
     while (startTime < stopTime) {
       var iname;
       var d = new Date(startTime*1000);
-      var jan = new Date(d.getUTCFullYear(), 0, 0);
-      if (rotateIndex === "monthly") {
+      switch (rotateIndex) {
+      case "monthly":
         iname = "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) + 'm' +
           twoDigitString(d.getUTCMonth()+1);
-      } else if (rotateIndex === "weekly") {
+        break;
+      case "weekly":
+        var jan = new Date(d.getUTCFullYear(), 0, 0);
         iname = "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) + 'w' +
           twoDigitString(Math.floor((d - jan) / 604800000));
-      } else if (rotateIndex === "hourly") {
+        break;
+      case "hourly":
         iname = "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
           twoDigitString(d.getUTCHours());
-      } else {
+        break;
+      default:
         iname = "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate());
+        break;
       }
+
+      startTime += offset;
 
       if (status.indices[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
         indices.push(iname);
       }
-      startTime += 86400;
     }
 
     if (indices.length === 0) {
