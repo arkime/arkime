@@ -375,6 +375,7 @@ app.get('/users', function(req, res) {
 
 app.get('/settings', function(req, res) {
   function render(user, cp) {
+    if (user.settings === undefined) {user.settings = {};}
     res.render('settings', {
       user: req.user,
       suser: user,
