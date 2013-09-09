@@ -66,7 +66,7 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
 
-passport.use(new DigestStrategy({qop: 'auth', realm: Config.getFull("default", "httpRealm", "Moloch")},
+passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
   function(userid, done) {
     Db.get("users", "user", userid, function(err, suser) {
       if (err) {return done(err);}
@@ -76,6 +76,7 @@ passport.use(new DigestStrategy({qop: 'auth', realm: Config.getFull("default", "
       suser._source.settings = suser._source.settings || {};
       if (suser._source.emailSearch === undefined) {suser._source.emailSearch = false;}
       if (suser._source.removeEnabled === undefined) {suser._source.removeEnabled = false;}
+      if (Config.get("multiES", false)) {suser._source.createEnabled = false;}
 
       return done(null, suser._source, {ha1: Config.store2ha1(suser._source.passStore)});
     });
@@ -97,6 +98,7 @@ app.configure(function() {
   app.locals.elasticBase = "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1];
   app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
+  app.locals.sendSession = Config.getObj("sendSession");
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
@@ -104,7 +106,7 @@ app.configure(function() {
     req.url = req.url.replace(Config.basePath(), "/");
     return next();
   });
-  app.use(express.bodyParser());
+  app.use(express.bodyParser({uploadDir: Config.get("pcapDir")}));
   app.use(connectTimeout({ time: 60*60*1000 }));
   app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(express.compress());
@@ -159,6 +161,7 @@ app.configure(function() {
           req.user.settings = req.user.settings || {};
           if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
           if (req.user.removeEnabled === undefined) {req.user.removeEnabled = false;}
+          if (Config.get("multiES", false)) {req.user.createEnabled = false;}
           return next();
         });
         return;
@@ -207,7 +210,9 @@ function twoDigitString(value) {
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
-Db.initialize({host : escInfo[0], port: escInfo[1]});
+Db.initialize({host : escInfo[0],
+               port: escInfo[1],
+               dontMapTags: Config.get("multiES", false)});
 
 function deleteFile(node, id, path, cb) {
   fs.unlink(path, function() {
@@ -669,6 +674,10 @@ function getIndices(startTime, stopTime, cb) {
  * and any of the filename stuff
  */
 function lookupQueryItems(query, doneCb) {
+  if (Config.get("multiES", false)) {
+    return doneCb(null);
+  }
+
   var outstanding = 0;
   var finished = 0;
   var err = null;
@@ -2681,7 +2690,7 @@ function getViewUrl(node, cb) {
   });
 }
 
-function addAuth(info, user, node) {
+function addAuth(info, user, node, secret) {
     if (!info.headers) {
         info.headers = {};
     }
@@ -2689,7 +2698,7 @@ function addAuth(info, user, node) {
                                                      user: user.userId,
                                                      node: node,
                                                      path: info.path
-                                                    });
+                                                    }, secret);
 }
 
 function proxyRequest (req, res) {
@@ -3179,8 +3188,6 @@ app.post('/addUser', function(req, res) {
       }
     });
   });
-
-
 });
 
 app.post('/updateUser/:userId', function(req, res) {
@@ -3316,6 +3323,10 @@ app.post('/changeSettings', function(req, res) {
   });
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+//// Session Add/Remove Tags
+//////////////////////////////////////////////////////////////////////////////////
+
 function addTagsList(res, allTagIds, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var tagIds = [];
@@ -3379,11 +3390,11 @@ function removeTagsList(res, allTagIds, list) {
   });
 }
 
-function mapTags(tags, tagsCb) {
+function mapTags(tags, prefix, tagsCb) {
   async.map(tags, function (tag, cb) {
-    Db.tagNameToId(tag, function (tagid) {
+    Db.tagNameToId(prefix + tag, function (tagid) {
       if (tagid === -1) {
-        Db.createTag(tag, function(tagid) {
+        Db.createTag(prefix + tag, function(tagid) {
           cb(null, tagid);
         });
       } else {
@@ -3405,7 +3416,7 @@ app.post('/addTags', function(req, res) {
     return res.send(JSON.stringify({success: false, text: "No tags specified"}));
   }
 
-  mapTags(tags, function(err, tagIds) {
+  mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
       var ids = req.body.ids.split(",");
 
@@ -3433,7 +3444,7 @@ app.post('/removeTags', function(req, res) {
     return res.send(JSON.stringify({success: false, text: "No tags specified"}));
   }
 
-  mapTags(tags, function(err, tagIds) {
+  mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
       var ids = req.body.ids.split(",");
 
@@ -3447,6 +3458,10 @@ app.post('/removeTags', function(req, res) {
     }
   });
 });
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Pcap Delete/Scrub
+//////////////////////////////////////////////////////////////////////////////////
 
 var scrubbingBuffers = null;
 function pcapScrub(req, res, id, entire, endCb) {
@@ -3661,6 +3676,246 @@ app.post('/delete', function(req, res) {
   }
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+//// Sending/Receive sessions
+//////////////////////////////////////////////////////////////////////////////////
+function sendSession(req, res, id, nextCb) {
+  var packetslen = 0;
+  var packets = [];
+  var packetshdr;
+  var ps = [-1];
+  var tags = [];
+
+  processSessionId(id, true, function(pcap, header) {
+    packetshdr = header;
+  }, function (pcap, packet, cb, i) {
+    packetslen += packet.length;
+    packets[i] = packet;
+    cb(null);
+  }, function (err, session) {
+    var buffer = new Buffer(packetshdr.length + packetslen);
+    var pos = 0;
+    packetshdr.copy(buffer);
+    pos += packetshdr.length;
+    for(var i = 0; i < packets.length; i++) {
+      ps.push(pos);
+      packets[i].copy(buffer, pos);
+      pos += packets[i].length;
+    }
+    session.id = id;
+    session.ps = ps;
+    delete session.fs;
+
+    if (req.query.tags) {
+      tags = req.query.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
+      if (!session.ta) {
+        session.ta = [];
+      }
+      session.ta = session.ta.concat(tags);
+    }
+
+    var sobj = Config.getObj("sendSession");
+
+
+    var info = url.parse(sobj.url + "/receiveSession");
+    addAuth(info, req.user, req.params.nodeName, sobj.passwordSecret);
+    info.method = "POST";
+
+    var result = "";
+    var agent = info.protocol === "https:"?httpsAgent:httpAgent;
+    var preq = agent.request(info, function(pres) {
+      pres.on('data', function (chunk) {
+        result += chunk;
+      });
+      pres.on('end', function () {
+        result = JSON.parse(result);
+        if (!result.success) {
+          console.log("ERROR sending session ", result);
+        }
+        nextCb();
+      });
+    });
+
+    preq.on('error', function (e) {
+      console.log("ERROR - Couldn't connect to ", info, "\nerror=", e);
+    });
+
+    var sessionStr = JSON.stringify(session);
+    var b = new Buffer(4);
+    b.writeUInt32BE(sessionStr.length, 0);
+    preq.write(b);
+    preq.write(sessionStr);
+
+    b = new Buffer(4);
+    b.writeUInt32BE(buffer.length, 0);
+    preq.write(b);
+    preq.write(buffer);
+    preq.end();
+  }, undefined, 10);
+}
+
+app.get('/:nodeName/sendSession/:id', function(req, res) {
+  noCache(req, res);
+  res.statusCode = 200;
+
+  isLocalView(req.params.nodeName, function () {
+    sendSession(req, res, req.params.id, function(err) {
+      res.end();
+    });
+  },
+  function() {
+    proxyRequest(req, res);
+  });
+});
+
+
+function sendSessionsList(req, res, list) {
+  if (!list) {
+    return res.end(JSON.stringify({success: false, text: "Missing list of sessions"}));
+  }
+
+  async.eachLimit(list, 10, function(item, nextCb) {
+    isLocalView(item.fields.no, function () {
+      // Get from our DISK
+      sendSession(req, res, item._id, nextCb);
+    },
+    function () {
+      // Get from remote DISK
+      getViewUrl(item.fields.no, function(err, viewUrl, agent) {
+        var info = url.parse(viewUrl);
+        info.path = Config.basePath(item.fields.no) + item.fields.no + "/sendSession/" + item._id;
+        if (req.query.tags) {
+          info.query = {tags: req.query.tags};
+        }
+        addAuth(info, req.user, item.fields.no);
+        var preq = agent.request(info, function(pres) {
+          pres.on('end', function () {
+            process.nextTick(nextCb);
+          });
+        });
+        preq.on('error', function (e) {
+          console.log("ERROR - Couldn't proxy sendSession request=", info, "\nerror=", e);
+          nextCb(null);
+        });
+        preq.end();
+      });
+    });
+  }, function(err) {
+    return res.end(JSON.stringify({success: true, text: "Sending of " + list.length + " sessions complete"}));
+  });
+}
+
+app.post('/receiveSession', function(req, res) {
+  var sessionlen = -1;
+  var filelen = -1;
+  var written = 0;
+  var session = null;
+  var buffer;
+  var file;
+
+  req.on('data', function(chunk) {
+    /* If the file is open, just write the current chunk */
+    if (file) {
+      file.write(chunk);
+      written += chunk.length;
+      if (written === filelen) {
+        file.close();
+      }
+      return;
+    }
+
+    /* If no file is open, then save the current chunk to the end of the buffer. 
+     */
+    if (!buffer) {
+      buffer = chunk;
+    } else {
+      buffer = Buffer.concat([buffer, chunk]);
+    }
+
+    if (sessionlen === -1 && (buffer.length > 4)) {
+      sessionlen = buffer.readUInt32BE(0);
+      buffer = buffer.slice(4);
+    }
+
+    /* If we know the session len and haven't read the session */
+    if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
+      session = JSON.parse(buffer.toString("utf8", 0, sessionlen));
+      buffer = buffer.slice(sessionlen);
+
+      req.pause();
+      Db.getSequenceNumber("fn-" + Config.nodeName(), function (err, seq) {
+        req.resume();
+        var id = session.id + "-test";
+        delete session.id;
+        session.ps[0] = - seq;
+        session.fs = [seq];
+        session.no = Config.nodeName();
+
+        var filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "_" + id + ".pcap";
+        file = fs.createWriteStream(filename);
+        file.write(buffer);
+        written += buffer.length;
+        if (written === filelen) {
+          file.close();
+        }
+
+        function tags(container, field, prefix, cb) {
+          if (!container[field]) {
+            return cb(null);
+          }
+
+          mapTags(session[field], prefix, function (err, tagIds) {
+            session[field] = tagIds;
+            cb(null);
+          });
+        }
+
+        async.parallel([
+          function(parallelCb) {
+            Db.indexNow("files", "file", Config.nodeName() + "-" + seq, {num: seq, name: filename, first: session.fp, node: Config.nodeName(), filesize: filelen, locked: 1}, parallelCb);
+          },
+          function(parallelCb) {
+            tags(session, "ta", "", parallelCb);
+          },
+          function(parallelCb) {
+            tags(session, "hh1", "http:header:", parallelCb);
+          },
+          function(parallelCb) {
+            tags(session, "hh2", "http:header:", parallelCb);
+          }],
+          function() {
+            Db.indexNow('sessions-' + id.substr(0,id.indexOf('-')), "session", id, session, function(err, info) {
+              if (err) {
+                return res.send({success: false, text: err});
+              }
+              return res.send({success: true});
+            });
+          }
+        );
+      });
+    }
+
+    if (sessionlen !== -1 && session && filelen === -1 && buffer.length >= 4) {
+      filelen = buffer.readUInt32BE(0);
+      buffer = buffer.slice(4);
+    }
+  });
+});
+
+app.post('/sendSessions', function(req, res) {
+  if (req.body.ids) {
+    var ids = req.body.ids.split(",");
+
+    sessionsListFromIds(req, ids, ["no"], function(err, list) {
+      sendSessionsList(req, res, list);
+    });
+  } else {
+    sessionsListFromQuery(req, ["no"], function(err, list) {
+      sendSessionsList(req, res, list);
+    });
+  }
+});
+
 app.post('/upload', function(req, res) {
   var exec = require('child_process').exec,
       child;
@@ -3708,7 +3963,7 @@ if (Config.isHTTPS()) {
   server = httpAgent.createServer(app).listen(Config.get("viewPort", "8005"));
 }
 
-httpsAgent.maxSockets = httpAgent.maxSockets = 200;
+httpAgent.globalAgent.maxSockets = httpsAgent.globalAgent.maxSockets = httpsAgent.maxSockets = httpAgent.maxSockets = 200;
 
 if (server.address() === null) {
   console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");

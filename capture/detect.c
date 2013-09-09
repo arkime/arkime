@@ -1669,6 +1669,10 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
     if (hlf->count < 9)
         return;
 
+    if ((data[4] == 0xff || data[4] == 0xfe) && memcmp("SMB", data+5, 3) == 0) {
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smb");
+    }
+
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:pop3");
 

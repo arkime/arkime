@@ -5,6 +5,10 @@
   - Fixed post increment issue in js0n code (issue #128)
   - Fixed broken hourly rotateIndex in viewer (issue #130)
   - Fixed broken settings page for other user (issue #126)
+  - Basic SMB tagging
+  - Basic ES query throttling
+  - Added missing ssh.ver from spigraph
+  - EXPERIMENTAL: Multi cluster search (issue #97)
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd

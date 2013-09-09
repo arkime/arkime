@@ -155,6 +155,9 @@ html
               a#scrubButton Scrub PCAP Storage
             li
               a#deleteButton Delete SPI &amp; PCAP
+          - if (sendSession && sendSession.name)
+            li
+              a#sendSessionButton Send Session to #{sendSession.name}
       div#sessionActionsMenu
         ul
           li
@@ -170,6 +173,9 @@ html
               a#sessionScrubButton.scrubAction Scrub PCAP Storage
             li
               a#sessionDeleteButton.deleteAction Delete SPI &amp; PCAP
+          - if (sendSession && sendSession.name)
+            li
+              a#sessionSendSessionButton.sendSessionAction Send Session to #{sendSession.name}
 
 script(type='text/javascript').
   var molochFields = !{fieldsMap};

@@ -26,11 +26,36 @@ var ESC            = require('elasticsearchclient'),
 var internals = {tagId2Name: {},
                  tagName2Id: {},
                  fileId2File: {},
-                 fileName2File: {}};
+                 fileName2File: {},
+                 qInProgress: 0,
+                 q: []};
 
 exports.initialize = function (info) {
+  internals.dontMapTags = info.dontMapTags || false;
+  delete info.dontMapTags;
+
   internals.elasticSearchClient = new ESC(info);
 };
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Very simple throttling Q
+//////////////////////////////////////////////////////////////////////////////////
+function canDo(fn, that, args) {
+  if (internals.qInProgress < 5) {
+    internals.qInProgress++;
+    return true;
+  }
+  internals.q.push([fn, that, args])
+  return false;
+}
+
+function didIt() {
+  internals.qInProgress--;
+  if (internals.q.length > 0) {
+    var item = internals.q.shift();
+    setTimeout(function () {item[0].apply(item[1], item[2]);}, 0);
+  }
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Low level functions to undo the data/error seperate callbacks
@@ -299,12 +324,22 @@ exports.hostnameToNodeids = function (hostname, cb) {
 };
 
 exports.tagIdToName = function (id, cb) {
+  if (internals.dontMapTags) {
+    return cb(id);
+  }
+
   if (internals.tagId2Name[id]) {
     return cb(internals.tagId2Name[id]);
   }
 
+  if (!canDo(exports.tagIdToName, this, arguments)) {
+    return;
+  }
+
   var query = {query: {term: {n:id}}};
   exports.search('tags', 'tag', query, function(err, tdata) {
+    didIt();
+
     if (!err && tdata.hits.hits[0]) {
       internals.tagId2Name[id] = tdata.hits.hits[0]._id;
       internals.tagName2Id[tdata.hits.hits[0]._id] = id;
@@ -352,21 +387,21 @@ exports.fileNameToFile = function (name, cb) {
   });
 };
 
-exports.syncTagNameToId = function (name) {
-  if (internals.tagName2Id[name]) {
-    return internals.tagName2Id[name];
+exports.tagNameToId = function (name, cb) {
+  if (internals.dontMapTags) {
+    return cb(name);
   }
 
-  exports.tagNameToId(name, function(){});
-  return -1;
-};
-
-exports.tagNameToId = function (name, cb) {
   if (internals.tagName2Id[name]) {
     return cb(internals.tagName2Id[name]);
   }
 
+  if (!canDo(exports.tagNameToId, this, arguments)) {
+    return;
+  }
+
   exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
+    didIt();
     if (!err && tdata.exists) {
       internals.tagName2Id[name] = tdata._source.n;
       internals.tagId2Name[tdata._source.n] = name;
@@ -376,12 +411,18 @@ exports.tagNameToId = function (name, cb) {
   });
 };
 
+exports.getSequenceNumber = function (name, cb) {
+  exports.index("sequence", "sequence", name, {}, function (err, sinfo) {
+    cb(err, sinfo._version);
+  });
+};
+
 exports.createTag = function (name, cb) {
-  exports.index("sequence", "sequence", "tags", {}, function (err, sinfo) {
-    exports.index("tags", "tag", name, {n: sinfo._version}, function (err, tinfo) {
-      internals.tagId2Name[sinfo._version] = name;
-      internals.tagName2Id[name] = sinfo._version;
-      cb(sinfo._version);
+  exports.getSequenceNumber("tags", function (err, num) {
+    exports.index("tags", "tag", encodeURIComponent(name), {n: num}, function (err, tinfo) {
+      internals.tagId2Name[num] = name;
+      internals.tagName2Id[name] = num;
+      cb(num);
     });
   });
 };
