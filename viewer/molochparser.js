@@ -206,8 +206,8 @@ break;
 case 190:this.$ = {terms: {}};
          this.$.terms[$$[$0-2]] = CSVtoArray($$[$0]);
 break;
-case 191:this.$ = {not: {term: {}}};
-         this.$.not.term[$$[$0-2]] = CSVtoArray($$[$0]);
+case 191:this.$ = {not: {terms: {}}};
+         this.$.not.terms[$$[$0-2]] = CSVtoArray($$[$0]);
 break;
 case 192:this.$ = {term: {pr: protocolLookup($$[$0])}};
 break;
@@ -273,7 +273,7 @@ case 214:
         
 break;
 case 215: this.$ = {not: {terms: {}}};
-          this.$.not.term[str2Header(yy, $$[$0-2])] = $$[$0];
+          this.$.not.terms[str2Header(yy, $$[$0-2])] = $$[$0];
         
 break;
 case 216:this.$ = {range: {}};
@@ -286,7 +286,7 @@ case 218:this.$ = {bool: {should: [{terms: {p1: CSVtoArray($$[$0])}}, {terms: {p
 break;
 case 219:this.$ = {bool: {must_not: [{term: {p1: $$[$0]}}, {term: {p2: $$[$0]}}]}};
 break;
-case 220:this.$ = {bool: {must_not: [{term: {p1: CSVtoArray($$[$0])}}, {term: {p2: CSVtoArray($$[$0])}}]}};
+case 220:this.$ = {bool: {must_not: [{terms: {p1: CSVtoArray($$[$0])}}, {terms: {p2: CSVtoArray($$[$0])}}]}};
 break;
 case 221:this.$ = parseIpPort(yy, $$[$0],$$[$0-2]);
 break;

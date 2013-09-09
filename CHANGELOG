@@ -9,6 +9,7 @@
   - Basic ES query throttling
   - Added missing ssh.ver from spigraph
   - EXPERIMENTAL: Multi cluster search (issue #97)
+  - Fixed CSV not equal search queries with range fields (issue #132)
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd
