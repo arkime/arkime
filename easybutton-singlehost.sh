@@ -88,8 +88,18 @@ if [ $JAVA_VAL -ne 0 ]; then
     fi
 fi
 
+echo -n "Use pfring? ('yes' enables) [no] "
+read USEPFRING
+PFRING=""
+if [ -n "$USEPFRING" -a "x$USEPFRING" = "xyes" ]; then 
+    echo "MOLOCH - Using pfring - Make sure to install the kernel modules"
+    sleep 1
+    PFRING="--pfring"
+fi
+
 # Building thirdparty libraries and moloch
-./easybutton-build.sh "$TDIR"
+echo ./easybutton-build.sh --dir "$TDIR" $PFRING
+./easybutton-build.sh --dir "$TDIR" $PFRING
 if [ $? -ne 0 ]; then
   exit 1
 fi
@@ -153,8 +163,10 @@ if [ ! -f "GeoIP.dat" ]; then
   gunzip GeoIP.dat.gz
 fi
 
-wget http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
-gunzip GeoIPASNum.dat.gz
+if [ ! -f "GeoIPASNum.dat" ]; then
+  wget http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
+  gunzip GeoIPASNum.dat.gz
+fi
 
 
 

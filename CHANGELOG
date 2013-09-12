@@ -10,6 +10,10 @@
   - Added missing ssh.ver from spigraph
   - EXPERIMENTAL: Multi cluster search (issue #97)
   - Fixed CSV not equal search queries with range fields (issue #132)
+  - BREAKING: To specify install dir with ./easybutton-build.sh  use --dir
+    for example: ./easybutton-build.sh --dir /nids/moloch
+  - Can build with PFRING now, easybutton-build.sh has --pfring
+    or easybutton-single.sh asks
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd
