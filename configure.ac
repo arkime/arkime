@@ -17,44 +17,6 @@ AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))
 AC_CHECK_LIB(uuid, main,,AC_MSG_ERROR(please install uuid library))
 AC_CHECK_LIB(magic, main,,AC_MSG_ERROR(please install magic library))
 
-
-dnl Checks for pfring
-AC_MSG_CHECKING(for pfring)
-AC_ARG_WITH(pfring,
-[  --with-pfring=DIR use pfring build directory],
-[ case "$withval" in
-  yes|no)
-     AC_MSG_RESULT(no)
-     ;;
-  *)
-  AC_MSG_RESULT($withval)
-    if test -f $withval/userland/libpcap/pcap.h -a -f $withval/userland/libpcap/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_CFLAGS="-I$withval"
-      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
-    elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_CFLAGS="-I$withval/userland/libpcap/include"
-      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a"
-    else
-      AC_ERROR(pcap.h or libpcap.a not found in $withval)
-    fi
-    ;;
-esac ], [
-AC_MSG_RESULT(no) ])
-AC_SUBST(PCAP_CFLAGS)
-AC_SUBST(PCAP_LIBS)
-
 dnl Checks for libpcap
 AC_MSG_CHECKING(for libpcap)
 AC_ARG_WITH(libpcap,
@@ -108,6 +70,43 @@ esac ], [
     fi
   fi
 AC_MSG_RESULT(yes) ])
+AC_SUBST(PCAP_CFLAGS)
+AC_SUBST(PCAP_LIBS)
+
+dnl Checks for pfring
+AC_MSG_CHECKING(for pfring)
+AC_ARG_WITH(pfring,
+[  --with-pfring=DIR use pfring build directory],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+  AC_MSG_RESULT($withval)
+    if test -f $withval/userland/libpcap/pcap.h -a -f $withval/userland/libpcap/libpcap.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+
+      PCAP_LIBS="$PCAP_LIBS $withval/userland/lib/libpfring.a"
+    elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+
+      PCAP_LIBS="$PCAP_LIBS $withval/userland/lib/libpfring.a"
+    elif test -f $withval/include/pfring.h -a -f $withval/lib/libpfring.a; then
+      PCAP_LIBS="$PCAP_LIBS $withval/lib/libpfring.a"
+    else
+      AC_ERROR(pcap.h or libpcap.a not found in $withval)
+    fi
+    ;;
+esac ], [
+AC_MSG_RESULT(no) ])
 AC_SUBST(PCAP_CFLAGS)
 AC_SUBST(PCAP_LIBS)
 
