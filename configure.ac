@@ -83,15 +83,7 @@ AC_ARG_WITH(pfring,
      ;;
   *)
   AC_MSG_RESULT($withval)
-    if test -f $withval/userland/libpcap/pcap.h -a -f $withval/userland/libpcap/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_LIBS="$PCAP_LIBS $withval/userland/lib/libpfring.a"
-    elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
+    if test -f $withval/userland/libpcap/libpfring.a; then
       owd=`pwd`
       if cd $withval; then
         withval=`pwd`;
