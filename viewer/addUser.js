@@ -79,6 +79,10 @@ for (i = 5; i < process.argv.length; i++) {
 }
 
 Db.indexNow("users", "user", process.argv[2], nuser, function(err, info) {
+  if (err) {
+    console.log("Elastic search error", err);
+  }
+
   if (info.ok !== true) {
     console.log("Failed to add user\n", nuser, "\nError\n", info);
   } else {

@@ -2,8 +2,8 @@
 // public domain, contributions/improvements welcome via github
 
 // opportunity to further optimize would be having different jump tables for higher depths
-#define PUSH(i) if(depth == 1) *out++ = ((cur+i) - js)
-#define CAP(i) if(depth == 1) *out++ = (cur+i) - (js + *(out-1)) + 1
+#define PUSH(i) if(depth == 1) *out = ((cur+i) - js), out++
+#define CAP(i) if(depth == 1) *out = (cur+i) - (js + *(out-1)) + 1, out++
 
 int js0n(unsigned char *js, unsigned int len, unsigned int *out)
 {

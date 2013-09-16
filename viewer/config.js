@@ -79,15 +79,17 @@ exports.store2ha1 = function(passstore) {
   return d;
 };
 
-exports.obj2auth = function(obj) {
-  var c = crypto.createCipher('aes192', exports.getFull("default", "passwordSecret", "password"));
+exports.obj2auth = function(obj, secret) {
+  secret = secret || exports.getFull("default", "passwordSecret", "password");
+  var c = crypto.createCipher('aes192', secret);
   var e = c.update(JSON.stringify(obj), "binary", "hex");
   e += c.final("hex");
   return e;
 };
 
-exports.auth2obj = function(auth) {
-  var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
+exports.auth2obj = function(auth, secret) {
+  secret = secret || exports.getFull("default", "passwordSecret", "password");
+  var c = crypto.createDecipher('aes192', secret);
   var d = c.update(auth, "hex", "binary");
   d += c.final("binary");
   return JSON.parse(d);
@@ -126,7 +128,28 @@ exports.getFull = function(node, key, defaultValue) {
 };
 
 exports.get = function(key, defaultValue) {
-    return exports.getFull(internals.nodeName, key, defaultValue);
+  return exports.getFull(internals.nodeName, key, defaultValue);
+};
+
+exports.getObj = function(key, defaultValue) {
+  var full = exports.getFull(internals.nodeName, key, defaultValue);
+  if (!full) {
+    return null;
+  }
+
+  var obj = {};
+  full.split(';').forEach(function(element) {
+    var parts = element.split("=");
+    if (parts && parts.length === 2) {
+      if (parts[1] === "true") {
+        parts[1] = true;
+      } else if (parts[1] === "false") {
+        parts[1] = false;
+      }
+      obj[parts[0]] = parts[1];
+    }
+  });
+  return obj;
 };
 
 function dropPrivileges() {
@@ -309,8 +332,8 @@ addField("uscnt", "http.uri.cnt", "http", "integer", "Unique number of request U
 
 addField("sshkey", "ssh.key", "ssh", "termfield", "Base64 encoded host key");
 addField("sshkeycnt", "ssh.key.cnt", "ssh", "integer", "Number of unique Base64 encoded host keys");
-addField("sshver", "ssh.key", "ssh", "lotermfield", "SSH version string");
-addField("sshvercnt", "ssh.key.cnt", "ssh", "integer", "Number of unique ssh version strings");
+addField("sshver", "ssh.ver", "ssh", "lotermfield", "SSH version string");
+addField("sshvercnt", "ssh.ver.cnt", "ssh", "integer", "Number of unique ssh version strings");
 
 exports.headers("headers-http-request").forEach(function(item) {
   addField("hdrs.hreq-" + item.name + (item.type === "integer"?"":".snow"), "http." + item.name, "http", (item.type === "integer"?"integer":"textfield"), "Request header " + item.name);

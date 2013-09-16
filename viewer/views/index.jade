@@ -315,6 +315,13 @@ block content
                 return data;
               }
 
+              if (oObj.aData.ircch) {
+                data += "<b>Channel:</b> ";
+                data += oObj.aData.ircch.join(", ");
+                data += "<br>";
+                return data;
+              }
+
               return "";
             }
           }
@@ -408,16 +415,18 @@ block content
             if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'info') {
               if (e.target.id === 'info') {
                 items = {
-                  usitems: {name: "Export Unique URLs", counts:0, field: 'us'},
-                  usitemcounts: {name: "Export Unique URLs with Counts", counts:1, field: 'us'},
-                  esubitems: {name: "Export Unique Email Subjects", counts:0, field: 'esub'},
-                  esubitemcounts: {name: "Export Unique Email Subjects with Counts", counts:1, field: 'esub'},
+                  usitems: {name: "Export Unique URLs", counts:0, field: 'rawus'},
+                  usitemcounts: {name: "Export Unique URLs with Counts", counts:1, field: 'rawus'},
+                  esubitems: {name: "Export Unique Email Subjects", counts:0, field: 'rawesub'},
+                  esubitemcounts: {name: "Export Unique Email Subjects with Counts", counts:1, field: 'rawesub'},
                   esrcitems: {name: "Export Unique Email Source", counts:0, field: 'esrc'},
                   esrcitemcounts: {name: "Export Unique Email Source with Counts", counts:1, field: 'esrc'},
                   edstitems: {name: "Export Unique Email Destination", counts:0, field: 'edst'},
                   edstitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
                   efnitems: {name: "Export Unique Email Files", counts:0, field: 'efn'},
-                  efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'}
+                  efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'},
+                  efnitems: {name: "Export Unique IRC Channels", counts:0, field: 'ircch'},
+                  efnitemcounts: {name: "Export Unique IRC Channels with Counts", counts:1, field: 'ircch'}
                 };
               } else {
                 items = {

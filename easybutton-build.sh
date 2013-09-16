@@ -14,11 +14,32 @@ YARA=1.7
 GEOIP=1.4.8
 PCAP=1.3.0
 NIDS=1.24
+PFRING=5.6.1
 
 TDIR="/data/moloch"
-if [ "$#" -gt 0 ]; then
-    TDIR="$1"
-fi
+DOPFRING=0
+
+while :
+do
+  case $1 in
+  -p | --pf_ring | --pfring)
+    DOPFRING=1
+    shift
+    ;;
+  -d | --dir)
+    TDIR=$2
+    shift 2
+    ;;
+  -*)
+    echo "Unknown option '$1'"
+    exit 1
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
 
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
@@ -73,26 +94,43 @@ if [ -f "/usr/bin/libtoolize" ]; then
 fi
 (cd GeoIP-$GEOIP ; ./configure --enable-static; make)
 
-# libpcap
-if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-  wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+if [ $DOPFRING -eq 1 ]; then
+    # pfring
+    echo "PFRING";
+    if [ ! -f "PF_RING-$PFRING.tar.gz" ]; then
+      wget -O PF_RING-$PFRING.tar.gz http://sourceforge.net/projects/ntop/files/PF_RING/PF_RING-$PFRING.tar.gz/download
+    fi
+    tar zxf PF_RING-$PFRING.tar.gz
+    (cd PF_RING-$PFRING; make)
+
+    PFRINGDIR=`pwd`/PF_RING-$PFRING
+    PCAPDIR=$PFRINGDIR/userland/libpcap
+    PCAPBUILD="--with-pfring=$PFRINGDIR"
+else
+    echo "NOT PFRING";
+    # libpcap
+    if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
+      wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    fi
+    tar zxf libpcap-$PCAP.tar.gz
+    (cd libpcap-$PCAP; ./configure --disable-libglib; make)
+    PCAPDIR=`pwd`/libpcap-$PCAP
+    PCAPBUILD="--with-libpcap=$PCAPDIR"
 fi
-tar zxf libpcap-$PCAP.tar.gz
-(cd libpcap-$PCAP; ./configure --disable-libglib; make)
 
 # libnids
 if [ ! -f "libnids-$NIDS.tar.gz" ]; then
   wget http://downloads.sourceforge.net/project/libnids/libnids/$NIDS/libnids-$NIDS.tar.gz
 fi
 tar zxf libnids-$NIDS.tar.gz
-( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=../libpcap-$PCAP --disable-libglib; make)
+( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=$PCAPDIR --disable-libglib; make)
 
 
 # Now build moloch
 echo "MOLOCH: Building capture"
 cd ..
-echo "./configure --prefix=$TDIR --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
-./configure --prefix=$TDIR --with-libpcap=thirdparty/libpcap-$PCAP --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
+echo "./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
+./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
 make
 
 exit 0

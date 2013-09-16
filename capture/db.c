@@ -723,7 +723,7 @@ void moloch_db_update_stats()
 
     gettimeofday(&currentTime, NULL);
 
-    if (currentTime.tv_sec == dbLastTime.tv_sec)
+    if (lastPackets != 0 && currentTime.tv_sec == dbLastTime.tv_sec)
         return;
 
     uint64_t totalDropped = moloch_nids_dropped_packets();
@@ -776,6 +776,7 @@ void moloch_db_update_stats()
     lastPackets  = totalPackets;
     lastSessions = totalSessions;
     lastDropped  = totalDropped;
+
     moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
 }
 
@@ -1076,8 +1077,8 @@ void moloch_db_check()
     key_len = snprintf(key, sizeof(key), "/dstats/version/version/_source");
     data = moloch_http_get(esServer, key, key_len, &datalen);
 
-    if (!data) {
-        LOG("ERROR - Couldn't load version information, database might out down or out of date.  Run \"db/db.pl host:port update\"");
+    if (!data || datalen == 0) {
+        LOG("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port update\"");
         exit(1);
     }
 
@@ -1086,8 +1087,8 @@ void moloch_db_check()
 
     version = moloch_js0n_get(data, datalen, "version", &version_len);
 
-    if (atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
-        LOG("ERROR - Database version (%.*s) too old, needs to be at least (%d), run \"db/db.pl host:port update\"", version_len, version, MOLOCH_MIN_DB_VERSION);
+    if (!version || atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
+        LOG("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port update\"", version_len, version, MOLOCH_MIN_DB_VERSION);
         exit(1);
     }
 

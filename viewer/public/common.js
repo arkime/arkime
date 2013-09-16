@@ -463,7 +463,7 @@ $(document).ready(function() {
     },
     adjust: {
       screen: true
-    } 
+    }
   }).qtip('api');
 
   $(document).on("mouseover", ".sessionActionsMenu", function (e) {
@@ -663,8 +663,8 @@ $(document).ready(function() {
       submit: "Destructively Delete Data",
       title: "Delete Data",
       message: "This will perform a three pass overwrite of all packet data for matching packets.  SPI data will be non forensically removed for matching sessions."
-    }, function(qs, ids, tags) {
-      var data = [{name: "tags", value: tags}, {name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+    }, function(qs, ids) {
+      var data = [{name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
@@ -686,8 +686,8 @@ $(document).ready(function() {
       query: "Delete",
       title: "Delete Data",
       message: "This will perform a three pass overwrite of all packet data for matching packets.  SPI data will be non forensically removed for matching sessions."
-    }, function(qs, ids, tags) {
-      var data = [{name: "tags", value: tags}];
+    }, function(qs, ids) {
+      var data = [];
       if (ids) {
         data.push({name: "ids", value: ids});
       }
@@ -737,6 +737,65 @@ $(document).ready(function() {
 
       window.location = "sessions.pcap/" + filename + "?" + $.param(qs);
     });
+    return false;
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Send Session Dialog
+  //////////////////////////////////////////////////////////////////////////////////
+  $(document).on("click", ".sendSessionAction", function (e) {
+    showActionsDialog({
+      submit: "Send Session",
+      title: "Send Session",
+      input: "Tags",
+      message: "This will send the SPI and PCAP data to remote Moloch instance."
+    }, function(qs, ids, tags) {
+      var data = [{name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+      if (tags) {
+        qs.push({name: "tags", value: tags});
+      }
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "sendSessions?" + $.param(qs),
+        "success": function(data) {
+          alert(data.text);
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
+    return false;
+  });
+
+  $("#sendSessionButton").click(function (e) {
+    showActionsDialog({
+      submit: "Send Session",
+      query: "Send Session",
+      title: "Send Session",
+      input: "Tags",
+      message: "This will send the SPI and PCAP data to remote Moloch instance."
+    }, function(qs, ids, tags) {
+      var data = [];
+      if (tags) {
+        qs.push({name: "tags", value: tags});
+      }
+      if (ids) {
+        data.push({name: "ids", value: ids});
+      }
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "data": data,
+        "url": "sendSessions?" + $.param(qs),
+        "success": function(data) {
+          alert(data.text);
+          $('input[id^=format-line-]').change();
+        }
+      });
+    });
+
     return false;
   });
 

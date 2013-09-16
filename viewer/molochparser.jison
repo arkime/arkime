@@ -416,8 +416,8 @@ e
         {$$ = {terms: {}};
          $$.terms[$1] = CSVtoArray($3);}
     | RANGEFIELD '!=' NUMBERLIST
-        {$$ = {not: {term: {}}};
-         $$.not.term[$1] = CSVtoArray($3);}
+        {$$ = {not: {terms: {}}};
+         $$.not.terms[$1] = CSVtoArray($3);}
     | protocol '==' PROTOCOLNUMBER
         {$$ = {term: {pr: protocolLookup($3)}};}
     | protocol '==' PROTOCOLLIST
@@ -483,7 +483,7 @@ e
         }
     | HEADER_CNT '!=' NUMBERLIST
         { $$ = {not: {terms: {}}};
-          $$.not.term[str2Header(yy, $1)] = $3;
+          $$.not.terms[str2Header(yy, $1)] = $3;
         }
     | HEADER_CNT GTLT NUMBER
         {$$ = {range: {}};
@@ -496,7 +496,7 @@ e
     | 'port' '!=' NUMBER
         {$$ = {bool: {must_not: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
     | 'port' '!=' NUMBERLIST
-        {$$ = {bool: {must_not: [{term: {p1: CSVtoArray($3)}}, {term: {p2: CSVtoArray($3)}}]}};}
+        {$$ = {bool: {must_not: [{terms: {p1: CSVtoArray($3)}}, {terms: {p2: CSVtoArray($3)}}]}};}
     | IPFIELD '==' IPNUM
         {$$ = parseIpPort(yy, $3,$1);}
     | IPFIELD '!=' IPNUM

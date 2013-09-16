@@ -167,7 +167,9 @@ block content
         var fullstate = "";
         $("[id^=SPIck]").each(function(index, item) {
           var field = item.id.substring(6);
-          if ($(item).prop("indeterminate")) {
+          if (fetchSize[field]) {
+            fullstate += "," + field + ":" + fetchSize[field];
+          } else if ($(item).prop("indeterminate")) {
             fullstate += "," + field + ":10";
           } else if ($(item).attr("checked")) {
             fullstate += "," + field + ":100";
