@@ -34,6 +34,7 @@ AC_ARG_WITH(libpcap,
         cd $owd;
       fi
 
+      LPCAP_FOUND="$withval"
       PCAP_CFLAGS="-I$withval"
       PCAP_LIBS="$withval/libpcap.a"
     elif test -f $withval/include/pcap.h -a -f $withval/lib/libpcap.a; then
@@ -43,6 +44,7 @@ AC_ARG_WITH(libpcap,
         cd $owd;
       fi
 
+      LPCAP_FOUND="$withval/lib"
       PCAP_CFLAGS="-I$withval/include"
       PCAP_LIBS="$withval/lib/libpcap.a"
     else
@@ -53,6 +55,7 @@ esac ], [
   if test "x$PCAP_LIBS" != "x"; then
       BLAHBLAH=1
   elif test -f ${prefix}/include/pcap.h; then
+     LPCAP_FOUND="${exec_prefix}/lib"
      PCAP_CFLAGS="-I${prefix}/include"
      PCAP_LIBS="-L${exec_prefix}/lib -lpcap"
   elif test -f /usr/include/pcap/pcap.h; then
@@ -78,8 +81,16 @@ AC_MSG_CHECKING(for pfring)
 AC_ARG_WITH(pfring,
 [  --with-pfring=DIR use pfring build directory],
 [ case "$withval" in
-  yes|no)
+  no)
      AC_MSG_RESULT(no)
+     ;;
+  yes)
+     if test -f $LPCAP_FOUND/libpfring.a; then
+       PCAP_LIBS="$PCAP_LIBS $LPCAP_FOUND/libpfring.a"
+       AC_MSG_RESULT(yes)
+     else
+       AC_ERROR(libpfring.a not found)
+     fi
      ;;
   *)
   AC_MSG_RESULT($withval)
