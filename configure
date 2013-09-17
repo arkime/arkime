@@ -659,8 +659,8 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_dependency_tracking
-with_pfring
 with_libpcap
+with_pfring
 with_libnids
 with_yara
 with_GeoIP
@@ -1299,8 +1299,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-pfring=DIR use pfring build directory
   --with-libpcap=DIR use libpcap build directory
+  --with-pfring=DIR use pfring build directory
   --with-libnids=DIR use libnids build directory
   --with-yara=DIR use yara build directory
   --with-GeoIP=DIR use GeoIP build directory
@@ -3791,52 +3791,6 @@ else
 fi
 
 
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pfring" >&5
-$as_echo_n "checking for pfring... " >&6; }
-
-# Check whether --with-pfring was given.
-if test "${with_pfring+set}" = set; then :
-  withval=$with_pfring;  case "$withval" in
-  yes|no)
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-     ;;
-  *)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
-    if test -f $withval/userland/libpcap/pcap.h -a -f $withval/userland/libpcap/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_CFLAGS="-I$withval"
-      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
-    elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_CFLAGS="-I$withval/userland/libpcap/include"
-      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a"
-    else
-      as_fn_error $? "pcap.h or libpcap.a not found in $withval" "$LINENO" 5
-    fi
-    ;;
-esac
-else
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpcap" >&5
 $as_echo_n "checking for libpcap... " >&6; }
 
@@ -3857,6 +3811,7 @@ $as_echo "$withval" >&6; }
         cd $owd;
       fi
 
+      LPCAP_FOUND="$withval"
       PCAP_CFLAGS="-I$withval"
       PCAP_LIBS="$withval/libpcap.a"
     elif test -f $withval/include/pcap.h -a -f $withval/lib/libpcap.a; then
@@ -3866,6 +3821,7 @@ $as_echo "$withval" >&6; }
         cd $owd;
       fi
 
+      LPCAP_FOUND="$withval/lib"
       PCAP_CFLAGS="-I$withval/include"
       PCAP_LIBS="$withval/lib/libpcap.a"
     else
@@ -3878,6 +3834,7 @@ else
   if test "x$PCAP_LIBS" != "x"; then
       BLAHBLAH=1
   elif test -f ${prefix}/include/pcap.h; then
+     LPCAP_FOUND="${exec_prefix}/lib"
      PCAP_CFLAGS="-I${prefix}/include"
      PCAP_LIBS="-L${exec_prefix}/lib -lpcap"
   elif test -f /usr/include/pcap/pcap.h; then
@@ -3913,6 +3870,52 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+fi
+
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pfring" >&5
+$as_echo_n "checking for pfring... " >&6; }
+
+# Check whether --with-pfring was given.
+if test "${with_pfring+set}" = set; then :
+  withval=$with_pfring;  case "$withval" in
+  no)
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+     ;;
+  yes)
+     if test -f $LPCAP_FOUND/libpfring.a; then
+       PCAP_LIBS="$PCAP_LIBS $LPCAP_FOUND/libpfring.a"
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+     else
+       as_fn_error $? "libpfring.a not found" "$LINENO" 5
+     fi
+     ;;
+  *)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
+    if test -f $withval/userland/libpcap/libpfring.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+
+      PCAP_LIBS="$PCAP_LIBS $withval/userland/lib/libpfring.a"
+    elif test -f $withval/include/pfring.h -a -f $withval/lib/libpfring.a; then
+      PCAP_LIBS="$PCAP_LIBS $withval/lib/libpfring.a"
+    else
+      as_fn_error $? "pcap.h or libpcap.a not found in $withval" "$LINENO" 5
+    fi
+    ;;
+esac
+else
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 
