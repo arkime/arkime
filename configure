@@ -1299,7 +1299,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-pfring=DIR use pfring build directory
+  --with-pfring=DIR use libpfring directory
   --with-libpcap=DIR use libpcap build directory
   --with-libnids=DIR use libnids build directory
   --with-yara=DIR use yara build directory
@@ -3792,49 +3792,26 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pfring" >&5
-$as_echo_n "checking for pfring... " >&6; }
-
 # Check whether --with-pfring was given.
 if test "${with_pfring+set}" = set; then :
   withval=$with_pfring;  case "$withval" in
   yes|no)
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-     ;;
-  *)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
-    if test -f $withval/userland/libpcap/pcap.h -a -f $withval/userland/libpcap/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_CFLAGS="-I$withval"
-      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
-    elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-
-      PCAP_CFLAGS="-I$withval/userland/libpcap/include"
-      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a"
-    else
-      as_fn_error $? "pcap.h or libpcap.a not found in $withval" "$LINENO" 5
-    fi
+    BLAHBLAH=1
     ;;
+  *)
+    if test -f $withval/libpfring.a; then
+      PCAP_LIBS="$withval/libpfring.a"
+    elif test -f $withval/lib/libpfring.a; then
+      PCAP_LIBS="$withval/lib/libpfring.a"
+    elif test -f $withval/userland/lib/libpfring.a; then
+      PCAP_LIBS="$withval/userland/lib/libpfring.a"
+    else
+      as_fn_error $? "libpfring.a not found" "$LINENO" 5
+    fi
+  ;;
 esac
-else
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
 fi
-
-
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpcap" >&5
@@ -3848,8 +3825,6 @@ if test "${with_libpcap+set}" = set; then :
 $as_echo "no" >&6; }
      ;;
   *)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
     if test -f $withval/pcap.h -a -f $withval/libpcap.a; then
       owd=`pwd`
       if cd $withval; then
@@ -3858,7 +3833,10 @@ $as_echo "$withval" >&6; }
       fi
 
       PCAP_CFLAGS="-I$withval"
-      PCAP_LIBS="$withval/libpcap.a"
+      PCAP_LIBS="$withval/libpcap.a $PCAP_LIBS"
+      PCAP_DIR="$withval"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
     elif test -f $withval/include/pcap.h -a -f $withval/lib/libpcap.a; then
       owd=`pwd`
       if cd $withval; then
@@ -3867,10 +3845,73 @@ $as_echo "$withval" >&6; }
       fi
 
       PCAP_CFLAGS="-I$withval/include"
-      PCAP_LIBS="$withval/lib/libpcap.a"
+      PCAP_LIBS="$withval/lib/libpcap.a $PCAP_LIBS"
+      PCAP_DIR="$withval/lib"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval/lib" >&5
+$as_echo "$withval/lib" >&6; }
     else
       as_fn_error $? "pcap.h or libpcap.a not found in $withval" "$LINENO" 5
     fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpcap dependancy" >&5
+$as_echo_n "checking for libpcap dependancy... " >&6; }
+    LIBS=$PCAP_LIBS
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcap_open_offline ();
+int
+main ()
+{
+return pcap_open_offline ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: ok" >&5
+$as_echo "ok" >&6; }
+else
+  LIBS="$LIBS $PCAP_DIR/libpfring.a"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcap_open_offline ();
+int
+main ()
+{
+return pcap_open_offline ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  PCAP_LIBS=$LIBS
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: pfring required" >&5
+$as_echo "pfring required" >&6; }
+else
+  as_fn_error $? "no working libpcap found" "$LINENO" 5
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
     ;;
 esac
 else
