@@ -35,7 +35,7 @@ AC_ARG_WITH(pfring,
         cd $owd;
       fi
 
-      PCAP_CFLAGS="-I$withval"
+      PCAP_CFLAGS="-I$withval/userland/libpcap"
       PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
     elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
       owd=`pwd`
@@ -52,8 +52,6 @@ AC_ARG_WITH(pfring,
     ;;
 esac ], [
 AC_MSG_RESULT(no) ])
-AC_SUBST(PCAP_CFLAGS)
-AC_SUBST(PCAP_LIBS)
 
 dnl Checks for libpcap
 AC_MSG_CHECKING(for libpcap)

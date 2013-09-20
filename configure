@@ -3812,7 +3812,7 @@ $as_echo "$withval" >&6; }
         cd $owd;
       fi
 
-      PCAP_CFLAGS="-I$withval"
+      PCAP_CFLAGS="-I$withval/userland/libpcap"
       PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
     elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
       owd=`pwd`
@@ -3833,8 +3833,6 @@ else
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-
-
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpcap" >&5
