@@ -127,6 +127,10 @@ block content
     dl
       mixin spi("Host", "socksho", "host.socks", "socks")
       mixin spi("IP", "socksip", "ip.socks", "socks")
+      mixin spion("GEO", "gsocksip", "country.socks", "socks")
+      mixin spion("ASN", "rawassocksip", "asn.socks", "socks")
+      mixin spi("ASN Token", "assocksip", "asn.socks", "socks")
+      mixin spi("RIR", "rirsocksip", "rir.socks", "socks")
       mixin spi("Port", "sockspo", "port.socks", "socks")
 
     if (user.emailSearch)

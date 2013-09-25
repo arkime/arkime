@@ -8,8 +8,10 @@ mixin arrayList(values, title, expr, extra)
           |, 
         if (value.length == 0)
           a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
-        else
+        else if (typeof value == "string")
           a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+        else
+          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
       if (extra)
         if (values)
           |, 

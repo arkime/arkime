@@ -238,18 +238,21 @@ addField("dnsip", "ip.dns", "dns", "ip", "IP from DNS result");
 addField("dnsipcnt", "ip.dns.cnt", "dns", "integer", "Unique number of IPs from DNS result");
 addField("eip", "ip.email", "email", "ip", "IP from email hop");
 addField("eipcnt", "ip.email.cnt", "email", "integer", "Unqiue number of IPs from email hop");
+addField("socksip", "ip.socks", "socks", "ip", "Socks destination ip");
 addField("xff", "ip.xff", "http", "ip", "IP from x-forwarded-for header");
 addField("xffscnt", "ip.xff.cnt", "http", "integer", "Unique number of IPs from x-forwarded-for header");
 
 addField(null, "port", "general", "integer", "Shorthand for port.src, port.socks, or port.dst");
 addField("p1", "port.src", "general", "integer", "Source port");
 addField("p2", "port.dst", "general", "integer", "Destination port");
+addField("sockspo", "port.socks", "socks", "integer", "Socks destination port");
 
 addField(null, "asn", "general", "textfield", "Shorthand for the GeoIP ASNum string from the asn.src, asn.dst, asn.dns, asn.email, asn.socks, or asn.xff fields");
 addField("as1", "asn.src", "general", "textfield", "GeoIP ASNum string calculated from the source ip address");
 addField("as2", "asn.dst", "general", "textfield", "GeoIP ASNum string calculated from the destination ip address");
 addField("asdnsip", "asn.dns", "dns", "textfield", "GeoIP ASNum string calculated from the DNS result ip address");
 addField("aseip", "asn.email", "email", "textfield", "GeoIP ASNum string calculated from the SMTP ip address");
+addField("assocksip", "asn.socks", "socks", "textfield", "GeoIP ASNum string calculated from the socks destination ip address");
 addField("asxff", "asn.xff", "http", "textfield", "GeoIP ASNum string calculated from the HTTP x-forwarded-for header");
 
 addField(null, "country", "general", "uptermfield", "Shorthand for the GeoIP string from the country.src, country.dst, country.dns, country.email, country.socks, or country.xff fields");
@@ -257,6 +260,7 @@ addField("g1", "country.src", "general", "uptermfield", "GeoIP country string ca
 addField("g2", "country.dst", "general", "uptermfield", "GeoIP country string calculated from the destination ip address");
 addField("gdnsip", "country.dns", "dns", "uptermfield", "GeoIP country string calculated from the DNS result ip address");
 addField("geip", "country.email", "email", "uptermfield", "GeoIP country string calculated from the SMTP ip address");
+addField("gsocksip", "country.socks", "socks", "uptermfield", "GeoIP country string calculated from the socks destination ip address");
 addField("gxff", "country.xff", "http", "uptermfield", "GeoIP country string calculated from the HTTP x-forwarded-for header");
 
 addField(null, "rir", "general", "uptermfield", "Shorthand for the Regional Internet Registry from the rir.src, rir.dst, rir.dns, rir.email, rir.socks, or country.xff fields");
@@ -264,6 +268,7 @@ addField("rir1", "rir.src", "general", "uptermfield", "Regional Internet Registr
 addField("rir2", "rir.dst", "general", "uptermfield", "Regional Internet Registry string calculated from the destination ip address");
 addField("rirdnsip", "rir.dns", "dns", "uptermfield", "Regional Internet Registry string calculated from the DNS result ip address");
 addField("rireip", "rir.email", "email", "uptermfield", "Regional Internet Registry string calculated from the SMTP ip address");
+addField("rirsocksip", "rir.socks", "socks", "uptermfield", "Regional Internet Registry string calculated from the socks destination ip address");
 addField("rirxff", "rir.xff", "http", "uptermfield", "Regional Internet Registry string calculated from the HTTP x-forwarded-for header");
 
 addField("by", "bytes", "general", "integer", "Total number of raw bytes sent AND received in a session");
@@ -285,6 +290,7 @@ addField("dnsho", "host.dns", "dns", "lotermfield", "DNS host response");
 addField("dnshocnt", "host.dns.cnt", "dns", "integer", "Unique number DNS host responses");
 addField("eho", "host.email", "email", "lotermfield", "EMAIL host proxy");
 addField("ehocnt", "host.email.cnt", "email", "integer", "Unique number of EMAIL host proxies");
+addField("socksho", "host.socks", "socks", "lotermfield", "Socks destination host");
 
 addField("tls.iCn", "cert.issuer.cn", "cert", "lotermfield", "Issuer's common name");
 addField("tls.iOn", "cert.issuer.on", "cert", "lotextfield", "Issuer's organization name");
@@ -356,10 +362,6 @@ addField("smbver", "smb.ver", "smb", "termfield", "SMB verison");
 addField("smbvercnt", "smb.ver.cnt", "smb", "integer", "Number of unique SMB versions");
 addField("smbuser", "smb.user", "smb", "termfield", "SMB user");
 addField("smbusercnt", "smb.usre.cnt", "smb", "integer", "Number of unique SMB users");
-
-addField("socksip", "ip.socks", "socks", "ip", "IP socks proxy connected to");
-addField("sockspo", "port.socks", "socks", "integer", "Port socks proxy connected to");
-addField("socksho", "host.socks", "socks", "lotermfield", "Host socks proxy connected to");
 
 exports.headers("headers-http-request").forEach(function(item) {
   addField("hdrs.hreq-" + item.name + (item.type === "integer"?"":".snow"), "http." + item.name, "http", (item.type === "integer"?"integer":"textfield"), "Request header " + item.name);
