@@ -14,6 +14,15 @@
     for example: ./easybutton-build.sh --dir /nids/moloch
   - Can build with PFRING now, easybutton-build.sh has --pfring
     or easybutton-single.sh asks
+  - Basic smb parsing, disable with parseSMB=false
+  - Basic socks4 and socks5 decoding
+  - rir lookups, configure with rirFile=ipv4-address-space.csv
+    https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+  - Netflowish CSV exporting from UI
+  - clean up db.pl some, rename rotate command to expire
+  - With custom date queries can now select bounded by
+  - New user setting for sessions sort order
+
 
 0.9.0 2013/08/26
   - 32bit fix for lpd/fpd

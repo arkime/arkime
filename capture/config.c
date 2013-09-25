@@ -189,6 +189,7 @@ void moloch_config_load()
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
     config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
     config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
+    config.rirFile          = moloch_config_str(keyfile, "rirFile", NULL);
     config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
@@ -216,6 +217,7 @@ void moloch_config_load()
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = moloch_config_boolean(keyfile, "logFileCreation", config.debug);
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
+    config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
 
 }
@@ -253,6 +255,8 @@ void moloch_config_load_local_ips()
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
                 ii->asn = g_strdup(values[v]+4);
+            } else if (strncmp(values[v], "rir:", 4) == 0) {
+                ii->rir = g_strdup(values[v]+4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
                 moloch_db_get_tag(ii, 0, values[v]+4, (MolochTag_cb)moloch_config_get_tag_cb);
             } else if (strncmp(values[v], "country:", 8) == 0) {
@@ -367,6 +371,7 @@ void moloch_config_init()
         LOG("yara: %s", config.yara);
         LOG("geoipFile: %s", config.geoipFile);
         LOG("geoipASNFile: %s", config.geoipASNFile);
+        LOG("rirFile: %s", config.rirFile);
         LOG("dropUser: %s", config.dropUser);
         LOG("dropGroup: %s", config.dropGroup);
         LOG("pluginsDir: %s", config.pluginsDir);
@@ -392,6 +397,7 @@ void moloch_config_init()
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));
         LOG("logFileCreation: %s", (config.logFileCreation?"true":"false"));
         LOG("parseSMTP: %s", (config.parseSMTP?"true":"false"));
+        LOG("parseSMB: %s", (config.parseSMB?"true":"false"));
         LOG("compressES: %s", (config.compressES?"true":"false"));
 
         MolochString_t *tstring;

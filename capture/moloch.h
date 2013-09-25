@@ -77,7 +77,8 @@ typedef HASH_VAR(s_, MolochStringHashStd_t, MolochStringHead_t, 13);
 #define MOLOCH_FIELD_TYPE_STR        3
 #define MOLOCH_FIELD_TYPE_STR_ARRAY  4
 #define MOLOCH_FIELD_TYPE_STR_HASH   5
-#define MOLOCH_FIELD_TYPE_IP_HASH    6
+#define MOLOCH_FIELD_TYPE_IP         6
+#define MOLOCH_FIELD_TYPE_IP_HASH    7
 
 #define MOLOCH_FIELD_FLAG_CNT         0x0001
 #define MOLOCH_FIELD_FLAG_SCNT        0x0002
@@ -138,6 +139,7 @@ typedef struct moloch_config {
     char     *emailYara;
     char     *geoipFile;
     char     *geoipASNFile;
+    char     *rirFile;
     char     *dropUser;
     char     *dropGroup;
     char     *pluginsDir;
@@ -167,12 +169,14 @@ typedef struct moloch_config {
     char      logESRequests;
     char      logFileCreation;
     char      parseSMTP;
+    char      parseSMB;
     char      compressES;
 } MolochConfig_t;
 
 typedef struct {
     char     *country;
     char     *asn;
+    char     *rir;
     int       numtags;
     int       tags[10];
 } MolochIpInfo_t;
@@ -218,6 +222,24 @@ typedef struct moloch_session_email {
     uint16_t           base64Decode:2;
 } MolochSessionEmail_t;
 
+typedef struct moloch_session_smb {
+    char               buf[2][512];
+    int                remlen[2];
+    short              buflen[2];
+    uint16_t           flags2[2];
+    unsigned char      version[2];
+    char               state[2];
+} MolochSessionSMB_t;
+
+typedef struct moloch_session_socks {
+    uint32_t  ip;
+    uint16_t  port;
+    uint8_t   which;
+    uint8_t   ver;
+    uint8_t   auth;
+    uint8_t   state;
+} MolochSessionSocks_t;
+
 typedef struct moloch_session_http {
     GString    *urlString;
     GString    *hostString;
@@ -249,6 +271,8 @@ typedef struct moloch_session {
     MolochField_t        **fields;
     MolochSessionHttp_t   *http;
     MolochSessionEmail_t  *email;
+    MolochSessionSMB_t    *smb;
+    MolochSessionSocks_t  *socks;
 
     void       *pluginData[MOLOCH_MAX_PLUGINS];
 
@@ -281,6 +305,7 @@ typedef struct moloch_session {
     uint8_t     tcp_flags;
     uint8_t     sshCode;
     uint8_t     ircState;
+    uint8_t     skip[2];
 
     uint16_t    haveNidsTcp:1;
     uint16_t    needSave:1;
@@ -395,12 +420,14 @@ void  moloch_db_exit();
  */
 void moloch_detect_init();
 void moloch_detect_initial_tag(MolochSession_t *session);
-void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
-void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
-void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
-void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
-void moloch_detect_parse_irc(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
-void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf);
+void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data, uint32_t remaining);
+void moloch_detect_parse_http(MolochSession_t *session, unsigned char *data, uint32_t remaining, int initial);
+void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, uint32_t remaining);
+void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint32_t remaining);
+void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, uint32_t remaining);
+void moloch_detect_parse_ssh(MolochSession_t *session, unsigned char *data, uint32_t remaining);
+void moloch_detect_parse_irc(MolochSession_t *session, unsigned char *data, uint32_t remaining);
+void moloch_detect_parse_yara(MolochSession_t *session, unsigned char *data, uint32_t remaining, int initial);
 void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len);
 void moloch_detect_exit();
 
@@ -449,6 +476,12 @@ void moloch_nids_free_session_http(MolochSession_t *session);
 
 void moloch_nids_new_session_email(MolochSession_t *session);
 void moloch_nids_free_session_email(MolochSession_t *session);
+
+void moloch_nids_new_session_smb(MolochSession_t *session);
+void moloch_nids_free_session_smb(MolochSession_t *session);
+
+void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data, int len);
+void moloch_nids_free_session_socks(MolochSession_t *session);
 
 /******************************************************************************/
 /*
@@ -584,7 +617,19 @@ MOLOCH_FIELD_EMAIL_IP,
 MOLOCH_FIELD_IRC_NICK,
 MOLOCH_FIELD_IRC_CHANNELS,
 
-MOLOCH_FIELD_TAGS, // Must be last
+MOLOCH_FIELD_SMB_SHARE,
+MOLOCH_FIELD_SMB_FN,
+MOLOCH_FIELD_SMB_OS,
+MOLOCH_FIELD_SMB_DOMAIN,
+MOLOCH_FIELD_SMB_VER,
+MOLOCH_FIELD_SMB_USER,
+MOLOCH_FIELD_SMB_HOST,
+
+MOLOCH_FIELD_SOCKS_IP,
+MOLOCH_FIELD_SOCKS_HOST,
+MOLOCH_FIELD_SOCKS_PORT,
+
+MOLOCH_FIELD_TAGS // Must be last
 };
 
 void moloch_field_init();

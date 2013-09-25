@@ -92,6 +92,8 @@ html
         input#startDate(size=21)
         span Ending Time:
         input#stopDate(size=21)
+        input(type='checkbox', id='strictly', name='strictly', size=21)
+        label(for='strictly') Bounded By 
         
     div.pageBody(id="pageBody-#{titleLink}")
       block content
@@ -146,6 +148,8 @@ html
             label(style='font-weight:bold') Search Result Actions
           li 
             a#exportButton Export PCAP
+          li 
+            a#exportCSVButton Export CSV
           li
             a#addTagsButton Add Tags
           - if (user.removeEnabled)

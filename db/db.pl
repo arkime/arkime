@@ -19,6 +19,7 @@
 # 10 - dynamic fields for http and email headers
 # 11 - Require 0.90.1, switch from soft to node, new fpd field, removed fpms field
 # 12 - Added hsver, hdver fields, diskQueue, user settings, scrub* fields, user removeEnabled
+# 13 - Rename rotate to expire, added smb, socks, rir fields
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -27,7 +28,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 12;
+my $VERSION = 13;
 my $verbose = 0;
 
 ################################################################################
@@ -45,8 +46,9 @@ sub showHelp($)
 {
     my ($str) = @_;
     print "\n", $str,"\n\n";
-    print "$0 [-v] <ESHOST:ESPORT> <command> [<options>]\n";
+    print "$0 [Options] <ESHOST:ESPORT> <command> [<options>]\n";
     print "\n";
+    print "Options:\n";
     print "  -v                    - Verbose, multiple increases level\n";
     print "\n";
     print "Commands:\n";
@@ -57,8 +59,8 @@ sub showHelp($)
     print "  usersexport <fn>      - Save the users info to <fn>\n";
     print "  usersimport <fn>      - Load the users info from <fn>\n";
     print "  optimize              - Optimize all indices\n";
-    print "  rotate <type> <num>   - Perform daily maintenance and optimize all indices\n";
-    print "       type             - Same as rotateIndex in ini file = daily,weekly,monthly\n";
+    print "  expire <type> <num>   - Perform daily maintenance and optimize all indices\n";
+    print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num              - number indexes to keep\n";
     exit 1;
 }
@@ -570,6 +572,11 @@ sub sessionsUpdate
           rawas1: {type: "string", index: "not_analyzed"}
         }
       },
+      rir1: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
       p1: {
         type: "integer"
       },
@@ -589,6 +596,11 @@ sub sessionsUpdate
           as2: {type: "string", analyzer: "snowball"},
           rawas2: {type: "string", index: "not_analyzed"}
         }
+      },
+      rir2: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
       },
       xff: {
         type: "long"
@@ -612,6 +624,11 @@ sub sessionsUpdate
           asxff: {type: "string", analyzer: "snowball"},
           rawasxff: {type: "string", index: "not_analyzed"}
         }
+      },
+      rirxff: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
       },
       hmd5cnt: {
         type: "short"
@@ -648,6 +665,11 @@ sub sessionsUpdate
           asdnsip: {type: "string", analyzer: "snowball"},
           rawasdnsip: {type: "string", index: "not_analyzed"}
         }
+      },
+      rirdnsip: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
       },
       p2: {
         type: "integer"
@@ -899,6 +921,11 @@ sub sessionsUpdate
           rawaseip: {type: "string", index: "not_analyzed"}
         }
       },
+      rireip: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
       ircnck: {
         omit_norms: true,
         type: "string",
@@ -926,6 +953,92 @@ sub sessionsUpdate
         omit_norms: true,
         type: "string",
         index: "not_analyzed"
+      },
+      smbdmcnt: {
+        type: "short"
+      },
+      smbdm : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      smbfncnt: {
+        type: "short"
+      },
+      smbfn : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      smbhocnt: {
+        type: "short"
+      },
+      smbho : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      smboscnt: {
+        type: "short"
+      },
+      smbos : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      smbshcnt: {
+        type: "short"
+      },
+      smbsh : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      smbusercnt: {
+        type: "short"
+      },
+      smbuser : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      smbvercnt: {
+        type: "short"
+      },
+      smbver: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      socksip: {
+        type: "long"
+      },
+      gsocksip: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      assocksip: {
+        type: "multi_field",
+        path: "just_name",
+        omit_norms: true,
+        fields: {
+          assocksip: {type: "string", analyzer: "snowball"},
+          rawassocksip: {type: "string", index: "not_analyzed"}
+        }
+      },
+      rirsocksip: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      sockspo: {
+        type: "integer"
+      },
+      socksho: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
       }
     }
   }
@@ -941,7 +1054,6 @@ sub sessionsUpdate
       refresh_interval: 60,
       number_of_shards: ' . $main::numberOfNodes . ',
       number_of_replicas: 0,
-      store: { compress: { stored : true, tv: true } },
       analysis: {
         analyzer : {
           url_analyzer : {
@@ -964,12 +1076,7 @@ sub sessionsUpdate
 
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
-        if ($verbose == 1) {
-            local $| = 1;
-            print ".";
-        } elsif ($verbose  > 1) {
-            print "  Updating sessions mapping for $i\n";
-        }
+        progress($i);
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
         esPost("/$i/_close", "");
         #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
@@ -1152,18 +1259,41 @@ sub dbCheck {
     }
 }
 ################################################################################
-while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
-    if ($ARGV[0] eq "-v") {
-        $verbose++;
-        shift @ARGV;
+sub progress {
+    my ($index) = @_;
+    if ($verbose == 1) {
+        local $| = 1;
+        print ".";
+    } elsif ($verbose == 2) {
+        local $| = 1;
+        print "$index ";
     }
+}
+################################################################################
+sub optimizeOther {
+    print "Optimizing Admin Indices\n";
+    foreach my $i ("dstats_v1", "files_v3", "sequence", "tags_v2", "users_v2") {
+        progress($i);
+        esGet("/$i/_optimize?max_num_segments=1", 1);
+    }
+    print "\n";
+    print "\n" if ($verbose > 0);
+}
+################################################################################
+while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
+    if ($ARGV[0] =~ /-v+$/) {
+         $verbose += ($ARGV[0] =~ tr/v//);
+    } else {
+        showHelp("Unknkown option $ARGV[0]")
+    }
+    shift @ARGV;
 }
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|rotate|optimize)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|expire|rotate|optimize)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
-showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate)/);
+showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
@@ -1182,13 +1312,15 @@ if ($ARGV[1] eq "usersimport") {
     }
     close($fh);
     exit 0;
-} elsif ($ARGV[1] eq "rotate") {
-    showHelp("Invalid rotate <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
+} elsif ($ARGV[1] eq "expire" || $ARGV[1] eq "rotate") {
+    showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
     my $json = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $json->{indices} || $json->{_all}->{indices};
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], $endTime);
+    delete $indices->{$endTimeIndex};
+
     my @startTime = gmtime;
     if ($ARGV[2] eq "hourly") {
         $startTime[2] -= int($ARGV[3]);
@@ -1200,18 +1332,26 @@ if ($ARGV[1] eq "usersimport") {
         $startTime[4] -= int($ARGV[3]);
     }
 
+    my $optimizecnt = 0;
     my $startTime = mktime(@startTime);
     while ($startTime <= $endTime) {
         my $iname = time2index($ARGV[2], $startTime);
         if (exists $indices->{$iname}) {
             $indices->{$iname}->{OPTIMIZEIT} = 1;
+            $optimizecnt++;
         }
-        $startTime += 24*60*60;
+        if ($ARGV[2] eq "hourly") {
+            $startTime += 60*60;
+        } else {
+            $startTime += 24*60*60;
+        }
     }
 
     $main::userAgent->timeout(600);
+    optimizeOther();
+    printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
-        next if ($endTimeIndex eq $i);
+        progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esGet("/$i/_optimize?max_num_segments=4", 1);
         } else {
@@ -1224,12 +1364,10 @@ if ($ARGV[1] eq "usersimport") {
     my $indices = $json->{indices} || $json->{_all}->{indices};
 
     $main::userAgent->timeout(600);
-    printf "Optimizing %s Indices\n", commify(scalar(keys %{$indices}));
+    optimizeOther();
+    printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
-        if ($verbose > 0) {
-            local $| = 1;
-            print ".";
-        }
+        progress($i);
         esGet("/$i/_optimize?max_num_segments=4", 1);
     }
     print "\n";
@@ -1396,7 +1534,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 12) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 13) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

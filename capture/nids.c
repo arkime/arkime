@@ -359,6 +359,9 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
         return FALSE;
 
     MolochOutput_t *out = DLL_PEEK_HEAD(mo_, &outputQ);
+    if (!out)
+        return DLL_COUNT(mo_, &outputQ) > 0;
+
     int len = write(out->fd, out->buf+out->pos, (out->max - out->pos));
 
     if (len < 0) {
@@ -522,6 +525,49 @@ void moloch_nids_free_session_email(MolochSession_t *session)
 
     MOLOCH_TYPE_FREE(MolochSessionEmail_t, email);
     session->email = 0;
+}
+/******************************************************************************/
+void moloch_nids_new_session_smb(MolochSession_t *session)
+{
+    if (!config.parseSMB)
+        return;
+
+    session->smb = MOLOCH_TYPE_ALLOC0(MolochSessionSMB_t);
+}
+/******************************************************************************/
+void moloch_nids_free_session_smb(MolochSession_t *session)
+{
+    MolochSessionSMB_t *smb = session->smb;
+
+    MOLOCH_TYPE_FREE(MolochSessionSMB_t, smb);
+    session->smb = 0;
+}
+/******************************************************************************/
+void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data, int len)
+{
+    MolochSessionSocks_t *socks;
+
+    socks = session->socks = MOLOCH_TYPE_ALLOC0(MolochSessionSocks_t);
+
+    if (data[0] == 4 && len == 9) {
+        socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
+        memcpy(&socks->ip, data+4, 4);
+        socks->which = session->which;
+        socks->ver   = 4;
+    }
+
+    if (data[0] == 5 && len == 3) {
+        socks->ver   = 5;
+        socks->auth  = data[1];
+    }
+}
+/******************************************************************************/
+void moloch_nids_free_session_socks(MolochSession_t *session)
+{
+    MolochSessionSocks_t *socks = session->socks;
+
+    MOLOCH_TYPE_FREE(MolochSessionSocks_t, socks);
+    session->socks = 0;
 }
 /******************************************************************************/
 void moloch_nids_cb_ip(struct ip *packet, int len)
@@ -808,7 +854,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
             moloch_plugins_cb_tcp(session, a_tcp);
         return;
-    case NIDS_DATA:
+    case NIDS_DATA: {
         session = a_tcp->user;
         if (!session) {
             LOG("ERROR - data - a_tcp->user not set for %s", moloch_friendly_session_id(IPPROTO_TCP, a_tcp->addr.saddr, a_tcp->addr.source, a_tcp->addr.daddr, a_tcp->addr.dest));
@@ -825,29 +871,57 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         }
 
         if (a_tcp->client.count_new) {
+            uint32_t countNew      = a_tcp->client.count_new;
+            uint32_t count         = a_tcp->client.count - a_tcp->client.offset;
+            unsigned char *dataNew = (unsigned char*)(a_tcp->client.data + (a_tcp->client.count - a_tcp->client.offset - countNew));
+            unsigned char *data    = (unsigned char*)a_tcp->client.data;
+
             session->which = 1;
-            moloch_detect_parse_http(session, a_tcp, &a_tcp->client);
-            moloch_detect_parse_classify(session, a_tcp, &a_tcp->client);
-            moloch_detect_parse_yara(session, a_tcp, &a_tcp->client);
+
+            if (session->socks)
+                moloch_detect_parse_socks(session, dataNew, countNew);
+
+            moloch_detect_parse_http(session, dataNew, countNew, a_tcp->client.count-countNew == session->skip[1]);
+
+            if (a_tcp->client.offset == session->skip[1])
+                moloch_detect_parse_classify(session, data, count);
+
+            moloch_detect_parse_yara(session, data, count, a_tcp->client.count-countNew == session->skip[1]);
             if (session->email)
-                moloch_detect_parse_email(session, a_tcp, &a_tcp->client);
-            nids_discard(a_tcp, session->offsets[1]);
+                moloch_detect_parse_email(session, dataNew, countNew);
+            if (session->smb)
+                moloch_detect_parse_smb(session, dataNew, countNew);
             if (session->isSsh)
-                moloch_detect_parse_ssh(session, a_tcp, &a_tcp->client);
-            session->offsets[1] = a_tcp->client.count_new;
+                moloch_detect_parse_ssh(session, dataNew, countNew);
+
+            nids_discard(a_tcp, session->offsets[1]);
+            session->offsets[1] = countNew;
         }
 
         if (a_tcp->server.count_new) {
+            uint32_t countNew      = a_tcp->server.count_new;
+            uint32_t count         = a_tcp->server.count - a_tcp->server.offset;
+            unsigned char *dataNew = (unsigned char*)(a_tcp->server.data + (a_tcp->server.count - a_tcp->server.offset - countNew));
+            unsigned char *data    = (unsigned char*)a_tcp->server.data;
+
             session->which = 0;
-            moloch_detect_parse_http(session, a_tcp, &a_tcp->server);
-            moloch_detect_parse_classify(session, a_tcp, &a_tcp->server);
+            if (session->socks)
+                moloch_detect_parse_socks(session, dataNew, countNew);
+
+            moloch_detect_parse_http(session, dataNew, countNew, a_tcp->server.count-countNew == session->skip[0]);
+            if (a_tcp->server.offset == session->skip[0])
+                moloch_detect_parse_classify(session, data, count);
+
             if (session->email)
-                moloch_detect_parse_email(session, a_tcp, &a_tcp->server);
-            moloch_detect_parse_yara(session, a_tcp, &a_tcp->server);
-            nids_discard(a_tcp, session->offsets[0]);
-            session->offsets[0] = a_tcp->server.count_new;
+                moloch_detect_parse_email(session, dataNew, countNew);
+            if (session->smb)
+                moloch_detect_parse_smb(session, dataNew, countNew);
+            moloch_detect_parse_yara(session, data, count, a_tcp->server.count-countNew == session->skip[0]);
             if (session->isIrc)
-                moloch_detect_parse_irc(session, a_tcp, &a_tcp->server);
+                moloch_detect_parse_irc(session, dataNew, countNew);
+
+            nids_discard(a_tcp, session->offsets[0]);
+            session->offsets[0] = countNew;
         }
 
         session->databytes += a_tcp->server.count_new + a_tcp->client.count_new;
@@ -855,6 +929,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
             moloch_plugins_cb_tcp(session, a_tcp);
         return;
+    }
     default:
         session = a_tcp->user;
 
@@ -864,11 +939,11 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         }
 
         if (a_tcp->client.count != a_tcp->client.offset) {
-            moloch_detect_parse_yara(session, a_tcp, &a_tcp->client);
+            moloch_detect_parse_yara(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count, a_tcp->client.offset == 0);
         }
 
         if (a_tcp->server.count != a_tcp->server.offset) {
-            moloch_detect_parse_yara(session, a_tcp, &a_tcp->server);
+            moloch_detect_parse_yara(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count, a_tcp->server.offset == 0);
         }
     
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
@@ -909,6 +984,10 @@ void moloch_nids_session_free (MolochSession_t *session)
 
     if (session->email) {
         moloch_nids_free_session_email(session);
+    }
+
+    if (session->smb) {
+        moloch_nids_free_session_smb(session);
     }
 
     MolochCertsInfo_t *certs;

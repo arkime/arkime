@@ -128,6 +128,18 @@ block content
         return false;
       });
 
+      var sortName2Col = {
+        start: 2,
+        stop: 3,
+        srcip: 4,
+        srcport: 5,
+        dstip: 6,
+        dstport: 7,
+        packets: 8,
+        bytes: 9,
+        node: 10
+      };
+
       sessionsTable = $('#sessions').dataTable( {
         "oLanguage": {
           "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
@@ -150,6 +162,7 @@ block content
             "sWidth": "10px",
             "bSortable": false,
             "sClass": "sessionDetails",
+            "sDefaultContent": "",
             "fnRender" : function(oObj) {
               var pr;
               switch (oObj.aData.pr) {
@@ -239,6 +252,7 @@ block content
           },
           { "bSortable": false,
             "mDataProp" : null,
+            "sDefaultContent": "",
             "sClass": "urlColumn",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
@@ -326,7 +340,7 @@ block content
             }
           }
         ],
-        "aaSorting": [[2, "asc"]],
+        "aaSorting": [[sortName2Col[molochSettings.sortColumn || "start"] || 2 , molochSettings.sortDirection || "asc"]],
         "fnServerData": function ( sSource, aoData, fnCallback ) {
           var params = buildParams();
           aoData = $.merge(aoData, params);

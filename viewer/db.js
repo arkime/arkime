@@ -45,7 +45,7 @@ function canDo(fn, that, args) {
     internals.qInProgress++;
     return true;
   }
-  internals.q.push([fn, that, args])
+  internals.q.push([fn, that, args]);
   return false;
 }
 

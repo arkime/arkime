@@ -5,10 +5,10 @@
 %%
 
 \s+                   /* skip whitespace */
-[0-9]+\b                  return 'NUMBER'
-\[[0-9,'"]+\]             return 'NUMBERLIST'
-([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?\b return 'IPMATCH'
-\[(?:([0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("."[0-9]{1,3})?("/"[0-9]{1,2})?(":"[0-9]{1,5})?[ ,]{0,1})+\] return 'IPMATCHLIST'
+\d+\b                     return 'NUMBER'
+\[\d+(\,\s*\d+)*\s*\]     return 'NUMBERLIST'
+(\d{1,3})?("."\d{1,3})?("."\d{1,3})?("."\d{1,3})?("/"\d{1,2})?(":"\d{1,5})?\b return 'IPMATCH'
+\[(?:(\d{1,3})?("."\d{1,3})?("."\d{1,3})?("."\d{1,3})?("/"\d{1,2})?(":"\d{1,5})?(\,\s*){0,1})+\] return 'IPMATCHLIST'
 
 /* Backwards Names, to be removed */
 "email.ct.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type.cnt'
@@ -33,6 +33,7 @@
 "asn"                     return 'asn'
 "asn.dns"                 return 'asn.dns'
 "asn.dst"                 return 'asn.dst'
+"asn.socks"               return 'asn.socks'
 "asn.src"                 return 'asn.src'
 "asn.xff"                 return 'asn.xff'
 "asn.email"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'asn.email'
@@ -48,6 +49,7 @@
 "country"                 return 'country'
 "country.dns"             return 'country.dns'
 "country.dst"             return 'country.dst'
+"country.socks"           return 'country.socks'
 "country.src"             return 'country.src'
 "country.xff"             return 'country.xff'
 "country.email"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'country.email'
@@ -84,6 +86,7 @@ email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled fo
 "host.email"              return "host.email"
 "host.http.cnt"           return "host.http.cnt"
 "host.http"               return "host.http"
+"host.socks"              return "host.socks"
 "host"                    return "host"
 "http.md5.cnt"            return "http.md5.cnt"
 "http.md5"                return "http.md5"
@@ -107,6 +110,7 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "ip.dns"                  return "ip.dns"
 "ip.dst"                  return "ip.dst"
 "ip"                      return "ip"
+"ip.socks"                return "ip.socks"
 "ip.src"                  return "ip.src"
 "ip.xff.cnt"              return "ip.xff.cnt"
 "ip.xff"                  return "ip.xff"
@@ -120,9 +124,34 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "packets"                 return 'packets'
 "port.dst"                return 'port.dst'
 "port"                    return 'port'
+"port.socks"              return 'port.socks'
 "port.src"                return 'port.src'
 "protocol"                return 'protocol'
+"rir"                     return 'rir'
+"rir.dns"                 return 'rir.dns'
+"rir.dst"                 return 'rir.dst'
+"rir.socks"               return 'rir.socks'
+"rir.src"                 return 'rir.src'
+"rir.xff"                 return 'rir.xff'
+"rir.email"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'rir.email'
 "rootId"                  return "rootId"
+"socks.host"              return "host.socks"
+"socks.ip"                return "ip.socks"
+"socks.port"              return "port.socks"
+"smb.domain.cnt"          return "smb.domain.cnt"
+"smb.domain"              return "smb.domain"
+"smb.fn.cnt"              return "smb.fn.cnt"
+"smb.fn"                  return "smb.fn"
+"smb.host.cnt"            return "smb.host.cnt"
+"smb.host"                return "smb.host"
+"smb.os.cnt"              return "smb.os.cnt"
+"smb.os"                  return "smb.os"
+"smb.share.cnt"           return "smb.share.cnt"
+"smb.share"               return "smb.share"
+"smb.user.cnt"            return "smb.user.cnt"
+"smb.user"                return "smb.user"
+"smb.ver.cnt"             return "smb.ver.cnt"
+"smb.ver"                 return "smb.ver"
 "ssh.key.cnt"             return "ssh.key.cnt"
 "ssh.key"                 return "ssh.key"
 "ssh.ver.cnt"             return "ssh.ver.cnt"
@@ -207,8 +236,9 @@ HEADER_CNT: EMAIL_HEADER_CNT
 RANGEFIELD: databytes                {$$ = 'db'}
           | bytes                    {$$ = 'by'}
           | packets                  {$$ = 'pa'}
-          | 'port.src'               {$$ = 'p1'}
           | 'port.dst'               {$$ = 'p2'}
+          | 'port.socks'             {$$ = 'sockspo'}
+          | 'port.src'               {$$ = 'p1'}
           | 'http.uri.cnt'           {$$ = 'uscnt'}
           | 'cert.cnt'               {$$ = 'tlscnt'}
           | 'ip.dns.cnt'             {$$ = 'dnsipcnt'}
@@ -235,6 +265,13 @@ RANGEFIELD: databytes                {$$ = 'db'}
           | 'email.subject.cnt'      {$$ = 'esubcnt'}
           | 'email.x-mailer.cnt'     {$$ = 'euacnt'}
           | 'cert.alt.cnt'           {$$ = 'tls.altcnt'}
+          | 'smb.domain.cnt'         {$$ = 'smbdmcnt'}
+          | 'smb.fn.cnt'             {$$ = 'smbfncnt'}
+          | 'smb.host.cnt'           {$$ = 'smbhocnt'}
+          | 'smb.os.cnt'             {$$ = 'smboscnt'}
+          | 'smb.share.cnt'          {$$ = 'smbsharecnt'}
+          | 'smb.user.cnt'           {$$ = 'smbusercnt'}
+          | 'smb.ver.cnt'            {$$ = 'smbvercnt'}
           | 'ssh.key.cnt'            {$$ = 'sshkeycnt'}
           | 'ssh.ver.cnt'            {$$ = 'sshvercnt'}
           | 'irc.nick.cnt'           {$$ = 'ircnckcnt'}
@@ -243,6 +280,7 @@ RANGEFIELD: databytes                {$$ = 'db'}
 
 LOTERMFIELD  : node               {$$ = 'no'}
              | 'host.dns'         {$$ = 'dnsho'}
+             | 'host.socks'       {$$ = 'socksho'}
              | 'host.email'       {$$ = 'eho'}
              | 'host.http'        {$$ = 'ho'}
              | user               {$$ = 'user'}
@@ -268,20 +306,35 @@ TERMFIELD  : 'id'                 {$$ = '_id'}
            | 'irc.nick'           {$$ = 'ircnck'}
            | 'irc.channel'        {$$ = 'ircch'}
            | 'rootId'             {$$ = 'ro'}
+           | 'smb.domain'         {$$ = 'smbdm'}
+           | 'smb.fn'             {$$ = 'smbfn'}
+           | 'smb.host'           {$$ = 'smbho'}
+           | 'smb.os'             {$$ = 'smbos'}
+           | 'smb.share'          {$$ = 'smbsh'}
+           | 'smb.user'           {$$ = 'smbuser'}
+           | 'smb.ver'            {$$ = 'smbver'}
            ;
 
-UPTERMFIELD  : 'country.src'   {$$ = 'g1'}
+UPTERMFIELD  : 'country.dns'   {$$ = 'gdnsip'}
              | 'country.dst'   {$$ = 'g2'}
-             | 'country.xff'   {$$ = 'gxff'}
              | 'country.email' {$$ = 'geip'}
-             | 'country.dns'   {$$ = 'gdnsip'}
+             | 'country.socks' {$$ = 'gsocksip'}
+             | 'country.src'   {$$ = 'g1'}
+             | 'country.xff'   {$$ = 'gxff'}
+             | 'rir.dns'       {$$ = 'rirdnsip'}
+             | 'rir.dst'       {$$ = 'rir2'}
+             | 'rir.email'     {$$ = 'rireip'}
+             | 'rir.socks'     {$$ = 'rirsocksip'}
+             | 'rir.src'       {$$ = 'rir1'}
+             | 'rir.xff'       {$$ = 'rirxff'}
              ;
 
 LOTEXTFIELD  : 'asn.src'         {$$ = 'as1'}
              | 'asn.dst'         {$$ = 'as2'}
              | 'asn.dns'         {$$ = 'asdnsip'}
-             | 'asn.xff'         {$$ = 'asxff'}
              | 'asn.email'       {$$ = 'aseip'}
+             | 'asn.socks'       {$$ = 'assocksip'}
+             | 'asn.xff'         {$$ = 'asxff'}
              | 'email.subject'   {$$ = 'esub'}
              | 'email.x-mailer'  {$$ = 'eua'}
              | 'cert.subject.on' {$$ = 'tls.sOn'}
@@ -298,6 +351,7 @@ IPFIELD  : 'ip'       {$$ = 0}
          | 'ip.xff'   {$$ = 3}
          | 'ip.dns'   {$$ = 4}
          | 'ip.email' {$$ = 5}
+         | 'ip.socks' {$$ = 6}
          ;
 
 STR : ID
@@ -350,6 +404,7 @@ STR : ID
     | ip.dst
     | ip.email
     | ip.email.cnt
+    | ip.socks
     | ip.src
     | ip.xff
     | ip.xff.cnt
@@ -357,10 +412,18 @@ STR : ID
     | packets
     | port
     | port.dst
+    | port.socks
     | port.src
     | protocol
     | QUOTEDSTR
     | REGEXSTR
+    | rir
+    | rir.dns
+    | rir.dst
+    | rir.email
+    | rir.socks
+    | rir.src
+    | rir.xff
     | ssh.key
     | ssh.key.cnt
     | ssh.ver
@@ -490,13 +553,29 @@ e
          $$.range[str2Header(yy, $1)] = {};
          $$.range[str2Header(yy, $1)][$2] = $3;}
     | 'port' '==' NUMBER
-        {$$ = {bool: {should: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
+        {$$ = {bool: {should: [
+                                {term: {p1: $3}},
+                                {term: {p2: $3}},
+                                {term: {sockspo: $3}}
+                              ]}};}
     | 'port' '==' NUMBERLIST
-        {$$ = {bool: {should: [{terms: {p1: CSVtoArray($3)}}, {terms: {p2: CSVtoArray($3)}}]}};}
+        {$$ = {bool: {should: [
+                                {terms: {p1: CSVtoArray($3)}},
+                                {terms: {p2: CSVtoArray($3)}},
+                                {terms: {sockspo: CSVtoArray($3)}}
+                              ]}};}
     | 'port' '!=' NUMBER
-        {$$ = {bool: {must_not: [{term: {p1: $3}}, {term: {p2: $3}}]}};}
+        {$$ = {bool: {must_not: [
+                                  {term: {p1: $3}}, 
+                                  {term: {p2: $3}},
+                                  {term: {sockspo: $3}}
+                                ]}};}
     | 'port' '!=' NUMBERLIST
-        {$$ = {bool: {must_not: [{terms: {p1: CSVtoArray($3)}}, {terms: {p2: CSVtoArray($3)}}]}};}
+        {$$ = {bool: {must_not: [
+                                  {terms: {p1: CSVtoArray($3)}}, 
+                                  {terms: {p2: CSVtoArray($3)}},
+                                  {terms: {sockspo: CSVtoArray($3)}}
+                                ]}};}
     | IPFIELD '==' IPNUM
         {$$ = parseIpPort(yy, $3,$1);}
     | IPFIELD '!=' IPNUM
@@ -559,9 +638,10 @@ e
         { var str = $3.toUpperCase();
           $$ = [str2Query("g1", "term", str),
                 str2Query("g2", "term", str),
-                str2Query("gxff", "term", str),
                 str2Query("gdnsip", "term", str),
-                str2Query("geip", "term", str)
+                str2Query("geip", "term", str),
+                str2Query("gsocksip", "term", str),
+                str2Query("gxff", "term", str)
                ];
           $$ = {bool: {should: $$}};
         }
@@ -569,9 +649,32 @@ e
         { var str = $3.toUpperCase();
           $$ = [str2Query("g1", "term", str),
                 str2Query("g2", "term", str),
-                str2Query("gxff", "term", str),
                 str2Query("gdnsip", "term", str),
-                str2Query("geip", "term", str)
+                str2Query("geip", "term", str),
+                str2Query("gsocksip", "term", str),
+                str2Query("gxff", "term", str)
+               ];
+          $$ = {bool: {must_not: $$}};
+        }
+    | rir '==' STR 
+        { var str = $3.toUpperCase();
+          $$ = [str2Query("rir1", "term", str),
+                str2Query("rir2", "term", str),
+                str2Query("rirxff", "term", str),
+                str2Query("rirdnsip", "term", str),
+                str2Query("rirsocksip", "term", str),
+                str2Query("rireip", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
+        }
+    | rir '!=' STR 
+        { var str = $3.toUpperCase();
+          $$ = [str2Query("rir1", "term", str),
+                str2Query("rir2", "term", str),
+                str2Query("rirxff", "term", str),
+                str2Query("rirdnsip", "term", str),
+                str2Query("rirsocksip", "term", str),
+                str2Query("rireip", "term", str)
                ];
           $$ = {bool: {must_not: $$}};
         }
@@ -579,9 +682,10 @@ e
         { var str = $3.toLowerCase();
           $$ = [str2Query("as1", "text", str),
                 str2Query("as2", "text", str),
-                str2Query("asxff", "text", str),
+                str2Query("aseip", "text", str),
                 str2Query("asdnsip", "text", str),
-                str2Query("aseip", "text", str)
+                str2Query("assocksip", "text", str),
+                str2Query("asxff", "text", str)
                ];
           $$ = {bool: {should: $$}};
         }
@@ -589,9 +693,10 @@ e
         { var str = $3.toLowerCase();
           $$ = [str2Query("as1", "text", str),
                 str2Query("as2", "text", str),
-                str2Query("asxff", "text", str),
                 str2Query("asdnsip", "text", str),
-                str2Query("aseip", "text", str)
+                str2Query("aseip", "text", str),
+                str2Query("assocksip", "text", str),
+                str2Query("asxff", "text", str)
                ];
           $$ = {bool: {must_not: $$}};
         }
@@ -600,7 +705,8 @@ e
 
           $$ = [str2Query("ho", "term", str),
                 str2Query("dnsho", "term", str),
-                str2Query("eho", "term", str)
+                str2Query("eho", "term", str),
+                str2Query("socksho", "term", str)
                ];
           $$ = {bool: {must_not: $$}};
         }
@@ -609,7 +715,8 @@ e
 
           $$ = [str2Query("ho", "term", str),
                 str2Query("dnsho", "term", str),
-                str2Query("eho", "term", str)
+                str2Query("eho", "term", str),
+                str2Query("socksho", "term", str)
                ];
           $$ = {bool: {should: $$}};
         }
@@ -661,36 +768,35 @@ function parseIpPort(yy, ipPortStr, which) {
      ip2 = ip2 | (0xffffffff >>> s);
   }
 
-  var t1 = {bool: {must: []}};
-  var t2 = {bool: {must: []}};
+  var t1;
+  var t2;
   var xff;
   var dns;
   var email;
+  var socks;
 
   if (ip1 !== -1) {
     if (ip1 === ip2) {
-        t1.bool.must.push({term: {a1: ip1>>>0}});
-        t2.bool.must.push({term: {a2: ip1>>>0}});
+        t1    = {term: {a1: ip1>>>0}};
+        t2    = {term: {a2: ip1>>>0}};
+        socks = {term: {socksip: ip1>>>0}};
         dns   = {term: {dnsip: ip1>>>0}};
         email = {term: {eip: ip1>>>0}};
         xff   = {term: {xff: ip1>>>0}};
     } else {
-        t1.bool.must.push({range: {a1: {from: ip1>>>0, to: ip2>>>0}}});
-        t2.bool.must.push({range: {a2: {from: ip1>>>0, to: ip2>>>0}}});
-        dns =    {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
-        email =  {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
-        xff =    {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
+        t1    = {range: {a1: {from: ip1>>>0, to: ip2>>>0}}};
+        t2    = {range: {a2: {from: ip1>>>0, to: ip2>>>0}}};
+        socks = {range: {socksip: {from: ip1>>>0, to: ip2>>>0}}};
+        dns   = {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
+        email = {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
+        xff   = {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
     }
   }
 
   if (port !== -1) {
-    t1.bool.must.push({term: {p1: port}});
-    t2.bool.must.push({term: {p2: port}});
-  }
-
-  if (t1.bool.must.length === 1) {
-      t1 = t1.bool.must[0];
-      t2 = t2.bool.must[0];
+    t1    = {bool: {must: [t1, {term: {p1: port}}]}};
+    t2    = {bool: {must: [t2, {term: {p1: port}}]}};
+    socks = {bool: {must: [socks, {term: {p1: port}}]}};
   }
 
   switch(which) {
@@ -703,6 +809,8 @@ function parseIpPort(yy, ipPortStr, which) {
         ors.push(dns);
     if (yy.emailSearch === true && email)
         ors.push(email);
+    if (socks)
+        ors.push(socks);
 
     return {bool: {should: ors}};
   case 1:
@@ -721,6 +829,8 @@ function parseIpPort(yy, ipPortStr, which) {
     if (!email)
         throw "email doesn't support port only";
     return email;
+  case 6:
+    return socks;
   }
 }
 

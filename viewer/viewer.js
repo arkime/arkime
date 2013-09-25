@@ -806,7 +806,12 @@ function buildSessionQuery(req, buildCb) {
     } else {
       req.query.stopTime = parseInt(req.query.stopTime, 10);
     }
-    query.query.filtered.query.range = {lp: {gte: req.query.startTime, lte: req.query.stopTime}};
+    if (req.query.strictly === "true") {
+      query.query.filtered.query.bool = {must: [{range: {fp: {gte: req.query.startTime}}}, {range: {lp: {lte: req.query.stopTime}}}]};
+    } else {
+      query.query.filtered.query.range = {lp: {gte: req.query.startTime, lte: req.query.stopTime}};
+    }
+
     var diff = req.query.stopTime - req.query.startTime;
     if (diff < 30*60) {
       interval = 1; // second
@@ -844,6 +849,7 @@ function buildSessionQuery(req, buildCb) {
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
                               fieldsMap: Config.getFieldsMap()};
   if (req.query.expression) {
+    req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
     try {
       query.query.filtered.filter = molochparser.parse(req.query.expression);
     } catch (e) {
@@ -1424,7 +1430,7 @@ app.get('/spigraph.json', function(req, res) {
 
     /* Need the nextTick so we don't blow max stack frames */
     var eachCb = function (item, cb) {process.nextTick(cb);};
-    if (field.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
+    if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
       eachCb = function(item, cb) {
         item.name = Pcap.inet_ntoa(item.name);
         process.nextTick(cb);
@@ -1754,50 +1760,50 @@ app.get('/connections.json', function(req, res) {
   });
 });
 
-app.get('/sessions.csv', function(req, res) {
-  res.setHeader("Content-Type", "text/csv");
+function csvListWriter(req, res, list, pcapWriter, extension) {
+  list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+  res.write("Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node\r\n");
 
-  buildSessionQuery(req, function(bsqErr, query, indices) {
-    if (bsqErr) {
-      res.send("#Error " + bsqErr.toString() + "\r\n");
-      return;
+  var i;
+  for (i = 0; i < list.length; i++) {
+    if (!list[i].fields) {
+      continue;
+    }
+    var f = list[i].fields;
+    var pr;
+    switch (f.pr) {
+    case 1:
+      pr = "icmp";
+      break;
+    case 6:
+      pr = "tcp";
+      break;
+    case 17:
+      pr =  "udp";
+      break;
     }
 
-    query.fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
-      if (err || result.error) {
-        console.log("sessions.csv error", err, (result?result.error:null));
-        res.send("#Error db\r\n");
-        return;
-      }
+    res.write(pr + ", " + f.fp + ", " + f.lp + ", " + Pcap.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + Pcap.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
+  }
+  res.end();
+}
 
-      res.write("Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node\r\n");
-      var i;
-      for (i = 0; i < result.hits.hits.length; i++) {
-        if (!result.hits.hits[i] || !result.hits.hits[i].fields) {
-          continue;
-        }
-        var f = result.hits.hits[i].fields;
-        var pr;
-        switch (f.pr) {
-        case 1:
-          pr = "icmp";
-          break;
-        case 6:
-          pr = "tcp";
-          break;
-        case 17:
-          pr =  "udp";
-          break;
-        }
+app.get(/\/sessions.csv.*/, function(req, res) {
+  res.setHeader("Content-Type", "text/csv");
+  var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"]
 
+  if (req.query.ids) {
+    var ids = req.query.ids.split(",");
 
-        res.write(pr + ", " + f.fp + ", " + f.lp + ", " + Pcap.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + Pcap.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
-      }
-      res.end();
+    sessionsListFromIds(req, ids, fields, function(err, list) {
+      csvListWriter(req, res, list);
     });
-  });
+  } else {
+    sessionsListFromQuery(req, fields, function(err, list) {
+      csvListWriter(req, res, list);
+    });
+  }
 });
 
 app.get('/uniqueValue.json', function(req, res) {
@@ -1835,63 +1841,106 @@ app.get('/unique.txt', function(req, res) {
   }
 
   noCache(req, res);
-  var doCounts = parseInt(req.query.counts, 10) || 0;
+
+  /* How should the results be written.  Use setTimeout to not blow stack frame */
+  var writeCb;
+  var writes = 0;
+  if (parseInt(req.query.counts, 10) || 0) {
+    writeCb = function (item, cb) {
+      res.write("" + item.term + ", " + item.count + "\n");
+      if (writes++ > 1000) {
+        writes = 0;
+        setTimeout(cb, 0);
+      } else {
+        cb();
+      }
+    };
+  } else {
+    writeCb = function (item, cb) {
+      res.write("" + item.term + "\n");
+      if (writes++ > 1000) {
+        writes = 0;
+        setTimeout(cb, 0);
+      } else {
+        cb();
+      }
+    };
+  }
+
+  /* How should each item be processed. */
+  var eachCb;
+  if (req.query.field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+    eachCb = function(item, cb) {
+      item.term = Pcap.inet_ntoa(item.term);
+      writeCb(item, cb);
+    };
+  } else if (req.query.field.match(/^(ta|hh1|hh2)$/) !== null) {
+    eachCb = function(item, cb) {
+      Db.tagIdToName(item.term, function (name) {
+        item.term = name;
+        writeCb(item, cb);
+      });
+    };
+  } else {
+    eachCb = writeCb;
+  }
 
   buildSessionQuery(req, function(err, query, indices) {
-    query.fields = [req.query.field];
-    query.facets = {facets: { terms : {field : req.query.field, size: 1000000}}};
-    console.log("unique query", indices, JSON.stringify(query));
+    delete query.sort;
+    delete query.facets;
 
-    Db.searchPrimary(indices, 'session', query, function(err, result) {
+    if (req.query.field.match(/^(rawus|rawua)$/)) {
+      var field = req.query.field.substring(3);
+      query.size   = 200000;
 
-      /* How should the results be written.  Use setTimeout to not blow stack frame */
-      var writeCb;
-      var writes = 0;
-      if (doCounts) {
-        writeCb = function (item, cb) {
-          res.write("" + item.term + ", " + item.count + "\n");
-          if (writes++ > 1000) {
-            writes = 0;
-            setTimeout(cb, 0);
-          } else {
-            cb();
-          }
-        };
+      query.fields = [field];
+
+      if (query.query.filtered.filter === undefined) {
+        query.query.filtered.filter = {exists: {field: field}};
       } else {
-        writeCb = function (item, cb) {
-          res.write("" + item.term + "\n");
-          if (writes++ > 1000) {
-            writes = 0;
-            setTimeout(cb, 0);
-          } else {
-            cb();
-          }
-        };
+        query.query.filtered.filter = {and: [query.query.filtered.filter, {exists: {field: field}}]};
       }
 
-      /* How should each item be processed. */
-      var eachCb;
-      if (req.query.field.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
-        eachCb = function(item, cb) {
-          item.term = Pcap.inet_ntoa(item.term);
-          writeCb(item, cb);
-        };
-      } else if (req.query.field.match(/^(ta|hh1|hh2)$/) !== null) {
-        eachCb = function(item, cb) {
-          Db.tagIdToName(item.term, function (name) {
-            item.term = name;
-            writeCb(item, cb);
-          });
-        };
-      } else {
-        eachCb = writeCb;
-      }
+      console.log("unique query", indices, JSON.stringify(query));
+      Db.searchPrimary(indices, 'session', query, function(err, result) {
+        console.log("uniqueing");
+        var counts = {};
 
-      /* Now actually run the processing */
-      async.forEachSeries(result.facets.facets.terms, eachCb, function () {
-        res.end();
+        // Count up hits
+        var hits = result.hits.hits;
+        for (var i = 0; i < hits.length; i++) {
+          var value = hits[i].fields[field];
+          if (value) {
+            if (counts[value]) {
+              counts[value]++;
+            } else {
+              counts[value] = 1;
+            }
+          }
+        }
+
+        // Change to facet looking array
+        var facets = [];
+        for (var key in counts) {
+          facets.push({term: key, count: counts[key]});
+        }
+        facets = facets.sort(function(a,b) {return b.count - a.count;});
+        
+
+        async.forEachSeries(facets, eachCb, function () {
+          res.end();
+        });
       });
-    });
+    } else {
+      console.log("unique facet", indices, JSON.stringify(query));
+      query.facets = {facets: { terms : {field : req.query.field, size: 1000000}}};
+      query.size = 0;
+      Db.searchPrimary(indices, 'session', query, function(err, result) {
+        async.forEachSeries(result.facets.facets.terms, eachCb, function () {
+          res.end();
+        });
+      });
+    }
   });
 });
 
@@ -3034,7 +3083,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
 
 function sessionsPcapList(req, res, list, pcapWriter, extension) {
 
-  list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+  list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
 
   var options = {writeHeader: true};
 

@@ -165,6 +165,8 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         session->fields[pos] = field;
         field->jsonSize = 3 + config.fields[pos]->len + 10;
         switch (config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_IP:
+            field->jsonSize += 100;
         case MOLOCH_FIELD_TYPE_INT:
             field->i = i;
             return TRUE;
@@ -190,6 +192,8 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     field = session->fields[pos];
     field->jsonSize += 3 + 10;
     switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_IP:
+        field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT:
         field->i = i;
         return TRUE;

@@ -618,4 +618,6 @@ nodes.forEach(function(node) {
 
 console.log(nodes);
 
+httpAgent.globalAgent.maxSockets = httpAgent.maxSockets = 200;
+
 var server = httpAgent.createServer(app).listen(Config.get("multiESPort", "8200"));

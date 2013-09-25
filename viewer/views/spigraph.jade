@@ -30,12 +30,12 @@ block content
           if (value.type.match(/textfield$/))
             if (value.db.match(/.snow$/))
               - var tmp = value.db.replace(".snow", ".raw");
-              option(value="#{tmp}") #{value.exp}
+              option(value="#{tmp}", exp='#{value.exp}') #{value.exp}
             else
-              option(value="raw#{value.db}") #{value.exp}
-            option(value="#{value.db}") #{value.exp} Tokens
+              option(value="raw#{value.db}, exp='#{value.exp}'") #{value.exp}
+            option(value="#{value.db}", exp='#{value.exp}') #{value.exp} Tokens
           else
-            option(value="#{value.db}") #{value.exp}
+            option(value="#{value.db}", exp='#{value.exp}') #{value.exp}
     label Max Elements:
     select(id='size')
       option(value="10") 10
@@ -138,7 +138,7 @@ block content
             $("#actionsForm").data("moloch-visible", -1)
                              .data("moloch-all", json.iTotalDisplayRecords);
 
-            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords || 0) + " total entries");
+            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords || 0) + " entries filtered from " + numberWithCommas(json.iTotalRecords || 0) + " total entries");
 
             if ($("#date").val() === "-2") {
               $("#customDate").show();
@@ -219,7 +219,12 @@ block content
           build: function($trigger, e) {
             var text = $(e.target).text();
             text = text.substring(0, text.lastIndexOf("(") - 1);
-            exp = $("#field option:selected").text() + " == " + text;
+            var exp;
+            if (molochFields[$("#field option:selected").attr("exp")].type.match(/^(integer|ip)$/)) {
+              exp = $("#field option:selected").text() + " == " + text;
+            } else {
+              exp = $("#field option:selected").text() + " == \"" + text + "\"";
+            }
             items = {
               and: {name: "and " + exp, exp: exp}
             };

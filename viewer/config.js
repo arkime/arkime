@@ -231,7 +231,7 @@ exports.getFieldsMap = function() {
   return internals.fieldsMap;
 };
 
-addField(null, "ip", "general", "ip", "Shorthand for ip.src, ip.dst, ip.dns, ip.email, and ip.xff");
+addField(null, "ip", "general", "ip", "Shorthand for ip.src, ip.dst, ip.dns, ip.email, ip.socks, or ip.xff");
 addField("a1", "ip.src", "general", "ip", "Source ip");
 addField("a2", "ip.dst", "general", "ip", "Destination ip");
 addField("dnsip", "ip.dns", "dns", "ip", "IP from DNS result");
@@ -241,23 +241,30 @@ addField("eipcnt", "ip.email.cnt", "email", "integer", "Unqiue number of IPs fro
 addField("xff", "ip.xff", "http", "ip", "IP from x-forwarded-for header");
 addField("xffscnt", "ip.xff.cnt", "http", "integer", "Unique number of IPs from x-forwarded-for header");
 
-addField(null, "port", "general", "integer", "Shorthand for port.src, port.dst");
+addField(null, "port", "general", "integer", "Shorthand for port.src, port.socks, or port.dst");
 addField("p1", "port.src", "general", "integer", "Source port");
 addField("p2", "port.dst", "general", "integer", "Destination port");
 
-addField(null, "asn", "general", "textfield", "Shorthand for the GeoIP ASNum string from the asn.src, asn.dst, asn.dns, asn.email, or asn.xff fields");
+addField(null, "asn", "general", "textfield", "Shorthand for the GeoIP ASNum string from the asn.src, asn.dst, asn.dns, asn.email, asn.socks, or asn.xff fields");
 addField("as1", "asn.src", "general", "textfield", "GeoIP ASNum string calculated from the source ip address");
 addField("as2", "asn.dst", "general", "textfield", "GeoIP ASNum string calculated from the destination ip address");
 addField("asdnsip", "asn.dns", "dns", "textfield", "GeoIP ASNum string calculated from the DNS result ip address");
 addField("aseip", "asn.email", "email", "textfield", "GeoIP ASNum string calculated from the SMTP ip address");
 addField("asxff", "asn.xff", "http", "textfield", "GeoIP ASNum string calculated from the HTTP x-forwarded-for header");
 
-addField(null, "country", "general", "uptermfield", "Shorthand for the GeoIP string from the country.src, country.dst, country.dns, country.email, or country.xff fields");
-addField("g1", "country.src", "general", "uptermfield", "GeoIP country string string calculated from the source ip address");
-addField("g2", "country.dst", "general", "uptermfield", "GeoIP country string string calculated from the destination ip address");
-addField("gdnsip", "country.dns", "dns", "uptermfield", "GeoIP country string string calculated from the DNS result ip address");
-addField("geip", "country.email", "email", "uptermfield", "GeoIP country string string calculated from the SMTP ip address");
-addField("gxff", "country.xff", "http", "uptermfield", "GeoIP country string string calculated from the HTTP x-forwarded-for header");
+addField(null, "country", "general", "uptermfield", "Shorthand for the GeoIP string from the country.src, country.dst, country.dns, country.email, country.socks, or country.xff fields");
+addField("g1", "country.src", "general", "uptermfield", "GeoIP country string calculated from the source ip address");
+addField("g2", "country.dst", "general", "uptermfield", "GeoIP country string calculated from the destination ip address");
+addField("gdnsip", "country.dns", "dns", "uptermfield", "GeoIP country string calculated from the DNS result ip address");
+addField("geip", "country.email", "email", "uptermfield", "GeoIP country string calculated from the SMTP ip address");
+addField("gxff", "country.xff", "http", "uptermfield", "GeoIP country string calculated from the HTTP x-forwarded-for header");
+
+addField(null, "rir", "general", "uptermfield", "Shorthand for the Regional Internet Registry from the rir.src, rir.dst, rir.dns, rir.email, rir.socks, or country.xff fields");
+addField("rir1", "rir.src", "general", "uptermfield", "Regional Internet Registry string calculated from the source ip address");
+addField("rir2", "rir.dst", "general", "uptermfield", "Regional Internet Registry string calculated from the destination ip address");
+addField("rirdnsip", "rir.dns", "dns", "uptermfield", "Regional Internet Registry string calculated from the DNS result ip address");
+addField("rireip", "rir.email", "email", "uptermfield", "Regional Internet Registry string calculated from the SMTP ip address");
+addField("rirxff", "rir.xff", "http", "uptermfield", "Regional Internet Registry string calculated from the HTTP x-forwarded-for header");
 
 addField("by", "bytes", "general", "integer", "Total number of raw bytes sent AND received in a session");
 addField("db", "databytes", "general", "integer", "Total number of data bytes sent AND received in a session");
@@ -334,6 +341,25 @@ addField("sshkey", "ssh.key", "ssh", "termfield", "Base64 encoded host key");
 addField("sshkeycnt", "ssh.key.cnt", "ssh", "integer", "Number of unique Base64 encoded host keys");
 addField("sshver", "ssh.ver", "ssh", "lotermfield", "SSH version string");
 addField("sshvercnt", "ssh.ver.cnt", "ssh", "integer", "Number of unique ssh version strings");
+
+addField("smbsh", "smb.share", "smb", "termfield", "SMB shares connected to");
+addField("smbshcnt", "smb.share.cnt", "smb", "integer", "Number of unique SMB shares connected to");
+addField("smbfn", "smb.fn", "smb", "termfield", "SMB files opened, created, deleted");
+addField("smbfncnt", "smb.fn.cnt", "smb", "integer", "Number of unique SMB files opened, created, deleted");
+addField("smbho", "smb.host", "smb", "termfield", "SMB Hostnames");
+addField("smbhocnt", "smb.host.cnt", "smb", "integer", "Number of unique SMB Hostnames");
+addField("smbos", "smb.os", "smb", "termfield", "SMB OS");
+addField("smboscnt", "smb.os.cnt", "smb", "integer", "Number of unique SMB OSes");
+addField("smbdm", "smb.domain", "smb", "termfield", "SMB domain");
+addField("smbdmcnt", "smb.domain.cnt", "smb", "integer", "Number of unique SMB domains");
+addField("smbver", "smb.ver", "smb", "termfield", "SMB verison");
+addField("smbvercnt", "smb.ver.cnt", "smb", "integer", "Number of unique SMB versions");
+addField("smbuser", "smb.user", "smb", "termfield", "SMB user");
+addField("smbusercnt", "smb.usre.cnt", "smb", "integer", "Number of unique SMB users");
+
+addField("socksip", "ip.socks", "socks", "ip", "IP socks proxy connected to");
+addField("sockspo", "port.socks", "socks", "integer", "Port socks proxy connected to");
+addField("socksho", "host.socks", "socks", "lotermfield", "Host socks proxy connected to");
 
 exports.headers("headers-http-request").forEach(function(item) {
   addField("hdrs.hreq-" + item.name + (item.type === "integer"?"":".snow"), "http." + item.name, "http", (item.type === "integer"?"integer":"textfield"), "Request header " + item.name);

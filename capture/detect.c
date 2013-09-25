@@ -39,6 +39,7 @@
 
 //#define HTTPDEBUG
 //#define EMAILDEBUG
+//#define SMBDEBUG
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -391,15 +392,15 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
 /*############################## HTTP ##############################*/
 
 /******************************************************************************/
-void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+void moloch_detect_parse_http(MolochSession_t *session, unsigned char *data, uint32_t remaining, int initial)
 {
     MolochSessionHttp_t   *http = session->http;
 #ifdef HTTPDEBUG
-    LOG("HTTPDEBUG: enter %d", session->which);
+    LOG("HTTPDEBUG: enter %d initial %d - %d %.*s", session->which, initial, remaining, remaining, data);
 #endif
 
     if (!http) {
-        if (hlf->offset == 0) {
+        if (initial) {
             moloch_nids_new_session_http(session);
             http = session->http;
 
@@ -416,11 +417,8 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
         return;
     }
 
-    int remaining = hlf->count_new;
-    char *data    = hlf->data + (hlf->count - hlf->offset - hlf->count_new);
-
     while (remaining > 0) {
-        int len = http_parser_execute(&http->parsers[session->which], &parserSettings, data, remaining);
+        int len = http_parser_execute(&http->parsers[session->which], &parserSettings, (char *)data, remaining);
 #ifdef HTTPDEBUG
             LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, http->parsers[session->which].http_errno);
 #endif
@@ -437,11 +435,8 @@ void moloch_detect_parse_http(MolochSession_t *session, struct tcp_stream *UNUSE
 }
 
 /******************************************************************************/
-void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+void moloch_detect_parse_ssh(MolochSession_t *session, unsigned char *data, uint32_t remaining)
 {
-    uint32_t remaining = hlf->count_new;
-    unsigned char *data   = (unsigned char*)(hlf->data + (hlf->count - hlf->offset - hlf->count_new));
-
     if (memcmp("SSH", data, 3) == 0)
         return;
 
@@ -461,7 +456,7 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
                 char *str = g_base64_encode(data+10, keyLen);
 
                 if (!moloch_field_string_add(MOLOCH_FIELD_SSH_KEY, session, str, (keyLen/3+1)*4, FALSE)) {
-                    free(str);
+                    g_free(str);
                 }
             }
             break;
@@ -480,11 +475,8 @@ void moloch_detect_parse_ssh(MolochSession_t *session, struct tcp_stream *UNUSED
 }
 
 /******************************************************************************/
-void moloch_detect_parse_irc(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+void moloch_detect_parse_irc(MolochSession_t *session, unsigned char *data, uint32_t remaining)
 {
-    uint32_t remaining = hlf->count_new;
-    unsigned char *data   = (unsigned char*)(hlf->data + (hlf->count - hlf->offset - hlf->count_new));
-
     while (remaining) {
         if (session->ircState & 0x1) {
             unsigned char *newline = memchr(data, '\n', remaining);
@@ -493,9 +485,7 @@ void moloch_detect_parse_irc(MolochSession_t *session, struct tcp_stream *UNUSED
                 data = newline+1;
                 session->ircState &= ~ 0x1;
             } else {
-                data += remaining;
-                remaining = 0;
-                break;
+                return;
             }
         }
 
@@ -1200,15 +1190,13 @@ void moloch_detect_parse_email_addresses(int field, MolochSession_t *session, ch
     }
 }
 /******************************************************************************/
-void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, uint32_t remaining)
 {
 #ifdef EMAILDEBUG
     LOG("EMAILDEBUG: enter %d", session->which);
 #endif
 
     MolochSessionEmail_t *email        = session->email;
-    int                   remaining    = hlf->count_new;
-    char                 *data         = hlf->data + (hlf->count - hlf->offset - hlf->count_new);
     GString              *line         = email->line[session->which];
     char                 *state        = &email->state[session->which];
     MolochString_t       *emailHeader  = 0;
@@ -1504,6 +1492,478 @@ void moloch_detect_parse_email(MolochSession_t *session, struct tcp_stream *UNUS
     }
 }
 
+/*############################## SMB ##############################*/
+
+// States
+#define SMB_NETBIOS             0
+#define SMB_SMBHEADER           1
+#define SMB_SKIP                2
+#define SMB1_TREE_CONNECT_ANDX 10
+#define SMB1_DELETE            11
+#define SMB1_OPEN_ANDX         12
+#define SMB1_CREATE_ANDX       13
+#define SMB1_SETUP_ANDX        14
+
+#define SMB2_TREE_CONNECT      20
+#define SMB2_CREATE            21
+
+// SMB1 Flags
+#define SMB1_FLAGS_REPLY       0x80
+#define SMB1_FLAGS2_UNICODE    0x8000
+
+// SMB2 Flags
+#define SMB2_FLAGS_SERVER_TO_REDIR 0x00000001
+
+
+// 2.2.13 AUTHENTICATE_MESSAGE from  http://download.microsoft.com/download/9/5/E/95EF66AF-9026-4BB0-A41D-A4F81802D92C/[MS-NLMP].pdf
+void moloch_detect_smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
+{
+    BSB bsb;
+
+    BSB_INIT(bsb, data, len);
+
+    int apc, atag, alen;
+    unsigned char *value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    if (atag != 1)
+        return;
+
+    BSB_INIT(bsb, value, alen);
+    value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    if (atag != 16)
+        return;
+
+    BSB_INIT(bsb, value, alen);
+    value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    if (atag != 2)
+        return;
+
+    BSB_INIT(bsb, value, alen);
+    value = moloch_detect_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    if (atag != 4 || memcmp("NTLMSSP", value, 7) != 0)
+        return;
+
+    /* Woot, have the part we need to decode */
+    BSB_INIT(bsb, value, alen);
+    BSB_IMPORT_skip(bsb, 8); 
+
+    int type = 0;
+    BSB_LIMPORT_u32(bsb, type);
+
+    if (type != 3) // auth type
+        return;
+
+    gsize bread, bwritten;
+    int lens[6], offsets[6];
+    int i;
+    for (i = 0; i < 6; i++) {
+        BSB_LIMPORT_u16(bsb, lens[i]);
+        BSB_IMPORT_skip(bsb, 2);
+        BSB_LIMPORT_u32(bsb, offsets[i]);
+    }
+
+    if (BSB_IS_ERROR(bsb))
+        return;
+
+    if (lens[1]) {
+        GError      *error = 0;
+        char *out = g_convert((char *)value + offsets[2], lens[2], "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_DOMAIN, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+    }
+    if (lens[2]) {
+        GError      *error = 0;
+        char *out = g_convert((char *)value + offsets[3], lens[3], "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_USER, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+    }
+    if (lens[3]) {
+        GError      *error = 0;
+        char *out = g_convert((char *)value + offsets[4], lens[4], "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_HOST, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+    }
+}
+
+int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, int *remlen)
+{
+    MolochSessionSMB_t   *smb          = session->smb;
+
+    unsigned char *start = BSB_WORK_PTR(*bsb);
+    unsigned char cmd    = 0;
+
+    switch (*state) {
+    case SMB_SMBHEADER: {
+        unsigned char flags = 0;
+        if (BSB_REMAINING(*bsb) < 32) {
+            return 1;
+            break;
+        }
+        BSB_IMPORT_skip(*bsb, 4);
+        BSB_IMPORT_u08(*bsb, cmd);
+        BSB_IMPORT_skip(*bsb, 4);
+        BSB_IMPORT_u08(*bsb, flags);
+        BSB_LIMPORT_u16(*bsb, smb->flags2[session->which]);
+        BSB_IMPORT_skip(*bsb, 20);
+        if ((flags & SMB1_FLAGS_REPLY) == 0) {
+            switch (cmd) {
+            case 0x06:
+                *state = SMB1_DELETE;
+                break;
+            case 0x2d:
+                *state = SMB1_OPEN_ANDX;
+                break;
+            case 0x73:
+                *state = SMB1_SETUP_ANDX;
+                break;
+            case 0x75:
+                *state = SMB1_TREE_CONNECT_ANDX;
+                break;
+            case 0xa2:
+                *state = SMB1_CREATE_ANDX;
+                break;
+            default:
+                *state = SMB_SKIP;
+            }
+        } else {
+            *state = SMB_SKIP;
+        }
+#ifdef SMBDEBUG
+        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %d", session->which, cmd, smb->flags2[session->which], *state, *remlen);
+#endif
+        break;
+    }
+    case SMB1_CREATE_ANDX:
+    case SMB1_OPEN_ANDX: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        int wordcount = 0;
+        BSB_IMPORT_u08(*bsb, wordcount);
+        BSB_IMPORT_skip(*bsb, wordcount*2 + 3);
+        gsize bread, bwritten;
+        GError      *error = 0;
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_FN, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+        *state = SMB_SKIP;
+        break;
+    }
+    case SMB1_DELETE: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        int wordcount = 0;
+        BSB_IMPORT_u08(*bsb, wordcount);
+        BSB_IMPORT_skip(*bsb, wordcount*2+3);
+        gsize bread, bwritten;
+        GError      *error = 0;
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_FN, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+        *state = SMB_SKIP;
+        break;
+    }
+    case SMB1_TREE_CONNECT_ANDX: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        int wordcount = 0, flags, bytecount, passlength = 0;
+        BSB_IMPORT_u08(*bsb, wordcount);
+        BSB_IMPORT_skip(*bsb, 3);
+        BSB_IMPORT_u16(*bsb, flags);
+        BSB_IMPORT_u16(*bsb, passlength);
+        BSB_IMPORT_u16(*bsb, bytecount);
+        BSB_IMPORT_skip(*bsb, passlength);
+
+        gsize bread, bwritten;
+        GError      *error = 0;
+
+        int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_SHARE, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+
+        *state = SMB_SKIP;
+        break;
+    }
+    case SMB1_SETUP_ANDX: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        int wordcount = 0;
+        BSB_IMPORT_u08(*bsb, wordcount);
+
+        if (wordcount != 12) {
+            break;
+        }
+
+        BSB_IMPORT_skip(*bsb, 7*2);
+
+        int securitylen = 0;
+        BSB_LIMPORT_u16(*bsb, securitylen);
+
+        BSB_IMPORT_skip(*bsb, 8);
+
+        int bytecount = 0;
+        BSB_LIMPORT_u16(*bsb, bytecount);
+
+        moloch_detect_smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
+        BSB_IMPORT_skip(*bsb, securitylen);
+
+        gsize bread, bwritten;
+        GError      *error = 0;
+        int          offset;
+
+        offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
+        BSB_IMPORT_skip(*bsb, offset);
+
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else if (!BSB_IS_ERROR(*bsb)) {
+            moloch_field_string_add(MOLOCH_FIELD_SMB_OS, session, out, -1, TRUE);
+            char *ver = out + strlen(out) + 1;
+            moloch_field_string_add(MOLOCH_FIELD_SMB_VER, session, ver, -1, TRUE);
+            char *domain = ver + strlen(ver) + 1;
+            moloch_field_string_add(MOLOCH_FIELD_SMB_DOMAIN, session, domain, -1, TRUE);
+            g_free(out);
+        } else {
+            g_free(out);
+        }
+
+        *state = SMB_SKIP;
+        break;
+    }
+    }
+
+    *remlen -= (BSB_WORK_PTR(*bsb) - start);
+    return 0;
+}
+/******************************************************************************/
+int moloch_detect_parse_smb2(MolochSession_t *session, BSB *bsb, char *state, int *remlen)
+{
+    unsigned char *start = BSB_WORK_PTR(*bsb);
+
+    switch (*state) {
+    case SMB_SMBHEADER: {
+        uint16_t  flags = 0;
+        uint16_t  cmd = 0;
+
+        if (BSB_REMAINING(*bsb) < 64) {
+            return 1;
+            break;
+        }
+        BSB_IMPORT_skip(*bsb, 12);
+        BSB_LIMPORT_u16(*bsb, cmd);
+        BSB_IMPORT_skip(*bsb, 2);
+        BSB_LIMPORT_u32(*bsb, flags);
+        BSB_IMPORT_skip(*bsb, 44);
+
+        if ((flags & SMB2_FLAGS_SERVER_TO_REDIR) == 0) {
+            switch (cmd) {
+            case 0x03:
+                *state = SMB2_TREE_CONNECT;
+                break;
+            case 0x05:
+                *state = SMB2_CREATE;
+                break;
+            default:
+                *state = SMB_SKIP;
+            }
+        } else {
+            *state = SMB_SKIP;
+        }
+#ifdef SMBDEBUG
+        LOG("%d cmd: %x flags: %x newstate: %d remlen: %d", session->which, cmd, flags, *state, *remlen);
+#endif
+        *remlen -= (BSB_WORK_PTR(*bsb) - start);
+        break;
+    }
+    case SMB2_TREE_CONNECT: {
+        uint16_t  pathoffset = 0;
+        uint16_t  pathlen = 0;
+
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        BSB_IMPORT_skip(*bsb, 4);
+        BSB_LIMPORT_u16(*bsb, pathoffset);
+        BSB_LIMPORT_u16(*bsb, pathlen);
+        pathoffset -= (64 + 8);
+        BSB_IMPORT_skip(*bsb, pathoffset);
+
+        gsize bread, bwritten;
+        GError      *error = 0;
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), pathlen, "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_SHARE, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+
+        *remlen -= (BSB_WORK_PTR(*bsb) - start);
+        *state = SMB_SKIP;
+        break;
+    }
+    case SMB2_CREATE: {
+        uint16_t  nameoffset = 0;
+        uint16_t  namelen = 0;
+
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        BSB_IMPORT_skip(*bsb, 44);
+        BSB_LIMPORT_u16(*bsb, nameoffset);
+        BSB_LIMPORT_u16(*bsb, namelen);
+        nameoffset -= (64 + 48);
+        BSB_IMPORT_skip(*bsb, nameoffset);
+
+        gsize bread, bwritten;
+        GError      *error = 0;
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), namelen, "utf8", "ucs2", &bread, &bwritten, &error);
+        if (error)
+            LOG("ERROR %s", error->message);
+        else {
+            if (!moloch_field_string_add(MOLOCH_FIELD_SMB_FN, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+
+        *remlen -= (BSB_WORK_PTR(*bsb) - start);
+        *state = SMB_SKIP;
+        break;
+    }
+    }
+
+    return 0;
+}
+/******************************************************************************/
+void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint32_t remaining)
+{
+    MolochSessionSMB_t   *smb          = session->smb;
+    char                 *state        = &smb->state[session->which];
+    char                 *buf          = smb->buf[session->which];
+    short                *buflen       = &smb->buflen[session->which];
+    int                  *remlen       = &smb->remlen[session->which];
+
+#ifdef SMBDEBUG
+    LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %d", remaining, *state, *buflen, *remlen);
+#endif
+
+    while (remaining > 0) {
+        BSB bsb;
+        int done = 0;
+
+        if (*buflen == 0) {
+            BSB_INIT(bsb, data, remaining);
+            data += remaining;
+            remaining = 0;
+        } else {
+            int len = MIN(remaining, (uint32_t)512 - (*buflen));
+            memcpy(buf + (*buflen), data, len);
+            (*buflen) += len;
+            remaining -= len;
+            data += len;
+            BSB_INIT(bsb, buf, *buflen);
+        }
+
+        while (!done && BSB_REMAINING(bsb) > 0) {
+#ifdef SMBDEBUG
+            LOG(" S: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %d done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+#endif
+            switch (*state) {
+            case SMB_NETBIOS:
+                if(BSB_REMAINING(bsb) < 5) {
+                    done = 1;
+                    break;
+                }
+
+                int type;
+                BSB_IMPORT_u08(bsb, type);
+                BSB_IMPORT_u24(bsb, *remlen);
+                // Peak at SMBHEADER for version
+                smb->version[session->which] = *(BSB_WORK_PTR(bsb));
+                *state = SMB_SMBHEADER;
+                break;
+            case SMB_SKIP:
+                if (BSB_REMAINING(bsb) < *remlen) {
+                    *remlen -= BSB_REMAINING(bsb);
+                    BSB_IMPORT_skip(bsb, BSB_REMAINING(bsb));
+                } else {
+                    BSB_IMPORT_skip(bsb, *remlen);
+                    *remlen = 0;
+                    *state = SMB_NETBIOS;
+                }
+                break;
+            default:
+                if (smb->version[session->which] == 0xff) {
+                    done = moloch_detect_parse_smb1(session, &bsb, state, remlen);
+                } else {
+                    done = moloch_detect_parse_smb2(session, &bsb, state, remlen);
+                }
+            }
+
+#ifdef SMBDEBUG
+            LOG(" E: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %d done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+#endif
+        }
+
+        if (BSB_IS_ERROR(bsb)) {
+            moloch_nids_free_session_smb(session);
+            return;
+        }
+
+        if (BSB_REMAINING(bsb) > 0 && BSB_WORK_PTR(bsb) != (unsigned char *)buf) {
+#ifdef SMBDEBUG
+            LOG("  Moving data %ld %s", BSB_REMAINING(bsb), (char*)(long)moloch_friendly_session_id(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
+#endif
+            if (BSB_REMAINING(bsb) > 512) {
+                LOG("ERROR - Not enough room for SMB packet %ld", BSB_REMAINING(bsb));
+                moloch_nids_free_session_smb(session);
+                return;
+            }
+            memmove(buf, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+        }
+        *buflen = BSB_REMAINING(bsb);
+    }
+}
+
 /*############################## SHARED ##############################*/
 
 /******************************************************************************/
@@ -1543,6 +2003,18 @@ void moloch_detect_init()
 
     moloch_field_define_internal(MOLOCH_FIELD_IRC_NICK,      "ircnck", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_IRC_CHANNELS,  "ircch",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_SHARE,     "smbsh",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_FN,        "smbfn",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_OS,        "smbos",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_DOMAIN,    "smbdm",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_VER,       "smbver", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_USER,      "smbuser",MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_SMB_HOST,      "smbho",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+
+    moloch_field_define_internal(MOLOCH_FIELD_SOCKS_IP,      "socksip",MOLOCH_FIELD_TYPE_IP,        0);
+    moloch_field_define_internal(MOLOCH_FIELD_SOCKS_HOST,    "socksho",MOLOCH_FIELD_TYPE_STR,       0);
+    moloch_field_define_internal(MOLOCH_FIELD_SOCKS_PORT,    "sockspo",MOLOCH_FIELD_TYPE_INT,       0);
 
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
     moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, nodeTag, NULL);
@@ -1606,22 +2078,32 @@ void moloch_detect_init()
 void moloch_detect_exit() {
     magic_close(cookie);
 }
-
 /******************************************************************************/
-void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+void moloch_print_hex_string(unsigned char* data, unsigned int length)
 {
-    unsigned char *data = (unsigned char *)hlf->data;
+    unsigned int i;
+    
+    for (i = 0; i < length; i++)
+    {
+        printf("%02X ", data[i]);
+    }
 
-    if (hlf->offset != 0)
+    printf("\n");
+}
+/******************************************************************************/
+void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data, uint32_t remaining)
+{
+    if (remaining < 3)
         return;
 
-    if (hlf->count < 3)
-        return;
+    if (data[0] == 0x5 && data[1] == 1 && data[2] <= 2 && remaining == 3) {
+        moloch_nids_new_session_socks(session, data, remaining);
+    }
 
     if (memcmp("SSH", data, 3) == 0) {
         session->isSsh = 1;
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:ssh");
-        unsigned char *n = memchr(data, 0x0a, hlf->count);
+        unsigned char *n = memchr(data, 0x0a, remaining);
         if (n && *(n-1) == 0x0d)
             n--;
 
@@ -1636,13 +2118,13 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
         }
     }
 
-    if (hlf->count < 4)
+    if (remaining < 4)
         return;
 
     if (memcmp("220 ", data, 4) == 0) {
-        if (g_strstr_len((char *)data, hlf->count_new, "LMTP") != 0)
+        if (g_strstr_len((char *)data, remaining, "LMTP") != 0)
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:lmtp");
-        else if (g_strstr_len((char *)data, hlf->count_new, "SMTP") != 0) {
+        else if (g_strstr_len((char *)data, remaining, "SMTP") != 0) {
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smtp");
             if (!session->email)
                 moloch_nids_new_session_email(session);
@@ -1651,7 +2133,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:ftp");
     }
 
-    if (hlf->count < 5)
+    if (remaining < 5)
         return;
 
     if (memcmp("HELO ", data, 5) == 0) {
@@ -1666,20 +2148,26 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
             moloch_nids_new_session_email(session);
     }
 
-    if (hlf->count < 9)
+    if (remaining < 9)
         return;
 
     if ((data[4] == 0xff || data[4] == 0xfe) && memcmp("SMB", data+5, 3) == 0) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smb");
+        if (!session->smb)
+            moloch_nids_new_session_smb(session);
     }
 
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:pop3");
 
-    if (hlf->count < 11)
+    if (data[0] == 0x4 && (data[1] & 0xfe) == 0 && data[remaining-1] == 0 && remaining == 9)  {
+        moloch_nids_new_session_socks(session, data, remaining);
+    }
+
+    if (remaining < 11)
         return;
 
-    if ((data[0] == ':' && moloch_memstr((char *)data, hlf->count, " NOTICE ", 8)) ||
+    if ((data[0] == ':' && moloch_memstr((char *)data, remaining, " NOTICE ", 8)) ||
          memcmp("NOTICE AUTH", data, 11) == 0 ||
          memcmp("NICK ", data, 5) == 0 ||
          memcmp("PASS ", data, 5) == 0) {
@@ -1688,34 +2176,118 @@ void moloch_detect_parse_classify(MolochSession_t *session, struct tcp_stream *U
     }
 
 
-    if (hlf->count < 14)
+    if (remaining < 14)
         return;
 
 
     if (data[13] == 0x78 &&  
-        (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << 8 | (data[5]&0xff)) == hlf->count)) ||  // Windows
-         ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << 8 | (data[8]&0xff)) == hlf->count)))) { // Mac
+        (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (uint32_t)(data[5]&0xff)) == remaining)) ||  // Windows
+         ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << (uint32_t)8 | (uint32_t)(data[8]&0xff)) == remaining)))) { // Mac
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:gh0st");
      }else if (data[7] == 0 && data[8] == 0 && data[11] == 0 && data[12] == 0 && data[13] == 0x78 && data[14] == 0x9c) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:gh0st-improved");
     }
 
-    if (hlf->count < 19)
+    if (remaining < 19)
         return;
 
     if (memcmp("BitTorrent protocol", data, 19) == 0)
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:bittorrent");
 
-    if (hlf->count < 30)
+    if (remaining < 30)
         return;
 
-    if (hlf->count != hlf->count_new && data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
+    if (data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:tls");
-        moloch_detect_tls_process(session, data, hlf->count);
+        moloch_detect_tls_process(session, data, remaining);
     }
 }
 /******************************************************************************/
-void moloch_detect_parse_yara(MolochSession_t *session, struct tcp_stream *UNUSED(a_tcp), struct half_stream *hlf)
+void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, uint32_t remaining)
 {
-    moloch_yara_execute(session, hlf->data, hlf->count - hlf->offset, (hlf->offset == 0));
+    MolochSessionSocks_t   *socks          = session->socks;
+
+    if (socks->ver == 4) {
+        if (session->which == socks->which)
+            return;
+
+        if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
+            moloch_detect_parse_classify(session, data + 8, remaining - 8);
+            session->skip[socks->which] = 9;
+            session->skip[session->which] = 8;
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
+        }
+        moloch_nids_free_session_socks(session);
+        return;
+    }
+
+    // Socks 5 - Only support no auth for now
+
+    if (socks->state == 0) {
+    // Waiting for reply from server
+        if (session->which == socks->which)
+            return;
+        if (remaining != 2 || data[0] != 5 || data[1] > 2) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
+
+        // Only support no auth for now
+        if (data[1] != 0) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+        socks->state++;
+        return;
+    } else if (socks->state == 1) {
+    // Waiting for connect from client
+        if (session->which != socks->which)
+            return;
+        if (remaining < 6 || data[0] != 5 || data[1] != 1 || data[2] != 0) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+        if (data[3] == 1) { // IPV4
+            socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
+            memcpy(&socks->ip, data+4, 4);
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
+            session->skip[socks->which] = 3 + 4 + 4 + 2;
+        } else if (data[3] == 3) { // Domain Name
+            socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
+            char *lower = g_ascii_strdown((char*)data+5, data[4]);
+            if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_HOST, session, lower, data[4], FALSE)) {
+                g_free(lower);
+            }
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
+            session->skip[socks->which] = 3 + 4 + 1 + data[4] + 2;
+        } else if (data[3] == 4) { // IPV6
+            session->skip[socks->which] = 3 + 4 + 16 + 2;
+        }
+        socks->state++;
+        return;
+    } else if (socks->state == 2) {
+        if (session->which == socks->which || remaining < 6) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+
+        if (data[3] == 1) { // IPV4
+            session->skip[session->which] = 2 + 4 + 4 + 2;
+        } else if (data[3] == 3) { // Domain Name
+            session->skip[session->which] = 3 + 4 + 1 + data[4] + 2;
+        } else if (data[3] == 4) { // IPV6
+            session->skip[session->which] = 2 + 4 + 16 + 2;
+        }
+        moloch_nids_free_session_socks(session);
+    }
+}
+/******************************************************************************/
+void moloch_detect_parse_yara(MolochSession_t *session, unsigned char *data, uint32_t remaining, int initial)
+{
+    moloch_yara_execute(session, (char*)data, remaining, initial);
 }

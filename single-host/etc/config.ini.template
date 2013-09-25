@@ -101,6 +101,10 @@ geoipFile = _TDIR_/etc/GeoIP.dat
 #  http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
 geoipASNFile = _TDIR_/etc/GeoIPASNum.dat
 
+# Path of the rir assignments file
+#  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+rirFile = _TDIR_/etc/ipv4-address-space.csv
+
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=_USERNAME_
 
@@ -118,9 +122,12 @@ dropGroup=_GROUPNAME_
 # RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
 # RequestHeader set MOLOCH_USER %{ENV_RU}e
 #userNameHeader=moloch_user
-#
+
 # Should we parse extra smtp traffic info
 parseSMTP=true
+
+# Should we parse extra smb traffic info
+parseSMB=true
 
 # Semicolon ';' seperated list of SMTP Headers that have ips, need to have the terminating colon ':'
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:

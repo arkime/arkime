@@ -44,12 +44,14 @@ block content
       mixin spion("Src GEO", "g1", "country.src", "general")
       mixin spion("Src ASN", "rawas1", "asn.src", "general")
       mixin spi("Src ASN Token", "as1", "asn.src", "general")
+      mixin spi("Src RIR", "rir1", "rir.src", "general")
 
       mixin spion("Dst IP", "a2", "ip.dst", "general")
       mixin spion("Dst Port", "p2", "port.dst", "general")
       mixin spion("Dst GEO", "g2", "country.dst", "general")
       mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
       mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
+      mixin spi("Dst RIR", "rir2", "rir.dst", "general")
 
       mixin spi("Node", "no", "node", "general")
       mixin spi("Tag", "ta", "tags", "general")
@@ -67,6 +69,7 @@ block content
       mixin spi("XFF GEO", "gxff", "country.xff", "http")
       mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
       mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
+      mixin spi("XFF RIR", "rirxff", "rir.xff", "http")
 
       mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
       mixin spi("Request Version", "hsver", "http.version.src", "http")
@@ -94,6 +97,7 @@ block content
       mixin spi("GEO", "gdnsip", "country.dns", "dns")
       mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
       mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
+      mixin spi("RIR", "rirdnsip", "rir.dns", "dns")
 
     mixin title("IRC", "irc")
     dl
@@ -119,6 +123,12 @@ block content
       mixin spi("Version", "sshver", "ssh.ver", "ssh")
       mixin spi("Key", "sshkey", "ssh.key", "ssh")
 
+    mixin title("SOCKS", "socks")
+    dl
+      mixin spi("Host", "socksho", "host.socks", "socks")
+      mixin spi("IP", "socksip", "ip.socks", "socks")
+      mixin spi("Port", "sockspo", "port.socks", "socks")
+
     if (user.emailSearch)
       mixin title("Email", "email")
       dl 
@@ -126,6 +136,7 @@ block content
         mixin spi("GEO", "geip", "country.email", "email")
         mixin spi("ASN", "rawaseip", "asn.email", "email")
         mixin spi("ASN Token", "aseip", "asn.email", "email")
+        mixin spi("RIR", "rireip", "rir.email", "email")
 
         mixin spi("Subject", "rawesub", "email.subject", "email")
         mixin spi("Subject Token", "esub", "email.subject", "email")
@@ -143,6 +154,16 @@ block content
             mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
           else
             mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
+
+    mixin title("SMB", "smb")
+    dl
+      mixin spi("Users", "smbuser", "smb.user", "smb")
+      mixin spi("Hosts", "smbho", "smb.host", "smb")
+      mixin spi("Domain", "smbdm", "smb.domain", "smb")
+      mixin spi("Share", "smbsh", "smb.share", "smb")
+      mixin spi("Filename", "smbfn", "smb.fn", "smb")
+      mixin spi("OS", "smbos", "smb.os", "smb")
+      mixin spi("Version", "smbver", "smb.ver", "smb")
 
   script(type='text/javascript').
     var initialDisplayLength = 100;
@@ -225,7 +246,7 @@ block content
                 spida.html("&nbsp;");
               }
 
-              if (spii.match(/^(a1|a2|xff|dnsip|eip)$/) !== null) {
+              if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
                 $.each(spi.terms, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
@@ -238,10 +259,17 @@ block content
                   if (i !== 0) {
                     spida.append(", ");
                   }
-                  var quote = (typeof term.term == "string" && term.term.match(/[^\w]/))?"\\\"":"";
+                  var escaped = term.term;
+                  if (typeof term.term == "string") {
+                    if (term.term.match(/[^\w]/)) {
+                      escaped = '"' + escaped.replace(/\\/g, "\\\\") + '"';
+                    } else {
+                      escaped = escaped.replace(/\\/g, "\\\\");
+                    }
+                  }
                   spida.append("<a href=\"#\" onclick='return addExpression(\"" + 
                                spida.attr("molochexpr") + 
-                               "==" + quote + term.term + quote + "\");'</a>" + term.term + "</a>");
+                               "==" + escaped + "\");'</a>" + term.term + "</a>");
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               }

@@ -22,6 +22,21 @@ block content
       option(value="last", selected=suser.settings.showTimestamps=="last") last used
       option(value="true", selected=suser.settings.showTimestamps=="true") on
       option(value="false", selected=suser.settings.showTimestamps=="false") off
+    br
+    label(for='sortColumn') Sessions Sort Column:
+    select#sortColumn.setting(name="sortColumn")
+      option(value="start", selected=suser.settings.sortColumn=="start") Start Time
+      option(value="stop", selected=suser.settings.sortColumn=="stop") Stop Time
+      option(value="srcip", selected=suser.settings.sortColumn=="srcip") Src IP
+      option(value="srcport", selected=suser.settings.sortColumn=="srcport") Src Port
+      option(value="dstip", selected=suser.settings.sortColumn=="dstip") Dst IP
+      option(value="dstport", selected=suser.settings.sortColumn=="dstport") Dst Port
+      option(value="packets", selected=suser.settings.sortColumn=="packets") Packets
+      option(value="bytes", selected=suser.settings.sortColumn=="bytes") Bytes
+      option(value="node", selected=suser.settings.sortColumn=="node") Node
+    select#sortDirection.setting(name="sortDirection")
+      option(value="asc", selected=suser.settings.sortDirection=="asc") Ascending
+      option(value="desc", selected=suser.settings.sortDirection=="desc") Descending
 
   h2 Change password for #{suser.userId} (#{suser.userName})
   form#changePassword

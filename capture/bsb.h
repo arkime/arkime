@@ -135,6 +135,17 @@ do {                                              \
         (b).end = 0;                              \
 } while (0)
 
+#define BSB_IMPORT_u24(b, x)                      \
+do {                                              \
+    if ((b).ptr + 3 <= (b).end) {                 \
+        x = (uint32_t)(((b).ptr)[0] << 16 |       \
+            ((b).ptr)[1] << 8             |       \
+            ((b).ptr)[2]);                        \
+        (b).ptr += 3;                             \
+    } else                                        \
+        (b).end = 0;                              \
+} while (0)
+
 #define BSB_IMPORT_u32(b, x)                      \
 do {                                              \
     if ((b).ptr + 4 <= (b).end) {                 \
@@ -142,6 +153,41 @@ do {                                              \
             ((b).ptr)[1] << 16            |       \
             ((b).ptr)[2] << 8             |       \
             ((b).ptr)[3]);                        \
+        (b).ptr += 4;                             \
+    } else                                        \
+        (b).end = 0;                              \
+} while (0)
+
+#define BSB_LIMPORT_u08(b, x) BSB_IMPORT_u08(b, x)
+
+#define BSB_LIMPORT_u16(b, x)                     \
+do {                                              \
+    if ((b).ptr + 2 <= (b).end) {                 \
+        x = (uint16_t)(((b).ptr)[1] << 8 |        \
+            ((b).ptr)[0]);                        \
+        (b).ptr += 2;                             \
+    } else                                        \
+        (b).end = 0;                              \
+} while (0)
+
+#define BSB_LIMPORT_u24(b, x)                     \
+do {                                              \
+    if ((b).ptr + 3 <= (b).end) {                 \
+        x = (uint32_t)(((b).ptr)[2] << 16 |       \
+            ((b).ptr)[1] << 8             |       \
+            ((b).ptr)[0]);                        \
+        (b).ptr += 3;                             \
+    } else                                        \
+        (b).end = 0;                              \
+} while (0)
+
+#define BSB_LIMPORT_u32(b, x)                     \
+do {                                              \
+    if ((b).ptr + 4 <= (b).end) {                 \
+        x = (uint32_t)(((b).ptr)[3] << 24 |       \
+            ((b).ptr)[2] << 16            |       \
+            ((b).ptr)[1] << 8             |       \
+            ((b).ptr)[0]);                        \
         (b).ptr += 4;                             \
     } else                                        \
         (b).end = 0;                              \

@@ -741,6 +741,26 @@ $(document).ready(function() {
   });
 
   //////////////////////////////////////////////////////////////////////////////////
+  // Export CSV
+  //////////////////////////////////////////////////////////////////////////////////
+  $("#exportCSVButton").click(function (e) {
+    showActionsDialog({
+      submit: "Export CSV",
+      title: "Export CSV",
+      input: "Filename",
+      query: "Export",
+      defaultInput: "sessions.csv"
+    }, function(qs, ids, filename) {
+      if (ids) {
+        qs.push({name: "ids", value: ids});
+      }
+
+      window.location = "sessions.csv/" + filename + "?" + $.param(qs);
+    });
+    return false;
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////
   // Send Session Dialog
   //////////////////////////////////////////////////////////////////////////////////
   $(document).on("click", ".sendSessionAction", function (e) {
@@ -808,6 +828,11 @@ $(document).ready(function() {
       return false;
     }
   });
+
+  $('#strictly').change(function() {
+    $('#searchForm').submit();
+    return false;
+  });
 });
 
 
@@ -838,6 +863,8 @@ function handleUrlParams() {
   initialDisplayLength = urlParams.iDisplayLength || 100;
   $("#graphSize").val(String(initialDisplayLength));
   $("#sessions_length").val(String(initialDisplayLength));
+
+  $("#strictly").prop("checked", urlParams.strictly === "true");
 
   if (urlParams.startTime && urlParams.stopTime) {
 
@@ -1009,6 +1036,9 @@ function addDateParams(params) {
       var d = new Date($("#startDate").val() + extra);
       if (d < 0) {d.setFullYear(d.getFullYear() + 100);}
       params.push({name:'startTime', value:d/1000});
+      if ($("#strictly").prop("checked")) {
+        params.push({name:'strictly', value:true});
+      }
 
       d = new Date($("#stopDate").val() + extra);
       if (d < 0) {d.setFullYear(d.getFullYear() + 100);}

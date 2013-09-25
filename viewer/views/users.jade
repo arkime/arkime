@@ -122,6 +122,7 @@ block content
           },
           { "mDataProp" : null,
             "bSortable" : false,
+            "sDefaultContent": "",
             "fnRender" : function(oObj) {
               return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
                      "<a href='settings?userId=" + oObj.aData.userId +"'>Settings</a>";

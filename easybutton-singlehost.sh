@@ -26,7 +26,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=0.90.3
+ES=0.90.5
 NODEJS=0.10.17
 INSTALL_DIR=$PWD
 
@@ -166,6 +166,10 @@ fi
 if [ ! -f "GeoIPASNum.dat" ]; then
   wget http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
   gunzip GeoIPASNum.dat.gz
+fi
+
+if [ ! -f "ipv4-address-space.csv" ]; then
+  wget https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
 fi
 
 
