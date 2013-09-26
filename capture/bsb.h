@@ -71,6 +71,8 @@ do {                                              \
 do {                                              \
     if ((b).ptr + size <= (b).end) {              \
         (b).ptr += size;                          \
+        if ((b).ptr < (b).buf)                    \
+            (b).end = 0;                          \
     } else                                        \
         (b).end = 0;                              \
 } while (0)
@@ -79,6 +81,8 @@ do {                                              \
 do {                                              \
     if ((b).ptr - size >= (b).buf) {              \
         (b).ptr -= size;                          \
+        if ((b).ptr < (b).buf)                    \
+            (b).end = 0;                          \
     } else {                                      \
         (b).end = 0;                              \
     }                                             \

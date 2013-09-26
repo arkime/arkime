@@ -224,7 +224,7 @@ typedef struct moloch_session_email {
 
 typedef struct moloch_session_smb {
     char               buf[2][512];
-    int                remlen[2];
+    uint32_t           remlen[2];
     short              buflen[2];
     uint16_t           flags2[2];
     unsigned char      version[2];

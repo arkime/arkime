@@ -1602,7 +1602,7 @@ void moloch_detect_smb_security_blob(MolochSession_t *session, unsigned char *da
     }
 }
 
-int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, int *remlen)
+int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, uint32_t *remlen)
 {
     MolochSessionSMB_t   *smb          = session->smb;
 
@@ -1728,6 +1728,7 @@ int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, in
         BSB_IMPORT_u08(*bsb, wordcount);
 
         if (wordcount != 12) {
+            *state = SMB_SKIP;
             break;
         }
 
@@ -1774,7 +1775,7 @@ int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, in
     return 0;
 }
 /******************************************************************************/
-int moloch_detect_parse_smb2(MolochSession_t *session, BSB *bsb, char *state, int *remlen)
+int moloch_detect_parse_smb2(MolochSession_t *session, BSB *bsb, char *state, uint32_t *remlen)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
 
@@ -1880,7 +1881,7 @@ void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint
     char                 *state        = &smb->state[session->which];
     char                 *buf          = smb->buf[session->which];
     short                *buflen       = &smb->buflen[session->which];
-    int                  *remlen       = &smb->remlen[session->which];
+    uint32_t             *remlen       = &smb->remlen[session->which];
 
 #ifdef SMBDEBUG
     LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %d", remaining, *state, *buflen, *remlen);
