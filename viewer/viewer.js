@@ -196,7 +196,7 @@ app.configure(function() {
 //////////////////////////////////////////////////////////////////////////////////
 function isEmptyObject(object) { for(var i in object) { return false; } return true; }
 function safeStr(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;');
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
 }
 
 //http://garethrees.org/2007/11/14/pngcrush/
@@ -3054,6 +3054,9 @@ app.get('/:nodeName/raw/:id', function(req, res) {
 app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
   noCache(req, res);
 
+  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
+  res.statusCode = 200;
+
   var options = {writeHeader: true};
 
   isLocalView(req.params.nodeName, function () {
@@ -3064,9 +3067,6 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
                 };
 
     console.log(JSON.stringify(query));
-
-    res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
-    res.statusCode = 200;
 
     Db.searchPrimary('sessions*', 'session', query, function(err, data) {
       async.forEachSeries(data.hits.hits, function(item, nextCb) {

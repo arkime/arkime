@@ -242,6 +242,9 @@ void moloch_session_id (char *buf, int protocol, uint32_t addr1, uint16_t port1,
 /******************************************************************************/
 void moloch_nids_save_session(MolochSession_t *session) 
 {
+    if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
+        moloch_plugins_cb_pre_save(session, TRUE);
+
     if (session->outstandingQueries > 0) {
         session->needSave = 1;
 
@@ -273,6 +276,9 @@ void moloch_nids_save_session(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_mid_save_session(MolochSession_t *session) 
 {
+    if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
+        moloch_plugins_cb_pre_save(session, FALSE);
+
     /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
     while (session->outstandingQueries > 0 && (config.pcapReadDir || config.pcapReadFile)) {
         g_main_context_iteration (g_main_context_default(), TRUE);

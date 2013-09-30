@@ -255,7 +255,9 @@ block content
                   if (i !== 0) {
                     spida.append(", ");
                   }
-                  spida.append("<a href=\"#\" onclick='return addExpression(\"" + spida.attr("molochexpr") + "==" + ipString(term.term) + "\");'</a>" + ipString(term.term) + "</a>");
+                  spida.append($('<a></a>').attr("href","#")
+                                           .text(ipString(term.term))
+                                           .click(function() {addExpression(spida.attr("molochexpr") + "==" + ipString(term.term));}));
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               } else {
@@ -263,17 +265,13 @@ block content
                   if (i !== 0) {
                     spida.append(", ");
                   }
-                  var escaped = term.term;
-                  if (typeof term.term == "string") {
-                    if (term.term.match(/[^\w]/)) {
-                      escaped = '"' + escaped.replace(/\\/g, "\\\\") + '"';
-                    } else {
-                      escaped = escaped.replace(/\\/g, "\\\\");
-                    }
+                  var quoted = term.term;
+                  if (typeof term.term == "string" && term.term.match(/[^\w]/)) {
+                    quoted = '"' + quoted + '"';
                   }
-                  spida.append("<a href=\"#\" onclick='return addExpression(\"" + 
-                               spida.attr("molochexpr") + 
-                               "==" + escaped + "\");'</a>" + term.term + "</a>");
+                  spida.append($('<a></a>').attr("href","#")
+                                           .text(""+term.term)
+                                           .click(function() {addExpression(spida.attr("molochexpr") + "==" + quoted);}));
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               }

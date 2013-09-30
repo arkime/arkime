@@ -29,7 +29,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 5
+#define MOLOCH_API_VERSION 6
 
 /******************************************************************************/
 /*
@@ -509,6 +509,7 @@ typedef void (* MolochPluginSMTPFunc) (MolochSession_t *session);
 #define MOLOCH_PLUGIN_EXIT         0x00000010
 #define MOLOCH_PLUGIN_NEW          0x00000020
 #define MOLOCH_PLUGIN_RELOAD       0x00000040
+#define MOLOCH_PLUGIN_PRE_SAVE     0x00000100
 
 #define MOLOCH_PLUGIN_HP_OMB       0x00001000
 #define MOLOCH_PLUGIN_HP_OU        0x00002000
@@ -531,6 +532,7 @@ void moloch_plugins_set_cb(const char *            name,
                            MolochPluginIpFunc      ipFunc,
                            MolochPluginUdpFunc     udpFunc,
                            MolochPluginTcpFunc     tcpFunc,
+                           MolochPluginSaveFunc    preSaveFunc,
                            MolochPluginSaveFunc    saveFunc,
                            MolochPluginNewFunc     newFunc,
                            MolochPluginExitFunc    exitFunc,
@@ -549,6 +551,7 @@ void moloch_plugins_set_smtp_cb(const char *                name,
                                 MolochPluginSMTPHeaderFunc  on_header,
                                 MolochPluginSMTPFunc        on_header_complete);
 
+void moloch_plugins_cb_pre_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_new(MolochSession_t *session);
 void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len);

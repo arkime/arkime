@@ -189,6 +189,7 @@ void moloch_plugin_init()
       NULL,
       NULL,
       NULL,
+      NULL,
       netflow_plugin_save,
       NULL,
       netflow_plugin_exit,

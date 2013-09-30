@@ -40,6 +40,7 @@ extern uint64_t         totalBytes;
 extern uint64_t         totalSessions;
 static uint16_t         myPid;
 static time_t           dbLastSave;
+extern uint32_t         pluginsCbs;
 
 struct timeval          startTime;
 static GeoIP           *gi = 0;
@@ -212,8 +213,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     int                    pos;
 
     /* Let the plugins finish */
-    moloch_plugins_cb_save(session, final);
-
+    if (pluginsCbs & MOLOCH_PLUGIN_SAVE)
+        moloch_plugins_cb_save(session, final);
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
     jsonSize = 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len + session->certJsonSize;

@@ -37,6 +37,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
+	(cd plugins; make)
 
 snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	gcc -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \

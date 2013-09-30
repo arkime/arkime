@@ -388,6 +388,7 @@ void moloch_plugin_init()
       NULL,
       NULL,
       NULL,
+      NULL,
       tagger_plugin_save,
       NULL,
       tagger_plugin_exit,

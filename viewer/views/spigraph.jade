@@ -32,7 +32,7 @@ block content
               - var tmp = value.db.replace(".snow", ".raw");
               option(value="#{tmp}", exp='#{value.exp}') #{value.exp}
             else
-              option(value="raw#{value.db}, exp='#{value.exp}'") #{value.exp}
+              option(value="raw#{value.db}", exp='#{value.exp}') #{value.exp}
             option(value="#{value.db}", exp='#{value.exp}') #{value.exp} Tokens
           else
             option(value="#{value.db}", exp='#{value.exp}') #{value.exp}

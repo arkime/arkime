@@ -22,6 +22,9 @@
   - clean up db.pl some, rename rotate command to expire
   - With custom date queries can now select bounded by
   - New user setting for sessions sort order
+  - Fixed encoding issues
+  - New plugin pre save callback
+  - Fixed entirePcap not setting correct Content-Type
 
 
 0.9.0 2013/08/26

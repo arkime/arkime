@@ -260,12 +260,12 @@ block content
               if (oObj.aData.us) {
                 if (oObj.aData.infoAll) {
                   oObj.aData.us.forEach(function(item) {
-                    data += "<div class=\"context-menu-url\">" + item + "</div>"
+                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>"
                   });
                   data += '<img src="up-arrow.png">';
                 } else {
                   oObj.aData.us.slice(0,5).forEach(function(item) {
-                    data += "<div class=\"context-menu-url\">" + item + "</div>"
+                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>"
                   });
                   if (oObj.aData.us.length > 5) {
                     data += '<img src="down-arrow.png">';
@@ -512,9 +512,9 @@ block content
             var text = $(e.target).text();
             var vt = text.indexOf('?') === -1?text:text.substring(0, text.indexOf('?'));
             items = {
-              and: {name: "<b>and</b> " + text, exp: "http.uri == \"" + text + "\""},
-              andnot: {name: "<b>and not</b> " + text, exp: "http.uri != \"" + text + "\""},
-              open: {name: "<b>open</b> " + text, url: "http:" + text},
+              and: {name: "<b>and</b> " + safeStr(text), exp: "http.uri == \"" + text + "\""},
+              andnot: {name: "<b>and not</b> " + safeStr(text), exp: "http.uri != \"" + text + "\""},
+              open: {name: "<b>open</b> " + safeStr(text), url: "http:" + text},
               vt: {name: "<b>virus total</b> " + vt, url: "https://www.virustotal.com/latest-scan/" + encodeURIComponent("http:" + vt)}
             };
             return {

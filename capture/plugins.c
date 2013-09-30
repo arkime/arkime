@@ -52,6 +52,7 @@ typedef struct moloch_plugin {
     MolochPluginIpFunc           ipFunc;
     MolochPluginUdpFunc          udpFunc;
     MolochPluginTcpFunc          tcpFunc;
+    MolochPluginSaveFunc         preSaveFunc;
     MolochPluginSaveFunc         saveFunc;
     MolochPluginNewFunc          newFunc;
     MolochPluginExitFunc         exitFunc;
@@ -153,10 +154,11 @@ void moloch_plugins_set_cb(const char *            name,
                            MolochPluginIpFunc      ipFunc,
                            MolochPluginUdpFunc     udpFunc,
                            MolochPluginTcpFunc     tcpFunc,
+                           MolochPluginSaveFunc    preSaveFunc,
                            MolochPluginSaveFunc    saveFunc,
                            MolochPluginNewFunc     newFunc,
                            MolochPluginExitFunc    exitFunc,
-                           MolochPluginReloadFunc    reloadFunc)
+                           MolochPluginReloadFunc  reloadFunc)
 {
     MolochPlugin_t *plugin;
 
@@ -177,6 +179,10 @@ void moloch_plugins_set_cb(const char *            name,
     plugin->tcpFunc = tcpFunc;
     if (tcpFunc)
         pluginsCbs |= MOLOCH_PLUGIN_TCP;
+
+    plugin->preSaveFunc = preSaveFunc;
+    if (preSaveFunc)
+        pluginsCbs |= MOLOCH_PLUGIN_PRE_SAVE;
 
     plugin->saveFunc = saveFunc;
     if (saveFunc)
@@ -261,6 +267,16 @@ void moloch_plugins_set_smtp_cb(const char *                name,
     plugin->smtp_on_header_complete = on_header_complete;
     if (on_header_complete)
         pluginsCbs |= MOLOCH_PLUGIN_SMTP_OHC;
+}
+/******************************************************************************/
+void moloch_plugins_cb_pre_save(MolochSession_t *session, int final)
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FORALL(p_, plugins, plugin, 
+        if (plugin->preSaveFunc)
+            plugin->preSaveFunc(session, final);
+    );
 }
 /******************************************************************************/
 void moloch_plugins_cb_save(MolochSession_t *session, int final)

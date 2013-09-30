@@ -76,6 +76,10 @@ function parseUrlParams() {
 
 }
 
+function safeStr(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
+}
+
 // From http://stackoverflow.com/a/2901298
 function numberWithCommas(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

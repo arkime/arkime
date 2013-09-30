@@ -11,9 +11,13 @@ INSTALL = @INSTALL@
 PLUGINDIR = @prefix@/plugins
 
 
-all:
+all:tagger.so netflow.so
+
+tagger.so:tagger.c ../moloch.h
 	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c tagger.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
 	$(CC) -shared -o tagger.so tagger.o
+
+netflow.so:netflow.c ../moloch.h
 	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c netflow.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
 	$(CC) -shared -o netflow.so netflow.o
 
