@@ -1,4 +1,4 @@
-0.9.x 2013/xx/xx
+0.9.1 2013/10/03
   - Make sure at least one stats record is written per run
   - Display IRC channel in sessions view
   - Fix right click on sessions view info column
@@ -25,6 +25,7 @@
   - Fixed encoding issues
   - New plugin pre save callback
   - Fixed entirePcap not setting correct Content-Type
+  - New right click pivot option in spiview
 
 
 0.9.0 2013/08/26

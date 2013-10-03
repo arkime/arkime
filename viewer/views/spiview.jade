@@ -173,6 +173,7 @@ block content
     var initialDisplayLength = 100;
     var doPushState = 1;
     var fetchSize = {};
+    var spiTerms = {};
 
     $(".spion").prop("indeterminate", true);
 
@@ -250,31 +251,44 @@ block content
                 spida.html("&nbsp;");
               }
 
+              var spiterm = "";
               if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
                 $.each(spi.terms, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
+                    spiterm += ",";
                   }
+                  spiterm += ipString(term.term);
                   spida.append($('<a></a>').attr("href","#")
                                            .text(ipString(term.term))
-                                           .click(function() {addExpression(spida.attr("molochexpr") + "==" + ipString(term.term));}));
+                                           .click(function() {
+                                             addExpression(spida.attr("molochexpr") + "==" + ipString(term.term));
+                                             return false;
+                                           }));
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               } else {
                 $.each(spi.terms, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
+                    spiterm += ",";
                   }
                   var quoted = term.term;
                   if (typeof term.term == "string" && term.term.match(/[^\w]/)) {
                     quoted = '"' + quoted + '"';
                   }
+                  spiterm += quoted;
                   spida.append($('<a></a>').attr("href","#")
                                            .text(""+term.term)
-                                           .click(function() {addExpression(spida.attr("molochexpr") + "==" + quoted);}));
+                                           .click(function() {
+                                             addExpression(spida.attr("molochexpr") + "==" + quoted);
+                                             return false;
+                                           }));
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               }
+              spiTerms[spii] = spiterm;
+
               if (spi.other > 0) {
                   spida.append(", <a href=\"#\" onclick='return moreSPI(\"" + 
                                spii + 
@@ -420,14 +434,21 @@ block content
             items = {
               spigraph: {name: "Open SPI Graph " + $(e.target).text(), mtype:0, field: checkbox.attr("id").substring(6)},
               items: {name: "Export Unique " + $(e.target).text(), mtype:1, counts:0, field: checkbox.attr("id").substring(6)},
-              itemcounts: {name: "Export Unique" + $(e.target).text() + " with Counts", mtype:1, counts:1, field: checkbox.attr("id").substring(6)}
+              itemcounts: {name: "Export Unique " + $(e.target).text() + " with Counts", mtype:1, counts:1, field: checkbox.attr("id").substring(6)},
+              pivot: {name: "Pivot on " + $(e.target).text(), mtype:2, counts:0, field: checkbox.attr("id").substring(6)}
             };
             return {
               callback: function(key, options) {
                 var params = buildParams();
                 var url;
 
-                if (items[key].mtype === 0) {
+                if (items[key].mtype === 2) {
+                  var spida = $("[id='SPIda-" + items[key].field + "']");
+                  var str = spida.attr("molochexpr") + " == [" + spiTerms[items[key].field] + "]";
+
+                  $("#expression").val(str);
+                  return true;
+                } else if (items[key].mtype === 0) {
                   params.push({name:'field', value:items[key].field});
                   url = "spigraph?" + $.param(params);
                 } else {

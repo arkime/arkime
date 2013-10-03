@@ -243,7 +243,7 @@ block content
           },
           { "mDataProp" : "diskQueue",
             "fnRender" : function(oObj) {
-              return numberWithCommas(Math.ceil(oObj.aData[oObj.mDataProp]/1000000));
+              return numberWithCommas(Math.ceil(oObj.aData[oObj.mDataProp]));
             },
             "sClass": "right",
             "sType": "formatted-num"
