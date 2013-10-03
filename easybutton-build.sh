@@ -72,15 +72,25 @@ cd thirdparty
 if [ ! -f "glib-$GLIB.tar.xz" ]; then
   wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-$GLIB.tar.xz
 fi
-xzcat glib-$GLIB.tar.xz | tar xf -
-(cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; make)
+
+if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
+  xzcat glib-$GLIB.tar.xz | tar xf -
+  (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; make)
+else
+  echo "MOLOCH: Not rebuilding glib"
+fi
 
 # yara
 if [ ! -f "yara-$YARA.tar.gz" ]; then
   wget http://yara-project.googlecode.com/files/yara-$YARA.tar.gz
 fi
-tar zxf yara-$YARA.tar.gz
-(cd yara-$YARA; ./configure --enable-static; make)
+
+if [ ! -f "yara-$YARA/libyara/.libs/libyara.a" ]; then
+  tar zxf yara-$YARA.tar.gz
+  (cd yara-$YARA; ./configure --enable-static; make)
+else
+  echo "MOLOCH: Not rebuilding yara"
+fi
 
 # GeoIP
 if [ ! -f "GeoIP-$GEOIP.tar.gz" ]; then
@@ -89,14 +99,18 @@ fi
 tar zxf GeoIP-$GEOIP.tar.gz
 
 # Not sure why this is required on some platforms
-if [ -f "/usr/bin/libtoolize" ]; then
-  (cd GeoIP-$GEOIP ; libtoolize -f)
+if [ ! -f "GeoIP-$GEOIP/libGeoIP/.libs/libGeoIP.a" ]; then
+  if [ -f "/usr/bin/libtoolize" ]; then
+    (cd GeoIP-$GEOIP ; libtoolize -f)
+  fi
+  (cd GeoIP-$GEOIP ; ./configure --enable-static; make)
+else
+  echo "MOLOCH: Not rebuilding libGeoIP"
 fi
-(cd GeoIP-$GEOIP ; ./configure --enable-static; make)
 
 if [ $DOPFRING -eq 1 ]; then
     # pfring
-    echo "PFRING";
+    echo "MOLOCH: Building libpcap with pfring";
     if [ ! -f "PF_RING-$PFRING.tar.gz" ]; then
       wget -O PF_RING-$PFRING.tar.gz http://sourceforge.net/projects/ntop/files/PF_RING/PF_RING-$PFRING.tar.gz/download
     fi
@@ -107,13 +121,13 @@ if [ $DOPFRING -eq 1 ]; then
     PCAPDIR=$PFRINGDIR/userland/libpcap
     PCAPBUILD="--with-pfring=$PFRINGDIR"
 else
-    echo "NOT PFRING";
+    echo "MOLOCH: Building libpcap without pfring";
     # libpcap
     if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
       wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
     fi
     tar zxf libpcap-$PCAP.tar.gz
-    (cd libpcap-$PCAP; ./configure --disable-libglib; make)
+    (cd libpcap-$PCAP; ./configure; make)
     PCAPDIR=`pwd`/libpcap-$PCAP
     PCAPBUILD="--with-libpcap=$PCAPDIR"
 fi
@@ -122,8 +136,13 @@ fi
 if [ ! -f "libnids-$NIDS.tar.gz" ]; then
   wget http://downloads.sourceforge.net/project/libnids/libnids/$NIDS/libnids-$NIDS.tar.gz
 fi
-tar zxf libnids-$NIDS.tar.gz
-( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=$PCAPDIR --disable-libglib; make)
+
+if [ ! -f "libnids-$NIDS/src/libnids.a" ]; then
+  tar zxf libnids-$NIDS.tar.gz
+  ( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=$PCAPDIR --disable-libglib; make)
+else 
+  echo "MOLOCH: Not rebuilding libnids"
+fi
 
 
 # Now build moloch
@@ -131,6 +150,11 @@ echo "MOLOCH: Building capture"
 cd ..
 echo "./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
 ./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
+
 make
+if [ $? -ne 0 ]; then
+  echo "MOLOCH: make failed"
+  exit 1
+fi
 
 exit 0

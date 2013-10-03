@@ -179,6 +179,11 @@ cd ${INSTALL_DIR}
 PATH=${TDIR}/bin:${PATH}
 make install
 
+if [ $? -ne 0 ]; then
+  echo "ERROR - 'make install' in moloch directory failed"
+  exit 1
+fi
+
 
 
 echo -n "Memory to give to elasticsearch, box MUST have more then this available: [512M] "
