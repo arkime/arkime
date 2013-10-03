@@ -1909,13 +1909,14 @@ app.get('/unique.txt', function(req, res) {
         // Count up hits
         var hits = result.hits.hits;
         for (var i = 0; i < hits.length; i++) {
-          var value = hits[i].fields[field];
-          if (value) {
-            if (counts[value]) {
-              counts[value]++;
-            } else {
-              counts[value] = 1;
+          var avalue = hits[i].fields[field];
+          if (Array.isArray(avalue)) {
+            for (var j = 0; j < avalue.length; j++) {
+              var value = avalue[j];
+              counts[value] = (counts[value] || 0) + 1;
             }
+          } else {
+            counts[avalue] = (counts[avalue] || 0) + 1;
           }
         }
 
