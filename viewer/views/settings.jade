@@ -1,43 +1,57 @@
 extends layout
 
+include mixins
+
 block content
   h2 Change settings for #{suser.userId} (#{suser.userName})
   form#changeSettings
     input(type='hidden', id='token', name='token', value='#{token}')
+    h3 General
     label(for='timezone') Timezone format:
     select#timezone.setting(name="timezone")
-      option(value="local", selected=suser.settings.timezone=="local") local time
-      option(value="gmt", selected=suser.settings.timezone=="gmt") gmt time
+      option(value="local") local time
+      option(value="gmt") gmt time
     br
+    h3 Sessions Tab
     label(for='detailFormat') Session Detail Format:
     select#detailFormat.setting(name="detailFormat")
-      option(value="last", selected=suser.settings.detailFormat=="last") last used
-      option(value="natural", selected=suser.settings.detailFormat=="natural") natural
-      option(value="ascii", selected=suser.settings.detailFormat=="ascii") ascii
-      option(value="utf8", selected=suser.settings.detailFormat=="utf8") utf8
-      option(value="hex", selected=suser.settings.detailFormat=="hex") hex
+      option(value="last") last used
+      option(value="natural") natural
+      option(value="ascii") ascii
+      option(value="utf8") utf8
+      option(value="hex") hex
     br
     label(for='showTimestamps') Show Timestamps:
     select#showTimestamps.setting(name="showTimestamps")
-      option(value="last", selected=suser.settings.showTimestamps=="last") last used
-      option(value="true", selected=suser.settings.showTimestamps=="true") on
-      option(value="false", selected=suser.settings.showTimestamps=="false") off
+      option(value="last") last used
+      option(value="true") on
+      option(value="false") off
     br
     label(for='sortColumn') Sessions Sort Column:
     select#sortColumn.setting(name="sortColumn")
-      option(value="start", selected=suser.settings.sortColumn=="start") Start Time
-      option(value="stop", selected=suser.settings.sortColumn=="stop") Stop Time
-      option(value="srcip", selected=suser.settings.sortColumn=="srcip") Src IP
-      option(value="srcport", selected=suser.settings.sortColumn=="srcport") Src Port
-      option(value="dstip", selected=suser.settings.sortColumn=="dstip") Dst IP
-      option(value="dstport", selected=suser.settings.sortColumn=="dstport") Dst Port
-      option(value="packets", selected=suser.settings.sortColumn=="packets") Packets
-      option(value="bytes", selected=suser.settings.sortColumn=="bytes") Bytes
-      option(value="node", selected=suser.settings.sortColumn=="node") Node
+      option(value="start") Start Time
+      option(value="stop") Stop Time
+      option(value="srcip") Src IP
+      option(value="srcport") Src Port
+      option(value="dstip") Dst IP
+      option(value="dstport") Dst Port
+      option(value="packets") Packets
+      option(value="bytes") Bytes
+      option(value="node") Node
     select#sortDirection.setting(name="sortDirection")
-      option(value="asc", selected=suser.settings.sortDirection=="asc") Ascending
-      option(value="desc", selected=suser.settings.sortDirection=="desc") Descending
-
+      option(value="asc") Ascending
+      option(value="desc") Descending
+    h3 SPI Graph Tab
+    label(for='spiGraph') Default Graph:
+    mixin fieldsSelect("spiGraph", "setting", false)
+    h3 Connections Tab
+    label(for='connSrcField') Default Src Field:
+    mixin fieldsSelect("connSrcField", "setting", true)
+    br
+    label(for='connDstField') Default Dst Field:
+    mixin fieldsSelect("connDstField", "setting", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
+  p
+  hr
   h2 Change password for #{suser.userId} (#{suser.userName})
   form#changePassword
     - if (currentPassword)
@@ -50,10 +64,29 @@ block content
     label(for='newPassword2') New Password:
     input(type='password', id='newPassword2', name='newPassword2', size='30')
     input(type='hidden', id='token', name='token', value='#{token}')
-    br 
-    button#change Change
+    p 
+    center
+      button#change Change Password
 
   script(type='text/javascript').
+
+    $(document).ready(function() {
+      // Selects
+      var defaults = {
+        spiGraph: "no",
+        connSrcField: "a1",
+        connDstField: "ip.dst:port"
+      };
+
+      ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
+        if (molochSettings[field]) {
+          $("#" + field + " option[value='" + molochSettings[field] + "']").attr('selected', 'selected');
+        } else if (defaults[field]) {
+          $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
+        }
+      });
+    });
+    
 
     $('#changePassword').submit(function() {
       if ($("#newPassword").val() != $("#newPassword2").val()) {

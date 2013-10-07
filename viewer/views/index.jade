@@ -385,12 +385,6 @@ block content
                   $("#bsqErr").hide();
                 }
 
-                if ($("#date").val() === "-2") {
-                  $("#customDate").show();
-                } else {
-                  $("#customDate").hide();
-                }
-
                 fnCallback(json);
                 $("#actionsForm").data("moloch-visible", sessionsTable.fnSettings().aiDisplay.length)
                                  .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());

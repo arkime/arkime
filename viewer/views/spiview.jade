@@ -233,12 +233,6 @@ block content
               $("#bsqErr").hide();
             }
 
-            if ($("#date").val() === "-2") {
-              $("#customDate").show();
-            } else {
-              $("#customDate").hide();
-            }
-
             $("#actionsForm").data("moloch-visible", -1)
                              .data("moloch-all", json.iTotalDisplayRecords);
             $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");

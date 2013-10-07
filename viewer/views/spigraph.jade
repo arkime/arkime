@@ -1,5 +1,7 @@
 extends layout
 
+include mixins
+
 block scripts
   script(src='jquery-jvectormap-1.2.2.min.js')
   script(src='jquery-jvectormap-world-en.js')
@@ -24,18 +26,7 @@ block content
       option(value="dbHisto") databytes
   div#spiGraphSelect
     label SPI Graph:
-    select(id='field')
-      each value in fields 
-        if (value.db !== null)
-          if (value.type.match(/textfield$/))
-            if (value.db.match(/.snow$/))
-              - var tmp = value.db.replace(".snow", ".raw");
-              option(value="#{tmp}", exp='#{value.exp}') #{value.exp}
-            else
-              option(value="raw#{value.db}", exp='#{value.exp}') #{value.exp}
-            option(value="#{value.db}", exp='#{value.exp}') #{value.exp} Tokens
-          else
-            option(value="#{value.db}", exp='#{value.exp}') #{value.exp}
+    mixin fieldsSelect("field", "", false)
     label Max Elements:
     select(id='size')
       option(value="10") 10
@@ -77,19 +68,22 @@ block content
 
     });
 
+    function handleParams() {
+      var params = handleUrlParams();
+      if (params.field !== undefined) {
+        $("#field").val(params.field);
+      } else {
+        $("#field").val(molochSettings.spiGraph || "no");
+      }
+      if (params.size !== undefined) {
+        $("#size").val(params.size);
+      }
+    }
+
     $(window).bind('popstate', function(e) {
       if (window.history.ready) {
         doPushState = 0;
-        var params = handleUrlParams();
-        if (params.field !== undefined) {
-          $("#field").val(params.field);
-        } else {
-          $("#field").val("no");
-        }
-        if (params.size !== undefined) {
-          $("#size").val(params.size);
-        }
-
+        handleParams();
         loadData();
       }
     });
@@ -139,12 +133,6 @@ block content
                              .data("moloch-all", json.iTotalDisplayRecords);
 
             $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords || 0) + " entries filtered from " + numberWithCommas(json.iTotalRecords || 0) + " total entries");
-
-            if ($("#date").val() === "-2") {
-              $("#customDate").show();
-            } else {
-              $("#customDate").hide();
-            }
 
             $('#sessionGraphs').empty();
             json.items.forEach(function(item, i) {
@@ -203,15 +191,7 @@ block content
     });
 
     $(document).ready(function() {
-      var initialParams = handleUrlParams();
-      if (initialParams.field !== undefined) {
-        $("#field").val(initialParams.field);
-      } else {
-        $("#field").val("no");
-      }
-      if (initialParams.size !== undefined) {
-        $("#size").val(initialParams.size);
-      }
+      handleParams();
       loadData();
 
       $.contextMenu({

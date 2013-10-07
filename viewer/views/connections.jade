@@ -1,7 +1,30 @@
 extends layout
 
+include mixins
+
 block scripts
   script(type='text/javascript', src='jquery.autocomplete.js')
+
+block customMenu
+  div#connectionsMenu
+    label(for='graphSize') Query Size:
+    select(id='graphSize')
+      option(value="100") 100
+      option(value="500") 500
+      option(value="1000",selected) 1000
+      option(value="5000") 5000
+      option(value="10000") 10000
+      option(value="100000") 100000
+    label(for='srcField') Src:
+    mixin fieldsSelect("srcField", "", true)
+    label(for='dstField') Dst:
+    mixin fieldsSelect("dstField", "", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
+    label(for='minConn') Min Connections:
+    select(id='minConn')
+      option(value="1") 1
+      option(value="2") 2
+      option(value="3") 3
+      option(value="4") 4
 
 block content
   div#networkLabel
@@ -15,9 +38,31 @@ block content
     var trans=[0,0];
     var scale=1;
     var popupTimer;
+    var colors = ["", "green", "red", "purple"];
 
-    $("#graphType, #graphSize").show();
-    $("#graphType,#graphSize").change (function() {
+    function handleParams() {
+      params = handleUrlParams();
+
+      if (params.srcField !== undefined) {
+        $("#srcField").val(params.srcField);
+      } else {
+        $("#srcField").val(molochSettings.connSrcField || "a1");
+      }
+
+      if (params.dstField !== undefined) {
+        $("#dstField").val(params.dstField);
+      } else {
+        $("#dstField").val(molochSettings.connDstField || "ip.dst:port");
+      }
+
+      if (params.minConn !== undefined) {
+        $("#minConn").val(params.minConn);
+      } else {
+        $("#minConn").val(molochSettings.connMinConn || "1");
+      }
+    }
+
+    $("#srcField,#dstField,#minConn,#graphSize").change (function() {
       initialDisplayLength = +$("#graphSize").val();
       loadData();
       return false;
@@ -27,7 +72,7 @@ block content
     $(window).bind('popstate', function(e) {
       if (window.history.ready) {
         doPushState = 0;
-        handleUrlParams();
+        handleParams();
 
         loadData();
         return false;
@@ -80,52 +125,35 @@ block content
          })
          .remove();
     }
-    function gAddIp(ip, op) {
-      if (ip.slice(0, 4) === "dst:") {
-        addExpression("ip.dst == " + ip.slice(4), op);
-      } else if (ip.slice(0, 4) === "src:") {
-        addExpression("ip.src == " + ip.slice(4), op);
-      } else {
-        addExpression("ip == " + ip, op);
+    var currentNode = null;
+    function gAddNode(op) {
+      var expr = $("#srcField option:selected").text();
+      if (currentNode.type === 2) {
+        expr = $("#dstField option:selected").text();
       }
+
+      addExpression(expr + "==" + currentNode.id, op);
     }
 
-    function gAddTSIp(ip1, ip2, op) {
-      var ip1s = "ip";
+    var currentLink = null;
+    function gAddLink(op) {
+      var srcExpr = $("#srcField option:selected").text();
+      var dstExpr = $("#dstField option:selected").text();
 
-      if (ip1.slice(0, 4) === "dst:") {
-        ip1 = ip1.slice(4);
-        ip1s = "ip.dst";
-      }
-
-      if (ip1.slice(0, 4) === "src:") {
-        ip1 = ip1.slice(4);
-        ip1s = "ip.src";
-      }
-
-      var ip2s = "ip";
-      if (ip2.slice(0, 4) === "dst:") {
-        ip2 = ip2.slice(4);
-        ip2s = "ip.dst";
-      }
-
-      if (ip2.slice(0, 4) === "src:") {
-        ip2 = ip2.slice(4);
-        ip2s = "ip.src";
-      }
-
-      addExpression("(" + ip1s + " == " + ip1 + " && " + ip2s + " == " + ip2 + ")", op);
+      addExpression("(" + srcExpr + " == " + currentLink.source.id + " && " + dstExpr + " == " + currentLink.target.id + ")", op);
     }
 
     function showNodePopup(that, d) {
-      var content = "Address<br>" + 
-                     d.id + (d.g?" (" + d.g + ")":"") + "<br>" + 
+      currentNode = d;
+      var content = d.id + "<br>" + 
+                    "Type: " + ["", "Source", "Target", "Both"][d.type] + "<br>" + 
                     "Links: " + d.weight + "<br>" +
+                    "Sessions: " + numberWithCommas(d.sessions) + "<br>" +
                     "Bytes: " + numberWithCommas(d.by) + "<br>" +
                     "Databytes: " + numberWithCommas(d.db) + "<br>" +
                     "Packets: " + numberWithCommas(d.pa) + "<br>" +
-                    "Expression: <a href='javascript:gAddIp(\"" + d.id + "\", \" && \")'>&amp;&amp;</a> " +
-                                "<a href='javascript:gAddIp(\"" + d.id + "\", \" || \")'>||</a><br>" +
+                    "Expression: <a href='javascript:gAddNode(\" && \")'>&amp;&amp;</a> " +
+                                "<a href='javascript:gAddNode(\" || \")'>||</a><br>" +
                     "<a href='javascript:hideNode(\"" + d.id + "\")'>Hide Node</a>";
       $('#networkLabel').html(content)
                         .css({ left: trans[0] + (d.px*scale) + 25,
@@ -136,16 +164,16 @@ block content
     }
 
     function showLinkPopup(that, d, mouse) {
+      currentLink = d;
       $('#networkLabel').html("Link<br>" + 
-                        d.source.id + (d.source.g?" (" + d.source.g + ")":"") + "<br>" + 
-                        d.target.id + (d.target.g?" (" + d.target.g + ")":"") + "<br>" + 
+                        d.source.id + "<br>" + 
+                        d.target.id + "<br>" + 
                         "Sessions: " + numberWithCommas(d.value) + "<br>" +
-                        "Protocol: " + d.pr + "<br>" +
                         "Bytes: " + numberWithCommas(d.by) + "<br>" +
                         "Databytes: " + numberWithCommas(d.db) + "<br>" +
                         "Packets: " + numberWithCommas(d.pa) + "<br>" +
-                        "Expression: <a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" && \")'>&amp;&amp;</a> " +
-                                    "<a href='javascript:gAddTSIp(\"" + d.source.id + "\", \"" + d.target.id + "\", \" || \")'>||</a><br>" +
+                        "Expression: <a href='javascript:gAddLink(\" && \")'>&amp;&amp;</a> " +
+                                    "<a href='javascript:gAddLink(\" || \")'>||</a><br>" +
                         "<a href='javascript:hideLink(\"" + d.source.id + "\",\"" + d.target.id + "\")'>Hide Link</a>")
                         .css({ left: trans[0] + (mouse[0]*scale) + 25,
                                 top: trans[1] + (mouse[1]*scale) + $('#networkLabel').height()/2 + 25
@@ -164,7 +192,11 @@ block content
           .remove();
 
       var params = buildParams();
-      var state = $("#graphType").val() + "&" + $.param(params);
+      params.push({name:'srcField', value:$("#srcField").val()});
+      params.push({name:'dstField', value:$("#dstField").val()});
+      params.push({name:'minConn', value:$("#minConn").val()});
+      var state = $.param(params);
+
       var url = "connections.json?" + state;
       if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
         history.pushState({}, this.title || '', "connections?" + state);
@@ -173,7 +205,6 @@ block content
       }
 
       d3.json(url, function(json) {
-
         $("#actionsForm").data("moloch-visible", +$("#graphSize").val())
                          .data("moloch-all", json.iTotalDisplayRecords);
         updateHealth(json.health);
@@ -196,31 +227,46 @@ block content
               window.clearTimeout(popupTimer);
             })
             ;  
+        var drag = d3.behavior.drag()
+          .origin(function(d) { return d; })
+          .on("dragstart", function (d) {
+            $('#networkLabel').hide();
+            d3.event.sourceEvent.stopPropagation(); 
+            d3.select(this).classed("dragging", true);
+            d.fixed |= 1;
+          })
+          .on("drag", function (d) {d.px = d3.event.x, d.py = d3.event.y; force.resume();})
+          .on("dragend", function (d) {
+            d3.select(this).classed("dragging", false);
+          });
 
         var node = svg.selectAll(".node")
             .data(json.nodes)
             .enter().append("g")
             .attr("class", "node")
             .attr("id", function(d) {return "id" + d.id.replace(/[:\.]/g,"_");})
-            .attr("y", function (d,i) {return i;})
-            .call(force.drag)
+            //.attr("y", function (d,i) {return i;})
+            .call(drag)
             .on("mouseover",function(d) {
+              if (d3.select(this).classed("dragging")) {
+                return;
+              }
+
               if (popupTimer) {
                 window.clearTimeout(popupTimer);
               }
               popupTimer = window.setTimeout(showNodePopup, 800, this, d);
-              d.fixed |= 1;
             }).on("mouseout",function(d){
               window.clearTimeout(popupTimer);
             })
             ;  
 
-        node.append("image")
-            .attr("xlink:href", "favicon.ico")
-            .attr("x", -8)
-            .attr("y", -8)
-            .attr("width", 16)
-            .attr("height", 16);
+        node.append("svg:circle")
+          .attr("class", "node")
+          .attr("r", function(d) { return Math.min(3+Math.log(d.sessions), 12); })
+          .style("fill", function(d) { return colors[d.type];})
+          ;
+
 
         node.append("text")
             .attr("dx", 12)
@@ -240,7 +286,7 @@ block content
     }
 
     $(document).ready(function() {
-      handleUrlParams();
+      handleParams();
 
       var width = $(window).width(),
           height = $(window).height()-100;

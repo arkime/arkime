@@ -1,0 +1,20 @@
+//- Standard method to print an array of values with commas
+mixin fieldsSelect(name,classname,simple,extra)
+  select(id=name,name=name,class=classname)
+    - var fields = fieldsArr
+    if (extra)
+      - fields = fields.concat(extra).sort(function(a,b) {return (a.exp > b.exp?1:-1);})
+    each value in fields
+      if (value.db !== null)
+        if (simple)
+          option(value="#{value.db}") #{value.exp}
+        else
+          if (value.type.match(/textfield$/))
+            if (value.db.match(/.snow$/))
+              - var tmp = value.db.replace(".snow", ".raw");
+              option(value="#{tmp}", exp='#{value.exp}') #{value.exp}
+            else
+              option(value="raw#{value.db}", exp='#{value.exp}') #{value.exp}
+            option(value="#{value.db}", exp='#{value.exp}') #{value.exp} Tokens
+          else
+            option(value="#{value.db}", exp='#{value.exp}') #{value.exp}

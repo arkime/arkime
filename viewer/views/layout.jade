@@ -10,7 +10,7 @@ html
     script(type='text/javascript', src='flot-0.7/jquery.flot.resize.min.js')
     script(type='text/javascript', src='flot-0.7/jquery.flot.navigate.min.js')
     script(type='text/javascript', src='jquery.qtip.min.js')
-    script(type='text/javascript', src='d3.v2.js')
+    script(type='text/javascript', src='d3.v3.js')
     script(type='text/javascript', src='common.js')
     block scripts
 
@@ -57,17 +57,7 @@ html
         form#searchForm
           div#searchStuff
             span#searchStuffLeft
-              select(id='graphSize')
-                option(value="100") 100
-                option(value="500") 500
-                option(value="1000",selected) 1000
-                option(value="5000") 5000
-                option(value="10000") 10000
-              select(id='graphType')
-                option(value="useDir=1&usePort=0") Directed/No Port
-                option(value="useDir=1&usePort=1") Directed/Port
-                option(value="useDir=0&usePort=0",selected) Indirect/No Port
-                option(value="useDir=0&usePort=1") Indirect/Port
+              block searchStuffLeft
               select(id='date')
                 option(value=1,selected) Last 1 hr
                 option(value=6) Last 6 hrs
@@ -85,15 +75,14 @@ html
               label#actionsButton Actions 
                 img#actionsButtonArrow(src="down-arrow.png")
             //button#info(type="button") I
-    - if (isIndex)
-      div#customDate
-        center
-        span Beginning Time:
-        input#startDate(size=21)
-        span Ending Time:
-        input#stopDate(size=21)
-        input(type='checkbox', id='strictly', name='strictly', size=21)
-        label(for='strictly') Bounded By 
+    div#customDate
+      span Beginning Time:
+      input#startDate(size=21)
+      span Ending Time:
+      input#stopDate(size=21)
+      input(type='checkbox', id='strictly', name='strictly', size=21)
+      label(for='strictly') Bounded By 
+    block customMenu
         
     div.pageBody(id="pageBody-#{titleLink}")
       block content

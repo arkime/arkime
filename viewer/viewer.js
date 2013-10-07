@@ -97,6 +97,7 @@ app.configure(function() {
   app.locals.basePath = Config.basePath();
   app.locals.elasticBase = "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1];
   app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
+  app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
   app.locals.sendSession = Config.getObj("sendSession");
 
@@ -306,14 +307,11 @@ app.get("/spigraph", function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
-  var fields = Config.getFields();
-  fields = fields.sort(function(a,b) {return (a.exp > b.exp?1:-1);});
   res.render('spigraph', {
     user: req.user,
     title: 'SPI Graph',
     titleLink: 'spigraphLink',
-    isIndex: true,
-    fields: fields
+    isIndex: true
   });
 });
 
@@ -345,13 +343,10 @@ app.get('/about', function(req, res) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
-  var fields = Config.getFields();
-  fields = fields.sort(function(a,b) {return (a.exp > b.exp?1:-1);});
   res.render('about', {
     user: req.user,
     title: 'About',
-    titleLink: 'aboutLink',
-    fields: fields
+    titleLink: 'aboutLink'
   });
 });
 
@@ -901,9 +896,16 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   }
 
   // Do a ro search on each item
+  var writes = 0; 
   async.eachLimit(list, 10, function(item, nextCb) {
     if (!item.fields.ro || processedRo[item.fields.ro]) {
-      return nextCb(null);
+      if (writes++ > 100) {
+        writes = 0;
+        setTimeout(nextCb, 0);
+      } else {
+        nextCb();
+      }
+      return;
     }
     processedRo[item.fields.ro] = true;
 
@@ -1658,8 +1660,18 @@ app.get('/dns.json', function(req, res) {
 });
 
 app.get('/connections.json', function(req, res) {
+  if (req.query.dstField === "ip.dst:port") {
+    var dstipport = true;
+    req.query.dstField = "a2";
+  }
 
+  req.query.srcField       = req.query.srcField || "a1";
+  req.query.dstField       = req.query.dstField || "a2";
+  var fsrc                 = req.query.srcField.replace(".snow", "");
+  var fdst                 = req.query.dstField.replace(".snow", "");
+  var minConn              = req.query.minConn  || 1;
   req.query.iDisplayLength = req.query.iDisplayLength || "5000";
+
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {};
@@ -1667,7 +1679,18 @@ app.get('/connections.json', function(req, res) {
       return;
     }
 
-    query.fields = ["a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
+    if (query.query.filtered.filter === undefined) {
+      query.query.filtered.filter = {bool: {must: [{exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
+    } else {
+      query.query.filtered.filter = {bool: {must: [query.query.filtered.filter, {exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
+    }
+
+    query.fields = ["by", "db", "pa", "no", fsrc, fdst];
+    if (dstipport) {
+      query.fields.push("p2");
+    }
+
+    console.log("connections.json query", JSON.stringify(query));
 
     async.parallel({
       health: function (healthCb) {
@@ -1685,75 +1708,101 @@ app.get('/connections.json', function(req, res) {
       }
 
       var nodesHash = {};
-      var nodes = [];
       var connects = {};
-      var numNodes = 1;
 
       var i;
-      for (i = 0; i < results.graph.hits.hits.length; i++) {
-        if (!results.graph.hits.hits[i] || !results.graph.hits.hits[i].fields) {
+      var hits = results.graph.hits.hits;
+      for (i = 0; i < hits.length; i++) {
+        if (!hits[i] || !hits[i].fields) {
           continue;
         }
 
-        var f = results.graph.hits.hits[i].fields;
-        var a1, a2, g1, g2;
-        if (req.query.useDir === "1"|| f.a1 < f.a2) {
-          a1 = Pcap.inet_ntoa(f.a1);
-          a2 = Pcap.inet_ntoa(f.a2);
-          g1 = f.g1;
-          g2 = f.g2;
-          if (req.query.usePort === "1") {
-            a2 += ":" + f.p2;
+        var f = hits[i].fields;
+        if (f[fsrc] === undefined || f[fdst] === undefined) {
+          continue;
+        }
+
+        var asrc = Array.isArray(f[fsrc])? f[fsrc] : [f[fsrc]];
+        var adst = Array.isArray(f[fdst])? f[fdst] : [f[fdst]];
+
+        for (var s = 0; s < asrc.length; s++) {
+          var vsrc = asrc[s];
+
+          if (fsrc.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+            vsrc = Pcap.inet_ntoa(vsrc);
           }
-          if (req.query.useDir === "1") {
-            a1 = "src:" + a1;
-            a2 = "dst:" + a2;
+
+          for (var d = 0; d < adst.length; d++) {
+            var vdst = adst[d];
+
+            if (fdst.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+              vdst = Pcap.inet_ntoa(vdst);
+              if (dstipport) {
+                vdst += ":" + f.p2;
+              }
+            }
+
+            if (nodesHash[vsrc] === undefined) {
+              nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+            }
+
+            nodesHash[vsrc].sessions++;
+            nodesHash[vsrc].by += f.by;
+            nodesHash[vsrc].db += f.db;
+            nodesHash[vsrc].pa += f.pa;
+            nodesHash[vsrc].type |= 1;
+
+            if (nodesHash[vdst] === undefined) {
+              nodesHash[vdst] = {id: ""+vdst, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+            }
+
+            nodesHash[vdst].sessions++;
+            nodesHash[vdst].by += f.by;
+            nodesHash[vdst].db += f.db;
+            nodesHash[vdst].pa += f.pa;
+            nodesHash[vdst].type |= 2;
+
+            var n = "" + vsrc + "->" + vdst;
+            if (connects[n] === undefined) {
+              connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, no: {}};
+              nodesHash[vsrc].cnt++;
+              nodesHash[vdst].cnt++;
+            }
+
+            connects[n].value++;
+            connects[n].by += f.by;
+            connects[n].db += f.db;
+            connects[n].pa += f.pa;
+            connects[n].no[f.no] = 1;
           }
-        } else {
-          a1 = Pcap.inet_ntoa(f.a2);
-          a2 = Pcap.inet_ntoa(f.a1);
-          g1 = f.g2;
-          g2 = f.g1;
-          if (req.query.usePort === "1") {
-            a1 += ":" + f.p2;
-          }
         }
-
-        if (nodesHash[a1] === undefined) {
-          nodesHash[a1] = nodes.length;
-          nodes.push({id: a1, g: g1, db: 0, by: 0, pa: 0});
-        }
-
-        if (nodesHash[a2] === undefined) {
-          nodesHash[a2] = nodes.length;
-          nodes.push({id: a2, g: g2, db: 0, by: 0, pa: 0});
-        }
-
-        var a1p = nodesHash[a1];
-        var a2p = nodesHash[a2];
-        nodes[a1p].by += f.by;
-        nodes[a1p].db += f.db;
-        nodes[a1p].pa += f.pa;
-        nodes[a2p].by += f.by;
-        nodes[a2p].db += f.db;
-        nodes[a2p].pa += f.pa;
-
-        var n = "" + a1 + "," + a2;
-        if (connects[n] === undefined) {
-          connects[n] = {value: 0, source: nodesHash[a1], target: nodesHash[a2], by: 0, db: 0, pa: 0, no: {}};
-        }
-
-        connects[n].value++;
-        connects[n].by += f.by;
-        connects[n].db += f.db;
-        connects[n].pa += f.pa;
-        connects[n].no[f.no] = 1;
       }
+
+      var nodes = [];
+      for (var node in nodesHash) {
+        if (nodesHash[node].cnt < minConn) {
+          nodesHash[node].pos = -1;
+        } else {
+          nodesHash[node].pos = nodes.length;
+          nodes.push(nodesHash[node]);
+        }
+      }
+
 
       var links = [];
       for (var key in connects) {
-        links.push(connects[key]);
+        var c = connects[key];
+        c.source = nodesHash[c.source].pos;
+        c.target = nodesHash[c.target].pos;
+        if (c.source >= 0 && c.target >= 0) {
+          links.push(connects[key]);
+        }
       }
+
+      //console.log("nodesHash", nodesHash);
+      //console.log("connects", connects);
+      //console.log("nodes", nodes.length, nodes);
+      //console.log("links", links.length, links);
 
       res.send({health: results.health, nodes: nodes, links: links, iTotalDisplayRecords: results.graph.hits.total});
     });
@@ -1791,7 +1840,7 @@ function csvListWriter(req, res, list, pcapWriter, extension) {
 
 app.get(/\/sessions.csv.*/, function(req, res) {
   res.setHeader("Content-Type", "text/csv");
-  var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"]
+  var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
   if (req.query.ids) {
     var ids = req.query.ids.split(",");

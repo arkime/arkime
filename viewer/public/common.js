@@ -1035,6 +1035,7 @@ function setSessionStopTime (t) {
 function addDateParams(params) {
   if ($("#date").length) {
     if ($("#date").val() === "-2") {
+      $("#customDate").show();
       /* Date madness because of firefox on windows */
       var extra = (molochSettings.timezone === "gmt"?" UTC":"");
       var d = new Date($("#startDate").val() + extra);
@@ -1048,6 +1049,7 @@ function addDateParams(params) {
       if (d < 0) {d.setFullYear(d.getFullYear() + 100);}
       params.push({name:'stopTime', value:d/1000});
     } else if ($("#date").val()) {
+      $("#customDate").hide();
       params.push({name:'date', value:$("#date").val()});
     }
   }

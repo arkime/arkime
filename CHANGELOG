@@ -1,3 +1,13 @@
+0.9.2 XXX
+  - Upgrade d3 and cubism 
+  - Fixed searches so number don't have to be quoted
+  - Fixed export hitting max number of stack frames
+  - Connections tab new UI
+  - Connections tab allows any field for src/dst
+  - More user settings
+  - Fixed unique.txt to deal with multi value fields
+
+
 0.9.1 2013/10/03
   - Make sure at least one stats record is written per run
   - Display IRC channel in sessions view

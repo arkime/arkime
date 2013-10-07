@@ -28,6 +28,8 @@
 "http.ua"                 return "http.user-agent"
 "ua.cnt"                  return "http.user-agent.cnt"
 "ua"                      return "http.user-agent"
+"uri.cnt"                 return "http.uri.cnt"
+"uri"                     return "http.uri"
 
 /* Search Elements*/
 "asn"                     return 'asn'
@@ -162,8 +164,6 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "\"tcp\""                 return "tcp"
 "udp"                     return "udp"
 "\"udp\""                 return "udp"
-"uri.cnt"                 return "http.uri.cnt"
-"uri"                     return "http.uri"
 "user.cnt"                return "user.cnt"
 "user"                    return "user"
 [/\w*._:-]+               return 'ID'
@@ -415,8 +415,6 @@ STR : ID
     | port.socks
     | port.src
     | protocol
-    | QUOTEDSTR
-    | REGEXSTR
     | rir
     | rir.dns
     | rir.dst
@@ -436,6 +434,9 @@ STR : ID
     | udp
     | uri
     | uri.cnt
+    | NUMBER
+    | QUOTEDSTR
+    | REGEXSTR
     | LOWERLIST
     | ANYLIST
     | NUMBERLIST
@@ -517,15 +518,6 @@ e
         {$$ = str2Query(str2Header(yy, $1), "text", $3);}
     | HEADER '!=' STR
         {$$ = {not: str2Query(str2Header(yy, $1), "text", $3)};}
-    | HEADER '==' NUMBER
-        {
-        $$ = {term: {}};
-        $$.term[str2Header(yy, $1)] = $3;
-        }
-    | HEADER '!=' NUMBER
-        { $$ = {not: {term: {}}};
-          $$.not.term[str2Header(yy, $1)] = $3;
-        }
     | HEADER GTLT NUMBER
         {$$ = {range: {}};
          $$.range[str2Header(yy, $1)] = {};
@@ -870,8 +862,10 @@ function str2Query(field, kind, str)
     }
 
     var strs;
+    var quoted = false;
     if (str[0] === "\"" && str[str.length -1] === "\"") {
         str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        quoted = true;
     } else if (str[0] === "[" && str[str.length -1] === "]") {
         strs = CSVtoArray(str);
         if (kind === "term") {
@@ -888,7 +882,10 @@ function str2Query(field, kind, str)
         return obj;
     }
 
-    if (str.indexOf("*") !== -1) {
+    if (!isNaN(str) && !quoted) {
+        obj = {term: {}};
+        obj.term[field] = str;
+    } else if (str.indexOf("*") !== -1) {
         field = field2RawField[field] || field;
         obj = {query: {wildcard: {}}};
         obj.query.wildcard[field] = str;
