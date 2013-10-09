@@ -787,8 +787,8 @@ function parseIpPort(yy, ipPortStr, which) {
 
   if (port !== -1) {
     t1    = {bool: {must: [t1, {term: {p1: port}}]}};
-    t2    = {bool: {must: [t2, {term: {p1: port}}]}};
-    socks = {bool: {must: [socks, {term: {p1: port}}]}};
+    t2    = {bool: {must: [t2, {term: {p2: port}}]}};
+    socks = {bool: {must: [socks, {term: {sockspo: port}}]}};
   }
 
   switch(which) {

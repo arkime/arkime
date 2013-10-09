@@ -33,6 +33,7 @@ block content
     var initialDisplayLength = 100;
     var doPushState = 1;
     var svg;
+    var svgMain;
     var force;
     var zoom;
     var trans=[0,0];
@@ -84,12 +85,15 @@ block content
     $(window).resize(function(e) {
       expressionResize();
 
-      svg.attr("width", $(window).width())
-         .attr("height", $(window).height()-100)
-         ;
+      var width = $(window).width() - 4;
+      var height = $(window).height() - $("#headers").height() - 4;
+
+      svgMain.attr("width", width)
+             .attr("height", height);
+             ;
 
       if (force) {
-        force.size([$(window).width(), $(window).height()-100]);
+        force.size([width, height]);
       }
     });
 
@@ -125,6 +129,14 @@ block content
          })
          .remove();
     }
+
+    function exprLookup(expr) {
+      if (expr === "ip.dst:port") {
+        return "ip.dst";
+      }
+      return expr;
+    }
+
     var currentNode = null;
     function gAddNode(op) {
       var expr = $("#srcField option:selected").text();
@@ -132,13 +144,13 @@ block content
         expr = $("#dstField option:selected").text();
       }
 
-      addExpression(expr + "==" + currentNode.id, op);
+      addExpression(exprLookup(expr) + "==" + currentNode.id, op);
     }
 
     var currentLink = null;
     function gAddLink(op) {
-      var srcExpr = $("#srcField option:selected").text();
-      var dstExpr = $("#dstField option:selected").text();
+      var srcExpr = exprLookup($("#srcField option:selected").text());
+      var dstExpr = exprLookup($("#dstField option:selected").text());
 
       addExpression("(" + srcExpr + " == " + currentLink.source.id + " && " + dstExpr + " == " + currentLink.target.id + ")", op);
     }
@@ -217,7 +229,7 @@ block content
             .data(json.links)
             .enter().append("line")
             .attr("class", "link")
-            .style("stroke-width", function(d) { return Math.sqrt(d.value);})
+            .style("stroke-width", function(d) { return Math.min(1 + Math.log(d.value), 12);})
             .on("mouseover",function(d) {
               if (popupTimer) {
                 window.clearTimeout(popupTimer);
@@ -268,7 +280,14 @@ block content
           ;
 
 
-        node.append("text")
+
+        node.append("svg:text")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .attr("class", "connshadow")
+            .text(function(d) { return d.id;});
+
+        node.append("svg:text")
             .attr("dx", 12)
             .attr("dy", ".35em")
             .text(function(d) { return d.id;});
@@ -281,15 +300,14 @@ block content
 
           node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
         });
-        svg.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");
       });
     }
 
     $(document).ready(function() {
       handleParams();
 
-      var width = $(window).width(),
-          height = $(window).height()-100;
+      var width = $(window).width() - 4;
+      var height = $(window).height() - $("#headers").height() - 4;
 
       zoom = d3.behavior.zoom()
           .translate([0,0])
@@ -297,10 +315,11 @@ block content
           .scaleExtent([0.25,6])
           .on("zoom", redraw);
 
-      svg = d3.select("#network").append("svg:svg")
+      svgMain = d3.select("#network").append("svg:svg")
           .attr("width", width)
-          .attr("height", height)
-          .append('svg:g')
+          .attr("height", height);
+
+      svg = svgMain.append('svg:g')
           .call(zoom)
           .append('svg:g')
           ;
@@ -317,8 +336,8 @@ block content
 
       force = d3.layout.force()
           .gravity(0.05)
-          .distance(150)
-          .charge(-100)
+          .distance(120)
+          .charge(-300)
           .size([width, height])
           ;
 

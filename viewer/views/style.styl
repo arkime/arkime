@@ -236,24 +236,6 @@ body
   background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
   //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
-#connectionsMenu
-  clear: both
-  padding-left: 65px
-  z-index: 4
-  font-family: Arial, sans-serif
-  text-shadow: black 0.1em 0.1em 0.2em
-  font-weight: normal
-  font-size: 12px
-  color:white
-  background: #16285a /* Old browsers */
-  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
-  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
-  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
-  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
-
 .dataTables_processing
   border: 0px
   color: red
@@ -641,13 +623,21 @@ table#sessions td.dateColumn
 .jvectormap-zoomout
   top: 30px
 
-// GRAPH
+// Connections
 .link
   stroke: #ccc
+
+.node circle
+  stroke: #333
+  stroke-width: 2px
 
 .node text
   pointer-events: none
   font: 10px sans-serif
+
+.connshadow
+  stroke-width: 2px
+  stroke: #fff
 
 #networkLabel
   position: absolute
@@ -662,6 +652,24 @@ table#sessions td.dateColumn
   font-size: smaller
   padding: 3px
   width: 200px
+
+#connectionsMenu
+  clear: both
+  padding-left: 65px
+  z-index: 4
+  font-family: Arial, sans-serif
+  text-shadow: black 0.1em 0.1em 0.2em
+  font-weight: normal
+  font-size: 12px
+  color:white
+  background: #16285a /* Old browsers */
+  background: -moz-linear-gradient(top,  #16285a 0%, #435b99 100%) /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#16285a), color-stop(100%,#435b99)) /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #16285a 0%,#435b99 100%) /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #16285a 0%,#435b99 100%) /* IE10+ */
+  background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
+  //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
 // spiview
 

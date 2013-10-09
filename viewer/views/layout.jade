@@ -22,68 +22,69 @@ html
       style(type='text/css').
         ##{titleLink} { color:white}
   body(id="body-#{titleLink}")
-    #header
-      div#logo
-        a(href='about')
-          img(src='header_logo.png', style="border-style:none")
-      div#nav
-        ul.ulist-nav
-          li
-            a#sessionsLink.expressionsLink(href='#{basePath}') Sessions
-          li
-            a#spiLink.expressionsLink(href='spiview') SPI View
-          li
-            a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
-          li
-            a#connectionsLink.expressionsLink(href='connections') Connections
-          if allowUploads
+    #headers
+      #header
+        div#logo
+          a(href='about')
+            img(src='header_logo.png', style="border-style:none")
+        div#nav
+          ul.ulist-nav
             li
-              a#uploadLink(href='upload') Upload
-          li
-            a#filesLink(href='files') Files
-          if user.createEnabled
+              a#sessionsLink.expressionsLink(href='#{basePath}') Sessions
             li
-              a#usersLink(href='users') Users
-          li
-            a#statsLink(href='stats') Stats
-          li.last
-            a.config#settingsLinke(href='settings') Settings
-      - if (user.createEnabled)
-        a(href="#{elasticBase}/_plugin/head/",target="_blank")
-          div#esstatus.tooltip
-      div#version 
-        p moloch v#{molochversion}
-      - if (isIndex)
-        form#searchForm
-          div#searchStuff
-            span#searchStuffLeft
-              block searchStuffLeft
-              select(id='date')
-                option(value=1,selected) Last 1 hr
-                option(value=6) Last 6 hrs
-                option(value=24) Last 24 hrs 
-                option(value=48) Last 48 hrs 
-                option(value=72) Last 3 days
-                option(value=168) Last Week
-                option(value=720) Last Month
-                option(value=4380) Last 6 Months
-                option(value=-1) All
-                option(value=-2) Custom
-            input#expression(type='search', name='expression')
-            span#searchStuffRight
-              button#searchButton(type="submit") Search
-              label#actionsButton Actions 
-                img#actionsButtonArrow(src="down-arrow.png")
-            //button#info(type="button") I
-    div#customDate
-      span Beginning Time:
-      input#startDate(size=21)
-      span Ending Time:
-      input#stopDate(size=21)
-      input(type='checkbox', id='strictly', name='strictly', size=21)
-      label(for='strictly') Bounded By 
-    block customMenu
-        
+              a#spiLink.expressionsLink(href='spiview') SPI View
+            li
+              a#spigraphLink.expressionsLink(href='spigraph') SPI Graph
+            li
+              a#connectionsLink.expressionsLink(href='connections') Connections
+            if allowUploads
+              li
+                a#uploadLink(href='upload') Upload
+            li
+              a#filesLink(href='files') Files
+            if user.createEnabled
+              li
+                a#usersLink(href='users') Users
+            li
+              a#statsLink(href='stats') Stats
+            li.last
+              a.config#settingsLinke(href='settings') Settings
+        - if (user.createEnabled)
+          a(href="#{elasticBase}/_plugin/head/",target="_blank")
+            div#esstatus.tooltip
+        div#version 
+          p moloch v#{molochversion}
+        - if (isIndex)
+          form#searchForm
+            div#searchStuff
+              span#searchStuffLeft
+                block searchStuffLeft
+                select(id='date')
+                  option(value=1,selected) Last 1 hr
+                  option(value=6) Last 6 hrs
+                  option(value=24) Last 24 hrs 
+                  option(value=48) Last 48 hrs 
+                  option(value=72) Last 3 days
+                  option(value=168) Last Week
+                  option(value=720) Last Month
+                  option(value=4380) Last 6 Months
+                  option(value=-1) All
+                  option(value=-2) Custom
+              input#expression(type='search', name='expression')
+              span#searchStuffRight
+                button#searchButton(type="submit") Search
+                label#actionsButton Actions 
+                  img#actionsButtonArrow(src="down-arrow.png")
+              //button#info(type="button") I
+      div#customDate
+        span Beginning Time:
+        input#startDate(size=21)
+        span Ending Time:
+        input#stopDate(size=21)
+        input(type='checkbox', id='strictly', name='strictly', size=21)
+        label(for='strictly') Bounded By 
+      block customMenu
+          
     div.pageBody(id="pageBody-#{titleLink}")
       block content
     div#wrapper(style="display:none")

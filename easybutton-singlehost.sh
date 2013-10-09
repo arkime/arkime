@@ -27,7 +27,7 @@ fi
 
 
 ES=0.90.5
-NODEJS=0.10.17
+NODEJS=0.10.20
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then

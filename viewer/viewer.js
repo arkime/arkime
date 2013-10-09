@@ -45,7 +45,8 @@ var Config         = require('./config.js'),
     HTTPParser     = process.binding('http_parser').HTTPParser,
     molochversion  = require('./version'),
     httpAgent      = require('http'),
-    httpsAgent     = require('https');
+    httpsAgent     = require('https'),
+    ForeverAgent   = require('forever-agent');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm install' inside viewer directory", e);
   process.exit(1);
@@ -86,6 +87,10 @@ passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Mo
       return done(null, true);
   }
 ));
+
+// Node 0.12 won't need this
+var foreverAgent    = new ForeverAgent({minSockets: 21, maxSockets: 20});
+var foreverAgentSSL = new ForeverAgent.SSL({minSockets: 21, maxSockets: 20});
 
 
 app.configure(function() {
@@ -191,7 +196,6 @@ app.configure(function() {
   express.logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 });
 
-
 //////////////////////////////////////////////////////////////////////////////////
 //// Utility
 //////////////////////////////////////////////////////////////////////////////////
@@ -206,6 +210,18 @@ var PNG_LINE_WIDTH = 256;
 
 function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
+}
+
+var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
+function fmenum(field) {
+  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+    return FMEnum.ip;
+  } else if (field.match(/^(ta)$/) !== null) {
+    return FMEnum.tags;
+  } else if (field.match(/^(hh1|hh2)$/) !== null) {
+    return FMEnum.hh;
+  }
+  return FMEnum.other;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -896,7 +912,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   }
 
   // Do a ro search on each item
-  var writes = 0; 
+  var writes = 0;
   async.eachLimit(list, 10, function(item, nextCb) {
     if (!item.fields.ro || processedRo[item.fields.ro]) {
       if (writes++ > 100) {
@@ -912,6 +928,10 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     query.query.filtered.filter = {term: {ro: item.fields.ro}};
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
+        console.log("ERROR fetching matching sessions", err, result);
+        return nextCb(null);
+      }
       result.hits.hits.forEach(function(item) {
         if (!haveIds[item._id]) {
           haveIds[item._id] = true;
@@ -1431,19 +1451,33 @@ app.get('/spigraph.json', function(req, res) {
     query.facets.field = {terms: {field: field, size: size}};
 
     /* Need the nextTick so we don't blow max stack frames */
-    var eachCb = function (item, cb) {process.nextTick(cb);};
-    if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+    var eachCb;
+    switch (fmenum(field)) {
+    case FMEnum.other:
+      eachCb = function (item, cb) {process.nextTick(cb);};
+      break;
+    case FMEnum.ip:
       eachCb = function(item, cb) {
         item.name = Pcap.inet_ntoa(item.name);
         process.nextTick(cb);
       };
-    } else if (field.match(/^(ta|hh1|hh2)$/) !== null) {
+      break;
+    case FMEnum.tags:
       eachCb = function(item, cb) {
         Db.tagIdToName(item.name, function (name) {
           item.name = name;
           process.nextTick(cb);
         });
       };
+      break;
+    case FMEnum.hh:
+      eachCb = function(item, cb) {
+        Db.tagIdToName(item.name, function (name) {
+          item.name = name.substring(12);
+          process.nextTick(cb);
+        });
+      };
+      break;
     }
 
     Db.healthCache(function(err, health) {results.health = health;});
@@ -1672,6 +1706,72 @@ app.get('/connections.json', function(req, res) {
   var minConn              = req.query.minConn  || 1;
   req.query.iDisplayLength = req.query.iDisplayLength || "5000";
 
+  var nodesHash = {};
+  var connects = {};
+  var tsrc = fmenum(fsrc);
+  var tdst = fmenum(fdst);
+
+  function process(vsrc, vdst, f, cb) {
+    if (nodesHash[vsrc] === undefined) {
+      nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+    }
+
+    nodesHash[vsrc].sessions++;
+    nodesHash[vsrc].by += f.by;
+    nodesHash[vsrc].db += f.db;
+    nodesHash[vsrc].pa += f.pa;
+    nodesHash[vsrc].type |= 1;
+
+    if (nodesHash[vdst] === undefined) {
+      nodesHash[vdst] = {id: ""+vdst, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
+    }
+
+    nodesHash[vdst].sessions++;
+    nodesHash[vdst].by += f.by;
+    nodesHash[vdst].db += f.db;
+    nodesHash[vdst].pa += f.pa;
+    nodesHash[vdst].type |= 2;
+
+    var n = "" + vsrc + "->" + vdst;
+    if (connects[n] === undefined) {
+      connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, no: {}};
+      nodesHash[vsrc].cnt++;
+      nodesHash[vdst].cnt++;
+    }
+
+    connects[n].value++;
+    connects[n].by += f.by;
+    connects[n].db += f.db;
+    connects[n].pa += f.pa;
+    connects[n].no[f.no] = 1;
+    cb();
+  }
+
+  function processDst(vsrc, adst, f, cb) {
+    async.each(adst, function(vdst, dstCb) {
+      if (tdst === FMEnum.other) {
+        process(vsrc, vdst, f, dstCb);
+      } else if (tdst === FMEnum.ip) {
+        vdst = Pcap.inet_ntoa(vdst);
+        if (dstipport) {
+          vdst += ":" + f.p2;
+        }
+        process(vsrc, vdst, f, dstCb);
+      } else {
+        Db.tagIdToName(vdst, function (name) {
+          if (tdst === FMEnum.tags) {
+            vdst = name;
+          } else {
+            vdst = name.substring(12);
+          }
+          process(vsrc, vdst, f, dstCb);
+        });
+      }
+    }, function (err) {
+      cb();
+    });
+  }
+
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {};
@@ -1707,104 +1807,65 @@ app.get('/connections.json', function(req, res) {
         return;
       }
 
-      var nodesHash = {};
-      var connects = {};
-
       var i;
-      var hits = results.graph.hits.hits;
-      for (i = 0; i < hits.length; i++) {
-        if (!hits[i] || !hits[i].fields) {
-          continue;
-        }
 
-        var f = hits[i].fields;
+      async.eachLimit(results.graph.hits.hits, 10, function(hit, hitCb) {
+        var f = hit.fields;
         if (f[fsrc] === undefined || f[fdst] === undefined) {
-          continue;
+          return hitCb();
         }
 
         var asrc = Array.isArray(f[fsrc])? f[fsrc] : [f[fsrc]];
         var adst = Array.isArray(f[fdst])? f[fdst] : [f[fdst]];
 
-        for (var s = 0; s < asrc.length; s++) {
-          var vsrc = asrc[s];
-
-          if (fsrc.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+        async.each(asrc, function(vsrc, srcCb) {
+          if (tsrc === FMEnum.other) {
+            processDst(vsrc, adst, f, srcCb);
+          } else if (tsrc === FMEnum.ip) {
             vsrc = Pcap.inet_ntoa(vsrc);
-          }
-
-          for (var d = 0; d < adst.length; d++) {
-            var vdst = adst[d];
-
-            if (fdst.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
-              vdst = Pcap.inet_ntoa(vdst);
-              if (dstipport) {
-                vdst += ":" + f.p2;
+            processDst(vsrc, adst, f, srcCb);
+          } else {
+            Db.tagIdToName(vsrc, function (name) {
+              if (tsrc === FMEnum.tags) {
+                vsrc = name;
+              } else {
+                vsrc = name.substring(12);
               }
-            }
-
-            if (nodesHash[vsrc] === undefined) {
-              nodesHash[vsrc] = {id: ""+vsrc, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
-            }
-
-            nodesHash[vsrc].sessions++;
-            nodesHash[vsrc].by += f.by;
-            nodesHash[vsrc].db += f.db;
-            nodesHash[vsrc].pa += f.pa;
-            nodesHash[vsrc].type |= 1;
-
-            if (nodesHash[vdst] === undefined) {
-              nodesHash[vdst] = {id: ""+vdst, db: 0, by: 0, pa: 0, cnt: 0, sessions: 0};
-            }
-
-            nodesHash[vdst].sessions++;
-            nodesHash[vdst].by += f.by;
-            nodesHash[vdst].db += f.db;
-            nodesHash[vdst].pa += f.pa;
-            nodesHash[vdst].type |= 2;
-
-            var n = "" + vsrc + "->" + vdst;
-            if (connects[n] === undefined) {
-              connects[n] = {value: 0, source: vsrc, target: vdst, by: 0, db: 0, pa: 0, no: {}};
-              nodesHash[vsrc].cnt++;
-              nodesHash[vdst].cnt++;
-            }
-
-            connects[n].value++;
-            connects[n].by += f.by;
-            connects[n].db += f.db;
-            connects[n].pa += f.pa;
-            connects[n].no[f.no] = 1;
+              processDst(vsrc, adst, f, srcCb);
+            });
+          }
+        }, function (err) {
+          hitCb();
+        });
+      }, function (err) {
+        var nodes = [];
+        for (var node in nodesHash) {
+          if (nodesHash[node].cnt < minConn) {
+            nodesHash[node].pos = -1;
+          } else {
+            nodesHash[node].pos = nodes.length;
+            nodes.push(nodesHash[node]);
           }
         }
-      }
 
-      var nodes = [];
-      for (var node in nodesHash) {
-        if (nodesHash[node].cnt < minConn) {
-          nodesHash[node].pos = -1;
-        } else {
-          nodesHash[node].pos = nodes.length;
-          nodes.push(nodesHash[node]);
+
+        var links = [];
+        for (var key in connects) {
+          var c = connects[key];
+          c.source = nodesHash[c.source].pos;
+          c.target = nodesHash[c.target].pos;
+          if (c.source >= 0 && c.target >= 0) {
+            links.push(connects[key]);
+          }
         }
-      }
 
+        //console.log("nodesHash", nodesHash);
+        //console.log("connects", connects);
+        //console.log("nodes", nodes.length, nodes);
+        //console.log("links", links.length, links);
 
-      var links = [];
-      for (var key in connects) {
-        var c = connects[key];
-        c.source = nodesHash[c.source].pos;
-        c.target = nodesHash[c.target].pos;
-        if (c.source >= 0 && c.target >= 0) {
-          links.push(connects[key]);
-        }
-      }
-
-      //console.log("nodesHash", nodesHash);
-      //console.log("connects", connects);
-      //console.log("nodes", nodes.length, nodes);
-      //console.log("links", links.length, links);
-
-      res.send({health: results.health, nodes: nodes, links: links, iTotalDisplayRecords: results.graph.hits.total});
+        res.send({health: results.health, nodes: nodes, links: links, iTotalDisplayRecords: results.graph.hits.total});
+      });
     });
   });
 });
@@ -1918,20 +1979,32 @@ app.get('/unique.txt', function(req, res) {
 
   /* How should each item be processed. */
   var eachCb;
-  if (req.query.field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+  switch (fmenum(req.query.field)) {
+  case FMEnum.other:
+    eachCb = writeCb;
+    break;
+  case FMEnum.ip:
     eachCb = function(item, cb) {
       item.term = Pcap.inet_ntoa(item.term);
       writeCb(item, cb);
     };
-  } else if (req.query.field.match(/^(ta|hh1|hh2)$/) !== null) {
+    break;
+  case FMEnum.tags:
     eachCb = function(item, cb) {
-      Db.tagIdToName(item.term, function (name) {
+      Db.tagIdToName(item.name, function (name) {
         item.term = name;
         writeCb(item, cb);
       });
     };
-  } else {
-    eachCb = writeCb;
+    break;
+  case FMEnum.hh:
+    eachCb = function(item, cb) {
+      Db.tagIdToName(item.name, function (name) {
+        item.term = name.substring(12);
+        writeCb(item, cb);
+      });
+    };
+    break;
   }
 
   buildSessionQuery(req, function(err, query, indices) {
@@ -2810,6 +2883,7 @@ function proxyRequest (req, res) {
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
+    info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
     info.rejectUnauthorized = true;
     addAuth(info, req.user, req.params.nodeName);
 
@@ -3149,6 +3223,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
         var bufpos = 0;
         var info = url.parse(viewUrl);
         info.path = Config.basePath(item.fields.no) + item.fields.no + "/" + extension + "/" + item._id + "." + extension;
+        info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
 
         addAuth(info, req.user, item.fields.no);
         var preq = agent.request(info, function(pres) {
@@ -3721,6 +3796,7 @@ function scrubList(req, res, entire, list) {
       getViewUrl(item.fields.no, function(err, viewUrl, agent) {
         var info = url.parse(viewUrl);
         info.path = Config.basePath(item.fields.no) + item.fields.no + (entire?"/delete/":"/scrub/") + item._id;
+        info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
         addAuth(info, req.user, item.fields.no);
         var preq = agent.request(info, function(pres) {
           pres.on('end', function () {
@@ -3883,6 +3959,7 @@ function sendSessionsList(req, res, list) {
       getViewUrl(item.fields.no, function(err, viewUrl, agent) {
         var info = url.parse(viewUrl);
         info.path = Config.basePath(item.fields.no) + item.fields.no + "/sendSession/" + item._id;
+        info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
         if (req.query.tags) {
           info.query = {tags: req.query.tags};
         }
@@ -3923,7 +4000,7 @@ app.post('/receiveSession', function(req, res) {
       return;
     }
 
-    /* If no file is open, then save the current chunk to the end of the buffer. 
+    /* If no file is open, then save the current chunk to the end of the buffer.
      */
     if (!buffer) {
       buffer = chunk;
@@ -4068,6 +4145,5 @@ if (server.address() === null) {
   console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
   process.exit(1);
 }
-
 console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
 

@@ -1,11 +1,17 @@
 0.9.2 XXX
+  - BREAKING: nodejs 0.8 is no longer supported
   - Upgrade d3 and cubism 
-  - Fixed searches so number don't have to be quoted
+  - Fixed searches so numbers don't have to be quoted
   - Fixed export hitting max number of stack frames
   - Connections tab new UI
   - Connections tab allows any field for src/dst
   - More user settings
   - Fixed unique.txt to deal with multi value fields
+  - viewer.js now uses forever-agent package to help multi 
+    machine communication.  (npm install required)
+  - easybutton installs node 0.10.20 now
+  - fixed race condition with tag lookup rate limiting
+  - expression ip.dst == ip:port wasn't working
 
 
 0.9.1 2013/10/03

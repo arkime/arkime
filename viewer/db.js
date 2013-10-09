@@ -328,12 +328,13 @@ exports.tagIdToName = function (id, cb) {
     return cb(id);
   }
 
-  if (internals.tagId2Name[id]) {
-    return cb(internals.tagId2Name[id]);
-  }
-
   if (!canDo(exports.tagIdToName, this, arguments)) {
     return;
+  }
+
+  if (internals.tagId2Name[id]) {
+    cb(internals.tagId2Name[id]);
+    return didIt();
   }
 
   var query = {query: {term: {n:id}}};
@@ -392,12 +393,13 @@ exports.tagNameToId = function (name, cb) {
     return cb(name);
   }
 
-  if (internals.tagName2Id[name]) {
-    return cb(internals.tagName2Id[name]);
-  }
-
   if (!canDo(exports.tagNameToId, this, arguments)) {
     return;
+  }
+
+  if (internals.tagName2Id[name]) {
+    cb(internals.tagName2Id[name]);
+    return didIt();
   }
 
   exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
