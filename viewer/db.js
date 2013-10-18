@@ -420,8 +420,22 @@ exports.getSequenceNumber = function (name, cb) {
 };
 
 exports.createTag = function (name, cb) {
+  // Only allow 1 create at a time, the lazy way
+  if (exports.createTag.inProgress === 1) {
+    setTimeout(function () {exports.createTag(name, cb);}, 50);
+    return;
+  }
+
+  // Was already created while waiting
+  if (internals.tagName2Id[name]) {
+    return cb(internals.tagName2Id[name]);
+  }
+
+  // Do a create
+  exports.createTag.inProgress = 1;
   exports.getSequenceNumber("tags", function (err, num) {
     exports.index("tags", "tag", encodeURIComponent(name), {n: num}, function (err, tinfo) {
+      exports.createTag.inProgress = 0;
       internals.tagId2Name[num] = name;
       internals.tagName2Id[name] = num;
       cb(num);

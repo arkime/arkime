@@ -477,11 +477,6 @@ table#sessions td.dateColumn
 #pageBody-filesLink
   margin: 10px
 
-// Users
-
-#pageBody-usersLink
-  margin: 10px
-
 // Upload
 
 #pageBody-uploadLink
@@ -765,8 +760,17 @@ table#sessions td.dateColumn
   background: linear-gradient(to bottom,  #16285a 0%,#435b99 100%) /* W3C */
   //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
-// users.jade
+// Users
+
+#pageBody-usersLink
+  margin: 10px
+
 #addUser label
   width: 14em
   text-align: right
   display: inline-block
+
+.forcedExpression div,.userName div
+  outline: 1px dotted #aaa
+  min-height: 20px
+  

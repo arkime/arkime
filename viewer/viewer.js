@@ -229,6 +229,7 @@ function fmenum(field) {
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host : escInfo[0],
                port: escInfo[1],
+               /*agent: new httpAgent.Agent({maxSockets: 20}), // Forever agent doesn't work :(*/
                dontMapTags: Config.get("multiES", false)});
 
 function deleteFile(node, id, path, cb) {
@@ -917,7 +918,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     if (!item.fields.ro || processedRo[item.fields.ro]) {
       if (writes++ > 100) {
         writes = 0;
-        setTimeout(nextCb, 0);
+        async.setImmediate(nextCb);
       } else {
         nextCb();
       }
@@ -1014,6 +1015,15 @@ app.get('/esstats.json', function(req, res) {
     }
   },
   function(err, results) {
+    if (err || !results.nodes) {
+      console.log ("ERROR", err);
+      var r = {sEcho: req.query.sEcho,
+               health: results.health,
+               iTotalRecords: 0,
+               iTotalDisplayRecords: 0,
+               aaData: []};
+      return res.send(r);
+    }
 
     var now = new Date().getTime();
     while (previousNodeStats.length > 1 && previousNodeStats[1].timestamp + 10000 < now) {
@@ -1450,23 +1460,23 @@ app.get('/spigraph.json', function(req, res) {
     var field = req.query.field || "no";
     query.facets.field = {terms: {field: field, size: size}};
 
-    /* Need the nextTick so we don't blow max stack frames */
+    /* Need the setImmediate so we don't blow max stack frames */
     var eachCb;
     switch (fmenum(field)) {
     case FMEnum.other:
-      eachCb = function (item, cb) {process.nextTick(cb);};
+      eachCb = function (item, cb) {async.setImmediate(cb);};
       break;
     case FMEnum.ip:
       eachCb = function(item, cb) {
         item.name = Pcap.inet_ntoa(item.name);
-        process.nextTick(cb);
+        async.setImmediate(cb);
       };
       break;
     case FMEnum.tags:
       eachCb = function(item, cb) {
         Db.tagIdToName(item.name, function (name) {
           item.name = name;
-          process.nextTick(cb);
+          async.setImmediate(cb);
         });
       };
       break;
@@ -1474,7 +1484,7 @@ app.get('/spigraph.json', function(req, res) {
       eachCb = function(item, cb) {
         Db.tagIdToName(item.name, function (name) {
           item.name = name.substring(12);
-          process.nextTick(cb);
+          async.setImmediate(cb);
         });
       };
       break;
@@ -1812,7 +1822,7 @@ app.get('/connections.json', function(req, res) {
       async.eachLimit(results.graph.hits.hits, 10, function(hit, hitCb) {
         var f = hit.fields;
         if (f[fsrc] === undefined || f[fdst] === undefined) {
-          return hitCb();
+          return async.setImmediate(hitCb);
         }
 
         var asrc = Array.isArray(f[fsrc])? f[fsrc] : [f[fsrc]];
@@ -1835,7 +1845,7 @@ app.get('/connections.json', function(req, res) {
             });
           }
         }, function (err) {
-          hitCb();
+          async.setImmediate(hitCb);
         });
       }, function (err) {
         var nodes = [];
@@ -1952,7 +1962,7 @@ app.get('/unique.txt', function(req, res) {
 
   noCache(req, res);
 
-  /* How should the results be written.  Use setTimeout to not blow stack frame */
+  /* How should the results be written.  Use setImmediate to not blow stack frame */
   var writeCb;
   var writes = 0;
   if (parseInt(req.query.counts, 10) || 0) {
@@ -1960,7 +1970,7 @@ app.get('/unique.txt', function(req, res) {
       res.write("" + item.term + ", " + item.count + "\n");
       if (writes++ > 1000) {
         writes = 0;
-        setTimeout(cb, 0);
+        async.setImmediate(cb);
       } else {
         cb();
       }
@@ -1970,7 +1980,7 @@ app.get('/unique.txt', function(req, res) {
       res.write("" + item.term + "\n");
       if (writes++ > 1000) {
         writes = 0;
-        setTimeout(cb, 0);
+        async.setImmediate(cb);
       } else {
         cb();
       }
@@ -2398,13 +2408,13 @@ function gzipDecode(req, res, session, incoming) {
     this.nextCb = null;
     if (this.inflator) {
       this.inflator.end(null, function () {
-        process.nextTick(nextCb);
+        async.setImmediate(nextCb);
       });
       this.inflator = null;
     } else {
       outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
       if (nextCb) {
-        process.nextTick(nextCb);
+        async.setImmediate(nextCb);
       }
     }
   };
@@ -2439,7 +2449,7 @@ function gzipDecode(req, res, session, incoming) {
     if (!item) {
     } else if (item.data.length === 0) {
       outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: item.data}]};
-      process.nextTick(nextCb);
+      async.setImmediate(nextCb);
     } else {
       parsers[(pos%2)].nextCb = nextCb;
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
@@ -2448,7 +2458,7 @@ function gzipDecode(req, res, session, incoming) {
         console.log("ERROR", out);
       }
       if (parsers[(pos%2)].nextCb) {
-        process.nextTick(parsers[(pos%2)].nextCb);
+        async.setImmediate(parsers[(pos%2)].nextCb);
         parsers[(pos%2)].nextCb = null;
       }
     }
@@ -2456,7 +2466,7 @@ function gzipDecode(req, res, session, incoming) {
     req.query.needgzip = "false";
     parsers[0].finish();
     parsers[1].finish();
-    setTimeout(function() {localSessionDetailReturnFull(req, res, session, outgoing);}, 100);
+    setTimeout(localSessionDetailReturnFull, 100, req, res, session, outgoing);
   });
 }
 
@@ -2550,12 +2560,12 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
     if (res.finished === true) {
       return nextCb("Done!");
     } else {
-      process.nextTick(nextCb);
+      async.setImmediate(nextCb);
     }
     p++;
   }, function (err) {
     if (findBody === -1) {
-      process.nextTick(function() {localSessionDetailReturnFull(req, res, session, outgoing);});
+      async.setImmediate(localSessionDetailReturnFull,req, res, session, outgoing);
     }
   });
 }
@@ -2730,7 +2740,7 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
   }
 
   if (findBody === -1) {
-    process.nextTick(function() {localSessionDetailReturnFull(req, res, session, outgoing);});
+    async.setImmediate(localSessionDetailReturnFull, req, res, session, outgoing);
   }
 }
 
@@ -2748,7 +2758,7 @@ function imageDecode(req, res, session, results, findBody) {
 
   req.query.needimage = "false";
   if (findBody === -1) {
-    process.nextTick(function() {localSessionDetailReturn(req, res, session, results);});
+    async.setImmediate(localSessionDetailReturn, req, res, session, results);
   }
 }
 
@@ -3244,7 +3254,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
             } else {
               res.write(buffer.slice(24, bufpos));
             }
-            process.nextTick(nextCb);
+            async.setImmediate(nextCb);
           });
         });
         preq.on('error', function (e) {
@@ -3390,6 +3400,19 @@ app.post('/updateUser/:userId', function(req, res) {
       user.enabled = req.query.enabled === "true";
     }
 
+    if (req.query.expression.match(/^\s*$/)) {
+      delete user.expression;
+    } else {
+      user.expression = req.query.expression;
+    }
+
+    if (req.query.userName.match(/^\s*$/)) {
+      console.log("empty username");
+      return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
+    } else {
+      user.userName = req.query.userName;
+    }
+
     if (req.query.webEnabled) {
       user.webEnabled = req.query.webEnabled === "true";
     }
@@ -3410,6 +3433,8 @@ app.post('/updateUser/:userId', function(req, res) {
     if (req.user.createEnabled && req.query.createEnabled) {
       user.createEnabled = req.query.createEnabled === "true";
     }
+
+    //console.log(user);
 
     Db.indexNow("users", "user", req.params.userId, user, function(err, info) {
       return res.send(JSON.stringify({success: true}));
@@ -3637,15 +3662,14 @@ app.post('/removeTags', function(req, res) {
 //// Pcap Delete/Scrub
 //////////////////////////////////////////////////////////////////////////////////
 
-var scrubbingBuffers = null;
 function pcapScrub(req, res, id, entire, endCb) {
-  if (scrubbingBuffers === null) {
-    scrubbingBuffers = [new Buffer(5000), new Buffer(5000), new Buffer(5000)];
-    scrubbingBuffers[0].fill(0);
-    scrubbingBuffers[1].fill(1);
+  if (pcapScrub.scrubbingBuffers === undefined) {
+    pcapScrub.scrubbingBuffers = [new Buffer(5000), new Buffer(5000), new Buffer(5000)];
+    pcapScrub.scrubbingBuffers[0].fill(0);
+    pcapScrub.scrubbingBuffers[1].fill(1);
     var str = "Scrubbed! Hoot! ";
     for (var i = 0; i < 5000;) {
-      i += scrubbingBuffers[2].write(str, i);
+      i += pcapScrub.scrubbingBuffers[2].write(str, i);
     }
   }
 
@@ -3659,9 +3683,9 @@ function pcapScrub(req, res, id, entire, endCb) {
           try {
             var obj = {};
             pcap.decode(packet, obj);
-            pcap.scrubPacket(obj, pos, scrubbingBuffers[0], entire);
-            pcap.scrubPacket(obj, pos, scrubbingBuffers[1], entire);
-            pcap.scrubPacket(obj, pos, scrubbingBuffers[2], entire);
+            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[0], entire);
+            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], entire);
+            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], entire);
           } catch (e) {
             console.log("Couldn't scrub packet at ", pos, e);
           }
@@ -3800,7 +3824,7 @@ function scrubList(req, res, entire, list) {
         addAuth(info, req.user, item.fields.no);
         var preq = agent.request(info, function(pres) {
           pres.on('end', function () {
-            process.nextTick(nextCb);
+            async.setImmediate(nextCb);
           });
         });
         preq.on('error', function (e) {
@@ -3861,6 +3885,10 @@ function sendSession(req, res, id, nextCb) {
   var ps = [-1];
   var tags = [];
 
+  if (!req.query.saveId) {
+    return res.end(JSON.stringify({success: false, text: "Missing saveId"}));
+  }
+
   processSessionId(id, true, function(pcap, header) {
     packetshdr = header;
   }, function (pcap, packet, cb, i) {
@@ -3890,9 +3918,12 @@ function sendSession(req, res, id, nextCb) {
     }
 
     var sobj = Config.getObj("sendSession");
+    if (!sobj) {
+      console.log("ERROR - sendSession is not configured");
+      return nextCb();
+    }
 
-
-    var info = url.parse(sobj.url + "/receiveSession");
+    var info = url.parse(sobj.url + "/receiveSession?saveId=" + req.query.saveId);
     addAuth(info, req.user, req.params.nodeName, sobj.passwordSecret);
     info.method = "POST";
 
@@ -3916,14 +3947,11 @@ function sendSession(req, res, id, nextCb) {
     });
 
     var sessionStr = JSON.stringify(session);
-    var b = new Buffer(4);
+    var b = new Buffer(8);
     b.writeUInt32BE(sessionStr.length, 0);
+    b.writeUInt32BE(buffer.length, 4);
     preq.write(b);
     preq.write(sessionStr);
-
-    b = new Buffer(4);
-    b.writeUInt32BE(buffer.length, 0);
-    preq.write(b);
     preq.write(buffer);
     preq.end();
   }, undefined, 10);
@@ -3949,6 +3977,8 @@ function sendSessionsList(req, res, list) {
     return res.end(JSON.stringify({success: false, text: "Missing list of sessions"}));
   }
 
+  req.query.saveId = Config.nodeName() + "-" + new Date().getTime().toString(36);
+
   async.eachLimit(list, 10, function(item, nextCb) {
     isLocalView(item.fields.no, function () {
       // Get from our DISK
@@ -3958,15 +3988,17 @@ function sendSessionsList(req, res, list) {
       // Get from remote DISK
       getViewUrl(item.fields.no, function(err, viewUrl, agent) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(item.fields.no) + item.fields.no + "/sendSession/" + item._id;
+        info.path = Config.basePath(item.fields.no) + item.fields.no + "/sendSession/" + item._id + "?saveId=" + req.query.saveId;
         info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
         if (req.query.tags) {
-          info.query = {tags: req.query.tags};
+          info.path += "&tags=" + req.query.tags;
         }
         addAuth(info, req.user, item.fields.no);
         var preq = agent.request(info, function(pres) {
+          pres.on('data', function (chunk) {
+          });
           pres.on('end', function () {
-            process.nextTick(nextCb);
+            async.setImmediate(nextCb);
           });
         });
         preq.on('error', function (e) {
@@ -3981,58 +4013,116 @@ function sendSessionsList(req, res, list) {
   });
 }
 
-app.post('/receiveSession', function(req, res) {
+app.post('/receiveSession', function receiveSession(req, res) {
+  if (!req.query.saveId) {
+    return res.send({success: false, text: "Missing saveId"});
+  }
+
+  // JS Static Variable :)
+  receiveSession.saveIds = receiveSession.saveIds || {};
+
+  var saveId = receiveSession.saveIds[req.query.saveId];
+  if (!saveId) {
+    saveId = receiveSession.saveIds[req.query.saveId] = {start: 0};
+  }
+
   var sessionlen = -1;
   var filelen = -1;
   var written = 0;
   var session = null;
   var buffer;
   var file;
+  var writeHeader;
 
-  req.on('data', function(chunk) {
-    /* If the file is open, just write the current chunk */
-    if (file) {
-      file.write(chunk);
-      written += chunk.length;
-      if (written === filelen) {
-        file.close();
-      }
-      return;
+  function makeFilename(cb) {
+    if (saveId.filename) {
+      return cb(saveId.filename);
     }
 
-    /* If no file is open, then save the current chunk to the end of the buffer.
-     */
+    if (saveId.inProgress) {
+      return setTimeout(makeFilename, 100, cb);
+    }
+
+    saveId.inProgress = 1;
+    Db.getSequenceNumber("fn-" + Config.nodeName(), function (err, seq) {
+      saveId.filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "-" + req.query.saveId + ".pcap";
+      saveId.seq      = seq;
+      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: saveId.filename, first: session.fp, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
+        cb(saveId.filename);
+      });
+    });
+  }
+
+  function chunkWrite(chunk) {
+    // Write full chunk if first packet and writeHeader or not first packet
+    if (writeHeader || written !== 0) {
+      writeHeader = false;
+      file.write(chunk);
+    } else {
+      file.write(chunk.slice(24));
+    }
+    written += chunk.length; // Pretend we wrote it all
+    if (written === filelen) {
+      file.end();
+    }
+  }
+
+  req.on('data', function(chunk) {
+    // If the file is open, just write the current chunk
+    if (file) {
+      return chunkWrite(chunk);
+    }
+
+    // If no file is open, then save the current chunk to the end of the buffer.
     if (!buffer) {
       buffer = chunk;
     } else {
       buffer = Buffer.concat([buffer, chunk]);
     }
 
-    if (sessionlen === -1 && (buffer.length > 4)) {
+    // Found the lengths
+    if (sessionlen === -1 && (buffer.length >= 8)) {
       sessionlen = buffer.readUInt32BE(0);
-      buffer = buffer.slice(4);
+      filelen    = buffer.readUInt32BE(4);
+      buffer = buffer.slice(8);
     }
 
-    /* If we know the session len and haven't read the session */
+    // If we know the session len and haven't read the session
     if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
       session = JSON.parse(buffer.toString("utf8", 0, sessionlen));
       buffer = buffer.slice(sessionlen);
 
       req.pause();
-      Db.getSequenceNumber("fn-" + Config.nodeName(), function (err, seq) {
+
+      makeFilename(function (filename) {
         req.resume();
-        var id = session.id + "-test";
-        delete session.id;
-        session.ps[0] = - seq;
-        session.fs = [seq];
+        session.ps[0] = - saveId.seq;
+        session.fs = [saveId.seq];
         session.no = Config.nodeName();
 
-        var filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "_" + id + ".pcap";
-        file = fs.createWriteStream(filename);
-        file.write(buffer);
-        written += buffer.length;
-        if (written === filelen) {
-          file.close();
+        if (saveId.start === 0) {
+          file = fs.createWriteStream(filename, {flags: "w"});
+        } else {
+          file = fs.createWriteStream(filename, {start: saveId.start, flags: "r+"});
+        }
+        writeHeader = saveId.start === 0;
+
+        // Adjust packet location based on where we start writing
+        if (saveId.start > 0) {
+          for (var p = 1; p < session.ps.length; p++) {
+            session.ps[p] += (saveId.start - 24);
+          }
+        }
+
+        // Filelen always includes header, if we don't write header subtract it
+        saveId.start += filelen;
+        if (!writeHeader) {
+          saveId.start -= 24;
+        }
+
+        // Still more data in buffer, start of pcap
+        if (buffer.length > 0) {
+          chunkWrite(buffer);
         }
 
         function tags(container, field, prefix, cb) {
@@ -4048,9 +4138,6 @@ app.post('/receiveSession', function(req, res) {
 
         async.parallel([
           function(parallelCb) {
-            Db.indexNow("files", "file", Config.nodeName() + "-" + seq, {num: seq, name: filename, first: session.fp, node: Config.nodeName(), filesize: filelen, locked: 1}, parallelCb);
-          },
-          function(parallelCb) {
             tags(session, "ta", "", parallelCb);
           },
           function(parallelCb) {
@@ -4060,21 +4147,18 @@ app.post('/receiveSession', function(req, res) {
             tags(session, "hh2", "http:header:", parallelCb);
           }],
           function() {
+            var id = session.id;
+            delete session.id;
             Db.indexNow('sessions-' + id.substr(0,id.indexOf('-')), "session", id, session, function(err, info) {
-              if (err) {
-                return res.send({success: false, text: err});
-              }
-              return res.send({success: true});
             });
           }
         );
       });
     }
+  });
 
-    if (sessionlen !== -1 && session && filelen === -1 && buffer.length >= 4) {
-      filelen = buffer.readUInt32BE(0);
-      buffer = buffer.slice(4);
-    }
+  req.on('end', function(chunk) {
+    return res.send({success: true});
   });
 });
 

@@ -83,68 +83,81 @@ block content
         "bScrollCollapse": true,
         "bAutoWidth": false,
         "aoColumns": [
-          { "mDataProp" : "userId"
+          { mDataProp : "userId"
           },
-          { "mDataProp" : "userName",
-            "bSortable" : false
-          },
-          { "mDataProp" : "expression"
-          },
-          { "mDataProp" : "enabled",
-            "fnRender" : function(oObj) {
-              return "<input type='checkbox' id='" + oObj.aData.userId +"-enabled' " + (oObj.aData.enabled?"CHECKED":"") + ">";
+          { mDataProp : "userName",
+            sClass: "userName",
+            fnRender: function(oObj) {
+              return "<div contentEditable>" + oObj.aData.userName + "</div>";
             }
           },
-          { "mDataProp" : "createEnabled",
-            "fnRender" : function(oObj) {
-              return "<input type='checkbox' id='" + oObj.aData.userId +"-createEnabled' " + (oObj.aData.createEnabled?"CHECKED":"") + ">";
+          { mDataProp : "expression",
+            sClass: "forcedExpression",
+            fnRender: function(oObj) {
+              return "<div contentEditable>" + oObj.aData.expression + "</div>";
             }
           },
-          { "mDataProp" : "webEnabled",
-            "fnRender" : function(oObj) {
-              return "<input type='checkbox' id='" + oObj.aData.userId +"-webEnabled' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
+          { mDataProp : "enabled",
+            sClass: "enabled",
+            fnRender : function(oObj) {
+              return "<input type='checkbox' " + (oObj.aData.enabled?"CHECKED":"") + ">";
             }
           },
-          { "mDataProp" : "headerAuthEnabled",
-            "fnRender" : function(oObj) {
-              return "<input type='checkbox' id='" + oObj.aData.userId +"-headerAuthEnabled' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
+          { mDataProp : "createEnabled",
+            sClass: "createEnabled",
+            fnRender : function(oObj) {
+              return "<input type='checkbox' " + (oObj.aData.createEnabled?"CHECKED":"") + ">";
             }
           },
-          { "mDataProp" : "emailSearch",
-            "fnRender" : function(oObj) {
-              return "<input type='checkbox' id='" + oObj.aData.userId +"-emailSearch' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
+          { mDataProp : "webEnabled",
+            sClass: "webEnabled",
+            fnRender : function(oObj) {
+              return "<input type='checkbox' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
             }
           },
-          { "mDataProp" : "removeEnabled",
-            "fnRender" : function(oObj) {
-              return "<input type='checkbox' id='" + oObj.aData.userId +"-removeEnabled' " + (oObj.aData.removeEnabled?"CHECKED":"") + ">";
+          { mDataProp : "headerAuthEnabled",
+            sClass: "headerAuthEnabled",
+            fnRender : function(oObj) {
+              return "<input type='checkbox' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
             }
           },
-          { "mDataProp" : null,
-            "bSortable" : false,
-            "sDefaultContent": "",
-            "fnRender" : function(oObj) {
-              return "<a href='#' onclick='return deleteUser(\"" + oObj.aData.userId +"\");'>Delete</a> " + 
-                     "<a href='settings?userId=" + oObj.aData.userId +"'>Settings</a>";
+          { mDataProp : "emailSearch",
+            sClass: "emailSearch",
+            fnRender : function(oObj) {
+              return "<input type='checkbox' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
+            }
+          },
+          { mDataProp : "removeEnabled",
+            sClass: "removeEnabled",
+            fnRender : function(oObj) {
+              return "<input type='checkbox' " + (oObj.aData.removeEnabled?"CHECKED":"") + ">";
+            }
+          },
+          { mDataProp : null,
+            bSortable : false,
+            fnRender : function(oObj) {
+              return "<a href='#' class='deleteUserAction'>Delete</a> " + 
+                     "<a href='#' class='settingsUserAction'>Settings</a>";
             }
           }
         ]
       } );
 
-      $('#users tbody td input').live('change', function () {
-        var nTr = this.parentNode.parentNode;
-        var aData = usersTable.fnGetData( nTr );
+      function saveRow(row) {
+        var aData = usersTable.fnGetData( row );
         $.ajax( {
           "dataType": 'json',
           "type": "POST",
           "data": [{name: "token", value: "#{token}"}],
           "url": "#{basePath}updateUser/" + aData.userId + "?" +
-            "enabled=" + $("#" + aData.userId  + "-enabled").is(':checked') +
-            "&webEnabled=" + $("#" + aData.userId  + "-webEnabled").is(':checked') +
-            "&headerAuthEnabled=" + $("#" + aData.userId  + "-headerAuthEnabled").is(':checked') +
-            "&emailSearch=" + $("#" + aData.userId  + "-emailSearch").is(':checked') +
-            "&removeEnabled=" + $("#" + aData.userId  + "-removeEnabled").is(':checked') +
-            "&createEnabled=" + $("#" + aData.userId  + "-createEnabled").is(':checked'),
+            "&expression="        + encodeURIComponent($(row).find(".forcedExpression div").text()) +
+            "&userName="          + encodeURIComponent($(row).find(".userName div").text()) +
+            "&enabled="           + $(row).find(".enabled input").is(':checked') +
+            "&webEnabled="        + $(row).find(".webEnabled input").is(':checked') +
+            "&headerAuthEnabled=" + $(row).find(".headerAuthEnabled input").is(':checked') +
+            "&emailSearch="       + $(row).find(".emailSearch input").is(':checked') +
+            "&removeEnabled="     + $(row).find(".removeEnabled input").is(':checked') +
+            "&createEnabled="     + $(row).find(".createEnabled input").is(':checked'),
           "success": function(data) {
             if (!data.success) {
               alert(data.text);
@@ -152,6 +165,33 @@ block content
           }
         });
         return true;
+      }
+
+      $('.settingsUserAction').live('click', function (e) {
+        var aData = usersTable.fnGetData( this.parentNode.parentNode );
+        window.location = 'settings?userId=' + aData.userId;
+      });
+
+      $('.deleteUserAction').live('click', function (e) {
+        var aData = usersTable.fnGetData( this.parentNode.parentNode );
+        return deleteUser(aData.userId);
+      });
+
+      $('.forcedExpression div, .userName div').live('focusout', function () {
+        var nTr = this.parentNode.parentNode;
+        return saveRow(nTr);
+      });
+
+      $('.forcedExpression div, .userName div').live('keypress', function (e) {
+        if ((e.keyCode ? e.keyCode : e.which) === 13) {
+          e.target.blur();
+          return false;
+        }
+      });
+
+      $('#users tbody td input').live('change', function () {
+        var nTr = this.parentNode.parentNode;
+        return saveRow(nTr);
       } );
 
       $('#addUser').submit(function() {

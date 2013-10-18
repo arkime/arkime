@@ -17,7 +17,7 @@ block content
         dt Wildcard
         dd If a * appears in a expression, it is assumed a wildcard match is being used.  Supported wildcards are *, which matches any character sequence (including the empty one), and ?, which matches any single character.  The wildcard query is run against the full text strings, after case normalization if enabled for the field. For example 'http.uri == "www.f*k.com"'
         dt Regex
-        dd A regex query needs to be surrounded by forward slashes, and is always anchored.  This means you will almost always want to include a leading and trailing ".*".  The regex query is run against the full text strings, after case normalization if enabled for the field.  For example 'http.uri == /.*www\.f.*k\.com.*/'
+        dd A regex query needs to be surrounded by forward slashes, and is always anchored.  This means you will almost always want to include a leading and trailing ".*".  The regex query is run against the full text strings, after case normalization if enabled for the field.  For example 'http.uri == /.*www\.f.*k\.com.*/'.  It uses the Lucene regex implementation which doesn't support most PCRE features.
     h3 IP Searches    
     p IP searching is very flexible and can be performed using the full ip address, a partial ip address, or using CIDR representation.  For fields that include a port number, it is possible to follow any of the ip representations with a colon and then the port number.  Ports are also first class searchable and may be searched for directly.  For example ip == 1.2.3/24:80.  IP search can also be done with list of IPs.  ip == [1.2.3.4, 1.3/16]
     h3 Numeric Searches

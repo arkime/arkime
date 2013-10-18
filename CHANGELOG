@@ -12,6 +12,8 @@
   - easybutton installs node 0.10.20 now
   - fixed race condition with tag lookup rate limiting
   - expression ip.dst == ip:port wasn't working
+  - more max stack fixes
+  - users tab improvements (issue #152)
 
 
 0.9.1 2013/10/03
