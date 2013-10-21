@@ -470,3 +470,38 @@ exports.updateFileSize = function (item, filesize) {
     })
     .exec();
 };
+
+exports.checkVersion = function(minVersion, checkUsers) {
+  var index;
+
+  ["stats", "dstats", "tags", "sequence", "files", "users"].forEach(function(index) {
+    exports.status(index, function(err, status) {
+      if (err || status.error) {
+        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
+        process.exit(1);
+      }
+    });
+  });
+
+  exports.get("dstats", "version", "version", function(err, doc) {
+    var version;
+    if (!doc.exists) {
+      version = 0;
+    } else {
+      version = doc._source.version;
+    }
+
+    if (version < minVersion) {
+        console.log("ERROR - Current database version (" + version + ") is less then required version (" + MIN_DB_VERSION + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
+        process.exit(1);
+    }
+  });
+
+  if (checkUsers) {
+    exports.numberOfDocuments("users", function(err, num) {
+      if (num === 0) {
+        console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
+      }
+    });
+  }
+};

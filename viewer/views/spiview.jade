@@ -60,8 +60,11 @@ block content
     mixin title("HTTP", "http")
     dl
       mixin spi("Host", "ho", "host.http", "http")
-      mixin spi("URI", "rawus", "uri", "http")
-      mixin spi("URI Token", "us", "uri", "http")
+      mixin spi("URI", "rawus", "http.uri", "http")
+      mixin spi("URI Token", "us", "http.uri", "http")
+      mixin spi("URI Path", "hpath", "http.uri.path", "http")
+      mixin spi("URI QS Key", "hkey", "http.uri.key", "http")
+      mixin spi("URI QS Value", "hval", "http.uri.value", "http")
       mixin spi("User Agent", "rawua", "http.user-agent", "http")
       mixin spi("User Agent Token", "ua", "http.user-agent", "http")
 

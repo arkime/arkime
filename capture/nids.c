@@ -78,7 +78,8 @@ uint64_t                     totalSessions = 0;
 
 /******************************************************************************/
 
-HASH_VAR(h_, sessions, MolochSessionHead_t, 199337);
+typedef HASH_VAR(h_, MolochSessionHash_t, MolochSessionHead_t, 199337);
+static MolochSessionHash_t *sessions[256];
 
 /******************************************************************************/
 void moloch_nids_session_free (MolochSession_t *session);
@@ -87,10 +88,16 @@ int  moloch_nids_next_file();
 void moloch_nids_init_nids();
 
 /******************************************************************************/
+/* Must match moloch_nids_session_cmp
+ * a1 0-3
+ * p1 4-5
+ * a2 6-9
+ * p2 10-11
+ */
 uint32_t moloch_nids_session_hash(const void *key)
 {
-    char *p = (char *)key;
-    return (p[4] & 0xff) << 24 | (p[6] & 0xff) << 16 | (p[10] & 0xff) << 8 | (p[12] & 0xff);
+    unsigned char *p = (unsigned char *)key;
+    return ((p[2] << 16 | p[3] << 8 | p[4]) * 59) ^ (p[8] << 16 | p[9] << 8 |  p[10]);
 }
 
 /******************************************************************************/
@@ -99,22 +106,20 @@ int moloch_nids_session_cmp(const void *keyv, const void *elementv)
     unsigned char *key = (unsigned char*)keyv;
     MolochSession_t *element = (MolochSession_t *)elementv;
 
-    if (key[0] != element->protocol) return 0;
-
     if (element->addr1 < element->addr2) {
         return key[5] == ((element->port1 >> 8) & 0xff) && 
-               key[6] == (element->port1 & 0xff) &&
+               key[4] == (element->port1 & 0xff) &&
                key[11] == ((element->port2 >> 8) & 0xff) &&
-               key[12] == (element->port2 & 0xff) &&
-               memcmp(key + 1, &element->addr1, 4) == 0 &&
-               memcmp(key + 7, &element->addr2, 4) == 0;
+               key[10] == (element->port2 & 0xff) &&
+               memcmp(key, &element->addr1, 4) == 0 &&
+               memcmp(key + 6, &element->addr2, 4) == 0;
     } else {
         return key[5] == ((element->port2 >> 8) & 0xff) && 
-               key[6] == (element->port2 & 0xff) &&
+               key[4] == (element->port2 & 0xff) &&
                key[11] == ((element->port1 >> 8) & 0xff) &&
-               key[12] == (element->port1 & 0xff) &&
-               memcmp(key + 1, &element->addr2, 4) == 0 &&
-               memcmp(key + 7, &element->addr1, 4) == 0;
+               key[10] == (element->port1 & 0xff) &&
+               memcmp(key, &element->addr2, 4) == 0 &&
+               memcmp(key + 6, &element->addr1, 4) == 0;
     }
 }
 
@@ -218,25 +223,24 @@ char *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint3
 
     return buf;
 }
-#define MOLOCH_SESSIONID_LEN 13
+#define MOLOCH_SESSIONID_LEN 12
 /******************************************************************************/
-void moloch_session_id (char *buf, int protocol, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
+void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
-    buf[0] = protocol;
     if (addr1 < addr2) {
-        memcpy(buf + 1, &addr1, 4);
-        buf[5] = (port1 >> 8) & 0xff;
-        buf[6] = port1 & 0xff;
-        memcpy(buf + 7, &addr2, 4);
-        buf[11] = (port2 >> 8) & 0xff;
-        buf[12] = port2 & 0xff;
+        memcpy(buf, &addr1, 4);
+        buf[4] = (port1 >> 8) & 0xff;
+        buf[5] = port1 & 0xff;
+        memcpy(buf + 6, &addr2, 4);
+        buf[10] = (port2 >> 8) & 0xff;
+        buf[11] = port2 & 0xff;
     } else {
-        memcpy(buf + 1, &addr2, 4);
-        buf[5] = (port2 >> 8) & 0xff;
-        buf[6] = port2 & 0xff;
-        memcpy(buf + 7, &addr1, 4);
-        buf[11] = (port1 >> 8) & 0xff;
-        buf[12] = port1 & 0xff;
+        memcpy(buf, &addr2, 4);
+        buf[4] = (port2 >> 8) & 0xff;
+        buf[5] = port2 & 0xff;
+        memcpy(buf + 6, &addr1, 4);
+        buf[10] = (port1 >> 8) & 0xff;
+        buf[11] = port1 & 0xff;
     }
 }
 /******************************************************************************/
@@ -264,13 +268,13 @@ void moloch_nids_save_session(MolochSession_t *session)
             break;
         }
 
-        HASH_REMOVE(h_, sessions, session);
+        HASH_REMOVE(h_, *(sessions[session->protocol]), session);
         return;
     }
 
     moloch_db_save_session(session, TRUE);
 
-    HASH_REMOVE(h_, sessions, session);
+    HASH_REMOVE(h_, *(sessions[session->protocol]), session);
     moloch_nids_session_free(session);
 }
 /******************************************************************************/
@@ -592,8 +596,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, ntohs(tcphdr->source), 
-                          packet->ip_dst.s_addr, ntohs(tcphdr->dest));
+        moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->source, 
+                          packet->ip_dst.s_addr, tcphdr->dest);
         break;
     case IPPROTO_UDP:
         sessionsQ = &udpSessionQ;
@@ -601,14 +605,14 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         udphdr = (struct udphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, ntohs(udphdr->source), 
-                          packet->ip_dst.s_addr, ntohs(udphdr->dest));
+        moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->source, 
+                          packet->ip_dst.s_addr, udphdr->dest);
         break;
     case IPPROTO_ICMP:
         sessionsQ = &icmpSessionQ;
         sessionTimeout = config.icmpTimeout;
 
-        moloch_session_id(sessionId, packet->ip_p, packet->ip_src.s_addr, 0, 
+        moloch_session_id(sessionId, packet->ip_src.s_addr, 0, 
                           packet->ip_dst.s_addr, 0);
         break;
     case IPPROTO_IPV6:
@@ -645,7 +649,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d disk: %d", 
           totalPackets, 
           sessionsQ->q_count, 
-          HASH_COUNT(h_, sessions),
+          moloch_nids_monitoring_sessions(),
           (headSession?(int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket.tv_sec + sessionTimeout)):0),
           ps.ps_recv, 
           ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*(double)100.0/ps.ps_recv,
@@ -657,16 +661,15 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     /* Get or Create Session */
     MolochSession_t *session;
     
-    HASH_FIND(h_, sessions, sessionId, session);
+    HASH_FIND(h_, *(sessions[packet->ip_p]), sessionId, session);
 
     if (!session) {
-        //LOG ("New session: %s", sessionId);
         session = MOLOCH_TYPE_ALLOC0(MolochSession_t);
         session->protocol = packet->ip_p;
         session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
         HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
-        HASH_ADD(h_, sessions, sessionId, session);
+        HASH_ADD(h_, *sessions[packet->ip_p], sessionId, session);
         session->lastSave = nids_last_pcap_header->ts.tv_sec;
         session->firstPacket = nids_last_pcap_header->ts;
         session->addr1 = packet->ip_src.s_addr;
@@ -846,8 +849,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
     switch (a_tcp->nids_state) {
     case NIDS_JUST_EST:
 
-        moloch_session_id(key, IPPROTO_TCP, a_tcp->addr.saddr, a_tcp->addr.source, a_tcp->addr.daddr, a_tcp->addr.dest);
-        HASH_FIND(h_, sessions, key, session);
+        moloch_session_id(key, a_tcp->addr.saddr, htons(a_tcp->addr.source), a_tcp->addr.daddr, htons(a_tcp->addr.dest));
+        HASH_FIND(h_, *sessions[IPPROTO_TCP], key, session);
         if (session) {
             session->haveNidsTcp = 1;
             DLL_PUSH_TAIL(tcp_, &tcpWriteQ, session);
@@ -1172,7 +1175,10 @@ uint32_t moloch_nids_dropped_packets()
 /******************************************************************************/
 uint32_t moloch_nids_monitoring_sessions()
 {
-    return HASH_COUNT(h_, sessions);
+    if (!sessions[IPPROTO_TCP])
+        return 0;
+
+    return HASH_COUNT(h_, *sessions[IPPROTO_TCP]) + HASH_COUNT(h_, *sessions[IPPROTO_UDP]) + HASH_COUNT(h_, *sessions[IPPROTO_ICMP]);
 }
 /******************************************************************************/
 uint32_t moloch_nids_disk_queue()
@@ -1380,7 +1386,13 @@ void moloch_nids_init()
     moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:image/gif", NULL);
     moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:image/jpg", NULL);
 
-    HASH_INIT(h_, sessions, moloch_nids_session_hash, moloch_nids_session_cmp);
+    memset(sessions, 0, sizeof(MolochSessionHash_t *) * 256);
+    sessions[IPPROTO_UDP] = malloc(sizeof(MolochSessionHash_t));
+    sessions[IPPROTO_TCP] = malloc(sizeof(MolochSessionHash_t));
+    sessions[IPPROTO_ICMP] = malloc(sizeof(MolochSessionHash_t));
+    HASH_INIT(h_, *(sessions[IPPROTO_UDP]), moloch_nids_session_hash, moloch_nids_session_cmp);
+    HASH_INIT(h_, *(sessions[IPPROTO_TCP]), moloch_nids_session_hash, moloch_nids_session_cmp);
+    HASH_INIT(h_, *(sessions[IPPROTO_ICMP]), moloch_nids_session_hash, moloch_nids_session_cmp);
     DLL_INIT(tcp_, &tcpWriteQ);
     DLL_INIT(q_, &tcpSessionQ);
     DLL_INIT(q_, &udpSessionQ);
@@ -1406,7 +1418,7 @@ void moloch_nids_init()
 void moloch_nids_exit() {
     config.exiting = 1;
     LOG("sessions: %d tcp: %d udp: %d icmp: %d", 
-            HASH_COUNT(h_, sessions), 
+            moloch_nids_monitoring_sessions(), 
             tcpSessionQ.q_count,
             udpSessionQ.q_count,
             icmpSessionQ.q_count);
@@ -1415,33 +1427,64 @@ void moloch_nids_exit() {
     nids_unregister_ip(moloch_nids_cb_ip);
     nids_exit();
 
-    MolochSession_t *hsession;
-    HASH_FORALL_POP_HEAD(h_, sessions, hsession, 
-        moloch_db_save_session(hsession, TRUE);
-    );
+    int i;
+    for (i = 0; i < 256; i++) {
+        if (!sessions[i])
+            continue;
 
-    if (!config.dryRun && config.copyPcap) {
-        moloch_nids_file_flush(TRUE);
-        MOLOCH_SIZE_FREE(pcapbuf, output->buf);
-        MOLOCH_TYPE_FREE(MolochOutput_t, output);
-
-        // Write out all the buffers
-        while (DLL_COUNT(mo_, &outputQ) > 0) {
-            output = DLL_PEEK_HEAD(mo_, &outputQ);
-            int len = write(output->fd, output->buf+output->pos, output->max - output->pos);
-            if (len < 0) {
-                LOG("ERROR - Write failed with %d %d\n", len, errno);
-                exit (0);
+#ifdef PRINT_BUCKETS
+        if (config.debug) {
+            // Print out the histogram for buckets, see how we are doing
+            printf("\nBuckets for %d:\n", i);
+            int buckets[51];
+            int total[51];
+            memset(buckets, 0, sizeof(buckets));
+            memset(total, 0, sizeof(total));
+            int b;
+            for ( b = 0;  b < sessions[i]->size;  b++) {
+                if (sessions[i]->buckets[b].h_count >= 50) {
+                    buckets[50]++; 
+                    total[50] += sessions[i]->buckets[b].h_count;
+                } else {
+                    buckets[(sessions[i]->buckets[b].h_count)]++;
+                    total[(sessions[i]->buckets[b].h_count)] += sessions[i]->buckets[b].h_count;
+                }
             }
-            output->pos += len;
-            if (output->pos < output->max) {
-                continue;
-            } else {
-                if (output->close)
-                    close(output->fd);
-                MOLOCH_SIZE_FREE(pcapbuf, output->buf);
-                DLL_REMOVE(mo_, &outputQ, output);
-                MOLOCH_TYPE_FREE(MolochOutput_t, output);
+            for ( b = 0;  b <= 50;  b++) {
+                if (buckets[b])
+                    printf(" %2d: %7d %7d\n", b, buckets[b], total[b]);
+            } 
+        }
+#endif
+
+        MolochSession_t *hsession;
+        HASH_FORALL_POP_HEAD(h_, *sessions[i], hsession, 
+            moloch_db_save_session(hsession, TRUE);
+        );
+
+        if (!config.dryRun && config.copyPcap) {
+            moloch_nids_file_flush(TRUE);
+            MOLOCH_SIZE_FREE(pcapbuf, output->buf);
+            MOLOCH_TYPE_FREE(MolochOutput_t, output);
+
+            // Write out all the buffers
+            while (DLL_COUNT(mo_, &outputQ) > 0) {
+                output = DLL_PEEK_HEAD(mo_, &outputQ);
+                int len = write(output->fd, output->buf+output->pos, output->max - output->pos);
+                if (len < 0) {
+                    LOG("ERROR - Write failed with %d %d\n", len, errno);
+                    exit (0);
+                }
+                output->pos += len;
+                if (output->pos < output->max) {
+                    continue;
+                } else {
+                    if (output->close)
+                        close(output->fd);
+                    MOLOCH_SIZE_FREE(pcapbuf, output->buf);
+                    DLL_REMOVE(mo_, &outputQ, output);
+                    MOLOCH_TYPE_FREE(MolochOutput_t, output);
+                }
             }
         }
     }

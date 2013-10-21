@@ -666,6 +666,42 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
             moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, http->hostString->len-2, TRUE);
         }
 
+        char *question = strchr(http->urlString->str, '?');
+        if (question) {
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_PATH, session, http->urlString->str, question - http->urlString->str, TRUE);
+            char *start = question+1;
+            char *ch;
+            int   field = MOLOCH_FIELD_HTTP_KEY;
+            for (ch = start; *ch; ch++) {
+                if (*ch == '&') {
+                    if (ch != start && (config.parseQSValue || field == MOLOCH_FIELD_HTTP_KEY)) {
+                        char *str = g_uri_unescape_segment(start, ch, NULL);
+                        if (!str) {
+                            moloch_field_string_add(field, session, start, ch-start, TRUE);
+                        } else if (!moloch_field_string_add(field, session, str, ch-start, FALSE)) {
+                            g_free(str);
+                        }
+                    }
+                    start = ch+1;
+                    field = MOLOCH_FIELD_HTTP_KEY;
+                    continue;
+                } else if (*ch == '=') {
+                    if (ch != start && (config.parseQSValue || field == MOLOCH_FIELD_HTTP_KEY)) {
+                        char *str = g_uri_unescape_segment(start, ch, NULL);
+                        if (!str) {
+                            moloch_field_string_add(field, session, start, ch-start, TRUE);
+                        } else if (!moloch_field_string_add(field, session, str, ch-start, FALSE)) {
+                            g_free(str);
+                        }
+                    }
+                    start = ch+1;
+                    field = MOLOCH_FIELD_HTTP_VALUE;
+                }
+            }
+        } else {
+            moloch_field_string_add(MOLOCH_FIELD_HTTP_PATH, session, http->urlString->str, http->urlString->len, TRUE);
+        }
+
         if (http->urlString->str[0] != '/') {
             char *result = strstr(http->urlString->str, http->hostString->str+2);
 
@@ -1982,6 +2018,9 @@ void moloch_detect_init()
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_MD5,      "hmd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_VER_REQ,  "hsver",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_HTTP_VER_RES,  "hdver",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_PATH,     "hpath",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_KEY,      "hkey",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_HTTP_VALUE,    "hval",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
 
     moloch_field_define_internal(MOLOCH_FIELD_SSH_VER,       "sshver", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_SSH_KEY,       "sshkey", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);

@@ -27,6 +27,17 @@ html
         div#logo
           a(href='about')
             img(src='header_logo.png', style="border-style:none")
+        div#nav-right
+          ul
+            - if (isIndex && user.views)
+              li#viewsButton
+                label 
+                img#viewsArrow(src="down-arrow.png")
+            li#version moloch v#{molochversion}
+            - if (user.createEnabled)
+              li  
+                a(href="#{elasticBase}/_plugin/head/",target="_blank")
+                div#esstatus.tooltip
         div#nav
           ul.ulist-nav
             li
@@ -49,11 +60,6 @@ html
               a#statsLink(href='stats') Stats
             li.last
               a.config#settingsLinke(href='settings') Settings
-        - if (user.createEnabled)
-          a(href="#{elasticBase}/_plugin/head/",target="_blank")
-            div#esstatus.tooltip
-        div#version 
-          p moloch v#{molochversion}
         - if (isIndex)
           form#searchForm
             div#searchStuff
@@ -75,7 +81,6 @@ html
                 button#searchButton(type="submit") Search
                 label#actionsButton Actions 
                   img#actionsButtonArrow(src="down-arrow.png")
-              //button#info(type="button") I
       div#customDate
         span Beginning Time:
         input#startDate(size=21)
@@ -170,8 +175,18 @@ html
           - if (sendSession && sendSession.name)
             li
               a#sessionSendSessionButton.sendSessionAction Send Session to #{sendSession.name}
+      if (user.views)
+        div#viewsMenu
+          ul
+            li.viewMenuOption 
+              a.viewMenuOption None
+            - var keys = Object.keys(user.views).sort()
+            each key in keys
+              li
+                a.viewMenuOption #{key}
 
 script(type='text/javascript').
   var molochFields = !{fieldsMap};
   var molochFieldsExp = Object.keys(molochFields);
   var molochSettings  = !{JSON.stringify(user.settings)};
+  var molochViews  = !{JSON.stringify(user.views || {})};

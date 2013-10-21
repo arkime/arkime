@@ -29,7 +29,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 6
+#define MOLOCH_API_VERSION 7
 
 /******************************************************************************/
 /*
@@ -64,6 +64,21 @@ typedef struct {
 } MolochStringHead_t;
 typedef HASH_VAR(s_, MolochStringHash_t, MolochStringHead_t, 1);
 typedef HASH_VAR(s_, MolochStringHashStd_t, MolochStringHead_t, 13);
+
+/******************************************************************************/
+/*
+ * TRIE
+ */
+typedef struct moloch_trie_node {
+    void                     *data;
+    struct moloch_trie_node **children;
+    char                      value, first, last;
+} MolochTrieNode_t;
+
+typedef struct moloch_trie {
+    int size;
+    MolochTrieNode_t root;
+} MolochTrie_t;
 
 
 /******************************************************************************/
@@ -170,6 +185,7 @@ typedef struct moloch_config {
     char      logFileCreation;
     char      parseSMTP;
     char      parseSMB;
+    char      parseQSValue;
     char      compressES;
 } MolochConfig_t;
 
@@ -597,6 +613,9 @@ MOLOCH_FIELD_HTTP_TAGS_RES, // Must be right after REQ
 MOLOCH_FIELD_HTTP_MD5,
 MOLOCH_FIELD_HTTP_VER_REQ,
 MOLOCH_FIELD_HTTP_VER_RES,
+MOLOCH_FIELD_HTTP_PATH,
+MOLOCH_FIELD_HTTP_KEY,
+MOLOCH_FIELD_HTTP_VALUE,
 
 MOLOCH_FIELD_SSH_VER,
 MOLOCH_FIELD_SSH_KEY,
@@ -643,6 +662,22 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 void moloch_field_free(MolochSession_t *session);
 void moloch_field_exit();
+
+/******************************************************************************/
+/*
+ * trie.c
+ */
+void moloch_trie_init(MolochTrie_t *trie);
+MolochTrieNode_t *moloch_trie_add_node(MolochTrieNode_t *node, const char key);
+void moloch_trie_add_forward(MolochTrie_t *trie, const char *key, const int len, void *data);
+void moloch_trie_add_reverse(MolochTrie_t *trie, const char *key, const int len, void *data);
+void *moloch_trie_get_forward(MolochTrie_t *trie, const char *key, const int len);
+void *moloch_trie_get_reverse(MolochTrie_t *trie, const char *key, const int len);
+void *moloch_trie_best_forward(MolochTrie_t *trie, const char *key, const int len);
+void *moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int len);
+void *moloch_trie_del_forward(MolochTrie_t *trie, const char *key, const int len);
+void *moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len);
+
 
 /******************************************************************************/
 /*

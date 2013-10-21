@@ -14,6 +14,14 @@
   - expression ip.dst == ip:port wasn't working
   - more max stack fixes
   - users tab improvements (issue #152)
+  - New views concept (issue #146), created in settings tab
+  - settings tab improvements
+  - Ability to search for http.uri.path, http.uri.key,http.uri.value for
+    uri path, query string key, and query string value (parseQSValue must 
+    be set to true)
+  - --dryrun doesn't use ES for anything now
+  - New session hash algorithm
+  - Token checking function now shared
 
 
 0.9.1 2013/10/03

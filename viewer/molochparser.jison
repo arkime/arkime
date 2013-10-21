@@ -94,6 +94,12 @@ email\.[^\s!=><.]*        if (!yy.emailSearch) throw "email searches disabled fo
 "http.md5"                return "http.md5"
 "http.uri.cnt"            return "http.uri.cnt"
 "http.uri"                return "http.uri"
+"http.uri.key.cnt"        return "http.uri.key.cnt"
+"http.uri.key"            return "http.uri.key"
+"http.uri.path.cnt"       return "http.uri.path.cnt"
+"http.uri.path"           return "http.uri.path"
+"http.uri.value.cnt"      return "http.uri.value.cnt"
+"http.uri.value"          return "http.uri.value"
 "http.version"            return "http.version"
 "http.version.src"        return "http.version.src"
 "http.version.src.cnt"    return "http.version.src.cnt"
@@ -240,6 +246,9 @@ RANGEFIELD: databytes                {$$ = 'db'}
           | 'port.socks'             {$$ = 'sockspo'}
           | 'port.src'               {$$ = 'p1'}
           | 'http.uri.cnt'           {$$ = 'uscnt'}
+          | 'http.uri.key.cnt'       {$$ = 'hkeycnt'}
+          | 'http.uri.path.cnt'      {$$ = 'hpathcnt'}
+          | 'http.uri.value.cnt'     {$$ = 'hvalcnt'}
           | 'cert.cnt'               {$$ = 'tlscnt'}
           | 'ip.dns.cnt'             {$$ = 'dnsipcnt'}
           | 'ip.email.cnt'           {$$ = 'eipcnt'}
@@ -301,6 +310,9 @@ TERMFIELD  : 'id'                 {$$ = '_id'}
            | 'email.fn'           {$$ = 'efn'}
            | 'email.content-type' {$$ = 'ect'}
            | 'http.md5'           {$$ = 'hmd5'}
+           | 'http.uri.key'       {$$ = 'hkey'}
+           | 'http.uri.path'      {$$ = 'hpath'}
+           | 'http.uri.value'     {$$ = 'hval'}
            | 'http.version.src'   {$$ = 'hsver'}
            | 'http.version.dst'   {$$ = 'hdver'}
            | 'irc.nick'           {$$ = 'ircnck'}

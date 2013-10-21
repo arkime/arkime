@@ -3,7 +3,9 @@ extends layout
 include mixins
 
 block content
-  h2 Change settings for #{suser.userId} (#{suser.userName})
+  if suser.userId != user.userId
+    h1.red Administrator changing data for user '#{suser.userId}'
+  h2 Settings
   form#changeSettings
     input(type='hidden', id='token', name='token', value='#{token}')
     h3 General
@@ -52,8 +54,41 @@ block content
     mixin fieldsSelect("connDstField", "setting", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
   p
   hr
-  h2 Change password for #{suser.userId} (#{suser.userName})
-  form#changePassword
+  h2 Views
+  p Saved views provide an easier method to specify common base queries and can be activated in the navigation header.
+  if (suser.views)
+    h3 Current Views
+    table#views(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+      thead
+        tr
+          th(style="width:150px") Name
+          th Expression
+          th(style="width:50px") Action
+      tbody
+        - var keys = Object.keys(suser.views).sort()
+        each key in keys
+          tr
+            td(contentEditable) #{key}
+            td(contentEditable) #{suser.views[key].expression}
+            td
+              a.deleteViewAction(href="#") delete
+    
+  p
+  h3 New View
+  form#createViewForm
+    input(type='hidden', id='token', name='token', value='#{token}')
+    label(for='viewName') View Name:
+    input(id='viewName', name='viewName', size='30', maxlength='20')
+    br
+    label(for='viewExpression') Expression:
+    input(id='viewExpression', name='viewExpression', size='100')
+    p
+    center
+      button#createView Create View
+  hr
+  h2 Change Password
+  form#changePasswordForm
+    input(type='hidden', id='token', name='token', value='#{token}')
     - if (currentPassword)
       label(for='currentPassword') Current Password:
       input(type='password', id='currentPassword', name='currentPassword', size='30')
@@ -63,12 +98,12 @@ block content
     br
     label(for='newPassword2') New Password:
     input(type='password', id='newPassword2', name='newPassword2', size='30')
-    input(type='hidden', id='token', name='token', value='#{token}')
     p 
     center
       button#change Change Password
 
   script(type='text/javascript').
+    var settings  = !{JSON.stringify(suser.settings)};
 
     $(document).ready(function() {
       // Selects
@@ -79,8 +114,8 @@ block content
       };
 
       ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
-        if (molochSettings[field]) {
-          $("#" + field + " option[value='" + molochSettings[field] + "']").attr('selected', 'selected');
+        if (settings[field]) {
+          $("#" + field + " option[value='" + settings[field] + "']").attr('selected', 'selected');
         } else if (defaults[field]) {
           $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
         }
@@ -88,7 +123,7 @@ block content
     });
     
 
-    $('#changePassword').submit(function() {
+    $('#changePasswordForm').submit(function() {
       if ($("#newPassword").val() != $("#newPassword2").val()) {
         alert("New passwords don't match");
         return false;
@@ -98,13 +133,12 @@ block content
         "dataType": 'json',
         "type": "POST",
         "url": "#{basePath}changePassword",
-        "data": $("#changePassword").serialize(),
+        "data": $("#changePasswordForm").serialize(),
         "success": function(data) {
           if (!data.success) {
             alert(data.text);
           } else {
             alert("Password changed.");
-            history.back();
           }
         }
       });
@@ -123,4 +157,62 @@ block content
           }
         }
       });
+    });
+
+    $('#createViewForm').submit(function() {
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}updateView",
+        "data": $("#createViewForm").serialize(),
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          } else {
+            location.reload();
+          }
+        }
+      });
+      return false;
+    });
+
+    $('.deleteViewAction').live('click', function (e) {
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}deleteView",
+        "data": [{name: "view", value: $(this.parentNode.parentNode).find("td:first").text()},
+                 {name: "token", value: "#{token}"}],
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          } else {
+            location.reload();
+          }
+        }
+      });
+    });
+
+    $('td[contenteditable]').live('focusout', function () {
+      var row = $(this.parentNode);
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}updateView",
+        "data": [{name: "viewName", value: row.find("td:first").text()}, 
+                 {name: "viewExpression", value: row.find("td:eq(1)").text()},
+                 {name: "token", value: "#{token}"}], 
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          }
+        }
+      });
+    });
+
+    $('td[contenteditable]').live('keypress', function (e) {
+      if ((e.keyCode ? e.keyCode : e.which) === 13) {
+        e.target.blur();
+        return false;
+      }
     });

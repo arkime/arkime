@@ -824,6 +824,53 @@ $(document).ready(function() {
   });
 
   //////////////////////////////////////////////////////////////////////////////////
+  // Views Menu
+  //////////////////////////////////////////////////////////////////////////////////
+  var viewsMenu = $('#viewsButton').qtip({
+    id: "viewsMenu",
+    content: {
+      text: $('#viewsMenu')
+    },
+    position: {
+      my: 'top right',
+      at: 'bottom right',
+    },
+    hide: {
+      fixed: true,
+      delay: 300
+    },
+    style: {
+      classes: 'qtip-light qtip-rounded',
+      tip: false
+    }
+  }).qtip('api');
+
+  $(".viewMenuOption").click(function (e) {
+    viewsMenu.hide();
+    var view = $(e.target).text();
+    if (view == "None") {
+      delete sessionStorage['moloch-view'];
+      $("#viewsButton label").text("Select View ")
+                             .removeClass("red");
+    } else {
+      sessionStorage['moloch-view'] = view;
+      $("#viewsButton label").text("View: "+ view + " ")
+                             .addClass("red");
+    }
+    $('#searchForm').submit();
+  });
+
+  if (sessionStorage['moloch-view'] && molochViews[sessionStorage['moloch-view']]) {
+    $("#viewsButton label").text("View: "+ sessionStorage['moloch-view'] + " ")
+                           .addClass("red");
+  } else {
+    delete sessionStorage['moloch-view'];
+    $("#viewsButton label").text("Select View ")
+                           .removeClass("red");
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////////
   // startDate/stopDate
   //////////////////////////////////////////////////////////////////////////////////
   $('#startDate,#stopDate').keypress(function (e) {
@@ -1063,6 +1110,10 @@ function buildParams(params) {
     if ($("#expression").val()) {
       params.push({name:'expression', value:$("#expression").val()});
     }
+  }
+
+  if (sessionStorage['moloch-view']) {
+    params.push({name:'view', value:sessionStorage['moloch-view']});
   }
 
   if (typeof sessionsTable === 'undefined') {

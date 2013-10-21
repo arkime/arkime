@@ -33,7 +33,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 13
+#define MOLOCH_MIN_DB_VERSION 14
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -1394,6 +1394,18 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         if (func)
             func(uw, tagtype, tag->tagValue);
         return;
+    } 
+
+    if (config.dryRun) {
+        static int tagNum = 1;
+        MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
+        tag->tagName = g_strdup(tagname);
+        tag->tagValue = tagNum++;
+        HASH_ADD(tag_, tags, tag->tagName, tag);
+
+        if (func)
+            func(uw, tagtype, tag->tagValue);
+        return;
     }
 
     MolochTagRequest_t *r = MOLOCH_TYPE_ALLOC(MolochTagRequest_t);
@@ -1470,12 +1482,14 @@ void moloch_db_init()
     esServer = moloch_http_create_server(config.elasticsearch, 9200, config.maxESConns, config.maxESRequests, config.compressES);
     DLL_INIT(t_, &tagRequests);
     HASH_INIT(tag_, tags, moloch_db_tag_hash, moloch_db_tag_cmp);
-    moloch_db_load_file_num();
     myPid = getpid();
     gettimeofday(&startTime, NULL);
-    moloch_db_check();
-    moloch_db_load_tags();
-    moloch_db_load_stats();
+    if (!config.dryRun) {
+        moloch_db_check();
+        moloch_db_load_file_num();
+        moloch_db_load_tags();
+        moloch_db_load_stats();
+    }
 
     if (config.geoipFile) {
         gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE);

@@ -20,6 +20,7 @@
 # 11 - Require 0.90.1, switch from soft to node, new fpd field, removed fpms field
 # 12 - Added hsver, hdver fields, diskQueue, user settings, scrub* fields, user removeEnabled
 # 13 - Rename rotate to expire, added smb, socks, rir fields
+# 14 - New http fields, user.views
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -28,7 +29,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 13;
+my $VERSION = 14;
 my $verbose = 0;
 
 ################################################################################
@@ -741,6 +742,30 @@ sub sessionsUpdate
       hdvercnt: {
         type: "integer"
       },
+      hpath: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hpathcnt: {
+        type: "integer"
+      },
+      hkey: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hkeycnt: {
+        type: "integer"
+      },
+      hval: {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
+      },
+      hvalcnt: {
+        type: "integer"
+      },
       user: {
         omit_norms: true,
         type: "string",
@@ -1156,6 +1181,10 @@ sub usersUpdate
       settings : {
         type : "object",
         dynamic: "true"
+      },
+      views : {
+        type : "object",
+        dynamic: "true"
       }
     }
   }
@@ -1534,7 +1563,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 13) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 14) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

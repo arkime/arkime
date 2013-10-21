@@ -12,15 +12,19 @@ body
 .bold
   font-weight: bold
 
+.red
+  color: red
+
 .ulist-nav li
   display:inline
   font-size:1em
   border-right:1px solid black
-  margin-right:1em
-  padding-right:1em
+  margin-right:10px
+  padding-right:10px
 
 .ulist-nav li.last
   border-right:none
+  margin-right:0px
 
 .ulist-nav li a
   text-decoration:none
@@ -73,12 +77,14 @@ body
   z-index: 5
 
 // layout.jade
-#header
+#headers
   font-family: Arial, sans-serif
+  color:white
+  text-shadow: black 0.1em 0.1em 0.2em
+
+#header
   margin-bottom:0px
   line-height: 0px
-  text-shadow: black 0.1em 0.1em 0.2em
-  color:white
   height: 70px
   position: relative
   background: #162758; /* Old browsers */
@@ -97,28 +103,46 @@ body
   left: 10px
   width: 61px
 
-#version
-  position: absolute
-  right:0px
-  top: 0px
-  padding:5px 0px
-  padding-right:10px
-  margin:0 auto
-  font-weight: normal
-
 #esstatus
-  position: absolute
-  right:130px
-  top: 15px
-  width: 4px
-  height: 4px
-  background: green
+  padding-top: 1px
+  width: 10px
+  height: 10px
+  display: inline-block
+  margin-top: -10px;
+
+#viewsArrow
+  margin-top: -10px;
+  width: 10px
+  height: 10px
+  margin-right: 5px
+
+#nav-right
+  overflow: visible
+  top: 0px
+  right: 0px
+  float: right
   padding:5px 0px
-  padding-right:10px
   margin:0 auto
-  font-weight: normal
-  display: none
-  
+  font-size: 12px
+
+#nav-right ul
+  height: 0px
+
+#nav-right li
+  display:inline
+  margin-right:2px
+  padding-right:1px
+
+#nav-right li.last
+  border-right:none
+
+#nav-right li a
+  text-decoration:none
+  color:rgb(160,167,214)
+
+#nav-right li a:hover
+  color:rgb(193,198,228)
+
 #searchStuff
   clear: both
   padding-left: 65px
@@ -197,7 +221,7 @@ body
 #actionsMenu li a:hover
   text-decoration:underline; 
 
-#sessionActionsMenu ul
+#sessionActionsMenu ul, #viewsMenu ul
   display: inline
   list-style: none
   font-size: 14px
@@ -205,7 +229,7 @@ body
   padding: 0px
   cursor: pointer
 
-#sessionActionsMenu li a:hover
+#sessionActionsMenu li a:hover, #viewsMenu li a:hover
   text-decoration:underline; 
 
 //From http://stackoverflow.com/a/248013
@@ -575,11 +599,16 @@ table#sessions td.dateColumn
   width: 14em
   text-align: right
 
-#changePassword
+#changePasswordForm, #createViewForm
   display: inline-block
 
 #pageBody-settingsLink h3
-  margin-left: 20px
+  margin: 1px 0px 1px 20px
+
+#pageBody-settingsLink #views
+  margin-left: 30px
+  padding-right: 60px
+  text-align: left
   
 
 // map

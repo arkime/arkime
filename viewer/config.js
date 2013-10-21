@@ -343,6 +343,13 @@ addField("uacnt", "http.user-agent.cnt", "http", "integer", "Unique number of Us
 addField("us", "http.uri", "http", "textfield", "URIs for request");
 addField("uscnt", "http.uri.cnt", "http", "integer", "Unique number of request URIs");
 
+addField("hpathcnt", "http.uri.path.cnt", "http", "integer", "Unique number of paths of all URIs in session");
+addField("hpath", "http.uri.path", "http", "termfield", "Path portion of URI");
+addField("hkeycnt", "http.uri.key.cnt", "http", "integer", "Unique number of querystring keys of all URIs in session");
+addField("hkey", "http.uri.key", "http", "termfield", "Keys from querystring of URI");
+addField("hvalcnt", "http.uri.value.cnt", "http", "integer", "Unique number of querystring values of all URIs in session");
+addField("hval", "http.uri.value", "http", "termfield", "Values from querystring of URI");
+
 addField("sshkey", "ssh.key", "ssh", "termfield", "Base64 encoded host key");
 addField("sshkeycnt", "ssh.key.cnt", "ssh", "integer", "Number of unique Base64 encoded host keys");
 addField("sshver", "ssh.ver", "ssh", "lotermfield", "SSH version string");

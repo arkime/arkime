@@ -254,41 +254,6 @@ function isLocalView(node, yesCB, noCB) {
   });
 }
 
-function dbCheck() {
-  var index;
-
-  ["stats", "dstats", "tags", "sequence", "files", "users"].forEach(function(index) {
-    Db.status(index, function(err, status) {
-      if (err || status.error) {
-        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
-        process.exit(1);
-      }
-    });
-  });
-
-  Db.get("dstats", "version", "version", function(err, doc) {
-    var version;
-    if (!doc.exists) {
-      version = 0;
-    } else {
-      version = doc._source.version;
-    }
-
-    if (version < MIN_DB_VERSION) {
-        console.log("ERROR - Current database version (" + version + ") is less then required version (" + MIN_DB_VERSION + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
-        process.exit(1);
-    }
-  });
-
-  if (Config.get("passwordSecret")) {
-    Db.numberOfDocuments("users", function(err, num) {
-      if (num === 0) {
-        console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
-      }
-    });
-  }
-}
-
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
@@ -397,7 +362,7 @@ app.get('/settings', function(req, res) {
       user: req.user,
       suser: user,
       currentPassword: cp,
-      token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: user.userId, cp:cp}),
+      token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
       title: 'Settings',
       titleLink: 'settingsLink'
     });
@@ -412,6 +377,9 @@ app.get('/settings', function(req, res) {
   }
 
   if (req.query.userId) {
+    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
+      return res.send("Moloch Permision Denied");
+    }
     Db.get("users", 'user', req.query.userId, function(err, user) {
       if (err || !user.exists) {
         console.log("ERROR - /password error", err, user);
@@ -869,10 +837,24 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
-  if (req.user.expression && req.user.expression.length > 0) {
+  if (!err && req.query.view && req.user.views && req.user.views[req.query.view]) {
+    try {
+      var viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
+      if (query.query.filtered.filter === undefined) {
+        query.query.filtered.filter = viewExpression;
+      } else {
+        query.query.filtered.filter = {bool: {must: [viewExpression, query.query.filtered.filter]}};
+      }
+    } catch (e) {
+      console.log("ERR - User expression doesn't compile", req.user.views[req.query.view], e);
+      err = e;
+    }
+  }
+
+  if (!err && req.user.expression && req.user.expression.length > 0) {
     try {
       // Expression was set by admin, so assume email search ok
-      molochparser.parser.yy = {emailSearch: true};
+      molochparser.parser.yy.emailSearch = true;
       var userExpression = molochparser.parse(req.user.expression);
       if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = userExpression;
@@ -880,7 +862,8 @@ function buildSessionQuery(req, buildCb) {
         query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
       }
     } catch (e) {
-      console.log("ERR - User expression doesn't compile", req.user.expression, e);
+      console.log("ERR - Forced expression doesn't compile", req.user.expression, e);
+      err = e;
     }
   }
 
@@ -1005,6 +988,7 @@ Db.nodesStats({fs: 1}, function (err, info) {
 
 app.get('/esstats.json', function(req, res) {
   var stats = [];
+  var r;
 
   async.parallel({
     nodes: function(nodesCb) {
@@ -1017,11 +1001,11 @@ app.get('/esstats.json', function(req, res) {
   function(err, results) {
     if (err || !results.nodes) {
       console.log ("ERROR", err);
-      var r = {sEcho: req.query.sEcho,
-               health: results.health,
-               iTotalRecords: 0,
-               iTotalDisplayRecords: 0,
-               aaData: []};
+      r = {sEcho: req.query.sEcho,
+           health: results.health,
+           iTotalRecords: 0,
+           iTotalDisplayRecords: 0,
+           aaData: []};
       return res.send(r);
     }
 
@@ -1065,11 +1049,11 @@ app.get('/esstats.json', function(req, res) {
     results.nodes.nodes.timestamp = new Date().getTime();
     previousNodeStats.push(results.nodes.nodes);
 
-    var r = {sEcho: req.query.sEcho,
-             health: results.health,
-             iTotalRecords: stats.length,
-             iTotalDisplayRecords: stats.length,
-             aaData: stats};
+    r = {sEcho: req.query.sEcho,
+         health: results.health,
+         iTotalRecords: stats.length,
+         iTotalDisplayRecords: stats.length,
+         aaData: stats};
     res.send(r);
   });
 });
@@ -3297,19 +3281,23 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
 });
 
 
-app.post('/deleteUser/:userId', function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
+function checkToken(req, res, next) {
   if (!req.body.token) {
     return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
-  var token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
-    console.log("bad token", token);
+  req.token = Config.auth2obj(req.body.token);
+  if (Math.abs(Date.now() - req.token.date) > 600000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
+    console.trace("bad token", req.token);
     return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+  }
+
+  return next();
+}
+
+app.post('/deleteUser/:userId', checkToken, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
   if (req.params.userId === req.user.userId) {
@@ -3321,23 +3309,13 @@ app.post('/deleteUser/:userId', function(req, res) {
   });
 });
 
-app.post('/addUser', function(req, res) {
+app.post('/addUser', checkToken, function(req, res) {
   if (!req.user.createEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
-  if (!req.body.token) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
-  }
-
   if (req.body.userId.match(/[^\w.-]/)) {
     return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
-  }
-
-  var token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
-    console.log("bad token", token);
-    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
@@ -3374,19 +3352,9 @@ app.post('/addUser', function(req, res) {
   });
 });
 
-app.post('/updateUser/:userId', function(req, res) {
+app.post('/updateUser/:userId', checkToken, function(req, res) {
   if (!req.user.createEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
-  if (!req.body.token) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
-  }
-
-  var token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - token.date) > 600000 || token.pid !== process.pid || token.userId !== req.user.userId) {
-    console.log("bad token", token);
-    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
 
   Db.get("users", 'user', req.params.userId, function(err, user) {
@@ -3442,7 +3410,7 @@ app.post('/updateUser/:userId', function(req, res) {
   });
 });
 
-app.post('/changePassword', function(req, res) {
+app.post('/changePassword', checkToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
@@ -3452,25 +3420,15 @@ app.post('/changePassword', function(req, res) {
   }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return error("New password needs to be at least 2 characters");
+    return error("New password needs to be at least 3 characters");
   }
 
-  if (!req.body.token) {
-    return error("Missing token");
-  }
-
-  var token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - token.date) > 120000 || token.pid !== process.pid) { // Request has to be +- 120 seconds and same pid
-    console.log("bad token", token);
-    return error("Try reloading page");
-  }
-
-  if (token.cp && (req.user.passStore !== Config.pass2store(req.user.userId, req.body.currentPassword) ||
-                   token.userId !== req.user.userId)) {
+  if (req.token.cp && (req.user.passStore !== Config.pass2store(req.token.suserId, req.body.currentPassword) ||
+                   req.token.suserId !== req.user.userId)) {
     return error("Current password mismatch");
   }
 
-  Db.get("users", 'user', token.userId, function(err, user) {
+  Db.get("users", 'user', req.token.suserId, function(err, user) {
     if (err || !user.exists) {
       console.log("changePassword failed", err, user);
       return error("Unknown user");
@@ -3487,22 +3445,12 @@ app.post('/changePassword', function(req, res) {
   });
 });
 
-app.post('/changeSettings', function(req, res) {
+app.post('/changeSettings', checkToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
 
-  if (!req.body.token) {
-    return error("Missing token");
-  }
-
-  var token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - token.date) > 300000 || token.pid !== process.pid) { // Request has to be +- 300 seconds and same pid
-    console.log("bad token", token);
-    return error("Try reloading page");
-  }
-
-  Db.get("users", 'user', token.userId, function(err, user) {
+  Db.get("users", 'user', req.token.suserId, function(err, user) {
     if (err || !user.exists) {
       console.log("changeSettings failed", err, user);
       return error("Unknown user");
@@ -3515,9 +3463,72 @@ app.post('/changeSettings', function(req, res) {
     Db.indexNow("users", "user", user.userId, user, function(err, info) {
       if (err) {
         console.log(err, info);
-        return error("Update failed");
+        return error("Change settings update failed");
       }
       return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
+    });
+  });
+});
+
+app.post('/updateView', checkToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.viewName || !req.body.viewExpression) {
+    return error("Missing viewName or viewExpression");
+  }
+
+  Db.get("users", 'user', req.token.suserId, function(err, user) {
+    if (err || !user.exists) {
+      console.log("updateView failed", err, user);
+      return error("Unknown user");
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+    if (user.views[req.body.viewName]) {
+      user.views[req.body.viewName].expression = req.body.viewExpression;
+    } else {
+      user.views[req.body.viewName] = {expression: req.body.viewExpression};
+    }
+    
+    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+      if (err) {
+        console.log(err, info);
+        return error("Create View update failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Updated view successfully"}));
+    });
+  });
+});
+
+app.post('/deleteView', checkToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.view) {
+    return error("Missing view");
+  }
+
+  Db.get("users", 'user', req.token.suserId, function(err, user) {
+    if (err || !user.exists) {
+      console.log("updateView failed", err, user);
+      return error("Unknown user");
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    delete user.views[req.body.view];
+
+    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+      if (err) {
+        console.log(err, info);
+        return error("Create View update failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
     });
   });
 });
@@ -4210,7 +4221,7 @@ app.post('/upload', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
-dbCheck();
+Db.checkVersion(MIN_DB_VERSION, Config.get("passwordSecret") !== undefined);
 expireCheckAll();
 setInterval(expireCheckAll, 5*60*1000);
 

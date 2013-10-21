@@ -23,7 +23,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        thirdparty/patricia.o \
 		-ldl -lpthread
 
-C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c field.c
+C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c field.c trie.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
