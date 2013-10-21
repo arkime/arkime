@@ -849,7 +849,9 @@ $(document).ready(function() {
     viewsMenu.hide();
     var view = $(e.target).text();
     if (view == "None") {
-      delete sessionStorage['moloch-view'];
+      if (sessionStorage['moloch-view']) {
+        delete sessionStorage['moloch-view'];
+      }
       $("#viewsButton label").text("Select View ")
                              .removeClass("red");
     } else {
@@ -864,7 +866,9 @@ $(document).ready(function() {
     $("#viewsButton label").text("View: "+ sessionStorage['moloch-view'] + " ")
                            .addClass("red");
   } else {
-    delete sessionStorage['moloch-view'];
+    if (sessionStorage['moloch-view']) {
+      delete sessionStorage['moloch-view'];
+    }
     $("#viewsButton label").text("Select View ")
                            .removeClass("red");
   }
