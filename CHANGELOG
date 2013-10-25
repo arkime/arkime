@@ -22,6 +22,7 @@
   - --dryrun doesn't use ES for anything now
   - New session hash algorithm
   - Token checking function now shared
+  - Fixed broken upload
 
 
 0.9.1 2013/10/03

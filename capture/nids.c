@@ -97,7 +97,8 @@ void moloch_nids_init_nids();
 uint32_t moloch_nids_session_hash(const void *key)
 {
     unsigned char *p = (unsigned char *)key;
-    return ((p[2] << 16 | p[3] << 8 | p[4]) * 59) ^ (p[8] << 16 | p[9] << 8 |  p[10]);
+    //return ((p[2] << 16 | p[3] << 8 | p[4]) * 59) ^ (p[8] << 16 | p[9] << 8 |  p[10]);
+    return (((p[1]<<24) ^ (p[2]<<18) ^ (p[3]<<12) ^ (p[4]<<6) ^ p[5]) * 13) ^ (p[8]<<24|p[9]<<16 | p[10]<<8 | p[11]);
 }
 
 /******************************************************************************/
@@ -1433,58 +1434,57 @@ void moloch_nids_exit() {
             continue;
 
 #ifdef PRINT_BUCKETS
-        if (config.debug) {
-            // Print out the histogram for buckets, see how we are doing
-            printf("\nBuckets for %d:\n", i);
-            int buckets[51];
-            int total[51];
-            memset(buckets, 0, sizeof(buckets));
-            memset(total, 0, sizeof(total));
-            int b;
-            for ( b = 0;  b < sessions[i]->size;  b++) {
-                if (sessions[i]->buckets[b].h_count >= 50) {
-                    buckets[50]++; 
-                    total[50] += sessions[i]->buckets[b].h_count;
-                } else {
-                    buckets[(sessions[i]->buckets[b].h_count)]++;
-                    total[(sessions[i]->buckets[b].h_count)] += sessions[i]->buckets[b].h_count;
-                }
+        // Print out the histogram for buckets, see how we are doing
+        printf("\nBuckets for %d:\n", i);
+        int buckets[51];
+        int total[51];
+        memset(buckets, 0, sizeof(buckets));
+        memset(total, 0, sizeof(total));
+        int b;
+        for ( b = 0;  b < sessions[i]->size;  b++) {
+            if (sessions[i]->buckets[b].h_count >= 50) {
+                buckets[50]++; 
+                total[50] += sessions[i]->buckets[b].h_count;
+            } else {
+                buckets[(sessions[i]->buckets[b].h_count)]++;
+                total[(sessions[i]->buckets[b].h_count)] += sessions[i]->buckets[b].h_count;
             }
-            for ( b = 0;  b <= 50;  b++) {
-                if (buckets[b])
-                    printf(" %2d: %7d %7d\n", b, buckets[b], total[b]);
-            } 
         }
+        for ( b = 0;  b <= 50;  b++) {
+            if (buckets[b])
+                printf(" %2d: %7d %7d\n", b, buckets[b], total[b]);
+        } 
 #endif
 
         MolochSession_t *hsession;
         HASH_FORALL_POP_HEAD(h_, *sessions[i], hsession, 
             moloch_db_save_session(hsession, TRUE);
         );
+    }
 
-        if (!config.dryRun && config.copyPcap) {
-            moloch_nids_file_flush(TRUE);
-            MOLOCH_SIZE_FREE(pcapbuf, output->buf);
-            MOLOCH_TYPE_FREE(MolochOutput_t, output);
+    if (!config.dryRun && config.copyPcap) {
+        moloch_nids_file_flush(TRUE);
 
-            // Write out all the buffers
-            while (DLL_COUNT(mo_, &outputQ) > 0) {
-                output = DLL_PEEK_HEAD(mo_, &outputQ);
-                int len = write(output->fd, output->buf+output->pos, output->max - output->pos);
-                if (len < 0) {
-                    LOG("ERROR - Write failed with %d %d\n", len, errno);
-                    exit (0);
+        // Write out all the buffers
+        MolochOutput_t *out;
+        while (DLL_COUNT(mo_, &outputQ) > 0) {
+            out = DLL_PEEK_HEAD(mo_, &outputQ);
+            int len = write(out->fd, out->buf+out->pos, out->max - out->pos);
+            if (len < 0) {
+                LOG("ERROR - Write failed with %d %d\n", len, errno);
+                exit (0);
+            }
+            out->pos += len;
+            if (out->pos < out->max) {
+                continue;
+            } else {
+                if (out->close) {
+                    close(out->fd);
                 }
-                output->pos += len;
-                if (output->pos < output->max) {
-                    continue;
-                } else {
-                    if (output->close)
-                        close(output->fd);
-                    MOLOCH_SIZE_FREE(pcapbuf, output->buf);
-                    DLL_REMOVE(mo_, &outputQ, output);
-                    MOLOCH_TYPE_FREE(MolochOutput_t, output);
-                }
+
+                MOLOCH_SIZE_FREE(pcapbuf, out->buf);
+                DLL_REMOVE(mo_, &outputQ, out);
+                MOLOCH_TYPE_FREE(MolochOutput_t, out);
             }
         }
     }
