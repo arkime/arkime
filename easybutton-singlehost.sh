@@ -55,7 +55,8 @@ fi
 
 if [ -d "${TDIR}/logs" ]; then
    echo "WARNING - looks like moloch was already installed on this host, make sure elasticsearch and capture aren't running" 1>&2
-   sleep 3
+   echo "You probably don't want to use this script.  See https://github.com/aol/moloch#upgrading" 1>&2
+   sleep 5
 fi
 
 

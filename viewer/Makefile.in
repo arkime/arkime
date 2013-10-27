@@ -11,7 +11,7 @@ install:
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
 	$(CP) -dpr views public $(VIEWERDIR)
-	(cd $(VIEWERDIR) ; npm install)
+	(cd $(VIEWERDIR) ; npm update)
 
 distclean realclean clean:
 	rm -rf node_modules

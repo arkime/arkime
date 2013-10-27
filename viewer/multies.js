@@ -18,7 +18,7 @@ var Config         = require('./config.js'),
     ESC            = require('elasticsearchclient'),
     httpAgent      = require('http');
 } catch (e) {
-  console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm install' inside viewer directory", e);
+  console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
 }
 

@@ -48,16 +48,16 @@ var Config         = require('./config.js'),
     httpsAgent     = require('https'),
     ForeverAgent   = require('forever-agent');
 } catch (e) {
-  console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm install' inside viewer directory", e);
+  console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
 }
 
 try {
   var Png = require('png').Png;
-} catch (e) {console.log("WARNING - No png support, maybe need to 'npm install'", e);}
+} catch (e) {console.log("WARNING - No png support, maybe need to 'npm update'", e);}
 
 if (typeof express !== "function") {
-    console.log("ERROR - Need to run 'npm install' in viewer directory");
+    console.log("ERROR - Need to run 'npm update' in viewer directory");
     process.exit(1);
 }
 var app = express();
@@ -531,7 +531,7 @@ function expireCheckAll () {
     async.map(nodes, function (node, cb) {
       var pcapDir = Config.getFull(node, "pcapDir");
       if (typeof pcapDir !== "string") {
-        return cb("ERROR - couldn't find pcapDir setting for node: " + node + "\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm install iniparser");
+        return cb("ERROR - couldn't find pcapDir setting for node: " + node + "\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm update iniparser");
       }
       fs.stat(pcapDir, function(err,stat) {
         cb(null, {node: node, stat: stat});

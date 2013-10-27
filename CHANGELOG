@@ -23,6 +23,7 @@
   - New session hash algorithm
   - Token checking function now shared
   - Fixed broken upload
+  - Change 'npm install' to 'npm update' everywhere
 
 
 0.9.1 2013/10/03
