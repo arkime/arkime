@@ -163,6 +163,7 @@ typedef struct moloch_config {
     char     **smtpIpHeaders;
 
     uint32_t  maxFileSizeG;
+    uint32_t  maxFileTimeM;
     uint32_t  minFreeSpaceG;
     uint32_t  icmpTimeout;
     uint32_t  udpTimeout;
@@ -238,8 +239,9 @@ typedef struct moloch_session_email {
     uint16_t           base64Decode:2;
 } MolochSessionEmail_t;
 
+#define MAX_SMB_BUFFER 4096
 typedef struct moloch_session_smb {
-    char               buf[2][512];
+    char               buf[2][MAX_SMB_BUFFER];
     uint32_t           remlen[2];
     short              buflen[2];
     uint16_t           flags2[2];

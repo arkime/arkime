@@ -24,6 +24,15 @@
   - Token checking function now shared
   - Fixed broken upload
   - Change 'npm install' to 'npm update' everywhere
+  - New maxFileTimeM for time rotation (issue #158)
+  - Increased SMB decode buffer size
+  - Fixed SMB decode infinite loop
+  - Fixed expire bug with multi nodes on same machine and different traffic rates
+  - Added connections.csv (issue #163)
+  - Added unlock button to connections
+  - small resolution UI improvements (issue #159)
+  - sessionDetail cleanup
+  - Permalinks are faster (issue #162)
 
 
 0.9.1 2013/10/03

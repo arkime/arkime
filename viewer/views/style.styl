@@ -19,8 +19,8 @@ body
   display:inline
   font-size:1em
   border-right:1px solid black
-  margin-right:10px
-  padding-right:10px
+  margin-right:8px
+  padding-right:8px
 
 .ulist-nav li.last
   border-right:none
@@ -57,6 +57,10 @@ body
   position: fixed
   right: 0px
   left: 0px
+  z-index: 0
+
+#sessions_processing
+  z-index: 10
 
 #processing
   text-align: center
@@ -127,6 +131,7 @@ body
 
 #nav-right ul
   height: 0px
+  padding-left: 5px
 
 #nav-right li
   display:inline
@@ -261,6 +266,8 @@ body
   //filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#16285a',endColorstr='#435b99',GradientType=0 ) /* IE6-9 */
 
 .dataTables_processing
+  position: fixed
+  top: 40%
   border: 0px
   color: red
   font-size: 24px
@@ -280,8 +287,11 @@ table#sessions td
   padding: 2px 2px
   font-size: 14px
 
-table#sessions td.urlColumn
+table#sessions td.infoColumn
   font-size: 12px
+
+.infoColumn
+  min-width: 200px
 
 table#sessions td.dateColumn
   font-size: 12px

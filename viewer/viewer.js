@@ -472,7 +472,7 @@ function expireOne (ourInfo, allInfo, minFreeG, pcapDir, nextCb) {
                   must:     { terms: {node: nodes}},
                   must_not: { term: {locked: 1}}
                 }},
-                sort: { num: { order: 'asc' } } };
+                sort: { first: { order: 'asc' } } };
 
   var done = false;
   async.until(
@@ -480,6 +480,7 @@ function expireOne (ourInfo, allInfo, minFreeG, pcapDir, nextCb) {
       return done;
     },
     function (untilNextCb) { // until iterator
+      console.log("expireOne query", JSON.stringify(query));
       Db.search('files', 'file', query, function(err, data) {
         console.log("expireOne result = \n", util.inspect(data, false, 12));
         if (err || data.error || data.hits.total <= query.size) {
@@ -1687,7 +1688,7 @@ app.get('/dns.json', function(req, res) {
   });
 });
 
-app.get('/connections.json', function(req, res) {
+function buildConnections(req, res, cb) {
   if (req.query.dstField === "ip.dst:port") {
     var dstipport = true;
     req.query.dstField = "a2";
@@ -1768,9 +1769,7 @@ app.get('/connections.json', function(req, res) {
 
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
-      var r = {};
-      res.send(r);
-      return;
+      return cb(bsqErr, 0, 0, 0);
     }
 
     if (query.query.filtered.filter === undefined) {
@@ -1784,26 +1783,12 @@ app.get('/connections.json', function(req, res) {
       query.fields.push("p2");
     }
 
-    console.log("connections.json query", JSON.stringify(query));
+    console.log("buildConnections query", JSON.stringify(query));
 
-    async.parallel({
-      health: function (healthCb) {
-        Db.healthCache(healthCb);
-      },
-      graph: function (graphCb) {
-        Db.searchPrimary(indices, 'session', query, graphCb);
-      }
-    },
-    function(err, results) {
-      if (err || results.graph.error) {
-        console.log("connections.json error", err, results.graph.error);
-        res.send({});
-        return;
-      }
-
+    Db.searchPrimary(indices, 'session', query, function (err, graph) {
       var i;
 
-      async.eachLimit(results.graph.hits.hits, 10, function(hit, hitCb) {
+      async.eachLimit(graph.hits.hits, 10, function(hit, hitCb) {
         var f = hit.fields;
         if (f[fsrc] === undefined || f[fdst] === undefined) {
           return async.setImmediate(hitCb);
@@ -1858,9 +1843,37 @@ app.get('/connections.json', function(req, res) {
         //console.log("nodes", nodes.length, nodes);
         //console.log("links", links.length, links);
 
-        res.send({health: results.health, nodes: nodes, links: links, iTotalDisplayRecords: results.graph.hits.total});
+        return cb(null, nodes, links, graph.hits.total);
       });
     });
+  });
+}
+
+app.get('/connections.json', function(req, res) {
+  var health;
+  Db.healthCache(function(err, h) {health = h;});
+  buildConnections(req, res, function (err, nodes, links, total) {
+    if (err) {
+      return res.send(err);
+    }
+    res.send({health: health, nodes: nodes, links: links, iTotalDisplayRecords: total});
+  });
+});
+
+app.get('/connections.csv', function(req, res) {
+  buildConnections(req, res, function (err, nodes, links, total) {
+    if (err) {
+      return res.send(err);
+    }
+    res.write("Source, Destination, Packets, Bytes, Databytes\r\n");
+    var i;
+    for (i = 0; i < links.length; i++) {
+      res.write("" + nodes[links[i].source].id + ", " + 
+                     nodes[links[i].target].id + ", " +
+                     links[i].pa + ", " +
+                     links[i].by + ", " +
+                     links[i].db + "\r\n");
+    }
   });
 });
 
@@ -2318,7 +2331,7 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
         if (incoming[r].pieces[p].bodyType === "image") {
           outgoing[r].html += "<img src=\"" + url + "\">";
         } else {
-          outgoing[r].html += "<a class=\"imagetag-" + session.id + "\" href=\"" + url + "\">" + incoming[r].pieces[p].bodyName + "</a>";
+          outgoing[r].html += "<a class='imagetag' href=\"" + url + "\">" + incoming[r].pieces[p].bodyName + "</a>";
         }
       }
     }

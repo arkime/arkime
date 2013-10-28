@@ -27,6 +27,16 @@ function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
 }
 
+function fourDigitString(value) {
+  if (value < 10)
+    return ("000" + value);
+  if (value < 100)
+    return ("00" + value);
+  if (value < 1000)
+    return ("0" + value);
+  return "" + value;
+}
+
 function dateString(seconds, sep) {
   var d = new Date(seconds*1000);
   if (molochSettings.timezone === "gmt") {

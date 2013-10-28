@@ -65,6 +65,8 @@ static MolochOutput_t        outputQ;
 static MolochOutput_t       *output;
 
 static uint64_t              dumperFilePos = 0;
+static char                 *dumperFileName;
+static struct timeval        dumperFileTime;
 static int                   dumperFd = -1;
 static uint32_t              dumperId;
 static FILE                 *offlineFile = 0;
@@ -309,23 +311,22 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->certJsonSize = 0;
 }
 /******************************************************************************/
-char *pcapFilename;
-
 int dlt_to_linktype(int dlt);
 void moloch_nids_file_create()
 {
     if (config.dryRun) {
-        pcapFilename = "dryrun.pcap";
+        dumperFileName = "dryrun.pcap";
         dumperFd = 1;
         return;
     }
 
-    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, 0, &dumperId);
+    dumperFileName = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, 0, &dumperId);
     dumperFilePos = 24;
     output = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
     output->max = config.pcapWriteSize;
     output->buf = MOLOCH_SIZE_ALLOC(pcapbuf, config.pcapWriteSize + 4096);
     output->pos = 24;
+    gettimeofday(&dumperFileTime, 0);
 
     struct pcap_file_header hdr;
     hdr.magic = 0xa1b2c3d4;
@@ -339,10 +340,10 @@ void moloch_nids_file_create()
 
     memcpy(output->buf, &hdr, 24);
 
-    LOG("Opening %s", pcapFilename);
-    dumperFd = open(pcapFilename,  O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    LOG("Opening %s", dumperFileName);
+    dumperFd = open(dumperFileName,  O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
     if (dumperFd < 0) {
-        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", pcapFilename, strerror(errno), errno);
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", dumperFileName, strerror(errno), errno);
         exit (2);
     }
 }
@@ -357,11 +358,11 @@ void moloch_nids_file_locked(char *filename)
     dumperFd = 1;
 
     if (config.dryRun) {
-        pcapFilename = "dryrun.pcap";
+        dumperFileName = "dryrun.pcap";
         return;
     }
 
-    pcapFilename = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, st.st_size, &dumperId);
+    dumperFileName = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, st.st_size, &dumperId);
 }
 /******************************************************************************/
 gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) 
@@ -376,7 +377,7 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
     int len = write(out->fd, out->buf+out->pos, (out->max - out->pos));
 
     if (len < 0) {
-        LOG("ERROR - Write failed with %d %d\n", len, errno);
+        LOG("ERROR - Write %d failed with %d %d\n", out->fd, len, errno);
         exit (0);
     }
     out->pos += len;
@@ -1027,16 +1028,16 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
 	    strcpy(saddr, int_ntoa(iph->ip_src.s_addr));
 	    strcpy(daddr, int_ntoa(iph->ip_dst.s_addr));
 	    LOG("NIDSIP:%s %s, packet (apparently) from %s to %s",
-		   pcapFilename, nids_warnings[errnum], saddr, daddr);
+		   dumperFileName, nids_warnings[errnum], saddr, daddr);
 	} else {
             if (iph->ip_hl < 5) {
-                LOG("NIDSIP:%s %s - %d (iph->ip_hl) < 5", pcapFilename, nids_warnings[errnum], iph->ip_hl);
+                LOG("NIDSIP:%s %s - %d (iph->ip_hl) < 5", dumperFileName, nids_warnings[errnum], iph->ip_hl);
             } else if (iph->ip_v != 4) {
-                LOG("NIDSIP:%s %s - %d (iph->ip_v) != 4", pcapFilename, nids_warnings[errnum], iph->ip_v);
+                LOG("NIDSIP:%s %s - %d (iph->ip_v) != 4", dumperFileName, nids_warnings[errnum], iph->ip_v);
             } else if (ntohs(iph->ip_len) < iph->ip_hl << 2) {
-                LOG("NIDSIP:%s %s - %d < %d (iph->ip_len < iph->ip_hl)", pcapFilename, nids_warnings[errnum], ntohs(iph->ip_len), iph->ip_hl << 2);
+                LOG("NIDSIP:%s %s - %d < %d (iph->ip_len < iph->ip_hl)", dumperFileName, nids_warnings[errnum], ntohs(iph->ip_len), iph->ip_hl << 2);
             } else {
-                LOG("NIDSIP:%s %s - Length issue, was packet truncated?", pcapFilename, nids_warnings[errnum]);
+                LOG("NIDSIP:%s %s - Length issue, was packet truncated?", dumperFileName, nids_warnings[errnum]);
             }
         }
 	break;
@@ -1047,11 +1048,11 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
         if (errnum == NIDS_WARN_TCP_TOOMUCH || errnum == NIDS_WARN_TCP_BIGQUEUE) {
             /* ALW - Should do something with it */
 	} else if (errnum != NIDS_WARN_TCP_HDR)
-	    LOG("NIDSTCP:%s %s,from %s:%hu to  %s:%hu", pcapFilename, nids_warnings[errnum],
+	    LOG("NIDSTCP:%s %s,from %s:%hu to  %s:%hu", dumperFileName, nids_warnings[errnum],
 		saddr, ntohs(((struct tcphdr *) data)->source), daddr,
 		ntohs(((struct tcphdr *) data)->dest));
 	else
-	    LOG("NIDSTCP:%s %s,from %s to %s", pcapFilename,
+	    LOG("NIDSTCP:%s %s,from %s to %s", dumperFileName,
 		nids_warnings[errnum], saddr, daddr);
 	break;
 
@@ -1196,7 +1197,7 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
         moloch_plugins_cb_udp(session, udphdr, data, len);
 }
 /******************************************************************************/
-pcap_t *closeNextOpen = 0;
+static pcap_t *closeNextOpen = 0;
 int moloch_nids_next_file()
 {
     static GDir *pcapGDir[21];
@@ -1316,11 +1317,31 @@ void moloch_nids_root_init()
     config.maxWriteBuffers = (config.pcapReadDir || config.pcapReadFile)?10:2000;
 }
 /******************************************************************************/
+gboolean moloch_nids_check_file_time_gfunc (gpointer UNUSED(user_data))
+{
+    static struct timeval tv;
+    gettimeofday(&tv, 0);
+
+    if (dumperFilePos > 24 && (tv.tv_sec - dumperFileTime.tv_sec) >= config.maxFileTimeM*60) {
+        moloch_nids_file_flush(TRUE);
+        moloch_nids_file_create();
+    }
+
+    return TRUE;
+}
+/******************************************************************************/
 void moloch_nids_init_nids()
 {
     nids_unregister_tcp(moloch_nids_cb_tcp);
     nids_unregister_ip(moloch_nids_cb_ip);
-    nids_init();
+    int rc = nids_init();
+    if (rc == 0) {
+        LOG("libnids error: %s", nids_errbuf);
+        if (nids_params.pcap_desc) {
+            LOG("libpcap error: %s", pcap_geterr(nids_params.pcap_desc));
+        }
+        exit(1);
+    }
 
     /* Have to do this after nids_init, libnids has issues */
     if (closeNextOpen) {
@@ -1412,6 +1433,9 @@ void moloch_nids_init()
     if (config.bpf)
         nids_params.pcap_filter = config.bpf;
 
+    if (config.maxFileTimeM > 0 && !config.dryRun && config.copyPcap) {
+        g_timeout_add_seconds( 30, moloch_nids_check_file_time_gfunc, 0);
+    }
 
     moloch_nids_init_nids();
 }
@@ -1471,7 +1495,7 @@ void moloch_nids_exit() {
             out = DLL_PEEK_HEAD(mo_, &outputQ);
             int len = write(out->fd, out->buf+out->pos, out->max - out->pos);
             if (len < 0) {
-                LOG("ERROR - Write failed with %d %d\n", len, errno);
+                LOG("ERROR - Write failed %d with %d %d\n", out->fd, len, errno);
                 exit (0);
             }
             out->pos += len;

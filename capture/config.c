@@ -196,6 +196,7 @@ void moloch_config_load()
     config.pluginsDir       = moloch_config_str(keyfile, "pluginsDir", NULL);
 
     config.maxFileSizeG     = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
+    config.maxFileTimeM     = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
     config.icmpTimeout      = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
     config.udpTimeout       = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
     config.tcpTimeout       = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
@@ -378,6 +379,7 @@ void moloch_config_init()
         LOG("pluginsDir: %s", config.pluginsDir);
 
         LOG("maxFileSizeG: %u", config.maxFileSizeG);
+        LOG("maxFileTimeM: %u", config.maxFileTimeM);
         LOG("icmpTimeout: %u", config.icmpTimeout);
         LOG("udpTimeout: %u", config.udpTimeout);
         LOG("tcpTimeout: %u", config.tcpTimeout);

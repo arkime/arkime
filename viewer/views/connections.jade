@@ -25,8 +25,10 @@ block customMenu
       option(value="2") 2
       option(value="3") 3
       option(value="4") 4
+    button#unlock Unlock
 
 block content
+  //input#networkZoom(type="range", value=100, min=25, max=600)
   div#networkLabel
   div#network
   script(type='text/javascript').
@@ -302,6 +304,18 @@ block content
         });
       });
     }
+
+    $("#unlock").on('click', function() {
+      svg.selectAll(".node circle").each(function(d) {d.fixed = 0;});
+      force.resume();
+    });
+
+    /*d3.select("#networkZoom").on("change", function() {
+       console.log("scroll", zoom.center(), zoom.scale(), zoom.translate(), zoom.size());
+       zoom.scale(this.value/100);
+       zoom.event(svg);
+    });*/
+
 
     $(document).ready(function() {
       handleParams();

@@ -49,7 +49,7 @@ mixin ipArrayList(values, geos, ass, rirs, title, expr)
         mixin ipPrint(values[i], undefined, geos[i], ass[i], rirs[i], expr)
 
 //- Start of page
-div.sessionDetail(id='sessionDetail#{session.id}',sessionid='#{session.id}')
+div.sessionDetail(sessionid='#{session.id}')
   div.sessionDetailToolbar 
     if (session.ro)
       li 
@@ -66,7 +66,7 @@ div.sessionDetail(id='sessionDetail#{session.id}',sessionid='#{session.id}')
     li
       a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw
     li
-      a(href='?expression=id=#{session.id}&date=-1&openAll=1') Permalink
+      a(href='?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}&openAll=1') Permalink
     li
       label.sessionActionsMenu Actions 
         img#actionsButtonArrow(src="down-arrow.png")
@@ -74,11 +74,11 @@ div.sessionDetail(id='sessionDetail#{session.id}',sessionid='#{session.id}')
     dt Start
     dd
       a(href='#', onclick='return setSessionStartTime(#{session.fp});')
-        span(id='startTime-#{session.id}')
+        span.startTime
       | &nbsp;
       | Stop: 
       a(href='#', onclick='return setSessionStopTime(#{session.lp});')
-        span(id='stopTime-#{session.id}')
+        span.stopTime
       | &nbsp;
       | Node: 
       a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
@@ -221,54 +221,60 @@ div.sessionDetail(id='sessionDetail#{session.id}',sessionid='#{session.id}')
     li
       options = ['natural', 'ascii', 'utf8', 'hex']
       for item in options
-        input(type="radio",id="format-base-#{session.id}-#{item}",name="format-base-#{session.id}",value=item,checked=query.base==item) 
-        label(for="format-base-#{session.id}-#{item}") #{item}
-      input(id='format-line-#{session.id}', type="checkbox", checked=query.line=='true') 
-      label(for='format-line-#{session.id}') Line Numbers
+        label.format-base
+          input(type="radio",name='format-base-#{session.id}',value=item,checked=query.base==item) 
+          | #{item}
+      label.format-line
+        input(type='checkbox', checked=query.line=='true') 
+        | Line Numbers
     li
-      input(id='format-gzip-#{session.id}', type="checkbox", checked=query.gzip=='true') 
-      label(for='format-gzip-#{session.id}') Decode GZip
+      label.format-gzip
+        input(type='checkbox', checked=query.gzip=='true') 
+        | Decode GZip
     li
-      input(id='format-image-#{session.id}', type="checkbox", checked=query.image=='true') 
-      label(for='format-image-#{session.id}') Show Images &amp; Files
+      label.format-image
+        input(type='checkbox', checked=query.image=='true') 
+        | Show Images &amp; Files
     li
-      input(id='format-ts-#{session.id}', type="checkbox", checked=query.ts=='true')
-      label(for='format-ts-#{session.id}') Show Timestamps
+      label.format-ts
+        input(type='checkbox', checked=query.ts=='true')
+        | Show Timestamps
   br
   if (session.pa > 200)
     p 
       b Only showing first 200 packets
   table#textpacket
     tr
-      th.textcol(id='srccol-#{session.id}') Source
-      th.textcol(id='dstcol-#{session.id}') Destination
+      th.textcol.srccol Source
+      th.textcol.dstcol Destination
 
     each item, i in data
       tr
         if i % 2 == 0
           td.sessionsrc 
             if (item.ts)
-              span(class="timestamp-#{session.id} sessionDetailTS", ts="#{item.ts}", bytes="#{item.bytes}")
+              span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
             !{item.html}
           td
         else
           td
           td.sessiondst
             if (item.ts)
-              span(class="timestamp-#{session.id} sessionDetailTS", ts="#{item.ts}", bytes="#{item.bytes}")
+              span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
             !{item.html}
 
 script(type='text/javascript').
   $(function() {
-    if ($('input[name=format-base-#{session.id}]:checked').val() === "hex") {
-      $('input#format-line-#{session.id}').removeAttr("disabled");
-      $('label[for=format-line-#{session.id}]').css("color", "black");
+    var sessionDetail = $('.sessionDetail[sessionid=#{session.id}]');
+    if (sessionDetail.find('.format-base input:checked').val() === "hex") {
+      sessionDetail.find('.format-line input').removeAttr("disabled");
+      sessionDetail.find('.format-line').css("color", "black");
     } else {
-      $('input#format-line-#{session.id}').attr("disabled", true);
-      $('label[for=format-line-#{session.id}]').css("color", "gray");
+      sessionDetail.find('.format-line input').attr("disabled", true);
+      sessionDetail.find('.format-line').css("color", "gray");
     }
 
-    $("#srccol-#{session.id}").each( function() {
+    sessionDetail.find('.srccol').each( function() {
       $(this).qtip({
         content: 'Source Bytes:<br><img src="#{session.no}/raw/#{session.id}.png?type=src">',
         style: 'light qtip-moloch',
@@ -278,7 +284,7 @@ script(type='text/javascript').
         }
       });
     });
-    $("#dstcol-#{session.id}").each( function() {
+    sessionDetail.find('.dstcol').each( function() {
       $(this).qtip({
         content: 'Destination Bytes:<br><img src="#{session.no}/raw/#{session.id}.png?type=dst">',
         style: 'light qtip-moloch',
@@ -288,7 +294,7 @@ script(type='text/javascript').
         }
       });
     });
-    $(".imagetag-#{session.id}").each( function() {
+    sessionDetail.find('.imagetag').each( function() {
       $(this).qtip({
         content: 'File Bytes:<br><img src="' + $(this).attr('href').replace("body", "bodypng") + '">',
         style: 'light qtip-moloch',
@@ -297,41 +303,43 @@ script(type='text/javascript').
         }
       });
     });
-    $('#startTime-#{session.id}').html(dateString(#{session.fp}, " "));
-    $('#stopTime-#{session.id}').html(dateString(#{session.lp}, " "));
-    $('input#format-line-#{session.id}, input#format-gzip-#{session.id}, input#format-image-#{session.id}, input[name=format-base-#{session.id}]').on('change', function(e) {
-      var base = $('input[name=format-base-#{session.id}]:checked').val();
+
+    sessionDetail.find('.startTime').html(dateString(#{session.fp}, " "));
+    sessionDetail.find('.stopTime').html(dateString(#{session.lp}, " "));
+    sessionDetail.find('.format-line input, .format-gzip input, .format-image input, .format-base input').on('change', function(e) {
+      var base = sessionDetail.find('.format-base input:checked').val();
+      var line = sessionDetail.find('.format-line input').is(':checked')
       var url = "#{session.no}/#{session.id}/sessionDetail" +
                  "?base=" + base +
-                 "&line=" + $('input#format-line-#{session.id}').is(':checked') + 
-                 "&image=" + $('input#format-image-#{session.id}').is(':checked') + 
-                 "&gzip=" + $('input#format-gzip-#{session.id}').is(':checked') +
-                 "&ts=" + $('input#format-ts-#{session.id}').is(':checked');
+                 "&line=" + line +
+                 "&image=" + sessionDetail.find('.format-image input').is(':checked') + 
+                 "&gzip=" + sessionDetail.find('.format-gzip input').is(':checked') +
+                 "&ts=" + sessionDetail.find('.format-ts input').is(':checked');
 
-      $("#sessionDetail#{session.id}").load(url);
+      sessionDetail.load(url);
       if (localStorage) {
-        localStorage['moloch-line'] = $('input#format-line-#{session.id}').is(':checked');
+        localStorage['moloch-line'] = line;
         localStorage['moloch-base'] = base;
       }
     });
     function showTimestamps() {
       if (localStorage) {
-        localStorage['moloch-ts'] = $('input#format-ts-#{session.id}').is(':checked');
+        localStorage['moloch-ts'] = sessionDetail.find('.format-ts input').is(':checked');
       }
-      if ( $('#format-ts-#{session.id}').is(':checked')) {
-        $('.timestamp-#{session.id}').each(function(index, item) {
+      if ( sessionDetail.find('.format-ts input').is(':checked')) {
+        sessionDetail.find('.sessionDetailTS').each(function(index, item) {
           if ($(item).attr("ts")) {
             var val = +$(item).attr("ts");
-            var str = dateString(val/1000, " ") + "." + val%1000;
+            var str = dateString(val/1000, " ") + "." + fourDigitString(val%1000);
             str += " <span style='float:right;'>" + $(item).attr("bytes") + " bytes</span>";
             $(item).html(str + "<hr>");
           }
           return item;
         }).show();
       } else {
-        $('.timestamp-#{session.id}').hide();
+        sessionDetail.find('.sessionDetailTS').hide();
       }
     }
-    $('#format-ts-#{session.id}').on('change', showTimestamps);
+    sessionDetail.find('.format-ts input').on('change', showTimestamps);
     showTimestamps();
   });

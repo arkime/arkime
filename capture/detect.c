@@ -1792,11 +1792,14 @@ int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, ui
         if (error)
             LOG("ERROR %s", error->message);
         else if (!BSB_IS_ERROR(*bsb)) {
-            moloch_field_string_add(MOLOCH_FIELD_SMB_OS, session, out, -1, TRUE);
+            if (*out)
+                moloch_field_string_add(MOLOCH_FIELD_SMB_OS, session, out, -1, TRUE);
             char *ver = out + strlen(out) + 1;
-            moloch_field_string_add(MOLOCH_FIELD_SMB_VER, session, ver, -1, TRUE);
+            if (*ver)
+                moloch_field_string_add(MOLOCH_FIELD_SMB_VER, session, ver, -1, TRUE);
             char *domain = ver + strlen(ver) + 1;
-            moloch_field_string_add(MOLOCH_FIELD_SMB_DOMAIN, session, domain, -1, TRUE);
+            if (*domain)
+                moloch_field_string_add(MOLOCH_FIELD_SMB_DOMAIN, session, domain, -1, TRUE);
             g_free(out);
         } else {
             g_free(out);
@@ -1932,12 +1935,18 @@ void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint
             data += remaining;
             remaining = 0;
         } else {
-            int len = MIN(remaining, (uint32_t)512 - (*buflen));
+            int len = MIN(remaining, (uint32_t)MAX_SMB_BUFFER - (*buflen));
             memcpy(buf + (*buflen), data, len);
             (*buflen) += len;
             remaining -= len;
             data += len;
             BSB_INIT(bsb, buf, *buflen);
+        }
+
+        if (*state != SMB_SKIP && *remlen > MAX_SMB_BUFFER) {
+            LOG("ERROR - Not enough room for SMB packet %d", *remlen);
+            moloch_nids_free_session_smb(session);
+            return;
         }
 
         while (!done && BSB_REMAINING(bsb) > 0) {
@@ -1990,7 +1999,7 @@ void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint
 #ifdef SMBDEBUG
             LOG("  Moving data %ld %s", BSB_REMAINING(bsb), (char*)(long)moloch_friendly_session_id(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
 #endif
-            if (BSB_REMAINING(bsb) > 512) {
+            if (BSB_REMAINING(bsb) > MAX_SMB_BUFFER) {
                 LOG("ERROR - Not enough room for SMB packet %ld", BSB_REMAINING(bsb));
                 moloch_nids_free_session_smb(session);
                 return;

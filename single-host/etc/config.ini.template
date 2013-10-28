@@ -58,6 +58,10 @@ pcapDir = _TDIR_/raw
 # The disk should have room for at least 10*maxFileSizeG
 maxFileSizeG = 1
 
+# The max time in minutes between rotating pcap files.  Default is 0, which means
+# only rotate based on current file size and the maxFileSizeG variable
+#maxFileTimeM = 60
+
 # TCP timeout value.  Moloch writes a session record after this many seconds 
 # of inactivity.
 tcpTimeout = 600
