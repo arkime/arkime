@@ -129,11 +129,11 @@ Pcap.prototype.readPacket = function(pos, cb) {
     return;
   }
 
-  var buffer = new Buffer(5000);
+  var buffer = new Buffer(1550);
   try {
 
     // Try and read full packet and header in one read
-    fs.read(self.fd, buffer, 0, 1550, pos, function (err, bytesRead, buffer) {
+    fs.read(self.fd, buffer, 0, buffer.length, pos, function (err, bytesRead, buffer) {
       if (bytesRead < 16) {
         return cb(null);
       }
@@ -149,6 +149,9 @@ Pcap.prototype.readPacket = function(pos, cb) {
       }
       // Full packet didn't fit, get what was missed
       try {
+        var b = new Buffer(16+len);
+        buffer.copy(b, 0, 0, bytesRead);
+        buffer = b;
         fs.read(self.fd, buffer, bytesRead, (16+len)-bytesRead, pos+bytesRead, function (err, bytesRead, buffer) {
           return cb(buffer.slice(0,16+len));
         });

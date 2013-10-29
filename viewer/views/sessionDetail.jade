@@ -46,7 +46,7 @@ mixin ipArrayList(values, geos, ass, rirs, title, expr)
       each ip,i in values 
         if (i > 0)
           |, 
-        mixin ipPrint(values[i], undefined, geos[i], ass[i], rirs[i], expr)
+        mixin ipPrint(values[i], undefined, (geos?geos[i]:null), (ass?ass[i]:null), (rirs?rirs[i]:null), expr)
 
 //- Start of page
 div.sessionDetail(sessionid='#{session.id}')
