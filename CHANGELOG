@@ -35,6 +35,7 @@
   - Permalinks are faster (issue #162)
   - Missing rir data would cause session detail to not open
   - Reassembled IP frames > ~5k would cause session detail to not open
+  - Fixed right click issues (issue #169)
 
 
 0.9.1 2013/10/03

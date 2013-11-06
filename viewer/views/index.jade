@@ -56,7 +56,7 @@ block content
       var initialParams = handleUrlParams();
 
       $('#sessions tbody td.infoColumn img').live('click', function () {
-        var nTr = this.parentNode.parentNode;
+        var nTr = $(this).closest("tr")[0];
         var rowData = sessionsTable.fnGetData(nTr);
         if ( this.src.match('up-arrow') ) {
           rowData.infoAll = 0;
@@ -110,7 +110,7 @@ block content
       }
 
       $('#sessions tbody td.sessionDetails img').live('click', function () {
-        var nTr = this.parentNode.parentNode;
+        var nTr = $(this).closest("tr")[0];
         if ( this.src.match('details_close') ) {
           this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
 
@@ -306,8 +306,7 @@ block content
                   data += tls.sCn;
                   if (tls.alt) {
                     data += " [";
-                    var i;
-                    for(i = 0; i < tls.alt.length; i++) {
+                    for(var i = 0, ilen = tls.alt.length; i < ilen; i++) {
                       if (i > 0) {
                         data += ", ";
                       }
@@ -379,7 +378,7 @@ block content
                                  .data("moloch-all", sessionsTable.fnSettings().fnRecordsDisplay());
                 if (initialParams.openAll) {
                   nNodes = sessionsTable.fnGetNodes();
-                  for (var i = 0; i < nNodes.length; i++) {
+                  for (var i = 0, ilen = nNodes.length; i < ilen; i++) {
                     openRow(nNodes[i]);
                   }
                 }
@@ -409,8 +408,9 @@ block content
           build: function($trigger, e) {
             var items = {};
 
-            if (e.target.id === "a1" || e.target.id === "a2" || e.target.id === 'info') {
-              if (e.target.id === 'info') {
+            var id = $(e.target).closest(".context-menu-one").attr("id");
+            if (id === "a1" || id === "a2" || id === 'info') {
+              if (id === 'info') {
                 items = {
                   usitems: {name: "Export Unique URLs", counts:0, field: 'rawus'},
                   usitemcounts: {name: "Export Unique URLs with Counts", counts:1, field: 'rawus'},
@@ -447,29 +447,44 @@ block content
               };
             }
 
-            var rowData = sessionsTable.fnGetData(e.target.parentNode);
+            var rowData = sessionsTable.fnGetData($(e.target).closest("tr")[0]);
             if (rowData === null) {
               return false;
             }
             var sPos = sessionsTable.fnGetPosition( e.target );
-            var port;
+            var ip, country, port, suffix;
             if (sPos[1] === 3 || sPos[1] === 5) {
-              var ip = (sPos[1] === 3? ipString(rowData.a1):ipString(rowData.a2));
-              var country = (sPos[1] === 3? rowData.g1:rowData.g2);
-              port = (sPos[1] === 3? rowData.p1:rowData.p2);
+              var ip, country, port;
+              if (sPos[1] === 3) {
+                ip = ipString(rowData.a1);
+                country = rowData.g1;
+                port = rowData.p1;
+                suffix = ".src";
+              } else {
+                ip = ipString(rowData.a2);
+                country = rowData.g2;
+                port = rowData.p2;
+                suffix = ".dst";
+              }
               items = {
-                andip: {name: "and " + ip, exp: "ip==" + ip},
-                andnotip: {name: "and NOT " + ip, exp: "ip!=" + ip},
-                andcountry: {name: "and Country " + country, exp: "country==" + country},
-                andnotcountry: {name: "and NOT Country " + country, exp: "country!=" + country},
-                andipport: {name: "and " + ip + ":" + port, exp: "ip=" + ip + ":" + port},
-                andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip!==" + ip + ":" + port}
+                andip: {name: "and " + ip, exp: "ip" + suffix + "==" + ip},
+                andnotip: {name: "and NOT " + ip, exp: "ip" + suffix + "!=" + ip},
+                andcountry: {name: "and Country " + country, exp: "country" + suffix + "==" + country},
+                andnotcountry: {name: "and NOT Country " + country, exp: "country" + suffix + "!=" + country},
+                andipport: {name: "and " + ip + ":" + port, exp: "ip" + suffix + "==" + ip + ":" + port},
+                andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip" + suffix + "!=" + ip + ":" + port}
               };
             } else if (sPos[1] === 4 || sPos[1] === 6)  {
-              port = (sPos[1] === 4? rowData.p1:rowData.p2);
+              if (sPos[1] === 4) {
+                port = rowData.p1;
+                suffix = ".src";
+              } else {
+                port = rowData.p2;
+                suffix = ".dst";
+              }
               items = {
-                andport: {name: "and Port " + port, exp: "port=" + port},
-                andnotport: {name: "and NOT Port " + port, exp: "port!=" + port}
+                andport: {name: "and Port " + port, exp: "port" + suffix + "==" + port},
+                andnotport: {name: "and NOT Port " + port, exp: "port" + suffix + "!=" + port}
               };
             } else if (sPos[1] === 9)  {
               items = {
