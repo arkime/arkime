@@ -2880,6 +2880,44 @@ function addAuth(info, user, node, secret) {
                                                     }, secret);
 }
 
+var caTrustCerts = [];
+function addCaTrust(info) {
+	if (!Config.isHTTPS()) {
+		return
+	}
+	
+	if (caTrustCerts.length > 0) {
+		info.ca = caTrustCerts
+		return
+	} 
+	
+	var caTrustFile = Config.get("caTrustFile")
+	
+	if (caTrustFile && caTrustFile.length > 0) {
+		var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
+		caTrustFileLines = caTrustFileLines.split("\n");
+		
+		var foundCert = [],
+			line;
+		
+		for (var i = 0; i < caTrustFileLines.length; i++) {
+			line = caTrustFileLines[i];
+			if (line.length === 0) {
+				continue;
+			}
+			foundCert.push(line);
+			if (line.match(/-END CERTIFICATE-/)) {
+				caTrustCerts.push(foundCert.join("\n"));
+				foundCert = [];
+			}
+		}
+		
+		if (caTrustCerts.length > 0) {
+			info.ca = caTrustCerts
+		}
+	}
+}
+
 function proxyRequest (req, res) {
   noCache(req, res);
 
@@ -2893,7 +2931,7 @@ function proxyRequest (req, res) {
     info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
     info.rejectUnauthorized = true;
     addAuth(info, req.user, req.params.nodeName);
-
+	addCaTrust(info);
     var preq = agent.request(info, function(pres) {
       pres.on('data', function (chunk) {
         res.write(chunk);
@@ -3233,6 +3271,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
         info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
 
         addAuth(info, req.user, item.fields.no);
+		addCaTrust(info);
         var preq = agent.request(info, function(pres) {
           pres.on('data', function (chunk) {
             if (bufpos + chunk.length > buffer.length) {
@@ -3846,6 +3885,7 @@ function scrubList(req, res, entire, list) {
         info.path = Config.basePath(item.fields.no) + item.fields.no + (entire?"/delete/":"/scrub/") + item._id;
         info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
         addAuth(info, req.user, item.fields.no);
+		addCaTrust(info);
         var preq = agent.request(info, function(pres) {
           pres.on('end', function () {
             async.setImmediate(nextCb);
@@ -3949,6 +3989,7 @@ function sendSession(req, res, id, nextCb) {
 
     var info = url.parse(sobj.url + "/receiveSession?saveId=" + req.query.saveId);
     addAuth(info, req.user, req.params.nodeName, sobj.passwordSecret);
+	addCaTrust(info);
     info.method = "POST";
 
     var result = "";
@@ -4018,6 +4059,7 @@ function sendSessionsList(req, res, list) {
           info.path += "&tags=" + req.query.tags;
         }
         addAuth(info, req.user, item.fields.no);
+		addCaTrust(info);
         var preq = agent.request(info, function(pres) {
           pres.on('data', function (chunk) {
           });
