@@ -115,6 +115,7 @@ patricia_node_t *patricia_search_exact (patricia_tree_t *patricia, prefix_t *pre
 patricia_node_t *patricia_search_best (patricia_tree_t *patricia, prefix_t *prefix);
 patricia_node_t * patricia_search_best2 (patricia_tree_t *patricia, prefix_t *prefix, 
 				   int inclusive);
+int patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive, patricia_node_t **results);
 patricia_node_t *patricia_lookup (patricia_tree_t *patricia, prefix_t *prefix);
 void patricia_remove (patricia_tree_t *patricia, patricia_node_t *node);
 patricia_tree_t *New_Patricia (int maxbits);
@@ -128,6 +129,9 @@ void Deref_Prefix (prefix_t * prefix);
 
 prefix_t *
 ascii2prefix (int family, char *string);
+
+prefix_t *
+ascii2prefix2 (int family, char *string, prefix_t *prefix);
 
 char *
 prefix_toa2x(prefix_t *prefix, char *buff, int with_len);

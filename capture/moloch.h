@@ -252,10 +252,12 @@ typedef struct moloch_session_smb {
 typedef struct moloch_session_socks {
     uint32_t  ip;
     uint16_t  port;
+    uint16_t  userlen;
     uint8_t   which;
     uint8_t   ver;
     uint8_t   auth;
     uint8_t   state;
+    char     *user;
 } MolochSessionSocks_t;
 
 typedef struct moloch_session_http {
@@ -301,6 +303,7 @@ typedef struct moloch_session {
 
     struct timeval firstPacket;
     struct timeval lastPacket;
+    char        firstBytes[2][8];
 
     uint64_t    bytes;
     uint64_t    databytes;
@@ -319,6 +322,7 @@ typedef struct moloch_session {
     uint16_t    outstandingQueries;
     uint16_t    sshLen;
 
+    uint8_t     firstBytesLen[2];
     uint8_t     ip_tos;
     uint8_t     tcp_flags;
     uint8_t     sshCode;
@@ -652,6 +656,7 @@ MOLOCH_FIELD_SMB_HOST,
 MOLOCH_FIELD_SOCKS_IP,
 MOLOCH_FIELD_SOCKS_HOST,
 MOLOCH_FIELD_SOCKS_PORT,
+MOLOCH_FIELD_SOCKS_USER,
 
 MOLOCH_FIELD_TAGS // Must be last
 };

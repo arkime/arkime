@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "patricia.h"
 #include "moloch.h"
 #include "nids.h"
 
@@ -54,17 +55,9 @@ typedef struct {
 
 /******************************************************************************/
 
-typedef struct tagger_int {
-    struct tagger_int    *i_next, *i_prev;
-    uint32_t              i_hash;
-    short                 i_bucket;
+typedef struct tagger_ip {
     GPtrArray            *files;
-} TaggerInt_t;
-
-typedef struct {
-    struct tagger_int *i_next, *i_prev;
-    int i_count;
-} TaggerIntHead_t;
+} TaggerIP_t;
 
 /******************************************************************************/
 
@@ -88,7 +81,8 @@ typedef struct {
 
 HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
 HASH_VAR(s_, allDomains, TaggerStringHead_t, 101);
-HASH_VAR(i_, allIps, TaggerIntHead_t, 101);
+
+static patricia_tree_t *allIps;
 
 /******************************************************************************/
 void tagger_add_tags(MolochSession_t *session, GPtrArray *files)
@@ -107,25 +101,38 @@ void tagger_add_tags(MolochSession_t *session, GPtrArray *files)
  */
 void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
-    TaggerInt_t    *ti;
     TaggerString_t *tstring;
 
-    HASH_FIND_INT(i_, allIps, session->addr1, ti);
-    if (ti)
-        tagger_add_tags(session, ti->files);
+    patricia_node_t *nodes[PATRICIA_MAXBITS+1];
+    int cnt;  
+    prefix_t prefix;
+    prefix.family = AF_INET;
+    prefix.bitlen = 32;
 
-    HASH_FIND_INT(i_, allIps, session->addr2, ti);
-    if (ti)
-        tagger_add_tags(session, ti->files);
+    int i;
+
+    prefix.add.sin.s_addr = session->addr1;
+    cnt = patricia_search_all(allIps, &prefix, 1, nodes);
+    for (i = 0; i < cnt; i++) {
+        tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
+    }
+
+    prefix.add.sin.s_addr = session->addr2;
+    cnt = patricia_search_all(allIps, &prefix, 1, nodes);
+    for (i = 0; i < cnt; i++) {
+        tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
+    }
 
     if (session->fields[MOLOCH_FIELD_HTTP_XFF]) {
         MolochIntHashStd_t *ihash = session->fields[MOLOCH_FIELD_HTTP_XFF]->ihash;
         MolochInt_t        *xff;
 
         HASH_FORALL(i_, *ihash, xff, 
-            HASH_FIND_INT(i_, allIps, xff->i_hash, ti);
-            if (ti)
-                tagger_add_tags(session, ti->files);
+            prefix.add.sin.s_addr = xff->i_hash;
+            cnt = patricia_search_all(allIps, &prefix, 1, nodes);
+            for (i = 0; i < cnt; i++) {
+                tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
+            }
         );
     }
 
@@ -136,6 +143,12 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
                 tagger_add_tags(session, tstring->files);
+            char *dot = strchr(hstring->str, '.');
+            if (dot && *(dot+1)) {
+                HASH_FIND(s_, allDomains, dot+1, tstring);
+                if (tstring)
+                    tagger_add_tags(session, tstring->files);
+            }
         );
     }
     if (session->fields[MOLOCH_FIELD_DNS_HOST]) {
@@ -144,6 +157,12 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
                 tagger_add_tags(session, tstring->files);
+            char *dot = strchr(hstring->str, '.');
+            if (dot && *(dot+1)) {
+                HASH_FIND(s_, allDomains, dot+1, tstring);
+                if (tstring)
+                    tagger_add_tags(session, tstring->files);
+            }
         );
     }
 }
@@ -159,12 +178,6 @@ void tagger_plugin_exit()
         free(tstring->str);
         g_ptr_array_free(tstring->files, TRUE);
         MOLOCH_TYPE_FREE(TaggerString_t, tstring);
-    );
-
-    TaggerInt_t *ti;
-    HASH_FORALL_POP_HEAD(i_, allIps, ti, 
-        g_ptr_array_free(ti->files, TRUE);
-        MOLOCH_TYPE_FREE(TaggerInt_t, ti);
     );
 
     TaggerFile_t *file;
@@ -186,14 +199,20 @@ void tagger_unload_file(TaggerFile_t *file) {
     int i;
     for (i = 0; file->elements[i]; i++) {
         if (file->type[0] == 'i') {
-            uint32_t ip = inet_addr(file->elements[i]);
-            if (ip == 0xffffffff)
+
+            prefix_t prefix;
+            if (!ascii2prefix2(AF_INET, file->elements[i], &prefix)) {
+                LOG("Couldn't unload %s", file->elements[i]);
                 continue;
-            TaggerInt_t *ti;
-            HASH_FIND_INT(i_, allIps, ip, ti);
-            if (ti) {
-                g_ptr_array_remove(ti->files, file);
             }
+
+            patricia_node_t *node = patricia_search_exact(allIps, &prefix);
+            if (!node || !(node->data)) {
+                LOG("Couldn't unload %s", file->elements[i]);
+                continue;
+            }
+
+            g_ptr_array_remove(((TaggerIP_t *)(node->data))->files, file);
         } else {
             TaggerString_t *tstring;
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
@@ -252,18 +271,21 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
     int i;
     for (i = 0; file->elements[i]; i++) {
         if (file->type[0] == 'i') {
-            uint32_t ip = inet_addr(file->elements[i]);
-            if (ip == 0xffffffff)
+            patricia_node_t *node;
+            node = make_and_lookup(allIps, file->elements[i]);
+            if (!node) {
+                LOG("Couldn't create node for %s", file->elements[i]);
                 continue;
-
-            TaggerInt_t *ti;
-            HASH_FIND_INT(i_, allIps, ip, ti);
-            if (!ti) {
-                ti = MOLOCH_TYPE_ALLOC(TaggerInt_t);
-                ti->files = g_ptr_array_new();
-                HASH_ADD(i_, allIps, (void *)(long)ip, ti);
             }
-            g_ptr_array_add(ti->files, file);
+            TaggerIP_t *tip;
+            if (!node->data) {
+                tip = MOLOCH_TYPE_ALLOC(TaggerIP_t);
+                tip->files = g_ptr_array_new();
+                node->data = tip;
+            } else {
+                tip = node->data;
+            }
+            g_ptr_array_add(tip->files, file);
         } else {
             TaggerString_t *tstring;
 
@@ -380,7 +402,7 @@ void moloch_plugin_init()
 {
     HASH_INIT(s_, allFiles, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(i_, allIps, moloch_int_hash, moloch_int_cmp);
+    allIps = New_Patricia(32);
 
     moloch_plugins_register("tagger", FALSE);
 
@@ -395,7 +417,9 @@ void moloch_plugin_init()
       NULL
     );
 
+
     /* Call right away sync, and schedule every 60 seconds async */
     tagger_fetch_files((gpointer)1);
     g_timeout_add_seconds(60, tagger_fetch_files, 0);
+
 }

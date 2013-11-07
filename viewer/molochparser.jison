@@ -114,6 +114,9 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "icmp"                    return "icmp"
 "\"icmp\""                return "icmp"
 "id"                      return "id"
+"payload8.src"            return "payload8.src"
+"payload8.dst"            return "payload8.dst"
+"payload8"                return "payload8"
 "ip.dns.cnt"              return "ip.dns.cnt"
 "ip.dns"                  return "ip.dns"
 "ip.dst"                  return "ip.dst"
@@ -146,6 +149,7 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "socks.host"              return "host.socks"
 "socks.ip"                return "ip.socks"
 "socks.port"              return "port.socks"
+"socks.user"              return "socks.user"
 "smb.domain.cnt"          return "smb.domain.cnt"
 "smb.domain"              return "smb.domain"
 "smb.fn.cnt"              return "smb.fn.cnt"
@@ -300,6 +304,8 @@ LOTERMFIELD  : node               {$$ = 'no'}
              | 'cert.serial'      {$$ = 'tls.sn'}
              | 'cert.alt'         {$$ = 'tls.alt'}
              | 'ssh.ver'          {$$ = 'sshver'}
+             | 'payload8.dst'     {$$ = 'fb2'}
+             | 'payload8.src'     {$$ = 'fb1'}
              ;
 
 TERMFIELD  : 'id'                 {$$ = '_id'}
@@ -324,6 +330,7 @@ TERMFIELD  : 'id'                 {$$ = '_id'}
            | 'smb.os'             {$$ = 'smbos'}
            | 'smb.share'          {$$ = 'smbsh'}
            | 'smb.user'           {$$ = 'smbuser'}
+           | 'socks.user'         {$$ = 'socksuser'}
            | 'smb.ver'            {$$ = 'smbver'}
            ;
 
@@ -635,6 +642,20 @@ e
         {
           $$ = [str2Query("hsver", "term", $3),
                 str2Query("hdver", "term", $3)
+               ];
+          $$ = {bool: {must_not: $$}};
+        }
+    | 'payload8' '==' STR 
+        { var str = $3.toLowerCase();
+          $$ = [str2Query("fb1", "term", str),
+                str2Query("fb2", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
+        }
+    | 'payload8' '!=' STR 
+        { var str = $3.toLowerCase();
+          $$ = [str2Query("fb1", "term", str),
+                str2Query("fb2", "term", str)
                ];
           $$ = {bool: {must_not: $$}};
         }

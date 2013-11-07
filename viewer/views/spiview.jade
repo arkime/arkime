@@ -45,6 +45,7 @@ block content
       mixin spion("Src ASN", "rawas1", "asn.src", "general")
       mixin spi("Src ASN Token", "as1", "asn.src", "general")
       mixin spi("Src RIR", "rir1", "rir.src", "general")
+      mixin spi("Src Payload8", "fb1", "payload8.src", "general")
 
       mixin spion("Dst IP", "a2", "ip.dst", "general")
       mixin spion("Dst Port", "p2", "port.dst", "general")
@@ -52,6 +53,7 @@ block content
       mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
       mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
       mixin spi("Dst RIR", "rir2", "rir.dst", "general")
+      mixin spi("Dst Payload8", "fb2", "payload8.dst", "general")
 
       mixin spi("Node", "no", "node", "general")
       mixin spi("Tag", "ta", "tags", "general")
@@ -135,6 +137,7 @@ block content
       mixin spi("ASN Token", "assocksip", "asn.socks", "socks")
       mixin spi("RIR", "rirsocksip", "rir.socks", "socks")
       mixin spi("Port", "sockspo", "port.socks", "socks")
+      mixin spi("User", "socksuser", "socks.user", "socks")
 
     if (user.emailSearch)
       mixin title("Email", "email")

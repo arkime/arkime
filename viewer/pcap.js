@@ -457,8 +457,8 @@ exports.reassemble_tcp = function (packets, a1, cb) {
     var packets2 = [];
     var info = {};
     var keys = [];
-    var key, i;
-    for (i = 0; i < packets.length; i++) {
+    var key, i, ilen;
+    for (i = 0, ilen = packets.length; i < ilen; i++) {
       if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
         continue;
       }
@@ -498,7 +498,7 @@ exports.reassemble_tcp = function (packets, a1, cb) {
 
     // Wrap the packets
     if (needwrap) {
-      for (i = 0; i < packets.length; i++) {
+      for (i = 0, ilen = packets.length; i < ilen; i++) {
         key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
         if (info[key].wrapseq && packets[i].tcp.seq < 0x7fffffff) {
           packets[i].tcp.seq += 0xffffffff;

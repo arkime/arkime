@@ -109,6 +109,10 @@ div.sessionDetail(sessionid='#{session.id}')
         a(href='#', onclick='return addExpression("host.socks == #{session.socksho}");') #{session.socksho}
         | :
         a(href='#', onclick='return addExpression("port.socks == #{session.sockspo}");') #{session.sockspo}
+    if (session.socksuser)
+      dt Socks User
+      dd
+        a(href='#', onclick='return addExpression("socks.user == #{session.socksuser}");') #{session.socksuser}
 
 
   if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)

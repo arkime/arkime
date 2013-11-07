@@ -160,7 +160,7 @@ exports.msearch = function (index, type, queries, cb) {
   var path = '/' + index + "/" + type + "/_msearch";
 
   var buf='';
-  for(var i=0; i<queries.length;i++){
+  for(var i = 0, ilen = queries.length; i < ilen; i++){
     buf += "{}\n";
     buf += queries[i] + "\n";
   }
@@ -314,8 +314,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
   exports.search('stats', 'stat', query, function(err, sdata) {
     var nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
-      var i;
-      for (i = 0; i < sdata.hits.hits.length; i++) {
+      for (var i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
         nodes.push(sdata.hits.hits[i]._id);
       }
     }
@@ -492,7 +491,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
     }
 
     if (version < minVersion) {
-        console.log("ERROR - Current database version (" + version + ") is less then required version (" + MIN_DB_VERSION + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
+        console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
         process.exit(1);
     }
   });

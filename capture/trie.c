@@ -26,7 +26,7 @@ MolochTrieNode_t *moloch_trie_add_node(MolochTrieNode_t *node, const char key)
     // No children, add 1 child
     if (!node->children) {
         node->first = node->last = key;
-        node->children = malloc(sizeof(void *));
+        node->children = malloc(sizeof(MolochTrieNode_t *));
         memset(node->children, 0, sizeof(void *));
         node->children[0] = malloc(sizeof(MolochTrieNode_t));
         memset(node->children[0], 0, sizeof(MolochTrieNode_t));
@@ -45,14 +45,14 @@ MolochTrieNode_t *moloch_trie_add_node(MolochTrieNode_t *node, const char key)
 
     // Not in range, so expand
     if (key < node->first) {
-        MolochTrieNode_t **newchildren = malloc(sizeof(void *)*(node->last - key + 1));
+        MolochTrieNode_t **newchildren = malloc(sizeof(MolochTrieNode_t *)*(node->last - key + 1));
         memset(newchildren, 0, sizeof(void*)*(node->first-key));
         memcpy(newchildren + (node->first-key), (void*)node->children, sizeof(void*) * (node->last - node->first + 1));
         free(node->children);
         node->children = newchildren;
         node->first = key;
     } else if (key > node->last) {
-        node->children = realloc(node->children, sizeof(void *)*(key - node->first + 1));
+        node->children = realloc(node->children, sizeof(MolochTrieNode_t *)*(key - node->first + 1));
         memset(node->children + (node->last - node->first + 1), 0, sizeof(void*)*(key-node->last));
         node->last = key;
     }

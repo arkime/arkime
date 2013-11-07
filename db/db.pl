@@ -21,6 +21,7 @@
 # 12 - Added hsver, hdver fields, diskQueue, user settings, scrub* fields, user removeEnabled
 # 13 - Rename rotate to expire, added smb, socks, rir fields
 # 14 - New http fields, user.views
+# 15 - New first byte fields, socks user
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -29,7 +30,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 14;
+my $VERSION = 15;
 my $verbose = 0;
 
 ################################################################################
@@ -581,6 +582,11 @@ sub sessionsUpdate
       p1: {
         type: "integer"
       },
+      fb1: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
       a2: {
         type: "long"
       },
@@ -599,6 +605,14 @@ sub sessionsUpdate
         }
       },
       rir2: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      p2: {
+        type: "integer"
+      },
+      fb2: {
         omit_norms: true,
         type: "string",
         index: "not_analyzed"
@@ -671,9 +685,6 @@ sub sessionsUpdate
         omit_norms: true,
         type: "string",
         index: "not_analyzed"
-      },
-      p2: {
-        type: "integer"
       },
       pr: {
         type: "short"
@@ -1059,6 +1070,11 @@ sub sessionsUpdate
       },
       sockspo: {
         type: "integer"
+      },
+      socksuser : {
+        omit_norms: true,
+        type : "string",
+        index : "not_analyzed"
       },
       socksho: {
         omit_norms: true,
@@ -1563,7 +1579,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 14) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 15) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

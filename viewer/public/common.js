@@ -28,12 +28,15 @@ function twoDigitString(value) {
 }
 
 function fourDigitString(value) {
-  if (value < 10)
+  if (value < 10) {
     return ("000" + value);
-  if (value < 100)
+  }
+  if (value < 100) {
     return ("00" + value);
-  if (value < 1000)
+  }
+  if (value < 1000) {
     return ("0" + value);
+  }
   return "" + value;
 }
 
@@ -184,7 +187,7 @@ function splitExpression(input ) {
   var output = [];
   var cur = "";
 
-  for (var i = 0; i < input.length; i++) {
+  for (var i = 0, ilen = input.length; i < ilen; i++) {
       if (/[)(]/.test(input[i])) {
         if (cur !== "") {
           output.push(cur);
@@ -247,7 +250,7 @@ function stopBlink() {
 }
 
 function updateParam(param, n, v) {
-  for (var i = 0; i < param.length; i++) {
+  for (var i = 0, ilen = param.length; i < ilen; i++) {
     if (param[i].name === n) {
       param[i].value = v;
       return;
@@ -858,7 +861,7 @@ $(document).ready(function() {
   $(".viewMenuOption").click(function (e) {
     viewsMenu.hide();
     var view = $(e.target).text();
-    if (view == "None") {
+    if (view === "None") {
       if (sessionStorage['moloch-view']) {
         delete sessionStorage['moloch-view'];
       }
@@ -1010,7 +1013,7 @@ $(document).ready(function() {
 
       var spaceCP = (cp > 0 && cp === input.length && input[cp-1] === " ");
 
-      for (var end = cp; end < input.length; end++) {
+      for (var end = cp, endlen = input.length; end < endlen; end++) {
         if (input[end] === " ") {
           break;
         }

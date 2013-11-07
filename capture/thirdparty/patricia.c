@@ -24,16 +24,18 @@ prefix_tochar(prefix_t * prefix)
     return ((u_char *) & prefix->add.sin);
 }
 
-int
+inline int
 comp_with_mask(void *addr, void *dest, u_int mask)
 {
 
     if ( /* mask/8 == 0 || */ memcmp(addr, dest, mask / 8) == 0) {
+        if (mask % 8 == 0)
+            return 1;
+
         int             n = mask / 8;
         int             m = ((-1) << (8 - (mask % 8)));
 
-        if (mask % 8 == 0
-            || (((u_char *) addr)[n] & m) == (((u_char *) dest)[n] & m))
+        if ((((u_char *) addr)[n] & m) == (((u_char *) dest)[n] & m))
             return (1);
     }
     return (0);
@@ -189,7 +191,7 @@ New_Prefix(int family, void *dest, int bitlen)
  * ascii2prefix 
  */
 prefix_t       *
-ascii2prefix(int family, char *string)
+ascii2prefix2(int family, char *string, prefix_t *prefix)
 {
     u_long          bitlen,
                     maxbitlen = 0;
@@ -225,7 +227,7 @@ ascii2prefix(int family, char *string)
         memcpy(save, string, cp - string);
         save[cp - string] = '\0';
         string = save;
-        if (bitlen < 0 || bitlen > maxbitlen)
+        if (bitlen > maxbitlen)
             bitlen = maxbitlen;
     } else {
         bitlen = maxbitlen;
@@ -236,13 +238,18 @@ ascii2prefix(int family, char *string)
 	{
             return (NULL);
 	}
-        return (New_Prefix(AF_INET, &sin, bitlen));
+        return (New_Prefix2(AF_INET, &sin, bitlen, prefix));
     } else if (family == AF_INET6) {
         if ((result = inet_pton (AF_INET6, string, &sin6)) <= 0)
             return (NULL);
-	return (New_Prefix (AF_INET6, &sin6, bitlen));
+	return (New_Prefix2(AF_INET6, &sin6, bitlen, prefix));
     } else
         return (NULL);
+}
+
+prefix_t       *
+ascii2prefix(int family, char *string) {
+    return ascii2prefix2(family, string, NULL);
 }
 
 prefix_t       *
@@ -499,6 +506,48 @@ patricia_search_best2(patricia_tree_t * patricia, prefix_t * prefix,
         }
     }
     return (NULL);
+}
+
+/*
+ * if inclusive != 0, "best" may be the given prefix itself 
+ */
+int
+patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive, patricia_node_t **results)
+{
+    patricia_node_t *node;
+    u_char         *addr;
+    u_int           bitlen;
+    int             cnt = 0;
+
+    node = patricia->head;
+    addr = prefix_touchar(prefix);
+    bitlen = prefix->bitlen;
+
+    while (node->bit < bitlen) {
+
+        if (node->prefix && node->data &&
+            comp_with_mask(prefix_tochar(node->prefix),
+                           prefix_tochar(prefix), node->prefix->bitlen)) {
+            results[cnt++] = node;
+        }
+
+        if (BIT_TEST(addr[node->bit >> 3], 0x80 >> (node->bit & 0x07))) {
+            node = node->r;
+        } else {
+            node = node->l;
+        }
+
+        if (!node)
+            return cnt;
+    }
+
+    if (inclusive && node->prefix && node->data &&
+        comp_with_mask(prefix_tochar(node->prefix),
+                       prefix_tochar(prefix), node->prefix->bitlen)) {
+        results[cnt++] = node;
+    }
+
+    return cnt;
 }
 
 

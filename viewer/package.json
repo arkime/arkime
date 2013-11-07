@@ -6,7 +6,7 @@
       "jade": ">= 0.0.1"
     , "express": ">= 3.0.0"
     , "async": ">= 0.0.1"
-    , "stylus": "= 0.38.0"
+    , "stylus": ">= 0.38.0"
     , "connect-timeout": ">= 0.0.1"
     , "elasticsearchclient": ">= 0.3.0"
     , "fs-ext": ">= 0.3.0"

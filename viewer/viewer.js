@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 12;
+var MIN_DB_VERSION = 15;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -429,7 +429,7 @@ fs.unlink("./public/style.css", function () {}); // Remove old style.css file
 app.get('/style.css', function(req, res) {
   fs.readFile("./views/style.styl", 'utf8', function(err, str) {
     if (err) {return console.log("ERROR - ", err);}
-    var style = stylus(str, "./views");
+    var style = stylus(str);
     style.render(function(err, css){
       if (err) {return console.log("ERROR - ", err);}
       var date = new Date().toUTCString();
@@ -455,11 +455,10 @@ function statG(dir, func) {
 
 function expireOne (ourInfo, allInfo, minFreeG, pcapDir, nextCb) {
 
-  var i;
   var nodes = [];
 
   // Find all the nodes that are on the same device
-  for (i = 0; i < allInfo.length; i++) {
+  for (var i = 0, ilen = allInfo.length; i < ilen; i++) {
     if (allInfo[i].stat.dev === ourInfo.stat.dev) {
       nodes.push(allInfo[i].node);
     }
@@ -569,8 +568,7 @@ function addSortToQuery(query, info, d) {
     query.sort = [];
   }
 
-  var i;
-  for (i = 0; i < parseInt(info.iSortingCols, 10); i++) {
+  for (var i = 0, ilen = parseInt(info.iSortingCols, 10); i < ilen; i++) {
     if (!info["iSortCol_" + i] || !info["sSortDir_" + i] || !info["mDataProp_" + info["iSortCol_" + i]]) {
       continue;
     }
@@ -1016,7 +1014,7 @@ app.get('/esstats.json', function(req, res) {
     }
 
     var nodes = Object.keys(results.nodes.nodes);
-    for (var n = 0; n < nodes.length; n++) {
+    for (var n = 0, nlen = nodes.length; n < nlen; n++) {
       var node = results.nodes.nodes[nodes[n]];
       stats.push({
         name: node.name,
@@ -1035,7 +1033,7 @@ app.get('/esstats.json', function(req, res) {
       var oldnode = previousNodeStats[0][nodes[n]];
       if (oldnode) {
         var olddisk = [0, 0], newdisk = [0, 0];
-        for (var i = 0; i < oldnode.fs.data.length; i++) {
+        for (var i = 0, ilen = oldnode.fs.data.length; i < ilen; i++) {
           olddisk[0] += oldnode.fs.data[i].disk_read_size_in_bytes;
           olddisk[1] += oldnode.fs.data[i].disk_write_size_in_bytes;
           newdisk[0] += node.fs.data[i].disk_read_size_in_bytes;
@@ -1080,12 +1078,11 @@ app.get('/stats.json', function(req, res) {
   async.parallel({
     stats: function (cb) {
       Db.search('stats', 'stat', query, function(err, result) {
-        var i;
         if (err || result.error) {
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
-          for (i = 0; i < result.hits.hits.length; i++) {
+          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
             result.hits.hits[i].fields.id     = result.hits.hits[i]._id;
             result.hits.hits[i].fields.memory = result.hits.hits[i].fields.memory || 0;
             result.hits.hits[i].fields.diskQueue = result.hits.hits[i].fields.diskQueue || 0;
@@ -1145,7 +1142,7 @@ app.get('/dstats.json', function(req, res) {
               };
 
   Db.search('dstats', 'dstat', query, function(err, result) {
-    var i;
+    var i, ilen;
     var data = [];
     var num = (req.query.stop - req.query.start)/req.query.step;
 
@@ -1159,7 +1156,7 @@ app.get('/dstats.json', function(req, res) {
     }
 
     if (result && result.hits) {
-      for (i = 0; i < result.hits.hits.length; i++) {
+      for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
         var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
         data[pos] = mult * (result.hits.hits[i].fields[req.query.name] || 0);
       }
@@ -1200,14 +1197,12 @@ app.get('/files.json', function(req, res) {
   async.parallel({
     files: function (cb) {
       Db.search('files', 'file', query, function(err, result) {
-        var i;
-
         if (err || result.error) {
           return cb(err || result.error);
         }
 
         var results = {total: result.hits.total, results: []};
-        for (i = 0; i < result.hits.hits.length; i++) {
+        for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
           if (result.hits.hits[i].fields.locked === undefined) {
             result.hits.hits[i].fields.locked = 0;
           }
@@ -1272,13 +1267,11 @@ app.post('/users.json', function(req, res) {
   async.parallel({
     users: function (cb) {
       Db.search('users', 'user', query, function(err, result) {
-        var i;
-
         if (err || result.error) {
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
-          for (i = 0; i < result.hits.hits.length; i++) {
+          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
             result.hits.hits[i].fields.id = result.hits.hits[i]._id;
             result.hits.hits[i].fields.expression = safeStr(result.hits.hits[i].fields.expression || "");
             result.hits.hits[i].fields.headerAuthEnabled = result.hits.hits[i].fields.headerAuthEnabled || false;
@@ -1394,7 +1387,7 @@ app.get('/sessions.json', function(req, res) {
 
           var results = {total: result.hits.total, results: []};
           var hits = result.hits.hits;
-          for (i = 0; i < hits.length; i++) {
+          for (var i = 0, ilen = hits.length; i < ilen; i++) {
             if (!hits[i] || !hits[i].fields) {
               continue;
             }
@@ -1866,9 +1859,8 @@ app.get('/connections.csv', function(req, res) {
       return res.send(err);
     }
     res.write("Source, Destination, Packets, Bytes, Databytes\r\n");
-    var i;
-    for (i = 0; i < links.length; i++) {
-      res.write("" + nodes[links[i].source].id + ", " + 
+    for (var i = 0, ilen = links.length; i < ilen; i++) {
+      res.write("" + nodes[links[i].source].id + ", " +
                      nodes[links[i].target].id + ", " +
                      links[i].pa + ", " +
                      links[i].by + ", " +
@@ -1881,8 +1873,7 @@ function csvListWriter(req, res, list, pcapWriter, extension) {
   list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
   res.write("Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node\r\n");
 
-  var i;
-  for (i = 0; i < list.length; i++) {
+  for (var i = 0, ilen = list.length; i < ilen; i++) {
     if (!list[i].fields) {
       continue;
     }
@@ -2037,10 +2028,10 @@ app.get('/unique.txt', function(req, res) {
 
         // Count up hits
         var hits = result.hits.hits;
-        for (var i = 0; i < hits.length; i++) {
+        for (var i = 0, ilen = hits.length; i < ilen; i++) {
           var avalue = hits[i].fields[field];
           if (Array.isArray(avalue)) {
-            for (var j = 0; j < avalue.length; j++) {
+            for (var j = 0, jlen = avalue.length; j < jlen; j++) {
               var value = avalue[j];
               counts[value] = (counts[value] || 0) + 1;
             }
@@ -2272,9 +2263,9 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
 // Some ideas from hexy.js
 function toHex(input, offsets) {
   var out = "";
-  var i;
+  var i, ilen;
 
-  for (var pos = 0; pos < input.length; pos += 16) {
+  for (var pos = 0, poslen = input.length; pos < poslen; pos += 16) {
     var line = input.slice(pos, Math.min(pos+16, input.length));
     if (offsets) {
       out += sprintf.sprintf("<span class=\"sessionln\">%08d:</span> ", pos);
@@ -2293,7 +2284,7 @@ function toHex(input, offsets) {
 
     out += " ";
 
-    for (i = 0; i < line.length; i++) {
+    for (i = 0, ilen = line.length; i < ilen; i++) {
       if (line[i] <= 32 || line[i]  > 128) {
         out += ".";
       } else {
@@ -2307,9 +2298,9 @@ function toHex(input, offsets) {
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
   var outgoing = [];
-  for (var r = 0; r < incoming.length; r++) {
+  for (var r = 0, rlen = incoming.length; r < rlen; r++) {
     outgoing[r]= {ts: incoming[r].ts, html: "", bytes:0};
-    for (var p = 0; p < incoming[r].pieces.length; p++) {
+    for (var p = 0, plen = incoming[r].pieces.length; p < plen; p++) {
       outgoing[r].bytes += incoming[r].pieces[p].raw.length;
       if (req.query.base === "hex") {
         outgoing[r].html += '<pre>' + toHex(incoming[r].pieces[p].raw, req.query.line === "true") + '</pre>';
@@ -2417,9 +2408,8 @@ function gzipDecode(req, res, session, incoming) {
   };
 
   parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
-    var h;
     this.gzip = false;
-    for (h = 0; h < info.headers.length; h += 2) {
+    for (var h = 0, hlen = info.headers.length; h < hlen; h += 2) {
       // If Content-Type is gzip then stop, otherwise look for encoding
       if (info.headers[h].match(/Content-Type/i) && info.headers[h+1].match(/gzip/i)) {
         this.gzip = true;
@@ -2520,9 +2510,8 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
 
     //console.log("onHeadersComplete", this.pos, info);
 
-    var h;
     this.image = false;
-    for (h = 0; h < info.headers.length; h += 2) {
+    for (var h = 0, hlen = info.headers.length; h < hlen; h += 2) {
       if (info.headers[h].match(/Content-Type/i)) {
         if (info.headers[h+1].match(/^image/i)) {
           this.image = true;
@@ -2591,11 +2580,11 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
     var mime;
     var boundaries = [];
     var pieces = [{raw: ""}];
-    var b;
     var matches;
+    var b, blen;
 
     linesloop:
-    for (var l = 0; l < lines.length; l++) {
+    for (var l = 0, llen = lines.length; l < llen; l++) {
       switch (state) {
       case STATES.cmd:
         pieces[pieces.length-1].raw += lines[l] + "\n";
@@ -2633,7 +2622,7 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
         }
 
         if (lines[l][0] === '-') {
-          for (b = 0; b < boundaries.length; b++) {
+          for (b = 0, blen = boundaries.length; b < blen; b++) {
             if (lines[l].substr(2, boundaries[b].length) === boundaries[b]) {
               state = STATES.mime;
               mime = {line:"", base64:0};
@@ -2699,7 +2688,7 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
         }
 
         if (lines[l][0] === '-') {
-          for (b = 0; b < boundaries.length; b++) {
+          for (b = 0, blen = boundaries.length; b < blen; b++) {
             if (lines[l].substr(2, boundaries[b].length) === boundaries[b]) {
               if (findBody === bodyNum) {
                 return res.end();
@@ -2724,8 +2713,7 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
     return pieces;
   }
 
-  var p = 0;
-  for (p = 0; p < incoming.length; p++) {
+  for (var p = 0, plen = incoming.length; p < plen; p++) {
     if (incoming[p].data.length === 0) {
       outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: incoming[p].data}]};
     } else {
@@ -2773,7 +2761,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
   }
 
   var outgoing = [];
-  for (var r = 0; r < incoming.length; r++) {
+  for (var r = 0, rlen = incoming.length; r < rlen; r++) {
     outgoing.push({pieces: [{raw: incoming[r].data}], ts: incoming[r].ts});
   }
   localSessionDetailReturnFull(req, res, session, outgoing);
@@ -3132,8 +3120,8 @@ app.get('/:nodeName/raw/:id.png', function(req, res) {
         return res.send (emptyPNG);
       }
       var size = 0;
-      var i;
-      for (i = (req.query.type !== 'dst'?0:1); i < results.length; i+=2) {
+      var i, ilen;
+      for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
         size += results[i].data.length + 2*PNG_LINE_WIDTH - (results[i].data.length % PNG_LINE_WIDTH);
       }
       var buffer = new Buffer(size);
@@ -3141,7 +3129,7 @@ app.get('/:nodeName/raw/:id.png', function(req, res) {
       if (size === 0) {
         return res.send (emptyPNG);
       }
-      for (i = (req.query.type !== 'dst'?0:1); i < results.length; i+=2) {
+      for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
         results[i].data.copy(buffer, pos);
         pos += results[i].data.length;
         var fillpos = pos;
@@ -3171,7 +3159,7 @@ app.get('/:nodeName/raw/:id', function(req, res) {
       if (err) {
         return res.send("Error");
       }
-      for (var i = (req.query.type !== 'dst'?0:1); i < results.length; i+=2) {
+      for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
         res.write(results[i].data);
       }
       res.end();
@@ -3559,7 +3547,7 @@ function addTagsList(res, allTagIds, list) {
     }
 
     // Find which tags need to be added to this session
-    for (var i = 0; i < allTagIds.length; i++) {
+    for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
       if (session.fields.ta.indexOf(allTagIds[i]) === -1) {
         tagIds.push(allTagIds[i]);
       }
@@ -3589,7 +3577,7 @@ function removeTagsList(res, allTagIds, list) {
     }
 
     // Find which tags need to be added to this session
-    for (var i = 0; i < allTagIds.length; i++) {
+    for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
       if (session.fields.ta.indexOf(allTagIds[i]) !== -1) {
         tagIds.push(allTagIds[i]);
       }
@@ -3924,7 +3912,7 @@ function sendSession(req, res, id, nextCb) {
     var pos = 0;
     packetshdr.copy(buffer);
     pos += packetshdr.length;
-    for(var i = 0; i < packets.length; i++) {
+    for(var i = 0, ilen = packets.length; i < ilen; i++) {
       ps.push(pos);
       packets[i].copy(buffer, pos);
       pos += packets[i].length;
@@ -4133,7 +4121,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
         // Adjust packet location based on where we start writing
         if (saveId.start > 0) {
-          for (var p = 1; p < session.ps.length; p++) {
+          for (var p = 1, plen = session.ps.length; p < plen; p++) {
             session.ps[p] += (saveId.start - 24);
           }
         }

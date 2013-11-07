@@ -1732,13 +1732,10 @@ int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, ui
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
-        int wordcount = 0, flags, bytecount, passlength = 0;
-        BSB_IMPORT_u08(*bsb, wordcount);
-        BSB_IMPORT_skip(*bsb, 3);
-        BSB_IMPORT_u16(*bsb, flags);
+        int passlength = 0;
+        BSB_IMPORT_skip(*bsb, 6);
         BSB_IMPORT_u16(*bsb, passlength);
-        BSB_IMPORT_u16(*bsb, bytecount);
-        BSB_IMPORT_skip(*bsb, passlength);
+        BSB_IMPORT_skip(*bsb, 2 + passlength);
 
         gsize bread, bwritten;
         GError      *error = 0;
@@ -1775,8 +1772,7 @@ int moloch_detect_parse_smb1(MolochSession_t *session, BSB *bsb, char *state, ui
 
         BSB_IMPORT_skip(*bsb, 8);
 
-        int bytecount = 0;
-        BSB_LIMPORT_u16(*bsb, bytecount);
+        BSB_IMPORT_skip(*bsb, 2);
 
         moloch_detect_smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
         BSB_IMPORT_skip(*bsb, securitylen);
@@ -1960,8 +1956,7 @@ void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint
                     break;
                 }
 
-                int type;
-                BSB_IMPORT_u08(bsb, type);
+                BSB_IMPORT_skip(bsb, 1);
                 BSB_IMPORT_u24(bsb, *remlen);
                 // Peak at SMBHEADER for version
                 smb->version[session->which] = *(BSB_WORK_PTR(bsb));
@@ -2007,6 +2002,130 @@ void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint
             memmove(buf, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
         }
         *buflen = BSB_REMAINING(bsb);
+    }
+}
+
+/******************************************************************************/
+/*############################## SOCKS ##############################*/
+
+#define SOCKS5_STATE_VER_REPLY      0
+#define SOCKS5_STATE_USER_REQUEST   1
+#define SOCKS5_STATE_USER_REPLY     2
+#define SOCKS5_STATE_CONN_REQUEST   3
+#define SOCKS5_STATE_CONN_REPLY     4
+void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, uint32_t remaining)
+{
+    MolochSessionSocks_t   *socks          = session->socks;
+
+    if (socks->ver == 4) {
+        if (session->which == socks->which)
+            return;
+
+        if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
+            moloch_detect_parse_classify(session, data + 8, remaining - 8);
+            session->skip[socks->which] = 9 + socks->userlen;
+            session->skip[session->which] = 8;
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
+
+            if (socks->user) {
+                if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_USER, session, socks->user, socks->userlen, TRUE)) {
+                    g_free(socks->user);
+                }
+                socks->user = 0;
+            }
+        }
+        moloch_nids_free_session_socks(session);
+        return;
+    }
+
+    // Socks 5
+
+    switch(socks->state) {
+    case SOCKS5_STATE_VER_REPLY:
+        if (session->which == socks->which)
+            return;
+
+        if (remaining != 2 || data[0] != 5 || data[1] > 2) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
+
+        if (data[1] == 0)
+            socks->state = SOCKS5_STATE_CONN_REQUEST;
+        else if (data[1] == 2)
+            socks->state = SOCKS5_STATE_USER_REQUEST;
+        else
+            moloch_nids_free_session_socks(session);
+
+        session->skip[session->which] = 2;
+        session->skip[socks->which] = 3;
+
+        return;
+    case SOCKS5_STATE_USER_REQUEST:
+        if (session->which != socks->which)
+            return;
+        if ((2 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1]+2]  > (int)remaining)) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+
+        moloch_field_string_add(MOLOCH_FIELD_SOCKS_USER, session, (char *)data + 2, data[1], TRUE);
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "socks:password");
+        session->skip[session->which] += 2 + data[1] + 1 + data[data[1]+2];
+        socks->state = SOCKS5_STATE_USER_REPLY;
+        return;
+    case SOCKS5_STATE_USER_REPLY:
+        if (session->which == socks->which)
+            return;
+
+        session->skip[session->which] += 2;
+        socks->state = SOCKS5_STATE_CONN_REQUEST;
+        return;
+    case SOCKS5_STATE_CONN_REQUEST:
+        if (session->which != socks->which)
+            return;
+        if (remaining < 6 || data[0] != 5 || data[1] != 1 || data[2] != 0) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+        if (data[3] == 1) { // IPV4
+            socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
+            memcpy(&socks->ip, data+4, 4);
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
+            session->skip[socks->which] +=  4 + 4 + 2;
+        } else if (data[3] == 3) { // Domain Name
+            socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
+            char *lower = g_ascii_strdown((char*)data+5, data[4]);
+            if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_HOST, session, lower, data[4], FALSE)) {
+                g_free(lower);
+            }
+            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
+            session->skip[socks->which] += 4 + 1 + data[4] + 2;
+        } else if (data[3] == 4) { // IPV6
+            session->skip[socks->which] += 4 + 16 + 2;
+        }
+        socks->state = SOCKS5_STATE_CONN_REPLY;
+        return;
+    case SOCKS5_STATE_CONN_REPLY:
+        if (session->which == socks->which || remaining < 6) {
+            moloch_nids_free_session_socks(session);
+            return;
+        }
+
+        if (data[3] == 1) { // IPV4
+            session->skip[session->which] += 4 + 4 + 2;
+        } else if (data[3] == 3) { // Domain Name
+            session->skip[session->which] += 4 + 1 + data[4] + 2;
+        } else if (data[3] == 4) { // IPV6
+            session->skip[session->which] += 4 + 16 + 2;
+        }
+        moloch_nids_free_session_socks(session);
+        return;
     }
 }
 
@@ -2064,6 +2183,7 @@ void moloch_detect_init()
     moloch_field_define_internal(MOLOCH_FIELD_SOCKS_IP,      "socksip",MOLOCH_FIELD_TYPE_IP,        0);
     moloch_field_define_internal(MOLOCH_FIELD_SOCKS_HOST,    "socksho",MOLOCH_FIELD_TYPE_STR,       0);
     moloch_field_define_internal(MOLOCH_FIELD_SOCKS_PORT,    "sockspo",MOLOCH_FIELD_TYPE_INT,       0);
+    moloch_field_define_internal(MOLOCH_FIELD_SOCKS_USER,    "socksuser",MOLOCH_FIELD_TYPE_STR,     0);
 
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
     moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, nodeTag, NULL);
@@ -2209,7 +2329,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (memcmp("+OK POP3 ", data, 9) == 0)
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:pop3");
 
-    if (data[0] == 0x4 && (data[1] & 0xfe) == 0 && data[remaining-1] == 0 && remaining == 9)  {
+    if (data[0] == 0x4 && (data[1] & 0xfe) == 0 && data[remaining-1] == 0)  {
         moloch_nids_new_session_socks(session, data, remaining);
     }
 
@@ -2249,118 +2369,6 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:tls");
         moloch_detect_tls_process(session, data, remaining);
-    }
-}
-/******************************************************************************/
-#define SOCKS5_STATE_VER_REPLY      0
-#define SOCKS5_STATE_USER_REQUEST   1
-#define SOCKS5_STATE_USER_REPLY     2
-#define SOCKS5_STATE_CONN_REQUEST   3
-#define SOCKS5_STATE_CONN_REPLY     4
-void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, uint32_t remaining)
-{
-    MolochSessionSocks_t   *socks          = session->socks;
-
-    if (socks->ver == 4) {
-        if (session->which == socks->which)
-            return;
-
-        if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
-            moloch_detect_parse_classify(session, data + 8, remaining - 8);
-            session->skip[socks->which] = 9;
-            session->skip[session->which] = 8;
-            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
-            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
-        }
-        moloch_nids_free_session_socks(session);
-        return;
-    }
-
-    // Socks 5 - Only support no auth for now
-
-    switch(socks->state) {
-    case SOCKS5_STATE_VER_REPLY:
-        if (session->which == socks->which)
-            return;
-
-        if (remaining != 2 || data[0] != 5 || data[1] > 2) {
-            moloch_nids_free_session_socks(session);
-            return;
-        }
-
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
-
-        if (data[1] == 0)
-            socks->state = SOCKS5_STATE_CONN_REQUEST;
-        else if (data[1] == 2)
-            socks->state = SOCKS5_STATE_USER_REQUEST;
-        else
-            moloch_nids_free_session_socks(session);
-
-        session->skip[session->which] = 2;
-        session->skip[socks->which] = 3;
-
-        return;
-    case SOCKS5_STATE_USER_REQUEST:
-        if (session->which != socks->which)
-            return;
-        if ((2 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1]+2]  > (int)remaining)) {
-            moloch_nids_free_session_socks(session);
-            return;
-        }
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "socks:password");
-        session->skip[session->which] += 2 + data[1] + 1 + data[data[1]+2];
-        socks->state = SOCKS5_STATE_USER_REPLY;
-        return;
-    case SOCKS5_STATE_USER_REPLY:
-        if (session->which == socks->which)
-            return;
-
-        session->skip[session->which] += 2;
-        socks->state = SOCKS5_STATE_CONN_REQUEST;
-        return;
-    case SOCKS5_STATE_CONN_REQUEST:
-        if (session->which != socks->which)
-            return;
-        if (remaining < 6 || data[0] != 5 || data[1] != 1 || data[2] != 0) {
-            moloch_nids_free_session_socks(session);
-            return;
-        }
-        if (data[3] == 1) { // IPV4
-            socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
-            memcpy(&socks->ip, data+4, 4);
-            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
-            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
-            session->skip[socks->which] +=  4 + 4 + 2;
-        } else if (data[3] == 3) { // Domain Name
-            socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
-            char *lower = g_ascii_strdown((char*)data+5, data[4]);
-            if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_HOST, session, lower, data[4], FALSE)) {
-                g_free(lower);
-            }
-            moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
-            session->skip[socks->which] += 4 + 1 + data[4] + 2;
-        } else if (data[3] == 4) { // IPV6
-            session->skip[socks->which] += 4 + 16 + 2;
-        }
-        socks->state = SOCKS5_STATE_CONN_REPLY;
-        return;
-    case SOCKS5_STATE_CONN_REPLY:
-        if (session->which == socks->which || remaining < 6) {
-            moloch_nids_free_session_socks(session);
-            return;
-        }
-
-        if (data[3] == 1) { // IPV4
-            session->skip[session->which] += 4 + 4 + 2;
-        } else if (data[3] == 3) { // Domain Name
-            session->skip[session->which] += 4 + 1 + data[4] + 2;
-        } else if (data[3] == 4) { // IPV6
-            session->skip[session->which] += 4 + 16 + 2;
-        }
-        moloch_nids_free_session_socks(session);
-        return;
     }
 }
 /******************************************************************************/

@@ -37,9 +37,8 @@ var internals = {
   };
 
 function processArgs() {
-  var i;
   var args = [];
-  for (i = 0; i < process.argv.length; i++) {
+  for (var i = 0, ilen = process.argv.length; i < ilen; i++) {
     if (process.argv[i] === "-c") {
       i++;
       internals.configFile = process.argv[i];
@@ -247,6 +246,10 @@ addField("p1", "port.src", "general", "integer", "Source port");
 addField("p2", "port.dst", "general", "integer", "Destination port");
 addField("sockspo", "port.socks", "socks", "integer", "Socks destination port");
 
+addField(null, "payload8", "general", "lotermfield", "Shorthand for payload8.src, payload8.dst");
+addField("fb1", "payload8.src", "general", "lotermfield", "First 8 bytes of source payload in hex");
+addField("fb2", "payload8.dst", "general", "lotermfield", "First 8 bytes of destination payload in hex");
+
 addField(null, "asn", "general", "textfield", "Shorthand for the GeoIP ASNum string from the asn.src, asn.dst, asn.dns, asn.email, asn.socks, or asn.xff fields");
 addField("as1", "asn.src", "general", "textfield", "GeoIP ASNum string calculated from the source ip address");
 addField("as2", "asn.dst", "general", "textfield", "GeoIP ASNum string calculated from the destination ip address");
@@ -282,6 +285,7 @@ addField("ta", "tags", "general", "lotermfield", "Tests if the session has the t
 addField("tacnt", "tags.cnt", "general", "integer", "Number of unique tags");
 addField("user", "user", "general", "lotermfield", "External user set for session");
 addField(null, "file", "general", "termfield", "File name of offline added files");
+addField("socksuser", "socks.user", "socks", "termfield", "Socks user");
 
 addField(null, "host", "general", "termfield", "Shorthand for host.dns, host.email. host.http");
 addField("ho", "host.http", "http", "lotermfield", "HTTP host header field");

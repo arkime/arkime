@@ -560,15 +560,20 @@ void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data
     MolochSessionSocks_t *socks;
 
     socks = session->socks = MOLOCH_TYPE_ALLOC0(MolochSessionSocks_t);
+    socks->which = session->which;
 
-    if (data[0] == 4 && len == 9) {
+    if (data[0] == 4) {
         socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
         memcpy(&socks->ip, data+4, 4);
-        socks->which = session->which;
         socks->ver   = 4;
-    }
 
-    if (data[0] == 5 && len == 3) {
+        int i;
+        for(i = 8; i < len && data[i]; i++);
+        if (i > 8 && i != len ) {
+            socks->user = g_strndup((char *)data+8, i-8);
+            socks->userlen = i - 8;
+        }
+    } else if (data[0] == 5 && len == 3) {
         socks->ver   = 5;
         socks->auth  = data[1];
     }
@@ -578,6 +583,8 @@ void moloch_nids_free_session_socks(MolochSession_t *session)
 {
     MolochSessionSocks_t *socks = session->socks;
 
+    if (socks->user)
+        g_free(socks->user);
     MOLOCH_TYPE_FREE(MolochSessionSocks_t, socks);
     session->socks = 0;
 }
@@ -722,6 +729,10 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     switch (packet->ip_p) {
     case IPPROTO_UDP:
         session->databytes += (nids_last_pcap_header->caplen - 8);
+        session->which = (session->addr1 == packet->ip_src.s_addr &&
+                          session->addr2 == packet->ip_dst.s_addr &&
+                          session->port1 == ntohs(udphdr->source) &&
+                          session->port2 == ntohs(udphdr->dest))?0:1;
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
         break;
     case IPPROTO_TCP:
@@ -907,6 +918,11 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 
             nids_discard(a_tcp, session->offsets[1]);
             session->offsets[1] = countNew;
+
+            if (a_tcp->client.offset == 0) {
+                session->firstBytesLen[1] = MIN(8, countNew);
+                memcpy(session->firstBytes[1], data, session->firstBytesLen[1]);
+            }
         }
 
         if (a_tcp->server.count_new) {
@@ -933,6 +949,11 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 
             nids_discard(a_tcp, session->offsets[0]);
             session->offsets[0] = countNew;
+
+            if (a_tcp->server.offset == 0) {
+                session->firstBytesLen[0] = MIN(8, countNew);
+                memcpy(session->firstBytes[0], data, session->firstBytesLen[0]);
+            }
         }
 
         session->databytes += a_tcp->server.count_new + a_tcp->client.count_new;
@@ -999,6 +1020,10 @@ void moloch_nids_session_free (MolochSession_t *session)
 
     if (session->smb) {
         moloch_nids_free_session_smb(session);
+    }
+
+    if (session->socks) {
+        moloch_nids_free_session_socks(session);
     }
 
     MolochCertsInfo_t *certs;
@@ -1195,6 +1220,17 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
 
     if (pluginsCbs & MOLOCH_PLUGIN_UDP)
         moloch_plugins_cb_udp(session, udphdr, data, len);
+
+    if (session->firstBytesLen[session->which] == 0) {
+        session->firstBytesLen[session->which] = MIN(8, len);
+        memcpy(session->firstBytes[session->which], data, session->firstBytesLen[session->which]);
+    }
+
+    if (len < 4)
+        return;
+
+    if (memcmp("d1:", data, 3) == 0 && (data[3] == 'a' || data[3] == 'r' || data [3] == 'q'))
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:bittorrent");
 }
 /******************************************************************************/
 static pcap_t *closeNextOpen = 0;

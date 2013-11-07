@@ -36,6 +36,13 @@
   - Missing rir data would cause session detail to not open
   - Reassembled IP frames > ~5k would cause session detail to not open
   - Fixed right click issues (issue #169)
+  - New payload8.src, payload8.dst that saves the first 8 bytes of sessions
+    in hex
+  - New socks.user field (issue #167)
+  - Tagger supports CIDR and 1 level hostname lookups (issue #160)
+  - DHT tagging (issue #154)
+  - stylus > 0.39 fix
+  - javascript loop length "improvements"
 
 
 0.9.1 2013/10/03

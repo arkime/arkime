@@ -33,7 +33,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 14
+#define MOLOCH_MIN_DB_VERSION 15
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -211,6 +211,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     unsigned char         *startPtr;
     uint32_t               jsonSize;
     int                    pos;
+    static char            hex[] = "0123456789abcdef";
 
     /* Let the plugins finish */
     if (pluginsCbs & MOLOCH_PLUGIN_SAVE)
@@ -308,6 +309,25 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       htonl(session->addr2),
                       session->port2,
                       session->protocol);
+
+    if (session->firstBytesLen[0] > 0) {
+        int i;
+        BSB_EXPORT_sprintf(jbsb, "\"fb1\":\"");
+        for (i = 0; i < session->firstBytesLen[0]; i++) {
+            BSB_EXPORT_u08(jbsb, hex[(session->firstBytes[0][i] & 0xf0) >> 4]);
+            BSB_EXPORT_u08(jbsb, hex[session->firstBytes[0][i] & 0x0f]);
+        }
+        BSB_EXPORT_sprintf(jbsb, "\",");
+    }
+
+    if (session->firstBytesLen[1] > 0) {
+        BSB_EXPORT_sprintf(jbsb, "\"fb2\":\"");
+        for (i = 0; i < session->firstBytesLen[1]; i++) {
+            BSB_EXPORT_u08(jbsb, hex[(session->firstBytes[1][i] & 0xf0) >> 4]);
+            BSB_EXPORT_u08(jbsb, hex[session->firstBytes[1][i] & 0x0f]);
+        }
+        BSB_EXPORT_sprintf(jbsb, "\",");
+    }
 
     MolochIpInfo_t *ii1 = 0, *ii2 = 0;
     char *g1 = 0, *g2 = 0, *as1 = 0, *as2 = 0, *rir1 = 0, *rir2 = 0;
