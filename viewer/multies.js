@@ -16,7 +16,8 @@ var Config         = require('./config.js'),
     util           = require('util'),
     URL            = require('url'),
     ESC            = require('elasticsearchclient'),
-    httpAgent      = require('http');
+    http           = require('http'),
+    KAA            = require('keep-alive-agent');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -24,17 +25,7 @@ var Config         = require('./config.js'),
 
 var clients = {};
 var nodes;
-
-
-var app = express();
-app.configure(function() {
-  app.enable("jsonp callback");
-  app.use(express.favicon(__dirname + '/public/favicon.ico'));
-  app.use(connectTimeout({ time: 60*60*1000 }));
-  app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
-  app.use(saveBody);
-  app.use(express.compress());
-});
+var agent = new KAA({maxSockets: 100});
 
 function hasBody(req) {
   var encoding = 'transfer-encoding' in req.headers;
@@ -61,6 +52,16 @@ function saveBody (req, res, next) {
   });
 }
 
+var app = express();
+app.configure(function() {
+  app.enable("jsonp callback");
+  app.use(express.favicon(__dirname + '/public/favicon.ico'));
+  app.use(connectTimeout({ time: 60*60*1000 }));
+  app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
+  app.use(saveBody);
+  app.use(express.compress());
+});
+
 function simpleGather(req, res, bodies, doneCb) {
   console.log(req.method, req.url);
 
@@ -69,7 +70,8 @@ function simpleGather(req, res, bodies, doneCb) {
     var url = "http://" + node + req.url;
     var info = URL.parse(url);
     info.method = req.method;
-    var preq = httpAgent.request(info, function(pres) {
+    info.agent  = agent;
+    var preq = http.request(info, function(pres) {
       pres.on('data', function (chunk) {
         result += chunk.toString();
       });
@@ -442,6 +444,10 @@ function fixResult(node, result, doneCb) {
 }
 
 function combineResults(obj, result) {
+  if (!result.hits) {
+    console.log("NO RESULTS", result);
+    return;
+  }
   obj.hits.total += result.hits.total;
   obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   if (obj.facets) {
@@ -612,12 +618,13 @@ if (nodes.length === 0 || nodes[0] === "") {
 
 nodes.forEach(function(node) {
   var escInfo = node.split(':');
-  clients[node] = new ESC({host : escInfo[0], port: escInfo[1]});
+  clients[node] = new ESC({host: escInfo[0],
+                           port: escInfo[1],
+                           agent: new KAA({maxSockets: 20})});
   tags[node] = {tagName2Id: {}, tagId2Name: {}};
 });
 
 console.log(nodes);
 
-httpAgent.globalAgent.maxSockets = httpAgent.maxSockets = 200;
-
-var server = httpAgent.createServer(app).listen(Config.get("multiESPort", "8200"));
+console.log("Listen on ", Config.get("multiESPort", "8200"));
+var server = http.createServer(app).listen(Config.get("multiESPort", "8200"));

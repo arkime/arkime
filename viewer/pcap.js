@@ -125,7 +125,7 @@ Pcap.prototype.readPacket = function(pos, cb) {
 
   // Hacky!! File isn't actually opened, try again soon
   if (!self.fd) {
-    setTimeout(function() {self.readPacket(pos, cb);}, 10);
+    setTimeout(self.readPacket, 10, pos, cb);
     return;
   }
 

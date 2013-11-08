@@ -43,6 +43,9 @@
   - DHT tagging (issue #154)
   - stylus > 0.39 fix
   - javascript loop length "improvements"
+  - switch from forever-agent to keep-alive-agent, npm update required
+  - caTrustFile config option (issue #161, pull #171
+  - start of some javascript cleanup
 
 
 0.9.1 2013/10/03

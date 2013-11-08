@@ -21,6 +21,9 @@
 "use strict";
 
 var ESC            = require('elasticsearchclient'),
+    async          = require('async'),
+    os             = require('os'),
+    fs             = require('fs'),
     util           = require('util');
 
 var internals = {tagId2Name: {},
@@ -33,6 +36,9 @@ var internals = {tagId2Name: {},
 exports.initialize = function (info) {
   internals.dontMapTags = info.dontMapTags || false;
   delete info.dontMapTags;
+
+  internals.nodeName = info.nodeName;
+  delete info.nodeName;
 
   internals.elasticSearchClient = new ESC(info);
 };
@@ -53,7 +59,7 @@ function didIt() {
   internals.qInProgress--;
   if (internals.q.length > 0) {
     var item = internals.q.shift();
-    setTimeout(function () {item[0].apply(item[1], item[2]);}, 0);
+    async.setImmediate(function () {item[0].apply(item[1], item[2]);});
   }
 }
 
@@ -84,55 +90,27 @@ exports.getWithOptions = function (index, type, query, options, cb) {
 };
 
 /* Work around a breaking change where document.id is nolonger used for the id */
-if (typeof ESC.prototype.multisearch === "function") {
-  exports.index = function (index, type, id, document, cb) {
-    internals.elasticSearchClient.index(index, type, document, id)
-      .on('data', function(data) {
-        cb(null, JSON.parse(data));
-      })
-      .on('error', function(error) {
-        cb(error, null);
-      })
-      .exec();
-  };
+exports.index = function (index, type, id, document, cb) {
+  internals.elasticSearchClient.index(index, type, document, id)
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
 
-  exports.indexNow = function (index, type, id, document, cb) {
-    internals.elasticSearchClient.index(index, type, document, id, {refresh: 1})
-      .on('data', function(data) {
-        cb(null, JSON.parse(data));
-      })
-      .on('error', function(error) {
-        cb(error, null);
-      })
-      .exec();
-  };
-} else {
-  exports.index = function (index, type, id, document, cb) {
-    document.id = id;
-
-    internals.elasticSearchClient.index(index, type, document)
-      .on('data', function(data) {
-        cb(null, JSON.parse(data));
-      })
-      .on('error', function(error) {
-        cb(error, null);
-      })
-      .exec();
-  };
-
-  exports.indexNow = function (index, type, id, document, cb) {
-    document.id = id;
-
-    internals.elasticSearchClient.index(index, type, document, {refresh: 1})
-      .on('data', function(data) {
-        cb(null, JSON.parse(data));
-      })
-      .on('error', function(error) {
-        cb(error, null);
-      })
-      .exec();
-  };
-}
+exports.indexNow = function (index, type, id, document, cb) {
+  internals.elasticSearchClient.index(index, type, document, id, {refresh: 1})
+    .on('data', function(data) {
+      cb(null, JSON.parse(data));
+    })
+    .on('error', function(error) {
+      cb(error, null);
+    })
+    .exec();
+};
 
 exports.search = function (index, type, query, cb) {
   internals.elasticSearchClient.search(index, type, query)
@@ -322,33 +300,55 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-exports.tagIdToName = function (id, cb) {
-  if (internals.dontMapTags) {
-    return cb(id);
-  }
-
-  if (!canDo(exports.tagIdToName, this, arguments)) {
-    return;
-  }
-
-  if (internals.tagId2Name[id]) {
-    cb(internals.tagId2Name[id]);
-    return didIt();
-  }
-
-  var query = {query: {term: {n:id}}};
-  exports.search('tags', 'tag', query, function(err, tdata) {
-    didIt();
-
-    if (!err && tdata.hits.hits[0]) {
-      internals.tagId2Name[id] = tdata.hits.hits[0]._id;
-      internals.tagName2Id[tdata.hits.hits[0]._id] = id;
-      return cb(internals.tagId2Name[id]);
+if (internals.dontMapTags) {
+  exports.tagIdToName = function (id, cb) { return cb(id); };
+  exports.tagNameToId = function (name, cb) { return cb(name); };
+} else {
+  exports.tagIdToName = function (id, cb) {
+    if (!canDo(exports.tagIdToName, this, arguments)) {
+      return;
     }
 
-    return cb(null);
-  });
-};
+    if (internals.tagId2Name[id]) {
+      cb(internals.tagId2Name[id]);
+      return didIt();
+    }
+
+    var query = {query: {term: {n:id}}};
+    exports.search('tags', 'tag', query, function(err, tdata) {
+      didIt();
+
+      if (!err && tdata.hits.hits[0]) {
+        internals.tagId2Name[id] = tdata.hits.hits[0]._id;
+        internals.tagName2Id[tdata.hits.hits[0]._id] = id;
+        return cb(internals.tagId2Name[id]);
+      }
+
+      return cb(null);
+    });
+  };
+
+  exports.tagNameToId = function (name, cb) {
+    if (!canDo(exports.tagNameToId, this, arguments)) {
+      return;
+    }
+
+    if (internals.tagName2Id[name]) {
+      cb(internals.tagName2Id[name]);
+      return didIt();
+    }
+
+    exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
+      didIt();
+      if (!err && tdata.exists) {
+        internals.tagName2Id[name] = tdata._source.n;
+        internals.tagId2Name[tdata._source.n] = name;
+        return cb(internals.tagName2Id[name]);
+      }
+      return cb(-1);
+    });
+  };
+}
 
 exports.fileIdToFile = function (node, num, cb) {
   var key = node + "!" + num;
@@ -387,31 +387,6 @@ exports.fileNameToFile = function (name, cb) {
   });
 };
 
-exports.tagNameToId = function (name, cb) {
-  if (internals.dontMapTags) {
-    return cb(name);
-  }
-
-  if (!canDo(exports.tagNameToId, this, arguments)) {
-    return;
-  }
-
-  if (internals.tagName2Id[name]) {
-    cb(internals.tagName2Id[name]);
-    return didIt();
-  }
-
-  exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
-    didIt();
-    if (!err && tdata.exists) {
-      internals.tagName2Id[name] = tdata._source.n;
-      internals.tagId2Name[tdata._source.n] = name;
-      return cb(internals.tagName2Id[name]);
-    }
-    return cb(-1);
-  });
-};
-
 exports.getSequenceNumber = function (name, cb) {
   exports.index("sequence", "sequence", name, {}, function (err, sinfo) {
     cb(err, sinfo._version);
@@ -421,7 +396,7 @@ exports.getSequenceNumber = function (name, cb) {
 exports.createTag = function (name, cb) {
   // Only allow 1 create at a time, the lazy way
   if (exports.createTag.inProgress === 1) {
-    setTimeout(function () {exports.createTag(name, cb);}, 50);
+    setTimeout(exports.createTag, 50, name, cb);
     return;
   }
 
@@ -484,6 +459,10 @@ exports.checkVersion = function(minVersion, checkUsers) {
 
   exports.get("dstats", "version", "version", function(err, doc) {
     var version;
+    if (err) {
+      console.log(err);
+      process.exit(0);
+    }
     if (!doc.exists) {
       version = 0;
     } else {
@@ -503,4 +482,26 @@ exports.checkVersion = function(minVersion, checkUsers) {
       }
     });
   }
+};
+
+exports.isLocalView = function(node, yesCB, noCB) {
+  if (node === internals.nodeName) {
+    return yesCB();
+  }
+
+  exports.molochNodeStatsCache(node, function(err, stat) {
+    if (err || stat.hostname !== os.hostname()) {
+      noCB();
+    } else {
+      yesCB();
+    }
+  });
+};
+
+exports.deleteFile = function(node, id, path, cb) {
+  fs.unlink(path, function() {
+    exports.deleteDocument('files', 'file', id, function(err, data) {
+      cb(null);
+    });
+  });
 };

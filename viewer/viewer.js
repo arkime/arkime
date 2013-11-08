@@ -2,13 +2,13 @@
 /* viewer.js  -- The main moloch app
  *
  * Copyright 2012-2013 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +35,7 @@ var Config         = require('./config.js'),
     url            = require('url'),
     dns            = require('dns'),
     Pcap           = require('./pcap.js'),
-    sprintf = require('./public/sprintf.js'),
+    sprintf        = require('./public/sprintf.js'),
     Db             = require('./db.js'),
     os             = require('os'),
     zlib           = require('zlib'),
@@ -44,9 +44,9 @@ var Config         = require('./config.js'),
     DigestStrategy = require('passport-http').DigestStrategy,
     HTTPParser     = process.binding('http_parser').HTTPParser,
     molochversion  = require('./version'),
-    httpAgent      = require('http'),
-    httpsAgent     = require('https'),
-    ForeverAgent   = require('forever-agent');
+    http           = require('http'),
+    https          = require('https'),
+    KAA            = require('keep-alive-agent');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -65,7 +65,17 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
-var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
+var internals = {
+  escInfo: Config.get("elasticsearch", "localhost:9200").split(':'),
+  esHttpAgent: new KAA({maxSockets: 20}),
+  httpAgent:   new KAA({maxSockets: 20}),
+  httpsAgent:  new KAA.Secure({maxSockets: 20}),
+  previousNodeStats: [],
+
+//http://garethrees.org/2007/11/14/pngcrush/
+  emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
+  PNG_LINE_WIDTH: 256,
+};
 
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
   function(userid, done) {
@@ -88,11 +98,6 @@ passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Mo
   }
 ));
 
-// Node 0.12 won't need this
-var foreverAgent    = new ForeverAgent({minSockets: 21, maxSockets: 20});
-var foreverAgentSSL = new ForeverAgent.SSL({minSockets: 21, maxSockets: 20});
-
-
 app.configure(function() {
   app.enable("jsonp callback");
   app.set('views', __dirname + '/views');
@@ -100,7 +105,7 @@ app.configure(function() {
   app.locals.molochversion =  molochversion.version;
   app.locals.isIndex = false;
   app.locals.basePath = Config.basePath();
-  app.locals.elasticBase = "http://" + (escInfo[0] === "localhost"?os.hostname():escInfo[0]) + ":" + escInfo[1];
+  app.locals.elasticBase = "http://" + (internals.escInfo[0] === "localhost"?os.hostname():internals.escInfo[0]) + ":" + internals.escInfo[1];
   app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
   app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
@@ -204,10 +209,6 @@ function safeStr(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
 }
 
-//http://garethrees.org/2007/11/14/pngcrush/
-var emptyPNG = new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64');
-var PNG_LINE_WIDTH = 256;
-
 function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
 }
@@ -227,32 +228,11 @@ function fmenum(field) {
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
-Db.initialize({host : escInfo[0],
-               port: escInfo[1],
-               /*agent: new httpAgent.Agent({maxSockets: 20}), // Forever agent doesn't work :(*/
+Db.initialize({host : internals.escInfo[0],
+               port: internals.escInfo[1],
+               nodeName: Config.nodeName(),
+               agent: internals.esHttpAgent,
                dontMapTags: Config.get("multiES", false)});
-
-function deleteFile(node, id, path, cb) {
-  fs.unlink(path, function() {
-    Db.deleteDocument('files', 'file', id, function(err, data) {
-      cb(null);
-    });
-  });
-}
-
-function isLocalView(node, yesCB, noCB) {
-  if (node === Config.nodeName()) {
-    return yesCB();
-  }
-
-  Db.molochNodeStatsCache(node, function(err, stat) {
-    if (err || stat.hostname !== os.hostname()) {
-      noCB();
-    } else {
-      yesCB();
-    }
-  });
-}
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
@@ -492,7 +472,7 @@ function expireOne (ourInfo, allInfo, minFreeG, pcapDir, nextCb) {
             console.log(freeG, "< ", minFreeG);
             if (freeG < minFreeG) {
               console.log("Deleting", item);
-              deleteFile(item.fields.node, item._id, item.fields.name, forNextCb);
+              Db.deleteFile(item.fields.node, item._id, item.fields.name, forNextCb);
             } else {
               done = true;
               return forNextCb("Done");
@@ -978,10 +958,9 @@ function noCache(req, res) {
   res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 }
 
-var previousNodeStats = [];
 Db.nodesStats({fs: 1}, function (err, info) {
   info.nodes.timestamp = new Date().getTime();
-  previousNodeStats.push(info.nodes);
+  internals.previousNodeStats.push(info.nodes);
 });
 
 
@@ -1009,8 +988,8 @@ app.get('/esstats.json', function(req, res) {
     }
 
     var now = new Date().getTime();
-    while (previousNodeStats.length > 1 && previousNodeStats[1].timestamp + 10000 < now) {
-      previousNodeStats.shift();
+    while (internals.previousNodeStats.length > 1 && internals.previousNodeStats[1].timestamp + 10000 < now) {
+      internals.previousNodeStats.shift();
     }
 
     var nodes = Object.keys(results.nodes.nodes);
@@ -1030,7 +1009,7 @@ app.get('/esstats.json', function(req, res) {
         load: node.os.load_average
       });
 
-      var oldnode = previousNodeStats[0][nodes[n]];
+      var oldnode = internals.previousNodeStats[0][nodes[n]];
       if (oldnode) {
         var olddisk = [0, 0], newdisk = [0, 0];
         for (var i = 0, ilen = oldnode.fs.data.length; i < ilen; i++) {
@@ -1046,7 +1025,7 @@ app.get('/esstats.json', function(req, res) {
     }
 
     results.nodes.nodes.timestamp = new Date().getTime();
-    previousNodeStats.push(results.nodes.nodes);
+    internals.previousNodeStats.push(results.nodes.nodes);
 
     r = {sEcho: req.query.sEcho,
          health: results.health,
@@ -1215,7 +1194,7 @@ app.get('/files.json', function(req, res) {
             return cb(null);
           }
 
-          isLocalView(item.node, function () {
+          Db.isLocalView(item.node, function () {
             fs.stat(item.name, function (err, stats) {
               if (err || !stats) {
                 item.filesize = -1;
@@ -2046,7 +2025,7 @@ app.get('/unique.txt', function(req, res) {
           facets.push({term: key, count: counts[key]});
         }
         facets = facets.sort(function(a,b) {return b.count - a.count;});
-        
+
 
         async.forEachSeries(facets, eachCb, function () {
           res.end();
@@ -2840,7 +2819,7 @@ function localSessionDetail(req, res) {
 function getViewUrl(node, cb) {
   var url = Config.getFull(node, "viewUrl");
   if (url) {
-    cb(null, url, url.slice(0, 5) === "https"?httpsAgent:httpAgent);
+    cb(null, url, url.slice(0, 5) === "https"?https:http);
     return;
   }
 
@@ -2850,9 +2829,9 @@ function getViewUrl(node, cb) {
     }
 
     if (Config.isHTTPS(node)) {
-      cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), httpsAgent);
+      cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), https);
     } else {
-      cb(null, "http://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), httpAgent);
+      cb(null, "http://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), http);
     }
   });
 }
@@ -2868,21 +2847,63 @@ function addAuth(info, user, node, secret) {
                                                     }, secret);
 }
 
+var caTrustCerts = {};
+function addCaTrust(info, node) {
+  if (!Config.isHTTPS(node)) {
+    return;
+  }
+
+  if ((caTrustCerts[node] !== undefined) && (caTrustCerts[node].length > 0)) {
+    info.ca = caTrustCerts[node];
+    return;
+  }
+
+  var caTrustFile = Config.getFull(node, "caTrustFile");
+
+  if (caTrustFile && caTrustFile.length > 0) {
+    var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
+    caTrustFileLines = caTrustFileLines.split("\n");
+
+    var foundCert = [],
+        line;
+
+    caTrustCerts[node] = [];
+
+    for (var i = 0; i < caTrustFileLines.length; i++) {
+      line = caTrustFileLines[i];
+      if (line.length === 0) {
+        continue;
+      }
+      foundCert.push(line);
+      if (line.match(/-END CERTIFICATE-/)) {
+        caTrustCerts[node].push(foundCert.join("\n"));
+        foundCert = [];
+      }
+    }
+
+    if (caTrustCerts[node].length > 0) {
+      info.ca = caTrustCerts[node];
+      return;
+    }
+  }
+}
+
 function proxyRequest (req, res) {
   noCache(req, res);
 
-  getViewUrl(req.params.nodeName, function(err, viewUrl, agent) {
+  getViewUrl(req.params.nodeName, function(err, viewUrl, client) {
     if (err) {
       console.log(err);
       res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
     }
     var info = url.parse(viewUrl);
     info.path = req.url;
-    info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
+    info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
     info.rejectUnauthorized = true;
     addAuth(info, req.user, req.params.nodeName);
+    addCaTrust(info, req.params.nodeName);
 
-    var preq = agent.request(info, function(pres) {
+    var preq = client.request(info, function(pres) {
       pres.on('data', function (chunk) {
         res.write(chunk);
       });
@@ -2902,7 +2923,7 @@ function proxyRequest (req, res) {
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {
   noCache(req, res);
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     localSessionDetail(req, res);
   },
   function () {
@@ -2912,7 +2933,7 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
 
 
 app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', function(req, res) {
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
       if (err) {
         return res.send("Error");
@@ -2929,13 +2950,13 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', function(req, res) {
 });
 
 app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', function(req, res) {
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     if (!Png) {
-      return res.send (emptyPNG);
+      return res.send (internals.emptyPNG);
     }
     processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
       if (err) {
-        return res.send (emptyPNG);
+        return res.send (internals.emptyPNG);
       }
       res.setHeader("Content-Type", "image/png");
       var newres = {
@@ -2948,9 +2969,9 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', function(req, res
           this.finished = true;
           if (buf) {this.write(buf);}
           if (this.fullbuf.length === 0) {
-            return res.send (emptyPNG);
+            return res.send (internals.emptyPNG);
           }
-          var png = new Png(this.fullbuf, PNG_LINE_WIDTH, Math.ceil(this.fullbuf.length/PNG_LINE_WIDTH), 'gray');
+          var png = new Png(this.fullbuf, internals.PNG_LINE_WIDTH, Math.ceil(this.fullbuf.length/internals.PNG_LINE_WIDTH), 'gray');
           var png_image = png.encodeSync();
 
           res.send(png_image);
@@ -3077,7 +3098,7 @@ app.get('/:nodeName/pcapng/:id.pcapng', function(req, res) {
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
   res.statusCode = 200;
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     writePcapNg(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
       res.end();
     });
@@ -3093,7 +3114,7 @@ app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
   res.statusCode = 200;
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     writePcap(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
       res.end();
     });
@@ -3108,36 +3129,34 @@ app.get('/:nodeName/raw/:id.png', function(req, res) {
 
   res.setHeader("Content-Type", "image/png");
 
-  var PNG_LINE_WIDTH = 256;
-
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     if (!Png) {
-      return res.send (emptyPNG);
+      return res.send (internals.emptyPNG);
     }
 
     processSessionIdAndDecode(req.params.id, 100, function(err, session, results) {
       if (err) {
-        return res.send (emptyPNG);
+        return res.send (internals.emptyPNG);
       }
       var size = 0;
       var i, ilen;
       for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
-        size += results[i].data.length + 2*PNG_LINE_WIDTH - (results[i].data.length % PNG_LINE_WIDTH);
+        size += results[i].data.length + 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
       }
       var buffer = new Buffer(size);
       var pos = 0;
       if (size === 0) {
-        return res.send (emptyPNG);
+        return res.send (internals.emptyPNG);
       }
       for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
         results[i].data.copy(buffer, pos);
         pos += results[i].data.length;
         var fillpos = pos;
-        pos += 2*PNG_LINE_WIDTH - (results[i].data.length % PNG_LINE_WIDTH);
+        pos += 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
         buffer.fill(0xff, fillpos, pos);
       }
 
-      var png = new Png(buffer, PNG_LINE_WIDTH, (size/PNG_LINE_WIDTH)-1, 'gray');
+      var png = new Png(buffer, internals.PNG_LINE_WIDTH, (size/internals.PNG_LINE_WIDTH)-1, 'gray');
       var png_image = png.encodeSync();
 
       res.send(png_image);
@@ -3154,7 +3173,7 @@ app.get('/:nodeName/raw/:id', function(req, res) {
   res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
   res.statusCode = 200;
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
       if (err) {
         return res.send("Error");
@@ -3178,7 +3197,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
 
   var options = {writeHeader: true};
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     var query = { fields: ["ro"],
                   size: 1000,
                   query: {term: {ro: req.params.id}},
@@ -3207,21 +3226,22 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
   var options = {writeHeader: true};
 
   async.eachLimit(list, 10, function(item, nextCb) {
-    isLocalView(item.fields.no, function () {
+    Db.isLocalView(item.fields.no, function () {
       // Get from our DISK
       pcapWriter(res, item._id, options, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.fields.no, function(err, viewUrl, agent) {
+      getViewUrl(item.fields.no, function(err, viewUrl, client) {
         var buffer = new Buffer(item.fields.pa*20 + item.fields.by);
         var bufpos = 0;
         var info = url.parse(viewUrl);
         info.path = Config.basePath(item.fields.no) + item.fields.no + "/" + extension + "/" + item._id + "." + extension;
-        info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
+        info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
 
         addAuth(info, req.user, item.fields.no);
-        var preq = agent.request(info, function(pres) {
+        addCaTrust(info, item.fields.no);
+        var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
             if (bufpos + chunk.length > buffer.length) {
               var tmp = new Buffer(buffer.length + chunk.length*10);
@@ -3494,7 +3514,7 @@ app.post('/updateView', checkToken, function(req, res) {
     } else {
       user.views[req.body.viewName] = {expression: req.body.viewExpression};
     }
-    
+
     Db.indexNow("users", "user", user.userId, user, function(err, info) {
       if (err) {
         console.log(err, info);
@@ -3788,7 +3808,7 @@ app.get('/:nodeName/scrub/:id', function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     pcapScrub(req, res, req.params.id, false, function(err) {
       res.end();
     });
@@ -3806,7 +3826,7 @@ app.get('/:nodeName/delete/:id', function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     pcapScrub(req, res, req.params.id, true, function(err) {
       res.end();
     });
@@ -3823,18 +3843,19 @@ function scrubList(req, res, entire, list) {
   }
 
   async.eachLimit(list, 10, function(item, nextCb) {
-    isLocalView(item.fields.no, function () {
+    Db.isLocalView(item.fields.no, function () {
       // Get from our DISK
       pcapScrub(req, res, item._id, entire, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.fields.no, function(err, viewUrl, agent) {
+      getViewUrl(item.fields.no, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
         info.path = Config.basePath(item.fields.no) + item.fields.no + (entire?"/delete/":"/scrub/") + item._id;
-        info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
+        info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         addAuth(info, req.user, item.fields.no);
-        var preq = agent.request(info, function(pres) {
+        addCaTrust(info, item.fields.no);
+        var preq = client.request(info, function(pres) {
           pres.on('end', function () {
             async.setImmediate(nextCb);
           });
@@ -3937,11 +3958,13 @@ function sendSession(req, res, id, nextCb) {
 
     var info = url.parse(sobj.url + "/receiveSession?saveId=" + req.query.saveId);
     addAuth(info, req.user, req.params.nodeName, sobj.passwordSecret);
+    addCaTrust(info, req.params.nodeName);
     info.method = "POST";
 
     var result = "";
-    var agent = info.protocol === "https:"?httpsAgent:httpAgent;
-    var preq = agent.request(info, function(pres) {
+    var client = info.protocol === "https:"?https:http;
+    info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+    var preq = client.request(info, function(pres) {
       pres.on('data', function (chunk) {
         result += chunk;
       });
@@ -3973,7 +3996,7 @@ app.get('/:nodeName/sendSession/:id', function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  isLocalView(req.params.nodeName, function () {
+  Db.isLocalView(req.params.nodeName, function () {
     sendSession(req, res, req.params.id, function(err) {
       res.end();
     });
@@ -3992,21 +4015,22 @@ function sendSessionsList(req, res, list) {
   req.query.saveId = Config.nodeName() + "-" + new Date().getTime().toString(36);
 
   async.eachLimit(list, 10, function(item, nextCb) {
-    isLocalView(item.fields.no, function () {
+    Db.isLocalView(item.fields.no, function () {
       // Get from our DISK
       sendSession(req, res, item._id, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.fields.no, function(err, viewUrl, agent) {
+      getViewUrl(item.fields.no, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
         info.path = Config.basePath(item.fields.no) + item.fields.no + "/sendSession/" + item._id + "?saveId=" + req.query.saveId;
-        info.agent = (agent === httpAgent?foreverAgent:foreverAgentSSL);
+        info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         if (req.query.tags) {
           info.path += "&tags=" + req.query.tags;
         }
         addAuth(info, req.user, item.fields.no);
-        var preq = agent.request(info, function(pres) {
+        addCaTrust(info, item.fields.no);
+        var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
           });
           pres.on('end', function () {
@@ -4228,14 +4252,12 @@ setInterval(expireCheckAll, 5*60*1000);
 
 var server;
 if (Config.isHTTPS()) {
- server = httpsAgent.createServer({key: fs.readFileSync(Config.get("keyFile")),
-                             cert: fs.readFileSync(Config.get("certFile"))}, app).listen(Config.get("viewPort", "8005"));
+ server = https.createServer({key: fs.readFileSync(Config.get("keyFile")),
+                              cert: fs.readFileSync(Config.get("certFile"))}, app).listen(Config.get("viewPort", "8005"));
 
 } else {
-  server = httpAgent.createServer(app).listen(Config.get("viewPort", "8005"));
+  server = http.createServer(app).listen(Config.get("viewPort", "8005"));
 }
-
-httpAgent.globalAgent.maxSockets = httpsAgent.globalAgent.maxSockets = httpsAgent.maxSockets = httpAgent.maxSockets = 200;
 
 if (server.address() === null) {
   console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");

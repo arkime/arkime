@@ -63,7 +63,7 @@ sub showHelp($)
     print "  optimize              - Optimize all indices\n";
     print "  expire <type> <num>   - Perform daily maintenance and optimize all indices\n";
     print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
-    print "       num              - number indexes to keep\n";
+    print "       num              - number of indexes to keep\n";
     exit 1;
 }
 ################################################################################

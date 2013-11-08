@@ -27,6 +27,10 @@ certFile=_TDIR_/etc/moloch.crt
 # Private key file to use, comment out to use http instead
 keyFile=_TDIR_/etc/moloch.key
 
+# File with trusted roots/certs. WARNING! this replaces default roots
+# Useful with self signed certs and can be set per node.
+# caTrustFile=roots.cert
+
 # S2S and Password Hash secret - Must be in default section. Since elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
 # so a malicous person can't insert a working new account.  It is also used
