@@ -1,15 +1,11 @@
 /**
  * @fileOverview jquery-autocomplete, the jQuery Autocompleter
  * @author <a href="mailto:dylan@dyve.net">Dylan Verheul</a>
+ * @version 2.4.4
  * @requires jQuery 1.6+
- *
- * Copyright 2005-2012, Dylan Verheul
- *
- * Use under either MIT, GPL or Apache 2.0. See LICENSE.txt
- *
- * Project home: https://github.com/dyve/jquery-autocomplete
+ * @license MIT | GPL | Apache 2.0, see LICENSE.txt
+ * @see https://github.com/dyve/jquery-autocomplete
  */
-
 (function($) {
     "use strict";
 
@@ -64,10 +60,11 @@
         selectFirst: false,
         selectOnly: false,
         showResult: null,
-        preventDefaultReturn: true,
-        preventDefaultTab: false,
+        preventDefaultReturn: 1,
+        preventDefaultTab: 0,
         autoFill: false,
         filterResults: true,
+        filter: true,
         sortResults: true,
         sortFunction: null,
         onItemSelect: null,
@@ -80,7 +77,8 @@
         delimiterChar: ',',
         delimiterKeyCode: 188,
         processData: null,
-        onError: null
+        onError: null,
+        enabled: true
     };
 
     /**
@@ -295,6 +293,12 @@
         this.options.maxItemsToShow = sanitizeInteger(this.options.maxItemsToShow, $.fn.autocomplete.defaults.maxItemsToShow, { min: 0 });
         this.options.maxCacheLength = sanitizeInteger(this.options.maxCacheLength, $.fn.autocomplete.defaults.maxCacheLength, { min: 1 });
         this.options.delay = sanitizeInteger(this.options.delay, $.fn.autocomplete.defaults.delay, { min: 0 });
+        if (this.options.preventDefaultReturn != 2) {
+            this.options.preventDefaultReturn = this.options.preventDefaultReturn ? 1 : 0;
+        }
+        if (this.options.preventDefaultTab != 2) {
+            this.options.preventDefaultTab = this.options.preventDefaultTab ? 1 : 0;
+        }
 
         /**
          * Init DOM elements repository
@@ -368,6 +372,10 @@
                             return false;
                         }
                     }
+                    if (self.options.preventDefaultTab === 2) {
+                        e.preventDefault();
+                        return false;
+                    }
                 break;
 
                 case 13: // return
@@ -377,6 +385,10 @@
                             e.preventDefault();
                             return false;
                         }
+                    }
+                    if (self.options.preventDefaultReturn === 2) {
+                        e.preventDefault();
+                        return false;
                     }
                 break;
 
@@ -395,14 +407,28 @@
         });
 
         /**
+         * Attach paste event listener because paste may occur much later then keydown or even without a keydown at all
+         */
+        $elem.on('paste', function() {
+            self.activate();
+        });
+
+        /**
          * Finish on blur event
          * Use a timeout because instant blur gives race conditions
          */
+        var onBlurFunction = function() {
+            self.deactivate(true);
+        }
         $elem.blur(function() {
             if (self.finishOnBlur_) {
-                self.finishTimeout_ = setTimeout(function() { self.deactivate(true); }, 200);
+                self.finishTimeout_ = setTimeout(onBlurFunction, 200);
             }
         });
+        /**
+         * Catch a race condition on form submit
+         */
+        $elem.parents('form').on('submit', onBlurFunction);
 
     };
 
@@ -504,11 +530,12 @@
         }
         return false;
     };
-    
+
     /**
      * Set timeout to activate autocompleter
      */
     $.Autocompleter.prototype.activate = function() {
+        if (!this.options.enabled) return;
         var self = this;
         if (this.keyTimeout_) {
             clearTimeout(this.keyTimeout_);
@@ -608,6 +635,8 @@
                 this.cacheFlush();
             }
         }
+
+        return this;
     };
 
     /**
@@ -656,13 +685,13 @@
     };
 
     /**
-     * Filter result
+     * Default filter for results
      * @param {Object} result
      * @param {String} filter
      * @returns {boolean} Include this result
      * @private
      */
-    $.Autocompleter.prototype.filterResult = function(result, filter) {
+    $.Autocompleter.prototype.defaultFilter = function(result, filter) {
         if (!result.value) {
             return false;
         }
@@ -681,6 +710,26 @@
             }
         }
         return true;
+    };
+
+    /**
+     * Filter result
+     * @param {Object} result
+     * @param {String} filter
+     * @returns {boolean} Include this result
+     * @private
+     */
+    $.Autocompleter.prototype.filterResult = function(result, filter) {
+        // No filter
+        if (this.options.filter === false) {
+            return true;
+        }
+        // Custom filter
+        if ($.isFunction(this.options.filter)) {
+            return this.options.filter(result, filter);
+        }
+        // Default filter
+        return this.defaultFilter(result, filter);
     };
 
     /**
@@ -742,15 +791,13 @@
 
     /**
      * Convert string before use
-     * @param s
-     * @param a
-     * @param b
+     * @param {String} s
      */
-    $.Autocompleter.prototype.beforeUseConverter = function(s, a, b) {
-        s = this.getValue();
+    $.Autocompleter.prototype.beforeUseConverter = function(s) {
+        s = this.getValue(s);
         var converter = this.options.beforeUseConverter;
         if ($.isFunction(converter)) {
-            s = converter(s, a, b);
+            s = converter(s);
         }
         return s;
     };
@@ -775,7 +822,8 @@
      */
     $.Autocompleter.prototype.createItemFromResult = function(result) {
         var self = this;
-        var $li = $('<li>' + this.showResult(result.value, result.data) + '</li>');
+        var $li = $('<li/>');
+        $li.html(this.showResult(result.value, result.data));
         $li.data({value: result.value, data: result.data})
             .click(function() {
                 self.selectItem($li);
@@ -847,7 +895,7 @@
         if ($.isFunction(this.options.showResult)) {
             return this.options.showResult(value, data);
         } else {
-            return value;
+            return $('<p></p>').text(value).html();
         }
     };
 
@@ -950,7 +998,7 @@
         this.setCaret(d.start + displayValue.length + extraCaretPos);
         this.callHook('onItemSelect', { value: value, data: data });
         this.deactivate(true);
-        elem.focus();    
+        elem.focus();
     };
 
     $.Autocompleter.prototype.displayValue = function(value, data) {
@@ -1015,35 +1063,39 @@
      * Get caret position
      */
     $.Autocompleter.prototype.getCaret = function() {
-        var elem = this.dom.$elem;
-        if ($.browser.msie) {
-            // ie
-            var selection = document.selection;
-            if (elem[0].tagName.toLowerCase() != 'textarea') {
-                var val = elem.val();
-                var range = selection.createRange().duplicate();
+        var $elem = this.dom.$elem;
+        var elem = $elem[0];
+        var val, selection, range, start, end, stored_range;
+        if (elem.createTextRange) { // IE
+            selection = document.selection;
+            if (elem.tagName.toLowerCase() != 'textarea') {
+                val = $elem.val();
+                range = selection.createRange().duplicate();
                 range.moveEnd('character', val.length);
-                var s = ( range.text == '' ? val.length : val.lastIndexOf(range.text) );
+                if (range.text === '') {
+                    start = val.length;
+                } else {
+                    start = val.lastIndexOf(range.text);
+                }
                 range = selection.createRange().duplicate();
                 range.moveStart('character', -val.length);
-                var e = range.text.length;
+                end = range.text.length;
             } else {
-                var range = selection.createRange();
-                var stored_range = range.duplicate();
-                stored_range.moveToElementText(elem[0]);
+                range = selection.createRange();
+                stored_range = range.duplicate();
+                stored_range.moveToElementText(elem);
                 stored_range.setEndPoint('EndToEnd', range);
-                var s = stored_range.text.length - range.text.length;
-                var e = s + range.text.length;
+                start = stored_range.text.length - range.text.length;
+                end = start + range.text.length;
             }
         } else {
-            // ff, chrome, safari
-            var s = elem[0].selectionStart;
-            var e = elem[0].selectionEnd;
+            start = $elem[0].selectionStart;
+            end = $elem[0].selectionEnd;
         }
         return {
-            start: s,
-            end: e
-        };        
+            start: start,
+            end: end
+        };
     };
 
     /**
@@ -1066,13 +1118,12 @@
      * Get the value currently being autocompleted
      * @param {String} value
      */
-    $.Autocompleter.prototype.getValue = function() {
-        var val = this.dom.$elem.val();
+    $.Autocompleter.prototype.getValue = function(value) {
         if ( this.options.useDelimiter ) {
             var d = this.getDelimiterOffsets();
-            return val.substring(d.start, d.end).trim();
+            return value.substring(d.start, d.end).trim();
         } else {
-            return val;
+            return value;
         }
     };
 
