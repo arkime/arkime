@@ -55,7 +55,7 @@ block content
     $(document).ready(function() {
       var initialParams = handleUrlParams();
 
-      $('#sessions tbody td.infoColumn img').live('click', function () {
+      $(document).on('click', '#sessions tbody td.infoColumn img', function () {
         var nTr = $(this).closest("tr")[0];
         var rowData = sessionsTable.fnGetData(nTr);
         if ( this.src.match('up-arrow') ) {
@@ -109,7 +109,7 @@ block content
         } );
       }
 
-      $('#sessions tbody td.sessionDetails img').live('click', function () {
+      $(document).on('click', '#sessions tbody td.sessionDetails img', function () {
         var nTr = $(this).closest("tr")[0];
         if ( this.src.match('details_close') ) {
           this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";

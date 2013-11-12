@@ -919,7 +919,7 @@ function handleUrlParams() {
       $("#stopDate").val(dateString(new Date()/1000, ' '));
     }
   } else {
-    $("#date").val("");
+    $("#date").val(1);
   }
 
   if (urlParams.expression) {

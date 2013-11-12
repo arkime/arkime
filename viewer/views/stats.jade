@@ -436,7 +436,7 @@ block content
         }
       } );
 
-      $('#stats tbody td img').live('click', function () {
+      $(document).on('click', '#stats tbody td img', function () {
         var nTr = this.parentNode.parentNode;
         var aData = statsTable.fnGetData( nTr );
         if ( this.src.match('details_close') )

@@ -46,7 +46,7 @@ block content
     var doPushState = 1;
     var refreshInterval;
 
-    $("#refresh").live("change", function () {
+    $(document).on('change', "#refresh", function () {
       if (refreshInterval) {
         window.clearInterval(refreshInterval);
         refreshInterval = undefined;
@@ -135,6 +135,12 @@ block content
             $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords || 0) + " entries filtered from " + numberWithCommas(json.iTotalRecords || 0) + " total entries");
 
             $('#sessionGraphs').empty();
+            if ($("#sort").val() === "name") {
+              json.items = json.items.sort(function (a, b) {
+                return a.name.localeCompare(b.name);
+              });
+            }
+
             json.items.forEach(function(item, i) {
               var name = $('<div />').text(item.name).html();
               $('#sessionGraphs').append("<div name=\"" +name + "\" count= " + item.count + ">" +

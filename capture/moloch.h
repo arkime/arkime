@@ -373,9 +373,9 @@ typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
 
 /******************************************************************************/
 #define LOG(...) do { \
-    time_t t = time(NULL); \
+    time_t _t = time(NULL); \
     printf("%15.15s %s:%d %s(): ",\
-        ctime(&t)+4, __FILE__,\
+        ctime(&_t)+4, __FILE__,\
         __LINE__, __FUNCTION__); \
     printf(__VA_ARGS__); \
     printf("\n"); \

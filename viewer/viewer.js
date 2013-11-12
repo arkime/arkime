@@ -27,7 +27,6 @@ var MIN_DB_VERSION = 15;
 try {
 var Config         = require('./config.js'),
     express        = require('express'),
-    connectTimeout = require('connect-timeout'),
     stylus         = require('stylus'),
     util           = require('util'),
     fs             = require('fs-ext'),
@@ -71,6 +70,7 @@ var internals = {
   httpAgent:   new KAA({maxSockets: 20}),
   httpsAgent:  new KAA.Secure({maxSockets: 20}),
   previousNodeStats: [],
+  caTrustCerts: {},
 
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
@@ -114,11 +114,11 @@ app.configure(function() {
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
   app.use(function(req, res, next) {
+    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
     req.url = req.url.replace(Config.basePath(), "/");
     return next();
   });
   app.use(express.bodyParser({uploadDir: Config.get("pcapDir")}));
-  app.use(connectTimeout({ time: 60*60*1000 }));
   app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(express.compress());
   app.use(express.methodOverride());
@@ -234,13 +234,161 @@ Db.initialize({host : internals.escInfo[0],
                agent: internals.esHttpAgent,
                dontMapTags: Config.get("multiES", false)});
 
+Db.nodesStats({fs: 1}, function (err, info) {
+  info.nodes.timestamp = new Date().getTime();
+  internals.previousNodeStats.push(info.nodes);
+});
 //////////////////////////////////////////////////////////////////////////////////
-//// Pages
+//// Requests
 //////////////////////////////////////////////////////////////////////////////////
-app.get("/", function(req, res) {
+
+function addAuth(info, user, node, secret) {
+    if (!info.headers) {
+        info.headers = {};
+    }
+    info.headers['x-moloch-auth'] = Config.obj2auth({date: Date.now(),
+                                                     user: user.userId,
+                                                     node: node,
+                                                     path: info.path
+                                                    }, secret);
+}
+
+function addCaTrust(info, node) {
+  if (!Config.isHTTPS(node)) {
+    return;
+  }
+
+  if ((internals.caTrustCerts[node] !== undefined) && (internals.caTrustCerts[node].length > 0)) {
+    info.ca = internals.caTrustCerts[node];
+    return;
+  }
+
+  var caTrustFile = Config.getFull(node, "caTrustFile");
+
+  if (caTrustFile && caTrustFile.length > 0) {
+    var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
+    caTrustFileLines = caTrustFileLines.split("\n");
+
+    var foundCert = [],
+        line;
+
+    internals.caTrustCerts[node] = [];
+
+    for (var i = 0, ilen = caTrustFileLines.length; i < ilen; i++) {
+      line = caTrustFileLines[i];
+      if (line.length === 0) {
+        continue;
+      }
+      foundCert.push(line);
+      if (line.match(/-END CERTIFICATE-/)) {
+        internals.caTrustCerts[node].push(foundCert.join("\n"));
+        foundCert = [];
+      }
+    }
+
+    if (internals.caTrustCerts[node].length > 0) {
+      info.ca = internals.caTrustCerts[node];
+      return;
+    }
+  }
+}
+
+function noCache(req, res, ct) {
+  res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+  if (ct) {
+    res.setHeader("Content-Type", ct);
+  }
+}
+
+function getViewUrl(node, cb) {
+  var url = Config.getFull(node, "viewUrl");
+  if (url) {
+    cb(null, url, url.slice(0, 5) === "https"?https:http);
+    return;
+  }
+
+  Db.molochNodeStatsCache(node, function(err, stat) {
+    if (err) {
+      return cb(err);
+    }
+
+    if (Config.isHTTPS(node)) {
+      cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), https);
+    } else {
+      cb(null, "http://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), http);
+    }
+  });
+}
+
+function proxyRequest (req, res) {
+  noCache(req, res);
+
+  getViewUrl(req.params.nodeName, function(err, viewUrl, client) {
+    if (err) {
+      console.log(err);
+      res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
+    }
+    var info = url.parse(viewUrl);
+    info.path = req.url;
+    info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+    info.rejectUnauthorized = true;
+    addAuth(info, req.user, req.params.nodeName);
+    addCaTrust(info, req.params.nodeName);
+
+    var preq = client.request(info, function(pres) {
+      pres.on('data', function (chunk) {
+        res.write(chunk);
+      });
+      pres.on('end', function () {
+        res.end();
+      });
+    });
+
+    preq.on('error', function (e) {
+      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
+      res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + os.hostname());
+    });
+    preq.end();
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Middleware
+//////////////////////////////////////////////////////////////////////////////////
+function checkProxyRequest(req, res, next) {
+  Db.isLocalView(req.params.nodeName, function () {
+    return next();
+  },
+  function () {
+    return proxyRequest(req, res);
+  });
+}
+
+function checkToken(req, res, next) {
+  if (!req.body.token) {
+    return res.send(JSON.stringify({success: false, text: "Missing token"}));
+  }
+
+  req.token = Config.auth2obj(req.body.token);
+  if (Math.abs(Date.now() - req.token.date) > 600000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
+    console.trace("bad token", req.token);
+    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+  }
+
+  return next();
+}
+
+function checkWebEnabled(req, res, next) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
   }
+
+  return next();
+}
+//////////////////////////////////////////////////////////////////////////////////
+//// Pages
+//////////////////////////////////////////////////////////////////////////////////
+app.get("/", checkWebEnabled, function(req, res) {
   res.render('index', {
     user: req.user,
     title: 'Home',
@@ -249,11 +397,7 @@ app.get("/", function(req, res) {
   });
 });
 
-app.get("/spiview", function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
-
+app.get("/spiview", checkWebEnabled, function(req, res) {
   res.render('spiview', {
     user: req.user,
     title: 'SPI View',
@@ -265,10 +409,7 @@ app.get("/spiview", function(req, res) {
   });
 });
 
-app.get("/spigraph", function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get("/spigraph", checkWebEnabled, function(req, res) {
   res.render('spigraph', {
     user: req.user,
     title: 'SPI Graph',
@@ -277,10 +418,7 @@ app.get("/spigraph", function(req, res) {
   });
 });
 
-app.get("/connections", function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get("/connections", checkWebEnabled, function(req, res) {
   res.render('connections', {
     user: req.user,
     title: 'Connections',
@@ -289,10 +427,7 @@ app.get("/connections", function(req, res) {
   });
 });
 
-app.get("/upload", function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get("/upload", checkWebEnabled, function(req, res) {
   res.render('upload', {
     user: req.user,
     title: 'Upload',
@@ -301,10 +436,7 @@ app.get("/upload", function(req, res) {
   });
 });
 
-app.get('/about', function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get('/about', checkWebEnabled, function(req, res) {
   res.render('about', {
     user: req.user,
     title: 'About',
@@ -312,10 +444,7 @@ app.get('/about', function(req, res) {
   });
 });
 
-app.get('/files', function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get('/files', checkWebEnabled, function(req, res) {
   res.render('files', {
     user: req.user,
     title: 'Files',
@@ -323,10 +452,7 @@ app.get('/files', function(req, res) {
   });
 });
 
-app.get('/users', function(req, res) {
-  if (!req.user.webEnabled || !req.user.createEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get('/users', checkWebEnabled, function(req, res) {
   res.render('users', {
     user: req.user,
     title: 'Users',
@@ -335,7 +461,7 @@ app.get('/users', function(req, res) {
   });
 });
 
-app.get('/settings', function(req, res) {
+app.get('/settings', checkWebEnabled, function(req, res) {
   function render(user, cp) {
     if (user.settings === undefined) {user.settings = {};}
     res.render('settings', {
@@ -346,10 +472,6 @@ app.get('/settings', function(req, res) {
       title: 'Settings',
       titleLink: 'settingsLink'
     });
-  }
-
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
   }
 
   if (Config.get("disableChangePassword", false)) {
@@ -372,11 +494,7 @@ app.get('/settings', function(req, res) {
   }
 });
 
-app.get('/stats', function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
-
+app.get('/stats', checkWebEnabled, function(req, res) {
   var query = {size: 100};
 
   Db.search('stats', 'stat', query, function(err, data) {
@@ -395,10 +513,7 @@ app.get('/stats', function(req, res) {
   });
 });
 
-app.get('/:nodeName/statsDetail', function(req, res) {
-  if (!req.user.webEnabled) {
-    return res.send("Moloch Permision Denied");
-  }
+app.get('/:nodeName/statsDetail', checkWebEnabled, function(req, res) {
   res.render('statsDetail', {
     user: req.user,
     nodeName: req.params.nodeName
@@ -740,7 +855,7 @@ function lookupQueryItems(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),100000):100);
+  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),2000000):100);
   var i;
 
 
@@ -908,7 +1023,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   });
 }
 
-function sessionsListFromQuery(req, fields, cb) {
+function sessionsListFromQuery(req, res, fields, cb) {
   if (req.query.segments && fields.indexOf("ro") === -1) {
     fields.push("ro");
   }
@@ -916,6 +1031,10 @@ function sessionsListFromQuery(req, fields, cb) {
   buildSessionQuery(req, function(err, query, indices) {
     query.fields = fields;
     Db.searchPrimary(indices, 'session', query, function(err, result) {
+      if (err || result.error) {
+          console.log("ERROR - Could not fetch list of sessions.  Err: ", err,  " Result: ", result, "query:", query);
+          return res.send("Could not fetch list of sessions.  Err: " + err + " Result: " + result);
+      }
       var list = result.hits.hits;
       if (req.query.segments) {
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
@@ -932,7 +1051,7 @@ function sessionsListFromIds(req, ids, fields, cb) {
   var list = [];
 
   async.eachLimit(ids, 10, function(id, nextCb) {
-    Db.getWithOptions('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, {fields: fields.join(",")}, function(err, session) {
+    Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: fields.join(",")}, function(err, session) {
       list.push(session);
       nextCb(null);
     });
@@ -953,17 +1072,6 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
-
-function noCache(req, res) {
-  res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-}
-
-Db.nodesStats({fs: 1}, function (err, info) {
-  info.nodes.timestamp = new Date().getTime();
-  internals.previousNodeStats.push(info.nodes);
-});
-
-
 app.get('/esstats.json', function(req, res) {
   var stats = [];
   var r;
@@ -972,9 +1080,7 @@ app.get('/esstats.json', function(req, res) {
     nodes: function(nodesCb) {
       Db.nodesStats({jvm: 1, process: 1, fs: 1, search: 1, os: 1}, nodesCb);
     },
-    health: function (healthCb) {
-      Db.healthCache(healthCb);
-    }
+    health: Db.healthCache
   },
   function(err, results) {
     if (err || !results.nodes) {
@@ -1062,10 +1168,11 @@ app.get('/stats.json', function(req, res) {
         } else {
           var results = {total: result.hits.total, results: []};
           for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            result.hits.hits[i].fields.id     = result.hits.hits[i]._id;
-            result.hits.hits[i].fields.memory = result.hits.hits[i].fields.memory || 0;
-            result.hits.hits[i].fields.diskQueue = result.hits.hits[i].fields.diskQueue || 0;
-            results.results.push(result.hits.hits[i].fields);
+            var fields = result.hits.hits[i].fields;
+            fields.id        = result.hits.hits[i]._id;
+            fields.memory    = fields.memory || 0;
+            fields.diskQueue = fields.diskQueue || 0;
+            results.results.push(fields);
           }
           cb(null, results);
         }
@@ -1136,8 +1243,9 @@ app.get('/dstats.json', function(req, res) {
 
     if (result && result.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-        var pos = Math.floor((result.hits.hits[i].fields.currentTime - req.query.start)/req.query.step);
-        data[pos] = mult * (result.hits.hits[i].fields[req.query.name] || 0);
+        var fields = result.hits.hits[i].fields;
+        var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
+        data[pos] = mult * (fields[req.query.name] || 0);
       }
     }
     res.send(data);
@@ -1182,11 +1290,12 @@ app.get('/files.json', function(req, res) {
 
         var results = {total: result.hits.total, results: []};
         for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          if (result.hits.hits[i].fields.locked === undefined) {
-            result.hits.hits[i].fields.locked = 0;
+          var fields = result.hits.hits[i].fields;
+          if (fields.locked === undefined) {
+            fields.locked = 0;
           }
-          result.hits.hits[i].fields.id = result.hits.hits[i]._id;
-          results.results.push(result.hits.hits[i].fields);
+          fields.id = result.hits.hits[i]._id;
+          results.results.push(fields);
         }
 
         async.forEach(results.results, function (item, cb) {
@@ -1233,10 +1342,10 @@ app.get('/files.json', function(req, res) {
 });
 
 app.post('/users.json', function(req, res) {
-  var fields = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
+  var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
-  var query = {fields: fields,
+  var query = {fields: columns,
                from: req.body.iDisplayStart || 0,
                size: limit
               };
@@ -1251,13 +1360,14 @@ app.post('/users.json', function(req, res) {
         } else {
           var results = {total: result.hits.total, results: []};
           for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            result.hits.hits[i].fields.id = result.hits.hits[i]._id;
-            result.hits.hits[i].fields.expression = safeStr(result.hits.hits[i].fields.expression || "");
-            result.hits.hits[i].fields.headerAuthEnabled = result.hits.hits[i].fields.headerAuthEnabled || false;
-            result.hits.hits[i].fields.emailSearch = result.hits.hits[i].fields.emailSearch || false;
-            result.hits.hits[i].fields.removeEnabled = result.hits.hits[i].fields.removeEnabled || false;
-            result.hits.hits[i].fields.userName = safeStr(result.hits.hits[i].fields.userName || "");
-            results.results.push(result.hits.hits[i].fields);
+            var fields = result.hits.hits[i].fields;
+            fields.id = result.hits.hits[i]._id;
+            fields.expression = safeStr(fields.expression || "");
+            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+            fields.emailSearch = fields.emailSearch || false;
+            fields.removeEnabled = fields.removeEnabled || false;
+            fields.userName = safeStr(fields.userName || "");
+            results.results.push(fields);
           }
           cb(null, results);
         }
@@ -1380,9 +1490,7 @@ app.get('/sessions.json', function(req, res) {
       total: function (totalCb) {
         Db.numberOfDocuments('sessions-*', totalCb);
       },
-      health: function (healthCb) {
-        Db.healthCache(healthCb);
-      }
+      health: Db.healthCache
     },
     function(err, results) {
       var r = {sEcho: req.query.sEcho,
@@ -1597,9 +1705,7 @@ app.get('/spiview.json', function(req, res) {
       total: function (totalCb) {
         Db.numberOfDocuments('sessions-*', totalCb);
       },
-      health: function (healthCb) {
-        Db.healthCache(healthCb);
-      }
+      health: Db.healthCache
     },
     function(err, results) {
       function tags(container, field, doneCb, offset) {
@@ -1711,7 +1817,7 @@ function buildConnections(req, res, cb) {
     connects[n].db += f.db;
     connects[n].pa += f.pa;
     connects[n].no[f.no] = 1;
-    cb();
+    return async.setImmediate(cb);
   }
 
   function processDst(vsrc, adst, f, cb) {
@@ -1735,7 +1841,7 @@ function buildConnections(req, res, cb) {
         });
       }
     }, function (err) {
-      cb();
+      return async.setImmediate(cb);
     });
   }
 
@@ -1877,7 +1983,7 @@ function csvListWriter(req, res, list, pcapWriter, extension) {
 }
 
 app.get(/\/sessions.csv.*/, function(req, res) {
-  res.setHeader("Content-Type", "text/csv");
+  noCache(req, res, "text/csv");
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
   if (req.query.ids) {
@@ -1887,7 +1993,7 @@ app.get(/\/sessions.csv.*/, function(req, res) {
       csvListWriter(req, res, list);
     });
   } else {
-    sessionsListFromQuery(req, fields, function(err, list) {
+    sessionsListFromQuery(req, res, fields, function(err, list) {
       csvListWriter(req, res, list);
     });
   }
@@ -2067,7 +2173,7 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     options  = {fields: "no,ps"};
   }
 
-  Db.getWithOptions('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, options, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
     var fields;
 
     if (err || !session.exists) {
@@ -2816,172 +2922,52 @@ function localSessionDetail(req, res) {
   req.query.needimage === "true"?10000:400, 10);
 }
 
-function getViewUrl(node, cb) {
-  var url = Config.getFull(node, "viewUrl");
-  if (url) {
-    cb(null, url, url.slice(0, 5) === "https"?https:http);
-    return;
-  }
-
-  Db.molochNodeStatsCache(node, function(err, stat) {
-    if (err) {
-      return cb(err);
-    }
-
-    if (Config.isHTTPS(node)) {
-      cb(null, "https://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), https);
-    } else {
-      cb(null, "http://" + stat.hostname + ":" + Config.getFull(node, "viewPort", "8005"), http);
-    }
-  });
-}
-
-function addAuth(info, user, node, secret) {
-    if (!info.headers) {
-        info.headers = {};
-    }
-    info.headers['x-moloch-auth'] = Config.obj2auth({date: Date.now(),
-                                                     user: user.userId,
-                                                     node: node,
-                                                     path: info.path
-                                                    }, secret);
-}
-
-var caTrustCerts = {};
-function addCaTrust(info, node) {
-  if (!Config.isHTTPS(node)) {
-    return;
-  }
-
-  if ((caTrustCerts[node] !== undefined) && (caTrustCerts[node].length > 0)) {
-    info.ca = caTrustCerts[node];
-    return;
-  }
-
-  var caTrustFile = Config.getFull(node, "caTrustFile");
-
-  if (caTrustFile && caTrustFile.length > 0) {
-    var caTrustFileLines = fs.readFileSync(caTrustFile, 'utf8');
-    caTrustFileLines = caTrustFileLines.split("\n");
-
-    var foundCert = [],
-        line;
-
-    caTrustCerts[node] = [];
-
-    for (var i = 0; i < caTrustFileLines.length; i++) {
-      line = caTrustFileLines[i];
-      if (line.length === 0) {
-        continue;
-      }
-      foundCert.push(line);
-      if (line.match(/-END CERTIFICATE-/)) {
-        caTrustCerts[node].push(foundCert.join("\n"));
-        foundCert = [];
-      }
-    }
-
-    if (caTrustCerts[node].length > 0) {
-      info.ca = caTrustCerts[node];
-      return;
-    }
-  }
-}
-
-function proxyRequest (req, res) {
+app.get('/:nodeName/:id/sessionDetail', checkProxyRequest, function(req, res) {
   noCache(req, res);
-
-  getViewUrl(req.params.nodeName, function(err, viewUrl, client) {
-    if (err) {
-      console.log(err);
-      res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
-    }
-    var info = url.parse(viewUrl);
-    info.path = req.url;
-    info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-    info.rejectUnauthorized = true;
-    addAuth(info, req.user, req.params.nodeName);
-    addCaTrust(info, req.params.nodeName);
-
-    var preq = client.request(info, function(pres) {
-      pres.on('data', function (chunk) {
-        res.write(chunk);
-      });
-      pres.on('end', function () {
-        res.end();
-      });
-    });
-
-    preq.on('error', function (e) {
-      console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
-      res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + os.hostname());
-    });
-    preq.end();
-  });
-}
-
-app.get('/:nodeName/:id/sessionDetail', function(req, res) {
-  noCache(req, res);
-
-  Db.isLocalView(req.params.nodeName, function () {
-    localSessionDetail(req, res);
-  },
-  function () {
-    proxyRequest(req, res);
-  });
+  localSessionDetail(req, res);
 });
 
 
-app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', function(req, res) {
-  Db.isLocalView(req.params.nodeName, function () {
-    processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
-      if (err) {
-        return res.send("Error");
-      }
-      if (req.params.bodyType === "file") {
-        res.setHeader("Content-Type", "application/force-download");
-      }
-      return imageDecode(req, res, session, results, +req.params.bodyNum);
-    });
-  },
-  function () {
-    proxyRequest(req, res);
+app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, function(req, res) {
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) {
+      return res.send("Error");
+    }
+    if (req.params.bodyType === "file") {
+      res.setHeader("Content-Type", "application/force-download");
+    }
+    return imageDecode(req, res, session, results, +req.params.bodyNum);
   });
 });
 
-app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', function(req, res) {
-  Db.isLocalView(req.params.nodeName, function () {
-    if (!Png) {
+app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest, function(req, res) {
+  if (!Png) {
+    return res.send (internals.emptyPNG);
+  }
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) {
       return res.send (internals.emptyPNG);
     }
-    processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
-      if (err) {
-        return res.send (internals.emptyPNG);
-      }
-      res.setHeader("Content-Type", "image/png");
-      var newres = {
-        finished: false,
-        fullbuf: new Buffer(0),
-        write: function(buf) {
-          this.fullbuf = Buffer.concat([this.fullbuf, buf]);
-        },
-        end: function(buf) {
-          this.finished = true;
-          if (buf) {this.write(buf);}
-          if (this.fullbuf.length === 0) {
-            return res.send (internals.emptyPNG);
-          }
-          var png = new Png(this.fullbuf, internals.PNG_LINE_WIDTH, Math.ceil(this.fullbuf.length/internals.PNG_LINE_WIDTH), 'gray');
-          var png_image = png.encodeSync();
-
-          res.send(png_image);
+    res.setHeader("Content-Type", "image/png");
+    var newres = {
+      finished: false,
+      fullbuf: new Buffer(0),
+      write: function(buf) {
+        this.fullbuf = Buffer.concat([this.fullbuf, buf]);
+      },
+      end: function(buf) {
+        this.finished = true;
+        if (buf) {this.write(buf);}
+        if (this.fullbuf.length === 0) {
+          return res.send (internals.emptyPNG);
         }
-      };
-      return imageDecode(req, newres, session, results, +req.params.bodyNum);
-    });
-  },
-  function () {
-    proxyRequest(req, res);
+        var png = new Png(this.fullbuf, internals.PNG_LINE_WIDTH, Math.ceil(this.fullbuf.length/internals.PNG_LINE_WIDTH), 'gray');
+        var png_image = png.encodeSync();
+
+        res.send(png_image);
+      }
+    };
+    return imageDecode(req, newres, session, results, +req.params.bodyNum);
   });
 });
 
@@ -3092,130 +3078,90 @@ function writePcapNg(res, id, options, doneCb) {
   });
 }
 
-app.get('/:nodeName/pcapng/:id.pcapng', function(req, res) {
-  noCache(req, res);
-
-  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
-  res.statusCode = 200;
-
-  Db.isLocalView(req.params.nodeName, function () {
-    writePcapNg(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
-      res.end();
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+app.get('/:nodeName/pcapng/:id.pcapng', checkProxyRequest, function(req, res) {
+  noCache(req, res, "application/vnd.tcpdump.pcap");
+  writePcapNg(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
+    res.end();
   });
 });
 
-app.get('/:nodeName/pcap/:id.pcap', function(req, res) {
-  noCache(req, res);
+app.get('/:nodeName/pcap/:id.pcap', checkProxyRequest, function(req, res) {
+  noCache(req, res, "application/vnd.tcpdump.pcap");
 
-  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
-  res.statusCode = 200;
-
-  Db.isLocalView(req.params.nodeName, function () {
-    writePcap(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
-      res.end();
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+  writePcap(res, req.params.id, {writeHeader: !req.query || !req.query.noHeader || req.query.noHeader !== "true"}, function () {
+    res.end();
   });
 });
 
-app.get('/:nodeName/raw/:id.png', function(req, res) {
-  noCache(req, res);
+app.get('/:nodeName/raw/:id.png', checkProxyRequest, function(req, res) {
+  noCache(req, res, "image/png");
 
-  res.setHeader("Content-Type", "image/png");
+  if (!Png) {
+    return res.send (internals.emptyPNG);
+  }
 
-  Db.isLocalView(req.params.nodeName, function () {
-    if (!Png) {
+  processSessionIdAndDecode(req.params.id, 100, function(err, session, results) {
+    if (err) {
       return res.send (internals.emptyPNG);
     }
+    var size = 0;
+    var i, ilen;
+    for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      size += results[i].data.length + 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
+    }
+    var buffer = new Buffer(size);
+    var pos = 0;
+    if (size === 0) {
+      return res.send (internals.emptyPNG);
+    }
+    for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      results[i].data.copy(buffer, pos);
+      pos += results[i].data.length;
+      var fillpos = pos;
+      pos += 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
+      buffer.fill(0xff, fillpos, pos);
+    }
 
-    processSessionIdAndDecode(req.params.id, 100, function(err, session, results) {
-      if (err) {
-        return res.send (internals.emptyPNG);
-      }
-      var size = 0;
-      var i, ilen;
-      for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
-        size += results[i].data.length + 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
-      }
-      var buffer = new Buffer(size);
-      var pos = 0;
-      if (size === 0) {
-        return res.send (internals.emptyPNG);
-      }
-      for (i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
-        results[i].data.copy(buffer, pos);
-        pos += results[i].data.length;
-        var fillpos = pos;
-        pos += 2*internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
-        buffer.fill(0xff, fillpos, pos);
-      }
+    var png = new Png(buffer, internals.PNG_LINE_WIDTH, (size/internals.PNG_LINE_WIDTH)-1, 'gray');
+    var png_image = png.encodeSync();
 
-      var png = new Png(buffer, internals.PNG_LINE_WIDTH, (size/internals.PNG_LINE_WIDTH)-1, 'gray');
-      var png_image = png.encodeSync();
-
-      res.send(png_image);
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+    res.send(png_image);
   });
 });
 
-app.get('/:nodeName/raw/:id', function(req, res) {
-  noCache(req, res);
+app.get('/:nodeName/raw/:id', checkProxyRequest, function(req, res) {
+  noCache(req, res, "application/vnd.tcpdump.pcap");
 
-  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
-  res.statusCode = 200;
-
-  Db.isLocalView(req.params.nodeName, function () {
-    processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
-      if (err) {
-        return res.send("Error");
-      }
-      for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
-        res.write(results[i].data);
-      }
-      res.end();
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+    if (err) {
+      return res.send("Error");
+    }
+    for (var i = (req.query.type !== 'dst'?0:1), ilen = results.length; i < ilen; i+=2) {
+      res.write(results[i].data);
+    }
+    res.end();
   });
 });
 
-app.get('/:nodeName/entirePcap/:id.pcap', function(req, res) {
-  noCache(req, res);
-
-  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
-  res.statusCode = 200;
+app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) {
+  noCache(req, res, "application/vnd.tcpdump.pcap");
 
   var options = {writeHeader: true};
 
-  Db.isLocalView(req.params.nodeName, function () {
-    var query = { fields: ["ro"],
-                  size: 1000,
-                  query: {term: {ro: req.params.id}},
-                  sort: { lp: { order: 'asc' } }
-                };
+  var query = { fields: ["ro"],
+                size: 1000,
+                query: {term: {ro: req.params.id}},
+                sort: { lp: { order: 'asc' } }
+              };
 
-    console.log(JSON.stringify(query));
+  console.log(JSON.stringify(query));
 
-    Db.searchPrimary('sessions*', 'session', query, function(err, data) {
-      async.forEachSeries(data.hits.hits, function(item, nextCb) {
-        writePcap(res, item._id, options, nextCb);
-      }, function (err) {
-        res.end();
-      });
+  Db.searchPrimary('sessions*', 'session', query, function(err, data) {
+    async.forEachSeries(data.hits.hits, function(item, nextCb) {
+      writePcap(res, item._id, options, nextCb);
+    }, function (err) {
+      res.end();
     });
-  },
-  function() {
-    proxyRequest(req, res);
   });
 });
 
@@ -3275,10 +3221,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
 }
 
 function sessionsPcap(req, res, pcapWriter, extension) {
-  noCache(req, res);
-
-  res.setHeader("Content-Type", "application/vnd.tcpdump.pcap");
-  res.statusCode = 200;
+  noCache(req, res, "application/vnd.tcpdump.pcap");
 
   if (req.query.ids) {
     var ids = req.query.ids.split(",");
@@ -3287,7 +3230,7 @@ function sessionsPcap(req, res, pcapWriter, extension) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   } else {
-    sessionsListFromQuery(req, ["lp", "no", "by", "pa", "ro"], function(err, list) {
+    sessionsListFromQuery(req, res, ["lp", "no", "by", "pa", "ro"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   }
@@ -3301,20 +3244,6 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
   return sessionsPcap(req, res, writePcap, "pcap");
 });
 
-
-function checkToken(req, res, next) {
-  if (!req.body.token) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
-  }
-
-  req.token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - req.token.date) > 600000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
-    console.trace("bad token", req.token);
-    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
-  }
-
-  return next();
-}
 
 app.post('/deleteUser/:userId', checkToken, function(req, res) {
   if (!req.user.createEnabled) {
@@ -3580,7 +3509,7 @@ function addTagsList(res, allTagIds, list) {
         ta: tagIds
       }
     };
-    Db.update('sessions-' + session._id.substr(0,session._id.indexOf('-')), 'session', session._id, document, function(err, data) {
+    Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
       nextCb(null);
     });
   }, function (err) {
@@ -3610,7 +3539,7 @@ function removeTagsList(res, allTagIds, list) {
         ta: tagIds
       }
     };
-    Db.update('sessions-' + session._id.substr(0,session._id.indexOf('-')), 'session', session._id, document, function(err, data) {
+    Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
       if (err) {
         console.log(err);
       }
@@ -3655,7 +3584,7 @@ app.post('/addTags', function(req, res) {
         addTagsList(res, tagIds, list);
       });
     } else {
-      sessionsListFromQuery(req, ["ta"], function(err, list) {
+      sessionsListFromQuery(req, res, ["ta"], function(err, list) {
         addTagsList(res, tagIds, list);
       });
     }
@@ -3683,7 +3612,7 @@ app.post('/removeTags', function(req, res) {
         removeTagsList(res, tagIds, list);
       });
     } else {
-      sessionsListFromQuery(req, ["ta"], function(err, list) {
+      sessionsListFromQuery(req, res, ["ta"], function(err, list) {
         removeTagsList(res, tagIds, list);
       });
     }
@@ -3730,7 +3659,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions('sessions-' + id.substr(0,id.indexOf('-')), 'session', id, {fields: "no,pr,ps"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: "no,pr,ps"}, function(err, session) {
     var fields = session.fields;
 
     /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
@@ -3780,7 +3709,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     },
     function (pcapErr, results) {
       if (entire) {
-        Db.deleteDocument('sessions-' + session._id.substr(0,session._id.indexOf('-')), 'session', session._id, function(err, data) {
+        Db.deleteDocument(Db.id2Index(session._id), 'session', session._id, function(err, data) {
           endCb(pcapErr, fields);
         });
       } else {
@@ -3792,7 +3721,7 @@ function pcapScrub(req, res, id, entire, endCb) {
             at: new Date().getTime()
           }
         };
-        Db.update('sessions-' + session._id.substr(0,session._id.indexOf('-')), 'session', session._id, document, function(err, data) {
+        Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
           endCb(pcapErr, fields);
         });
       }
@@ -3800,7 +3729,7 @@ function pcapScrub(req, res, id, entire, endCb) {
   });
 }
 
-app.get('/:nodeName/scrub/:id', function(req, res) {
+app.get('/:nodeName/scrub/:id', checkProxyRequest, function(req, res) {
   if (!req.user.removeEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
   }
@@ -3808,17 +3737,12 @@ app.get('/:nodeName/scrub/:id', function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  Db.isLocalView(req.params.nodeName, function () {
-    pcapScrub(req, res, req.params.id, false, function(err) {
-      res.end();
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+  pcapScrub(req, res, req.params.id, false, function(err) {
+    res.end();
   });
 });
 
-app.get('/:nodeName/delete/:id', function(req, res) {
+app.get('/:nodeName/delete/:id', checkProxyRequest, function(req, res) {
   if (!req.user.removeEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need remove data privileges"}));
   }
@@ -3826,13 +3750,8 @@ app.get('/:nodeName/delete/:id', function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  Db.isLocalView(req.params.nodeName, function () {
-    pcapScrub(req, res, req.params.id, true, function(err) {
-      res.end();
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+  pcapScrub(req, res, req.params.id, true, function(err) {
+    res.end();
   });
 });
 
@@ -3884,7 +3803,7 @@ app.post('/scrub', function(req, res) {
       scrubList(req, res, false, list);
     });
   } else {
-    sessionsListFromQuery(req, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["no"], function(err, list) {
       scrubList(req, res, false, list);
     });
   }
@@ -3902,7 +3821,7 @@ app.post('/delete', function(req, res) {
       scrubList(req, res, true, list);
     });
   } else {
-    sessionsListFromQuery(req, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["no"], function(err, list) {
       scrubList(req, res, true, list);
     });
   }
@@ -3992,17 +3911,12 @@ function sendSession(req, res, id, nextCb) {
   }, undefined, 10);
 }
 
-app.get('/:nodeName/sendSession/:id', function(req, res) {
+app.get('/:nodeName/sendSession/:id', checkProxyRequest, function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  Db.isLocalView(req.params.nodeName, function () {
-    sendSession(req, res, req.params.id, function(err) {
-      res.end();
-    });
-  },
-  function() {
-    proxyRequest(req, res);
+  sendSession(req, res, req.params.id, function(err) {
+    res.end();
   });
 });
 
@@ -4185,7 +4099,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
           function() {
             var id = session.id;
             delete session.id;
-            Db.indexNow('sessions-' + id.substr(0,id.indexOf('-')), "session", id, session, function(err, info) {
+            Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
             });
           }
         );
@@ -4206,7 +4120,7 @@ app.post('/sendSessions', function(req, res) {
       sendSessionsList(req, res, list);
     });
   } else {
-    sessionsListFromQuery(req, ["no"], function(err, list) {
+    sessionsListFromQuery(req, res, ["no"], function(err, list) {
       sendSessionsList(req, res, list);
     });
   }
@@ -4258,7 +4172,6 @@ if (Config.isHTTPS()) {
 } else {
   server = http.createServer(app).listen(Config.get("viewPort", "8005"));
 }
-
 if (server.address() === null) {
   console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
   process.exit(1);

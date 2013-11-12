@@ -46,6 +46,10 @@
   - switch from forever-agent to keep-alive-agent, npm update required
   - caTrustFile config option (issue #161, pull #171
   - start of some javascript cleanup
+  - Upgrade to jquery 2.x, no more IE <= 8 support
+  - remove connect-timeout package requirement
+  - increase 2 minute http timeout to 10 minutes
+  - increase max session queried to 2 million
 
 
 0.9.1 2013/10/03

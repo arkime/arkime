@@ -145,7 +145,7 @@ block content
       return false;
     });
 
-    $('.setting').live('change', function (e) {
+    $(document).on('change', '.setting', function (e) {
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
@@ -176,7 +176,7 @@ block content
       return false;
     });
 
-    $('.deleteViewAction').live('click', function (e) {
+    $(document).on('click', '.deleteViewAction', function (e) {
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
@@ -193,7 +193,7 @@ block content
       });
     });
 
-    $('td[contenteditable]').live('focusout', function () {
+    $(document).on('focusous', 'td[contenteditable]', function () {
       var row = $(this.parentNode);
       $.ajax( {
         "dataType": 'json',
@@ -210,7 +210,7 @@ block content
       });
     });
 
-    $('td[contenteditable]').live('keypress', function (e) {
+    $(document).on('keypress', 'td[contenteditable]', function (e) {
       if ((e.keyCode ? e.keyCode : e.which) === 13) {
         e.target.blur();
         return false;

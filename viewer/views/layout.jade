@@ -2,7 +2,7 @@
 html
   head
     title Moloch - #{title}
-    script(type='text/javascript', src='jquery-1.7.2.min.js')
+    script(type='text/javascript', src='jquery-2.0.3.min.js')
     script(type='text/javascript', src='DataTables-1.9.1/media/js/jquery.dataTables.min.js')
     <!--[if IE]><script language="javascript" type="text/javascript" src="flot-0.7/excanvas.min.js"></script><![endif]-->
     script(type='text/javascript', src='flot-0.7/jquery.flot.min.js')
@@ -37,7 +37,7 @@ html
             - if (user.createEnabled)
               li  
                 a(href="#{elasticBase}/_plugin/head/",target="_blank")
-                div#esstatus.tooltip
+                  div#esstatus.tooltip
         div#nav
           ul.ulist-nav
             li

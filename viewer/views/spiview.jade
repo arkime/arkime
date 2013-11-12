@@ -203,7 +203,7 @@ block content
             fullstate += "," + field + ":" + fetchSize[field];
           } else if ($(item).prop("indeterminate")) {
             fullstate += "," + field + ":10";
-          } else if ($(item).attr("checked")) {
+          } else if ($(item).prop("checked")) {
             fullstate += "," + field + ":100";
           }
         });
@@ -312,7 +312,7 @@ block content
         } else {
           spida.html("<img src=\"spinning.gif\">");
         }
-      } else if (item.attr("checked")) {
+      } else if (item.prop("checked")) {
         if (!fetchSize[field]) {
           fetchSize[field] = 100;
         }
@@ -363,7 +363,7 @@ block content
       var spick = $("[id='SPIck-" + spii + "']");
       if (spick.prop("indeterminate")) {
         spick.prop("indeterminate", null);
-        spick.attr("checked", "checked");
+        spick.prop("checked", "checked");
       }
       if (fetchSize[spii]) {
         fetchSize[spii] += 100;
@@ -385,15 +385,15 @@ block content
     $(":checkbox").on('change', function(e) {
       if (e.target.id.match(/SPItck/)) {
         var item = $(e.target);
-        if (item.attr("checked")) {
+        if (item.prop("checked")) {
           $("." + e.target.id.substring(7)).each(function() {
             $(this).prop("indeterminate", null);
-            $(this).attr("checked", "checked").triggerHandler('change');
+            $(this).prop("checked", "checked").triggerHandler('change');
           });
         } else {
           $("." + e.target.id.substring(7)).each(function() {
             $(this).prop("indeterminate", null);
-            $(this).attr("checked", false).triggerHandler('change');
+            $(this).prop("checked", false).triggerHandler('change');
           });
         }
         return true;
@@ -416,7 +416,7 @@ block content
           } else {
             fetchSize[parts[0]] = +parts[1];
             spick.prop("indeterminate", null);
-            spick.attr("checked", "checked");
+            spick.prop("checked", "checked");
           }
         });
       }

@@ -1,13 +1,12 @@
 {
     "name": "moloch"
-  , "version": "0.8.6"
+  , "version": "0.9.2"
   , "private": true
   , "dependencies": {
       "jade": ">= 0.0.1"
     , "express": ">= 3.0.0"
     , "async": ">= 0.0.1"
     , "stylus": ">= 0.38.0"
-    , "connect-timeout": ">= 0.0.1"
     , "elasticsearchclient": ">= 0.3.0"
     , "fs-ext": ">= 0.3.0"
     , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"

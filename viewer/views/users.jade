@@ -167,29 +167,29 @@ block content
         return true;
       }
 
-      $('.settingsUserAction').live('click', function (e) {
+      $(document).on('click', '.settingsUserAction', function (e) {
         var aData = usersTable.fnGetData( this.parentNode.parentNode );
         window.location = 'settings?userId=' + aData.userId;
       });
 
-      $('.deleteUserAction').live('click', function (e) {
+      $(document).on('click', '.deleteUserAction', function (e) {
         var aData = usersTable.fnGetData( this.parentNode.parentNode );
         return deleteUser(aData.userId);
       });
 
-      $('.forcedExpression div, .userName div').live('focusout', function () {
+      $(document).on('focusout', '.forcedExpression div, .userName div', function () {
         var nTr = this.parentNode.parentNode;
         return saveRow(nTr);
       });
 
-      $('.forcedExpression div, .userName div').live('keypress', function (e) {
+      $(document).on('keypress', '.forcedExpression div, .userName div', function (e) {
         if ((e.keyCode ? e.keyCode : e.which) === 13) {
           e.target.blur();
           return false;
         }
       });
 
-      $('#users tbody td input').live('change', function () {
+      $(document).on('change', '#users tbody td input', function () {
         var nTr = this.parentNode.parentNode;
         return saveRow(nTr);
       } );

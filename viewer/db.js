@@ -505,3 +505,7 @@ exports.deleteFile = function(node, id, path, cb) {
     });
   });
 };
+
+exports.id2Index = function (id) {
+  return 'sessions-' + id.substr(0,id.indexOf('-'));
+}
