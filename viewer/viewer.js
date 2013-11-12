@@ -114,7 +114,9 @@ app.configure(function() {
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
   app.use(function(req, res, next) {
-    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
+    if (res.setTimeout) {
+      res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
+    }
     req.url = req.url.replace(Config.basePath(), "/");
     return next();
   });
