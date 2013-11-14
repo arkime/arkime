@@ -1,4 +1,4 @@
-0.9.2 XXX
+0.9.2 2013/11/14
   - BREAKING: nodejs 0.8 is no longer supported
   - Upgrade d3 and cubism 
   - Fixed searches so numbers don't have to be quoted
@@ -46,7 +46,7 @@
   - switch from forever-agent to keep-alive-agent, npm update required
   - caTrustFile config option (issue #161, pull #171
   - start of some javascript cleanup
-  - Upgrade to jquery 2.x, no more IE <= 8 support
+  - BREAKING: Upgrade to jquery 2.x, no more IE <= 8 support
   - remove connect-timeout package requirement
   - increase 2 minute http timeout to 10 minutes
   - increase max session queried to 2 million
