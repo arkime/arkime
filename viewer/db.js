@@ -446,6 +446,13 @@ exports.updateFileSize = function (item, filesize) {
 };
 
 exports.checkVersion = function(minVersion, checkUsers) {
+  var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
+  var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
+  if (version < 1001) {
+    console.log("ERROR - Need at least node 0.10.1, currently using", process.version);
+    process.exit(1);
+  }
+
   var index;
 
   ["stats", "dstats", "tags", "sequence", "files", "users"].forEach(function(index) {
@@ -508,4 +515,4 @@ exports.deleteFile = function(node, id, path, cb) {
 
 exports.id2Index = function (id) {
   return 'sessions-' + id.substr(0,id.indexOf('-'));
-}
+};
