@@ -190,3 +190,10 @@ script(type='text/javascript').
   var molochFieldsExp = Object.keys(molochFields);
   var molochSettings  = !{JSON.stringify(user.settings)};
   var molochViews  = !{JSON.stringify(user.views || {})};
+  function loadHealth() {
+    $.get('#{basePath}eshealth.json', function(data) {
+      updateHealth(data);
+      setTimeout(loadHealth, 60000);
+    });
+  }
+  loadHealth();

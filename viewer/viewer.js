@@ -67,8 +67,8 @@ var app = express();
 var internals = {
   escInfo: Config.get("elasticsearch", "localhost:9200").split(':'),
   esHttpAgent: new KAA({maxSockets: 20}),
-  httpAgent:   new KAA({maxSockets: 20}),
-  httpsAgent:  new KAA.Secure({maxSockets: 20}),
+  httpAgent:   new KAA({maxSockets: 40}),
+  httpsAgent:  new KAA.Secure({maxSockets: 40}),
   previousNodeStats: [],
   caTrustCerts: {},
 
@@ -77,6 +77,13 @@ var internals = {
   PNG_LINE_WIDTH: 256,
 };
 
+function userCleanup(suser) {
+  suser.settings = suser.settings || {};
+  if (suser.emailSearch === undefined) {suser.emailSearch = false;}
+  if (suser.removeEnabled === undefined) {suser.removeEnabled = false;}
+  if (Config.get("multiES", false)) {suser.createEnabled = false;}
+}
+
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
   function(userid, done) {
     Db.get("users", "user", userid, function(err, suser) {
@@ -84,10 +91,7 @@ passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Mo
       if (!suser || !suser.exists) {console.log(userid, "doesn't exist"); return done(null, false);}
       if (!suser._source.enabled) {console.log(userid, "not enabled"); return done("Not enabled");}
 
-      suser._source.settings = suser._source.settings || {};
-      if (suser._source.emailSearch === undefined) {suser._source.emailSearch = false;}
-      if (suser._source.removeEnabled === undefined) {suser._source.removeEnabled = false;}
-      if (Config.get("multiES", false)) {suser._source.createEnabled = false;}
+      userCleanup(suser._source);
 
       return done(null, suser._source, {ha1: Config.store2ha1(suser._source.passStore)});
     });
@@ -132,8 +136,8 @@ app.configure(function() {
         return res.end();
       }
 
-      // No auth for stats.json, dstats.json, esstats.json
-      if (req.url.match(/^\/[e]*[ds]*stats.json/)) {
+      // No auth for stats.json, dstats.json, esstats.json, eshealth.json
+      if (req.url.match(/^\/([e]*[ds]*stats|eshealth).json/)) {
         return next();
       }
 
@@ -144,8 +148,8 @@ app.configure(function() {
           console.log("ERROR - mismatch url", obj.path, req.url);
           return res.send("Unauthorized based on bad url, check logs on ", os.hostname());
         }
-        if (Math.abs(Date.now() - obj.date) > 60000) { // Request has to be +- 60 seconds
-          console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?");
+        if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
+          console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?", Date.now(), obj.date);
           return res.send("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
         }
 
@@ -153,10 +157,8 @@ app.configure(function() {
           if (err) {return res.send("ERROR - " +  err);}
           if (!suser || !suser.exists) {return res.send(obj.user + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
+          userCleanup(suser._source);
           req.user = suser._source;
-          req.user.settings = req.user.settings || {};
-          if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
-          if (req.user.removeEnabled === undefined) {req.user.removeEnabled = false;}
           return next();
         });
         return;
@@ -170,11 +172,9 @@ app.configure(function() {
           if (!suser || !suser.exists) {return res.send(userName + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(userName + " not enabled");}
           if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
+
+          userCleanup(suser._source);
           req.user = suser._source;
-          req.user.settings = req.user.settings || {};
-          if (req.user.emailSearch === undefined) {req.user.emailSearch = false;}
-          if (req.user.removeEnabled === undefined) {req.user.removeEnabled = false;}
-          if (Config.get("multiES", false)) {req.user.createEnabled = false;}
           return next();
         });
         return;
@@ -1074,6 +1074,12 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+app.get('/eshealth.json', function(req, res) {
+  Db.healthCache(function(err, health) {
+    res.send(health);
+  });
+});
+
 app.get('/esstats.json', function(req, res) {
   var stats = [];
   var r;
@@ -2556,10 +2562,13 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
 
   var bodyNum = 0;
   var bodyType = "file";
+  var foundBody = false;
+
   parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
-    //console.log("onBody", this.pos, start, len);
+    //console.log("onBody", this.pos, bodyNum, start, len, outgoing[this.pos]);
     if (findBody === bodyNum) {
-      return res.end(buf.slice(start));
+      foundBody = true;
+      return res.write(buf.slice(start, start+len));
     }
 
     var pos = this.pos;
@@ -2572,22 +2581,26 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
         outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
       }
       outgoing[pos].pieces[0].raw = buf.slice(0, start);
-    } else if (outgoing[pos].data === undefined) {
+    } else if (incoming[pos].data === undefined) {
       outgoing[pos].pieces[0].raw = new Buffer(0);
     }
-    bodyNum++;
   };
 
   parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
+    if (foundBody) {
+      return res.end();
+    }
     if (this.pos > 0 && this.hinfo && this.hinfo.statusCode !== 100) {
       parsers[(this.pos+1)%2].reinitialize(kind[(this.pos+1)%2]);
     }
     var pos = this.pos;
 
-    //console.log("onMessageComplete", this.pos);
+    //console.log("onMessageComplete", this.pos, outgoing[this.pos]);
 
     if (!outgoing[pos]) {
       outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
+    } else if (outgoing[pos].pieces && outgoing[pos].pieces[0].bodyNum !== undefined) {
+      bodyNum++;
     }
   };
 
@@ -4164,7 +4177,7 @@ app.post('/upload', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 Db.checkVersion(MIN_DB_VERSION, Config.get("passwordSecret") !== undefined);
 expireCheckAll();
-setInterval(expireCheckAll, 5*60*1000);
+setInterval(expireCheckAll, 2*60*1000);
 
 var server;
 if (Config.isHTTPS()) {

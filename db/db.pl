@@ -1119,10 +1119,14 @@ sub sessionsUpdate
     foreach my $i (keys %{$indices}) {
         progress($i);
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
-        esPost("/$i/_close", "");
-        #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
-        esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
-        esPost("/$i/_open", "");
+
+        # Before version 12 had soft, change to node, requires a close and open
+        if ($main::versionNumber < 12) {
+            esPost("/$i/_close", "");
+            #esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node", "index.store.type": "mmapfs"}');
+            esPut("/$i/_settings", '{"index.fielddata.cache": "node", "index.cache.field.type" : "node"}');
+            esPost("/$i/_open", "");
+        }
     }
 
     print "\n";

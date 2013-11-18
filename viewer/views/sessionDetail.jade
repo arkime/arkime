@@ -320,7 +320,7 @@ script(type='text/javascript').
                  "&gzip=" + sessionDetail.find('.format-gzip input').is(':checked') +
                  "&ts=" + sessionDetail.find('.format-ts input').is(':checked');
 
-      sessionDetail.load(url);
+      sessionDetail.parent().load(url);
       if (localStorage) {
         localStorage['moloch-line'] = line;
         localStorage['moloch-base'] = base;

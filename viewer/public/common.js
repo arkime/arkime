@@ -909,15 +909,12 @@ var utcParser = d3.time.format.utc("%Y-%m-%d %X UTC").parse;
 function handleUrlParams() {
   var urlParams = parseUrlParams();
 
-  if (urlParams.date) {
-    $("#date").val(urlParams.date);
-    if (urlParams.date !== -1) {
-      $("#startDate").val(dateString(new Date()/1000 - 60*60*urlParams.date, ' '));
-      $("#stopDate").val(dateString(new Date()/1000, ' '));
-    } else {
-      $("#startDate").val(dateString(0, ' '));
-      $("#stopDate").val(dateString(new Date()/1000, ' '));
+  if (urlParams.date !== undefined) {
+    urlParams.date = parseInt(urlParams.date,10);
+    if ($("#date option[value=" + urlParams.date + "]").length === 0) {
+      $("#date").append("<option value=" + urlParams.date + "> Last " + urlParams.date + " hrs");
     }
+    $("#date").val(urlParams.date);
   } else {
     $("#date").val(1);
   }
@@ -925,7 +922,7 @@ function handleUrlParams() {
   if (urlParams.expression) {
     $("#expression").val(urlParams.expression);
   } else {
-    $("dexpression").val("");
+    $("#expression").val("");
   }
 
   initialDisplayLength = urlParams.iDisplayLength || 100;
@@ -973,6 +970,12 @@ function handleUrlParams() {
     $("#startDate").val(dateString(urlParams.startTime, ' '));
     $("#stopDate").val(dateString(urlParams.stopTime, ' '));
     $("#date").val("-2");
+  } else if ($("#date").val() === -1) {
+    $("#startDate").val(dateString(0, ' '));
+    $("#stopDate").val(dateString(new Date()/1000, ' '));
+  } else {
+    $("#startDate").val(dateString(new Date()/1000 - 60*60*$("#date").val(), ' '));
+    $("#stopDate").val(dateString(new Date()/1000, ' '));
   }
 
   if (urlParams.useDir=== "0" && urlParams.usePort === "0") {
