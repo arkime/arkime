@@ -90,7 +90,8 @@ if [ $JAVA_VAL -ne 0 ]; then
 fi
 
 if [ "x$http_proxy" != "x" ]; then
-    export JAVA_OPTS=`echo $http_proxy | sed 's/http:..\(.*\):\(.*\)/-Dhttp.proxyHost=\1 -Dhttp.proxyPort=\2/'`
+    JAVA_OPTS=`echo $http_proxy | sed 's/http:..\(.*\):\(.*\)/-Dhttp.proxyHost=\1 -Dhttp.proxyPort=\2/'`
+    export JAVA_OPTS
     echo "Because http_proxy is set ($http_proxy) setting JAVA_OPTS to ($JAVA_OPTS) because http_proxy is set ($http_proxy)"
     sleep 1
 fi
