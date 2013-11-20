@@ -523,6 +523,9 @@ patricia_search_all(patricia_tree_t * patricia, prefix_t * prefix, int inclusive
     addr = prefix_touchar(prefix);
     bitlen = prefix->bitlen;
 
+    if (node == NULL)
+        return 0;
+
     while (node->bit < bitlen) {
 
         if (node->prefix && node->data &&
