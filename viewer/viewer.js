@@ -1864,7 +1864,13 @@ function buildConnections(req, res, cb) {
       query.query.filtered.filter = {bool: {must: [query.query.filtered.filter, {exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
     }
 
-    query.fields = ["by", "db", "pa", "no", fsrc, fdst];
+    query.fields = ["by", "db", "pa", "no"];
+    if (query.fields.indexOf(fsrc) === -1) {
+      query.fields.push(fsrc);
+    }
+    if (query.fields.indexOf(fdst) === -1) {
+      query.fields.push(fdst);
+    }
     if (dstipport) {
       query.fields.push("p2");
     }
@@ -1947,18 +1953,21 @@ app.get('/connections.json', function(req, res) {
 });
 
 app.get('/connections.csv', function(req, res) {
+  res.setHeader("Content-Type", "application/force-download");
+  var seperator = req.query.seperator || ",";
   buildConnections(req, res, function (err, nodes, links, total) {
     if (err) {
       return res.send(err);
     }
     res.write("Source, Destination, Packets, Bytes, Databytes\r\n");
     for (var i = 0, ilen = links.length; i < ilen; i++) {
-      res.write("" + nodes[links[i].source].id + ", " +
-                     nodes[links[i].target].id + ", " +
-                     links[i].pa + ", " +
-                     links[i].by + ", " +
+      res.write("\"" + nodes[links[i].source].id.replace('"', '""') + "\"" + seperator +
+                "\"" + nodes[links[i].target].id.replace('"', '""') + "\"" + seperator +
+                     links[i].pa + seperator +
+                     links[i].by + seperator +
                      links[i].db + "\r\n");
     }
+    res.end();
   });
 });
 
