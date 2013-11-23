@@ -7,6 +7,7 @@
   - Session detail check boxes work multiple times again
   - core fix with empty tagging plugin information
   - multiple connections.csv files (issue #163)
+  - fixed view editing
 
 0.9.2 2013/11/14
   - BREAKING: nodejs 0.8 is no longer supported

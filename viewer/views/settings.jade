@@ -193,7 +193,7 @@ block content
       });
     });
 
-    $(document).on('focusous', 'td[contenteditable]', function () {
+    $(document).on('focusout', 'td[contenteditable]', function () {
       var row = $(this.parentNode);
       $.ajax( {
         "dataType": 'json',
