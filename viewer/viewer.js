@@ -773,7 +773,7 @@ function lookupQueryItems(query, doneCb) {
         } else {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
-        Db.search('tags', 'tag', {size:500, fields:["id", "n"], query: query}, function(err, result) {
+        Db.search('tags', 'tag', {size:1000, fields:["id", "n"], query: query}, function(err, result) {
           var terms = [];
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);
@@ -2091,7 +2091,7 @@ app.get('/unique.txt', function(req, res) {
     break;
   case FMEnum.tags:
     eachCb = function(item, cb) {
-      Db.tagIdToName(item.name, function (name) {
+      Db.tagIdToName(item.term, function (name) {
         item.term = name;
         writeCb(item, cb);
       });
@@ -2099,7 +2099,7 @@ app.get('/unique.txt', function(req, res) {
     break;
   case FMEnum.hh:
     eachCb = function(item, cb) {
-      Db.tagIdToName(item.name, function (name) {
+      Db.tagIdToName(item.term, function (name) {
         item.term = name.substring(12);
         writeCb(item, cb);
       });
@@ -2150,7 +2150,7 @@ app.get('/unique.txt', function(req, res) {
         facets = facets.sort(function(a,b) {return b.count - a.count;});
 
 
-        async.forEachSeries(facets, eachCb, function () {
+        async.forEachSeries(facets, writeCb, function () {
           res.end();
         });
       });
