@@ -209,6 +209,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     MolochStringHashStd_t *shash;
     MolochIntHashStd_t    *ihash;
     unsigned char         *startPtr;
+    unsigned char         *dataPtr;
     uint32_t               jsonSize;
     int                    pos;
     static char            hex[] = "0123456789abcdef";
@@ -287,9 +288,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     startPtr = BSB_WORK_PTR(jbsb);
-
     BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
+    dataPtr = BSB_WORK_PTR(jbsb);
     BSB_EXPORT_sprintf(jbsb, 
                       "{\"fp\":%u,"
                       "\"lp\":%u,"
@@ -523,7 +524,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             int freeField = final || ((config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CONTINUE) == 0);
 
             if (!inHeaders && config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) {
-                BSB_EXPORT_sprintf(jbsb, "\"hdrs\": {");
+                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_PLUGINS) {
+                    BSB_EXPORT_sprintf(jbsb, "\"plugin\": {");
+                } else {
+                    BSB_EXPORT_sprintf(jbsb, "\"hdrs\": {");
+                }
                 inHeaders = 1;
             } else if (inHeaders && (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) == 0) {
                 inHeaders = 0;
@@ -608,6 +613,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 char *as = NULL;
                 const char *g = NULL;
                 const char *rir = NULL;
+                char post = config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPOST;
+
 
                 if (ii) {
                     g = ii->country;
@@ -622,7 +629,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     }
 
                     if (g) {
-                        BSB_EXPORT_sprintf(jbsb, "\"g%s\":\"%s\",", config.fields[pos]->name, g);
+                        if (post)
+                            BSB_EXPORT_sprintf(jbsb, "\"%s.geo\":\"%s\",", config.fields[pos]->name, g);
+                        else
+                            BSB_EXPORT_sprintf(jbsb, "\"g%s\":\"%s\",", config.fields[pos]->name, g);
                     }
                 }
 
@@ -632,7 +642,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     }
 
                     if (as) {
-                        BSB_EXPORT_sprintf(jbsb, "\"as%s\":", config.fields[pos]->name);
+                        if (post)
+                            BSB_EXPORT_sprintf(jbsb, "\"%s.asn\":", config.fields[pos]->name);
+                        else
+                            BSB_EXPORT_sprintf(jbsb, "\"as%s\":", config.fields[pos]->name);
                         moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
                         if (!ii || !ii->asn) {
                             free(as);
@@ -647,14 +660,18 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     }
 
                     if (rir) {
-                        BSB_EXPORT_sprintf(jbsb, "\"rir%s\":\"%s\",", config.fields[pos]->name, rir);
+                        if (post)
+                            BSB_EXPORT_sprintf(jbsb, "\"%s.rir\":\"%s\",", config.fields[pos]->name, rir);
+                        else
+                            BSB_EXPORT_sprintf(jbsb, "\"rir%s\":\"%s\",", config.fields[pos]->name, rir);
                     }
                 }
 
                 BSB_EXPORT_sprintf(jbsb, "\"%s\":%u,", config.fields[pos]->name, htonl(value));
                 }
                 break;
-            case MOLOCH_FIELD_TYPE_IP_HASH:
+            case MOLOCH_FIELD_TYPE_IP_HASH: {
+                char post = config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPOST;
                 ihash = session->fields[pos]->ihash;
                 if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
                     BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
@@ -666,7 +683,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 if (gi || ipTree) {
                     MolochIpInfo_t *ii;
 
-                    BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->name);
+                    if (post)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s.geo\":[", config.fields[pos]->name);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->name);
                     HASH_FORALL(i_, *ihash, hint,
                         const char *g = NULL;
                         if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
@@ -691,7 +711,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 if (giASN || ipTree) {
                     MolochIpInfo_t *ii = 0;
 
-                    BSB_EXPORT_sprintf(jbsb, "\"as%s\":[", config.fields[pos]->name);
+                    if (post)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s.asn\":[", config.fields[pos]->name);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"as%s\":[", config.fields[pos]->name);
                     HASH_FORALL(i_, *ihash, hint,
                         char *as = NULL;
 
@@ -720,7 +743,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 if (config.rirFile || ipTree) {
                     MolochIpInfo_t *ii = 0;
 
-                    BSB_EXPORT_sprintf(jbsb, "\"rir%s\":[", config.fields[pos]->name);
+                    if (post)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s.rir\":[", config.fields[pos]->name);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"rir%s\":[", config.fields[pos]->name);
                     HASH_FORALL(i_, *ihash, hint,
                         char *rir = NULL;
 
@@ -758,6 +784,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 BSB_EXPORT_sprintf(jbsb, "],");
                 break;
+            }
             } /* switch */
             if (freeField) {
                 MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
@@ -780,7 +807,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     if (config.dryRun) {
-        if (config.debug)
+        if (config.tests) {
+            int hlen = dataPtr - startPtr;
+            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, sJson, (int)(BSB_LENGTH(jbsb)-hlen-1), sJson+hlen);
+        } else if (config.debug)
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson);
         BSB_INIT(jbsb, sJson, BSB_SIZE(jbsb));
         return;
@@ -1499,7 +1529,12 @@ void moloch_db_load_rir()
 guint timers[5];
 void moloch_db_init()
 {
-    esServer = moloch_http_create_server(config.elasticsearch, 9200, config.maxESConns, config.maxESRequests, config.compressES);
+    if (config.tests) {
+        fprintf(stderr, "{\"packets\": [\n");
+    }
+    if (!config.dryRun) {
+        esServer = moloch_http_create_server(config.elasticsearch, 9200, config.maxESConns, config.maxESRequests, config.compressES);
+    }
     DLL_INIT(t_, &tagRequests);
     HASH_INIT(tag_, tags, moloch_db_tag_hash, moloch_db_tag_cmp);
     myPid = getpid();
@@ -1550,6 +1585,22 @@ void moloch_db_exit()
 
         moloch_db_flush_gfunc((gpointer)1);
         moloch_db_update_stats();
+        moloch_http_free_server(esServer);
     }
-    moloch_http_free_server(esServer);
+
+    if (config.tests) {
+        int comma = 0;
+        MolochTag_t *tag;
+        fprintf(stderr, "], \"tags\": {\n");
+        HASH_FORALL(tag_, tags, tag,
+            if (comma)
+                fprintf(stderr, ",\n");
+            else {
+                comma = 1;
+                fprintf(stderr, "\n");
+            }
+            fprintf(stderr, "  \"%d\": \"%s\"", tag->tagValue, tag->tagName);
+        );
+        fprintf(stderr, "\n}}\n");
+    }
 }

@@ -31,6 +31,7 @@
 "uri.cnt"                 return "http.uri.cnt"
 "uri"                     return "http.uri"
 
+"EXISTS!"                 return "EXISTS"
 /* Search Elements*/
 "asn"                     return 'asn'
 "asn.dns"                 return 'asn.dns'
@@ -114,9 +115,6 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "icmp"                    return "icmp"
 "\"icmp\""                return "icmp"
 "id"                      return "id"
-"payload8.src"            return "payload8.src"
-"payload8.dst"            return "payload8.dst"
-"payload8"                return "payload8"
 "ip.dns.cnt"              return "ip.dns.cnt"
 "ip.dns"                  return "ip.dns"
 "ip.dst"                  return "ip.dst"
@@ -133,6 +131,11 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "irc.channel.cnt"         return "irc.channel.cnt"
 "node"                    return 'node'
 "packets"                 return 'packets'
+"payload8.src"            return "payload8.src"
+"payload8.dst"            return "payload8.dst"
+"payload8"                return "payload8"
+plugin\.[^\s!=><]*\.cnt  return "PLUGIN_CNT"
+plugin\.[^\s!=><]*       return "PLUGIN"
 "port.dst"                return 'port.dst'
 "port"                    return 'port'
 "port.socks"              return 'port.socks'
@@ -237,10 +240,12 @@ IPNUM: IPMATCH
 
 HEADER: EMAIL_HEADER
       | HTTP_HEADER
+      | PLUGIN
       ;
 
 HEADER_CNT: EMAIL_HEADER_CNT
           | HTTP_HEADER_CNT
+          | PLUGIN_CNT
           ;
 
 RANGEFIELD: databytes                {$$ = 'db'}
@@ -364,13 +369,13 @@ TEXTFIELD  : 'http.uri'        {$$ = 'us'}
            | 'http.user-agent' {$$ = 'ua'}
            ;
 
-IPFIELD  : 'ip'       {$$ = 0}
-         | 'ip.src'   {$$ = 1}
-         | 'ip.dst'   {$$ = 2}
-         | 'ip.xff'   {$$ = 3}
-         | 'ip.dns'   {$$ = 4}
-         | 'ip.email' {$$ = 5}
-         | 'ip.socks' {$$ = 6}
+IPFIELD  : 'ip'       {$$ = "all"}
+         | 'ip.src'   {$$ = "a1"}
+         | 'ip.dst'   {$$ = "a2"}
+         | 'ip.xff'   {$$ = "xff"}
+         | 'ip.dns'   {$$ = "dnsip"}
+         | 'ip.email' {$$ = "eip"}
+         | 'ip.socks' {$$ = "socksip"}
          ;
 
 STR : ID
@@ -514,29 +519,53 @@ e
          $$.bool.should[0].range.p1[$2] = $3;
          $$.bool.should[1].range.p2[$2] = $3;}
     | LOTERMFIELD '!=' STR
-        {$$ = {not: str2Query($1, "term", $3.toLowerCase())};}
+        {$$ = {not: str2Query(yy, $1, "term", $3.toLowerCase())};}
     | LOTERMFIELD '==' STR
-        {$$ = str2Query($1, "term", $3.toLowerCase());}
+        {$$ = str2Query(yy, $1, "term", $3.toLowerCase());}
+    | LOTERMFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | LOTERMFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | TERMFIELD '!=' STR
-        {$$ = {not: str2Query($1, "term", $3)};}
+        {$$ = {not: str2Query(yy, $1, "term", $3)};}
     | TERMFIELD '==' STR
-        {$$ = str2Query($1, "term", $3);}
+        {$$ = str2Query(yy, $1, "term", $3);}
+    | TERMFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | TERMFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | UPTERMFIELD '!=' STR
-        {$$ = {not: str2Query($1, "term", $3.toUpperCase())};}
+        {$$ = {not: str2Query(yy, $1, "term", $3.toUpperCase())};}
     | UPTERMFIELD '==' STR
-        {$$ = str2Query($1, "term", $3.toUpperCase());}
+        {$$ = str2Query(yy, $1, "term", $3.toUpperCase());}
+    | UPTERMFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | UPTERMFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | LOTEXTFIELD '!=' STR
-        {$$ = {not: str2Query($1, "text", $3.toLowerCase())};}
+        {$$ = {not: str2Query(yy, $1, "text", $3.toLowerCase())};}
     | LOTEXTFIELD '==' STR
-        {$$ = str2Query($1, "text", $3.toLowerCase());}
+        {$$ = str2Query(yy, $1, "text", $3.toLowerCase());}
+    | LOTEXTFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | LOTEXTFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | TEXTFIELD '!=' STR
-        {$$ = {not: str2Query($1, "text", $3)};}
+        {$$ = {not: str2Query(yy, $1, "text", $3)};}
     | TEXTFIELD '==' STR
-        {$$ = str2Query($1, "text", $3);}
+        {$$ = str2Query(yy, $1, "text", $3);}
+    | TEXTFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | TEXTFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | HEADER '==' STR
-        {$$ = str2Query(str2Header(yy, $1), "text", $3);}
+        {$$ = str2Query(yy, str2Header(yy, $1), "text", $3);}
     | HEADER '!=' STR
-        {$$ = {not: str2Query(str2Header(yy, $1), "text", $3)};}
+        {$$ = {not: str2Query(yy, str2Header(yy, $1), "text", $3)};}
+    | HEADER '==' EXISTS
+        {$$ = {exists: {field: str2Header(yy, $1)}};}
+    | HEADER '!=' EXISTS
+        {$$ = {not: {exists: {field: str2Header(yy, $1)}}};}
     | HEADER GTLT NUMBER
         {$$ = {range: {}};
          $$.range[str2Header(yy, $1)] = {};
@@ -633,115 +662,79 @@ e
         }
     | 'http.version' '==' STR 
         {
-          $$ = [str2Query("hsver", "term", $3),
-                str2Query("hdver", "term", $3)
+          $$ = [str2Query(yy, "hsver", "term", $3),
+                str2Query(yy, "hdver", "term", $3)
                ];
           $$ = {bool: {should: $$}};
         }
     | 'http.version' '!=' STR 
         {
-          $$ = [str2Query("hsver", "term", $3),
-                str2Query("hdver", "term", $3)
+          $$ = [str2Query(yy, "hsver", "term", $3),
+                str2Query(yy, "hdver", "term", $3)
                ];
           $$ = {bool: {must_not: $$}};
         }
     | 'payload8' '==' STR 
         { var str = $3.toLowerCase();
-          $$ = [str2Query("fb1", "term", str),
-                str2Query("fb2", "term", str)
+          $$ = [str2Query(yy, "fb1", "term", str),
+                str2Query(yy, "fb2", "term", str)
                ];
           $$ = {bool: {should: $$}};
         }
     | 'payload8' '!=' STR 
         { var str = $3.toLowerCase();
-          $$ = [str2Query("fb1", "term", str),
-                str2Query("fb2", "term", str)
+          $$ = [str2Query(yy, "fb1", "term", str),
+                str2Query(yy, "fb2", "term", str)
                ];
           $$ = {bool: {must_not: $$}};
         }
     | country '==' STR 
         { var str = $3.toUpperCase();
-          $$ = [str2Query("g1", "term", str),
-                str2Query("g2", "term", str),
-                str2Query("gdnsip", "term", str),
-                str2Query("geip", "term", str),
-                str2Query("gsocksip", "term", str),
-                str2Query("gxff", "term", str)
-               ];
+          $$ = str2IpListQuery(yy, "geo", "term", str);
           $$ = {bool: {should: $$}};
         }
     | country '!=' STR 
         { var str = $3.toUpperCase();
-          $$ = [str2Query("g1", "term", str),
-                str2Query("g2", "term", str),
-                str2Query("gdnsip", "term", str),
-                str2Query("geip", "term", str),
-                str2Query("gsocksip", "term", str),
-                str2Query("gxff", "term", str)
-               ];
+          $$ = str2IpListQuery(yy, "geo", "term", str);
           $$ = {bool: {must_not: $$}};
         }
     | rir '==' STR 
         { var str = $3.toUpperCase();
-          $$ = [str2Query("rir1", "term", str),
-                str2Query("rir2", "term", str),
-                str2Query("rirxff", "term", str),
-                str2Query("rirdnsip", "term", str),
-                str2Query("rirsocksip", "term", str),
-                str2Query("rireip", "term", str)
-               ];
+          $$ = str2IpListQuery(yy, "rir", "term", str);
           $$ = {bool: {should: $$}};
         }
     | rir '!=' STR 
         { var str = $3.toUpperCase();
-          $$ = [str2Query("rir1", "term", str),
-                str2Query("rir2", "term", str),
-                str2Query("rirxff", "term", str),
-                str2Query("rirdnsip", "term", str),
-                str2Query("rirsocksip", "term", str),
-                str2Query("rireip", "term", str)
-               ];
+          $$ = str2IpListQuery(yy, "rir", "term", str);
           $$ = {bool: {must_not: $$}};
         }
     | asn '==' STR 
         { var str = $3.toLowerCase();
-          $$ = [str2Query("as1", "text", str),
-                str2Query("as2", "text", str),
-                str2Query("aseip", "text", str),
-                str2Query("asdnsip", "text", str),
-                str2Query("assocksip", "text", str),
-                str2Query("asxff", "text", str)
-               ];
+          $$ = str2IpListQuery(yy, "asn", "text", str);
           $$ = {bool: {should: $$}};
         }
     | asn '!=' STR 
         { var str = $3.toLowerCase();
-          $$ = [str2Query("as1", "text", str),
-                str2Query("as2", "text", str),
-                str2Query("asdnsip", "text", str),
-                str2Query("aseip", "text", str),
-                str2Query("assocksip", "text", str),
-                str2Query("asxff", "text", str)
-               ];
+          $$ = str2IpListQuery(yy, "asn", "text", str);
           $$ = {bool: {must_not: $$}};
         }
     | host '!=' STR
         { var str = $3.toLowerCase();
 
-          $$ = [str2Query("ho", "term", str),
-                str2Query("dnsho", "term", str),
-                str2Query("eho", "term", str),
-                str2Query("socksho", "term", str)
+          $$ = [str2Query(yy, "ho", "term", str),
+                str2Query(yy, "dnsho", "term", str),
+                str2Query(yy, "eho", "term", str),
+                str2Query(yy, "socksho", "term", str)
                ];
           $$ = {bool: {must_not: $$}};
         }
     | host '==' STR
         { var str = $3.toLowerCase();
 
-          $$ = [str2Query("ho", "term", str),
-                str2Query("dnsho", "term", str),
-                str2Query("eho", "term", str),
-                str2Query("socksho", "term", str)
+          $$ = [str2Query(yy, "ho", "term", str),
+                str2Query(yy, "dnsho", "term", str),
+                str2Query(yy, "eho", "term", str),
+                str2Query(yy, "socksho", "term", str)
                ];
           $$ = {bool: {should: $$}};
         }
@@ -751,11 +744,46 @@ e
 var    util           = require('util');
 
 function parseIpPort(yy, ipPortStr, which) {
+  function singleIp(which, ip1, ip2, port) {
+    var obj;
+
+    if (ip1 !== -1) {
+      if (ip1 === ip2) {
+        obj = {term: {}};
+        obj.term[which] = ip1>>>0;
+      } else {
+        obj = {range: {}};
+        obj.range[which] = {from: ip1>>>0, to: ip2>>>0};
+      }
+    }
+
+    if (port !== -1) {
+      if (which === "a1") {
+        obj = {bool: {must: [obj, {term: {p1: port}}]}};
+      } else if (which === "a2") {
+        obj = {bool: {must: [obj, {term: {p2: port}}]}};
+      } else if (which === "socksip") {
+        obj = {bool: {must: [obj, {term: {sockspo: port}}]}};
+      } else {
+        return obj;
+      }
+
+      if (ip1 === -1) {
+        obj = obj.bool.must[1];
+      }
+    }
+
+    return obj;
+  }
+
+
+  var obj;
+
   ipPortStr = ipPortStr.trim();
 
 // We really have a list of them
   if (ipPortStr[0] === "[" && ipPortStr[ipPortStr.length -1] === "]") {
-      var obj =  {bool: {should: []}};
+      obj =  {bool: {should: []}};
       CSVtoArray(ipPortStr).forEach(function(str) {
           obj.bool.should.push(parseIpPort(yy, str, which));
       });
@@ -792,71 +820,23 @@ function parseIpPort(yy, ipPortStr, which) {
      ip1 = ip1 & (0xffffffff << (32 - s));
      ip2 = ip2 | (0xffffffff >>> s);
   }
+  
+  if (which !== "all") {
+    return singleIp(which, ip1, ip2, port);
+  }
 
-  var t1;
-  var t2;
-  var xff;
-  var dns;
-  var email;
-  var socks;
-
-  if (ip1 !== -1) {
-    if (ip1 === ip2) {
-        t1    = {term: {a1: ip1>>>0}};
-        t2    = {term: {a2: ip1>>>0}};
-        socks = {term: {socksip: ip1>>>0}};
-        dns   = {term: {dnsip: ip1>>>0}};
-        email = {term: {eip: ip1>>>0}};
-        xff   = {term: {xff: ip1>>>0}};
-    } else {
-        t1    = {range: {a1: {from: ip1>>>0, to: ip2>>>0}}};
-        t2    = {range: {a2: {from: ip1>>>0, to: ip2>>>0}}};
-        socks = {range: {socksip: {from: ip1>>>0, to: ip2>>>0}}};
-        dns   = {range: {dnsip: {from: ip1>>>0, to: ip2>>>0}}};
-        email = {range: {eip: {from: ip1>>>0, to: ip2>>>0}}};
-        xff   = {range: {xff: {from: ip1>>>0, to: ip2>>>0}}};
+  var ors = [];
+  for (var i = 0, ilen = yy.ipFields.length; i < ilen; i++) {
+    if (yy.emailSearch !== true && yy.ipFields[i].addr === "eip") {
+      continue;
+    }
+    obj = singleIp(yy.ipFields[i].addr, ip1, ip2, port);
+    if (obj) {
+      ors.push(obj);
     }
   }
 
-  if (port !== -1) {
-    t1    = {bool: {must: [t1, {term: {p1: port}}]}};
-    t2    = {bool: {must: [t2, {term: {p2: port}}]}};
-    socks = {bool: {must: [socks, {term: {sockspo: port}}]}};
-  }
-
-  switch(which) {
-  case 0:
-    var ors = [t1, t2];
-
-    if (xff)
-        ors.push(xff);
-    if (dns)
-        ors.push(dns);
-    if (yy.emailSearch === true && email)
-        ors.push(email);
-    if (socks)
-        ors.push(socks);
-
-    return {bool: {should: ors}};
-  case 1:
-    return t1;
-  case 2:
-    return t2;
-  case 3:
-    if (!xff)
-        throw "xff doesn't support port only";
-    return xff;
-  case 4:
-    if (!dns)
-        throw "dns doesn't support port only";
-    return dns;
-  case 5:
-    if (!email)
-        throw "email doesn't support port only";
-    return email;
-  case 6:
-    return socks;
-  }
+  return {bool: {should: ors}};
 }
 
 function stripQuotes (str) {
@@ -879,8 +859,12 @@ var field2RawField = {
     aseip: "rawaseip"
 }
 
-function str2Query(field, kind, str)
+function str2Query(yy, field, kind, str)
 {
+    if (yy.fieldsMap[field] && yy.fieldsMap[field].type === "ip") {
+        return parseIpPort(yy, str, field);
+    }
+
     var obj;
 
     if (field2RawField[field] === undefined && field.indexOf(".snow", field.length - 5) !== -1) {
@@ -930,6 +914,14 @@ function str2Query(field, kind, str)
         obj.term[field] = str;
     }
     return obj;
+}
+
+function str2IpListQuery(yy, field, kind, str) {
+  var obj = [];
+  for (var i = 0, ilen = yy.ipFields.length; i < ilen; i++) {
+      obj.push(str2Query(yy, yy.ipFields[i][field], kind, str));
+  }
+  return obj;
 }
 
 function str2Header(yy, name) {

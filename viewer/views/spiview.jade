@@ -175,6 +175,21 @@ block content
       mixin spi("OS", "smbos", "smb.os", "smb")
       mixin spi("Version", "smbver", "smb.ver", "smb")
 
+    if (pluginFields && pluginFields.length > 0)
+      mixin title("Plugin", "plugin")
+      dl 
+        each value,i in pluginFields 
+          if (value.type === "string")
+            mixin spi(value.name, "plugin." + value.name + ".raw", "plugin." + value.name, "plugin")
+            mixin spi(value.name + " Tokens", "plugin." + value.name + ".snow", "plugin." + value.name, "plugin")
+          else if (value.type === "ip")
+            mixin spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
+            mixin spi(value.name + " GEO", "plugin." + value.name + ".geo.raw",  "plugin." + value.name + ".country", "plugin")
+            mixin spi(value.name + " ASN", "plugin." + value.name + ".asn.snow", "plugin." + value.name + ".asn", "plugin")
+            mixin spi(value.name + " RIR", "plugin." + value.name + ".rir.raw",  "plugin." + value.name + ".rir", "plugin")
+          else
+            mixin spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
+
   script(type='text/javascript').
     var initialDisplayLength = 100;
     var doPushState = 1;
@@ -252,7 +267,8 @@ block content
               }
 
               var spiterm = "";
-              if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+              if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
+                  (molochFields[spii] && molochFields[spii].type === "ip")) {
                 $.each(spi.terms, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");

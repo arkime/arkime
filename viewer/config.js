@@ -33,6 +33,7 @@ var internals = {
     configFile: "/data/moloch/etc/config.ini",
     nodeName: os.hostname().split(".")[0],
     fields: [],
+    ipFields: [],
     fieldsMap: {}
   };
 
@@ -222,8 +223,17 @@ function addField(db, exp, cat, type, help) {
   internals.fieldsMap[exp] = {db: db, cat: cat, type: type};
 }
 
+function addIpField(name, addr, port, geo, asn, rir) {
+  internals.ipFields.push({name: name, addr: addr, port: port, geo: geo, asn: asn, rir: rir});
+}
+
+
 exports.getFields = function() {
   return internals.fields;
+};
+
+exports.getIpFields = function() {
+  return internals.ipFields;
 };
 
 exports.getFieldsMap = function() {
@@ -394,3 +404,27 @@ exports.headers("headers-email").forEach(function(item) {
     addField("hdrs.ehead-" + item.name + "cnt", "email." + item.name + ".cnt", "http", "integer", "Unique number of email header " + item.name);
   }
 });
+
+exports.headers("plugin-fields").forEach(function(item) {
+  var p = "plugin." + item.name;
+  if (item.type == "ip") {
+    addField(p, p, "plugin", "ip", "Plugin field " + item.name);
+    addField(p + ".geo.snow", p + ".country", "plugin", "ip", "Plugin field " + item.name + " GEO");
+    addField(p + ".rir.snow", p + ".rir", "plugin", "ip", "Plugin field " + item.name + " RIR");
+    addField(p + ".asn.snow", p + ".asn", "plugin", "ip", "Plugin field " + item.name + " ASN");
+    addIpField(p, p, null, p + ".geo.raw", p + ".asn.snow", p + ".rir.raw");
+  } else {
+    addField(p + (item.type === "integer"?"":".snow"), p, "plugin", (item.type === "integer"?"integer":"textfield"), "Plugin field " + item.name);
+  }
+
+  if (item.count === true) {
+    addField("plugin." + item.name + "cnt", "plugin." + item.name + ".cnt", "http", "integer", "Unique number of plugin field " + item.name);
+  }
+});
+
+addIpField("Src", "a1", "p1", "g1", "as1", "rir1");
+addIpField("Dst", "a2", "p2", "g2", "as2", "rir2");
+addIpField("DNS", "dnsip", null, "gdnsip", "asdnsip", "rirdnsip");
+addIpField("XFF", "xff", null, "gxff", "asxff", "rirxff");
+addIpField("Socks", "socksip", "sockspo", "gsocksip", "assocksip", "rirsocksip");
+addIpField("Email", "eip", null, "geip", "aseip", "rireip");

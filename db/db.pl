@@ -22,6 +22,7 @@
 # 13 - Rename rotate to expire, added smb, socks, rir fields
 # 14 - New http fields, user.views
 # 15 - New first byte fields, socks user
+# 16 - New dynamic plugin section
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -30,7 +31,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 15;
+my $VERSION = 16;
 my $verbose = 0;
 
 ################################################################################
@@ -511,6 +512,19 @@ sub sessionsUpdate
             }
           }
         }
+      }, {
+        template_plugin: {
+          path_match: "plugin.*",
+          match_mapping_type: "string",
+          mapping: {
+            type: "multi_field",
+            path: "full",
+            fields: {
+              "snow" : {"type": "string", "analyzer" : "snowball"},
+              "raw" : {"type": "string", "index" : "not_analyzed"}
+            }
+          }
+        }
       }
     ],
     properties: {
@@ -979,6 +993,10 @@ sub sessionsUpdate
         type: "integer"
       },
       hdrs: {
+        type: "object",
+        dynamic: "true"
+      },
+      plugin: {
         type: "object",
         dynamic: "true"
       },
@@ -1583,7 +1601,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 15) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 16) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

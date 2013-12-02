@@ -564,7 +564,11 @@ void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data
 
     if (data[0] == 4) {
         socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
-        memcpy(&socks->ip, data+4, 4);
+        if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
+            socks->ip = 0;
+        } else {
+            memcpy(&socks->ip, data+4, 4);
+        }
         socks->ver   = 4;
 
         int i;
@@ -573,9 +577,24 @@ void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data
             socks->user = g_strndup((char *)data+8, i-8);
             socks->userlen = i - 8;
         }
-    } else if (data[0] == 5 && len == 3) {
+
+        if (socks->ip == 0) {
+            i++;
+            int start;
+            for(start = i; i < len && data[i]; i++);
+            if (i > start && i != len ) {
+                socks->hostlen = i-start;
+                socks->host = g_ascii_strdown((char*)data+start, i-start);
+            }
+        }
+
+        session->skip[socks->which] = i+1;
+    } else if (data[0] == 5 && (len == 3 || len == 4)) {
         socks->ver   = 5;
         socks->auth  = data[1];
+        session->skip[socks->which] = len;
+    } else {
+        moloch_nids_free_session_socks(session);
     }
 }
 /******************************************************************************/
@@ -585,6 +604,8 @@ void moloch_nids_free_session_socks(MolochSession_t *session)
 
     if (socks->user)
         g_free(socks->user);
+    if (socks->host)
+        g_free(socks->host);
     MOLOCH_TYPE_FREE(MolochSessionSocks_t, socks);
     session->socks = 0;
 }
@@ -787,6 +808,9 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         if (session->packets >= config.maxPackets) {
             moloch_nids_mid_save_session(session);
         }
+    } else if (config.tests) {
+        dumperFilePos = ftell(offlineFile) - 16 - nids_last_pcap_header->caplen;
+        g_array_append_val(session->filePosArray, dumperFilePos);
     }
 
     /* Clean up the Q, only 1 per incoming packet so we don't fall behind */

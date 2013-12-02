@@ -617,6 +617,7 @@ void moloch_http_exit()
 int moloch_http_queue_length(void *serverV) 
 {
     MolochHttp_t *server = serverV;
+    if (!server) return 0;
 
     return server->requestQ[0].r_count + server->requestQ[1].r_count;
 }

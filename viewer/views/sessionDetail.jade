@@ -18,35 +18,50 @@ mixin arrayList(values, title, expr, extra)
         !{extra}
 
 //- Standard method to print ip, port, geo, asn, and rir info
-mixin ipPrint(ip,port,geo,as,rir,expr)
+mixin ipPrint(ip,port,geo,as,rir,expr, full)
   - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
-  a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");') #{ipstr}
+  if (full)
+    a(href='#', onclick='return addExpression("#{expr} == #{ipstr}");') #{ipstr}
+  else
+    a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");') #{ipstr}
   - if (port)
     | :
-    a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.port == #{port}");') #{port}
+    else
+      a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
 
   - if (geo)
     |  (
-    a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");') #{geo}
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.country == #{geo}");') #{geo}
+    else
+      a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");') #{geo}
     |)
   - if (as)
     |  [
-    a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");') #{as}
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.asn == \\\"#{as}\\\"");') #{as}
+    else
+      a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");') #{as}
     |]
   - if (rir)
     |  {
-    a(href='#', onclick='return addExpression("rir.#{expr} == \\\"#{rir}\\\"");') #{rir}
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.rir == \\\"#{rir}\\\"");') #{rir}
+    else
+      a(href='#', onclick='return addExpression("rir.#{expr} == \\\"#{rir}\\\"");') #{rir}
     |}
 
 //- Standard method to print ip info with commas
-mixin ipArrayList(values, geos, ass, rirs, title, expr)
+mixin ipArrayList(values, geos, ass, rirs, title, expr, full)
   if (values)
     dt #{title}
     dd
       each ip,i in values 
         if (i > 0)
           |, 
-        mixin ipPrint(values[i], undefined, (geos?geos[i]:null), (ass?ass[i]:null), (rirs?rirs[i]:null), expr)
+        mixin ipPrint(values[i], undefined, (geos?geos[i]:null), (ass?ass[i]:null), (rirs?rirs[i]:null), expr, full)
 
 //- Start of page
 div.sessionDetail(sessionid='#{session.id}')
@@ -220,6 +235,15 @@ div.sessionDetail(sessionid='#{session.id}')
       mixin arrayList(session.smbfn, "Files", "smb.fn")
       mixin arrayList(session.smbos, "OS", "smb.os")
       mixin arrayList(session.smbver, "Version", "smb.ver")
+
+  if (session.plugin && pluginFields && pluginFields.length > 0)
+    div.sessionDetailMeta.bold Plugin
+    dl.sessionDetailMeta
+      each value,i in pluginFields 
+        if (value.type === "ip")
+          mixin ipArrayList(session.plugin[value.name], session.plugin[value.name + ".geo"], session.plugin[value.name + ".asn"], session.plugin[value.name+".rir"], value.name, "plugin." + value.name, true)
+        else
+          mixin arrayList(session.plugin[value.name], value.name, "plugin." + value.name)
 
   div.sessionDetailToolbar
     li

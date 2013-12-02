@@ -51,6 +51,7 @@ static GOptionEntry entries[] =
     { "copy",        0,                    0, G_OPTION_ARG_NONE,         &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file ", NULL },
     { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.fakePcap,      "fake pcap", NULL },
     { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &config.dryRun,        "dry run, noting written to database", NULL },
+    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.tests,         "Output test suite information", NULL },
     { NULL,          0, 0,                                    0,         NULL, NULL, NULL }
 };
 
@@ -103,6 +104,10 @@ void parse_args(int argc, char **argv)
     if (config.debug) {
         LOG("nodeName = %s", config.nodeName);
         LOG("hostName = %s", config.hostName);
+    }
+
+    if (config.tests) {
+        config.dryRun = 1;
     }
 }
 /******************************************************************************/
@@ -233,7 +238,7 @@ int moloch_string_cmp(const void *keyv, const void *elementv)
     char *key = (char*)keyv;
     MolochString_t *element = (MolochString_t *)elementv;
 
-    return strcmp(key, element->str) == 0;
+    return strncmp(key, element->str, element->len) == 0;
 }
 /******************************************************************************/
 uint32_t moloch_int_hash(const void *key)

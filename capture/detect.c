@@ -388,6 +388,88 @@ moloch_detect_tls_process(MolochSession_t *session, unsigned char *data, int len
 
     session->certJsonSize += len*2;
 }
+/******************************************************************************/
+void
+moloch_detect_tls_process_client(MolochSession_t *session, unsigned char *data, int len)
+{
+    BSB sslbsb;
+
+    BSB_INIT(sslbsb, data, len);
+
+    if (BSB_REMAINING(sslbsb) > 5) {
+        unsigned char *ssldata = BSB_WORK_PTR(sslbsb);
+        int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
+
+        BSB pbsb;
+        BSB_INIT(pbsb, ssldata+5, ssllen);
+
+        if (BSB_REMAINING(pbsb) > 7) {
+            unsigned char *pdata = BSB_WORK_PTR(pbsb);
+            int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
+
+            BSB cbsb;
+            BSB_INIT(cbsb, pdata+6, plen-2); // The - 4 for plen is done above, confusing
+
+            if(BSB_REMAINING(cbsb) > 32) {
+                BSB_IMPORT_skip(cbsb, 32);     // Random
+
+                int skiplen = 0;
+                BSB_IMPORT_u08(cbsb, skiplen);   // Session Id Length
+                BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
+
+                BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
+                BSB_IMPORT_skip(cbsb, skiplen);  // Ciper Suites
+
+                BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
+                BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
+
+                if (BSB_REMAINING(cbsb) > 2) {
+                    int etotlen = 0;
+                    BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
+
+                    etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
+
+                    BSB ebsb;
+                    BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+
+                    while (BSB_REMAINING(ebsb) > 0) {
+                        int etype = 0, elen = 0;
+
+                        BSB_IMPORT_u16 (ebsb, etype);
+                        BSB_IMPORT_u16 (ebsb, elen);
+                        if (etype != 0) {
+                            BSB_IMPORT_skip (ebsb, elen);
+                            continue;
+                        }
+
+                        BSB snibsb;
+                        BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
+                        BSB_IMPORT_skip (ebsb, elen);
+
+                        int sni = 0;
+                        BSB_IMPORT_u16(snibsb, sni); // list len
+                        if (sni != BSB_REMAINING(snibsb))
+                            continue;
+
+                        BSB_IMPORT_u08(snibsb, sni); // type
+                        if (sni != 0)
+                            continue;
+
+                        BSB_IMPORT_u16(snibsb, sni); // len
+                        if (sni != BSB_REMAINING(snibsb))
+                            continue;
+
+                        moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
+                    }
+                }
+            }
+        }
+
+        BSB_IMPORT_skip(sslbsb, ssllen + 5);
+    }
+
+    session->certJsonSize += len*2;
+}
 
 /*############################## HTTP ##############################*/
 
@@ -1251,7 +1333,12 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
 #ifdef EMAILDEBUG
             printf("%d %d cmd => %s\n", session->which, *state, line->str);
 #endif
-            if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
+            if (email->needStatus[(session->which + 1) % 2]) {
+                email->needStatus[(session->which + 1) % 2] = 0;
+                char tag[200];
+                snprintf(tag, sizeof(tag), "smtp:statuscode:%d", atoi(line->str));
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
+            } else if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
                 char *lower = g_ascii_strdown(moloch_detect_remove_matching(line->str+11, '<', '>'), -1);
                 if (!moloch_field_string_add(MOLOCH_FIELD_EMAIL_SRC, session, lower, -1, FALSE)) {
@@ -1265,7 +1352,11 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
                 *state = EMAIL_CMD;
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
+            } else if (strncasecmp(line->str, "AUTH LOGIN", 8) == 0) {
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "smtp:authlogin");
+                *state = EMAIL_CMD;
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "smtp:starttls");
                 *state = EMAIL_IGNORE;
                 email->state[(session->which+1)%2] = EMAIL_TLS_OK;
                 return;
@@ -1291,6 +1382,7 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
             printf("%d %d header => %s\n", session->which, *state, line->str);
 #endif
             if (strcmp(line->str, ".") == 0) {
+                email->needStatus[session->which] = 1;
                 *state = EMAIL_CMD;
             } else if (*line->str == 0) {
                 *state = EMAIL_DATA;
@@ -1388,6 +1480,7 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
             printf("%d %d %sdata => %s\n", session->which, *state, (*state == EMAIL_MIME_DATA_RETURN?"mime ": ""), line->str);
 #endif
             if (strcmp(line->str, ".") == 0) {
+                email->needStatus[session->which] = 1;
                 *state = EMAIL_CMD;
             } else {
                 MolochString_t *string;
@@ -2023,17 +2116,23 @@ void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, ui
 
         if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
             moloch_detect_parse_classify(session, data + 8, remaining - 8);
-            session->skip[socks->which] = 9 + socks->userlen;
             session->skip[session->which] = 8;
-            moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
+            if (socks->ip)
+                moloch_field_int_add(MOLOCH_FIELD_SOCKS_IP, session, socks->ip);
             moloch_field_int_add(MOLOCH_FIELD_SOCKS_PORT, session, socks->port);
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:socks");
 
             if (socks->user) {
-                if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_USER, session, socks->user, socks->userlen, TRUE)) {
+                if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_USER, session, socks->user, socks->userlen, FALSE)) {
                     g_free(socks->user);
                 }
                 socks->user = 0;
+            }
+            if (socks->host) {
+                if (!moloch_field_string_add(MOLOCH_FIELD_SOCKS_HOST, session, socks->host, socks->hostlen, FALSE)) {
+                    g_free(socks->host);
+                }
+                socks->host = 0;
             }
         }
         moloch_nids_free_session_socks(session);
@@ -2062,7 +2161,6 @@ void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, ui
             moloch_nids_free_session_socks(session);
 
         session->skip[session->which] = 2;
-        session->skip[socks->which] = 3;
 
         return;
     case SOCKS5_STATE_USER_REQUEST:
@@ -2222,6 +2320,7 @@ void moloch_detect_init()
     qclasses[4]   = "dns:qclass:HS";
     qclasses[255] = "dns:qclass:ANY";
 
+    //http://en.wikipedia.org/wiki/List_of_DNS_record_types
     qtypes[1]   = "dns:qtype:A";
     qtypes[2]   = "dns:qtype:NS";
     qtypes[3]   = "dns:qtype:MD";
@@ -2238,6 +2337,45 @@ void moloch_detect_init()
     qtypes[14]  = "dns:qtype:MINFO";
     qtypes[15]  = "dns:qtype:MX";
     qtypes[16]  = "dns:qtype:TXT";
+    qtypes[17]  = "dns:qtype:RP";
+    qtypes[18]  = "dns:qtype:AFSDB";
+    qtypes[19]  = "dns:qtype:X25";
+    qtypes[20]  = "dns:qtype:ISDN";
+    qtypes[21]  = "dns:qtype:RT";
+    qtypes[22]  = "dns:qtype:NSAP";
+    qtypes[23]  = "dns:qtype:NSAPPTR";
+    qtypes[24]  = "dns:qtype:SIG";
+    qtypes[25]  = "dns:qtype:KEY";
+    qtypes[26]  = "dns:qtype:PX";
+    qtypes[27]  = "dns:qtype:GPOS";
+    qtypes[28]  = "dns:qtype:AAAA";
+    qtypes[29]  = "dns:qtype:LOC";
+    qtypes[30]  = "dns:qtype:NXT";
+    qtypes[31]  = "dns:qtype:EID";
+    qtypes[32]  = "dns:qtype:NIMLOC";
+    qtypes[33]  = "dns:qtype:SRV";
+    qtypes[34]  = "dns:qtype:ATMA";
+    qtypes[35]  = "dns:qtype:NAPTR";
+    qtypes[36]  = "dns:qtype:KX";
+    qtypes[37]  = "dns:qtype:CERT";
+    qtypes[38]  = "dns:qtype:A6";
+    qtypes[39]  = "dns:qtype:DNAME";
+    qtypes[40]  = "dns:qtype:SINK";
+    qtypes[41]  = "dns:qtype:OPT";
+    qtypes[42]  = "dns:qtype:APL";
+    qtypes[43]  = "dns:qtype:DS";
+    qtypes[44]  = "dns:qtype:SSHFP";
+    qtypes[46]  = "dns:qtype:RRSIG";
+    qtypes[47]  = "dns:qtype:NSEC";
+    qtypes[48]  = "dns:qtype:DNSKEY";
+    qtypes[49]  = "dns:qtype:DHCID";
+    qtypes[50]  = "dns:qtype:NSEC3";
+    qtypes[51]  = "dns:qtype:NSEC3PARAM";
+    qtypes[52]  = "dns:qtype:TLSA";
+    qtypes[55]  = "dns:qtype:HIP";
+    qtypes[99]  = "dns:qtype:SPF";
+    qtypes[249] = "dns:qtype:TKEY";
+    qtypes[250] = "dns:qtype:TSIG";
     qtypes[252] = "dns:qtype:AXFR";
     qtypes[253] = "dns:qtype:MAILB";
     qtypes[254] = "dns:qtype:MAILA";
@@ -2265,7 +2403,8 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (remaining < 3)
         return;
 
-    if (data[0] == 0x5 && data[1] == 1 && data[2] <= 2 && remaining == 3) {
+    if (data[0] == 0x5 && ((remaining == 3 && data[1] == 1 && data[2] <= 2) || 
+                           (remaining == 4 && data[1] == 2 && data[2] <= 2 && data[3] <= 3))) {
         moloch_nids_new_session_socks(session, data, remaining);
     }
 
@@ -2348,6 +2487,13 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (remaining < 14)
         return;
 
+    if (session->which == 0 && session->port2 == 53 && data[4] == 1 && data[5] == 0)
+        session->isDnsTcp = 1;
+    else if (session->which == 1 && session->isDnsTcp) {
+        uint32_t len = ((data[0]&0xff) << 8) | (data[1] & 0xff);
+        moloch_detect_dns(session, data+2, MIN(len, remaining)-2);
+    }
+
 
     if (data[13] == 0x78 &&  
         (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (uint32_t)(data[5]&0xff)) == remaining)) ||  // Windows
@@ -2366,9 +2512,18 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (remaining < 30)
         return;
 
-    if (data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03 && data[5] == 2) {
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:tls");
-        moloch_detect_tls_process(session, data, remaining);
+    /* 1 Content Type - 0x16
+     * 2 Version 0x0301 - 0x03-03
+     * 2 Length
+     * 1 Message Type 1 - Client Hello, 2 Server Hellow
+     */
+    if (data[0] == 0x16 && data[1] == 0x03 && data[2] <= 0x03) {
+        if (data[5] == 1) {
+            moloch_detect_tls_process_client(session, data, remaining);
+        } else if (data[5] == 2) {
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:tls");
+            moloch_detect_tls_process(session, data, remaining);
+        }
     }
 }
 /******************************************************************************/

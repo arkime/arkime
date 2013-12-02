@@ -99,7 +99,9 @@ typedef struct moloch_trie {
 #define MOLOCH_FIELD_FLAG_SCNT        0x0002
 #define MOLOCH_FIELD_FLAG_FORCE_UTF8  0x0004
 #define MOLOCH_FIELD_FLAG_HEADERS     0x0008
-#define MOLOCH_FIELD_FLAG_CONTINUE    0x0010
+#define MOLOCH_FIELD_FLAG_PLUGINS     0x0010
+#define MOLOCH_FIELD_FLAG_CONTINUE    0x0020
+#define MOLOCH_FIELD_FLAG_IPPOST      0x0040
 
 typedef struct {
     char                 *name;
@@ -138,6 +140,7 @@ typedef struct moloch_config {
     gboolean  fakePcap;
     gboolean  copyPcap;
     gboolean  pcapRecursive;
+    gboolean  tests;
 
     enum MolochRotate rotate;
 
@@ -231,6 +234,7 @@ typedef struct {
 typedef struct moloch_session_email {
     MolochStringHead_t boundaries;
     char               state[2];
+    char               needStatus[2];
     GString           *line[2];
     gint               state64[2];
     guint              save64[2];
@@ -250,14 +254,16 @@ typedef struct moloch_session_smb {
 } MolochSessionSMB_t;
 
 typedef struct moloch_session_socks {
+    char     *user;
+    char     *host;
     uint32_t  ip;
     uint16_t  port;
     uint16_t  userlen;
+    uint16_t  hostlen;
     uint8_t   which;
     uint8_t   ver;
     uint8_t   auth;
     uint8_t   state;
-    char     *user;
 } MolochSessionSocks_t;
 
 typedef struct moloch_session_http {
@@ -335,6 +341,7 @@ typedef struct moloch_session {
     uint16_t    which:1;
     uint16_t    isSsh:1;
     uint16_t    isIrc:1;
+    uint16_t    isDnsTcp:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {

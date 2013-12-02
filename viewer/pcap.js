@@ -350,6 +350,9 @@ Pcap.prototype.pcap = function (buffer, obj) {
   };
 
   switch(this.linkType) {
+  case 0: // NULL
+    this.ip4(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
+    break;
   case 1: // Ether
     this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;

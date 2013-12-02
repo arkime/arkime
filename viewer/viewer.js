@@ -217,7 +217,9 @@ function twoDigitString(value) {
 
 var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
 function fmenum(field) {
-  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null) {
+  var fieldsMap = Config.getFieldsMap();
+  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null || 
+      fieldsMap[field] && fieldsMap[field].type === "ip") {
     return FMEnum.ip;
   } else if (field.match(/^(ta)$/) !== null) {
     return FMEnum.tags;
@@ -407,7 +409,8 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
     isIndex: true,
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
-    emailFields: Config.headers("headers-email")
+    emailFields: Config.headers("headers-email"),
+    pluginFields: Config.headers("plugin-fields")
   });
 });
 
@@ -773,7 +776,7 @@ function lookupQueryItems(query, doneCb) {
         } else {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
-        Db.search('tags', 'tag', {size:1000, fields:["id", "n"], query: query}, function(err, result) {
+        Db.search('tags', 'tag', {size:500, fields:["id", "n"], query: query}, function(err, result) {
           var terms = [];
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);
@@ -923,6 +926,7 @@ function buildSessionQuery(req, buildCb) {
 
   var err = null;
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
+                              ipFields: Config.getIpFields(),
                               fieldsMap: Config.getFieldsMap()};
   if (req.query.expression) {
     req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
@@ -997,7 +1001,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     if (!item.fields.ro || processedRo[item.fields.ro]) {
       if (writes++ > 100) {
         writes = 0;
-        async.setImmediate(nextCb);
+        setImmediate(nextCb);
       } else {
         nextCb();
       }
@@ -1537,19 +1541,19 @@ app.get('/spigraph.json', function(req, res) {
     var eachCb;
     switch (fmenum(field)) {
     case FMEnum.other:
-      eachCb = function (item, cb) {async.setImmediate(cb);};
+      eachCb = function (item, cb) {setImmediate(cb);};
       break;
     case FMEnum.ip:
       eachCb = function(item, cb) {
         item.name = Pcap.inet_ntoa(item.name);
-        async.setImmediate(cb);
+        setImmediate(cb);
       };
       break;
     case FMEnum.tags:
       eachCb = function(item, cb) {
         Db.tagIdToName(item.name, function (name) {
           item.name = name;
-          async.setImmediate(cb);
+          setImmediate(cb);
         });
       };
       break;
@@ -1557,7 +1561,7 @@ app.get('/spigraph.json', function(req, res) {
       eachCb = function(item, cb) {
         Db.tagIdToName(item.name, function (name) {
           item.name = name.substring(12);
-          async.setImmediate(cb);
+          setImmediate(cb);
         });
       };
       break;
@@ -1660,7 +1664,7 @@ app.get('/spiview.json', function(req, res) {
     });
     query.size = 0;
 
-    //console.log("spiview.json query", JSON.stringify(query), "indices", indices);
+    console.log("spiview.json query", JSON.stringify(query), "indices", indices);
 
     var graph;
     var map;
@@ -1825,7 +1829,7 @@ function buildConnections(req, res, cb) {
     connects[n].db += f.db;
     connects[n].pa += f.pa;
     connects[n].no[f.no] = 1;
-    return async.setImmediate(cb);
+    return setImmediate(cb);
   }
 
   function processDst(vsrc, adst, f, cb) {
@@ -1849,7 +1853,7 @@ function buildConnections(req, res, cb) {
         });
       }
     }, function (err) {
-      return async.setImmediate(cb);
+      return setImmediate(cb);
     });
   }
 
@@ -1883,7 +1887,7 @@ function buildConnections(req, res, cb) {
       async.eachLimit(graph.hits.hits, 10, function(hit, hitCb) {
         var f = hit.fields;
         if (f[fsrc] === undefined || f[fdst] === undefined) {
-          return async.setImmediate(hitCb);
+          return setImmediate(hitCb);
         }
 
         var asrc = Array.isArray(f[fsrc])? f[fsrc] : [f[fsrc]];
@@ -1906,7 +1910,7 @@ function buildConnections(req, res, cb) {
             });
           }
         }, function (err) {
-          async.setImmediate(hitCb);
+          setImmediate(hitCb);
         });
       }, function (err) {
         var nodes = [];
@@ -2060,7 +2064,7 @@ app.get('/unique.txt', function(req, res) {
       res.write("" + item.term + ", " + item.count + "\n");
       if (writes++ > 1000) {
         writes = 0;
-        async.setImmediate(cb);
+        setImmediate(cb);
       } else {
         cb();
       }
@@ -2070,7 +2074,7 @@ app.get('/unique.txt', function(req, res) {
       res.write("" + item.term + "\n");
       if (writes++ > 1000) {
         writes = 0;
-        async.setImmediate(cb);
+        setImmediate(cb);
       } else {
         cb();
       }
@@ -2150,7 +2154,7 @@ app.get('/unique.txt', function(req, res) {
         facets = facets.sort(function(a,b) {return b.count - a.count;});
 
 
-        async.forEachSeries(facets, writeCb, function () {
+        async.forEachSeries(facets, eachCb, function () {
           res.end();
         });
       });
@@ -2437,7 +2441,8 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
     query: req.query,
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
-    emailFields: Config.headers("headers-email")
+    emailFields: Config.headers("headers-email"),
+    pluginFields: Config.headers("plugin-fields")
   });
 }
 
@@ -2498,13 +2503,13 @@ function gzipDecode(req, res, session, incoming) {
     this.nextCb = null;
     if (this.inflator) {
       this.inflator.end(null, function () {
-        async.setImmediate(nextCb);
+        setImmediate(nextCb);
       });
       this.inflator = null;
     } else {
       outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
       if (nextCb) {
-        async.setImmediate(nextCb);
+        setImmediate(nextCb);
       }
     }
   };
@@ -2538,7 +2543,7 @@ function gzipDecode(req, res, session, incoming) {
     if (!item) {
     } else if (item.data.length === 0) {
       outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: item.data}]};
-      async.setImmediate(nextCb);
+      setImmediate(nextCb);
     } else {
       parsers[(pos%2)].nextCb = nextCb;
       var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
@@ -2547,7 +2552,7 @@ function gzipDecode(req, res, session, incoming) {
         console.log("ERROR", out);
       }
       if (parsers[(pos%2)].nextCb) {
-        async.setImmediate(parsers[(pos%2)].nextCb);
+        setImmediate(parsers[(pos%2)].nextCb);
         parsers[(pos%2)].nextCb = null;
       }
     }
@@ -2655,12 +2660,12 @@ function imageDecodeHTTP(req, res, session, incoming, findBody) {
     if (res.finished === true) {
       return nextCb("Done!");
     } else {
-      async.setImmediate(nextCb);
+      setImmediate(nextCb);
     }
     p++;
   }, function (err) {
     if (findBody === -1) {
-      async.setImmediate(localSessionDetailReturnFull,req, res, session, outgoing);
+      setImmediate(localSessionDetailReturnFull,req, res, session, outgoing);
     }
   });
 }
@@ -2834,7 +2839,7 @@ function imageDecodeSMTP(req, res, session, incoming, findBody) {
   }
 
   if (findBody === -1) {
-    async.setImmediate(localSessionDetailReturnFull, req, res, session, outgoing);
+    setImmediate(localSessionDetailReturnFull, req, res, session, outgoing);
   }
 }
 
@@ -2852,7 +2857,7 @@ function imageDecode(req, res, session, results, findBody) {
 
   req.query.needimage = "false";
   if (findBody === -1) {
-    async.setImmediate(localSessionDetailReturn, req, res, session, results);
+    setImmediate(localSessionDetailReturn, req, res, session, results);
   }
 }
 
@@ -3229,7 +3234,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
             } else {
               res.write(buffer.slice(24, bufpos));
             }
-            async.setImmediate(nextCb);
+            setImmediate(nextCb);
           });
         });
         preq.on('error', function (e) {
@@ -3800,7 +3805,7 @@ function scrubList(req, res, entire, list) {
         addCaTrust(info, item.fields.no);
         var preq = client.request(info, function(pres) {
           pres.on('end', function () {
-            async.setImmediate(nextCb);
+            setImmediate(nextCb);
           });
         });
         preq.on('error', function (e) {
@@ -3972,7 +3977,7 @@ function sendSessionsList(req, res, list) {
           pres.on('data', function (chunk) {
           });
           pres.on('end', function () {
-            async.setImmediate(nextCb);
+            setImmediate(nextCb);
           });
         });
         preq.on('error', function (e) {

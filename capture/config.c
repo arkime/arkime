@@ -34,6 +34,7 @@ static GKeyFile             *molochKeyFile;
 MolochStringHashStd_t        httpReqHeaders;
 MolochStringHashStd_t        httpResHeaders;
 MolochStringHashStd_t        emailHeaders;
+MolochStringHashStd_t        pluginHeaders;
 
 /******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
@@ -281,7 +282,7 @@ void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos)
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
-void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t *hash)
+void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t *hash, int flags)
 {
     GError   *error = 0;
     char      name[100];
@@ -321,7 +322,7 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
         }
         g_strfreev(values);
 
-        int flags = MOLOCH_FIELD_FLAG_HEADERS;
+        flags |= MOLOCH_FIELD_FLAG_HEADERS;
 
         if (count)
             flags |= MOLOCH_FIELD_FLAG_CNT;
@@ -340,6 +341,7 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
                 type = MOLOCH_FIELD_TYPE_INT_ARRAY;
             break;
         case 2:
+            flags |= MOLOCH_FIELD_FLAG_IPPOST;
             type = MOLOCH_FIELD_TYPE_IP_HASH;
             break;
         }
@@ -426,19 +428,22 @@ void moloch_config_load_headers()
     HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, httpResHeaders, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, emailHeaders, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, pluginHeaders, moloch_string_hash, moloch_string_cmp);
 
     moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", MOLOCH_FIELD_HTTP_XFF);
     moloch_config_add_header(&httpReqHeaders, "user-agent", MOLOCH_FIELD_HTTP_UA);
     moloch_config_add_header(&httpReqHeaders, "host", MOLOCH_FIELD_HTTP_HOST);
-    moloch_config_load_header("headers-http-request", "hreq-", &httpReqHeaders);
+    moloch_config_load_header("headers-http-request", "hreq-", &httpReqHeaders, 0);
 
-    moloch_config_load_header("headers-http-response", "hres-", &httpResHeaders);
+    moloch_config_load_header("headers-http-response", "hres-", &httpResHeaders, 0);
 
 
     moloch_config_add_header(&emailHeaders, "subject", MOLOCH_FIELD_EMAIL_SUB);
     moloch_config_add_header(&emailHeaders, "x-mailer", MOLOCH_FIELD_EMAIL_UA);
     moloch_config_add_header(&emailHeaders, "mime-version", MOLOCH_FIELD_EMAIL_MV);
-    moloch_config_load_header("headers-email", "ehead-", &emailHeaders);
+    moloch_config_load_header("headers-email", "ehead-", &emailHeaders, 0);
+
+    moloch_config_load_header("plugin-fields", "", &pluginHeaders, MOLOCH_FIELD_FLAG_PLUGINS);
 }
 /******************************************************************************/
 void moloch_config_exit()
