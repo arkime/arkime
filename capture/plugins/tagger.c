@@ -379,7 +379,7 @@ gboolean tagger_fetch_files (gpointer sync)
     char                key[500];
     int                 key_len;
 
-    key_len = snprintf(key, sizeof(key), "/tagger/_search?fields=md5");
+    key_len = snprintf(key, sizeof(key), "/tagger/_search?fields=md5&size=999");
 
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {
