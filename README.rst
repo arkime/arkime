@@ -141,11 +141,11 @@ Building Capture
 
    - CentOS::
 
-        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel
+        yum install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
 
    - Ubuntu::
     
-        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev
+        apt-get install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev
 
 2. Building ``capture`` can be a pain because of OS versions.
 
@@ -155,14 +155,14 @@ Building Capture
      here are the pieces you need:
 
      + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.22 or
-       higher (2.22 is recommended for static builds)::
+       higher (2.34 is recommended for static builds)::
 
-            wget http://ftp.acc.umu.se/pub/gnome/sources/glib/2.22/glib-2.22.5.tar.gz
-            ./configure --disable-xattr --disable-selinux --enable-static
+            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-2.34.3.tar.xz
+            ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux
 
      + `yara <http://yara-project.googlecode.com>`_ version 1.6 or higher::
 
-            wget http://yara-project.googlecode.com/files/yara-1.6.tar.gz
+            wget http://yara-project.googlecode.com/files/yara-1.7.tar.gz
             ./configure --enable-static
 
      + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be
@@ -171,18 +171,16 @@ Building Capture
             libtoolize -f # Only some platforms need this
             ./configure --enable-static
 
-     + `libpcap <http://www.tcpdump.org/#latest-release>`_ - version 1.1 or
+     + `libpcap <http://www.tcpdump.org/#latest-release>`_ - version 1.3 or
        higher (most OS versions are older)::
        
-        wget http://www.tcpdump.org/release/libpcap-1.3.0.tar.gz
-        ./configure --disable-libglib
+             wget http://www.tcpdump.org/release/libpcap-1.5.1.tar.gz
+             ./configure --disable-dbus
 
      + `libnids <http://libnids.sourceforge.net/>`_ - version 1.24 or higher::
 
-        wget http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
-        tar zxvf libnids-1.24.tar.gz
-        cd libnids-1.24
-        ./configure --disable-libnet --disable-glib2
+             wget http://downloads.sourceforge.net/project/libnids/libnids/1.24/libnids-1.24.tar.gz
+             ./configure --disable-libnet --disable-glib2
 
 3. Run ``configure``. Optionally use the ``--with-<foo>`` directives to use
    static libraries from build directories.
