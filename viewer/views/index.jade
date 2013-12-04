@@ -261,12 +261,12 @@ block content
               if (oObj.aData.us) {
                 if (oObj.aData.infoAll) {
                   oObj.aData.us.forEach(function(item) {
-                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>"
+                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>";
                   });
                   data += '<img src="up-arrow.png">';
                 } else {
                   oObj.aData.us.slice(0,5).forEach(function(item) {
-                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>"
+                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>";
                   });
                   if (oObj.aData.us.length > 5) {
                     data += '<img src="down-arrow.png">';
@@ -322,7 +322,7 @@ block content
                 data += "<br>";
               }
 
-              data += "</div>"
+              data += "</div>";
 
               return data;
             }
@@ -422,8 +422,8 @@ block content
                   edstitemcounts: {name: "Export Unique Email Destination with Counts", counts:1, field: 'edst'},
                   efnitems: {name: "Export Unique Email Files", counts:0, field: 'efn'},
                   efnitemcounts: {name: "Export Unique Email Files with Counts", counts:1, field: 'efn'},
-                  efnitems: {name: "Export Unique IRC Channels", counts:0, field: 'ircch'},
-                  efnitemcounts: {name: "Export Unique IRC Channels with Counts", counts:1, field: 'ircch'}
+                  ircchitems: {name: "Export Unique IRC Channels", counts:0, field: 'ircch'},
+                  ircchitemcounts: {name: "Export Unique IRC Channels with Counts", counts:1, field: 'ircch'}
                 };
               } else {
                 items = {
@@ -454,7 +454,6 @@ block content
             var sPos = sessionsTable.fnGetPosition( e.target );
             var ip, country, port, suffix;
             if (sPos[1] === 3 || sPos[1] === 5) {
-              var ip, country, port;
               if (sPos[1] === 3) {
                 ip = ipString(rowData.a1);
                 country = rowData.g1;

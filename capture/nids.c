@@ -589,9 +589,8 @@ void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data
         }
 
         session->skip[socks->which] = i+1;
-    } else if (data[0] == 5 && (len == 3 || len == 4)) {
+    } else if (data[0] == 5 && (len >= 3 && len <= 5)) {
         socks->ver   = 5;
-        socks->auth  = data[1];
         session->skip[socks->which] = len;
     } else {
         moloch_nids_free_session_socks(session);

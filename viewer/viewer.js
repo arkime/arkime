@@ -218,7 +218,7 @@ function twoDigitString(value) {
 var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
 function fmenum(field) {
   var fieldsMap = Config.getFieldsMap();
-  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null || 
+  if (field.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
       fieldsMap[field] && fieldsMap[field].type === "ip") {
     return FMEnum.ip;
   } else if (field.match(/^(ta)$/) !== null) {
@@ -227,6 +227,15 @@ function fmenum(field) {
     return FMEnum.hh;
   }
   return FMEnum.other;
+}
+
+function errorString(err, result) {
+  if ((err || result.error).match("IndexMissingException")) {
+    return "Moloch's Elasticsearch database has no matching session indices for timeframe selected";
+  } else {
+    return "Elasticsearch error: " + (err || result.error);
+  }
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -340,6 +349,9 @@ function proxyRequest (req, res) {
     addCaTrust(info, req.params.nodeName);
 
     var preq = client.request(info, function(pres) {
+      if (pres.headers['content-type']) {
+        res.setHeader('content-type', pres.headers['content-type']);
+      }
       pres.on('data', function (chunk) {
         res.write(chunk);
       });
@@ -1571,7 +1583,7 @@ app.get('/spigraph.json', function(req, res) {
     Db.numberOfDocuments('sessions-*', function (err, total) {results.iTotalRecords = total;});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
-        results.bsqErr = "Error performing query";
+        results.bsqErr = errorString(err, result);
         console.log("spigraph.json error", err, (result?result.error:null));
         return res.send(results);
       }
@@ -1682,7 +1694,8 @@ app.get('/spiview.json', function(req, res) {
       spi: function (sessionsCb) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
           if (err || result.error) {
-            console.log("spiview.json error", err, (result?result.error:null));
+            bsqErr = errorString(err, result);
+            console.log("spiview.json ERROR", err, (result?result.error:null));
             sessionsCb(null, {});
             return;
           }
@@ -1882,6 +1895,11 @@ function buildConnections(req, res, cb) {
     console.log("buildConnections query", JSON.stringify(query));
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
+      if (err || graph.error) {
+        console.log("Build Connections ERROR", err, graph.error);
+        return cb(err || graph.error);
+      }
+
       var i;
 
       async.eachLimit(graph.hits.hits, 10, function(hit, hitCb) {

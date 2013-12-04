@@ -407,7 +407,7 @@ exports.headers("headers-email").forEach(function(item) {
 
 exports.headers("plugin-fields").forEach(function(item) {
   var p = "plugin." + item.name;
-  if (item.type == "ip") {
+  if (item.type === "ip") {
     addField(p, p, "plugin", "ip", "Plugin field " + item.name);
     addField(p + ".geo.snow", p + ".country", "plugin", "ip", "Plugin field " + item.name + " GEO");
     addField(p + ".rir.snow", p + ".rir", "plugin", "ip", "Plugin field " + item.name + " RIR");

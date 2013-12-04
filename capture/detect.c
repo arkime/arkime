@@ -1156,7 +1156,6 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
         if (BSB_IS_ERROR(bsb))
             break;
 
-
         uint16_t antype = 0;
         BSB_IMPORT_u16 (bsb, antype);
         uint16_t anclass = 0;
@@ -1165,13 +1164,27 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
         uint16_t rdlength = 0;
         BSB_IMPORT_u16 (bsb, rdlength);
 
-        if (antype == 1 && anclass == 1 && rdlength == 4 && BSB_REMAINING(bsb) >= 4) {
+        if (BSB_REMAINING(bsb) < rdlength) {
+            break;
+        }
+
+        if (anclass != 1) {
+            BSB_IMPORT_skip(bsb, rdlength);
+            continue;
+        }
+
+        switch (antype) {
+        case 1: {
+            if (rdlength != 4)
+                break;
             struct in_addr in;
             unsigned char *ptr = BSB_WORK_PTR(bsb);
             in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
 
             moloch_field_int_add(MOLOCH_FIELD_DNS_IP, session, in.s_addr);
-        } else if (antype == 5 && anclass == 1 && BSB_REMAINING(bsb) >= rdlength) {
+            break;
+        }
+        case 5: {
             BSB rdbsb;
             BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
@@ -1186,7 +1199,26 @@ void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len)
             if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
                 g_free(lower);
             }
+            break;
         }
+        case 15: {
+            BSB rdbsb;
+            BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
+            BSB_IMPORT_skip(rdbsb, 2); // preference
+
+            int namelen;
+            unsigned char *name = moloch_detect_dns_name(data, len, &rdbsb, &namelen);
+
+            if (!namelen || BSB_IS_ERROR(rdbsb))
+                continue;
+
+            char *lower = g_ascii_strdown((char*)name, namelen);
+
+            if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
+                g_free(lower);
+            }
+        }
+        } /* switch */
         BSB_IMPORT_skip(bsb, rdlength);
     }
 }
@@ -2403,8 +2435,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (remaining < 3)
         return;
 
-    if (data[0] == 0x5 && ((remaining == 3 && data[1] == 1 && data[2] <= 2) || 
-                           (remaining == 4 && data[1] == 2 && data[2] <= 2 && data[3] <= 3))) {
+    if (data[0] == 0x5 && (remaining >=3 && remaining <= 5) && data[1] == remaining - 2 && data[2] <= 3) {
         moloch_nids_new_session_socks(session, data, remaining);
     }
 

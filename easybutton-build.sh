@@ -12,7 +12,7 @@
 GLIB=2.34.3
 YARA=1.7
 GEOIP=1.4.8
-PCAP=1.3.0
+PCAP=1.5.1
 NIDS=1.24
 PFRING=5.6.1
 
@@ -127,7 +127,7 @@ else
       wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
     fi
     tar zxf libpcap-$PCAP.tar.gz
-    (cd libpcap-$PCAP; ./configure; make)
+    (cd libpcap-$PCAP; ./configure --disable-dbus; make)
     PCAPDIR=`pwd`/libpcap-$PCAP
     PCAPBUILD="--with-libpcap=$PCAPDIR"
 fi

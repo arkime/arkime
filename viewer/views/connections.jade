@@ -91,7 +91,7 @@ block content
       var height = $(window).height() - $("#headers").height() - 4;
 
       svgMain.attr("width", width)
-             .attr("height", height);
+             .attr("height", height)
              ;
 
       if (force) {
@@ -249,7 +249,7 @@ block content
             d3.select(this).classed("dragging", true);
             d.fixed |= 1;
           })
-          .on("drag", function (d) {d.px = d3.event.x, d.py = d3.event.y; force.resume();})
+          .on("drag", function (d) {d.px = d3.event.x; d.py = d3.event.y; force.resume();})
           .on("dragend", function (d) {
             d3.select(this).classed("dragging", false);
           });

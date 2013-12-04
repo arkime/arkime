@@ -77,9 +77,9 @@ div.sessionDetail(sessionid='#{session.id}')
       li 
         a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
     li
-      a(href='#{session.no}/raw/#{session.id}?type=src') Source Raw
+      a(href='#{session.no}/raw/#{session.id}?type=src',target="_blank") Source Raw
     li
-      a(href='#{session.no}/raw/#{session.id}?type=dst') Destination Raw
+      a(href='#{session.no}/raw/#{session.id}?type=dst',target="_blank") Destination Raw
     li
       a(href='?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}&openAll=1') Permalink
     li

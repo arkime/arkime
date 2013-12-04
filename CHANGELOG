@@ -17,6 +17,12 @@
   - smtp status code tagging (issue #180)
   - added missing DNS qtypes
   - tcp DNS support (issue #173)
+  - DNS MX support
+  - easybutton builds libpcap 1.5.1
+  - proxy content type correctly
+  - fixed viewer exit (issue #183)
+  - added unique email filenames
+  - src/dst raw view (issue #178)
 
 0.9.2 2013/11/14
   - BREAKING: nodejs 0.8 is no longer supported
