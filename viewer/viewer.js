@@ -273,6 +273,7 @@ function addCaTrust(info, node) {
 
   if ((internals.caTrustCerts[node] !== undefined) && (internals.caTrustCerts[node].length > 0)) {
     info.ca = internals.caTrustCerts[node];
+	info.agent.options.ca = internals.caTrustCerts[node];
     return;
   }
 
@@ -301,6 +302,7 @@ function addCaTrust(info, node) {
 
     if (internals.caTrustCerts[node].length > 0) {
       info.ca = internals.caTrustCerts[node];
+	  info.agent.options.ca = internals.caTrustCerts[node];
       return;
     }
   }
@@ -3924,12 +3926,12 @@ function sendSession(req, res, id, nextCb) {
 
     var info = url.parse(sobj.url + "/receiveSession?saveId=" + req.query.saveId);
     addAuth(info, req.user, req.params.nodeName, sobj.passwordSecret);
-    addCaTrust(info, req.params.nodeName);
     info.method = "POST";
 
     var result = "";
     var client = info.protocol === "https:"?https:http;
     info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
+    addCaTrust(info, req.params.nodeName);
     var preq = client.request(info, function(pres) {
       pres.on('data', function (chunk) {
         result += chunk;
