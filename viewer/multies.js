@@ -9,7 +9,6 @@
 try {
 var Config         = require('./config.js'),
     express        = require('express'),
-    connectTimeout = require('connect-timeout'),
     async          = require('async'),
     sprintf        = require('./public/sprintf.js'),
     os             = require('os'),
@@ -56,10 +55,15 @@ var app = express();
 app.configure(function() {
   app.enable("jsonp callback");
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
-  app.use(connectTimeout({ time: 60*60*1000 }));
   app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(saveBody);
   app.use(express.compress());
+  app.use(function(req, res, next) {
+    if (res.setTimeout) {
+      res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
+      return next();
+    }
+  });
 });
 
 function simpleGather(req, res, bodies, doneCb) {
