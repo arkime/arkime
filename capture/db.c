@@ -51,6 +51,10 @@ void *                  esServer = 0;
 
 static patricia_tree_t *ipTree;
 
+extern char            *moloch_char_to_hex;
+extern unsigned char    moloch_char_to_hexstr[256][3];
+extern unsigned char    moloch_hex_to_char[256][256];
+
 /******************************************************************************/
 extern MolochConfig_t        config;
 
@@ -212,7 +216,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     unsigned char         *dataPtr;
     uint32_t               jsonSize;
     int                    pos;
-    static char            hex[] = "0123456789abcdef";
 
     /* Let the plugins finish */
     if (pluginsCbs & MOLOCH_PLUGIN_SAVE)
@@ -315,8 +318,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         int i;
         BSB_EXPORT_sprintf(jbsb, "\"fb1\":\"");
         for (i = 0; i < session->firstBytesLen[0]; i++) {
-            BSB_EXPORT_u08(jbsb, hex[(session->firstBytes[0][i] & 0xf0) >> 4]);
-            BSB_EXPORT_u08(jbsb, hex[session->firstBytes[0][i] & 0x0f]);
+            BSB_EXPORT_ptr(jbsb, moloch_char_to_hexstr[(unsigned char)session->firstBytes[0][i]], 2);
         }
         BSB_EXPORT_sprintf(jbsb, "\",");
     }
@@ -324,8 +326,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (session->firstBytesLen[1] > 0) {
         BSB_EXPORT_sprintf(jbsb, "\"fb2\":\"");
         for (i = 0; i < session->firstBytesLen[1]; i++) {
-            BSB_EXPORT_u08(jbsb, hex[(session->firstBytes[1][i] & 0xf0) >> 4]);
-            BSB_EXPORT_u08(jbsb, hex[session->firstBytes[1][i] & 0x0f]);
+            BSB_EXPORT_ptr(jbsb, moloch_char_to_hexstr[(unsigned char)session->firstBytes[1][i]], 2);
         }
         BSB_EXPORT_sprintf(jbsb, "\",");
     }

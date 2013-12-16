@@ -278,7 +278,8 @@ void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos)
 
     hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
     hstring->str = key;
-    hstring->len = pos;
+    hstring->len = strlen(key);
+    hstring->uw = pos;
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
@@ -438,9 +439,15 @@ void moloch_config_load_headers()
     moloch_config_load_header("headers-http-response", "hres-", &httpResHeaders, 0);
 
 
+    moloch_config_add_header(&emailHeaders, "cc", MOLOCH_FIELD_EMAIL_DST);
+    moloch_config_add_header(&emailHeaders, "to", MOLOCH_FIELD_EMAIL_DST);
+    moloch_config_add_header(&emailHeaders, "from", MOLOCH_FIELD_EMAIL_SRC);
+    moloch_config_add_header(&emailHeaders, "message-id", MOLOCH_FIELD_EMAIL_ID);
+    moloch_config_add_header(&emailHeaders, "content-type", MOLOCH_FIELD_EMAIL_CT);
     moloch_config_add_header(&emailHeaders, "subject", MOLOCH_FIELD_EMAIL_SUB);
     moloch_config_add_header(&emailHeaders, "x-mailer", MOLOCH_FIELD_EMAIL_UA);
     moloch_config_add_header(&emailHeaders, "mime-version", MOLOCH_FIELD_EMAIL_MV);
+    moloch_config_add_header(&emailHeaders, "received", MOLOCH_FIELD_EMAIL_RECEIVED);
     moloch_config_load_header("headers-email", "ehead-", &emailHeaders, 0);
 
     moloch_config_load_header("plugin-fields", "", &pluginHeaders, MOLOCH_FIELD_FLAG_PLUGINS);

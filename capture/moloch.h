@@ -53,6 +53,7 @@ typedef struct moloch_string {
     struct moloch_string *s_next, *s_prev;
     char                 *str;
     uint32_t              s_hash;
+    uint32_t              uw;
     short                 s_bucket;
     short                 len:15;
     short                 utf8:1;
@@ -648,6 +649,7 @@ MOLOCH_FIELD_EMAIL_FN,
 MOLOCH_FIELD_EMAIL_MD5,
 MOLOCH_FIELD_EMAIL_FCT,
 MOLOCH_FIELD_EMAIL_IP,
+MOLOCH_FIELD_EMAIL_RECEIVED,
 
 MOLOCH_FIELD_IRC_NICK,
 MOLOCH_FIELD_IRC_CHANNELS,

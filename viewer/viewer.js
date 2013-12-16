@@ -273,7 +273,7 @@ function addCaTrust(info, node) {
 
   if ((internals.caTrustCerts[node] !== undefined) && (internals.caTrustCerts[node].length > 0)) {
     info.ca = internals.caTrustCerts[node];
-	info.agent.options.ca = internals.caTrustCerts[node];
+    info.agent.options.ca = internals.caTrustCerts[node];
     return;
   }
 
@@ -302,7 +302,7 @@ function addCaTrust(info, node) {
 
     if (internals.caTrustCerts[node].length > 0) {
       info.ca = internals.caTrustCerts[node];
-	  info.agent.options.ca = internals.caTrustCerts[node];
+      info.agent.options.ca = internals.caTrustCerts[node];
       return;
     }
   }

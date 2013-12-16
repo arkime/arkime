@@ -418,6 +418,7 @@ unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uin
     request = MOLOCH_TYPE_ALLOC(MolochRequest_t);
     memcpy(request->key, key, MIN(key_len, sizeof(request->key)));
     strncpy(request->method, method, sizeof(request->method));
+    request->method[sizeof(request->method)-1] = 0;
     request->key_len  = key_len;
     request->data_len = data_len;
     request->data     = data;

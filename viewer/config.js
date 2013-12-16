@@ -73,9 +73,14 @@ exports.pass2store = function(userid, password) {
 };
 
 exports.store2ha1 = function(passstore) {
-  var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
-  var d = c.update(passstore, "hex", "binary");
-  d += c.final("binary");
+  try {
+    var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
+    var d = c.update(passstore, "hex", "binary");
+    d += c.final("binary");
+  } catch (e) {
+    console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
+    process.exit(1);
+  }
   return d;
 };
 

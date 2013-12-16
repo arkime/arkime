@@ -58,6 +58,10 @@ extern MolochStringHashStd_t httpReqHeaders;
 extern MolochStringHashStd_t httpResHeaders;
 extern MolochStringHashStd_t emailHeaders;
 
+extern char                 *moloch_char_to_hex;
+extern unsigned char         moloch_char_to_hexstr[256][3];
+extern unsigned char         moloch_hex_to_char[256][256];
+
 
 /******************************************************************************/
 void moloch_detect_initial_tag(MolochSession_t *session)
@@ -257,6 +261,7 @@ moloch_detect_tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb)
         } else if (lastOid && atag == 2) {
             MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
             element->str = g_ascii_strdown((char*)value, alen);
+            element->len = alen;
             DLL_PUSH_TAIL(s_, &certs->alt, element);
         }
     }
@@ -956,7 +961,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         else
             HASH_FIND(s_, httpResHeaders, lower, hstring);
 
-        http->pos[session->which] = (hstring?hstring->len:0);
+        http->pos[session->which] = (hstring?hstring->uw:0);
 
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);
@@ -1305,6 +1310,129 @@ moloch_detect_email_add_value(MolochSession_t *session, int pos, char *s, int l)
     } /* SWITCH */
 }
 /******************************************************************************/
+char *
+moloch_detect_quoteable_decode_inplace(char *str, gsize *olen)
+{
+    char *start = str;
+    int   ipos = 0;
+    int   opos = 0;
+    int   done = 0;
+
+    while (str[ipos] && !done) {
+        switch(str[ipos]) {
+        case '=':
+            if (str[ipos+1] && str[ipos+2] && str[ipos+1] != '\n') {
+                str[opos] = moloch_hex_to_char[(unsigned char)str[ipos+1]][(unsigned char)str[ipos+2]];
+                ipos += 2;
+            } else {
+                done = 1;
+                continue;
+            }
+            break;
+        case '_':
+            str[opos] = ' ';
+            break;
+        case '?':
+            if (str[ipos+1] == '=') {
+                done = 1;
+                continue;
+            }
+            str[opos] = str[ipos];
+        default:
+            str[opos] = str[ipos];
+        }
+        opos++;
+        ipos++;
+    }
+
+
+    *olen = opos;
+    str[opos] = 0;
+    return start;
+}
+
+/******************************************************************************/
+void
+moloch_detect_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
+{
+    /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
+    /* =?charset?encoding?encoded-text?= */
+
+
+    char  output[0xffff];
+    int   outputlen = 0;
+    char *str = string;
+    char *end = str + len;
+
+    while (str < end) {
+        if (str[0] != '=' || str[1] != '?') {
+            output[outputlen] = *str;
+            outputlen++;
+            str++;
+            continue;
+        }
+
+        /* Start of encoded token */
+        char *question = strchr(str+2, '?');
+        if (!question) {
+            moloch_field_string_add(pos, session, string, len, TRUE);
+            return;
+        }
+
+        char *endquestion = strstr(question+3, "?=");
+        if (!endquestion) {
+            moloch_field_string_add(pos, session, string, len, TRUE);
+            return;
+        }
+
+        /* str+2 - question         = charset */
+        /* question+1               = encoding */
+        /* question+3 - endquestion = encoded-text */
+
+        GError  *error = 0;
+        gsize    bread, bwritten, olen;
+        if (*(question+1) == 'B' || *(question+1) == 'b') {
+            *question = 0;
+            *endquestion = 0;
+
+            g_base64_decode_inplace(question+3, &olen);
+
+            char *out = g_convert((char *)question+3, olen, "utf8", str+2, &bread, &bwritten, &error);
+            if (error) {
+                LOG("ERROR convering %s to utf8 %s ", str+2, error->message);
+                moloch_field_string_add(pos, session, string, len, TRUE);
+                return;
+            }
+
+            strcpy(output+outputlen, out);
+            outputlen += strlen(out);
+            g_free(out);
+        } else if (*(question+1) == 'Q' || *(question+1) == 'q') {
+            *question = 0;
+
+            moloch_detect_quoteable_decode_inplace(question+3, &olen);
+
+            char *out = g_convert((char *)question+3, strlen(question+3), "utf8", str+2, &bread, &bwritten, &error);
+            if (error) {
+                LOG("ERROR convering %s to utf8 %s ", str+2, error->message);
+                moloch_field_string_add(pos, session, string, len, TRUE);
+                return;
+            }
+
+            strcpy(output+outputlen, out);
+            outputlen += strlen(out);
+            g_free(out);
+        } else {
+            moloch_field_string_add(pos, session, string, len, TRUE);
+            return;
+        }
+        str = endquestion + 3;
+    }
+
+    output[outputlen] = 0;
+    moloch_field_string_add(pos, session, output, outputlen, TRUE);
+}
+/******************************************************************************/
 void moloch_detect_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
 {
     char *end = data+len;
@@ -1337,6 +1465,55 @@ void moloch_detect_parse_email_addresses(int field, MolochSession_t *session, ch
 
         while (data < end && *data != ',') data++;
         if (data < end && *data == ',') data++;
+    }
+}
+/******************************************************************************/
+void moloch_detect_parse_email_received(MolochSession_t *session, char *data, int len)
+{
+    char *end = data+len;
+
+    while (data < end) {
+        if (end - data > 10) {
+            if (memcmp("from ", data, 5) == 0) {
+                data += 5;
+                while(data < end && isspace(*data)) data++;
+                char *fromstart = data;
+                while (data < end && *data != ' ' && *data != ')') {
+                    if (*data == '@')
+                        fromstart = data+1;
+                    data++;
+                }
+                char *lower = g_ascii_strdown((char*)fromstart, data - fromstart);
+                if (!moloch_field_string_add(MOLOCH_FIELD_EMAIL_HOST, session, lower, data - fromstart, FALSE)) {
+                    g_free(lower);
+                }
+            } else if (memcmp("by ", data, 3) == 0) {
+                data += 3;
+                while(data < end && isspace(*data)) data++;
+                char *fromstart = data;
+                while (data < end && *data != ' ' && *data != ')') {
+                    if (*data == '@')
+                        fromstart = data+1;
+                    data++;
+                }
+                char *lower = g_ascii_strdown((char*)fromstart, data - fromstart);
+                if (!moloch_field_string_add(MOLOCH_FIELD_EMAIL_HOST, session, lower, data - fromstart, FALSE)) {
+                    g_free(lower);
+                }
+            }
+        }
+
+        if (*data == '[') {
+            data++;
+            char *ipstart = data;
+            while (data < end && *data != ']') data++;
+            *data = 0;
+            in_addr_t ia = inet_addr(ipstart);
+            if (ia == 0 || ia == 0xffffffff)
+                continue;
+            moloch_field_int_add(MOLOCH_FIELD_EMAIL_IP, session, ia);
+        }
+        data++;
     }
 }
 /******************************************************************************/
@@ -1436,6 +1613,7 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
             *state = EMAIL_DATA_HEADER;
 
             if (*data == ' ' || *data == '\t') {
+                g_string_append_c(line, ' ');
                 g_string_append_c(line, *data);
                 break;
             }
@@ -1451,27 +1629,39 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
 
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
-                moloch_detect_email_add_value(session, emailHeader->len, line->str + cpos , line->len - cpos);
-            } else if (strcmp(lower, "cc") == 0) {
-                moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_DST, session, line->str+3, line->len-3);
-            } else if (strcmp(lower, "to") == 0) {
-                moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_DST, session, line->str+3, line->len-3);
-            } else if (strcmp(lower, "from") == 0) {
-                moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_SRC, session, line->str+5, line->len-5);
-            } else if (strcmp(lower, "message-id") == 0) {
-                moloch_field_string_add(MOLOCH_FIELD_EMAIL_ID, session, moloch_detect_remove_matching(line->str+11, '<', '>'), -1, TRUE);
-            } else if (strcmp(lower, "content-type") == 0) {
-                char *s = line->str + 13;
-                while(isspace(*s)) s++;
+                switch (emailHeader->uw) {
+                case MOLOCH_FIELD_EMAIL_SUB:
+                    moloch_detect_email_add_encoded(session, MOLOCH_FIELD_EMAIL_SUB, line->str+9, line->len-9);
+                    break;
+                case MOLOCH_FIELD_EMAIL_DST:
+                    moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_DST, session, line->str+cpos, line->len-cpos);
+                    break;
+                case MOLOCH_FIELD_EMAIL_SRC:
+                    moloch_detect_parse_email_addresses(MOLOCH_FIELD_EMAIL_SRC, session, line->str+cpos, line->len-cpos);
+                    break;
+                case MOLOCH_FIELD_EMAIL_ID:
+                    moloch_field_string_add(MOLOCH_FIELD_EMAIL_ID, session, moloch_detect_remove_matching(line->str+cpos, '<', '>'), -1, TRUE);
+                    break;
+                case MOLOCH_FIELD_EMAIL_RECEIVED:
+                    moloch_detect_parse_email_received(session, line->str+cpos, line->len-cpos);
+                    break;
+                case MOLOCH_FIELD_EMAIL_CT: {
+                    char *s = line->str + 13;
+                    while(isspace(*s)) s++;
 
-                moloch_field_string_add(MOLOCH_FIELD_EMAIL_CT, session, s, -1, TRUE);
-                char *boundary = (char *)moloch_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
-                if (boundary) {
-                    MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
-                    string->str = g_strdup(moloch_detect_remove_matching(boundary+9, '"', '"'));
-                    string->len = strlen(string->str);
-                    DLL_PUSH_TAIL(s_, &email->boundaries, string);
+                    moloch_field_string_add(MOLOCH_FIELD_EMAIL_CT, session, s, -1, TRUE);
+                    char *boundary = (char *)moloch_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
+                    if (boundary) {
+                        MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
+                        string->str = g_strdup(moloch_detect_remove_matching(boundary+9, '"', '"'));
+                        string->len = strlen(string->str);
+                        DLL_PUSH_TAIL(s_, &email->boundaries, string);
+                    }
+                    break;
                 }
+                default:
+                    moloch_detect_email_add_value(session, emailHeader->uw, line->str + cpos , line->len - cpos);
+                } /* switch */
             } else {
                 int i;
                 for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
@@ -2138,6 +2328,7 @@ void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint
 #define SOCKS5_STATE_USER_REPLY     2
 #define SOCKS5_STATE_CONN_REQUEST   3
 #define SOCKS5_STATE_CONN_REPLY     4
+#define SOCKS5_STATE_CONN_DATA      5
 void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, uint32_t remaining)
 {
     MolochSessionSocks_t   *socks          = session->socks;
@@ -2254,6 +2445,13 @@ void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, ui
         } else if (data[3] == 4) { // IPV6
             session->skip[session->which] += 4 + 16 + 2;
         }
+        socks->state = SOCKS5_STATE_CONN_DATA;
+        return;
+    case SOCKS5_STATE_CONN_DATA:
+        if (session->which != socks->which) {
+            return;
+        }
+        moloch_detect_parse_classify(session, data, remaining);
         moloch_nids_free_session_socks(session);
         return;
     }
@@ -2290,7 +2488,7 @@ void moloch_detect_init()
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_UA,      "eua",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_SRC,     "esrc",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_DST,     "edst",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_SUB,     "esub",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_SUB,     "esub",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_ID,      "eid",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_CT,      "ect",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_MV,      "emv",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
@@ -2475,6 +2673,9 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (remaining < 5)
         return;
 
+    if (memcpy("* OK ", data, 5) == 0 && strstr((char*)data + 5, "IMAP") != 0)
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:imap");
+
     if (memcmp("HELO ", data, 5) == 0) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smtp");
         if (!session->email)
@@ -2489,6 +2690,10 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
 
     if (remaining < 9)
         return;
+
+    if (data[0] == 3 && data[1] == 0 && data[3] <= remaining && data[4] == (data[3] - 5) && data[5] == 0xe0) {
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:rdp");
+    }
 
     if ((data[4] == 0xff || data[4] == 0xfe) && memcmp("SMB", data+5, 3) == 0) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:smb");

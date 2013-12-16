@@ -25,6 +25,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <ctype.h>
 #include "glib.h"
 #include "pcap.h"
 #include "moloch.h"
@@ -33,6 +34,9 @@
 /******************************************************************************/
 MolochConfig_t         config;
 GMainLoop             *mainLoop;
+char                  *moloch_char_to_hex = "0123456789abcdef"; /* don't change case */
+unsigned char          moloch_char_to_hexstr[256][3];
+unsigned char          moloch_hex_to_char[256][256];
 
 /******************************************************************************/
 gboolean showVersion    = FALSE;
@@ -205,6 +209,7 @@ gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
     } else {
         hstring->str = string;
     }
+    hstring->len = strlen(string);
     HASH_ADD(s_, *hash, hstring->str, hstring);
     return TRUE;
 }
@@ -355,6 +360,25 @@ gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
+void moloch_hex_init()
+{
+    int i, j;
+    memset(moloch_hex_to_char, 0, sizeof(moloch_hex_to_char));
+    for (i = 0; i < 16; i++) {
+        for (j = 0; j < 16; j++) {
+            moloch_hex_to_char[(unsigned char)moloch_char_to_hex[i]][(unsigned char)moloch_char_to_hex[j]] = i << 4 | j;
+            moloch_hex_to_char[toupper(moloch_char_to_hex[i])][(unsigned char)moloch_char_to_hex[j]] = i << 4 | j;
+            moloch_hex_to_char[(unsigned char)moloch_char_to_hex[i]][toupper(moloch_char_to_hex[j])] = i << 4 | j;
+            moloch_hex_to_char[toupper(moloch_char_to_hex[i])][toupper(moloch_char_to_hex[j])] = i << 4 | j;
+        }
+    }
+
+    memset(moloch_char_to_hexstr, 0, sizeof(moloch_char_to_hexstr));
+    for (i = 0; i < 256; i++) {
+        moloch_char_to_hexstr[i][0] = moloch_char_to_hex[(i >> 4) & 0xf];
+        moloch_char_to_hexstr[i][1] = moloch_char_to_hex[i & 0xf];
+    }
+}
 /******************************************************************************/
 int main(int argc, char **argv)
 {
@@ -367,6 +391,7 @@ int main(int argc, char **argv)
 
     parse_args(argc, argv);
     moloch_config_init();
+    moloch_hex_init();
     moloch_nids_root_init();
     if (!config.pcapReadFile && !config.pcapReadDir) {
         moloch_drop_privileges();

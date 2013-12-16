@@ -55,7 +55,7 @@ int moloch_field_get(char *name)
 {
     int i;
     for (i = 0; i < config.maxField; i++) {
-        if (strcmp(config.fields[i]->name, name) == 0)
+        if (config.fields[i] && strcmp(config.fields[i]->name, name) == 0)
             return i;
     }
     return -1;
