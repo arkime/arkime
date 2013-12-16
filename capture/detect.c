@@ -2673,7 +2673,7 @@ void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data,
     if (remaining < 5)
         return;
 
-    if (memcpy("* OK ", data, 5) == 0 && strstr((char*)data + 5, "IMAP") != 0)
+    if (memcmp("* OK ", data, 5) == 0 && strstr((char*)data + 5, "IMAP") != 0)
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:imap");
 
     if (memcmp("HELO ", data, 5) == 0) {
