@@ -1,0 +1,94 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "db" : 252,
+            "no" : "test",
+            "ho" : [
+               "www.github.com"
+            ],
+            "lp" : 1385394928,
+            "a2" : "192.30.252.130",
+            "hsvercnt" : 1,
+            "ta" : [
+               "http:method:GET",
+               "http:statuscode:301",
+               "node:test",
+               "protocol:http",
+               "tcp"
+            ],
+            "hpath" : [
+               "/"
+            ],
+            "fpd" : 1385394928482,
+            "fs" : [],
+            "g1" : "USA",
+            "hsver" : [
+               "1.1"
+            ],
+            "uscnt" : 1,
+            "hocnt" : 1,
+            "p1" : 62341,
+            "by" : 800,
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               517,
+               706,
+               788,
+               870
+            ],
+            "hpathcnt" : 1,
+            "lpd" : 1385394928608,
+            "hh2" : [
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:location"
+            ],
+            "fp" : 1385394928,
+            "as2" : "AS36459 GitHub, Inc.",
+            "pa" : 8,
+            "hh2cnt" : 3,
+            "tacnt" : 5,
+            "fb1" : "474554202f204854",
+            "us" : [
+               "//www.github.com/"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "a1" : "10.180.156.141",
+            "fb2" : "485454502f312e31",
+            "hdrs" : {
+               "hres-location" : [
+                  "https://www.github.com/"
+               ]
+            },
+            "hh1cnt" : 3,
+            "p2" : 80,
+            "rir2" : "ARIN",
+            "hdvercnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "uacnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

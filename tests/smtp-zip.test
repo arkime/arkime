@@ -1,0 +1,126 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db" : 1969,
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "ectcnt" : 1,
+            "eid" : [
+               "20131217145016.GA29077@xxx.net"
+            ],
+            "no" : "test",
+            "emd5" : [
+               "40be8f5100e9beabab293c9d7bacaff0"
+            ],
+            "euacnt" : 1,
+            "lp" : 1387291817,
+            "emvcnt" : 1,
+            "a2" : "64.236.64.225",
+            "ect" : [
+               "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
+            ],
+            "esub" : [
+               "zip test"
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "smtp:content:application/zip",
+               "tcp"
+            ],
+            "eip" : [
+               "127.0.0.1"
+            ],
+            "eua" : [
+               "Mutt/1.5.20 (2009-12-10)"
+            ],
+            "fpd" : 1387291817187,
+            "fs" : [],
+            "g1" : "USA",
+            "p1" : 46671,
+            "by" : 3833,
+            "eipcnt" : 1,
+            "eho" : [
+               "localhost",
+               "xxxxxxxxxxxxx.xxx.com"
+            ],
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               521,
+               631,
+               713,
+               964,
+               1083,
+               1196,
+               1317,
+               1441,
+               1523,
+               1651,
+               1733,
+               3201,
+               3283,
+               3368,
+               3450,
+               3563,
+               3645,
+               3733,
+               3815,
+               3977,
+               4059,
+               4141,
+               4223
+            ],
+            "efncnt" : 1,
+            "ehocnt" : 2,
+            "geip" : [
+               "---"
+            ],
+            "lpd" : 1387291817565,
+            "fp" : 1387291817,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "pa" : 28,
+            "tacnt" : 4,
+            "fb1" : "45484c4f20787878",
+            "edst" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "esubcnt" : 1,
+            "a1" : "10.180.156.249",
+            "fb2" : "3232302078787878",
+            "efn" : [
+               "a.zip"
+            ],
+            "rireip" : [
+               ""
+            ],
+            "emd5cnt" : 1,
+            "aseip" : [
+               "---"
+            ],
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "p2" : 25,
+            "rir2" : "ARIN",
+            "eidcnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131217",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

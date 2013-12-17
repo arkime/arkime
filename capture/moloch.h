@@ -242,6 +242,7 @@ typedef struct moloch_session_email {
     GChecksum         *checksum[2];
 
     uint16_t           base64Decode:2;
+    uint16_t           firstInContent:2;
 } MolochSessionEmail_t;
 
 #define MAX_SMB_BUFFER 4096

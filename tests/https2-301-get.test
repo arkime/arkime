@@ -1,0 +1,96 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 4817,
+            "lpd" : 1385410274128,
+            "fp" : 1385410273,
+            "no" : "test",
+            "as2" : "AS36459 GitHub, Inc.",
+            "lp" : 1385410274,
+            "pa" : 23,
+            "tacnt" : 3,
+            "fb1" : "8080010301005700",
+            "a2" : "192.30.252.131",
+            "ta" : [
+               "node:test",
+               "protocol:tls",
+               "tcp"
+            ],
+            "fpd" : 1385410273592,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "1603010051020000",
+            "a1" : "10.180.156.141",
+            "tlscnt" : 2,
+            "p1" : 50754,
+            "tls" : [
+               {
+                  "sCn" : [
+                     "github.com"
+                  ],
+                  "alt" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "sOn" : "GitHub, Inc.",
+                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "iOn" : "DigiCert Inc",
+                  "altcnt" : 2,
+                  "iCn" : [
+                     "digicert high assurance ev ca-1"
+                  ]
+               },
+               {
+                  "sCn" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0337b928347c60a6aec5adb1217f3860",
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ]
+               }
+            ],
+            "by" : 6319,
+            "p2" : 443,
+            "rir2" : "ARIN",
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               502,
+               2008,
+               3514,
+               4485,
+               4567,
+               4649,
+               5045,
+               5174,
+               5256,
+               5480,
+               5955,
+               6037,
+               6146,
+               6228,
+               6337,
+               6419,
+               6501,
+               6571,
+               6641
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

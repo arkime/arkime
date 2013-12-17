@@ -1,0 +1,189 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 372,
+            "lpd" : 1385482078899,
+            "fp" : 1385482078,
+            "no" : "test",
+            "dnsipcnt" : 11,
+            "lp" : 1385482078,
+            "pa" : 10,
+            "tacnt" : 5,
+            "fb1" : "001c5e6301000001",
+            "a2" : "10.2.95.39",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "node:test",
+               "protocol:dns",
+               "tcp"
+            ],
+            "fpd" : 1385482078892,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "01545e6381800001",
+            "a1" : "10.180.156.141",
+            "dnshocnt" : 1,
+            "gdnsip" : [
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA"
+            ],
+            "p1" : 49342,
+            "by" : 1052,
+            "p2" : 53,
+            "dnsip" : [
+               "74.125.228.41",
+               "74.125.228.32",
+               "74.125.228.46",
+               "74.125.228.33",
+               "74.125.228.34",
+               "74.125.228.35",
+               "74.125.228.36",
+               "74.125.228.37",
+               "74.125.228.38",
+               "74.125.228.39",
+               "74.125.228.40"
+            ],
+            "asdnsip" : [
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc.",
+               "AS15169 Google Inc."
+            ],
+            "rirdnsip" : [
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               402,
+               484,
+               908,
+               990,
+               1072,
+               1154
+            ],
+            "dnsho" : [
+               "google.com"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131126",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db" : 285,
+            "lpd" : 1385482080086,
+            "fp" : 1385482080,
+            "no" : "test",
+            "dnsipcnt" : 5,
+            "lp" : 1385482080,
+            "pa" : 10,
+            "tacnt" : 5,
+            "fb1" : "0019e2ec01000001",
+            "a2" : "10.2.95.39",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "node:test",
+               "protocol:dns",
+               "tcp"
+            ],
+            "fpd" : 1385482080084,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "0100e2ec81800001",
+            "a1" : "10.180.156.141",
+            "dnshocnt" : 1,
+            "gdnsip" : [
+               "USA",
+               "USA",
+               "USA",
+               "USA",
+               "USA"
+            ],
+            "p1" : 49343,
+            "by" : 965,
+            "p2" : 53,
+            "dnsip" : [
+               "64.12.89.186",
+               "207.200.74.38",
+               "205.188.100.58",
+               "205.188.101.58",
+               "64.12.79.57"
+            ],
+            "asdnsip" : [
+               "AS1668 AOL Transit Data Network",
+               "AS1668 AOL Transit Data Network",
+               "AS1668 AOL Transit Data Network",
+               "AS1668 AOL Transit Data Network",
+               "AS1668 AOL Transit Data Network"
+            ],
+            "rirdnsip" : [
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN"
+            ],
+            "pr" : 6,
+            "ps" : [
+               1236,
+               1330,
+               1420,
+               1502,
+               1611,
+               1693,
+               2033,
+               2115,
+               2197,
+               2279
+            ],
+            "dnsho" : [
+               "aol.com"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131126",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

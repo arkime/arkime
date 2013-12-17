@@ -64,6 +64,20 @@ extern unsigned char         moloch_hex_to_char[256][256];
 
 
 /******************************************************************************/
+void moloch_detect_magic_tag(MolochSession_t *session, const char *base, const char *data, int len)
+{
+    const char *m = magic_buffer(cookie, data, len);
+    if (m) {
+        char tmp[500];
+        snprintf(tmp, sizeof(tmp), "%s:%s", base, m);
+        char *semi = strchr(tmp, ';');
+        if (semi) {
+            *semi = 0;
+        } 
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tmp);
+    }
+}
+/******************************************************************************/
 void moloch_detect_initial_tag(MolochSession_t *session)
 {
     int i;
@@ -693,16 +707,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:password");
         }
 
-        const char *m = magic_buffer(cookie, at, length);
-        if (m) {
-            char tmp[500];
-            snprintf(tmp, sizeof(tmp), "http:content:%s", m);
-            char *semi = strchr(tmp, ';');
-            if (semi) {
-                *semi = 0;
-            } 
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tmp);
-        }
+        moloch_detect_magic_tag(session, "http:content", at, length);
         http->inBody |= (1 << session->which);
     }
 
@@ -1722,6 +1727,7 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
                         const char *md5 = g_checksum_get_string(email->checksum[session->which]);
                         moloch_field_string_add(MOLOCH_FIELD_EMAIL_MD5, session, (char*)md5, 32, TRUE);
                     }
+                    email->firstInContent |= (1 << session->which);
                     email->base64Decode &= ~(1 << session->which);
                     email->state64[session->which] = 0;
                     email->save64[session->which] = 0;
@@ -1735,6 +1741,11 @@ void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, ui
                                                             &(email->state64[session->which]),
                                                             &(email->save64[session->which]));
                             g_checksum_update(email->checksum[session->which], buf, b);
+
+                            if (email->firstInContent & (1 << session->which)) {
+                                email->firstInContent &= ~(1 << session->which);
+                                moloch_detect_magic_tag(session, "smtp:content", (char *)buf, b);
+                            }
                         }
 
                     }

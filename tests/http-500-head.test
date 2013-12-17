@@ -1,0 +1,89 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "ua" : [
+               "Mozilla/4.0 (compatible;+MSIE+8.0;+Windows+NT+5.1)"
+            ],
+            "db" : 312,
+            "no" : "test",
+            "ho" : [
+               "samples.example.com"
+            ],
+            "lp" : 1361891421,
+            "a2" : "10.156.206.202",
+            "hsvercnt" : 1,
+            "ta" : [
+               "http:method:HEAD",
+               "http:statuscode:500",
+               "node:test",
+               "protocol:http",
+               "tcp"
+            ],
+            "hpath" : [
+               "/UpdataConfig.dat"
+            ],
+            "fpd" : 1361891420707,
+            "fs" : [],
+            "hsver" : [
+               "1.1"
+            ],
+            "uscnt" : 1,
+            "hocnt" : 1,
+            "p1" : 49323,
+            "by" : 912,
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               491,
+               567,
+               792,
+               868,
+               944,
+               1020
+            ],
+            "hpathcnt" : 1,
+            "lpd" : 1361891421481,
+            "hh2" : [
+               "http:header:connection",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:server"
+            ],
+            "fp" : 1361891420,
+            "pa" : 10,
+            "hh2cnt" : 4,
+            "tacnt" : 5,
+            "fb1" : "48454144202f5570",
+            "us" : [
+               "//samples.example.com/UpdataConfig.dat"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "a1" : "10.172.10.16",
+            "fb2" : "485454502f312e31",
+            "hh1cnt" : 4,
+            "p2" : 80,
+            "hdvercnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "uacnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-130226",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -1,0 +1,103 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "db" : 5389,
+            "no" : "test",
+            "ho" : [
+               "xxxxxxxxxxxxx.xxx.com"
+            ],
+            "lp" : 1385391358,
+            "a2" : "10.180.156.249",
+            "hsvercnt" : 1,
+            "ta" : [
+               "http:content:text/html",
+               "http:method:GET",
+               "http:statuscode:403",
+               "node:test",
+               "protocol:http",
+               "tcp"
+            ],
+            "hpath" : [
+               "/"
+            ],
+            "fpd" : 1385391358382,
+            "fs" : [],
+            "g1" : "USA",
+            "hsver" : [
+               "1.1"
+            ],
+            "uscnt" : 1,
+            "hocnt" : 1,
+            "p1" : 61450,
+            "by" : 6465,
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               524,
+               606,
+               2136,
+               3666,
+               3748,
+               5278,
+               5360,
+               6335,
+               6417,
+               6499,
+               6581,
+               6663
+            ],
+            "hpathcnt" : 1,
+            "lpd" : 1385391358387,
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:server"
+            ],
+            "fp" : 1385391358,
+            "hmd5cnt" : 1,
+            "pa" : 16,
+            "hh2cnt" : 6,
+            "tacnt" : 6,
+            "fb1" : "474554202f204854",
+            "us" : [
+               "//xxxxxxxxxxxxx.xxx.com/"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "a1" : "10.180.156.141",
+            "fb2" : "485454502f312e31",
+            "hmd5" : [
+               "230e3b4387b64caf54a7487b4f726adb"
+            ],
+            "hh1cnt" : 3,
+            "p2" : 80,
+            "hdvercnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "uacnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -1,0 +1,100 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db" : 1898,
+            "esrc" : [
+               "12345678@aol.com"
+            ],
+            "ectcnt" : 1,
+            "eid" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
+            ],
+            "no" : "test",
+            "lp" : 1386338052,
+            "emvcnt" : 1,
+            "a2" : "64.12.168.40",
+            "ect" : [
+               "text/plain; charset=utf-8"
+            ],
+            "esub" : [
+               "Re: xxx xxx xxxxx xxxxxx..."
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "smtp:statuscode:250",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1386338020379,
+            "fs" : [],
+            "g1" : "USA",
+            "p1" : 3293,
+            "by" : 3620,
+            "as1" : "AS0000 This is neat",
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               756,
+               832,
+               918,
+               994,
+               1273,
+               1388,
+               1464,
+               1571,
+               1672,
+               1748,
+               1832,
+               1936,
+               2012,
+               2096,
+               2172,
+               2279,
+               2355,
+               2739,
+               2815,
+               3502,
+               3578,
+               3686,
+               3762,
+               3896,
+               3972,
+               4048
+            ],
+            "lpd" : 1386338052390,
+            "fp" : 1386338020,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "pa" : 30,
+            "tacnt" : 5,
+            "fb1" : "45484c4f206c6f63",
+            "edst" : [
+               "xxxx.xxxxxx@xxxxx.com"
+            ],
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "fb2" : "3232302d6d74616f",
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "p2" : 587,
+            "rir2" : "ARIN",
+            "eidcnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131206",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -1,0 +1,116 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db" : 2151,
+            "esrc" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "ectcnt" : 1,
+            "eid" : [
+               "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
+            ],
+            "no" : "test",
+            "euacnt" : 1,
+            "lp" : 1386358271,
+            "emvcnt" : 1,
+            "a2" : "64.236.55.18",
+            "ect" : [
+               "multipart/alternative; \tboundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
+            ],
+            "esub" : [
+               "test å é î ø ü"
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "tcp"
+            ],
+            "eip" : [
+               "10.180.121.108",
+               "169.254.4.195"
+            ],
+            "eua" : [
+               "Microsoft-MacOutlook/14.3.9.131030"
+            ],
+            "fpd" : 1386358271061,
+            "fs" : [],
+            "g1" : "USA",
+            "p1" : 11084,
+            "by" : 3465,
+            "eipcnt" : 2,
+            "eho" : [
+               "xxxxxxxxxxxxxxxxx2.xxxxx.net",
+               "xxxxxxxxxxxxxxxxx1.xxxxx.net"
+            ],
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               405,
+               510,
+               586,
+               830,
+               975,
+               1084,
+               1160,
+               1269,
+               1345,
+               1461,
+               2991,
+               3145,
+               3221,
+               3322,
+               3398,
+               3553,
+               3629,
+               3705,
+               3781
+            ],
+            "ehocnt" : 2,
+            "geip" : [
+               "USA",
+               "---"
+            ],
+            "lpd" : 1386358271580,
+            "fp" : 1386358271,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "pa" : 23,
+            "tacnt" : 3,
+            "fb1" : "45484c4f20787878",
+            "edst" : [
+               "xxxxxxxx@gmail.com"
+            ],
+            "esubcnt" : 1,
+            "a1" : "10.180.121.109",
+            "fb2" : "3232302078787878",
+            "rireip" : [
+               "",
+               "ARIN"
+            ],
+            "aseip" : [
+               "---",
+               "---"
+            ],
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "p2" : 25,
+            "rir2" : "ARIN",
+            "eidcnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131206",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -1,0 +1,135 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 4838,
+            "lpd" : 1385396821236,
+            "fp" : 1385396821,
+            "no" : "test",
+            "as2" : "AS36459 GitHub, Inc.",
+            "ho" : [
+               "www.github.com"
+            ],
+            "lp" : 1385396821,
+            "pa" : 20,
+            "tacnt" : 3,
+            "fb1" : "1603010072010000",
+            "a2" : "192.30.252.130",
+            "ta" : [
+               "node:test",
+               "protocol:tls",
+               "tcp"
+            ],
+            "fpd" : 1385396821013,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "1603010055020000",
+            "a1" : "10.180.156.141",
+            "tlscnt" : 2,
+            "hocnt" : 1,
+            "p1" : 62599,
+            "tls" : [
+               {
+                  "sCn" : [
+                     "github.com"
+                  ],
+                  "alt" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "sOn" : "GitHub, Inc.",
+                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "iOn" : "DigiCert Inc",
+                  "altcnt" : 2,
+                  "iCn" : [
+                     "digicert high assurance ev ca-1"
+                  ]
+               },
+               {
+                  "sCn" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0337b928347c60a6aec5adb1217f3860",
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ]
+               }
+            ],
+            "by" : 6166,
+            "p2" : 443,
+            "rir2" : "ARIN",
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               491,
+               1997,
+               3503,
+               4478,
+               4560,
+               4642,
+               5038,
+               5167,
+               5249,
+               5501,
+               5976,
+               6058,
+               6167,
+               6249,
+               6358,
+               6440
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db" : 0,
+            "lpd" : 1385396821236,
+            "fp" : 1385396821,
+            "no" : "test",
+            "as2" : "AS36459 GitHub, Inc.",
+            "lp" : 1385396821,
+            "pa" : 3,
+            "tacnt" : 2,
+            "a2" : "192.30.252.130",
+            "ta" : [
+               "node:test",
+               "tcp"
+            ],
+            "fpd" : 1385396821236,
+            "fs" : [],
+            "g1" : "USA",
+            "a1" : "10.180.156.141",
+            "p1" : 62599,
+            "by" : 174,
+            "p2" : 443,
+            "rir2" : "ARIN",
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               6510,
+               6580,
+               6662
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

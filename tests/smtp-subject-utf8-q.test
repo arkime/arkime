@@ -1,0 +1,112 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db" : 2329,
+            "esrc" : [
+               "xxxxxxxxx@xxxxxxxxx.com"
+            ],
+            "ectcnt" : 1,
+            "no" : "test",
+            "emd5" : [
+               "5b153a606bea42005e1eedb5ddeabcf0"
+            ],
+            "lp" : 1384762016,
+            "emvcnt" : 1,
+            "a2" : "64.236.64.226",
+            "ect" : [
+               "multipart/mixed; boundary=\"===============1250870193309395048==\""
+            ],
+            "esub" : [
+               "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL _xxxxxxxxxxxxx_xxxxxx.zip"
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "smtp:content:application/octet-stream",
+               "srcip",
+               "tcp"
+            ],
+            "eip" : [
+               "10.168.0.1",
+               "10.168.0.2"
+            ],
+            "fpd" : 1384762012670,
+            "fs" : [],
+            "g1" : "USA",
+            "p1" : 20720,
+            "by" : 3599,
+            "as1" : "AS0000 This is neat",
+            "eipcnt" : 2,
+            "eho" : [
+               "xxxx.xxxx.xxxxxxxxx.com",
+               "smtp-02.xxxxxxxxx.com",
+               "smtp-01.xxxxxxxxx.com"
+            ],
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               549,
+               631,
+               882,
+               1064,
+               1187,
+               1269,
+               1453,
+               2983,
+               3323,
+               3405,
+               3519,
+               3681,
+               3763,
+               3845
+            ],
+            "ehocnt" : 3,
+            "geip" : [
+               "---",
+               "---"
+            ],
+            "lpd" : 1384762016457,
+            "fp" : 1384762012,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "pa" : 19,
+            "tacnt" : 5,
+            "fb1" : "45484c4f20736d74",
+            "edst" : [
+               "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
+            ],
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "fb2" : "32323020616f6c6d",
+            "rireip" : [
+               "",
+               ""
+            ],
+            "emd5cnt" : 1,
+            "aseip" : [
+               "---",
+               "---"
+            ],
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "p2" : 25,
+            "rir2" : "ARIN"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131118",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

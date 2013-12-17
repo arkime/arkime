@@ -1,0 +1,104 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db" : 3976,
+            "esrc" : [
+               "1234567899@aol.com"
+            ],
+            "ectcnt" : 1,
+            "no" : "test",
+            "lp" : 1386251823,
+            "emvcnt" : 1,
+            "a2" : "205.188.186.167",
+            "ect" : [
+               "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
+            ],
+            "esub" : [
+               "Urgent Trip."
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "smtp:statuscode:521",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1386251815266,
+            "fs" : [],
+            "g1" : "USA",
+            "p1" : 56558,
+            "by" : 6494,
+            "as1" : "AS0000 This is neat",
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               790,
+               899,
+               981,
+               1272,
+               1366,
+               1454,
+               1574,
+               1656,
+               1775,
+               1863,
+               1945,
+               2041,
+               2156,
+               2238,
+               2334,
+               2453,
+               2535,
+               2631,
+               2719,
+               2801,
+               2920,
+               3317,
+               3399,
+               4829,
+               4912,
+               4994,
+               5076,
+               6451,
+               6533,
+               6716,
+               6798,
+               6880,
+               6968,
+               7050
+            ],
+            "lpd" : 1386251823511,
+            "fp" : 1386251815,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "pa" : 38,
+            "tacnt" : 5,
+            "fb1" : "45484c4f20787878",
+            "edst" : [
+               "xxxxx-xxxx@xxxx.xxx.xx.jp"
+            ],
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "fb2" : "3232302d6d74616f",
+            "esrccnt" : 1,
+            "p2" : 587,
+            "emv" : [
+               "1.0"
+            ],
+            "rir2" : "ARIN"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131205",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

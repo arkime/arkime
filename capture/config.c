@@ -446,6 +446,7 @@ void moloch_config_load_headers()
     moloch_config_add_header(&emailHeaders, "content-type", MOLOCH_FIELD_EMAIL_CT);
     moloch_config_add_header(&emailHeaders, "subject", MOLOCH_FIELD_EMAIL_SUB);
     moloch_config_add_header(&emailHeaders, "x-mailer", MOLOCH_FIELD_EMAIL_UA);
+    moloch_config_add_header(&emailHeaders, "user-agent", MOLOCH_FIELD_EMAIL_UA);
     moloch_config_add_header(&emailHeaders, "mime-version", MOLOCH_FIELD_EMAIL_MV);
     moloch_config_add_header(&emailHeaders, "received", MOLOCH_FIELD_EMAIL_RECEIVED);
     moloch_config_load_header("headers-email", "ehead-", &emailHeaders, 0);

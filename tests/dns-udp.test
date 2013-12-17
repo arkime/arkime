@@ -1,0 +1,119 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 312,
+            "lpd" : 1385400647218,
+            "fp" : 1385400647,
+            "no" : "test",
+            "dnsipcnt" : 1,
+            "lp" : 1385400647,
+            "pa" : 2,
+            "tacnt" : 5,
+            "fb1" : "e039010000010000",
+            "a2" : "10.2.95.39",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "node:test",
+               "protocol:dns",
+               "udp"
+            ],
+            "fpd" : 1385400647217,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "e039818000010002",
+            "a1" : "10.180.156.141",
+            "dnshocnt" : 2,
+            "gdnsip" : [
+               "USA"
+            ],
+            "p1" : 62563,
+            "by" : 328,
+            "p2" : 53,
+            "dnsip" : [
+               "192.30.252.128"
+            ],
+            "asdnsip" : [
+               "AS36459 GitHub, Inc."
+            ],
+            "rirdnsip" : [
+               "ARIN"
+            ],
+            "pr" : 17,
+            "ps" : [
+               24,
+               114
+            ],
+            "dnsho" : [
+               "www.github.com",
+               "github.com"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db" : 312,
+            "lpd" : 1385400648228,
+            "fp" : 1385400648,
+            "no" : "test",
+            "dnsipcnt" : 1,
+            "lp" : 1385400648,
+            "pa" : 2,
+            "tacnt" : 5,
+            "fb1" : "e039010000010000",
+            "a2" : "10.178.8.71",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "node:test",
+               "protocol:dns",
+               "udp"
+            ],
+            "fpd" : 1385400648218,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "e039818000010002",
+            "a1" : "10.180.156.141",
+            "dnshocnt" : 2,
+            "gdnsip" : [
+               "USA"
+            ],
+            "p1" : 62416,
+            "by" : 328,
+            "p2" : 53,
+            "dnsip" : [
+               "192.30.252.130"
+            ],
+            "asdnsip" : [
+               "AS36459 GitHub, Inc."
+            ],
+            "rirdnsip" : [
+               "ARIN"
+            ],
+            "pr" : 17,
+            "ps" : [
+               384,
+               474
+            ],
+            "dnsho" : [
+               "www.github.com",
+               "github.com"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131125",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

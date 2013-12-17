@@ -1,0 +1,4 @@
+This directory contains simple pcap regression tests.  
+By running the command "./tests.pl" each pcap file is run thru moloch capture with the results compared against the matching .test file.
+The pcap file have been mostly anonymized.  mostly...  If you see data that shouldn't be there please let us know.
+If you have simple sample pcap files that we can use please share them!

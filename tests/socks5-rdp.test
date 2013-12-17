@@ -1,0 +1,58 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 85,
+            "lpd" : 1386644257101,
+            "fp" : 1386644255,
+            "socksip" : "10.0.0.1",
+            "no" : "test",
+            "as2" : "AS0001 Cool Beans!",
+            "lp" : 1386644257,
+            "sockspo" : 3389,
+            "pa" : 10,
+            "tacnt" : 6,
+            "fb1" : "050100050100010a",
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:rdp",
+               "protocol:socks",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1386644255859,
+            "fs" : [],
+            "fb2" : "0500050000010000",
+            "a1" : "10.0.0.3",
+            "p1" : 2276,
+            "by" : 668,
+            "assocksip" : "AS0000 This is neat",
+            "p2" : 42356,
+            "as1" : "AS0002 Hmm!@#$%^&*()",
+            "gsocksip" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               340,
+               416,
+               496,
+               576,
+               687,
+               776
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131210",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

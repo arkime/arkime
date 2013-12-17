@@ -17,6 +17,12 @@ if ($ARGV[0] eq "--fix") {
 } elsif ($ARGV[0] eq "--make") {
     shift @ARGV;
     doMake();
+} elsif ($ARGV[0] eq "--help") {
+    print "$ARGV[0] [-debug] [COMMAND] <pcap> files\n";
+    print "Commands:\n";
+    print "  --help        This help\n";
+    print "  --make        Create a .test file for each .pcap file on command line\n";
+    print " [default]      Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
 } else {
     doTests();
 }
