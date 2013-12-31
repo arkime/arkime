@@ -65,6 +65,8 @@ install: installdirs
 
 installdirs:
 	$(INSTALL) -d $(bindir)
+	(cd parsers; make install)
+	(cd plugins; make install)
 
 distclean realclean clean:
 	rm -f *.o moloch-capture
