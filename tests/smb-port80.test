@@ -1,0 +1,53 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 237,
+            "lpd" : 1379519110616,
+            "fp" : 1379519109,
+            "no" : "test",
+            "as2" : "AS0000 This is neat",
+            "lp" : 1379519110,
+            "pa" : 9,
+            "tacnt" : 5,
+            "fb1" : "000000a4ff534d42",
+            "a2" : "10.0.0.1",
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:smb",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1379519109833,
+            "fs" : [],
+            "fb2" : "b378fd2aae2d4aee",
+            "a1" : "10.0.0.2",
+            "p1" : 46735,
+            "by" : 847,
+            "p2" : 80,
+            "as1" : "AS0001 Cool Beans!",
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               536,
+               679,
+               769,
+               851,
+               933
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-130918",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

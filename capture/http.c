@@ -1,6 +1,6 @@
 /* http.c  -- Functions dealing with http connections.
  * 
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,14 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <string.h>
 #include <string.h>
 #include <sys/time.h>
-#include <netdb.h>
-#include <netdb.h>
 #include "glib.h"
 #include "zlib.h"
 #include "gio/gio.h"
@@ -156,6 +150,7 @@ gboolean moloch_http_write_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
     if (gerror) {
         /* Should free stuff here */
         LOG("ERROR: %p: Receive Error: %s", (void*)conn, gerror->message);
+        g_error_free(gerror);
         return FALSE;
     }
 
@@ -176,9 +171,10 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
     len = g_socket_receive(conn->conn, buffer, sizeof(buffer)-1, NULL, &gerror);
 
     if (gerror || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
-        if (gerror)
+        if (gerror) {
             LOG("ERROR: %p: Receive Error: %s", (void*)conn, gerror->message);
-        else if (cond & (G_IO_HUP | G_IO_ERR))
+            g_error_free(gerror);
+        } else if (cond & (G_IO_HUP | G_IO_ERR))
             LOG("ERROR: %p: Lost connection to %s", (void*)conn, conn->server->name);
         else if (len <= 0)
             LOG("ERROR: %p: len: %d cond: %x", (void*)conn, len, cond);
@@ -395,6 +391,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
     if (gerror) {
         LOG("%p: Send Error: %d %s", (void*)conn, sync, gerror->message);
         conn->conn = 0;
+        g_error_free(gerror);
         return FALSE;
     }
 

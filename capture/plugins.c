@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* plugins.c  -- Functions dealing with plugins
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -17,17 +17,10 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <string.h>
-#include <string.h>
-#include <netdb.h>
-#include <uuid/uuid.h>
 #include <unistd.h>
 #include <inttypes.h>
 #include <errno.h>
-#include <sys/statvfs.h>
 #include <ctype.h>
 #include "glib.h"
 #include "gmodule.h"
@@ -37,7 +30,6 @@
 extern MolochConfig_t        config;
 
 uint32_t                     pluginsCbs = 0;
-int                          numPlugins = 0;
 
 /******************************************************************************/
 typedef struct moloch_plugin {
@@ -95,15 +87,28 @@ void moloch_plugins_init()
             name++;
         g_strchomp((char *)name);
 
-        gchar   *path = g_build_filename (config.pluginsDir, name, NULL);
-        GModule *plugin = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+        int d;
+        GModule *plugin = 0;
+        for (d = 0; config.pluginsDir[d]; d++) {
+            gchar   *path = g_build_filename (config.pluginsDir[d], name, NULL);
 
-        if (!plugin) {
-            LOG("ERROR - Couldn't load plugin %s from '%s'\n%s", name, path, g_module_error());
+            if (!g_file_test(path, G_FILE_TEST_EXISTS))
+                continue;
+
+            plugin = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+
+            if (!plugin) {
+                LOG("ERROR - Couldn't load plugin %s from '%s'\n%s", name, path, g_module_error());
+                g_free (path);
+                continue;
+            }
+
             g_free (path);
-            continue;
+            break;
         }
-        g_free (path);
+
+        if (!plugin)
+            continue;
 
         MolochPluginInitFunc plugin_init;
 
@@ -142,7 +147,7 @@ int moloch_plugins_register_internal(const char *            name,
     plugin = MOLOCH_TYPE_ALLOC0(MolochPlugin_t);
     plugin->name = strdup(name);
     if (storeData) {
-        plugin->num  = numPlugins++;
+        plugin->num  = config.numPlugins++;
     } else {
         plugin->num  = -1;
     }

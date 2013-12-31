@@ -85,6 +85,26 @@
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "fb2" : "3232302d6d74616f",
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:56558,-1480934195:587"
+               ],
+               "test.number" : [
+                  2814033101
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
             "esrccnt" : 1,
             "p2" : 587,
             "emv" : [

@@ -1,0 +1,163 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "ua" : [
+               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"
+            ],
+            "db" : 933,
+            "no" : "test",
+            "ho" : [
+               "xxxxxxxxxxxxx.xxx.com"
+            ],
+            "lp" : 1388428585,
+            "a2" : "10.0.0.2",
+            "hsvercnt" : 1,
+            "ta" : [
+               "dstip",
+               "http:content:application/zip",
+               "http:method:GET",
+               "http:statuscode:200",
+               "node:test",
+               "protocol:http",
+               "srcip",
+               "tcp"
+            ],
+            "hpath" : [
+               "/a.zip"
+            ],
+            "fpd" : 1388428585136,
+            "fs" : [],
+            "g1" : "USA",
+            "hsver" : [
+               "1.1"
+            ],
+            "uscnt" : 1,
+            "hocnt" : 1,
+            "p1" : 52925,
+            "by" : 1613,
+            "as1" : "AS0000 This is neat",
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               734,
+               816,
+               1469,
+               1551,
+               1633,
+               1715
+            ],
+            "hpathcnt" : 1,
+            "lpd" : 1388428585164,
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:etag",
+               "http:header:last-modified",
+               "http:header:server"
+            ],
+            "fp" : 1388428585,
+            "as2" : "AS0001 Cool Beans!",
+            "hmd5cnt" : 1,
+            "pa" : 10,
+            "hh2cnt" : 8,
+            "tacnt" : 8,
+            "fb1" : "474554202f612e7a",
+            "us" : [
+               "//xxxxxxxxxxxxx.xxx.com/a.zip"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "a1" : "10.0.0.1",
+            "fb2" : "485454502f312e31",
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:52925,33554442:80"
+               ],
+               "test.number" : [
+                  33554442
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
+            "hmd5" : [
+               "40be8f5100e9beabab293c9d7bacaff0"
+            ],
+            "hh1cnt" : 6,
+            "p2" : 80,
+            "hdvercnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "uacnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131230",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db" : 0,
+            "lpd" : 1388428585176,
+            "fp" : 1388428585,
+            "no" : "test",
+            "as2" : "AS0001 Cool Beans!",
+            "lp" : 1388428585,
+            "pa" : 2,
+            "tacnt" : 4,
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "node:test",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1388428585167,
+            "fs" : [],
+            "g1" : "USA",
+            "a1" : "10.0.0.1",
+            "p1" : 52925,
+            "by" : 132,
+            "p2" : 80,
+            "as1" : "AS0000 This is neat",
+            "pr" : 6,
+            "ps" : [
+               1797,
+               1879
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131230",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

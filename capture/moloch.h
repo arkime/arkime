@@ -23,13 +23,14 @@
 #include "http_parser.h"
 #include "dll.h"
 #include "hash.h"
+#include "bsb.h"
 #include "nids.h"
 #include "glib.h"
 
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 7
+#define MOLOCH_API_VERSION 8
 
 /******************************************************************************/
 /*
@@ -81,6 +82,36 @@ typedef struct moloch_trie {
     MolochTrieNode_t root;
 } MolochTrie_t;
 
+/******************************************************************************/
+/*
+ * Certs Info
+ */
+
+typedef struct {
+    MolochStringHead_t  commonName; //2.5.4.3
+    char               *orgName; // 2.5.4.10
+    char                orgUtf8;
+} MolochCertInfo_t;
+
+typedef struct moloch_tlsinfo{
+    struct moloch_tlsinfo *t_next, *t_prev;
+    uint32_t               t_hash;
+    MolochCertInfo_t       issuer;
+    MolochCertInfo_t       subject;
+    MolochStringHead_t     alt;
+    unsigned char         *serialNumber;
+    short                  serialNumberLen;
+    short                  t_bucket;
+} MolochCertsInfo_t;
+
+typedef struct {
+    struct moloch_tlsinfo *t_next, *t_prev;
+    int                    t_count;
+} MolochCertsInfoHead_t;
+
+typedef HASH_VAR(s_, MolochCertsInfoHash_t, MolochCertsInfoHead_t, 1);
+typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
+
 
 /******************************************************************************/
 /*
@@ -95,6 +126,7 @@ typedef struct moloch_trie {
 #define MOLOCH_FIELD_TYPE_STR_HASH   5
 #define MOLOCH_FIELD_TYPE_IP         6
 #define MOLOCH_FIELD_TYPE_IP_HASH    7
+#define MOLOCH_FIELD_TYPE_CERTSINFO  8
 
 #define MOLOCH_FIELD_FLAG_CNT         0x0001
 #define MOLOCH_FIELD_FLAG_SCNT        0x0002
@@ -103,6 +135,8 @@ typedef struct moloch_trie {
 #define MOLOCH_FIELD_FLAG_PLUGINS     0x0010
 #define MOLOCH_FIELD_FLAG_CONTINUE    0x0020
 #define MOLOCH_FIELD_FLAG_IPPOST      0x0040
+
+#define MOLOCH_FIELD_FLAG_HP          0x0018
 
 typedef struct {
     char                 *name;
@@ -114,12 +148,13 @@ typedef struct {
 
 typedef struct {
     union {
-        char                  *str;
-        GPtrArray             *sarray;
-        MolochStringHashStd_t *shash;
-        int                    i;
-        GArray                *iarray;
-        MolochIntHashStd_t    *ihash;
+        char                     *str;
+        GPtrArray                *sarray;
+        MolochStringHashStd_t    *shash;
+        int                       i;
+        GArray                   *iarray;
+        MolochIntHashStd_t       *ihash;
+        MolochCertsInfoHashStd_t *cihash;
     };
     uint32_t                   jsonSize;
 } MolochField_t;
@@ -136,6 +171,7 @@ typedef struct moloch_config {
     char     *hostName;
     char     *pcapReadFile;
     char     *pcapReadDir;
+    gchar   **extraTags;
     gboolean  debug;
     gboolean  dryRun;
     gboolean  fakePcap;
@@ -149,6 +185,8 @@ typedef struct moloch_config {
     MolochFieldInfo_t *fields[100];
     int                maxField;
 
+    int                numPlugins;
+
     char     *nodeClass;
     char     *elasticsearch;
     char     *interface;
@@ -161,7 +199,8 @@ typedef struct moloch_config {
     char     *rirFile;
     char     *dropUser;
     char     *dropGroup;
-    char     *pluginsDir;
+    char     **pluginsDir;
+    char     **parsersDir;
 
     char     **plugins;
     char     **smtpIpHeaders;
@@ -207,84 +246,17 @@ typedef struct {
  * SPI Data Storage
  */
 
-typedef struct {
-    MolochStringHead_t  commonName; //2.5.4.3
-    char               *orgName; // 2.5.4.10
-    char                orgUtf8;
-} MolochCertInfo_t;
+struct moloch_session;
 
-typedef struct moloch_tlsinfo{
-    struct moloch_tlsinfo *t_next, *t_prev;
-    uint32_t               t_hash;
-    MolochCertInfo_t       issuer;
-    MolochCertInfo_t       subject;
-    MolochStringHead_t     alt;
-    unsigned char         *serialNumber;
-    short                  serialNumberLen;
-    short                  t_bucket;
-} MolochCertsInfo_t;
+typedef int  (* MolochParserFunc) (struct moloch_session *session, void *uw, const unsigned char *data, int remaining);
+typedef void (* MolochParserFreeFunc) (struct moloch_session *session, void *uw);
 
 typedef struct {
-    struct moloch_tlsinfo *t_next, *t_prev;
-    int                    t_count;
-} MolochCertsInfoHead_t;
+    MolochParserFunc      parserFunc;
+    void                 *uw;
+    MolochParserFreeFunc  parserFreeFunc;
 
-
-#define MOLOCH_MAX_PLUGINS       10
-
-typedef struct moloch_session_email {
-    MolochStringHead_t boundaries;
-    char               state[2];
-    char               needStatus[2];
-    GString           *line[2];
-    gint               state64[2];
-    guint              save64[2];
-    GChecksum         *checksum[2];
-
-    uint16_t           base64Decode:2;
-    uint16_t           firstInContent:2;
-} MolochSessionEmail_t;
-
-#define MAX_SMB_BUFFER 4096
-typedef struct moloch_session_smb {
-    char               buf[2][MAX_SMB_BUFFER];
-    uint32_t           remlen[2];
-    short              buflen[2];
-    uint16_t           flags2[2];
-    unsigned char      version[2];
-    char               state[2];
-} MolochSessionSMB_t;
-
-typedef struct moloch_session_socks {
-    char     *user;
-    char     *host;
-    uint32_t  ip;
-    uint16_t  port;
-    uint16_t  userlen;
-    uint16_t  hostlen;
-    uint8_t   which;
-    uint8_t   ver;
-    uint8_t   auth;
-    uint8_t   state;
-} MolochSessionSocks_t;
-
-typedef struct moloch_session_http {
-    GString    *urlString;
-    GString    *hostString;
-
-    GString    *valueString[2];
-
-    char        header[2][40];
-    short       pos[2];
-    http_parser parsers[2];
-
-    GChecksum  *checksum[2];
-
-    uint16_t    wParsers:2;
-    uint16_t    inHeader:2;
-    uint16_t    inValue:2;
-    uint16_t    inBody:2;
-} MolochSessionHttp_t;
+} MolochParserInfo_t;
 
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
@@ -293,57 +265,46 @@ typedef struct moloch_session {
     int                    h_bucket;
     uint32_t               h_hash;
 
-
-    HASH_VAR(t_, certs, MolochCertsInfoHead_t, 5);
-
     MolochField_t        **fields;
-    MolochSessionHttp_t   *http;
-    MolochSessionEmail_t  *email;
-    MolochSessionSMB_t    *smb;
-    MolochSessionSocks_t  *socks;
 
-    void       *pluginData[MOLOCH_MAX_PLUGINS];
+    void                  **pluginData;
 
+    MolochParserInfo_t    *parserInfo;
 
-    GArray     *filePosArray;
-    GArray     *fileNumArray;
-    char       *rootId;
+    GArray                *filePosArray;
+    GArray                *fileNumArray;
+    char                  *rootId;
 
-    struct timeval firstPacket;
-    struct timeval lastPacket;
-    char        firstBytes[2][8];
+    struct timeval         firstPacket;
+    struct timeval         lastPacket;
+    char                   firstBytes[2][8];
 
-    uint64_t    bytes;
-    uint64_t    databytes;
+    uint64_t               bytes;
+    uint64_t               databytes;
 
 
-    uint32_t    lastSave;
-    uint32_t    addr1;
-    uint32_t    addr2;
-    uint32_t    packets;
-    uint32_t    certJsonSize;
+    uint32_t               lastSave;
+    uint32_t               addr1;
+    uint32_t               addr2;
+    uint32_t               packets;
 
-    uint16_t    port1;
-    uint16_t    port2;
-    uint16_t    protocol;
-    uint16_t    offsets[2];
-    uint16_t    outstandingQueries;
-    uint16_t    sshLen;
+    uint16_t               port1;
+    uint16_t               port2;
+    uint16_t               offsets[2];
+    uint16_t               outstandingQueries;
 
-    uint8_t     firstBytesLen[2];
-    uint8_t     ip_tos;
-    uint8_t     tcp_flags;
-    uint8_t     sshCode;
-    uint8_t     ircState;
-    uint8_t     skip[2];
+    uint8_t                consumed[2];
+    uint8_t                protocol;
+    uint8_t                firstBytesLen[2];
+    uint8_t                ip_tos;
+    uint8_t                tcp_flags;
+    uint8_t                parserLen;
+    uint8_t                parserNum;
 
-    uint16_t    haveNidsTcp:1;
-    uint16_t    needSave:1;
-    uint16_t    dontSave:1;
-    uint16_t    which:1;
-    uint16_t    isSsh:1;
-    uint16_t    isIrc:1;
-    uint16_t    isDnsTcp:1;
+    uint16_t               haveNidsTcp:1;
+    uint16_t               needSave:1;
+    uint16_t               dontSave:1;
+    uint16_t               which:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -413,6 +374,9 @@ int moloch_string_cmp(const void *keyv, const void *elementv);
 uint32_t moloch_int_hash(const void *key);
 int moloch_int_cmp(const void *keyv, const void *elementv);
 
+const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
+const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
+
 void moloch_quit();
 
 
@@ -429,7 +393,6 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
 gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
-void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 
 
 
@@ -438,29 +401,41 @@ void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
  * db.c
  */
 
-void  moloch_db_init();
-int   moloch_db_tags_loading();
-char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id);
-void  moloch_db_save_session(MolochSession_t *session, int final);
-void  moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
-void  moloch_db_exit();
+void     moloch_db_init();
+int      moloch_db_tags_loading();
+char    *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id);
+void     moloch_db_save_session(MolochSession_t *session, int final);
+void     moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
+uint32_t moloch_db_peek_tag(const char *tagname);
+void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
+void     moloch_db_exit();
 
 /******************************************************************************/
 /*
- * detect.c
+ * parsers.c
  */
-void moloch_detect_init();
-void moloch_detect_initial_tag(MolochSession_t *session);
-void moloch_detect_parse_classify(MolochSession_t *session, unsigned char *data, uint32_t remaining);
-void moloch_detect_parse_http(MolochSession_t *session, unsigned char *data, uint32_t remaining, int initial);
-void moloch_detect_parse_email(MolochSession_t *session, unsigned char *data, uint32_t remaining);
-void moloch_detect_parse_smb(MolochSession_t *session, unsigned char *data, uint32_t remaining);
-void moloch_detect_parse_socks(MolochSession_t *session, unsigned char *data, uint32_t remaining);
-void moloch_detect_parse_ssh(MolochSession_t *session, unsigned char *data, uint32_t remaining);
-void moloch_detect_parse_irc(MolochSession_t *session, unsigned char *data, uint32_t remaining);
-void moloch_detect_parse_yara(MolochSession_t *session, unsigned char *data, uint32_t remaining, int initial);
-void moloch_detect_dns(MolochSession_t *session, unsigned char *data, int len);
-void moloch_detect_exit();
+
+void moloch_parsers_init();
+void moloch_parsers_initial_tag(MolochSession_t *session);
+unsigned char *moloch_parsers_asn_get_tlv(BSB *bsb, int *apc, int *atag, int *alen);
+char *moloch_parsers_asn_decode_oid(unsigned char *oid, int len);
+void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining);
+void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining);
+void moloch_parsers_exit();
+
+void moloch_parsers_magic_tag(MolochSession_t *session, const char *base, const char *data, int len);
+
+typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining);
+
+void  moloch_parsers_unregister(MolochSession_t *session, void *uw);
+void  moloch_parsers_register(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc);
+
+void  moloch_parsers_classifier_register_tcp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
+#define moloch_parsers_classifier_register_tcp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_tcp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+
+void  moloch_parsers_classifier_register_udp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
+#define moloch_parsers_classifier_register_udp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_udp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+
 
 /******************************************************************************/
 /*
@@ -490,29 +465,17 @@ void moloch_http_free_server(void *serverV);
  * nids.c
  */
 
-void  moloch_nids_root_init();
-void  moloch_nids_init();
-void  moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag);
-void  moloch_nids_certs_free (MolochCertsInfo_t *certs);
+void      moloch_nids_root_init();
+void     moloch_nids_init();
+void     moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag);
+gboolean moloch_nids_has_tag(MolochSession_t *session, int tagtype, const char *tag);
 uint32_t moloch_nids_dropped_packets();
 uint32_t moloch_nids_monitoring_sessions();
 uint32_t moloch_nids_disk_queue();
-void  moloch_nids_exit();
+void     moloch_nids_exit();
 
-void moloch_nids_incr_outstanding(MolochSession_t *session);
-void moloch_nids_decr_outstanding(MolochSession_t *session);
-
-void moloch_nids_new_session_http(MolochSession_t *session);
-void moloch_nids_free_session_http(MolochSession_t *session);
-
-void moloch_nids_new_session_email(MolochSession_t *session);
-void moloch_nids_free_session_email(MolochSession_t *session);
-
-void moloch_nids_new_session_smb(MolochSession_t *session);
-void moloch_nids_free_session_smb(MolochSession_t *session);
-
-void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data, int len);
-void moloch_nids_free_session_socks(MolochSession_t *session);
+void     moloch_nids_incr_outstanding(MolochSession_t *session);
+void     moloch_nids_decr_outstanding(MolochSession_t *session);
 
 /******************************************************************************/
 /*
@@ -607,8 +570,8 @@ void moloch_plugins_exit();
  * yara.c
  */
 void moloch_yara_init();
-void moloch_yara_execute(MolochSession_t *session, char *data, int len, int first);
-void moloch_yara_email_execute(MolochSession_t *session, char *data, int len, int first);
+void moloch_yara_execute(MolochSession_t *session, unsigned char *data, int len, int first);
+void moloch_yara_email_execute(MolochSession_t *session, unsigned char *data, int len, int first);
 void moloch_yara_exit();
 
 /******************************************************************************/
@@ -618,6 +581,8 @@ void moloch_yara_exit();
 
 enum {
 MOLOCH_FIELD_USER,
+
+MOLOCH_FIELD_CERTSINFO,
 
 MOLOCH_FIELD_HTTP_HOST,
 MOLOCH_FIELD_HTTP_URLS,
@@ -677,6 +642,8 @@ void moloch_field_define_internal(int pos, char *name, int type, int flags);
 int moloch_field_get(char *name);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
+gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
+void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);
 void moloch_field_free(MolochSession_t *session);
 void moloch_field_exit();
 

@@ -1,0 +1,95 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 2516,
+            "lpd" : 1387565112051,
+            "fp" : 1387565111,
+            "no" : "test",
+            "as2" : "AS0001 Cool Beans!",
+            "lp" : 1387565112,
+            "pa" : 22,
+            "tacnt" : 5,
+            "fb1" : "5353482d322e302d",
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:ssh",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1387565111946,
+            "fs" : [],
+            "g1" : "USA",
+            "fb2" : "5353482d312e3939",
+            "a1" : "10.0.0.1",
+            "sshver" : [
+               "ssh-1.99-openssh_3.9p1",
+               "ssh-2.0-openssh_5.3"
+            ],
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:61672,33554442:22"
+               ],
+               "test.number" : [
+                  33554442
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
+            "sshkeycnt" : 1,
+            "p1" : 61672,
+            "by" : 3752,
+            "p2" : 22,
+            "as1" : "AS0000 This is neat",
+            "sshkey" : [
+               "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
+            ],
+            "pr" : 6,
+            "sshvercnt" : 2,
+            "ps" : [
+               24,
+               106,
+               188,
+               258,
+               351,
+               421,
+               512,
+               588,
+               1450,
+               1526,
+               2236,
+               2330,
+               2552,
+               2766,
+               3300,
+               3386,
+               3462,
+               3580,
+               3656,
+               3774,
+               3908,
+               4058
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131220",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -16,9 +16,9 @@ block customMenu
       option(value="10000") 10000
       option(value="100000") 100000
     label(for='srcField') Src:
-    mixin fieldsSelect("srcField", "", true)
+    +fieldsSelect("srcField", "", true)
     label(for='dstField') Dst:
-    mixin fieldsSelect("dstField", "", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
+    +fieldsSelect("dstField", "", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
     label(for='minConn') Min Connections:
     select(id='minConn')
       option(value="1") 1

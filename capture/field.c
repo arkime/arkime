@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* field.c  -- Functions dealing with declaring fields
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -215,14 +215,104 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     }
 }
 /******************************************************************************/
+uint32_t moloch_field_certsinfo_hash(const void *key)
+{
+    MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
+
+    return ((ci->serialNumber[0] << 28) | 
+            (ci->serialNumber[ci->serialNumberLen-1] << 24) |
+            (ci->issuer.commonName.s_count << 18) |
+            (ci->issuer.orgName?ci->issuer.orgName[0] << 12:0) |
+            (ci->subject.commonName.s_count << 6) |
+            (ci->subject.orgName?ci->subject.orgName[0]:0));
+}
+
+/******************************************************************************/
+int moloch_field_certsinfo_cmp(const void *keyv, const void *elementv)
+{
+    MolochCertsInfo_t *key = (MolochCertsInfo_t *)keyv;
+    MolochCertsInfo_t *element = (MolochCertsInfo_t *)elementv;
+
+    if ( !((key->serialNumberLen == element->serialNumberLen) &&
+           (memcmp(key->serialNumber, element->serialNumber, element->serialNumberLen) == 0) &&
+           (key->issuer.commonName.s_count == element->issuer.commonName.s_count) &&
+           (key->issuer.orgName == element->issuer.orgName || strcmp(key->issuer.orgName, element->issuer.orgName) == 0) &&
+           (key->subject.commonName.s_count == element->subject.commonName.s_count) &&
+           (key->subject.orgName == element->subject.orgName || strcmp(key->subject.orgName, element->subject.orgName) == 0)
+          )
+       ) {
+
+        return 0;
+    }
+
+    MolochString_t *kstr, *estr;
+    for (kstr = key->issuer.commonName.s_next, estr = element->issuer.commonName.s_next;
+         kstr != (void *)&(key->issuer.commonName);
+         kstr = kstr->s_next, estr = estr->s_next) {
+
+        if (strcmp(kstr->str, estr->str) != 0)
+            return 0;
+    }
+
+    for (kstr = key->subject.commonName.s_next, estr = element->subject.commonName.s_next;
+         kstr != (void *)&(key->subject.commonName);
+         kstr = kstr->s_next, estr = estr->s_next) {
+
+        if (strcmp(kstr->str, estr->str) != 0)
+            return 0;
+    }
+
+    return 1;
+}
+/******************************************************************************/
+gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *certs, int len)
+{
+    MolochField_t             *field;
+    MolochCertsInfoHashStd_t   *hash;
+    MolochCertsInfo_t          *hci;
+
+    if (!session->fields[pos]) {
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
+        session->fields[pos] = field;
+        field->jsonSize = 3 + config.fields[pos]->len + len;
+        switch (config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            hash = MOLOCH_TYPE_ALLOC(MolochCertsInfoHashStd_t);
+            HASH_INIT(t_, *hash, moloch_field_certsinfo_hash, moloch_field_certsinfo_cmp);
+            field->cihash = hash;
+            HASH_ADD(t_, *hash, certs, certs);
+            return TRUE;
+        default:
+            LOG("Not a certsinfo %s", config.fields[pos]->name);
+            exit (1);
+        }
+    }
+
+    field = session->fields[pos];
+    field->jsonSize += 3 + len;
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_CERTSINFO:
+        HASH_FIND(t_, *(field->cihash), certs, hci);
+        if (hci)
+            return FALSE;
+        HASH_ADD(t_, *(field->cihash), certs, certs);
+        return TRUE;
+    default:
+        LOG("Not a certsinfo %s", config.fields[pos]->name);
+        exit (1);
+    }
+}
+/******************************************************************************/
 void moloch_field_free(MolochSession_t *session)
 {
-    int                    pos;
-    MolochField_t         *field;
-    MolochString_t        *hstring;
-    MolochStringHashStd_t *shash;
-    MolochInt_t           *hint;
-    MolochIntHashStd_t    *ihash;
+    int                       pos;
+    MolochField_t            *field;
+    MolochString_t           *hstring;
+    MolochStringHashStd_t    *shash;
+    MolochInt_t              *hint;
+    MolochIntHashStd_t       *ihash;
+    MolochCertsInfo_t        *hci;
+    MolochCertsInfoHashStd_t *cihash;
 
     for (pos = 0; pos < config.maxField; pos++) {
         if (!(field = session->fields[pos]))
@@ -256,9 +346,45 @@ void moloch_field_free(MolochSession_t *session)
             );
             MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
             break;
-        }
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            cihash = session->fields[pos]->cihash;
+            HASH_FORALL_POP_HEAD(t_, *cihash, hci, 
+                moloch_field_certsinfo_free(hci);
+            );
+            MOLOCH_TYPE_FREE(MolochCertsInfoHashStd_t, cihash);
+            break;
+        } // switch
         MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
     }
     MOLOCH_SIZE_FREE(fields, session->fields);
     session->fields = 0;
+}
+/******************************************************************************/
+void moloch_field_certsinfo_free (MolochCertsInfo_t *certs) 
+{
+    MolochString_t *string;
+
+    while (DLL_POP_HEAD(s_, &certs->alt, string)) {
+        g_free(string->str);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
+    }
+
+    while (DLL_POP_HEAD(s_, &certs->issuer.commonName, string)) {
+        g_free(string->str);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
+    }
+
+    while (DLL_POP_HEAD(s_, &certs->subject.commonName, string)) {
+        g_free(string->str);
+        MOLOCH_TYPE_FREE(MolochString_t, string);
+    }
+
+    if (certs->issuer.orgName)
+        g_free(certs->issuer.orgName);
+    if (certs->subject.orgName)
+        g_free(certs->subject.orgName);
+    if (certs->serialNumber)
+        free(certs->serialNumber);
+
+    MOLOCH_TYPE_FREE(MolochCertsInfo_t, certs);
 }

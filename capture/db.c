@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.c  -- Functions dealing with database queries and updates
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -17,11 +17,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <string.h>
-#include <netdb.h>
 #include <uuid/uuid.h>
 #include <unistd.h>
 #include <inttypes.h>
@@ -222,7 +218,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         moloch_plugins_cb_save(session, final);
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len + session->certJsonSize;
+    jsonSize = 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
     for (pos = 0; pos < config.maxField; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
@@ -421,95 +417,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_sprintf(jbsb, "],");
 
-    if (HASH_COUNT(t_, session->certs)) {
-        BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, session->certs));
-        BSB_EXPORT_sprintf(jbsb, "\"tls\":[");
-
-        MolochCertsInfo_t *certs;
-        MolochString_t *string;
-
-        HASH_FORALL_POP_HEAD(t_, session->certs, certs,
-            BSB_EXPORT_u08(jbsb, '{');
-
-            if (certs->issuer.commonName.s_count > 0) {
-                BSB_EXPORT_sprintf(jbsb, "\"iCn\":[");
-                while (certs->issuer.commonName.s_count > 0) {
-                    DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
-                    moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
-                    BSB_EXPORT_u08(jbsb, ',');
-                    g_free(string->str);
-                    MOLOCH_TYPE_FREE(MolochString_t, string);
-                }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_u08(jbsb, ']');
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-
-            if (certs->issuer.orgName) {
-                BSB_EXPORT_sprintf(jbsb, "\"iOn\":");
-                moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-
-            if (certs->subject.commonName.s_count) {
-                BSB_EXPORT_sprintf(jbsb, "\"sCn\":[");
-                while (certs->subject.commonName.s_count > 0) {
-                    DLL_POP_HEAD(s_, &certs->subject.commonName, string);
-                    moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
-                    BSB_EXPORT_u08(jbsb, ',');
-                    g_free(string->str);
-                    MOLOCH_TYPE_FREE(MolochString_t, string);
-                }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_u08(jbsb, ']');
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-
-            if (certs->subject.orgName) {
-                BSB_EXPORT_sprintf(jbsb, "\"sOn\":");
-                moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-
-            if (certs->serialNumber) {
-                int k;
-                BSB_EXPORT_sprintf(jbsb, "\"sn\":\"");
-                for (k = 0; k < certs->serialNumberLen; k++) {
-                    BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
-                }
-                BSB_EXPORT_u08(jbsb, '"');
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-
-            if (certs->alt.s_count) {
-                BSB_EXPORT_sprintf(jbsb, "\"altcnt\":%d,", certs->alt.s_count);
-                BSB_EXPORT_sprintf(jbsb, "\"alt\":[");
-                while (certs->alt.s_count > 0) {
-                    DLL_POP_HEAD(s_, &certs->alt, string);
-                    moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
-                    BSB_EXPORT_u08(jbsb, ',');
-                    g_free(string->str);
-                    MOLOCH_TYPE_FREE(MolochString_t, string);
-                }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_u08(jbsb, ']');
-                BSB_EXPORT_u08(jbsb, ',');
-            }
-
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-            moloch_nids_certs_free(certs);
-            i++;
-
-            BSB_EXPORT_u08(jbsb, '}');
-            BSB_EXPORT_u08(jbsb, ',');
-        );
-
-        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_sprintf(jbsb, "],");
-    }
-
-
     BSB_EXPORT_sprintf(jbsb, "\"fs\":[");
     for(i = 0; i < session->fileNumArray->len; i++) {
         if (i == 0)
@@ -524,18 +431,19 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         if (session->fields[pos]) {
             int freeField = final || ((config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CONTINUE) == 0);
 
-            if (!inHeaders && config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) {
+            if (inHeaders && inHeaders != (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HP)) {
+                inHeaders = 0;
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_sprintf(jbsb, "},");
+            }
+
+            if (inHeaders == 0 && (inHeaders = (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HP))) {
                 if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_PLUGINS) {
                     BSB_EXPORT_sprintf(jbsb, "\"plugin\": {");
                 } else {
                     BSB_EXPORT_sprintf(jbsb, "\"hdrs\": {");
                 }
-                inHeaders = 1;
-            } else if (inHeaders && (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HEADERS) == 0) {
-                inHeaders = 0;
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_sprintf(jbsb, "},");
-            }
+            } 
 
             switch(config.fields[pos]->type) {
             case MOLOCH_FIELD_TYPE_INT:
@@ -785,6 +693,96 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 BSB_EXPORT_sprintf(jbsb, "],");
                 break;
+            }
+            case MOLOCH_FIELD_TYPE_CERTSINFO: {
+                MolochCertsInfoHashStd_t *cihash = session->fields[pos]->cihash;
+
+                BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, *cihash));
+                BSB_EXPORT_sprintf(jbsb, "\"tls\":[");
+
+                MolochCertsInfo_t *certs;
+                MolochString_t *string;
+
+                HASH_FORALL_POP_HEAD(t_, *cihash, certs,
+                    BSB_EXPORT_u08(jbsb, '{');
+
+                    if (certs->issuer.commonName.s_count > 0) {
+                        BSB_EXPORT_sprintf(jbsb, "\"iCn\":[");
+                        while (certs->issuer.commonName.s_count > 0) {
+                            DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
+                            moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
+                            BSB_EXPORT_u08(jbsb, ',');
+                            g_free(string->str);
+                            MOLOCH_TYPE_FREE(MolochString_t, string);
+                        }
+                        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                        BSB_EXPORT_u08(jbsb, ']');
+                        BSB_EXPORT_u08(jbsb, ',');
+                    }
+
+                    if (certs->issuer.orgName) {
+                        BSB_EXPORT_sprintf(jbsb, "\"iOn\":");
+                        moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
+                        BSB_EXPORT_u08(jbsb, ',');
+                    }
+
+                    if (certs->subject.commonName.s_count) {
+                        BSB_EXPORT_sprintf(jbsb, "\"sCn\":[");
+                        while (certs->subject.commonName.s_count > 0) {
+                            DLL_POP_HEAD(s_, &certs->subject.commonName, string);
+                            moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
+                            BSB_EXPORT_u08(jbsb, ',');
+                            g_free(string->str);
+                            MOLOCH_TYPE_FREE(MolochString_t, string);
+                        }
+                        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                        BSB_EXPORT_u08(jbsb, ']');
+                        BSB_EXPORT_u08(jbsb, ',');
+                    }
+
+                    if (certs->subject.orgName) {
+                        BSB_EXPORT_sprintf(jbsb, "\"sOn\":");
+                        moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
+                        BSB_EXPORT_u08(jbsb, ',');
+                    }
+
+                    if (certs->serialNumber) {
+                        int k;
+                        BSB_EXPORT_sprintf(jbsb, "\"sn\":\"");
+                        for (k = 0; k < certs->serialNumberLen; k++) {
+                            BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
+                        }
+                        BSB_EXPORT_u08(jbsb, '"');
+                        BSB_EXPORT_u08(jbsb, ',');
+                    }
+
+                    if (certs->alt.s_count) {
+                        BSB_EXPORT_sprintf(jbsb, "\"altcnt\":%d,", certs->alt.s_count);
+                        BSB_EXPORT_sprintf(jbsb, "\"alt\":[");
+                        while (certs->alt.s_count > 0) {
+                            DLL_POP_HEAD(s_, &certs->alt, string);
+                            moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
+                            BSB_EXPORT_u08(jbsb, ',');
+                            g_free(string->str);
+                            MOLOCH_TYPE_FREE(MolochString_t, string);
+                        }
+                        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                        BSB_EXPORT_u08(jbsb, ']');
+                        BSB_EXPORT_u08(jbsb, ',');
+                    }
+
+                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+
+                    moloch_field_certsinfo_free(certs);
+                    i++;
+
+                    BSB_EXPORT_u08(jbsb, '}');
+                    BSB_EXPORT_u08(jbsb, ',');
+                );
+                MOLOCH_TYPE_FREE(MolochCertsInfoHashStd_t, cihash);
+
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_sprintf(jbsb, "],");
             }
             } /* switch */
             if (freeField) {
@@ -1434,6 +1432,16 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
     }
 
     moloch_db_get_sequence_number("tags", moloch_db_tag_seq_cb, r) ;
+}
+/******************************************************************************/
+uint32_t moloch_db_peek_tag(const char *tagname)
+{
+    MolochTag_t *tag;
+    HASH_FIND(tag_, tags, tagname, tag);
+
+    if (!tag)
+        return 0;
+    return tag->tagValue;
 }
 /******************************************************************************/
 void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb func)

@@ -1,0 +1,67 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 68,
+            "lpd" : 1387744084305,
+            "fp" : 1387744084,
+            "no" : "test",
+            "as2" : "AS0001 Cool Beans!",
+            "lp" : 1387744084,
+            "pa" : 4,
+            "tacnt" : 5,
+            "fb1" : "13426974546f7272",
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:bittorrent",
+               "srcip",
+               "tcp"
+            ],
+            "fpd" : 1387744084182,
+            "fs" : [],
+            "g1" : "USA",
+            "a1" : "10.0.0.1",
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:1203,33554442:26001"
+               ],
+               "test.number" : [
+                  33554442
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
+            "p1" : 1203,
+            "by" : 314,
+            "p2" : 26001,
+            "as1" : "AS0000 This is neat",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131222",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

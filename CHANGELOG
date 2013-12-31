@@ -1,3 +1,17 @@
+0.10.0 2013/12/31
+  - IMPORTANT: all parsers have been broken out into individual
+    shared libraries.  It still isn't possible to easily add new
+    db fields yet, coming soon.
+  - parsersDir and pluginsDir can now be a list of directories
+  - jade 1.0 support (issue #194)
+  - webBasePath fix (issue #193)
+  - reverse socks support
+  - memory reduction
+  - fixed plugin and header sections when together not working
+  - fixed memory leak with GErrors
+  - support traffic to/from same ip better
+  - more capture tests
+
 0.9.3 2013/12/17
   - db.pl only open/closes indexes for pre version 12
   - Custom date was broken for urls with no date param

@@ -1,4 +1,4 @@
-!!! 5
+doctype html
 html
   head
     title Moloch - #{title}
@@ -31,11 +31,11 @@ html
           ul
             - if (isIndex && user.views)
               li#viewsButton
-                label 
+                label
                 img#viewsArrow(src="down-arrow.png")
             li#version moloch v#{molochversion}
             - if (user.createEnabled)
-              li  
+              li
                 a(href="#{elasticBase}/_plugin/head/",target="_blank")
                   div#esstatus.tooltip
         div#nav
@@ -68,8 +68,8 @@ html
                 select(id='date')
                   option(value=1,selected) Last 1 hr
                   option(value=6) Last 6 hrs
-                  option(value=24) Last 24 hrs 
-                  option(value=48) Last 48 hrs 
+                  option(value=24) Last 24 hrs
+                  option(value=48) Last 48 hrs
                   option(value=72) Last 3 days
                   option(value=168) Last Week
                   option(value=720) Last Month
@@ -96,13 +96,13 @@ html
       form#actionsForm
         div#actions-message
         div#actions-opened-div
-          input(type="radio",id="actions-opened",name="actions-type",value="opened")  
+          input(type="radio",id="actions-opened",name="actions-type",value="opened")
           label(for="actions-opened")
         div#actions-visible-div
-          input(type="radio",id="actions-visible",name="actions-type",value="visible",checked) 
+          input(type="radio",id="actions-visible",name="actions-type",value="visible",checked)
           label(for="actions-visible")
         div#actions-all-div
-          input(type="radio",id="actions-all",name="actions-type",value="all") 
+          input(type="radio",id="actions-all",name="actions-type",value="all")
           label(for="actions-all")
         div#actions-linked-div
           label(for='actions-linked') Include 
@@ -118,13 +118,13 @@ html
         button#actions-button Go
       form#exportForm
         div#export-opened-div
-          input(type="radio",id="export-opened",name="export-type",value="opened")  
+          input(type="radio",id="export-opened",name="export-type",value="opened")
           label(for="export-opened") Export <span id="export-opened-cnt">0</span> opened items
         div#export-visible-div
-          input(type="radio",id="export-visible",name="export-type",value="visible",checked) 
+          input(type="radio",id="export-visible",name="export-type",value="visible",checked)
           label(for="export-visible") Export <span id="export-visible-cnt">0</span> visible items
         div#export-all-div
-          input(type="radio",id="export-all",name="export-type",value="all") 
+          input(type="radio",id="export-all",name="export-type",value="all")
           label(for="export-all") Export <span id="export-all-cnt">0</span> query matching items
         div#export-linked-div
           label(for='export-linked') Include 
@@ -141,9 +141,9 @@ html
         ul
           li
             label(style='font-weight:bold') Search Result Actions
-          li 
+          li
             a#exportButton Export PCAP
-          li 
+          li
             a#exportCSVButton Export CSV
           li
             a#addTagsButton Add Tags
@@ -161,7 +161,7 @@ html
         ul
           li
             label(style='font-weight:bold') Session Actions
-          li 
+          li
             a#sessionExportButton.exportAction Export PCAP
           li
             a#sessionAddTagsButton.addTagsAction Add Tags
@@ -178,7 +178,7 @@ html
       if (user.views)
         div#viewsMenu
           ul
-            li.viewMenuOption 
+            li.viewMenuOption
               a.viewMenuOption None
             - var keys = Object.keys(user.views).sort()
             each key in keys

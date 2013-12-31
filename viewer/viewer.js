@@ -144,6 +144,7 @@ app.configure(function() {
       // S2S Auth
       if (req.headers['x-moloch-auth']) {
         var obj = Config.auth2obj(req.headers['x-moloch-auth']);
+        obj.path = obj.path.replace(Config.basePath(), "/");
         if (obj.path !== req.url) {
           console.log("ERROR - mismatch url", obj.path, req.url);
           return res.send("Unauthorized based on bad url, check logs on ", os.hostname());

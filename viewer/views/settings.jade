@@ -45,13 +45,13 @@ block content
       option(value="desc") Descending
     h3 SPI Graph Tab
     label(for='spiGraph') Default Graph:
-    mixin fieldsSelect("spiGraph", "setting", false)
+    +fieldsSelect("spiGraph", "setting", false)
     h3 Connections Tab
     label(for='connSrcField') Default Src Field:
-    mixin fieldsSelect("connSrcField", "setting", true)
+    +fieldsSelect("connSrcField", "setting", true)
     br
     label(for='connDstField') Default Dst Field:
-    mixin fieldsSelect("connDstField", "setting", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
+    +fieldsSelect("connDstField", "setting", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
   p
   hr
   h2 Views
@@ -72,7 +72,7 @@ block content
             td(contentEditable) #{suser.views[key].expression}
             td
               a.deleteViewAction(href="#") delete
-    
+
   p
   h3 New View
   form#createViewForm
@@ -92,13 +92,13 @@ block content
     - if (currentPassword)
       label(for='currentPassword') Current Password:
       input(type='password', id='currentPassword', name='currentPassword', size='30')
-      br 
+      br
     label(for='newPassword') New Password:
     input(type='password', id='newPassword', name='newPassword', size='30')
     br
     label(for='newPassword2') New Password:
     input(type='password', id='newPassword2', name='newPassword2', size='30')
-    p 
+    p
     center
       button#change Change Password
 
@@ -121,7 +121,7 @@ block content
         }
       });
     });
-    
+
 
     $('#changePasswordForm').submit(function() {
       if ($("#newPassword").val() != $("#newPassword2").val()) {
@@ -199,9 +199,9 @@ block content
         "dataType": 'json',
         "type": "POST",
         "url": "#{basePath}updateView",
-        "data": [{name: "viewName", value: row.find("td:first").text()}, 
+        "data": [{name: "viewName", value: row.find("td:first").text()},
                  {name: "viewExpression", value: row.find("td:eq(1)").text()},
-                 {name: "token", value: "#{token}"}], 
+                 {name: "token", value: "#{token}"}],
         "success": function(data) {
           if (!data.success) {
             alert(data.text);

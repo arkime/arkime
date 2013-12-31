@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.9.3])
+AC_INIT([moloch], [0.10.0])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -8,7 +8,9 @@ AC_CONFIG_FILES([
   Makefile
   capture/Makefile
   capture/plugins/Makefile
+  capture/parsers/Makefile
   db/Makefile
+  tests/plugins/Makefile
   viewer/Makefile
   viewer/version.js
 ])

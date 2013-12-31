@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* config.c  -- Functions dealing with the config file
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -18,10 +18,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/udp.h>
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -194,7 +190,8 @@ void moloch_config_load()
     config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
-    config.pluginsDir       = moloch_config_str(keyfile, "pluginsDir", NULL);
+    config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
+    config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", "/data/moloch/parsers;./parsers");
 
     config.maxFileSizeG     = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
     config.maxFileTimeM     = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
@@ -363,6 +360,8 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
 /******************************************************************************/
 void moloch_config_init()
 {
+    char *str;
+
     HASH_INIT(s_, config.dontSaveTags, moloch_string_hash, moloch_string_cmp);
 
     moloch_config_load();
@@ -379,7 +378,30 @@ void moloch_config_init()
         LOG("rirFile: %s", config.rirFile);
         LOG("dropUser: %s", config.dropUser);
         LOG("dropGroup: %s", config.dropGroup);
-        LOG("pluginsDir: %s", config.pluginsDir);
+
+        if (config.smtpIpHeaders) {
+            str = g_strjoinv(";", config.smtpIpHeaders);
+            LOG("smtpIpHeaders: %s", str);
+            g_free(str);
+        }
+
+        if (config.pluginsDir) {
+            str = g_strjoinv(";", config.pluginsDir);
+            LOG("pluginsDir: %s", str);
+            g_free(str);
+        }
+
+        if (config.plugins) {
+            str = g_strjoinv(";", config.plugins);
+            LOG("plugins: %s", str);
+            g_free(str);
+        }
+
+        if (config.parsersDir) {
+            str = g_strjoinv(";", config.parsersDir);
+            LOG("parsersDir: %s", str);
+            g_free(str);
+        }
 
         LOG("maxFileSizeG: %u", config.maxFileSizeG);
         LOG("maxFileTimeM: %u", config.maxFileTimeM);
@@ -472,6 +494,10 @@ void moloch_config_exit()
         g_free(config.emailYara);
     if (config.pcapDir)
         g_free(config.pcapDir);
+    if (config.pluginsDir)
+        g_strfreev(config.pluginsDir);
+    if (config.parsersDir)
+        g_strfreev(config.parsersDir);
     if (config.plugins)
         g_strfreev(config.plugins);
     if (config.smtpIpHeaders)

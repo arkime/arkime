@@ -3,7 +3,7 @@ mixin arrayList(values, title, expr, extra)
   if (values || extra)
     dt #{title}
     dd
-      each value,i in values 
+      each value,i in values
         if (i > 0)
           |, 
         if (value.length == 0)
@@ -58,23 +58,23 @@ mixin ipArrayList(values, geos, ass, rirs, title, expr, full)
   if (values)
     dt #{title}
     dd
-      each ip,i in values 
+      each ip,i in values
         if (i > 0)
           |, 
-        mixin ipPrint(values[i], undefined, (geos?geos[i]:null), (ass?ass[i]:null), (rirs?rirs[i]:null), expr, full)
+        +ipPrint(values[i], undefined, (geos?geos[i]:null), (ass?ass[i]:null), (rirs?rirs[i]:null), expr, full)
 
 //- Start of page
 div.sessionDetail(sessionid='#{session.id}')
-  div.sessionDetailToolbar 
+  div.sessionDetailToolbar
     if (session.ro)
-      li 
+      li
         a(href='#', onclick='return addExpression("rootId == #{session.ro}");') All Sessions
-      li 
+      li
         a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
-      li 
+      li
         a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
     else
-      li 
+      li
         a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
     li
       a(href='#{session.no}/raw/#{session.id}?type=src',target="_blank") Source Raw
@@ -83,7 +83,7 @@ div.sessionDetail(sessionid='#{session.id}')
     li
       a(href='?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}&openAll=1') Permalink
     li
-      label.sessionActionsMenu Actions 
+      label.sessionActionsMenu Actions
         img#actionsButtonArrow(src="down-arrow.png")
   dl.sessionDetailMeta
     dt Start
@@ -101,23 +101,23 @@ div.sessionDetail(sessionid='#{session.id}')
       | IP Protocol: 
       a(href='#', onclick='return addExpression("protocol == #{session.pr}");') #{session.pr}
 
-    mixin arrayList(session.user, "Users", "user")
+    +arrayList(session.user, "Users", "user")
 
     dt Src IP/Port
     dd
-      mixin ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
+      +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
       |  Dst IP/Port: 
-      mixin ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
-    mixin arrayList(session.ta, "Tags", "tags", "<img class=\"addTagsAction\" src=\"DataTables-1.9.1/examples/examples_support/details_open.png\">")
+      +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
+    +arrayList(session.ta, "Tags", "tags", "<img class=\"addTagsAction\" src=\"DataTables-1.9.1/examples/examples_support/details_open.png\">")
     if (session.fs && session.fs.length > 0)
-      mixin arrayList(session.fs, "Files", "file")
+      +arrayList(session.fs, "Files", "file")
     if (session.scrubby)
       dt Scrubbed
       dd By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
     if (session.socksip)
       dt Socks Dst
       dd
-        mixin ipPrint(session.socksip, session.sockspo, session.gsocksip, session.assocksip, session.rirsocksip, "socks")
+        +ipPrint(session.socksip, session.sockspo, session.gsocksip, session.assocksip, session.rirsocksip, "socks")
     if (session.socksho)
       dt Socks Dst
       dd
@@ -133,32 +133,32 @@ div.sessionDetail(sessionid='#{session.id}')
   if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
     div.sessionDetailMeta.bold HTTP
     dl.sessionDetailMeta
-      mixin arrayList(session.ho, "Hosts", "host.http")
-      mixin arrayList(session.ua, "User Agents", "ua")
-      mixin ipArrayList(session.xff, session.gxff, session.asxff, session.rirxff, "XFFs", "xff")
-      mixin arrayList(session.hh1, "Request Headers", "header.src")
-      mixin arrayList(session.hsver, "Request Versions", "http.version.src")
-      mixin arrayList(session.hh2, "Resp Headers", "header.dst")
-      mixin arrayList(session.hdver, "Resp Versions", "http.version.dst")
-      mixin arrayList(session.hmd5, "Body MD5s", "http.md5")
+      +arrayList(session.ho, "Hosts", "host.http")
+      +arrayList(session.ua, "User Agents", "ua")
+      +ipArrayList(session.xff, session.gxff, session.asxff, session.rirxff, "XFFs", "xff")
+      +arrayList(session.hh1, "Request Headers", "header.src")
+      +arrayList(session.hsver, "Request Versions", "http.version.src")
+      +arrayList(session.hh2, "Resp Headers", "header.dst")
+      +arrayList(session.hdver, "Resp Versions", "http.version.dst")
+      +arrayList(session.hmd5, "Body MD5s", "http.md5")
       if (session.hdrs)
-        each value,i in reqFields 
-          mixin arrayList(session.hdrs["hreq-" + value.name], value.name + " Header", "http." + value.name)
-        each value,i in resFields 
-          mixin arrayList(session.hdrs["hres-" + value.name], value.name + " Header", "http." + value.name)
+        each value,i in reqFields
+          +arrayList(session.hdrs["hreq-" + value.name], value.name + " Header", "http." + value.name)
+        each value,i in resFields
+          +arrayList(session.hdrs["hres-" + value.name], value.name + " Header", "http." + value.name)
 
 
   if (session.dnsip || session.dnsho)
     div.sessionDetailMeta.bold DNS
     dl.sessionDetailMeta
-      mixin ipArrayList(session.dnsip, session.gdnsip, session.asdnsip, session.rirdnsip, "IPs", "dns")
-      mixin arrayList(session.dnsho, "Hosts", "host.dns")
+      +ipArrayList(session.dnsip, session.gdnsip, session.asdnsip, session.rirdnsip, "IPs", "dns")
+      +arrayList(session.dnsho, "Hosts", "host.dns")
 
   if (session.ircnck || session.ircch)
     div.sessionDetailMeta.bold IRC
     dl.sessionDetailMeta
-      mixin arrayList(session.ircnck, "Nicks", "irc.nick")
-      mixin arrayList(session.ircch, "Channels", "irc.channel")
+      +arrayList(session.ircnck, "Nicks", "irc.nick")
+      +arrayList(session.ircch, "Channels", "irc.channel")
 
   if (session.tls)
     div.sessionDetailMeta.bold TLS
@@ -205,63 +205,63 @@ div.sessionDetail(sessionid='#{session.id}')
   if (session.sshkey || session.sshver)
     div.sessionDetailMeta.bold SSH
     dl.sessionDetailMeta
-      mixin arrayList(session.sshkey, "Host Keys", "ssh.key")
-      mixin arrayList(session.sshver, "Versions", "ssh.ver")
+      +arrayList(session.sshkey, "Host Keys", "ssh.key")
+      +arrayList(session.sshver, "Versions", "ssh.ver")
 
   if (user.emailSearch && (session.esub || session.esrc || session.edst || session.eua || session.eid || session.emv || session.ect || session.efn || session.emd5 || session.eip))
     div.sessionDetailMeta.bold Email
     dl.sessionDetailMeta
-      mixin ipArrayList(session.eip, session.geip, session.aseip, session.rireip, "IPs", "email")
-      mixin arrayList(session.esub, "Subjects", "email.subject")
-      mixin arrayList(session.esrc, "Senders", "email.src")
-      mixin arrayList(session.edst, "Destinations", "email.dst")
-      mixin arrayList(session.eua, "User Agents", "email.ua")
-      mixin arrayList(session.eid, "Message Ids", "email.id")
-      mixin arrayList(session.emv, "Mime Versions", "email.mv")
-      mixin arrayList(session.ect, "Content Types", "email.ct")
-      mixin arrayList(session.efn, "Filenames", "email.fn")
-      mixin arrayList(session.emd5, "Attachment MD5s", "email.md5")
+      +ipArrayList(session.eip, session.geip, session.aseip, session.rireip, "IPs", "email")
+      +arrayList(session.esub, "Subjects", "email.subject")
+      +arrayList(session.esrc, "Senders", "email.src")
+      +arrayList(session.edst, "Destinations", "email.dst")
+      +arrayList(session.eua, "User Agents", "email.ua")
+      +arrayList(session.eid, "Message Ids", "email.id")
+      +arrayList(session.emv, "Mime Versions", "email.mv")
+      +arrayList(session.ect, "Content Types", "email.ct")
+      +arrayList(session.efn, "Filenames", "email.fn")
+      +arrayList(session.emd5, "Attachment MD5s", "email.md5")
       if (session.hdrs)
-        each value,i in emailFields 
-          mixin arrayList(session.hdrs["ehead-" + value.name], value.name + " Header", "email." + value.name)
+        each value,i in emailFields
+          +arrayList(session.hdrs["ehead-" + value.name], value.name + " Header", "email." + value.name)
 
   if (session.smbfn || session.smbsh)
     div.sessionDetailMeta.bold SMB
     dl.sessionDetailMeta
-      mixin arrayList(session.smbuser, "Users", "smb.user")
-      mixin arrayList(session.smbuser, "Hosts", "smb.host")
-      mixin arrayList(session.smbdm, "Domains", "smb.domain")
-      mixin arrayList(session.smbsh, "Shares", "smb.share")
-      mixin arrayList(session.smbfn, "Files", "smb.fn")
-      mixin arrayList(session.smbos, "OS", "smb.os")
-      mixin arrayList(session.smbver, "Version", "smb.ver")
+      +arrayList(session.smbuser, "Users", "smb.user")
+      +arrayList(session.smbuser, "Hosts", "smb.host")
+      +arrayList(session.smbdm, "Domains", "smb.domain")
+      +arrayList(session.smbsh, "Shares", "smb.share")
+      +arrayList(session.smbfn, "Files", "smb.fn")
+      +arrayList(session.smbos, "OS", "smb.os")
+      +arrayList(session.smbver, "Version", "smb.ver")
 
   if (session.plugin && pluginFields && pluginFields.length > 0)
     div.sessionDetailMeta.bold Plugin
     dl.sessionDetailMeta
-      each value,i in pluginFields 
+      each value,i in pluginFields
         if (value.type === "ip")
-          mixin ipArrayList(session.plugin[value.name], session.plugin[value.name + ".geo"], session.plugin[value.name + ".asn"], session.plugin[value.name+".rir"], value.name, "plugin." + value.name, true)
+          +ipArrayList(session.plugin[value.name], session.plugin[value.name + ".geo"], session.plugin[value.name + ".asn"], session.plugin[value.name+".rir"], value.name, "plugin." + value.name, true)
         else
-          mixin arrayList(session.plugin[value.name], value.name, "plugin." + value.name)
+          +arrayList(session.plugin[value.name], value.name, "plugin." + value.name)
 
   div.sessionDetailToolbar
     li
-      options = ['natural', 'ascii', 'utf8', 'hex']
-      for item in options
+      - options = ['natural', 'ascii', 'utf8', 'hex'];
+      each item in options
         label.format-base
-          input(type="radio",name='format-base-#{session.id}',value=item,checked=query.base==item) 
+          input(type="radio",name='format-base-#{session.id}',value=item,checked=query.base==item)
           | #{item}
       label.format-line
-        input(type='checkbox', checked=query.line=='true') 
+        input(type='checkbox', checked=query.line=='true')
         | Line Numbers
     li
       label.format-gzip
-        input(type='checkbox', checked=query.gzip=='true') 
+        input(type='checkbox', checked=query.gzip=='true')
         | Decode GZip
     li
       label.format-image
-        input(type='checkbox', checked=query.image=='true') 
+        input(type='checkbox', checked=query.image=='true')
         | Show Images &amp; Files
     li
       label.format-ts
@@ -269,7 +269,7 @@ div.sessionDetail(sessionid='#{session.id}')
         | Show Timestamps
   br
   if (session.pa > 200)
-    p 
+    p
       b Only showing first 200 packets
   table#textpacket
     tr
@@ -279,7 +279,7 @@ div.sessionDetail(sessionid='#{session.id}')
     each item, i in data
       tr
         if i % 2 == 0
-          td.sessionsrc 
+          td.sessionsrc
             if (item.ts)
               span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
             !{item.html}
@@ -340,7 +340,7 @@ script(type='text/javascript').
       var url = "#{session.no}/#{session.id}/sessionDetail" +
                  "?base=" + base +
                  "&line=" + line +
-                 "&image=" + sessionDetail.find('.format-image input').is(':checked') + 
+                 "&image=" + sessionDetail.find('.format-image input').is(':checked') +
                  "&gzip=" + sessionDetail.find('.format-gzip input').is(':checked') +
                  "&ts=" + sessionDetail.find('.format-ts input').is(':checked');
 

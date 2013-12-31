@@ -1,0 +1,25 @@
+INCLUDE_PCAP  = @PCAP_CFLAGS@
+
+INCLUDE_OTHER = -I.. -I../thirdparty \
+                @GLIB2_CFLAGS@ \
+	        @NIDS_CFLAGS@
+
+mkdir_p = @mkdir_p@
+INSTALL = @INSTALL@
+PARSERSDIR = @prefix@/parsers
+
+SRCS=$(wildcard *.c)
+SOS=$(SRCS:.c=.so)
+
+%.so : %.c ../moloch.h
+	$(CC) --shared -o $@ -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
+
+all:$(SOS)
+
+install:
+	test -z "$(PARSERSDIR)" || $(mkdir_p) "$(PARSERSDIR)"
+	$(INSTALL) *.so $(PARSERSDIR)
+
+distclean realclean clean:
+	rm -f *.o *.so
+

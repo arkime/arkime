@@ -1,15 +1,15 @@
 extends layout
 
 block content
-  //- 
+  //-
   mixin spi(name, field, expr, c)
     dt.context-menu-one #{name}
-      input(id="SPIck-#{field}", type="checkbox", class="#{c}-group") 
+      input(id="SPIck-#{field}", type="checkbox", class="#{c}-group")
     dd(id="SPIda-#{field}", molochexpr=expr)
 
   mixin spion(name, field, expr, c)
     dt.context-menu-one #{name}
-      input.spion(id="SPIck-#{field}", type="checkbox", class="#{c}-group") 
+      input.spion(id="SPIck-#{field}", type="checkbox", class="#{c}-group")
     dd(id="SPIda-#{field}", molochexpr=expr)
 
   mixin title(name, c)
@@ -36,159 +36,159 @@ block content
   div#spiViewInfo
     span#recordsText
   div#spiview
-    mixin title("General", "general")
+    +title("General", "general")
     dl
-      mixin spion("IP Protocol", "pr", "protocol", "general")
-      mixin spion("Src IP", "a1", "ip.src", "general")
-      mixin spion("Src Port", "p1", "port.src", "general")
-      mixin spion("Src GEO", "g1", "country.src", "general")
-      mixin spion("Src ASN", "rawas1", "asn.src", "general")
-      mixin spi("Src ASN Token", "as1", "asn.src", "general")
-      mixin spi("Src RIR", "rir1", "rir.src", "general")
-      mixin spi("Src Payload8", "fb1", "payload8.src", "general")
+      +spion("IP Protocol", "pr", "protocol", "general")
+      +spion("Src IP", "a1", "ip.src", "general")
+      +spion("Src Port", "p1", "port.src", "general")
+      +spion("Src GEO", "g1", "country.src", "general")
+      +spion("Src ASN", "rawas1", "asn.src", "general")
+      +spi("Src ASN Token", "as1", "asn.src", "general")
+      +spi("Src RIR", "rir1", "rir.src", "general")
+      +spi("Src Payload8", "fb1", "payload8.src", "general")
 
-      mixin spion("Dst IP", "a2", "ip.dst", "general")
-      mixin spion("Dst Port", "p2", "port.dst", "general")
-      mixin spion("Dst GEO", "g2", "country.dst", "general")
-      mixin spion("Dst ASN", "rawas2", "asn.dst", "general")
-      mixin spi("Dst ASN Token", "as2", "asn.dst", "general")
-      mixin spi("Dst RIR", "rir2", "rir.dst", "general")
-      mixin spi("Dst Payload8", "fb2", "payload8.dst", "general")
+      +spion("Dst IP", "a2", "ip.dst", "general")
+      +spion("Dst Port", "p2", "port.dst", "general")
+      +spion("Dst GEO", "g2", "country.dst", "general")
+      +spion("Dst ASN", "rawas2", "asn.dst", "general")
+      +spi("Dst ASN Token", "as2", "asn.dst", "general")
+      +spi("Dst RIR", "rir2", "rir.dst", "general")
+      +spi("Dst Payload8", "fb2", "payload8.dst", "general")
 
-      mixin spi("Node", "no", "node", "general")
-      mixin spi("Tag", "ta", "tags", "general")
-      mixin spi("User", "user", "user", "general")
+      +spi("Node", "no", "node", "general")
+      +spi("Tag", "ta", "tags", "general")
+      +spi("User", "user", "user", "general")
 
-    mixin title("HTTP", "http")
+    +title("HTTP", "http")
     dl
-      mixin spi("Host", "ho", "host.http", "http")
-      mixin spi("URI", "rawus", "http.uri", "http")
-      mixin spi("URI Token", "us", "http.uri", "http")
-      mixin spi("URI Path", "hpath", "http.uri.path", "http")
-      mixin spi("URI QS Key", "hkey", "http.uri.key", "http")
-      mixin spi("URI QS Value", "hval", "http.uri.value", "http")
-      mixin spi("User Agent", "rawua", "http.user-agent", "http")
-      mixin spi("User Agent Token", "ua", "http.user-agent", "http")
+      +spi("Host", "ho", "host.http", "http")
+      +spi("URI", "rawus", "http.uri", "http")
+      +spi("URI Token", "us", "http.uri", "http")
+      +spi("URI Path", "hpath", "http.uri.path", "http")
+      +spi("URI QS Key", "hkey", "http.uri.key", "http")
+      +spi("URI QS Value", "hval", "http.uri.value", "http")
+      +spi("User Agent", "rawua", "http.user-agent", "http")
+      +spi("User Agent Token", "ua", "http.user-agent", "http")
 
-      mixin spi("XFF IP", "xff", "ip.xff", "http")
-      mixin spi("XFF GEO", "gxff", "country.xff", "http")
-      mixin spi("XFF ASN", "rawasxff", "asn.xff", "http")
-      mixin spi("XFF ASN Token", "asxff", "asn.xff", "http")
-      mixin spi("XFF RIR", "rirxff", "rir.xff", "http")
+      +spi("XFF IP", "xff", "ip.xff", "http")
+      +spi("XFF GEO", "gxff", "country.xff", "http")
+      +spi("XFF ASN", "rawasxff", "asn.xff", "http")
+      +spi("XFF ASN Token", "asxff", "asn.xff", "http")
+      +spi("XFF RIR", "rirxff", "rir.xff", "http")
 
-      mixin spi("Request Header", "hh1", "http.hasheader.src", "http")
-      mixin spi("Request Version", "hsver", "http.version.src", "http")
-      each value,i in reqFields 
+      +spi("Request Header", "hh1", "http.hasheader.src", "http")
+      +spi("Request Version", "hsver", "http.version.src", "http")
+      each value,i in reqFields
         if (value.type === "string")
-          mixin spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
-          mixin spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
+          +spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
+          +spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
         else
-          mixin spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
-      mixin spi("Resp Header", "hh2", "http.hasheader.dst", "http")
-      mixin spi("Resp Version", "hdver", "http.version.dst", "http")
-      each value,i in resFields 
+          +spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
+      +spi("Resp Header", "hh2", "http.hasheader.dst", "http")
+      +spi("Resp Version", "hdver", "http.version.dst", "http")
+      each value,i in resFields
         if (value.type === "string")
-          mixin spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
-          mixin spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
+          +spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
+          +spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
         else
-          mixin spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
+          +spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
 
-      mixin spi("Body MD5", "hmd5", "http.md5", "http")
+      +spi("Body MD5", "hmd5", "http.md5", "http")
 
-    mixin title("DNS", "dns")
+    +title("DNS", "dns")
     dl
-      mixin spi("Host", "dnsho", "host.dns", "dns")
-      mixin spi("IP", "dnsip", "ip.dns", "dns")
-      mixin spi("GEO", "gdnsip", "country.dns", "dns")
-      mixin spi("ASN", "rawasdnsip", "asn.dns", "dns")
-      mixin spi("ASN Token", "asdnsip", "asn.dns", "dns")
-      mixin spi("RIR", "rirdnsip", "rir.dns", "dns")
+      +spi("Host", "dnsho", "host.dns", "dns")
+      +spi("IP", "dnsip", "ip.dns", "dns")
+      +spi("GEO", "gdnsip", "country.dns", "dns")
+      +spi("ASN", "rawasdnsip", "asn.dns", "dns")
+      +spi("ASN Token", "asdnsip", "asn.dns", "dns")
+      +spi("RIR", "rirdnsip", "rir.dns", "dns")
 
-    mixin title("IRC", "irc")
+    +title("IRC", "irc")
     dl
-      mixin spi("Nick", "ircnck", "irc.nick", "irc")
-      mixin spi("Channel", "ircch", "irc.channel", "irc")
+      +spi("Nick", "ircnck", "irc.nick", "irc")
+      +spi("Channel", "ircch", "irc.channel", "irc")
 
-    mixin title("Certificates", "cert")
+    +title("Certificates", "cert")
     dl
-      mixin spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
-      mixin spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
-      mixin spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
+      +spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
+      +spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
+      +spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
 
-      mixin spi("Subject CN", "sCn", "cert.subject.cn", "cert")
-      mixin spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
-      mixin spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
+      +spi("Subject CN", "sCn", "cert.subject.cn", "cert")
+      +spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
+      +spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
 
-      mixin spi("Serial Number", "sn", "cert.serial", "cert")
-      mixin spi("Alt Name", "alt", "cert.alt", "cert")
+      +spi("Serial Number", "sn", "cert.serial", "cert")
+      +spi("Alt Name", "alt", "cert.alt", "cert")
 
 
-    mixin title("SSH", "ssh")
+    +title("SSH", "ssh")
     dl
-      mixin spi("Version", "sshver", "ssh.ver", "ssh")
-      mixin spi("Key", "sshkey", "ssh.key", "ssh")
+      +spi("Version", "sshver", "ssh.ver", "ssh")
+      +spi("Key", "sshkey", "ssh.key", "ssh")
 
-    mixin title("SOCKS", "socks")
+    +title("SOCKS", "socks")
     dl
-      mixin spi("Host", "socksho", "host.socks", "socks")
-      mixin spi("IP", "socksip", "ip.socks", "socks")
-      mixin spi("GEO", "gsocksip", "country.socks", "socks")
-      mixin spi("ASN", "rawassocksip", "asn.socks", "socks")
-      mixin spi("ASN Token", "assocksip", "asn.socks", "socks")
-      mixin spi("RIR", "rirsocksip", "rir.socks", "socks")
-      mixin spi("Port", "sockspo", "port.socks", "socks")
-      mixin spi("User", "socksuser", "socks.user", "socks")
+      +spi("Host", "socksho", "host.socks", "socks")
+      +spi("IP", "socksip", "ip.socks", "socks")
+      +spi("GEO", "gsocksip", "country.socks", "socks")
+      +spi("ASN", "rawassocksip", "asn.socks", "socks")
+      +spi("ASN Token", "assocksip", "asn.socks", "socks")
+      +spi("RIR", "rirsocksip", "rir.socks", "socks")
+      +spi("Port", "sockspo", "port.socks", "socks")
+      +spi("User", "socksuser", "socks.user", "socks")
 
     if (user.emailSearch)
-      mixin title("Email", "email")
-      dl 
-        mixin spi("IP", "eip", "ip.email", "email")
-        mixin spi("GEO", "geip", "country.email", "email")
-        mixin spi("ASN", "rawaseip", "asn.email", "email")
-        mixin spi("ASN Token", "aseip", "asn.email", "email")
-        mixin spi("RIR", "rireip", "rir.email", "email")
+      +title("Email", "email")
+      dl
+        +spi("IP", "eip", "ip.email", "email")
+        +spi("GEO", "geip", "country.email", "email")
+        +spi("ASN", "rawaseip", "asn.email", "email")
+        +spi("ASN Token", "aseip", "asn.email", "email")
+        +spi("RIR", "rireip", "rir.email", "email")
 
-        mixin spi("Subject", "rawesub", "email.subject", "email")
-        mixin spi("Subject Token", "esub", "email.subject", "email")
-        mixin spi("Source", "esrc", "email.src", "email")
-        mixin spi("Destination", "edst", "email.dst", "email")
-        mixin spi("X-Mailer", "raweua", "email.x-mailer", "email")
-        mixin spi("X-Mailer Token", "eua", "email.x-mailer", "email")
-        mixin spi("Message Id", "eid", "email.message-id", "email")
-        mixin spi("Mime Version", "emv", "email.mime-version", "email")
-        mixin spi("Filename", "efn", "email.fn", "email")
-        mixin spi("Attachment MD5", "emd5", "email.md5", "email")
-        each value,i in emailFields 
+        +spi("Subject", "rawesub", "email.subject", "email")
+        +spi("Subject Token", "esub", "email.subject", "email")
+        +spi("Source", "esrc", "email.src", "email")
+        +spi("Destination", "edst", "email.dst", "email")
+        +spi("X-Mailer", "raweua", "email.x-mailer", "email")
+        +spi("X-Mailer Token", "eua", "email.x-mailer", "email")
+        +spi("Message Id", "eid", "email.message-id", "email")
+        +spi("Mime Version", "emv", "email.mime-version", "email")
+        +spi("Filename", "efn", "email.fn", "email")
+        +spi("Attachment MD5", "emd5", "email.md5", "email")
+        each value,i in emailFields
           if (value.type === "string")
-            mixin spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
-            mixin spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
+            +spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
+            +spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
           else
-            mixin spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
+            +spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
 
-    mixin title("SMB", "smb")
+    +title("SMB", "smb")
     dl
-      mixin spi("Users", "smbuser", "smb.user", "smb")
-      mixin spi("Hosts", "smbho", "smb.host", "smb")
-      mixin spi("Domain", "smbdm", "smb.domain", "smb")
-      mixin spi("Share", "smbsh", "smb.share", "smb")
-      mixin spi("Filename", "smbfn", "smb.fn", "smb")
-      mixin spi("OS", "smbos", "smb.os", "smb")
-      mixin spi("Version", "smbver", "smb.ver", "smb")
+      +spi("Users", "smbuser", "smb.user", "smb")
+      +spi("Hosts", "smbho", "smb.host", "smb")
+      +spi("Domain", "smbdm", "smb.domain", "smb")
+      +spi("Share", "smbsh", "smb.share", "smb")
+      +spi("Filename", "smbfn", "smb.fn", "smb")
+      +spi("OS", "smbos", "smb.os", "smb")
+      +spi("Version", "smbver", "smb.ver", "smb")
 
     if (pluginFields && pluginFields.length > 0)
-      mixin title("Plugin", "plugin")
-      dl 
-        each value,i in pluginFields 
+      +title("Plugin", "plugin")
+      dl
+        each value,i in pluginFields
           if (value.type === "string")
-            mixin spi(value.name, "plugin." + value.name + ".raw", "plugin." + value.name, "plugin")
-            mixin spi(value.name + " Tokens", "plugin." + value.name + ".snow", "plugin." + value.name, "plugin")
+            +spi(value.name, "plugin." + value.name + ".raw", "plugin." + value.name, "plugin")
+            +spi(value.name + " Tokens", "plugin." + value.name + ".snow", "plugin." + value.name, "plugin")
           else if (value.type === "ip")
-            mixin spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
-            mixin spi(value.name + " GEO", "plugin." + value.name + ".geo.raw",  "plugin." + value.name + ".country", "plugin")
-            mixin spi(value.name + " ASN", "plugin." + value.name + ".asn.snow", "plugin." + value.name + ".asn", "plugin")
-            mixin spi(value.name + " RIR", "plugin." + value.name + ".rir.raw",  "plugin." + value.name + ".rir", "plugin")
+            +spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
+            +spi(value.name + " GEO", "plugin." + value.name + ".geo.raw",  "plugin." + value.name + ".country", "plugin")
+            +spi(value.name + " ASN", "plugin." + value.name + ".asn.snow", "plugin." + value.name + ".asn", "plugin")
+            +spi(value.name + " RIR", "plugin." + value.name + ".rir.raw",  "plugin." + value.name + ".rir", "plugin")
           else
-            mixin spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
+            +spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
 
   script(type='text/javascript').
     var initialDisplayLength = 100;
@@ -306,8 +306,8 @@ block content
               spiTerms[spii] = spiterm;
 
               if (spi.other > 0) {
-                  spida.append(", <a href=\"#\" onclick='return moreSPI(\"" + 
-                               spii + 
+                  spida.append(", <a href=\"#\" onclick='return moreSPI(\"" +
+                               spii +
                                "\");'</a> &hellip;</a>");
                   spida.append("<span class=\"spicount\">(" + spi.other + ")</span>");
               }

@@ -1,6 +1,6 @@
 /* main.c  -- Initialization of components
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -16,10 +16,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/udp.h>
 #include <string.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -39,8 +35,7 @@ unsigned char          moloch_char_to_hexstr[256][3];
 unsigned char          moloch_hex_to_char[256][256];
 
 /******************************************************************************/
-gboolean showVersion    = FALSE;
-gchar  **extraTags      = NULL;
+static gboolean showVersion    = FALSE;
 
 static GOptionEntry entries[] =
 {
@@ -49,7 +44,7 @@ static GOptionEntry entries[] =
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadDir,   "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "recursive",   0,                    0, G_OPTION_ARG_NONE,         &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,       &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
-    { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY, &extraTags,            "Extra tag to add to all packets, can be used multiple times", NULL },
+    { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY, &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,         &showVersion,          "Show version number", NULL },
     { "debug",     'd',                    0, G_OPTION_ARG_NONE,         &config.debug,         "Turn on all debugging", NULL },
     { "copy",        0,                    0, G_OPTION_ARG_NONE,         &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file ", NULL },
@@ -138,7 +133,7 @@ void cleanup(int UNUSED(sig))
     LOG("exiting");
     moloch_nids_exit();
     moloch_plugins_exit();
-    moloch_detect_exit();
+    moloch_parsers_exit();
     moloch_yara_exit();
     moloch_db_exit();
     moloch_http_exit();
@@ -150,8 +145,8 @@ void cleanup(int UNUSED(sig))
         g_free(config.pcapReadFile);
     if (config.pcapReadDir)
         g_free(config.pcapReadDir);
-    if (extraTags)
-        g_strfreev(extraTags);
+    if (config.extraTags)
+        g_strfreev(config.extraTags);
     exit(0);
 }
 /******************************************************************************/
@@ -192,6 +187,39 @@ char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key)
     if (!value)
         return NULL;
     return g_strndup((gchar*)value, value_len);
+}
+/******************************************************************************/
+const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize)
+{
+    const char *p;
+    const char *end = haystack + haysize - needlesize;
+
+    for (p = haystack; p <= end; p++)
+    {
+        if (p[0] == needle[0] && memcmp(p+1, needle+1, needlesize-1) == 0)
+            return p;
+    }
+    return NULL;
+}
+/******************************************************************************/
+const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize)
+{
+    const char *p;
+    const char *end = haystack + haysize - needlesize;
+    int i;
+
+    for (p = haystack; p <= end; p++)
+    {
+        for (i = 0; i < needlesize; i++) {
+            if (tolower(p[i]) != needle[i]) {
+                goto memcasestr_outer;
+            }
+        }
+        return p;
+
+        memcasestr_outer: ;
+    }
+    return NULL;
 }
 /******************************************************************************/
 gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
@@ -402,7 +430,7 @@ int main(int argc, char **argv)
     moloch_db_init();
     moloch_config_load_local_ips();
     moloch_yara_init();
-    moloch_detect_init();
+    moloch_parsers_init();
     moloch_config_load_headers();
     moloch_plugins_init();
     g_timeout_add(10, moloch_nids_init_gfunc, 0);

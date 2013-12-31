@@ -1,0 +1,191 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 24346,
+            "socksip" : "74.125.131.103",
+            "no" : "test",
+            "ho" : [
+               "www.google.com"
+            ],
+            "lp" : 1386790404,
+            "sockspo" : 80,
+            "a2" : "10.0.0.2",
+            "hsvercnt" : 1,
+            "ta" : [
+               "dstip",
+               "http:content:application/x-gzip",
+               "http:content:text/html",
+               "http:method:GET",
+               "http:statuscode:200",
+               "http:statuscode:302",
+               "node:test",
+               "protocol:http",
+               "protocol:socks",
+               "srcip",
+               "tcp"
+            ],
+            "hpath" : [
+               "/search"
+            ],
+            "fpd" : 1386790367120,
+            "fs" : [],
+            "g1" : "USA",
+            "hsver" : [
+               "1.1"
+            ],
+            "uscnt" : 2,
+            "hocnt" : 1,
+            "p1" : 54263,
+            "by" : 27311,
+            "as1" : "AS0000 This is neat",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               340,
+               416,
+               496,
+               572,
+               648,
+               724,
+               804,
+               1167,
+               1243,
+               2337,
+               2413,
+               3843,
+               4267,
+               4343,
+               5773,
+               7203,
+               7279,
+               8709,
+               8785,
+               10215,
+               10291,
+               11721,
+               13151,
+               13305,
+               13381,
+               13457,
+               14887,
+               15645,
+               15721,
+               17151,
+               17909,
+               17985,
+               19415,
+               20173,
+               20249,
+               21679,
+               21755,
+               22513,
+               23943,
+               24019,
+               24777,
+               24853,
+               26091,
+               26809,
+               26885,
+               27939,
+               28015,
+               28091
+            ],
+            "hpathcnt" : 1,
+            "hkey" : [
+               "hl",
+               "uule",
+               "client",
+               "start",
+               "rls",
+               "q",
+               "num",
+               "gl"
+            ],
+            "lpd" : 1386790404657,
+            "hh2" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "fp" : 1386790367,
+            "as2" : "AS0001 Cool Beans!",
+            "hkeycnt" : 8,
+            "hmd5cnt" : 2,
+            "pa" : 52,
+            "hh2cnt" : 6,
+            "tacnt" : 11,
+            "fb1" : "4e5a",
+            "us" : [
+               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "hh1" : [
+               "http:header:alternate-protocol",
+               "http:header:cache-control",
+               "http:header:content-encoding",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:expires",
+               "http:header:location",
+               "http:header:p3p",
+               "http:header:pragma",
+               "http:header:server",
+               "http:header:set-cookie",
+               "http:header:transfer-encoding",
+               "http:header:x-frame-options",
+               "http:header:x-xss-protection"
+            ],
+            "a1" : "10.0.0.1",
+            "fb2" : "050100050100014a",
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:54263,33554442:8855"
+               ],
+               "test.number" : [
+                  33554442
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
+            "rirsocksip" : "ARIN",
+            "hmd5" : [
+               "2069181ae704855f29caf964ca52ec49",
+               "b0cecae354b9eab1f04f70e46a612cb1"
+            ],
+            "hh1cnt" : 15,
+            "assocksip" : "AS15169 Google Inc.",
+            "p2" : 8855,
+            "gsocksip" : "USA",
+            "hdvercnt" : 1,
+            "hdver" : [
+               "1.1"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131211",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

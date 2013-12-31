@@ -16,10 +16,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/udp.h>
 #include <string.h>
 #include "glib.h"
 #include "yara.h"
@@ -263,7 +259,7 @@ int moloch_yara_callback(RULE* rule, MolochSession_t* session)
 /******************************************************************************/
 int yr_scan_mem_blocks(MEMORY_BLOCK* block, YARA_CONTEXT* context, YARACALLBACK callback, void* user_data);
 
-void  moloch_yara_execute(MolochSession_t *session, char *data, int len, int first)
+void  moloch_yara_execute(MolochSession_t *session, unsigned char *data, int len, int first)
 {
     MEMORY_BLOCK block;
 
@@ -271,15 +267,15 @@ void  moloch_yara_execute(MolochSession_t *session, char *data, int len, int fir
         return;
     
     if (first) {
-        block.data = (unsigned char *)data;
+        block.data = data;
         block.size = len;
         block.base = 0;
     } else if (len == 1) {
-        block.data = (unsigned char *)data+1;
+        block.data = data+1;
         block.size = len-1;
         block.base = 1;
     } else {
-        block.data = (unsigned char *)data+2;
+        block.data = data+2;
         block.size = len-2;
         block.base = 2;
     }
@@ -289,7 +285,7 @@ void  moloch_yara_execute(MolochSession_t *session, char *data, int len, int fir
     return;
 }
 /******************************************************************************/
-void  moloch_yara_email_execute(MolochSession_t *session, char *data, int len, int first)
+void  moloch_yara_email_execute(MolochSession_t *session, unsigned char *data, int len, int first)
 {
     MEMORY_BLOCK block;
 
@@ -297,15 +293,15 @@ void  moloch_yara_email_execute(MolochSession_t *session, char *data, int len, i
         return;
     
     if (first) {
-        block.data = (unsigned char *)data;
+        block.data = data;
         block.size = len;
         block.base = 0;
     } else if (len == 1) {
-        block.data = (unsigned char *)data+1;
+        block.data = data+1;
         block.size = len-1;
         block.base = 1;
     } else {
-        block.data = (unsigned char *)data+2;
+        block.data = data+2;
         block.size = len-2;
         block.base = 2;
     }

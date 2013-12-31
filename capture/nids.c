@@ -1,6 +1,6 @@
 /* nids.c  -- Functions for dealing with libnids
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -116,95 +116,28 @@ int moloch_nids_session_cmp(const void *keyv, const void *elementv)
                key[10] == (element->port2 & 0xff) &&
                memcmp(key, &element->addr1, 4) == 0 &&
                memcmp(key + 6, &element->addr2, 4) == 0;
-    } else {
+    } else if (element->addr1 > element->addr2) {
         return key[5] == ((element->port2 >> 8) & 0xff) && 
                key[4] == (element->port2 & 0xff) &&
                key[11] == ((element->port1 >> 8) & 0xff) &&
                key[10] == (element->port1 & 0xff) &&
                memcmp(key, &element->addr2, 4) == 0 &&
                memcmp(key + 6, &element->addr1, 4) == 0;
+    } else if (element->port1 > element->port2) {
+        return key[5] == ((element->port1 >> 8) & 0xff) && 
+               key[4] == (element->port1 & 0xff) &&
+               key[11] == ((element->port2 >> 8) & 0xff) &&
+               key[10] == (element->port2 & 0xff) &&
+               memcmp(key, &element->addr1, 4) == 0 &&
+               memcmp(key + 6, &element->addr1, 4) == 0;
+    } else {
+        return key[5] == ((element->port2 >> 8) & 0xff) && 
+               key[4] == (element->port2 & 0xff) &&
+               key[11] == ((element->port1 >> 8) & 0xff) &&
+               key[10] == (element->port1 & 0xff) &&
+               memcmp(key, &element->addr1, 4) == 0 &&
+               memcmp(key + 6, &element->addr1, 4) == 0;
     }
-}
-
-/******************************************************************************/
-void moloch_nids_certs_free (MolochCertsInfo_t *certs) 
-{
-    MolochString_t *string;
-
-    while (DLL_POP_HEAD(s_, &certs->alt, string)) {
-        g_free(string->str);
-        MOLOCH_TYPE_FREE(MolochString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->issuer.commonName, string)) {
-        g_free(string->str);
-        MOLOCH_TYPE_FREE(MolochString_t, string);
-    }
-
-    while (DLL_POP_HEAD(s_, &certs->subject.commonName, string)) {
-        g_free(string->str);
-        MOLOCH_TYPE_FREE(MolochString_t, string);
-    }
-
-    if (certs->issuer.orgName)
-        g_free(certs->issuer.orgName);
-    if (certs->subject.orgName)
-        g_free(certs->subject.orgName);
-    if (certs->serialNumber)
-        free(certs->serialNumber);
-
-    MOLOCH_TYPE_FREE(MolochCertsInfo_t, certs);
-}
-
-/******************************************************************************/
-uint32_t moloch_nids_certs_hash(const void *key)
-{
-    MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
-
-    return ((ci->serialNumber[0] << 28) | 
-            (ci->serialNumber[ci->serialNumberLen-1] << 24) |
-            (ci->issuer.commonName.s_count << 18) |
-            (ci->issuer.orgName?ci->issuer.orgName[0] << 12:0) |
-            (ci->subject.commonName.s_count << 6) |
-            (ci->subject.orgName?ci->subject.orgName[0]:0));
-}
-
-/******************************************************************************/
-int moloch_nids_certs_cmp(const void *keyv, const void *elementv)
-{
-    MolochCertsInfo_t *key = (MolochCertsInfo_t *)keyv;
-    MolochCertsInfo_t *element = (MolochCertsInfo_t *)elementv;
-
-    if ( !((key->serialNumberLen == element->serialNumberLen) &&
-           (memcmp(key->serialNumber, element->serialNumber, element->serialNumberLen) == 0) &&
-           (key->issuer.commonName.s_count == element->issuer.commonName.s_count) &&
-           (key->issuer.orgName == element->issuer.orgName || strcmp(key->issuer.orgName, element->issuer.orgName) == 0) &&
-           (key->subject.commonName.s_count == element->subject.commonName.s_count) &&
-           (key->subject.orgName == element->subject.orgName || strcmp(key->subject.orgName, element->subject.orgName) == 0)
-          )
-       ) {
-
-        return 0;
-    }
-
-    MolochString_t *kstr, *estr;
-    for (kstr = key->issuer.commonName.s_next, estr = element->issuer.commonName.s_next;
-         kstr != (void *)&(key->issuer.commonName);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    for (kstr = key->subject.commonName.s_next, estr = element->subject.commonName.s_next;
-         kstr != (void *)&(key->subject.commonName);
-         kstr = kstr->s_next, estr = estr->s_next) {
-
-        if (strcmp(kstr->str, estr->str) != 0)
-            return 0;
-    }
-
-    return 1;
 }
 
 /******************************************************************************/
@@ -237,14 +170,29 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
         memcpy(buf + 6, &addr2, 4);
         buf[10] = (port2 >> 8) & 0xff;
         buf[11] = port2 & 0xff;
-    } else {
+    } else if (addr1 > addr2) {
         memcpy(buf, &addr2, 4);
         buf[4] = (port2 >> 8) & 0xff;
         buf[5] = port2 & 0xff;
         memcpy(buf + 6, &addr1, 4);
         buf[10] = (port1 >> 8) & 0xff;
         buf[11] = port1 & 0xff;
+    } else if (port1 < port2) {
+        memcpy(buf, &addr1, 4);
+        buf[4] = (port1 >> 8) & 0xff;
+        buf[5] = port1 & 0xff;
+        memcpy(buf + 6, &addr1, 4);
+        buf[10] = (port2 >> 8) & 0xff;
+        buf[11] = port2 & 0xff;
+    } else {
+        memcpy(buf, &addr1, 4);
+        buf[4] = (port2 >> 8) & 0xff;
+        buf[5] = port2 & 0xff;
+        memcpy(buf + 6, &addr1, 4);
+        buf[10] = (port1 >> 8) & 0xff;
+        buf[11] = port1 & 0xff;
     }
+
 }
 /******************************************************************************/
 void moloch_nids_save_session(MolochSession_t *session) 
@@ -308,7 +256,6 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->bytes = 0;
     session->databytes = 0;
     session->packets = 0;
-    session->certJsonSize = 0;
 }
 /******************************************************************************/
 int dlt_to_linktype(int dlt);
@@ -471,144 +418,6 @@ moloch_nids_pcap_dump(const struct pcap_pkthdr *h, const u_char *sp)
     output->pos += h->caplen;
 }
 /******************************************************************************/
-void moloch_nids_new_session_http(MolochSession_t *session)
-{
-    MolochSessionHttp_t *http;
-
-    http = session->http = MOLOCH_TYPE_ALLOC0(MolochSessionHttp_t);
-
-    http->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
-    http->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
-}
-/******************************************************************************/
-void moloch_nids_free_session_http(MolochSession_t *session)
-{
-    MolochSessionHttp_t *http = session->http;
-
-    if (http->urlString)
-        g_string_free(http->urlString, TRUE);
-    if (http->hostString)
-        g_string_free(http->hostString, TRUE);
-    if (http->valueString[0])
-        g_string_free(http->valueString[0], TRUE);
-    if (http->valueString[1])
-        g_string_free(http->valueString[1], TRUE);
-
-    g_checksum_free(http->checksum[0]);
-    g_checksum_free(http->checksum[1]);
-
-    MOLOCH_TYPE_FREE(MolochSessionHttp_t, http);
-    session->http = 0;
-}
-/******************************************************************************/
-void moloch_nids_new_session_email(MolochSession_t *session)
-{
-    if (!config.parseSMTP)
-        return;
-
-    MolochSessionEmail_t *email;
-
-    email = session->email = MOLOCH_TYPE_ALLOC0(MolochSessionEmail_t);
-
-    email->line[0] = g_string_sized_new(100);
-    email->line[1] = g_string_sized_new(100);
-
-    email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
-    email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
-
-    DLL_INIT(s_, &(email->boundaries));
-}
-/******************************************************************************/
-void moloch_nids_free_session_email(MolochSession_t *session)
-{
-    MolochSessionEmail_t *email = session->email;
-    MolochString_t *string;
-
-    g_string_free(email->line[0], TRUE);
-    g_string_free(email->line[1], TRUE);
-
-    g_checksum_free(email->checksum[0]);
-    g_checksum_free(email->checksum[1]);
-
-    while (DLL_POP_HEAD(s_, &email->boundaries, string)) {
-        g_free(string->str);
-        MOLOCH_TYPE_FREE(MolochString_t, string);
-    }
-
-    MOLOCH_TYPE_FREE(MolochSessionEmail_t, email);
-    session->email = 0;
-}
-/******************************************************************************/
-void moloch_nids_new_session_smb(MolochSession_t *session)
-{
-    if (!config.parseSMB)
-        return;
-
-    session->smb = MOLOCH_TYPE_ALLOC0(MolochSessionSMB_t);
-}
-/******************************************************************************/
-void moloch_nids_free_session_smb(MolochSession_t *session)
-{
-    MolochSessionSMB_t *smb = session->smb;
-
-    MOLOCH_TYPE_FREE(MolochSessionSMB_t, smb);
-    session->smb = 0;
-}
-/******************************************************************************/
-void moloch_nids_new_session_socks(MolochSession_t *session, unsigned char *data, int len)
-{
-    MolochSessionSocks_t *socks;
-
-    socks = session->socks = MOLOCH_TYPE_ALLOC0(MolochSessionSocks_t);
-    socks->which = session->which;
-
-    if (data[0] == 4) {
-        socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
-        if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
-            socks->ip = 0;
-        } else {
-            memcpy(&socks->ip, data+4, 4);
-        }
-        socks->ver   = 4;
-
-        int i;
-        for(i = 8; i < len && data[i]; i++);
-        if (i > 8 && i != len ) {
-            socks->user = g_strndup((char *)data+8, i-8);
-            socks->userlen = i - 8;
-        }
-
-        if (socks->ip == 0) {
-            i++;
-            int start;
-            for(start = i; i < len && data[i]; i++);
-            if (i > start && i != len ) {
-                socks->hostlen = i-start;
-                socks->host = g_ascii_strdown((char*)data+start, i-start);
-            }
-        }
-
-        session->skip[socks->which] = i+1;
-    } else if (data[0] == 5 && (len >= 3 && len <= 5)) {
-        socks->ver   = 5;
-        session->skip[socks->which] = len;
-    } else {
-        moloch_nids_free_session_socks(session);
-    }
-}
-/******************************************************************************/
-void moloch_nids_free_session_socks(MolochSession_t *session)
-{
-    MolochSessionSocks_t *socks = session->socks;
-
-    if (socks->user)
-        g_free(socks->user);
-    if (socks->host)
-        g_free(socks->host);
-    MOLOCH_TYPE_FREE(MolochSessionSocks_t, socks);
-    session->socks = 0;
-}
-/******************************************************************************/
 void moloch_nids_cb_ip(struct ip *packet, int len)
 {
     char             sessionId[MOLOCH_SESSIONID_LEN];
@@ -697,7 +506,6 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->protocol = packet->ip_p;
         session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
         session->fileNumArray = g_array_new(FALSE, FALSE, 4);
-        HASH_INIT(t_, session->certs, moloch_nids_certs_hash, moloch_nids_certs_cmp);
         HASH_ADD(h_, *sessions[packet->ip_p], sessionId, session);
         session->lastSave = nids_last_pcap_header->ts.tv_sec;
         session->firstPacket = nids_last_pcap_header->ts;
@@ -705,8 +513,10 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->addr2 = packet->ip_dst.s_addr;
         session->ip_tos = packet->ip_tos;
         session->fields = MOLOCH_SIZE_ALLOC0(fields, sizeof(MolochField_t *)*config.maxField);
+        if (config.numPlugins > 0)
+            session->pluginData = MOLOCH_SIZE_ALLOC0(pluginData, sizeof(void *)*config.numPlugins);
 
-        moloch_detect_initial_tag(session);
+        moloch_parsers_initial_tag(session);
 
         switch (packet->ip_p) {
         case IPPROTO_TCP:
@@ -859,6 +669,21 @@ void moloch_nids_get_tag_cb(void *session, int tagtype, uint32_t tag)
     moloch_nids_decr_outstanding(session);
 }
 /******************************************************************************/
+gboolean moloch_nids_has_tag(MolochSession_t *session, int tagType, const char *tagName) 
+{
+    uint32_t tagValue;
+
+    if (!session->fields[tagType])
+        return FALSE;
+
+    if ((tagValue = moloch_db_peek_tag(tagName)) == 0)
+        return FALSE;
+
+    MolochInt_t          *hint;
+    HASH_FIND_INT(i_, *(session->fields[tagType]->ihash), tagValue, hint);
+    return hint != 0;
+}
+/******************************************************************************/
 void moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag) {
     moloch_nids_incr_outstanding(session);
     moloch_db_get_tag(session, tagtype, tag, moloch_nids_get_tag_cb);
@@ -916,28 +741,33 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         }
 
         if (a_tcp->client.count_new) {
-            uint32_t countNew      = a_tcp->client.count_new;
-            uint32_t count         = a_tcp->client.count - a_tcp->client.offset;
+            int countNew      = a_tcp->client.count_new;
+            int count         = a_tcp->client.count - a_tcp->client.offset;
             unsigned char *dataNew = (unsigned char*)(a_tcp->client.data + (a_tcp->client.count - a_tcp->client.offset - countNew));
             unsigned char *data    = (unsigned char*)a_tcp->client.data;
 
             session->which = 1;
 
-            if (session->socks)
-                moloch_detect_parse_socks(session, dataNew, countNew);
+            if (a_tcp->client.offset == session->consumed[1])
+                moloch_parsers_classify_tcp(session, data, count);
 
-            moloch_detect_parse_http(session, dataNew, countNew, a_tcp->client.count-countNew == session->skip[1]);
+            int i;
+            int totConsumed = 0;
+            int consumed = 0;
 
-            if (a_tcp->client.offset == session->skip[1])
-                moloch_detect_parse_classify(session, data, count);
+            for (i = 0; i < session->parserNum; i++)
+                if (session->parserInfo[i].parserFunc) {
+                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, dataNew + totConsumed, countNew - totConsumed);
+                    if (consumed) {
+                        totConsumed += consumed;
+                        session->consumed[1] += consumed;
+                    }
 
-            moloch_detect_parse_yara(session, data, count, a_tcp->client.count-countNew == session->skip[1]);
-            if (session->email)
-                moloch_detect_parse_email(session, dataNew, countNew);
-            if (session->smb)
-                moloch_detect_parse_smb(session, dataNew, countNew);
-            if (session->isSsh)
-                moloch_detect_parse_ssh(session, dataNew, countNew);
+                    if (consumed >= countNew)
+                        break;
+                }
+
+            moloch_yara_execute(session, data, count, a_tcp->client.count-countNew == session->consumed[1]);
 
             nids_discard(a_tcp, session->offsets[1]);
             session->offsets[1] = countNew;
@@ -949,26 +779,33 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         }
 
         if (a_tcp->server.count_new) {
-            uint32_t countNew      = a_tcp->server.count_new;
-            uint32_t count         = a_tcp->server.count - a_tcp->server.offset;
+            int countNew      = a_tcp->server.count_new;
+            int count         = a_tcp->server.count - a_tcp->server.offset;
             unsigned char *dataNew = (unsigned char*)(a_tcp->server.data + (a_tcp->server.count - a_tcp->server.offset - countNew));
             unsigned char *data    = (unsigned char*)a_tcp->server.data;
 
             session->which = 0;
-            if (session->socks)
-                moloch_detect_parse_socks(session, dataNew, countNew);
 
-            moloch_detect_parse_http(session, dataNew, countNew, a_tcp->server.count-countNew == session->skip[0]);
-            if (a_tcp->server.offset == session->skip[0])
-                moloch_detect_parse_classify(session, data, count);
+            if (a_tcp->server.offset == session->consumed[0])
+                moloch_parsers_classify_tcp(session, data, count);
 
-            if (session->email)
-                moloch_detect_parse_email(session, dataNew, countNew);
-            if (session->smb)
-                moloch_detect_parse_smb(session, dataNew, countNew);
-            moloch_detect_parse_yara(session, data, count, a_tcp->server.count-countNew == session->skip[0]);
-            if (session->isIrc)
-                moloch_detect_parse_irc(session, dataNew, countNew);
+            int i;
+            int totConsumed = 0;
+            int consumed = 0;
+            for (i = 0; i < session->parserNum; i++)
+                if (session->parserInfo[i].parserFunc) {
+                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, dataNew + totConsumed, countNew - totConsumed);
+
+                    if (consumed) {
+                        totConsumed += consumed;
+                        session->consumed[0] += consumed;
+                    }
+
+                    if (consumed >= countNew)
+                        break;
+                }
+
+            moloch_yara_execute(session, data, count, a_tcp->server.count-countNew == session->consumed[0]);
 
             nids_discard(a_tcp, session->offsets[0]);
             session->offsets[0] = countNew;
@@ -994,11 +831,11 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
         }
 
         if (a_tcp->client.count != a_tcp->client.offset) {
-            moloch_detect_parse_yara(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count, a_tcp->client.offset == 0);
+            moloch_yara_execute(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count, a_tcp->client.offset == 0);
         }
 
         if (a_tcp->server.count != a_tcp->server.offset) {
-            moloch_detect_parse_yara(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count, a_tcp->server.offset == 0);
+            moloch_yara_execute(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count, a_tcp->server.offset == 0);
         }
     
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
@@ -1033,30 +870,20 @@ void moloch_nids_session_free (MolochSession_t *session)
     g_array_free(session->filePosArray, TRUE);
     g_array_free(session->fileNumArray, TRUE);
 
-    if (session->http) {
-        moloch_nids_free_session_http(session);
-    }
-
-    if (session->email) {
-        moloch_nids_free_session_email(session);
-    }
-
-    if (session->smb) {
-        moloch_nids_free_session_smb(session);
-    }
-
-    if (session->socks) {
-        moloch_nids_free_session_socks(session);
-    }
-
-    MolochCertsInfo_t *certs;
-    HASH_FORALL_POP_HEAD(t_, session->certs, certs, 
-        moloch_nids_certs_free(certs);
-    );
-
     if (session->rootId)
         g_free(session->rootId);
 
+    if (session->parserInfo) {
+        int i;
+        for (i = 0; i < session->parserNum; i++) {
+            if (session->parserInfo[i].parserFreeFunc)
+                session->parserInfo[i].parserFreeFunc(session, session->parserInfo[i].uw);
+        }
+        free(session->parserInfo);
+    }
+
+    if (session->pluginData)
+        MOLOCH_SIZE_FREE(pluginData, session->pluginData);
     moloch_field_free(session);
     MOLOCH_TYPE_FREE(MolochSession_t, session);
 }
@@ -1238,8 +1065,7 @@ uint32_t moloch_nids_disk_queue()
 /******************************************************************************/
 void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len)
 {
-    if (session->port1 == 53 || session->port2 == 53)
-        moloch_detect_dns(session, data, len);
+    moloch_parsers_classify_udp(session, data, len);
 
     if (pluginsCbs & MOLOCH_PLUGIN_UDP)
         moloch_plugins_cb_udp(session, udphdr, data, len);
@@ -1248,12 +1074,6 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
         session->firstBytesLen[session->which] = MIN(8, len);
         memcpy(session->firstBytes[session->which], data, session->firstBytesLen[session->which]);
     }
-
-    if (len < 4)
-        return;
-
-    if (memcmp("d1:", data, 3) == 0 && (data[3] == 'a' || data[3] == 'r' || data [3] == 'q'))
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:bittorrent");
 }
 /******************************************************************************/
 static pcap_t *closeNextOpen = 0;

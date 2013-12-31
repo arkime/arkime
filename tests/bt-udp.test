@@ -1,0 +1,113 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 137,
+            "lpd" : 1387253713030,
+            "fp" : 1387253713,
+            "no" : "test",
+            "as2" : "AS0000 This is neat",
+            "lp" : 1387253713,
+            "pa" : 1,
+            "tacnt" : 5,
+            "fb1" : "64313a6164323a69",
+            "a2" : "10.0.0.1",
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:bittorrent",
+               "srcip",
+               "udp"
+            ],
+            "fpd" : 1387253713030,
+            "fs" : [],
+            "a1" : "10.0.0.2",
+            "p1" : 50759,
+            "by" : 145,
+            "p2" : 3207,
+            "as1" : "AS0001 Cool Beans!",
+            "g2" : "USA",
+            "pr" : 17,
+            "ps" : [
+               24
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131217",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db" : 321,
+            "lpd" : 1387253793904,
+            "fp" : 1387253793,
+            "no" : "test",
+            "as2" : "AS0002 Hmm!@#$%^&*()",
+            "lp" : 1387253793,
+            "pa" : 1,
+            "tacnt" : 3,
+            "fb1" : "64313a7264323a69",
+            "a2" : "10.0.0.3",
+            "ta" : [
+               "node:test",
+               "protocol:bittorrent",
+               "udp"
+            ],
+            "fpd" : 1387253793904,
+            "fs" : [],
+            "a1" : "10.0.0.4",
+            "p1" : 44102,
+            "by" : 329,
+            "p2" : 12074,
+            "pr" : 17,
+            "ps" : [
+               185
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131217",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db" : 328,
+            "lpd" : 1387257610963,
+            "fp" : 1387257610,
+            "no" : "test",
+            "lp" : 1387257610,
+            "pa" : 1,
+            "tacnt" : 3,
+            "fb1" : "64313a71393a6669",
+            "a2" : "10.0.0.5",
+            "ta" : [
+               "node:test",
+               "protocol:bittorrent",
+               "udp"
+            ],
+            "fpd" : 1387257610963,
+            "fs" : [],
+            "a1" : "10.0.0.6",
+            "p1" : 47061,
+            "by" : 336,
+            "p2" : 20551,
+            "pr" : 17,
+            "ps" : [
+               530
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131217",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

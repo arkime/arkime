@@ -23,7 +23,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        thirdparty/patricia.o \
 		-ldl -lpthread
 
-C_FILES         = main.c db.c nids.c yara.c http.c config.c detect.c plugins.c field.c trie.c
+C_FILES         = main.c db.c nids.c yara.c http.c config.c parsers.c plugins.c field.c trie.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
@@ -34,9 +34,11 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
 	$(CC) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
+	    -ug_checksum_update \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
+	(cd parsers; make)
 	(cd plugins; make)
 
 snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
@@ -44,6 +46,7 @@ snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_SNF) -DSNF \
 	    $(INCLUDE_OTHER) 
 	g++ -ggdb $(O_FILES) -o moloch-capture \
+	    -ug_checksum_update \
 	    $(LIB_SNF) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz

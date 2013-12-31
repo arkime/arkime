@@ -1,0 +1,37 @@
+#include <string.h>
+#include <ctype.h>
+#include "moloch.h"
+
+typedef struct {
+} CHANGEMEInfo_t;
+
+/******************************************************************************/
+void changeme_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+{
+    CHANGEMEInfo_t            *changeme          = uw;
+}
+/******************************************************************************/
+void changeme_free(MolochSession_t UNUSED(*session), void *uw)
+{
+    CHANGEMEInfo_t            *changeme          = uw;
+
+    MOLOCH_TYPE_FREE(CHANGEMEInfo_t, changeme);
+}
+/******************************************************************************/
+void changeme_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len))
+{
+    if (moloch_nids_has_tag(session, MOLOCH_FIELD_TAGS, "protocol:changeme"))
+        return;
+
+    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:changeme");
+
+    CHANGEMEInfo_t            *changeme          = MOLOCH_TYPE_ALLOC0(CHANGEMEInfo_t);
+
+    moloch_parsers_register(session, changeme_parser, changeme, changeme_free);
+}
+/******************************************************************************/
+void moloch_parser_init()
+{
+    moloch_parsers_classifier_register_tcp("changeme", 0, "\x12", 1, changeme_classify);
+}
+
