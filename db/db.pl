@@ -62,6 +62,8 @@ sub showHelp($)
     print "  usersexport <fn>      - Save the users info to <fn>\n";
     print "  usersimport <fn>      - Load the users info from <fn>\n";
     print "  optimize              - Optimize all indices\n";
+    print "  mv <old fn> <new fn>  - Move a pcap file in the database (doesn't change disk)\n";
+    print "  rm <fn>               - Remove a pcap file in the database (doesn't change disk)\n";
     print "  expire <type> <num>   - Perform daily maintenance and optimize all indices\n";
     print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num              - number of indexes to keep\n";
@@ -1358,8 +1360,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|expire|rotate|optimize)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport)/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|expire|rotate|optimize|mv|rm)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport|rm)/);
+showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
@@ -1474,6 +1477,27 @@ sub printIndex {
     printIndex($status->{indices}->{tags_v1}, "tags_v1");
     printIndex($status->{indices}->{users_v2}, "users_v2");
     printIndex($status->{indices}->{users_v1}, "users_v1");
+    exit 0;
+} elsif ($ARGV[1] eq "mv") {
+    (my $fn = $ARGV[2]) =~ s/\//\\\//g;
+    my $results = esGet("/files/_search?q=name:$fn");
+    die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
+
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
+        esPost("/files/file/" . $hit->{_id} . "/_update", $script);
+    }
+    print "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+    exit 0;
+} elsif ($ARGV[1] eq "rm") {
+    (my $fn = $ARGV[2]) =~ s/\//\\\//g;
+    my $results = esGet("/files/_search?q=name:$fn");
+    die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
+
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        esDelete("/files/file/" . $hit->{_id}, 0);
+    }
+    print "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 }
 
