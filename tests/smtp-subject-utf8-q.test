@@ -25,6 +25,7 @@
                "node:test",
                "protocol:smtp",
                "smtp:content:application/octet-stream",
+               "smtp:statuscode:250",
                "srcip",
                "tcp"
             ],
@@ -76,7 +77,7 @@
             "fp" : 1384762012,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 19,
-            "tacnt" : 5,
+            "tacnt" : 6,
             "fb1" : "45484c4f20736d74",
             "edst" : [
                "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"

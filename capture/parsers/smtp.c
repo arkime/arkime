@@ -319,14 +319,14 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
 /******************************************************************************/
 int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
 {
-#ifdef EMAILDEBUG
-    LOG("EMAILDEBUG: enter %d", session->which);
-#endif
-
     SMTPInfo_t           *email        = uw;
     GString              *line         = email->line[session->which];
     char                 *state        = &email->state[session->which];
     MolochString_t       *emailHeader  = 0;
+
+#ifdef EMAILDEBUG
+    LOG("EMAILDEBUG: enter %d %d %d %.*s", session->which, *state, email->needStatus[(session->which + 1) % 2], remaining, data);
+#endif
 
     while (remaining > 0) {
         switch (*state) {
@@ -596,6 +596,9 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 #endif
             if (*line->str == 0) {
                 *state = EMAIL_MIME_DATA;
+            } else if (strcmp(line->str, ".") == 0) {
+                email->needStatus[session->which] = 1;
+                *state = EMAIL_CMD;
             } else {
                 *state = EMAIL_MIME_DONE;
             }

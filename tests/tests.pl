@@ -43,7 +43,7 @@ sub doTests {
         my $savedJson = from_json($savedData, {relaxed => 1});
 
         if ($debug) {
-            print "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+            print "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix\n";
         }
 
         my $testData = `../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix`;

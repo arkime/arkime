@@ -29,6 +29,7 @@
                "node:test",
                "protocol:smtp",
                "smtp:content:text/plain",
+               "smtp:statuscode:250",
                "tcp"
             ],
             "eip" : [
@@ -85,7 +86,7 @@
             "fp" : 1386358422,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 24,
-            "tacnt" : 4,
+            "tacnt" : 5,
             "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxxxxx@gmail.com"
