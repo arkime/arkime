@@ -302,10 +302,10 @@ function fixQuery(node, body, doneCb) {
   body = JSON.parse(body);
 
   // Reset from & size since we do aggregation
-  body.from = 0;
   if (body.size) {
     body.size = (+body.size) + ((+body.from) || 0);
   }
+  body.from = 0;
 
   var outstanding = 0;
   var finished = 0;
