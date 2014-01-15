@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.90.5**, as of **2013-7-12** requires at least 0.90.1
+Tested with **0.90.10**, requires at least 0.90.1, does **not** support 1.x.
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -83,7 +83,7 @@ Tested with **0.90.5**, as of **2013-7-12** requires at least 0.90.1
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.90.5 <http://www.elasticsearch.org/downloads/0-90-5/>`_.
+   0.90.10 <http://www.elasticsearch.org/downloads/0-90-10/>`_.
 
 4. Uncompress the archive you downloaded.
 
@@ -201,7 +201,7 @@ Building Viewer
 
    - **Binary install:** Please see the `platform-specific instructions
      <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
-   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.21/node-v0.10.21.tar.gz>`_, build, and install.
+   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.24/node-v0.10.24.tar.gz>`_, build, and install.
 
 3. In the ``viewer`` directory run ``npm update``.
 
