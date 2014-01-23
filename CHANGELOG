@@ -2,6 +2,7 @@
   - Status code not being set when . after mime data
   - db.pl has simple mv/rm commands now
   - Fixed all pagination (issue #192)
+  - multies tag fix (issue #205)
 
 0.10.0 2013/12/31
   - IMPORTANT: all parsers have been broken out into individual

@@ -41,6 +41,12 @@ exports.initialize = function (info) {
   delete info.nodeName;
 
   internals.elasticSearchClient = new ESC(info);
+
+  // Replace tag implementation
+  if (internals.dontMapTags) {
+    exports.tagIdToName = function (id, cb) { return cb(id); };
+    exports.tagNameToId = function (name, cb) { return cb(name); };
+  }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -300,55 +306,50 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-if (internals.dontMapTags) {
-  exports.tagIdToName = function (id, cb) { return cb(id); };
-  exports.tagNameToId = function (name, cb) { return cb(name); };
-} else {
-  exports.tagIdToName = function (id, cb) {
-    if (!canDo(exports.tagIdToName, this, arguments)) {
-      return;
+exports.tagIdToName = function (id, cb) {
+  if (!canDo(exports.tagIdToName, this, arguments)) {
+    return;
+  }
+
+  if (internals.tagId2Name[id]) {
+    cb(internals.tagId2Name[id]);
+    return didIt();
+  }
+
+  var query = {query: {term: {n:id}}};
+  exports.search('tags', 'tag', query, function(err, tdata) {
+    didIt();
+
+    if (!err && tdata.hits.hits[0]) {
+      internals.tagId2Name[id] = tdata.hits.hits[0]._id;
+      internals.tagName2Id[tdata.hits.hits[0]._id] = id;
+      return cb(internals.tagId2Name[id]);
     }
 
-    if (internals.tagId2Name[id]) {
-      cb(internals.tagId2Name[id]);
-      return didIt();
+    return cb(null);
+  });
+};
+
+exports.tagNameToId = function (name, cb) {
+  if (!canDo(exports.tagNameToId, this, arguments)) {
+    return;
+  }
+
+  if (internals.tagName2Id[name]) {
+    cb(internals.tagName2Id[name]);
+    return didIt();
+  }
+
+  exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
+    didIt();
+    if (!err && tdata.exists) {
+      internals.tagName2Id[name] = tdata._source.n;
+      internals.tagId2Name[tdata._source.n] = name;
+      return cb(internals.tagName2Id[name]);
     }
-
-    var query = {query: {term: {n:id}}};
-    exports.search('tags', 'tag', query, function(err, tdata) {
-      didIt();
-
-      if (!err && tdata.hits.hits[0]) {
-        internals.tagId2Name[id] = tdata.hits.hits[0]._id;
-        internals.tagName2Id[tdata.hits.hits[0]._id] = id;
-        return cb(internals.tagId2Name[id]);
-      }
-
-      return cb(null);
-    });
-  };
-
-  exports.tagNameToId = function (name, cb) {
-    if (!canDo(exports.tagNameToId, this, arguments)) {
-      return;
-    }
-
-    if (internals.tagName2Id[name]) {
-      cb(internals.tagName2Id[name]);
-      return didIt();
-    }
-
-    exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
-      didIt();
-      if (!err && tdata.exists) {
-        internals.tagName2Id[name] = tdata._source.n;
-        internals.tagId2Name[tdata._source.n] = name;
-        return cb(internals.tagName2Id[name]);
-      }
-      return cb(-1);
-    });
-  };
-}
+    return cb(-1);
+  });
+};
 
 exports.fileIdToFile = function (node, num, cb) {
   var key = node + "!" + num;
