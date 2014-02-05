@@ -231,6 +231,7 @@ typedef struct moloch_config {
     char      parseSMB;
     char      parseQSValue;
     char      compressES;
+    char      antiSynDrop;
 } MolochConfig_t;
 
 typedef struct {
