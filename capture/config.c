@@ -219,6 +219,7 @@ void moloch_config_load()
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
+    config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
 
 }
 /******************************************************************************/
