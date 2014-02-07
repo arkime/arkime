@@ -488,6 +488,20 @@ function sortResults(search, obj) {
     obj.hits.hits = obj.hits.hits.slice(from, from + (+search.size));
   }
 }
+function newResult(search) {
+  var result = {hits: {hits: [], total: 0}};
+  if (search.facets) {
+    result.facets = {};
+    for (var facet in search.facets) {
+      if (search.facets[facet].histogram) {
+        result.facets[facet] = {entries: [], _type: "histogram"};
+      } else {
+        result.facets[facet] = {terms: [], _type: "terms"};
+      }
+    }
+  }
+  return result;
+}
 
 // Only tags search is for auto complete so unique the results
 app.post("/tags/tag/_search", function(req, res) {
@@ -499,6 +513,10 @@ app.post("/tags/tag/_search", function(req, res) {
     }, function (err) {
       var tags = {};
       for (var i = 0; i < results.length; i++) {
+        if (results[i].error || !results[i].hits) {
+          console.log("Issue with tag results", results[i].error);
+          continue;
+        }
         for (var h = 0; h < results[i].hits.hits.length; h++) {
           tags[results[i].hits.hits[h]._id] = results[i].hits.hits[h];
         }
@@ -530,13 +548,9 @@ app.post("/:index/:type/_search", function(req, res) {
       async.each(results, function (result, asyncCb) {
         fixResult(result._node, result, asyncCb);
       }, function (err) {
-        var obj = results[0];
+        var obj = newResult(search);
 
-        if (obj.facets) {
-          facetConvert2Obj(obj.facets);
-        }
-
-        for (var i = 1; i < results.length; i++) {
+        for (var i = 0; i < results.length; i++) {
           combineResults(obj, results[i]);
         }
 
@@ -583,13 +597,9 @@ app.post("/:index/:type/_msearch", function(req, res) {
       }, function(err) {
         var obj = {responses:[]};
         for (var h = 0; h < results[0].responses.length; h++) {
-          obj.responses[h] = results[0].responses[h];
+          obj.responses[h] = newResult(JSON.parse(lines[h*2+1]));
 
-          if (obj.facets) {
-            facetConvert2Obj(obj.responses[h].facets);
-          }
-
-          for (var i = 1; i < results.length; i++) {
+          for (var i = 0; i < results.length; i++) {
             combineResults(obj.responses[h], results[i].responses[h]);
           }
 
