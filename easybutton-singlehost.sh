@@ -60,6 +60,7 @@ if [ -d "${TDIR}/logs" ]; then
 fi
 
 
+echo -n "Looking for java "
 which java
 JAVA_VAL=$?
 
@@ -90,9 +91,16 @@ if [ $JAVA_VAL -ne 0 ]; then
 fi
 
 if [ "x$http_proxy" != "x" ]; then
-    JAVA_OPTS=`echo $http_proxy | sed 's/http:..\(.*\):\(.*\)/-Dhttp.proxyHost=\1 -Dhttp.proxyPort=\2/'`
+    JAVA_OPTS="$JAVA_OPTS `echo $http_proxy | sed 's/https*:..\(.*\):\(.*\)/-Dhttp.proxyHost=\1 -Dhttp.proxyPort=\2/'`"
     export JAVA_OPTS
-    echo "Because http_proxy is set ($http_proxy) setting JAVA_OPTS to ($JAVA_OPTS) because http_proxy is set ($http_proxy)"
+    echo "Because http_proxy is set ($http_proxy) setting JAVA_OPTS to ($JAVA_OPTS)"
+    sleep 1
+fi
+
+if [ "x$https_proxy" != "x" ]; then
+    JAVA_OPTS="$JAVA_OPTS `echo $https_proxy | sed 's/https*:..\(.*\):\(.*\)/-Dhttps.proxyHost=\1 -Dhttps.proxyPort=\2/'`"
+    export JAVA_OPTS
+    echo "Because https_proxy is set ($https_proxy) setting JAVA_OPTS to ($JAVA_OPTS)"
     sleep 1
 fi
 
@@ -164,6 +172,17 @@ make install
 ./configure --prefix=${TDIR}
 make install
 
+if [ "x$http_proxy" != "x" ]; then
+    ${TDIR}/bin/npm config set proxy $http_proxy
+    echo "Because http_proxy is set ($http_proxy) setting npm proxy"
+    sleep 1
+fi
+
+if [ "x$https_proxy" != "x" ]; then
+    ${TDIR}/bin/npm config set https-proxy $https_proxy
+    echo "Because https_proxy is set ($https_proxy) setting npm https-proxy"
+    sleep 1
+fi
 
 cd ${TDIR}/etc/
 if [ ! -f "GeoIP.dat" ]; then
@@ -179,8 +198,6 @@ fi
 if [ ! -f "ipv4-address-space.csv" ]; then
   wget https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
 fi
-
-
 
 echo "MOLOCH: Installing"
 cd ${INSTALL_DIR}
