@@ -523,9 +523,9 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         switch (packet->ip_p) {
         case IPPROTO_TCP:
-            /* If a syn & ack that means the first packet is actually the syn-ack 
-             * reply, the syn probably got dropped */
-            if ((tcphdr->syn) && (tcphdr->ack)) {
+            /* If antiSynDrop option is set to true, capture will assume that 
+            *if the syn-ack packet was captured first then the syn probably got dropped.*/
+            if ((tcphdr->syn) && (tcphdr->ack) && (config.antiSynDrop)) {
                 session->addr1 = packet->ip_dst.s_addr;
                 session->addr2 = packet->ip_src.s_addr;
                 session->port1 = ntohs(tcphdr->dest);
