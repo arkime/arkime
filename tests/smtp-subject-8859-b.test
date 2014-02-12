@@ -3,6 +3,7 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "db2" : 485,
             "db" : 2151,
             "esrc" : [
                "xxxxxxxxx@xxxxxxx.com"
@@ -29,18 +30,41 @@
                "tcp"
             ],
             "eip" : [
+               "10.0.0.4",
                "10.180.121.108",
                "169.254.4.195"
             ],
             "eua" : [
                "Microsoft-MacOutlook/14.3.9.131030"
             ],
+            "pa1" : 11,
             "fpd" : 1386358271061,
             "fs" : [],
+            "by2" : 1169,
             "g1" : "USA",
+            "pa2" : 12,
             "p1" : 11084,
             "by" : 3465,
-            "eipcnt" : 2,
+            "ehh" : [
+               "content-type",
+               "from",
+               "message-id",
+               "mime-version",
+               "to",
+               "user-agent",
+               "x-ms-tnef-correlator",
+               "received",
+               "thread-index",
+               "date",
+               "subject",
+               "content-language",
+               "x-originating-ip",
+               "x-ms-has-attach",
+               "accept-language",
+               "thread-topic"
+            ],
+            "ehhcnt" : 16,
+            "eipcnt" : 3,
             "eho" : [
                "xxxxxxxxxxxxxxxxx2.xxxxx.net",
                "xxxxxxxxxxxxxxxxx1.xxxxx.net"
@@ -74,6 +98,7 @@
             ],
             "ehocnt" : 2,
             "geip" : [
+               "---",
                "USA",
                "---"
             ],
@@ -82,21 +107,25 @@
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 23,
             "tacnt" : 4,
-            "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxxxxx@gmail.com"
             ],
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.180.121.109",
             "fb2" : "3232302078787878",
+            "db1" : 1666,
             "rireip" : [
+               "",
                "",
                "ARIN"
             ],
             "aseip" : [
                "---",
+               "---",
                "---"
             ],
+            "by1" : 2296,
             "esrccnt" : 1,
             "emv" : [
                "1.0"

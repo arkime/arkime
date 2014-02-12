@@ -263,9 +263,6 @@ void  moloch_yara_execute(MolochSession_t *session, unsigned char *data, int len
 {
     MEMORY_BLOCK block;
 
-    if (!config.yara)
-        return;
-    
     if (first) {
         block.data = data;
         block.size = len;

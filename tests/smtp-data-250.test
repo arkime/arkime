@@ -3,6 +3,7 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "db2" : 835,
             "db" : 1898,
             "esrc" : [
                "12345678@aol.com"
@@ -21,19 +22,37 @@
             "esub" : [
                "Re: xxx xxx xxxxx xxxxxx..."
             ],
+            "user" : [
+               "12345678@aol.com"
+            ],
             "ta" : [
                "node:test",
                "protocol:smtp",
+               "smtp:authplain",
                "smtp:statuscode:250",
                "srcip",
                "tcp"
             ],
+            "pa1" : 14,
             "fpd" : 1386338020379,
             "fs" : [],
+            "by2" : 1753,
             "g1" : "USA",
+            "pa2" : 16,
             "p1" : 3293,
             "by" : 3620,
             "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "from",
+               "mime-version",
+               "to",
+               "date",
+               "content-transfer-encoding",
+               "subject"
+            ],
+            "ehhcnt" : 8,
             "g2" : "USA",
             "pr" : 6,
             "ps" : [
@@ -72,14 +91,15 @@
             "fp" : 1386338020,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 30,
-            "tacnt" : 5,
-            "fb1" : "45484c4f206c6f63",
+            "tacnt" : 6,
             "edst" : [
                "xxxx.xxxxxx@xxxxx.com"
             ],
+            "fb1" : "45484c4f206c6f63",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "fb2" : "3232302d6d74616f",
+            "db1" : 1063,
             "plugin" : {
                "test.ip.rir" : [
                   ""
@@ -100,6 +120,8 @@
                   167772161
                ]
             },
+            "usercnt" : 1,
+            "by1" : 1867,
             "esrccnt" : 1,
             "emv" : [
                "1.0"

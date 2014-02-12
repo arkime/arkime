@@ -560,105 +560,104 @@ app.get('/style.css', function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING
 //////////////////////////////////////////////////////////////////////////////////
-function statG(dir, func) {
-  fs.statVFS(dir, function(err,stat) {
-    if (err) {return console.log("ERROR with statVFS", dir, err);}
-    var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
-    func(freeG);
-  });
-}
-
-function expireOne (ourInfo, allInfo, minFreeG, pcapDir, nextCb) {
-
-  var nodes = [];
-
-  // Find all the nodes that are on the same device
-  for (var i = 0, ilen = allInfo.length; i < ilen; i++) {
-    if (allInfo[i].stat.dev === ourInfo.stat.dev) {
-      nodes.push(allInfo[i].node);
-    }
-  }
-
+// Search for all files on a set of nodes in a set of directories.
+// If less then size items are returned we don't delete anything.
+// Doesn't support mounting sub directories in main directory, don't do it.
+function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   var query = { fields: [ 'num', 'name', 'first', 'size', 'node' ],
-                from: '0',
-                size: 10,
-                query: { bool: {
-                  must:     { terms: {node: nodes}},
-                  must_not: { term: {locked: 1}}
+                  from: '0',
+                  size: 20,
+                 query: { bool: {
+                    must: [
+                          {terms: {node: nodes}},
+                          { bool: {should: []}}
+                        ],
+                    must_not: { term: {locked: 1}}
                 }},
                 sort: { first: { order: 'asc' } } };
 
-  var done = false;
-  async.until(
-    function () { // until test
-      return done;
-    },
-    function (untilNextCb) { // until iterator
-      console.log("expireOne query", JSON.stringify(query));
-      Db.search('files', 'file', query, function(err, data) {
-        console.log("expireOne result = \n", util.inspect(data, false, 12));
-        if (err || data.error || data.hits.total <= query.size) {
-          done = true;
-          return untilNextCb();
-        }
+  Object.keys(dirs).forEach( function (pcapDir) {
+    var obj = {wildcard: {}};
+    if (pcapDir[pcapDir.length - 1] === "/") {
+      obj.wildcard.name = pcapDir + "*";
+    } else {
+      obj.wildcard.name = pcapDir + "/*";
+    }
+    query.query.bool.must[1].bool.should.push(obj);
+  });
 
-        async.forEachSeries(data.hits.hits, function(item, forNextCb) {
-          statG(pcapDir, function(freeG) {
-            console.log(freeG, "< ", minFreeG);
-            if (freeG < minFreeG) {
-              console.log("Deleting", item);
-              Db.deleteFile(item.fields.node, item._id, item.fields.name, forNextCb);
-            } else {
-              done = true;
-              return forNextCb("Done");
-            }
-          });
-        },
-        function(err) {
-          return untilNextCb();
-        });
+  Db.search('files', 'file', query, function(err, data) {
+      if (err || data.error || !data.hits || data.hits.total <= query.size) {
+        return nextCb();
+      }
+      async.forEachSeries(data.hits.hits, function(item, forNextCb) {
+        var stat = fs.statVFS(item.fields.name);
+        var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
+        if (freeG < minFreeSpaceG) {
+          console.log("Deleting", item);
+          return Db.deleteFile(item.fields.node, item._id, item.fields.name, forNextCb);
+        } else {
+          return forNextCb("DONE");
+        }
+      }, function () {
+        return nextCb();
       });
-    },
-    function (err) {
-      return nextCb();
-    });
+  });
 }
 
-function expireCheckOne (ourInfo, allInfo, nextCb) {
-  var node = ourInfo.node;
-  var pcapDir = Config.getFull(node, "pcapDir");
-  var freeSpaceG = Config.getFull(node, "freeSpaceG", 301);
-
-  // Check if our pcap dir is full
-  statG(pcapDir, function(freeG) {
+function expireCheckDevice (nodes, stat, nextCb) {
+  var doit = false;
+  var minFreeSpaceG = 0;
+  async.forEach(nodes, function(node, cb) {
+    var freeSpaceG = Config.getFull(node, "freeSpaceG", 301);
+    var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
     if (freeG < freeSpaceG) {
-      expireOne(ourInfo, allInfo, freeSpaceG, pcapDir, nextCb);
+      doit = true;
+    }
+
+    if (freeSpaceG > minFreeSpaceG) {
+      minFreeSpaceG = freeSpaceG;
+    }
+
+    cb();
+  }, function () {
+    if (doit) {
+      expireDevice(nodes, stat.dirs, minFreeSpaceG, nextCb);
     } else {
-      nextCb();
+      return nextCb();
     }
   });
 }
 
 function expireCheckAll () {
+  var devToStat = {};
   // Find all the nodes running on this host
   Db.hostnameToNodeids(os.hostname(), function(nodes) {
     // Find all the pcap dirs for local nodes
     async.map(nodes, function (node, cb) {
-      var pcapDir = Config.getFull(node, "pcapDir");
-      if (typeof pcapDir !== "string") {
+      var pcapDirs = Config.getFull(node, "pcapDir");
+      if (typeof pcapDirs !== "string") {
         return cb("ERROR - couldn't find pcapDir setting for node: " + node + "\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm update iniparser");
       }
-      fs.stat(pcapDir, function(err,stat) {
-        cb(null, {node: node, stat: stat});
+      // Create a mapping from device id to stat information and all directories on that device
+      pcapDirs.split(";").forEach(function (pcapDir) {
+        pcapDir = pcapDir.trim();
+        var stat = fs.statVFS(pcapDir);
+        if (!devToStat[stat.dev]) {
+          stat.dirs = {};
+          stat.dirs[pcapDir] = {};
+          devToStat[stat.dev] = stat;
+        } else {
+          devToStat[stat.dev].dirs[pcapDir] = {};
+        }
       });
+      cb(null);
     },
-    function (err, allInfo) {
-      if (err) {
-        return console.log(err);
-      }
-      // Now gow through all the local nodes and check them
-      async.forEachSeries(allInfo, function (info, cb) {
-        expireCheckOne(info, allInfo, cb);
+    function (err) {
+      // Now gow through all the local devices and check them
+      var keys = Object.keys(devToStat);
+      async.forEachSeries(keys, function (key, cb) {
+        expireCheckDevice(nodes, devToStat[key], cb);
       }, function (err) {
       });
     });

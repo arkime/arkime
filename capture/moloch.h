@@ -190,7 +190,8 @@ typedef struct moloch_config {
     char     *nodeClass;
     char     *elasticsearch;
     char     *interface;
-    char     *pcapDir;
+    int       pcapDirPos;
+    char    **pcapDir;
     char     *bpf;
     char     *yara;
     char     *emailYara;
@@ -206,6 +207,7 @@ typedef struct moloch_config {
     char     **smtpIpHeaders;
 
     uint32_t  maxFileSizeG;
+    uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
     uint32_t  minFreeSpaceG;
     uint32_t  icmpTimeout;
@@ -279,14 +281,14 @@ typedef struct moloch_session {
     struct timeval         lastPacket;
     char                   firstBytes[2][8];
 
-    uint64_t               bytes;
-    uint64_t               databytes;
+    uint64_t               bytes[2];
+    uint64_t               databytes[2];
 
 
     uint32_t               lastSave;
     uint32_t               addr1;
     uint32_t               addr2;
-    uint32_t               packets;
+    uint32_t               packets[2];
 
     uint16_t               port1;
     uint16_t               port2;
@@ -616,6 +618,7 @@ MOLOCH_FIELD_EMAIL_MD5,
 MOLOCH_FIELD_EMAIL_FCT,
 MOLOCH_FIELD_EMAIL_IP,
 MOLOCH_FIELD_EMAIL_RECEIVED,
+MOLOCH_FIELD_EMAIL_HH,
 
 MOLOCH_FIELD_IRC_NICK,
 MOLOCH_FIELD_IRC_CHANNELS,

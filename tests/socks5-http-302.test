@@ -6,6 +6,7 @@
             "ua" : [
                "Mozilla/5.0 (Windows NT 5.1; rv:25.0) Gecko/20100101 Firefox/25.0"
             ],
+            "db2" : 942,
             "db" : 1361,
             "no" : "test",
             "ho" : [
@@ -29,12 +30,15 @@
             "hpath" : [
                "/"
             ],
+            "pa1" : 8,
             "fpd" : 1385474294492,
             "fs" : [],
+            "by2" : 1290,
             "g1" : "USA",
             "hsver" : [
                "1.1"
             ],
+            "pa2" : 6,
             "uscnt" : 1,
             "hocnt" : 1,
             "p1" : 1637,
@@ -58,7 +62,6 @@
                2348
             ],
             "hpathcnt" : 1,
-            "lpd" : 1385474412431,
             "hh2" : [
                "http:header:alternate-protocol",
                "http:header:cache-control",
@@ -72,11 +75,12 @@
                "http:header:x-frame-options",
                "http:header:x-xss-protection"
             ],
+            "lpd" : 1385474412431,
             "fp" : 1385474294,
             "as2" : "AS0001 Cool Beans!",
             "hmd5cnt" : 1,
-            "pa" : 14,
             "hh2cnt" : 11,
+            "pa" : 14,
             "tacnt" : 9,
             "fb1" : "050100050100030e",
             "us" : [
@@ -93,6 +97,7 @@
             ],
             "a1" : "10.0.0.1",
             "fb2" : "0500050000010a00",
+            "db1" : 419,
             "plugin" : {
                "test.ip.rir" : [
                   ""
@@ -121,6 +126,7 @@
                   "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
                ]
             },
+            "by1" : 886,
             "hh1cnt" : 7,
             "p2" : 21477,
             "hdvercnt" : 1,

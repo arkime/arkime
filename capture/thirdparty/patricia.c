@@ -24,7 +24,7 @@ prefix_tochar(prefix_t * prefix)
     return ((u_char *) & prefix->add.sin);
 }
 
-inline int
+static inline int
 comp_with_mask(void *addr, void *dest, u_int mask)
 {
 

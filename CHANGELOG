@@ -3,6 +3,15 @@
   - db.pl has simple mv/rm commands now
   - Fixed all pagination (issue #192)
   - multies tag fix (issue #205)
+  - New email.hasheader
+  - New packets.(src|dst), bytes.(src|dst), databytes.(src|dst) (issue #206)
+  - New payload8.(src|dst), payload.(hex|utf8), payload.(src|dst).(hex|utf8) (issue #209)
+  - pcapDir can now be a semicolon seperated list of directories, currently just 
+    round robin is supported
+  - UI: Fix Search/Actions showing up on second line on page load
+  - capture now does memlock and max schedule priority on startup (issue #199)
+  - when yara is disabled dont retain extra data
+  - parse email user names
 
 0.10.0 2013/12/31
   - IMPORTANT: all parsers have been broken out into individual

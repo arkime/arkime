@@ -40,6 +40,8 @@
 "asn.src"                 return 'asn.src'
 "asn.xff"                 return 'asn.xff'
 "asn.email"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'asn.email'
+"bytes.src"               return 'bytes.src'
+"bytes.dst"               return 'bytes.dst'
 "bytes"                   return 'bytes'
 "cert.alt.cnt"            return "cert.alt.cnt"
 "cert.alt"                return "cert.alt"
@@ -56,6 +58,8 @@
 "country.src"             return 'country.src'
 "country.xff"             return 'country.xff'
 "country.email"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'country.email'
+"databytes.dst"           return 'databytes.dst'
+"databytes.src"           return 'databytes.src'
 "databytes"               return 'databytes'
 "email.content-type.cnt"  if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type.cnt'
 "email.content-type"      if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.content-type'
@@ -63,6 +67,8 @@
 "email.dst"               if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.dst'
 "email.fn.cnt"            if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.fn.cnt'
 "email.fn"                if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.fn'
+"email.hasheader.cnt"     if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.hasheader.cnt'
+"email.hasheader"         if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.hasheader'
 "email.message-id.cnt"    if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.message-id.cnt'
 "email.message-id"        if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.message-id'
 "email.md5.cnt"           if (!yy.emailSearch) throw "email searches disabled for user"; return 'email.md5.cnt'
@@ -130,10 +136,18 @@ http\.[^\s!=><.]*         return "HTTP_HEADER"
 "irc.channel"             return "irc.channel"
 "irc.channel.cnt"         return "irc.channel.cnt"
 "node"                    return 'node'
+"packets.src"             return 'packets.src'
+"packets.dst"             return 'packets.dst'
 "packets"                 return 'packets'
-"payload8.src"            return "payload8.src"
-"payload8.dst"            return "payload8.dst"
-"payload8"                return "payload8"
+"payload8.src.hex"        return "payload8.src.hex"
+"payload8.dst.hex"        return "payload8.dst.hex"
+"payload8.src.utf8"       return "payload8.src.utf8"
+"payload8.dst.utf8"       return "payload8.dst.utf8"
+"payload8.src"            return "payload8.src.hex"
+"payload8.dst"            return "payload8.dst.hex"
+"payload8.hex"            return "payload8.hex"
+"payload8.utf8"           return "payload8.utf8"
+"payload8"                return "payload8.hex"
 plugin\.[^\s!=><]*\.cnt  return "PLUGIN_CNT"
 plugin\.[^\s!=><]*       return "PLUGIN"
 "port.dst"                return 'port.dst'
@@ -249,8 +263,14 @@ HEADER_CNT: EMAIL_HEADER_CNT
           ;
 
 RANGEFIELD: databytes                {$$ = 'db'}
+          | 'databytes.src'          {$$ = 'db1'}
+          | 'databytes.dst'          {$$ = 'db2'}
           | bytes                    {$$ = 'by'}
+          | 'bytes.src'              {$$ = 'by1'}
+          | 'bytes.dst'              {$$ = 'by2'}
           | packets                  {$$ = 'pa'}
+          | 'packets.src'            {$$ = 'pa1'}
+          | 'packets.dst'            {$$ = 'pa2'}
           | 'port.dst'               {$$ = 'p2'}
           | 'port.socks'             {$$ = 'sockspo'}
           | 'port.src'               {$$ = 'p1'}
@@ -276,6 +296,7 @@ RANGEFIELD: databytes                {$$ = 'db'}
           | 'email.content-type.cnt' {$$ = 'ectcnt'}
           | 'email.dst.cnt'          {$$ = 'edstcnt'}
           | 'email.fn.cnt'           {$$ = 'efncnt'}
+          | 'email.hasheader.cnt'    {$$ = 'ehhcnt'}
           | 'email.message-id.cnt'   {$$ = 'eidcnt'}
           | 'email.md5.cnt'          {$$ = 'emd5cnt'}
           | 'email.mime-version.cnt' {$$ = 'emvcnt'}
@@ -309,9 +330,13 @@ LOTERMFIELD  : node               {$$ = 'no'}
              | 'cert.serial'      {$$ = 'tls.sn'}
              | 'cert.alt'         {$$ = 'tls.alt'}
              | 'ssh.ver'          {$$ = 'sshver'}
-             | 'payload8.dst'     {$$ = 'fb2'}
-             | 'payload8.src'     {$$ = 'fb1'}
+             | 'payload8.dst.hex' {$$ = 'fb2'}
+             | 'payload8.src.hex' {$$ = 'fb1'}
              ;
+
+HEXTERMFIELD  : 'payload8.dst.utf8' {$$ = 'fb2'}
+              | 'payload8.src.utf8' {$$ = 'fb1'}
+              ;
 
 TERMFIELD  : 'id'                 {$$ = '_id'}
            | 'ssh.key'            {$$ = 'sshkey'}
@@ -360,6 +385,7 @@ LOTEXTFIELD  : 'asn.src'         {$$ = 'as1'}
              | 'asn.socks'       {$$ = 'assocksip'}
              | 'asn.xff'         {$$ = 'asxff'}
              | 'email.subject'   {$$ = 'esub'}
+             | 'email.hasheader' {$$ = 'ehh'}
              | 'email.x-mailer'  {$$ = 'eua'}
              | 'cert.subject.on' {$$ = 'tls.sOn'}
              | 'cert.issuer.on'  {$$ = 'tls.iOn'}
@@ -402,6 +428,8 @@ STR : ID
     | country.xff
     | email.dst
     | email.dst.cnt
+    | email.hasheader
+    | email.hasheader.cnt
     | email.src
     | email.src.cnt
     | email.subject
@@ -526,6 +554,14 @@ e
         {$$ = {exists: {field: $1}};}
     | LOTERMFIELD '!=' EXISTS
         {$$ = {not: {exists: {field: $1}}};}
+    | HEXTERMFIELD '!=' STR
+        {$$ = {not: str2Query(yy, $1, "term", utf8ToHex($3))};}
+    | HEXTERMFIELD '==' STR
+        {$$ = str2Query(yy, $1, "term", utf8ToHex($3));}
+    | HEXTERMFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | HEXTERMFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | TERMFIELD '!=' STR
         {$$ = {not: str2Query(yy, $1, "term", $3)};}
     | TERMFIELD '==' STR
@@ -616,6 +652,10 @@ e
                                   {terms: {p2: CSVtoArray($3)}},
                                   {terms: {sockspo: CSVtoArray($3)}}
                                 ]}};}
+    | IPFIELD '==' EXISTS
+        {$$ = {exists: {field: $1}};}
+    | IPFIELD '!=' EXISTS
+        {$$ = {not: {exists: {field: $1}}};}
     | IPFIELD '==' IPNUM
         {$$ = parseIpPort(yy, $3,$1);}
     | IPFIELD '!=' IPNUM
@@ -674,15 +714,30 @@ e
                ];
           $$ = {bool: {must_not: $$}};
         }
-    | 'payload8' '==' STR 
+    | 'payload8.hex' '==' STR 
         { var str = $3.toLowerCase();
           $$ = [str2Query(yy, "fb1", "term", str),
                 str2Query(yy, "fb2", "term", str)
                ];
           $$ = {bool: {should: $$}};
         }
-    | 'payload8' '!=' STR 
+    | 'payload8.hex' '!=' STR 
         { var str = $3.toLowerCase();
+          $$ = [str2Query(yy, "fb1", "term", str),
+                str2Query(yy, "fb2", "term", str)
+               ];
+          $$ = {bool: {must_not: $$}};
+        }
+    | 'payload8.utf8' '==' STR 
+        { var str = utf8ToHex($3);
+        console.log($3, "=>", str);
+          $$ = [str2Query(yy, "fb1", "term", str),
+                str2Query(yy, "fb2", "term", str)
+               ];
+          $$ = {bool: {should: $$}};
+        }
+    | 'payload8.utf8' '!=' STR 
+        { var str = utf8ToHex($3);
           $$ = [str2Query(yy, "fb1", "term", str),
                 str2Query(yy, "fb2", "term", str)
                ];
@@ -742,6 +797,12 @@ e
 %%
 
 var    util           = require('util');
+
+function utf8ToHex(utf8) {
+    var hex = new Buffer(stripQuotes(utf8)).toString("hex").toLowerCase();
+    hex = hex.replace('2a', '*');
+    return hex;
+}
 
 function parseIpPort(yy, ipPortStr, which) {
   function singleIp(which, ip1, ip2, port) {

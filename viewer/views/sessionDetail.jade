@@ -15,7 +15,7 @@ mixin arrayList(values, title, expr, extra)
       if (extra)
         if (values)
           |, 
-        !{extra}
+        |!{extra}
 
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
@@ -83,7 +83,7 @@ div.sessionDetail(sessionid='#{session.id}')
     li
       a(href='?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}&openAll=1') Permalink
     li
-      label.sessionActionsMenu Actions
+      label.sessionActionsMenu Actions 
         img#actionsButtonArrow(src="down-arrow.png")
   dl.sessionDetailMeta
     dt Start
@@ -103,11 +103,47 @@ div.sessionDetail(sessionid='#{session.id}')
 
     +arrayList(session.user, "Users", "user")
 
+    if (session.by1 || session.by2)
+      dt Src
+      dd
+        span.sessionDetailSmall
+          | Packets: 
+          a(href='#', onclick='return addExpression("packets.src == #{session.pa1}");') #{session.pa1}
+          | &nbsp;Bytes: 
+          a(href='#', onclick='return addExpression("bytes.src == #{session.by1}");') #{session.by1}
+          | &nbsp;Databytes: 
+          a(href='#', onclick='return addExpression("databytes.src == #{session.db1}");') #{session.db1}
+        | &nbsp;Dst: 
+        span.sessionDetailSmall
+          | Packets: 
+          a(href='#', onclick='return addExpression("packets.dst == #{session.pa2}");') #{session.pa2}
+          | &nbsp;Bytes: 
+          a(href='#', onclick='return addExpression("bytes.dst == #{session.by2}");') #{session.by2}
+          | &nbsp;Databytes: 
+          a(href='#', onclick='return addExpression("databytes.dst == #{session.db2}");') #{session.db2}
     dt Src IP/Port
     dd
       +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
       |  Dst IP/Port: 
       +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
+    if (session.fb1 || session.fb2)
+      dt Payload8
+      dd 
+        if (session.fb1)
+          span.sessionDetailSmall
+            | Src: 
+            - var fb1a = new Buffer(session.fb1, "hex");
+            a(href='#', onclick='return addExpression("payload8.src.hex == #{session.fb1}");') #{session.fb1}
+            | 
+            a(href='#', onclick='return addExpression("payload8.src.utf8 == \\\"#{fb1a}\\\"");') (#{fb1a})
+            | 
+        if (session.fb2)
+          span.sessionDetailSmall
+            | Dst: 
+            - var fb2a = new Buffer(session.fb2, "hex");
+            a(href='#', onclick='return addExpression("payload8.dst.hex == #{session.fb2}");') #{session.fb2}
+            | 
+            a(href='#', onclick='return addExpression("payload8.dst.utf8 == \\\"#{fb2a}\\\"");') (#{fb2a})
     +arrayList(session.ta, "Tags", "tags", "<img class=\"addTagsAction\" src=\"DataTables-1.9.1/examples/examples_support/details_open.png\">")
     if (session.fs && session.fs.length > 0)
       +arrayList(session.fs, "Files", "file")
@@ -212,6 +248,8 @@ div.sessionDetail(sessionid='#{session.id}')
     div.sessionDetailMeta.bold Email
     dl.sessionDetailMeta
       +ipArrayList(session.eip, session.geip, session.aseip, session.rireip, "IPs", "email")
+      +arrayList(session.eho, "Hosts", "host.email")
+      +arrayList(session.ehh, "Headers", "email.hasheader")
       +arrayList(session.esub, "Subjects", "email.subject")
       +arrayList(session.esrc, "Senders", "email.src")
       +arrayList(session.edst, "Destinations", "email.dst")
@@ -282,14 +320,14 @@ div.sessionDetail(sessionid='#{session.id}')
           td.sessionsrc
             if (item.ts)
               span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
-            !{item.html}
+            |!{item.html}
           td
         else
           td
           td.sessiondst
             if (item.ts)
               span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
-            !{item.html}
+            |!{item.html}
 
 script(type='text/javascript').
   $(function() {

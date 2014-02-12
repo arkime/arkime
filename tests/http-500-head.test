@@ -5,6 +5,7 @@
             "ua" : [
                "Mozilla/4.0 (compatible;+MSIE+8.0;+Windows+NT+5.1)"
             ],
+            "db2" : 155,
             "db" : 312,
             "no" : "test",
             "ho" : [
@@ -23,11 +24,14 @@
             "hpath" : [
                "/UpdataConfig.dat"
             ],
+            "pa1" : 5,
             "fpd" : 1361891420707,
             "fs" : [],
+            "by2" : 455,
             "hsver" : [
                "1.1"
             ],
+            "pa2" : 5,
             "uscnt" : 1,
             "hocnt" : 1,
             "p1" : 49323,
@@ -46,13 +50,13 @@
                1020
             ],
             "hpathcnt" : 1,
-            "lpd" : 1361891421481,
             "hh2" : [
                "http:header:connection",
                "http:header:content-type",
                "http:header:date",
                "http:header:server"
             ],
+            "lpd" : 1361891421481,
             "fp" : 1361891420,
             "pa" : 10,
             "hh2cnt" : 4,
@@ -69,6 +73,8 @@
             ],
             "a1" : "10.172.10.16",
             "fb2" : "485454502f312e31",
+            "db1" : 157,
+            "by1" : 457,
             "hh1cnt" : 4,
             "p2" : 80,
             "hdvercnt" : 1,

@@ -3,6 +3,7 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "db2" : 854,
             "db" : 3976,
             "esrc" : [
                "1234567899@aol.com"
@@ -18,19 +19,36 @@
             "esub" : [
                "Urgent Trip."
             ],
+            "user" : [
+               "123456789@aol.com"
+            ],
             "ta" : [
                "node:test",
                "protocol:smtp",
+               "smtp:authplain",
                "smtp:statuscode:521",
                "srcip",
                "tcp"
             ],
+            "pa1" : 16,
             "fpd" : 1386251815266,
             "fs" : [],
+            "by2" : 2308,
             "g1" : "USA",
+            "pa2" : 22,
             "p1" : 56558,
             "by" : 6494,
             "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "content-type",
+               "reply-to",
+               "from",
+               "mime-version",
+               "to",
+               "date",
+               "subject"
+            ],
+            "ehhcnt" : 7,
             "g2" : "USA",
             "pr" : 6,
             "ps" : [
@@ -77,14 +95,15 @@
             "fp" : 1386251815,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 38,
-            "tacnt" : 5,
-            "fb1" : "45484c4f20787878",
+            "tacnt" : 6,
             "edst" : [
                "xxxxx-xxxx@xxxx.xxx.xx.jp"
             ],
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "fb2" : "3232302d6d74616f",
+            "db1" : 3122,
             "plugin" : {
                "test.ip.rir" : [
                   ""
@@ -105,11 +124,13 @@
                   167772161
                ]
             },
+            "usercnt" : 1,
+            "by1" : 4186,
             "esrccnt" : 1,
-            "p2" : 587,
             "emv" : [
                "1.0"
             ],
+            "p2" : 587,
             "rir2" : "ARIN"
          },
          "header" : {

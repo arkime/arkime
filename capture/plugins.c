@@ -83,9 +83,6 @@ void moloch_plugins_init()
 
     for (i = 0; config.plugins[i]; i++) {
         const char *name = config.plugins[i];
-        while (isspace(*name))
-            name++;
-        g_strchomp((char *)name);
 
         int d;
         GModule *plugin = 0;

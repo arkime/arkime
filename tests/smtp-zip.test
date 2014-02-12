@@ -3,6 +3,7 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "db2" : 470,
             "db" : 1969,
             "esrc" : [
                "xxxxx@xxx.net"
@@ -38,11 +39,27 @@
             "eua" : [
                "Mutt/1.5.20 (2009-12-10)"
             ],
+            "pa1" : 14,
             "fpd" : 1387291817187,
             "fs" : [],
+            "by2" : 1402,
             "g1" : "USA",
+            "pa2" : 14,
             "p1" : 46671,
             "by" : 3833,
+            "ehh" : [
+               "content-type",
+               "from",
+               "message-id",
+               "mime-version",
+               "to",
+               "user-agent",
+               "received",
+               "date",
+               "content-disposition",
+               "subject"
+            ],
+            "ehhcnt" : 10,
             "eipcnt" : 1,
             "eho" : [
                "localhost",
@@ -90,13 +107,14 @@
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 28,
             "tacnt" : 5,
-            "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxxxxxx@xxxxxxx.com"
             ],
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.180.156.249",
             "fb2" : "3232302078787878",
+            "db1" : 1499,
             "efn" : [
                "a.zip"
             ],
@@ -107,6 +125,7 @@
             "aseip" : [
                "---"
             ],
+            "by1" : 2431,
             "esrccnt" : 1,
             "emv" : [
                "1.0"

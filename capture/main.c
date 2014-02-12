@@ -22,6 +22,13 @@
 #include <grp.h>
 #include <errno.h>
 #include <ctype.h>
+#include <sys/resource.h>
+#ifdef _POSIX_MEMLOCK
+#include <sys/mman.h>
+#endif
+#ifdef _POSIX_PRIORITY_SCHEDULING
+#include <sched.h>
+#endif
 #include "glib.h"
 #include "pcap.h"
 #include "moloch.h"
@@ -408,6 +415,46 @@ void moloch_hex_init()
     }
 }
 /******************************************************************************/
+void moloch_sched_init()
+{
+#ifdef _POSIX_PRIORITY_SCHEDULING
+    struct sched_param sp;
+    sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
+    int result = sched_setscheduler(0, SCHED_FIFO, &sp);
+    if (result != 0) {
+        LOG("ERROR: Failed to change to FIFO scheduler - %s", strerror(errno));
+    } else if (config.debug) {
+        LOG("Changed to FIFO scheduler with priority %d", sp.sched_priority);
+    }
+#endif
+}
+/******************************************************************************/
+void moloch_mlockall_init()
+{
+#ifdef _POSIX_MEMLOCK
+    struct rlimit l;
+    getrlimit(RLIMIT_MEMLOCK, &l);
+    if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
+        LOG("memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (long)l.rlim_max/1024);
+        return;
+    }
+
+    if (l.rlim_cur != l.rlim_max) {
+        if (config.debug)
+            LOG("Setting memlock soft to %lu", (long)l.rlim_max);
+        l.rlim_cur = l.rlim_max;
+        setrlimit(RLIMIT_MEMLOCK, &l);
+    }
+
+    int result = mlockall(MCL_FUTURE | MCL_CURRENT);
+    if (result != 0) {
+        LOG("ERROR: Failed to mlockall - %s", strerror(errno));
+    } else if (config.debug) {
+        LOG("mlockall with max of %lu", (long)l.rlim_max);
+    }
+#endif
+}
+/******************************************************************************/
 int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);
@@ -422,8 +469,10 @@ int main(int argc, char **argv)
     moloch_hex_init();
     moloch_nids_root_init();
     if (!config.pcapReadFile && !config.pcapReadDir) {
+        moloch_sched_init();
         moloch_drop_privileges();
         config.copyPcap = 1;
+        moloch_mlockall_init();
     }
     moloch_field_init();
     moloch_http_init();

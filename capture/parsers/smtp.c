@@ -29,22 +29,31 @@ typedef struct {
 } SMTPInfo_t;
 
 /******************************************************************************/
-#define EMAIL_CMD                  0
-#define EMAIL_CMD_RETURN           1
-#define EMAIL_DATA_HEADER          2
-#define EMAIL_DATA_HEADER_RETURN   3
-#define EMAIL_DATA_HEADER_DONE     4
-#define EMAIL_DATA                 5
-#define EMAIL_DATA_RETURN          6
-#define EMAIL_IGNORE               7
-#define EMAIL_TLS_OK               8
-#define EMAIL_TLS_OK_RETURN        9
-#define EMAIL_TLS                 10
-#define EMAIL_MIME                11
-#define EMAIL_MIME_RETURN         12
-#define EMAIL_MIME_DONE           13
-#define EMAIL_MIME_DATA           14
-#define EMAIL_MIME_DATA_RETURN    15
+enum {
+EMAIL_CMD,
+EMAIL_CMD_RETURN,
+
+EMAIL_AUTHLOGIN,
+EMAIL_AUTHLOGIN_RETURN,
+
+EMAIL_AUTHPLAIN,
+EMAIL_AUTHPLAIN_RETURN,
+
+EMAIL_DATA_HEADER,
+EMAIL_DATA_HEADER_RETURN,
+EMAIL_DATA_HEADER_DONE,
+EMAIL_DATA,
+EMAIL_DATA_RETURN,
+EMAIL_IGNORE,
+EMAIL_TLS_OK,
+EMAIL_TLS_OK_RETURN,
+EMAIL_TLS,
+EMAIL_MIME,
+EMAIL_MIME_RETURN,
+EMAIL_MIME_DONE,
+EMAIL_MIME_DATA,
+EMAIL_MIME_DATA_RETURN
+};
 /******************************************************************************/
 char *smtp_remove_matching(char *str, char start, char stop) 
 {
@@ -270,13 +279,28 @@ void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data,
 /******************************************************************************/
 void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
 {
+    char *start = data;
     char *end = data+len;
 
     while (data < end) {
         if (end - data > 10) {
-            if (memcmp("from ", data, 5) == 0) {
+            if (memcmp("from ", data, 5) == 0 && (data == start || data[-1] != '-')) {
                 data += 5;
                 while(data < end && isspace(*data)) data++;
+
+                if (*data == '[') {
+                    data++;
+                    char *ipstart = data;
+                    while (data < end && *data != ']') data++;
+                    *data = 0;
+                    data++;
+                    in_addr_t ia = inet_addr(ipstart);
+                    if (ia == 0 || ia == 0xffffffff)
+                        continue;
+                    moloch_field_int_add(MOLOCH_FIELD_EMAIL_IP, session, ia);
+                    continue;
+                }
+
                 char *fromstart = data;
                 while (data < end && *data != ' ' && *data != ')') {
                     if (*data == '@')
@@ -330,9 +354,11 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 
     while (remaining > 0) {
         switch (*state) {
+        case EMAIL_AUTHPLAIN:
+        case EMAIL_AUTHLOGIN:
         case EMAIL_CMD: {
             if (*data == '\r') {
-                *state = EMAIL_CMD_RETURN;
+                (*state)++;
                 break;
             }
             g_string_append_c(line, *data);
@@ -361,9 +387,36 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 *state = EMAIL_CMD;
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
-            } else if (strncasecmp(line->str, "AUTH LOGIN", 8) == 0) {
+            } else if (strncasecmp(line->str, "AUTH LOGIN", 10) == 0) {
                 moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "smtp:authlogin");
-                *state = EMAIL_CMD;
+                if (line->len > 11) {
+                    gsize out_len = 0;
+                    g_base64_decode_inplace(line->str+11, &out_len);
+                    if (out_len > 0) {
+                        moloch_field_string_add(MOLOCH_FIELD_USER, session, line->str+11, out_len, TRUE);
+                    }
+                    *state = EMAIL_CMD;
+                } else {
+                    *state = EMAIL_AUTHLOGIN;
+                }
+            } else if (strncasecmp(line->str, "AUTH PLAIN", 10) == 0) {
+                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "smtp:authplain");
+                if (line->len > 11) {
+                    gsize out_len = 0;
+                    gsize zation = 0;
+                    gsize cation = 0;
+                    g_base64_decode_inplace(line->str+11, &out_len);
+                    zation = strlen(line->str+11);
+                    if (zation < out_len) {
+                        cation = strlen(line->str+11+zation+1);
+                        if (cation+zation+1 < out_len) {
+                            moloch_field_string_add(MOLOCH_FIELD_USER, session, line->str+11+zation+1, cation, TRUE);
+                        }
+                    }
+                    *state = EMAIL_CMD;
+                } else {
+                    *state = EMAIL_AUTHPLAIN;
+                }
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
                 moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "smtp:starttls");
                 *state = EMAIL_IGNORE;
@@ -376,6 +429,30 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             g_string_truncate(line, 0);
             if (*data != '\n')
                 continue;
+            break;
+        }
+        case EMAIL_AUTHLOGIN_RETURN: {
+            gsize out_len = 0;
+            g_base64_decode_inplace(line->str, &out_len);
+            if (out_len > 0) {
+                moloch_field_string_add(MOLOCH_FIELD_USER, session, line->str, out_len, TRUE);
+            }
+            *state = EMAIL_CMD;
+            break;
+        }
+        case EMAIL_AUTHPLAIN_RETURN: {
+            gsize out_len = 0;
+            gsize zation = 0;
+            gsize cation = 0;
+            g_base64_decode_inplace(line->str, &out_len);
+            zation = strlen(line->str);
+            if (zation < out_len) {
+                cation = strlen(line->str+zation+1);
+                if (cation+zation+1 < out_len) {
+                    moloch_field_string_add(MOLOCH_FIELD_USER, session, line->str+zation+1, cation, TRUE);
+                }
+            }
+            *state = EMAIL_CMD;
             break;
         }
         case EMAIL_DATA_HEADER: {
@@ -427,6 +504,8 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             char *lower = g_ascii_strdown(line->str, colon - line->str);
             HASH_FIND(s_, emailHeaders, lower, emailHeader);
 
+            moloch_field_string_add(MOLOCH_FIELD_EMAIL_HH, session, lower, colon - line->str, TRUE);
+
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
                 switch (emailHeader->uw) {
@@ -467,7 +546,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
                         int l = strlen(config.smtpIpHeaders[i]);
-                        char *ip = smtp_remove_matching(line->str+l, '[', ']');
+                        char *ip = smtp_remove_matching(line->str+l+1, '[', ']');
                         in_addr_t ia = inet_addr(ip);
                         if (ia == 0 || ia == 0xffffffff)
                             break;
@@ -717,6 +796,7 @@ void moloch_parser_init()
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_MD5,     "emd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_FCT,     "efct",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
     moloch_field_define_internal(MOLOCH_FIELD_EMAIL_IP,      "eip",    MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT);
+    moloch_field_define_internal(MOLOCH_FIELD_EMAIL_HH,      "ehh",    MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
 
     if (config.parseSMTP) {
         moloch_parsers_classifier_register_tcp("smtp", 0, (unsigned char*)"HELO", 4, smtp_classify);

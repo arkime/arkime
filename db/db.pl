@@ -23,6 +23,7 @@
 # 14 - New http fields, user.views
 # 15 - New first byte fields, socks user
 # 16 - New dynamic plugin section
+# 17 - email hasheader, db,pa,by src and dst
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -31,7 +32,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 16;
+my $VERSION = 17;
 my $verbose = 0;
 
 ################################################################################
@@ -708,10 +709,28 @@ sub sessionsUpdate
       pa: {
         type: "integer"
       },
+      pa1: {
+        type: "integer"
+      },
+      pa2: {
+        type: "integer"
+      },
       by: {
         type: "long"
       },
+      by1: {
+        type: "long"
+      },
+      by2: {
+        type: "long"
+      },
       db: {
+        type: "long"
+      },
+      db1: {
+        type: "long"
+      },
+      db2: {
         type: "long"
       },
       ro: {
@@ -957,6 +976,14 @@ sub sessionsUpdate
         type: "long"
       },
       eipcnt: {
+        type: "integer"
+      },
+      ehh: {
+        omit_norms: true,
+        type: "string",
+        index: "not_analyzed"
+      },
+      ehhcnt: {
         type: "integer"
       },
       geip: {
@@ -1262,13 +1289,15 @@ my ($loud) = @_;
 
     my $version = esGet("/dstats/version/version", 1);
 
-    if (!exists $version->{exists}) {
+    my $found = $version->{exists} || $version->{found};
+
+    if (!defined $found) {
         print "This is a fresh Moloch install\n" if ($loud);
         $main::versionNumber = -1;
         if ($loud && $ARGV[1] ne "init") {
             die "Looks like moloch wasn't installed, must do init"
         }
-    } elsif ($version->{exists} == 0) {
+    } elsif ($found == 0) {
         $main::versionNumber = 0;
     } else {
         $main::versionNumber = $version->{_source}->{version};
@@ -1625,7 +1654,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 16) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 17) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
     waitFor("UPGRADE");

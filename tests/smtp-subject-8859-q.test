@@ -3,6 +3,7 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "db2" : 493,
             "db" : 1570,
             "esrc" : [
                "xxxxx@xxx.net"
@@ -34,11 +35,27 @@
             "eua" : [
                "Mutt/1.5.20 (2009-12-10)"
             ],
+            "pa1" : 15,
             "fpd" : 1386817725755,
             "fs" : [],
+            "by2" : 1359,
             "g1" : "USA",
+            "pa2" : 13,
             "p1" : 35796,
             "by" : 3434,
+            "ehh" : [
+               "content-type",
+               "from",
+               "message-id",
+               "mime-version",
+               "to",
+               "user-agent",
+               "received",
+               "date",
+               "content-disposition",
+               "subject"
+            ],
+            "ehhcnt" : 10,
             "eipcnt" : 1,
             "eho" : [
                "localhost",
@@ -85,19 +102,21 @@
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 28,
             "tacnt" : 4,
-            "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxxxxxx@xxxxxxx.com"
             ],
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.180.156.249",
             "fb2" : "3232302078787878",
+            "db1" : 1077,
             "rireip" : [
                ""
             ],
             "aseip" : [
                "---"
             ],
+            "by1" : 2075,
             "esrccnt" : 1,
             "emv" : [
                "1.0"
@@ -115,6 +134,7 @@
       },
       {
          "body" : {
+            "db2" : 0,
             "db" : 0,
             "lpd" : 1386817726156,
             "fp" : 1386817726,
@@ -127,11 +147,16 @@
                "node:test",
                "tcp"
             ],
+            "pa1" : 1,
             "fpd" : 1386817726156,
             "fs" : [],
+            "by2" : 0,
             "g1" : "USA",
             "a1" : "64.236.55.17",
+            "db1" : 0,
+            "pa2" : 0,
             "p1" : 25,
+            "by1" : 66,
             "by" : 66,
             "p2" : 35796,
             "as1" : "AS1668 AOL Transit Data Network",

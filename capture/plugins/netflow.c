@@ -124,8 +124,8 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
     BSB_EXPORT_u32(bsb, 0); // nexthop
     BSB_EXPORT_u16(bsb, netflowSNMPInput); // snmp input
     BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
-    BSB_EXPORT_u32(bsb, session->packets); 
-    BSB_EXPORT_u32(bsb, session->databytes);
+    BSB_EXPORT_u32(bsb, session->packets[0] + session->packets[1]); 
+    BSB_EXPORT_u32(bsb, session->databytes[0] + session->databytes[1]);
     uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec)*1000;
     uint32_t last = (session->lastPacket.tv_sec - initialPacket.tv_sec)*1000;
     BSB_EXPORT_u32(bsb, first);

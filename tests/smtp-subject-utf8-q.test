@@ -3,6 +3,7 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "db2" : 495,
             "db" : 2329,
             "esrc" : [
                "xxxxxxxxx@xxxxxxxxx.com"
@@ -33,12 +34,24 @@
                "10.168.0.1",
                "10.168.0.2"
             ],
+            "pa1" : 9,
             "fpd" : 1384762012670,
             "fs" : [],
+            "by2" : 1163,
             "g1" : "USA",
+            "pa2" : 10,
             "p1" : 20720,
             "by" : 3599,
             "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "content-type",
+               "mime-version",
+               "from",
+               "to",
+               "received",
+               "subject"
+            ],
+            "ehhcnt" : 6,
             "eipcnt" : 2,
             "eho" : [
                "xxxx.xxxx.xxxxxxxxx.com",
@@ -78,13 +91,14 @@
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 19,
             "tacnt" : 6,
-            "fb1" : "45484c4f20736d74",
             "edst" : [
                "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
             ],
+            "fb1" : "45484c4f20736d74",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "fb2" : "32323020616f6c6d",
+            "db1" : 1834,
             "plugin" : {
                "test.ip.rir" : [
                   ""
@@ -114,6 +128,7 @@
                "---",
                "---"
             ],
+            "by1" : 2436,
             "esrccnt" : 1,
             "emv" : [
                "1.0"

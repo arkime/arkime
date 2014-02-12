@@ -46,6 +46,9 @@ block content
       +spi("Src ASN Token", "as1", "asn.src", "general")
       +spi("Src RIR", "rir1", "rir.src", "general")
       +spi("Src Payload8", "fb1", "payload8.src", "general")
+      +spi("Src Packets", "pa1", "packets.src", "general")
+      +spi("Src Bytes", "by1", "bytes.src", "general")
+      +spi("Src Databytes", "db1", "databytes.src", "general")
 
       +spion("Dst IP", "a2", "ip.dst", "general")
       +spion("Dst Port", "p2", "port.dst", "general")
@@ -54,6 +57,9 @@ block content
       +spi("Dst ASN Token", "as2", "asn.dst", "general")
       +spi("Dst RIR", "rir2", "rir.dst", "general")
       +spi("Dst Payload8", "fb2", "payload8.dst", "general")
+      +spi("Dst Packets", "pa2", "packets.dst", "general")
+      +spi("Dst Bytes", "by2", "bytes.dst", "general")
+      +spi("Dst Databytes", "db2", "databytes.dst", "general")
 
       +spi("Node", "no", "node", "general")
       +spi("Tag", "ta", "tags", "general")
@@ -142,12 +148,14 @@ block content
     if (user.emailSearch)
       +title("Email", "email")
       dl
+        +spi("Hosts", "eho", "host.email", "email")
         +spi("IP", "eip", "ip.email", "email")
         +spi("GEO", "geip", "country.email", "email")
         +spi("ASN", "rawaseip", "asn.email", "email")
         +spi("ASN Token", "aseip", "asn.email", "email")
         +spi("RIR", "rireip", "rir.email", "email")
 
+        +spi("Headers", "ehh", "email.hasheader", "email")
         +spi("Subject", "rawesub", "email.subject", "email")
         +spi("Subject Token", "esub", "email.subject", "email")
         +spi("Source", "esrc", "email.src", "email")

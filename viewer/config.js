@@ -261,9 +261,12 @@ addField("p1", "port.src", "general", "integer", "Source port");
 addField("p2", "port.dst", "general", "integer", "Destination port");
 addField("sockspo", "port.socks", "socks", "integer", "Socks destination port");
 
-addField(null, "payload8", "general", "lotermfield", "Shorthand for payload8.src, payload8.dst");
-addField("fb1", "payload8.src", "general", "lotermfield", "First 8 bytes of source payload in hex");
-addField("fb2", "payload8.dst", "general", "lotermfield", "First 8 bytes of destination payload in hex");
+addField(null, "payload8.hex", "general", "lotermfield", "Shorthand for payload8.src.hex, payload8.dst.hex");
+addField(null, "payload8.utf8", "general", "lotermfield", "Shorthand for payload8.src.utf8, payload8.dst.utf8");
+addField("fb1", "payload8.src.hex", "general", "lotermfield", "First 8 bytes of source payload in hex");
+addField("fb2", "payload8.dst.hex", "general", "lotermfield", "First 8 bytes of destination payload in hex");
+addField("fb1", "payload8.src.utf8", "general", "lotermfield", "First 8 bytes of source payload in utf8");
+addField("fb2", "payload8.dst.utf8", "general", "lotermfield", "First 8 bytes of destination payload in utf8");
 
 addField(null, "asn", "general", "textfield", "Shorthand for the GeoIP ASNum string from the asn.src, asn.dst, asn.dns, asn.email, asn.socks, or asn.xff fields");
 addField("as1", "asn.src", "general", "textfield", "GeoIP ASNum string calculated from the source ip address");
@@ -290,8 +293,14 @@ addField("rirsocksip", "rir.socks", "socks", "uptermfield", "Regional Internet R
 addField("rirxff", "rir.xff", "http", "uptermfield", "Regional Internet Registry string calculated from the HTTP x-forwarded-for header");
 
 addField("by", "bytes", "general", "integer", "Total number of raw bytes sent AND received in a session");
+addField("by1", "bytes.src", "general", "integer", "Total number of raw bytes sent by source");
+addField("by2", "bytes.dst", "general", "integer", "Total number of raw bytes sent by destination");
 addField("db", "databytes", "general", "integer", "Total number of data bytes sent AND received in a session");
+addField("db1", "databytes.src", "general", "integer", "Total number of data bytes sent by source");
+addField("db2", "databytes.dst", "general", "integer", "Total number of data bytes sent by destination");
 addField("pa", "packets", "general", "integer", "Total number of packets sent AND received in a session");
+addField("pa1", "packets.src", "general", "integer", "Total number of packets sent by source");
+addField("pa2", "packets.dst", "general", "integer", "Total number of packets sent by destination");
 addField("pr", "protocol", "general", "integer", "IP protocol number");
 addField("id", "id", "general", "termfield", "Moloch ID for the session");
 addField("ro", "rootId", "general", "termfield", "Moloch ID of the first session in a multi session stream");
@@ -335,6 +344,8 @@ addField("esrc", "email.src", "email", "lotermfield", "Email from address");
 addField("esrccnt", "email.src.cnt", "email", "integer", "Unique number of email from addresses");
 addField("efn", "email.fn", "email", "termfield", "Email attachment filenames");
 addField("efncnt", "email.fn.cnt", "email", "integer", "Unique number of email attachment filenames");
+addField("ehh", "email.hasheader", "email", "lotextfield", "Email has header set");
+addField("ehhcnt", "email.hasheader.cnt", "email", "integer", "Unique number of headers");
 addField("emd5", "email.md5", "email", "lotermfield", "Email md5 of attachments ");
 addField("emd5cnt", "email.md5.cnt", "email", "integer", "Unique number of md5s of attachments");
 addField("emv", "email.mime-version", "email", "lotermfield", "Email mime-version header");

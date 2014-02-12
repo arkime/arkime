@@ -5,6 +5,7 @@
             "ua" : [
                "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
             ],
+            "db2" : 107,
             "db" : 252,
             "no" : "test",
             "ho" : [
@@ -23,12 +24,15 @@
             "hpath" : [
                "/"
             ],
+            "pa1" : 5,
             "fpd" : 1385394928482,
             "fs" : [],
+            "by2" : 313,
             "g1" : "USA",
             "hsver" : [
                "1.1"
             ],
+            "pa2" : 3,
             "uscnt" : 1,
             "hocnt" : 1,
             "p1" : 62341,
@@ -46,16 +50,16 @@
                870
             ],
             "hpathcnt" : 1,
-            "lpd" : 1385394928608,
             "hh2" : [
                "http:header:connection",
                "http:header:content-length",
                "http:header:location"
             ],
+            "lpd" : 1385394928608,
             "fp" : 1385394928,
             "as2" : "AS36459 GitHub, Inc.",
-            "pa" : 8,
             "hh2cnt" : 3,
+            "pa" : 8,
             "tacnt" : 5,
             "fb1" : "474554202f204854",
             "us" : [
@@ -68,11 +72,13 @@
             ],
             "a1" : "10.180.156.141",
             "fb2" : "485454502f312e31",
+            "db1" : 145,
             "hdrs" : {
                "hres-location" : [
                   "https://www.github.com/"
                ]
             },
+            "by1" : 487,
             "hh1cnt" : 3,
             "p2" : 80,
             "rir2" : "ARIN",

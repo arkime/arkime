@@ -2,9 +2,8 @@
    "packets" : [
       {
          "body" : {
+            "db2" : 8279,
             "db" : 8920,
-            "lpd" : 1386004472629,
-            "fp" : 1386004472,
             "socksip" : "93.184.216.119",
             "no" : "test",
             "ho" : [
@@ -12,9 +11,6 @@
             ],
             "lp" : 1386004472,
             "sockspo" : 443,
-            "pa" : 30,
-            "tacnt" : 4,
-            "fb1" : "040101bb5db8d877",
             "a2" : "10.180.156.249",
             "ta" : [
                "node:test",
@@ -22,67 +18,16 @@
                "protocol:tls",
                "tcp"
             ],
+            "pa1" : 17,
             "fpd" : 1386004472572,
             "fs" : [],
+            "by2" : 9145,
             "g1" : "USA",
-            "fb2" : "005a99b40ab49cf9",
-            "a1" : "10.180.156.185",
             "tlscnt" : 1,
-            "rirsocksip" : "RIPE",
+            "pa2" : 13,
             "hocnt" : 1,
             "p1" : 53554,
-            "tls" : [
-               {
-                  "sCn" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ],
-                  "alt" : [
-                     "gp1.wac.edgecastcdn.net",
-                     "www.edgecast.com",
-                     "wac.edgecastcdn.net",
-                     "ne.wac.edgecastcdn.net",
-                     "swf.mixpo.com",
-                     "cdn.traceregister.com",
-                     "s.tmocache.com",
-                     "s.my.tmocache.com",
-                     "e1.boxcdn.net",
-                     "e2.boxcdn.net",
-                     "e3.boxcdn.net",
-                     "www.sonos.com",
-                     "static-cache.tp-global.net",
-                     "ssl-cdn.sometrics.com",
-                     "cache.vehicleassets.captivelead.com",
-                     "static.woopra.com",
-                     "images.ink2.com",
-                     "assets-secure.razoo.com",
-                     "ec.pond5.com",
-                     "images.esellerpro.com",
-                     "use.typekit.com",
-                     "static.iseatz.com",
-                     "static.www.turnto.com",
-                     "inpath-static.iseatz.com",
-                     "secure.avelleassets.com",
-                     "static.dubli.com",
-                     "www-cdn.cinamuse.com",
-                     "www-cdn.cineble.com",
-                     "www-cdn.cinemaden.com",
-                     "www-cdn.filmlush.com",
-                     "www-cdn.flixaddict.com",
-                     "www-cdn.itshd.com"
-                  ],
-                  "sOn" : "EdgeCast Networks, Inc.",
-                  "sn" : "062d488986c9a6d7f94901c2b5906882",
-                  "iOn" : "DigiCert Inc",
-                  "altcnt" : 32,
-                  "iCn" : [
-                     "digicert high assurance ca-3"
-                  ]
-               }
-            ],
             "by" : 10920,
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "p2" : 1080,
-            "gsocksip" : "USA",
             "g2" : "USA",
             "pr" : 6,
             "ps" : [
@@ -116,45 +61,17 @@
                11178,
                11260,
                11342
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "sessions-131202",
-               "_type" : "session"
-            }
-         }
-      },
-      {
-         "body" : {
-            "socksho" : "www.example.com",
-            "db" : 8911,
-            "lpd" : 1386004475761,
-            "fp" : 1386004475,
-            "no" : "test",
-            "ho" : [
-               "www.example.com"
             ],
-            "lp" : 1386004475,
-            "sockspo" : 443,
+            "lpd" : 1386004472629,
+            "fp" : 1386004472,
             "pa" : 30,
             "tacnt" : 4,
-            "fb1" : "040101bb00000001",
-            "a2" : "10.180.156.249",
-            "ta" : [
-               "node:test",
-               "protocol:socks",
-               "protocol:tls",
-               "tcp"
-            ],
-            "fpd" : 1386004475691,
-            "fs" : [],
-            "g1" : "USA",
-            "fb2" : "005a99b50ab49cf9",
+            "fb1" : "040101bb5db8d877",
             "a1" : "10.180.156.185",
-            "tlscnt" : 1,
-            "hocnt" : 1,
-            "p1" : 53555,
+            "fb2" : "005a99b40ab49cf9",
+            "db1" : 641,
+            "rirsocksip" : "RIPE",
+            "by1" : 1775,
             "tls" : [
                {
                   "sCn" : [
@@ -203,8 +120,45 @@
                   ]
                }
             ],
-            "by" : 10911,
             "p2" : 1080,
+            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "gsocksip" : "USA"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-131202",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "socksho" : "www.example.com",
+            "db2" : 8254,
+            "db" : 8911,
+            "no" : "test",
+            "ho" : [
+               "www.example.com"
+            ],
+            "lp" : 1386004475,
+            "sockspo" : 443,
+            "a2" : "10.180.156.249",
+            "ta" : [
+               "node:test",
+               "protocol:socks",
+               "protocol:tls",
+               "tcp"
+            ],
+            "pa1" : 17,
+            "fpd" : 1386004475691,
+            "fs" : [],
+            "by2" : 9120,
+            "g1" : "USA",
+            "tlscnt" : 1,
+            "pa2" : 13,
+            "hocnt" : 1,
+            "p1" : 53555,
+            "by" : 10911,
             "g2" : "USA",
             "pr" : 6,
             "ps" : [
@@ -238,7 +192,65 @@
                22569,
                22651,
                22733
-            ]
+            ],
+            "lpd" : 1386004475761,
+            "fp" : 1386004475,
+            "pa" : 30,
+            "fb1" : "040101bb00000001",
+            "tacnt" : 4,
+            "a1" : "10.180.156.185",
+            "fb2" : "005a99b50ab49cf9",
+            "db1" : 657,
+            "by1" : 1791,
+            "tls" : [
+               {
+                  "sCn" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ],
+                  "alt" : [
+                     "gp1.wac.edgecastcdn.net",
+                     "www.edgecast.com",
+                     "wac.edgecastcdn.net",
+                     "ne.wac.edgecastcdn.net",
+                     "swf.mixpo.com",
+                     "cdn.traceregister.com",
+                     "s.tmocache.com",
+                     "s.my.tmocache.com",
+                     "e1.boxcdn.net",
+                     "e2.boxcdn.net",
+                     "e3.boxcdn.net",
+                     "www.sonos.com",
+                     "static-cache.tp-global.net",
+                     "ssl-cdn.sometrics.com",
+                     "cache.vehicleassets.captivelead.com",
+                     "static.woopra.com",
+                     "images.ink2.com",
+                     "assets-secure.razoo.com",
+                     "ec.pond5.com",
+                     "images.esellerpro.com",
+                     "use.typekit.com",
+                     "static.iseatz.com",
+                     "static.www.turnto.com",
+                     "inpath-static.iseatz.com",
+                     "secure.avelleassets.com",
+                     "static.dubli.com",
+                     "www-cdn.cinamuse.com",
+                     "www-cdn.cineble.com",
+                     "www-cdn.cinemaden.com",
+                     "www-cdn.filmlush.com",
+                     "www-cdn.flixaddict.com",
+                     "www-cdn.itshd.com"
+                  ],
+                  "sOn" : "EdgeCast Networks, Inc.",
+                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "iOn" : "DigiCert Inc",
+                  "altcnt" : 32,
+                  "iCn" : [
+                     "digicert high assurance ca-3"
+                  ]
+               }
+            ],
+            "p2" : 1080
          },
          "header" : {
             "index" : {
@@ -249,9 +261,8 @@
       },
       {
          "body" : {
+            "db2" : 8283,
             "db" : 8929,
-            "lpd" : 1386004480888,
-            "fp" : 1386004480,
             "socksip" : "93.184.216.119",
             "no" : "test",
             "ho" : [
@@ -259,9 +270,6 @@
             ],
             "lp" : 1386004480,
             "sockspo" : 443,
-            "pa" : 33,
-            "tacnt" : 4,
-            "fb1" : "0502000105010001",
             "a2" : "10.180.156.249",
             "ta" : [
                "node:test",
@@ -269,15 +277,63 @@
                "protocol:tls",
                "tcp"
             ],
+            "pa1" : 19,
             "fpd" : 1386004480852,
             "fs" : [],
+            "by2" : 9215,
             "g1" : "USA",
-            "fb2" : "0500050000010ab4",
-            "a1" : "10.180.156.185",
             "tlscnt" : 1,
-            "rirsocksip" : "RIPE",
+            "pa2" : 14,
             "hocnt" : 1,
             "p1" : 53556,
+            "by" : 11127,
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               22815,
+               22909,
+               22999,
+               23081,
+               23167,
+               23249,
+               23333,
+               23415,
+               23507,
+               23599,
+               23681,
+               23883,
+               25413,
+               26943,
+               27049,
+               27131,
+               27213,
+               28743,
+               28825,
+               30355,
+               31179,
+               31261,
+               31657,
+               31786,
+               31868,
+               32121,
+               32549,
+               32631,
+               34033,
+               34115,
+               34224,
+               34306,
+               34388
+            ],
+            "lpd" : 1386004480888,
+            "fp" : 1386004480,
+            "pa" : 33,
+            "tacnt" : 4,
+            "fb1" : "0502000105010001",
+            "a1" : "10.180.156.185",
+            "fb2" : "0500050000010ab4",
+            "db1" : 646,
+            "rirsocksip" : "RIPE",
+            "by1" : 1912,
             "tls" : [
                {
                   "sCn" : [
@@ -396,47 +452,9 @@
                   ]
                }
             ],
-            "by" : 11127,
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "p2" : 1080,
-            "gsocksip" : "USA",
-            "g2" : "USA",
-            "pr" : 6,
-            "ps" : [
-               22815,
-               22909,
-               22999,
-               23081,
-               23167,
-               23249,
-               23333,
-               23415,
-               23507,
-               23599,
-               23681,
-               23883,
-               25413,
-               26943,
-               27049,
-               27131,
-               27213,
-               28743,
-               28825,
-               30355,
-               31179,
-               31261,
-               31657,
-               31786,
-               31868,
-               32121,
-               32549,
-               32631,
-               34033,
-               34115,
-               34224,
-               34306,
-               34388
-            ]
+            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "gsocksip" : "USA"
          },
          "header" : {
             "index" : {

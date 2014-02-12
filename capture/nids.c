@@ -253,9 +253,12 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     }
 
     session->lastSave = nids_last_pcap_header->ts.tv_sec;
-    session->bytes = 0;
-    session->databytes = 0;
-    session->packets = 0;
+    session->bytes[0] = 0;
+    session->bytes[1] = 0;
+    session->databytes[0] = 0;
+    session->databytes[1] = 0;
+    session->packets[0] = 0;
+    session->packets[1] = 0;
 }
 /******************************************************************************/
 int dlt_to_linktype(int dlt);
@@ -550,31 +553,35 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         DLL_PUSH_TAIL(q_, sessionsQ, session);
     }
 
-    session->bytes += nids_last_pcap_header->caplen;
+    switch (packet->ip_p) {
+    case IPPROTO_UDP:
+        session->which = (session->addr1 == packet->ip_src.s_addr &&
+                          session->addr2 == packet->ip_dst.s_addr &&
+                          session->port1 == ntohs(udphdr->source) &&
+                          session->port2 == ntohs(udphdr->dest))?0:1;
+        session->databytes[session->which] += (nids_last_pcap_header->caplen - 8);
+        moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
+        break;
+    case IPPROTO_TCP:
+        session->which = (session->addr1 == packet->ip_src.s_addr &&
+                          session->addr2 == packet->ip_dst.s_addr &&
+                          session->port1 == ntohs(tcphdr->source) &&
+                          session->port2 == ntohs(tcphdr->dest))?0:1;
+        session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
+        break;
+    }
+
+    session->bytes[session->which] += nids_last_pcap_header->caplen;
     session->lastPacket = nids_last_pcap_header->ts;
 
     if (pluginsCbs & MOLOCH_PLUGIN_IP)
         moloch_plugins_cb_ip(session, packet, len);
 
-    switch (packet->ip_p) {
-    case IPPROTO_UDP:
-        session->databytes += (nids_last_pcap_header->caplen - 8);
-        session->which = (session->addr1 == packet->ip_src.s_addr &&
-                          session->addr2 == packet->ip_dst.s_addr &&
-                          session->port1 == ntohs(udphdr->source) &&
-                          session->port2 == ntohs(udphdr->dest))?0:1;
-        moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
-        break;
-    case IPPROTO_TCP:
-        session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
-        break;
-    }
-
-    session->packets++;
+    session->packets[session->which]++;
     if (!config.dryRun && !session->dontSave) {
         if (config.copyPcap) {
             /* Save packet to file */
-            if (dumperFd == -1 || dumperFilePos >= (uint64_t)config.maxFileSizeG*1024LL*1024LL*1024LL) {
+            if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeB) {
                 if (dumperFd > 0 && !config.dryRun)  {
                     moloch_nids_file_flush(TRUE);
                 }
@@ -614,7 +621,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             g_array_append_val(session->filePosArray, dumperFilePos);
         }
 
-        if (session->packets >= config.maxPackets) {
+        if (session->packets[0] + session->packets[1] >= config.maxPackets) {
             moloch_nids_mid_save_session(session);
         }
     } else if (config.tests) {
@@ -767,10 +774,15 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                         break;
                 }
 
-            moloch_yara_execute(session, data, count, a_tcp->client.count-countNew == session->consumed[1]);
+            if (config.yara) {
+                moloch_yara_execute(session, data, count, a_tcp->client.count-countNew == session->consumed[1]);
 
-            nids_discard(a_tcp, session->offsets[1]);
-            session->offsets[1] = countNew;
+                nids_discard(a_tcp, session->offsets[1]);
+                session->offsets[1] = countNew;
+            } else if (session->offsets[1] == 0) {
+                session->offsets[1] = countNew;
+                nids_discard(a_tcp, 0);
+            }
 
             if (a_tcp->client.offset == 0) {
                 session->firstBytesLen[1] = MIN(8, countNew);
@@ -805,10 +817,15 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                         break;
                 }
 
-            moloch_yara_execute(session, data, count, a_tcp->server.count-countNew == session->consumed[0]);
+            if (config.yara) {
+                moloch_yara_execute(session, data, count, a_tcp->server.count-countNew == session->consumed[0]);
 
-            nids_discard(a_tcp, session->offsets[0]);
-            session->offsets[0] = countNew;
+                nids_discard(a_tcp, session->offsets[0]);
+                session->offsets[0] = countNew;
+            } else if (session->offsets[0] == 0) {
+                session->offsets[0] = countNew;
+                nids_discard(a_tcp, 0);
+            }
 
             if (a_tcp->server.offset == 0) {
                 session->firstBytesLen[0] = MIN(8, countNew);
@@ -816,7 +833,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             }
         }
 
-        session->databytes += a_tcp->server.count_new + a_tcp->client.count_new;
+        session->databytes[session->which] += a_tcp->server.count_new + a_tcp->client.count_new;
 
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
             moloch_plugins_cb_tcp(session, a_tcp);
@@ -830,12 +847,14 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             return;
         }
 
-        if (a_tcp->client.count != a_tcp->client.offset) {
-            moloch_yara_execute(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count, a_tcp->client.offset == 0);
-        }
+        if (config.yara) {
+            if (a_tcp->client.count != a_tcp->client.offset) {
+                moloch_yara_execute(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count, a_tcp->client.offset == 0);
+            }
 
-        if (a_tcp->server.count != a_tcp->server.offset) {
-            moloch_yara_execute(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count, a_tcp->server.offset == 0);
+            if (a_tcp->server.count != a_tcp->server.offset) {
+                moloch_yara_execute(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count, a_tcp->server.offset == 0);
+            }
         }
     
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)

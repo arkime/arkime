@@ -29,7 +29,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 15
+#define MOLOCH_MIN_DB_VERSION 17
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -218,7 +218,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         moloch_plugins_cb_save(session, final);
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1000 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
+    jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
     for (pos = 0; pos < config.maxField; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
@@ -396,12 +396,24 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     BSB_EXPORT_sprintf(jbsb, 
                       "\"pa\":%u,"
+                      "\"pa1\":%u,"
+                      "\"pa2\":%u,"
                       "\"by\":%" PRIu64 ","
+                      "\"by1\":%" PRIu64 ","
+                      "\"by2\":%" PRIu64 ","
                       "\"db\":%" PRIu64 ","
+                      "\"db1\":%" PRIu64 ","
+                      "\"db2\":%" PRIu64 ","
                       "\"no\":\"%s\",",
-                      session->packets,
-                      session->bytes,
-                      session->databytes,
+                      session->packets[0] + session->packets[1],
+                      session->packets[0],
+                      session->packets[1],
+                      session->bytes[0] + session->bytes[1],
+                      session->bytes[0],
+                      session->bytes[1],
+                      session->databytes[0] + session->databytes[1],
+                      session->databytes[0],
+                      session->databytes[1],
                       config.nodeName);
     
     if (session->rootId) {
@@ -865,6 +877,8 @@ void moloch_db_update_stats()
     static uint64_t lastBytes = 0;
     static uint64_t lastSessions = 0;
     static uint64_t lastDropped = 0;
+    uint64_t        freeSpaceM = 0;
+    int             i;
 
     char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
@@ -876,8 +890,11 @@ void moloch_db_update_stats()
 
     uint64_t totalDropped = moloch_nids_dropped_packets();
 
-    struct statvfs vfs;
-    statvfs(config.pcapDir, &vfs);
+    for (i = 0; config.pcapDir[i]; i++) {
+        struct statvfs vfs;
+        statvfs(config.pcapDir[i], &vfs);
+        freeSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0);
+    }
 
     dbTotalPackets += (totalPackets - lastPackets);
     dbTotalSessions += (totalSessions - lastSessions);
@@ -905,7 +922,7 @@ void moloch_db_update_stats()
         "}",
         config.hostName,
         (uint32_t)currentTime.tv_sec,
-        (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
+        freeSpaceM,
         moloch_nids_monitoring_sessions(),
         mem,
         moloch_nids_disk_queue(),
@@ -937,8 +954,10 @@ void moloch_db_update_dstats(int n)
     static uint64_t lastDropped[2] = {0, 0};
     static struct timeval lastTime[2];
     static int      intervals[2] = {5, 60};
-    char key[200];
-    int  key_len = 0;
+    uint64_t        freeSpaceM = 0;
+    int             i;
+    char            key[200];
+    int             key_len = 0;
 
     char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
@@ -952,8 +971,11 @@ void moloch_db_update_dstats(int n)
 
     uint64_t totalDropped = moloch_nids_dropped_packets();
 
-    struct statvfs vfs;
-    statvfs(config.pcapDir, &vfs);
+    for (i = 0; config.pcapDir[i]; i++) {
+        struct statvfs vfs;
+        statvfs(config.pcapDir[i], &vfs);
+        freeSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0);
+    }
 
     const uint64_t cursec = currentTime.tv_sec;
     const uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000);
@@ -977,7 +999,7 @@ void moloch_db_update_dstats(int n)
         config.nodeName,
         intervals[n],
         cursec,
-        (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0),
+        freeSpaceM,
         moloch_nids_monitoring_sessions(),
         mem,
         moloch_nids_disk_queue(),
@@ -1193,7 +1215,10 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
     } else {
         tmp = localtime(&firstPacket);
 
-        strcpy(filename, config.pcapDir);
+        strcpy(filename, config.pcapDir[config.pcapDirPos++]);
+        if (!config.pcapDir[config.pcapDirPos])
+            config.pcapDirPos = 0;
+
         if (filename[strlen(filename)-1] != '/')
             strcat(filename, "/");
         snprintf(filename+strlen(filename), sizeof(filename) - strlen(filename), "%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
@@ -1532,6 +1557,7 @@ void moloch_db_load_rir()
                 start = ptr+1;
             }
         }
+        fclose(fp);
     }
 }
 /******************************************************************************/

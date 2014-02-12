@@ -57,7 +57,7 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
 }
 
 /******************************************************************************/
-gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
+gchar **moloch_config_raw_str_list(GKeyFile *keyfile, char *key, char *d)
 {
     if (!keyfile)
         keyfile = molochKeyFile;
@@ -78,6 +78,29 @@ gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
         return NULL;
 
     return g_strsplit(d, ";", 0);
+}
+
+/******************************************************************************/
+gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
+{
+    gchar **strs = moloch_config_raw_str_list(keyfile, key, d);
+    if (!strs)
+        return strs;
+
+    int i;
+    for (i = 0; strs[i]; i++) {
+        char *str = strs[i];
+        while (isspace(*str))
+            str++;
+        g_strchomp(str);
+        if (str != strs[i]) {
+            str = g_strdup(str);
+            g_free(strs[i]);
+            strs[i] = str;
+        }
+    }
+
+    return strs;
 }
 
 /******************************************************************************/
@@ -122,7 +145,6 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
 
     return value;
 }
-
 /******************************************************************************/
 void moloch_config_load() 
 {
@@ -130,6 +152,7 @@ void moloch_config_load()
     gboolean  status;
     GError   *error = 0;
     GKeyFile *keyfile;
+    int       i;
 
     keyfile = molochKeyFile = g_key_file_new();
 
@@ -157,20 +180,12 @@ void moloch_config_load()
 
 
     config.nodeClass        = moloch_config_str(keyfile, "nodeClass", NULL);
-
     gchar **tags            = moloch_config_str_list(keyfile, "dontSaveTags", NULL);
     if (tags) {
-        int i;
         for (i = 0; tags[i]; i++) {
-            gchar *tag = tags[i];
-            while (isspace(*tag))
-                tag++;
-            g_strchomp(tag);
-
-            if (!(*tag))
+            if (!(*tags[i]))
                 continue;
-
-            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tag, TRUE);
+            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tags[i], TRUE);
         }
         g_strfreev(tags);
     }
@@ -179,9 +194,20 @@ void moloch_config_load()
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);
     config.smtpIpHeaders    = moloch_config_str_list(keyfile, "smtpIpHeaders", NULL);
 
+    if (config.smtpIpHeaders) {
+        for (i = 0; config.smtpIpHeaders[i]; i++) {
+            int len = strlen(config.smtpIpHeaders[i]);
+            char *lower = g_ascii_strdown(config.smtpIpHeaders[i], len);
+            g_free(config.smtpIpHeaders[i]);
+            config.smtpIpHeaders[i] = lower;
+            if (lower[len-1] == ':')
+                lower[len-1] = 0;
+        }
+    }
+
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = moloch_config_str(keyfile, "interface", NULL);
-    config.pcapDir          = moloch_config_str(keyfile, "pcapDir", NULL);
+    config.pcapDir          = moloch_config_str_list(keyfile, "pcapDir", NULL);
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
     config.emailYara        = moloch_config_str(keyfile, "emailYara", NULL);
@@ -191,9 +217,10 @@ void moloch_config_load()
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
-    config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", "/data/moloch/parsers;./parsers");
+    config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", " /data/moloch/parsers ; ./parsers ");
 
     config.maxFileSizeG     = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
+    config.maxFileSizeB     = config.maxFileSizeG*1024LL*1024LL*1024LL;
     config.maxFileTimeM     = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
     config.icmpTimeout      = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
     config.udpTimeout       = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
@@ -370,7 +397,11 @@ void moloch_config_init()
         LOG("nodeClass: %s", config.nodeClass);
         LOG("elasticsearch: %s", config.elasticsearch);
         LOG("interface: %s", config.interface);
-        LOG("pcapDir: %s", config.pcapDir);
+        if (config.pcapDir) {
+            str = g_strjoinv(";", config.pcapDir);
+            LOG("pcapDir: %s", str);
+            g_free(str);
+        }
         LOG("bpf: %s", config.bpf);
         LOG("yara: %s", config.yara);
         LOG("geoipFile: %s", config.geoipFile);
@@ -493,7 +524,7 @@ void moloch_config_exit()
     if (config.emailYara)
         g_free(config.emailYara);
     if (config.pcapDir)
-        g_free(config.pcapDir);
+        g_strfreev(config.pcapDir);
     if (config.pluginsDir)
         g_strfreev(config.pluginsDir);
     if (config.parsersDir)
