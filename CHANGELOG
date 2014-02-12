@@ -12,6 +12,7 @@
   - capture now does memlock and max schedule priority on startup (issue #199)
   - when yara is disabled dont retain extra data
   - parse email user names
+  - antiSynDrop config option
 
 0.10.0 2013/12/31
   - IMPORTANT: all parsers have been broken out into individual
