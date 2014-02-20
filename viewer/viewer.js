@@ -591,9 +591,20 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         return nextCb();
       }
       async.forEachSeries(data.hits.hits, function(item, forNextCb) {
-        var stat = fs.statVFS(item.fields.name);
-        var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
+        if (data.hits.total <= query.size) {
+          return forNextCb("DONE");
+        }
+         
+        try {
+          var stat = fs.statVFS(item.fields.name);
+          var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
+        } catch (e) {
+          console.log("ERROR", e);
+          // File doesn't exist, delete it
+          var freeG = minFreeSpaceG - 1;
+        }
         if (freeG < minFreeSpaceG) {
+          data.hits.total--;
           console.log("Deleting", item);
           return Db.deleteFile(item.fields.node, item._id, item.fields.name, forNextCb);
         } else {
@@ -642,13 +653,14 @@ function expireCheckAll () {
       // Create a mapping from device id to stat information and all directories on that device
       pcapDirs.split(";").forEach(function (pcapDir) {
         pcapDir = pcapDir.trim();
-        var stat = fs.statVFS(pcapDir);
-        if (!devToStat[stat.dev]) {
-          stat.dirs = {};
-          stat.dirs[pcapDir] = {};
-          devToStat[stat.dev] = stat;
+        var fileStat = fs.statSync(pcapDir);
+        var vfsStat = fs.statVFS(pcapDir);
+        if (!devToStat[fileStat.dev]) {
+          vfsStat.dirs = {};
+          vfsStat.dirs[pcapDir] = {};
+          devToStat[fileStat.dev] = vfsStat;
         } else {
-          devToStat[stat.dev].dirs[pcapDir] = {};
+          devToStat[fileStat.dev].dirs[pcapDir] = {};
         }
       });
       cb(null);
