@@ -108,6 +108,68 @@ esac ], [
     fi
   fi
 AC_MSG_RESULT(yes) ])
+
+# Do we have libnl?
+# Modfied version of whats in libpcap configure.ac.  Thank you libpcap!
+#
+AC_ARG_WITH(libnl,
+AC_HELP_STRING([--without-libnl],[disable libnl support @<:@default=yes, on Linux, if present@:>@]),
+        with_libnl=$withval,,)
+
+if test x$with_libnl != xno ; then
+        have_any_nl="no"
+
+        #
+        # Try libnl 3.x first.
+        #
+        AC_CHECK_LIB(nl-3, nl_socket_alloc,
+        [
+                #
+                # Yes, we have libnl 3.x.
+                #
+                PCAP_LIBS="$PCAP_LIBS -lnl-genl-3 -lnl-3"
+                have_any_nl="yes"
+        ])
+
+        if test x$have_any_nl = xno ; then
+                #
+                # Try libnl 2.x
+                #
+                AC_CHECK_LIB(nl, nl_socket_alloc,
+                [
+                        #
+                        # Yes, we have libnl 2.x.
+                        #
+                        PCAP_LIBS="$PCAP_LIBS -lnl-genl -lnl"
+                        have_any_nl="yes"
+                ])
+        fi
+
+        if test x$have_any_nl = xno ; then
+                #
+                # No, we don't; do we have libnl 1.x?
+                #
+                AC_CHECK_LIB(nl, nl_handle_alloc,
+                [
+                        #
+                        # Yes.
+                        #
+                        PCAP_LIBS="$PCAP_LIBS -lnl"
+                        have_any_nl="yes"
+                ])
+        fi
+
+        if test x$have_any_nl = xno ; then
+                #
+                # No, we don't have libnl at all.
+                #
+                if test x$with_libnl = xyes ; then
+                        AC_MSG_ERROR([libnl support requested but libnl not found])
+                fi
+        fi
+fi
+
+
 AC_SUBST(PCAP_CFLAGS)
 AC_SUBST(PCAP_LIBS)
 
