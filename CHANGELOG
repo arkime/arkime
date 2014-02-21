@@ -13,6 +13,9 @@
   - when yara is disabled dont retain extra data
   - parse email user names
   - antiSynDrop config option
+  - remove schedule priority change for now
+  - Changing memlock failure message to WARNING
+  - new pcapWriteMethod advanced setting, supports direct and thread now
 
 0.10.0 2013/12/31
   - IMPORTANT: all parsers have been broken out into individual

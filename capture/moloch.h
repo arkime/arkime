@@ -164,6 +164,7 @@ typedef struct {
  * Configuration Information
  */
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
+enum MolochWriteMethod { MOLOCH_WRITE_NORMAL, MOLOCH_WRITE_DIRECT, MOLOCH_WRITE_MMAP, MOLOCH_WRITE_THREAD};
 typedef struct moloch_config {
     gboolean  exiting;
     char     *configFile;
@@ -174,12 +175,16 @@ typedef struct moloch_config {
     gchar   **extraTags;
     gboolean  debug;
     gboolean  dryRun;
+    gboolean  noSPI;
     gboolean  fakePcap;
     gboolean  copyPcap;
     gboolean  pcapRecursive;
     gboolean  tests;
 
+    int       pagesize;
+
     enum MolochRotate rotate;
+    enum MolochWriteMethod writeMethod;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
     MolochFieldInfo_t *fields[100];
@@ -225,6 +230,7 @@ typedef struct moloch_config {
     uint32_t  pcapBufferSize;
     uint32_t  pcapWriteSize;
     uint32_t  maxWriteBuffers;
+
 
     char      logUnknownProtocols;
     char      logESRequests;

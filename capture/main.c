@@ -56,7 +56,8 @@ static GOptionEntry entries[] =
     { "debug",     'd',                    0, G_OPTION_ARG_NONE,         &config.debug,         "Turn on all debugging", NULL },
     { "copy",        0,                    0, G_OPTION_ARG_NONE,         &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file ", NULL },
     { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.fakePcap,      "fake pcap", NULL },
-    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &config.dryRun,        "dry run, noting written to database", NULL },
+    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &config.dryRun,        "dry run, noting written to databases or filesystem", NULL },
+    { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.noSPI,         "no SPI data written to ES", NULL },
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.tests,         "Output test suite information", NULL },
     { NULL,          0, 0,                                    0,         NULL, NULL, NULL }
 };
@@ -414,7 +415,6 @@ void moloch_hex_init()
         moloch_char_to_hexstr[i][1] = moloch_char_to_hex[i & 0xf];
     }
 }
-/******************************************************************************/
 void moloch_sched_init()
 {
 #ifdef _POSIX_PRIORITY_SCHEDULING
@@ -422,7 +422,7 @@ void moloch_sched_init()
     sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
     int result = sched_setscheduler(0, SCHED_FIFO, &sp);
     if (result != 0) {
-        LOG("ERROR: Failed to change to FIFO scheduler - %s", strerror(errno));
+        LOG("WARNING: Failed to change to FIFO scheduler - %s", strerror(errno));
     } else if (config.debug) {
         LOG("Changed to FIFO scheduler with priority %d", sp.sched_priority);
     }
@@ -435,7 +435,7 @@ void moloch_mlockall_init()
     struct rlimit l;
     getrlimit(RLIMIT_MEMLOCK, &l);
     if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
-        LOG("memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (long)l.rlim_max/1024);
+        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (long)l.rlim_max/1024);
         return;
     }
 
@@ -448,7 +448,7 @@ void moloch_mlockall_init()
 
     int result = mlockall(MCL_FUTURE | MCL_CURRENT);
     if (result != 0) {
-        LOG("ERROR: Failed to mlockall - %s", strerror(errno));
+        LOG("WARNING: Failed to mlockall - %s", strerror(errno));
     } else if (config.debug) {
         LOG("mlockall with max of %lu", (long)l.rlim_max);
     }
@@ -469,7 +469,6 @@ int main(int argc, char **argv)
     moloch_hex_init();
     moloch_nids_root_init();
     if (!config.pcapReadFile && !config.pcapReadDir) {
-        moloch_sched_init();
         moloch_drop_privileges();
         config.copyPcap = 1;
         moloch_mlockall_init();

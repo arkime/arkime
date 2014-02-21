@@ -827,6 +827,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
     }
 
+    if (config.noSPI) {
+        BSB_INIT(jbsb, sJson, BSB_SIZE(jbsb));
+        return;
+    }
+
     if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
         LOG("WARNING - BIGGER then expected json %d %d\n", jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)

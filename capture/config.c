@@ -178,7 +178,6 @@ void moloch_config_load()
     }
     g_free(rotateIndex);
 
-
     config.nodeClass        = moloch_config_str(keyfile, "nodeClass", NULL);
     gchar **tags            = moloch_config_str_list(keyfile, "dontSaveTags", NULL);
     if (tags) {
@@ -189,6 +188,22 @@ void moloch_config_load()
         }
         g_strfreev(tags);
     }
+
+    char *writeMethod       = moloch_config_str(keyfile, "pcapWriteMethod", "normal");
+
+    if (strcmp(writeMethod, "normal") == 0)
+        config.writeMethod = MOLOCH_WRITE_NORMAL;
+    else if (strcmp(writeMethod, "direct") == 0)
+        config.writeMethod = MOLOCH_WRITE_DIRECT;
+    else if (strcmp(writeMethod, "thread") == 0)
+        config.writeMethod = MOLOCH_WRITE_THREAD;
+    /*else if (strcmp(writeMethod, "mmap") == 0)
+        config.writeMethod = MOLOCH_WRITE_MMAP;*/
+    else {
+        printf("Unknown pcapWriteMethod '%s'\n", writeMethod);
+        exit(1);
+    }
+    g_free(writeMethod);
 
     
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);
@@ -389,6 +404,8 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
 void moloch_config_init()
 {
     char *str;
+    static char *rotates[] = {"hourly", "daily", "weekly", "monthly"};
+    static char *methods[] = {"normal", "direct", "mmap"};
 
     HASH_INIT(s_, config.dontSaveTags, moloch_string_hash, moloch_string_cmp);
 
@@ -461,10 +478,19 @@ void moloch_config_init()
         LOG("parseQSValue: %s", (config.parseQSValue?"true":"false"));
         LOG("compressES: %s", (config.compressES?"true":"false"));
 
+        LOG("rotateIndex = %s", rotates[config.rotate]);
+        LOG("pcapWriteMethod = %s", methods[config.writeMethod]);
+
         MolochString_t *tstring;
         HASH_FORALL(s_, config.dontSaveTags, tstring, 
           LOG("dontSaveTags: %s", tstring->str);
         );
+    }
+
+    config.pagesize = getpagesize();
+    if (config.writeMethod == MOLOCH_WRITE_DIRECT && (config.pcapWriteSize % config.pagesize != 0)) {
+        printf("When using pcapWriteMethod of direct pcapWriteSize must be a multiple of %d", config.pagesize);
+        exit (1);
     }
 
     if (!config.interface && !config.pcapReadFile && !config.pcapReadDir) {
