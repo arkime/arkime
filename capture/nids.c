@@ -263,6 +263,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->packets[1] = 0;
 }
 /******************************************************************************/
+static struct pcap_file_header pcapFileHeader;
 int dlt_to_linktype(int dlt);
 void moloch_nids_file_create()
 {
@@ -283,17 +284,7 @@ void moloch_nids_file_create()
     output->pos = 24;
     gettimeofday(&dumperFileTime, 0);
 
-    struct pcap_file_header hdr;
-    hdr.magic = 0xa1b2c3d4;
-    hdr.version_major = PCAP_VERSION_MAJOR;
-    hdr.version_minor = PCAP_VERSION_MINOR;
-
-    hdr.thiszone = 0;
-    hdr.snaplen = pcap_snapshot(nids_params.pcap_desc);
-    hdr.sigfigs = 0;
-    hdr.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
-
-    memcpy(output->buf, &hdr, 24);
+    memcpy(output->buf, &pcapFileHeader, 24);
 
     LOG("Opening %s", dumperFileName);
     int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
@@ -1289,6 +1280,15 @@ void moloch_nids_root_init()
         LOG("pcap open live failed! %s", errbuf);
         exit(1);
     }
+
+    pcapFileHeader.magic = 0xa1b2c3d4;
+    pcapFileHeader.version_major = PCAP_VERSION_MAJOR;
+    pcapFileHeader.version_minor = PCAP_VERSION_MINOR;
+
+    pcapFileHeader.thiszone = 0;
+    pcapFileHeader.snaplen = pcap_snapshot(nids_params.pcap_desc);
+    pcapFileHeader.sigfigs = 0;
+    pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
 
     config.maxWriteBuffers = (config.pcapReadDir || config.pcapReadFile)?10:2000;
 }

@@ -67,6 +67,16 @@ do {                                              \
         (b).end = 0;                              \
 } while (0)
 
+#define BSB_EXPORT_cstr(b, x)                     \
+do {                                              \
+    const int size = sizeof x - 1;                \
+    if ((b).ptr + size <= (b).end) {              \
+        memcpy((b).ptr, x, size);                 \
+        (b).ptr += size;                          \
+    } else                                        \
+        (b).end = 0;                              \
+} while (0)
+
 #define BSB_EXPORT_skip(b, size)                  \
 do {                                              \
     if ((b).ptr + size <= (b).end) {              \
