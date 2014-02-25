@@ -30,7 +30,15 @@ var escInfo = Config.get("elasticsearch", "localhost:9200").split(':');
 Db.initialize({host : escInfo[0], port: escInfo[1]});
 
 function help() {
-  console.log("addUser.js <user id> <user friendly name> <password> [-noweb] [-webauth] [-admin] [-email]");
+  console.log("addUser.js <user id> <user friendly name> <password> [<options>]");
+  console.log("");
+  console.log("Options:");
+  console.log("  --admin      Has admin privileges");
+  console.log("  --apionly    Can only use api, not web pages");
+  console.log("  --email      Can do email searches");
+  console.log("  --remove     Can remove data (scrub, delete tags)");
+  console.log("  --webauth    Can auth using the web auth header"); 
+
   process.exit(0);
 }
 
@@ -65,6 +73,7 @@ for (i = 5; i < process.argv.length; i++) {
 
   case "--noweb":
   case "-noweb":
+  case "--apionly":
     nuser.webEnabled = false;
     break;
     
