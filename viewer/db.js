@@ -220,10 +220,14 @@ exports.update = function (indexName, typeName, documentId, document, cb) {
                                                      path: path,
                                                      method: 'POST'}, internals.elasticSearchClient.clientOptions)
     .on('data', function(data) {
-      cb(null, JSON.parse(data));
+      if (cb) {
+        cb(null, JSON.parse(data));
+      }
     })
     .on('error', function(error) {
-      cb(error, null);
+      if (cb) {
+        cb(error, null);
+      }
     })
     .exec();
 };
@@ -436,14 +440,7 @@ exports.numberOfDocuments = function (index, cb) {
 };
 
 exports.updateFileSize = function (item, filesize) {
-  // _update has bug so do ourselves
-  internals.elasticSearchClient.createCall({data:JSON.stringify({script: "ctx._source.filesize = " + filesize}),
-                                            path:"/files/file/" + item.id + "/_update",
-                                            method: "POST"}, internals.elasticSearchClient.clientOptions)
-    .on('error', function(error) {
-      console.log("ERROR - updateFileSize", error);
-    })
-    .exec();
+  exports.update("files", "file", item.id, {doc: {filesize: filesize}});
 };
 
 exports.checkVersion = function(minVersion, checkUsers) {

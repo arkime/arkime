@@ -1304,6 +1304,13 @@ my ($loud) = @_;
     }
 }
 ################################################################################
+sub dbCheckHealth {
+    my $health = esGet("/_cluster/health");
+    if ($health->{status} ne "green") {
+        print("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
+    }
+}
+################################################################################
 sub dbCheck {
     my $esversion = esGet("/");
     my @parts = split(/\./, $esversion->{version}->{number});
@@ -1322,6 +1329,7 @@ sub dbCheck {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
         my $node = $nodes->{nodes}->{$key};
         my $errstr;
+        my $warnstr;
 
         if (exists $node->{settings}->{"index.cache.field.type"}) {
             $errstr .= sprintf ("    REMOVE 'index.cache.field.type'\n");
@@ -1336,6 +1344,10 @@ sub dbCheck {
         if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
             $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
         }
+        if (!(exists $node->{settings}->{"script.disable_dynamic"})) {
+            $warnstr .= sprintf ("       ADD 'script.disable_dynamic: true'\n");
+            $warnstr .= sprintf ("         - Closes a potential security issue\n");
+        }
 
         if (!(exists $node->{process}->{max_file_descriptors}) || int($node->{process}->{max_file_descriptors}) < 4000) {
             $errstr .= sprintf ("  INCREASE max file descriptors in /etc/security/limits.conf and restart all ES node\n");
@@ -1346,8 +1358,13 @@ sub dbCheck {
 
         if ($errstr) {
             $error = 1;
-            print ("\nOn node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
+            print ("\nERROR: On node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
             print($errstr);
+        }
+
+        if ($warnstr) {
+            print ("\nWARNING: On node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
+            print($warnstr);
         }
     }
 
@@ -1543,6 +1560,7 @@ my ($nodes) = @_;
 }
 
 
+dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});

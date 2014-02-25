@@ -595,13 +595,14 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
           return forNextCb("DONE");
         }
          
+        var freeG;
         try {
           var stat = fs.statVFS(item.fields.name);
-          var freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
+          freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
         } catch (e) {
           console.log("ERROR", e);
           // File doesn't exist, delete it
-          var freeG = minFreeSpaceG - 1;
+          freeG = minFreeSpaceG - 1;
         }
         if (freeG < minFreeSpaceG) {
           data.hits.total--;
@@ -3559,15 +3560,14 @@ function addTagsList(res, allTagIds, list) {
     // Find which tags need to be added to this session
     for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
       if (session.fields.ta.indexOf(allTagIds[i]) === -1) {
-        tagIds.push(allTagIds[i]);
+        session.fields.ta.push(allTagIds[i]);
       }
     }
 
     // Do the ES update
     var document = {
-      script: "ctx._source.ta += ta",
-      params: {
-        ta: tagIds
+      doc: {
+        ta: session.fields.ta
       }
     };
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
@@ -3586,18 +3586,18 @@ function removeTagsList(res, allTagIds, list) {
       return nextCb(null);
     }
 
-    // Find which tags need to be added to this session
+    // Find which tags need to be removed from this session
     for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      if (session.fields.ta.indexOf(allTagIds[i]) !== -1) {
-        tagIds.push(allTagIds[i]);
+      var pos = session.fields.ta.indexOf(allTagIds[i]);
+      if (pos !== -1) {
+        session.fields.ta.splice(pos, 1);
       }
     }
 
     // Do the ES update
     var document = {
-      script: "ctx._source.ta.removeAll(ta)",
-      params: {
-        ta: tagIds
+      doc: {
+        ta: session.fields.ta
       }
     };
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
@@ -3776,10 +3776,9 @@ function pcapScrub(req, res, id, entire, endCb) {
       } else {
         // Do the ES update
         var document = {
-          script: "ctx._source.scrubat = at; ctx._source.scrubby = by",
-          params: {
-            by: req.user.userId || "-",
-            at: new Date().getTime()
+          doc: {
+            scrubby: req.user.userId || "-",
+            scrubat: new Date().getTime()
           }
         };
         Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
