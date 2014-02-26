@@ -10,16 +10,13 @@ mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
 PLUGINDIR = @prefix@/plugins
 
+SRCS=$(wildcard *.c)
+SOS=$(SRCS:.c=.so)
 
-all:tagger.so netflow.so
+%.so : %.c ../moloch.h
+	$(CC) --shared -o $@ -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
 
-tagger.so:tagger.c ../moloch.h
-	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c tagger.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
-	$(CC) -shared -o tagger.so tagger.o
-
-netflow.so:netflow.c ../moloch.h
-	$(CC) -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC -c netflow.c $(INCLUDE_PCAP) $(INCLUDE_OTHER) 
-	$(CC) -shared -o netflow.so netflow.o
+all:$(SOS)
 
 install:
 	test -z "$(PLUGINDIR)" || $(mkdir_p) "$(PLUGINDIR)"
