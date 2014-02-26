@@ -292,6 +292,7 @@ typedef struct moloch_session {
     uint64_t               databytes[2];
 
 
+    uint32_t               lastFileNum;
     uint32_t               lastSave;
     uint32_t               addr1;
     uint32_t               addr2;

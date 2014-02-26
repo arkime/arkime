@@ -650,7 +650,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             }
 
             //LOG("ALW POS %d %llx", dumperFilePos, val);
-            if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
+            if (session->lastFileNum != dumperId) {
+                session->lastFileNum = dumperId;
                 g_array_append_val(session->fileNumArray, dumperId);
                 int64_t val = -1LL * dumperId;
                 g_array_append_val(session->filePosArray, val);
@@ -674,7 +675,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             }
 
             dumperFilePos = ftell(offlineFile) - 16 - nids_last_pcap_header->caplen;
-            if (session->fileNumArray->len == 0 || g_array_index(session->fileNumArray, uint32_t, session->fileNumArray->len-1) != dumperId) {
+            if (session->lastFileNum != dumperId) {
+                session->lastFileNum = dumperId;
                 g_array_append_val(session->fileNumArray, dumperId);
                 int64_t val = -1LL * dumperId;
                 g_array_append_val(session->filePosArray, val);
