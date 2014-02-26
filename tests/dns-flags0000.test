@@ -1,0 +1,58 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db2" : 74,
+            "db" : 148,
+            "lpd" : 1393422583932,
+            "fp" : 1393422583,
+            "no" : "test",
+            "as2" : "AS0000 This is neat",
+            "lp" : 1393422583,
+            "pa" : 2,
+            "tacnt" : 7,
+            "fb1" : "b2b5000000010000",
+            "a2" : "10.0.0.1",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "dstip",
+               "node:test",
+               "protocol:dns",
+               "srcip",
+               "udp"
+            ],
+            "pa1" : 1,
+            "fpd" : 1393422583830,
+            "fs" : [],
+            "by2" : 82,
+            "fb2" : "b2b5800500010000",
+            "a1" : "10.0.0.2",
+            "dnshocnt" : 1,
+            "db1" : 74,
+            "pa2" : 1,
+            "p1" : 61912,
+            "by1" : 82,
+            "by" : 164,
+            "p2" : 53,
+            "as1" : "AS0001 Cool Beans!",
+            "g2" : "USA",
+            "pr" : 17,
+            "ps" : [
+               24,
+               122
+            ],
+            "dnsho" : [
+               "flashservice.adobe.com"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-140226",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -1,0 +1,80 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db2" : 83,
+            "db" : 210,
+            "no" : "test",
+            "lp" : 1393428477,
+            "a2" : "10.0.0.1",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "node:test",
+               "protocol:dns",
+               "srcip",
+               "udp"
+            ],
+            "pa1" : 1,
+            "fpd" : 1393428477363,
+            "fs" : [],
+            "by2" : 91,
+            "g1" : "USA",
+            "pa2" : 1,
+            "p1" : 53,
+            "by" : 226,
+            "as1" : "AS15169 Google Inc.",
+            "rir1" : "ARIN",
+            "g2" : "USA",
+            "dnsip" : [
+               "91.189.89.88",
+               "91.189.90.40",
+               "91.189.90.41"
+            ],
+            "asdnsip" : [
+               "AS41231 Canonical Ltd",
+               "AS41231 Canonical Ltd",
+               "AS41231 Canonical Ltd"
+            ],
+            "pr" : 17,
+            "ps" : [
+               24,
+               175
+            ],
+            "dnsho" : [
+               "start.ubuntu.com"
+            ],
+            "lpd" : 1393428477327,
+            "fp" : 1393428477,
+            "as2" : "AS0000 This is neat",
+            "dnsipcnt" : 3,
+            "pa" : 2,
+            "tacnt" : 6,
+            "fb1" : "5aae819000010003",
+            "a1" : "8.8.8.8",
+            "fb2" : "5aae011000010000",
+            "dnshocnt" : 1,
+            "db1" : 127,
+            "gdnsip" : [
+               "GBR",
+               "GBR",
+               "GBR"
+            ],
+            "by1" : 135,
+            "p2" : 62928,
+            "rirdnsip" : [
+               "RIPE",
+               "RIPE",
+               "RIPE"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-140226",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

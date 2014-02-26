@@ -293,10 +293,10 @@ block content
                 }
               } else if (oObj.aData.dnsho) {
                 if (oObj.aData.infoAll) {
-                  data += oObj.aData.dnsho.join("<br>");
+                  data += oObj.aData.dnsho.join("<br>").replace("<root>","&lt;root&gt;");
                   data += '<br><img src="up-arrow.png">';
                 } else {
-                  data += oObj.aData.dnsho.slice(0, 5).join("<br>");
+                  data += oObj.aData.dnsho.slice(0, 5).join("<br>").replace("<root>","&lt;root&gt;");
                   if (oObj.aData.dnsho.length > 5) {
                     data += '<br><img src="down-arrow.png">';
                   }

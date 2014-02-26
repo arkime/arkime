@@ -109,8 +109,13 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
         int namelen;
         unsigned char *name = dns_name(data, len, &bsb, &namelen);
 
-        if (!namelen || BSB_IS_ERROR(bsb))
+        if (BSB_IS_ERROR(bsb))
             break;
+
+        if (!namelen) {
+            name = (unsigned char*)"<root>";
+            namelen = 6;
+        }
 
         unsigned short qtype = 0 , qclass = 0 ;
         BSB_IMPORT_u16(bsb, qtype);
@@ -219,7 +224,7 @@ int dns_tcp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned ch
     return 0;
 }
 /******************************************************************************/
-void dns_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
+void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
 {
     if (session->which == 0 && session->port2 == 53 && !moloch_nids_has_tag(session, MOLOCH_FIELD_TAGS, "protocol:dns")) {
         moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:dns");
@@ -306,8 +311,19 @@ void moloch_parser_init()
     qtypes[254] = "dns:qtype:MAILA";
     qtypes[255] = "dns:qtype:ANY";
 
-    moloch_parsers_classifier_register_tcp("dns", 4, (unsigned char*)"\x01\x00", 2, dns_classify);
-    moloch_parsers_classifier_register_udp("dns", 2, (unsigned char*)"\x01\x00", 2, dns_udp_classify);
-    moloch_parsers_classifier_register_udp("dns", 2, (unsigned char*)"\x81\x80", 2, dns_udp_classify);
+#define DNS_CLASSIFY(_str) \
+    moloch_parsers_classifier_register_tcp("dns", 4, (unsigned char*)_str, 2, dns_tcp_classify); \
+    moloch_parsers_classifier_register_udp("dns", 2, (unsigned char*)_str, 2, dns_udp_classify);
+
+    DNS_CLASSIFY("\x00\x00");
+    DNS_CLASSIFY("\x00\x10");
+    DNS_CLASSIFY("\x01\x00");
+    DNS_CLASSIFY("\x01\x10");
+    DNS_CLASSIFY("\x01\x82");
+    DNS_CLASSIFY("\x81\x80");
+    DNS_CLASSIFY("\x81\x82");
+    DNS_CLASSIFY("\x81\x90");
+    DNS_CLASSIFY("\x81\xb0");
+    DNS_CLASSIFY("\x84\x10");
 }
 
