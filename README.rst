@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.90.10**, requires at least 0.90.1, does **not** support 1.x.
+Tested with **0.90.12**, requires at least 0.90.1, does **not** support 1.x and 0.90.11 has a bug.
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
