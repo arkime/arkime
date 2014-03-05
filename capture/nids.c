@@ -248,6 +248,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     moloch_db_save_session(session, FALSE);
     g_array_set_size(session->filePosArray, 0);
     g_array_set_size(session->fileNumArray, 0);
+    session->lastFileNum = 0;
 
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ, session);
