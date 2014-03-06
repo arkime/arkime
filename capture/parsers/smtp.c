@@ -170,12 +170,30 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
     int   outputlen = 0;
     char *str = string;
     char *end = str + len;
+    GError  *error = 0;
+    gsize    bread, bwritten, olen;
 
     while (str < end) {
-        if (str[0] != '=' || str[1] != '?') {
-            output[outputlen] = *str;
-            outputlen++;
-            str++;
+        char *startquestion = strstr(str, "=?");
+
+        /* No encoded text, or normal text in front of encoded */
+        if (!startquestion || str != startquestion) {
+            if (!startquestion) 
+                startquestion = end;
+
+            char *out = g_convert((char *)str, startquestion - str, "utf8", "WINDOWS-1252", &bread, &bwritten, &error);
+            if (error) {
+                LOG("ERROR convering %s to utf8 %s ", "windows-1252", error->message);
+                moloch_field_string_add(pos, session, string, len, TRUE);
+                g_error_free(error);
+                return;
+            }
+
+            strcpy(output+outputlen, out);
+            outputlen += bwritten;
+            g_free(out);
+
+            str = startquestion;
             continue;
         }
 
@@ -196,8 +214,6 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
         /* question+1               = encoding */
         /* question+3 - endquestion = encoded-text */
 
-        GError  *error = 0;
-        gsize    bread, bwritten, olen;
         if (*(question+1) == 'B' || *(question+1) == 'b') {
             *question = 0;
             *endquestion = 0;
@@ -213,7 +229,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
             }
 
             strcpy(output+outputlen, out);
-            outputlen += strlen(out);
+            outputlen += bwritten;
             g_free(out);
         } else if (*(question+1) == 'Q' || *(question+1) == 'q') {
             *question = 0;
@@ -229,7 +245,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
             }
 
             strcpy(output+outputlen, out);
-            outputlen += strlen(out);
+            outputlen += bwritten;
             g_free(out);
         } else {
             moloch_field_string_add(pos, session, string, len, TRUE);

@@ -1,0 +1,111 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db2" : 749,
+            "db" : 960,
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "no" : "test",
+            "lp" : 1394118475,
+            "a2" : "10.0.0.2",
+            "esub" : [
+               "Awesome windows: See What’s Next in charset decoding!"
+            ],
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:smtp",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 12,
+            "fpd" : 1394118475009,
+            "fs" : [],
+            "by2" : 1487,
+            "g1" : "USA",
+            "pa2" : 11,
+            "p1" : 40531,
+            "by" : 2498,
+            "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "from",
+               "to",
+               "subject"
+            ],
+            "ehhcnt" : 3,
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               208,
+               290,
+               583,
+               665,
+               747,
+               829,
+               1002,
+               1084,
+               1599,
+               1681,
+               1803,
+               1885,
+               2010,
+               2092,
+               2224,
+               2306,
+               2444,
+               2526,
+               2644,
+               2726,
+               2808
+            ],
+            "lpd" : 1394118475137,
+            "fp" : 1394118475,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 23,
+            "fb1" : "45484c4f20787878",
+            "edst" : [
+               "xxxxx@xxx.net"
+            ],
+            "tacnt" : 5,
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "fb2" : "3232302d78787878",
+            "db1" : 211,
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:40531,33554442:25"
+               ],
+               "test.number" : [
+                  33554442
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
+            "by1" : 1011,
+            "esrccnt" : 1,
+            "p2" : 25
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-140306",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
