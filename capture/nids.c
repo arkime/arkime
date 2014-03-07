@@ -54,22 +54,22 @@ typedef struct moloch_output {
     struct moloch_output *mo_next, *mo_prev;
     uint16_t   mo_count;
 
+    char      *name;
     char      *buf;
     uint64_t   max;
     uint64_t   pos;
-    int        fd;
     char       close;
 } MolochOutput_t;
 
 
 static MolochOutput_t        outputQ;
 static MolochOutput_t       *output;
-static pthread_mutex_t       outputQMutex;
+static pthread_mutex_t       outputQMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t        outputQCond = PTHREAD_COND_INITIALIZER;
 
 static uint64_t              dumperFilePos = 0;
 static char                 *dumperFileName;
 static struct timeval        dumperFileTime;
-static int                   dumperFd = -1;
 static uint32_t              dumperId;
 static FILE                 *offlineFile = 0;
 static uint32_t              initialDropped = 0;
@@ -270,32 +270,21 @@ void moloch_nids_file_create()
 {
     if (config.dryRun) {
         dumperFileName = "dryrun.pcap";
-        dumperFd = 1;
         return;
     }
 
-    dumperFileName = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, 0, &dumperId);
+    dumperFileName = strdup(moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, NULL, 0, &dumperId));
     dumperFilePos = 24;
     output = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
     output->max = config.pcapWriteSize;
-    if (config.writeMethod == MOLOCH_WRITE_DIRECT)
-        posix_memalign((void **)&output->buf, 512, config.pcapWriteSize + 8192);
+    if (config.writeMethod & MOLOCH_WRITE_DIRECT)
+        (void)posix_memalign((void **)&output->buf, config.pagesize, config.pcapWriteSize + 8192);
     else
         output->buf = malloc(config.pcapWriteSize + 8192);
     output->pos = 24;
     gettimeofday(&dumperFileTime, 0);
 
     memcpy(output->buf, &pcapFileHeader, 24);
-
-    LOG("Opening %s", dumperFileName);
-    int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
-    if (config.writeMethod == MOLOCH_WRITE_DIRECT)
-        options |= O_DIRECT;
-    dumperFd = open(dumperFileName,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-    if (dumperFd < 0) {
-        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", dumperFileName, strerror(errno), errno);
-        exit (2);
-    }
 }
 /******************************************************************************/
 void moloch_nids_file_locked(char *filename)
@@ -305,7 +294,6 @@ void moloch_nids_file_locked(char *filename)
     fstat(fileno(offlineFile), &st);
 
     dumperFilePos = 24;
-    dumperFd = 1;
 
     if (config.dryRun) {
         dumperFileName = "dryrun.pcap";
@@ -320,31 +308,45 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
     if (config.exiting && fd)
         return FALSE;
 
+    static int dumperFd = 0;
+
     MolochOutput_t *out = DLL_PEEK_HEAD(mo_, &outputQ);
     if (!out)
         return DLL_COUNT(mo_, &outputQ) > 0;
 
+    if (!dumperFd) {
+        LOG("Opening %s", out->name);
+        int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+        if (config.writeMethod & MOLOCH_WRITE_DIRECT)
+            options |= O_DIRECT;
+        dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+        if (dumperFd < 0) {
+            LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
+            exit (2);
+        }
+    }
+
     int len;
     if (config.writeMethod == MOLOCH_WRITE_NORMAL) {
-        len = write(out->fd, out->buf+out->pos, (out->max - out->pos));
+        len = write(dumperFd, out->buf+out->pos, (out->max - out->pos));
         if (len < 0) {
-            LOG("ERROR - Write %d failed with %d %d\n", out->fd, len, errno);
+            LOG("ERROR - Write %d failed with %d %d\n", dumperFd, len, errno);
             exit (0);
         }
     } else {
         int wlen = (out->max - out->pos);
-        int filelen = 0;
+        uint64_t filelen = 0;
         if (out->close && wlen % config.pagesize != 0) {
-            filelen = lseek(out->fd, 0, SEEK_CUR) + wlen;
+            filelen = lseek64(dumperFd, 0, SEEK_CUR) + wlen;
             wlen = (wlen - (wlen % config.pagesize) + config.pagesize);
         }
-        len = write(out->fd, out->buf+out->pos, wlen);
+        len = write(dumperFd, out->buf+out->pos, wlen);
         if (len < 0) {
-            LOG("ERROR - Write %d failed with %d %d\n", out->fd, len, errno);
+            LOG("ERROR - Write %d failed with %d %d\n", dumperFd, len, errno);
             exit (0);
         }
         if (out->close && filelen) {
-            ftruncate(out->fd, filelen);
+            (void)ftruncate(dumperFd, filelen);
         }
     }
 
@@ -356,9 +358,10 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
     }
 
     // The last write for this fd
-    char needClose = out->close;
     if (out->close) {
-        close(out->fd);
+        close(dumperFd);
+        dumperFd = 0;
+        free(out->name);
     }
 
     // Cleanup buffer
@@ -367,9 +370,8 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
     MOLOCH_TYPE_FREE(MolochOutput_t, out);
 
     // More waiting to write on different fd, setup a new watch
-    if (fd && needClose && DLL_COUNT(mo_, &outputQ) > 0) {
-        out = DLL_PEEK_HEAD(mo_, &outputQ);
-        moloch_watch_fd(out->fd, MOLOCH_GIO_WRITE_COND, moloch_nids_output_cb, NULL);
+    if (dumperFd && !config.exiting && DLL_COUNT(mo_, &outputQ) > 0) {
+        moloch_watch_fd(dumperFd, MOLOCH_GIO_WRITE_COND, moloch_nids_output_cb, NULL);
         return FALSE;
     }
 
@@ -379,28 +381,52 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
 void *moloch_nids_output_thread(void *UNUSED(arg))
 {
     MolochOutput_t *out;
+    int dumperFd = 0;
+
     while (1) {
+        uint64_t filelen = 0;
         pthread_mutex_lock(&outputQMutex);
-        int count = DLL_COUNT(mo_, &outputQ);
-        if (count == 0) {
-            pthread_mutex_unlock(&outputQMutex);
-            usleep(100000);
-            continue;
+        while (DLL_COUNT(mo_, &outputQ) == 0) {
+            pthread_cond_wait(&outputQCond, &outputQMutex);
         }
         DLL_POP_HEAD(mo_, &outputQ, out);
         pthread_mutex_unlock(&outputQMutex);
 
+        if (!dumperFd) {
+            LOG("Opening %s", out->name);
+            int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+            if (config.writeMethod & MOLOCH_WRITE_DIRECT)
+                options |= O_DIRECT;
+            dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+            if (dumperFd < 0) {
+                LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
+                exit (2);
+            }
+        }
+
         while (out->pos < out->max) {
-            int len = write(out->fd, out->buf+out->pos, (out->max - out->pos));
+            int wlen = out->max - out->pos;
+
+            if (out->close && (config.writeMethod & MOLOCH_WRITE_DIRECT) && ((wlen % config.pagesize) != 0)) {
+                filelen = lseek64(dumperFd, 0, SEEK_CUR) + wlen;
+                wlen = (wlen - (wlen % config.pagesize) + config.pagesize);
+            }
+
+            int len = write(dumperFd, out->buf+out->pos, wlen);
             out->pos += len;
             if (len < 0) {
-                LOG("ERROR - Write %d failed with %d %d\n", out->fd, len, errno);
+                LOG("ERROR - Write %d failed with %d %d\n", dumperFd, len, errno);
                 exit (0);
             }
         }
 
         if (out->close) {
-            close(out->fd);
+            if (filelen) {
+                (void)ftruncate(dumperFd, filelen);
+            }
+            close(dumperFd);
+            dumperFd = 0;
+            free(out->name);
         }
         free(out->buf);
         MOLOCH_TYPE_FREE(MolochOutput_t, out);
@@ -414,12 +440,12 @@ void moloch_nids_file_flush(gboolean all)
     }
 
     output->close = all;
-    output->fd    = dumperFd;
+    output->name  = dumperFileName;
 
     MolochOutput_t *noutput = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
     noutput->max = config.pcapWriteSize;
-    if (config.writeMethod == MOLOCH_WRITE_DIRECT)
-        posix_memalign((void **)&noutput->buf, 512, config.pcapWriteSize + 8192);
+    if (config.writeMethod & MOLOCH_WRITE_DIRECT)
+        (void)posix_memalign((void **)&noutput->buf, config.pagesize, config.pcapWriteSize + 8192);
     else
         noutput->buf = malloc(config.pcapWriteSize + 8192);
 
@@ -435,19 +461,19 @@ void moloch_nids_file_flush(gboolean all)
     output->pos = 0;
 
     int count;
-    if (config.writeMethod == MOLOCH_WRITE_THREAD) {
+    if (config.writeMethod & MOLOCH_WRITE_THREAD) {
         pthread_mutex_lock(&outputQMutex);
         DLL_PUSH_TAIL(mo_, &outputQ, output);
         count = DLL_COUNT(mo_, &outputQ);
         pthread_mutex_unlock(&outputQMutex);
+        pthread_cond_broadcast(&outputQCond);
     } else {
         DLL_PUSH_TAIL(mo_, &outputQ, output);
         count = DLL_COUNT(mo_, &outputQ);
 
         if (count == 1) {
-            moloch_watch_fd(dumperFd, MOLOCH_GIO_WRITE_COND, moloch_nids_output_cb, NULL);
+            moloch_nids_output_cb(0,0,0);
         }
-
     }
 
     if (count >= 100 && count % 50 == 0) {
@@ -643,8 +669,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     if (!config.dryRun && !session->dontSave) {
         if (config.copyPcap) {
             /* Save packet to file */
-            if (dumperFd == -1 || dumperFilePos >= config.maxFileSizeB) {
-                if (dumperFd > 0 && !config.dryRun)  {
+            if (!dumperFileName || dumperFilePos >= config.maxFileSizeB) {
+                if (dumperFileName && !config.dryRun)  {
                     moloch_nids_file_flush(TRUE);
                 }
                 moloch_nids_file_create();
@@ -671,7 +697,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
                 moloch_nids_file_flush(FALSE);
             }
         } else {
-            if (dumperFd == -1) {
+            if (!dumperFileName) {
                 moloch_nids_file_locked(offlinePcapFilename);
             }
 
@@ -1144,7 +1170,7 @@ uint32_t moloch_nids_monitoring_sessions()
 uint32_t moloch_nids_disk_queue()
 {
     int count;
-    if (config.writeMethod == MOLOCH_WRITE_THREAD) {
+    if (config.writeMethod & MOLOCH_WRITE_THREAD) {
         pthread_mutex_lock(&outputQMutex);
         count = DLL_COUNT(mo_, &outputQ);
         pthread_mutex_unlock(&outputQMutex);
@@ -1227,7 +1253,7 @@ int moloch_nids_next_file()
 
 
         if (!config.copyPcap) {
-            dumperFd = -1;
+            dumperFileName = 0;
         }
 
         errbuf[0] = 0;
@@ -1272,9 +1298,9 @@ void moloch_nids_root_init()
         }
     } else {
 #ifdef SNF
-        nids_params.pcap_desc = pcap_open_live(config.interface, 1600, 1, 500, errbuf);
+        nids_params.pcap_desc = pcap_open_live(config.interface, 8096, 1, 500, errbuf);
 #else
-        nids_params.pcap_desc = moloch_pcap_open_live(config.interface, 1600, 1, 500, errbuf);
+        nids_params.pcap_desc = moloch_pcap_open_live(config.interface, 8096, 1, 500, errbuf);
 #endif
 
     }
@@ -1418,7 +1444,7 @@ void moloch_nids_init()
 
     moloch_nids_init_nids();
 
-    if (config.writeMethod == MOLOCH_WRITE_THREAD) {
+    if (config.writeMethod & MOLOCH_WRITE_THREAD) {
         pthread_t thread;
         int rc = pthread_create(&thread, NULL, &moloch_nids_output_thread, NULL);
         if (rc) {
@@ -1476,7 +1502,7 @@ void moloch_nids_exit() {
 
     if (!config.dryRun && config.copyPcap) {
         moloch_nids_file_flush(TRUE);
-        if (config.writeMethod == MOLOCH_WRITE_THREAD) {
+        if (config.writeMethod & MOLOCH_WRITE_THREAD) {
             while (moloch_nids_disk_queue() >0) {
                 usleep(10000);
             }

@@ -196,7 +196,9 @@ void moloch_config_load()
     else if (strcmp(writeMethod, "direct") == 0)
         config.writeMethod = MOLOCH_WRITE_DIRECT;
     else if (strcmp(writeMethod, "thread") == 0)
-        config.writeMethod = MOLOCH_WRITE_THREAD;
+        config.writeMethod = MOLOCH_WRITE_THREAD | MOLOCH_WRITE_NORMAL;
+    else if (strcmp(writeMethod, "thread-direct") == 0)
+        config.writeMethod = MOLOCH_WRITE_THREAD | MOLOCH_WRITE_DIRECT;
     /*else if (strcmp(writeMethod, "mmap") == 0)
         config.writeMethod = MOLOCH_WRITE_MMAP;*/
     else {
@@ -405,7 +407,6 @@ void moloch_config_init()
 {
     char *str;
     static char *rotates[] = {"hourly", "daily", "weekly", "monthly"};
-    static char *methods[] = {"normal", "direct", "mmap"};
 
     HASH_INIT(s_, config.dontSaveTags, moloch_string_hash, moloch_string_cmp);
 
@@ -479,7 +480,22 @@ void moloch_config_init()
         LOG("compressES: %s", (config.compressES?"true":"false"));
 
         LOG("rotateIndex = %s", rotates[config.rotate]);
-        LOG("pcapWriteMethod = %s", methods[config.writeMethod]);
+        switch (config.writeMethod) {
+        case MOLOCH_WRITE_NORMAL:
+            LOG("pcapWriteMethod = normal");
+            break;
+        case MOLOCH_WRITE_DIRECT:
+            LOG("pcapWriteMethod = direct");
+            break;
+        case MOLOCH_WRITE_THREAD | MOLOCH_WRITE_NORMAL:
+            LOG("pcapWriteMethod = thread");
+            break;
+        case MOLOCH_WRITE_THREAD | MOLOCH_WRITE_DIRECT:
+            LOG("pcapWriteMethod = thread-direct");
+            break;
+        default:
+            LOG("pcapWriteMethod = config.c needs to be updated");
+        }
 
         MolochString_t *tstring;
         HASH_FORALL(s_, config.dontSaveTags, tstring, 
@@ -487,8 +503,11 @@ void moloch_config_init()
         );
     }
 
+    if ((config.writeMethod & MOLOCH_WRITE_DIRECT) && sizeof(off_t) == 4 && config.maxFileSizeG > 2)
+        printf("WARNING - DIRECT mode on 32bit machines may not work with maxFileSizeG > 2");
+
     config.pagesize = getpagesize();
-    if (config.writeMethod == MOLOCH_WRITE_DIRECT && (config.pcapWriteSize % config.pagesize != 0)) {
+    if (config.writeMethod & MOLOCH_WRITE_DIRECT && (config.pcapWriteSize % config.pagesize != 0)) {
         printf("When using pcapWriteMethod of direct pcapWriteSize must be a multiple of %d", config.pagesize);
         exit (1);
     }

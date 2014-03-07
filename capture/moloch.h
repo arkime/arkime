@@ -164,7 +164,12 @@ typedef struct {
  * Configuration Information
  */
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
-enum MolochWriteMethod { MOLOCH_WRITE_NORMAL, MOLOCH_WRITE_DIRECT, MOLOCH_WRITE_MMAP, MOLOCH_WRITE_THREAD};
+
+#define MOLOCH_WRITE_NORMAL 0x00
+#define MOLOCH_WRITE_DIRECT 0x01 
+#define MOLOCH_WRITE_MMAP   0x02
+#define MOLOCH_WRITE_THREAD 0x04
+
 typedef struct moloch_config {
     gboolean  exiting;
     char     *configFile;
@@ -184,7 +189,8 @@ typedef struct moloch_config {
     int       pagesize;
 
     enum MolochRotate rotate;
-    enum MolochWriteMethod writeMethod;
+
+    int       writeMethod;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
     MolochFieldInfo_t *fields[100];

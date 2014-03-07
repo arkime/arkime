@@ -171,11 +171,12 @@ spiDataMaxIndices=3
 
 
 # ADVANCED - How is pcap written to disk
-#    normal = just normal open/writes uses the linux page cache heavily (default)
-#             probably want to tune vm.dirty_ratio and vm.dirty_background_ratio
-#    direct = use O_DIRECT with open/write - writes directly to drives, no page cache, increase
-#             pcapWriteSize (>= 256k, must be multiple of 4096) and packetsPerPoll (>= 100k)
-#    thread = like normal, but use a thread for all the writes
+#  normal        = just normal open/writes uses the linux page cache heavily (default)
+#                  probably want to tune vm.dirty_ratio and vm.dirty_background_ratio
+#  direct        = use O_DIRECT with open/write - writes directly to drives, no page cache, increase
+#                  pcapWriteSize (>= 256k, must be multiple of 4096) and packetsPerPoll (>= 100k)
+#  thread        = like normal, but use a thread for all the writes
+#  thread-direct = like direct, but use a thread for all the writes
 pcapWriteMethod=normal
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
