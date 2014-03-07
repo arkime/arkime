@@ -1,0 +1,1 @@
+./configure --prefix=/usr/local/moloch --with-libpcap=/opt/local --with-libnids=/opt/local  --with-yara=/opt/local --with-GeoIP=/opt/local LDFLAGS=-L/opt/local/lib CPPFLAGS="-I/opt/local/include -I/opt/local/include/glib-2.0 -I/opt/local/include/glib-2.0/glib"

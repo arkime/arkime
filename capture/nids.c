@@ -316,9 +316,13 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
 
     if (!dumperFd) {
         LOG("Opening %s", out->name);
+#ifdef __APPLE__
+        int options = O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+#else
         int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
         if (config.writeMethod & MOLOCH_WRITE_DIRECT)
             options |= O_DIRECT;
+#endif
         dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
         if (dumperFd < 0) {
             LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
@@ -394,9 +398,13 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
 
         if (!dumperFd) {
             LOG("Opening %s", out->name);
+#ifdef __APPLE__
+            int options = O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+#else
             int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
             if (config.writeMethod & MOLOCH_WRITE_DIRECT)
                 options |= O_DIRECT;
+#endif
             dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
             if (dumperFd < 0) {
                 LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
@@ -525,17 +533,26 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
 
+#ifdef __APPLE__
+        moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->th_sport, 
+                          packet->ip_dst.s_addr, tcphdr->th_dport);
+#else
         moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->source, 
                           packet->ip_dst.s_addr, tcphdr->dest);
+#endif
         break;
     case IPPROTO_UDP:
         sessionsQ = &udpSessionQ;
         sessionTimeout = config.udpTimeout;
 
         udphdr = (struct udphdr *)((char*)packet + 4 * packet->ip_hl);
-
+#ifdef __APPLE__
+        moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->uh_sport, 
+                          packet->ip_dst.s_addr, udphdr->uh_dport);
+#else
         moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->source, 
                           packet->ip_dst.s_addr, udphdr->dest);
+#endif
         break;
     case IPPROTO_ICMP:
         sessionsQ = &icmpSessionQ;
@@ -613,19 +630,38 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         case IPPROTO_TCP:
             /* If antiSynDrop option is set to true, capture will assume that 
             *if the syn-ack packet was captured first then the syn probably got dropped.*/
+#ifdef __APPLE__
+            if ((tcphdr->th_flags == TH_SYN) && (tcphdr->th_flags == TH_ACK) && (config.antiSynDrop)) {
+#else
             if ((tcphdr->syn) && (tcphdr->ack) && (config.antiSynDrop)) {
+#endif
                 session->addr1 = packet->ip_dst.s_addr;
                 session->addr2 = packet->ip_src.s_addr;
+#ifdef __APPLE__
+                session->port1 = ntohs(tcphdr->th_dport);
+                session->port2 = ntohs(tcphdr->th_sport);
+#else
                 session->port1 = ntohs(tcphdr->dest);
                 session->port2 = ntohs(tcphdr->source);
+#endif
             } else {
+#ifdef __APPLE__
+                session->port1 = ntohs(tcphdr->th_sport);
+                session->port2 = ntohs(tcphdr->th_dport);
+#else
                 session->port1 = ntohs(tcphdr->source);
                 session->port2 = ntohs(tcphdr->dest);
+#endif
             }
             break;
         case IPPROTO_UDP:
+#ifdef __APPLE__
+            session->port1 = ntohs(udphdr->uh_sport);
+            session->port2 = ntohs(udphdr->uh_dport);
+#else
             session->port1 = ntohs(udphdr->source);
             session->port2 = ntohs(udphdr->dest);
+#endif
             break;
         case IPPROTO_ICMP:
             session->port1 = 0;
@@ -645,16 +681,26 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     case IPPROTO_UDP:
         session->which = (session->addr1 == packet->ip_src.s_addr &&
                           session->addr2 == packet->ip_dst.s_addr &&
+#ifdef __APPLE__
+                          session->port1 == ntohs(udphdr->uh_sport) &&
+                          session->port2 == ntohs(udphdr->uh_dport))?0:1;
+#else
                           session->port1 == ntohs(udphdr->source) &&
                           session->port2 == ntohs(udphdr->dest))?0:1;
+#endif
         session->databytes[session->which] += (nids_last_pcap_header->caplen - 8);
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
         break;
     case IPPROTO_TCP:
         session->which = (session->addr1 == packet->ip_src.s_addr &&
                           session->addr2 == packet->ip_dst.s_addr &&
+#ifdef __APPLE__
+                          session->port1 == ntohs(tcphdr->th_sport) &&
+                          session->port2 == ntohs(tcphdr->th_dport))?0:1;
+#else
                           session->port1 == ntohs(tcphdr->source) &&
                           session->port2 == ntohs(tcphdr->dest))?0:1;
+#endif
         session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
         break;
     }
@@ -1033,8 +1079,13 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
             /* ALW - Should do something with it */
 	} else if (errnum != NIDS_WARN_TCP_HDR)
 	    LOG("NIDSTCP:%s %s,from %s:%hu to  %s:%hu", dumperFileName, nids_warnings[errnum],
+#ifdef __APPLE__
+		saddr, ntohs(((struct tcphdr *) data)->th_sport), daddr,
+		ntohs(((struct tcphdr *) data)->th_dport));
+#else
 		saddr, ntohs(((struct tcphdr *) data)->source), daddr,
 		ntohs(((struct tcphdr *) data)->dest));
+#endif
 	else
 	    LOG("NIDSTCP:%s %s,from %s to %s", dumperFileName,
 		nids_warnings[errnum], saddr, daddr);

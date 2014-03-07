@@ -288,11 +288,19 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
         setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sendbuff, sizeof(sendbuff));
     }
 
+#ifdef __APPLE__
+    res = getsockopt(fd, IPPROTO_TCP, SO_KEEPALIVE, &sendbuff, &optlen);
+    if(res != -1 && sendbuff > 60*8) {
+        sendbuff = 60*8;
+        setsockopt(fd, IPPROTO_TCP, SO_KEEPALIVE, &sendbuff, sizeof(sendbuff));
+    }
+#else
     res = getsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, &optlen);
     if(res != -1 && sendbuff > 60*8) {
         sendbuff = 60*8;
         setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, sizeof(sendbuff));
     }
+#endif
 
     return 0;
 }
