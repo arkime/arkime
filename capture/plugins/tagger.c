@@ -323,7 +323,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
                 tip = node->data;
             }
             g_ptr_array_add(tip->files, file);
-        } else if (file->type[0] == 'i') {
+        } else if (file->type[0] == 'h') {
             TaggerString_t *tstring;
 
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
