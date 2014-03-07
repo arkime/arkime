@@ -1,10 +1,10 @@
-/* tagger.c  -- Simple plugin that tags sessions by using ip and hosts 
+/* tagger.c  -- Simple plugin that tags sessions by using ip, hosts, md5s
  *              lists fetched from the ES database.  taggerUpdate.pl is
  *              used to upload files to the database.  tagger checks
  *              once a minute to see if the files in the database have 
  *              changed.
  *     
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -80,7 +80,8 @@ typedef struct {
 /******************************************************************************/
 
 HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
-HASH_VAR(s_, allDomains, TaggerStringHead_t, 101);
+HASH_VAR(s_, allDomains, TaggerStringHead_t, 7919);
+HASH_VAR(s_, allMD5s, TaggerStringHead_t, 37277);
 
 static patricia_tree_t *allIps;
 
@@ -165,6 +166,24 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             }
         );
     }
+
+    if (session->fields[MOLOCH_FIELD_HTTP_MD5]) {
+        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_HTTP_MD5]->shash;
+        HASH_FORALL(s_, *shash, hstring, 
+            HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_add_tags(session, tstring->files);
+        );
+    }
+
+    if (session->fields[MOLOCH_FIELD_EMAIL_MD5]) {
+        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_EMAIL_MD5]->shash;
+        HASH_FORALL(s_, *shash, hstring, 
+            HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_add_tags(session, tstring->files);
+        );
+    }
 }
 
 /******************************************************************************/
@@ -175,6 +194,12 @@ void tagger_plugin_exit()
 {
     TaggerString_t *tstring;
     HASH_FORALL_POP_HEAD(s_, allDomains, tstring, 
+        free(tstring->str);
+        g_ptr_array_free(tstring->files, TRUE);
+        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, allMD5s, tstring, 
         free(tstring->str);
         g_ptr_array_free(tstring->files, TRUE);
         MOLOCH_TYPE_FREE(TaggerString_t, tstring);
@@ -213,12 +238,24 @@ void tagger_unload_file(TaggerFile_t *file) {
             }
 
             g_ptr_array_remove(((TaggerIP_t *)(node->data))->files, file);
-        } else {
+        } else if (file->type[0] == 'h') {
             TaggerString_t *tstring;
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
             if (tstring) {
                 g_ptr_array_remove(tstring->files, file);
+                // We could check if files is now empty and remove the node, but the 
+                // theory is most of the time it will be just readded in the load_file
             }
+        } else if (file->type[0] == 'm') {
+            TaggerString_t *tstring;
+            HASH_FIND(s_, allMD5s, file->elements[i], tstring);
+            if (tstring) {
+                g_ptr_array_remove(tstring->files, file);
+                // We could check if files is now empty and remove the node, but the 
+                // theory is most of the time it will be just readded in the load_file
+            }
+        } else {
+            LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
         } 
     }
 
@@ -286,17 +323,31 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
                 tip = node->data;
             }
             g_ptr_array_add(tip->files, file);
-        } else {
+        } else if (file->type[0] == 'i') {
             TaggerString_t *tstring;
 
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
             if (!tstring) {
                 tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
-                tstring->str = strdup(file->elements[i]);
+                tstring->str = strdup(file->elements[i]); // Need to strdup since file might be unloaded
                 tstring->files = g_ptr_array_new();
                 HASH_ADD(s_, allDomains, tstring->str, tstring);
             }
             g_ptr_array_add(tstring->files, file);
+        } else if (file->type[0] == 'm') {
+            TaggerString_t *tstring;
+
+            HASH_FIND(s_, allMD5s, file->elements[i], tstring);
+            if (!tstring) {
+                tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
+                tstring->str = strdup(file->elements[i]); // Need to strdup since file might be unloaded
+                tstring->files = g_ptr_array_new();
+                HASH_ADD(s_, allMD5s, tstring->str, tstring);
+            }
+            g_ptr_array_add(tstring->files, file);
+            LOG("%s to %s", tstring->str, file->str);
+        } else {
+            LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
         }
     }
 }
@@ -402,6 +453,7 @@ void moloch_plugin_init()
 {
     HASH_INIT(s_, allFiles, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, allMD5s, moloch_string_hash, moloch_string_cmp);
     allIps = New_Patricia(32);
 
     moloch_plugins_register("tagger", FALSE);
