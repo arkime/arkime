@@ -493,6 +493,19 @@ void     moloch_nids_exit();
 void     moloch_nids_incr_outstanding(MolochSession_t *session);
 void     moloch_nids_decr_outstanding(MolochSession_t *session);
 
+/* file access compability for non-Linux systems */
+#ifndef O_NOATIME
+#define O_NOATIME 0
+#endif
+
+#ifndef O_DIRECT
+#define O_DIRECT 0
+#endif
+
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
+#endif
+
 /******************************************************************************/
 /*
  * plugins.c

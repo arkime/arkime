@@ -316,13 +316,9 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
 
     if (!dumperFd) {
         LOG("Opening %s", out->name);
-#ifdef __APPLE__
-        int options = O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
-#else
         int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
         if (config.writeMethod & MOLOCH_WRITE_DIRECT)
             options |= O_DIRECT;
-#endif
         dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
         if (dumperFd < 0) {
             LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
@@ -398,13 +394,9 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
 
         if (!dumperFd) {
             LOG("Opening %s", out->name);
-#ifdef __APPLE__
-            int options = O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
-#else
             int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
             if (config.writeMethod & MOLOCH_WRITE_DIRECT)
                 options |= O_DIRECT;
-#endif
             dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
             if (dumperFd < 0) {
                 LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
