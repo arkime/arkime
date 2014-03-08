@@ -417,7 +417,7 @@ void moloch_hex_init()
 }
 void moloch_sched_init()
 {
-#ifdef _POSIX_PRIORITY_SCHEDULING
+#if defined(_POSIX_PRIORITY_SCHEDULING) && (_POSIX_PRIORITY_SCHEDULING > 0)
     struct sched_param sp;
     sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
     int result = sched_setscheduler(0, SCHED_FIFO, &sp);
