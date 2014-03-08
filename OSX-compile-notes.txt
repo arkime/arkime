@@ -1,1 +1,16 @@
-./configure --prefix=/usr/local/moloch --with-libpcap=/opt/local --with-libnids=/opt/local  --with-yara=/opt/local --with-GeoIP=/opt/local LDFLAGS=-L/opt/local/lib CPPFLAGS="-I/opt/local/include -I/opt/local/include/glib-2.0 -I/opt/local/include/glib-2.0/glib"
+The only working configure string; tested on OSX 10.7.5 with Macports 2.2.1.
+
+Along to the package I already had installed, I added the following ports to
+give it a first try:
+
+$ sudo port install yara libpcap libnids openssl pcre flex bison zlib file \
+gettext p5-JSON p5-libwww-perl libffi xz
+
+Configuring is a little tricky, what worked for me - assuming Macports is
+installed at /opt/local - was:
+
+$ ./configure --prefix=/usr/local/moloch --with-libpcap=/opt/local --with-libnids=/opt/local  --with-yara=/opt/local --with-GeoIP=/opt/local LDFLAGS=-L/opt/local/lib CPPFLAGS="-I/opt/local/include -I/opt/local/include/glib-2.0 -I/opt/local/include/glib-2.0/glib"
+
+Currently linking moloch-capture fails. For a list of issues refer to [1].
+
+1. https://github.com/yalla/moloch/issues
