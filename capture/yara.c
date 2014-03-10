@@ -21,11 +21,107 @@
 #include "yara.h"
 #include "moloch.h"
 
+extern MolochConfig_t config;
+
+#ifdef YR_YARA_H
+// Yara 2.x
+static YR_COMPILER *yCompiler = 0;
+static YR_COMPILER *yEmailCompiler = 0;
+static YR_RULES *yRules = 0;
+static YR_RULES *yEmailRules = 0;
+
+
+/******************************************************************************/
+void moloch_yara_report_error(int error_level, const char* file_name, int line_number, const char* error_message)
+{
+    LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
+}
+/******************************************************************************/
+void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules) 
+{
+    yr_compiler_create(compiler);
+    (*compiler)->error_report_function = moloch_yara_report_error;
+
+    if (filename) {
+        FILE *rule_file;
+
+        rule_file = fopen(filename, "r");
+
+        if (rule_file != NULL) {
+            int errors = yr_compiler_add_file(*compiler, rule_file, NULL);
+                                    
+            fclose(rule_file);
+            
+            if (errors) {
+                exit (0);
+            }
+            yr_compiler_get_rules(*compiler, rules);
+        } else {
+            printf("yara could not open file: %s\n", filename);
+            exit(1);
+        }
+    }
+}
+/******************************************************************************/
+void moloch_yara_init()
+{
+    yr_initialize();
+
+    moloch_yara_open(config.yara, &yCompiler, &yRules);
+    moloch_yara_open(config.emailYara, &yEmailCompiler, &yEmailRules);
+}
+
+/******************************************************************************/
+int moloch_yara_callback(int message, YR_RULE* rule, MolochSession_t* session)
+{
+    char tagname[256];
+    char* tag;
+
+    if (message == CALLBACK_MSG_RULE_MATCHING) {
+        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier); 
+        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
+        tag = rule->tags;
+        while(tag != NULL && *tag) {
+            snprintf(tagname, sizeof(tagname), "yara:%s", tag); 
+            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
+            tag += strlen(tag) + 1;
+        }
+    }
+    
+    return CALLBACK_CONTINUE;
+}
+/******************************************************************************/
+void  moloch_yara_execute(MolochSession_t *session, unsigned char *data, int len, int UNUSED(first))
+{
+    yr_rules_scan_mem(yRules, data, len, (YR_CALLBACK_FUNC)moloch_yara_callback, session, FALSE, 0);
+    return;
+}
+/******************************************************************************/
+void  moloch_yara_email_execute(MolochSession_t *session, unsigned char *data, int len, int UNUSED(first))
+{
+    yr_rules_scan_mem(yEmailRules, data, len, (YR_CALLBACK_FUNC)moloch_yara_callback, session, FALSE, 0);
+    return;
+}
+/******************************************************************************/
+void moloch_yara_exit()
+{
+    if (yRules)
+        yr_rules_destroy(yRules);
+    if (yEmailRules)
+        yr_rules_destroy(yEmailRules);
+
+    if (yCompiler)
+        yr_compiler_destroy(yCompiler);
+    if (yEmailCompiler)
+        yr_compiler_destroy(yEmailCompiler);
+    yr_finalize();
+}
+#else
+// Yara 1.x
+
 static YARA_CONTEXT *yContext = 0;
 static YARA_CONTEXT *yEmailContext = 0;
 
-/******************************************************************************/
-extern MolochConfig_t config;
 
 /******************************************************************************/
 void moloch_yara_report_error(const char* file_name, int line_number, const char* error_message)
@@ -71,175 +167,11 @@ void moloch_yara_init()
     yEmailContext = moloch_yara_open(config.emailYara);
 }
 
-#ifdef DEBUG
-/******************************************************************************/
-void print_string(unsigned char* data, unsigned int length, int unicode)
-{
-    unsigned int i;
-    char* str;
-    
-    str = (char*) (data);
-    
-    for (i = 0; i < length; i++)
-    {
-        if (str[i] >= 32 && str[i] <= 126)
-        {
-            printf("%c",str[i]);
-        }
-        else
-        {
-            printf("\\x%02x", str[i]);
-        }
-        
-        if (unicode) i++;
-    }
-
-    printf("\n");
-}
-/******************************************************************************/
-void print_hex_string(unsigned char* data, unsigned int length)
-{
-    unsigned int i;
-    
-    for (i = 0; i < length; i++)
-    {
-        printf("%02X ", data[i]);
-    }
-
-    printf("\n");
-}
-
-/******************************************************************************/
-int callback(RULE* rule, void* data)
-{
-    TAG* tag;
-    STRING* string;
-    META* meta;
-    MATCH* match;
-    
-    int rule_match;
-    int string_found;
-    int show = TRUE;
-    int show_tags = TRUE;
-    int show_meta = TRUE;
-    int show_strings = TRUE;
-        
-    
-    rule_match = (rule->flags & RULE_FLAGS_MATCH);
-
-    
-    if (show)
-    {
-        printf("%s ", rule->identifier);
-
-        printf(" flags: %x ", rule->flags);
-        
-        if (show_tags)
-        {           
-            tag = rule->tag_list_head;
-            
-            printf("tag: [");
-                        
-            while(tag != NULL)
-            {
-                if (tag->next == NULL)
-                {
-                    printf("%s", tag->identifier);
-                }
-                else
-                {
-                    printf("%s,", tag->identifier);
-                }
-                                
-                tag = tag->next;
-            }   
-            
-            printf("] ");
-        }
-        
-        if (show_meta)
-        {
-            meta = rule->meta_list_head;
-            
-            printf("meta: [");
-           
-            while(meta != NULL)
-            {
-                if (meta->type == META_TYPE_INTEGER)
-                {
-                    printf("%s=%lu", meta->identifier, meta->integer);
-                }
-                else if (meta->type == META_TYPE_BOOLEAN)
-                {
-                    printf("%s=%s", meta->identifier, (meta->boolean)?("true"):("false"));
-                }
-                else
-                {
-                    printf("%s=\"%s\"", meta->identifier, meta->string);
-                }
-            
-                if (meta->next != NULL)
-                    printf(",");
-                                        
-                meta = meta->next;
-            }
-        
-            printf("] ");
-        }
-        
-        /* show matched strings */
-        
-        if (show_strings)
-        {
-            string = rule->string_list_head;
-
-            while (string != NULL)
-            {
-                string_found = string->flags & STRING_FLAGS_FOUND;
-                
-                if (string_found)
-                {
-                    match = string->matches_head;
-
-                    while (match != NULL)
-                    {
-                        printf("0x%lx:%s: ", match->offset, string->identifier);
-                        
-                        if (IS_HEX(string))
-                        {
-                            print_hex_string(match->data, match->length);
-                        }
-                        else if (IS_WIDE(string))
-                        {
-                            print_string(match->data, match->length, TRUE);
-                        }
-                        else
-                        {
-                            print_string(match->data, match->length, FALSE);
-                        }
-                        
-                        match = match->next;
-                    }
-                }
-
-                string = string->next;
-            }       
-        }
-    }
-    printf("\n");
-    
-    return CALLBACK_CONTINUE;
-}
-#endif
 /******************************************************************************/
 int moloch_yara_callback(RULE* rule, MolochSession_t* session)
 {
     char tagname[256];
     TAG* tag;
-
-#ifdef DEBUG
-    callback(rule, session);
-#endif
 
     if (rule->flags & RULE_FLAGS_MATCH) {
         snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier); 
@@ -312,3 +244,4 @@ void moloch_yara_exit()
 {
     yr_destroy_context(yContext);
 }
+#endif

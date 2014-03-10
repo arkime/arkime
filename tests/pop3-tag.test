@@ -10,7 +10,7 @@
             "as2" : "AS0001 Cool Beans!",
             "lp" : 1387659690,
             "pa" : 4,
-            "tacnt" : 6,
+            "tacnt" : 8,
             "a2" : "10.0.0.2",
             "ta" : [
                "dstip",
@@ -18,7 +18,9 @@
                "protocol:pop3",
                "srcip",
                "tcp",
-               "yara:Pop3Yara"
+               "yara:Pop3Yara",
+               "yara:tag1",
+               "yara:tag2"
             ],
             "pa1" : 2,
             "fpd" : 1387659689446,

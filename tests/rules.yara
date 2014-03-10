@@ -1,4 +1,4 @@
-rule Pop3Yara
+rule Pop3Yara: tag1 tag2
 {
     strings:
         $o = " POP3 "
