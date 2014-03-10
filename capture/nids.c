@@ -22,6 +22,7 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
+#define __FAVOR_BSD
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <netinet/ip_icmp.h>
@@ -525,8 +526,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->source, 
-                          packet->ip_dst.s_addr, tcphdr->dest);
+        moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->th_sport, 
+                          packet->ip_dst.s_addr, tcphdr->th_dport);
         break;
     case IPPROTO_UDP:
         sessionsQ = &udpSessionQ;
@@ -534,8 +535,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         udphdr = (struct udphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->source, 
-                          packet->ip_dst.s_addr, udphdr->dest);
+        moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->uh_sport, 
+                          packet->ip_dst.s_addr, udphdr->uh_dport);
         break;
     case IPPROTO_ICMP:
         sessionsQ = &icmpSessionQ;
@@ -613,19 +614,19 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         case IPPROTO_TCP:
             /* If antiSynDrop option is set to true, capture will assume that 
             *if the syn-ack packet was captured first then the syn probably got dropped.*/
-            if ((tcphdr->syn) && (tcphdr->ack) && (config.antiSynDrop)) {
+            if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && (config.antiSynDrop)) {
                 session->addr1 = packet->ip_dst.s_addr;
                 session->addr2 = packet->ip_src.s_addr;
-                session->port1 = ntohs(tcphdr->dest);
-                session->port2 = ntohs(tcphdr->source);
+                session->port1 = ntohs(tcphdr->th_dport);
+                session->port2 = ntohs(tcphdr->th_sport);
             } else {
-                session->port1 = ntohs(tcphdr->source);
-                session->port2 = ntohs(tcphdr->dest);
+                session->port1 = ntohs(tcphdr->th_sport);
+                session->port2 = ntohs(tcphdr->th_dport);
             }
             break;
         case IPPROTO_UDP:
-            session->port1 = ntohs(udphdr->source);
-            session->port2 = ntohs(udphdr->dest);
+            session->port1 = ntohs(udphdr->uh_sport);
+            session->port2 = ntohs(udphdr->uh_dport);
             break;
         case IPPROTO_ICMP:
             session->port1 = 0;
@@ -645,16 +646,16 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
     case IPPROTO_UDP:
         session->which = (session->addr1 == packet->ip_src.s_addr &&
                           session->addr2 == packet->ip_dst.s_addr &&
-                          session->port1 == ntohs(udphdr->source) &&
-                          session->port2 == ntohs(udphdr->dest))?0:1;
+                          session->port1 == ntohs(udphdr->uh_sport) &&
+                          session->port2 == ntohs(udphdr->uh_dport))?0:1;
         session->databytes[session->which] += (nids_last_pcap_header->caplen - 8);
         moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
         break;
     case IPPROTO_TCP:
         session->which = (session->addr1 == packet->ip_src.s_addr &&
                           session->addr2 == packet->ip_dst.s_addr &&
-                          session->port1 == ntohs(tcphdr->source) &&
-                          session->port2 == ntohs(tcphdr->dest))?0:1;
+                          session->port1 == ntohs(tcphdr->th_sport) &&
+                          session->port2 == ntohs(tcphdr->th_dport))?0:1;
         session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
         break;
     }
@@ -1033,8 +1034,8 @@ void moloch_nids_syslog(int type, int errnum, struct ip *iph, void *data)
             /* ALW - Should do something with it */
 	} else if (errnum != NIDS_WARN_TCP_HDR)
 	    LOG("NIDSTCP:%s %s,from %s:%hu to  %s:%hu", dumperFileName, nids_warnings[errnum],
-		saddr, ntohs(((struct tcphdr *) data)->source), daddr,
-		ntohs(((struct tcphdr *) data)->dest));
+		saddr, ntohs(((struct tcphdr *) data)->th_sport), daddr,
+		ntohs(((struct tcphdr *) data)->th_dport));
 	else
 	    LOG("NIDSTCP:%s %s,from %s to %s", dumperFileName,
 		nids_warnings[errnum], saddr, daddr);
