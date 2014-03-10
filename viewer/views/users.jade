@@ -1,19 +1,28 @@
 extends layout
 
 block content
+  - var help = { user: "The id used for login, can not be changed once created"}
+  - help.name = "Friendly name for user";
+  - help.forced = "A moloch expression that is silently added to all queries, useful to limit what data a user can access (ex what nodes or ips)";
+  - help.enabled = "Is the account currently enabled for anything";
+  - help.admin = "Can create new accounts and change the settings for other accounts";
+  - help.web = "Can access the web interface, when off only APIs can be used";
+  - help.webauth = "Can login using the web auth header, setting doesn't disable the password so it should be scrambled";
+  - help.email = "Can perform email searches";
+  - help.remove = "Can delete tags or delete/scrub pcap data";
   h2 System Users
   table#users(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
     thead
       tr
-        th User Id
-        th Name
-        th Forced Expression
-        th Enabled?
-        th Admin?
-        th Web Interface?
-        th Web Auth Header?
-        th Email Search?
-        th Can Remove Data?
+        th(title=help.user) User Id
+        th(title=help.name) Name
+        th(title=help.forced) Forced Expression
+        th(title=help.enabled) Enabled?
+        th(title=help.admin) Admin?
+        th(title=help.web) Web Interface?
+        th(title=help.webauth) Web Auth Header?
+        th(title=help.email) Email Search?
+        th(title=help.remove) Can Remove Data?
         th Actions
     tbody
   br
@@ -22,39 +31,41 @@ block content
   <h2> Add User</h2>
   form#addUser
     input(type='hidden', id='token', name='token', value='#{token}')
-    label(for='userId') User ID
+    label(for='userId',title=help.user) User ID
     input(type='text', id='userId', name='userId', size='30')
     br
-    label(for='userName') User Name
+    label(for='userName',title=help.name) User Name
     input(type='text', id='userName', name='userName', size='30')
     br
     label(for='Password') Password
     input(type='password', id='password', name='password', size='30')
     br
-    label(for='Expression') Forced Search Expression
+    label(for='Expression',title=help.forced) Forced Search Expression
     input(type='expression', id='expression', name='expression', size='60')
     br
-    label(for='enabled') Enabled:
+    label(for='enabled',title=help.enabled) Enabled:
     input(type='checkbox', id='enabled', name='enabled', CHECKED)
     br
-    label(for='createEnabled') Admin User:
+    label(for='createEnabled',title=help.admin) Admin User:
     input(type='checkbox', id='createEnabled', name='createEnabled')
     br
-    label(for='webEnabled') Web Enabled User:
+    label(for='webEnabled',title=help.web) Web Enabled User:
     input(type='checkbox', id='webEnabled', name='webEnabled', CHECKED)
     br
-    label(for='headerAuthEnabled') Web Auth Header:
+    label(for='headerAuthEnabled',title=help.webauth) Web Auth Header:
     input(type='checkbox', id='headerAuthEnabled', name='headerAuthEnabled')
     br
-    label(for='emailSearch') Allow Email Searches:
+    label(for='emailSearch',title=help.email) Allow Email Searches:
     input(type='checkbox', id='emailSearch', name='emailSearch')
     br
-    label(for='removeEnabled') Can Scrub/Delete data:
+    label(for='removeEnabled',title=help.remove) Can Scrub/Delete data:
     input(type='checkbox', id='removeEnabled', name='removeEnabled')
     br
     button#create create
 
   script(type='text/javascript').
+    $("th[title]").qtip();
+    $("label[title]").qtip();
     var usersTable;
 
     $(document).ready(function() {
