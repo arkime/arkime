@@ -641,4 +641,4 @@ nodes.forEach(function(node) {
 console.log(nodes);
 
 console.log("Listen on ", Config.get("multiESPort", "8200"));
-var server = http.createServer(app).listen(Config.get("multiESPort", "8200"));
+var server = http.createServer(app).listen(Config.get("multiESPort", "8200"), Config.get("multiESHost", undefined));

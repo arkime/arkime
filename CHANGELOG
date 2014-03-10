@@ -21,6 +21,7 @@
   - Deal with windows-1252 subject encoding better (issue #213)
   - Tagger supports md5s
   - Increased default pcap size to 8096
+  - Added viewHost and multiESHost
 
 0.10.0 2013/12/31
   - IMPORTANT: all parsers have been broken out into individual

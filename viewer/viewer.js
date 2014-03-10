@@ -4226,15 +4226,19 @@ setInterval(expireCheckAll, 2*60*1000);
 
 var server;
 if (Config.isHTTPS()) {
- server = https.createServer({key: fs.readFileSync(Config.get("keyFile")),
-                              cert: fs.readFileSync(Config.get("certFile"))}, app).listen(Config.get("viewPort", "8005"));
-
+  server = https.createServer({key: fs.readFileSync(Config.get("keyFile")),
+                              cert: fs.readFileSync(Config.get("certFile"))}, app);
 } else {
-  server = http.createServer(app).listen(Config.get("viewPort", "8005"));
+  server = http.createServer(app);
 }
-if (server.address() === null) {
-  console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
-  process.exit(1);
-}
-console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
+
+server
+  .on('error', function (e) {
+    console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
+    process.exit(1);
+  })
+  .on('listening', function (e) {
+    console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
+  })
+  .listen(Config.get("viewPort", "8005"), Config.get("viewHost", undefined));
 
