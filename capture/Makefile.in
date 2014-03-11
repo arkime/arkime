@@ -35,7 +35,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
 	$(CC) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
-	    -u g_checksum_update \
+            @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
 	    -lm -lresolv -lffi -lz
@@ -47,7 +47,7 @@ snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_SNF) -DSNF \
 	    $(INCLUDE_OTHER) 
 	g++ -ggdb $(O_FILES) -o moloch-capture \
-	    -u g_checksum_update \
+            @UNDEFINED_FLAGS@ \
 	    $(LIB_SNF) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz

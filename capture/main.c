@@ -415,6 +415,8 @@ void moloch_hex_init()
         moloch_char_to_hexstr[i][1] = moloch_char_to_hex[i & 0xf];
     }
 }
+
+/*
 void moloch_sched_init()
 {
 #ifdef _POSIX_PRIORITY_SCHEDULING
@@ -428,6 +430,7 @@ void moloch_sched_init()
     }
 #endif
 }
+*/
 /******************************************************************************/
 void moloch_mlockall_init()
 {

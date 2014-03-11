@@ -21,6 +21,21 @@ AC_CHECK_LIB(magic, main,,AC_MSG_ERROR(please install magic library))
 AC_CHECK_LIB(rt, main,,)
 AC_CHECK_LIB(net, main,,)
 
+dnl OS Stuff
+AC_CANONICAL_HOST
+case $host_os in
+darwin*)
+  SHARED_FLAGS="--shared -undefined suppress -flat_namespace"
+  UNDEFINED_FLAGS="-u _g_checksum_update"
+  ;;
+*)
+  SHARED_FLAGS="--shared"
+  UNDEFINED_FLAGS="-u g_checksum_update"
+esac
+AC_SUBST(SHARED_FLAGS)
+AC_SUBST(UNDEFINED_FLAGS)
+
+
 
 dnl Checks for pfring
 AC_MSG_CHECKING(for pfring)
