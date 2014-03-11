@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+#define _FILE_OFFSET_BITS 64
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
@@ -30,7 +32,6 @@
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <inttypes.h>
 #include <pthread.h>
 #include <sys/stat.h>
@@ -39,6 +40,10 @@
 #include "pcap.h"
 #include "magic.h"
 #include "moloch.h"
+
+#ifndef O_NOATIME
+#define O_NOATIME 0
+#endif
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -317,9 +322,11 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
 
     if (!dumperFd) {
         LOG("Opening %s", out->name);
-        int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+        int options = O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+#ifdef O_DIRECT
         if (config.writeMethod & MOLOCH_WRITE_DIRECT)
             options |= O_DIRECT;
+#endif
         dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
         if (dumperFd < 0) {
             LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
@@ -338,7 +345,7 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
         int wlen = (out->max - out->pos);
         uint64_t filelen = 0;
         if (out->close && wlen % config.pagesize != 0) {
-            filelen = lseek64(dumperFd, 0, SEEK_CUR) + wlen;
+            filelen = lseek(dumperFd, 0, SEEK_CUR) + wlen;
             wlen = (wlen - (wlen % config.pagesize) + config.pagesize);
         }
         len = write(dumperFd, out->buf+out->pos, wlen);
@@ -395,9 +402,11 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
 
         if (!dumperFd) {
             LOG("Opening %s", out->name);
-            int options = O_LARGEFILE | O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+            int options = O_NOATIME | O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC;
+#ifdef O_DIRECT
             if (config.writeMethod & MOLOCH_WRITE_DIRECT)
                 options |= O_DIRECT;
+#endif
             dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
             if (dumperFd < 0) {
                 LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
@@ -409,7 +418,7 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
             int wlen = out->max - out->pos;
 
             if (out->close && (config.writeMethod & MOLOCH_WRITE_DIRECT) && ((wlen % config.pagesize) != 0)) {
-                filelen = lseek64(dumperFd, 0, SEEK_CUR) + wlen;
+                filelen = lseek(dumperFd, 0, SEEK_CUR) + wlen;
                 wlen = (wlen - (wlen % config.pagesize) + config.pagesize);
             }
 

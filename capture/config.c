@@ -21,6 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include "moloch.h"
 
 extern MolochConfig_t        config;
@@ -206,6 +207,13 @@ void moloch_config_load()
         exit(1);
     }
     g_free(writeMethod);
+
+#ifndef O_DIRECT
+    if (config.writeMethod & MOLOCH_WRITE_DIRECT) {
+        printf("OS doesn't support direct write method\n");
+        exit(1);
+    }
+#endif
 
     
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);

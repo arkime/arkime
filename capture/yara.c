@@ -23,7 +23,7 @@
 
 extern MolochConfig_t config;
 
-#ifdef YR_YARA_H
+#ifdef STRING_IS_HEX
 // Yara 2.x
 static YR_COMPILER *yCompiler = 0;
 static YR_COMPILER *yEmailCompiler = 0;

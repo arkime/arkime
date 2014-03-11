@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "moloch.h"
 
 uint64_t addNCnt;
@@ -300,11 +301,13 @@ void moloch_trie_print(MolochTrie_t *trie)
 
 void moloch_trie_exit()
 {
+    /*
     printf("addN: %ld\n", addNCnt);
     printf("add: %ld\n", addCnt);
     printf("get: %ld\n", getCnt);
     printf("del: %ld\n", delCnt);
     printf("walkN: %ld\n", walkNCnt);
+    */
 }
 /*
 main() {
