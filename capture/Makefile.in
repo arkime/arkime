@@ -18,6 +18,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
 	        @GEOIP_LIBS@ \
+                @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
@@ -34,10 +35,10 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
 	$(CC) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
-	    -ug_checksum_update \
+	    -u g_checksum_update \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
-	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
+	    -lm -lresolv -lffi -lz
 	(cd parsers; make)
 	(cd plugins; make)
 
@@ -46,7 +47,7 @@ snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_SNF) -DSNF \
 	    $(INCLUDE_OTHER) 
 	g++ -ggdb $(O_FILES) -o moloch-capture \
-	    -ug_checksum_update \
+	    -u g_checksum_update \
 	    $(LIB_SNF) \
 	    $(LIB_OTHER) \
 	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz

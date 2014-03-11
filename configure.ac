@@ -18,6 +18,8 @@ AC_CONFIG_FILES([
 AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))
 AC_CHECK_LIB(uuid, main,,AC_MSG_ERROR(please install uuid library))
 AC_CHECK_LIB(magic, main,,AC_MSG_ERROR(please install magic library))
+AC_CHECK_LIB(rt, main,,)
+AC_CHECK_LIB(net, main,,)
 
 
 dnl Checks for pfring
