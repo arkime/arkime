@@ -24,9 +24,28 @@ if ($ARGV[0] eq "--fix") {
     print "  --make        Create a .test file for each .pcap file on command line\n";
     print " [default]      Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
 } else {
+    doGeo();
     doTests();
 }
 
+################################################################################
+sub doGeo() {
+    if (! -f "ipv4-address-space.csv") {
+        system("wget https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
+    }
+
+    if (! -f "GeoIPASNum.dat") {
+        system("wget http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz; gunzip GeoIPASNum.dat.gz");
+    }
+
+    if (! -f "GeoIP.dat") {
+        system("wget http://www.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz; gunzip GeoIP.dat.gz");
+    }
+
+    if (! -f "plugins/test.so") {
+        system("cd plugins ; make");
+    }
+}
 ################################################################################
 sub doTests {
     my @files = @ARGV;
