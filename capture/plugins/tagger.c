@@ -43,9 +43,9 @@ extern void                 *esServer;
 typedef struct tagger_string {
     struct tagger_string *s_next, *s_prev;
     char                 *str;
-    uint32_t              s_hash;
-    short                 s_bucket;
     GPtrArray            *files;
+    uint32_t              s_hash;
+    uint16_t              s_bucket;
 } TaggerString_t;
 
 typedef struct {
@@ -64,12 +64,12 @@ typedef struct tagger_ip {
 typedef struct tagger_file {
     struct tagger_file   *s_next, *s_prev;
     char                 *str;
-    uint32_t              s_hash;
-    short                 s_bucket;
     char                 *md5;
     char                 *type;
     char                **tags;
     char                **elements;
+    uint32_t              s_hash;
+    uint16_t              s_bucket;
 } TaggerFile_t;
 
 typedef struct {
@@ -345,7 +345,6 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
                 HASH_ADD(s_, allMD5s, tstring->str, tstring);
             }
             g_ptr_array_add(tstring->files, file);
-            LOG("%s to %s", tstring->str, file->str);
         } else {
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
         }
