@@ -10,6 +10,7 @@
             "ta" : [
                "dns:qclass:IN",
                "dns:qtype:A",
+               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "udp"
@@ -42,7 +43,7 @@
             "dnsipcnt" : 1,
             "pa" : 2,
             "fb1" : "e039010000010000",
-            "tacnt" : 5,
+            "tacnt" : 6,
             "a1" : "10.180.156.141",
             "fb2" : "e039818000010002",
             "db1" : 66,
@@ -73,6 +74,7 @@
             "ta" : [
                "dns:qclass:IN",
                "dns:qtype:A",
+               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "udp"
@@ -105,7 +107,7 @@
             "dnsipcnt" : 1,
             "pa" : 2,
             "fb1" : "e039010000010000",
-            "tacnt" : 5,
+            "tacnt" : 6,
             "a1" : "10.180.156.141",
             "fb2" : "e039818000010002",
             "db1" : 66,

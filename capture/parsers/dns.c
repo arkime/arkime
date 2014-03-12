@@ -4,6 +4,8 @@
 
 static char                 *qclasses[256];
 static char                 *qtypes[256];
+static char                 *statuses[16] = {"dns:status:NOERROR", "dns:status:FORMERR", "dns:status:SERVFAIL", "dns:status:NXDOMAIN", "dns:status:NOTIMPL", "dns:status:REFUSED", "dns:status:YXDOMAIN", "dns:status:YXRRSET", "dns:status:NXRRSET", "dns:status:NOTAUTH", "dns:status:NOTZONE", "dns:status:11", "dns:status:12", "dns:status:13", "dns:status:14", "dns:status:15"};
+
 
 /******************************************************************************/
 int dns_name_element(BSB *nbsb, BSB *bsb)
@@ -139,6 +141,9 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 
     if (qr == 0)
         return;
+
+    int rcode      = data[3] & 0xf;
+    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, statuses[rcode]);
 
     for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
         int namelen;
@@ -325,5 +330,6 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x81\x90");
     DNS_CLASSIFY("\x81\xb0");
     DNS_CLASSIFY("\x84\x10");
+    DNS_CLASSIFY("\x85\x83");
 }
 

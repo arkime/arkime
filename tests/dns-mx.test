@@ -9,12 +9,13 @@
             "no" : "test",
             "lp" : 1386104997,
             "pa" : 2,
-            "tacnt" : 5,
+            "tacnt" : 6,
             "fb1" : "4c17010000010000",
             "a2" : "10.2.95.39",
             "ta" : [
                "dns:qclass:IN",
                "dns:qtype:MX",
+               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "udp"

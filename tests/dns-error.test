@@ -1,0 +1,59 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db2" : 139,
+            "db" : 203,
+            "lpd" : 1394587409103,
+            "fp" : 1394587409,
+            "no" : "test",
+            "as2" : "AS0001 Cool Beans!",
+            "lp" : 1394587409,
+            "pa" : 2,
+            "tacnt" : 8,
+            "fb1" : "a9ba010000010000",
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dns:qclass:IN",
+               "dns:qtype:A",
+               "dns:status:NXDOMAIN",
+               "dstip",
+               "node:test",
+               "protocol:dns",
+               "srcip",
+               "udp"
+            ],
+            "pa1" : 1,
+            "fpd" : 1394587409097,
+            "fs" : [],
+            "by2" : 147,
+            "g1" : "USA",
+            "fb2" : "a9ba858300010000",
+            "a1" : "10.0.0.1",
+            "dnshocnt" : 1,
+            "db1" : 64,
+            "pa2" : 1,
+            "p1" : 56329,
+            "by1" : 72,
+            "by" : 219,
+            "p2" : 53,
+            "as1" : "AS0000 This is neat",
+            "pr" : 17,
+            "ps" : [
+               24,
+               112
+            ],
+            "dnsho" : [
+               "no.such.host"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-140312",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

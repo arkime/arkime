@@ -10,6 +10,7 @@
             "ta" : [
                "dns:qclass:IN",
                "dns:qtype:A",
+               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "srcip",
@@ -49,7 +50,7 @@
             "as2" : "AS0000 This is neat",
             "dnsipcnt" : 3,
             "pa" : 2,
-            "tacnt" : 6,
+            "tacnt" : 7,
             "fb1" : "5aae819000010003",
             "a1" : "8.8.8.8",
             "fb2" : "5aae011000010000",
