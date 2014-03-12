@@ -7,4 +7,4 @@ INCLUDE_OTHER = -I../../capture -I../../capture/thirdparty \
                 @NIDS_CFLAGS@
 
 all:
-	gcc --shared -o test.so -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) test.c
+	gcc @SHARED_FLAGS@ -o test.so -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) test.c
