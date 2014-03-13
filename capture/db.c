@@ -263,7 +263,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     /* If no room left to add, send the buffer */
     if (sJson && (uint32_t)BSB_REMAINING(jbsb) < jsonSize) {
-        moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
+        if (BSB_LENGTH(jbsb) > 0) {
+            moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
+        }
         sJson = 0;
 
         struct timeval currentTime;
@@ -813,8 +815,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         if (config.tests) {
             int hlen = dataPtr - startPtr;
             fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, sJson, (int)(BSB_LENGTH(jbsb)-hlen-1), sJson+hlen);
-        } else if (config.debug)
+        } else if (config.debug) {
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson);
+        }
         BSB_INIT(jbsb, sJson, BSB_SIZE(jbsb));
         return;
     }
