@@ -18,7 +18,7 @@
             "emvcnt" : 1,
             "a2" : "64.236.55.18",
             "ect" : [
-               "multipart/alternative; \tboundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
+               "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
             ],
             "esub" : [
                "test å é î ø ü"

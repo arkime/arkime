@@ -1,0 +1,92 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db2" : 0,
+            "db" : 325,
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "no" : "test",
+            "lp" : 1394730057,
+            "a2" : "10.0.0.2",
+            "esub" : [
+               "xxxxxxxxxxxxx: xxxxêxx xxéxxxxxxx  xx xxx xxx xxxxxxxxxx  x xx xxxxxxxxxxxxxxx - xxxx"
+            ],
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:smtp",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 4,
+            "fpd" : 1394730057309,
+            "fs" : [],
+            "by2" : 60,
+            "g1" : "USA",
+            "pa2" : 1,
+            "p1" : 58802,
+            "by" : 621,
+            "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "from",
+               "to",
+               "subject"
+            ],
+            "ehhcnt" : 3,
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               190,
+               260,
+               655
+            ],
+            "lpd" : 1394730057312,
+            "fp" : 1394730057,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 5,
+            "fb1" : "45484c4f20787878",
+            "edst" : [
+               "xxxxx@xxx.net"
+            ],
+            "tacnt" : 5,
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "db1" : 325,
+            "plugin" : {
+               "test.ip.rir" : [
+                  ""
+               ],
+               "test.ip.asn" : [
+                  "AS0000 This is neat"
+               ],
+               "test.ip.geo" : [
+                  "USA"
+               ],
+               "test.string" : [
+                  "16777226:58802,33554442:25"
+               ],
+               "test.number" : [
+                  33554442
+               ],
+               "test.ip" : [
+                  167772161
+               ]
+            },
+            "by1" : 561,
+            "esrccnt" : 1,
+            "p2" : 25
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-140313",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

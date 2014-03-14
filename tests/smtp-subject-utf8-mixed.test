@@ -21,7 +21,7 @@
                "text/plain; charset=us-ascii"
             ],
             "esub" : [
-               "这是用空格测试                                                                                                                    å é  î ø ü                                                                              test"
+               "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
             ],
             "ta" : [
                "node:test",

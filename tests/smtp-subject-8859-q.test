@@ -21,7 +21,7 @@
                "text/plain; charset=us-ascii"
             ],
             "esub" : [
-               "é î ø ü                                                                                                                                                                                            test"
+               "é î ø ü                                                                                                                                                                                         test"
             ],
             "ta" : [
                "node:test",

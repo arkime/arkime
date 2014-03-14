@@ -90,7 +90,7 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
 
     if (lens[1]) {
         GError      *error = 0;
-        char *out = g_convert((char *)value + offsets[2], lens[2], "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char *)value + offsets[2], lens[2], "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -102,7 +102,7 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
     }
     if (lens[2]) {
         GError      *error = 0;
-        char *out = g_convert((char *)value + offsets[3], lens[3], "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char *)value + offsets[3], lens[3], "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -114,7 +114,7 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
     }
     if (lens[3]) {
         GError      *error = 0;
-        char *out = g_convert((char *)value + offsets[4], lens[4], "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char *)value + offsets[4], lens[4], "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -182,7 +182,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         BSB_IMPORT_skip(*bsb, wordcount*2 + 3);
         gsize bread, bwritten;
         GError      *error = 0;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -203,7 +203,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         BSB_IMPORT_skip(*bsb, wordcount*2+3);
         gsize bread, bwritten;
         GError      *error = 0;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
 
         if (error) {
             LOG("ERROR %s", error->message);
@@ -229,7 +229,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         GError      *error = 0;
 
         int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -273,7 +273,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
         BSB_IMPORT_skip(*bsb, offset);
 
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -354,7 +354,7 @@ int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char 
 
         gsize bread, bwritten;
         GError      *error = 0;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), pathlen, "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), pathlen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);
@@ -383,7 +383,7 @@ int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char 
 
         gsize bread, bwritten;
         GError      *error = 0;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), namelen, "utf8", "ucs2", &bread, &bwritten, &error);
+        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
         if (error) {
             LOG("ERROR %s", error->message);
             g_error_free(error);

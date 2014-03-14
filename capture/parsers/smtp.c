@@ -178,12 +178,17 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
 
         /* No encoded text, or normal text in front of encoded */
         if (!startquestion || str != startquestion) {
+            int extra = 0;
             if (!startquestion) 
                 startquestion = end;
+            else if (str + 1 == startquestion && *str == ' ') {
+                // If we have " =?" don't encode space, this helps with "?= =?"
+                extra = 1;
+            }
 
-            char *out = g_convert((char *)str, startquestion - str, "utf8", "WINDOWS-1252", &bread, &bwritten, &error);
+            char *out = g_convert((char *)str+extra, startquestion - str-extra, "utf-8", "WINDOWS-1252", &bread, &bwritten, &error);
             if (error) {
-                LOG("ERROR convering %s to utf8 %s ", "windows-1252", error->message);
+                LOG("ERROR convering %s to utf-8 %s ", "windows-1252", error->message);
                 moloch_field_string_add(pos, session, string, len, TRUE);
                 g_error_free(error);
                 return;
@@ -220,9 +225,9 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
 
             g_base64_decode_inplace(question+3, &olen);
 
-            char *out = g_convert((char *)question+3, olen, "utf8", str+2, &bread, &bwritten, &error);
+            char *out = g_convert((char *)question+3, olen, "utf-8", str+2, &bread, &bwritten, &error);
             if (error) {
-                LOG("ERROR convering %s to utf8 %s ", str+2, error->message);
+                LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
                 moloch_field_string_add(pos, session, string, len, TRUE);
                 g_error_free(error);
                 return;
@@ -236,9 +241,9 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
 
             smtp_quoteable_decode_inplace(question+3, &olen);
 
-            char *out = g_convert((char *)question+3, strlen(question+3), "utf8", str+2, &bread, &bwritten, &error);
+            char *out = g_convert((char *)question+3, strlen(question+3), "utf-8", str+2, &bread, &bwritten, &error);
             if (error) {
-                LOG("ERROR convering %s to utf8 %s ", str+2, error->message);
+                LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
                 moloch_field_string_add(pos, session, string, len, TRUE);
                 g_error_free(error);
                 return;
@@ -251,7 +256,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
             moloch_field_string_add(pos, session, string, len, TRUE);
             return;
         }
-        str = endquestion + 3;
+        str = endquestion + 2;
     }
 
     output[outputlen] = 0;
@@ -507,7 +512,6 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 
             if (*data == ' ' || *data == '\t') {
                 g_string_append_c(line, ' ');
-                g_string_append_c(line, *data);
                 break;
             }
 
@@ -524,9 +528,15 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
+
                 switch (emailHeader->uw) {
                 case MOLOCH_FIELD_EMAIL_SUB:
-                    smtp_email_add_encoded(session, MOLOCH_FIELD_EMAIL_SUB, line->str+9, line->len-9);
+                    if (line->str[8] != ' ') {
+                        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "smtp:missing-subject-space");
+                        smtp_email_add_encoded(session, MOLOCH_FIELD_EMAIL_SUB, line->str+8, line->len-8);
+                    } else {
+                        smtp_email_add_encoded(session, MOLOCH_FIELD_EMAIL_SUB, line->str+9, line->len-9);
+                    }
                     break;
                 case MOLOCH_FIELD_EMAIL_DST:
                     smtp_parse_email_addresses(MOLOCH_FIELD_EMAIL_DST, session, line->str+cpos, line->len-cpos);
@@ -728,7 +738,8 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 while(isspace(*s)) s++;
                 char *filename = (char *)moloch_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
-                    moloch_field_string_add(MOLOCH_FIELD_EMAIL_FN, session, smtp_remove_matching(filename+9, '"', '"'), -1, TRUE);
+                    char *matching = smtp_remove_matching(filename+9, '"', '"');
+                    smtp_email_add_encoded(session, MOLOCH_FIELD_EMAIL_FN, matching, strlen(matching));
                 }
             } else if (strncasecmp(line->str, "content-transfer-encoding:", 26) == 0) {
                 if(moloch_memcasestr(line->str+26, line->len - 26, "base64", 6)) {

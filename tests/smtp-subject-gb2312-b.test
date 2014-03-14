@@ -21,7 +21,7 @@
             "emvcnt" : 1,
             "a2" : "64.236.64.225",
             "ect" : [
-               "multipart/alternative; \tboundary=\"_000_CEC790C31A0F0xxxxxxxxxxxxxxxxxx_\""
+               "multipart/alternative; boundary=\"_000_CEC790C31A0F0xxxxxxxxxxxxxxxxxx_\""
             ],
             "esub" : [
                "test 测试"
