@@ -949,11 +949,11 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 
         if (config.yara) {
             if (a_tcp->client.count != a_tcp->client.offset) {
-                moloch_yara_execute(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count, a_tcp->client.offset == 0);
+                moloch_yara_execute(session, (unsigned char*)a_tcp->client.data, a_tcp->client.count - a_tcp->client.offset, a_tcp->client.offset == 0);
             }
 
             if (a_tcp->server.count != a_tcp->server.offset) {
-                moloch_yara_execute(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count, a_tcp->server.offset == 0);
+                moloch_yara_execute(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count - a_tcp->server.offset, a_tcp->server.offset == 0);
             }
         }
     
