@@ -1,4 +1,4 @@
-0.10.1 xxx
+0.10.1 2014/03/30
   - Status code not being set when . after mime data
   - db.pl has simple mv/rm commands now
   - Fixed all pagination (issue #192)
