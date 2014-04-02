@@ -5,6 +5,26 @@
             "ua" : [
                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"
             ],
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:52925,33554442:80"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 571,
             "db" : 933,
             "no" : "test",
@@ -54,6 +74,7 @@
                1633,
                1715
             ],
+            "prot-term-cnt" : 2,
             "hpathcnt" : 1,
             "hh2" : [
                "http:header:accept-ranges",
@@ -87,26 +108,6 @@
             "a1" : "10.0.0.1",
             "fb2" : "485454502f312e31",
             "db1" : 362,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:52925,33554442:80"
-               ],
-               "test.number" : [
-                  33554442
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "hmd5" : [
                "40be8f5100e9beabab293c9d7bacaff0"
             ],
@@ -114,6 +115,10 @@
             "hh1cnt" : 6,
             "p2" : 80,
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
             ],
@@ -157,11 +162,15 @@
             "by" : 132,
             "p2" : 80,
             "as1" : "AS0000 This is neat",
+            "prot-term" : [
+               "tcp"
+            ],
             "pr" : 6,
             "ps" : [
                1797,
                1879
-            ]
+            ],
+            "prot-term-cnt" : 1
          },
          "header" : {
             "index" : {

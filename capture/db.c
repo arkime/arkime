@@ -29,7 +29,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 17
+#define MOLOCH_MIN_DB_VERSION 18
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -45,11 +45,13 @@ static char            *rirs[256];
 
 void *                  esServer = 0;
 
-static patricia_tree_t *ipTree;
+patricia_tree_t        *ipTree = 0;
 
 extern char            *moloch_char_to_hex;
 extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
+
+static int tagsField = -1;
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -67,7 +69,7 @@ typedef struct moloch_tag {
 HASH_VAR(tag_, tags, MolochTag_t, 9337);
 
 /******************************************************************************/
-void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii) 
+void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii)
 {
     patricia_node_t *node;
     if (!ipTree) {
@@ -78,7 +80,7 @@ void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii)
 }
 /******************************************************************************/
 #define int_ntoa(x)     inet_ntoa(*((struct in_addr *)(int*)&x))
-MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip) 
+MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip)
 {
     prefix_t prefix;
     patricia_node_t *node;
@@ -90,11 +92,14 @@ MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip)
     if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
         return 0;
 
+    if (tagsField == -1)
+        tagsField = moloch_field_by_db("ta");
+
     MolochIpInfo_t *ii = node->data;
     int t;
 
     for (t = 0; t < ii->numtags; t++) {
-        moloch_field_int_add(MOLOCH_FIELD_TAGS, session, ii->tags[t]);
+        moloch_field_int_add(tagsField, session, ii->tags[t]);
     }
 
     return ii;
@@ -284,7 +289,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
     dataPtr = BSB_WORK_PTR(jbsb);
-    BSB_EXPORT_sprintf(jbsb, 
+    BSB_EXPORT_sprintf(jbsb,
                       "{\"fp\":%u,"
                       "\"lp\":%u,"
                       "\"fpd\":%" PRIu64 ","
@@ -388,7 +393,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (rir2)
         BSB_EXPORT_sprintf(jbsb, "\"rir2\":\"%s\",", rir2);
 
-    BSB_EXPORT_sprintf(jbsb, 
+    BSB_EXPORT_sprintf(jbsb,
                       "\"pa\":%u,"
                       "\"pa1\":%u,"
                       "\"pa2\":%u,"
@@ -409,7 +414,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       session->databytes[0],
                       session->databytes[1],
                       config.nodeName);
-    
+
     if (session->rootId) {
         if (session->rootId[0] == 'R')
             session->rootId = g_strdup(id);
@@ -432,373 +437,378 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
-    int inHeaders = 0;
+    int inGroupNum = 0;
     for (pos = 0; pos < config.maxField; pos++) {
-        if (session->fields[pos]) {
-            int freeField = final || ((config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CONTINUE) == 0);
+        if (!session->fields[pos])
+            continue;
 
-            if (inHeaders && inHeaders != (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HP)) {
-                inHeaders = 0;
+        int freeField = final || ((config.fields[pos]->flags & MOLOCH_FIELD_FLAG_LINKED_SESSIONS) == 0);
+
+        if (inGroupNum != config.fields[pos]->dbGroupNum) {
+            if (inGroupNum != 0) {
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_cstr(jbsb, "},");
             }
+            inGroupNum = config.fields[pos]->dbGroupNum;
 
-            if (inHeaders == 0 && (inHeaders = (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_HP))) {
-                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_PLUGINS) {
-                    BSB_EXPORT_cstr(jbsb, "\"plugin\": {");
-                } else {
-                    BSB_EXPORT_cstr(jbsb, "\"hdrs\": {");
-                }
-            } 
+            if (inGroupNum) {
+                BSB_EXPORT_sprintf(jbsb, "\"%.*s\": {", config.fields[pos]->dbGroupLen, config.fields[pos]->dbGroup);
+            }
+        }
 
-            switch(config.fields[pos]->type) {
-            case MOLOCH_FIELD_TYPE_INT:
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":%d", config.fields[pos]->name, session->fields[pos]->i);
-                BSB_EXPORT_u08(jbsb, ',');
-                break;
-            case MOLOCH_FIELD_TYPE_STR:
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":", config.fields[pos]->name);
-                moloch_db_js0n_str(&jbsb, 
-                                   (unsigned char *)session->fields[pos]->str, 
+        switch(config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_INT:
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":%d", config.fields[pos]->dbField, session->fields[pos]->i);
+            BSB_EXPORT_u08(jbsb, ',');
+            break;
+        case MOLOCH_FIELD_TYPE_STR:
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":", config.fields[pos]->dbField);
+            moloch_db_js0n_str(&jbsb,
+                               (unsigned char *)session->fields[pos]->str,
+                               config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+            BSB_EXPORT_u08(jbsb, ',');
+            if (freeField) {
+                g_free(session->fields[pos]->str);
+            }
+            break;
+        case MOLOCH_FIELD_TYPE_STR_ARRAY:
+            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
+            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            for(i = 0; i < session->fields[pos]->sarray->len; i++) {
+                moloch_db_js0n_str(&jbsb,
+                                   g_ptr_array_index(session->fields[pos]->sarray, i),
                                    config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
-                if (freeField) {
-                    g_free(session->fields[pos]->str);
-                }
-                break;
-            case MOLOCH_FIELD_TYPE_STR_ARRAY:
-                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, session->fields[pos]->sarray->len);
-                }
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
-                for(i = 0; i < session->fields[pos]->sarray->len; i++) {
-                    moloch_db_js0n_str(&jbsb, 
-                                       g_ptr_array_index(session->fields[pos]->sarray, i), 
-                                       config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
-                    BSB_EXPORT_u08(jbsb, ',');
-                }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_cstr(jbsb, "],");
-                if (freeField) {
-                    g_ptr_array_free(session->fields[pos]->sarray, TRUE);
-                }
-                break;
-            case MOLOCH_FIELD_TYPE_STR_HASH:
-                shash = session->fields[pos]->shash;
-                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, HASH_COUNT(s_, *shash));
-                }
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
-                HASH_FORALL(s_, *shash, hstring,
-                    moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
-                    BSB_EXPORT_u08(jbsb, ',');
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            if (freeField) {
+                g_ptr_array_free(session->fields[pos]->sarray, TRUE);
+            }
+            break;
+        case MOLOCH_FIELD_TYPE_STR_HASH:
+            shash = session->fields[pos]->shash;
+            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(s_, *shash));
+            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(s_, *shash));
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            HASH_FORALL(s_, *shash, hstring,
+                moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+                BSB_EXPORT_u08(jbsb, ',');
+            );
+            if (freeField) {
+                HASH_FORALL_POP_HEAD(s_, *shash, hstring,
+                    g_free(hstring->str);
+                    MOLOCH_TYPE_FREE(MolochString_t, hstring);
                 );
-                if (freeField) {
-                    HASH_FORALL_POP_HEAD(s_, *shash, hstring,
-                        g_free(hstring->str);
-                        MOLOCH_TYPE_FREE(MolochString_t, hstring);
-                    );
-                    MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
+                MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            break;
+        case MOLOCH_FIELD_TYPE_INT_HASH:
+            ihash = session->fields[pos]->ihash;
+            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
+            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\": %d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            HASH_FORALL(i_, *ihash, hint,
+                BSB_EXPORT_sprintf(jbsb, "%u", hint->i_hash);
+                BSB_EXPORT_u08(jbsb, ',');
+            );
+            if (freeField) {
+                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
+                );
+                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            break;
+        case MOLOCH_FIELD_TYPE_IP: {
+            int value = session->fields[pos]->i;
+            MolochIpInfo_t *ii = ipTree?moloch_db_get_local_ip(session, value):0;
+            char *as = NULL;
+            const char *g = NULL;
+            const char *rir = NULL;
+            char post = (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPRE) == 0;
+
+            if (ii) {
+                g = ii->country;
+                as = ii->asn;
+                rir = ii->rir;
+            }
+
+            if (gi || g) {
+
+                if (!g) {
+                    g = GeoIP_country_code3_by_ipnum(gi, htonl(value));
                 }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_cstr(jbsb, "],");
-                break;
-            case MOLOCH_FIELD_TYPE_INT_HASH:
-                ihash = session->fields[pos]->ihash;
-                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
+
+                if (g) {
+                    if (post)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s-geo\":\"%s\",", config.fields[pos]->dbField, g);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"g%s\":\"%s\",", config.fields[pos]->dbField, g);
                 }
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
+            }
+
+            if (giASN || as) {
+                if (!as) {
+                    as = GeoIP_name_by_ipnum(giASN, htonl(value));
+                }
+
+                if (as) {
+                    if (post)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s-asn\":", config.fields[pos]->dbField);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"as%s\":", config.fields[pos]->dbField);
+                    moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
+                    if (!ii || !ii->asn) {
+                        free(as);
+                    }
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+            }
+
+            if (config.rirFile || rir) {
+                if (!rir) {
+                    rir = rirs[value & 0xff];
+                }
+
+                if (rir) {
+                    if (post)
+                        BSB_EXPORT_sprintf(jbsb, "\"%s-rir\":\"%s\",", config.fields[pos]->dbField, rir);
+                    else
+                        BSB_EXPORT_sprintf(jbsb, "\"rir%s\":\"%s\",", config.fields[pos]->dbField, rir);
+                }
+            }
+
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":%u,", config.fields[pos]->dbField, htonl(value));
+            }
+            break;
+        case MOLOCH_FIELD_TYPE_IP_HASH: {
+            char post = (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPRE) == 0;
+            ihash = session->fields[pos]->ihash;
+            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
+            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
+            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_SCNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%sscnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
+            }
+
+            if (gi || ipTree) {
+                MolochIpInfo_t *ii;
+
+                if (post)
+                    BSB_EXPORT_sprintf(jbsb, "\"%s-geo\":[", config.fields[pos]->dbField);
+                else
+                    BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->dbField);
                 HASH_FORALL(i_, *ihash, hint,
-                    BSB_EXPORT_sprintf(jbsb, "%u", hint->i_hash);
-                    BSB_EXPORT_u08(jbsb, ',');
-                );
-                if (freeField) {
-                    HASH_FORALL_POP_HEAD(i_, *ihash, hint,
-                        MOLOCH_TYPE_FREE(MolochInt_t, hint);
-                    );
-                    MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
-                }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                BSB_EXPORT_cstr(jbsb, "],");
-                break;
-            case MOLOCH_FIELD_TYPE_IP: {
-                int value = session->fields[pos]->i;
-                MolochIpInfo_t *ii = ipTree?moloch_db_get_local_ip(session, value):0;
-                char *as = NULL;
-                const char *g = NULL;
-                const char *rir = NULL;
-                char post = config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPOST;
+                    const char *g = NULL;
+                    if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                        g = ii->country;
+                    }
 
-
-                if (ii) {
-                    g = ii->country;
-                    as = ii->asn;
-                    rir = ii->rir;
-                }
-
-                if (gi || g) {
-                        
                     if (!g) {
-                        g = GeoIP_country_code3_by_ipnum(gi, htonl(value));
+                        g = GeoIP_country_code3_by_ipnum(gi, htonl(hint->i_hash));
                     }
 
                     if (g) {
-                        if (post)
-                            BSB_EXPORT_sprintf(jbsb, "\"%s.geo\":\"%s\",", config.fields[pos]->name, g);
-                        else
-                            BSB_EXPORT_sprintf(jbsb, "\"g%s\":\"%s\",", config.fields[pos]->name, g);
+                        BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
+                    } else {
+                        BSB_EXPORT_cstr(jbsb, "\"---\"");
                     }
-                }
+                    BSB_EXPORT_u08(jbsb, ',');
+                );
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_cstr(jbsb, "],");
+            }
 
-                if (giASN || as) {
+            if (giASN || ipTree) {
+                MolochIpInfo_t *ii = 0;
+
+                if (post)
+                    BSB_EXPORT_sprintf(jbsb, "\"%s-asn\":[", config.fields[pos]->dbField);
+                else
+                    BSB_EXPORT_sprintf(jbsb, "\"as%s\":[", config.fields[pos]->dbField);
+                HASH_FORALL(i_, *ihash, hint,
+                    char *as = NULL;
+
+                    if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                        as = ii->asn;
+                    }
+
                     if (!as) {
-                        as = GeoIP_name_by_ipnum(giASN, htonl(value));
+                        as = GeoIP_name_by_ipnum(giASN, htonl(hint->i_hash));
                     }
 
                     if (as) {
-                        if (post)
-                            BSB_EXPORT_sprintf(jbsb, "\"%s.asn\":", config.fields[pos]->name);
-                        else
-                            BSB_EXPORT_sprintf(jbsb, "\"as%s\":", config.fields[pos]->name);
                         moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
                         if (!ii || !ii->asn) {
                             free(as);
                         }
-                        BSB_EXPORT_u08(jbsb, ',');
+                    } else {
+                        BSB_EXPORT_cstr(jbsb, "\"---\"");
                     }
-                }
+                    BSB_EXPORT_u08(jbsb, ',');
+                );
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                BSB_EXPORT_cstr(jbsb, "],");
+            }
 
-                if (config.rirFile || rir) {
+            if (config.rirFile || ipTree) {
+                MolochIpInfo_t *ii = 0;
+
+                if (post)
+                    BSB_EXPORT_sprintf(jbsb, "\"%s-rir\":[", config.fields[pos]->dbField);
+                else
+                    BSB_EXPORT_sprintf(jbsb, "\"rir%s\":[", config.fields[pos]->dbField);
+                HASH_FORALL(i_, *ihash, hint,
+                    char *rir = NULL;
+
+                    if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                        rir = ii->rir;
+                    }
+
                     if (!rir) {
-                        rir = rirs[value & 0xff];
+                        rir = rirs[hint->i_hash & 0xff];
                     }
 
                     if (rir) {
-                        if (post)
-                            BSB_EXPORT_sprintf(jbsb, "\"%s.rir\":\"%s\",", config.fields[pos]->name, rir);
-                        else
-                            BSB_EXPORT_sprintf(jbsb, "\"rir%s\":\"%s\",", config.fields[pos]->name, rir);
+                        BSB_EXPORT_sprintf(jbsb, "\"%s\",", rir);
+                    } else {
+                        BSB_EXPORT_cstr(jbsb, "\"\",");
                     }
-                }
-
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":%u,", config.fields[pos]->name, htonl(value));
-                }
-                break;
-            case MOLOCH_FIELD_TYPE_IP_HASH: {
-                char post = config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPOST;
-                ihash = session->fields[pos]->ihash;
-                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
-                }
-                if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_SCNT) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%sscnt\":%d,", config.fields[pos]->name, HASH_COUNT(i_, *ihash));
-                }
-
-                if (gi || ipTree) {
-                    MolochIpInfo_t *ii;
-
-                    if (post)
-                        BSB_EXPORT_sprintf(jbsb, "\"%s.geo\":[", config.fields[pos]->name);
-                    else
-                        BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->name);
-                    HASH_FORALL(i_, *ihash, hint,
-                        const char *g = NULL;
-                        if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
-                            g = ii->country;
-                        }
-                        
-                        if (!g) {
-                            g = GeoIP_country_code3_by_ipnum(gi, htonl(hint->i_hash));
-                        }
-
-                        if (g) {
-                            BSB_EXPORT_sprintf(jbsb, "\"%s\"", g);
-                        } else {
-                            BSB_EXPORT_cstr(jbsb, "\"---\"");
-                        }
-                        BSB_EXPORT_u08(jbsb, ',');
-                    );
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                    BSB_EXPORT_cstr(jbsb, "],");
-                }
-
-                if (giASN || ipTree) {
-                    MolochIpInfo_t *ii = 0;
-
-                    if (post)
-                        BSB_EXPORT_sprintf(jbsb, "\"%s.asn\":[", config.fields[pos]->name);
-                    else
-                        BSB_EXPORT_sprintf(jbsb, "\"as%s\":[", config.fields[pos]->name);
-                    HASH_FORALL(i_, *ihash, hint,
-                        char *as = NULL;
-
-                        if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
-                            as = ii->asn;
-                        }
-
-                        if (!as) {
-                            as = GeoIP_name_by_ipnum(giASN, htonl(hint->i_hash));
-                        }
-
-                        if (as) {
-                            moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
-                            if (!ii || !ii->asn) {
-                                free(as);
-                            }
-                        } else {
-                            BSB_EXPORT_cstr(jbsb, "\"---\"");
-                        }
-                        BSB_EXPORT_u08(jbsb, ',');
-                    );
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                    BSB_EXPORT_cstr(jbsb, "],");
-                }
-
-                if (config.rirFile || ipTree) {
-                    MolochIpInfo_t *ii = 0;
-
-                    if (post)
-                        BSB_EXPORT_sprintf(jbsb, "\"%s.rir\":[", config.fields[pos]->name);
-                    else
-                        BSB_EXPORT_sprintf(jbsb, "\"rir%s\":[", config.fields[pos]->name);
-                    HASH_FORALL(i_, *ihash, hint,
-                        char *rir = NULL;
-
-                        if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
-                            rir = ii->rir;
-                        }
-
-                        if (!rir) {
-                            rir = rirs[hint->i_hash & 0xff];
-                        }
-
-                        if (rir) {
-                            BSB_EXPORT_sprintf(jbsb, "\"%s\",", rir);
-                        } else {
-                            BSB_EXPORT_cstr(jbsb, "\"\",");
-                        }
-                    );
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                    BSB_EXPORT_cstr(jbsb, "],");
-                }
-
-
-                BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->name);
-                HASH_FORALL(i_, *ihash, hint,
-                    BSB_EXPORT_sprintf(jbsb, "%u", htonl(hint->i_hash));
-                    BSB_EXPORT_u08(jbsb, ',');
                 );
-                if (freeField) {
-                    HASH_FORALL_POP_HEAD(i_, *ihash, hint,
-                        MOLOCH_TYPE_FREE(MolochInt_t, hint);
-                    );
-                    MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
-                }
-                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-                BSB_EXPORT_cstr(jbsb, "],");
-                break;
-            }
-            case MOLOCH_FIELD_TYPE_CERTSINFO: {
-                MolochCertsInfoHashStd_t *cihash = session->fields[pos]->cihash;
-
-                BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, *cihash));
-                BSB_EXPORT_cstr(jbsb, "\"tls\":[");
-
-                MolochCertsInfo_t *certs;
-                MolochString_t *string;
-
-                HASH_FORALL_POP_HEAD(t_, *cihash, certs,
-                    BSB_EXPORT_u08(jbsb, '{');
-
-                    if (certs->issuer.commonName.s_count > 0) {
-                        BSB_EXPORT_cstr(jbsb, "\"iCn\":[");
-                        while (certs->issuer.commonName.s_count > 0) {
-                            DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
-                            moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
-                            BSB_EXPORT_u08(jbsb, ',');
-                            g_free(string->str);
-                            MOLOCH_TYPE_FREE(MolochString_t, string);
-                        }
-                        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                        BSB_EXPORT_u08(jbsb, ']');
-                        BSB_EXPORT_u08(jbsb, ',');
-                    }
-
-                    if (certs->issuer.orgName) {
-                        BSB_EXPORT_cstr(jbsb, "\"iOn\":");
-                        moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
-                        BSB_EXPORT_u08(jbsb, ',');
-                    }
-
-                    if (certs->subject.commonName.s_count) {
-                        BSB_EXPORT_cstr(jbsb, "\"sCn\":[");
-                        while (certs->subject.commonName.s_count > 0) {
-                            DLL_POP_HEAD(s_, &certs->subject.commonName, string);
-                            moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
-                            BSB_EXPORT_u08(jbsb, ',');
-                            g_free(string->str);
-                            MOLOCH_TYPE_FREE(MolochString_t, string);
-                        }
-                        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                        BSB_EXPORT_u08(jbsb, ']');
-                        BSB_EXPORT_u08(jbsb, ',');
-                    }
-
-                    if (certs->subject.orgName) {
-                        BSB_EXPORT_cstr(jbsb, "\"sOn\":");
-                        moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
-                        BSB_EXPORT_u08(jbsb, ',');
-                    }
-
-                    if (certs->serialNumber) {
-                        int k;
-                        BSB_EXPORT_cstr(jbsb, "\"sn\":\"");
-                        for (k = 0; k < certs->serialNumberLen; k++) {
-                            BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
-                        }
-                        BSB_EXPORT_u08(jbsb, '"');
-                        BSB_EXPORT_u08(jbsb, ',');
-                    }
-
-                    if (certs->alt.s_count) {
-                        BSB_EXPORT_sprintf(jbsb, "\"altcnt\":%d,", certs->alt.s_count);
-                        BSB_EXPORT_cstr(jbsb, "\"alt\":[");
-                        while (certs->alt.s_count > 0) {
-                            DLL_POP_HEAD(s_, &certs->alt, string);
-                            moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
-                            BSB_EXPORT_u08(jbsb, ',');
-                            g_free(string->str);
-                            MOLOCH_TYPE_FREE(MolochString_t, string);
-                        }
-                        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-                        BSB_EXPORT_u08(jbsb, ']');
-                        BSB_EXPORT_u08(jbsb, ',');
-                    }
-
-                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-
-                    moloch_field_certsinfo_free(certs);
-                    i++;
-
-                    BSB_EXPORT_u08(jbsb, '}');
-                    BSB_EXPORT_u08(jbsb, ',');
-                );
-                MOLOCH_TYPE_FREE(MolochCertsInfoHashStd_t, cihash);
-
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_cstr(jbsb, "],");
             }
-            } /* switch */
+
+
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            HASH_FORALL(i_, *ihash, hint,
+                BSB_EXPORT_sprintf(jbsb, "%u", htonl(hint->i_hash));
+                BSB_EXPORT_u08(jbsb, ',');
+            );
             if (freeField) {
-                MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
-                session->fields[pos] = 0;
+                HASH_FORALL_POP_HEAD(i_, *ihash, hint,
+                    MOLOCH_TYPE_FREE(MolochInt_t, hint);
+                );
+                MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
             }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+
+            BSB_EXPORT_cstr(jbsb, "],");
+            break;
+        }
+        case MOLOCH_FIELD_TYPE_CERTSINFO: {
+            MolochCertsInfoHashStd_t *cihash = session->fields[pos]->cihash;
+
+            BSB_EXPORT_sprintf(jbsb, "\"tlscnt\":%d,", HASH_COUNT(t_, *cihash));
+            BSB_EXPORT_cstr(jbsb, "\"tls\":[");
+
+            MolochCertsInfo_t *certs;
+            MolochString_t *string;
+
+            HASH_FORALL_POP_HEAD(t_, *cihash, certs,
+                BSB_EXPORT_u08(jbsb, '{');
+
+                if (certs->issuer.commonName.s_count > 0) {
+                    BSB_EXPORT_cstr(jbsb, "\"iCn\":[");
+                    while (certs->issuer.commonName.s_count > 0) {
+                        DLL_POP_HEAD(s_, &certs->issuer.commonName, string);
+                        moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
+                        BSB_EXPORT_u08(jbsb, ',');
+                        g_free(string->str);
+                        MOLOCH_TYPE_FREE(MolochString_t, string);
+                    }
+                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                    BSB_EXPORT_u08(jbsb, ']');
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+
+                if (certs->issuer.orgName) {
+                    BSB_EXPORT_cstr(jbsb, "\"iOn\":");
+                    moloch_db_js0n_str(&jbsb, (unsigned char *)certs->issuer.orgName, certs->issuer.orgUtf8);
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+
+                if (certs->subject.commonName.s_count) {
+                    BSB_EXPORT_cstr(jbsb, "\"sCn\":[");
+                    while (certs->subject.commonName.s_count > 0) {
+                        DLL_POP_HEAD(s_, &certs->subject.commonName, string);
+                        moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, string->utf8);
+                        BSB_EXPORT_u08(jbsb, ',');
+                        g_free(string->str);
+                        MOLOCH_TYPE_FREE(MolochString_t, string);
+                    }
+                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                    BSB_EXPORT_u08(jbsb, ']');
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+
+                if (certs->subject.orgName) {
+                    BSB_EXPORT_cstr(jbsb, "\"sOn\":");
+                    moloch_db_js0n_str(&jbsb, (unsigned char *)certs->subject.orgName, certs->subject.orgUtf8);
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+
+                if (certs->serialNumber) {
+                    int k;
+                    BSB_EXPORT_cstr(jbsb, "\"sn\":\"");
+                    for (k = 0; k < certs->serialNumberLen; k++) {
+                        BSB_EXPORT_sprintf(jbsb, "%02x", certs->serialNumber[k]);
+                    }
+                    BSB_EXPORT_u08(jbsb, '"');
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+
+                if (certs->alt.s_count) {
+                    BSB_EXPORT_sprintf(jbsb, "\"altcnt\":%d,", certs->alt.s_count);
+                    BSB_EXPORT_cstr(jbsb, "\"alt\":[");
+                    while (certs->alt.s_count > 0) {
+                        DLL_POP_HEAD(s_, &certs->alt, string);
+                        moloch_db_js0n_str(&jbsb, (unsigned char *)string->str, TRUE);
+                        BSB_EXPORT_u08(jbsb, ',');
+                        g_free(string->str);
+                        MOLOCH_TYPE_FREE(MolochString_t, string);
+                    }
+                    BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+                    BSB_EXPORT_u08(jbsb, ']');
+                    BSB_EXPORT_u08(jbsb, ',');
+                }
+
+                BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+
+                moloch_field_certsinfo_free(certs);
+                i++;
+
+                BSB_EXPORT_u08(jbsb, '}');
+                BSB_EXPORT_u08(jbsb, ',');
+            );
+            MOLOCH_TYPE_FREE(MolochCertsInfoHashStd_t, cihash);
+
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+        }
+        } /* switch */
+        if (freeField) {
+            MOLOCH_TYPE_FREE(MolochField_t, session->fields[pos]);
+            session->fields[pos] = 0;
         }
     }
 
-    if (inHeaders) {
+    if (inGroupNum) {
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
         BSB_EXPORT_cstr(jbsb, "},");
     }
@@ -852,16 +862,16 @@ static int      stats_key_len = 0;
 
 void moloch_db_load_stats()
 {
-    size_t             datalen;
+    size_t             data_len;
     uint32_t           len;
     uint32_t           source_len;
     unsigned char     *source = 0;
 
     stats_key_len = snprintf(stats_key, sizeof(stats_key), "/stats/stat/%s", config.nodeName);
 
-    unsigned char     *data = moloch_http_get(esServer, stats_key, stats_key_len, &datalen);
+    unsigned char     *data = moloch_http_get(esServer, stats_key, stats_key_len, &data_len);
 
-    source = moloch_js0n_get(data, datalen, "_source", &source_len);
+    source = moloch_js0n_get(data, data_len, "_source", &source_len);
     if (source) {
         dbTotalPackets = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalPackets", &len));
         dbTotalK = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalK", &len));
@@ -909,7 +919,7 @@ void moloch_db_update_stats()
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
-        "\"diskQueue\": %u, " 
+        "\"diskQueue\": %u, "
         "\"totalPackets\": %" PRIu64 ", "
         "\"totalK\": %" PRIu64 ", "
         "\"totalSessions\": %" PRIu64 ", "
@@ -989,7 +999,7 @@ void moloch_db_update_dstats(int n)
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
-        "\"diskQueue\": %u, " 
+        "\"diskQueue\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
@@ -1242,15 +1252,15 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
 /******************************************************************************/
 void moloch_db_check()
 {
-    size_t             datalen;
+    size_t             data_len;
     char               key[100];
     int                key_len;
     unsigned char     *data;
 
     key_len = snprintf(key, sizeof(key), "/dstats/version/version/_source");
-    data = moloch_http_get(esServer, key, key_len, &datalen);
+    data = moloch_http_get(esServer, key, key_len, &data_len);
 
-    if (!data || datalen == 0) {
+    if (!data || data_len == 0) {
         LOG("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port update\"");
         exit(1);
     }
@@ -1258,7 +1268,7 @@ void moloch_db_check()
     uint32_t           version_len;
     unsigned char     *version = 0;
 
-    version = moloch_js0n_get(data, datalen, "version", &version_len);
+    version = moloch_js0n_get(data, data_len, "version", &version_len);
 
     if (!version || atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
         LOG("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port update\"", version_len, version, MOLOCH_MIN_DB_VERSION);
@@ -1267,7 +1277,7 @@ void moloch_db_check()
 
     if (config.compressES) {
         key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process");
-        data = moloch_http_get(esServer, key, key_len, &datalen);
+        data = moloch_http_get(esServer, key, key_len, &data_len);
         if (strstr((char *)data, "\"http.compression\":\"true\"") == NULL) {
             LOG("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
             exit(1);
@@ -1278,12 +1288,12 @@ void moloch_db_check()
 /******************************************************************************/
 void moloch_db_load_tags()
 {
-    size_t             datalen;
+    size_t             data_len;
     char               key[100];
     int                key_len;
 
     key_len = snprintf(key, sizeof(key), "/tags/tag/_search?size=3000&fields=n");
-    unsigned char     *data = moloch_http_get(esServer, key, key_len, &datalen);
+    unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data) {
         return;
@@ -1291,7 +1301,7 @@ void moloch_db_load_tags()
 
     uint32_t           hits_len;
     unsigned char     *hits = 0;
-    hits = moloch_js0n_get(data, datalen, "hits", &hits_len);
+    hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
     if (!hits) {
         return;
     }
@@ -1478,7 +1488,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         if (func)
             func(uw, tagtype, tag->tagValue);
         return;
-    } 
+    }
 
     if (config.dryRun) {
         static int tagNum = 1;
@@ -1549,7 +1559,7 @@ void moloch_db_load_rir()
                         rirs[num] = g_ascii_strup(parts[1], -1);
                     }
                     g_strfreev(parts);
-                    
+
                     break;
                 }
 
@@ -1559,6 +1569,95 @@ void moloch_db_load_rir()
         }
         fclose(fp);
     }
+}
+/******************************************************************************/
+void moloch_db_load_fields()
+{
+    size_t                 data_len;
+    char                   key[100];
+    int                    key_len;
+
+    key_len = snprintf(key, sizeof(key), "/fields/field/_search?size=3000");
+    unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
+
+    if (!data) {
+        return;
+    }
+
+    uint32_t           hits_len;
+    unsigned char     *hits = 0;
+    hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
+    if (!hits) {
+        return;
+    }
+
+    uint32_t           ahits_len;
+    unsigned char     *ahits = 0;
+    ahits = moloch_js0n_get(hits, hits_len, "hits", &ahits_len);
+
+    if (!ahits)
+        return;
+
+    uint32_t out[2*8000];
+    memset(out, 0, sizeof(out));
+    js0n(ahits, ahits_len, out);
+    int i;
+    for (i = 0; out[i]; i+= 2) {
+        uint32_t           id_len;
+        unsigned char     *id = 0;
+        id = moloch_js0n_get(ahits+out[i], out[i+1], "_id", &id_len);
+
+        uint32_t           fields_len;
+        unsigned char     *fields = 0;
+        fields = moloch_js0n_get(ahits+out[i], out[i+1], "_source", &fields_len);
+        if (!fields) {
+            continue;
+        }
+
+        moloch_field_define_json(id, id_len, fields, fields_len);
+    }
+}
+/******************************************************************************/
+void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap)
+{
+    char                   key[100];
+    int                    key_len;
+    BSB                    bsb;
+    char                  *field, *value;
+
+    if (config.dryRun)
+        return;
+
+    char                  *json = moloch_http_get_buffer(10000);
+
+    BSB_INIT(bsb, json, 10000);
+
+    key_len = snprintf(key, sizeof(key), "/fields/field/%s", expression);
+
+    BSB_EXPORT_sprintf(bsb, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField\": \"%s\", \"type\": \"%s\"",
+             friendlyName,
+             group,
+             help,
+             dbField,
+             kind);
+
+    if (ap) {
+        while (1) {
+            field = va_arg(ap, char *);
+            value = va_arg(ap, char *);
+            if (!field || !value) {
+                break;
+            }
+            BSB_EXPORT_sprintf(bsb, ", \"%s\": ", field);
+            if (*value == '{' || *value == '[')
+                BSB_EXPORT_sprintf(bsb, "%s", value);
+            else
+                BSB_EXPORT_sprintf(bsb, "\"%s\"", value);
+        }
+    }
+
+    BSB_EXPORT_u08(bsb, '}');
+    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), FALSE, NULL, NULL);
 }
 /******************************************************************************/
 guint timers[5];
@@ -1579,6 +1678,7 @@ void moloch_db_init()
         moloch_db_load_file_num();
         moloch_db_load_tags();
         moloch_db_load_stats();
+        moloch_db_load_fields();
     }
 
     if (config.geoipFile) {

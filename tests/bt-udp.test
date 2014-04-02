@@ -33,10 +33,15 @@
             "p2" : 3207,
             "as1" : "AS0001 Cool Beans!",
             "g2" : "USA",
+            "prot-term" : [
+               "udp",
+               "bittorrent"
+            ],
             "pr" : 17,
             "ps" : [
                24
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {
@@ -74,10 +79,15 @@
             "by1" : 329,
             "by" : 329,
             "p2" : 12074,
+            "prot-term" : [
+               "udp",
+               "bittorrent"
+            ],
             "pr" : 17,
             "ps" : [
                185
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {
@@ -114,10 +124,15 @@
             "by1" : 336,
             "by" : 336,
             "p2" : 20551,
+            "prot-term" : [
+               "udp",
+               "bittorrent"
+            ],
             "pr" : 17,
             "ps" : [
                530
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {

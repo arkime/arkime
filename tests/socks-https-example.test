@@ -62,6 +62,7 @@
                11260,
                11342
             ],
+            "prot-term-cnt" : 3,
             "lpd" : 1386004472629,
             "fp" : 1386004472,
             "pa" : 30,
@@ -122,7 +123,12 @@
             ],
             "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "gsocksip" : "USA"
+            "gsocksip" : "USA",
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {
@@ -193,6 +199,7 @@
                22651,
                22733
             ],
+            "prot-term-cnt" : 3,
             "lpd" : 1386004475761,
             "fp" : 1386004475,
             "pa" : 30,
@@ -250,7 +257,12 @@
                   ]
                }
             ],
-            "p2" : 1080
+            "p2" : 1080,
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {
@@ -324,6 +336,7 @@
                34306,
                34388
             ],
+            "prot-term-cnt" : 3,
             "lpd" : 1386004480888,
             "fp" : 1386004480,
             "pa" : 33,
@@ -454,7 +467,12 @@
             ],
             "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "gsocksip" : "USA"
+            "gsocksip" : "USA",
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

@@ -1,0 +1,80 @@
+script(type='text/javascript').
+  $(function() {
+    var sessionDetail = $('.sessionDetail[sessionid=#{session.id}]');
+    if (sessionDetail.find('.format-base input:checked').val() === "hex") {
+      sessionDetail.find('.format-line input').removeAttr("disabled");
+      sessionDetail.find('.format-line').css("color", "black");
+    } else {
+      sessionDetail.find('.format-line input').attr("disabled", true);
+      sessionDetail.find('.format-line').css("color", "gray");
+    }
+
+    sessionDetail.find('.srccol').each( function() {
+      $(this).qtip({
+        content: 'Source Bytes:<br><img src="#{session.no}/raw/#{session.id}.png?type=src">',
+        style: 'light qtip-moloch',
+        position: {
+          my: 'top center',
+          at: 'bottom center'
+        }
+      });
+    });
+    sessionDetail.find('.dstcol').each( function() {
+      $(this).qtip({
+        content: 'Destination Bytes:<br><img src="#{session.no}/raw/#{session.id}.png?type=dst">',
+        style: 'light qtip-moloch',
+        position: {
+          my: 'top center',
+          at: 'bottom center'
+        }
+      });
+    });
+    sessionDetail.find('.imagetag').each( function() {
+      $(this).qtip({
+        content: 'File Bytes:<br><img src="' + $(this).attr('href').replace("body", "bodypng") + '">',
+        style: 'light qtip-moloch',
+        position: {
+          viewport: $(window)
+        }
+      });
+    });
+
+    sessionDetail.find('.startTime').html(dateString(#{session.fp}, " "));
+    sessionDetail.find('.stopTime').html(dateString(#{session.lp}, " "));
+    sessionDetail.find('.format-line input, .format-gzip input, .format-image input, .format-base input').on('change', function(e) {
+      var base = sessionDetail.find('.format-base input:checked').val();
+      var line = sessionDetail.find('.format-line input').is(':checked')
+      var url = "#{session.no}/#{session.id}/sessionDetail" +
+                 "?base=" + base +
+                 "&line=" + line +
+                 "&image=" + sessionDetail.find('.format-image input').is(':checked') +
+                 "&gzip=" + sessionDetail.find('.format-gzip input').is(':checked') +
+                 "&ts=" + sessionDetail.find('.format-ts input').is(':checked');
+
+      sessionDetail.parent().load(url);
+      if (localStorage) {
+        localStorage['moloch-line'] = line;
+        localStorage['moloch-base'] = base;
+      }
+    });
+    function showTimestamps() {
+      if (localStorage) {
+        localStorage['moloch-ts'] = sessionDetail.find('.format-ts input').is(':checked');
+      }
+      if ( sessionDetail.find('.format-ts input').is(':checked')) {
+        sessionDetail.find('.sessionDetailTS').each(function(index, item) {
+          if ($(item).attr("ts")) {
+            var val = +$(item).attr("ts");
+            var str = dateString(val/1000, " ") + "." + fourDigitString(val%1000);
+            str += " <span style='float:right;'>" + $(item).attr("bytes") + " bytes</span>";
+            $(item).html(str + "<hr>");
+          }
+          return item;
+        }).show();
+      } else {
+        sessionDetail.find('.sessionDetailTS').hide();
+      }
+    }
+    sessionDetail.find('.format-ts input').on('change', showTimestamps);
+    showTimestamps();
+  });

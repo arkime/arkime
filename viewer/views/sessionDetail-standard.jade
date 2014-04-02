@@ -1,0 +1,100 @@
+div.sessionDetailToolbar
+  if (session.ro)
+    li
+      a(href='#', onclick='return addExpression("rootId == #{session.ro}");') All Sessions
+    li
+      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
+    li
+      a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
+  else
+    li
+      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
+  li
+    a(href='#{session.no}/raw/#{session.id}?type=src',target="_blank") Source Raw
+  li
+    a(href='#{session.no}/raw/#{session.id}?type=dst',target="_blank") Destination Raw
+  li
+    a(href='?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}&openAll=1') Permalink
+  li
+    label.sessionActionsMenu Actions 
+      img#actionsButtonArrow(src="down-arrow.png")
+dl.sessionDetailMeta
+  +arrayList(session, "prot-term", "Protocols", "protocols")
+  dt Start
+  dd
+    a(href='#', onclick='return setSessionStartTime(#{session.fp});')
+      span.startTime
+    | &nbsp;
+    | Stop: 
+    a(href='#', onclick='return setSessionStopTime(#{session.lp});')
+      span.stopTime
+    | &nbsp;
+    | Node: 
+    a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}
+    | &nbsp;
+    | IP Protocol: 
+    a(href='#', onclick='return addExpression("ip.protocol == #{session.pr}");') #{session.pr}
+
+  +arrayList(session, "user", "Users", "user")
+
+  if (session.by1 || session.by2)
+    dt Src
+    dd
+      span.sessionDetailSmall
+        | Packets: 
+        a(href='#', onclick='return addExpression("packets.src == #{session.pa1}");') #{session.pa1}
+        | &nbsp;Bytes: 
+        a(href='#', onclick='return addExpression("bytes.src == #{session.by1}");') #{session.by1}
+        | &nbsp;Databytes: 
+        a(href='#', onclick='return addExpression("databytes.src == #{session.db1}");') #{session.db1}
+      | &nbsp;Dst: 
+      span.sessionDetailSmall
+        | Packets: 
+        a(href='#', onclick='return addExpression("packets.dst == #{session.pa2}");') #{session.pa2}
+        | &nbsp;Bytes: 
+        a(href='#', onclick='return addExpression("bytes.dst == #{session.by2}");') #{session.by2}
+        | &nbsp;Databytes: 
+        a(href='#', onclick='return addExpression("databytes.dst == #{session.db2}");') #{session.db2}
+  dt Src IP/Port
+  dd
+    +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
+    |  Dst IP/Port: 
+    +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
+  if (session.fb1 || session.fb2)
+    dt Payload8
+    dd 
+      if (session.fb1)
+        span.sessionDetailSmall
+          | Src: 
+          - var fb1a = new Buffer(session.fb1, "hex");
+          a(href='#', onclick='return addExpression("payload8.src.hex == #{session.fb1}");') #{session.fb1}
+          | 
+          a(href='#', onclick='return addExpression("payload8.src.utf8 == \\\"#{fb1a}\\\"");') (#{fb1a})
+          | 
+      if (session.fb2)
+        span.sessionDetailSmall
+          | Dst: 
+          - var fb2a = new Buffer(session.fb2, "hex");
+          a(href='#', onclick='return addExpression("payload8.dst.hex == #{session.fb2}");') #{session.fb2}
+          | 
+          a(href='#', onclick='return addExpression("payload8.dst.utf8 == \\\"#{fb2a}\\\"");') (#{fb2a})
+  +arrayList(session, "ta", "Tags", "tags", "<img class=\"addTagsAction\" src=\"DataTables-1.9.1/examples/examples_support/details_open.png\">")
+  if (session.fs && session.fs.length > 0)
+    +arrayList(session, "fs", "Files", "file")
+  if (session.scrubby)
+    dt Scrubbed
+    dd By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
+  if (session.socksip)
+    dt Socks Dst
+    dd
+      +ipPrint(session.socksip, session.sockspo, session.gsocksip, session.assocksip, session.rirsocksip, "socks")
+  if (session.socksho)
+    dt Socks Dst
+    dd
+      a(href='#', onclick='return addExpression("host.socks == #{session.socksho}");') #{session.socksho}
+      | :
+      a(href='#', onclick='return addExpression("port.socks == #{session.sockspo}");') #{session.sockspo}
+  if (session.socksuser)
+    dt Socks User
+    dd
+      a(href='#', onclick='return addExpression("socks.user == #{session.socksuser}");') #{session.socksuser}

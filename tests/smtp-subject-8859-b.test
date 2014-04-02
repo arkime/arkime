@@ -96,6 +96,7 @@
                3705,
                3781
             ],
+            "prot-term-cnt" : 2,
             "ehocnt" : 2,
             "geip" : [
                "---",
@@ -132,6 +133,10 @@
             ],
             "p2" : 25,
             "rir2" : "ARIN",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
             "eidcnt" : 1
          },
          "header" : {

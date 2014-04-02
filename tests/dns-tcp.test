@@ -2,15 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
             "db2" : 342,
             "db" : 372,
             "no" : "test",
             "lp" : 1385482078,
             "a2" : "10.2.95.39",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
-               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "tcp"
@@ -62,6 +73,7 @@
                1072,
                1154
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "google.com"
             ],
@@ -70,7 +82,7 @@
             "dnsipcnt" : 11,
             "pa" : 10,
             "fb1" : "001c5e6301000001",
-            "tacnt" : 6,
+            "tacnt" : 3,
             "a1" : "10.180.156.141",
             "fb2" : "01545e6381800001",
             "db1" : 30,
@@ -90,6 +102,10 @@
             ],
             "by1" : 438,
             "p2" : 53,
+            "prot-term" : [
+               "dns",
+               "tcp"
+            ],
             "rirdnsip" : [
                "ARIN",
                "ARIN",
@@ -113,15 +129,26 @@
       },
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
             "db2" : 258,
             "db" : 285,
             "no" : "test",
             "lp" : 1385482080,
             "a2" : "10.2.95.39",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
-               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "tcp"
@@ -161,6 +188,7 @@
                2197,
                2279
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "aol.com"
             ],
@@ -169,7 +197,7 @@
             "dnsipcnt" : 5,
             "pa" : 10,
             "fb1" : "0019e2ec01000001",
-            "tacnt" : 6,
+            "tacnt" : 3,
             "a1" : "10.180.156.141",
             "fb2" : "0100e2ec81800001",
             "db1" : 27,
@@ -183,6 +211,10 @@
             ],
             "by1" : 435,
             "p2" : 53,
+            "prot-term" : [
+               "dns",
+               "tcp"
+            ],
             "rirdnsip" : [
                "ARIN",
                "ARIN",

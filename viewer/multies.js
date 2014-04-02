@@ -534,6 +534,31 @@ app.post("/tags/tag/_search", function(req, res) {
 
 });
 
+app.post("/fields/field/_search", function(req, res) {
+  simpleGather(req, res, null, function(err, results) {
+    var obj = {
+      hits: {
+        total: 0,
+        hits: [
+        ]
+      }
+    };
+    var unique = {};
+    for (var i = 0; i < results.length; i++) {
+      var result = results[i];
+      for (var h = 0; h < result.hits.total; h++) {
+        var hit = result.hits.hits[h];
+        if (!unique[hit._id]) {
+          unique[hit._id] = 1;
+          obj.hits.total++;
+          obj.hits.hits.push(hit);
+        }
+      }
+    }
+    res.send(obj);
+  });
+});
+
 app.post("/:index/:type/_search", function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);

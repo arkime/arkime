@@ -92,6 +92,7 @@
                4016,
                4098
             ],
+            "prot-term-cnt" : 2,
             "ehocnt" : 1,
             "geip" : [
                "---",
@@ -126,6 +127,10 @@
                "1.0 (Apple Message framework v1283)"
             ],
             "p2" : 25,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
             "eidcnt" : 1
          },
          "header" : {

@@ -36,167 +36,26 @@ block content
   div#spiViewInfo
     span#recordsText
   div#spiview
-    +title("General", "general")
-    dl
-      +spion("IP Protocol", "pr", "protocol", "general")
-      +spion("Src IP", "a1", "ip.src", "general")
-      +spion("Src Port", "p1", "port.src", "general")
-      +spion("Src GEO", "g1", "country.src", "general")
-      +spion("Src ASN", "rawas1", "asn.src", "general")
-      +spi("Src ASN Token", "as1", "asn.src", "general")
-      +spi("Src RIR", "rir1", "rir.src", "general")
-      +spi("Src Payload8", "fb1", "payload8.src", "general")
-      +spi("Src Packets", "pa1", "packets.src", "general")
-      +spi("Src Bytes", "by1", "bytes.src", "general")
-      +spi("Src Databytes", "db1", "databytes.src", "general")
-
-      +spion("Dst IP", "a2", "ip.dst", "general")
-      +spion("Dst Port", "p2", "port.dst", "general")
-      +spion("Dst GEO", "g2", "country.dst", "general")
-      +spion("Dst ASN", "rawas2", "asn.dst", "general")
-      +spi("Dst ASN Token", "as2", "asn.dst", "general")
-      +spi("Dst RIR", "rir2", "rir.dst", "general")
-      +spi("Dst Payload8", "fb2", "payload8.dst", "general")
-      +spi("Dst Packets", "pa2", "packets.dst", "general")
-      +spi("Dst Bytes", "by2", "bytes.dst", "general")
-      +spi("Dst Databytes", "db2", "databytes.dst", "general")
-
-      +spi("Node", "no", "node", "general")
-      +spi("Tag", "ta", "tags", "general")
-      +spi("User", "user", "user", "general")
-
-    +title("HTTP", "http")
-    dl
-      +spi("Host", "ho", "host.http", "http")
-      +spi("URI", "rawus", "http.uri", "http")
-      +spi("URI Token", "us", "http.uri", "http")
-      +spi("URI Path", "hpath", "http.uri.path", "http")
-      +spi("URI QS Key", "hkey", "http.uri.key", "http")
-      +spi("URI QS Value", "hval", "http.uri.value", "http")
-      +spi("User Agent", "rawua", "http.user-agent", "http")
-      +spi("User Agent Token", "ua", "http.user-agent", "http")
-
-      +spi("XFF IP", "xff", "ip.xff", "http")
-      +spi("XFF GEO", "gxff", "country.xff", "http")
-      +spi("XFF ASN", "rawasxff", "asn.xff", "http")
-      +spi("XFF ASN Token", "asxff", "asn.xff", "http")
-      +spi("XFF RIR", "rirxff", "rir.xff", "http")
-
-      +spi("Request Header", "hh1", "http.hasheader.src", "http")
-      +spi("Request Version", "hsver", "http.version.src", "http")
-      each value,i in reqFields
-        if (value.type === "string")
-          +spi(value.name + " Header", "hdrs.hreq-" + value.name + ".raw", "http." + value.name, "http")
-          +spi(value.name + " Tokens", "hdrs.hreq-" + value.name + ".snow", "http." + value.name, "http")
-        else
-          +spi(value.name + " Header", "hdrs.hreq-" + value.name, "http." + value.name, "http")
-      +spi("Resp Header", "hh2", "http.hasheader.dst", "http")
-      +spi("Resp Version", "hdver", "http.version.dst", "http")
-      each value,i in resFields
-        if (value.type === "string")
-          +spi(value.name + " Header", "hdrs.hres-" + value.name + ".raw", "http." + value.name, "http")
-          +spi(value.name + " Tokens", "hdrs.hres-" + value.name + ".snow", "http." + value.name, "http")
-        else
-          +spi(value.name + " Header", "hdrs.hres-" + value.name, "http." + value.name, "http")
-
-      +spi("Body MD5", "hmd5", "http.md5", "http")
-
-    +title("DNS", "dns")
-    dl
-      +spi("Host", "dnsho", "host.dns", "dns")
-      +spi("IP", "dnsip", "ip.dns", "dns")
-      +spi("GEO", "gdnsip", "country.dns", "dns")
-      +spi("ASN", "rawasdnsip", "asn.dns", "dns")
-      +spi("ASN Token", "asdnsip", "asn.dns", "dns")
-      +spi("RIR", "rirdnsip", "rir.dns", "dns")
-
-    +title("IRC", "irc")
-    dl
-      +spi("Nick", "ircnck", "irc.nick", "irc")
-      +spi("Channel", "ircch", "irc.channel", "irc")
-
-    +title("Certificates", "cert")
-    dl
-      +spi("Issuer CN", "iCn", "cert.issuer.cn", "cert")
-      +spi("Issuer ON", "rawiOn", "cert.issuer.on", "cert")
-      +spi("Issuer ON Token", "iOn", "cert.issuer.on", "cert")
-
-      +spi("Subject CN", "sCn", "cert.subject.cn", "cert")
-      +spi("Subject ON", "rawsOn", "cert.subject.on", "cert")
-      +spi("Subject ON Token", "sOn", "cert.subject.on", "cert")
-
-      +spi("Serial Number", "sn", "cert.serial", "cert")
-      +spi("Alt Name", "alt", "cert.alt", "cert")
-
-
-    +title("SSH", "ssh")
-    dl
-      +spi("Version", "sshver", "ssh.ver", "ssh")
-      +spi("Key", "sshkey", "ssh.key", "ssh")
-
-    +title("SOCKS", "socks")
-    dl
-      +spi("Host", "socksho", "host.socks", "socks")
-      +spi("IP", "socksip", "ip.socks", "socks")
-      +spi("GEO", "gsocksip", "country.socks", "socks")
-      +spi("ASN", "rawassocksip", "asn.socks", "socks")
-      +spi("ASN Token", "assocksip", "asn.socks", "socks")
-      +spi("RIR", "rirsocksip", "rir.socks", "socks")
-      +spi("Port", "sockspo", "port.socks", "socks")
-      +spi("User", "socksuser", "socks.user", "socks")
-
-    if (user.emailSearch)
-      +title("Email", "email")
+    -var cats = Object.keys(categories).sort();
+    -cats.splice(cats.indexOf("general"), 1);
+    -cats.unshift("general");
+    each ckey in cats
+      -var cvalue = categories[ckey]
+      +title(ckey, ckey)
       dl
-        +spi("Hosts", "eho", "host.email", "email")
-        +spi("IP", "eip", "ip.email", "email")
-        +spi("GEO", "geip", "country.email", "email")
-        +spi("ASN", "rawaseip", "asn.email", "email")
-        +spi("ASN Token", "aseip", "asn.email", "email")
-        +spi("RIR", "rireip", "rir.email", "email")
-
-        +spi("Headers", "ehh", "email.hasheader", "email")
-        +spi("Subject", "rawesub", "email.subject", "email")
-        +spi("Subject Token", "esub", "email.subject", "email")
-        +spi("Source", "esrc", "email.src", "email")
-        +spi("Destination", "edst", "email.dst", "email")
-        +spi("X-Mailer", "raweua", "email.x-mailer", "email")
-        +spi("X-Mailer Token", "eua", "email.x-mailer", "email")
-        +spi("Message Id", "eid", "email.message-id", "email")
-        +spi("Mime Version", "emv", "email.mime-version", "email")
-        +spi("Filename", "efn", "email.fn", "email")
-        +spi("Attachment MD5", "emd5", "email.md5", "email")
-        each value,i in emailFields
-          if (value.type === "string")
-            +spi(value.name + " Header", "hdrs.ehead-" + value.name + ".raw", "email." + value.name, "email")
-            +spi(value.name + " Tokens", "hdrs.ehead-" + value.name + ".snow", "email." + value.name, "email")
-          else
-            +spi(value.name + " Header", "hdrs.ehead-" + value.name, "email." + value.name, "email")
-
-    +title("SMB", "smb")
-    dl
-      +spi("Users", "smbuser", "smb.user", "smb")
-      +spi("Hosts", "smbho", "smb.host", "smb")
-      +spi("Domain", "smbdm", "smb.domain", "smb")
-      +spi("Share", "smbsh", "smb.share", "smb")
-      +spi("Filename", "smbfn", "smb.fn", "smb")
-      +spi("OS", "smbos", "smb.os", "smb")
-      +spi("Version", "smbver", "smb.ver", "smb")
-
-    if (pluginFields && pluginFields.length > 0)
-      +title("Plugin", "plugin")
-      dl
-        each value,i in pluginFields
-          if (value.type === "string")
-            +spi(value.name, "plugin." + value.name + ".raw", "plugin." + value.name, "plugin")
-            +spi(value.name + " Tokens", "plugin." + value.name + ".snow", "plugin." + value.name, "plugin")
-          else if (value.type === "ip")
-            +spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
-            +spi(value.name + " GEO", "plugin." + value.name + ".geo.raw",  "plugin." + value.name + ".country", "plugin")
-            +spi(value.name + " ASN", "plugin." + value.name + ".asn.snow", "plugin." + value.name + ".asn", "plugin")
-            +spi(value.name + " RIR", "plugin." + value.name + ".rir.raw",  "plugin." + value.name + ".rir", "plugin")
-          else
-            +spi(value.name, "plugin." + value.name, "plugin." + value.name, "plugin")
+        each fvalue,fkey in cvalue
+          - if (fvalue.noFacet || fvalue.regex)
+            - continue
+          - else if (fvalue.dbField.match(/^(a1|a2|prot-term)/))
+              +spion(fvalue.friendlyName, fvalue.dbField, fvalue.exp, ckey)
+          - else if (fvalue.dbField.match(/\.snow$/))
+            +spi(fvalue.friendlyName, fvalue.dbField.replace(".snow", ".raw"), fvalue.exp, ckey)
+            +spi(fvalue.friendlyName + " Tokens", fvalue.dbField, fvalue.exp, ckey)
+          - else if (fvalue.rawField)
+              +spi(fvalue.friendlyName, fvalue.rawField, fvalue.exp, ckey)
+              +spi(fvalue.friendlyName + " Tokens", fvalue.dbField, fvalue.exp, ckey)
+          - else
+              +spi(fvalue.friendlyName, fvalue.dbField, fvalue.exp, ckey)
 
   script(type='text/javascript').
     var initialDisplayLength = 100;
@@ -204,7 +63,7 @@ block content
     var fetchSize = {};
     var spiTerms = {};
 
-    $(".spion").prop("indeterminate", true);
+    $(".spion").prop("checked", "checked");
 
     $(window).bind('popstate', function(e) {
       if (window.history.ready) {
@@ -224,8 +83,6 @@ block content
           var field = item.id.substring(6);
           if (fetchSize[field]) {
             fullstate += "," + field + ":" + fetchSize[field];
-          } else if ($(item).prop("indeterminate")) {
-            fullstate += "," + field + ":10";
           } else if ($(item).prop("checked")) {
             fullstate += "," + field + ":100";
           }
@@ -329,14 +186,7 @@ block content
       var state = "";
 
       var spida = $("[id='SPIda-" + field + "']");
-      if (item.prop("indeterminate")) {
-        state = field + ":10";
-        if (append) {
-          spida.append(" <img src=\"spinning.gif\">");
-        } else {
-          spida.html("<img src=\"spinning.gif\">");
-        }
-      } else if (item.prop("checked")) {
+      if (item.prop("checked")) {
         if (!fetchSize[field]) {
           fetchSize[field] = 100;
         }
@@ -385,10 +235,6 @@ block content
 
     function moreSPI(spii) {
       var spick = $("[id='SPIck-" + spii + "']");
-      if (spick.prop("indeterminate")) {
-        spick.prop("indeterminate", null);
-        spick.prop("checked", "checked");
-      }
       if (fetchSize[spii]) {
         fetchSize[spii] += 100;
       }
@@ -411,12 +257,10 @@ block content
         var item = $(e.target);
         if (item.prop("checked")) {
           $("." + e.target.id.substring(7)).each(function() {
-            $(this).prop("indeterminate", null);
             $(this).prop("checked", "checked").triggerHandler('change');
           });
         } else {
           $("." + e.target.id.substring(7)).each(function() {
-            $(this).prop("indeterminate", null);
             $(this).prop("checked", false).triggerHandler('change');
           });
         }
@@ -435,13 +279,8 @@ block content
         initialParams.spi.split(",").forEach(function (item) {
           var parts = item.split(":");
           var spick = $("[id='SPIck-" + parts[0] + "']");
-          if (parts[1] === "10") {
-            spick.prop("indeterminate");
-          } else {
-            fetchSize[parts[0]] = +parts[1];
-            spick.prop("indeterminate", null);
-            spick.prop("checked", "checked");
-          }
+          fetchSize[parts[0]] = +parts[1];
+          spick.prop("checked", "checked");
         });
       }
 

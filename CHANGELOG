@@ -1,3 +1,14 @@
+0.11.0 2014/xx/xx
+  - Major internal fields refactoring
+  - Fields are now 'easy' to create, only need to change 2 places
+  - db.pl upgrade should be needed less often
+  - Plugins/Parsers can have their own sessionDetail UI
+  - BREAKING: Many of the older expression that were kept for backwards 
+    compatibility no longer work
+  - BREAKING: All plugins need to be rebuilt, and updated
+  - New protocols, dns.status, dns.query.type, dns.query.class fields
+  - Fixed bug with http parser not capturing last query value
+
 0.10.1 2014/03/30
   - Status code not being set when . after mime data
   - db.pl has simple mv/rm commands now

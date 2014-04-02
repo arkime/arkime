@@ -59,6 +59,7 @@
                2782,
                2864
             ],
+            "prot-term-cnt" : 3,
             "hpathcnt" : 1,
             "hh2" : [
                "http:header:accept-ranges",
@@ -101,6 +102,11 @@
             "p2" : 1080,
             "gsocksip" : "USA",
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
             ],
@@ -173,6 +179,7 @@
                5802,
                5884
             ],
+            "prot-term-cnt" : 3,
             "hpathcnt" : 1,
             "hh2" : [
                "http:header:accept-ranges",
@@ -212,6 +219,11 @@
             "hh1cnt" : 3,
             "p2" : 1080,
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
             ],
@@ -286,6 +298,7 @@
                8979,
                9061
             ],
+            "prot-term-cnt" : 3,
             "hpathcnt" : 1,
             "hh2" : [
                "http:header:accept-ranges",
@@ -328,6 +341,11 @@
             "p2" : 1080,
             "gsocksip" : "USA",
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
             ],

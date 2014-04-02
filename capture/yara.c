@@ -1,13 +1,13 @@
 /* yara.c  -- Functions dealing with yara library
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
- * 
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ void moloch_yara_report_error(int error_level, const char* file_name, int line_n
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules) 
+void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->error_report_function = moloch_yara_report_error;
@@ -49,9 +49,9 @@ void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 
         if (rule_file != NULL) {
             int errors = yr_compiler_add_file(*compiler, rule_file, NULL);
-                                    
+
             fclose(rule_file);
-            
+
             if (errors) {
                 exit (0);
             }
@@ -78,16 +78,16 @@ int moloch_yara_callback(int message, YR_RULE* rule, MolochSession_t* session)
     char* tag;
 
     if (message == CALLBACK_MSG_RULE_MATCHING) {
-        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier); 
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
+        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
+        moloch_nids_add_tag(session, tagname);
         tag = rule->tags;
         while(tag != NULL && *tag) {
-            snprintf(tagname, sizeof(tagname), "yara:%s", tag); 
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
+            snprintf(tagname, sizeof(tagname), "yara:%s", tag);
+            moloch_nids_add_tag(session, tagname);
             tag += strlen(tag) + 1;
         }
     }
-    
+
     return CALLBACK_CONTINUE;
 }
 /******************************************************************************/
@@ -129,7 +129,7 @@ void moloch_yara_report_error(const char* file_name, int line_number, const char
     LOG("%s:%d: %s\n", file_name, line_number, error_message);
 }
 /******************************************************************************/
-YARA_CONTEXT *moloch_yara_open(char *filename) 
+YARA_CONTEXT *moloch_yara_open(char *filename)
 {
     YARA_CONTEXT *context;
 
@@ -143,11 +143,11 @@ YARA_CONTEXT *moloch_yara_open(char *filename)
 
         if (rule_file != NULL) {
             yr_push_file_name(context, filename);
-                                    
+
             int errors = yr_compile_file(rule_file, context);
-            
+
             fclose(rule_file);
-            
+
             if (errors) {
                 exit (0);
             }
@@ -174,18 +174,18 @@ int moloch_yara_callback(RULE* rule, MolochSession_t* session)
     TAG* tag;
 
     if (rule->flags & RULE_FLAGS_MATCH) {
-        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier); 
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
+        snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
+        moloch_nids_add_tag(session, tagname);
         tag = rule->tag_list_head;
         while(tag != NULL) {
             if (tag->identifier) {
-                snprintf(tagname, sizeof(tagname), "yara:%s", tag->identifier); 
-                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tagname);
+                snprintf(tagname, sizeof(tagname), "yara:%s", tag->identifier);
+                moloch_nids_add_tag(session, tagname);
             }
             tag = tag->next;
         }
     }
-    
+
     return CALLBACK_CONTINUE;
 }
 /******************************************************************************/
@@ -209,7 +209,7 @@ void  moloch_yara_execute(MolochSession_t *session, unsigned char *data, int len
         block.base = 2;
     }
     block.next = NULL;
-    
+
     yr_scan_mem_blocks(&block, yContext, (YARACALLBACK)moloch_yara_callback, session);
     return;
 }
@@ -220,7 +220,7 @@ void  moloch_yara_email_execute(MolochSession_t *session, unsigned char *data, i
 
     if (!config.emailYara)
         return;
-    
+
     if (first) {
         block.data = data;
         block.size = len;
@@ -235,7 +235,7 @@ void  moloch_yara_email_execute(MolochSession_t *session, unsigned char *data, i
         block.base = 2;
     }
     block.next = NULL;
-    
+
     yr_scan_mem_blocks(&block, yEmailContext, (YARACALLBACK)moloch_yara_callback, session);
     return;
 }

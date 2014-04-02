@@ -93,6 +93,7 @@
                3742,
                3824
             ],
+            "prot-term-cnt" : 2,
             "ehocnt" : 2,
             "geip" : [
                "---"
@@ -123,6 +124,10 @@
             ],
             "p2" : 25,
             "rir2" : "ARIN",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
             "eidcnt" : 1
          },
          "header" : {
@@ -162,10 +167,14 @@
             "as1" : "AS1668 AOL Transit Data Network",
             "rir1" : "ARIN",
             "g2" : "USA",
+            "prot-term" : [
+               "tcp"
+            ],
             "pr" : 6,
             "ps" : [
                3906
-            ]
+            ],
+            "prot-term-cnt" : 1
          },
          "header" : {
             "index" : {

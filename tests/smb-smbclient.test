@@ -37,6 +37,10 @@
             "by" : 3929,
             "p2" : 445,
             "smbshcnt" : 1,
+            "prot-term" : [
+               "smb",
+               "tcp"
+            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -73,7 +77,8 @@
                4251,
                4333,
                4415
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {

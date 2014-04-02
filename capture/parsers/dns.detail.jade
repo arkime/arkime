@@ -1,0 +1,7 @@
+if (session.dnsip || session.dnsho)
+  div.sessionDetailMeta.bold DNS
+  dl.sessionDetailMeta
+    +ipArrayListPre(session, "dnsip", "IPs", "dns")
+    +arrayList(session, 'dnsho', "Hosts", "host.dns")
+    +arrayList(session.dns, 'qt-term', "Query Type", "dns.query.type")
+    +arrayList(session.dns, 'qc-term', "Query Class", "dns.query.class")

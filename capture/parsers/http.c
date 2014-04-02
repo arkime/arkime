@@ -28,8 +28,21 @@ typedef struct {
 extern MolochConfig_t        config;
 static http_parser_settings  parserSettings;
 extern uint32_t              pluginsCbs;
-extern MolochStringHashStd_t httpReqHeaders;
-extern MolochStringHashStd_t httpResHeaders;
+static MolochStringHashStd_t httpReqHeaders;
+static MolochStringHashStd_t httpResHeaders;
+
+static int hostField;
+static int urlsField;
+static int xffField;
+static int uaField;
+static int tagsReqField;
+static int tagsResField;
+static int md5Field;
+static int verReqField;
+static int verResField;
+static int pathField;
+static int keyField;
+static int valueField;
 
 /******************************************************************************/
 int
@@ -84,7 +97,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 
     if (!(http->inBody & (1 << session->which))) {
         if (moloch_memstr(at, length, "password=", 9)) {
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:password");
+            moloch_nids_add_tag(session, "http:password");
         }
 
         moloch_parsers_magic_tag(session, "http:content", at, length);
@@ -119,7 +132,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
         char *ch = http->urlString->str;
         while (*ch) {
             if (*ch < 32) {
-                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:control-char");
+                moloch_nids_add_tag(session, "http:control-char");
                 break;
             }
             ch++;
@@ -133,20 +146,20 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
     if (http->urlString && http->hostString) {
         char *colon = strchr(http->hostString->str+2, ':');
         if (colon) {
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
         } else {
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
         }
 
         char *question = strchr(http->urlString->str, '?');
         if (question) {
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_PATH, session, http->urlString->str, question - http->urlString->str, TRUE);
+            moloch_field_string_add(pathField, session, http->urlString->str, question - http->urlString->str, TRUE);
             char *start = question+1;
             char *ch;
-            int   field = MOLOCH_FIELD_HTTP_KEY;
+            int   field = keyField;
             for (ch = start; *ch; ch++) {
                 if (*ch == '&') {
-                    if (ch != start && (config.parseQSValue || field == MOLOCH_FIELD_HTTP_KEY)) {
+                    if (ch != start && (config.parseQSValue || field == keyField)) {
                         char *str = g_uri_unescape_segment(start, ch, NULL);
                         if (!str) {
                             moloch_field_string_add(field, session, start, ch-start, TRUE);
@@ -155,10 +168,10 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
                         }
                     }
                     start = ch+1;
-                    field = MOLOCH_FIELD_HTTP_KEY;
+                    field = keyField;
                     continue;
                 } else if (*ch == '=') {
-                    if (ch != start && (config.parseQSValue || field == MOLOCH_FIELD_HTTP_KEY)) {
+                    if (ch != start && (config.parseQSValue || field == keyField)) {
                         char *str = g_uri_unescape_segment(start, ch, NULL);
                         if (!str) {
                             moloch_field_string_add(field, session, start, ch-start, TRUE);
@@ -167,11 +180,19 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
                         }
                     }
                     start = ch+1;
-                    field = MOLOCH_FIELD_HTTP_VALUE;
+                    field = valueField;
+                }
+            }
+            if (config.parseQSValue && field == valueField && ch > start) {
+                char *str = g_uri_unescape_segment(start, ch, NULL);
+                if (!str) {
+                    moloch_field_string_add(field, session, start, ch-start, TRUE);
+                } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                    g_free(str);
                 }
             }
         } else {
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_PATH, session, http->urlString->str, http->urlString->len, TRUE);
+            moloch_field_string_add(pathField, session, http->urlString->str, http->urlString->len, TRUE);
         }
 
         if (http->urlString->str[0] != '/') {
@@ -179,42 +200,44 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
             /* If the host header is in the first 8 bytes of url then just use the url */
             if (result && result - http->urlString->str <= 8) {
-                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->urlString->str, http->urlString->len, FALSE);
+                moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
                 g_string_free(http->urlString, FALSE);
                 g_string_free(http->hostString, TRUE);
             } else {
                 /* Host header doesn't match the url */
                 g_string_append(http->hostString, ";");
                 g_string_append(http->hostString, http->urlString->str);
-                moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->hostString->str, http->hostString->len, FALSE);
+                moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
                 g_string_free(http->urlString, TRUE);
                 g_string_free(http->hostString, FALSE);
             }
         } else {
             /* Normal case, url starts with /, so no extra host in url */
             g_string_append(http->hostString, http->urlString->str);
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->hostString->str, http->hostString->len, FALSE);
+            moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
             g_string_free(http->urlString, TRUE);
             g_string_free(http->hostString, FALSE);
         }
 
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
+        moloch_nids_add_tag(session, "protocol:http");
+        moloch_nids_add_protocol(session, "http");
 
         http->urlString = NULL;
         http->hostString = NULL;
     } else if (http->urlString) {
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_URLS, session, http->urlString->str, http->urlString->len, FALSE);
+        moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
         g_string_free(http->urlString, FALSE);
 
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
+        moloch_nids_add_tag(session, "protocol:http");
+        moloch_nids_add_protocol(session, "http");
 
         http->urlString = NULL;
     } else if (http->hostString) {
         char *colon = strchr(http->hostString->str+2, ':');
         if (colon) {
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
         } else {
-            moloch_field_string_add(MOLOCH_FIELD_HTTP_HOST, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
         }
 
         g_string_free(http->hostString, TRUE);
@@ -223,7 +246,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
     if (http->inBody & (1 << session->which)) {
         const char *md5 = g_checksum_get_string(http->checksum[session->which]);
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_MD5, session, (char*)md5, 32, TRUE);
+        moloch_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
     }
 
     return 0;
@@ -268,7 +291,7 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
 
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
-                moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "http:bad-xff");
+                moloch_nids_add_tag(session, "http:bad-xff");
                 LOG("ERROR - Didn't understand ip: %s %s %d", http->valueString[session->which]->str, ip, ia);
                 continue;
             }
@@ -349,7 +372,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);
-        moloch_nids_add_tag(session, MOLOCH_FIELD_HTTP_TAGS_REQ+session->which, header);
+        moloch_nids_add_tag_type(session, tagsReqField+session->which, header);
     }
 
     moloch_plugins_cb_hp_ohv(session, parser, at, length);
@@ -387,12 +410,12 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
     if (parser->status_code == 0) {
         snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_VER_REQ, session, version, len, TRUE);
+        moloch_nids_add_tag(session, tag);
+        moloch_field_string_add(verReqField, session, version, len, TRUE);
     } else {
         snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tag);
-        moloch_field_string_add(MOLOCH_FIELD_HTTP_VER_RES, session, version, len, TRUE);
+        moloch_nids_add_tag(session, tag);
+        moloch_field_string_add(verResField, session, version, len, TRUE);
     }
 
     if (http->inValue & (1 << session->which) && http->pos[session->which]) {
@@ -457,10 +480,11 @@ void http_free(MolochSession_t UNUSED(*session), void *uw)
 /******************************************************************************/
 void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
 {
-    if (moloch_nids_has_tag(session, MOLOCH_FIELD_TAGS, "protocol:http"))
+    if (moloch_nids_has_protocol(session, "http"))
         return;
 
-    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:http");
+    moloch_nids_add_tag(session, "protocol:http");
+    moloch_nids_add_protocol(session, "http");
 
     HTTPInfo_t            *http          = MOLOCH_TYPE_ALLOC0(HTTPInfo_t);
 
@@ -488,18 +512,101 @@ static const char *method_strings[] =
     0
     };
 
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_HOST,     "ho",     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_URLS,     "us",     MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_XFF,      "xff",    MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_SCNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_UA,       "ua",     MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_REQ, "hh1",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_TAGS_RES, "hh2",    MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_MD5,      "hmd5",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_VER_REQ,  "hsver",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_VER_RES,  "hdver",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_PATH,     "hpath",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_KEY,      "hkey",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_HTTP_VALUE,    "hval",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    hostField = moloch_field_define("http", "lotermfield",
+        "host.http", "Hostname", "ho", 
+        "HTTP host header field", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "aliases", "[\"http.host\"]", NULL);
+
+    urlsField = moloch_field_define("http", "textfield",
+        "http.uri", "URI", "us", 
+        "URIs for request", 
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT, 
+        "rawField", "rawus",
+        NULL);
+
+    xffField = moloch_field_define("http", "ip",
+        "ip.xff", "XFF IP", "xff", 
+        "X-Forwarded-For Header",
+        MOLOCH_FIELD_TYPE_IP_HASH, MOLOCH_FIELD_FLAG_SCNT | MOLOCH_FIELD_FLAG_IPPRE, 
+        NULL);
+
+    uaField = moloch_field_define("http", "textfield",
+        "http.user-agent", "Useragent", "ua", 
+        "User-Agent Header", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "rawField", "rawua",
+        NULL);
+
+    tagsReqField = moloch_field_define("http", "lotermfield",
+        "http.hasheader.src", "Has Src Header", "hh1", 
+        "Request has header present",   
+        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    tagsResField = moloch_field_define("http", "lotermfield",
+        "http.hasheader.dst", "Has Dst Header", "hh2", 
+        "Response has header present",   
+        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    moloch_field_define("http", "lotermfield",
+        "http.hasheader", "Has Src or Dst Header", "hhall", 
+        "Shorthand for http.hasheader.src or http.hasheader.dst",   
+        0,  MOLOCH_FIELD_FLAG_FAKE, 
+        NULL);
+
+    md5Field = moloch_field_define("http", "lotermfield",
+        "http.md5", "Body MD5", "hmd5", 
+        "MD5 of http body response",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    moloch_field_define("http", "termfield",
+        "http.version", "Version", "httpversion", 
+        "HTTP version number",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        "regex", "^http.version.[a-z]+$",
+        NULL);
+
+    verReqField = moloch_field_define("http", "termfield",
+        "http.version.src", "Src Version", "hsver", 
+        "Request HTTP version number",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    verResField = moloch_field_define("http", "termfield",
+        "http.version.dst", "Dst Version", "hdver", 
+        "Response HTTP version number",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    pathField = moloch_field_define("http", "termfield",
+        "http.uri.path", "URI Path", "hpath", 
+        "Path portion of URI",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    keyField = moloch_field_define("http", "termfield",
+        "http.uri.key", "QS Keys", "hkey", 
+        "Keys from query string of URI",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    valueField = moloch_field_define("http", "termfield",
+        "http.uri.value", "QS Values", "hval", 
+        "Values from query string of URI",  
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, httpResHeaders, moloch_string_hash, moloch_string_cmp);
+
+    moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", xffField);
+    moloch_config_add_header(&httpReqHeaders, "user-agent", uaField);
+    moloch_config_add_header(&httpReqHeaders, "host", hostField);
+    moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "hdrs.hreq-", &httpReqHeaders, 0);
+    moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "hdrs.hres-", &httpResHeaders, 0);
 
     int i;
     for (i = 0; method_strings[i]; i++) {

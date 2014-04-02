@@ -2,6 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:54263,33554442:8855"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 954,
             "db" : 24346,
             "socksip" : "74.125.131.103",
@@ -34,6 +54,7 @@
             "fs" : [],
             "by2" : 2199,
             "g1" : "USA",
+            "hvalcnt" : 7,
             "hsver" : [
                "1.1"
             ],
@@ -98,6 +119,7 @@
                28015,
                28091
             ],
+            "prot-term-cnt" : 3,
             "hpathcnt" : 1,
             "hkey" : [
                "hl",
@@ -150,26 +172,6 @@
             "a1" : "10.0.0.1",
             "fb2" : "050100050100014a",
             "db1" : 23392,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:54263,33554442:8855"
-               ],
-               "test.number" : [
-                  33554442
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "rirsocksip" : "ARIN",
             "hmd5" : [
                "2069181ae704855f29caf964ca52ec49",
@@ -181,8 +183,22 @@
             "p2" : 8855,
             "gsocksip" : "USA",
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
+            ],
+            "hval" : [
+               "firefox",
+               "en",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "sheepskin boots",
+               "10",
+               "0",
+               "us"
             ]
          },
          "header" : {

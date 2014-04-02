@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* moloch.h -- General Moloch include file
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -30,7 +30,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 8
+#define MOLOCH_API_VERSION 9
 
 /******************************************************************************/
 /*
@@ -54,7 +54,7 @@ typedef struct moloch_string {
     struct moloch_string *s_next, *s_prev;
     char                 *str;
     uint32_t              s_hash;
-    uint32_t              uw;
+    int                   uw;
     short                 s_bucket;
     short                 len:15;
     short                 utf8:1;
@@ -128,22 +128,43 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_TYPE_IP_HASH    7
 #define MOLOCH_FIELD_TYPE_CERTSINFO  8
 
-#define MOLOCH_FIELD_FLAG_CNT         0x0001
-#define MOLOCH_FIELD_FLAG_SCNT        0x0002
-#define MOLOCH_FIELD_FLAG_FORCE_UTF8  0x0004
-#define MOLOCH_FIELD_FLAG_HEADERS     0x0008
-#define MOLOCH_FIELD_FLAG_PLUGINS     0x0010
-#define MOLOCH_FIELD_FLAG_CONTINUE    0x0020
-#define MOLOCH_FIELD_FLAG_IPPOST      0x0040
+/* These are ones you should set */
+/* Field should be set on all linked sessions */
+#define MOLOCH_FIELD_FLAG_LINKED_SESSIONS    0x0001
+/* Create a XXX-cnt field with unique count */
+#define MOLOCH_FIELD_FLAG_COUNT              0x0002
+/* Force the field to be utf8 */
+#define MOLOCH_FIELD_FLAG_FORCE_UTF8         0x0004
+/* Don't create in fields db table */
+#define MOLOCH_FIELD_FLAG_NODB               0x0008
+/* Don't create in capture list */ 
+#define MOLOCH_FIELD_FLAG_FAKE               0x0010
 
-#define MOLOCH_FIELD_FLAG_HP          0x0018
+/* These are ones you shouldn't set, for old cruf before we were smarter */
+/* XXXcnt - dont use */
+#define MOLOCH_FIELD_FLAG_CNT                0x1000
+/* XXXscnt - dont use */
+#define MOLOCH_FIELD_FLAG_SCNT               0x2000
+/* prepend ip stuff - dont use*/
+#define MOLOCH_FIELD_FLAG_IPPRE              0x4000
 
-typedef struct {
-    char                 *name;
-    int                   len;
-    int                   pos;
-    uint16_t              type;
-    uint16_t              flags;
+
+typedef struct moloch_field_info {
+    struct moloch_field_info *f_next, *f_prev;
+    char                     *dbField;
+    uint32_t                  f_hash;
+    uint32_t                  f_bucket;
+    uint32_t                  f_count;
+
+    int                       dbFieldLen;
+    int                       dbGroupNum;
+    char                     *dbGroup;
+    int                       dbGroupLen;
+    char                     *expression;
+    char                     *group;
+    int                       pos;
+    uint16_t                  type;
+    uint16_t                  flags;
 } MolochFieldInfo_t;
 
 typedef struct {
@@ -402,7 +423,8 @@ void moloch_quit();
  */
 void moloch_config_init();
 void moloch_config_load_local_ips();
-void moloch_config_load_headers();
+void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos);
+void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
 void moloch_config_exit();
 
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
@@ -424,6 +446,8 @@ void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
 uint32_t moloch_db_peek_tag(const char *tagname);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
+void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap);
+MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip);
 void     moloch_db_exit();
 
 /******************************************************************************/
@@ -481,10 +505,13 @@ void moloch_http_free_server(void *serverV);
  * nids.c
  */
 
-void      moloch_nids_root_init();
+void     moloch_nids_root_init();
 void     moloch_nids_init();
-void     moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag);
-gboolean moloch_nids_has_tag(MolochSession_t *session, int tagtype, const char *tag);
+void     moloch_nids_add_protocol(MolochSession_t *session, const char *protocol);
+gboolean moloch_nids_has_protocol(MolochSession_t *session, const char *protocol);
+void     moloch_nids_add_tag(MolochSession_t *session, const char *tag);
+void     moloch_nids_add_tag_type(MolochSession_t *session, int field, const char *tag);
+gboolean moloch_nids_has_tag(MolochSession_t *session, const char *tag);
 uint32_t moloch_nids_dropped_packets();
 uint32_t moloch_nids_monitoring_sessions();
 uint32_t moloch_nids_disk_queue();
@@ -595,69 +622,12 @@ void moloch_yara_exit();
  * field.c
  */
 
-enum {
-MOLOCH_FIELD_USER,
-
-MOLOCH_FIELD_CERTSINFO,
-
-MOLOCH_FIELD_HTTP_HOST,
-MOLOCH_FIELD_HTTP_URLS,
-MOLOCH_FIELD_HTTP_XFF,
-MOLOCH_FIELD_HTTP_UA,
-MOLOCH_FIELD_HTTP_TAGS_REQ, // Must be right before RES
-MOLOCH_FIELD_HTTP_TAGS_RES, // Must be right after REQ
-MOLOCH_FIELD_HTTP_MD5,
-MOLOCH_FIELD_HTTP_VER_REQ,
-MOLOCH_FIELD_HTTP_VER_RES,
-MOLOCH_FIELD_HTTP_PATH,
-MOLOCH_FIELD_HTTP_KEY,
-MOLOCH_FIELD_HTTP_VALUE,
-
-MOLOCH_FIELD_SSH_VER,
-MOLOCH_FIELD_SSH_KEY,
-
-MOLOCH_FIELD_DNS_IP,
-MOLOCH_FIELD_DNS_HOST,
-
-MOLOCH_FIELD_EMAIL_HOST,
-MOLOCH_FIELD_EMAIL_UA,
-MOLOCH_FIELD_EMAIL_SRC,
-MOLOCH_FIELD_EMAIL_DST,
-MOLOCH_FIELD_EMAIL_SUB,
-MOLOCH_FIELD_EMAIL_ID,
-MOLOCH_FIELD_EMAIL_CT,
-MOLOCH_FIELD_EMAIL_MV,
-MOLOCH_FIELD_EMAIL_FN,
-MOLOCH_FIELD_EMAIL_MD5,
-MOLOCH_FIELD_EMAIL_FCT,
-MOLOCH_FIELD_EMAIL_IP,
-MOLOCH_FIELD_EMAIL_RECEIVED,
-MOLOCH_FIELD_EMAIL_HH,
-
-MOLOCH_FIELD_IRC_NICK,
-MOLOCH_FIELD_IRC_CHANNELS,
-
-MOLOCH_FIELD_SMB_SHARE,
-MOLOCH_FIELD_SMB_FN,
-MOLOCH_FIELD_SMB_OS,
-MOLOCH_FIELD_SMB_DOMAIN,
-MOLOCH_FIELD_SMB_VER,
-MOLOCH_FIELD_SMB_USER,
-MOLOCH_FIELD_SMB_HOST,
-
-MOLOCH_FIELD_SOCKS_IP,
-MOLOCH_FIELD_SOCKS_HOST,
-MOLOCH_FIELD_SOCKS_PORT,
-MOLOCH_FIELD_SOCKS_USER,
-
-MOLOCH_FIELD_TAGS // Must be last
-};
-
 void moloch_field_init();
-int moloch_field_define(char *name, int type, int flags);
-void moloch_field_define_internal(int pos, char *name, int type, int flags);
-int moloch_field_get(char *name);
-gboolean moloch_field_string_add(int pos, MolochSession_t *session, char *string, int len, gboolean copy);
+void moloch_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len);
+int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...);
+int moloch_field_by_db(char *dbField);
+int moloch_field_by_exp(char *exp);
+gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
 void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);

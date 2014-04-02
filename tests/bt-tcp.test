@@ -2,6 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:1203,33554442:26001"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 0,
             "db" : 68,
             "lpd" : 1387744084305,
@@ -27,39 +47,24 @@
             "g1" : "USA",
             "a1" : "10.0.0.1",
             "db1" : 68,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:1203,33554442:26001"
-               ],
-               "test.number" : [
-                  33554442
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "pa2" : 1,
             "p1" : 1203,
             "by1" : 248,
             "by" : 314,
             "p2" : 26001,
             "as1" : "AS0000 This is neat",
+            "prot-term" : [
+               "tcp",
+               "bittorrent"
+            ],
             "pr" : 6,
             "ps" : [
                24,
                106,
                188,
                264
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {

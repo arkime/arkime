@@ -2,6 +2,20 @@
    "packets" : [
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "MX"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
             "db2" : 208,
             "db" : 266,
             "lpd" : 1386104997055,
@@ -9,13 +23,10 @@
             "no" : "test",
             "lp" : 1386104997,
             "pa" : 2,
-            "tacnt" : 6,
+            "tacnt" : 3,
             "fb1" : "4c17010000010000",
             "a2" : "10.2.95.39",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:MX",
-               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "udp"
@@ -34,11 +45,16 @@
             "by1" : 66,
             "by" : 282,
             "p2" : 53,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
             "pr" : 17,
             "ps" : [
                24,
                106
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "cluster5.us.messagelabs.com",
                "mx.com",

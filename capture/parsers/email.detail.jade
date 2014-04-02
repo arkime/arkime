@@ -1,0 +1,18 @@
+if (user.emailSearch && (session.esub || session.esrc || session.edst || session.eua || session.eid || session.emv || session.ect || session.efn || session.emd5 || session.eip))
+  div.sessionDetailMeta.bold Email
+  dl.sessionDetailMeta
+    +ipArrayListPre(session, "eip", "IPs", "email")
+    +arrayList(session, 'eho', "Hosts", "host.email")
+    +arrayList(session, 'ehh', "Headers", "email.hasheader")
+    +arrayList(session, 'esub', "Subjects", "email.subject")
+    +arrayList(session, 'esrc', "Senders", "email.src")
+    +arrayList(session, 'edst', "Destinations", "email.dst")
+    +arrayList(session, 'eua', "User Agents", "email.ua")
+    +arrayList(session, 'eid', "Message Ids", "email.id")
+    +arrayList(session, 'emv', "Mime Versions", "email.mv")
+    +arrayList(session, 'ect', "Content Types", "email.ct")
+    +arrayList(session, 'efn', "Filenames", "email.fn")
+    +arrayList(session, 'emd5', "Attachment MD5s", "email.md5")
+    if (session.hdrs)
+      each value,i in emailFields
+        +arrayList(session.hdrs, "ehead-" + value.name, value.name + " Header", "email." + value.name)

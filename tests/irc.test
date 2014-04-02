@@ -57,6 +57,7 @@
                8713,
                8795
             ],
+            "prot-term-cnt" : 2,
             "lpd" : 1387554256201,
             "fp" : 1387554241,
             "as2" : "AS23028 Team Cymru Inc.",
@@ -72,7 +73,11 @@
             "by1" : 1046,
             "p2" : 8000,
             "rir2" : "ARIN",
-            "ircnckcnt" : 1
+            "ircnckcnt" : 1,
+            "prot-term" : [
+               "irc",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

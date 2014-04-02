@@ -3,6 +3,26 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:58802,33554442:25"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 0,
             "db" : 325,
             "esrc" : [
@@ -44,6 +64,7 @@
                260,
                655
             ],
+            "prot-term-cnt" : 2,
             "lpd" : 1394730057312,
             "fp" : 1394730057,
             "as2" : "AS0001 Cool Beans!",
@@ -56,29 +77,13 @@
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "db1" : 325,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:58802,33554442:25"
-               ],
-               "test.number" : [
-                  33554442
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "by1" : 561,
             "esrccnt" : 1,
-            "p2" : 25
+            "p2" : 25,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

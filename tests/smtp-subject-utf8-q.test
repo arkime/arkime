@@ -3,6 +3,26 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "test" : {
+               "number" : [
+                  3795905600
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:20720,-499061696:25"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 495,
             "db" : 2329,
             "esrc" : [
@@ -81,6 +101,7 @@
                3763,
                3845
             ],
+            "prot-term-cnt" : 2,
             "ehocnt" : 3,
             "geip" : [
                "---",
@@ -99,26 +120,6 @@
             "a1" : "10.0.0.1",
             "fb2" : "32323020616f6c6d",
             "db1" : 1834,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:20720,-499061696:25"
-               ],
-               "test.number" : [
-                  3795905600
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "rireip" : [
                "",
                ""
@@ -134,7 +135,11 @@
                "1.0"
             ],
             "p2" : 25,
-            "rir2" : "ARIN"
+            "rir2" : "ARIN",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

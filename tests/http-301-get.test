@@ -49,6 +49,7 @@
                788,
                870
             ],
+            "prot-term-cnt" : 2,
             "hpathcnt" : 1,
             "hh2" : [
                "http:header:connection",
@@ -83,6 +84,10 @@
             "p2" : 80,
             "rir2" : "ARIN",
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
             ],

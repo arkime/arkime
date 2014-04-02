@@ -5,16 +5,95 @@ mixin fieldsSelect(name,classname,simple,extra)
     if (extra)
       - fields = fields.concat(extra).sort(function(a,b) {return (a.exp > b.exp?1:-1);})
     each value in fields
-      if (value.db !== null)
+      if (value.regex)
+        - continue
+
+      if (value.dbField !== null)
         if (simple)
-          option(value="#{value.db}") #{value.exp}
+          option(value="#{value.dbField}") #{value.exp}
         else
           if (value.type.match(/textfield$/))
-            if (value.db.match(/.snow$/))
-              - var tmp = value.db.replace(".snow", ".raw");
+            if (value.dbField.match(/.snow$/))
+              - var tmp = value.dbField.replace(".snow", ".raw");
               option(value="#{tmp}", exp='#{value.exp}') #{value.exp}
             else
-              option(value="raw#{value.db}", exp='#{value.exp}') #{value.exp}
-            option(value="#{value.db}", exp='#{value.exp}') #{value.exp} Tokens
+              option(value="raw#{value.dbField}", exp='#{value.exp}') #{value.exp}
+            option(value="#{value.dbField}", exp='#{value.exp}') #{value.exp} Tokens
           else
-            option(value="#{value.db}", exp='#{value.exp}') #{value.exp}
+            option(value="#{value.dbField}", exp='#{value.exp}') #{value.exp}
+
+//- Standard method to print an array of values with commas
+mixin arrayList(container, field, title, expr, extra)
+  if ((container && container[field]) || extra)
+    dt #{title}
+    dd
+      if (container && container[field])
+        each value,i in container[field]
+          if (i > 0)
+            |, 
+          if (value.length == 0)
+            a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
+          else if (typeof value == "string")
+            a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+          else
+            a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+      if (extra)
+        if (values)
+          |, 
+        |!{extra}
+
+//- Standard method to print ip, port, geo, asn, and rir info
+mixin ipPrint(ip,port,geo,as,rir,expr, full)
+  - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
+  if (full)
+    a(href='#', onclick='return addExpression("#{expr} == #{ipstr}");') #{ipstr}
+  else
+    a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");') #{ipstr}
+  - if (port)
+    | :
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.port == #{port}");') #{port}
+    else
+      a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
+
+  - if (geo)
+    |  (
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.country == #{geo}");') #{geo}
+    else
+      a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");') #{geo}
+    |)
+  - if (as)
+    |  [
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.asn == \\\"#{as}\\\"");') #{as}
+    else
+      a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");') #{as}
+    |]
+  - if (rir)
+    |  {
+    if (full)
+      a(href='#', onclick='return addExpression("#{expr}.rir == \\\"#{rir}\\\"");') #{rir}
+    else
+      a(href='#', onclick='return addExpression("rir.#{expr} == \\\"#{rir}\\\"");') #{rir}
+    |}
+
+//- Method to print ip info with commas when the field names use the old prefix method - shouldn't be used for new fields
+mixin ipArrayListPre(session, field, title, expr)
+  if (session[field])
+    dt #{title}
+    dd
+      each ip,i in session[field]
+        if (i > 0)
+          |, 
+        +ipPrint(session[field][i], undefined, (session["g" + field]?session["g" + field][i]:null), (session["as" + field]?session["as" + field][i]:null), (session["rir" + field]?session["rir" + field][i]:null), expr)
+
+//- Standard method to print ip info with commas
+mixin ipArrayList(container, field, title, expr)
+  if (container[field])
+    dt #{title}
+    dd
+      each ip,i in container[field]
+        if (i > 0)
+          |, 
+        +ipPrint(container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)

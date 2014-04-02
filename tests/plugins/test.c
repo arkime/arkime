@@ -23,12 +23,25 @@ void test_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 /******************************************************************************/
 void moloch_plugin_init()
 {
-    test_number = moloch_field_get("test.number");
-    test_ip = moloch_field_get("test.ip");
-    test_string = moloch_field_get("test.string");
+    test_number = moloch_field_define("test", "integer",
+        "test.number", "Test Number", "test.number",
+        "Test Number",
+        MOLOCH_FIELD_TYPE_INT_HASH,      0, 
+        NULL);
+
+    test_ip = moloch_field_define("test", "ip",
+        "test.ip", "Test Ip", "test.ip",
+        "Test IP",
+        MOLOCH_FIELD_TYPE_IP_HASH,       0, 
+        NULL);
+
+    test_string = moloch_field_define("test", "textfield",
+        "test.string", "Test String", "test.string.snow",
+        "Test String",
+        MOLOCH_FIELD_TYPE_STR_HASH,       0, 
+        NULL);
 
     moloch_plugins_register("string", FALSE);
-
     moloch_plugins_set_cb("string",
       NULL,
       NULL,

@@ -49,6 +49,7 @@
                6358,
                6440
             ],
+            "prot-term-cnt" : 2,
             "lpd" : 1385396821236,
             "fp" : 1385396821,
             "as2" : "AS36459 GitHub, Inc.",
@@ -89,7 +90,11 @@
                }
             ],
             "p2" : 443,
-            "rir2" : "ARIN"
+            "rir2" : "ARIN",
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {
@@ -128,12 +133,16 @@
             "p2" : 443,
             "rir2" : "ARIN",
             "g2" : "USA",
+            "prot-term" : [
+               "tcp"
+            ],
             "pr" : 6,
             "ps" : [
                6510,
                6580,
                6662
-            ]
+            ],
+            "prot-term-cnt" : 1
          },
          "header" : {
             "index" : {

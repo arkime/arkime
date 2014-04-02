@@ -1,13 +1,13 @@
 /* http.c  -- Functions dealing with http connections.
- * 
+ *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,7 +61,7 @@ typedef struct molochconn_t {
     struct timeval       startTime;
     struct timeval       sendTime;
     struct timeval       endTime;
-    char                 hp_data[1000000];
+    char                 hp_data[10000000];
     uint32_t             sent;
     uint32_t             hp_len;
     uint16_t             hp_complete;
@@ -320,7 +320,7 @@ void moloch_http_finish( MolochConn_t *conn, gboolean sync)
 
     gettimeofday(&conn->endTime, NULL);
     if (config.logESRequests)
-        LOG("%s %ldms %ldms", 
+        LOG("%s %ldms %ldms",
            line,
            (conn->sendTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->sendTime.tv_usec/1000 - conn->startTime.tv_usec/1000),
            (conn->endTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->endTime.tv_usec/1000 - conn->startTime.tv_usec/1000)
@@ -357,7 +357,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
                           (int)request->data_len);
 
     gettimeofday(&conn->startTime, NULL);
-    snprintf(conn->line, sizeof(conn->line), "%15.15s %d/%d/%d %p %s %s %.*s %d", 
+    snprintf(conn->line, sizeof(conn->line), "%15.15s %d/%d/%d %p %s %s %.*s %d",
            ctime(&conn->startTime.tv_sec)+4,
            conn->server->connQ.e_count,
            conn->server->requestQ[0].r_count,
@@ -387,7 +387,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
     while (!gerror && sent < request->data_len) {
         sent += g_socket_send(conn->conn, request->data+sent, request->data_len-sent, NULL, &gerror);
     }
-    
+
     gettimeofday(&conn->sendTime, NULL);
 
     if (gerror) {
@@ -614,7 +614,7 @@ void moloch_http_exit()
     deflateEnd(&z_strm);
 }
 /******************************************************************************/
-int moloch_http_queue_length(void *serverV) 
+int moloch_http_queue_length(void *serverV)
 {
     MolochHttp_t *server = serverV;
     if (!server) return 0;

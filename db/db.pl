@@ -24,6 +24,7 @@
 # 15 - New first byte fields, socks user
 # 16 - New dynamic plugin section
 # 17 - email hasheader, db,pa,by src and dst
+# 18 - fields db
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -32,7 +33,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 17;
+my $VERSION = 18;
 my $verbose = 0;
 
 ################################################################################
@@ -73,8 +74,9 @@ sub showHelp($)
 ################################################################################
 sub waitFor
 {
-    my ($str) = @_;
+    my ($str, $help) = @_;
 
+    print "Type \"$str\" to continue - $help?\n";
     while (1) {
         my $answer = <STDIN>;
         chomp $answer;
@@ -492,6 +494,322 @@ my $mapping = '
     print "Setting dstats_v1 mapping\n" if ($verbose > 0);
     esPut("/dstats_v1/dstat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
 }
+################################################################################
+sub fieldsCreate
+{
+    my $settings = '
+{
+  settings: {
+    number_of_shards: 1,
+    number_of_replicas: 0,
+    auto_expand_replicas: "0-2"
+  }
+}';
+
+    print "Creating fields index\n" if ($verbose > 0);
+    esPut("/fields", $settings);
+    fieldsUpdate();
+}
+################################################################################
+sub fieldsUpdate
+{
+    my $mapping = '
+{
+  field: {
+    _all : {enabled : 0},
+    _source : {enabled : 1},
+    dynamic_templates: [
+      {
+        template_1: {
+          match_mapping_type: "string",
+          mapping: {
+            index: "not_analyzed"
+          }
+        }
+      }
+    ]
+  }
+}';
+
+    print "Setting fields mapping\n" if ($verbose > 0);
+    esPut("/fields/field/_mapping", $mapping);
+
+    esPost("/fields/field/ip", '{
+      "friendlyName": "All IP fields",
+      "group": "general",
+      "help": "Search all ip fields",
+      "type": "ip",
+      "dbField": "ipall",
+      "portField": "portall",
+      "noFacet": true
+    }');
+    esPost("/fields/field/port", '{
+      "friendlyName": "All port fields",
+      "group": "general",
+      "help": "Search all port fields",
+      "type": "integer",
+      "dbField": "portall",
+      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
+    }');
+    esPost("/fields/field/rir", '{
+      "friendlyName": "All rir fields",
+      "group": "general",
+      "help": "Search all rir fields",
+      "type": "uptermfield",
+      "dbField": "all",
+      "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
+    }');
+    esPost("/fields/field/country", '{
+      "friendlyName": "All country fields",
+      "group": "general",
+      "help": "Search all country fields",
+      "type": "uptermfield",
+      "dbField": "all",
+      "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
+    }');
+    esPost("/fields/field/asn", '{
+      "friendlyName": "All ASN fields",
+      "group": "general",
+      "help": "Search all ASN fields",
+      "type": "textfield",
+      "dbField": "all",
+      "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
+    }');
+    esPost("/fields/field/host", '{
+      "friendlyName": "All Host fields",
+      "group": "general",
+      "help": "Search all Host fields",
+      "type": "lotextfield",
+      "dbField": "all",
+      "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
+    }');
+    esPost("/fields/field/ip.src", '{
+      "friendlyName": "Src IP",
+      "group": "general",
+      "help": "Source IP",
+      "type": "ip",
+      "dbField": "a1",
+      "portField": "p1"
+    }');
+    esPost("/fields/field/port.src", '{
+      "friendlyName": "Src Port",
+      "group": "general",
+      "help": "Source Port",
+      "type": "integer",
+      "dbField": "p1"
+    }');
+    esPost("/fields/field/asn.src", '{
+      "friendlyName": "Src ASN",
+      "group": "general",
+      "help": "GeoIP ASN string calculated from the source IP",
+      "type": "textfield",
+      "dbField": "as1",
+      "rawField": "rawas1"
+    }');
+    esPost("/fields/field/country.src", '{
+      "friendlyName": "Src Country",
+      "group": "general",
+      "help": "Source Country",
+      "type": "uptermfield",
+      "dbField": "g1"
+    }');
+    esPost("/fields/field/rir.src", '{
+      "friendlyName": "Src RIR",
+      "group": "general",
+      "help": "Source RIR",
+      "type": "uptermfield",
+      "dbField": "rir1"
+    }');
+    esPost("/fields/field/ip.dst", '{
+      "friendlyName": "Dst IP",
+      "group": "general",
+      "help": "Destination IP",
+      "type": "ip",
+      "dbField": "a2",
+      "portField": "p2"
+    }');
+    esPost("/fields/field/port.dst", '{
+      "friendlyName": "dst Port",
+      "group": "general",
+      "help": "Source Port",
+      "type": "integer",
+      "dbField": "p2"
+    }');
+    esPost("/fields/field/asn.dst", '{
+      "friendlyName": "Dst ASN",
+      "group": "general",
+      "help": "GeoIP ASN string calculated from the destination IP",
+      "type": "textfield",
+      "dbField": "as2",
+      "rawField": "rawas2"
+    }');
+    esPost("/fields/field/country.dst", '{
+      "friendlyName": "Dst Country",
+      "group": "general",
+      "help": "Destination Country",
+      "type": "uptermfield",
+      "dbField": "g2"
+    }');
+    esPost("/fields/field/rir.dst", '{
+      "friendlyName": "Dst RIR",
+      "group": "general",
+      "help": "Destination RIR",
+      "type": "uptermfield",
+      "dbField": "rir2"
+    }');
+    esPost("/fields/field/bytes", '{
+      "friendlyName": "Bytes",
+      "group": "general",
+      "help": "Total number of raw bytes sent AND received in a session",
+      "type": "integer",
+      "dbField": "by"
+    }');
+    esPost("/fields/field/bytes.src", '{
+      "friendlyName": "Src Bytes",
+      "group": "general",
+      "help": "Total number of raw bytes sent by source in a session",
+      "type": "integer",
+      "dbField": "by1"
+    }');
+    esPost("/fields/field/bytes.dst", '{
+      "friendlyName": "Dst Bytes",
+      "group": "general",
+      "help": "Total number of raw bytes sent by destination in a session",
+      "type": "integer",
+      "dbField": "by2"
+    }');
+    esPost("/fields/field/databytes", '{
+      "friendlyName": "Data bytes",
+      "group": "general",
+      "help": "Total number of data bytes sent AND received in a session",
+      "type": "integer",
+      "dbField": "db"
+    }');
+    esPost("/fields/field/databytes.src", '{
+      "friendlyName": "Src data bytes",
+      "group": "general",
+      "help": "Total number of data bytes sent by source in a session",
+      "type": "integer",
+      "dbField": "db1"
+    }');
+    esPost("/fields/field/databytes.dst", '{
+      "friendlyName": "Dst data bytes",
+      "group": "general",
+      "help": "Total number of data bytes sent by destination in a session",
+      "type": "integer",
+      "dbField": "db2"
+    }');
+    esPost("/fields/field/packets", '{
+      "friendlyName": "Packets",
+      "group": "general",
+      "help": "Total number of packets sent AND received in a session",
+      "type": "integer",
+      "dbField": "pa"
+    }');
+    esPost("/fields/field/packets.src", '{
+      "friendlyName": "Src Packets",
+      "group": "general",
+      "help": "Total number of packets sent by source in a session",
+      "type": "integer",
+      "dbField": "pa1"
+    }');
+    esPost("/fields/field/packets.dst", '{
+      "friendlyName": "Dst Packets",
+      "group": "general",
+      "help": "Total number of packets sent by destination in a session",
+      "type": "integer",
+      "dbField": "pa2"
+    }');
+    esPost("/fields/field/ip.protocol", '{
+      "friendlyName": "IP Protocol",
+      "group": "general",
+      "help": "IP protocol number or friendly name",
+      "type": "lotermfield",
+      "dbField": "pr",
+      "transform": "ipProtocolLookup"
+    }');
+    esPost("/fields/field/id", '{
+      "friendlyName": "Moloch ID",
+      "group": "general",
+      "help": "Moloch ID for the session",
+      "type": "termfield",
+      "dbField": "_id",
+      "noFacet": true
+
+    }');
+    esPost("/fields/field/rootId", '{
+      "friendlyName": "Moloch Root ID",
+      "group": "general",
+      "help": "Moloch ID of the first session in a multi session stream",
+      "type": "termfield",
+      "dbField": "ro"
+    }');
+    esPost("/fields/field/node", '{
+      "friendlyName": "Moloch Node",
+      "group": "general",
+      "help": "Moloch node name the session was recorded on",
+      "type": "termfield",
+      "dbField": "no"
+    }');
+    esPost("/fields/field/file", '{
+      "friendlyName": "Filename",
+      "group": "general",
+      "help": "Moloch offline pcap filename",
+      "type": "fileand",
+      "dbField": "fileand"
+    }');
+    esPost("/fields/field/payload8.src.hex", '{
+      "friendlyName": "Payload Src",
+      "group": "general",
+      "help": "First 8 bytes of source payload in hex",
+      "type": "lotermfield",
+      "dbField": "fb1",
+      "aliases": ["payload.src"]
+    }');
+    esPost("/fields/field/payload8.src.utf8", '{
+      "friendlyName": "Payload Src UTF8",
+      "group": "general",
+      "help": "First 8 bytes of source payload in utf8",
+      "type": "termfield",
+      "dbField": "fb1",
+      "transform": "utf8ToHex",
+      "noFacet": true
+    }');
+    esPost("/fields/field/payload8.dst.hex", '{
+      "friendlyName": "Payload Dst Hex",
+      "group": "general",
+      "help": "First 8 bytes of destination payload in hex",
+      "type": "lotermfield",
+      "dbField": "fb2",
+      "aliases": ["payload.dst"]
+    }');
+    esPost("/fields/field/payload8.dst.utf8", '{
+      "friendlyName": "Payload Dst UTF8",
+      "group": "general",
+      "help": "First 8 bytes of destination payload in utf8",
+      "type": "termfield",
+      "dbField": "fb2",
+      "transform": "utf8ToHex",
+      "noFacet": true
+    }');
+    esPost("/fields/field/payload8.hex", '{
+      "friendlyName": "Payload Hex",
+      "group": "general",
+      "help": "First 8 bytes of payload in hex",
+      "type": "lotermfield",
+      "dbField": "fballhex",
+      "regex": "^playload8\\\\..*hex$"
+    }');
+    esPost("/fields/field/payload8.utf8", '{
+      "friendlyName": "Payload UTF8",
+      "group": "general",
+      "help": "First 8 bytes of payload in hex",
+      "type": "lotermfield",
+      "dbField": "fballutf8",
+      "regex": "^playload8\\\\..*utf8$"
+    }');
+}
+
 
 ################################################################################
 sub sessionsUpdate
@@ -500,7 +818,7 @@ sub sessionsUpdate
 {
   session: {
     _all : {enabled : false},
-    dynamic: "strict",
+    dynamic: "true",
     dynamic_templates: [
       {
         template_1: {
@@ -516,8 +834,18 @@ sub sessionsUpdate
           }
         }
       }, {
-        template_plugin: {
-          path_match: "plugin.*",
+        template_georir: {
+          match_pattern: "regex",
+          path_match: ".*-(geo|rir|term)$",
+          match_mapping_type: "string",
+          mapping: {
+            omit_norms: true,
+            type: "string",
+            index: "not_analyzed"
+          }
+        }
+      }, {
+        template_string: {
           match_mapping_type: "string",
           mapping: {
             type: "multi_field",
@@ -1324,7 +1652,7 @@ sub dbCheck {
     }
 
     my $error = 0;
-    my $nodes = esGet("/_nodes?settings&process");
+    my $nodes = esGet("/_nodes?settings&process&flat_settings");
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
         my $node = $nodes->{nodes}->{$key};
@@ -1358,12 +1686,12 @@ sub dbCheck {
 
         if ($errstr) {
             $error = 1;
-            print ("\nERROR: On node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
+            print ("\nERROR: On node ", $node->{name}, " machine ", ($node->{hostname} || $node->{host}), " in file ", $node->{settings}->{config}, "\n");
             print($errstr);
         }
 
         if ($warnstr) {
-            print ("\nWARNING: On node ", $node->{name}, " machine ", $node->{hostname}, " in file ", $node->{settings}->{config}, "\n");
+            print ("\nWARNING: On node ", $node->{name}, " machine ", ($node->{hostname} || $node->{host}), " in file ", $node->{settings}->{config}, "\n");
             print($warnstr);
         }
     }
@@ -1583,12 +1911,10 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
         print "It appears this elastic search cluster already has moloch installed, this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
-        print "Type \"INIT\" to continue - do you want to erase everything?\n";
-        waitFor("INIT");
+        waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
         print "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
-        print "Type \"WIPE\" to continue - do you want to wipe everything?\n";
-        waitFor("WIPE");
+        waitFor("WIPE", "do you want to wipe everything?");
     }
     print "Erasing\n";
     esDelete("/tags_v2", 1);
@@ -1607,6 +1933,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         esDelete("/users_v1", 1);
         esDelete("/users_v2", 1);
         esDelete("/users", 1);
+        esDelete("/fields", 1);
     }
     esDelete("/tagger", 1);
 
@@ -1619,14 +1946,14 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     statsCreate();
     dstatsCreate();
     sessionsUpdate();
+    fieldsCreate();
     if ($ARGV[1] eq "init") {
         usersCreate();
     }
     print "Finished.  Have fun!\n";
 } elsif ($main::versionNumber == 0) {
     print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elasticsearch moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
-    print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
-    waitFor("UPGRADE");
+    waitFor("UPGRADE", "do you want to upgrade?");
     print "Starting Upgrade\n";
 
     esDelete("/stats", 1);
@@ -1638,6 +1965,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsCreate();
     sessionsUpdate();
     usersCreate();
+    fieldsCreate();
 
     esAlias("remove", "files_v1", "files");
     esCopy("files_v1", "files_v3", "file");
@@ -1657,8 +1985,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     print "Finished\n";
 } elsif ($main::versionNumber >= 1 && $main::versionNumber < 7) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
-    waitFor("UPGRADE");
+    waitFor("UPGRADE", "do you want to upgrade?");
     print "Starting Upgrade\n";
 
     filesCreate();
@@ -1670,12 +1997,12 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     usersUpdate();
     statsUpdate();
     dstatsUpdate();
+    fieldsCreate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber <= 17) {
+} elsif ($main::versionNumber >= 7 && $main::versionNumber < 18) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    print "Type \"UPGRADE\" to continue - do you want to upgrade?\n";
-    waitFor("UPGRADE");
+    waitFor("UPGRADE", "do you want to upgrade?");
     print "Starting Upgrade\n";
 
     filesUpdate();
@@ -1683,6 +2010,15 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     usersUpdate();
     statsUpdate();
     dstatsUpdate();
+    fieldsCreate();
+
+    print "Finished\n";
+} elsif ($main::versionNumber >= 18 && $main::versionNumber <= 18) {
+    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
+    waitFor("UPGRADE", "do you want to upgrade?");
+    print "Starting Upgrade\n";
+
+    fieldsUpdate();
 
     print "Finished\n";
 } else {

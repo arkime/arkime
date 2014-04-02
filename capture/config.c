@@ -2,13 +2,13 @@
 /* config.c  -- Functions dealing with the config file
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,11 +27,6 @@
 extern MolochConfig_t        config;
 
 static GKeyFile             *molochKeyFile;
-
-MolochStringHashStd_t        httpReqHeaders;
-MolochStringHashStd_t        httpResHeaders;
-MolochStringHashStd_t        emailHeaders;
-MolochStringHashStd_t        pluginHeaders;
 
 /******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
@@ -147,7 +142,7 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
     return value;
 }
 /******************************************************************************/
-void moloch_config_load() 
+void moloch_config_load()
 {
 
     gboolean  status;
@@ -215,7 +210,7 @@ void moloch_config_load()
     }
 #endif
 
-    
+
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);
     config.smtpIpHeaders    = moloch_config_str_list(keyfile, "smtpIpHeaders", NULL);
 
@@ -333,7 +328,7 @@ void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos)
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
-void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t *hash, int flags)
+void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags)
 {
     GError   *error = 0;
     char      name[100];
@@ -356,10 +351,12 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
                                                    keys[k],
                                                   &values_len,
                                                    NULL);
-        snprintf(name, sizeof(name), "%s%s", base, keys[k]);
+        snprintf(name, sizeof(name), "%s", keys[k]);
         int type = 0;
+        int t = 0;
         int unique = 1;
         int count  = 0;
+        char *kind = 0;
         for (v = 0; v < values_len; v++) {
             if (strcmp(values[v], "type:integer") == 0) {
                 type = 1;
@@ -373,27 +370,29 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
         }
         g_strfreev(values);
 
-        flags |= MOLOCH_FIELD_FLAG_HEADERS;
+        int f = flags;
 
         if (count)
-            flags |= MOLOCH_FIELD_FLAG_CNT;
+            f |= MOLOCH_FIELD_FLAG_CNT;
 
         switch (type) {
         case 0:
+            kind = "textfield";
             if (unique)
-                type = MOLOCH_FIELD_TYPE_STR_HASH;
+                t = MOLOCH_FIELD_TYPE_STR_HASH;
             else
-                type = MOLOCH_FIELD_TYPE_STR_ARRAY;
+                t = MOLOCH_FIELD_TYPE_STR_ARRAY;
             break;
         case 1:
+            kind = "integer";
             if (unique)
-                type = MOLOCH_FIELD_TYPE_INT_HASH;
+                t = MOLOCH_FIELD_TYPE_INT_HASH;
             else
-                type = MOLOCH_FIELD_TYPE_INT_ARRAY;
+                t = MOLOCH_FIELD_TYPE_INT_ARRAY;
             break;
         case 2:
-            flags |= MOLOCH_FIELD_FLAG_IPPOST;
-            type = MOLOCH_FIELD_TYPE_IP_HASH;
+            kind = "ip";
+            t = MOLOCH_FIELD_TYPE_IP_HASH;
             break;
         }
 
@@ -406,7 +405,38 @@ void moloch_config_load_header(char *section, char *base, MolochStringHashStd_t 
             LOG("WARNING - ignoring field %s for %s", keys[k], section);
             continue;
         }
-        moloch_config_add_header(hash, g_strdup(keys[k]), moloch_field_define(g_strdup(name), type, flags));
+
+        char expression[100];
+        char field[100];
+        char rawfield[100];
+        char help[100];
+        
+        if (type == 0) {
+            sprintf(expression, "%s%s", expBase, name);
+            sprintf(field, "%s%s.snow", dbBase, name);
+            sprintf(rawfield, "%s%s.raw", dbBase, name);
+            sprintf(help, "%s%s", helpBase, name);
+        } else {
+            sprintf(expression, "%s%s", expBase, name);
+            sprintf(field, "%s%s", dbBase, name);
+            rawfield[0] = 0;
+            sprintf(help, "%s%s", helpBase, name);
+        }
+
+        int pos;
+        if (rawfield[0]) {
+            pos = moloch_field_define(group, kind,
+                    expression, expression, field,
+                    help,
+                    t, f, 
+                    "rawField", rawfield, NULL);
+        } else {
+            pos = moloch_field_define(group, kind,
+                    expression, expression, field,
+                    help,
+                    t, f, NULL);
+        }
+        moloch_config_add_header(hash, g_strdup(keys[k]), pos);
     }
     g_strfreev(keys);
 }
@@ -506,7 +536,7 @@ void moloch_config_init()
         }
 
         MolochString_t *tstring;
-        HASH_FORALL(s_, config.dontSaveTags, tstring, 
+        HASH_FORALL(s_, config.dontSaveTags, tstring,
           LOG("dontSaveTags: %s", tstring->str);
         );
     }
@@ -529,36 +559,6 @@ void moloch_config_init()
         printf("Must set a pcapDir to save files to\n");
         exit(1);
     }
-}
-/******************************************************************************/
-void moloch_config_load_headers()
-{
-    HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, httpResHeaders, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, emailHeaders, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, pluginHeaders, moloch_string_hash, moloch_string_cmp);
-
-    moloch_config_add_header(&httpReqHeaders, "x-forwarded-for", MOLOCH_FIELD_HTTP_XFF);
-    moloch_config_add_header(&httpReqHeaders, "user-agent", MOLOCH_FIELD_HTTP_UA);
-    moloch_config_add_header(&httpReqHeaders, "host", MOLOCH_FIELD_HTTP_HOST);
-    moloch_config_load_header("headers-http-request", "hreq-", &httpReqHeaders, 0);
-
-    moloch_config_load_header("headers-http-response", "hres-", &httpResHeaders, 0);
-
-
-    moloch_config_add_header(&emailHeaders, "cc", MOLOCH_FIELD_EMAIL_DST);
-    moloch_config_add_header(&emailHeaders, "to", MOLOCH_FIELD_EMAIL_DST);
-    moloch_config_add_header(&emailHeaders, "from", MOLOCH_FIELD_EMAIL_SRC);
-    moloch_config_add_header(&emailHeaders, "message-id", MOLOCH_FIELD_EMAIL_ID);
-    moloch_config_add_header(&emailHeaders, "content-type", MOLOCH_FIELD_EMAIL_CT);
-    moloch_config_add_header(&emailHeaders, "subject", MOLOCH_FIELD_EMAIL_SUB);
-    moloch_config_add_header(&emailHeaders, "x-mailer", MOLOCH_FIELD_EMAIL_UA);
-    moloch_config_add_header(&emailHeaders, "user-agent", MOLOCH_FIELD_EMAIL_UA);
-    moloch_config_add_header(&emailHeaders, "mime-version", MOLOCH_FIELD_EMAIL_MV);
-    moloch_config_add_header(&emailHeaders, "received", MOLOCH_FIELD_EMAIL_RECEIVED);
-    moloch_config_load_header("headers-email", "ehead-", &emailHeaders, 0);
-
-    moloch_config_load_header("plugin-fields", "", &pluginHeaders, MOLOCH_FIELD_FLAG_PLUGINS);
 }
 /******************************************************************************/
 void moloch_config_exit()

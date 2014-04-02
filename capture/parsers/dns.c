@@ -4,8 +4,13 @@
 
 static char                 *qclasses[256];
 static char                 *qtypes[256];
-static char                 *statuses[16] = {"dns:status:NOERROR", "dns:status:FORMERR", "dns:status:SERVFAIL", "dns:status:NXDOMAIN", "dns:status:NOTIMPL", "dns:status:REFUSED", "dns:status:YXDOMAIN", "dns:status:YXRRSET", "dns:status:NXRRSET", "dns:status:NOTAUTH", "dns:status:NOTZONE", "dns:status:11", "dns:status:12", "dns:status:13", "dns:status:14", "dns:status:15"};
+static char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
 
+static int                   ipField;
+static int                   hostField;
+static int                   queryTypeField;
+static int                   queryClassField;
+static int                   statusField;
 
 /******************************************************************************/
 int dns_name_element(BSB *nbsb, BSB *bsb)
@@ -126,24 +131,25 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
         char *lower = g_ascii_strdown((char*)name, namelen);
 
         if (qclass <= 255 && qclasses[qclass]) {
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, qclasses[qclass]);
+            moloch_field_string_add(queryClassField, session, qclasses[qclass], -1, TRUE);
         }
 
         if (qtype <= 255 && qtypes[qtype]) {
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, qtypes[qtype]);
+            moloch_field_string_add(queryTypeField, session, qtypes[qtype], -1, TRUE);
         }
 
-        if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
+        if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
             g_free(lower);
         }
     }
-    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:dns");
+    moloch_nids_add_tag(session, "protocol:dns");
+    moloch_nids_add_protocol(session, "dns");
 
     if (qr == 0)
         return;
 
     int rcode      = data[3] & 0xf;
-    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, statuses[rcode]);
+    moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
 
     for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
         int namelen;
@@ -177,7 +183,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             unsigned char *ptr = BSB_WORK_PTR(bsb);
             in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
 
-            moloch_field_int_add(MOLOCH_FIELD_DNS_IP, session, in.s_addr);
+            moloch_field_int_add(ipField, session, in.s_addr);
             break;
         }
         case 5: {
@@ -192,7 +198,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 
             char *lower = g_ascii_strdown((char*)name, namelen);
 
-            if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
+            if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
                 g_free(lower);
             }
             break;
@@ -210,7 +216,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 
             char *lower = g_ascii_strdown((char*)name, namelen);
 
-            if (lower && !moloch_field_string_add(MOLOCH_FIELD_DNS_HOST, session, lower, namelen, FALSE)) {
+            if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
                 g_free(lower);
             }
         }
@@ -231,8 +237,9 @@ int dns_tcp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned ch
 /******************************************************************************/
 void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
 {
-    if (session->which == 0 && session->port2 == 53 && !moloch_nids_has_tag(session, MOLOCH_FIELD_TAGS, "protocol:dns")) {
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:dns");
+    if (session->which == 0 && session->port2 == 53 && !moloch_nids_has_protocol(session, "dns")) {
+        moloch_nids_add_tag(session, "protocol:dns");
+        moloch_nids_add_protocol(session, "dns");
         moloch_parsers_register(session, dns_tcp_parser, 0, 0);
     }
 }
@@ -245,76 +252,103 @@ void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_field_define_internal(MOLOCH_FIELD_DNS_IP,        "dnsip",  MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_DNS_HOST,      "dnsho",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    ipField = moloch_field_define("dns", "ip",
+        "ip.dns", "IP",  "dnsip", 
+        "IP from DNS result", 
+        MOLOCH_FIELD_TYPE_IP_HASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE, 
+        "aliases", "[\"dns.ip\"]", NULL);
+
+    hostField = moloch_field_define("dns", "lotermfield",
+        "host.dns", "Host", "dnsho", 
+        "DNS host looked up",  
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "aliases", "[\"dns.host\"]", NULL);
+
+    statusField = moloch_field_define("dns", "lotermfield",
+        "dns.status", "Status Code", "dns.status-term", 
+        "DNS lookup return code",  
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
+        NULL);
+
+    queryTypeField = moloch_field_define("dns", "uptermfield",
+        "dns.query.type", "Query Type", "dns.qt-term", 
+        "DNS lookup query type",  
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
+        NULL);
+
+    queryClassField = moloch_field_define("dns", "uptermfield",
+        "dns.query.class", "Query Class", "dns.qc-term", 
+        "DNS lookup query class",  
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
+        NULL);
 
 
-    qclasses[1]   = "dns:qclass:IN";
-    qclasses[2]   = "dns:qclass:CS";
-    qclasses[3]   = "dns:qclass:CH";
-    qclasses[4]   = "dns:qclass:HS";
-    qclasses[255] = "dns:qclass:ANY";
+    qclasses[1]   = "IN";
+    qclasses[2]   = "CS";
+    qclasses[3]   = "CH";
+    qclasses[4]   = "HS";
+    qclasses[255] = "ANY";
 
     //http://en.wikipedia.org/wiki/List_of_DNS_record_types
-    qtypes[1]   = "dns:qtype:A";
-    qtypes[2]   = "dns:qtype:NS";
-    qtypes[3]   = "dns:qtype:MD";
-    qtypes[4]   = "dns:qtype:MF";
-    qtypes[5]   = "dns:qtype:CNAME";
-    qtypes[6]   = "dns:qtype:SOA";
-    qtypes[7]   = "dns:qtype:MB";
-    qtypes[8]   = "dns:qtype:MG";
-    qtypes[9]   = "dns:qtype:MR";
-    qtypes[10]  = "dns:qtype:NULL";
-    qtypes[11]  = "dns:qtype:WKS";
-    qtypes[12]  = "dns:qtype:PTR";
-    qtypes[13]  = "dns:qtype:HINFO";
-    qtypes[14]  = "dns:qtype:MINFO";
-    qtypes[15]  = "dns:qtype:MX";
-    qtypes[16]  = "dns:qtype:TXT";
-    qtypes[17]  = "dns:qtype:RP";
-    qtypes[18]  = "dns:qtype:AFSDB";
-    qtypes[19]  = "dns:qtype:X25";
-    qtypes[20]  = "dns:qtype:ISDN";
-    qtypes[21]  = "dns:qtype:RT";
-    qtypes[22]  = "dns:qtype:NSAP";
-    qtypes[23]  = "dns:qtype:NSAPPTR";
-    qtypes[24]  = "dns:qtype:SIG";
-    qtypes[25]  = "dns:qtype:KEY";
-    qtypes[26]  = "dns:qtype:PX";
-    qtypes[27]  = "dns:qtype:GPOS";
-    qtypes[28]  = "dns:qtype:AAAA";
-    qtypes[29]  = "dns:qtype:LOC";
-    qtypes[30]  = "dns:qtype:NXT";
-    qtypes[31]  = "dns:qtype:EID";
-    qtypes[32]  = "dns:qtype:NIMLOC";
-    qtypes[33]  = "dns:qtype:SRV";
-    qtypes[34]  = "dns:qtype:ATMA";
-    qtypes[35]  = "dns:qtype:NAPTR";
-    qtypes[36]  = "dns:qtype:KX";
-    qtypes[37]  = "dns:qtype:CERT";
-    qtypes[38]  = "dns:qtype:A6";
-    qtypes[39]  = "dns:qtype:DNAME";
-    qtypes[40]  = "dns:qtype:SINK";
-    qtypes[41]  = "dns:qtype:OPT";
-    qtypes[42]  = "dns:qtype:APL";
-    qtypes[43]  = "dns:qtype:DS";
-    qtypes[44]  = "dns:qtype:SSHFP";
-    qtypes[46]  = "dns:qtype:RRSIG";
-    qtypes[47]  = "dns:qtype:NSEC";
-    qtypes[48]  = "dns:qtype:DNSKEY";
-    qtypes[49]  = "dns:qtype:DHCID";
-    qtypes[50]  = "dns:qtype:NSEC3";
-    qtypes[51]  = "dns:qtype:NSEC3PARAM";
-    qtypes[52]  = "dns:qtype:TLSA";
-    qtypes[55]  = "dns:qtype:HIP";
-    qtypes[99]  = "dns:qtype:SPF";
-    qtypes[249] = "dns:qtype:TKEY";
-    qtypes[250] = "dns:qtype:TSIG";
-    qtypes[252] = "dns:qtype:AXFR";
-    qtypes[253] = "dns:qtype:MAILB";
-    qtypes[254] = "dns:qtype:MAILA";
-    qtypes[255] = "dns:qtype:ANY";
+    qtypes[1]   = "A";
+    qtypes[2]   = "NS";
+    qtypes[3]   = "MD";
+    qtypes[4]   = "MF";
+    qtypes[5]   = "CNAME";
+    qtypes[6]   = "SOA";
+    qtypes[7]   = "MB";
+    qtypes[8]   = "MG";
+    qtypes[9]   = "MR";
+    qtypes[10]  = "NULL";
+    qtypes[11]  = "WKS";
+    qtypes[12]  = "PTR";
+    qtypes[13]  = "HINFO";
+    qtypes[14]  = "MINFO";
+    qtypes[15]  = "MX";
+    qtypes[16]  = "TXT";
+    qtypes[17]  = "RP";
+    qtypes[18]  = "AFSDB";
+    qtypes[19]  = "X25";
+    qtypes[20]  = "ISDN";
+    qtypes[21]  = "RT";
+    qtypes[22]  = "NSAP";
+    qtypes[23]  = "NSAPPTR";
+    qtypes[24]  = "SIG";
+    qtypes[25]  = "KEY";
+    qtypes[26]  = "PX";
+    qtypes[27]  = "GPOS";
+    qtypes[28]  = "AAAA";
+    qtypes[29]  = "LOC";
+    qtypes[30]  = "NXT";
+    qtypes[31]  = "EID";
+    qtypes[32]  = "NIMLOC";
+    qtypes[33]  = "SRV";
+    qtypes[34]  = "ATMA";
+    qtypes[35]  = "NAPTR";
+    qtypes[36]  = "KX";
+    qtypes[37]  = "CERT";
+    qtypes[38]  = "A6";
+    qtypes[39]  = "DNAME";
+    qtypes[40]  = "SINK";
+    qtypes[41]  = "OPT";
+    qtypes[42]  = "APL";
+    qtypes[43]  = "DS";
+    qtypes[44]  = "SSHFP";
+    qtypes[46]  = "RRSIG";
+    qtypes[47]  = "NSEC";
+    qtypes[48]  = "DNSKEY";
+    qtypes[49]  = "DHCID";
+    qtypes[50]  = "NSEC3";
+    qtypes[51]  = "NSEC3PARAM";
+    qtypes[52]  = "TLSA";
+    qtypes[55]  = "HIP";
+    qtypes[99]  = "SPF";
+    qtypes[249] = "TKEY";
+    qtypes[250] = "TSIG";
+    qtypes[252] = "AXFR";
+    qtypes[253] = "MAILB";
+    qtypes[254] = "MAILA";
+    qtypes[255] = "ANY";
 
 #define DNS_CLASSIFY(_str) \
     moloch_parsers_classifier_register_tcp("dns", 4, (unsigned char*)_str, 2, dns_tcp_classify); \

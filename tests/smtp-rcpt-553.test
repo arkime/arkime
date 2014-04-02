@@ -3,6 +3,26 @@
       {
          "body" : {
             "edstcnt" : 1,
+            "test" : {
+               "number" : [
+                  682101824
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:48012,682101824:587"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 715,
             "db" : 789,
             "esrc" : [
@@ -46,6 +66,7 @@
                1977,
                2059
             ],
+            "prot-term-cnt" : 2,
             "lpd" : 1386252623067,
             "fp" : 1386252622,
             "as2" : "AS1668 AOL Transit Data Network",
@@ -58,30 +79,14 @@
             "a1" : "10.0.0.1",
             "fb2" : "3232302d6d74616f",
             "db1" : 74,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:48012,682101824:587"
-               ],
-               "test.number" : [
-                  682101824
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "by1" : 676,
             "esrccnt" : 1,
             "p2" : 587,
-            "rir2" : "ARIN"
+            "rir2" : "ARIN",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

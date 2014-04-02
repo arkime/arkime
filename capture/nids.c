@@ -1,13 +1,13 @@
 /* nids.c  -- Functions for dealing with libnids
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -82,6 +82,9 @@ static uint32_t              initialDropped = 0;
 struct timeval               initialPacket;
 static char                  offlinePcapFilename[PATH_MAX+1];
 
+static int                   tagsField;
+static int                   protocolField;
+
 uint64_t                     totalPackets = 0;
 uint64_t                     totalBytes = 0;
 uint64_t                     totalSessions = 0;
@@ -118,28 +121,28 @@ int moloch_nids_session_cmp(const void *keyv, const void *elementv)
     MolochSession_t *element = (MolochSession_t *)elementv;
 
     if (element->addr1 < element->addr2) {
-        return key[5] == ((element->port1 >> 8) & 0xff) && 
+        return key[5] == ((element->port1 >> 8) & 0xff) &&
                key[4] == (element->port1 & 0xff) &&
                key[11] == ((element->port2 >> 8) & 0xff) &&
                key[10] == (element->port2 & 0xff) &&
                memcmp(key, &element->addr1, 4) == 0 &&
                memcmp(key + 6, &element->addr2, 4) == 0;
     } else if (element->addr1 > element->addr2) {
-        return key[5] == ((element->port2 >> 8) & 0xff) && 
+        return key[5] == ((element->port2 >> 8) & 0xff) &&
                key[4] == (element->port2 & 0xff) &&
                key[11] == ((element->port1 >> 8) & 0xff) &&
                key[10] == (element->port1 & 0xff) &&
                memcmp(key, &element->addr2, 4) == 0 &&
                memcmp(key + 6, &element->addr1, 4) == 0;
     } else if (element->port1 > element->port2) {
-        return key[5] == ((element->port1 >> 8) & 0xff) && 
+        return key[5] == ((element->port1 >> 8) & 0xff) &&
                key[4] == (element->port1 & 0xff) &&
                key[11] == ((element->port2 >> 8) & 0xff) &&
                key[10] == (element->port2 & 0xff) &&
                memcmp(key, &element->addr1, 4) == 0 &&
                memcmp(key + 6, &element->addr1, 4) == 0;
     } else {
-        return key[5] == ((element->port2 >> 8) & 0xff) && 
+        return key[5] == ((element->port2 >> 8) & 0xff) &&
                key[4] == (element->port2 & 0xff) &&
                key[11] == ((element->port1 >> 8) & 0xff) &&
                key[10] == (element->port1 & 0xff) &&
@@ -203,7 +206,7 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
 
 }
 /******************************************************************************/
-void moloch_nids_save_session(MolochSession_t *session) 
+void moloch_nids_save_session(MolochSession_t *session)
 {
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, TRUE);
@@ -237,7 +240,7 @@ void moloch_nids_save_session(MolochSession_t *session)
     moloch_nids_session_free(session);
 }
 /******************************************************************************/
-void moloch_nids_mid_save_session(MolochSession_t *session) 
+void moloch_nids_mid_save_session(MolochSession_t *session)
 {
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, FALSE);
@@ -309,7 +312,7 @@ void moloch_nids_file_locked(char *filename)
     dumperFileName = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, st.st_size, &dumperId);
 }
 /******************************************************************************/
-gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data)) 
+gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer UNUSED(data))
 {
     if (config.exiting && fd)
         return FALSE;
@@ -535,7 +538,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->th_sport, 
+        moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->th_sport,
                           packet->ip_dst.s_addr, tcphdr->th_dport);
         break;
     case IPPROTO_UDP:
@@ -544,14 +547,14 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         udphdr = (struct udphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->uh_sport, 
+        moloch_session_id(sessionId, packet->ip_src.s_addr, udphdr->uh_sport,
                           packet->ip_dst.s_addr, udphdr->uh_dport);
         break;
     case IPPROTO_ICMP:
         sessionsQ = &icmpSessionQ;
         sessionTimeout = config.icmpTimeout;
 
-        moloch_session_id(sessionId, packet->ip_src.s_addr, 0, 
+        moloch_session_id(sessionId, packet->ip_src.s_addr, 0,
                           packet->ip_dst.s_addr, 0);
         break;
     case IPPROTO_IPV6:
@@ -572,7 +575,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             initialDropped = ps.ps_drop;
         }
         initialPacket = nids_last_pcap_header->ts;
-        LOG("Initial Packet = %ld", initialPacket.tv_sec); 
+        LOG("Initial Packet = %ld", initialPacket.tv_sec);
         LOG("%" PRIu64 " Initial Dropped = %d", totalPackets, initialDropped);
     }
 
@@ -585,21 +588,21 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         }
         headSession = DLL_PEEK_HEAD(q_, sessionsQ);
 
-        LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d disk: %d", 
-          totalPackets, 
-          sessionsQ->q_count, 
+        LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %u drop: %u (%0.2f) ifdrop: %u queue: %d disk: %d",
+          totalPackets,
+          sessionsQ->q_count,
           moloch_nids_monitoring_sessions(),
           (headSession?(int)(nids_last_pcap_header->ts.tv_sec - (headSession->lastPacket.tv_sec + sessionTimeout)):0),
-          ps.ps_recv, 
+          ps.ps_recv,
           ps.ps_drop - initialDropped, (ps.ps_drop - initialDropped)*(double)100.0/ps.ps_recv,
           ps.ps_ifdrop,
           moloch_http_queue_length(esServer),
           moloch_nids_disk_queue());
     }
-    
+
     /* Get or Create Session */
     MolochSession_t *session;
-    
+
     HASH_FIND(h_, *(sessions[packet->ip_p]), sessionId, session);
 
     if (!session) {
@@ -621,7 +624,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         switch (packet->ip_p) {
         case IPPROTO_TCP:
-            /* If antiSynDrop option is set to true, capture will assume that 
+            /* If antiSynDrop option is set to true, capture will assume that
             *if the syn-ack packet was captured first then the syn probably got dropped.*/
             if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && (config.antiSynDrop)) {
                 session->addr1 = packet->ip_dst.s_addr;
@@ -776,22 +779,52 @@ void moloch_nids_get_tag_cb(void *session, int tagtype, uint32_t tag)
     moloch_nids_decr_outstanding(session);
 }
 /******************************************************************************/
-gboolean moloch_nids_has_tag(MolochSession_t *session, int tagType, const char *tagName) 
+gboolean moloch_nids_has_tag(MolochSession_t *session, const char *tagName)
 {
     uint32_t tagValue;
 
-    if (!session->fields[tagType])
+    if (!session->fields[tagsField])
         return FALSE;
 
     if ((tagValue = moloch_db_peek_tag(tagName)) == 0)
         return FALSE;
 
     MolochInt_t          *hint;
-    HASH_FIND_INT(i_, *(session->fields[tagType]->ihash), tagValue, hint);
+    HASH_FIND_INT(i_, *(session->fields[tagsField]->ihash), tagValue, hint);
     return hint != 0;
 }
 /******************************************************************************/
-void moloch_nids_add_tag(MolochSession_t *session, int tagtype, const char *tag) {
+void moloch_nids_add_protocol(MolochSession_t *session, const char *protocol)
+{
+    moloch_field_string_add(protocolField, session, protocol, -1, TRUE);
+}
+/******************************************************************************/
+gboolean moloch_nids_has_protocol(MolochSession_t *session, const char *protocol)
+{
+    if (!session->fields[protocolField])
+        return FALSE;
+
+    MolochString_t          *hstring;
+    HASH_FIND(s_, *(session->fields[protocolField]->shash), protocol, hstring);
+    return hstring != 0;
+}
+/******************************************************************************/
+void moloch_nids_add_tag(MolochSession_t *session, const char *tag) {
+    moloch_nids_incr_outstanding(session);
+    moloch_db_get_tag(session, tagsField, tag, moloch_nids_get_tag_cb);
+
+    if (!session->dontSave && HASH_COUNT(s_, config.dontSaveTags)) {
+        MolochString_t *tstring;
+
+        HASH_FIND(s_, config.dontSaveTags, tag, tstring);
+        if (tstring) {
+            session->dontSave = 1;
+        }
+    }
+}
+
+/******************************************************************************/
+void moloch_nids_add_tag_type(MolochSession_t *session, int tagtype, const char *tag) {
     moloch_nids_incr_outstanding(session);
     moloch_db_get_tag(session, tagtype, tag, moloch_nids_get_tag_cb);
 
@@ -956,7 +989,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                 moloch_yara_execute(session, (unsigned char*)a_tcp->server.data, a_tcp->server.count - a_tcp->server.offset, a_tcp->server.offset == 0);
             }
         }
-    
+
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
             moloch_plugins_cb_tcp(session, a_tcp);
         //LOG("TCP %d ", a_tcp->nids_state);
@@ -1081,7 +1114,7 @@ gboolean moloch_nids_interface_dispatch()
 }
 /******************************************************************************/
 /* Used when reading packets from a file thru libnids/libpcap */
-gboolean moloch_nids_file_dispatch() 
+gboolean moloch_nids_file_dispatch()
 {
     // pause reading if too many waiting disk operations
     if (moloch_nids_disk_queue() > 10) {
@@ -1367,7 +1400,7 @@ void moloch_nids_init_nids()
     GVoidFunc dispatch;
     if (config.pcapReadDir || config.pcapReadFile)
         dispatch = (GVoidFunc)&moloch_nids_file_dispatch;
-    else 
+    else
         dispatch = (GVoidFunc)&moloch_nids_interface_dispatch;
 
     if (nids_getfd() == -1) {
@@ -1392,36 +1425,43 @@ void moloch_nids_init()
 
     LOG("%s", pcap_lib_version());
 
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "tcp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "udp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:http", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:ssh", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:smtp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:ftp", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:pop3", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:gh0st", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "protocol:dns", NULL);
+    protocolField = moloch_field_define("general", "termfield",
+        "protocols", "Protocols", "prot-term",
+        "Protocols set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
 
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:200", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:204", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:301", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:302", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:304", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:400", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:404", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:statuscode:500", NULL);
+    tagsField = moloch_field_by_db("ta");
+    moloch_db_get_tag(NULL, tagsField, "tcp", NULL);
+    moloch_db_get_tag(NULL, tagsField, "udp", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:http", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:ssh", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:smtp", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:ftp", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:pop3", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:gh0st", NULL);
+    moloch_db_get_tag(NULL, tagsField, "protocol:dns", NULL);
 
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:method:GET", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:method:POST", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:method:HEAD", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:200", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:204", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:301", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:302", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:304", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:400", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:404", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:statuscode:500", NULL);
 
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:application/octet-stream", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:text/plain", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:text/html", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:application/x-gzip", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:application/x-shockwave-flash", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:image/gif", NULL);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, "http:content:image/jpg", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:method:GET", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:method:POST", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:method:HEAD", NULL);
+
+    moloch_db_get_tag(NULL, tagsField, "http:content:application/octet-stream", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:content:text/plain", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:content:text/html", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:content:application/x-gzip", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:content:application/x-shockwave-flash", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:content:image/gif", NULL);
+    moloch_db_get_tag(NULL, tagsField, "http:content:image/jpg", NULL);
 
     memset(sessions, 0, sizeof(MolochSessionHash_t *) * 256);
     sessions[IPPROTO_UDP] = malloc(sizeof(MolochSessionHash_t));
@@ -1466,8 +1506,8 @@ void moloch_nids_init()
 /******************************************************************************/
 void moloch_nids_exit() {
     config.exiting = 1;
-    LOG("sessions: %d tcp: %d udp: %d icmp: %d", 
-            moloch_nids_monitoring_sessions(), 
+    LOG("sessions: %d tcp: %d udp: %d icmp: %d",
+            moloch_nids_monitoring_sessions(),
             tcpSessionQ.q_count,
             udpSessionQ.q_count,
             icmpSessionQ.q_count);
@@ -1491,7 +1531,7 @@ void moloch_nids_exit() {
         int b;
         for ( b = 0;  b < sessions[i]->size;  b++) {
             if (sessions[i]->buckets[b].h_count >= 50) {
-                buckets[50]++; 
+                buckets[50]++;
                 total[50] += sessions[i]->buckets[b].h_count;
             } else {
                 buckets[(sessions[i]->buckets[b].h_count)]++;
@@ -1501,11 +1541,11 @@ void moloch_nids_exit() {
         for ( b = 0;  b <= 50;  b++) {
             if (buckets[b])
                 printf(" %2d: %7d %7d\n", b, buckets[b], total[b]);
-        } 
+        }
 #endif
 
         MolochSession_t *hsession;
-        HASH_FORALL_POP_HEAD(h_, *sessions[i], hsession, 
+        HASH_FORALL_POP_HEAD(h_, *sessions[i], hsession,
             moloch_db_save_session(hsession, TRUE);
         );
     }

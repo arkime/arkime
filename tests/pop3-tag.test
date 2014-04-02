@@ -2,6 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:2464,33554442:110"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 16,
             "db" : 16,
             "lpd" : 1387659690419,
@@ -30,39 +50,24 @@
             "fb2" : "2b4f4b20504f5033",
             "a1" : "10.0.0.1",
             "db1" : 0,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:2464,33554442:110"
-               ],
-               "test.number" : [
-                  33554442
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "pa2" : 2,
             "p1" : 2464,
             "by1" : 122,
             "by" : 254,
             "p2" : 110,
             "as1" : "AS0000 This is neat",
+            "prot-term" : [
+               "pop3",
+               "tcp"
+            ],
             "pr" : 6,
             "ps" : [
                24,
                102,
                180,
                256
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {

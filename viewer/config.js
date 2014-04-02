@@ -2,7 +2,7 @@
 /* config.js -- Code dealing with the config file, command line arguments, 
  *              and dropping privileges
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -33,8 +33,8 @@ var internals = {
     configFile: "/data/moloch/etc/config.ini",
     nodeName: os.hostname().split(".")[0],
     fields: [],
-    ipFields: [],
-    fieldsMap: {}
+    fieldsMap: {},
+    categories: {}
   };
 
 function processArgs() {
@@ -223,28 +223,40 @@ dropPrivileges();
 //////////////////////////////////////////////////////////////////////////////////
 // Fields
 //////////////////////////////////////////////////////////////////////////////////
-function addField(db, exp, cat, type, help) {
-  internals.fields.push({db: db, exp: exp, cat: cat, type: type, help:help});
-  internals.fieldsMap[exp] = {db: db, cat: cat, type: type};
-}
-
-function addIpField(name, addr, port, geo, asn, rir) {
-  internals.ipFields.push({name: name, addr: addr, port: port, geo: geo, asn: asn, rir: rir});
-}
-
-
 exports.getFields = function() {
   return internals.fields;
-};
-
-exports.getIpFields = function() {
-  return internals.ipFields;
 };
 
 exports.getFieldsMap = function() {
   return internals.fieldsMap;
 };
 
+exports.getCategories = function() {
+  return internals.categories;
+};
+
+exports.loadFields = function(data) {
+  data.forEach(function(field) {
+    var source = field._source;
+    source.exp = field._id;
+    internals.fieldsMap[field._id] = source;
+    internals.fields.push(source);
+    if (!internals.categories[source.group]) {
+      internals.categories[source.group] = [];
+    }
+    internals.categories[source.group].push(source);
+    (source.aliases || []).forEach(function(alias) {
+      internals.fieldsMap[alias] = source;
+    });
+  });
+  for (var cat in internals.categories) {
+    internals.categories[cat] = internals.categories[cat].sort(function(a,b) {
+      return a.exp.localeCompare(b.exp);
+    });
+  }
+};
+
+/*
 addField(null, "ip", "general", "ip", "Shorthand for ip.src, ip.dst, ip.dns, ip.email, ip.socks, or ip.xff");
 addField("a1", "ip.src", "general", "ip", "Source ip");
 addField("a2", "ip.dst", "general", "ip", "Destination ip");
@@ -398,7 +410,7 @@ addField("smbdmcnt", "smb.domain.cnt", "smb", "integer", "Number of unique SMB d
 addField("smbver", "smb.ver", "smb", "termfield", "SMB verison");
 addField("smbvercnt", "smb.ver.cnt", "smb", "integer", "Number of unique SMB versions");
 addField("smbuser", "smb.user", "smb", "termfield", "SMB user");
-addField("smbusercnt", "smb.usre.cnt", "smb", "integer", "Number of unique SMB users");
+addField("smbusercnt", "smb.user.cnt", "smb", "integer", "Number of unique SMB users");
 
 exports.headers("headers-http-request").forEach(function(item) {
   addField("hdrs.hreq-" + item.name + (item.type === "integer"?"":".snow"), "http." + item.name, "http", (item.type === "integer"?"integer":"textfield"), "Request header " + item.name);
@@ -428,7 +440,6 @@ exports.headers("plugin-fields").forEach(function(item) {
     addField(p + ".geo.snow", p + ".country", "plugin", "ip", "Plugin field " + item.name + " GEO");
     addField(p + ".rir.snow", p + ".rir", "plugin", "ip", "Plugin field " + item.name + " RIR");
     addField(p + ".asn.snow", p + ".asn", "plugin", "ip", "Plugin field " + item.name + " ASN");
-    addIpField(p, p, null, p + ".geo.raw", p + ".asn.snow", p + ".rir.raw");
   } else {
     addField(p + (item.type === "integer"?"":".snow"), p, "plugin", (item.type === "integer"?"integer":"textfield"), "Plugin field " + item.name);
   }
@@ -436,11 +447,4 @@ exports.headers("plugin-fields").forEach(function(item) {
   if (item.count === true) {
     addField("plugin." + item.name + "cnt", "plugin." + item.name + ".cnt", "http", "integer", "Unique number of plugin field " + item.name);
   }
-});
-
-addIpField("Src", "a1", "p1", "g1", "as1", "rir1");
-addIpField("Dst", "a2", "p2", "g2", "as2", "rir2");
-addIpField("DNS", "dnsip", null, "gdnsip", "asdnsip", "rirdnsip");
-addIpField("XFF", "xff", null, "gxff", "asxff", "rirxff");
-addIpField("Socks", "socksip", "sockspo", "gsocksip", "assocksip", "rirsocksip");
-addIpField("Email", "eip", null, "geip", "aseip", "rireip");
+});*/

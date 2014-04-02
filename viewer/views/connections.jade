@@ -18,7 +18,7 @@ block customMenu
     label(for='srcField') Src:
     +fieldsSelect("srcField", "", true)
     label(for='dstField') Dst:
-    +fieldsSelect("dstField", "", true, [{db: "ip.dst:port", exp: "ip.dst:port"}])
+    +fieldsSelect("dstField", "", true, [{dbField: "ip.dst:port", exp: "ip.dst:port"}])
     label(for='minConn') Min Connections:
     select(id='minConn')
       option(value="1") 1

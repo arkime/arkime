@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* viewer.js  -- The main moloch app
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var MIN_DB_VERSION = 15;
+var MIN_DB_VERSION = 18;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ var Config         = require('./config.js'),
     HTTPParser     = process.binding('http_parser').HTTPParser,
     molochversion  = require('./version'),
     http           = require('http'),
+    jade           = require('jade'),
     https          = require('https'),
     KAA            = require('keep-alive-agent');
 } catch (e) {
@@ -110,8 +111,6 @@ app.configure(function() {
   app.locals.isIndex = false;
   app.locals.basePath = Config.basePath();
   app.locals.elasticBase = "http://" + (internals.escInfo[0] === "localhost"?os.hostname():internals.escInfo[0]) + ":" + internals.escInfo[1];
-  app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
-  app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
   app.locals.sendSession = Config.getObj("sendSession");
 
@@ -236,8 +235,50 @@ function errorString(err, result) {
   } else {
     return "Elasticsearch error: " + (err || result.error);
   }
-
 }
+
+function createSessionDetail() {
+  var found = {};
+
+  var dirs = Config.get("pluginsDir", "/data/moloch/plugins");
+  if (dirs) {
+    dirs.split(';').forEach(function(dir) {
+      try {
+        var files = fs.readdirSync(dir);
+        files.forEach(function(file) {
+          if (file.match(/\.detail\.jade$/i) && !found["plugin-" + file]) {
+            found[file] = dir + "/" + file;
+          }
+        });
+      } catch (e) {};
+    });
+  }
+
+  var dirs = Config.get("parsersDir", "/data/moloch/parsers");
+  if (dirs) {
+    dirs.split(';').forEach(function(dir) {
+      try {
+        var files = fs.readdirSync(dir);
+        files.forEach(function(file) {
+          if (file.match(/\.detail\.jade$/i) && !found["parser-" + file]) {
+            found[file] = dir + "/" + file;
+          }
+        });
+      } catch (e) {};
+    });
+  }
+
+  internals.sessionDetail =    "include views/mixins\n" + 
+                               "div.sessionDetail(sessionid='#{session.id}')\n" +
+                               "  include views/sessionDetail-standard\n";
+  for (var k in found) {
+    internals.sessionDetail += "  include " + found[k] + "\n";
+  }
+  internals.sessionDetail +=   "  include views/sessionDetail-body\n";
+  internals.sessionDetail +=   "include views/sessionDetail-footer\n";
+  //console.log(internals.sessionDetail);
+}
+createSessionDetail();
 
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
@@ -341,7 +382,7 @@ function proxyRequest (req, res) {
 
   getViewUrl(req.params.nodeName, function(err, viewUrl, client) {
     if (err) {
-      console.log(err);
+      console.log("ERROR - ", err);
       res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
     }
     var info = url.parse(viewUrl);
@@ -425,7 +466,7 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
     emailFields: Config.headers("headers-email"),
-    pluginFields: Config.headers("plugin-fields")
+    categories: Config.getCategories()
   });
 });
 
@@ -953,7 +994,6 @@ function buildSessionQuery(req, buildCb) {
 
   var err = null;
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
-                              ipFields: Config.getIpFields(),
                               fieldsMap: Config.getFieldsMap()};
   if (req.query.expression) {
     req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
@@ -2435,6 +2475,26 @@ function toHex(input, offsets) {
   return out;
 }
 
+// Modified version of https://gist.github.com/penguinboy/762197
+function flattenObject1 (obj) {
+  var toReturn = {};
+  
+  for (var i in obj) {
+    if (!obj.hasOwnProperty(i)) continue;
+    
+    if ((typeof obj[i]) == 'object' && !Array.isArray(obj[i])) {
+      for (var x in obj[i]) {
+        if (!obj[i].hasOwnProperty(x)) continue;
+        
+        toReturn[i + '.' + x] = obj[i][x];
+      }
+    } else {
+      toReturn[i] = obj[i];
+    }
+  }
+  return toReturn;
+};
+
 function localSessionDetailReturnFull(req, res, session, incoming) {
   var outgoing = [];
   for (var r = 0, rlen = incoming.length; r < rlen; r++) {
@@ -2467,15 +2527,22 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
     }
   }
 
-  res.render('sessionDetail', {
+  jade.render(internals.sessionDetail, {
+    filename: "sessionDetail",
     user: req.user,
     session: session,
     data: outgoing,
     query: req.query,
+    basedir: "/",
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
-    emailFields: Config.headers("headers-email"),
-    pluginFields: Config.headers("plugin-fields")
+    emailFields: Config.headers("headers-email")
+  }, function(err, data) {
+    if (err) {
+      console.trace("ERROR - ", err);
+      return req.next(err);
+    }
+    res.send(data);
   });
 }
 
@@ -4223,6 +4290,11 @@ app.post('/upload', function(req, res) {
 Db.checkVersion(MIN_DB_VERSION, Config.get("passwordSecret") !== undefined);
 expireCheckAll();
 setInterval(expireCheckAll, 2*60*1000);
+Db.loadFields(function (data) {
+  Config.loadFields(data);
+  app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
+  app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
+});
 
 var server;
 if (Config.isHTTPS()) {

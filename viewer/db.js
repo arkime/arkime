@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.js -- Lowlevel and highlevel functions dealing with the database
  *
- * Copyright 2012-2013 AOL Inc. All rights reserved.
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -514,3 +514,9 @@ exports.deleteFile = function(node, id, path, cb) {
 exports.id2Index = function (id) {
   return 'sessions-' + id.substr(0,id.indexOf('-'));
 };
+
+exports.loadFields = function(cb) {
+  exports.search("fields", "field", {size:1000}, function (err, data) {
+    cb(data.hits.hits);
+  });
+}

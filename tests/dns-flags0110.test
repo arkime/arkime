@@ -2,15 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
             "db2" : 83,
             "db" : 210,
             "no" : "test",
             "lp" : 1393428477,
             "a2" : "10.0.0.1",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
-               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "srcip",
@@ -42,6 +53,7 @@
                24,
                175
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "start.ubuntu.com"
             ],
@@ -50,7 +62,7 @@
             "as2" : "AS0000 This is neat",
             "dnsipcnt" : 3,
             "pa" : 2,
-            "tacnt" : 7,
+            "tacnt" : 4,
             "fb1" : "5aae819000010003",
             "a1" : "8.8.8.8",
             "fb2" : "5aae011000010000",
@@ -63,6 +75,10 @@
             ],
             "by1" : 135,
             "p2" : 62928,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
             "rirdnsip" : [
                "RIPE",
                "RIPE",

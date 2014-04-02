@@ -468,11 +468,13 @@ block content
               items = {
                 andip: {name: "and " + ip, exp: "ip" + suffix + "==" + ip},
                 andnotip: {name: "and NOT " + ip, exp: "ip" + suffix + "!=" + ip},
-                andcountry: {name: "and Country " + country, exp: "country" + suffix + "==" + country},
-                andnotcountry: {name: "and NOT Country " + country, exp: "country" + suffix + "!=" + country},
                 andipport: {name: "and " + ip + ":" + port, exp: "ip" + suffix + "==" + ip + ":" + port},
                 andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip" + suffix + "!=" + ip + ":" + port}
               };
+              if (country) {
+                items.andcountry = {name: "and Country " + country, exp: "country" + suffix + "==" + country};
+                items.andnotcountry = {name: "and NOT Country " + country, exp: "country" + suffix + "!=" + country};
+              }
             } else if (sPos[1] === 4 || sPos[1] === 6)  {
               if (sPos[1] === 4) {
                 port = rowData.p1;

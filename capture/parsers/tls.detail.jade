@@ -1,0 +1,40 @@
+if (session.tls)
+  div.sessionDetailMeta.bold TLS
+  dl.sessionDetailMeta
+    each cert in session.tls
+      dt Certificate
+      dd
+        - if (cert.sn)
+          | Serial: 
+          a(href='#', onclick='return addExpression("cert.serial == #{cert.sn}");') #{cert.sn}
+        - if (cert.iCn && Array.isArray(cert.iCn))
+          |  Issuer Common: 
+          each cn,i in cert.iCn
+            if (i > 0)
+              |, 
+            a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cn}\\\"");') #{cn}
+        - else if (cert.iCn)
+          |  Issuer Common: 
+          a(href='#', onclick='return addExpression("cert.issuer.cn == \\\"#{cert.iCn}\\\"");') #{cert.iCn}
+        - if (cert.iOn)
+          |  Issuer Org: 
+          a(href='#', onclick='return addExpression("cert.issuer.on == \\\"#{cert.iOn}\\\"");') #{cert.iOn}
+        - if (cert.sCn && Array.isArray(cert.sCn))
+          |  Subject Common: 
+          each cn,i in cert.sCn
+            if (i > 0)
+              |, 
+            a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cn}\\\"");') #{cn}
+        - else if (cert.sCn)
+          | Subject Common: 
+          a(href='#', onclick='return addExpression("cert.subject.cn == \\\"#{cert.sCn}\\\"");') #{cert.sCn}
+        - if (cert.sOn)
+          |  Subject Org: 
+          a(href='#', onclick='return addExpression("cert.subject.on == \\\"#{cert.sOn}\\\"");') #{cert.sOn}
+        if (cert.alt)
+          |  [
+          each alt,i in cert.alt
+            if (i > 0)
+              |, 
+            a(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
+          | ]

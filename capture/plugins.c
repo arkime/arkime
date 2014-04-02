@@ -28,6 +28,7 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
+MolochStringHashStd_t        pluginHeaders;
 
 uint32_t                     pluginsCbs = 0;
 
@@ -67,6 +68,9 @@ HASH_VAR(p_, plugins, MolochPlugin_t, 11);
 void moloch_plugins_init()
 {
     HASH_INIT(p_, plugins, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, pluginHeaders, moloch_string_hash, moloch_string_cmp);
+
+    //moloch_config_load_header("plugin-fields", "plugin", "Plugin field ", "plugin.", "plugin.", &pluginHeaders, MOLOCH_FIELD_FLAG_PLUGINS);
 
     if (!config.pluginsDir)
         return;
@@ -140,7 +144,7 @@ int moloch_plugins_register_internal(const char *            name,
         LOG("Plugin %s is already registered", name);
         exit(-1);
     }
-    
+
     plugin = MOLOCH_TYPE_ALLOC0(MolochPlugin_t);
     plugin->name = strdup(name);
     if (storeData) {
@@ -275,7 +279,7 @@ void moloch_plugins_cb_pre_save(MolochSession_t *session, int final)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->preSaveFunc)
             plugin->preSaveFunc(session, final);
     );
@@ -285,7 +289,7 @@ void moloch_plugins_cb_save(MolochSession_t *session, int final)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->saveFunc)
             plugin->saveFunc(session, final);
     );
@@ -295,7 +299,7 @@ void moloch_plugins_cb_new(MolochSession_t *session)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->newFunc)
             plugin->newFunc(session);
     );
@@ -305,7 +309,7 @@ void moloch_plugins_cb_tcp(MolochSession_t *session, struct tcp_stream *a_tcp)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->tcpFunc)
             plugin->tcpFunc(session, a_tcp);
     );
@@ -315,7 +319,7 @@ void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsi
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->udpFunc)
             plugin->udpFunc(session, udphdr, data, len);
     );
@@ -325,7 +329,7 @@ void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->ipFunc)
             plugin->ipFunc(session, packet, len);
     );
@@ -335,7 +339,7 @@ void moloch_plugins_cb_hp_omb(MolochSession_t *session, http_parser *parser)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_message_begin)
             plugin->on_message_begin(session, parser);
     );
@@ -345,7 +349,7 @@ void moloch_plugins_cb_hp_ou(MolochSession_t *session, http_parser *parser, cons
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_url)
             plugin->on_url(session, parser, at, length);
     );
@@ -355,7 +359,7 @@ void moloch_plugins_cb_hp_ohf(MolochSession_t *session, http_parser *parser, con
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_header_field)
             plugin->on_header_field(session, parser, at, length);
     );
@@ -365,7 +369,7 @@ void moloch_plugins_cb_hp_ohv(MolochSession_t *session, http_parser *parser, con
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_header_value)
             plugin->on_header_value(session, parser, at, length);
     );
@@ -375,7 +379,7 @@ void moloch_plugins_cb_hp_ohc(MolochSession_t *session, http_parser *parser)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_headers_complete)
             plugin->on_headers_complete(session, parser);
     );
@@ -385,7 +389,7 @@ void moloch_plugins_cb_hp_ob(MolochSession_t *session, http_parser *parser, cons
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_body)
             plugin->on_body(session, parser, at, length);
     );
@@ -395,7 +399,7 @@ void moloch_plugins_cb_hp_omc(MolochSession_t *session, http_parser *parser)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->on_message_complete)
             plugin->on_message_complete(session, parser);
     );
@@ -405,7 +409,7 @@ void moloch_plugins_cb_smtp_oh(MolochSession_t *session, const char *field, size
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->smtp_on_header)
             plugin->smtp_on_header(session, field, field_len, value, value_len);
     );
@@ -415,7 +419,7 @@ void moloch_plugins_cb_smtp_ohc(MolochSession_t *session)
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->smtp_on_header_complete)
             plugin->smtp_on_header_complete(session);
     );
@@ -425,12 +429,12 @@ void moloch_plugins_exit()
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->exitFunc)
             plugin->exitFunc();
     );
 
-    HASH_FORALL_POP_HEAD(p_, plugins, plugin, 
+    HASH_FORALL_POP_HEAD(p_, plugins, plugin,
         free(plugin->name);
         MOLOCH_TYPE_FREE(MolochPlugin_t, plugin);
     );
@@ -440,7 +444,7 @@ void moloch_plugins_reload()
 {
     MolochPlugin_t *plugin;
 
-    HASH_FORALL(p_, plugins, plugin, 
+    HASH_FORALL(p_, plugins, plugin,
         if (plugin->reloadFunc)
             plugin->reloadFunc();
     );

@@ -2,6 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:61672,33554442:22"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 1407,
             "db" : 2516,
             "no" : "test",
@@ -54,6 +74,7 @@
                3908,
                4058
             ],
+            "prot-term-cnt" : 2,
             "lpd" : 1387565112051,
             "fp" : 1387565111,
             "as2" : "AS0001 Cool Beans!",
@@ -63,30 +84,14 @@
             "a1" : "10.0.0.1",
             "fb2" : "5353482d312e3939",
             "db1" : 1109,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:61672,33554442:22"
-               ],
-               "test.number" : [
-                  33554442
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "by1" : 1715,
             "p2" : 22,
             "sshkey" : [
                "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
+            ],
+            "prot-term" : [
+               "ssh",
+               "tcp"
             ]
          },
          "header" : {

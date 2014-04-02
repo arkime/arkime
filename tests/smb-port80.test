@@ -34,6 +34,10 @@
             "p2" : 80,
             "as1" : "AS0001 Cool Beans!",
             "g2" : "USA",
+            "prot-term" : [
+               "smb",
+               "tcp"
+            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -45,7 +49,8 @@
                769,
                851,
                933
-            ]
+            ],
+            "prot-term-cnt" : 2
          },
          "header" : {
             "index" : {

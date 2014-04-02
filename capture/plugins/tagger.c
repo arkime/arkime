@@ -38,6 +38,13 @@ extern MolochConfig_t        config;
 
 extern void                 *esServer;
 
+static int                   tagsField;
+static int                   httpHostField;
+static int                   httpXffField;
+static int                   httpMd5Field;
+static int                   emailMd5Field;
+static int                   dnsHostField;
+
 /******************************************************************************/
 
 typedef struct tagger_string {
@@ -92,7 +99,7 @@ void tagger_add_tags(MolochSession_t *session, GPtrArray *files)
     for (f = 0; f < files->len; f++) {
         TaggerFile_t *file = files->pdata[f];
         for (t = 0; file->tags[t]; t++) {
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, file->tags[t]);
+            moloch_nids_add_tag(session, file->tags[t]);
         }
     }
 }
@@ -124,8 +131,8 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
     }
 
-    if (session->fields[MOLOCH_FIELD_HTTP_XFF]) {
-        MolochIntHashStd_t *ihash = session->fields[MOLOCH_FIELD_HTTP_XFF]->ihash;
+    if (session->fields[httpXffField]) {
+        MolochIntHashStd_t *ihash = session->fields[httpXffField]->ihash;
         MolochInt_t        *xff;
 
         HASH_FORALL(i_, *ihash, xff, 
@@ -138,8 +145,8 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     }
 
     MolochString_t *hstring;
-    if (session->fields[MOLOCH_FIELD_HTTP_HOST]) {
-        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_HTTP_HOST]->shash;
+    if (session->fields[httpHostField]) {
+        MolochStringHashStd_t *shash = session->fields[httpHostField]->shash;
         HASH_FORALL(s_, *shash, hstring, 
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -152,8 +159,8 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             }
         );
     }
-    if (session->fields[MOLOCH_FIELD_DNS_HOST]) {
-        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_DNS_HOST]->shash;
+    if (session->fields[dnsHostField]) {
+        MolochStringHashStd_t *shash = session->fields[dnsHostField]->shash;
         HASH_FORALL(s_, *shash, hstring, 
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -167,8 +174,8 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[MOLOCH_FIELD_HTTP_MD5]) {
-        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_HTTP_MD5]->shash;
+    if (session->fields[httpMd5Field]) {
+        MolochStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
         HASH_FORALL(s_, *shash, hstring, 
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -176,8 +183,8 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[MOLOCH_FIELD_EMAIL_MD5]) {
-        MolochStringHashStd_t *shash = session->fields[MOLOCH_FIELD_EMAIL_MD5]->shash;
+    if (session->fields[emailMd5Field]) {
+        MolochStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
         HASH_FORALL(s_, *shash, hstring, 
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
@@ -296,7 +303,7 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 
     int tag = 0;
     for (tag = 0; file->tags[tag]; tag++) {
-        moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, file->tags[tag], NULL);
+        moloch_db_get_tag(NULL, tagsField, file->tags[tag], NULL);
     }
 
     file->type = moloch_js0n_get_str(source, source_len, "type");
@@ -467,6 +474,13 @@ void moloch_plugin_init()
       tagger_plugin_exit,
       NULL
     );
+
+    tagsField    = moloch_field_by_db("ta");
+    httpHostField = moloch_field_by_db("ho");
+    httpXffField  = moloch_field_by_db("xff");
+    httpMd5Field  = moloch_field_by_db("hmd5");
+    emailMd5Field = moloch_field_by_db("emd5");
+    dnsHostField  = moloch_field_by_db("dnsho");
 
 
     /* Call right away sync, and schedule every 60 seconds async */

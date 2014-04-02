@@ -6,6 +6,9 @@ typedef struct {
     int ircState;
 } IRCInfo_t;
 
+static int channelsField;
+static int nickField;
+
 /******************************************************************************/
 int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
 {
@@ -34,7 +37,7 @@ int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
                 ptr++;
             }
 
-            moloch_field_string_add(MOLOCH_FIELD_IRC_CHANNELS, session, (char*)data + 5, ptr - data - 5, TRUE);
+            moloch_field_string_add(channelsField, session, (char*)data + 5, ptr - data - 5, TRUE);
         }
 
         if (remaining > 5 && memcmp("NICK ", data, 5) == 0) {
@@ -45,7 +48,7 @@ int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
                 ptr++;
             }
 
-            moloch_field_string_add(MOLOCH_FIELD_IRC_NICK, session, (char*)data + 5, ptr - data - 5, TRUE);
+            moloch_field_string_add(nickField, session, (char*)data + 5, ptr - data - 5, TRUE);
         }
 
         if (remaining > 0) {
@@ -73,10 +76,11 @@ void irc_classify(MolochSession_t *session, const unsigned char *data, int len)
         return;
     }
 
-    if (moloch_nids_has_tag(session, MOLOCH_FIELD_TAGS, "protocol:irc"))
+    if (moloch_nids_has_protocol(session, "irc"))
         return;
 
-    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:irc");
+    moloch_nids_add_tag(session, "protocol:irc");
+    moloch_nids_add_protocol(session, "irc");
 
     IRCInfo_t            *irc          = MOLOCH_TYPE_ALLOC0(IRCInfo_t);
 
@@ -86,8 +90,17 @@ void irc_classify(MolochSession_t *session, const unsigned char *data, int len)
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_field_define_internal(MOLOCH_FIELD_IRC_NICK,      "ircnck", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_IRC_CHANNELS,  "ircch",  MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    nickField = moloch_field_define("irc", "termfield",
+        "irc.nick", "Nickname", "ircnck", 
+        "Nicknames set", 
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    channelsField = moloch_field_define("irc", "termfield",
+        "irc.channel", "Channel", "ircch", 
+        "Channels joined",  
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
 
     moloch_parsers_classifier_register_tcp("irc", 0, (unsigned char*)":", 1, irc_classify);
     moloch_parsers_classifier_register_tcp("irc", 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);

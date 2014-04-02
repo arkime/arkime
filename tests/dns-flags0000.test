@@ -2,20 +2,22 @@
    "packets" : [
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ]
+            },
             "db2" : 74,
             "db" : 148,
-            "lpd" : 1393422583932,
-            "fp" : 1393422583,
             "no" : "test",
-            "as2" : "AS0000 This is neat",
             "lp" : 1393422583,
-            "pa" : 2,
-            "tacnt" : 7,
-            "fb1" : "b2b5000000010000",
             "a2" : "10.0.0.1",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
                "dstip",
                "node:test",
                "protocol:dns",
@@ -26,15 +28,9 @@
             "fpd" : 1393422583830,
             "fs" : [],
             "by2" : 82,
-            "fb2" : "b2b5800500010000",
-            "a1" : "10.0.0.2",
-            "dnshocnt" : 1,
-            "db1" : 74,
             "pa2" : 1,
             "p1" : 61912,
-            "by1" : 82,
             "by" : 164,
-            "p2" : 53,
             "as1" : "AS0001 Cool Beans!",
             "g2" : "USA",
             "pr" : 17,
@@ -42,8 +38,25 @@
                24,
                122
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "flashservice.adobe.com"
+            ],
+            "lpd" : 1393422583932,
+            "fp" : 1393422583,
+            "as2" : "AS0000 This is neat",
+            "pa" : 2,
+            "fb1" : "b2b5000000010000",
+            "tacnt" : 5,
+            "a1" : "10.0.0.2",
+            "fb2" : "b2b5800500010000",
+            "db1" : 74,
+            "dnshocnt" : 1,
+            "by1" : 82,
+            "p2" : 53,
+            "prot-term" : [
+               "udp",
+               "dns"
             ]
          },
          "header" : {

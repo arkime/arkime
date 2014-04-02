@@ -8,6 +8,9 @@ typedef struct {
     uint8_t    sshCode;
 } SSHInfo_t;
 
+static int verField;
+static int keyField;
+
 /******************************************************************************/
 int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
 {
@@ -23,7 +26,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
 
             char *str = g_ascii_strdown((char *)data, len);
 
-            if (!moloch_field_string_add(MOLOCH_FIELD_SSH_VER, session, str, len, FALSE)) {
+            if (!moloch_field_string_add(verField, session, str, len, FALSE)) {
                 free(str);
             }
         }
@@ -48,7 +51,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
             if ((uint32_t)remaining > keyLen + 8) {
                 char *str = g_base64_encode(data+10, keyLen);
 
-                if (!moloch_field_string_add(MOLOCH_FIELD_SSH_KEY, session, str, (keyLen/3+1)*4, FALSE)) {
+                if (!moloch_field_string_add(keyField, session, str, (keyLen/3+1)*4, FALSE)) {
                     g_free(str);
                 }
             }
@@ -77,10 +80,11 @@ void ssh_free(MolochSession_t UNUSED(*session), void *uw)
 /******************************************************************************/
 void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
 {
-    if (moloch_nids_has_tag(session, MOLOCH_FIELD_TAGS, "protocol:ssh"))
+    if (moloch_nids_has_protocol(session, "ssh"))
         return;
 
-    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "protocol:ssh");
+    moloch_nids_add_tag(session, "protocol:ssh");
+    moloch_nids_add_protocol(session, "ssh");
 
     SSHInfo_t            *ssh          = MOLOCH_TYPE_ALLOC0(SSHInfo_t);
 
@@ -90,8 +94,17 @@ void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_field_define_internal(MOLOCH_FIELD_SSH_VER,       "sshver", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
-    moloch_field_define_internal(MOLOCH_FIELD_SSH_KEY,       "sshkey", MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT);
+    verField = moloch_field_define("ssh", "lotermfield",
+        "ssh.ver", "Version", "sshver",
+        "SSH Software Version",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        NULL);
+
+    keyField = moloch_field_define("ssh", "termfield",
+        "ssh.key", "Key", "sshkey", 
+        "SSH Key",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
 
     moloch_parsers_classifier_register_tcp("ssh", 0, (unsigned char*)"SSH", 3, ssh_classify);
 }

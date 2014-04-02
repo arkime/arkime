@@ -58,6 +58,7 @@
                6581,
                6663
             ],
+            "prot-term-cnt" : 2,
             "hpathcnt" : 1,
             "hh2" : [
                "http:header:accept-ranges",
@@ -92,6 +93,10 @@
             "hh1cnt" : 3,
             "p2" : 80,
             "hdvercnt" : 1,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
             "hdver" : [
                "1.1"
             ],

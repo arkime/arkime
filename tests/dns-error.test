@@ -2,21 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NXDOMAIN"
+               ]
+            },
             "db2" : 139,
             "db" : 203,
-            "lpd" : 1394587409103,
-            "fp" : 1394587409,
             "no" : "test",
-            "as2" : "AS0001 Cool Beans!",
             "lp" : 1394587409,
-            "pa" : 2,
-            "tacnt" : 8,
-            "fb1" : "a9ba010000010000",
             "a2" : "10.0.0.2",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
-               "dns:status:NXDOMAIN",
                "dstip",
                "node:test",
                "protocol:dns",
@@ -28,23 +33,34 @@
             "fs" : [],
             "by2" : 147,
             "g1" : "USA",
-            "fb2" : "a9ba858300010000",
-            "a1" : "10.0.0.1",
-            "dnshocnt" : 1,
-            "db1" : 64,
             "pa2" : 1,
             "p1" : 56329,
-            "by1" : 72,
             "by" : 219,
-            "p2" : 53,
             "as1" : "AS0000 This is neat",
             "pr" : 17,
             "ps" : [
                24,
                112
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "no.such.host"
+            ],
+            "lpd" : 1394587409103,
+            "fp" : 1394587409,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 2,
+            "fb1" : "a9ba010000010000",
+            "tacnt" : 5,
+            "a1" : "10.0.0.1",
+            "fb2" : "a9ba858300010000",
+            "db1" : 64,
+            "dnshocnt" : 1,
+            "by1" : 72,
+            "p2" : 53,
+            "prot-term" : [
+               "udp",
+               "dns"
             ]
          },
          "header" : {

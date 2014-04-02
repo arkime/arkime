@@ -1,0 +1,16 @@
+if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
+  div.sessionDetailMeta.bold HTTP
+  dl.sessionDetailMeta
+    +arrayList(session, "ho", "Hosts", "host.http")
+    +arrayList(session, "ua", "User Agents", "ua")
+    +ipArrayListPre(session, "xff", "XFFs", "xff")
+    +arrayList(session, "hh1", "Request Headers", "header.src")
+    +arrayList(session, "hsver", "Request Versions", "http.version.src")
+    +arrayList(session, "hh2", "Resp Headers", "header.dst")
+    +arrayList(session, "hdver", "Resp Versions", "http.version.dst")
+    +arrayList(session, "hmd5", "Body MD5s", "http.md5")
+    if (session.hdrs)
+      each value,i in reqFields
+        +arrayList(session.hdrs, "hreq-" + value.name, value.name + " Header", "http." + value.name)
+      each value,i in resFields
+        +arrayList(session.hdrs, "hres-" + value.name, value.name + " Header", "http." + value.name)

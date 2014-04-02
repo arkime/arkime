@@ -1,13 +1,13 @@
 /* main.c  -- Initialization of components
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -171,14 +171,15 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
 
     memset(out, 0, sizeof(out));
     *olen = 0;
-    if (js0n(data, len, out) != 0) {
-        LOG("ERROR: Parse error for >%s< in >%.*s<\n", key, len, data);
+    int rc;
+    if ((rc = js0n(data, len, out)) != 0) {
+        LOG("ERROR: Parse error %d for >%s< in >%.*s<\n", rc, key, len, data);
         fflush(stdout);
         return 0;
     }
 
     for (i = 0; out[i]; i+= 4) {
-        if (out[i+1] == key_len && memcmp(key, data + out[i], key_len) == 0) { 
+        if (out[i+1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
             *olen = out[i+3];
             return data + out[i+2];
         }
@@ -482,9 +483,8 @@ int main(int argc, char **argv)
     moloch_config_load_local_ips();
     moloch_yara_init();
     moloch_parsers_init();
-    moloch_config_load_headers();
     moloch_plugins_init();
-    g_timeout_add(10, moloch_nids_init_gfunc, 0);
+    g_timeout_add(1, moloch_nids_init_gfunc, 0);
 
     g_main_loop_run(mainLoop);
     cleanup(0);

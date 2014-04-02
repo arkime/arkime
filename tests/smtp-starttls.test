@@ -2,6 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "test" : {
+               "number" : [
+                  440713901
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:57406,440713901:25"
+               ],
+               "ip-geo" : [
+                  "USA"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
             "db2" : 4627,
             "db" : 6011,
             "no" : "test",
@@ -65,6 +85,7 @@
                8839,
                8921
             ],
+            "prot-term-cnt" : 3,
             "lpd" : 1388017125239,
             "fp" : 1388017124,
             "as2" : "AS15169 Google Inc.",
@@ -74,26 +95,6 @@
             "a1" : "10.0.0.1",
             "fb2" : "323230206d782e67",
             "db1" : 1384,
-            "plugin" : {
-               "test.ip.rir" : [
-                  ""
-               ],
-               "test.ip.asn" : [
-                  "AS0000 This is neat"
-               ],
-               "test.ip.geo" : [
-                  "USA"
-               ],
-               "test.string" : [
-                  "16777226:57406,440713901:25"
-               ],
-               "test.number" : [
-                  440713901
-               ],
-               "test.ip" : [
-                  167772161
-               ]
-            },
             "by1" : 2514,
             "tls" : [
                {
@@ -132,7 +133,12 @@
                }
             ],
             "p2" : 25,
-            "rir2" : "ARIN"
+            "rir2" : "ARIN",
+            "prot-term" : [
+               "tls",
+               "smtp",
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

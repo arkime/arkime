@@ -1,13 +1,13 @@
 /* parsers.c  -- Functions for dealing with classification and parsers
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,8 +44,8 @@ void moloch_parsers_magic_tag(MolochSession_t *session, const char *base, const 
         char *semi = strchr(tmp, ';');
         if (semi) {
             *semi = 0;
-        } 
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, tmp);
+        }
+        moloch_nids_add_tag(session, tmp);
     }
 }
 /******************************************************************************/
@@ -53,25 +53,28 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
 {
     int i;
 
-    moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, nodeTag);
+    moloch_nids_add_tag(session, nodeTag);
     if (config.nodeClass)
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, classTag);
+        moloch_nids_add_tag(session, classTag);
 
     if (config.extraTags) {
         for (i = 0; config.extraTags[i]; i++) {
-            moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, config.extraTags[i]);
+            moloch_nids_add_tag(session, config.extraTags[i]);
         }
     }
 
     switch(session->protocol) {
     case IPPROTO_TCP:
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "tcp");
+        moloch_nids_add_tag(session, "tcp");
+        moloch_nids_add_protocol(session, "tcp");
         break;
     case IPPROTO_UDP:
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "udp");
+        moloch_nids_add_tag(session, "udp");
+        moloch_nids_add_protocol(session, "udp");
         break;
     case IPPROTO_ICMP:
-        moloch_nids_add_tag(session, MOLOCH_FIELD_TAGS, "ICMP");
+        moloch_nids_add_tag(session, "ICMP");
+        moloch_nids_add_protocol(session, "icmp");
         break;
     }
 }
@@ -152,7 +155,7 @@ char *moloch_parsers_asn_decode_oid(unsigned char *oid, int len) {
         value = (value << 7) | (oid[pos] & 0x7f);
         if (oid[pos] & 0x80) {
             continue;
-        } 
+        }
 
         if (first) {
             first = FALSE;
@@ -173,23 +176,12 @@ char *moloch_parsers_asn_decode_oid(unsigned char *oid, int len) {
 /******************************************************************************/
 void moloch_parsers_init()
 {
-    moloch_field_define_internal(MOLOCH_FIELD_USER,          "user",   MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_CONTINUE);
-    moloch_field_define_internal(MOLOCH_FIELD_TAGS,          "ta",     MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_CONTINUE);
 
-    snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
-    moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, nodeTag, NULL);
-
-    if (config.nodeClass) {
-        snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
-        moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, classTag, NULL);
-    }
-
-    if (config.extraTags) {
-        int i;
-        for (i = 0; config.extraTags[i]; i++) {
-            moloch_db_get_tag(NULL, MOLOCH_FIELD_TAGS, config.extraTags[i], NULL);
-        }
-    }
+    moloch_field_define("general", "lotermfield",
+        "user", "User", "user",
+        "External user set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
 
     cookie = magic_open(MAGIC_MIME);
     if (!cookie) {
@@ -203,7 +195,7 @@ void moloch_parsers_init()
 
     MolochString_t *hstring;
     int d;
-    
+
     for (d = 0; config.parsersDir[d]; d++) {
         GError      *error = 0;
         GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
@@ -270,10 +262,32 @@ void moloch_parsers_init()
         g_dir_close(dir);
     }
 
-    HASH_FORALL_POP_HEAD(s_, loaded, hstring, 
+    HASH_FORALL_POP_HEAD(s_, loaded, hstring,
         g_free(hstring->str);
         MOLOCH_TYPE_FREE(MolochString_t, hstring);
     );
+
+    // Set tags field up AFTER loading plugins
+    int tagsField = moloch_field_define("general", "termfield",
+        "tags", "Tags", "ta",
+        "Tags set for session",
+        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
+    moloch_db_get_tag(NULL, tagsField, nodeTag, NULL);
+
+    if (config.nodeClass) {
+        snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
+        moloch_db_get_tag(NULL, tagsField, classTag, NULL);
+    }
+
+    if (config.extraTags) {
+        int i;
+        for (i = 0; config.extraTags[i]; i++) {
+            moloch_db_get_tag(NULL, tagsField, config.extraTags[i], NULL);
+        }
+    }
 }
 /******************************************************************************/
 void moloch_parsers_exit() {
@@ -283,7 +297,7 @@ void moloch_parsers_exit() {
 void moloch_print_hex_string(unsigned char* data, unsigned int length)
 {
     unsigned int i;
-    
+
     for (i = 0; i < length; i++)
     {
         printf("%02X ", data[i]);
@@ -335,7 +349,7 @@ typedef struct moloch_classify_t
     MolochClassifyFunc   func;
 } MolochClassify_t;
 
-typedef struct 
+typedef struct
 {
     MolochClassify_t   **arr;
     short               size;
@@ -351,7 +365,7 @@ MolochClassifyHead_t classifersUdp1[256];
 MolochClassifyHead_t classifersUdp2[256][256];
 
 /******************************************************************************/
-void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c) 
+void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
 {
     if (ch->cnt <= ch->size) {
         if (ch->size == 0) {

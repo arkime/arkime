@@ -1,0 +1,5 @@
+if (session.sshkey || session.sshver)
+  div.sessionDetailMeta.bold SSH
+  dl.sessionDetailMeta
+    +arrayList(session, "sshkey", "Host Keys", "ssh.key")
+    +arrayList(session, "sshver", "Versions", "ssh.ver")

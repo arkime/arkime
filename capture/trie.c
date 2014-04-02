@@ -2,13 +2,13 @@
 /* trie.c  -- Simple trie implementation
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,7 @@ uint64_t delCnt;
 uint64_t walkNCnt;
 
 
-void moloch_trie_init(MolochTrie_t *trie) 
+void moloch_trie_init(MolochTrie_t *trie)
 {
     memset(trie, 0, sizeof(*trie));
     trie->root.data = 0;
@@ -83,10 +83,10 @@ MolochTrieNode_t *moloch_trie_add_node(MolochTrieNode_t *node, const char key)
     return node->children[p];
 }
 
-void moloch_trie_add_forward(MolochTrie_t *trie, const char *key, const int len, void *data) 
+void moloch_trie_add_forward(MolochTrie_t *trie, const char *key, const int len, void *data)
 {
     addCnt++;
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
 
     int i;
     for (i = 0; i < len; i++) {
@@ -97,9 +97,9 @@ void moloch_trie_add_forward(MolochTrie_t *trie, const char *key, const int len,
     node->data = data;
 }
 
-void moloch_trie_add_reverse(MolochTrie_t *trie, const char *key, const int len, void *data) 
+void moloch_trie_add_reverse(MolochTrie_t *trie, const char *key, const int len, void *data)
 {
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
 
     int i;
     for (i = len-1; i >= 0; i--) {
@@ -118,7 +118,7 @@ MolochTrieNode_t * moloch_trie_walk_forward(MolochTrieNode_t *node, const char *
         if (!node->children)
             return NULL;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return NULL;
 
         const int p = key[i] - node->first;
@@ -134,14 +134,14 @@ MolochTrieNode_t * moloch_trie_walk_forward(MolochTrieNode_t *node, const char *
 void * moloch_trie_get_forward(MolochTrie_t *trie, const char *key, const int len)
 {
     getCnt++;
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
 
     int i;
     for (i = 0; i < len; i++) {
         if (!node->children)
             return NULL;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return NULL;
 
         const int p = key[i] - node->first;
@@ -156,14 +156,14 @@ void * moloch_trie_get_forward(MolochTrie_t *trie, const char *key, const int le
 
 void * moloch_trie_get_reverse(MolochTrie_t *trie, const char *key, const int len)
 {
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
 
     int i;
     for (i = len-1; i >= 0; i--) {
         if (!node->children)
             return NULL;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return NULL;
 
         const int p = key[i] - node->first;
@@ -178,7 +178,7 @@ void * moloch_trie_get_reverse(MolochTrie_t *trie, const char *key, const int le
 
 void * moloch_trie_best_forward(MolochTrie_t *trie, const char *key, const int len)
 {
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
     void *data = NULL;
 
     int i;
@@ -186,7 +186,7 @@ void * moloch_trie_best_forward(MolochTrie_t *trie, const char *key, const int l
         if (!node->children)
             return data;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return data;
 
         const int p = key[i] - node->first;
@@ -202,7 +202,7 @@ void * moloch_trie_best_forward(MolochTrie_t *trie, const char *key, const int l
 
 void * moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int len)
 {
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
     void *data = NULL;
 
     int i;
@@ -210,7 +210,7 @@ void * moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int l
         if (!node->children)
             return data;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return data;
 
         const int p = key[i] - node->first;
@@ -227,14 +227,14 @@ void * moloch_trie_best_reverse(MolochTrie_t *trie, const char *key, const int l
 void * moloch_trie_del_forward(MolochTrie_t *trie, const char *key, const int len)
 {
     delCnt++;
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
 
     int i;
     for (i = 0; i < len; i++) {
         if (!node->children)
             return NULL;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return NULL;
 
         const int p = key[i] - node->first;
@@ -253,14 +253,14 @@ void * moloch_trie_del_forward(MolochTrie_t *trie, const char *key, const int le
 
 void * moloch_trie_del_reverse(MolochTrie_t *trie, const char *key, const int len)
 {
-    MolochTrieNode_t *node = &trie->root;    
+    MolochTrieNode_t *node = &trie->root;
 
     int i;
     for (i = len-1; i >= 0; i--) {
         if (!node->children)
             return NULL;
 
-        if (key[i] < node->first || key[i] > node->last) 
+        if (key[i] < node->first || key[i] > node->last)
             return NULL;
 
         const int p = key[i] - node->first;
@@ -293,7 +293,7 @@ void moloch_trie_print_node(MolochTrieNode_t *node, int level)
     }
 }
 
-void moloch_trie_print(MolochTrie_t *trie) 
+void moloch_trie_print(MolochTrie_t *trie)
 {
     printf("Size: %d\n", trie->size);
     moloch_trie_print_node(&trie->root, 0);

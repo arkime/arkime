@@ -2,15 +2,26 @@
    "packets" : [
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
             "db2" : 246,
             "db" : 312,
             "no" : "test",
             "lp" : 1385400647,
             "a2" : "10.2.95.39",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
-               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "udp"
@@ -34,6 +45,7 @@
                24,
                114
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "www.github.com",
                "github.com"
@@ -43,7 +55,7 @@
             "dnsipcnt" : 1,
             "pa" : 2,
             "fb1" : "e039010000010000",
-            "tacnt" : 6,
+            "tacnt" : 3,
             "a1" : "10.180.156.141",
             "fb2" : "e039818000010002",
             "db1" : 66,
@@ -53,6 +65,10 @@
             ],
             "by1" : 74,
             "p2" : 53,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
             "rirdnsip" : [
                "ARIN"
             ]
@@ -66,15 +82,26 @@
       },
       {
          "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
             "db2" : 246,
             "db" : 312,
             "no" : "test",
             "lp" : 1385400648,
             "a2" : "10.178.8.71",
             "ta" : [
-               "dns:qclass:IN",
-               "dns:qtype:A",
-               "dns:status:NOERROR",
                "node:test",
                "protocol:dns",
                "udp"
@@ -98,6 +125,7 @@
                384,
                474
             ],
+            "prot-term-cnt" : 2,
             "dnsho" : [
                "www.github.com",
                "github.com"
@@ -107,7 +135,7 @@
             "dnsipcnt" : 1,
             "pa" : 2,
             "fb1" : "e039010000010000",
-            "tacnt" : 6,
+            "tacnt" : 3,
             "a1" : "10.180.156.141",
             "fb2" : "e039818000010002",
             "db1" : 66,
@@ -117,6 +145,10 @@
             ],
             "by1" : 74,
             "p2" : 53,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
             "rirdnsip" : [
                "ARIN"
             ]
