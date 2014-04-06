@@ -67,7 +67,6 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
   escInfo: Config.get("elasticsearch", "localhost:9200").split(':'),
-  esHttpAgent: new KAA({maxSockets: 20}),
   httpAgent:   new KAA({maxSockets: 40}),
   httpsAgent:  new KAA.Secure({maxSockets: 40}),
   previousNodeStats: [],
@@ -129,6 +128,7 @@ app.configure(function() {
   app.use(express.methodOverride());
   app.use("/", express['static'](__dirname + '/public', { maxAge: 600 * 1000}));
   if (Config.get("passwordSecret")) {
+    app.locals.alwaysShowESStatus = false;
     app.use(function(req, res, next) {
       // 200 for NS
       if (req.url === "/_ns_/nstest.html") {
@@ -194,6 +194,7 @@ app.configure(function() {
     });
   } else {
     /* Shared password isn't set, who cares about auth */
+    app.locals.alwaysShowESStatus = true;
     app.use(function(req, res, next) {
       req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
       next();
@@ -286,7 +287,6 @@ createSessionDetail();
 Db.initialize({host : internals.escInfo[0],
                port: internals.escInfo[1],
                nodeName: Config.nodeName(),
-               agent: internals.esHttpAgent,
                dontMapTags: Config.get("multiES", false)});
 
 Db.nodesStats({fs: 1}, function (err, info) {

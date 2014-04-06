@@ -361,26 +361,20 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 /*
  * Start loading a file from database
  */
-void tagger_load_file(TaggerFile_t *file, gpointer sync)
+void tagger_load_file(TaggerFile_t *file)
 {
     char                key[500];
     int                 key_len;
 
     key_len = snprintf(key, sizeof(key), "/tagger/file/%s", file->str);
 
-    if (sync) {
-        size_t         data_len;
-        unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, &data_len);;
-        tagger_load_file_cb(data, data_len, file);
-    } else {
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_load_file_cb, file);
-    }
+    moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_load_file_cb, file);
 }
 /******************************************************************************/
 /*
  * Process the list of files from ES
  */
-void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer sync)
+void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer UNUSED(uw))
 {
     uint32_t           hits_len;
     unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
@@ -417,12 +411,12 @@ void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer sync)
             file = MOLOCH_TYPE_ALLOC0(TaggerFile_t);
             file->str = id;
             HASH_ADD(s_, allFiles, file->str, file);
-            tagger_load_file(file, sync);
+            tagger_load_file(file);
             continue;
         }
         g_free(id);
         if (!file->md5 || strncmp(file->md5, (char*)md5, md5_len) != 0) {
-            tagger_load_file(file, sync);
+            tagger_load_file(file);
         }
     }
 }
@@ -443,10 +437,10 @@ gboolean tagger_fetch_files (gpointer sync)
         size_t         data_len;
         unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, &data_len);;
         unsigned char *datacopy = (unsigned char*)g_strndup((char*)data, data_len);
-        tagger_fetch_files_cb(datacopy, data_len, sync);
+        tagger_fetch_files_cb(datacopy, data_len, NULL);
         g_free(datacopy);
     } else {
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_fetch_files_cb, sync);
+        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_fetch_files_cb, NULL);
     }
 
     return TRUE;

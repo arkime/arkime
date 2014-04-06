@@ -34,7 +34,7 @@ html
                 label
                 img#viewsArrow(src="down-arrow.png")
             li#version moloch v#{molochversion}
-            - if (user.createEnabled)
+            - if (user.createEnabled || alwaysShowESStatus)
               li
                 a(href="#{elasticBase}/_plugin/head/",target="_blank")
                   div#esstatus.tooltip

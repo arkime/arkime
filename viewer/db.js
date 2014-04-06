@@ -20,7 +20,7 @@
 */
 "use strict";
 
-var ESC            = require('elasticsearchclient'),
+var ESC            = require('elasticsearch'),
     async          = require('async'),
     os             = require('os'),
     fs             = require('fs'),
@@ -40,7 +40,10 @@ exports.initialize = function (info) {
   internals.nodeName = info.nodeName;
   delete info.nodeName;
 
-  internals.elasticSearchClient = new ESC(info);
+  internals.elasticSearchClient = new ESC.Client({
+    host: info.host + ":" + info.port,
+    apiVersion: "0.90"
+  });
 
   // Replace tag implementation
   if (internals.dontMapTags) {
@@ -73,173 +76,72 @@ function didIt() {
 //// Low level functions to undo the data/error seperate callbacks
 //////////////////////////////////////////////////////////////////////////////////
 
-exports.get = function (index, type, query, cb) {
-  internals.elasticSearchClient.get(index, type, query)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+function merge(to, from) {
+  for (var key in from)
+    to[key] = from[key];
+}
+
+
+exports.get = function (index, type, id, cb) {
+  internals.elasticSearchClient.get({index: index, type: type, id: id}, cb);
 };
 
-exports.getWithOptions = function (index, type, query, options, cb) {
-  internals.elasticSearchClient.get(index, type, query, options)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+exports.getWithOptions = function (index, type, id, options, cb) {
+  var params = {index: index, type:type, id: id};
+  merge(params, options);
+  internals.elasticSearchClient.get(params, cb);
 };
 
 /* Work around a breaking change where document.id is nolonger used for the id */
 exports.index = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.index(index, type, document, id)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.index({index: index, type: type, body: document, id: id}, cb);
 };
 
 exports.indexNow = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.index(index, type, document, id, {refresh: 1})
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.index({index: index, type: type, body: document, id: id, refresh: 1}, cb);
 };
 
 exports.search = function (index, type, query, cb) {
-  internals.elasticSearchClient.search(index, type, query)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.search({index: index, type: type, body: query}, cb);
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
-  internals.elasticSearchClient.search(index, type, query, {preference: "_primary_first"})
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.search({index: index, type: type, body: query, preference: "_primary_first"}, cb);
 };
 
 exports.msearch = function (index, type, queries, cb) {
-  var path = '/' + index + "/" + type + "/_msearch";
+  var body = [];
 
-  var buf='';
   for(var i = 0, ilen = queries.length; i < ilen; i++){
-    buf += "{}\n";
-    buf += queries[i] + "\n";
+    body.push({index: index, type: type});
+    body.push(queries[i]);
   }
 
-  internals.elasticSearchClient.createCall({data:buf, path:path, method: "POST"}, internals.elasticSearchClient.clientOptions)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.msearch({body: body}, cb);
 };
 
 exports.deleteByQuery = function (index, type, query, cb) {
-  internals.elasticSearchClient.deleteByQuery(index, type, query)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.deleteByQuery({index: index, type: type, body: query}, cb);
 };
 
 exports.deleteDocument = function (index, type, id, cb) {
-  internals.elasticSearchClient.deleteDocument(index, type, id, {refresh:true})
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.delete({index: index, type: type, id: id}, cb);
 };
 
 exports.status = function(index, cb) {
-  internals.elasticSearchClient.status(index)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.indices.status({index: index}, cb);
 };
 
 exports.health = function(cb) {
-  internals.elasticSearchClient.health()
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.cluster.health({}, cb);
 };
 
 exports.nodesStats = function (options, cb) {
-  internals.elasticSearchClient.nodesStats(null, options)
-    .on('data', function(data) {
-      cb(null, JSON.parse(data));
-    })
-    .on('error', function(error) {
-      cb(error, null);
-    })
-    .exec();
+  internals.elasticSearchClient.cluster.nodeStats(options, function (err, data, status) {cb(err,data);});
 };
 
-exports.update = function (indexName, typeName, documentId, document, cb) {
-    var path = '/' + indexName + '/' + typeName + '/' + documentId + '/_update';
-    return internals.elasticSearchClient.createCall({data: JSON.stringify(document),
-                                                     path: path,
-                                                     method: 'POST'}, internals.elasticSearchClient.clientOptions)
-    .on('data', function(data) {
-      if (cb) {
-        cb(null, JSON.parse(data));
-      }
-    })
-    .on('error', function(error) {
-      if (cb) {
-        cb(error, null);
-      }
-    })
-    .exec();
-};
-
-exports.esVersion = function (cb) {
-  internals.elasticSearchClient.createCall({data:"",path:"/",method: "GET"}, internals.elasticSearchClient.clientOptions)
-    .on('data', function(data) {
-      data = JSON.parse(data);
-      var matches = data.version.number.match(/^(\d+).(\d+).(\d+)/);
-      cb(((+matches[1]) << 16) | ((+matches[2]) << 8) | (+matches[3]));
-    })
-    .exec();
+exports.update = function (index, type, id, document, cb) {
+  internals.elasticSearchClient.update({index: index, type: type, body: document, id: id}, cb);
 };
 
 //////////////////////////////////////////////////////////////////////////////////

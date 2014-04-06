@@ -262,6 +262,9 @@ static int hostField = -1;
                             continue;
                         }
 
+                        if (elen > BSB_REMAINING(ebsb))
+                            break;
+
                         BSB snibsb;
                         BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
                         BSB_IMPORT_skip (ebsb, elen);

@@ -226,7 +226,7 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
     return TRUE;
 }
 /******************************************************************************/
-int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
+int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blocking)
 {
     GError                   *error = 0;
     GSocketConnectable       *connectable;
@@ -234,7 +234,7 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
     GSocketAddress           *sockaddr;
 
     if (config.logESRequests)
-        LOG("Connecting %p", (void*)conn);
+        LOG("Connecting %p %s", (void*)conn, name);
 
 
     connectable = g_network_address_parse(name, defaultport, &error);
@@ -250,10 +250,17 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
     while (!conn->conn && (sockaddr = g_socket_address_enumerator_next (enumerator, NULL, &error)))
     {
         conn->conn = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
+
         if (!error) {
+            GValue value = G_VALUE_INIT;
+            g_value_init (&value, G_TYPE_BOOLEAN);
+            g_value_set_boolean (&value, blocking);
+            g_object_set_property(G_OBJECT(conn->conn), "blocking", &value);
+
             g_socket_connect(conn->conn, sockaddr, NULL, &error);
         }
-        if (error) {
+
+        if (error && error->code != G_IO_ERROR_PENDING) {
             g_object_unref (conn->conn);
             conn->conn = NULL;
         }
@@ -262,8 +269,10 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport)
     g_object_unref (enumerator);
 
     if (conn->conn) {
-        if (error)
+        if (error) {
             g_error_free(error);
+            error = 0;
+        }
     } else if (error) {
         LOG("%p: Error: %s", (void*)conn, error->message);
     }
@@ -336,7 +345,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
     MolochRequest_t     *request = conn->request;
 
     if (conn->conn == 0) {
-        if (moloch_http_connect(conn, conn->server->name, conn->server->port)) {
+        if (moloch_http_connect(conn, conn->server->name, conn->server->port, TRUE)) {
             LOG("%p: Couldn't connect from process", (void*)conn);
             return FALSE;
         }
@@ -533,15 +542,15 @@ unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mle
 }
 /******************************************************************************/
 MolochConn_t *
-moloch_http_create(MolochHttp_t *server) {
+moloch_http_create(MolochHttp_t *server, int blocking) {
     MolochConn_t *conn;
 
     conn = MOLOCH_TYPE_ALLOC0(MolochConn_t);
     conn->parser.data = conn;
     conn->server = server;
 
-    if (moloch_http_connect(conn, server->name, server->port)) {
-        printf("Couldn't connect to elastic search at '%s'", server->name);
+    if (moloch_http_connect(conn, server->name, server->port, blocking)) {
+        LOG("Couldn't connect to '%s'", server->name);
         exit (1);
     }
     return conn;
@@ -560,10 +569,10 @@ void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, i
     server->maxOutstandingRequests = maxOutstandingRequests;
     server->compress = compress;
 
-    server->syncConn = moloch_http_create(server);
+    server->syncConn = moloch_http_create(server, TRUE);
     uint32_t i;
     for (i = 0; i < server->maxConns; i++) {
-        MolochConn_t *conn = moloch_http_create(server);
+        MolochConn_t *conn = moloch_http_create(server, FALSE);
         DLL_PUSH_TAIL(e_, &server->connQ, conn);
     }
 

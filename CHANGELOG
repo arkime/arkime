@@ -8,6 +8,11 @@
   - BREAKING: All plugins need to be rebuilt, and updated
   - New protocols, dns.status, dns.query.type, dns.query.class fields
   - Fixed bug with http parser not capturing last query value
+  - BREAKING: Glib 2.30 or newer is now required
+  - BREAKING: switched to official elasticsearch javascript client,
+    npm update required (issue #222)
+  - http connecting is now mostly async for faster startup (issue #225)
+  - tagger loading is now mostly async for faster startup
 
 0.10.1 2014/03/30
   - Status code not being set when . after mime data

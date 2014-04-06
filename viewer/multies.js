@@ -14,7 +14,7 @@ var Config         = require('./config.js'),
     os             = require('os'),
     util           = require('util'),
     URL            = require('url'),
-    ESC            = require('elasticsearchclient'),
+    ESC            = require('elasticsearch'),
     http           = require('http'),
     KAA            = require('keep-alive-agent');
 } catch (e) {
@@ -117,7 +117,7 @@ function shallowAdd(obj1, obj2) {
   }
 }
 
-app.get("/_cluster/nodes/stats", function(req, res) {
+function simpleGatherCopy(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -125,9 +125,9 @@ app.get("/_cluster/nodes/stats", function(req, res) {
     }
     res.send(obj);
   });
-});
+}
 
-app.get("/_cluster/health", function(req, res) {
+function simpleGatherAdd(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -136,7 +136,11 @@ app.get("/_cluster/health", function(req, res) {
     obj.cluster_name = "COMBINED";
     res.send(obj);
   });
-});
+}
+
+app.get("/_cluster/nodes/stats", simpleGatherCopy);
+app.get("/_nodes/stats", simpleGatherCopy);
+app.get("/_cluster/health", simpleGatherAdd);
 
 app.get("/:index/_status", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
@@ -167,7 +171,7 @@ app.get("/dstats/version/version", function(req, res) {
 });
 
 app.get("/users/user/:user", function(req, res) {
-  clients[nodes[0]].get("users", "user", req.params.user, function(err, result) {
+  clients[nodes[0]].get({index: "users", type: "user", id: req.params.user}, function(err, result) {
     res.send(result);
   });
 });
@@ -269,7 +273,7 @@ function tagNameToId(node, name, cb) {
     return cb (tags[node].tagName2Id[name]);
   }
 
-  clients[node].get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
+  clients[node].get({index: 'tags', type: 'tag', id: encodeURIComponent(name)}, function(err, tdata) {
     tdata = JSON.parse(tdata);
     if (!err && tdata.exists) {
       tags[node].tagName2Id[name] = tdata._source.n;
@@ -286,7 +290,7 @@ function tagIdToName (node, id, cb) {
   }
 
   var query = {query: {term: {n:id}}};
-  clients[node].search('tags', 'tag', query, function(err, tdata) {
+  clients[node].search({index: 'tags', type: 'tag', body: query}, function(err, tdata) {
     tdata = JSON.parse(tdata);
     if (!err && tdata.hits.hits[0]) {
       tags[node].tagId2Name[id] = tdata.hits.hits[0]._id;
@@ -325,7 +329,7 @@ function fixQuery(node, body, doneCb) {
         } else {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
-        clients[node].search('tags', 'tag', {size:500, fields:["id", "n"], query: query}, function(err, result) {
+        clients[node].search({index: 'tags', type: 'tag', size:500, fields:["id", "n"], body: {query: query}}, function(err, result) {
           result = JSON.parse(result);
           var terms = [];
           result.hits.hits.forEach(function (hit) {
@@ -656,10 +660,10 @@ if (nodes.length === 0 || nodes[0] === "") {
 }
 
 nodes.forEach(function(node) {
-  var escInfo = node.split(':');
-  clients[node] = new ESC({host: escInfo[0],
-                           port: escInfo[1],
-                           agent: new KAA({maxSockets: 20})});
+  clients[node] = new ESC.Client({
+    host: node,
+    apiVersion: "0.90"
+  });
   tags[node] = {tagName2Id: {}, tagId2Name: {}};
 });
 

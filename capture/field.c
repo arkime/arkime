@@ -298,7 +298,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
             return TRUE;
         case MOLOCH_FIELD_TYPE_STR_HASH:
             hash = MOLOCH_TYPE_ALLOC(MolochStringHashStd_t);
-            HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_cmp);
+            HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_ncmp);
             field->shash = hash;
             hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
             hstring->str = (char*)string;

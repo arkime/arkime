@@ -36,6 +36,7 @@
 
 /******************************************************************************/
 MolochConfig_t         config;
+extern void           *esServer;
 GMainLoop             *mainLoop;
 char                  *moloch_char_to_hex = "0123456789abcdef"; /* don't change case */
 unsigned char          moloch_char_to_hexstr[256][3];
@@ -280,6 +281,14 @@ int moloch_string_cmp(const void *keyv, const void *elementv)
     char *key = (char*)keyv;
     MolochString_t *element = (MolochString_t *)elementv;
 
+    return strcmp(key, element->str) == 0;
+}
+/******************************************************************************/
+int moloch_string_ncmp(const void *keyv, const void *elementv)
+{
+    char *key = (char*)keyv;
+    MolochString_t *element = (MolochString_t *)elementv;
+
     return strncmp(key, element->str, element->len) == 0;
 }
 /******************************************************************************/
@@ -390,7 +399,7 @@ void moloch_quit()
  */
 gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
 {
-    if (moloch_db_tags_loading() == 0) {
+    if (moloch_db_tags_loading() == 0 && moloch_http_queue_length(esServer) == 0) {
         moloch_nids_init();
         return FALSE;
     }

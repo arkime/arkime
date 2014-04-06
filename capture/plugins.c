@@ -28,7 +28,6 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
-MolochStringHashStd_t        pluginHeaders;
 
 uint32_t                     pluginsCbs = 0;
 
@@ -68,9 +67,6 @@ HASH_VAR(p_, plugins, MolochPlugin_t, 11);
 void moloch_plugins_init()
 {
     HASH_INIT(p_, plugins, moloch_string_hash, moloch_string_cmp);
-    HASH_INIT(s_, pluginHeaders, moloch_string_hash, moloch_string_cmp);
-
-    //moloch_config_load_header("plugin-fields", "plugin", "Plugin field ", "plugin.", "plugin.", &pluginHeaders, MOLOCH_FIELD_FLAG_PLUGINS);
 
     if (!config.pluginsDir)
         return;
@@ -93,8 +89,10 @@ void moloch_plugins_init()
         for (d = 0; config.pluginsDir[d]; d++) {
             gchar   *path = g_build_filename (config.pluginsDir[d], name, NULL);
 
-            if (!g_file_test(path, G_FILE_TEST_EXISTS))
+            if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
+                g_free (path);
                 continue;
+            }
 
             plugin = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
 

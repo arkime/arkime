@@ -406,6 +406,7 @@ gboolean moloch_string_add(void *hash, char *string, gboolean copy);
 uint32_t moloch_string_hash(const void *key);
 uint32_t moloch_string_hash_len(const void *key, int len);
 int moloch_string_cmp(const void *keyv, const void *elementv);
+int moloch_string_ncmp(const void *keyv, const void *elementv);
 
 
 uint32_t moloch_int_hash(const void *key);
