@@ -246,7 +246,8 @@ exports.tagNameToId = function (name, cb) {
     return didIt();
   }
 
-  exports.get('tags', 'tag', encodeURIComponent(name), function(err, tdata) {
+  exports.get('tags', 'tag', name, function(err, tdata) {
+    console.log("taglookup", name, err, tdata);
     didIt();
     if (!err && tdata.exists) {
       internals.tagName2Id[name] = tdata._source.n;
@@ -315,7 +316,7 @@ exports.createTag = function (name, cb) {
   // Do a create
   exports.createTag.inProgress = 1;
   exports.getSequenceNumber("tags", function (err, num) {
-    exports.index("tags", "tag", encodeURIComponent(name), {n: num}, function (err, tinfo) {
+    exports.index("tags", "tag", name, {n: num}, function (err, tinfo) {
       exports.createTag.inProgress = 0;
       internals.tagId2Name[num] = name;
       internals.tagName2Id[name] = num;
