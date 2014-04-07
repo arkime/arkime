@@ -397,6 +397,9 @@ function formatQuery(yy, field, op, value)
     var completed = [];
     for (var f in yy.fieldsMap) {
       if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
+        if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
+          continue;
+        }
         obj.push(formatQuery(yy, f, "eq", value));
         completed[yy.fieldsMap[f].dbField] = 1;
       }
