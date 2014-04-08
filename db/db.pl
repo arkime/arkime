@@ -1926,6 +1926,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/files", 1);
     esDelete("/stats", 1);
     esDelete("/dstats", 1);
+    esDelete("/fields", 1);
     esDelete("/dstats_v1", 1);
     esDelete("/sessions*", 1);
     esDelete("/template_1", 1);
@@ -1933,7 +1934,6 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         esDelete("/users_v1", 1);
         esDelete("/users_v2", 1);
         esDelete("/users", 1);
-        esDelete("/fields", 1);
     }
     esDelete("/tagger", 1);
 
