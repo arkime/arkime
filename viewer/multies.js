@@ -274,7 +274,6 @@ function tagNameToId(node, name, cb) {
   }
 
   clients[node].get({index: 'tags', type: 'tag', id: encodeURIComponent(name)}, function(err, tdata) {
-    tdata = JSON.parse(tdata);
     if (!err && tdata.exists) {
       tags[node].tagName2Id[name] = tdata._source.n;
       tags[node].tagId2Name[tdata._source.n] = name;
@@ -291,7 +290,6 @@ function tagIdToName (node, id, cb) {
 
   var query = {query: {term: {n:id}}};
   clients[node].search({index: 'tags', type: 'tag', body: query}, function(err, tdata) {
-    tdata = JSON.parse(tdata);
     if (!err && tdata.hits.hits[0]) {
       tags[node].tagId2Name[id] = tdata.hits.hits[0]._id;
       tags[node].tagName2Id[tdata.hits.hits[0]._id] = id;
@@ -330,7 +328,6 @@ function fixQuery(node, body, doneCb) {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
         clients[node].search({index: 'tags', type: 'tag', size:500, fields:["id", "n"], body: {query: query}}, function(err, result) {
-          result = JSON.parse(result);
           var terms = [];
           result.hits.hits.forEach(function (hit) {
             terms.push(hit.fields.n);
