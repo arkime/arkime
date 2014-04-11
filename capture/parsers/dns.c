@@ -264,7 +264,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
         "aliases", "[\"dns.host\"]", NULL);
 
-    statusField = moloch_field_define("dns", "lotermfield",
+    statusField = moloch_field_define("dns", "uptermfield",
         "dns.status", "Status Code", "dns.status-term", 
         "DNS lookup return code",  
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
