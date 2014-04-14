@@ -5,7 +5,7 @@
 %%
 
 \s+                        /* skip whitespace */
-[-a-zA-Z0-9_.@:*?]+          return 'STR'
+[-a-zA-Z0-9_.@:*?/]+       return 'STR'
 \"[^"\\]*(?:\\.[^"\\]*)*\" return 'QUOTEDSTR'
 \/[^/\\]*(?:\\.[^/\\]*)*\/ return 'REGEXSTR'
 \[[^/\\]*(?:\\.[^/\\]*)*\] return 'LIST'
