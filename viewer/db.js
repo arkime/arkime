@@ -334,7 +334,7 @@ exports.numberOfDocuments = function (index, cb) {
     var i;
     var num = 0;
     for (i in result.indices) {
-      if (typeof result.indices[i] === "object") {
+      if (typeof result.indices[i] === "object" && result.indices[i].docs) {
         num += result.indices[i].docs.num_docs;
       }
     }
