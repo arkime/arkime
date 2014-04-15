@@ -15,6 +15,20 @@
             "lp" : 1386004309,
             "sockspo" : 80,
             "a2" : "10.180.156.249",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "http:content:text/html",
@@ -134,6 +148,20 @@
             "lp" : 1386004312,
             "sockspo" : 80,
             "a2" : "10.180.156.249",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "http:content:text/html",
@@ -251,6 +279,20 @@
             "lp" : 1386004317,
             "sockspo" : 80,
             "a2" : "10.180.156.249",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "http:content:text/html",

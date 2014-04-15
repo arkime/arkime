@@ -13,6 +13,20 @@
             ],
             "lp" : 1385391358,
             "a2" : "10.180.156.249",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  403
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "http:content:text/html",

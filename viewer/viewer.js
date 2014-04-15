@@ -448,10 +448,20 @@ function checkWebEnabled(req, res, next) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
+function makeTitle(req, page) {
+  var title = Config.get("titleTemplate", "_cluster_ - _page_ _-view_ _-expression_");
+  title = title.replace(/_cluster_/g, internals.clusterName)
+               .replace(/_page_/g, page)
+               .replace(/_userId_/g, req.user?req.user.userId:"-")
+               .replace(/_userName_/g, req.user?req.user.userName:"-")
+               ;
+  return title;
+}
+
 app.get("/", checkWebEnabled, function(req, res) {
   res.render('index', {
     user: req.user,
-    title: 'Home',
+    title: makeTitle(req, 'Sessions'),
     titleLink: 'sessionsLink',
     isIndex: true
   });
@@ -460,7 +470,7 @@ app.get("/", checkWebEnabled, function(req, res) {
 app.get("/spiview", checkWebEnabled, function(req, res) {
   res.render('spiview', {
     user: req.user,
-    title: 'SPI View',
+    title: makeTitle(req, 'SPI View'),
     titleLink: 'spiLink',
     isIndex: true,
     reqFields: Config.headers("headers-http-request"),
@@ -473,7 +483,7 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
 app.get("/spigraph", checkWebEnabled, function(req, res) {
   res.render('spigraph', {
     user: req.user,
-    title: 'SPI Graph',
+    title: makeTitle(req, 'SPI Graph'),
     titleLink: 'spigraphLink',
     isIndex: true
   });
@@ -482,7 +492,7 @@ app.get("/spigraph", checkWebEnabled, function(req, res) {
 app.get("/connections", checkWebEnabled, function(req, res) {
   res.render('connections', {
     user: req.user,
-    title: 'Connections',
+    title: makeTitle(req, 'Connections'),
     titleLink: 'connectionsLink',
     isIndex: true
   });
@@ -491,7 +501,7 @@ app.get("/connections", checkWebEnabled, function(req, res) {
 app.get("/upload", checkWebEnabled, function(req, res) {
   res.render('upload', {
     user: req.user,
-    title: 'Upload',
+    title: makeTitle(req, 'Upload'),
     titleLink: 'uploadLink',
     isIndex: false
   });
@@ -500,7 +510,7 @@ app.get("/upload", checkWebEnabled, function(req, res) {
 app.get('/about', checkWebEnabled, function(req, res) {
   res.render('about', {
     user: req.user,
-    title: 'About',
+    title: makeTitle(req, 'About'),
     titleLink: 'aboutLink'
   });
 });
@@ -508,7 +518,7 @@ app.get('/about', checkWebEnabled, function(req, res) {
 app.get('/files', checkWebEnabled, function(req, res) {
   res.render('files', {
     user: req.user,
-    title: 'Files',
+    title: makeTitle(req, 'Files'),
     titleLink: 'filesLink'
   });
 });
@@ -516,7 +526,7 @@ app.get('/files', checkWebEnabled, function(req, res) {
 app.get('/users', checkWebEnabled, function(req, res) {
   res.render('users', {
     user: req.user,
-    title: 'Users',
+    title: makeTitle(req, 'Users'),
     titleLink: 'usersLink',
     token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
   });
@@ -530,7 +540,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
       suser: user,
       currentPassword: cp,
       token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
-      title: 'Settings',
+      title: makeTitle(req, 'Settings'),
       titleLink: 'settingsLink'
     });
   }
@@ -567,7 +577,7 @@ app.get('/stats', checkWebEnabled, function(req, res) {
     nodes.sort();
     res.render('stats', {
       user: req.user,
-      title: 'Stats',
+      title: makeTitle(req, 'Stats'),
       titleLink: 'statsLink',
       nodes: nodes
     });
@@ -4288,6 +4298,10 @@ app.post('/upload', function(req, res) {
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
 Db.checkVersion(MIN_DB_VERSION, Config.get("passwordSecret") !== undefined);
+Db.healthCache(function(err, health) {
+  internals.clusterName = health.cluster_name;
+});
+
 expireCheckAll();
 setInterval(expireCheckAll, 2*60*1000);
 Db.loadFields(function (data) {

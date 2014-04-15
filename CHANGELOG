@@ -13,6 +13,11 @@
     npm update required (issue #222)
   - http connecting is now mostly async for faster startup (issue #225)
   - tagger loading is now mostly async for faster startup
+  - titleTemplate config option (issue #229)
+  - output buffers are now mmaped so they are more likely to be returned to OS
+  - free output buffers are now cached, controlled by maxFreeOutputBuffers
+  - More untagging, new fields http.method, http.statuscode, http.bodymagic
+  - More untagging, new fields email.bodymagic
 
 0.10.1 2014/03/30
   - Status code not being set when . after mime data

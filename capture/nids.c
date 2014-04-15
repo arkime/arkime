@@ -35,6 +35,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include "glib.h"
 #include "nids.h"
 #include "pcap.h"
@@ -55,6 +56,9 @@ static MolochSessionHead_t   tcpSessionQ;
 static MolochSessionHead_t   udpSessionQ;
 static MolochSessionHead_t   icmpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
+
+static MolochIntHead_t       freeOutputBufs;   
+static pthread_mutex_t       freeOutputMutex = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct moloch_output {
     struct moloch_output *mo_next, *mo_prev;
@@ -273,6 +277,40 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->packets[1] = 0;
 }
 /******************************************************************************/
+void moloch_nids_alloc_buf(MolochOutput_t *out)
+{
+    if (config.writeMethod & MOLOCH_WRITE_THREAD)
+        pthread_mutex_lock(&freeOutputMutex);
+
+    if (freeOutputBufs.i_count > 0) {
+        MolochInt_t *tmp;
+        DLL_POP_HEAD(i_, &freeOutputBufs, tmp);
+        out->buf = (void*)tmp;
+    } else {
+        out->buf = mmap (0, config.pcapWriteSize + 8192, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    }
+
+    if (config.writeMethod & MOLOCH_WRITE_THREAD)
+        pthread_mutex_unlock(&freeOutputMutex);
+}
+/******************************************************************************/
+void moloch_nids_free_buf(MolochOutput_t *out)
+{
+    if (config.writeMethod & MOLOCH_WRITE_THREAD)
+        pthread_mutex_lock(&freeOutputMutex);
+
+    if (freeOutputBufs.i_count > (int)config.maxFreeOutputBuffers) {
+        munmap(out->buf, config.pcapWriteSize + 8192);
+    } else {
+        MolochInt_t *tmp = (MolochInt_t *)out->buf;
+        DLL_PUSH_HEAD(i_, &freeOutputBufs, tmp);
+    }
+    out->buf = 0;
+
+    if (config.writeMethod & MOLOCH_WRITE_THREAD)
+        pthread_mutex_unlock(&freeOutputMutex);
+}
+/******************************************************************************/
 static struct pcap_file_header pcapFileHeader;
 int dlt_to_linktype(int dlt);
 void moloch_nids_file_create()
@@ -286,10 +324,7 @@ void moloch_nids_file_create()
     dumperFilePos = 24;
     output = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
     output->max = config.pcapWriteSize;
-    if (config.writeMethod & MOLOCH_WRITE_DIRECT)
-        (void)posix_memalign((void **)&output->buf, config.pagesize, config.pcapWriteSize + 8192);
-    else
-        output->buf = malloc(config.pcapWriteSize + 8192);
+    moloch_nids_alloc_buf(output);
     output->pos = 24;
     gettimeofday(&dumperFileTime, 0);
 
@@ -376,7 +411,7 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
     }
 
     // Cleanup buffer
-    free(out->buf);
+    moloch_nids_free_buf(out);
     DLL_REMOVE(mo_, &outputQ, out);
     MOLOCH_TYPE_FREE(MolochOutput_t, out);
 
@@ -441,7 +476,7 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
             dumperFd = 0;
             free(out->name);
         }
-        free(out->buf);
+        moloch_nids_free_buf(out);
         MOLOCH_TYPE_FREE(MolochOutput_t, out);
     }
 }
@@ -457,10 +492,7 @@ void moloch_nids_file_flush(gboolean all)
 
     MolochOutput_t *noutput = MOLOCH_TYPE_ALLOC0(MolochOutput_t);
     noutput->max = config.pcapWriteSize;
-    if (config.writeMethod & MOLOCH_WRITE_DIRECT)
-        (void)posix_memalign((void **)&noutput->buf, config.pagesize, config.pcapWriteSize + 8192);
-    else
-        noutput->buf = malloc(config.pcapWriteSize + 8192);
+    moloch_nids_alloc_buf(noutput);
 
 
     all |= (output->pos <= output->max);
@@ -1474,8 +1506,8 @@ void moloch_nids_init()
     DLL_INIT(q_, &tcpSessionQ);
     DLL_INIT(q_, &udpSessionQ);
     DLL_INIT(q_, &icmpSessionQ);
-
     DLL_INIT(mo_, &outputQ);
+    DLL_INIT(i_, &freeOutputBufs);
 
     nids_params.n_hosts = 1024;
     nids_params.tcp_workarounds = 1;

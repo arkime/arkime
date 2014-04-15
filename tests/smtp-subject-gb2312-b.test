@@ -18,6 +18,12 @@
             ],
             "euacnt" : 1,
             "lp" : 1386358429,
+            "email" : {
+               "bodymagic-term" : [
+                  "text/plain"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "emvcnt" : 1,
             "a2" : "64.236.64.225",
             "ect" : [

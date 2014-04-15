@@ -1125,16 +1125,26 @@ function addDateParams(params) {
 function buildParams(params) {
   params = params || [];
 
+  var title = molochTitle;
+
   addDateParams(params);
-  if ($("#expression").length) {
-    if ($("#expression").val()) {
-      params.push({name:'expression', value:$("#expression").val()});
-    }
+  if ($("#expression").length && $("#expression").val()) {
+    params.push({name:'expression', value:$("#expression").val()});
+    title = title.replace(/_expression_/g, safeStr($("#expression").val()));
+    title = title.replace(/ *_-expression_/g, " - " + safeStr($("#expression").val()));
+  } else {
+    title = title.replace(/( *_-|_)expression_/g, "");
   }
 
   if (sessionStorage['moloch-view']) {
+    title = title.replace(/_view_/g, sessionStorage['moloch-view']);
+    title = title.replace(/ *_-view_/g, " - " + sessionStorage['moloch-view']);
     params.push({name:'view', value:sessionStorage['moloch-view']});
+  } else {
+    title = title.replace(/( *_-|_)view_/g, "");
   }
+
+  window.document.title = title;
 
   if (typeof sessionsTable === 'undefined') {
     params.push({name: "iDisplayLength", value: initialDisplayLength});

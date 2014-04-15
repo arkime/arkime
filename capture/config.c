@@ -239,24 +239,25 @@ void moloch_config_load()
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
     config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", " /data/moloch/parsers ; ./parsers ");
 
-    config.maxFileSizeG     = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
-    config.maxFileSizeB     = config.maxFileSizeG*1024LL*1024LL*1024LL;
-    config.maxFileTimeM     = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
-    config.icmpTimeout      = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
-    config.udpTimeout       = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
-    config.tcpTimeout       = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
-    config.tcpSaveTimeout   = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
-    config.maxStreams       = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
-    config.maxPackets       = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
-    config.minFreeSpaceG    = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
-    config.dbBulkSize       = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
-    config.dbFlushTimeout   = moloch_config_int(keyfile, "dbFlushTimeout", 1, 60*30, 5);
-    config.maxESConns       = moloch_config_int(keyfile, "maxESConns", 20, 5, 1000);
-    config.maxESRequests    = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
-    config.logEveryXPackets = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
-    config.packetsPerPoll   = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
-    config.pcapBufferSize   = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize    = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x400000);
+    config.maxFileSizeG          = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
+    config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
+    config.maxFileTimeM          = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
+    config.icmpTimeout           = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
+    config.udpTimeout            = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
+    config.tcpTimeout            = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
+    config.tcpSaveTimeout        = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
+    config.maxStreams            = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
+    config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
+    config.minFreeSpaceG         = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
+    config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
+    config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 1, 60*30, 5);
+    config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 5, 1000);
+    config.maxESRequests         = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
+    config.logEveryXPackets      = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
+    config.packetsPerPoll        = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
+    config.pcapBufferSize        = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
+    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x400000);
+    config.maxFreeOutputBuffers  = moloch_config_int(keyfile, "maxFreeOutputBuffers", 50, 0, 0xffff);
 
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
@@ -508,6 +509,7 @@ void moloch_config_init()
         LOG("packetsPerPoll: %u", config.packetsPerPoll);
         LOG("pcapBufferSize: %u", config.pcapBufferSize);
         LOG("pcapWriteSize: %u", config.pcapWriteSize);
+        LOG("maxFreeOutputBuffers: %u", config.maxFreeOutputBuffers);
 
         LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));

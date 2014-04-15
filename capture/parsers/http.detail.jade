@@ -1,6 +1,8 @@
 if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
   div.sessionDetailMeta.bold HTTP
   dl.sessionDetailMeta
+    +arrayList(session.http, "method-term", "Method", "http.method")
+    +arrayList(session.http, "statuscode", "Status code", "http.statuscode")
     +arrayList(session, "ho", "Hosts", "host.http")
     +arrayList(session, "ua", "User Agents", "ua")
     +ipArrayListPre(session, "xff", "XFFs", "xff")
@@ -9,6 +11,7 @@ if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
     +arrayList(session, "hh2", "Resp Headers", "header.dst")
     +arrayList(session, "hdver", "Resp Versions", "http.version.dst")
     +arrayList(session, "hmd5", "Body MD5s", "http.md5")
+    +arrayList(session.http, "bodymagic-term", "libfile content type", "http.bodymagic")
     if (session.hdrs)
       each value,i in reqFields
         +arrayList(session.hdrs, "hreq-" + value.name, value.name + " Header", "http." + value.name)

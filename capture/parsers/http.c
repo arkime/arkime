@@ -43,6 +43,9 @@ static int verResField;
 static int pathField;
 static int keyField;
 static int valueField;
+static int magicField;
+static int statuscodeField;
+static int methodField;
 
 /******************************************************************************/
 int
@@ -100,7 +103,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             moloch_nids_add_tag(session, "http:password");
         }
 
-        moloch_parsers_magic_tag(session, "http:content", at, length);
+        moloch_parsers_magic_tag(session, magicField, "http:content", at, length);
         http->inBody |= (1 << session->which);
     }
 
@@ -409,12 +412,18 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
     int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
 
     if (parser->status_code == 0) {
+#ifndef REMOVEOLD
         snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
         moloch_nids_add_tag(session, tag);
+#endif
+        moloch_field_string_add(methodField, session, http_method_str(parser->method), -1, TRUE);
         moloch_field_string_add(verReqField, session, version, len, TRUE);
     } else {
+#ifndef REMOVEOLD
         snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
         moloch_nids_add_tag(session, tag);
+#endif
+        moloch_field_int_add(statuscodeField, session, parser->status_code);
         moloch_field_string_add(verResField, session, version, len, TRUE);
     }
 
@@ -597,6 +606,24 @@ static const char *method_strings[] =
         "http.uri.value", "QS Values", "hval", 
         "Values from query string of URI",  
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    methodField = moloch_field_define("http", "termfield",
+        "http.method", "Request Method", "http.method-term",
+        "HTTP Request Method",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
+
+    magicField = moloch_field_define("http", "termfield",
+        "http.bodymagic", "Body Magic", "http.bodymagic-term",
+        "The content type of body determined by libfile/magic",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
+
+    statuscodeField = moloch_field_define("http", "integer",
+        "http.statuscode", "Status Code", "http.statuscode",
+        "Response HTTP numeric status code",
+        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
     HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);

@@ -35,6 +35,20 @@
             "lp" : 1385474412,
             "sockspo" : 80,
             "a2" : "10.0.0.2",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  302
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "dstip",

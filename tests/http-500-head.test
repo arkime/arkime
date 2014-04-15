@@ -13,6 +13,16 @@
             ],
             "lp" : 1361891421,
             "a2" : "10.156.206.202",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "HEAD"
+               ],
+               "statuscode" : [
+                  500
+               ],
+               "statuscode-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "http:method:HEAD",

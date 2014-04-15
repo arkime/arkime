@@ -34,6 +34,12 @@
                "5b153a606bea42005e1eedb5ddeabcf0"
             ],
             "lp" : 1384762016,
+            "email" : {
+               "bodymagic-term" : [
+                  "application/octet-stream"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "emvcnt" : 1,
             "a2" : "64.236.64.226",
             "ect" : [

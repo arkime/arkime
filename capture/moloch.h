@@ -257,6 +257,7 @@ typedef struct moloch_config {
     uint32_t  pcapBufferSize;
     uint32_t  pcapWriteSize;
     uint32_t  maxWriteBuffers;
+    uint32_t  maxFreeOutputBuffers;
 
 
     char      logUnknownProtocols;
@@ -464,7 +465,7 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
 void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining);
 void moloch_parsers_exit();
 
-void moloch_parsers_magic_tag(MolochSession_t *session, const char *base, const char *data, int len);
+void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *base, const char *data, int len);
 
 typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining);
 

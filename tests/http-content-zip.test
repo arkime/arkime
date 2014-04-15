@@ -33,6 +33,20 @@
             ],
             "lp" : 1388428585,
             "a2" : "10.0.0.2",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "application/zip"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "dstip",

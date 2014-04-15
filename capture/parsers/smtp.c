@@ -31,6 +31,7 @@ static int fnField;
 static int uaField;
 static int mvField;
 static int fctField;
+static int magicField;
 
 typedef struct {
     MolochStringHead_t boundaries;
@@ -653,7 +654,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 
                             if (email->firstInContent & (1 << session->which)) {
                                 email->firstInContent &= ~(1 << session->which);
-                                moloch_parsers_magic_tag(session, "smtp:content", (char *)buf, b);
+                                moloch_parsers_magic_tag(session, magicField, "smtp:content", (char *)buf, b);
                             }
                         }
 
@@ -913,6 +914,12 @@ void moloch_parser_init()
         "Email has the header set",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
+        NULL);
+
+    magicField = moloch_field_define("email", "termfield",
+        "email.bodymagic", "Body Magic", "email.bodymagic-term",
+        "The content type of body determined by libfile/magic",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
     HASH_INIT(s_, emailHeaders, moloch_string_hash, moloch_string_cmp);

@@ -13,6 +13,16 @@
             ],
             "lp" : 1385394928,
             "a2" : "192.30.252.130",
+            "http" : {
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  301
+               ],
+               "statuscode-cnt" : 1
+            },
             "hsvercnt" : 1,
             "ta" : [
                "http:method:GET",

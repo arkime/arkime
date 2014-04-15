@@ -106,7 +106,7 @@ exports.search = function (index, type, query, cb) {
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
-  internals.elasticSearchClient.search({index: index, type: type, body: query, preference: "_primary_first"}, cb);
+  internals.elasticSearchClient.search({index: index, type: type, body: query, preference: "_primary_first", ignoreIndices: "missing"}, cb);
 };
 
 exports.msearch = function (index, type, queries, cb) {

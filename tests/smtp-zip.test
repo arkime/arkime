@@ -18,6 +18,12 @@
             ],
             "euacnt" : 1,
             "lp" : 1387291817,
+            "email" : {
+               "bodymagic-term" : [
+                  "application/zip"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
             "emvcnt" : 1,
             "a2" : "64.236.64.225",
             "ect" : [

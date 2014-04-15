@@ -35,7 +35,7 @@ static gchar                 classTag[100];
 static magic_t               cookie;
 
 /******************************************************************************/
-void moloch_parsers_magic_tag(MolochSession_t *session, const char *base, const char *data, int len)
+void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *base, const char *data, int len)
 {
     const char *m = magic_buffer(cookie, data, len);
     if (m) {
@@ -46,6 +46,8 @@ void moloch_parsers_magic_tag(MolochSession_t *session, const char *base, const 
             *semi = 0;
         }
         moloch_nids_add_tag(session, tmp);
+        if (field != -1)
+          moloch_field_string_add(field, session, tmp+strlen(base)+1, -1, TRUE);
     }
 }
 /******************************************************************************/
