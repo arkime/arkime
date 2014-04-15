@@ -1,4 +1,5 @@
 0.11.0 2014/xx/xx
+  - NOTICE: Requires at least 0.90.7 ES, recommend 0.90.12+, 1.x not supported yet
   - Major internal fields refactoring
   - Fields are now 'easy' to create, only need to change 2 places
   - db.pl upgrade should be needed less often
