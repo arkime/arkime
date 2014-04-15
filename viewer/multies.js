@@ -1,3 +1,20 @@
+/******************************************************************************/
+/* multies.js  -- Make multiple ES servers look like one but merging results
+ *
+ * Copyright 2012-2014 AOL Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this Software except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
@@ -80,7 +97,11 @@ function simpleGather(req, res, bodies, doneCb) {
         result += chunk.toString();
       });
       pres.on('end', function () {
-        result = JSON.parse(result);
+        if (result.length) {
+          result = JSON.parse(result);
+        } else {
+          result = {};
+        }
         result._node = node;
         asyncCb(null, result);
       });
@@ -200,6 +221,9 @@ app.get("/:index/:type/:id", function(req, res) {
 });
 
 
+app.head(/^\/$/, function(req, res) {
+  res.send("");
+});
 
 app.get(/./, function(req, res) {
   simpleGather(req, res, null, function(err, results) {
@@ -207,6 +231,7 @@ app.get(/./, function(req, res) {
   });
 
 });
+
 
 function facet2Obj(field, facet) {
   var obj = {};
@@ -592,7 +617,7 @@ app.post("/:index/:type/_search", function(req, res) {
   });
 });
 
-app.post("/:index/:type/_msearch", function(req, res) {
+function msearch(req, res) {
   var lines = req.body.split(/[\r\n]/);
   var bodies = {};
 
@@ -640,7 +665,10 @@ app.post("/:index/:type/_msearch", function(req, res) {
       });
     });
   });
-});
+}
+
+app.post("/:index/:type/_msearch", msearch);
+app.post("/_msearch", msearch);
 
 app.post(/./, function(req, res) {
   console.log("UNKNOWN", req.method, req.url, req.body);
