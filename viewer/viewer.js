@@ -843,7 +843,7 @@ function lookupQueryItems(query, doneCb) {
     //console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
     if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
       if (obj[item].indexOf("*") !== -1) {
-        delete parent.term;
+        delete parent.wildcard;
         outstanding++;
         var query;
         if (item === "ta") {

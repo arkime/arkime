@@ -298,7 +298,7 @@ function tagNameToId(node, name, cb) {
     return cb (tags[node].tagName2Id[name]);
   }
 
-  clients[node].get({index: 'tags', type: 'tag', id: encodeURIComponent(name)}, function(err, tdata) {
+  clients[node].get({index: 'tags', type: 'tag', id: name}, function(err, tdata) {
     if (!err && tdata.exists) {
       tags[node].tagName2Id[name] = tdata._source.n;
       tags[node].tagId2Name[tdata._source.n] = name;
@@ -341,7 +341,7 @@ function fixQuery(node, body, doneCb) {
   function process(parent, obj, item) {
     if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
       if (obj[item].indexOf("*") !== -1) {
-        delete parent.term;
+        delete parent.wildcard;
         outstanding++;
         var query;
         if (item === "ta") {
@@ -588,9 +588,11 @@ app.post("/fields/field/_search", function(req, res) {
 app.post("/:index/:type/_search", function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
+  //console.log("INCOMING SEARCH", util.inspect(search, false, 50));
 
   async.each(nodes, function (node, asyncCb) {
     fixQuery(node, req.body, function(err, body) {
+      //console.log("OUTGOING SEARCH", node, util.inspect(body, false, 50));
       bodies[node] = JSON.stringify(body);
       asyncCb(null);
     });
