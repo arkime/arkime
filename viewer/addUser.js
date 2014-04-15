@@ -103,4 +103,5 @@ Db.indexNow("users", "user", process.argv[2], nuser, function(err, info) {
   } else {
     console.log("Added");
   }
+  process.exit(0);
 });
