@@ -121,6 +121,7 @@ index.number_of_replicas: 0
 index.fielddata.cache: node
 indices.fielddata.cache.size: 40%
 http.compression: true
+script.disable_dynamic: true
 
 # These settings directly affect the performance of index and search operations
 # in your cluster. Assuming you have enough machines to hold shards and
