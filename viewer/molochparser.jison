@@ -226,14 +226,15 @@ function formatQuery(yy, field, op, value)
         if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
           continue;
         }
-        obj.push(formatQuery(yy, f, "eq", value));
+        /* If a not equal op then format as if an equal and do the not below */
+        obj.push(formatQuery(yy, f, (op === "ne"?"eq":op), value));
         completed[yy.fieldsMap[f].dbField] = 1;
       }
     }
-    if (op === "eq")
-      return {bool: {should: obj}};
     if (op === "ne")
       return {bool: {must_not: obj}};
+    else
+      return {bool: {should: obj}};
     throw "Invalid operator '" + op + "' for " + field;
   }
 
@@ -347,8 +348,8 @@ function stringQuery(yy, field, str) {
     } else if (info.type.match(/textfield/)) {
       var obj =  {query: {bool: {should: []}}};
       strs.forEach(function(str) {
-        var should = {text: {}};
-        should.text[dbField] = {query: str, type: "phrase", operator: "and"}
+        var should = {match: {}};
+        should.match[dbField] = {query: str, type: "phrase", operator: "and"}
         obj.query.bool.should.push(should);
       });
     }
@@ -367,8 +368,8 @@ function stringQuery(yy, field, str) {
     obj = {query: {wildcard: {}}};
     obj.query.wildcard[dbField] = str;
   } else if (info.type.match(/textfield/)) {
-    obj = {query: {text: {}}};
-    obj.query.text[dbField] = {query: str, type: "phrase", operator: "and"}
+    obj = {query: {match: {}}};
+    obj.query.match[dbField] = {query: str, type: "phrase", operator: "and"}
   } else if (info.type.match(/termfield/)) {
     obj = {term: {}};
     obj.term[dbField] = str;
