@@ -223,7 +223,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             sprintf(dbField2, "%s-asn.snow", dbField);
             sprintf(expression2, "%s.asn", expression);
             sprintf(friendlyName2, "%s ASN", friendlyName);
-            sprintf(rawField, "%s.raw", dbField);
+            sprintf(rawField, "%s-asn.raw", dbField);
             sprintf(help2, "GeoIP ASN string calculated from the %s", help);
             moloch_nids_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
         }
