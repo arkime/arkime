@@ -123,7 +123,15 @@ app.configure(function() {
     return next();
   });
   app.use(express.bodyParser({uploadDir: Config.get("pcapDir")}));
-  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
+
+// send req to access log file or stdout
+  var _stream = process.stdout;
+  var _accesslogfile = Config.get("accessLogFile");
+  if (_accesslogfile) {
+    _stream = fs.createWriteStream(_accesslogfile, {flags: 'a'});
+  }
+  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms', stream: _stream }));
+//  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(express.compress());
   app.use(express.methodOverride());
   app.use("/", express['static'](__dirname + '/public', { maxAge: 600 * 1000}));
