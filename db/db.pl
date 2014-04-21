@@ -808,6 +808,9 @@ sub fieldsUpdate
       "dbField": "fballutf8",
       "regex": "^playload8\\\\..*utf8$"
     }');
+
+    esPost("/fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
+    esPost("/fields/field/http.hasheader/_update", '{doc: {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
 }
 
 
@@ -1485,6 +1488,7 @@ sub sessionsUpdate
 }';
 
     print "Creating sessions template\n" if ($verbose > 0);
+    #print "$template\n";
     esPut("/_template/template_1", $template);
 
     my $status = esGet("/sessions-*/_stats?clear=1", 1);
@@ -1492,6 +1496,7 @@ sub sessionsUpdate
 
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
+        next if ($i !~ /^sessions-/);
         progress($i);
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
 
@@ -1622,7 +1627,7 @@ my ($loud) = @_;
     if (!defined $found) {
         print "This is a fresh Moloch install\n" if ($loud);
         $main::versionNumber = -1;
-        if ($loud && $ARGV[1] ne "init") {
+        if ($loud && $ARGV[1] !~ "init") {
             die "Looks like moloch wasn't installed, must do init"
         }
     } elsif ($found == 0) {
@@ -1734,7 +1739,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|info|wipe|upgrade|usersimport|usersexport|expire|rotate|optimize|mv|rm)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|usersimport|usersexport|expire|rotate|optimize|mv|rm)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport|rm)/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)/);
@@ -1795,6 +1800,7 @@ if ($ARGV[1] eq "usersimport") {
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
+        next if ($i !~ /^sessions-/);
         progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esGet("/$i/_optimize?max_num_segments=4", 1);
@@ -1811,6 +1817,7 @@ if ($ARGV[1] eq "usersimport") {
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
+        next if ($i !~ /^sessions-/);
         progress($i);
         esGet("/$i/_optimize?max_num_segments=4", 1);
     }
@@ -1825,6 +1832,7 @@ if ($ARGV[1] eq "usersimport") {
     my $sessionsBytes = 0;
     my @sessions = grep /^session/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
+        next if ($index !~ /^sessions-/);
         $sessions += $status->{indices}->{$index}->{docs}->{num_docs};
         $sessionsBytes += $status->{indices}->{$index}->{index}->{primary_size_in_bytes};
     }
@@ -1930,7 +1938,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/dstats_v1", 1);
     esDelete("/sessions*", 1);
     esDelete("/template_1", 1);
-    if ($ARGV[1] eq "init") {
+    if ($ARGV[1] =~ "init") {
         esDelete("/users_v1", 1);
         esDelete("/users_v2", 1);
         esDelete("/users", 1);
@@ -1947,7 +1955,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsCreate();
     sessionsUpdate();
     fieldsCreate();
-    if ($ARGV[1] eq "init") {
+    if ($ARGV[1] =~ "init") {
         usersCreate();
     }
     print "Finished.  Have fun!\n";

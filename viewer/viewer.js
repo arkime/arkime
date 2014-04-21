@@ -240,8 +240,9 @@ function errorString(err, result) {
 
 function createSessionDetail() {
   var found = {};
+  var dirs;
 
-  var dirs = Config.get("pluginsDir", "/data/moloch/plugins");
+  dirs = Config.get("pluginsDir", "/data/moloch/plugins");
   if (dirs) {
     dirs.split(';').forEach(function(dir) {
       try {
@@ -251,11 +252,11 @@ function createSessionDetail() {
             found[file] = dir + "/" + file;
           }
         });
-      } catch (e) {};
+      } catch (e) {}
     });
   }
 
-  var dirs = Config.get("parsersDir", "/data/moloch/parsers");
+  dirs = Config.get("parsersDir", "/data/moloch/parsers");
   if (dirs) {
     dirs.split(';').forEach(function(dir) {
       try {
@@ -265,11 +266,11 @@ function createSessionDetail() {
             found[file] = dir + "/" + file;
           }
         });
-      } catch (e) {};
+      } catch (e) {}
     });
   }
 
-  internals.sessionDetail =    "include views/mixins\n" + 
+  internals.sessionDetail =    "include views/mixins\n" +
                                "div.sessionDetail(sessionid='#{session.id}')\n" +
                                "  include views/sessionDetail-standard\n";
   for (var k in found) {
@@ -2490,11 +2491,15 @@ function flattenObject1 (obj) {
   var toReturn = {};
   
   for (var i in obj) {
-    if (!obj.hasOwnProperty(i)) continue;
+    if (!obj.hasOwnProperty(i)) {
+      continue;
+    }
     
-    if ((typeof obj[i]) == 'object' && !Array.isArray(obj[i])) {
+    if ((typeof obj[i]) === 'object' && !Array.isArray(obj[i])) {
       for (var x in obj[i]) {
-        if (!obj[i].hasOwnProperty(x)) continue;
+        if (!obj[i].hasOwnProperty(x)) {
+          continue;
+        }
         
         toReturn[i + '.' + x] = obj[i][x];
       }
@@ -2503,7 +2508,7 @@ function flattenObject1 (obj) {
     }
   }
   return toReturn;
-};
+}
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
   var outgoing = [];
@@ -4294,6 +4299,13 @@ app.post('/upload', function(req, res) {
     fs.unlink(req.files.file.path);
   });
 });
+
+if (Config.get("enableShutdown")) {
+  app.post('/shutdown', function(req, res) {
+    process.exit(0);
+  });
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////

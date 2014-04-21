@@ -25,6 +25,7 @@
             "p1" : 2276,
             "by" : 668,
             "as1" : "AS0002 Hmm!@#$%^&*()",
+            "g2" : "CAN",
             "pr" : 6,
             "ps" : [
                24,
@@ -51,7 +52,8 @@
             "by1" : 405,
             "p2" : 42356,
             "assocksip" : "AS0000 This is neat",
-            "gsocksip" : "USA",
+            "gsocksip" : "RUS",
+            "rir2" : "TEST",
             "prot-term" : [
                "rdp",
                "socks",

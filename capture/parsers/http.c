@@ -6,6 +6,8 @@
 #include <netinet/in.h>
 #include "moloch.h"
 
+//#define HTTPDEBUG 1
+
 typedef struct {
     MolochSession_t *session;
     GString         *urlString;
@@ -23,6 +25,7 @@ typedef struct {
     uint16_t         inHeader:2;
     uint16_t         inValue:2;
     uint16_t         inBody:2;
+    uint16_t         urlWhich:1;
 } HTTPInfo_t;
 
 extern MolochConfig_t        config;
@@ -79,9 +82,10 @@ moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
     LOG("HTTPDEBUG: which:%d url %.*s", session->which, (int)length, at);
 #endif
 
-    if (!http->urlString)
+    if (!http->urlString) {
         http->urlString = g_string_new_len(at, length);
-    else
+        http->urlWhich = http->session->which;
+    } else
         g_string_append_len(http->urlString, at, length);
 
     return 0;
@@ -366,7 +370,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         char *lower = g_ascii_strdown(http->header[session->which], -1);
         moloch_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
 
-        if (session->which == 0)
+        if (session->which == http->urlWhich)
             HASH_FIND(s_, httpReqHeaders, lower, hstring);
         else
             HASH_FIND(s_, httpResHeaders, lower, hstring);
@@ -375,7 +379,10 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);
-        moloch_nids_add_tag_type(session, tagsReqField+session->which, header);
+        if (session->which == http->urlWhich)
+            moloch_nids_add_tag_type(session, tagsReqField, header);
+        else
+            moloch_nids_add_tag_type(session, tagsResField, header);
     }
 
     moloch_plugins_cb_hp_ohv(session, parser, at, length);
@@ -443,7 +450,7 @@ int http_parse(MolochSession_t *session, void *uw, const unsigned char *data, in
 {
     HTTPInfo_t            *http          = uw;
 #ifdef HTTPDEBUG
-    LOG("HTTPDEBUG: enter %d initial %d - %d %.*s", session->which, initial, remaining, remaining, data);
+    LOG("HTTPDEBUG: enter %d - %d %.*s", session->which, remaining, remaining, data);
 #endif
 
     if ((http->wParsers & (1 << session->which)) == 0) {
@@ -563,6 +570,7 @@ static const char *method_strings[] =
         "http.hasheader", "Has Src or Dst Header", "hhall", 
         "Shorthand for http.hasheader.src or http.hasheader.dst",   
         0,  MOLOCH_FIELD_FLAG_FAKE, 
+        "regex", "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
 
     md5Field = moloch_field_define("http", "lotermfield",

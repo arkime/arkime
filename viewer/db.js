@@ -77,8 +77,9 @@ function didIt() {
 //////////////////////////////////////////////////////////////////////////////////
 
 function merge(to, from) {
-  for (var key in from)
+  for (var key in from) {
     to[key] = from[key];
+  }
 }
 
 
@@ -349,8 +350,8 @@ exports.updateFileSize = function (item, filesize) {
 exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 1001) {
-    console.log("ERROR - Need at least node 0.10.1, currently using", process.version);
+  if (version < 1021) {
+    console.log("ERROR - Need at least node 0.10.21, currently using", process.version);
     process.exit(1);
   }
 
@@ -422,4 +423,4 @@ exports.loadFields = function(cb) {
   exports.search("fields", "field", {size:1000}, function (err, data) {
     cb(data.hits.hits);
   });
-}
+};

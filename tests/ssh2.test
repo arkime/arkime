@@ -16,7 +16,7 @@
                   "16777226:61672,33554442:22"
                ],
                "ip-geo" : [
-                  "USA"
+                  "RUS"
                ],
                "ip-rir" : [
                   ""
@@ -38,7 +38,7 @@
             "fpd" : 1387565111946,
             "fs" : [],
             "by2" : 2037,
-            "g1" : "USA",
+            "g1" : "RUS",
             "sshver" : [
                "ssh-1.99-openssh_3.9p1",
                "ssh-2.0-openssh_5.3"
@@ -48,6 +48,7 @@
             "p1" : 61672,
             "by" : 3752,
             "as1" : "AS0000 This is neat",
+            "g2" : "CAN",
             "pr" : 6,
             "sshvercnt" : 2,
             "ps" : [
@@ -86,6 +87,7 @@
             "db1" : 1109,
             "by1" : 1715,
             "p2" : 22,
+            "rir2" : "TEST",
             "sshkey" : [
                "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
             ],

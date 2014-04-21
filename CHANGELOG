@@ -19,6 +19,8 @@
   - free output buffers are now cached, controlled by maxFreeOutputBuffers
   - More untagging, new fields http.method, http.statuscode, http.bodymagic
   - More untagging, new fields email.bodymagic
+  - Start of viewer regression testing
+  - Fix reverse http header parsing
 
 0.10.1 2014/03/30
   - Status code not being set when . after mime data

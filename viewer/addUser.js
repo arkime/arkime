@@ -37,7 +37,7 @@ function help() {
   console.log("  --apionly    Can only use api, not web pages");
   console.log("  --email      Can do email searches");
   console.log("  --remove     Can remove data (scrub, delete tags)");
-  console.log("  --webauth    Can auth using the web auth header"); 
+  console.log("  --webauth    Can auth using the web auth header");
 
   process.exit(0);
 }
@@ -103,5 +103,4 @@ Db.indexNow("users", "user", process.argv[2], nuser, function(err, info) {
   } else {
     console.log("Added");
   }
-  process.exit(0);
 });
