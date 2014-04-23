@@ -121,17 +121,18 @@ sub doMake {
     }
 }
 ################################################################################
-sub esGet {
+sub viewerGet {
 my ($url) = @_;
 
     my $response = $main::userAgent->get("http://localhost:8123$url");
+    #print $response->content;
     my $json = from_json($response->content);
     return ($json);
 }
 ################################################################################
 sub countTest {
 my ($count, $test) = @_;
-    my $json = esGet("/sessions.json?$test");
+    my $json = viewerGet("/sessions.json?$test");
     #print Dumper($json);
     is ($json->{iTotalDisplayRecords}, $count, uri_unescape($test) . " iTotalDisplayRecords");
     is (scalar @{$json->{aaData}}, $count, uri_unescape($test) . " aaData count");
@@ -153,15 +154,16 @@ my ($cmd) = @_;
         } else {
             system("../db/db.pl localhost:9200 initnoprompt 2>&1 1>/dev/null");
         }
-        sleep 1;
+        $main::userAgent->get("http://localhost:9200/_refresh");
 
         print ("Loading PCAP\n");
+        system("/bin/cp socks-http-example.pcap copytest.pcap");
         if ($main::debug) {
             system("../capture/moloch-capture -c config.test.ini -n test -R .");
         } else {
             system("../capture/moloch-capture -c config.test.ini -n test -R . 2>&1 1>/dev/null");
         }
-        sleep 1;
+        $main::userAgent->get("http://localhost:9200/_refresh");
     }
 
 
@@ -450,6 +452,25 @@ my ($cmd) = @_;
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==[accept-encoding]"));
 # http.user-agent tests
 
+
+
+# adding/removing tags test expression
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));
+    countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+    $main::userAgent->post("http://localhost:8123/addTags?date=-1&expression=file=$pwd/copytest.pcap", Content => "tags=COPYTEST1");
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    countTest(3, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+    $main::userAgent->post("http://localhost:8123/removeTags?date=-1&expression=file=$pwd/copytest.pcap", Content => "tags=COPYTEST1");
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+# adding/removing tags test ids
+    my $results = from_json($main::userAgent->get("http://localhost:8123/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"))->content);
+    $main::userAgent->post("http://localhost:8123/addTags?date=-1", Content => "tags=COPYTEST1&ids=" . $results->{aaData}->[0]->{id});
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    countTest(1, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+    $main::userAgent->post("http://localhost:8123/removeTags?date=-1", Content => "tags=COPYTEST1&ids=" . $results->{aaData}->[0]->{id});
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
 
     if ($cmd eq "--viewer") {
         $main::userAgent->post("http://localhost:8123/shutdown");

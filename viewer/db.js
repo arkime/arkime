@@ -73,7 +73,7 @@ function didIt() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-//// Low level functions to undo the data/error seperate callbacks
+//// Low level functions to convert from old style to new
 //////////////////////////////////////////////////////////////////////////////////
 
 function merge(to, from) {
@@ -144,6 +144,10 @@ exports.nodesStats = function (options, cb) {
 exports.update = function (index, type, id, document, cb) {
   internals.elasticSearchClient.update({index: index, type: type, body: document, id: id}, cb);
 };
+
+exports.close = function () {
+  internals.elasticSearchClient.close();
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
@@ -350,8 +354,8 @@ exports.updateFileSize = function (item, filesize) {
 exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 1021) {
-    console.log("ERROR - Need at least node 0.10.21, currently using", process.version);
+  if (version < 1020) {
+    console.log("ERROR - Need at least node 0.10.20, currently using", process.version);
     process.exit(1);
   }
 

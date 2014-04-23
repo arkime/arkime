@@ -42,6 +42,24 @@ mixin arrayList(container, field, title, expr, extra)
           |, 
         |!{extra}
 
+//- Standard method to print an array of values with commas
+mixin stringList(container, field, title, expr, extra)
+  if ((container && container[field]) || extra)
+    dt #{title}
+    dd
+      if (container && container[field])
+        - value = container[field]
+        if (value.length == 0)
+          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
+        else if (typeof value == "string")
+          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+        else
+          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+      if (extra)
+        if (values)
+          |, 
+        |!{extra}
+
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
   - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 

@@ -204,6 +204,14 @@ app.configure(function() {
   express.logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 });
 
+function loadFields() {
+  Db.loadFields(function (data) {
+    Config.loadFields(data);
+    app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
+    app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
+  });
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Utility
 //////////////////////////////////////////////////////////////////////////////////
@@ -4302,6 +4310,7 @@ app.post('/upload', function(req, res) {
 
 if (Config.get("enableShutdown")) {
   app.post('/shutdown', function(req, res) {
+    Db.close();
     process.exit(0);
   });
 }
@@ -4316,11 +4325,8 @@ Db.healthCache(function(err, health) {
 
 expireCheckAll();
 setInterval(expireCheckAll, 2*60*1000);
-Db.loadFields(function (data) {
-  Config.loadFields(data);
-  app.locals.fieldsMap = JSON.stringify(Config.getFieldsMap());
-  app.locals.fieldsArr = Config.getFields().sort(function(a,b) {return (a.exp > b.exp?1:-1);});
-});
+loadFields();
+setInterval(loadFields, 2*60*1000);
 
 var server;
 if (Config.isHTTPS()) {

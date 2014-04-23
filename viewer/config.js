@@ -77,11 +77,11 @@ exports.store2ha1 = function(passstore) {
     var c = crypto.createDecipher('aes192', exports.getFull("default", "passwordSecret", "password"));
     var d = c.update(passstore, "hex", "binary");
     d += c.final("binary");
+    return d;
   } catch (e) {
     console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
     process.exit(1);
   }
-  return d;
 };
 
 exports.obj2auth = function(obj, secret) {
@@ -236,6 +236,9 @@ exports.getCategories = function() {
 };
 
 exports.loadFields = function(data) {
+  internals.fields = [];
+  internals.fieldsMap = {};
+  internals.categories =  {};
   data.forEach(function(field) {
     var source = field._source;
     source.exp = field._id;
@@ -249,10 +252,13 @@ exports.loadFields = function(data) {
       internals.fieldsMap[alias] = source;
     });
   });
+
+  function sortFunc(a,b) {
+    return a.exp.localeCompare(b.exp);
+  }
+
   for (var cat in internals.categories) {
-    internals.categories[cat] = internals.categories[cat].sort(function(a,b) {
-      return a.exp.localeCompare(b.exp);
-    });
+    internals.categories[cat] = internals.categories[cat].sort(sortFunc);
   }
 };
 
