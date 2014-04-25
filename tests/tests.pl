@@ -141,7 +141,7 @@ my ($count, $test) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 486;
+    plan tests => 498;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -471,6 +471,8 @@ my ($cmd) = @_;
     $main::userAgent->post("http://localhost:8123/removeTags?date=-1", Content => "tags=COPYTEST1&ids=" . $results->{aaData}->[0]->{id});
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+
+    unlink("copytest.pcap");
 
     if ($cmd eq "--viewer") {
         $main::userAgent->post("http://localhost:8123/shutdown");

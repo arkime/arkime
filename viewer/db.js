@@ -42,7 +42,8 @@ exports.initialize = function (info) {
 
   internals.elasticSearchClient = new ESC.Client({
     host: info.host + ":" + info.port,
-    apiVersion: "0.90"
+    apiVersion: "0.90",
+    requestTimeout: 300000
   });
 
   // Replace tag implementation

@@ -811,6 +811,7 @@ sub fieldsUpdate
 
     esPost("/fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
     esPost("/fields/field/http.hasheader/_update", '{doc: {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
+    esPost("/fields/field/email.subject/_update", '{doc: {type: "textfield"}}', 1);
 }
 
 

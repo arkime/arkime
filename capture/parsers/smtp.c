@@ -237,7 +237,9 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
         /* question+1               = encoding */
         /* question+3 - endquestion = encoded-text */
 
-        if (*(question+1) == 'B' || *(question+1) == 'b') {
+        if (question+3 == endquestion) {
+            // The encoded text is empty
+        } else if (*(question+1) == 'B' || *(question+1) == 'b') {
             *question = 0;
             *endquestion = 0;
 
@@ -852,7 +854,7 @@ void moloch_parser_init()
         "requiredRight", "emailSearch",
         NULL);
 
-    subField = moloch_field_define("email", "lotextfield",
+    subField = moloch_field_define("email", "textfield",
         "email.subject", "Subject", "esub",
         "Email subject header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FORCE_UTF8,

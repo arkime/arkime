@@ -25,6 +25,8 @@
   - Start of viewer regression testing
   - Fix reverse http header parsing
   - simple mysql parser
+  - Fix smtp subject empty encoded sections
+  - Increase ES query timeout to 5 minutes
 
 0.10.1 2014/03/30
   - Status code not being set when . after mime data

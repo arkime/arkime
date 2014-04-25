@@ -1,0 +1,129 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:62855,33554442:25"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "db2" : 756,
+            "db" : 1106,
+            "esrc" : [
+               "user1@xxx.net"
+            ],
+            "no" : "test",
+            "lp" : 1398431453,
+            "a2" : "10.0.0.2",
+            "esub" : [
+               "Can this 10 Second Trick Help Prevent YOUR Heart Attack?"
+            ],
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:smtp",
+               "smtp:statuscode:250",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 19,
+            "fpd" : 1398431422481,
+            "fs" : [],
+            "by2" : 1688,
+            "g1" : "RUS",
+            "pa2" : 14,
+            "p1" : 62855,
+            "by" : 3304,
+            "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "from",
+               "to",
+               "subject"
+            ],
+            "ehhcnt" : 3,
+            "g2" : "CAN",
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               681,
+               763,
+               873,
+               955,
+               1245,
+               1327,
+               1436,
+               1558,
+               1640,
+               1747,
+               1872,
+               1954,
+               2042,
+               2174,
+               2256,
+               2359,
+               2441,
+               2757,
+               2839,
+               2924,
+               3006,
+               3144,
+               3226,
+               3314,
+               3446,
+               3528,
+               3610,
+               3692,
+               3774
+            ],
+            "prot-term-cnt" : 2,
+            "lpd" : 1398431453159,
+            "fp" : 1398431422,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 33,
+            "tacnt" : 6,
+            "fb1" : "45484c4f20787878",
+            "edst" : [
+               "user2@xxx.net"
+            ],
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "fb2" : "3232302d78787878",
+            "db1" : 350,
+            "by1" : 1616,
+            "esrccnt" : 1,
+            "p2" : 25,
+            "rir2" : "TEST",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "sessions-140425",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
