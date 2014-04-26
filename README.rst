@@ -399,9 +399,9 @@ Currently upgrading from previous versions of Moloch is a manual process, howeve
 
 * Update the moloch repository from github
 * Build the moloch system using "easybutton-build.sh"
-* Shut down currently running capture and viewer processes
+* Shut down currently running old capture and viewer processes
 * Optionally use "make install" to copy the new binaries and other items and/or push the new items to the capture hosts
 * Run "npm update" in the viewer directory if not using "make install"
-* Update the database using the "db/db.pl host:port upgrade" script
-* Start the new moloch system back up
+* Make sure ES is running and update the database using the "db/db.pl host:port upgrade" script
+* Start the new capture and viewer processes
 
