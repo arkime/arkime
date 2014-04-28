@@ -798,7 +798,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField": "fballhex",
-      "regex": "^playload8\\\\..*hex$"
+      "regex": "^payload8.(src|dst).hex$"
     }');
     esPost("/fields/field/payload8.utf8", '{
       "friendlyName": "Payload UTF8",
@@ -806,7 +806,14 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField": "fballutf8",
-      "regex": "^playload8\\\\..*utf8$"
+      "regex": "^payload8.(src|dst).utf8$"
+    }');
+    esPost("/fields/field/scrubbed.by", '{
+      "friendlyName": "Scrubbed By",
+      "group": "general",
+      "help": "SPI data was scrubbed by",
+      "type": "lotermfield",
+      "dbField": "scrubby"
     }');
 
     esPost("/fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
