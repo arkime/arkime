@@ -55,6 +55,9 @@ interface=_INTERFACE_
 # The yara file name
 #yara=
 
+# Uncomment to log access requests to a different log file
+#accessLogFile = _TDIR_/logs/access.log
+
 # The directory to save raw pcap files to
 pcapDir = _TDIR_/raw
 
