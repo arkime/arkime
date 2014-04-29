@@ -341,9 +341,20 @@ Ports Used
 Important Considerations
 ------------------------
 
-* Elasticsearch provides no security, so ``iptables`` should be used allowing
+* Elasticsearch provides NO security, so ``iptables`` MUST be used allowing
   only Moloch machines to talk to the ``elasticsearch`` machines (ports
-  9200-920x) and for them to mesh connect (ports 9300-930x).
+  9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine::
+    for ip in moloches1 moloches2 moloches3 molochvieweronly1; do
+      iptables -A INPUT -i eth0 -p tcp --dport 9300 -s $ip -j ACCEPT
+      iptables -A INPUT -i eth0 -p tcp --dport 9200 -s $ip -j ACCEPT
+      iptables -A INPUT -i eth0 -p tcp --dport 9301 -s $ip -j ACCEPT
+      iptables -A INPUT -i eth0 -p tcp --dport 9201 -s $ip -j ACCEPT
+    done
+    iptables -A INPUT -i eth0 -p tcp --dport 9300 -j DROP
+    iptables -A INPUT -i eth0 -p tcp --dport 9200 -j DROP
+    iptables -A INPUT -i eth0 -p tcp --dport 9301 -j DROP
+    iptables -A INPUT -i eth0 -p tcp --dport 9201 -j DROP
+  
 * Moloch machines should be locked down, however they need to talk to each
   other (port 8005), to the elasticsearch machines (ports 9200-920x), and the
   web interface needs to be open (port 8005).
