@@ -131,9 +131,9 @@ my ($url) = @_;
 }
 ################################################################################
 sub countTest {
-my ($count, $test) = @_;
+my ($count, $test, $debug) = @_;
     my $json = viewerGet("/sessions.json?$test");
-    #print Dumper($json);
+    print Dumper($json) if ($debug);
     is ($json->{iTotalDisplayRecords}, $count, uri_unescape($test) . " iTotalDisplayRecords");
     is (scalar @{$json->{aaData}}, $count, uri_unescape($test) . " aaData count");
 }
@@ -141,12 +141,18 @@ my ($count, $test) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 498;
+    plan tests => 682;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
     if ($cmd eq "--viewerfast") {
         print "Skipping ES Init and PCAP load\n";
+        system("/bin/cp socks-http-example.pcap copytest.pcap");
+        if ($main::debug) {
+            system("../capture/moloch-capture -c config.test.ini -n test -r copytest.pcap");
+        } else {
+            system("../capture/moloch-capture -c config.test.ini -n test -r copytest.pcap 2>&1 1>/dev/null");
+        }
     } else {
         print ("Initializing ES\n");
         if ($main::debug) {
@@ -163,17 +169,18 @@ my ($cmd) = @_;
         } else {
             system("../capture/moloch-capture -c config.test.ini -n test -R . 2>&1 1>/dev/null");
         }
-        $main::userAgent->get("http://localhost:9200/_refresh");
+
+        print ("Starting viewer\n");
+        if ($main::debug) {
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test &");
+        } else {
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
+        }
+        sleep 2;
     }
+    $main::userAgent->get("http://localhost:9200/_refresh");
 
 
-    print ("Starting viewer\n");
-    if ($main::debug) {
-        system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test &");
-    } else {
-        system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
-    }
-    sleep 1;
 
     my $pwd = getcwd();
 # file tests
@@ -265,6 +272,17 @@ my ($cmd) = @_;
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip!=10.0.0.1"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1]"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1,10.0.0.3]"));
+# ip.protocol
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=1"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=6"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=17"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol!=17"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=icmp"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=udp"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol!=udp"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=tcp"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,6]"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,17]"));
 # IP:Port tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0:50759"));
@@ -352,6 +370,48 @@ my ($cmd) = @_;
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols.cnt>=1"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols.cnt<2"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-pass.pcap&&protocols.cnt<=2"));
+# payload8 tests
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex!=64313a6164323a69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex==64313a6164323a69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex==\"64313A6164323A69\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex==*13A6164323A69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex==/.*13A6164323A69/"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex==[64313A6164323A69]"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex!=[64313A6164323A69]"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.hex==[64313A6164323A69,64313a71393a6669]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=\"GET / HT\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=\"HTTP/1.1\""));
+# payload8.src tests
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex!=64313a6164323a69"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.dst.hex==64313a6164323a69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex==64313a6164323a69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex==64313A6164323A69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex==*13A6164323A69"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex==/.*13A6164323A69/"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex==[64313A6164323A69]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex!=[64313A6164323A69,64313a71393a6669]"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&payload8.src.hex==[64313A6164323A69,64313a71393a6669]"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.src.utf8=\"GET / HT\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.src.utf8=GET*"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.src.utf8=/GET.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.src.utf8=/.*NOT.*/"));
+
+# payload8.dst tests
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex!=0500050000010ab4"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex==0500050000010ab4"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex==\"0500050000010Ab4\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex==*0000010ab4"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex==/.*50000010Ab4/"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex==[0500050000010ab4]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex!=[0500050000010ab4,005adfb20ab49cf9]"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap&&payload8.dst.hex==[0500050000010ab4,005adfb20ab49cf9]"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=HTTP/1.1"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=HTTP*"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*TP.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*NOT.*/"));
+
 # dns.query.class tests
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/dns-udp.pcap&&dns.query.class==IN"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/dns-udp.pcap&&dns.query.class!=IN"));
@@ -450,8 +510,48 @@ my ($cmd) = @_;
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader==[content-length]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.dst==[content-length]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==[accept-encoding]"));
+# http.version tests
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version==1.1"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.src==1.1"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.dst==1.1"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version==not"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.src==fudge"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.dst==paste"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version==[1.1]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.src==[1.1]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.dst==[1.1]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version==1.*"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.src==1.*"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.dst==1.*"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version==/1.*/"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.src==/1.*/"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.version.dst==/1.*/"));
 # http.user-agent tests
-
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==\"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)\""));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent!=\"Mozilla/4.0\""));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36\""));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent!=\"Mozilla/5.0\""));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==Mozilla"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==mozilla"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==*Mozilla*"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==*mozilla*"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==/.*Mozilla.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==/.*mozilla.*/"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==[Mozilla]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.user-agent==[mozilla]"));
+# http.md5 tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=40be8f5100e9beabab293c9d7bacaff0"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=40Be8f5100e9beabab293c9d7bacaff0"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=40be8f5100e9beabab293c9d7*"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=40Be8f5100e9beabab293c9d7*"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=/40be8f5100e9beabab293c9d7.*/"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=/40Be8f5100e9beabab293c9d7.*/"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=40be8f5100e9beabab293c9d7bacaff0"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=40Be8f5100e9beabab293c9d7bacaff0"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=[40be8f5100e9beabab293c9d7bacaff0,b0cecae354b9eab1f04f70e46a612cb1]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=[40Be8f5100e9beabab293c9d7bacaff0,B0cecae354b9eab1f04f70e46a612cb1]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=[40be8f5100e9beabab293c9d7bacaff0,b0cecae354b9eab1f04f70e46a612cb1]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=[40Be8f5100e9beabab293c9d7bacaff0,B0cecae354b9eab1f04f70e46a612cb1]"));
 
 
 # adding/removing tags test expression
@@ -464,13 +564,30 @@ my ($cmd) = @_;
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
 # adding/removing tags test ids
-    my $results = from_json($main::userAgent->get("http://localhost:8123/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"))->content);
-    $main::userAgent->post("http://localhost:8123/addTags?date=-1", Content => "tags=COPYTEST1&ids=" . $results->{aaData}->[0]->{id});
+    my $idQuery = from_json($main::userAgent->get("http://localhost:8123/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"))->content);
+    $main::userAgent->post("http://localhost:8123/addTags?date=-1", Content => "tags=COPYTEST1&ids=" . $idQuery->{aaData}->[0]->{id});
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(1, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
-    $main::userAgent->post("http://localhost:8123/removeTags?date=-1", Content => "tags=COPYTEST1&ids=" . $results->{aaData}->[0]->{id});
+    $main::userAgent->post("http://localhost:8123/removeTags?date=-1", Content => "tags=COPYTEST1&ids=" . $idQuery->{aaData}->[0]->{id});
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+    $main::userAgent->post("http://localhost:8123/addTags?date=-1", Content => "tags=COPYTEST1&ids=" . $idQuery->{aaData}->[0]->{id});
+
+# scrub tags test ids
+    $main::userAgent->post("http://localhost:8123/scrub?date=-1", Content => "ids=" . $idQuery->{aaData}->[0]->{id});
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==anonymous"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by!=anonymous"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==Anonymous"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==[Anonymous]"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by!=[Anonymous]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==Anon*mous"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==/Anon.*mous/"));
+
+# delete tags test expression
+    $main::userAgent->post("http://localhost:8123/delete?date=-1&expression=file=$pwd/copytest.pcap");
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));
 
     unlink("copytest.pcap");
 
