@@ -131,7 +131,6 @@ app.configure(function() {
     _stream = fs.createWriteStream(_accesslogfile, {flags: 'a'});
   }
   app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms', stream: _stream }));
-//  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
   app.use(express.compress());
   app.use(express.methodOverride());
   app.use("/", express['static'](__dirname + '/public', { maxAge: 600 * 1000}));
@@ -3433,7 +3432,7 @@ app.post('/addUser', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.body.userId, function(err, user) {
-    if (err || user.exists) {
+    if (!user || user.exists) {
       console.log("Adding duplicate user", err, user);
       return res.send(JSON.stringify({success: false, text: "User already exists"}));
     }
