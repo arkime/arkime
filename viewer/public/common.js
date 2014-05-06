@@ -347,7 +347,7 @@ $(document).ready(function() {
     }
 
     if ($("#actions-linked").val() !== "false") {
-      qs.push({name: "segments", value: $("#addTags-linked").val()});
+      qs.push({name: "segments", value: $("#actions-linked").val()});
     }
 
     // Prevent normal form submission
