@@ -8,7 +8,7 @@
 [-a-zA-Z0-9_.@:*?/]+       return 'STR'
 \"[^"\\]*(?:\\.[^"\\]*)*\" return 'QUOTEDSTR'
 \/[^/\\]*(?:\\.[^/\\]*)*\/ return 'REGEXSTR'
-\[[^/\\]*(?:\\.[^/\\]*)*\] return 'LIST'
+\[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
 "EXISTS!"                  return "EXISTS"
 "<="                       return 'lte'
 "<"                        return 'lt'

@@ -141,7 +141,7 @@ my ($count, $test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 682;
+    plan tests => 695;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -178,9 +178,8 @@ my ($cmd) = @_;
         }
         sleep 2;
     }
+
     $main::userAgent->get("http://localhost:9200/_refresh");
-
-
 
     my $pwd = getcwd();
 # file tests
@@ -265,6 +264,7 @@ my ($cmd) = @_;
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0.1"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst!=10.0.0.1"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0.0/24"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.0/24]"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=0"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst!=0"));
@@ -272,6 +272,8 @@ my ($cmd) = @_;
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip!=10.0.0.1"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1]"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1,10.0.0.3]"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1/32,10.0.0.3/32]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=[10.0.0.1/32]"));
 # ip.protocol
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=1"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=6"));
@@ -291,6 +293,7 @@ my ($cmd) = @_;
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0.2:50758"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=[10.0.0.2:50759]"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip=[10.0.0.2:50759/32]"));
 # port tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&port.src=50759"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&port.src!=50759"));
@@ -563,6 +566,7 @@ my ($cmd) = @_;
     $main::userAgent->post("http://localhost:8123/removeTags?date=-1&expression=file=$pwd/copytest.pcap", Content => "tags=COPYTEST1");
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
+
 # adding/removing tags test ids
     my $idQuery = from_json($main::userAgent->get("http://localhost:8123/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"))->content);
     $main::userAgent->post("http://localhost:8123/addTags?date=-1", Content => "tags=COPYTEST1&ids=" . $idQuery->{aaData}->[0]->{id});
@@ -572,6 +576,21 @@ my ($cmd) = @_;
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==COPYTEST1"));
     $main::userAgent->post("http://localhost:8123/addTags?date=-1", Content => "tags=COPYTEST1&ids=" . $idQuery->{aaData}->[0]->{id});
+
+# csv =
+    my $csv = $main::userAgent->get("http://localhost:8123/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    $csv =~ s/\r//g;
+    is ($csv, 'Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node
+tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, USA, 14, 2698, 1754, test
+tcp, 1386004312, 1386004312, 10.180.156.185, 53534, USA, 10.180.156.249, 1080, USA, 15, 2780, 1770, test
+tcp, 1386004317, 1386004317, 10.180.156.185, 53535, USA, 10.180.156.249, 1080, USA, 17, 2905, 1763, test
+', "CSV Expression");
+   
+    $csv = $main::userAgent->get("http://localhost:8123/sessions.csv?date=-1&ids=" . $idQuery->{aaData}->[0]->{id})->content;
+    $csv =~ s/\r//g;
+    is ($csv, 'Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node
+tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, USA, 14, 2698, 1754, test
+', "CSV Ids");
 
 # scrub tags test ids
     $main::userAgent->post("http://localhost:8123/scrub?date=-1", Content => "ids=" . $idQuery->{aaData}->[0]->{id});
@@ -589,10 +608,33 @@ my ($cmd) = @_;
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));
 
+# users
+    my $usersPage = $main::userAgent->get("http://localhost:8123/users")->content;
+    $usersPage =~ /token.*value: "(.*)"/;
+    my $token = $1;
+    my $users = from_json($main::userAgent->post("http://localhost:8123/users.json")->content);
+    is (@{$users->{aaData}}, 0, "Empty users table");
+
+    my $json = from_json($main::userAgent->post("http://localhost:8123/addUser", Content => "token=$token&userId=test1&userName=UserName&enabled=on&password=password")->content);
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    $users = from_json($main::userAgent->post("http://localhost:8123/users.json")->content);
+    is (@{$users->{aaData}}, 1, "Single user");
+
+    my $json = from_json($main::userAgent->post("http://localhost:8123/deleteUser/test1", Content => "token=$token")->content);
+    $main::userAgent->get("http://localhost:9200/_refresh");
+    $users = from_json($main::userAgent->post("http://localhost:8123/users.json")->content);
+    is (@{$users->{aaData}}, 0, "Removed user");
+
     unlink("copytest.pcap");
 
     if ($cmd eq "--viewer") {
         $main::userAgent->post("http://localhost:8123/shutdown");
+    }
+
+    if ($main::debug) {
+        system("../db/db.pl localhost:9200 rm $pwd/copytest.pcap");
+    } else {
+        system("../db/db.pl localhost:9200 rm $pwd/copytest.pcap 2>&1 1>/dev/null");
     }
 }
 ################################################################################

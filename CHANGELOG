@@ -27,6 +27,7 @@
   - simple mysql parser
   - Fix smtp subject empty encoded sections
   - Increase ES query timeout to 5 minutes
+  - simple postgresql parser
 
 0.10.1 2014/03/30
   - Status code not being set when . after mime data
