@@ -17,8 +17,11 @@ int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *d
     Info_t *info = uw;
     if (session->which != info->which)
         return 0;
-    if (len == 8 && memcmp(data, "\x00\x00\x00\x08\x04\xd2\x16\x2f", 8) == 0)
+
+    if (len == 8 && memcmp(data, "\x00\x00\x00\x08\x04\xd2\x16\x2f", 8) == 0) {
+        moloch_nids_add_protocol(session, "postgresql");
         return 0;
+    }
 
     BSB bsb;
 
@@ -47,9 +50,10 @@ int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *d
         if (BSB_IS_ERROR(bsb))
             break;
 
-        if (strcmp(key, "user") == 0)
+        if (strcmp(key, "user") == 0) {
             moloch_field_string_add(userField, session, value, vlen, TRUE);
-        else if (strcmp(key, "database") == 0)
+            moloch_nids_add_protocol(session, "postgresql");
+        } else if (strcmp(key, "database") == 0)
             moloch_field_string_add(dbField, session, value, vlen, TRUE);
         else if (strcmp(key, "application_name") == 0)
             moloch_field_string_add(appField, session, value, vlen, TRUE);
@@ -72,15 +76,18 @@ void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*d
     if (moloch_nids_has_protocol(session, "postgresql"))
         return;
 
-    Info_t *info = MOLOCH_TYPE_ALLOC0(Info_t);
-    info->which = session->which;
-    moloch_nids_add_protocol(session, "postgresql");
-    moloch_parsers_register(session, postgresql_parser, info, postgresql_free);
+    if ((len == 8 && memcmp(data+3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||
+        (len > 8 && data[3] <= len && data[4] == 0 && data[5] == 3 && data[6] == 0)) {
+
+        Info_t *info = MOLOCH_TYPE_ALLOC0(Info_t);
+        info->which = session->which;
+        moloch_parsers_register(session, postgresql_parser, info, postgresql_free);
+    }
 }
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("postgresql", 0, (unsigned char*)"\x00\x00\x00\x08\x04\xd2\x16\x2f", 8, postgresql_classify);
+    moloch_parsers_classifier_register_tcp("postgresql", 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
 
     userField = moloch_field_define("postgresql", "termfield",
         "postgresql.user", "User", "postgresql.user-term",
