@@ -138,19 +138,19 @@ int moloch_nids_session_cmp(const void *keyv, const void *elementv)
                key[10] == (element->port1 & 0xff) &&
                memcmp(key, &element->addr2, 4) == 0 &&
                memcmp(key + 6, &element->addr1, 4) == 0;
-    } else if (element->port1 > element->port2) {
+    } else if (element->port1 < element->port2) {
         return key[5] == ((element->port1 >> 8) & 0xff) &&
                key[4] == (element->port1 & 0xff) &&
                key[11] == ((element->port2 >> 8) & 0xff) &&
                key[10] == (element->port2 & 0xff) &&
                memcmp(key, &element->addr1, 4) == 0 &&
-               memcmp(key + 6, &element->addr1, 4) == 0;
+               memcmp(key + 6, &element->addr2, 4) == 0;
     } else {
         return key[5] == ((element->port2 >> 8) & 0xff) &&
                key[4] == (element->port2 & 0xff) &&
                key[11] == ((element->port1 >> 8) & 0xff) &&
                key[10] == (element->port1 & 0xff) &&
-               memcmp(key, &element->addr1, 4) == 0 &&
+               memcmp(key, &element->addr2, 4) == 0 &&
                memcmp(key + 6, &element->addr1, 4) == 0;
     }
 }
@@ -165,6 +165,12 @@ char *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint3
     int         len;
 
     if (addr1 < addr2) {
+        len = snprintf(buf, sizeof(buf), "%d;%s:%i,", protocol, int_ntoa(addr1), port1);
+        snprintf(buf+len, sizeof(buf) - len, "%s:%i", int_ntoa(addr2), port2);
+    } else if (addr1 > addr2) {
+        len = snprintf(buf, sizeof(buf), "%d;%s:%i,", protocol, int_ntoa(addr2), port2);
+        snprintf(buf+len, sizeof(buf) - len, "%s:%i", int_ntoa(addr1), port1);
+    } else if (port1 < port2) {
         len = snprintf(buf, sizeof(buf), "%d;%s:%i,", protocol, int_ntoa(addr1), port1);
         snprintf(buf+len, sizeof(buf) - len, "%s:%i", int_ntoa(addr2), port2);
     } else {
@@ -192,22 +198,21 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
         memcpy(buf + 6, &addr1, 4);
         buf[10] = (port1 >> 8) & 0xff;
         buf[11] = port1 & 0xff;
-    } else if (port1 < port2) {
+    } else if (ntohs(port1) < ntohs(port2)) {
         memcpy(buf, &addr1, 4);
         buf[4] = (port1 >> 8) & 0xff;
         buf[5] = port1 & 0xff;
-        memcpy(buf + 6, &addr1, 4);
+        memcpy(buf + 6, &addr2, 4);
         buf[10] = (port2 >> 8) & 0xff;
         buf[11] = port2 & 0xff;
     } else {
-        memcpy(buf, &addr1, 4);
+        memcpy(buf, &addr2, 4);
         buf[4] = (port2 >> 8) & 0xff;
         buf[5] = port2 & 0xff;
         memcpy(buf + 6, &addr1, 4);
         buf[10] = (port1 >> 8) & 0xff;
         buf[11] = port1 & 0xff;
     }
-
 }
 /******************************************************************************/
 void moloch_nids_save_session(MolochSession_t *session)
