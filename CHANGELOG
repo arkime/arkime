@@ -29,6 +29,7 @@
   - Increase ES query timeout to 5 minutes
   - simple postgresql parser
   - More same src/dst ip fixes
+  - easybutton installs node 0.10.28 & ES 0.90.13 now
 
 0.10.1 2014/03/30
   - Status code not being set when . after mime data
