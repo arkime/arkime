@@ -1,4 +1,4 @@
-0.11.0 2014/xx/xx
+0.11.0 2014/05/08
   - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 
     1.x not supported yet
   - BREAKING: node 0.10.20 or newer required, 0.11+ not supported yet

@@ -29,7 +29,7 @@ int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *d
 
     int plen = 0;
     BSB_IMPORT_u32(bsb, plen);
-    if (plen > len) {
+    if (plen > len || plen < 16) {
         goto cleanup;
     }
 
@@ -43,6 +43,10 @@ int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *d
         char *key = (char*)BSB_WORK_PTR(bsb);
         int klen = strlen(key);
         BSB_IMPORT_skip(bsb, klen+1);
+
+        if (BSB_IS_ERROR(bsb))
+            break;
+
         char *value = (char*)BSB_WORK_PTR(bsb);
         int vlen = strlen(value);
         BSB_IMPORT_skip(bsb, vlen+1);

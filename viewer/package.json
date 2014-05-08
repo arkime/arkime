@@ -1,18 +1,19 @@
 {
-    "name": "moloch"
-  , "version": "0.11.0"
-  , "private": true
-  , "dependencies": {
-      "jade": ">= 1.0.0"
-    , "express": "< 4.0.0"
-    , "async": ">= 0.0.1"
-    , "stylus": ">= 0.38.0"
-    , "elasticsearch": "~2.1.1"
-    , "fs-ext": ">= 0.3.0"
-    , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
-    , "png": ">= 3.0.0"
-    , "passport": ">= 0.0.1"
-    , "passport-http": ">= 0.0.1"
-    , "keep-alive-agent": ">= 0.0.1"
+  "name": "moloch",
+  "version": "0.11.0",
+  "description": "",
+  "main": "viewer.js",
+  "dependencies": {
+    "async": "~0.7.0",
+    "elasticsearch": "~2.1.4",
+    "express": "~3.5.2",
+    "fs-ext": "~0.3.2",
+    "jade": "~1.3.1",
+    "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
+    "keep-alive-agent": "~0.0.1",
+    "passport-http": "~0.2.2",
+    "passport": "~0.2.0",
+    "stylus": "~0.44.0",
+    "png": "~3.0.3"
   }
 }
