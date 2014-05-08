@@ -281,7 +281,7 @@ exports.tagIdToName = function (id, cb) {
       return cb(internals.tagId2Name[id]);
     }
 
-    return cb(null);
+    return cb("<lookuperror>");
   });
 };
 

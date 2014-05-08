@@ -375,7 +375,7 @@ typedef int (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
 typedef void (*MolochResponse_cb)(unsigned char *data, int len, gpointer uw);
 
-typedef void (*MolochTag_cb)(void *uw, int tagtype, uint32_t tag);
+typedef void (*MolochTag_cb)(void *uw, int tagType, const char *tagName, uint32_t tagValue);
 
 typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
 
@@ -477,7 +477,7 @@ void  moloch_parsers_classifier_register_tcp_internal(const char *name, int offs
 
 void  moloch_parsers_classifier_register_udp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
 #define moloch_parsers_classifier_register_udp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_udp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
-
+void moloch_print_hex_string(unsigned char* data, unsigned int length);
 
 /******************************************************************************/
 /*

@@ -810,9 +810,13 @@ void moloch_nids_decr_outstanding(MolochSession_t *session)
     }
 }
 /******************************************************************************/
-void moloch_nids_get_tag_cb(void *session, int tagtype, uint32_t tag)
+void moloch_nids_get_tag_cb(void *session, int tagType, const char *tagName, uint32_t tag)
 {
-    moloch_field_int_add(tagtype, session, tag);
+    if (tag == 0) {
+        LOG("ERROR - Not adding tag %s type %d couldn't get tag num", tagName, tagType);
+    } else {
+        moloch_field_int_add(tagType, session, tag);
+    }
     moloch_nids_decr_outstanding(session);
 }
 /******************************************************************************/

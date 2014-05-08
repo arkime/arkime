@@ -1146,7 +1146,15 @@ void moloch_db_load_file_num()
     key_len = snprintf(key, sizeof(key), "/sequence/sequence/fn-%s", config.nodeName);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
+    // 0.90
     exists = moloch_js0n_get(data, data_len, "exists", &exists_len);
+    if (exists && memcmp("true", exists, 4) == 0) {
+        goto fetch_file_num;
+        return;
+    }
+
+    // 1.1.1
+    exists = moloch_js0n_get(data, data_len, "found", &exists_len);
     if (exists && memcmp("true", exists, 4) == 0) {
         goto fetch_file_num;
         return;
@@ -1337,7 +1345,10 @@ void moloch_db_load_tags()
         if (id && n) {
             MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
             tag->tagName = g_strndup((char*)id, (int)id_len);
-            tag->tagValue = atol((char*)n);
+            if (*n == '[')
+                tag->tagValue = atol((char*)n+1);
+            else
+                tag->tagValue = atol((char*)n);
             HASH_ADD(tag_, tags, tag->tagName, tag);
         } else {
             LOG ("ERROR - Could not load %.*s", out[i+1], ahits+out[i]);
@@ -1383,7 +1394,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
 
         if (tag) {
             if (r->func)
-                r->func(r->uw, r->tagtype, tag->tagValue);
+                r->func(r->uw, r->tagtype, r->tag, tag->tagValue);
             g_free(r->escaped);
             free(r->tag);
             MOLOCH_TYPE_FREE(MolochTagRequest_t, r);
@@ -1416,7 +1427,7 @@ void moloch_db_tag_create_cb(unsigned char *data, int UNUSED(data_len), gpointer
     HASH_ADD(tag_, tags, tag->tagName, tag);
 
     if (r->func)
-        r->func(r->uw, r->tagtype, r->newSeq);
+        r->func(r->uw, r->tagtype, r->tag, r->newSeq);
     moloch_db_free_tag_request(r);
 }
 /******************************************************************************/
@@ -1441,7 +1452,7 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
 
     if (!data) {
         if (r->func)
-            r->func(r->uw, r->tagtype, 0);
+            r->func(r->uw, r->tagtype, r->tag, 0);
         moloch_db_free_tag_request(r);
         return;
     }
@@ -1457,11 +1468,14 @@ void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
 
         MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
         tag->tagName = g_strdup(r->tag);
-        tag->tagValue = atol((char*)n);
+        if (*n == '[')
+            tag->tagValue = atol((char*)n+1);
+        else
+            tag->tagValue = atol((char*)n);
         HASH_ADD(tag_, tags, tag->tagName, tag);
 
         if (r->func)
-            r->func(r->uw, r->tagtype, atol((char *)n));
+            r->func(r->uw, r->tagtype, r->tag, tag->tagValue);
         moloch_db_free_tag_request(r);
         return;
     }
@@ -1486,7 +1500,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
 
     if (tag) {
         if (func)
-            func(uw, tagtype, tag->tagValue);
+            func(uw, tagtype, tagname, tag->tagValue);
         return;
     }
 
@@ -1498,7 +1512,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         HASH_ADD(tag_, tags, tag->tagName, tag);
 
         if (func)
-            func(uw, tagtype, tag->tagValue);
+            func(uw, tagtype, tagname, tag->tagValue);
         return;
     }
 
