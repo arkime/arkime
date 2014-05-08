@@ -88,7 +88,7 @@ passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Mo
   function(userid, done) {
     Db.get("users", "user", userid, function(err, suser) {
       if (err) {return done(err);}
-      if (!suser || !suser.exists) {console.log(userid, "doesn't exist"); return done(null, false);}
+      if (!suser || !suser.found) {console.log(userid, "doesn't exist"); return done(null, false);}
       if (!suser._source.enabled) {console.log(userid, "not enabled"); return done("Not enabled");}
 
       userCleanup(suser._source);
@@ -162,7 +162,7 @@ app.configure(function() {
 
         Db.get("users", "user", obj.user, function(err, suser) {
           if (err) {return res.send("ERROR - " +  err);}
-          if (!suser || !suser.exists) {return res.send(obj.user + " doesn't exist");}
+          if (!suser || !suser.found) {return res.send(obj.user + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
           userCleanup(suser._source);
           req.user = suser._source;
@@ -176,7 +176,7 @@ app.configure(function() {
         var userName = req.headers[Config.get("userNameHeader")];
         Db.get("users", "user", userName, function(err, suser) {
           if (err) {return res.send("ERROR - " +  err);}
-          if (!suser || !suser.exists) {return res.send(userName + " doesn't exist");}
+          if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(userName + " not enabled");}
           if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
 
@@ -203,7 +203,7 @@ app.configure(function() {
     /* Shared password isn't set, who cares about auth */
     app.locals.alwaysShowESStatus = true;
     app.use(function(req, res, next) {
-      req.user = {userId: "anonymous", enabled: true, createEnabled: false, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+      req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("enableShutdown", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
       next();
     });
   }
@@ -374,6 +374,10 @@ function noCache(req, res, ct) {
 }
 
 function getViewUrl(node, cb) {
+  if (Array.isArray(node)) {
+    node = node[0];
+  }
+
   var url = Config.getFull(node, "viewUrl");
   if (url) {
     cb(null, url, url.slice(0, 5) === "https"?https:http);
@@ -570,7 +574,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
       return res.send("Moloch Permision Denied");
     }
     Db.get("users", 'user', req.query.userId, function(err, user) {
-      if (err || !user.exists) {
+      if (err || !user.found) {
         console.log("ERROR - /password error", err, user);
         return res.send("Unknown user");
       }
@@ -631,7 +635,7 @@ app.get('/style.css', function(req, res) {
 // If less then size items are returned we don't delete anything.
 // Doesn't support mounting sub directories in main directory, don't do it.
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
-  var query = { fields: [ 'num', 'name', 'first', 'size', 'node' ],
+  var query = { _source: [ 'num', 'name', 'first', 'size', 'node' ],
                   from: '0',
                   size: 20,
                  query: { bool: {
@@ -661,10 +665,12 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         if (data.hits.total <= query.size) {
           return forNextCb("DONE");
         }
+
+        var fields = item._source || item.fields;
          
         var freeG;
         try {
-          var stat = fs.statVFS(item.fields.name);
+          var stat = fs.statVFS(fields.name);
           freeG = stat.f_frsize/1024.0*stat.f_bavail/(1024.0*1024.0);
         } catch (e) {
           console.log("ERROR", e);
@@ -674,7 +680,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         if (freeG < minFreeSpaceG) {
           data.hits.total--;
           console.log("Deleting", item);
-          return Db.deleteFile(item.fields.node, item._id, item.fields.name, forNextCb);
+          return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
         } else {
           return forNextCb("DONE");
         }
@@ -870,10 +876,11 @@ function lookupQueryItems(query, doneCb) {
         } else {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
-        Db.search('tags', 'tag', {size:500, fields:["id", "n"], query: query}, function(err, result) {
+        Db.search('tags', 'tag', {size:500, _source:["id", "n"], query: query}, function(err, result) {
           var terms = [];
           result.hits.hits.forEach(function (hit) {
-            terms.push(hit.fields.n);
+            var fields = hit._source || hit.fields;
+            terms.push(fields.n);
           });
           parent.terms = {};
           parent.terms[item] = terms;
@@ -1091,7 +1098,8 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   // Do a ro search on each item
   var writes = 0;
   async.eachLimit(list, 10, function(item, nextCb) {
-    if (!item.fields.ro || processedRo[item.fields.ro]) {
+    var fields = item._source || item.fields;
+    if (!fields.ro || processedRo[fields.ro]) {
       if (writes++ > 100) {
         writes = 0;
         setImmediate(nextCb);
@@ -1100,9 +1108,9 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
       }
       return;
     }
-    processedRo[item.fields.ro] = true;
+    processedRo[fields.ro] = true;
 
-    query.query.filtered.filter = {term: {ro: item.fields.ro}};
+    query.query.filtered.filter = {term: {ro: fields.ro}};
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
@@ -1128,7 +1136,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
   }
 
   buildSessionQuery(req, function(err, query, indices) {
-    query.fields = fields;
+    query._source = fields;
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
           console.log("ERROR - Could not fetch list of sessions.  Err: ", err,  " Result: ", result, "query:", query);
@@ -1148,16 +1156,25 @@ function sessionsListFromQuery(req, res, fields, cb) {
 
 function sessionsListFromIds(req, ids, fields, cb) {
   var list = [];
+  var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro"];
+  var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
   async.eachLimit(ids, 10, function(id, nextCb) {
     Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: fields.join(",")}, function(err, session) {
+      for (var i = 0; i < fixFields.length; i++) {
+        var field = fixFields[i];
+        if (session.fields[field] && Array.isArray(session.fields[field])) {
+          session.fields[field] = session.fields[field][0];
+        }
+      }
+
       list.push(session);
       nextCb(null);
     });
   }, function(err) {
     if (req.query.segments) {
       buildSessionQuery(req, function(err, query, indices) {
-        query.fields = fields;
+        query._source = fields;
         sessionsListAddSegments(req, indices, query, list, function(err, list) {
           cb(err, list);
         });
@@ -1247,13 +1264,22 @@ app.get('/esstats.json', function(req, res) {
   });
 });
 
+function mergeUnarray(to, from) {
+  for (var key in from) {
+    if (Array.isArray(from[key])) {
+      to[key] = from[key][0];
+    } else {
+      to[key] = from[key];
+    }
+  }
+}
 app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
-  var columns = ["", "_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "diskQueue", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
+  var columns = ["_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "diskQueue", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),1000000):500);
 
-  var query = {fields: columns,
+  var query = {_source: columns,
                from: req.query.iDisplayStart || 0,
                size: limit,
                script_fields: {
@@ -1273,7 +1299,10 @@ app.get('/stats.json', function(req, res) {
         } else {
           var results = {total: result.hits.total, results: []};
           for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i].fields;
+            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+            if (result.hits.hits[i]._source) {
+              mergeUnarray(fields, result.hits.hits[i].fields);
+            }
             fields.id        = result.hits.hits[i]._id;
             fields.memory    = fields.memory || 0;
             fields.diskQueue = fields.diskQueue || 0;
@@ -1321,7 +1350,7 @@ app.get('/dstats.json', function(req, res) {
                    }
                  }
                },
-               fields: ["currentTime", req.query.name],
+               _source: ["currentTime", req.query.name],
                script_fields: {
                  deltaBits: {script :"floor(_source.deltaBytes * 8.0)"},
                  deltaBytesPerSec: {script :"floor(_source.deltaBytes * 1000.0/_source.deltaMS)"},
@@ -1348,7 +1377,10 @@ app.get('/dstats.json', function(req, res) {
 
     if (result && result.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-        var fields = result.hits.hits[i].fields;
+        var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+        if (result.hits.hits[i]._source) {
+          mergeUnarray(fields, result.hits.hits[i].fields);
+        }
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
         data[pos] = mult * (fields[req.query.name] || 0);
       }
@@ -1379,7 +1411,7 @@ app.get('/files.json', function(req, res) {
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):500);
 
-  var query = {fields: columns,
+  var query = {_source: columns,
                from: req.query.iDisplayStart || 0,
                size: limit
               };
@@ -1395,7 +1427,7 @@ app.get('/files.json', function(req, res) {
 
         var results = {total: result.hits.total, results: []};
         for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          var fields = result.hits.hits[i].fields;
+          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
           if (fields.locked === undefined) {
             fields.locked = 0;
           }
@@ -1450,7 +1482,7 @@ app.post('/users.json', function(req, res) {
   var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
-  var query = {fields: columns,
+  var query = {_source: columns,
                from: req.body.iDisplayStart || 0,
                size: limit
               };
@@ -1465,7 +1497,7 @@ app.post('/users.json', function(req, res) {
         } else {
           var results = {total: result.hits.total, results: []};
           for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i].fields;
+            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
             fields.id = result.hits.hits[i]._id;
             fields.expression = safeStr(fields.expression || "");
             fields.headerAuthEnabled = fields.headerAuthEnabled || false;
@@ -1554,7 +1586,7 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
-    query.fields = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
+    query._source = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
 
     if (query.facets && query.facets.dbHisto) {
       graph.interval = query.facets.dbHisto.histogram.interval;
@@ -1582,12 +1614,16 @@ app.get('/sessions.json', function(req, res) {
           var results = {total: result.hits.total, results: []};
           var hits = result.hits.hits;
           for (var i = 0, ilen = hits.length; i < ilen; i++) {
-            if (!hits[i] || !hits[i].fields) {
+            if (!hits[i]) {
               continue;
             }
-            hits[i].fields.index = hits[i]._index;
-            hits[i].fields.id = hits[i]._id;
-            results.results.push(hits[i].fields);
+            var fields = hits[i]._source || hits[i].fields;
+            if (!fields) {
+              continue;
+            }
+            fields.index = hits[i]._index;
+            fields.id = hits[i]._id;
+            results.results.push(fields);
           }
           sessionsCb(null, results);
         });
@@ -1962,15 +1998,15 @@ function buildConnections(req, res, cb) {
       query.query.filtered.filter = {bool: {must: [query.query.filtered.filter, {exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
     }
 
-    query.fields = ["by", "db", "pa", "no"];
-    if (query.fields.indexOf(fsrc) === -1) {
-      query.fields.push(fsrc);
+    query._source = ["by", "db", "pa", "no"];
+    if (query._source.indexOf(fsrc) === -1) {
+      query._source.push(fsrc);
     }
-    if (query.fields.indexOf(fdst) === -1) {
-      query.fields.push(fdst);
+    if (query._source.indexOf(fdst) === -1) {
+      query._source.push(fdst);
     }
     if (dstipport) {
-      query.fields.push("p2");
+      query._source.push("p2");
     }
 
     console.log("buildConnections query", JSON.stringify(query));
@@ -1984,7 +2020,7 @@ function buildConnections(req, res, cb) {
       var i;
 
       async.eachLimit(graph.hits.hits, 10, function(hit, hitCb) {
-        var f = hit.fields;
+        var f = hit._source || hit.fields;
         if (f[fsrc] === undefined || f[fdst] === undefined) {
           return setImmediate(hitCb);
         }
@@ -2075,16 +2111,22 @@ app.get('/connections.csv', function(req, res) {
 });
 
 function csvListWriter(req, res, list, pcapWriter, extension) {
-  list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+  if (list.length > 0 && list[0].fields) {
+    list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+  } else if (list.length > 0 && list[0]._source) {
+    list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
+  }
+
   res.write("Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node\r\n");
 
   for (var i = 0, ilen = list.length; i < ilen; i++) {
-    if (!list[i].fields) {
+    var fields = list[i]._source || list[i].fields;
+
+    if (!fields) {
       continue;
     }
-    var f = list[i].fields;
     var pr;
-    switch (f.pr) {
+    switch (fields.pr) {
     case 1:
       pr = "icmp";
       break;
@@ -2097,7 +2139,7 @@ function csvListWriter(req, res, list, pcapWriter, extension) {
     }
 
 
-    res.write(pr + ", " + f.fp + ", " + f.lp + ", " + Pcap.inet_ntoa(f.a1) + ", " + f.p1 + ", " + (f.g1||"") + ", "  + Pcap.inet_ntoa(f.a2) + ", " + f.p2 + ", " + (f.g2||"") + ", " + f.pa + ", " + f.by + ", " + f.db + ", " + f.no + "\r\n");
+    res.write(pr + ", " + fields.fp + ", " + fields.lp + ", " + Pcap.inet_ntoa(fields.a1) + ", " + fields.p1 + ", " + (fields.g1||"") + ", "  + Pcap.inet_ntoa(fields.a2) + ", " + fields.p2 + ", " + (fields.g2||"") + ", " + fields.pa + ", " + fields.by + ", " + fields.db + ", " + fields.no + "\r\n");
   }
   res.end();
 }
@@ -2106,6 +2148,7 @@ app.get(/\/sessions.csv.*/, function(req, res) {
   noCache(req, res, "text/csv");
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
+  console.log("Queryids", req.query.ids);
   if (req.query.ids) {
     var ids = req.query.ids.split(",");
 
@@ -2218,7 +2261,7 @@ app.get('/unique.txt', function(req, res) {
       var field = req.query.field.substring(3);
       query.size   = 200000;
 
-      query.fields = [field];
+      query._source = [field];
 
       if (query.query.filtered.filter === undefined) {
         query.query.filtered.filter = {exists: {field: field}};
@@ -2234,7 +2277,8 @@ app.get('/unique.txt', function(req, res) {
         // Count up hits
         var hits = result.hits.hits;
         for (var i = 0, ilen = hits.length; i < ilen; i++) {
-          var avalue = hits[i].fields[field];
+          var fields = hits[i]._source || hits[i].fields;
+          var avalue = fields[field];
           if (Array.isArray(avalue)) {
             for (var j = 0, jlen = avalue.length; j < jlen; j++) {
               var value = avalue[j];
@@ -2296,17 +2340,12 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
     var fields;
 
-    if (err || !session.exists) {
+    if (err || !session.found) {
       console.log("session get error", err, session);
       return endCb("Not Found", null);
     }
 
-    if (fullSession) {
-      fields = session._source;
-    } else {
-      fields = session.fields;
-    }
-
+    fields = session._source || session.fields;
 
     if (maxPackets && fields.ps.length > maxPackets) {
       fields.ps.length = maxPackets;
@@ -3307,7 +3346,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   var options = {writeHeader: true};
 
-  var query = { fields: ["ro"],
+  var query = { _source: ["ro"],
                 size: 1000,
                 query: {term: {ro: req.params.id}},
                 sort: { lp: { order: 'asc' } }
@@ -3326,26 +3365,31 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
 function sessionsPcapList(req, res, list, pcapWriter, extension) {
 
-  list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+  if (list.length > 0 && list[0].fields) {
+    list = list.sort(function(a,b){return a.fields.lp - b.fields.lp;});
+  } else if (list.length > 0 && list[0]._source) {
+    list = list.sort(function(a,b){return a._source.lp - b._source.lp;});
+  }
 
   var options = {writeHeader: true};
 
   async.eachLimit(list, 10, function(item, nextCb) {
-    Db.isLocalView(item.fields.no, function () {
+    var fields = item._source || item.fields;
+    Db.isLocalView(fields.no, function () {
       // Get from our DISK
       pcapWriter(res, item._id, options, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.fields.no, function(err, viewUrl, client) {
-        var buffer = new Buffer(item.fields.pa*20 + item.fields.by);
+      getViewUrl(fields.no, function(err, viewUrl, client) {
+        var buffer = new Buffer(fields.pa*20 + fields.by);
         var bufpos = 0;
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(item.fields.no) + item.fields.no + "/" + extension + "/" + item._id + "." + extension;
+        info.path = Config.basePath(fields.no) + fields.no + "/" + extension + "/" + item._id + "." + extension;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
 
-        addAuth(info, req.user, item.fields.no);
-        addCaTrust(info, item.fields.no);
+        addAuth(info, req.user, fields.no);
+        addCaTrust(info, fields.no);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
             if (bufpos + chunk.length > buffer.length) {
@@ -3432,7 +3476,7 @@ app.post('/addUser', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.body.userId, function(err, user) {
-    if (!user || user.exists) {
+    if (!user || user.found) {
       console.log("Adding duplicate user", err, user);
       return res.send(JSON.stringify({success: false, text: "User already exists"}));
     }
@@ -3467,7 +3511,7 @@ app.post('/updateUser/:userId', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.params.userId, function(err, user) {
-    if (err || !user.exists) {
+    if (err || !user.found) {
       console.log("update user failed", err, user);
       return res.send(JSON.stringify({success: false, text: "User not found"}));
     }
@@ -3538,7 +3582,7 @@ app.post('/changePassword', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.token.suserId, function(err, user) {
-    if (err || !user.exists) {
+    if (err || !user.found) {
       console.log("changePassword failed", err, user);
       return error("Unknown user");
     }
@@ -3560,7 +3604,7 @@ app.post('/changeSettings', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.token.suserId, function(err, user) {
-    if (err || !user.exists) {
+    if (err || !user.found) {
       console.log("changeSettings failed", err, user);
       return error("Unknown user");
     }
@@ -3589,7 +3633,7 @@ app.post('/updateView', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.token.suserId, function(err, user) {
-    if (err || !user.exists) {
+    if (err || !user.found) {
       console.log("updateView failed", err, user);
       return error("Unknown user");
     }
@@ -3623,7 +3667,7 @@ app.post('/deleteView', checkToken, function(req, res) {
   }
 
   Db.get("users", 'user', req.token.suserId, function(err, user) {
-    if (err || !user.exists) {
+    if (err || !user.found) {
       console.log("updateView failed", err, user);
       return error("Unknown user");
     }
@@ -3650,21 +3694,23 @@ function addTagsList(res, allTagIds, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var tagIds = [];
 
-    if (!session.fields || !session.fields.ta) {
+    var fields = session._source || session.fields;
+
+    if (!fields || !fields.ta) {
       return nextCb(null);
     }
 
     // Find which tags need to be added to this session
     for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      if (session.fields.ta.indexOf(allTagIds[i]) === -1) {
-        session.fields.ta.push(allTagIds[i]);
+      if (fields.ta.indexOf(allTagIds[i]) === -1) {
+        fields.ta.push(allTagIds[i]);
       }
     }
 
     // Do the ES update
     var document = {
       doc: {
-        ta: session.fields.ta
+        ta: fields.ta
       }
     };
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
@@ -3679,22 +3725,23 @@ function removeTagsList(res, allTagIds, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var tagIds = [];
 
-    if (!session.fields || !session.fields.ta) {
+    var fields = session._source || session.fields;
+    if (!fields || !fields.ta) {
       return nextCb(null);
     }
 
     // Find which tags need to be removed from this session
     for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
-      var pos = session.fields.ta.indexOf(allTagIds[i]);
+      var pos = fields.ta.indexOf(allTagIds[i]);
       if (pos !== -1) {
-        session.fields.ta.splice(pos, 1);
+        fields.ta.splice(pos, 1);
       }
     }
 
     // Do the ES update
     var document = {
       doc: {
-        ta: session.fields.ta
+        ta: fields.ta
       }
     };
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
@@ -3818,7 +3865,7 @@ function pcapScrub(req, res, id, entire, endCb) {
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: "no,pr,ps"}, function(err, session) {
-    var fields = session.fields;
+    var fields = session._source || session.fields;
 
     /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
      * New Format: Negative numbers are file numbers until next neg number, otherwise file pos */
@@ -3919,18 +3966,20 @@ function scrubList(req, res, entire, list) {
   }
 
   async.eachLimit(list, 10, function(item, nextCb) {
-    Db.isLocalView(item.fields.no, function () {
+    var fields = item._source || item.fields;
+
+    Db.isLocalView(fields.no, function () {
       // Get from our DISK
       pcapScrub(req, res, item._id, entire, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.no, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(item.fields.no) + item.fields.no + (entire?"/delete/":"/scrub/") + item._id;
+        info.path = Config.basePath(fields.no) + fields.no + (entire?"/delete/":"/scrub/") + item._id;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
-        addAuth(info, req.user, item.fields.no);
-        addCaTrust(info, item.fields.no);
+        addAuth(info, req.user, fields.no);
+        addCaTrust(info, fields.no);
         var preq = client.request(info, function(pres) {
           pres.on('end', function () {
             setImmediate(nextCb);
@@ -4086,21 +4135,22 @@ function sendSessionsList(req, res, list) {
   req.query.saveId = Config.nodeName() + "-" + new Date().getTime().toString(36);
 
   async.eachLimit(list, 10, function(item, nextCb) {
-    Db.isLocalView(item.fields.no, function () {
+    var fields = item._source || item.fields;
+    Db.isLocalView(fields.no, function () {
       // Get from our DISK
       sendSession(req, res, item._id, nextCb);
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.fields.no, function(err, viewUrl, client) {
+      getViewUrl(fields.no, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(item.fields.no) + item.fields.no + "/sendSession/" + item._id + "?saveId=" + req.query.saveId;
+        info.path = Config.basePath(fields.no) + fields.no + "/sendSession/" + item._id + "?saveId=" + req.query.saveId;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         if (req.query.tags) {
           info.path += "&tags=" + req.query.tags;
         }
-        addAuth(info, req.user, item.fields.no);
-        addCaTrust(info, item.fields.no);
+        addAuth(info, req.user, fields.no);
+        addCaTrust(info, fields.no);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
           });

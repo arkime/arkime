@@ -212,7 +212,7 @@ app.get("/:index/:type/_search", function(req, res) {
 app.get("/:index/:type/:id", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     for (var i = 0; i < results.length; i++) {
-      if (results[i].exists) {
+      if (results[i].found || results[i].exists) {
         return res.send(results[i]);
       }
     }
@@ -223,6 +223,12 @@ app.get("/:index/:type/:id", function(req, res) {
 
 app.head(/^\/$/, function(req, res) {
   res.send("");
+});
+
+app.get(/^\/$/, function(req, res) {
+  simpleGather(req, res, null, function(err, results) {
+    res.send(results[0]);
+  });
 });
 
 app.get(/./, function(req, res) {
@@ -299,7 +305,7 @@ function tagNameToId(node, name, cb) {
   }
 
   clients[node].get({index: 'tags', type: 'tag', id: name}, function(err, tdata) {
-    if (!err && tdata.exists) {
+    if (!err && (tdata.found || tdata.exists)) {
       tags[node].tagName2Id[name] = tdata._source.n;
       tags[node].tagId2Name[tdata._source.n] = name;
       return cb (tags[node].tagName2Id[name]);
@@ -327,6 +333,14 @@ function tagIdToName (node, id, cb) {
 
 function fixQuery(node, body, doneCb) {
   body = JSON.parse(body);
+
+  if (clients[node].version === "0.90" && body._source) {
+    body.fields = body._source;
+    delete body._source;
+  } else if (clients[node].version === "1.1" && body.fields) {
+    body._source = body.fields;
+    delete body.fields;
+  }
 
   // Reset from & size since we do aggregation
   if (body.size) {
@@ -588,17 +602,18 @@ app.post("/fields/field/_search", function(req, res) {
 app.post("/:index/:type/_search", function(req, res) {
   var bodies = {};
   var search = JSON.parse(req.body);
-  //console.log("INCOMING SEARCH", util.inspect(search, false, 50));
+  //console.log("DEBUG - INCOMING SEARCH", util.inspect(search, false, 50));
 
   async.each(nodes, function (node, asyncCb) {
     fixQuery(node, req.body, function(err, body) {
-      //console.log("OUTGOING SEARCH", node, util.inspect(body, false, 50));
+      //console.log("DEBUG - OUTGOING SEARCH", node, util.inspect(body, false, 50));
       bodies[node] = JSON.stringify(body);
       asyncCb(null);
     });
   }, function (err) {
     simpleGather(req, res, bodies, function(err, results) {
       async.each(results, function (result, asyncCb) {
+        //console.log("DEBUG - RESULT", util.inspect(result, false, 50));
         fixResult(result._node, result, asyncCb);
       }, function (err) {
         var obj = newResult(search);
@@ -687,11 +702,29 @@ if (nodes.length === 0 || nodes[0] === "") {
 }
 
 nodes.forEach(function(node) {
+  tags[node] = {tagName2Id: {}, tagId2Name: {}};
+
+  // Try as 0.90
   clients[node] = new ESC.Client({
     host: node,
-    apiVersion: "0.90"
+    apiVersion: "0.90",
+    requestTimeout: 300000
   });
-  tags[node] = {tagName2Id: {}, tagId2Name: {}};
+  clients[node].version = "0.90";
+
+  // Switch to 1.1 if need to
+  clients[node].info(function(err,data) {
+    if (data.version.number.match(/^1.1/)) {
+      var oldes = clients[node];
+      setTimeout(function() {oldes.close();}, 2000);
+      clients[node]= new ESC.Client({
+        host: node,
+        apiVersion: "1.1",
+        requestTimeout: 300000
+      });
+      clients[node].version = "1.1";
+    }
+  });
 });
 
 console.log(nodes);

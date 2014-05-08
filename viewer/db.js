@@ -31,19 +31,39 @@ var internals = {tagId2Name: {},
                  fileId2File: {},
                  fileName2File: {},
                  qInProgress: 0,
+                 apiVersion: "0.90",
                  q: []};
 
 exports.initialize = function (info) {
   internals.dontMapTags = info.dontMapTags || false;
   delete info.dontMapTags;
+  internals.info = info;
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
 
   internals.elasticSearchClient = new ESC.Client({
-    host: info.host + ":" + info.port,
-    apiVersion: "0.90",
+    host: internals.info.host + ":" + internals.info.port,
+    apiVersion: internals.apiVersion,
     requestTimeout: 300000
+  });
+
+  // See if this is 1.1
+  internals.elasticSearchClient.info(function(err,data) {
+    if (data.version.number.match(/^1.0/)) {
+      console.log("ES 1.0 is not supported");
+    }
+
+    if (data.version.number.match(/^1.1/)) {
+      internals.apiVersion = "1.1";
+      var oldes = internals.elasticSearchClient;
+      setTimeout(function() {oldes.close();}, 2000);
+      internals.elasticSearchClient = new ESC.Client({
+        host: internals.info.host + ":" + internals.info.port,
+        apiVersion: internals.apiVersion,
+        requestTimeout: 300000
+      });
+    }
   });
 
   // Replace tag implementation
@@ -83,15 +103,26 @@ function merge(to, from) {
   }
 }
 
-
 exports.get = function (index, type, id, cb) {
-  internals.elasticSearchClient.get({index: index, type: type, id: id}, cb);
+  internals.elasticSearchClient.get({index: index, type: type, id: id}, function(err, data) {
+    if (data && data.exists !== undefined) {
+      data.found = data.exists;
+      delete data.exists;
+    }
+    cb(err, data)
+  });
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
   var params = {index: index, type:type, id: id};
   merge(params, options);
-  internals.elasticSearchClient.get(params, cb);
+  internals.elasticSearchClient.get(params, function(err, data) {
+    if (data && data.exists !== undefined) {
+      data.found = data.exists;
+      delete data.exists;
+    }
+    cb(err, data)
+  });
 };
 
 /* Work around a breaking change where document.id is nolonger used for the id */
@@ -104,10 +135,18 @@ exports.indexNow = function (index, type, id, document, cb) {
 };
 
 exports.search = function (index, type, query, cb) {
+  if (query._source && internals.apiVersion === "0.90") {
+    query.fields = query._source;
+    delete query._source;
+  }
   internals.elasticSearchClient.search({index: index, type: type, body: query}, cb);
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
+  if (query._source && internals.apiVersion === "0.90") {
+    query.fields = query._source;
+    delete query._source;
+  }
   internals.elasticSearchClient.search({index: index, type: type, body: query, preference: "_primary_first", ignoreIndices: "missing"}, cb);
 };
 
@@ -139,7 +178,11 @@ exports.health = function(cb) {
 };
 
 exports.nodesStats = function (options, cb) {
-  internals.elasticSearchClient.cluster.nodeStats(options, function (err, data, status) {cb(err,data);});
+  if (internals.apiVersion === "0.90") {
+    internals.elasticSearchClient.cluster.nodeStats(options, function (err, data, status) {cb(err,data);});
+  } else {
+    internals.elasticSearchClient.nodes.stats(options, function (err, data, status) {cb(err,data);});
+  }
 };
 
 exports.update = function (index, type, id, document, cb) {
@@ -157,7 +200,7 @@ internals.molochNodeStatsCache = {};
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
-    if (err || !stat.exists) {
+    if (err || !stat.found) {
 
       // Even if an error, if we have a cached value use it
       if (err && internals.molochNodeStatsCache[name]) {
@@ -206,7 +249,7 @@ exports.healthCache = function (cb) {
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
-  var query = {query: {text: {hostname:hostname}}};
+  var query = {query: {match: {hostname:hostname}}};
   exports.search('stats', 'stat', query, function(err, sdata) {
     var nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
@@ -253,9 +296,8 @@ exports.tagNameToId = function (name, cb) {
   }
 
   exports.get('tags', 'tag', name, function(err, tdata) {
-    console.log("taglookup", name, err, tdata);
     didIt();
-    if (!err && tdata.exists) {
+    if (!err && tdata.found) {
       internals.tagName2Id[name] = tdata._source.n;
       internals.tagId2Name[tdata._source.n] = name;
       return cb(internals.tagName2Id[name]);
@@ -271,7 +313,7 @@ exports.fileIdToFile = function (node, num, cb) {
   }
 
   exports.get('files', 'file', node + '-' + num, function (err, fresult) {
-    if (!err && fresult.exists) {
+    if (!err && fresult.found) {
       var file = fresult._source;
       internals.fileId2File[key] = file;
       internals.fileName2File[file.name] = file;
@@ -287,7 +329,7 @@ exports.fileNameToFile = function (name, cb) {
     return cb(internals.fileName2File[name]);
   }
 
-  var query = {query: {term: {name: name}}};
+  var query = {query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
   exports.search('files', 'file', query, function(err, data) {
     if (!err && data.hits.hits[0]) {
       var file = data.hits.hits[0]._source;
@@ -377,7 +419,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
       console.log(err);
       process.exit(0);
     }
-    if (!doc.exists) {
+    if (!doc.found) {
       version = 0;
     } else {
       version = doc._source.version;
