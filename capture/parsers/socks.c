@@ -1,3 +1,17 @@
+/* Copyright 2012-2014 AOL Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this Software except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <string.h>
 #include "moloch.h"
 
@@ -18,6 +32,8 @@ static int ipField;
 static int portField;
 static int userField;
 static int hostField;
+
+//#define SOCKSDEBUG
 
 /******************************************************************************/
 #define SOCKS4_STATE_REPLY        0
@@ -190,6 +206,10 @@ void socks_free(MolochSession_t UNUSED(*session), void *uw)
 /******************************************************************************/
 void socks4_classify(MolochSession_t *session, const unsigned char *data, int len)
 {
+#ifdef SOCKSDEBUG
+    LOG("SOCKSDEBUG: enter %d %d", data[0], len);
+#endif
+
     if (data[len-1] == 0)  {
         SocksInfo_t *socks;
 
@@ -226,6 +246,10 @@ void socks4_classify(MolochSession_t *session, const unsigned char *data, int le
 /******************************************************************************/
 void socks5_classify(MolochSession_t *session, const unsigned char *data, int len)
 {
+#ifdef SOCKSDEBUG
+    LOG("SOCKSDEBUG: enter %d %d", data[0], len);
+#endif
+
     if ((len >=3 && len <= 5) && data[1] == len - 2 && data[2] <= 3) {
         SocksInfo_t *socks;
 
