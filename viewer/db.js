@@ -30,6 +30,8 @@ var internals = {tagId2Name: {},
                  tagName2Id: {},
                  fileId2File: {},
                  fileName2File: {},
+                 molochNodeStatsCache: {},
+                 healthCache: {},
                  qInProgress: 0,
                  apiVersion: "0.90",
                  q: []};
@@ -196,7 +198,14 @@ exports.close = function () {
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
 //////////////////////////////////////////////////////////////////////////////////
-internals.molochNodeStatsCache = {};
+exports.flushCache = function () {
+  internals.tagId2Name = {};
+  internals.tagName2Id = {};
+  internals.fileId2File = {};
+  internals.fileName2File = {};
+  internals.molochNodeStatsCache = {};
+  internals.healthCache = {};
+}
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
@@ -226,7 +235,6 @@ exports.molochNodeStatsCache = function (name, cb) {
 };
 
 
-internals.healthCache = {};
 exports.healthCache = function (cb) {
   if (internals.healthCache._timeStamp !== undefined && internals.healthCache._timeStamp > Date.now() - 10000) {
     return cb(null, internals.healthCache);

@@ -203,7 +203,7 @@ app.configure(function() {
     /* Shared password isn't set, who cares about auth */
     app.locals.alwaysShowESStatus = true;
     app.use(function(req, res, next) {
-      req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("enableShutdown", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+      req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
       next();
     });
   }
@@ -4365,10 +4365,14 @@ app.post('/upload', function(req, res) {
   });
 });
 
-if (Config.get("enableShutdown")) {
+if (Config.get("regressionTests")) {
   app.post('/shutdown', function(req, res) {
     Db.close();
     process.exit(0);
+  });
+  app.post('/flushCache', function(req, res) {
+    Db.flushCache();
+    res.send("");
   });
 }
 

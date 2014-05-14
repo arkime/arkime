@@ -141,17 +141,18 @@ my ($count, $test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 695;
+    plan tests => 720;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
     if ($cmd eq "--viewerfast") {
         print "Skipping ES Init and PCAP load\n";
+        $main::userAgent->post("http://localhost:8123/flushCache");
         system("/bin/cp socks-http-example.pcap copytest.pcap");
         if ($main::debug) {
-            system("../capture/moloch-capture -c config.test.ini -n test -r copytest.pcap");
+            system("../capture/moloch-capture --debug -c config.test.ini -n test -r copytest.pcap --tag testisfun");
         } else {
-            system("../capture/moloch-capture -c config.test.ini -n test -r copytest.pcap 2>&1 1>/dev/null");
+            system("../capture/moloch-capture -c config.test.ini -n test -r copytest.pcap --tag testisfun 2>&1 1>/dev/null");
         }
     } else {
         print ("Initializing ES\n");
@@ -179,7 +180,9 @@ my ($cmd) = @_;
         sleep 2;
     }
 
+    $main::userAgent->get("http://localhost:9200/_flush");
     $main::userAgent->get("http://localhost:9200/_refresh");
+    sleep 1;
 
     my $pwd = getcwd();
 # file tests
@@ -593,17 +596,22 @@ tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, U
 ', "CSV Ids");
 
 # scrub tags test ids
-    $main::userAgent->post("http://localhost:8123/scrub?date=-1", Content => "ids=" . $idQuery->{aaData}->[0]->{id});
-    $main::userAgent->get("http://localhost:9200/_refresh");
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==anonymous"));
-    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by!=anonymous"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==Anonymous"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==[Anonymous]"));
-    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by!=[Anonymous]"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==Anon*mous"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==/Anon.*mous/"));
+    if (defined $idQuery->{aaData}->[0]->{id}) {
+        $main::userAgent->post("http://localhost:8123/scrub?date=-1", Content => "ids=" . $idQuery->{aaData}->[0]->{id});
+        $main::userAgent->get("http://localhost:9200/_refresh");
+        countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==anonymous"));
+        countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by!=anonymous"));
+        countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==Anonymous"));
+        countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==[Anonymous]"));
+        countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by!=[Anonymous]"));
+        countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==Anon*mous"));
+        countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap&&scrubbed.by==/Anon.*mous/"));
+    } else {
+        diag "No scrubid, so skipping scrub\n";
+    }
 
 # delete tags test expression
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));
     $main::userAgent->post("http://localhost:8123/delete?date=-1&expression=file=$pwd/copytest.pcap");
     $main::userAgent->get("http://localhost:9200/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));
@@ -625,6 +633,28 @@ tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, U
     $users = from_json($main::userAgent->post("http://localhost:8123/users.json")->content);
     is (@{$users->{aaData}}, 0, "Removed user");
 
+# stats.json
+    my $stats = viewerGet("/stats.json");
+    is (@{$stats->{aaData}}, 1, "stats.json aaData set ");
+    is ($stats->{iTotalRecords}, 1, "stats.json iTotalRecords");
+    is ($stats->{aaData}->[0]->{id}, "test", "stats.json name");
+    foreach my $i ("diskQueue", "deltaDroppedPerSec") {
+        is ($stats->{aaData}->[0]->{$i}, 0, "stats.json $i 0");
+    }
+
+    foreach my $i ("monitoring", "diskQueue", "deltaDropped", "deltaDroppedPerSec") {
+        is ($stats->{aaData}->[0]->{$i}, 0, "stats.json $i == 0");
+    }
+
+    foreach my $i ("deltaMS", "totalPackets", "deltaSessions", "deltaPackets", "deltaBytes", "memory", "currentTime", "totalK", "totalSessions", "freeSpaceM", "deltaSessionsPerSec", "deltaBytesPerSec", "deltaPacketsPerSec") {
+        cmp_ok ($stats->{aaData}->[0]->{$i}, '>', 0, "stats.json $i > 0");
+    }
+
+# dstats.json
+    my $dstats = viewerGet("/dstats.json?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
+    is (@{$dstats}, 7, "dstats.json array size");
+
+# Cleanup
     unlink("copytest.pcap");
 
     if ($cmd eq "--viewer") {
