@@ -308,7 +308,7 @@ void moloch_print_hex_string(unsigned char* data, unsigned int length)
     printf("\n");
 }
 /******************************************************************************/
-void  moloch_parsers_register(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc)
+void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc)
 {
     if (session->parserLen == 0) {
         session->parserLen = 2;
@@ -320,6 +320,7 @@ void  moloch_parsers_register(MolochSession_t *session, MolochParserFunc func, v
     session->parserInfo[session->parserNum].parserFunc     = func;
     session->parserInfo[session->parserNum].uw             = uw;
     session->parserInfo[session->parserNum].parserFreeFunc = ffunc;
+    session->parserInfo[session->parserNum].parserSaveFunc = sfunc;
 
     session->parserNum++;
 }
@@ -334,6 +335,7 @@ void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
                 session->parserInfo[i].parserFreeFunc = 0;
             }
 
+            session->parserInfo[i].parserSaveFunc = 0;
             session->parserInfo[i].parserFunc = 0;
             session->parserInfo[i].uw = 0;
             break;

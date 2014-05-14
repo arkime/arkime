@@ -30,7 +30,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 9
+#define MOLOCH_API_VERSION 10
 
 /******************************************************************************/
 /*
@@ -287,11 +287,13 @@ struct moloch_session;
 
 typedef int  (* MolochParserFunc) (struct moloch_session *session, void *uw, const unsigned char *data, int remaining);
 typedef void (* MolochParserFreeFunc) (struct moloch_session *session, void *uw);
+typedef void (* MolochParserSaveFunc) (struct moloch_session *session, void *uw, int final);
 
 typedef struct {
     MolochParserFunc      parserFunc;
     void                 *uw;
     MolochParserFreeFunc  parserFreeFunc;
+    MolochParserSaveFunc  parserSaveFunc;
 
 } MolochParserInfo_t;
 
@@ -470,7 +472,8 @@ void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *b
 typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining);
 
 void  moloch_parsers_unregister(MolochSession_t *session, void *uw);
-void  moloch_parsers_register(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc);
+void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc);
+#define moloch_parsers_register(session, func, uw, ffunc) moloch_parsers_register2(session, func, uw, ffunc, NULL)
 
 void  moloch_parsers_classifier_register_tcp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
 #define moloch_parsers_classifier_register_tcp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_tcp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)

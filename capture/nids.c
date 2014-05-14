@@ -217,6 +217,14 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
 /******************************************************************************/
 void moloch_nids_save_session(MolochSession_t *session)
 {
+    if (session->parserInfo) {
+        int i;
+        for (i = 0; i < session->parserNum; i++) {
+            if (session->parserInfo[i].parserSaveFunc)
+                session->parserInfo[i].parserSaveFunc(session, session->parserInfo[i].uw, TRUE);
+        }
+    }
+
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, TRUE);
 
@@ -251,6 +259,14 @@ void moloch_nids_save_session(MolochSession_t *session)
 /******************************************************************************/
 void moloch_nids_mid_save_session(MolochSession_t *session)
 {
+    if (session->parserInfo) {
+        int i;
+        for (i = 0; i < session->parserNum; i++) {
+            if (session->parserInfo[i].parserSaveFunc)
+                session->parserInfo[i].parserSaveFunc(session, session->parserInfo[i].uw, FALSE);
+        }
+    }
+
     if (pluginsCbs & MOLOCH_PLUGIN_PRE_SAVE)
         moloch_plugins_cb_pre_save(session, FALSE);
 

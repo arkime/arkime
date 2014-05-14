@@ -475,6 +475,26 @@ int http_parse(MolochSession_t *session, void *uw, const unsigned char *data, in
     return 0;
 }
 /******************************************************************************/
+void http_save(MolochSession_t UNUSED(*session), void *uw, int final)
+{
+    if (!final)
+        return;
+
+    HTTPInfo_t            *http          = uw;
+
+#ifdef HTTPDEBUG
+    LOG("Save callback %d", final);
+#endif
+    if (http->wParsers & 0x1) {
+        http_parser_execute(&http->parsers[0], &parserSettings, 0, 0);
+    }
+
+    if (http->wParsers & 0x2) {
+        http_parser_execute(&http->parsers[1], &parserSettings, 0, 0);
+    }
+
+}
+/******************************************************************************/
 void http_free(MolochSession_t UNUSED(*session), void *uw)
 {
     HTTPInfo_t            *http          = uw;
@@ -515,7 +535,7 @@ void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), 
 
     http->session = session;
 
-    moloch_parsers_register(session, http_parse, http, http_free);
+    moloch_parsers_register2(session, http_parse, http, http_free, http_save);
 }
 /******************************************************************************/
 void moloch_parser_init()
