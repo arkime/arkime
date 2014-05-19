@@ -386,7 +386,7 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
         if (config.writeMethod & MOLOCH_WRITE_DIRECT)
             options |= O_DIRECT;
 #endif
-        dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+        dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         if (dumperFd < 0) {
             LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
             exit (2);
@@ -466,7 +466,7 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
             if (config.writeMethod & MOLOCH_WRITE_DIRECT)
                 options |= O_DIRECT;
 #endif
-            dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+            dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
             if (dumperFd < 0) {
                 LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
                 exit (2);
