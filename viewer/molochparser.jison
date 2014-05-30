@@ -240,6 +240,12 @@ function formatQuery(yy, field, op, value)
 
   switch (info.type) {
   case "ip":
+    if (value[0] === "/")
+      throw value + " - Regex not supported for ip queries";
+
+    if (value.indexOf("*") !== -1)
+      throw value + " - Wildcard not supported for ip queries";
+
     if (op === "eq")
       return parseIpPort(yy, field, value);
     if (op === "ne")
