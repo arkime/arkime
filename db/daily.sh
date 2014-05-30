@@ -7,9 +7,4 @@
 ESHOSTPORT=CHANGEMEHOST:CHANGEMEPORT
 RETAINNUMDAYS=7
 
-
-YESTERDAY=`date +sessions-%y%m%d -d yesterday`
-curl -XPOST "http://$ESHOSTPORT/$YESTERDAY/_optimize?max_num_segments=4"
-
-EXPIRE=`date +sessions-%y%m%d -d "$RETAINNUMDAYS days ago"`
-curl -XDELETE "http://$ESHOSTPORT/$EXPIRE/"
+/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
