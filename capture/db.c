@@ -1284,7 +1284,7 @@ void moloch_db_check()
     }
 
     if (config.compressES) {
-        key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process");
+        key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process&flat_settings");
         data = moloch_http_get(esServer, key, key_len, &data_len);
         if (strstr((char *)data, "\"http.compression\":\"true\"") == NULL) {
             LOG("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");

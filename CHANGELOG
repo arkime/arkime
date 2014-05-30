@@ -6,6 +6,7 @@
   - NOTICE: When upgrading your runes.sh for 1.1.1 add a -d to the 
             command, ES no longer runs in background by default
   - Parsers can register for session save events (issue #248)
+  - Fix compressES check with ES 1.1.1 (issue #255)
 
 0.11.0 2014/05/08
   - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 
