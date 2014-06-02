@@ -91,9 +91,9 @@ function userCleanup(suser) {
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
   function(userid, done) {
     Db.get("users", "user", userid, function(err, suser) {
-      if (err) {return done(err);}
-      if (!suser || !suser.found) {console.log(userid, "doesn't exist"); return done(null, false);}
-      if (!suser._source.enabled) {console.log(userid, "not enabled"); return done("Not enabled");}
+      if (err && !suser) {return done(err);}
+      if (!suser || !suser.found) {console.log("User", userid, "doesn't exist"); return done(null, false);}
+      if (!suser._source.enabled) {console.log("User", userid, "not enabled"); return done("Not enabled");}
 
       userCleanup(suser._source);
 
@@ -2346,7 +2346,7 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
 
     if (err || !session.found) {
       console.log("session get error", err, session);
-      return endCb("Not Found", null);
+      return endCb("Session not found", null);
     }
 
     fields = session._source || session.fields;
