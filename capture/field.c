@@ -587,3 +587,34 @@ void moloch_field_certsinfo_free (MolochCertsInfo_t *certs)
 
     MOLOCH_TYPE_FREE(MolochCertsInfo_t, certs);
 }
+/******************************************************************************/
+int moloch_field_count(int pos, MolochSession_t *session)
+{
+    MolochField_t         *field;
+
+    if (!session->fields[pos])
+        return 0;
+
+    field = session->fields[pos];
+
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_INT:
+    case MOLOCH_FIELD_TYPE_STR:
+    case MOLOCH_FIELD_TYPE_IP:
+        return 1;
+    case MOLOCH_FIELD_TYPE_STR_ARRAY:
+        return field->sarray->len;
+    case MOLOCH_FIELD_TYPE_INT_ARRAY:
+        return field->iarray->len;
+    case MOLOCH_FIELD_TYPE_STR_HASH:
+        return HASH_COUNT(s_, *(field->shash));
+    case MOLOCH_FIELD_TYPE_INT_HASH:
+    case MOLOCH_FIELD_TYPE_IP_HASH:
+        return HASH_COUNT(s_, *(field->ihash));
+    case MOLOCH_FIELD_TYPE_CERTSINFO:
+        return HASH_COUNT(s_, *(field->cihash));
+    default:
+        LOG("ERROR - Unknown field type for counting %s %d", config.fields[pos]->dbField, config.fields[pos]->type);
+        exit (1);
+    }
+}

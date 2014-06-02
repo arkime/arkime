@@ -17,6 +17,7 @@
             "lp" : 1389625274,
             "emvcnt" : 1,
             "a2" : "10.0.0.6",
+            "ss" : 1,
             "ect" : [
                "text/plain; charset=us-ascii"
             ],
@@ -103,10 +104,11 @@
             "fp" : 1389625273,
             "pa" : 24,
             "tacnt" : 5,
-            "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com"
             ],
+            "sl" : 822,
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.0.0.5",
             "fb2" : "3232302078787878",

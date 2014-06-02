@@ -24,14 +24,10 @@
             },
             "db2" : 327,
             "db" : 456,
-            "lpd" : 1399300685032,
-            "fp" : 1399300685,
             "no" : "test",
             "lp" : 1399300685,
-            "pa" : 11,
-            "tacnt" : 3,
-            "fb1" : "0000000804d2162f",
             "a2" : "10.0.13.120",
+            "ss" : 1,
             "ta" : [
                "node:test",
                "srcip",
@@ -42,24 +38,10 @@
             "fs" : [],
             "by2" : 665,
             "g1" : "RUS",
-            "fb2" : "4e520000000c0000",
-            "a1" : "10.0.0.1",
-            "db1" : 129,
-            "postgresql" : {
-               "app-term" : "pgAdmin III - Browser",
-               "db-term" : "dbdbdbdb",
-               "user-term" : "cooluser"
-            },
             "pa2" : 5,
             "p1" : 36060,
-            "by1" : 533,
             "by" : 1198,
-            "p2" : 5432,
             "as1" : "AS0000 This is neat",
-            "prot-term" : [
-               "tcp",
-               "postgresql"
-            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -74,7 +56,27 @@
                880,
                1003
             ],
-            "prot-term-cnt" : 2
+            "prot-term-cnt" : 2,
+            "lpd" : 1399300685032,
+            "fp" : 1399300685,
+            "pa" : 11,
+            "sl" : 8,
+            "fb1" : "0000000804d2162f",
+            "tacnt" : 3,
+            "a1" : "10.0.0.1",
+            "fb2" : "4e520000000c0000",
+            "db1" : 129,
+            "postgresql" : {
+               "app-term" : "pgAdmin III - Browser",
+               "db-term" : "dbdbdbdb",
+               "user-term" : "cooluser"
+            },
+            "by1" : 533,
+            "p2" : 5432,
+            "prot-term" : [
+               "tcp",
+               "postgresql"
+            ]
          },
          "header" : {
             "index" : {

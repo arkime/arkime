@@ -25,6 +25,7 @@
 # 16 - New dynamic plugin section
 # 17 - email hasheader, db,pa,by src and dst
 # 18 - fields db
+# 19 - users_v3
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -33,7 +34,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 18;
+my $VERSION = 19;
 my $verbose = 0;
 
 ################################################################################
@@ -119,6 +120,7 @@ sub esPut
     print "PUT http://$ARGV[0]$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]$url", Content => $content));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+      print Dumper($response);
       die "Couldn't PUT http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
     }
     my $json = from_json($response->content);
@@ -629,7 +631,7 @@ sub fieldsUpdate
       "portField": "p2"
     }');
     esPost("/fields/field/port.dst", '{
-      "friendlyName": "dst Port",
+      "friendlyName": "Dst Port",
       "group": "general",
       "help": "Source Port",
       "type": "integer",
@@ -759,7 +761,7 @@ sub fieldsUpdate
       "dbField": "fileand"
     }');
     esPost("/fields/field/payload8.src.hex", '{
-      "friendlyName": "Payload Src",
+      "friendlyName": "Payload Src Hex",
       "group": "general",
       "help": "First 8 bytes of source payload in hex",
       "type": "lotermfield",
@@ -1518,6 +1520,8 @@ sub sessionsUpdate
     }
 
     print "\n";
+
+    esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":-1}}');
 }
 
 ################################################################################
@@ -1532,9 +1536,9 @@ sub usersCreate
   }
 }';
 
-    print "Creating users_v2 index\n" if ($verbose > 0);
-    esPut("/users_v2", $settings);
-    esAlias("add", "users_v2", "users");
+    print "Creating users_v3 index\n" if ($verbose > 0);
+    esPut("/users_v3", $settings);
+    esAlias("add", "users_v3", "users");
     usersUpdate();
 }
 ################################################################################
@@ -1552,39 +1556,34 @@ sub usersUpdate
         index: "not_analyzed"
       },
       userName: {
-        type: "string"
+        type: "string",
+        index: "not_analyzed"
       },
       enabled: {
-        type: "boolean",
-        index: "no"
+        type: "boolean"
       },
       createEnabled: {
-        type: "boolean",
-        index: "no"
+        type: "boolean"
       },
       webEnabled: {
-        type: "boolean",
-        index: "no"
+        type: "boolean"
       },
       headerAuthEnabled: {
-        type: "boolean",
-        index: "no"
+        type: "boolean"
       },
       emailSearch: {
-        type: "boolean",
-        index: "no"
+        type: "boolean"
       },
       removeEnabled: {
-        type: "boolean",
-        index: "no"
+        type: "boolean"
       },
       passStore: {
         type: "string",
-        index: "no"
+        index: "not_analyzed"
       },
       expression: {
         type: "string",
-        index: "no"
+        index: "not_analyzed"
       },
       settings : {
         type : "object",
@@ -1598,8 +1597,8 @@ sub usersUpdate
   }
 }';
 
-    print "Setting users_v2 mapping\n" if ($verbose > 0);
-    esPut("/users_v2/user/_mapping?pretty&ignore_conflicts=true", $mapping);
+    print "Setting users_v3 mapping\n" if ($verbose > 0);
+    esPut("/users_v3/user/_mapping?pretty&ignore_conflicts=true", $mapping);
 }
 
 ################################################################################
@@ -1728,7 +1727,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("dstats_v1", "files_v3", "sequence", "tags_v2", "users_v2") {
+    foreach my $i ("dstats_v1", "files_v3", "sequence", "tags_v2", "users_v3") {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=1", 1);
     }
@@ -1812,6 +1811,9 @@ if ($ARGV[1] eq "usersimport") {
         progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esGet("/$i/_optimize?max_num_segments=4", 1);
+            esPost("/$i/_close", "");
+            esPut("/$i/_settings?index.codec.bloom.load=false", 1);
+            esPost("/$i/_open", "");
         } else {
             esDelete("/$i", 1);
         }
@@ -1865,6 +1867,7 @@ sub printIndex {
     printIndex($status->{indices}->{files_v1}, "files_v1");
     printIndex($status->{indices}->{tags_v2}, "tags_v2");
     printIndex($status->{indices}->{tags_v1}, "tags_v1");
+    printIndex($status->{indices}->{users_v3}, "users_v3");
     printIndex($status->{indices}->{users_v2}, "users_v2");
     printIndex($status->{indices}->{users_v1}, "users_v1");
     exit 0;
@@ -1949,6 +1952,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     if ($ARGV[1] =~ "init") {
         esDelete("/users_v1", 1);
         esDelete("/users_v2", 1);
+        esDelete("/users_v3", 1);
         esDelete("/users", 1);
     }
     esDelete("/tagger", 1);
@@ -1976,19 +1980,19 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     tagsUpdate();
     sequenceUpdate();
-    filesCreate();
     statsCreate();
-    dstatsCreate();
     sessionsUpdate();
-    usersCreate();
     fieldsCreate();
 
+    filesCreate();
     esAlias("remove", "files_v1", "files");
     esCopy("files_v1", "files_v3", "file");
 
+    usersCreate();
     esAlias("remove", "users_v1", "users");
-    esCopy("users_v1", "users_v2", "user");
+    esCopy("users_v1", "users_v3", "user");
 
+    dstatsCreate();
     esCopy("dstats", "dstats_v1", "user");
     sleep 1;
 
@@ -2007,10 +2011,13 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     filesCreate();
     esAlias("remove", "files_v2", "files");
     esCopy("files_v2", "files_v3", "file");
-    print "files_v2 table can be deleted now\n";
+
+    usersCreate();
+    esAlias("remove", "users_v2", "users");
+    esCopy("users_v2", "users_v3", "user");
+    print "users_v2 and files_v2 table can be deleted now\n";
 
     sessionsUpdate();
-    usersUpdate();
     statsUpdate();
     dstatsUpdate();
     fieldsCreate();
@@ -2021,20 +2028,35 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     waitFor("UPGRADE", "do you want to upgrade?");
     print "Starting Upgrade\n";
 
+    usersCreate();
+    esAlias("remove", "users_v2", "users");
+    esCopy("users_v2", "users_v3", "user");
+    print "users_v2 table can be deleted now\n";
+
     filesUpdate();
     sessionsUpdate();
-    usersUpdate();
     statsUpdate();
     dstatsUpdate();
     fieldsCreate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 18 && $main::versionNumber <= 18) {
+} elsif ($main::versionNumber >= 18 && $main::versionNumber < 19) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     waitFor("UPGRADE", "do you want to upgrade?");
     print "Starting Upgrade\n";
 
+    usersCreate();
+    esAlias("remove", "users_v2", "users");
+    esCopy("users_v2", "users_v3", "user");
+    print "users_v2 table can be deleted now\n";
+
     fieldsUpdate();
+    sessionsUpdate();
+
+    print "Finished\n";
+} elsif ($main::versionNumber >= 19 && $main::versionNumber <= 20) {
+    waitFor("UPGRADE", "do you want to upgrade?");
+    sessionsUpdate();
 
     print "Finished\n";
 } else {

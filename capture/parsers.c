@@ -37,7 +37,10 @@ static magic_t               cookie;
 /******************************************************************************/
 void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *base, const char *data, int len)
 {
-    const char *m = magic_buffer(cookie, data, len);
+    if (len < 3)
+        return;
+
+    const char *m = magic_buffer(cookie, data, MIN(len,50));
     if (m) {
         char tmp[500];
         snprintf(tmp, sizeof(tmp), "%s:%s", base, m);
@@ -183,6 +186,18 @@ void moloch_parsers_init()
         "user", "User", "user",
         "External user set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "session.segments", "Session Segments", "ss", 
+        "Number of segments in session so far",
+        0,  MOLOCH_FIELD_FLAG_FAKE, 
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "session.length", "Session Length", "sl", 
+        "Session Length in milliseconds so far",
+        0,  MOLOCH_FIELD_FLAG_FAKE, 
         NULL);
 
     cookie = magic_open(MAGIC_MIME);

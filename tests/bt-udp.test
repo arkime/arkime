@@ -4,15 +4,10 @@
          "body" : {
             "db2" : 0,
             "db" : 137,
-            "lpd" : 1387253713030,
-            "fp" : 1387253713,
             "no" : "test",
-            "as2" : "AS0000 This is neat",
             "lp" : 1387253713,
-            "pa" : 1,
-            "tacnt" : 5,
-            "fb1" : "64313a6164323a69",
             "a2" : "10.0.0.1",
+            "ss" : 1,
             "ta" : [
                "dstip",
                "node:test",
@@ -25,25 +20,32 @@
             "fs" : [],
             "by2" : 0,
             "g1" : "CAN",
-            "a1" : "10.0.0.2",
-            "db1" : 137,
             "pa2" : 0,
             "p1" : 50759,
-            "by1" : 145,
             "by" : 145,
-            "p2" : 3207,
             "as1" : "AS0001 Cool Beans!",
             "rir1" : "TEST",
             "g2" : "RUS",
-            "prot-term" : [
-               "udp",
-               "bittorrent"
-            ],
             "pr" : 17,
             "ps" : [
                24
             ],
-            "prot-term-cnt" : 2
+            "prot-term-cnt" : 2,
+            "lpd" : 1387253713030,
+            "fp" : 1387253713,
+            "as2" : "AS0000 This is neat",
+            "pa" : 1,
+            "sl" : 0,
+            "fb1" : "64313a6164323a69",
+            "tacnt" : 5,
+            "a1" : "10.0.0.2",
+            "db1" : 137,
+            "by1" : 145,
+            "p2" : 3207,
+            "prot-term" : [
+               "udp",
+               "bittorrent"
+            ]
          },
          "header" : {
             "index" : {
@@ -64,7 +66,9 @@
             "pa" : 1,
             "tacnt" : 3,
             "fb1" : "64313a7264323a69",
+            "sl" : 0,
             "a2" : "10.0.0.3",
+            "ss" : 1,
             "ta" : [
                "node:test",
                "protocol:bittorrent",
@@ -109,7 +113,9 @@
             "pa" : 1,
             "tacnt" : 3,
             "fb1" : "64313a71393a6669",
+            "sl" : 0,
             "a2" : "10.0.0.5",
+            "ss" : 1,
             "ta" : [
                "node:test",
                "protocol:bittorrent",

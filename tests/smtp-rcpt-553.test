@@ -31,6 +31,7 @@
             "no" : "test",
             "lp" : 1386252623,
             "a2" : "64.12.168.40",
+            "ss" : 1,
             "ta" : [
                "node:test",
                "protocol:smtp",
@@ -72,10 +73,11 @@
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 16,
             "tacnt" : 4,
-            "fb1" : "45484c4f206c6f63",
             "edst" : [
                "123456@example"
             ],
+            "sl" : 643,
+            "fb1" : "45484c4f206c6f63",
             "a1" : "10.0.0.1",
             "fb2" : "3232302d6d74616f",
             "db1" : 74,

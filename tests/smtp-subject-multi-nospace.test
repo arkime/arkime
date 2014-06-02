@@ -31,6 +31,7 @@
             "no" : "test",
             "lp" : 1394730057,
             "a2" : "10.0.0.2",
+            "ss" : 1,
             "esub" : [
                "xxxxxxxxxxxxx: xxxxêxx xxéxxxxxxx  xx xxx xxx xxxxxxxxxx  x xx xxxxxxxxxxxxxxx - xxxx"
             ],
@@ -71,6 +72,7 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 5,
             "tacnt" : 5,
+            "sl" : 2,
             "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxx@xxx.net"

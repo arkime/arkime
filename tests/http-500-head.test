@@ -23,6 +23,7 @@
                ],
                "statuscode-cnt" : 1
             },
+            "ss" : 1,
             "hsvercnt" : 1,
             "ta" : [
                "http:method:HEAD",
@@ -69,9 +70,10 @@
             ],
             "lpd" : 1361891421481,
             "fp" : 1361891420,
-            "pa" : 10,
             "hh2cnt" : 4,
+            "pa" : 10,
             "tacnt" : 5,
+            "sl" : 775,
             "fb1" : "48454144202f5570",
             "us" : [
                "//samples.example.com/UpdataConfig.dat"

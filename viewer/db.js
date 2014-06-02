@@ -45,7 +45,7 @@ exports.initialize = function (info) {
   delete info.nodeName;
 
   internals.elasticSearchClient = new ESC.Client({
-    host: internals.info.host + ":" + internals.info.port,
+    host: internals.info.host,
     apiVersion: internals.apiVersion,
     requestTimeout: 300000
   });
@@ -61,7 +61,7 @@ exports.initialize = function (info) {
       var oldes = internals.elasticSearchClient;
       setTimeout(function() {oldes.close();}, 2000);
       internals.elasticSearchClient = new ESC.Client({
-        host: internals.info.host + ":" + internals.info.port,
+        host: internals.info.host,
         apiVersion: internals.apiVersion,
         requestTimeout: 300000
       });

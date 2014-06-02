@@ -31,6 +31,7 @@
             "no" : "test",
             "lp" : 1398431453,
             "a2" : "10.0.0.2",
+            "ss" : 1,
             "esub" : [
                "Can this 10 Second Trick Help Prevent YOUR Heart Attack?"
             ],
@@ -100,10 +101,11 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 33,
             "tacnt" : 6,
-            "fb1" : "45484c4f20787878",
             "edst" : [
                "user2@xxx.net"
             ],
+            "sl" : 30678,
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "fb2" : "3232302d78787878",

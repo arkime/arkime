@@ -8,6 +8,13 @@
   - Parsers can register for session save events (issue #248)
   - Fix compressES check with ES 1.1.1 (issue #255)
   - Show error for ip queries with regex or wildcard (issue #252)
+  - added session.segments and session.length (issue #254)
+  - support elasticsearch=http:// or https:// format (issue #249)
+  - Only libmagic the first 50 bytes
+  - users tab can now sort various tabs
+  - Turn of bloom filter for previous indexes if using db.pl expire
+  - Set threadpool search queue size to unlimited
+  - stats page works again with dynamic scripts disabled
 
 0.11.0 2014/05/08
   - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 

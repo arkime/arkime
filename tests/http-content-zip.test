@@ -47,6 +47,7 @@
                ],
                "bodymagic-term-cnt" : 1
             },
+            "ss" : 1,
             "hsvercnt" : 1,
             "ta" : [
                "dstip",
@@ -108,6 +109,7 @@
             "hh2cnt" : 8,
             "pa" : 10,
             "tacnt" : 8,
+            "sl" : 27,
             "fb1" : "474554202f612e7a",
             "us" : [
                "//xxxxxxxxxxxxx.xxx.com/a.zip"
@@ -151,14 +153,10 @@
          "body" : {
             "db2" : 0,
             "db" : 0,
-            "lpd" : 1388428585176,
-            "fp" : 1388428585,
             "no" : "test",
-            "as2" : "AS0001 Cool Beans!",
             "lp" : 1388428585,
-            "pa" : 2,
-            "tacnt" : 4,
             "a2" : "10.0.0.2",
+            "ss" : 1,
             "ta" : [
                "dstip",
                "node:test",
@@ -170,25 +168,31 @@
             "fs" : [],
             "by2" : 0,
             "g1" : "RUS",
-            "a1" : "10.0.0.1",
-            "db1" : 0,
             "pa2" : 0,
             "p1" : 52925,
-            "by1" : 132,
             "by" : 132,
-            "p2" : 80,
             "as1" : "AS0000 This is neat",
-            "rir2" : "TEST",
             "g2" : "CAN",
-            "prot-term" : [
-               "tcp"
-            ],
             "pr" : 6,
             "ps" : [
                1797,
                1879
             ],
-            "prot-term-cnt" : 1
+            "prot-term-cnt" : 1,
+            "lpd" : 1388428585176,
+            "fp" : 1388428585,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 2,
+            "sl" : 8,
+            "tacnt" : 4,
+            "a1" : "10.0.0.1",
+            "db1" : 0,
+            "by1" : 132,
+            "p2" : 80,
+            "rir2" : "TEST",
+            "prot-term" : [
+               "tcp"
+            ]
          },
          "header" : {
             "index" : {

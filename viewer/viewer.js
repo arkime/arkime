@@ -66,7 +66,7 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  escInfo: Config.get("elasticsearch", "localhost:9200").split(':'),
+  elasticBase: Config.get("elasticsearch", "http://localhost:9200"),
   httpAgent:   new KAA({maxSockets: 40}),
   httpsAgent:  new KAA.Secure({maxSockets: 40}),
   previousNodeStats: [],
@@ -76,6 +76,10 @@ var internals = {
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
   PNG_LINE_WIDTH: 256,
 };
+
+if (internals.elasticBase.lastIndexOf('http', 0) !== 0) {
+  internals.elasticBase = "http://" + internals.elasticBase;
+}
 
 function userCleanup(suser) {
   suser.settings = suser.settings || {};
@@ -109,7 +113,7 @@ app.configure(function() {
   app.locals.molochversion =  molochversion.version;
   app.locals.isIndex = false;
   app.locals.basePath = Config.basePath();
-  app.locals.elasticBase = "http://" + (internals.escInfo[0] === "localhost"?os.hostname():internals.escInfo[0]) + ":" + internals.escInfo[1];
+  app.locals.elasticBase = internals.elasticBase;
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
   app.locals.sendSession = Config.getObj("sendSession");
 
@@ -300,8 +304,7 @@ createSessionDetail();
 //////////////////////////////////////////////////////////////////////////////////
 //// DB
 //////////////////////////////////////////////////////////////////////////////////
-Db.initialize({host : internals.escInfo[0],
-               port: internals.escInfo[1],
+Db.initialize({host: internals.elasticBase,
                nodeName: Config.nodeName(),
                dontMapTags: Config.get("multiES", false)});
 
@@ -752,7 +755,7 @@ function expireCheckAll () {
 //////////////////////////////////////////////////////////////////////////////////
 //// Sessions Query
 //////////////////////////////////////////////////////////////////////////////////
-function addSortToQuery(query, info, d) {
+function addSortToQuery(query, info, d, missing) {
   if (!info || !info.iSortingCols || parseInt(info.iSortingCols, 10) === 0) {
     if (d) {
       if (!query.sort) {
@@ -760,6 +763,9 @@ function addSortToQuery(query, info, d) {
       }
       query.sort.push({});
       query.sort[query.sort.length-1][d] = {order: "asc"};
+      if (missing && missing[d] !== undefined) {
+        query.sort[query.sort.length-1][d].missing = missing[d];
+      }
     }
     return;
   }
@@ -776,7 +782,11 @@ function addSortToQuery(query, info, d) {
     var obj = {};
     var field = info["mDataProp_" + info["iSortCol_" + i]];
     obj[field] = {order: info["sSortDir_" + i]};
+    if (missing && missing[field] !== undefined) {
+      obj[field].missing = missing[field];
+    }
     query.sort.push(obj);
+
     if (field === "fp") {
       query.sort.push({fpd: {order: info["sSortDir_" + i]}});
     } else if (field === "lp") {
@@ -1018,8 +1028,7 @@ function buildSessionQuery(req, buildCb) {
     query.facets = {
                      dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: interval, size:1440}},
                      paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: interval, size:1440}},
-                     map1: {terms : {field: "g1", size:1000}},
-                     map2: {terms : {field: "g2", size:1000}}
+                     map: {terms : {fields: ["g1", "g2"], size:1000}}
                    };
   }
 
@@ -1281,13 +1290,7 @@ app.get('/stats.json', function(req, res) {
 
   var query = {_source: columns,
                from: req.query.iDisplayStart || 0,
-               size: limit,
-               script_fields: {
-                 deltaBytesPerSec: {script :"floor(_source.deltaBytes * 1000.0/_source.deltaMS)"},
-                 deltaPacketsPerSec: {script :"floor(_source.deltaPackets * 1000.0/_source.deltaMS)"},
-                 deltaSessionsPerSec: {script :"floor(_source.deltaSessions * 1000.0/_source.deltaMS)"},
-                 deltaDroppedPerSec: {script :"floor(_source.deltaDropped * 1000.0/_source.deltaMS)"}
-               }
+               size: limit
               };
   addSortToQuery(query, req.query, "_uid");
 
@@ -1306,6 +1309,10 @@ app.get('/stats.json', function(req, res) {
             fields.id        = result.hits.hits[i]._id;
             fields.memory    = fields.memory || 0;
             fields.diskQueue = fields.diskQueue || 0;
+            fields.deltaBytesPerSec = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+            fields.deltaPacketsPerSec = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+            fields.deltaSessionsPerSec = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+            fields.deltaDroppedPerSec = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
             results.results.push(fields);
           }
           cb(null, results);
@@ -1350,15 +1357,7 @@ app.get('/dstats.json', function(req, res) {
                    }
                  }
                },
-               _source: ["currentTime", req.query.name],
-               script_fields: {
-                 deltaBits: {script :"floor(_source.deltaBytes * 8.0)"},
-                 deltaBytesPerSec: {script :"floor(_source.deltaBytes * 1000.0/_source.deltaMS)"},
-                 deltaBitsPerSec: {script :"floor(_source.deltaBytes * 1000.0/_source.deltaMS * 8)"},
-                 deltaPacketsPerSec: {script :"floor(_source.deltaPackets * 1000.0/_source.deltaMS)"},
-                 deltaSessionsPerSec: {script :"floor(_source.deltaSessions * 1000.0/_source.deltaMS)"},
-                 deltaDroppedPerSec: {script :"floor(_source.deltaDropped * 1000.0/_source.deltaMS)"}
-               }
+               _source: ["currentTime", req.query.name]
               };
 
   Db.search('dstats', 'dstat', query, function(err, result) {
@@ -1382,6 +1381,12 @@ app.get('/dstats.json', function(req, res) {
           mergeUnarray(fields, result.hits.hits[i].fields);
         }
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
+        fields.deltaBits           = Math.floor(fields.deltaBytes * 8.0);
+        fields.deltaBytesPerSec    = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+        fields.deltaBitsPerSec     = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
+        fields.deltaPacketsPerSec  = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+        fields.deltaSessionsPerSec = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+        fields.deltaDroppedPerSec  = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
         data[pos] = mult * (fields[req.query.name] || 0);
       }
     }
@@ -1478,6 +1483,17 @@ app.get('/files.json', function(req, res) {
   });
 });
 
+
+internals.usersMissing = {
+  userName: "",
+  enabled: "F",
+  createEnabled: "F",
+  webEnabled: "F",
+  headerAuthEnabled: "F",
+  emailSearch: "F",
+  removeEnabled: "F",
+  expression: ""
+}
 app.post('/users.json', function(req, res) {
   var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
   var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
@@ -1487,7 +1503,7 @@ app.post('/users.json', function(req, res) {
                size: limit
               };
 
-  addSortToQuery(query, req.body, "userId");
+  addSortToQuery(query, req.body, "userId", internals.usersMissing);
 
   async.parallel({
     users: function (cb) {
@@ -1526,22 +1542,13 @@ app.post('/users.json', function(req, res) {
 function mapMerge(facets) {
   var map = {};
 
-  facets.map1.terms.forEach(function (item) {
+  facets.map.terms.forEach(function (item) {
     if (item.count < 0) {
       item.count = 0x7fffffff;
     }
     map[item.term] = item.count;
   });
 
-  facets.map2.terms.forEach(function (item) {
-    if (item.count < 0) {
-      item.count = 0x7fffffff;
-    }
-    if (!map[item.term]) {
-      map[item.term] = 0;
-    }
-    map[item.term] += item.count;
-  });
   return map;
 }
 
@@ -1605,7 +1612,7 @@ app.get('/sessions.json', function(req, res) {
           }
 
           if (!result.facets) {
-            result.facets = {map1: {terms: []}, map2: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}};
+            result.facets = {map: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}};
           }
 
           histoMerge(req, query, result.facets, graph);
@@ -1705,8 +1712,6 @@ app.get('/spigraph.json', function(req, res) {
         return res.send(results);
       }
       results.iTotalDisplayRecords = result.hits.total;
-      results.map = mapMerge(result.facets);
-
       histoMerge(req, query, result.facets, results.graph);
       results.map = mapMerge(result.facets);
 
@@ -1837,8 +1842,7 @@ app.get('/spiview.json', function(req, res) {
             map = mapMerge(result.facets);
             delete result.facets.dbHisto;
             delete result.facets.paHisto;
-            delete result.facets.map1;
-            delete result.facets.map2;
+            delete result.facets.map;
           }
 
           sessionsCb(null, result.facets);

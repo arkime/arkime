@@ -292,13 +292,11 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     case MOLOCH_FIELD_TYPE_INT_ARRAY:
     case MOLOCH_FIELD_TYPE_INT_HASH:
         moloch_field_int_add(pos, session, atoi(s));
-        g_string_free(http->valueString[session->which], TRUE);
         break;
     case MOLOCH_FIELD_TYPE_STR:
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
     case MOLOCH_FIELD_TYPE_STR_HASH:
         moloch_field_string_add(pos, session, s, l, TRUE);
-        g_string_free(http->valueString[session->which], TRUE);
         break;
     case MOLOCH_FIELD_TYPE_IP_HASH:
     {
@@ -321,13 +319,12 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
         }
 
         g_strfreev(parts);
-        g_string_free(http->valueString[session->which], TRUE);
         break;
     }
     } /* SWITCH */
 
 
-    http->valueString[session->which] = 0;
+    g_string_truncate(http->valueString[session->which], 0);
     http->pos[session->which] = 0;
 }
 /******************************************************************************/

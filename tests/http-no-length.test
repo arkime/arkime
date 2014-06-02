@@ -47,6 +47,7 @@
                ],
                "bodymagic-term-cnt" : 1
             },
+            "ss" : 1,
             "hsvercnt" : 1,
             "ta" : [
                "dstip",
@@ -110,6 +111,7 @@
             "hh2cnt" : 10,
             "pa" : 10,
             "tacnt" : 8,
+            "sl" : 124,
             "fb1" : "474554202f6a732f",
             "us" : [
                "//xxxxxxx.xxxxxx.xx/js/xxxxxx.js"

@@ -36,6 +36,7 @@
             "lp" : 1386338052,
             "emvcnt" : 1,
             "a2" : "64.12.168.40",
+            "ss" : 1,
             "ect" : [
                "text/plain; charset=utf-8"
             ],
@@ -116,6 +117,7 @@
             "edst" : [
                "xxxx.xxxxxx@xxxxx.com"
             ],
+            "sl" : 32010,
             "fb1" : "45484c4f206c6f63",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",

@@ -71,6 +71,9 @@ my ($json) = @_;
         my $body = $packet->{body};
 
         delete $packet->{header}->{index}->{_id};
+        if (exists $body->{ro}) {
+            $body->{ro} = "SET";
+        }
         foreach my $field ("a1", "a2", "dnsip", "socksip", "eip") {
             $body->{$field} = fixIp($body->{$field}) if (exists $body->{$field});
         }
@@ -141,7 +144,7 @@ my ($count, $test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 720;
+    plan tests => 736;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -165,11 +168,17 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
         system("/bin/cp socks-http-example.pcap copytest.pcap");
-        if ($main::debug) {
-            system("../capture/moloch-capture -c config.test.ini -n test -R .");
-        } else {
-            system("../capture/moloch-capture -c config.test.ini -n test -R . 2>&1 1>/dev/null");
+        my $cmd = "../capture/moloch-capture -c config.test.ini -n test -R .";
+
+        if (!$main::debug) {
+            $cmd .= " 2>&1 1>/dev/null";
         }
+
+        if ($main::valgrind) {
+            $cmd = "G_SLICE=allows-malloc valgrind --leak-check=full --log-file=moloch.val " . $cmd;
+        }
+
+        system($cmd);
 
         print ("Starting viewer\n");
         if ($main::debug) {
@@ -558,7 +567,16 @@ my ($cmd) = @_;
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=[40Be8f5100e9beabab293c9d7bacaff0,B0cecae354b9eab1f04f70e46a612cb1]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=[40be8f5100e9beabab293c9d7bacaff0,b0cecae354b9eab1f04f70e46a612cb1]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=[40Be8f5100e9beabab293c9d7bacaff0,B0cecae354b9eab1f04f70e46a612cb1]"));
-
+# session.segments tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments=2"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments=1"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments=[2]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments!=[2]"));
+# sessions.length tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length=908493"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length>=908493"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length<908493"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length=[908493,908494]"));
 
 # adding/removing tags test expression
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));
@@ -671,6 +689,10 @@ tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, U
 $main::debug = 0;
 if ($ARGV[0] eq "--debug") {
     $main::debug = 1;
+    shift @ARGV;
+}
+if ($ARGV[0] eq "--valgrind") {
+    $main::valgrind = 1;
     shift @ARGV;
 }
 $main::cmd = $ARGV[0];

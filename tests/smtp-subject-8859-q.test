@@ -17,6 +17,7 @@
             "lp" : 1386817726,
             "emvcnt" : 1,
             "a2" : "64.236.55.17",
+            "ss" : 1,
             "ect" : [
                "text/plain; charset=us-ascii"
             ],
@@ -106,6 +107,7 @@
             "edst" : [
                "xxxxxxxxx@xxxxxxx.com"
             ],
+            "sl" : 399,
             "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.180.156.249",
@@ -147,7 +149,9 @@
             "lp" : 1386817726,
             "pa" : 1,
             "tacnt" : 2,
+            "sl" : 0,
             "a2" : "10.180.156.249",
+            "ss" : 1,
             "ta" : [
                "node:test",
                "tcp"

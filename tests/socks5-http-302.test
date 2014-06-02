@@ -49,6 +49,7 @@
                ],
                "bodymagic-term-cnt" : 1
             },
+            "ss" : 1,
             "hsvercnt" : 1,
             "ta" : [
                "dstip",
@@ -118,6 +119,7 @@
             "hh2cnt" : 11,
             "pa" : 14,
             "tacnt" : 9,
+            "sl" : 117939,
             "fb1" : "050100050100030e",
             "us" : [
                "//www.google.com/"

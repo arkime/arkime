@@ -563,7 +563,14 @@ void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, i
     DLL_INIT(r_, &server->requestQ[0]);
     DLL_INIT(r_, &server->requestQ[1]);
     DLL_INIT(e_, &server->connQ);
-    server->name = strdup(hostname);
+    if (strncmp(hostname, "http://", 7) == 0) {
+        server->name = strdup(hostname+7);
+    } else if (strncmp(hostname, "https://", 8) == 0) {
+        LOG("https not supported yet %s", hostname);
+        exit(0);
+    } else {
+        server->name = strdup(hostname);
+    }
     server->port = defaultPort;
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;

@@ -227,6 +227,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
 
     totalSessions++;
+    session->segments++;
 
     static char     prefix[100];
     static time_t   prefix_time = 0;
@@ -285,6 +286,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_INIT(jbsb, sJson, size);
     }
 
+    uint32_t timediff = (session->lastPacket.tv_sec - session->firstPacket.tv_sec)*1000 +
+                        (session->lastPacket.tv_usec - session->firstPacket.tv_usec)/1000;
+
     startPtr = BSB_WORK_PTR(jbsb);
     BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"sessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", prefix, id);
 
@@ -294,6 +298,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       "\"lp\":%u,"
                       "\"fpd\":%" PRIu64 ","
                       "\"lpd\":%" PRIu64 ","
+                      "\"sl\":%u,"
                       "\"a1\":%u,"
                       "\"p1\":%u,"
                       "\"a2\":%u,"
@@ -303,6 +308,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       (uint32_t)session->lastPacket.tv_sec,
                       ((uint64_t)session->firstPacket.tv_sec)*1000 + ((uint64_t)session->firstPacket.tv_usec)/1000,
                       ((uint64_t)session->lastPacket.tv_sec)*1000 + ((uint64_t)session->lastPacket.tv_usec)/1000,
+                      timediff,
                       htonl(session->addr1),
                       session->port1,
                       htonl(session->addr2),
@@ -403,6 +409,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       "\"db\":%" PRIu64 ","
                       "\"db1\":%" PRIu64 ","
                       "\"db2\":%" PRIu64 ","
+                      "\"ss\":%u,"
                       "\"no\":\"%s\",",
                       session->packets[0] + session->packets[1],
                       session->packets[0],
@@ -413,6 +420,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       session->databytes[0] + session->databytes[1],
                       session->databytes[0],
                       session->databytes[1],
+                      session->segments,
                       config.nodeName);
 
     if (session->rootId) {
@@ -1658,10 +1666,13 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     if (ap) {
         while (1) {
             field = va_arg(ap, char *);
-            value = va_arg(ap, char *);
-            if (!field || !value) {
+            if (!field)
                 break;
-            }
+
+            value = va_arg(ap, char *);
+            if (!value)
+                break;
+
             BSB_EXPORT_sprintf(bsb, ", \"%s\": ", field);
             if (*value == '{' || *value == '[')
                 BSB_EXPORT_sprintf(bsb, "%s", value);

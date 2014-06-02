@@ -26,6 +26,7 @@
             },
             "emvcnt" : 1,
             "a2" : "64.236.64.225",
+            "ss" : 1,
             "ect" : [
                "multipart/alternative; boundary=\"_000_CEC790C31A0F0xxxxxxxxxxxxxxxxxx_\""
             ],
@@ -122,6 +123,7 @@
             "edst" : [
                "xxxxxxxx@gmail.com"
             ],
+            "sl" : 7755,
             "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.180.121.151",

@@ -33,6 +33,7 @@
             "lp" : 1386251823,
             "emvcnt" : 1,
             "a2" : "205.188.186.167",
+            "ss" : 1,
             "ect" : [
                "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
             ],
@@ -120,6 +121,7 @@
             "edst" : [
                "xxxxx-xxxx@xxxx.xxx.xx.jp"
             ],
+            "sl" : 8244,
             "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",

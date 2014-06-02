@@ -31,6 +31,7 @@
             "no" : "test",
             "lp" : 1394118475,
             "a2" : "10.0.0.2",
+            "ss" : 1,
             "esub" : [
                "Awesome windows: See What’s Next in charset decoding!"
             ],
@@ -89,10 +90,11 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 23,
             "tacnt" : 5,
-            "fb1" : "45484c4f20787878",
             "edst" : [
                "xxxxx@xxx.net"
             ],
+            "sl" : 128,
+            "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.0.0.1",
             "fb2" : "3232302d78787878",

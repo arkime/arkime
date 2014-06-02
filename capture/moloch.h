@@ -332,6 +332,7 @@ typedef struct moloch_session {
     uint16_t               port2;
     uint16_t               offsets[2];
     uint16_t               outstandingQueries;
+    uint16_t               segments;
 
     uint8_t                consumed[2];
     uint8_t                protocol;
@@ -635,6 +636,7 @@ int moloch_field_by_exp(char *exp);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
+int  moloch_field_count(int pos, MolochSession_t *session);
 void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);
 void moloch_field_free(MolochSession_t *session);
 void moloch_field_exit();

@@ -27,6 +27,7 @@
                ],
                "bodymagic-term-cnt" : 1
             },
+            "ss" : 1,
             "hsvercnt" : 1,
             "ta" : [
                "http:content:text/html",
@@ -88,6 +89,7 @@
             "hh2cnt" : 6,
             "pa" : 16,
             "tacnt" : 6,
+            "sl" : 5,
             "fb1" : "474554202f204854",
             "us" : [
                "//xxxxxxxxxxxxx.xxx.com/"
