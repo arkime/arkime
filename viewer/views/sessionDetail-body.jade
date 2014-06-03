@@ -21,25 +21,27 @@ div.sessionDetailToolbar
       input(type='checkbox', checked=query.ts=='true')
       | Show Timestamps
 br
-if (session.pa > 200)
-  p
-    b Only showing first 200 packets
-table#textpacket
-  tr
-    th.textcol.srccol Source
-    th.textcol.dstcol Destination
-
-  each item, i in data
+if (session._err)
+  b #{session._err}
+else if (session.pa > 200)
+  b Only showing first 200 packets
+else
+  table#textpacket
     tr
-      if i % 2 == 0
-        td.sessionsrc
-          if (item.ts)
-            span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
-          |!{item.html}
-        td
-      else
-        td
-        td.sessiondst
-          if (item.ts)
-            span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
-          |!{item.html}
+      th.textcol.srccol Source
+      th.textcol.dstcol Destination
+
+    each item, i in data
+      tr
+        if i % 2 == 0
+          td.sessionsrc
+            if (item.ts)
+              span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
+            |!{item.html}
+          td
+        else
+          td
+          td.sessiondst
+            if (item.ts)
+              span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")
+            |!{item.html}

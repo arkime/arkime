@@ -18,6 +18,7 @@
   - New db.pl rm-missing command (issue #242)
   - Upgrade qtip2 to 2.2.0
   - Mouse over view names shows expression (issue #220)
+  - Display SPI Data even if node is unavailabe (issue #219)
 
 0.11.0 2014/05/08
   - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 

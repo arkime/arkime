@@ -400,11 +400,14 @@ function getViewUrl(node, cb) {
   });
 }
 
-function proxyRequest (req, res) {
+function proxyRequest (req, res, errCb) {
   noCache(req, res);
 
   getViewUrl(req.params.nodeName, function(err, viewUrl, client) {
     if (err) {
+      if (errCb) {
+        return errCb(err);
+      }
       console.log("ERROR - ", err);
       res.send("Can't find view url for '" + req.params.nodeName + "' check viewer logs on " + os.hostname());
     }
@@ -428,6 +431,9 @@ function proxyRequest (req, res) {
     });
 
     preq.on('error', function (e) {
+      if (errCb) {
+        return errCb(e);
+      }
       console.log("ERROR - Couldn't proxy request=", info, "\nerror=", e);
       res.send("Error talking to node '" + req.params.nodeName + "' using host '" + info.host + "' check viewer logs on " + os.hostname());
     });
@@ -3102,31 +3108,49 @@ function localSessionDetail(req, res) {
     //console.log("session", util.inspect(session, false, 15));
     /* Now reassembly the packets */
     if (packets.length === 0) {
-      localSessionDetailReturn(req, res, session, [{data: err || "No pcap data found"}]);
+      session._err = err || "No pcap data found";
+      localSessionDetailReturn(req, res, session, []);
     } else if (packets[0].ip === undefined) {
-      localSessionDetailReturn(req, res, session, [{data: "Couldn't decode pcap file, check viewer log"}]);
+      session._err = "Couldn't decode pcap file, check viewer log";
+      localSessionDetailReturn(req, res, session, []);
     } else if (packets[0].ip.p === 1) {
       Pcap.reassemble_icmp(packets, function(err, results) {
-        localSessionDetailReturn(req, res, session, results || [{data: err}]);
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 6) {
       Pcap.reassemble_tcp(packets, Pcap.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
-        localSessionDetailReturn(req, res, session, results || [{data: err}]);
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 17) {
       Pcap.reassemble_udp(packets, function(err, results) {
-        localSessionDetailReturn(req, res, session, results || [{data: err}]);
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
       });
     } else {
-      localSessionDetailReturn(req, res, session, [{data: "Unknown ip.p=" + packets[0].ip.p}]);
+      session._err = "Unknown ip.p=" + packets[0].ip.p;
+      localSessionDetailReturn(req, res, session, []);
     }
   },
   req.query.needimage === "true"?10000:400, 10);
 }
 
-app.get('/:nodeName/:id/sessionDetail', checkProxyRequest, function(req, res) {
-  noCache(req, res);
-  localSessionDetail(req, res);
+app.get('/:nodeName/:id/sessionDetail', function(req, res) {
+  Db.isLocalView(req.params.nodeName, function () {
+    noCache(req, res);
+    localSessionDetail(req, res);
+  },
+  function () {
+    return proxyRequest(req, res, function (err) {
+      Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
+        var fields = session._source || session.fields;
+        fields._err = "Couldn't connect to remote viewer, only displaying SPI data";
+        localSessionDetailReturnFull(req, res, fields, []);
+      });
+    });
+  });
+
 });
 
 
