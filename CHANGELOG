@@ -15,6 +15,7 @@
   - Turn of bloom filter for previous indexes if using db.pl expire
   - Set threadpool search queue size to unlimited
   - stats page works again with dynamic scripts disabled
+  - New db.pl rm-missing command (issue #242)
 
 0.11.0 2014/05/08
   - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 

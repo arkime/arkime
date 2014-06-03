@@ -62,11 +62,12 @@ sub showHelp($)
     print "  wipe                  - Same as init, but leaves user database untouched\n";
     print "  upgrade               - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "  info                  - Information about the database\n";
-    print "  usersexport <fn>      - Save the users info to <fn>\n";
-    print "  usersimport <fn>      - Load the users info from <fn>\n";
+    print "  users-export <fn>     - Save the users info to <fn>\n";
+    print "  users-import <fn>     - Load the users info from <fn>\n";
     print "  optimize              - Optimize all indices\n";
     print "  mv <old fn> <new fn>  - Move a pcap file in the database (doesn't change disk)\n";
     print "  rm <fn>               - Remove a pcap file in the database (doesn't change disk)\n";
+    print "  rm-missing <node>     - Remove from db any file that is missing from disk for given node\n";
     print "  expire <type> <num>   - Perform daily maintenance and optimize all indices\n";
     print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num              - number of indexes to keep\n";
@@ -1746,20 +1747,20 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|usersimport|usersexport|expire|rotate|optimize|mv|rm)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(usersimport|usersexport|rm)/);
-showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)/);
-showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing)$/);
+showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
+showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
-if ($ARGV[1] eq "usersimport") {
+if ($ARGV[1] =~ /^users-?import$/) {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
     my $data = do { local $/; <$fh> };
     esPost("/_bulk", $data);
     close($fh);
     exit 0;
-} elsif ($ARGV[1] eq "usersexport") {
+} elsif ($ARGV[1] =~ /^users-?export$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
     my $users = esGet("/users/_search?size=1000");
     foreach my $hit (@{$users->{hits}->{hits}}) {
@@ -1768,7 +1769,7 @@ if ($ARGV[1] eq "usersimport") {
     }
     close($fh);
     exit 0;
-} elsif ($ARGV[1] eq "expire" || $ARGV[1] eq "rotate") {
+} elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
     my $json = esGet("/sessions-*/_stats?clear=1", 1);
     my $indices = $json->{indices} || $json->{_all}->{indices};
@@ -1891,6 +1892,26 @@ sub printIndex {
         esDelete("/files/file/" . $hit->{_id}, 0);
     }
     print "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+    exit 0;
+} elsif ($ARGV[1] =~ /^rm-?missing$/) {
+    my $results = esGet("/files/_search?size=10000&q=node:$ARGV[2]");
+    die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
+    print "Need to remove references to these files from database:\n";
+    my $cnt = 0;
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        if (! -f $hit->{_source}->{name}) {
+            print $hit->{_source}->{name}, "\n";
+            $cnt++;
+        }
+    }
+    die "Nothing found to remove." if ($cnt == 0);
+    print "\n";
+    waitFor("YES", "Do you want to remove file references from database?");
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        if (! -f $hit->{_source}->{name}) {
+            esDelete("/files/file/" . $hit->{_id}, 0);
+        }
+    }
     exit 0;
 }
 
