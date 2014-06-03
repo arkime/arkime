@@ -9,4 +9,4 @@ ulimit -a
 export ES_HOSTNAME=`hostname -s`a
 
 # Increase memory
-ES_HEAP_SIZE=_ESMEM_ bin/elasticsearch -Des.config=${TDIR}/etc/elasticsearch.yml
+ES_HEAP_SIZE=_ESMEM_ bin/elasticsearch -Des.config=${TDIR}/etc/elasticsearch.yml -d
