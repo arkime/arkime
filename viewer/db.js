@@ -56,8 +56,9 @@ exports.initialize = function (info) {
       console.log("ES 1.0 is not supported");
     }
 
-    if (data.version.number.match(/^1.1/)) {
-      internals.apiVersion = "1.1";
+    var vmatch = data.version.number.match(/^1\.[12]/);
+    if (vmatch) {
+      internals.apiVersion = vmatch[0];
       var oldes = internals.elasticSearchClient;
       setTimeout(function() {oldes.close();}, 2000);
       internals.elasticSearchClient = new ESC.Client({
@@ -424,7 +425,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   exports.get("dstats", "version", "version", function(err, doc) {
     var version;
     if (err) {
-      console.log(err);
+      console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
     }
     if (!doc.found) {

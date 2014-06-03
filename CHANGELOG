@@ -1,12 +1,12 @@
 0.11.1 2014/05/XX
-  - NOTICE: ES 0.90.12+ & ES 1.1.1 are support by this version. 
+  - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are support by this version. 
             ES 1.0 is NOT supported.
             This is the LAST version to support 0.90.x
             Restart viewer AFTER upgrading ES versions
-  - NOTICE: When upgrading your runes.sh for 1.1.1 add a -d to the 
+  - NOTICE: When upgrading your runes.sh for 1.x add a -d to the 
             command, ES no longer runs in background by default
   - Parsers can register for session save events (issue #248)
-  - Fix compressES check with ES 1.1.1 (issue #255)
+  - Fix compressES check with ES 1.x (issue #255)
   - Show error for ip queries with regex or wildcard (issue #252)
   - added session.segments and session.length (issue #254)
   - support elasticsearch=http:// or https:// format (issue #249)

@@ -4,8 +4,8 @@
   "description": "",
   "main": "viewer.js",
   "dependencies": {
-    "async": "~0.7.0",
-    "elasticsearch": "~2.1.4",
+    "async": "~0.8.0",
+    "elasticsearch": "~2.2.0",
     "express": "~3.5.2",
     "fs-ext": "~0.3.2",
     "jade": "~1.3.1",
