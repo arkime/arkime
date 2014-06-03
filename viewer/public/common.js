@@ -224,20 +224,22 @@ function updateHealth(health)
 
   $("#esstatus").show();
   $("#esstatus").css("background", health.status);
-  $("#esstatus").qtip({content:
-     "Elasticsearch:<br>" +
-     " Status: " + health.status + "<br>" +
-     " Nodes: " + health.number_of_data_nodes + "<br>" +
-     " Shards: " + health.active_shards + "<br>" +
-     " Relocating Shards: " + health.relocating_shards + "<br>" +
-     " Unassigned Shards: " + health.unassigned_shards + "<br>",
-     position: {
-       my: 'top right',
-       at: 'bottom left'
-     },
-     style: {
-       classes: 'qtip-moloch'
-     }});
+  $("#esstatus").qtip({
+    content:
+      "Elasticsearch:<br>" +
+      " Status: " + health.status + "<br>" +
+      " Nodes: " + health.number_of_data_nodes + "<br>" +
+      " Shards: " + health.active_shards + "<br>" +
+      " Relocating Shards: " + health.relocating_shards + "<br>" +
+      " Unassigned Shards: " + health.unassigned_shards + "<br>",
+    position: {
+      my: 'top right',
+      at: 'bottom left'
+    },
+    style: {
+      classes: 'qtip-light qtip-rounded',
+    }
+  });
 }
 
 function startBlink() {
@@ -855,6 +857,27 @@ $(document).ready(function() {
     style: {
       classes: 'qtip-light qtip-rounded',
       tip: false
+    },
+    events: {
+      render: function(event, api) {
+        var content = api.elements.content;
+        $('a[exp]', content).qtip({
+          style: {
+            classes: 'qtip-rounded',
+          },
+          show: {
+            delay: 500
+          },
+          position: {
+            my: 'top right',
+            at: 'bottom left'
+          },
+          container: content,
+          content: function (a,b) {
+            return $(this).attr('exp');
+          }
+        });
+      }
     }
   }).qtip('api');
 

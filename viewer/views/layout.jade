@@ -183,7 +183,7 @@ html
             - var keys = Object.keys(user.views).sort()
             each key in keys
               li
-                a.viewMenuOption #{key}
+                a.viewMenuOption(exp=user.views[key].expression) #{key}
 
 script(type='text/javascript').
   var molochTitle = "#{title}";
