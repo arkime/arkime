@@ -49,7 +49,7 @@ static int           headerSize;
 
 extern MolochConfig_t        config;
 
-struct timeval        bufTime;
+struct timeval        lastTime;
 static char           buf[1500];
 static BSB            bsb;
 static int            bufCount = -1;
@@ -62,16 +62,15 @@ void netflow_send()
 
     BSB_INIT(hbsb, buf, headerSize);
 
-    uint32_t sys_uptime = (bufTime.tv_sec - initialPacket.tv_sec)*1000; /*+
-                          (bufTIme.tv_usec - initialPacket.tv_usec)/1000;*/
+    uint32_t sys_uptime = (lastTime.tv_sec - initialPacket.tv_sec)*1000 + (lastTime.tv_usec - initialPacket.tv_usec)/1000;
                  
 
     /* Header */
     BSB_EXPORT_u16(hbsb, netflowVersion);
     BSB_EXPORT_u16(hbsb, bufCount); // count
     BSB_EXPORT_u32(hbsb, sys_uptime); // sys_uptime
-    BSB_EXPORT_u32(hbsb, bufTime.tv_sec);
-    BSB_EXPORT_u32(hbsb, bufTime.tv_usec);
+    BSB_EXPORT_u32(hbsb, lastTime.tv_sec);
+    BSB_EXPORT_u32(hbsb, lastTime.tv_usec);
 
     switch (netflowVersion) {
     case 5:
@@ -114,9 +113,7 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         netflow_send();
     }
 
-    if (bufCount == 0)
-        bufTime = session->lastPacket;
-
+    lastTime = session->lastPacket;
 
     /* Body */
     BSB_EXPORT_ptr(bsb, &session->addr1, 4);
@@ -126,8 +123,8 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
     BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
     BSB_EXPORT_u32(bsb, session->packets[0] + session->packets[1]); 
     BSB_EXPORT_u32(bsb, session->databytes[0] + session->databytes[1]);
-    uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec)*1000;
-    uint32_t last = (session->lastPacket.tv_sec - initialPacket.tv_sec)*1000;
+    uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->firstPacket.tv_usec - initialPacket.tv_usec)/1000;
+    uint32_t last  = (session->lastPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->lastPacket.tv_usec - initialPacket.tv_usec)/1000;
     BSB_EXPORT_u32(bsb, first);
     BSB_EXPORT_u32(bsb, last);
     BSB_EXPORT_u16(bsb, session->port1);

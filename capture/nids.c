@@ -622,7 +622,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
     totalBytes += nids_last_pcap_header->caplen;
 
-    if (totalPackets == 1) {
+    if (totalPackets == 0) {
         struct pcap_stat ps;
         if (!pcap_stats(nids_params.pcap_desc, &ps)) {
             initialDropped = ps.ps_drop;
