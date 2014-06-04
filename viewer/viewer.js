@@ -1362,8 +1362,7 @@ app.get('/dstats.json', function(req, res) {
                      ]
                    }
                  }
-               },
-               _source: ["currentTime", req.query.name]
+               }
               };
 
   Db.search('dstats', 'dstat', query, function(err, result) {
