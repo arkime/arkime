@@ -69,6 +69,7 @@ typedef struct molochconn_t {
     http_parser          parser;
     MolochRequest_t     *request;
     struct molochhttp_t *server;
+    char                *name;
 } MolochConn_t;
 
 typedef struct {
@@ -78,7 +79,9 @@ typedef struct {
 
 typedef struct molochhttp_t {
     MolochConn_t         *syncConn;
-    char                 *name;
+    char                **names;
+    int                   namesCnt;
+    int                   namesPos;
     char                  compress;
     int                   port;
     uint16_t              maxConns;
@@ -175,7 +178,7 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
             LOG("ERROR: %p: Receive Error: %s", (void*)conn, gerror->message);
             g_error_free(gerror);
         } else if (cond & (G_IO_HUP | G_IO_ERR))
-            LOG("ERROR: %p: Lost connection to %s", (void*)conn, conn->server->name);
+            LOG("ERROR: %p: Lost connection to %s", (void*)conn, conn->name);
         else if (len <= 0)
             LOG("ERROR: %p: len: %d cond: %x", (void*)conn, len, cond);
 
@@ -244,6 +247,8 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
         exit(0);
     }
 
+    conn->name = name;
+
     enumerator = g_socket_connectable_enumerate (connectable);
     g_object_unref(connectable);
 
@@ -281,7 +286,6 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
         conn->server->lastFailedConnect = time(0);
         return 1;
     }
-
 
     //g_object_ref (conn->conn);
     g_socket_set_keepalive(conn->conn, TRUE);
@@ -337,6 +341,18 @@ void moloch_http_finish( MolochConn_t *conn, gboolean sync)
 
 }
 /******************************************************************************/
+char *moloch_http_get_name(MolochHttp_t *server)
+{
+    char *name;
+    if (server->names[server->namesPos]) {
+        name = server->names[server->namesPos];
+        server->namesPos++;
+        return name;
+    }
+    server->namesPos = 0;
+    return server->names[0];
+}
+/******************************************************************************/
 gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
 {
     char                 buffer[3000];
@@ -345,7 +361,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
     MolochRequest_t     *request = conn->request;
 
     if (conn->conn == 0) {
-        if (moloch_http_connect(conn, conn->server->name, conn->server->port, TRUE)) {
+        if (moloch_http_connect(conn, moloch_http_get_name(conn->server), conn->server->port, TRUE)) {
             LOG("%p: Couldn't connect from process", (void*)conn);
             return FALSE;
         }
@@ -544,40 +560,49 @@ unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mle
 MolochConn_t *
 moloch_http_create(MolochHttp_t *server, int blocking) {
     MolochConn_t *conn;
+    int           tries = server->namesCnt;
 
     conn = MOLOCH_TYPE_ALLOC0(MolochConn_t);
     conn->parser.data = conn;
     conn->server = server;
 
-    if (moloch_http_connect(conn, server->name, server->port, blocking)) {
-        LOG("Couldn't connect to '%s'", server->name);
-        exit (1);
+    while (tries > 0) {
+        if (!moloch_http_connect(conn, moloch_http_get_name(server), server->port, blocking)) {
+            return conn;
+        }
+        tries--;
+        LOG("Couldn't connect to '%s'", conn->name);
     }
-    return conn;
+    exit (1);
 }
 /******************************************************************************/
-void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
+void *moloch_http_create_server(char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
 {
     MolochHttp_t *server = MOLOCH_TYPE_ALLOC0(MolochHttp_t);
 
     DLL_INIT(r_, &server->requestQ[0]);
     DLL_INIT(r_, &server->requestQ[1]);
     DLL_INIT(e_, &server->connQ);
-    if (strncmp(hostname, "http://", 7) == 0) {
-        server->name = strdup(hostname+7);
-    } else if (strncmp(hostname, "https://", 8) == 0) {
-        LOG("https not supported yet %s", hostname);
-        exit(0);
-    } else {
-        server->name = strdup(hostname);
+
+    server->names = g_strsplit(hostnames, ",", 0);
+    uint32_t i;
+    for (i = 0; server->names[i]; i++) {
+        if (strncmp(server->names[i], "http://", 7) == 0) {
+            char *tmp = g_strdup(server->names[i] + 7);
+            g_free(server->names[i]);
+            server->names[i] = tmp;
+        } else if (strncmp(server->names[i], "https://", 8) == 0) {
+            LOG("https not supported yet %s", server->names[i]);
+            exit(0);
+        }
     }
+    server->namesCnt = i;
     server->port = defaultPort;
     server->maxConns = maxConns;
     server->maxOutstandingRequests = maxOutstandingRequests;
     server->compress = compress;
 
     server->syncConn = moloch_http_create(server, TRUE);
-    uint32_t i;
     for (i = 0; i < server->maxConns; i++) {
         MolochConn_t *conn = moloch_http_create(server, FALSE);
         DLL_PUSH_TAIL(e_, &server->connQ, conn);
@@ -620,7 +645,7 @@ void moloch_http_free_server(void *serverV)
 
     MOLOCH_TYPE_FREE(MolochConn_t, server->syncConn);
     server->syncConn = 0;
-    free(server->name);
+    g_strfreev(server->names);
 
     MOLOCH_TYPE_FREE(MolochHttp_t, server);
 }

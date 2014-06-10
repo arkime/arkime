@@ -66,7 +66,7 @@ var app = express();
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
-  elasticBase: Config.get("elasticsearch", "http://localhost:9200"),
+  elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   httpAgent:   new KAA({maxSockets: 40}),
   httpsAgent:  new KAA.Secure({maxSockets: 40}),
   previousNodeStats: [],
@@ -77,8 +77,8 @@ var internals = {
   PNG_LINE_WIDTH: 256,
 };
 
-if (internals.elasticBase.lastIndexOf('http', 0) !== 0) {
-  internals.elasticBase = "http://" + internals.elasticBase;
+if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
+  internals.elasticBase[0] = "http://" + internals.elasticBase[0];
 }
 
 function userCleanup(suser) {
@@ -113,7 +113,7 @@ app.configure(function() {
   app.locals.molochversion =  molochversion.version;
   app.locals.isIndex = false;
   app.locals.basePath = Config.basePath();
-  app.locals.elasticBase = internals.elasticBase;
+  app.locals.elasticBase = internals.elasticBase[0];
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
   app.locals.sendSession = Config.getObj("sendSession");
 
