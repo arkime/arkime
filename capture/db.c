@@ -79,6 +79,16 @@ void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii)
     node->data = ii;
 }
 /******************************************************************************/
+void moloch_db_free_local_ip(MolochIpInfo_t *ii)
+{
+    if (ii->country)
+        g_free(ii->country);
+    if (ii->asn)
+        g_free(ii->asn);
+    if (ii->rir)
+        g_free(ii->rir);
+}
+/******************************************************************************/
 #define int_ntoa(x)     inet_ntoa(*((struct in_addr *)(int*)&x))
 MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip)
 {
@@ -1763,4 +1773,14 @@ void moloch_db_exit()
         );
         fprintf(stderr, "\n}}\n");
     }
+
+    if (ipTree) {
+        Clear_Patricia(ipTree, moloch_db_free_local_ip);
+    }
+
+    MolochTag_t *tag;
+    HASH_FORALL_POP_HEAD(tag_, tags, tag,
+        g_free(tag->tagName);
+        MOLOCH_TYPE_FREE(MolochTag_t, tag);
+    );
 }

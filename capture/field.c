@@ -47,7 +47,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
         if (strncmp("group", (char*)data + out[i], 5) == 0) {
             info->group = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("dbField", (char*)data + out[i], 7) == 0) {
-            info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->dbFieldMem = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen = out[i+3];
         }
     }
@@ -81,7 +81,8 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
     if (!minfo) {
         minfo = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-        minfo->dbField    = g_strdup(dbField);
+        minfo->dbFieldMem = g_strdup(dbField);
+        minfo->dbField    = minfo->dbFieldMem;
         minfo->dbFieldLen = strlen(minfo->dbField);
         minfo->pos        = -1;
         minfo->expression = g_strdup(expression);
@@ -173,6 +174,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     if (flags & MOLOCH_FIELD_FLAG_FAKE) {
         g_free(minfo->expression);
         g_free(minfo->dbField);
+        g_free(minfo->group);
         HASH_REMOVE(f_, fields, minfo);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, minfo);
         return -1;
@@ -267,11 +269,17 @@ void moloch_field_init()
 /******************************************************************************/
 void moloch_field_exit()
 {
-    int i;
+    MolochFieldInfo_t *info = 0;
 
-    for (i = 0; i < config.maxField; i++) {
-        MOLOCH_TYPE_FREE(MolochFieldInfo_t, config.fields[i]);
-    }
+    HASH_FORALL_POP_HEAD(f_, fields, info,
+        if (info->dbFieldMem)
+            g_free(info->dbFieldMem);
+        if (info->expression)
+            g_free(info->expression);
+        if (info->group)
+            g_free(info->group);
+        MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
+    );
 }
 /******************************************************************************/
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy)

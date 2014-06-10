@@ -151,6 +151,7 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 
 typedef struct moloch_field_info {
     struct moloch_field_info *f_next, *f_prev;
+    char                     *dbFieldMem;
     char                     *dbField;
     uint32_t                  f_hash;
     uint32_t                  f_bucket;
