@@ -45,11 +45,17 @@ sub doTests {
         my $savedData = do { local $/; <$fh> };
         my $savedJson = from_json($savedData, {relaxed => 1});
 
-        if ($main::debug) {
-            print "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix\n";
+        my $cmd = "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+
+        if ($main::valgrind) {
+            $cmd = "G_SLICE=allows-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
         }
 
-        my $testData = `../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix`;
+        if ($main::debug) {
+            print "$cmd\n";
+        }
+
+        my $testData = `$cmd`;
         my $testJson = from_json($testData, {relaxed => 1});
 
         eq_or_diff($testJson, $savedJson, "$filename", { context => 3 });
@@ -178,6 +184,7 @@ my ($cmd) = @_;
             $cmd = "G_SLICE=allows-malloc valgrind --leak-check=full --log-file=moloch.val " . $cmd;
         }
 
+        print "$cmd\n" if ($main::debug);
         system($cmd);
 
         print ("Starting viewer\n");
@@ -687,32 +694,45 @@ tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, U
 }
 ################################################################################
 $main::debug = 0;
-if ($ARGV[0] eq "--debug") {
-    $main::debug = 1;
-    shift @ARGV;
-}
-if ($ARGV[0] eq "--valgrind") {
-    $main::valgrind = 1;
-    shift @ARGV;
-}
-$main::cmd = $ARGV[0];
+$main::valgrind = 0;
+$main::cmd = "--capture";
 
-if ($ARGV[0] eq "--fix") {
-    shift @ARGV;
+while (scalar (@ARGV) > 0) {
+    if ($ARGV[0] eq "--debug") {
+        $main::debug = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--valgrind") {
+        $main::valgrind = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewerfast|help)$/) {
+        $main::cmd = $ARGV[0];
+        shift @ARGV;
+    } elsif ($ARGV[0] =~ /^-/) {
+        print "Unknown option $ARGV[0]\n";
+        $main::cmd = "--help";
+        last;
+    } else {
+        last;
+    }
+}
+
+if ($main::cmd eq "--fix") {
     doFix();
-} elsif ($ARGV[0] eq "--make") {
-    shift @ARGV;
+} elsif ($main::cmd eq "--make") {
     doMake();
-} elsif ($ARGV[0] eq "--help") {
-    print "$ARGV[0] [-debug] [COMMAND] <pcap> files\n";
+} elsif ($main::cmd eq "--help") {
+    print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
+    print "Options:\n";
+    print "  --debug       Turn on debuggin\n";
+    print "  --valgrind    Use valgrind on capture\n";
+    print "\n";
     print "Commands:\n";
     print "  --help        This help\n";
     print "  --make        Create a .test file for each .pcap file on command line\n";
     print "  --viewer      viewer tests\n";
     print "                This will init local ES, import data, start a viewer, run tests\n";
     print " [default]      Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
-} elsif ($ARGV[0] =~ "^--viewer") {
-    shift @ARGV;
+} elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;
     doViewer($main::cmd);
