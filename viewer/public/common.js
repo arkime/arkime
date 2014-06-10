@@ -355,7 +355,7 @@ $(document).ready(function() {
     // Prevent normal form submission
     event.preventDefault();
 
-    actionsDialog.molochInputs[actionsDialog.get("content.title.text")] = $("#actions-input").val();
+    actionsDialog.molochInputs[actionsDialog.get("content.title")] = $("#actions-input").val();
     actionsDialog.molochCb(qs, ids, $("#actions-input").val());
 
     return false;
@@ -397,7 +397,7 @@ $(document).ready(function() {
   function showActionsDialog(options, cb) {
     actionsMenu.hide();
     sessionActionsMenu.hide();
-    actionsDialog.set('content.title.text', options.title);
+    actionsDialog.set('content.title', options.title);
     if (options.message) {
       $("#actions-message").show();
       $("#actions-message").html(options.message);
