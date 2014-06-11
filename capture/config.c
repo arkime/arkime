@@ -142,6 +142,36 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
     return value;
 }
 /******************************************************************************/
+void moloch_config_load_includes(char **includes)
+{
+    int       i, g, k;
+
+    for (i = 0; includes[i]; i++) {
+        GKeyFile *keyFile = g_key_file_new();
+        GError *error = 0;
+        gboolean status = g_key_file_load_from_file(keyFile, includes[i], G_KEY_FILE_NONE, &error);
+        if (!status || error) {
+            printf("Couldn't load config includes file (%s) %s\n", includes[i], (error?error->message:""));
+            exit(1);
+        }
+
+        gchar **groups = g_key_file_get_groups (keyFile, NULL);
+        for (g = 0; groups[g]; g++) {
+            gchar **keys = g_key_file_get_keys (keyFile, groups[g], NULL, NULL);
+            for (k = 0; keys[k]; k++) {
+                char *value = g_key_file_get_value(keyFile, groups[g], keys[k], NULL);
+                if (value && !error) {
+                    g_key_file_set_value(molochKeyFile, groups[g], keys[k], value);
+                    g_free(value);
+                }
+            }
+            g_strfreev(keys);
+        }
+        g_strfreev(groups);
+        g_key_file_free(keyFile);
+    }
+}
+/******************************************************************************/
 void moloch_config_load()
 {
 
@@ -157,6 +187,14 @@ void moloch_config_load()
         printf("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
         exit(1);
     }
+
+    char **includes = moloch_config_str_list(keyfile, "includes", NULL);
+    if (includes) {
+        moloch_config_load_includes(includes);
+        g_strfreev(includes);
+        //LOG("KEYFILE:\n%s", g_key_file_to_data(molochKeyFile, NULL, NULL));
+    }
+
 
     char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
 

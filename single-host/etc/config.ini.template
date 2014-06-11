@@ -186,6 +186,10 @@ spiDataMaxIndices=3
 # _-view_ = " - " + current view if set, otherwise blank, prior spaces removed
 #titleTemplate=_cluster_ - _page_ _-view_ _-expression_
 
+# ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
+# in order and can replace values set in this file or previous files.
+#includes=
+
 # ADVANCED - How is pcap written to disk
 #  normal        = just normal open/writes uses the linux page cache heavily (default)
 #                  probably want to tune vm.dirty_ratio and vm.dirty_background_ratio
