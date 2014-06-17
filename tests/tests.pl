@@ -150,7 +150,7 @@ my ($count, $test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 736;
+    plan tests => 738;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -584,6 +584,12 @@ my ($cmd) = @_;
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length>=908493"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length<908493"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length=[908493,908494]"));
+
+# bigendian tests
+    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    is ($json->{iTotalDisplayRecords}, 1, "bigendian iTotalDisplayRecords");
+    my $response = $main::userAgent->get("http://localhost:8123/test/raw/" . $json->{aaData}->[0]->{id} . "?type=src");
+    is (unpack("H*", $response->content), "4fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "Correct bigendian tcpdump data");
 
 # adding/removing tags test expression
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/copytest.pcap"));

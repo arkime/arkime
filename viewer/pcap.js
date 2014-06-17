@@ -66,6 +66,7 @@ Pcap.prototype.open = function(filename) {
   }
   this.filename = filename;
   this.fd = fs.openSync(filename, "r");
+  this.readHeader();
 };
 
 Pcap.prototype.openReadWrite = function(filename) {
@@ -112,7 +113,12 @@ Pcap.prototype.readHeader = function(cb) {
 
   this.headBuffer = new Buffer(24);
   fs.readSync(this.fd, this.headBuffer, 0, 24, 0);
-  this.linkType =  this.headBuffer.readUInt32LE(20);
+  this.bigEndian  = this.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
+  if (this.bigEndian) {
+    this.linkType   = this.headBuffer.readUInt32BE(20);
+  } else {
+    this.linkType   = this.headBuffer.readUInt32LE(20);
+  }
 
   if (cb) {
     cb(this.headBuffer);
@@ -137,7 +143,7 @@ Pcap.prototype.readPacket = function(pos, cb) {
       if (bytesRead < 16) {
         return cb(null);
       }
-      var len = buffer.readInt32LE(8);
+      var len = (self.bigEndian?buffer.readUInt32BE(8):buffer.readUInt32LE(8));
 
       if (len < 0 || len > 0xffff) {
         return cb(undefined);
@@ -342,12 +348,21 @@ Pcap.prototype.ether = function (buffer, obj, pos) {
 
 
 Pcap.prototype.pcap = function (buffer, obj) {
-  obj.pcap = {
-    ts_sec:   buffer.readUInt32LE(0),
-    ts_usec:  buffer.readUInt32LE(4),
-    incl_len: buffer.readUInt32LE(8),
-    orig_len: buffer.readUInt32LE(12)
-  };
+  if (this.bigEndian) {
+    obj.pcap = {
+      ts_sec:   buffer.readUInt32BE(0),
+      ts_usec:  buffer.readUInt32BE(4),
+      incl_len: buffer.readUInt32BE(8),
+      orig_len: buffer.readUInt32BE(12)
+    };
+  } else {
+    obj.pcap = {
+      ts_sec:   buffer.readUInt32LE(0),
+      ts_usec:  buffer.readUInt32LE(4),
+      incl_len: buffer.readUInt32LE(8),
+      orig_len: buffer.readUInt32LE(12)
+    };
+  }
 
   switch(this.linkType) {
   case 0: // NULL
