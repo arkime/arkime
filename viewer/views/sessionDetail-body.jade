@@ -23,9 +23,9 @@ div.sessionDetailToolbar
 br
 if (session._err)
   b #{session._err}
-else if (session.pa > 200)
-  b Only showing first 200 packets
-else
+else 
+  if (session.pa > 200)
+    b Only showing first 200 packets
   table#textpacket
     tr
       th.textcol.srccol Source
