@@ -7,7 +7,7 @@
 \s+                        /* skip whitespace */
 [-a-zA-Z0-9_.@:*?/]+       return 'STR'
 \"[^"\\]*(?:\\.[^"\\]*)*\" return 'QUOTEDSTR'
-\/[^/\\]*(?:\\.[^/\\]*)*\/ return 'REGEXSTR'
+\/[^\/\\]*(?:\\.[^\/\\]*)*\/ return 'REGEXSTR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
 "EXISTS!"                  return "EXISTS"
 "<="                       return 'lte'
@@ -125,7 +125,7 @@ function parseIpPort(yy, field, ipPortStr) {
 // We really have a list of them
   if (ipPortStr[0] === "[" && ipPortStr[ipPortStr.length -1] === "]") {
       obj =  {bool: {should: []}};
-      CSVtoArray(ipPortStr).forEach(function(str) {
+      ListToArray(ipPortStr).forEach(function(str) {
         obj.bool.should.push(parseIpPort(yy, field, str));
       });
       return obj;
@@ -341,24 +341,48 @@ function stringQuery(yy, field, str) {
     str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
     quoted = true;
   } else if (str[0] === "[" && str[str.length -1] === "]") {
-    strs = CSVtoArray(str);
+    var rawField = field2Raw(yy, field);
+    strs = ListToArray(str);
     if (info.transform) {
       for (var i = 0; i < strs.length; i++) {
         strs[i] = global.moloch[info.transform](strs[i]);
       }
     }
 
-    if (info.type.match(/termfield/)) {
-      obj = {terms: {}};
-      obj.terms[dbField] = strs;
-    } else if (info.type.match(/textfield/)) {
-      var obj =  {query: {bool: {should: []}}};
-      strs.forEach(function(str) {
-        var should = {match: {}};
-        should.match[dbField] = {query: str, type: "phrase", operator: "and"}
+    var obj =  {query: {bool: {should: []}}};
+    var terms = null;
+    strs.forEach(function(str) {
+      var should;
+
+      if (typeof str === "string" && str[0] === "/" && str[str.length -1] === "/") {
+        should = {regexp: {}};
+        should.regexp[rawField] = str.substring(1, str.length-1);
         obj.query.bool.should.push(should);
-      });
-    }
+      } else if (typeof str === "string" && str.indexOf("*") !== -1) {
+        should = {wildcard: {}};
+        should.wildcard[rawField] = str;
+        obj.query.bool.should.push(should);
+      } else {
+        if (str[0] === "\"" && str[str.length -1] === "\"") {
+          str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
+        }
+
+        if (info.type.match(/termfield/)) {
+          // Reuse same terms element
+          if (terms === null) {
+            terms = {terms: {}};
+            terms.terms[dbField] = [];
+            obj.query.bool.should.push(terms);
+          }
+          terms.terms[dbField].push(str);
+        } else {
+          should = {match: {}};
+          should.match[dbField] = {query: str, type: "phrase", operator: "and"}
+          obj.query.bool.should.push(should);
+        }
+      }
+    });
+
     return obj;
   }
 
@@ -408,48 +432,24 @@ global.moloch.ipProtocolLookup = function (text) {
     }
 };
 
-// http://stackoverflow.com/a/8497474
-// Return array of string values, or NULL if CSV string not well formed.
-function CSVtoArray(text) {
+function ListToArray(text) {
   if (text[0] !== "[" || text[text.length -1] !== "]")
     return text;
 
-    text = text.substring(1, text.length-1);
-    var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
-    var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
-    // Return NULL if input string is not well formed CSV string.
-    if (!re_valid.test(text)) return null;
-    var a = [];                     // Initialize array to receive values.
-    text.replace(re_value, // "Walk" the string using replace with callback.
-        function(m0, m1, m2, m3) {
-            // Remove backslash from \' in single quoted values.
-            if      (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
-            // Remove backslash from \" in double quoted values.
-            else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
-            else if (m3 !== undefined) a.push(m3);
-            return ''; // Return empty string.
-        });
-    // Handle special case of empty last value.
-    if (/,\s*$/.test(text)) a.push('');
-    return a;
-};
-
-function termOrTermsStr(dbField, str) {
-  var obj = {};
-  if (str[0] === "[" && str[str.length -1] === "]") {
-    obj = {terms: {}};
-    obj.terms[dbField] = CSVtoArray(str);
-  } else {
-    obj = {term: {}};
-    obj.term[dbField] = str;
+  // JS doesn't have negative look behind
+  text = text.substring(1, text.length-1);
+  strs = text.replace(/\\\\/g, "**BACKSLASH**").replace(/\\,/g, "**COMMA**").split(/\s*,\s*/);
+  for (var i = 0; i < strs.length; i++) {
+    strs[i] = strs[i].replace("**COMMA**", ",").replace("**BACKSLASH**", "\\");
   }
-  return obj;
+  return strs;
 }
+
 function termOrTermsInt(dbField, str) {
   var obj = {};
   if (str[0] === "[" && str[str.length -1] === "]") {
     obj = {terms: {}};
-    obj.terms[dbField] = CSVtoArray(str);
+    obj.terms[dbField] = ListToArray(str);
     obj.terms[dbField].forEach(function(str) {
       str = stripQuotes(str);
       if (typeof str !== "integer" && str.match(/[^\d]+/))

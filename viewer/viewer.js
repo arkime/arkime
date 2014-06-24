@@ -1044,7 +1044,7 @@ function buildSessionQuery(req, buildCb) {
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
                               fieldsMap: Config.getFieldsMap()};
   if (req.query.expression) {
-    req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
+    //req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
     try {
       query.query.filtered.filter = molochparser.parse(req.query.expression);
     } catch (e) {

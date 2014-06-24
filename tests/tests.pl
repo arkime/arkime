@@ -26,7 +26,7 @@ sub doGeo {
         system("wget http://www.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz; gunzip GeoIP.dat.gz");
     }
 
-    if (! -f "plugins/test.so") {
+    if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {
         system("cd plugins ; make");
     }
 }
@@ -150,7 +150,7 @@ my ($count, $test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 738;
+    plan tests => 842;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -178,6 +178,8 @@ my ($cmd) = @_;
 
         if (!$main::debug) {
             $cmd .= " 2>&1 1>/dev/null";
+        } else {
+            $cmd .= " --debug";
         }
 
         if ($main::valgrind) {
@@ -504,6 +506,60 @@ my ($cmd) = @_;
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==config.dat"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==a.zip"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==/.*a.zip/"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/http-500-head.pcap)&&http.uri==/.*a.zip/"));
+# http.uri slash tests - tokeniezd field
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/js/xxxxxx.js"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==//js/xxxxxx.js"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==js/xxxxxx"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/.*\\/js\\/xxxxxx.js/"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/*/js/xxxxxx.j*"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/js/xxxxxx.js]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[//js/xxxxxx.js]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[js/xxxxxx]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/.*js\\/xxxxxx.js/]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[\"/.*js\\/xxxxxx.js/\"]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/*/js/xxxxxx.j*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[\"/\\/js\\/xxxxxx.js/\"]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip,/js/xxxxxx.js]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip,//js/xxxxxx.js]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip,js/xxxxxx]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip,/.*js\\/xxxxxx.js/]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip,/*/js/xxxxxx.j*]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip , /js/xxxxxx.js]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip , //js/xxxxxx.js]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip , js/xxxxxx]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip , /.*js\\/xxxxxx.js/]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri==[a.zip , /*/js/xxxxxx.j*]"));
+# http.uri.path slash tests - not tokenized
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==/js/xxxxxx.js"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==//js/xxxxxx.js"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==js/xxxxxx"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==/\\/js\\/xxxxxx.js/"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==/js/xxxxxx.j*"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==//js/xxxxxx.j*"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[/js/xxxxxx.js]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[//js/xxxxxx.js]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[js/xxxxxx]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[/\\/js\\/xxxxxx.js/]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[\"/\\/js\\/xxxxxx.js/\"]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[/\\/js\\/.*.js/]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[/js/xxxxxx.js*]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri.path==[//js/xxxxxx.js*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/js/xxxxxx.js,a.zip]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[//js/xxxxxx.js,a.zip]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[js/xxxxxx,a.zip]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/\\/js\\/xxxxxx.js/,a.zip]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/\\/js\\/.*.js/,a.zip]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/js/xxxxxx.js*,a.zip]"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[//js/xxxxxx.js*,a.zip]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/js/xxxxxx.js,*a.zip*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[//js/xxxxxx.js,*a.zip*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[js/xxxxxx,*a.zip*]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/\\/js\\/xxxxxx.js/,*a.zip*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[\"/\\/js\\/xxxxxx.js/\",*a.zip*]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/\\/js\\/.*.js/,*a.zip*]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[/js/xxxxxx.js*,*a.zip*]"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap||file=$pwd/http-content-zip.pcap)&&http.uri.path==[//js/xxxxxx.js*,*a.zip*]"));
 # http.hasheader, http.hasheader.src, http.hasheader.dst tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader==server"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.dst==server"));
@@ -525,7 +581,7 @@ my ($cmd) = @_;
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==*kIe"));
     #TODO countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader==/.*VeR/"));
     #TODO countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.dst==/.*VeR/"));
-    #TODO tTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==/.*kIe/"));
+    #TODO countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==/.*kIe/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader==[SeRver]"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.dst==[SeRver]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.hasheader.src==[CooKie]"));
