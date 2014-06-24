@@ -25,6 +25,7 @@
   - Initial bigendian support in viewer (issue #259)
   - List queries can now have wildcard and regex items.
     example: http.uri = [term, w*ldcard, /.*regex/]
+  - freeSpaceG now supports a percentage
 
 0.11.0 2014/05/08
   - BREAKING: elasticsearch 0.90.7 or newer required, recommend 0.90.12+, 
