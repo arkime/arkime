@@ -54,6 +54,7 @@ exports.initialize = function (info) {
   internals.elasticSearchClient.info(function(err,data) {
     if (data.version.number.match(/^1.0/)) {
       console.log("ES 1.0 is not supported");
+      process.exit();
     }
 
     var vmatch = data.version.number.match(/^1\.[12]/);

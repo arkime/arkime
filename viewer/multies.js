@@ -337,7 +337,7 @@ function fixQuery(node, body, doneCb) {
   if (clients[node].version === "0.90" && body._source) {
     body.fields = body._source;
     delete body._source;
-  } else if (clients[node].version === "1.1" && body.fields) {
+  } else if (clients[node].version !== "0.90" && body.fields) {
     body._source = body.fields;
     delete body.fields;
   }
@@ -712,17 +712,24 @@ nodes.forEach(function(node) {
   });
   clients[node].version = "0.90";
 
-  // Switch to 1.1 if need to
+  // Switch to 1.x if need to
   clients[node].info(function(err,data) {
-    if (data.version.number.match(/^1.1/)) {
+    if (data.version.number.match(/^1.0/)) {
+      console.log("ES 1.0 is not supported: ", node);
+      process.exit();
+    }
+
+    var vmatch = data.version.number.match(/^1\.[12]/);
+    if (vmatch) {
+      internals.apiVersion = vmatch[0];
       var oldes = clients[node];
       setTimeout(function() {oldes.close();}, 2000);
       clients[node]= new ESC.Client({
         host: node,
-        apiVersion: "1.1",
+        apiVersion: vmatch[0],
         requestTimeout: 300000
       });
-      clients[node].version = "1.1";
+      clients[node].version = vmatch[0];
     }
   });
 });
