@@ -261,6 +261,12 @@ function updateParam(param, n, v) {
   param.push({name: n, value: v});
 }
 
+$(document).on("click", ".showMoreItems", function (e) {
+  $(e.target).hide();
+  $(e.target).prev().show();
+  return false;
+});
+
 //////////////////////////////////////////////////////////////////////////////////
 // layout Functions
 //////////////////////////////////////////////////////////////////////////////////
