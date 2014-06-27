@@ -721,7 +721,6 @@ nodes.forEach(function(node) {
 
     var vmatch = data.version.number.match(/^1\.[12]/);
     if (vmatch) {
-      internals.apiVersion = vmatch[0];
       var oldes = clients[node];
       setTimeout(function() {oldes.close();}, 2000);
       clients[node]= new ESC.Client({
