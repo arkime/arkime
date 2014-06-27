@@ -1522,7 +1522,7 @@ sub sessionsUpdate
 
     print "\n";
 
-    esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":-1}}');
+    esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
 }
 
 ################################################################################
