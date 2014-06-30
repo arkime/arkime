@@ -338,13 +338,6 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
     LOG("HTTPDEBUG: which: %d field: %.*s", session->which, (int)length, at);
 #endif
 
-    if ((http->inHeader & (1 << session->which)) == 0) {
-        http->inValue |= (1 << session->which);
-        if (http->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
-            moloch_plugins_cb_hp_ou(session, parser, http->urlString->str, http->urlString->len);
-        }
-    }
-
     if (http->inValue & (1 << session->which)) {
         http->inValue &= ~(1 << session->which);
 
@@ -352,6 +345,13 @@ moloch_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length
 
         if (http->pos[session->which]) {
             http_add_value(session, http);
+        }
+    }
+
+    if ((http->inHeader & (1 << session->which)) == 0) {
+        http->inHeader |= (1 << session->which);
+        if (http->urlString && parser->status_code == 0 && pluginsCbs & MOLOCH_PLUGIN_HP_OU) {
+            moloch_plugins_cb_hp_ou(session, parser, http->urlString->str, http->urlString->len);
         }
     }
 
