@@ -26,7 +26,7 @@ html
       #header
         div#logo
           a(href='about')
-            img(src='header_logo.png', style="border-style:none")
+            img(src='#{headerImage}', style="border-style:none")
         div#nav-right
           ul
             - if (isIndex && user.views)
