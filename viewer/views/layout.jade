@@ -18,6 +18,7 @@ html
     link(rel='stylesheet', type='text/css', href='jquery-ui.css')
     link(rel='stylesheet', type='text/css', href='jquery.qtip.min.css')
     link(rel='stylesheet', type='text/css', href='style.css')
+    link(rel='stylesheet', type='text/css', href='custom-style.css')
     if (typeof titleLink === "string")
       style(type='text/css').
         ##{titleLink} { color:white}
@@ -26,7 +27,7 @@ html
       #header
         div#logo
           a(href='about')
-            img(src='#{headerImage}', style="border-style:none")
+            img(src='header_logo.png', style="border-style:none")
         div#nav-right
           ul
             - if (isIndex && user.views)

@@ -494,8 +494,6 @@ app.get("/", checkWebEnabled, function(req, res) {
     titleLink: 'sessionsLink',
     isIndex: true,
     processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
-    processingImage: Config.get('processingImage', 'watching.gif'),
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -509,7 +507,6 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
     resFields: Config.headers("headers-http-response"),
     emailFields: Config.headers("headers-email"),
     categories: Config.getCategories(),
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -520,8 +517,6 @@ app.get("/spigraph", checkWebEnabled, function(req, res) {
     titleLink: 'spigraphLink',
     isIndex: true,
     processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
-    processingImage: Config.get('processingImage', 'watching.gif'),
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -531,7 +526,6 @@ app.get("/connections", checkWebEnabled, function(req, res) {
     title: makeTitle(req, 'Connections'),
     titleLink: 'connectionsLink',
     isIndex: true,
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -541,7 +535,6 @@ app.get("/upload", checkWebEnabled, function(req, res) {
     title: makeTitle(req, 'Upload'),
     titleLink: 'uploadLink',
     isIndex: false,
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -550,7 +543,6 @@ app.get('/about', checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'About'),
     titleLink: 'aboutLink',
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -560,8 +552,6 @@ app.get('/files', checkWebEnabled, function(req, res) {
     title: makeTitle(req, 'Files'),
     titleLink: 'filesLink',
     processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
-    processingImage: Config.get('processingImage', 'watching.gif'),
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -572,8 +562,6 @@ app.get('/users', checkWebEnabled, function(req, res) {
     titleLink: 'usersLink',
     token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
     processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
-    processingImage: Config.get('processingImage', 'watching.gif'),
-    headerImage: Config.get('headerImage', 'header_logo.png')
   });
 });
 
@@ -587,7 +575,6 @@ app.get('/settings', checkWebEnabled, function(req, res) {
       token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
       title: makeTitle(req, 'Settings'),
       titleLink: 'settingsLink',
-      headerImage: Config.get('headerImage', 'header_logo.png')
     });
   }
 
@@ -627,8 +614,6 @@ app.get('/stats', checkWebEnabled, function(req, res) {
       titleLink: 'statsLink',
       nodes: nodes,
       processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
-      processingImage: Config.get('processingImage', 'watching.gif'),
-      headerImage: Config.get('headerImage', 'header_logo.png')
     });
   });
 });
