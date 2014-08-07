@@ -101,6 +101,74 @@ block content
     p
     center
       button#change Change Password
+  p
+  hr
+  h2 Cron Queries
+  p Allow queries to be run periodically that can perform actions on sessions that match the queries.  The query runs against sessions delayed by 90 second to make sure all updates have been completed for that session.
+  if (suser.queries)
+    h3 Current Queries
+    table#queries(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+      thead
+        tr
+          th(style="width:50px") Processed
+          th(style="width:50px") Enabled
+          th(style="width:150px") Name
+          th Expression
+          th(style="width:150px") Actions
+          th Tags
+          th(style="width:50px") Action
+      tbody
+        - var keys = Object.keys(suser.queries).sort()
+        each key in keys
+          tr(key="#{key}")
+            td #{suser.queries[key].count || 0}
+            td
+              input.cronQueryEnabled(type='checkbox', CHECKED=suser.queries[key].enabled)
+            td(contentEditable) #{suser.queries[key].name}
+            td(contentEditable) #{suser.queries[key].query}
+            td
+              select
+                each action in actions
+                  option(value=action.value,SELECTED=suser.queries[key].action==action.value) #{action.name}
+            td(contentEditable) #{suser.queries[key].tags}
+            td
+              a.deleteCronQueryAction(href="#") delete
+  p
+  h3 New Cron Query
+  form#createCQForm
+    input(type='hidden', name='token', value='#{token}')
+    input(type='hidden', name='key', value='_create_')
+    input(type='hidden', name='enabled', value='true')
+    label(for='cqName') Name:
+    input(id='cqName', name='name', size='30', maxlength='20')
+    br
+    label(for='cqExpression') Expression:
+    input(id='cqExpression', name='query', size='100')
+    br
+    label(for='cqAction') Action:
+    select(id='cqAction',name='action')
+      each action in actions
+        option(value=action.value) #{action.name}
+    br
+    label(for='cqTags') Comma seperated tags:
+    input(id='cqTags', name='tags', size='100')
+    br
+    label(for='cqSince') Since:
+    select(id='cqSince',name='since')
+      option(value=0,selected) Now
+      option(value=1) Last 1 hr
+      option(value=6) Last 6 hrs
+      option(value=24) Last 24 hrs
+      option(value=48) Last 48 hrs
+      option(value=72) Last 3 days
+      option(value=168) Last Week
+      option(value=720) Last Month
+      option(value=4380) Last 6 Months
+      option(value=-1) All
+    br
+    p
+    center
+      button#createCQ Create Cron Query
 
   script(type='text/javascript').
     var settings  = !{JSON.stringify(suser.settings)};
@@ -176,12 +244,29 @@ block content
       return false;
     });
 
+    $('#createCQForm').submit(function() {
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}updateCronQuery",
+        "data": $("#createCQForm").serialize(),
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          } else {
+            location.reload();
+          }
+        }
+      });
+      return false;
+    });
+
     $(document).on('click', '.deleteViewAction', function (e) {
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
         "url": "#{basePath}deleteView",
-        "data": [{name: "view", value: $(this.parentNode.parentNode).find("td:first").text()},
+        "data": [{name: "view", value: $(this).closest("tr").find("td:first").text()},
                  {name: "token", value: "#{token}"}],
         "success": function(data) {
           if (!data.success) {
@@ -191,10 +276,11 @@ block content
           }
         }
       });
+      return false;
     });
 
-    $(document).on('focusout', 'td[contenteditable]', function () {
-      var row = $(this.parentNode);
+    $(document).on('focusout', '#views td[contentEditable]', function () {
+      var row = $(this).closest("tr");
       $.ajax( {
         "dataType": 'json',
         "type": "POST",
@@ -210,7 +296,54 @@ block content
       });
     });
 
-    $(document).on('keypress', 'td[contenteditable]', function (e) {
+    $(document).on('click', '.deleteCronQueryAction', function (e) {
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}deleteCronQuery",
+        "data": [{name: "key", value: $(this).closest("tr").attr("key")},
+                 {name: "token", value: "#{token}"}],
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          } else {
+            location.reload();
+          }
+        }
+      });
+      return false;
+    });
+
+    function saveCQRow(row) {
+      $.ajax( {
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}updateCronQuery",
+        "data": [{name: "key", value: row.attr("key")},
+                 {name: "enabled", value: row.find("td:eq(1) input").is(':checked')?"true":"false"},
+                 {name: "name", value: row.find("td:eq(2)").text()},
+                 {name: "query", value: row.find("td:eq(3)").text()},
+                 {name: "action", value: row.find("td:eq(4) select").val()},
+                 {name: "tags", value: row.find("td:eq(5)").text()},
+                 {name: "token", value: "#{token}"}],
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          }
+        }
+      });
+    }
+
+    $(document).on('focusout', '#queries td[contentEditable]', function () {
+      var row = $(this).closest("tr");
+      saveCQRow(row);
+    });
+
+    $(document).on('change', '#queries input, #queries select', function (e) {
+      saveCQRow($(e.target).closest("tr"));
+    });
+
+    $(document).on('keypress', 'td[contentEditable]', function (e) {
       if ((e.keyCode ? e.keyCode : e.which) === 13) {
         e.target.blur();
         return false;

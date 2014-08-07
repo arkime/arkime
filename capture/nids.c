@@ -285,8 +285,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
     session->lastFileNum = 0;
 
     if (session->tcp_next) {
-        DLL_REMOVE(tcp_, &tcpWriteQ, session);
-        DLL_PUSH_TAIL(tcp_, &tcpWriteQ, session);
+        DLL_MOVE_TAIL(tcp_, &tcpWriteQ, session);
     }
 
     session->lastSave = nids_last_pcap_header->ts.tv_sec;
@@ -703,8 +702,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         if (pluginsCbs & MOLOCH_PLUGIN_NEW)
             moloch_plugins_cb_new(session);
     } else {
-        DLL_REMOVE(q_, sessionsQ, session);
-        DLL_PUSH_TAIL(q_, sessionsQ, session);
+        DLL_MOVE_TAIL(q_, sessionsQ, session);
     }
 
     switch (packet->ip_p) {
@@ -722,6 +720,10 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
                           session->port1 == ntohs(tcphdr->th_sport) &&
                           session->port2 == ntohs(tcphdr->th_dport))?0:1;
         session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
+        break;
+    case IPPROTO_ICMP:
+        session->which = (session->addr1 == packet->ip_src.s_addr &&
+                          session->addr2 == packet->ip_dst.s_addr)?0:1;
         break;
     }
 
@@ -793,8 +795,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             //LOG("Saving because of at head %s", moloch_friendly_session_id(headSession->protocol, headSession->addr1, headSession->port1, headSession->addr2, headSession->port2));
             headSession->lastPacket.tv_sec = nids_last_pcap_header->ts.tv_sec;
 
-            DLL_REMOVE(q_, sessionsQ, headSession);
-            DLL_PUSH_TAIL(q_, sessionsQ, headSession);
+            DLL_MOVE_TAIL(q_, sessionsQ, headSession);
 
             moloch_nids_mid_save_session(headSession);
         } else

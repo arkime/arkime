@@ -200,7 +200,18 @@ void moloch_parsers_init()
         0,  MOLOCH_FIELD_FLAG_FAKE, 
         NULL);
 
-    cookie = magic_open(MAGIC_MIME);
+    int flags = MAGIC_MIME;
+#ifdef MAGIC_NO_CHECK_COMPRESS
+    flags |= MAGIC_NO_CHECK_COMPRESS |
+             MAGIC_NO_CHECK_TAR      |
+             MAGIC_NO_CHECK_APPTYPE  |
+             MAGIC_NO_CHECK_ELF      |
+             MAGIC_NO_CHECK_TOKENS;
+#endif
+#ifdef MAGIC_NO_CHECK_CDF
+    flags |= MAGIC_NO_CHECK_CDF;
+#endif
+    cookie = magic_open(flags);
     if (!cookie) {
         LOG("Error with libmagic %s", magic_error(cookie));
     } else {

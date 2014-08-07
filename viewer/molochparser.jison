@@ -5,9 +5,9 @@
 %%
 
 \s+                        /* skip whitespace */
+\"(?:\\?.)*?\"             return 'QUOTEDSTR'
+\/(?:\\?.)*?\/             return 'REGEXSTR'
 [-a-zA-Z0-9_.@:*?/]+       return 'STR'
-\"[^"\\]*(?:\\.[^"\\]*)*\" return 'QUOTEDSTR'
-\/[^\/\\]*(?:\\.[^\/\\]*)*\/ return 'REGEXSTR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
 "EXISTS!"                  return "EXISTS"
 "<="                       return 'lte'
@@ -206,7 +206,11 @@ function stripQuotes (str) {
 function formatQuery(yy, field, op, value)
 {
   var obj;
+  //console.log("field", field, "op", op, "value", value);
   //console.log("yy", util.inspect(yy, false, 50));
+  if (value[0] === "/" && value[value.length -1] === "/") {
+    checkRegex(value);
+  }
 
   if (!yy.fieldsMap[field])
     throw "Unknown field " + field;
@@ -264,7 +268,7 @@ function formatQuery(yy, field, op, value)
     }
 
     if (value[0] === "\[")
-      throw value + " - List queries not supported for gt/lt queries";
+      throw value + " - List queries not supported for gt/lt queries - " + value;
 
     obj = {range: {}};
     obj.range[info.dbField] = {};
@@ -293,7 +297,7 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   case "fileand":
     if (value[0] === "\[")
-      throw value + " - List queries not supported for file queries";
+      throw value + " - List queries not supported for file queries - " + value;
 
     if (op === "eq")
       return {fileand: stripQuotes(value)}
@@ -304,6 +308,13 @@ function formatQuery(yy, field, op, value)
   default:
     throw "Unknown field type: " + info.type;
   }
+}
+
+function checkRegex(str) {
+    var m;
+    if ((m = str.match(/^\/(?:\\?.)*?\//)) && m[0].length != str.length) {
+      throw "Must back slash any forward slashes in regexp query - " + m[0];
+    }
 }
 
 function field2Raw(yy, field) {
@@ -325,6 +336,8 @@ function stringQuery(yy, field, str) {
 
 
   if (str[0] === "/" && str[str.length -1] === "/") {
+    checkRegex(str);
+
     str = str.substring(1, str.length-1);
     if (info.transform) {
       str = global.moloch[info.transform](str).replace(/2e/g, '.');
@@ -355,6 +368,8 @@ function stringQuery(yy, field, str) {
       var should;
 
       if (typeof str === "string" && str[0] === "/" && str[str.length -1] === "/") {
+        checkRegex(str);
+
         should = {regexp: {}};
         should.regexp[rawField] = str.substring(1, str.length-1);
         obj.query.bool.should.push(should);

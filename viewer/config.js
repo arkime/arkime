@@ -19,7 +19,7 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-"use strict";
+(function () {'use strict';} ());
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Command Line Parsing
@@ -226,20 +226,50 @@ exports.headers = function(section) {
   var headers = Object.keys(internals.config[section]).map(function(key) {
     var obj = {name: key};
     internals.config[section][key].split(';').forEach(function(element) {
-      var parts = element.split(":");
-      if (parts && parts.length === 2) {
-        if (parts[1] === "true") {
-          parts[1] = true;
-        } else if (parts[1] === "false") {
-          parts[1] = false;
-        }
-        obj[parts[0]] = parts[1];
+      var i = element.indexOf(':');
+      if (i === -1) {
+        return;
       }
+
+      var parts = [element.slice(0, i), element.slice(i+1)];
+      if (parts[1] === "true") {
+        parts[1] = true;
+      } else if (parts[1] === "false") {
+        parts[1] = false;
+      }
+      obj[parts[0]] = parts[1];
     });
     return obj;
   });
 
   return headers;
+};
+
+exports.configMap = function(section, name) {
+  if (internals.config[section] === undefined) {return {};}
+  var keys = Object.keys(internals.config[section]);
+  if (!keys) {return {};}
+  var map = {};
+  Object.keys(internals.config[section]).forEach(function(key) {
+    var obj = {};
+    internals.config[section][key].split(';').forEach(function(element) {
+      var i = element.indexOf(':');
+      if (i === -1) {
+        return;
+      }
+
+      var parts = [element.slice(0, i), element.slice(i+1)];
+      if (parts[1] === "true") {
+        parts[1] = true;
+      } else if (parts[1] === "false") {
+        parts[1] = false;
+      }
+      obj[parts[0]] = parts[1];
+    });
+    map[key] = obj;
+  });
+
+  return map;
 };
 
 dropPrivileges();

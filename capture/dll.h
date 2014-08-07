@@ -45,6 +45,15 @@
      (head)->name##count-- \
     )
 
+#define DLL_MOVE_TAIL(name,head,element) \
+    ((element)->name##prev->name##next = (element)->name##next, \
+     (element)->name##next->name##prev = (element)->name##prev, \
+     (element)->name##next             = (void *)(head), \
+     (element)->name##prev             = (head)->name##prev, \
+     (head)->name##prev->name##next    = (element), \
+     (head)->name##prev                = (element) \
+    )
+
 #define DLL_POP_HEAD(name, head, element) \
     ((head)->name##count == 0 ? ((element) = NULL, 0) : ((element) = (head)->name##next, DLL_REMOVE(name, (head), (element)), 1))
 

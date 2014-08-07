@@ -789,13 +789,14 @@ $(document).ready(function() {
   // Send Session Dialog
   //////////////////////////////////////////////////////////////////////////////////
   $(document).on("click", ".sendSessionAction", function (e) {
+    var cluster = $(e.target).attr("cluster");
     showActionsDialog({
       submit: "Send Session",
       title: "Send Session",
       input: "Tags",
       message: "This will send the SPI and PCAP data to remote Moloch instance."
     }, function(qs, ids, tags) {
-      var data = [{name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
+      var data = [{name: "cluster", value: cluster}, {name: "ids", value: $(e.target).parents("div[sessionid]").attr("sessionid")}];
       if (tags) {
         qs.push({name: "tags", value: tags});
       }
@@ -814,7 +815,8 @@ $(document).ready(function() {
     return false;
   });
 
-  $("#sendSessionButton").click(function (e) {
+  $(".sendSessionButton").click(function (e) {
+    var cluster = $(e.target).attr("cluster");
     showActionsDialog({
       submit: "Send Session",
       query: "Send Session",
@@ -822,7 +824,7 @@ $(document).ready(function() {
       input: "Tags",
       message: "This will send the SPI and PCAP data to remote Moloch instance."
     }, function(qs, ids, tags) {
-      var data = [];
+      var data = [{name: "cluster", value: cluster}];
       if (tags) {
         qs.push({name: "tags", value: tags});
       }

@@ -18,7 +18,7 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-"use strict";
+(function () {'use strict';} ());
 
 var ESC            = require('elasticsearch'),
     async          = require('async'),
@@ -32,6 +32,7 @@ var internals = {tagId2Name: {},
                  fileName2File: {},
                  molochNodeStatsCache: {},
                  healthCache: {},
+                 usersCache: {},
                  qInProgress: 0,
                  apiVersion: "0.90",
                  q: []};
@@ -47,7 +48,10 @@ exports.initialize = function (info) {
   internals.elasticSearchClient = new ESC.Client({
     host: internals.info.host,
     apiVersion: internals.apiVersion,
-    requestTimeout: 300000
+    requestTimeout: 300000,
+    keepAlive: true,
+    minSockets: 20,
+    maxSockets: 21
   });
 
   // See if this is 1.1
@@ -55,17 +59,25 @@ exports.initialize = function (info) {
     if (data.version.number.match(/^1.0/)) {
       console.log("ES 1.0 is not supported");
       process.exit();
+      throw new Error("Exiting");
     }
 
-    var vmatch = data.version.number.match(/^1\.[12]/);
+    var vmatch = data.version.number.match(/^1\.[1-3]/);
     if (vmatch) {
-      internals.apiVersion = vmatch[0];
+      if (data.version.number.match(/^1\.[1-3]/)) {
+        internals.apiVersion = vmatch[0];
+      } else {
+        internals.apiVersion = "1.x";
+      }
       var oldes = internals.elasticSearchClient;
       setTimeout(function() {oldes.close();}, 2000);
       internals.elasticSearchClient = new ESC.Client({
         host: internals.info.host,
         apiVersion: internals.apiVersion,
-        requestTimeout: 300000
+        requestTimeout: 300000,
+        keepAlive: true,
+        minSockets: 20,
+        maxSockets: 21
       });
     }
   });
@@ -101,11 +113,11 @@ function didIt() {
 //// Low level functions to convert from old style to new
 //////////////////////////////////////////////////////////////////////////////////
 
-function merge(to, from) {
+exports.merge = function(to, from) {
   for (var key in from) {
     to[key] = from[key];
   }
-}
+};
 
 exports.get = function (index, type, id, cb) {
   internals.elasticSearchClient.get({index: index, type: type, id: id}, function(err, data) {
@@ -113,23 +125,22 @@ exports.get = function (index, type, id, cb) {
       data.found = data.exists;
       delete data.exists;
     }
-    cb(err, data)
+    cb(err, data);
   });
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
   var params = {index: index, type:type, id: id};
-  merge(params, options);
+  exports.merge(params, options);
   internals.elasticSearchClient.get(params, function(err, data) {
     if (data && data.exists !== undefined) {
       data.found = data.exists;
       delete data.exists;
     }
-    cb(err, data)
+    cb(err, data);
   });
 };
 
-/* Work around a breaking change where document.id is nolonger used for the id */
 exports.index = function (index, type, id, document, cb) {
   internals.elasticSearchClient.index({index: index, type: type, body: document, id: id}, cb);
 };
@@ -138,20 +149,23 @@ exports.indexNow = function (index, type, id, document, cb) {
   internals.elasticSearchClient.index({index: index, type: type, body: document, id: id, refresh: 1}, cb);
 };
 
-exports.search = function (index, type, query, cb) {
+exports.search = function (index, type, query, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index, type: type, body: query};
+  exports.merge(params, options);
+
   if (query._source && internals.apiVersion === "0.90") {
     query.fields = query._source;
     delete query._source;
   }
-  internals.elasticSearchClient.search({index: index, type: type, body: query}, cb);
+  internals.elasticSearchClient.search(params, cb);
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
-  if (query._source && internals.apiVersion === "0.90") {
-    query.fields = query._source;
-    delete query._source;
-  }
-  internals.elasticSearchClient.search({index: index, type: type, body: query, preference: "_primary_first", ignoreIndices: "missing"}, cb);
+  return exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing"}, cb);
 };
 
 exports.msearch = function (index, type, queries, cb) {
@@ -165,12 +179,22 @@ exports.msearch = function (index, type, queries, cb) {
   internals.elasticSearchClient.msearch({body: body}, cb);
 };
 
+exports.scroll = function (params, callback) {
+  internals.elasticSearchClient.scroll(params, callback);
+};
+
 exports.deleteByQuery = function (index, type, query, cb) {
   internals.elasticSearchClient.deleteByQuery({index: index, type: type, body: query}, cb);
 };
 
-exports.deleteDocument = function (index, type, id, cb) {
-  internals.elasticSearchClient.delete({index: index, type: type, id: id}, cb);
+exports.deleteDocument = function (index, type, id, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+  var params = {index: index, type: type, id: id};
+  exports.merge(params, options);
+  internals.elasticSearchClient.delete(params, cb);
 };
 
 exports.status = function(index, cb) {
@@ -189,13 +213,20 @@ exports.nodesStats = function (options, cb) {
   }
 };
 
-exports.update = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.update({index: index, type: type, body: document, id: id}, cb);
+exports.update = function (index, type, id, document, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+
+  var params = {index: index, type: type, body: document, id: id};
+  exports.merge(params, options);
+  internals.elasticSearchClient.update(params, cb);
 };
 
 exports.close = function () {
   internals.elasticSearchClient.close();
-}
+};
 
 //////////////////////////////////////////////////////////////////////////////////
 //// High level functions
@@ -207,7 +238,25 @@ exports.flushCache = function () {
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
   internals.healthCache = {};
-}
+  internals.usersCache = {};
+};
+
+exports.getUser = function (name, cb) {
+  if (internals.usersCache[name] && internals.usersCache[name]._timeStamp > Date.now() - 5000) {
+    return cb(null, internals.usersCache[name]);
+  }
+
+  exports.get('users', 'user', name, function(err, suser) {
+    if (err) {
+      return cb(err, suser);
+    }
+
+    suser._timeStamp = Date.now();
+    internals.usersCache[name] = suser;
+
+    cb(null, suser);
+  });
+};
 
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, function(err, stat) {
@@ -334,22 +383,35 @@ exports.fileIdToFile = function (node, num, cb) {
   });
 };
 
-exports.fileNameToFile = function (name, cb) {
-  if (internals.fileName2File[name]) {
-    return cb(internals.fileName2File[name]);
+exports.fileNameToFiles = function (name, cb) {
+  var query;
+  if (name[0] === "/" && name[name.length - 1] === "/") {
+    query = {query: {regexp: {name: name.substring(1, name.length-1)}}, sort: [{num: {order: "desc"}}]};
+  } else if (name.indexOf("*") !== -1) {
+    query = {query: {wildcard: {name: name}}, sort: [{num: {order: "desc"}}]};
   }
 
-  var query = {query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
+  // Not wildcard/regex check the cache
+  if (!query) {
+    if (internals.fileName2File[name]) {
+      return cb([internals.fileName2File[name]]);
+    }
+    query = {query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
+  }
+
   exports.search('files', 'file', query, function(err, data) {
-    if (!err && data.hits.hits[0]) {
-      var file = data.hits.hits[0]._source;
+    var files = [];
+    if (err || !data.hits) {
+      return cb(null);
+    }
+    data.hits.hits.forEach(function(hit) {
+      var file = hit._source;
       var key = file.node + "!" + file.num;
       internals.fileId2File[key] = file;
       internals.fileName2File[file.name] = file;
-      return cb(file);
-    }
-
-    return cb(null);
+      files.push(file);
+    });
+    return cb(files);
   });
 };
 
@@ -410,6 +472,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   if (version < 1020) {
     console.log("ERROR - Need at least node 0.10.20, currently using", process.version);
     process.exit(1);
+    throw new Error("Exiting");
   }
 
   var index;
@@ -419,6 +482,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
         process.exit(1);
+        throw new Error("Exiting");
       }
     });
   });
@@ -428,6 +492,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
+      throw new Error("Exiting");
     }
     if (!doc.found) {
       version = 0;
@@ -438,6 +503,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
     if (version < minVersion) {
         console.log("ERROR - Current database version (" + version + ") is less then required version (" + minVersion + ") use 'db/db.pl <eshost:esport> upgrade' to upgrade");
         process.exit(1);
+        throw new Error("Exiting");
     }
   });
 
@@ -478,6 +544,73 @@ exports.id2Index = function (id) {
 
 exports.loadFields = function(cb) {
   exports.search("fields", "field", {size:1000}, function (err, data) {
+    if (err) {
+      return cb([]);
+    }
     cb(data.hits.hits);
+  });
+};
+
+function twoDigitString(value) {
+  return (value < 10) ? ("0" + value) : value.toString();
+}
+
+exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
+  var indices = [];
+  exports.status("sessions-*", function(err, status) {
+
+    if (err || status.error) {
+      return cb("");
+    }
+
+    var offset = 86400;
+    if (rotateIndex === "hourly") {
+      offset = 3600;
+    }
+
+    startTime = Math.floor(startTime/offset)*offset;
+
+    while (startTime < stopTime) {
+      var iname;
+      var d = new Date(startTime*1000);
+      switch (rotateIndex) {
+      case "monthly":
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) + 'm' +
+          twoDigitString(d.getUTCMonth()+1);
+        break;
+      case "weekly":
+        var jan = new Date(d.getUTCFullYear(), 0, 0);
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) + 'w' +
+          twoDigitString(Math.floor((d - jan) / 604800000));
+        break;
+      case "hourly":
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) +
+          twoDigitString(d.getUTCMonth()+1) +
+          twoDigitString(d.getUTCDate()) + 'h' +
+          twoDigitString(d.getUTCHours());
+        break;
+      default:
+        iname = "sessions-" +
+          twoDigitString(d.getUTCFullYear()%100) +
+          twoDigitString(d.getUTCMonth()+1) +
+          twoDigitString(d.getUTCDate());
+        break;
+      }
+
+      startTime += offset;
+
+      if (status.indices[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
+        indices.push(iname);
+      }
+    }
+
+    if (indices.length === 0) {
+      return cb("sessions-*");
+    }
+
+    return cb(indices.join());
   });
 };

@@ -380,7 +380,11 @@ function stripQuotes (str) {
 function formatQuery(yy, field, op, value)
 {
   var obj;
+  //console.log("field", field, "op", op, "value", value);
   //console.log("yy", util.inspect(yy, false, 50));
+  if (value[0] === "/" && value[value.length -1] === "/") {
+    checkRegex(value);
+  }
 
   if (!yy.fieldsMap[field])
     throw "Unknown field " + field;
@@ -438,7 +442,7 @@ function formatQuery(yy, field, op, value)
     }
 
     if (value[0] === "\[")
-      throw value + " - List queries not supported for gt/lt queries";
+      throw value + " - List queries not supported for gt/lt queries - " + value;
 
     obj = {range: {}};
     obj.range[info.dbField] = {};
@@ -467,7 +471,7 @@ function formatQuery(yy, field, op, value)
     throw "Invalid operator '" + op + "' for " + field;
   case "fileand":
     if (value[0] === "\[")
-      throw value + " - List queries not supported for file queries";
+      throw value + " - List queries not supported for file queries - " + value;
 
     if (op === "eq")
       return {fileand: stripQuotes(value)}
@@ -478,6 +482,13 @@ function formatQuery(yy, field, op, value)
   default:
     throw "Unknown field type: " + info.type;
   }
+}
+
+function checkRegex(str) {
+    var m;
+    if ((m = str.match(/^\/(?:\\?.)*?\//)) && m[0].length != str.length) {
+      throw "Must back slash any forward slashes in regexp query - " + m[0];
+    }
 }
 
 function field2Raw(yy, field) {
@@ -499,6 +510,8 @@ function stringQuery(yy, field, str) {
 
 
   if (str[0] === "/" && str[str.length -1] === "/") {
+    checkRegex(str);
+
     str = str.substring(1, str.length-1);
     if (info.transform) {
       str = global.moloch[info.transform](str).replace(/2e/g, '.');
@@ -529,6 +542,8 @@ function stringQuery(yy, field, str) {
       var should;
 
       if (typeof str === "string" && str[0] === "/" && str[str.length -1] === "/") {
+        checkRegex(str);
+
         should = {regexp: {}};
         should.regexp[rawField] = str.substring(1, str.length-1);
         obj.query.bool.should.push(should);
@@ -968,11 +983,11 @@ var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
 case 0:/* skip whitespace */
 break;
-case 1:return 14
+case 1:return 15
 break;
-case 2:return 15
+case 2:return 16
 break;
-case 3:return 16
+case 3:return 14
 break;
 case 4:return 17
 break;
@@ -1014,7 +1029,7 @@ case 22:console.log(yy_.yytext);
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:[-a-zA-Z0-9_.@:*?/]+)/,/^(?:"[^"\\]*(?:\\.[^"\\]*)*")/,/^(?:\/[^\/\\]*(?:\\.[^\/\\]*)*\/)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
+rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-a-zA-Z0-9_.@:*?/]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
 };
 return lexer;

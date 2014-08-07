@@ -26,6 +26,7 @@
 # 17 - email hasheader, db,pa,by src and dst
 # 18 - fields db
 # 19 - users_v3
+# 20 - queries
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -34,7 +35,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 19;
+my $VERSION = 20;
 my $verbose = 0;
 
 ################################################################################
@@ -824,6 +825,71 @@ sub fieldsUpdate
     esPost("/fields/field/email.subject/_update", '{doc: {type: "textfield"}}', 1);
 }
 
+################################################################################
+sub queriesCreate
+{
+    my $settings = '
+{
+  settings: {
+    number_of_shards: 1,
+    number_of_replicas: 0,
+    auto_expand_replicas: "0-2"
+  }
+}';
+
+    print "Creating queries index\n" if ($verbose > 0);
+    esPut("/queries", $settings);
+    queriesUpdate();
+}
+################################################################################
+sub queriesUpdate
+{
+    my $mapping = '
+{
+  query: {
+    _all : {enabled : 0},
+    _source : {enabled : 1},
+    dynamic: "strict",
+    properties: {
+      name: {
+        type: "string",
+        index: "not_analyzed"
+      },
+      enabled: {
+        type: "boolean"
+      },
+      lpValue: {
+        type: "long"
+      },
+      lastRun: {
+        type: "date"
+      },
+      count: {
+        type: "long"
+      },
+      query: {
+        type: "string",
+        index: "not_analyzed"
+      },
+      action: {
+        type: "string",
+        index: "not_analyzed"
+      },
+      creator: {
+        type: "string",
+        index: "not_analyzed"
+      },
+      tags: {
+        type: "string",
+        index: "not_analyzed"
+      }
+    }
+  }
+}';
+
+    print "Setting queries mapping\n" if ($verbose > 0);
+    esPut("/queries/query/_mapping?pretty&ignore_conflicts=true", $mapping);
+}
 
 ################################################################################
 sub sessionsUpdate
@@ -1650,6 +1716,12 @@ sub dbCheckHealth {
     if ($health->{status} ne "green") {
         print("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
     }
+
+    my $settings = esGet("/_cluster/settings?flat_settings");
+    if ($settings && $settings->{persistent} && $settings->{persistent}->{"threadpool.search.queue_size"} == "-1") {
+        print "Changing threadpool.search.queue_size to 10000 to work around bug\n";
+        esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
+    }
 }
 ################################################################################
 sub dbCheck {
@@ -1975,6 +2047,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         esDelete("/users_v2", 1);
         esDelete("/users_v3", 1);
         esDelete("/users", 1);
+        esDelete("/queries", 1);
     }
     esDelete("/tagger", 1);
 
@@ -1990,6 +2063,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     fieldsCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
+        queriesCreate();
     }
     print "Finished.  Have fun!\n";
 } elsif ($main::versionNumber == 0) {
@@ -2022,6 +2096,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     esAlias("add", "dstats_v1", "dstats");
 
+    queriesCreate();
+
     print "users_v1 and files_v1 tables can be deleted now\n";
     print "Finished\n";
 } elsif ($main::versionNumber >= 1 && $main::versionNumber < 7) {
@@ -2042,6 +2118,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     statsUpdate();
     dstatsUpdate();
     fieldsCreate();
+    queriesCreate();
 
     print "Finished\n";
 } elsif ($main::versionNumber >= 7 && $main::versionNumber < 18) {
@@ -2059,6 +2136,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     statsUpdate();
     dstatsUpdate();
     fieldsCreate();
+    queriesCreate();
 
     print "Finished\n";
 } elsif ($main::versionNumber >= 18 && $main::versionNumber < 19) {
@@ -2073,11 +2151,19 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     fieldsUpdate();
     sessionsUpdate();
+    queriesCreate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 19 && $main::versionNumber <= 20) {
+} elsif ($main::versionNumber >= 19 && $main::versionNumber < 20) {
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
+    queriesCreate();
+
+    print "Finished\n";
+} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 20) {
+    waitFor("UPGRADE", "do you want to upgrade?");
+    sessionsUpdate();
+    queriesUpdate();
 
     print "Finished\n";
 } else {

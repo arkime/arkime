@@ -1,5 +1,20 @@
+0.11.2 2014/08/xx
+  - NOTICE: ES 1.1.x, 1.2.x, 1.3.x are supported by this version. 
+            ES 0.90.12 still works but will no longer be supported.
+            Restart viewer AFTER upgrading ES versions
+  - NOTICE: Requires running db.pl upgrade
+  - NOTICE: Requires running npm update for ES 1.3 support
+  - New experimental "Cron Queries" feature
+    * ONE and ONLY one viewer should have "cronQueries=true"
+    * New [moloch-clusters] config section to send sessions 
+      from one cluster to another
+  - Doubled the number of sockets from viewer to ES, now 20
+  - Regex and wildcard support for file expression
+  - Regex is stricter about back slashing (issue #281)
+  - Cache user lookups for 5 seconds
+
 0.11.1 2014/08/07
-  - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are support by this version. 
+  - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version. 
             ES 1.0 is NOT supported.
             This is the LAST version to support 0.90.x
             Restart viewer AFTER upgrading ES versions

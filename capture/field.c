@@ -74,7 +74,6 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     char friendlyName2[1000];
     char help2[1000];
     char rawField[100];
-    int  pos = -1;
 
     MolochFieldInfo_t *minfo = 0;
     HASH_FIND(f_, fields, dbField, minfo);
@@ -109,11 +108,10 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
     if ((flags & MOLOCH_FIELD_FLAG_FAKE) == 0) {
         if (minfo->pos == -1) {
-            pos = config.maxField++;
-            minfo->pos      = pos;
+            minfo->pos = config.maxField++;
         }
 
-        config.fields[pos] = minfo;
+        config.fields[minfo->pos] = minfo;
 
         // Change leading part to dbGroup
         char *firstdot = strchr(minfo->dbField, '.');
@@ -135,7 +133,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     }
 
     if (flags & MOLOCH_FIELD_FLAG_NODB)
-        return pos;
+        return minfo->pos;
 
     MolochFieldInfo_t *info = 0;
     if (flags & MOLOCH_FIELD_FLAG_CNT) {
@@ -239,7 +237,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, NULL);
         }
     }
-    return pos;
+    return minfo->pos;
 }
 /******************************************************************************/
 int moloch_field_by_db(char *dbField)

@@ -154,9 +154,10 @@ html
               a#scrubButton Scrub PCAP Storage
             li
               a#deleteButton Delete SPI &amp; PCAP
-          - if (sendSession && sendSession.name)
-            li
-              a#sendSessionButton Send Session to #{sendSession.name}
+          - if (molochClusters)
+            each key in Object.keys(molochClusters)
+              li
+                a.sendSessionButton(cluster=key) Send Session to #{molochClusters[key].name}
       div#sessionActionsMenu
         ul
           li
@@ -172,9 +173,10 @@ html
               a#sessionScrubButton.scrubAction Scrub PCAP Storage
             li
               a#sessionDeleteButton.deleteAction Delete SPI &amp; PCAP
-          - if (sendSession && sendSession.name)
-            li
-              a#sessionSendSessionButton.sendSessionAction Send Session to #{sendSession.name}
+          - if (molochClusters)
+            each key in Object.keys(molochClusters)
+              li
+                a.sessionSendSessionButton.sendSessionAction(cluster=key) Send Session to #{molochClusters[key].name}
       if (user.views)
         div#viewsMenu
           ul
