@@ -492,7 +492,8 @@ app.get("/", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'Sessions'),
     titleLink: 'sessionsLink',
-    isIndex: true
+    isIndex: true,
+    processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
   });
 });
 
@@ -505,7 +506,7 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
     emailFields: Config.headers("headers-email"),
-    categories: Config.getCategories()
+    categories: Config.getCategories(),
   });
 });
 
@@ -514,7 +515,8 @@ app.get("/spigraph", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'SPI Graph'),
     titleLink: 'spigraphLink',
-    isIndex: true
+    isIndex: true,
+    processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
   });
 });
 
@@ -523,7 +525,7 @@ app.get("/connections", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'Connections'),
     titleLink: 'connectionsLink',
-    isIndex: true
+    isIndex: true,
   });
 });
 
@@ -532,7 +534,7 @@ app.get("/upload", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'Upload'),
     titleLink: 'uploadLink',
-    isIndex: false
+    isIndex: false,
   });
 });
 
@@ -540,7 +542,7 @@ app.get('/about', checkWebEnabled, function(req, res) {
   res.render('about', {
     user: req.user,
     title: makeTitle(req, 'About'),
-    titleLink: 'aboutLink'
+    titleLink: 'aboutLink',
   });
 });
 
@@ -548,7 +550,8 @@ app.get('/files', checkWebEnabled, function(req, res) {
   res.render('files', {
     user: req.user,
     title: makeTitle(req, 'Files'),
-    titleLink: 'filesLink'
+    titleLink: 'filesLink',
+    processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
   });
 });
 
@@ -557,7 +560,8 @@ app.get('/users', checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'Users'),
     titleLink: 'usersLink',
-    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
+    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+    processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
   });
 });
 
@@ -570,7 +574,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
       currentPassword: cp,
       token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
       title: makeTitle(req, 'Settings'),
-      titleLink: 'settingsLink'
+      titleLink: 'settingsLink',
     });
   }
 
@@ -608,7 +612,8 @@ app.get('/stats', checkWebEnabled, function(req, res) {
       user: req.user,
       title: makeTitle(req, 'Stats'),
       titleLink: 'statsLink',
-      nodes: nodes
+      nodes: nodes,
+      processingMessage: Config.get('processingMessage', "I'm Hootin' :D"),
     });
   });
 });
