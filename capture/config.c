@@ -600,7 +600,7 @@ void moloch_config_init()
         exit (1);
     }
 
-    if (!config.interface && !config.pcapReadFile && !config.pcapReadDir) {
+    if (!config.interface && !config.pcapReadOffline) {
         printf("Need to set interface, pcap file (-r) or pcap directory (-R) \n");
         exit (1);
     }

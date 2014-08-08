@@ -197,8 +197,9 @@ typedef struct moloch_config {
     char     *configFile;
     char     *nodeName;
     char     *hostName;
-    char     *pcapReadFile;
-    char     *pcapReadDir;
+    char    **pcapReadFiles;
+    char    **pcapReadDirs;
+    gboolean  pcapReadOffline;
     gchar   **extraTags;
     gboolean  debug;
     gboolean  dryRun;

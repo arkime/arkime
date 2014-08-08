@@ -47,20 +47,20 @@ static gboolean showVersion    = FALSE;
 
 static GOptionEntry entries[] =
 {
-    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,     &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
-    { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadFile,  "Offline pcap file", NULL },
-    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME,     &config.pcapReadDir,   "Offline pcap directory, all *.pcap files will be processed", NULL },
-    { "recursive",   0,                    0, G_OPTION_ARG_NONE,         &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
-    { "node",      'n',                    0, G_OPTION_ARG_STRING,       &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
-    { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY, &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
-    { "version",   'v',                    0, G_OPTION_ARG_NONE,         &showVersion,          "Show version number", NULL },
-    { "debug",     'd',                    0, G_OPTION_ARG_NONE,         &config.debug,         "Turn on all debugging", NULL },
-    { "copy",        0,                    0, G_OPTION_ARG_NONE,         &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file ", NULL },
-    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.fakePcap,      "fake pcap", NULL },
-    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,         &config.dryRun,        "dry run, noting written to databases or filesystem", NULL },
-    { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.noSPI,         "no SPI data written to ES", NULL },
-    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,         &config.tests,         "Output test suite information", NULL },
-    { NULL,          0, 0,                                    0,         NULL, NULL, NULL }
+    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
+    { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
+    { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
+    { "recursive",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
+    { "node",      'n',                    0, G_OPTION_ARG_STRING,         &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host.", NULL },
+    { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
+    { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
+    { "debug",     'd',                    0, G_OPTION_ARG_NONE,           &config.debug,         "Turn on all debugging", NULL },
+    { "copy",        0,                    0, G_OPTION_ARG_NONE,           &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file ", NULL },
+    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.fakePcap,      "fake pcap", NULL },
+    { "dryrun",      0,                    0, G_OPTION_ARG_NONE,           &config.dryRun,        "dry run, noting written to databases or filesystem", NULL },
+    { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
+    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
+    { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
 
@@ -80,10 +80,7 @@ void parse_args(int argc, char **argv)
 
     g_option_context_free(context);
 
-    if (config.pcapReadFile && config.pcapReadDir) {
-        printf("Use either -R or -r\n");
-        exit(0);
-    }
+    config.pcapReadOffline = (config.pcapReadFiles || config.pcapReadDirs);
 
     if (!config.configFile)
         config.configFile = g_strdup("/data/moloch/etc/config.ini");
@@ -150,10 +147,10 @@ void cleanup(int UNUSED(sig))
     moloch_field_exit();
 
 
-    if (config.pcapReadFile)
-        g_free(config.pcapReadFile);
-    if (config.pcapReadDir)
-        g_free(config.pcapReadDir);
+    if (config.pcapReadFiles)
+        g_strfreev(config.pcapReadFiles);
+    if (config.pcapReadDirs)
+        g_strfreev(config.pcapReadDirs);
     if (config.extraTags)
         g_strfreev(config.extraTags);
     exit(0);
@@ -484,7 +481,7 @@ int main(int argc, char **argv)
     moloch_config_init();
     moloch_hex_init();
     moloch_nids_root_init();
-    if (!config.pcapReadFile && !config.pcapReadDir) {
+    if (!config.pcapReadOffline) {
         moloch_drop_privileges();
         config.copyPcap = 1;
         moloch_mlockall_init();

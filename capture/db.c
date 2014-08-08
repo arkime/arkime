@@ -1215,7 +1215,7 @@ void moloch_db_load_file_num()
     moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL);
 
 fetch_file_num:
-    if (!(config.pcapReadFile || config.pcapReadDir)) {
+    if (!config.pcapReadOffline) {
         /* If doing a live file create a file number now */
         snprintf(key, sizeof(key), "fn-%s", config.nodeName);
         nextFileNum = moloch_db_get_sequence_number_sync(key);

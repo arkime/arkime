@@ -271,7 +271,7 @@ void moloch_nids_mid_save_session(MolochSession_t *session)
         moloch_plugins_cb_pre_save(session, FALSE);
 
     /* If we are parsing pcap its ok to pause and make sure all tags are loaded */
-    while (session->outstandingQueries > 0 && (config.pcapReadDir || config.pcapReadFile)) {
+    while (session->outstandingQueries > 0 && config.pcapReadOffline) {
         g_main_context_iteration (g_main_context_default(), TRUE);
     }
 
@@ -1189,7 +1189,7 @@ gboolean moloch_nids_file_dispatch()
 
     // Some kind of failure, move to the next file or quit
     if (r <= 0) {
-        if (config.pcapReadDir && moloch_nids_next_file()) {
+        if (moloch_nids_next_file()) {
             g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
             return FALSE;
         }
@@ -1298,106 +1298,138 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
 static pcap_t *closeNextOpen = 0;
 int moloch_nids_next_file()
 {
-    static GDir *pcapGDir[21];
-    static char *pcapBase[21];
-    static int   pcapGDirLevel = -1;
-    GError      *error = 0;
     char         errbuf[1024];
+    gchar       *fullfilename;
 
-    if (pcapGDirLevel == -1) {
-        pcapGDirLevel = 0;
-        pcapBase[0] = config.pcapReadDir;
+
+    if (!config.copyPcap) {
+        dumperFileName = 0;
     }
 
-    if (!pcapGDir[pcapGDirLevel]) {
-        pcapGDir[pcapGDirLevel] = g_dir_open(pcapBase[pcapGDirLevel], 0, &error);
-        if (error) {
-            LOG("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
-            exit(0);
+    if (config.pcapReadFiles) {
+        static int pcapFilePos = 0;
+
+        fullfilename = config.pcapReadFiles[pcapFilePos];
+
+        errbuf[0] = 0;
+        closeNextOpen = nids_params.pcap_desc;
+        if (!fullfilename) {
+            goto filesDone;
         }
+        pcapFilePos++;
+
+        LOG ("Processing %s", fullfilename);
+        nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
+
+        if (!nids_params.pcap_desc) {
+            LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
+            return moloch_nids_next_file();
+        }
+        offlineFile = pcap_file(nids_params.pcap_desc);
+
+        if (!realpath(fullfilename, offlinePcapFilename)) {
+            LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", fullfilename, errno);
+            exit(1);
+        }
+        return 1;
     }
-    const gchar *filename;
-    while (1) {
-        filename = g_dir_read_name(pcapGDir[pcapGDirLevel]);
 
-        // No more files, stop processing this directory
-        if (!filename) {
-            break;
+filesDone:
+
+    if (config.pcapReadDirs) {
+        static int   pcapDirPos = 0;
+        static GDir *pcapGDir[21];
+        static char *pcapBase[21];
+        static int   pcapGDirLevel = -1;
+        GError      *error = 0;
+
+        if (pcapGDirLevel == -1) {
+            pcapGDirLevel = 0;
+            pcapBase[0] = config.pcapReadDirs[pcapDirPos];
+            if (!pcapBase[0]) {
+                goto dirsDone;
+            }
         }
 
-        // Skip hidden files/directories
-        if (filename[0] == '.')
-            continue;
+        if (!pcapGDir[pcapGDirLevel]) {
+            pcapGDir[pcapGDirLevel] = g_dir_open(pcapBase[pcapGDirLevel], 0, &error);
+            if (error) {
+                LOG("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
+                exit(0);
+            }
+        }
+        const gchar *filename;
+        while (1) {
+            filename = g_dir_read_name(pcapGDir[pcapGDirLevel]);
 
-        gchar *fullfilename;
-        fullfilename = g_build_filename (pcapBase[pcapGDirLevel], filename, NULL);
+            // No more files, stop processing this directory
+            if (!filename) {
+                break;
+            }
 
-        // If recursive option and a directory then process all the files in that dir
-        if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            if (pcapGDirLevel >= 20)
+            // Skip hidden files/directories
+            if (filename[0] == '.')
                 continue;
-            pcapBase[pcapGDirLevel+1] = fullfilename;
-            pcapGDirLevel++;
+
+            fullfilename = g_build_filename (pcapBase[pcapGDirLevel], filename, NULL);
+
+            // If recursive option and a directory then process all the files in that dir
+            if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+                if (pcapGDirLevel >= 20)
+                    continue;
+                pcapBase[pcapGDirLevel+1] = fullfilename;
+                pcapGDirLevel++;
+                return moloch_nids_next_file();
+            }
+
+            // If it doesn't end with pcap we ignore it
+            if (strcasecmp(".pcap", filename + strlen(filename)-5) != 0) {
+                g_free(fullfilename);
+                continue;
+            }
+
+            if (!realpath(fullfilename, offlinePcapFilename)) {
+                g_free(fullfilename);
+                continue;
+            }
+
+            LOG ("Processing %s", fullfilename);
+            errbuf[0] = 0;
+            closeNextOpen = nids_params.pcap_desc;
+            nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
+            if (!nids_params.pcap_desc) {
+                LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
+                g_free(fullfilename);
+                continue;
+            }
+            offlineFile = pcap_file(nids_params.pcap_desc);
+            g_free(fullfilename);
+            return 1;
+        }
+        g_dir_close(pcapGDir[pcapGDirLevel]);
+        pcapGDir[pcapGDirLevel] = 0;
+
+        if (pcapGDirLevel > 0) {
+            g_free(pcapBase[pcapGDirLevel]);
+            pcapGDirLevel--;
+            return moloch_nids_next_file();
+        } else {
+            pcapDirPos++;
+            pcapGDirLevel = -1;
             return moloch_nids_next_file();
         }
 
-        // If it doesn't end with pcap we ignore it
-        if (strcasecmp(".pcap", filename + strlen(filename)-5) != 0) {
-            g_free(fullfilename);
-            continue;
-        }
-
-        if (!realpath(fullfilename, offlinePcapFilename)) {
-            g_free(fullfilename);
-            continue;
-        }
-        LOG ("Processing %s", fullfilename);
-
-
-        if (!config.copyPcap) {
-            dumperFileName = 0;
-        }
-
-        errbuf[0] = 0;
-        if (nids_params.pcap_desc)
-            closeNextOpen = nids_params.pcap_desc;
-        nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
-        if (!nids_params.pcap_desc) {
-            LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
-            g_free(fullfilename);
-            continue;
-        }
-        offlineFile = pcap_file(nids_params.pcap_desc);
-        g_free(fullfilename);
-        return 1;
-    }
-    g_dir_close(pcapGDir[pcapGDirLevel]);
-    pcapGDir[pcapGDirLevel] = 0;
-
-    if (pcapGDirLevel > 0) {
-        g_free(pcapBase[pcapGDirLevel]);
-        pcapGDirLevel--;
-        return moloch_nids_next_file();
     }
 
+dirsDone:
     return 0;
 }
 /******************************************************************************/
 void moloch_nids_root_init()
 {
     char errbuf[1024];
-    if (config.pcapReadDir) {
+    if (config.pcapReadOffline) {
         moloch_nids_next_file();
-    }
-    else if (config.pcapReadFile) {
-        nids_params.pcap_desc = pcap_open_offline(config.pcapReadFile, errbuf);
-        if (nids_params.pcap_desc) {
-            offlineFile = pcap_file(nids_params.pcap_desc);
-            if (!realpath(config.pcapReadFile, offlinePcapFilename)) {
-                LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", config.pcapReadFile, errno);
-                exit(1);
-            }
-        }
     } else {
 #ifdef SNF
         nids_params.pcap_desc = pcap_open_live(config.interface, 8096, 1, 500, errbuf);
@@ -1421,7 +1453,7 @@ void moloch_nids_root_init()
     pcapFileHeader.sigfigs = 0;
     pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
 
-    config.maxWriteBuffers = (config.pcapReadDir || config.pcapReadFile)?10:2000;
+    config.maxWriteBuffers = config.pcapReadOffline?10:2000;
 }
 /******************************************************************************/
 gboolean moloch_nids_check_file_time_gfunc (gpointer UNUSED(user_data))
@@ -1457,7 +1489,7 @@ void moloch_nids_init_nids()
     }
 
     GVoidFunc dispatch;
-    if (config.pcapReadDir || config.pcapReadFile)
+    if (config.pcapReadOffline)
         dispatch = (GVoidFunc)&moloch_nids_file_dispatch;
     else
         dispatch = (GVoidFunc)&moloch_nids_interface_dispatch;
