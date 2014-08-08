@@ -218,7 +218,17 @@ void moloch_config_load()
         for (i = 0; tags[i]; i++) {
             if (!(*tags[i]))
                 continue;
-            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tags[i], TRUE);
+            int num = 1;
+            char *colon = strchr(tags[i], ':');
+            if (colon) {
+                *colon = 0;
+                num = atoi(colon+1);
+                if (num < 1)
+                    num = 1;
+                if (num > 0xffff)
+                    num = 0xffff;
+            }
+            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tags[i], num, TRUE);
         }
         g_strfreev(tags);
     }

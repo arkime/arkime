@@ -232,14 +232,16 @@ const char *moloch_memcasestr(const char *haystack, int haysize, const char *nee
     return NULL;
 }
 /******************************************************************************/
-gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
+gboolean moloch_string_add(void *hashv, char *string, int uw, gboolean copy)
 {
     MolochStringHash_t *hash = hashv;
     MolochString_t *hstring;
 
     HASH_FIND(s_, *hash, string, hstring);
-    if (hstring)
+    if (hstring) {
+        hstring->uw = uw;
         return FALSE;
+    }
 
     hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
     if (copy) {
@@ -248,6 +250,7 @@ gboolean moloch_string_add(void *hashv, char *string, gboolean copy)
         hstring->str = string;
     }
     hstring->len = strlen(string);
+    hstring->uw = uw;
     HASH_ADD(s_, *hash, hstring->str, hstring);
     return TRUE;
 }

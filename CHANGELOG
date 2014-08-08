@@ -12,6 +12,8 @@
   - Regex and wildcard support for file expression
   - Regex is stricter about back slashing (issue #281)
   - Cache user lookups for 5 seconds
+  - dontSaveTags config can now have a :<num> for each tag which
+    specifies the total packets to save. (issue #278)
 
 0.11.1 2014/08/07
   - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version. 

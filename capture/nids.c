@@ -734,7 +734,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         moloch_plugins_cb_ip(session, packet, len);
 
     session->packets[session->which]++;
-    if (!config.dryRun && !session->dontSave) {
+    uint32_t packets = session->packets[0] + session->packets[1];
+    if (!config.dryRun && (session->stopSaving == 0 || packets < session->stopSaving)) {
         if (config.copyPcap) {
             /* Save packet to file */
             if (!dumperFileName || dumperFilePos >= config.maxFileSizeB) {
@@ -779,7 +780,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             g_array_append_val(session->filePosArray, dumperFilePos);
         }
 
-        if (session->packets[0] + session->packets[1] >= config.maxPackets) {
+        if (packets >= config.maxPackets) {
             moloch_nids_mid_save_session(session);
         }
     } else if (config.tests) {
@@ -871,12 +872,12 @@ void moloch_nids_add_tag(MolochSession_t *session, const char *tag) {
     moloch_nids_incr_outstanding(session);
     moloch_db_get_tag(session, tagsField, tag, moloch_nids_get_tag_cb);
 
-    if (!session->dontSave && HASH_COUNT(s_, config.dontSaveTags)) {
+    if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
         MolochString_t *tstring;
 
         HASH_FIND(s_, config.dontSaveTags, tag, tstring);
         if (tstring) {
-            session->dontSave = 1;
+            session->stopSaving = tstring->uw;
         }
     }
 }
@@ -886,12 +887,12 @@ void moloch_nids_add_tag_type(MolochSession_t *session, int tagtype, const char 
     moloch_nids_incr_outstanding(session);
     moloch_db_get_tag(session, tagtype, tag, moloch_nids_get_tag_cb);
 
-    if (!session->dontSave && HASH_COUNT(s_, config.dontSaveTags)) {
+    if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
         MolochString_t *tstring;
 
         HASH_FIND(s_, config.dontSaveTags, tag, tstring);
         if (tstring) {
-            session->dontSave = 1;
+            session->stopSaving = tstring->uw;
         }
     }
 }

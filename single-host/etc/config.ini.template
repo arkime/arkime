@@ -128,6 +128,7 @@ dropGroup=_GROUPNAME_
 # Semicolon ';' seperated list of tags which once capture sets for a session causes the
 # remaining pcap from being saved for the session.  It is likely that the initial packets 
 # WILL be saved for the session since tags usually aren't set until after several packets
+# Each tag can optionally be followed by a :<num> which specifies how many total packets to save
 #dontSaveTags=
 
 # Header to use for determining the username to check in the database for instead of

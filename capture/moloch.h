@@ -334,6 +334,7 @@ typedef struct moloch_session {
     uint16_t               offsets[2];
     uint16_t               outstandingQueries;
     uint16_t               segments;
+    uint16_t               stopSaving;
 
     uint8_t                consumed[2];
     uint8_t                protocol;
@@ -345,7 +346,6 @@ typedef struct moloch_session {
 
     uint16_t               haveNidsTcp:1;
     uint16_t               needSave:1;
-    uint16_t               dontSave:1;
     uint16_t               which:1;
 } MolochSession_t;
 
@@ -406,7 +406,7 @@ gint moloch_watch_fd(gint fd, GIOCondition cond, MolochWatchFd_func func, gpoint
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen);
 char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 
-gboolean moloch_string_add(void *hash, char *string, gboolean copy);
+gboolean moloch_string_add(void *hash, char *string, int uw, gboolean copy);
 
 uint32_t moloch_string_hash(const void *key);
 uint32_t moloch_string_hash_len(const void *key, int len);
