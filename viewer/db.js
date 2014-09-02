@@ -90,26 +90,6 @@ exports.initialize = function (info) {
 };
 
 //////////////////////////////////////////////////////////////////////////////////
-//// Very simple throttling Q
-//////////////////////////////////////////////////////////////////////////////////
-function canDo(fn, that, args) {
-  if (internals.qInProgress < 5) {
-    internals.qInProgress++;
-    return true;
-  }
-  internals.q.push([fn, that, args]);
-  return false;
-}
-
-function didIt() {
-  internals.qInProgress--;
-  if (internals.q.length > 0) {
-    var item = internals.q.shift();
-    async.setImmediate(function () {item[0].apply(item[1], item[2]);});
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////////
 //// Low level functions to convert from old style to new
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -320,48 +300,47 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-exports.tagIdToName = function (id, cb) {
-  if (!canDo(exports.tagIdToName, this, arguments)) {
-    return;
-  }
-
-  if (internals.tagId2Name[id]) {
-    cb(internals.tagId2Name[id]);
-    return didIt();
-  }
-
-  var query = {query: {term: {n:id}}};
-  exports.search('tags', 'tag', query, function(err, tdata) {
-    didIt();
-
-    if (!err && tdata.hits.hits[0]) {
-      internals.tagId2Name[id] = tdata.hits.hits[0]._id;
-      internals.tagName2Id[tdata.hits.hits[0]._id] = id;
-      return cb(internals.tagId2Name[id]);
+function tagWorker(task, callback) {
+  if (task.type === "tagIdToName") {
+    if (internals.tagId2Name[task.id]) {
+      return callback(null, internals.tagId2Name[task.id]);
+    }
+    var query = {query: {term: {n:task.id}}};
+    exports.search('tags', 'tag', query, function(err, tdata) {
+      if (!err && tdata.hits.hits[0]) {
+        internals.tagId2Name[task.id] = tdata.hits.hits[0]._id;
+        internals.tagName2Id[tdata.hits.hits[0]._id] = task.id;
+        return callback(null, internals.tagId2Name[task.id]);
+      }
+      return callback(null, "<lookuperror>");
+    });
+  } else {
+    if (internals.tagName2Id[task.name]) {
+      return callback(null, internals.tagName2Id[task.name]);
     }
 
-    return cb("<lookuperror>");
+    exports.get('tags', 'tag', task.name, function(err, tdata) {
+      if (!err && tdata.found) {
+        internals.tagName2Id[task.name] = tdata._source.n;
+        internals.tagId2Name[tdata._source.n] = task.name;
+        return callback(null, internals.tagName2Id[task.name]);
+      }
+      return callback(null, -1);
+    });
+  }
+}
+
+internals.tagQueue = async.queue(tagWorker, 5);
+
+exports.tagIdToName = function (id, cb) {
+  internals.tagQueue.push({id: id, type: "tagIdToName"}, function (err, data) {
+    return cb(data);
   });
 };
 
 exports.tagNameToId = function (name, cb) {
-  if (!canDo(exports.tagNameToId, this, arguments)) {
-    return;
-  }
-
-  if (internals.tagName2Id[name]) {
-    cb(internals.tagName2Id[name]);
-    return didIt();
-  }
-
-  exports.get('tags', 'tag', name, function(err, tdata) {
-    didIt();
-    if (!err && tdata.found) {
-      internals.tagName2Id[name] = tdata._source.n;
-      internals.tagId2Name[tdata._source.n] = name;
-      return cb(internals.tagName2Id[name]);
-    }
-    return cb(-1);
+  internals.tagQueue.push({name: name, type: "tagNameToId"}, function (err, data) {
+    return cb(data);
   });
 };
 

@@ -61,9 +61,9 @@ block content
     table#views(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
       thead
         tr
-          th(style="width:150px") Name
-          th Expression
-          th(style="width:50px") Action
+          th.viewName(style="width:150px") Name
+          th.viewExpression Expression
+          th.viewAction(style="width:50px") Action
       tbody
         - var keys = Object.keys(suser.views).sort()
         each key in keys
@@ -110,13 +110,13 @@ block content
     table#queries(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
       thead
         tr
-          th(style="width:50px") Processed
-          th(style="width:50px") Enabled
-          th(style="width:150px") Name
-          th Expression
-          th(style="width:150px") Actions
-          th Tags
-          th(style="width:50px") Action
+          th.queryProcessed(style="width:50px") Processed
+          th.queryEnabled(style="width:50px") Enabled
+          th.queryName(style="width:150px") Name
+          th.queryExpression Expression
+          th.queryActions(style="width:150px") Actions
+          th.queryTags Tags
+          th.queryAction(style="width:50px") Action
       tbody
         - var keys = Object.keys(suser.queries).sort()
         each key in keys
@@ -153,17 +153,17 @@ block content
     label(for='cqTags') Comma seperated tags:
     input(id='cqTags', name='tags', size='100')
     br
-    label(for='cqSince') Since:
+    label(for='cqSince') Start Processing Since:
     select(id='cqSince',name='since')
       option(value=0,selected) Now
-      option(value=1) Last 1 hr
-      option(value=6) Last 6 hrs
-      option(value=24) Last 24 hrs
-      option(value=48) Last 48 hrs
-      option(value=72) Last 3 days
-      option(value=168) Last Week
-      option(value=720) Last Month
-      option(value=4380) Last 6 Months
+      option(value=1) 1 hr ago
+      option(value=6) 6 hrs ago
+      option(value=24) 24 hrs ago
+      option(value=48) 48 hrs ago
+      option(value=72) 3 days ago
+      option(value=168) Week ago
+      option(value=720) Month ago
+      option(value=4380) 6 Months ago
       option(value=-1) All
     br
     p
@@ -172,6 +172,7 @@ block content
 
   script(type='text/javascript').
     var settings  = !{JSON.stringify(suser.settings)};
+
 
     $(document).ready(function() {
       // Selects
@@ -187,6 +188,44 @@ block content
         } else if (defaults[field]) {
           $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
         }
+      });
+
+      $('#views').dataTable({
+        oLanguage: {
+          "sLengthMenu": "_MENU_"
+        },
+        sDom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipfr>t',
+        aoColumns: [
+        null,
+        null,
+        {
+          bSearchable: false,
+          bSortable: false
+        }
+        ]
+      });
+
+      $('#queries').dataTable({
+        "oLanguage": {
+          "sLengthMenu": "_MENU_"
+        },
+        "sDom": '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipfr>t',
+        aoColumns: [
+          null,
+          {
+            sSortDataType: "dom-checkbox"
+          },
+          null,
+          null,
+          {
+            sSortDataType: "dom-select"
+          },
+          null,
+          {
+            bSearchable: false,
+            bSortable: false
+          }
+        ]
       });
     });
 
@@ -349,3 +388,24 @@ block content
         return false;
       }
     });
+
+    // From http://datatables.net/examples/plug-ins/dom_sort.html
+    /* Create an array with the values of all the select options in a column */
+    $.fn.dataTableExt.afnSortData['dom-select'] = function  ( oSettings, iColumn )
+    {
+      var aData = [];
+      $( 'td:eq('+iColumn+') select', oSettings.oApi._fnGetTrNodes(oSettings) ).each( function () {
+        aData.push( $(this).val() );
+      } );
+      return aData;
+    }
+
+    /* Create an array with the values of all the checkboxes in a column */
+    $.fn.dataTableExt.afnSortData['dom-checkbox'] = function  ( oSettings, iColumn )
+    {
+      var aData = [];
+      $( 'td:eq('+iColumn+') input', oSettings.oApi._fnGetTrNodes(oSettings) ).each( function () {
+        aData.push( this.checked==true ? "1" : "0" );
+      } );
+      return aData;
+    }
