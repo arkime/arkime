@@ -388,6 +388,9 @@ gboolean moloch_nids_output_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoin
         dumperFd = open(out->name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         if (dumperFd < 0) {
             LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", out->name, strerror(errno), errno);
+            if (config.dropUser) {
+                LOG("   Verify that user '%s' set by configuration variable dropUser can write and the parent directory exists", config.dropUser);
+            }
             exit (2);
         }
     }
