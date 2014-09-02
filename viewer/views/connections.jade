@@ -29,6 +29,7 @@ block customMenu
 
 block content
   //input#networkZoom(type="range", value=100, min=25, max=600)
+  div#bsqErr
   div#networkLabel
   div#network
   script(type='text/javascript').
@@ -222,6 +223,7 @@ block content
         $("#actionsForm").data("moloch-visible", +$("#graphSize").val())
                          .data("moloch-all", json.iTotalDisplayRecords);
         updateHealth(json.health);
+        updateString("#bsqErr", json.bsqErr);
         force
             .nodes(json.nodes)
             .links(json.links)

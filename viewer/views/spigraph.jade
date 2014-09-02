@@ -121,13 +121,7 @@ block content
 
             updateGraph(json.graph);
             updateMap(json.map);
-
-            if (json.bsqErr) {
-              $("#bsqErr").show();
-              $("#bsqErr").html("<pre>" + json.bsqErr.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
-            } else {
-              $("#bsqErr").hide();
-            }
+            updateString("#bsqErr", json.bsqErr);
 
             $("#actionsForm").data("moloch-visible", -1)
                              .data("moloch-all", json.iTotalDisplayRecords);

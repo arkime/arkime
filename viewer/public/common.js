@@ -242,6 +242,16 @@ function updateHealth(health)
   });
 }
 
+function updateString(name, string) 
+{
+  if (string === undefined) {
+    return $(name).hide();
+  }
+
+  $(name).show();
+  $(name).html("<pre>" + string.replace(/\n/g, "\n").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + "</pre>");
+}
+
 function startBlink() {
   $(".blink").animate({opacity:0},500,"linear")
              .animate({opacity:1},500,"linear",startBlink);
