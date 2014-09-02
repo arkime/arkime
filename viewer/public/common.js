@@ -244,7 +244,7 @@ function updateHealth(health)
 
 function updateString(name, string) 
 {
-  if (string === undefined) {
+  if (!string) {
     return $(name).hide();
   }
 
