@@ -139,6 +139,8 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_FLAG_NODB               0x0008
 /* Don't create in capture list */ 
 #define MOLOCH_FIELD_FLAG_FAKE               0x0010
+/* Don't create in capture list */ 
+#define MOLOCH_FIELD_FLAG_DISABLED           0x0020
 
 /* These are ones you shouldn't set, for old cruf before we were smarter */
 /* XXXcnt - dont use */

@@ -18,6 +18,8 @@
   - Fixed update vs upgrade message (issue #287)
   - Fixed expression errors not displayed on connections tab (issue #288)
   - Added vlan and mac.src, mac.dst, mac indexing/expressions (issue #284)
+  - Can disable/enable fields from being indexed with 
+    './db.pl <host:port> field disable <expression>'
 
 0.11.1 2014/08/07
   - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version. 

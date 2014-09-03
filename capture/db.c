@@ -291,7 +291,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     /* Allocate a new buffer using the max of the bulk size or estimated size. */
     if (!sJson) {
-        int size = MAX(config.dbBulkSize, jsonSize);
+        const int size = MAX(config.dbBulkSize, jsonSize);
         sJson = moloch_http_get_buffer(size);
         BSB_INIT(jbsb, sJson, size);
     }
@@ -457,10 +457,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     int inGroupNum = 0;
     for (pos = 0; pos < config.maxField; pos++) {
-        if (!session->fields[pos])
+        const int flags = config.fields[pos]->flags;
+        if (!session->fields[pos] || flags & MOLOCH_FIELD_FLAG_DISABLED)
             continue;
 
-        int freeField = final || ((config.fields[pos]->flags & MOLOCH_FIELD_FLAG_LINKED_SESSIONS) == 0);
+        const int freeField = final || ((flags & MOLOCH_FIELD_FLAG_LINKED_SESSIONS) == 0);
 
         if (inGroupNum != config.fields[pos]->dbGroupNum) {
             if (inGroupNum != 0) {
@@ -483,23 +484,23 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_sprintf(jbsb, "\"%s\":", config.fields[pos]->dbField);
             moloch_db_js0n_str(&jbsb,
                                (unsigned char *)session->fields[pos]->str,
-                               config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+                               flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
             BSB_EXPORT_u08(jbsb, ',');
             if (freeField) {
                 g_free(session->fields[pos]->str);
             }
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
-            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
-            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+            } else if (flags & MOLOCH_FIELD_FLAG_COUNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[pos]->dbField, session->fields[pos]->sarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             for(i = 0; i < session->fields[pos]->sarray->len; i++) {
                 moloch_db_js0n_str(&jbsb,
                                    g_ptr_array_index(session->fields[pos]->sarray, i),
-                                   config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+                                   flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
@@ -510,14 +511,14 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             break;
         case MOLOCH_FIELD_TYPE_STR_HASH:
             shash = session->fields[pos]->shash;
-            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(s_, *shash));
-            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+            } else if (flags & MOLOCH_FIELD_FLAG_COUNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(s_, *shash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             HASH_FORALL(s_, *shash, hstring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || config.fields[pos]->flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
+                moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
             );
             if (freeField) {
@@ -532,9 +533,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             break;
         case MOLOCH_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
-            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%scnt\": %d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
-            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+            } else if (flags & MOLOCH_FIELD_FLAG_COUNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\": %d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
@@ -552,12 +553,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
             break;
         case MOLOCH_FIELD_TYPE_IP: {
-            int value = session->fields[pos]->i;
-            MolochIpInfo_t *ii = ipTree?moloch_db_get_local_ip(session, value):0;
-            char *as = NULL;
-            const char *g = NULL;
-            const char *rir = NULL;
-            char post = (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPRE) == 0;
+            const int             value = session->fields[pos]->i;
+            const MolochIpInfo_t *ii = ipTree?moloch_db_get_local_ip(session, value):0;
+            char                 *as = NULL;
+            const char           *g = NULL;
+            const char           *rir = NULL;
+            const int             post = (flags & MOLOCH_FIELD_FLAG_IPPRE) == 0;
 
             if (ii) {
                 g = ii->country;
@@ -614,18 +615,18 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
             break;
         case MOLOCH_FIELD_TYPE_IP_HASH: {
-            char post = (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_IPPRE) == 0;
+            const int post = (flags & MOLOCH_FIELD_FLAG_IPPRE) == 0;
             ihash = session->fields[pos]->ihash;
-            if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_CNT) {
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%scnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
-            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_COUNT) {
+            } else if (flags & MOLOCH_FIELD_FLAG_COUNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
-            } else if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_SCNT) {
+            } else if (flags & MOLOCH_FIELD_FLAG_SCNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%sscnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
             }
 
             if (gi || ipTree) {
-                MolochIpInfo_t *ii;
+                const MolochIpInfo_t *ii;
 
                 if (post)
                     BSB_EXPORT_sprintf(jbsb, "\"%s-geo\":[", config.fields[pos]->dbField);
@@ -653,7 +654,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
 
             if (giASN || ipTree) {
-                MolochIpInfo_t *ii = 0;
+                const MolochIpInfo_t *ii = 0;
 
                 if (post)
                     BSB_EXPORT_sprintf(jbsb, "\"%s-asn\":[", config.fields[pos]->dbField);
@@ -685,7 +686,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
 
             if (config.rirFile || ipTree) {
-                MolochIpInfo_t *ii = 0;
+                const MolochIpInfo_t *ii = 0;
 
                 if (post)
                     BSB_EXPORT_sprintf(jbsb, "\"%s-rir\":[", config.fields[pos]->dbField);
@@ -841,7 +842,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     if (config.dryRun) {
         if (config.tests) {
-            int hlen = dataPtr - startPtr;
+            const int hlen = dataPtr - startPtr;
             fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, sJson, (int)(BSB_LENGTH(jbsb)-hlen-1), sJson+hlen);
         } else if (config.debug) {
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson);

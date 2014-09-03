@@ -49,6 +49,10 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
         } else if (strncmp("dbField", (char*)data + out[i], 7) == 0) {
             info->dbFieldMem = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen = out[i+3];
+        } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
+            if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
+                info->flags    |= MOLOCH_FIELD_FLAG_DISABLED;
+            }
         }
     }
 
