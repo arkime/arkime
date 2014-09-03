@@ -27,6 +27,10 @@
             },
             "db2" : 478,
             "db" : 895,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:d8:bf:c2"
+            ],
             "no" : "test",
             "ho" : [
                "xxxxxxxxxxx.xxxxxxx.xxx"
@@ -141,9 +145,11 @@
                   "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
                ]
             },
+            "mac2-term-cnt" : 2,
             "by1" : 843,
             "hh1cnt" : 9,
             "p2" : 80,
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "hdvercnt" : 1,
             "prot-term" : [
@@ -152,6 +158,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:0a:f3:31:90:00"
             ],
             "uacnt" : 1
          },

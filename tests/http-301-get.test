@@ -7,6 +7,10 @@
             ],
             "db2" : 107,
             "db" : 252,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "no" : "test",
             "ho" : [
                "www.github.com"
@@ -91,9 +95,11 @@
                   "https://www.github.com/"
                ]
             },
+            "mac2-term-cnt" : 2,
             "by1" : 487,
             "hh1cnt" : 3,
             "p2" : 80,
+            "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "hdvercnt" : 1,
             "prot-term" : [
@@ -102,6 +108,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
             "uacnt" : 1
          },

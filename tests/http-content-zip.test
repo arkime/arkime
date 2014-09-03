@@ -27,6 +27,9 @@
             },
             "db2" : 571,
             "db" : 933,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "no" : "test",
             "ho" : [
                "xxxxxxxxxxxxx.xxx.com"
@@ -128,9 +131,11 @@
             "hmd5" : [
                "40be8f5100e9beabab293c9d7bacaff0"
             ],
+            "mac2-term-cnt" : 1,
             "by1" : 704,
             "hh1cnt" : 6,
             "p2" : 80,
+            "mac1-term-cnt" : 2,
             "rir2" : "TEST",
             "hdvercnt" : 1,
             "prot-term" : [
@@ -139,6 +144,10 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
             ],
             "uacnt" : 1
          },
@@ -153,6 +162,9 @@
          "body" : {
             "db2" : 0,
             "db" : 0,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "no" : "test",
             "lp" : 1388428585,
             "a2" : "10.0.0.2",
@@ -187,11 +199,16 @@
             "tacnt" : 4,
             "a1" : "10.0.0.1",
             "db1" : 0,
+            "mac2-term-cnt" : 1,
             "by1" : 132,
             "p2" : 80,
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "prot-term" : [
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:0e:d6:0b:98:80"
             ]
          },
          "header" : {

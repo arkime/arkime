@@ -4,6 +4,10 @@
          "body" : {
             "db2" : 6901,
             "db" : 7015,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "no" : "test",
             "lp" : 1387554256,
             "a2" : "38.229.70.20",
@@ -72,13 +76,18 @@
             "ircnck" : [
                "molochtest"
             ],
+            "mac2-term-cnt" : 2,
             "by1" : 1046,
             "p2" : 8000,
+            "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "ircnckcnt" : 1,
             "prot-term" : [
                "irc",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
             ]
          },
          "header" : {

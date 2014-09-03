@@ -18,6 +18,11 @@
             },
             "db2" : 83,
             "db" : 210,
+            "vlan-cnt" : 1,
+            "mac2-term" : [
+               "00:1a:e3:dc:2e:c0",
+               "00:23:04:17:9b:00"
+            ],
             "no" : "test",
             "lp" : 1393428477,
             "a2" : "10.0.0.1",
@@ -75,8 +80,13 @@
                "GBR",
                "GBR"
             ],
+            "mac2-term-cnt" : 2,
             "by1" : 135,
+            "vlan" : [
+               500
+            ],
             "p2" : 62928,
+            "mac1-term-cnt" : 2,
             "prot-term" : [
                "udp",
                "dns"
@@ -85,6 +95,10 @@
                "RIPE",
                "RIPE",
                "RIPE"
+            ],
+            "mac1-term" : [
+               "00:19:e2:b1:ef:c6",
+               "00:19:e2:ba:2f:c1"
             ]
          },
          "header" : {

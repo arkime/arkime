@@ -28,6 +28,10 @@
             },
             "db2" : 942,
             "db" : 1361,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:df:17:c7"
+            ],
             "no" : "test",
             "ho" : [
                "www.google.com"
@@ -144,9 +148,11 @@
                   "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
                ]
             },
+            "mac2-term-cnt" : 2,
             "by1" : 886,
             "hh1cnt" : 7,
             "p2" : 21477,
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "hdvercnt" : 1,
             "prot-term" : [
@@ -156,6 +162,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:0b:45:b7:16:c0"
             ],
             "uacnt" : 1
          },

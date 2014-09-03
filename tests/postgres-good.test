@@ -24,6 +24,9 @@
             },
             "db2" : 327,
             "db" : 456,
+            "mac2-term" : [
+               "00:0c:29:18:7f:fe"
+            ],
             "no" : "test",
             "lp" : 1399300685,
             "a2" : "10.0.13.120",
@@ -71,11 +74,17 @@
                "db-term" : "dbdbdbdb",
                "user-term" : "cooluser"
             },
+            "mac2-term-cnt" : 1,
             "by1" : 533,
             "p2" : 5432,
+            "mac1-term-cnt" : 2,
             "prot-term" : [
                "tcp",
                "postgresql"
+            ],
+            "mac1-term" : [
+               "90:e2:ba:52:f6:2a",
+               "00:00:5e:00:01:71"
             ]
          },
          "header" : {

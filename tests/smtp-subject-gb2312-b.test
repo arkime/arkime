@@ -9,6 +9,9 @@
                "xxxxxxxxx@xxxxxxx.com"
             ],
             "ectcnt" : 1,
+            "mac2-term" : [
+               "00:25:90:7e:28:f6"
+            ],
             "eid" : [
                "CEC790C3.1A0F0%xxxxxxxxx@xxxxxxx.com"
             ],
@@ -140,18 +143,24 @@
                "---",
                "---"
             ],
+            "mac2-term-cnt" : 1,
             "by1" : 2149,
             "esrccnt" : 1,
             "emv" : [
                "1.0"
             ],
             "p2" : 25,
+            "mac1-term-cnt" : 2,
             "rir2" : "ARIN",
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "eidcnt" : 1
+            "eidcnt" : 1,
+            "mac1-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0b:5f:6b:5d:40"
+            ]
          },
          "header" : {
             "index" : {

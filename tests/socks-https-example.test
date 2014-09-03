@@ -4,6 +4,9 @@
          "body" : {
             "db2" : 8279,
             "db" : 8920,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "socksip" : "93.184.216.119",
             "no" : "test",
             "ho" : [
@@ -74,6 +77,7 @@
             "fb2" : "005a99b40ab49cf9",
             "db1" : 641,
             "rirsocksip" : "RIPE",
+            "mac2-term-cnt" : 1,
             "by1" : 1775,
             "tls" : [
                {
@@ -126,10 +130,14 @@
             "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "gsocksip" : "USA",
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "tls",
                "socks",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ]
          },
          "header" : {
@@ -144,6 +152,9 @@
             "socksho" : "www.example.com",
             "db2" : 8254,
             "db" : 8911,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "no" : "test",
             "ho" : [
                "www.example.com"
@@ -206,12 +217,13 @@
             "lpd" : 1386004475761,
             "fp" : 1386004475,
             "pa" : 30,
-            "tacnt" : 4,
             "sl" : 69,
             "fb1" : "040101bb00000001",
+            "tacnt" : 4,
             "a1" : "10.180.156.185",
             "fb2" : "005a99b50ab49cf9",
             "db1" : 657,
+            "mac2-term-cnt" : 1,
             "by1" : 1791,
             "tls" : [
                {
@@ -262,10 +274,14 @@
                }
             ],
             "p2" : 1080,
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "tls",
                "socks",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ]
          },
          "header" : {
@@ -279,6 +295,9 @@
          "body" : {
             "db2" : 8283,
             "db" : 8929,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "socksip" : "93.184.216.119",
             "no" : "test",
             "ho" : [
@@ -352,6 +371,7 @@
             "fb2" : "0500050000010ab4",
             "db1" : 646,
             "rirsocksip" : "RIPE",
+            "mac2-term-cnt" : 1,
             "by1" : 1912,
             "tls" : [
                {
@@ -474,10 +494,14 @@
             "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "gsocksip" : "USA",
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "tls",
                "socks",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ]
          },
          "header" : {

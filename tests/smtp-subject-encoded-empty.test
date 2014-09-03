@@ -28,6 +28,10 @@
             "esrc" : [
                "user1@xxx.net"
             ],
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "no" : "test",
             "lp" : 1398431453,
             "a2" : "10.0.0.2",
@@ -110,13 +114,18 @@
             "a1" : "10.0.0.1",
             "fb2" : "3232302d78787878",
             "db1" : 350,
+            "mac2-term-cnt" : 2,
             "by1" : 1616,
             "esrccnt" : 1,
             "p2" : 25,
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "prot-term" : [
                "smtp",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ]
          },
          "header" : {

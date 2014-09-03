@@ -14,6 +14,10 @@
             },
             "db2" : 0,
             "db" : 66,
+            "vlan-cnt" : 1,
+            "mac2-term" : [
+               "00:19:e2:ba:2f:c1"
+            ],
             "no" : "test",
             "lp" : 1393428477,
             "a2" : "8.8.8.8",
@@ -52,12 +56,20 @@
             "a1" : "10.0.0.1",
             "db1" : 66,
             "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
             "by1" : 74,
+            "vlan" : [
+               500
+            ],
             "p2" : 53,
+            "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "prot-term" : [
                "udp",
                "dns"
+            ],
+            "mac1-term" : [
+               "00:1a:e3:dc:2e:c0"
             ]
          },
          "header" : {

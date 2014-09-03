@@ -3,6 +3,10 @@
       {
          "body" : {
             "db" : 24346,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:83:9f:c6"
+            ],
             "socksip" : "74.125.131.103",
             "sockspo" : 80,
             "a2" : "10.0.0.2",
@@ -220,10 +224,15 @@
                "2069181ae704855f29caf964ca52ec49",
                "b0cecae354b9eab1f04f70e46a612cb1"
             ],
+            "mac2-term-cnt" : 2,
             "by1" : 25112,
             "assocksip" : "AS15169 Google Inc.",
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "hdvercnt" : 1,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
             "hval" : [
                "firefox",
                "en",

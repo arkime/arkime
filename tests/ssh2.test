@@ -24,6 +24,10 @@
             },
             "db2" : 1407,
             "db" : 2516,
+            "mac2-term" : [
+               "02:21:59:a1:83:b2",
+               "00:00:5e:00:01:01"
+            ],
             "no" : "test",
             "lp" : 1387565112,
             "a2" : "10.0.0.2",
@@ -87,8 +91,10 @@
             "a1" : "10.0.0.1",
             "fb2" : "5353482d312e3939",
             "db1" : 1109,
+            "mac2-term-cnt" : 2,
             "by1" : 1715,
             "p2" : 22,
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "sshkey" : [
                "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
@@ -96,6 +102,9 @@
             "prot-term" : [
                "ssh",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:0c:29:62:b6:75"
             ]
          },
          "header" : {

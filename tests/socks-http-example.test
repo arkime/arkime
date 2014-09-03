@@ -7,6 +7,9 @@
             ],
             "db2" : 1599,
             "db" : 1754,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "socksip" : "93.184.216.119",
             "no" : "test",
             "ho" : [
@@ -112,11 +115,13 @@
             "hmd5" : [
                "09b9c392dc1f6e914cea287cb6be34b0"
             ],
+            "mac2-term-cnt" : 1,
             "by1" : 695,
             "hh1cnt" : 3,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "p2" : 1080,
             "gsocksip" : "USA",
+            "mac1-term-cnt" : 1,
             "hdvercnt" : 1,
             "prot-term" : [
                "http",
@@ -125,6 +130,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
             "uacnt" : 1
          },
@@ -143,6 +151,9 @@
             ],
             "db2" : 1599,
             "db" : 1770,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "no" : "test",
             "ho" : [
                "www.example.com"
@@ -247,9 +258,11 @@
             "hmd5" : [
                "09b9c392dc1f6e914cea287cb6be34b0"
             ],
+            "mac2-term-cnt" : 1,
             "by1" : 711,
             "hh1cnt" : 3,
             "p2" : 1080,
+            "mac1-term-cnt" : 1,
             "hdvercnt" : 1,
             "prot-term" : [
                "http",
@@ -258,6 +271,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
             "uacnt" : 1
          },
@@ -275,6 +291,9 @@
             ],
             "db2" : 1603,
             "db" : 1763,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "socksip" : "93.184.216.119",
             "no" : "test",
             "ho" : [
@@ -383,11 +402,13 @@
             "hmd5" : [
                "09b9c392dc1f6e914cea287cb6be34b0"
             ],
+            "mac2-term-cnt" : 1,
             "by1" : 832,
             "hh1cnt" : 3,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "p2" : 1080,
             "gsocksip" : "USA",
+            "mac1-term-cnt" : 1,
             "hdvercnt" : 1,
             "prot-term" : [
                "http",
@@ -396,6 +417,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
             "uacnt" : 1
          },

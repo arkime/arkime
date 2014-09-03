@@ -29,6 +29,10 @@
                "1234567899@aol.com"
             ],
             "ectcnt" : 1,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:ca:1f:c6"
+            ],
             "no" : "test",
             "lp" : 1386251823,
             "emvcnt" : 1,
@@ -128,16 +132,21 @@
             "fb2" : "3232302d6d74616f",
             "db1" : 3122,
             "usercnt" : 1,
+            "mac2-term-cnt" : 2,
             "by1" : 4186,
             "esrccnt" : 1,
             "emv" : [
                "1.0"
             ],
             "p2" : 587,
+            "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "prot-term" : [
                "smtp",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:0b:45:b7:08:80"
             ]
          },
          "header" : {

@@ -7,6 +7,9 @@
             ],
             "db2" : 5237,
             "db" : 5389,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
             "no" : "test",
             "ho" : [
                "xxxxxxxxxxxxx.xxx.com"
@@ -105,9 +108,11 @@
             "hmd5" : [
                "230e3b4387b64caf54a7487b4f726adb"
             ],
+            "mac2-term-cnt" : 1,
             "by1" : 692,
             "hh1cnt" : 3,
             "p2" : 80,
+            "mac1-term-cnt" : 1,
             "hdvercnt" : 1,
             "prot-term" : [
                "http",
@@ -115,6 +120,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
             "uacnt" : 1
          },

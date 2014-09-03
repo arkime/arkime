@@ -4,6 +4,9 @@
          "body" : {
             "db2" : 31,
             "db" : 85,
+            "mac2-term" : [
+               "00:0a:f3:31:94:00"
+            ],
             "socksip" : "10.0.0.1",
             "no" : "test",
             "lp" : 1386644257,
@@ -51,15 +54,21 @@
             "a1" : "10.0.0.3",
             "fb2" : "0500050000010000",
             "db1" : 54,
+            "mac2-term-cnt" : 1,
             "by1" : 405,
             "p2" : 42356,
             "assocksip" : "AS0000 This is neat",
             "gsocksip" : "RUS",
+            "mac1-term-cnt" : 2,
             "rir2" : "TEST",
             "prot-term" : [
                "rdp",
                "socks",
                "tcp"
+            ],
+            "mac1-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
             ]
          },
          "header" : {

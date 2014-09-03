@@ -9,6 +9,10 @@
                "xxxxx@xxx.net"
             ],
             "ectcnt" : 1,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
             "eid" : [
                "20131212194457.GA7990@xxx.net"
             ],
@@ -119,18 +123,23 @@
             "aseip" : [
                "---"
             ],
+            "mac2-term-cnt" : 2,
             "by1" : 1780,
             "esrccnt" : 1,
             "emv" : [
                "1.0"
             ],
             "p2" : 25,
+            "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "eidcnt" : 1
+            "eidcnt" : 1,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
          },
          "header" : {
             "index" : {

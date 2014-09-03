@@ -55,6 +55,16 @@ dl.sessionDetailMeta
         a(href='#', onclick='return addExpression("bytes.dst == #{session.by2}");') #{session.by2}
         | &nbsp;Databytes: 
         a(href='#', onclick='return addExpression("databytes.dst == #{session.db2}");') #{session.db2}
+  if (session["mac1-term"])
+    dt Ethernet
+    dd
+      | Src Mac: 
+      +arrayPrint(session, "mac1-term", "mac.src")
+      | &nbsp;Dst Mac: 
+      +arrayPrint(session, "mac2-term", "mac.dst")
+      if (session.vlan)
+        | &nbsp;VLan: 
+        +arrayPrint(session, "vlan", "vlan")
   dt Src IP/Port
   dd
     +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")

@@ -29,6 +29,10 @@
                "12345678@aol.com"
             ],
             "ectcnt" : 1,
+            "mac2-term" : [
+               "00:00:5e:00:01:02",
+               "80:71:1f:82:cf:c6"
+            ],
             "eid" : [
                "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
             ],
@@ -124,18 +128,23 @@
             "fb2" : "3232302d6d74616f",
             "db1" : 1063,
             "usercnt" : 1,
+            "mac2-term-cnt" : 2,
             "by1" : 1867,
             "esrccnt" : 1,
             "emv" : [
                "1.0"
             ],
             "p2" : 587,
+            "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "eidcnt" : 1
+            "eidcnt" : 1,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ]
          },
          "header" : {
             "index" : {

@@ -57,7 +57,7 @@ static MolochSessionHead_t   udpSessionQ;
 static MolochSessionHead_t   icmpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
 
-static MolochIntHead_t       freeOutputBufs;   
+static MolochIntHead_t       freeOutputBufs;
 static pthread_mutex_t       freeOutputMutex = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct moloch_output {
@@ -88,6 +88,9 @@ static char                  offlinePcapFilename[PATH_MAX+1];
 
 static int                   tagsField;
 static int                   protocolField;
+static int                   mac1Field;
+static int                   mac2Field;
+static int                   vlanField;
 
 uint64_t                     totalPackets = 0;
 uint64_t                     totalBytes = 0;
@@ -728,6 +731,43 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->which = (session->addr1 == packet->ip_src.s_addr &&
                           session->addr2 == packet->ip_dst.s_addr)?0:1;
         break;
+    }
+
+    /* Handle MACs and vlans on first few packets in each direction */
+    if (pcapFileHeader.linktype == 1 && session->packets[session->which] <= 1) {
+        char str1[20];
+        char str2[20];
+        snprintf(str1, sizeof(str1), "%02x:%02x:%02x:%02x:%02x:%02x",
+                nids_last_pcap_data[0],
+                nids_last_pcap_data[1],
+                nids_last_pcap_data[2],
+                nids_last_pcap_data[3],
+                nids_last_pcap_data[4],
+                nids_last_pcap_data[5]);
+
+
+        snprintf(str2, sizeof(str2), "%02x:%02x:%02x:%02x:%02x:%02x",
+                nids_last_pcap_data[6],
+                nids_last_pcap_data[7],
+                nids_last_pcap_data[8],
+                nids_last_pcap_data[9],
+                nids_last_pcap_data[10],
+                nids_last_pcap_data[11]);
+
+        if (session->which == 1) {
+            moloch_field_string_add(mac1Field, session, str1, 17, TRUE);
+            moloch_field_string_add(mac2Field, session, str2, 17, TRUE);
+        } else {
+            moloch_field_string_add(mac1Field, session, str2, 17, TRUE);
+            moloch_field_string_add(mac2Field, session, str1, 17, TRUE);
+        }
+
+        int n = 12;
+        while (nids_last_pcap_data[n] == 0x81 && nids_last_pcap_data[n+1] == 0x00) {
+            uint16_t vlan = ((uint16_t)(nids_last_pcap_data[n+2] << 8 | nids_last_pcap_data[n+3])) & 0xfff;
+            moloch_field_int_add(vlanField, session, vlan);
+            n += 4;
+        }
     }
 
     session->bytes[session->which] += nids_last_pcap_header->caplen;
@@ -1455,6 +1495,8 @@ void moloch_nids_root_init()
     pcapFileHeader.snaplen = pcap_snapshot(nids_params.pcap_desc);
     pcapFileHeader.sigfigs = 0;
     pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
+    if (config.debug)
+        LOG("linktype %x", pcapFileHeader.linktype);
 
     config.maxWriteBuffers = config.pcapReadOffline?10:2000;
 }
@@ -1523,6 +1565,31 @@ void moloch_nids_init()
         "protocols", "Protocols", "prot-term",
         "Protocols set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    mac1Field = moloch_field_define("general", "lotermfield",
+        "mac.src", "Src MAC", "mac1-term",
+        "Source ethernet mac addresses set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    mac2Field = moloch_field_define("general", "lotermfield",
+        "mac.dst", "Dst MAC", "mac2-term",
+        "Destination ethernet mac addresses set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    moloch_field_define("general", "lotermfield",
+        "mac", "Src or Dst MAC", "macall",
+        "Shorthand for mac.src or mac.dst",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        "regex", "^mac\\\\.(?:(?!\\\\.cnt$).)*$",
+        NULL);
+
+    vlanField = moloch_field_define("general", "integer",
+        "vlan", "VLan", "vlan",
+        "vlan value",
+        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     tagsField = moloch_field_by_db("ta");

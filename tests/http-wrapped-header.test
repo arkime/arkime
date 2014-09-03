@@ -27,6 +27,9 @@
             },
             "db2" : 706,
             "db" : 4119,
+            "mac2-term" : [
+               "88:43:e1:94:fc:2d"
+            ],
             "no" : "test",
             "ho" : [
                "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
@@ -166,9 +169,11 @@
                   "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
                ]
             },
+            "mac2-term-cnt" : 1,
             "by1" : 3811,
             "hh1cnt" : 8,
             "p2" : 80,
+            "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "hdvercnt" : 1,
             "prot-term" : [
@@ -177,6 +182,9 @@
             ],
             "hdver" : [
                "1.1"
+            ],
+            "mac1-term" : [
+               "a4:93:4c:43:13:9b"
             ],
             "hval" : [
                "xxxxxxxxxxxxxxxxxxxxxxxxxxx",

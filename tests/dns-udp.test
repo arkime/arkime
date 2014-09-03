@@ -18,6 +18,10 @@
             },
             "db2" : 246,
             "db" : 312,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "no" : "test",
             "lp" : 1385400647,
             "a2" : "10.2.95.39",
@@ -65,14 +69,19 @@
             "gdnsip" : [
                "USA"
             ],
+            "mac2-term-cnt" : 2,
             "by1" : 74,
             "p2" : 53,
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "udp",
                "dns"
             ],
             "rirdnsip" : [
                "ARIN"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ]
          },
          "header" : {
@@ -100,6 +109,10 @@
             },
             "db2" : 246,
             "db" : 312,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
             "no" : "test",
             "lp" : 1385400648,
             "a2" : "10.178.8.71",
@@ -147,14 +160,19 @@
             "gdnsip" : [
                "USA"
             ],
+            "mac2-term-cnt" : 2,
             "by1" : 74,
             "p2" : 53,
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "udp",
                "dns"
             ],
             "rirdnsip" : [
                "ARIN"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ]
          },
          "header" : {

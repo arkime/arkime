@@ -22,6 +22,18 @@ mixin fieldsSelect(name,classname,simple,extra)
           else
             option(value="#{value.dbField}", exp='#{value.exp}') #{value.exp}
 
+mixin arrayPrint(container, field, expr)
+  if ((container && container[field]))
+    each value,i in container[field]
+      if (i > 0)
+        |, 
+      if (value.length == 0)
+        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
+      else if (typeof value == "string")
+        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+      else
+        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+
 //- Standard method to print an array of values with commas
 mixin arrayList(container, field, title, expr, extra, max)
   if (!max)

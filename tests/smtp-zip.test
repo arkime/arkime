@@ -2,34 +2,25 @@
    "packets" : [
       {
          "body" : {
-            "edstcnt" : 1,
-            "db2" : 470,
             "db" : 1969,
             "esrc" : [
                "xxxxx@xxx.net"
             ],
             "ectcnt" : 1,
-            "eid" : [
-               "20131217145016.GA29077@xxx.net"
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
             ],
-            "no" : "test",
             "emd5" : [
                "40be8f5100e9beabab293c9d7bacaff0"
             ],
-            "euacnt" : 1,
-            "lp" : 1387291817,
             "email" : {
                "bodymagic-term" : [
                   "application/zip"
                ],
                "bodymagic-term-cnt" : 1
             },
-            "emvcnt" : 1,
             "a2" : "64.236.64.225",
-            "ss" : 1,
-            "ect" : [
-               "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
-            ],
             "esub" : [
                "zip test"
             ],
@@ -43,17 +34,10 @@
             "eip" : [
                "127.0.0.1"
             ],
-            "eua" : [
-               "Mutt/1.5.20 (2009-12-10)"
-            ],
-            "pa1" : 14,
-            "fpd" : 1387291817187,
-            "fs" : [],
             "by2" : 1402,
             "g1" : "USA",
             "pa2" : 14,
             "p1" : 46671,
-            "by" : 3833,
             "ehh" : [
                "content-type",
                "from",
@@ -67,12 +51,10 @@
                "subject"
             ],
             "ehhcnt" : 10,
-            "eipcnt" : 1,
             "eho" : [
                "localhost",
                "xxxxxxxxxxxxx.xxx.com"
             ],
-            "g2" : "USA",
             "pr" : 6,
             "ps" : [
                24,
@@ -104,48 +86,75 @@
                4141,
                4223
             ],
-            "prot-term-cnt" : 2,
-            "efncnt" : 1,
-            "ehocnt" : 2,
             "geip" : [
                "---"
             ],
-            "lpd" : 1387291817565,
-            "fp" : 1387291817,
             "as2" : "AS1668 AOL Transit Data Network",
-            "pa" : 28,
-            "tacnt" : 5,
             "edst" : [
                "xxxxxxxxx@xxxxxxx.com"
             ],
-            "sl" : 377,
             "fb1" : "45484c4f20787878",
             "esubcnt" : 1,
             "a1" : "10.180.156.249",
             "fb2" : "3232302078787878",
-            "db1" : 1499,
             "efn" : [
                "a.zip"
             ],
-            "rireip" : [
-               ""
-            ],
             "emd5cnt" : 1,
-            "aseip" : [
-               "---"
-            ],
-            "by1" : 2431,
-            "esrccnt" : 1,
-            "emv" : [
-               "1.0"
-            ],
             "p2" : 25,
-            "rir2" : "ARIN",
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "eidcnt" : 1
+            "eidcnt" : 1,
+            "edstcnt" : 1,
+            "db2" : 470,
+            "no" : "test",
+            "eid" : [
+               "20131217145016.GA29077@xxx.net"
+            ],
+            "lp" : 1387291817,
+            "euacnt" : 1,
+            "emvcnt" : 1,
+            "ss" : 1,
+            "ect" : [
+               "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
+            ],
+            "fpd" : 1387291817187,
+            "pa1" : 14,
+            "eua" : [
+               "Mutt/1.5.20 (2009-12-10)"
+            ],
+            "fs" : [],
+            "by" : 3833,
+            "eipcnt" : 1,
+            "g2" : "USA",
+            "prot-term-cnt" : 2,
+            "ehocnt" : 2,
+            "efncnt" : 1,
+            "lpd" : 1387291817565,
+            "fp" : 1387291817,
+            "pa" : 28,
+            "sl" : 377,
+            "tacnt" : 5,
+            "db1" : 1499,
+            "rireip" : [
+               ""
+            ],
+            "aseip" : [
+               "---"
+            ],
+            "by1" : 2431,
+            "mac2-term-cnt" : 2,
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "rir2" : "ARIN",
+            "mac1-term-cnt" : 1,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
          },
          "header" : {
             "index" : {
