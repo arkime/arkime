@@ -290,6 +290,9 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
     MolochStringHashStd_t *hash;
     MolochString_t        *hstring;
 
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED)
+        return FALSE;
+
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
@@ -368,6 +371,9 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     MolochField_t        *field;
     MolochIntHashStd_t   *hash;
     MolochInt_t          *hint;
+
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED)
+        return FALSE;
 
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
