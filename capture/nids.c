@@ -41,6 +41,7 @@
 #include "pcap.h"
 #include "magic.h"
 #include "moloch.h"
+#include <gio/gio.h>
 
 #ifndef O_NOATIME
 #define O_NOATIME 0
@@ -56,6 +57,8 @@ static MolochSessionHead_t   tcpSessionQ;
 static MolochSessionHead_t   udpSessionQ;
 static MolochSessionHead_t   icmpSessionQ;
 static MolochSessionHead_t   tcpWriteQ;
+
+static MolochStringHead_t    monitorQ;
 
 static MolochIntHead_t       freeOutputBufs;
 static pthread_mutex_t       freeOutputMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -509,7 +512,7 @@ void *moloch_nids_output_thread(void *UNUSED(arg))
 /******************************************************************************/
 void moloch_nids_file_flush(gboolean all)
 {
-    if (config.dryRun) {
+    if (config.dryRun || !output) {
         return;
     }
 
@@ -1208,6 +1211,19 @@ gboolean moloch_nids_next_file_gfunc (gpointer UNUSED(user_data))
     return FALSE;
 }
 /******************************************************************************/
+gboolean moloch_nids_monitor_gfunc (gpointer UNUSED(user_data))
+{
+    if (DLL_COUNT(s_, &monitorQ) == 0)
+        return TRUE;
+
+    if (moloch_nids_next_file()) {
+        g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+/******************************************************************************/
 /* Used when reading packets from an interface thru libnids/libpcap */
 gboolean moloch_nids_interface_dispatch()
 {
@@ -1232,12 +1248,22 @@ gboolean moloch_nids_file_dispatch()
 
     // Some kind of failure, move to the next file or quit
     if (r <= 0) {
+        if (config.pcapDelete && r == 0) {
+            if (config.debug)
+                LOG("Deleting %s", offlinePcapFilename);
+            int rc = unlink(offlinePcapFilename);
+            if (rc != 0)
+                LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
+        }
         if (moloch_nids_next_file()) {
             g_timeout_add(10, moloch_nids_next_file_gfunc, 0);
             return FALSE;
         }
 
-        moloch_quit();
+        if (config.pcapMonitor)
+            g_timeout_add(100, moloch_nids_monitor_gfunc, 0);
+        else
+            moloch_quit();
         return FALSE;
     }
 
@@ -1338,6 +1364,15 @@ void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, un
     }
 }
 /******************************************************************************/
+void moloch_nids_pcap_opened() 
+{
+    pcapFileHeader.snaplen = pcap_snapshot(nids_params.pcap_desc);
+    pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
+    if (config.debug)
+        LOG("linktype %x", pcapFileHeader.linktype);
+}
+
+/******************************************************************************/
 static pcap_t *closeNextOpen = 0;
 int moloch_nids_next_file()
 {
@@ -1368,6 +1403,7 @@ int moloch_nids_next_file()
             LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
             return moloch_nids_next_file();
         }
+        moloch_nids_pcap_opened();
         offlineFile = pcap_file(nids_params.pcap_desc);
 
         if (!realpath(fullfilename, offlinePcapFilename)) {
@@ -1386,10 +1422,15 @@ filesDone:
         static int   pcapGDirLevel = -1;
         GError      *error = 0;
 
+        if (pcapGDirLevel == -2) {
+            goto dirsDone;
+        }
+
         if (pcapGDirLevel == -1) {
             pcapGDirLevel = 0;
             pcapBase[0] = config.pcapReadDirs[pcapDirPos];
             if (!pcapBase[0]) {
+                pcapGDirLevel = -2;
                 goto dirsDone;
             }
         }
@@ -1436,6 +1477,13 @@ filesDone:
                 continue;
             }
 
+            if (config.pcapSkip && moloch_db_file_exists(offlinePcapFilename)) {
+                if (config.debug)
+                    LOG("Skipping %s", fullfilename);
+                g_free(fullfilename);
+                continue;
+            }
+
             LOG ("Processing %s", fullfilename);
             errbuf[0] = 0;
             closeNextOpen = nids_params.pcap_desc;
@@ -1445,6 +1493,7 @@ filesDone:
                 g_free(fullfilename);
                 continue;
             }
+            moloch_nids_pcap_opened();
             offlineFile = pcap_file(nids_params.pcap_desc);
             g_free(fullfilename);
             return 1;
@@ -1465,40 +1514,58 @@ filesDone:
     }
 
 dirsDone:
+    while (DLL_COUNT(s_, &monitorQ) > 0) {
+        MolochString_t *string;
+        DLL_POP_HEAD(s_, &monitorQ, string);
+        fullfilename = string->str;
+        MOLOCH_TYPE_FREE(MolochString_t, string);
+
+        if (!realpath(fullfilename, offlinePcapFilename)) {
+            g_free(fullfilename);
+            continue;
+        }
+
+        if (config.pcapSkip && moloch_db_file_exists(offlinePcapFilename)) {
+            if (config.debug)
+                LOG("Skipping %s", fullfilename);
+            g_free(fullfilename);
+            continue;
+        }
+
+        LOG ("Processing %s", fullfilename);
+        errbuf[0] = 0;
+        closeNextOpen = nids_params.pcap_desc;
+        nids_params.pcap_desc = pcap_open_offline(fullfilename, errbuf);
+        if (!nids_params.pcap_desc) {
+            LOG("Couldn't process '%s' error '%s'", fullfilename, errbuf);
+            g_free(fullfilename);
+            continue;
+        }
+        offlineFile = pcap_file(nids_params.pcap_desc);
+        moloch_nids_pcap_opened();
+        g_free(fullfilename);
+        return 1;
+    }
     return 0;
 }
 /******************************************************************************/
 void moloch_nids_root_init()
 {
     char errbuf[1024];
-    if (config.pcapReadOffline) {
-        moloch_nids_next_file();
-    } else {
+    if (!config.pcapReadOffline) {
 #ifdef SNF
         nids_params.pcap_desc = pcap_open_live(config.interface, 8096, 1, 500, errbuf);
 #else
         nids_params.pcap_desc = moloch_pcap_open_live(config.interface, 8096, 1, 500, errbuf);
 #endif
 
+
+        if (!nids_params.pcap_desc) {
+            LOG("pcap open live failed! %s", errbuf);
+            exit(1);
+        }
+        moloch_nids_pcap_opened();
     }
-
-    if (!nids_params.pcap_desc) {
-        LOG("pcap open live failed! %s", errbuf);
-        exit(1);
-    }
-
-    pcapFileHeader.magic = 0xa1b2c3d4;
-    pcapFileHeader.version_major = PCAP_VERSION_MAJOR;
-    pcapFileHeader.version_minor = PCAP_VERSION_MINOR;
-
-    pcapFileHeader.thiszone = 0;
-    pcapFileHeader.snaplen = pcap_snapshot(nids_params.pcap_desc);
-    pcapFileHeader.sigfigs = 0;
-    pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
-    if (config.debug)
-        LOG("linktype %x", pcapFileHeader.linktype);
-
-    config.maxWriteBuffers = config.pcapReadOffline?10:2000;
 }
 /******************************************************************************/
 gboolean moloch_nids_check_file_time_gfunc (gpointer UNUSED(user_data))
@@ -1556,10 +1623,104 @@ void moloch_nids_init_nids()
     nids_register_ip(moloch_nids_cb_ip);
 }
 /******************************************************************************/
+static void
+moloch_nids_monitor_changed (GFileMonitor      *UNUSED(monitor),
+                             GFile             *file,
+                             GFile             *UNUSED(other_file),
+                             GFileMonitorEvent  event_type,
+                             gpointer           UNUSED(user_data))
+{
+    if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
+        return;
+    gchar *path = g_file_get_path(file);
+
+    if (strcasecmp(".pcap", path + strlen(path)-5) != 0) {
+        g_free(path);
+        return;
+    }
+
+    MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
+    string->str = path;
+
+    if (config.debug) 
+        LOG("Monitor enqueing %s", string->str);
+    DLL_PUSH_TAIL(s_, &monitorQ, string);
+}
+/******************************************************************************/
+void moloch_nids_monitor_dir(char *dirname)
+{
+    GError      *error = 0;
+    if (config.debug)
+        LOG("Monitoring %s", dirname);
+    if (error) {
+        LOG("ERROR: Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
+        exit(0);
+    }
+
+    GFile *filedir = g_file_new_for_path(dirname);
+    GFileMonitor *monitor = g_file_monitor_directory (filedir, 0, NULL, &error);
+    g_file_monitor_set_rate_limit(monitor, 0);
+    g_signal_connect (monitor, "changed", G_CALLBACK (moloch_nids_monitor_changed), 0);
+
+    if (!config.pcapRecursive)
+        return;
+    GDir *dir = g_dir_open(dirname, 0, &error);
+    while (1) {
+        const gchar *filename = g_dir_read_name(dir);
+
+        // No more files, stop processing this directory
+        if (!filename) {
+            break;
+        }
+
+        // Skip hidden files/directories
+        if (filename[0] == '.')
+            continue;
+
+        gchar *fullfilename = g_build_filename (dirname, filename, NULL);
+
+        if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+            moloch_nids_monitor_dir(fullfilename);
+        }
+        g_free(fullfilename);
+    }
+    g_dir_close(dir);
+}
+/******************************************************************************/
+void moloch_nids_init_monitor()
+{
+    int          dir;
+
+    for (dir = 0; config.pcapReadDirs[dir] && config.pcapReadDirs[dir][0]; dir++) {
+        moloch_nids_monitor_dir(config.pcapReadDirs[dir]);
+    }
+}
+/******************************************************************************/
 void moloch_nids_init()
 {
 
     LOG("%s", pcap_lib_version());
+
+    if (config.pcapReadOffline) {
+        moloch_nids_next_file();
+        if (!nids_params.pcap_desc) {
+            if (config.pcapMonitor) {
+                g_timeout_add(100, moloch_nids_monitor_gfunc, 0);
+            } else {
+                LOG("No files to process.");
+                exit(0);
+            }
+        }
+    }
+
+    pcapFileHeader.magic = 0xa1b2c3d4;
+    pcapFileHeader.version_major = PCAP_VERSION_MAJOR;
+    pcapFileHeader.version_minor = PCAP_VERSION_MINOR;
+
+    pcapFileHeader.thiszone = 0;
+    pcapFileHeader.sigfigs = 0;
+
+    config.maxWriteBuffers = config.pcapReadOffline?10:2000;
 
     protocolField = moloch_field_define("general", "termfield",
         "protocols", "Protocols", "prot-term",
@@ -1637,6 +1798,7 @@ void moloch_nids_init()
     DLL_INIT(q_, &icmpSessionQ);
     DLL_INIT(mo_, &outputQ);
     DLL_INIT(i_, &freeOutputBufs);
+    DLL_INIT(s_, &monitorQ);
 
     nids_params.n_hosts = 1024;
     nids_params.tcp_workarounds = 1;
@@ -1653,7 +1815,8 @@ void moloch_nids_init()
         g_timeout_add_seconds( 30, moloch_nids_check_file_time_gfunc, 0);
     }
 
-    moloch_nids_init_nids();
+    if (nids_params.pcap_desc)
+        moloch_nids_init_nids();
 
     if (config.writeMethod & MOLOCH_WRITE_THREAD) {
         pthread_t thread;
@@ -1663,6 +1826,9 @@ void moloch_nids_init()
             exit (2);
         }
     }
+
+    if (config.pcapMonitor)
+        moloch_nids_init_monitor();
 }
 /******************************************************************************/
 void moloch_nids_exit() {

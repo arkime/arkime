@@ -20,6 +20,11 @@
   - Added vlan and mac.src, mac.dst, mac indexing/expressions (issue #284)
   - Can disable/enable fields from being indexed with 
     './db.pl <host:port> field disable <expression>'
+  - Directory monitoring support (issue #191)
+    * --monitor (-m) to enable
+    * --recursive required to monitor recursively
+  - --delete removes files after processing, requires --copy
+  - --skip (-s) skips files that have already been processed
 
 0.11.1 2014/08/07
   - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version. 

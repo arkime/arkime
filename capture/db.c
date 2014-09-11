@@ -1696,6 +1696,36 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), FALSE, NULL, NULL);
 }
 /******************************************************************************/
+gboolean moloch_db_file_exists(char *filename)
+{
+    size_t                 data_len;
+    char                   key[2000];
+    int                    key_len;
+
+    key_len = snprintf(key, sizeof(key), "/files/file/_search?size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.nodeName, filename);
+
+    LOG("query: %s", key);
+    unsigned char *data = moloch_http_get(esServer, key, key_len, &data_len);
+    LOG("data: %.*s", (int)data_len, data);
+
+    uint32_t           hits_len;
+    unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
+
+    if (!hits_len || !hits)
+        return FALSE;
+
+    uint32_t           total_len;
+    unsigned char     *total = moloch_js0n_get(hits, hits_len, "total", &total_len);
+
+    if (!total_len || !total)
+        return FALSE;
+
+    if (*total != '0')
+        return TRUE;
+
+    return FALSE;
+}
+/******************************************************************************/
 guint timers[5];
 void moloch_db_init()
 {

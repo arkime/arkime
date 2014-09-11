@@ -210,6 +210,9 @@ typedef struct moloch_config {
     gboolean  copyPcap;
     gboolean  pcapRecursive;
     gboolean  tests;
+    gboolean  pcapMonitor;
+    gboolean  pcapDelete;
+    gboolean  pcapSkip;
 
     int       pagesize;
 
@@ -457,6 +460,7 @@ uint32_t moloch_db_peek_tag(const char *tagname);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap);
 MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip);
+gboolean moloch_db_file_exists(char *filename);
 void     moloch_db_exit();
 
 /******************************************************************************/
