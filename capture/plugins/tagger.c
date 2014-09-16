@@ -457,6 +457,11 @@ gboolean tagger_fetch_files (gpointer sync)
  */
 void moloch_plugin_init()
 {
+    if (config.dryRun) {
+        LOG("Not enabling in dryRun mode");
+        return;
+    }
+
     HASH_INIT(s_, allFiles, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, allMD5s, moloch_string_hash, moloch_string_cmp);
