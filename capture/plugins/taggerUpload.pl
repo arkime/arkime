@@ -3,6 +3,7 @@
 # a database key, so make sure to reuse the same filename.
 
 use strict;
+use HTTP::Request::Common;
 use LWP::UserAgent;
 use Digest::MD5 qw(md5_hex);
 
@@ -19,8 +20,8 @@ showHelp("file '$ARGV[2]' not found") if (! -f $ARGV[2]);
 showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 
 my $userAgent = LWP::UserAgent->new(timeout => 20);
-my $response = $userAgent->post("http://$ARGV[0]/tagger",
-                                Content => '{"mappings": {"file": { "_all.enabled" : false, "properties":{"tags":{"type":"string","index": "no"}, "type": {"type":"string","index": "no"}, "data": {"type":"string","index": "no"}, "md5": {"type":"string","index": "no"}}}}}');
+my $response = $userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]/tagger",
+                                Content => '{"mappings": {"file": { _all: {enabled: 0}, "properties":{"tags":{"type":"string","index": "no"}, "type": {"type":"string","index": "no"}, "data": {"type":"string","index": "no"}, "md5": {"type":"string","index": "no"}}}}}'));
 
 my @ELEMENTS;
 open (FILE, $ARGV[2]);

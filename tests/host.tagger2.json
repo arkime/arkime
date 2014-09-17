@@ -1,0 +1,2 @@
+cluster5.us.messagelabs.com;tags=byhost1;irc.channel=byhost1channel;email.x-priority=666
+www.example.com;tags=byhost2;mysql.user=byhost2mysqluser;test.ip=122.122.122.122

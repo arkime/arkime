@@ -1,17 +1,17 @@
 /* tagger.c  -- Simple plugin that tags sessions by using ip, hosts, md5s
  *              lists fetched from the ES database.  taggerUpdate.pl is
  *              used to upload files to the database.  tagger checks
- *              once a minute to see if the files in the database have 
+ *              once a minute to see if the files in the database have
  *              changed.
- *     
+ *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,7 @@ static int                   dnsHostField;
 typedef struct tagger_string {
     struct tagger_string *s_next, *s_prev;
     char                 *str;
-    GPtrArray            *files;
+    GPtrArray            *infos;
     uint32_t              s_hash;
     uint16_t              s_bucket;
 } TaggerString_t;
@@ -63,7 +63,7 @@ typedef struct {
 /******************************************************************************/
 
 typedef struct tagger_ip {
-    GPtrArray            *files;
+    GPtrArray            *infos;
 } TaggerIP_t;
 
 /******************************************************************************/
@@ -85,6 +85,25 @@ typedef struct {
 } TaggerFileHead_t;
 
 /******************************************************************************/
+typedef struct tagger_op {
+    struct tagger_op     *o_next, *o_prev;
+    char                 *str;
+    int                   strLenOrInt;
+    int                   fieldPos;
+} TaggerOp_t; 
+
+typedef struct {
+    struct tagger_op     *o_next, *o_prev;
+    int                   o_count;
+} TaggerOpHead_t;
+/******************************************************************************/
+
+typedef struct tagger_info {
+    TaggerOpHead_t ops;
+    TaggerFile_t  *file;
+} TaggerInfo_t;
+
+/******************************************************************************/
 
 HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
 HASH_VAR(s_, allDomains, TaggerStringHead_t, 7919);
@@ -93,18 +112,40 @@ HASH_VAR(s_, allMD5s, TaggerStringHead_t, 37277);
 static patricia_tree_t *allIps;
 
 /******************************************************************************/
-void tagger_add_tags(MolochSession_t *session, GPtrArray *files)
+void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
 {
     uint32_t f, t;
-    for (f = 0; f < files->len; f++) {
-        TaggerFile_t *file = files->pdata[f];
+    for (f = 0; f < infos->len; f++) {
+        TaggerInfo_t *info = g_ptr_array_index(infos, f);
+        TaggerFile_t *file = info->file;
         for (t = 0; file->tags[t]; t++) {
             moloch_nids_add_tag(session, file->tags[t]);
+        }
+        TaggerOp_t *op;
+        DLL_FOREACH(o_, &info->ops, op) {
+            switch (config.fields[op->fieldPos]->type) {
+            case  MOLOCH_FIELD_TYPE_INT:
+            case  MOLOCH_FIELD_TYPE_INT_ARRAY:
+            case  MOLOCH_FIELD_TYPE_INT_HASH:
+            case  MOLOCH_FIELD_TYPE_IP:
+            case  MOLOCH_FIELD_TYPE_IP_HASH:
+                if (op->fieldPos == tagsField) {
+                    moloch_nids_add_tag(session, op->str);
+                } else {
+                    moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
+                }
+                break;
+            case  MOLOCH_FIELD_TYPE_STR:
+            case  MOLOCH_FIELD_TYPE_STR_ARRAY:
+            case  MOLOCH_FIELD_TYPE_STR_HASH:
+                moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
+                break;
+            }
         }
     }
 }
 /******************************************************************************/
-/* 
+/*
  * Called by moloch when a session is about to be saved
  */
 void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
@@ -112,7 +153,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     TaggerString_t *tstring;
 
     patricia_node_t *nodes[PATRICIA_MAXBITS+1];
-    int cnt;  
+    int cnt;
     prefix_t prefix;
     prefix.family = AF_INET;
     prefix.bitlen = 32;
@@ -122,24 +163,24 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     prefix.add.sin.s_addr = session->addr1;
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
     }
 
     prefix.add.sin.s_addr = session->addr2;
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
-        tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
+        tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
     }
 
     if (session->fields[httpXffField]) {
         MolochIntHashStd_t *ihash = session->fields[httpXffField]->ihash;
         MolochInt_t        *xff;
 
-        HASH_FORALL(i_, *ihash, xff, 
+        HASH_FORALL(i_, *ihash, xff,
             prefix.add.sin.s_addr = xff->i_hash;
             cnt = patricia_search_all(allIps, &prefix, 1, nodes);
             for (i = 0; i < cnt; i++) {
-                tagger_add_tags(session, ((TaggerIP_t *)(nodes[i]->data))->files);
+                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
             }
         );
     }
@@ -147,73 +188,73 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     MolochString_t *hstring;
     if (session->fields[httpHostField]) {
         MolochStringHashStd_t *shash = session->fields[httpHostField]->shash;
-        HASH_FORALL(s_, *shash, hstring, 
+        HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_add_tags(session, tstring->files);
+                tagger_process_match(session, tstring->infos);
             char *dot = strchr(hstring->str, '.');
             if (dot && *(dot+1)) {
                 HASH_FIND(s_, allDomains, dot+1, tstring);
                 if (tstring)
-                    tagger_add_tags(session, tstring->files);
+                    tagger_process_match(session, tstring->infos);
             }
         );
     }
     if (session->fields[dnsHostField]) {
         MolochStringHashStd_t *shash = session->fields[dnsHostField]->shash;
-        HASH_FORALL(s_, *shash, hstring, 
+        HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_add_tags(session, tstring->files);
+                tagger_process_match(session, tstring->infos);
             char *dot = strchr(hstring->str, '.');
             if (dot && *(dot+1)) {
                 HASH_FIND(s_, allDomains, dot+1, tstring);
                 if (tstring)
-                    tagger_add_tags(session, tstring->files);
+                    tagger_process_match(session, tstring->infos);
             }
         );
     }
 
     if (session->fields[httpMd5Field]) {
         MolochStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
-        HASH_FORALL(s_, *shash, hstring, 
+        HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_add_tags(session, tstring->files);
+                tagger_process_match(session, tstring->infos);
         );
     }
 
     if (session->fields[emailMd5Field]) {
         MolochStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
-        HASH_FORALL(s_, *shash, hstring, 
+        HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
             if (tstring)
-                tagger_add_tags(session, tstring->files);
+                tagger_process_match(session, tstring->infos);
         );
     }
 }
 
 /******************************************************************************/
-/* 
+/*
  * Called by moloch when moloch is quiting
  */
 void tagger_plugin_exit()
 {
     TaggerString_t *tstring;
-    HASH_FORALL_POP_HEAD(s_, allDomains, tstring, 
+    HASH_FORALL_POP_HEAD(s_, allDomains, tstring,
         free(tstring->str);
-        g_ptr_array_free(tstring->files, TRUE);
+        g_ptr_array_free(tstring->infos, TRUE);
         MOLOCH_TYPE_FREE(TaggerString_t, tstring);
     );
 
-    HASH_FORALL_POP_HEAD(s_, allMD5s, tstring, 
+    HASH_FORALL_POP_HEAD(s_, allMD5s, tstring,
         free(tstring->str);
-        g_ptr_array_free(tstring->files, TRUE);
+        g_ptr_array_free(tstring->infos, TRUE);
         MOLOCH_TYPE_FREE(TaggerString_t, tstring);
     );
 
     TaggerFile_t *file;
-    HASH_FORALL_POP_HEAD(s_, allFiles, file, 
+    HASH_FORALL_POP_HEAD(s_, allFiles, file,
         free(file->str);
         g_free(file->md5);
         g_free(file->type);
@@ -223,6 +264,16 @@ void tagger_plugin_exit()
     );
 }
 
+void tagger_remove_file(GPtrArray *infos, TaggerFile_t *file)
+{
+    int f;
+    for (f = 0; f < (int)infos->len; f++) {
+        if (file == ((TaggerInfo_t *)g_ptr_array_index(infos, f))->file) {
+            g_ptr_array_remove_index_fast(infos, f);
+            return;
+        }
+    }
+}
 /******************************************************************************/
 /*
  * Free most of the memory used by a file
@@ -244,26 +295,26 @@ void tagger_unload_file(TaggerFile_t *file) {
                 continue;
             }
 
-            g_ptr_array_remove(((TaggerIP_t *)(node->data))->files, file);
+            tagger_remove_file(((TaggerIP_t *)(node->data))->infos, file);
         } else if (file->type[0] == 'h') {
             TaggerString_t *tstring;
             HASH_FIND(s_, allDomains, file->elements[i], tstring);
             if (tstring) {
-                g_ptr_array_remove(tstring->files, file);
-                // We could check if files is now empty and remove the node, but the 
+                tagger_remove_file(tstring->infos, file);
+                // We could check if files is now empty and remove the node, but the
                 // theory is most of the time it will be just readded in the load_file
             }
         } else if (file->type[0] == 'm') {
             TaggerString_t *tstring;
             HASH_FIND(s_, allMD5s, file->elements[i], tstring);
             if (tstring) {
-                g_ptr_array_remove(tstring->files, file);
-                // We could check if files is now empty and remove the node, but the 
+                tagger_remove_file(tstring->infos, file);
+                // We could check if files is now empty and remove the node, but the
                 // theory is most of the time it will be just readded in the load_file
             }
         } else {
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
-        } 
+        }
     }
 
     g_free(file->md5);
@@ -273,87 +324,175 @@ void tagger_unload_file(TaggerFile_t *file) {
     file->md5 = NULL;
 }
 /******************************************************************************/
+void tagger_info_free(gpointer data)
+{
+    TaggerInfo_t *info = data;
+    TaggerOp_t   *op;
+
+    while (DLL_POP_HEAD(o_, &info->ops, op)) {
+        MOLOCH_TYPE_FREE(TaggerOp_t, op);
+    }
+    MOLOCH_TYPE_FREE(TaggerInfo_t, info);
+}
+/******************************************************************************/
 /*
  * File data from ES
  */
 void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 {
     TaggerFile_t *file = uw;
+    uint32_t out[4*100];
 
     if (file->md5)
         tagger_unload_file(file);
 
-    uint32_t           source_len;
-    unsigned char     *source = 0;
-
-    source = moloch_js0n_get(data, data_len, "_source", &source_len);
-
-    if (!source_len || !source) {
+    memset(out, 0, sizeof(out));
+    if (!data_len || !data) {
         HASH_REMOVE(s_, allFiles, file);
         free(file->str);
         MOLOCH_TYPE_FREE(TaggerFile_t, file);
         return;
     }
 
-    file->md5 = moloch_js0n_get_str(source, source_len, "md5");
+    int rc;
+    if ((rc = js0n(data, data_len, out)) != 0) {
+        LOG("ERROR: Parse error %d in >%.*s<\n", rc, data_len, data);
+        HASH_REMOVE(s_, allFiles, file);
+        free(file->str);
+        MOLOCH_TYPE_FREE(TaggerFile_t, file);
+        return;
+    }
 
-    char *tags = moloch_js0n_get_str(source, source_len, "tags");
-    file->tags = g_strsplit(tags, ",", 0);
-    g_free(tags);
+    int i = 0;
+    for (i = 0; out[i]; i+= 4) {
+        if (out[i+1] == 3 && memcmp("md5", data + out[i], sizeof("md5")-1) == 0) {
+            file->md5 = g_strndup((char*)data + out[i+2], out[i+3]);
+        } else if (out[i+1] == 4 && memcmp("tags", data + out[i], sizeof("tags")-1) == 0) {
+            data[out[i+2] + out[i+3]] = 0;
+            file->tags = g_strsplit((char*)data + out[i+2], ",", 0);
+        } else if (out[i+1] == 4 && memcmp("type", data + out[i], sizeof("type")-1) == 0) {
+            file->type = g_strndup((char*)data + out[i+2], out[i+3]);
+        } else if (out[i+1] == 4 && memcmp("data", data + out[i], sizeof("data")-1) == 0) {
+            data[out[i+2] + out[i+3]] = 0;
+            file->elements = g_strsplit((char*)data + out[i+2], ",", 0);
+        }
+    }
+
+
 
     int tag = 0;
     for (tag = 0; file->tags[tag]; tag++) {
         moloch_db_get_tag(NULL, tagsField, file->tags[tag], NULL);
     }
 
-    file->type = moloch_js0n_get_str(source, source_len, "type");
-
-    char *jdata = moloch_js0n_get_str(source, source_len, "data");
-    file->elements = g_strsplit(jdata, ",", 0);
-    g_free(jdata);
-
-    int i;
     for (i = 0; file->elements[i]; i++) {
+
+        int p = 2;
+        char *parts[100];
+        char *str = file->elements[i];
+
+        parts[0] = file->elements[i];
+        parts[1] = 0;
+        while (*str) {
+            if (*str == ';' || *str == '=') {
+                if (!str[1])
+                    break;
+                parts[p] = str+1;
+                p++;
+                *str = 0;
+            }
+            str++;
+        }
+
+        TaggerInfo_t *info = MOLOCH_TYPE_ALLOC(TaggerInfo_t);
+        info->file = file;
+        DLL_INIT(o_, &info->ops);
+
+        int j;
+        for(j = 2; j < p; j+=2) {
+            int pos = moloch_field_by_exp(parts[j]);
+            if (pos == -1) {
+                LOG("WARNING - Unknown expression field %s", parts[j]);
+                continue;
+            }
+            TaggerOp_t *op = MOLOCH_TYPE_ALLOC(TaggerOp_t);
+            op->fieldPos = pos;
+
+            switch (config.fields[pos]->type) {
+            case  MOLOCH_FIELD_TYPE_INT:
+            case  MOLOCH_FIELD_TYPE_INT_ARRAY:
+            case  MOLOCH_FIELD_TYPE_INT_HASH:
+                if (pos == tagsField) {
+                    moloch_db_get_tag(NULL, tagsField, parts[j+1], NULL); // Preload the tagname -> tag mapping
+                    op->str = parts[j+1];
+                    op->strLenOrInt = strlen(op->str);
+                } else {
+                    op->strLenOrInt = atoi(parts[j+1]);
+                }
+                break;
+            case  MOLOCH_FIELD_TYPE_STR:
+            case  MOLOCH_FIELD_TYPE_STR_ARRAY:
+            case  MOLOCH_FIELD_TYPE_STR_HASH:
+                op->str = parts[j+1];
+                op->strLenOrInt = strlen(op->str);
+                break;
+            case  MOLOCH_FIELD_TYPE_IP:
+            case  MOLOCH_FIELD_TYPE_IP_HASH:
+                op->strLenOrInt = inet_addr(parts[j+1]);
+                break;
+            default:
+                LOG("WARNING - Unsupported expression type for %s", parts[j]);
+                continue;
+            }
+
+
+
+
+            DLL_PUSH_TAIL(o_, &info->ops, op);
+
+        }
+
         if (file->type[0] == 'i') {
             patricia_node_t *node;
-            node = make_and_lookup(allIps, file->elements[i]);
+            node = make_and_lookup(allIps, parts[0]);
             if (!node) {
-                LOG("Couldn't create node for %s", file->elements[i]);
+                LOG("Couldn't create node for %s", parts[0]);
                 continue;
             }
             TaggerIP_t *tip;
             if (!node->data) {
                 tip = MOLOCH_TYPE_ALLOC(TaggerIP_t);
-                tip->files = g_ptr_array_new();
+                tip->infos = g_ptr_array_new_with_free_func(tagger_info_free);
                 node->data = tip;
             } else {
                 tip = node->data;
             }
-            g_ptr_array_add(tip->files, file);
+            g_ptr_array_add(tip->infos, info);
         } else if (file->type[0] == 'h') {
             TaggerString_t *tstring;
 
-            HASH_FIND(s_, allDomains, file->elements[i], tstring);
+            HASH_FIND(s_, allDomains, parts[0], tstring);
             if (!tstring) {
                 tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
-                tstring->str = strdup(file->elements[i]); // Need to strdup since file might be unloaded
-                tstring->files = g_ptr_array_new();
+                tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
+                tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
                 HASH_ADD(s_, allDomains, tstring->str, tstring);
             }
-            g_ptr_array_add(tstring->files, file);
+            g_ptr_array_add(tstring->infos, info);
         } else if (file->type[0] == 'm') {
             TaggerString_t *tstring;
 
-            HASH_FIND(s_, allMD5s, file->elements[i], tstring);
+            HASH_FIND(s_, allMD5s, parts[0], tstring);
             if (!tstring) {
                 tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
-                tstring->str = strdup(file->elements[i]); // Need to strdup since file might be unloaded
-                tstring->files = g_ptr_array_new();
+                tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
+                tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
                 HASH_ADD(s_, allMD5s, tstring->str, tstring);
             }
-            g_ptr_array_add(tstring->files, file);
+            g_ptr_array_add(tstring->infos, info);
         } else {
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
+            continue;
         }
     }
 }
@@ -366,7 +505,7 @@ void tagger_load_file(TaggerFile_t *file)
     char                key[500];
     int                 key_len;
 
-    key_len = snprintf(key, sizeof(key), "/tagger/file/%s", file->str);
+    key_len = snprintf(key, sizeof(key), "/tagger/file/%s/_source", file->str);
 
     moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_load_file_cb, file);
 }
@@ -428,7 +567,7 @@ void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer UNUSED(uw
 }
 
 /******************************************************************************/
-/* 
+/*
  * Get the list of files from ES, when called at start up it will be a sync call
  */
 gboolean tagger_fetch_files (gpointer sync)

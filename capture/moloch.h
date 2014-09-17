@@ -152,18 +152,23 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 
 
 typedef struct moloch_field_info {
-    struct moloch_field_info *f_next, *f_prev;
-    char                     *dbFieldMem;
-    char                     *dbField;
-    uint32_t                  f_hash;
-    uint32_t                  f_bucket;
-    uint32_t                  f_count;
+    struct moloch_field_info *d_next, *d_prev; /* Must be first */
+    char                     *dbFieldFull;     /* Must be second - this is the full version example:mysql.user-term */
+    char                     *dbField;         /* - this is the version used in db writing example:user-term */
+    uint32_t                  d_hash;
+    uint32_t                  d_bucket;
+    uint32_t                  d_count;
+
+    struct moloch_field_info *e_next, *e_prev;
+    char                     *expression;
+    uint32_t                  e_hash;
+    uint32_t                  e_bucket;
+    uint32_t                  e_count;
 
     int                       dbFieldLen;
     int                       dbGroupNum;
     char                     *dbGroup;
     int                       dbGroupLen;
-    char                     *expression;
     char                     *group;
     int                       pos;
     uint16_t                  type;
@@ -221,7 +226,7 @@ typedef struct moloch_config {
     int       writeMethod;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
-    MolochFieldInfo_t *fields[100];
+    MolochFieldInfo_t *fields[200];
     int                maxField;
 
     int                numPlugins;

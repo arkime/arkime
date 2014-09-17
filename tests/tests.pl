@@ -48,7 +48,7 @@ sub doTests {
         my $cmd = "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
-            $cmd = "G_SLICE=allows-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
+            $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
         }
 
         if ($main::debug) {
@@ -157,7 +157,7 @@ my ($test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 903;
+    plan tests => 927;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -179,9 +179,12 @@ my ($cmd) = @_;
         }
 
         print ("Loading tagger\n");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 ip ip.tagger1.json iptaggertest");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 host host.tagger1.json hosttaggertest");
-        system("../capture/plugins/taggerUpload.pl localhost:9200 md5 md5.tagger1.json md5taggertest");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 ip ip.tagger1.json iptaggertest1");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 host host.tagger1.json hosttaggertest1");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 md5 md5.tagger1.json md5taggertest1");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 ip ip.tagger2.json iptaggertest2");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 host host.tagger2.json hosttaggertest2");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 md5 md5.tagger2.json md5taggertest2");
 
         $main::userAgent->get("http://localhost:9200/_flush");
         $main::userAgent->get("http://localhost:9200/_refresh");
@@ -197,7 +200,7 @@ my ($cmd) = @_;
         }
 
         if ($main::valgrind) {
-            $cmd = "G_SLICE=allows-malloc valgrind --leak-check=full --log-file=moloch.val " . $cmd;
+            $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=moloch.val " . $cmd;
         }
 
         print "$cmd\n" if ($main::debug);
@@ -687,10 +690,26 @@ my ($cmd) = @_;
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=/00:.*/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=[00:23:04:17:9b:00,00:1a:e3:dc:2e:c0]"));
 
-# tagger tests
-    countTest(7, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=hosttaggertest"));
-    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap)&&tags=iptaggertest"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=md5taggertest"));
+# tagger tests 1
+    countTest(7, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=hosttaggertest1"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=iptaggertest1"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=md5taggertest1"));
+
+# tagger tests 2
+    countTest(7, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=hosttaggertest2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&host=cluster5.us.messagelabs.com"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=byhost1&&irc.channel=byhost1channel&&email.x-priority=666"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&host=www.example.com"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=byhost2&&mysql.user=byhost2mysqluser&&test.ip=122.122.122.122"));
+
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=iptaggertest2"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&ip=10.0.0.3"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=byip1&&irc.channel=byip1channel&&email.x-priority=111"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&ip=192.168.177.160"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=byip2&&mysql.user=byip2mysqluser&&test.ip=111.111.111.111"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=md5taggertest2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=bymd51&&mysql.user=bymd51mysqluser&&test.ip=133.133.133.133"));
 
 # bigendian pcap file tests
     my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));

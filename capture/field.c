@@ -26,8 +26,17 @@
 
 extern patricia_tree_t *ipTree;
 extern MolochConfig_t        config;
-HASH_VAR(f_, fields, MolochFieldInfo_t, 13);
+HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 13);
+HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
 
+/******************************************************************************/
+int moloch_field_exp_cmp(const void *keyv, const void *elementv)
+{
+    char *key = (char*)keyv;
+    MolochFieldInfo_t *element = (MolochFieldInfo_t *)elementv;
+
+    return strcmp(key, element->expression) == 0;
+}
 /******************************************************************************/
 void moloch_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len)
 {
@@ -47,8 +56,8 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
         if (strncmp("group", (char*)data + out[i], 5) == 0) {
             info->group = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("dbField", (char*)data + out[i], 7) == 0) {
-            info->dbFieldMem = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
-            info->dbFieldLen = out[i+3];
+            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->dbFieldLen  = out[i+3];
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
                 info->flags    |= MOLOCH_FIELD_FLAG_DISABLED;
@@ -57,7 +66,8 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
     }
 
     info->pos = -1;
-    HASH_ADD(f_, fields, info->dbField, info);
+    HASH_ADD(d_, fieldsByDb, info->dbField, info);
+    HASH_ADD(e_, fieldsByExp, info->expression, info);
 
     return;
 }
@@ -80,17 +90,18 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     char rawField[100];
 
     MolochFieldInfo_t *minfo = 0;
-    HASH_FIND(f_, fields, dbField, minfo);
+    HASH_FIND(d_, fieldsByDb, dbField, minfo);
 
     if (!minfo) {
         minfo = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
-        minfo->dbFieldMem = g_strdup(dbField);
-        minfo->dbField    = minfo->dbFieldMem;
-        minfo->dbFieldLen = strlen(minfo->dbField);
-        minfo->pos        = -1;
-        minfo->expression = g_strdup(expression);
-        minfo->group      = g_strdup(group);
-        HASH_ADD(f_, fields, minfo->dbField, minfo);
+        minfo->dbFieldFull = g_strdup(dbField);
+        minfo->dbField     = minfo->dbFieldFull;
+        minfo->dbFieldLen  = strlen(minfo->dbField);
+        minfo->pos         = -1;
+        minfo->expression  = g_strdup(expression);
+        minfo->group       = g_strdup(group);
+        HASH_ADD(d_, fieldsByDb, minfo->dbField, minfo);
+        HASH_ADD(e_, fieldsByExp, minfo->expression, minfo);
 
         if ((flags & MOLOCH_FIELD_FLAG_NODB) == 0) {
             va_list args;
@@ -142,7 +153,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     MolochFieldInfo_t *info = 0;
     if (flags & MOLOCH_FIELD_FLAG_CNT) {
         sprintf(dbField2, "%scnt", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "%s.cnt", expression);
             sprintf(friendlyName2, "%s Cnt", friendlyName);
@@ -153,7 +164,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
     if (flags & MOLOCH_FIELD_FLAG_SCNT) {
         sprintf(dbField2, "%sscnt", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "%s.cnt", expression);
             sprintf(friendlyName2, "%s Cnt", friendlyName);
@@ -164,7 +175,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 
     if (flags & MOLOCH_FIELD_FLAG_COUNT) {
         sprintf(dbField2, "%s-cnt", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "%s.cnt", expression);
             sprintf(friendlyName2, "%s Cnt", friendlyName);
@@ -177,7 +188,8 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         g_free(minfo->expression);
         g_free(minfo->dbField);
         g_free(minfo->group);
-        HASH_REMOVE(f_, fields, minfo);
+        HASH_REMOVE(d_, fieldsByDb, minfo);
+        HASH_REMOVE(e_, fieldsByExp, minfo);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, minfo);
         return -1;
     }
@@ -185,7 +197,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     if (flags & MOLOCH_FIELD_FLAG_IPPRE) {
         int fnlen = strlen(friendlyName);
         sprintf(dbField2, "g%s", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "country.%s", expression+3);
             sprintf(friendlyName2, "%.*s GEO", fnlen-2, friendlyName);
@@ -194,7 +206,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         }
 
         sprintf(dbField2, "as%s", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "asn.%s", expression+3);
             sprintf(friendlyName2, "%.*s ASN", fnlen-2, friendlyName);
@@ -204,7 +216,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         }
 
         sprintf(dbField2, "rir%s", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "rir.%s", expression+3);
             sprintf(friendlyName2, "%.*s RIR", fnlen-2, friendlyName);
@@ -213,7 +225,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         }
     } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH) {
         sprintf(dbField2, "%s-geo", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "%s.country", expression);
             sprintf(friendlyName2, "%s GEO", friendlyName);
@@ -222,7 +234,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         }
 
         sprintf(dbField2, "%s-asn.snow", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(dbField2, "%s-asn.snow", dbField);
             sprintf(expression2, "%s.asn", expression);
@@ -233,7 +245,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         }
 
         sprintf(dbField2, "%s-rir", dbField);
-        HASH_FIND(f_, fields, dbField2, info);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             sprintf(expression2, "%s.rir", expression);
             sprintf(friendlyName2, "%s RIR", friendlyName);
@@ -247,7 +259,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
 int moloch_field_by_db(char *dbField)
 {
     MolochFieldInfo_t *info = 0;
-    HASH_FIND(f_, fields, dbField, info);
+    HASH_FIND(d_, fieldsByDb, dbField, info);
     if (info)
         return info->pos;
     return -1;
@@ -256,26 +268,26 @@ int moloch_field_by_db(char *dbField)
 int moloch_field_by_exp(char *exp)
 {
     MolochFieldInfo_t *info = 0;
-    HASH_FORALL(f_, fields, info,
-        if (strcmp(exp, info->expression) == 0)
-            return info->pos;
-    );
+    HASH_FIND(e_, fieldsByExp, exp, info);
+    if (info)
+        return info->pos;
     return -1;
 }
 /******************************************************************************/
 void moloch_field_init()
 {
     config.maxField = 0;
-    HASH_INIT(f_, fields, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(d_, fieldsByDb, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(e_, fieldsByExp, moloch_string_hash, moloch_field_exp_cmp);
 }
 /******************************************************************************/
 void moloch_field_exit()
 {
     MolochFieldInfo_t *info = 0;
 
-    HASH_FORALL_POP_HEAD(f_, fields, info,
-        if (info->dbFieldMem)
-            g_free(info->dbFieldMem);
+    HASH_FORALL_POP_HEAD(d_, fieldsByDb, info,
+        if (info->dbFieldFull)
+            g_free(info->dbFieldFull);
         if (info->expression)
             g_free(info->expression);
         if (info->group)
