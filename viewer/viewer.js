@@ -4407,9 +4407,6 @@ app.post('/receiveSession', function receiveSession(req, res) {
       file.write(chunk.slice(24));
     }
     written += chunk.length; // Pretend we wrote it all
-    if (written === filelen) {
-      file.end();
-    }
   }
 
   req.on('data', function(chunk) {
@@ -4503,6 +4500,9 @@ app.post('/receiveSession', function receiveSession(req, res) {
   });
 
   req.on('end', function(chunk) {
+    if (file) {
+      file.end();
+    }
     return res.send({success: true});
   });
 });
