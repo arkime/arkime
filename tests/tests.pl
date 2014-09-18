@@ -157,7 +157,7 @@ my ($test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 927;
+    plan tests => 943;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -185,6 +185,8 @@ my ($cmd) = @_;
         system("../capture/plugins/taggerUpload.pl localhost:9200 ip ip.tagger2.json iptaggertest2");
         system("../capture/plugins/taggerUpload.pl localhost:9200 host host.tagger2.json hosttaggertest2");
         system("../capture/plugins/taggerUpload.pl localhost:9200 md5 md5.tagger2.json md5taggertest2");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 email email.tagger2.json emailtaggertest2");
+        system("../capture/plugins/taggerUpload.pl localhost:9200 uri uri.tagger2.json uritaggertest2");
 
         $main::userAgent->get("http://localhost:9200/_flush");
         $main::userAgent->get("http://localhost:9200/_refresh");
@@ -710,6 +712,16 @@ my ($cmd) = @_;
 
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=md5taggertest2"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=bymd51&&mysql.user=bymd51mysqluser&&test.ip=133.133.133.133"));
+
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=emailtaggertest2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=srcmatch"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=dstmatch"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&email.dst=added1"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&email.src=added2"));
+
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=uritaggertest2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&http.referer=added1&&tags=firstmatch"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-500-head.pcap||file=$pwd/http-wrapped-header.pcap)&&http.user-agent=added2&&tags=secondmatch"));
 
 # bigendian pcap file tests
     my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));

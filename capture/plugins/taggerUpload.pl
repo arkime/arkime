@@ -11,11 +11,11 @@ sub showHelp($)
 {
     my ($str) = @_;
     print $str,"\n";
-    die "$0 ESHOST:ESPORT (ip|host|md5) filename tag1 [tag2..tagN]";
+    die "$0 ESHOST:ESPORT (ip|host|md5|email|uri) filename tag1 [tag2..tagN]";
 }
 
 showHelp("Missing arguments") if (@ARGV < 4);
-showHelp("Must be ip, host, or md5 for file type instead of $ARGV[1]") if ($ARGV[1] !~ /^(host|ip|md5)$/);
+showHelp("Must be ip, host, or md5 for file type instead of $ARGV[1]") if ($ARGV[1] !~ /^(host|ip|md5|email|uri)$/);
 showHelp("file '$ARGV[2]' not found") if (! -f $ARGV[2]);
 showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 

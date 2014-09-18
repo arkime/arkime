@@ -42,7 +42,10 @@ static int                   tagsField;
 static int                   httpHostField;
 static int                   httpXffField;
 static int                   httpMd5Field;
+static int                   httpPathField;
 static int                   emailMd5Field;
+static int                   emailSrcField;
+static int                   emailDstField;
 static int                   dnsHostField;
 
 /******************************************************************************/
@@ -104,10 +107,14 @@ typedef struct tagger_info {
 } TaggerInfo_t;
 
 /******************************************************************************/
+typedef HASH_VAR(s_, TaggerStringHash_t, TaggerStringHead_t, 37277);
+
+TaggerStringHash_t allDomains;
+TaggerStringHash_t allMD5s;
+TaggerStringHash_t allEmails;
+TaggerStringHash_t allURIs;
 
 HASH_VAR(s_, allFiles, TaggerFileHead_t, 101);
-HASH_VAR(s_, allDomains, TaggerStringHead_t, 7919);
-HASH_VAR(s_, allMD5s, TaggerStringHead_t, 37277);
 
 static patricia_tree_t *allIps;
 
@@ -224,10 +231,38 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
+    if (session->fields[httpPathField]) {
+        MolochStringHashStd_t *shash = session->fields[httpPathField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            HASH_FIND_HASH(s_, allURIs, hstring->s_hash, hstring->str, tstring);
+            if (tstring) {
+                tagger_process_match(session, tstring->infos);
+            }
+        );
+    }
+
     if (session->fields[emailMd5Field]) {
         MolochStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_process_match(session, tstring->infos);
+        );
+    }
+
+    if (session->fields[emailSrcField]) {
+        MolochStringHashStd_t *shash = session->fields[emailSrcField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
+            if (tstring)
+                tagger_process_match(session, tstring->infos);
+        );
+    }
+
+    if (session->fields[emailDstField]) {
+        MolochStringHashStd_t *shash = session->fields[emailDstField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
             if (tstring)
                 tagger_process_match(session, tstring->infos);
         );
@@ -248,6 +283,18 @@ void tagger_plugin_exit()
     );
 
     HASH_FORALL_POP_HEAD(s_, allMD5s, tstring,
+        free(tstring->str);
+        g_ptr_array_free(tstring->infos, TRUE);
+        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, allEmails, tstring,
+        free(tstring->str);
+        g_ptr_array_free(tstring->infos, TRUE);
+        MOLOCH_TYPE_FREE(TaggerString_t, tstring);
+    );
+
+    HASH_FORALL_POP_HEAD(s_, allURIs, tstring,
         free(tstring->str);
         g_ptr_array_free(tstring->infos, TRUE);
         MOLOCH_TYPE_FREE(TaggerString_t, tstring);
@@ -280,10 +327,10 @@ void tagger_remove_file(GPtrArray *infos, TaggerFile_t *file)
  */
 void tagger_unload_file(TaggerFile_t *file) {
     int i;
-    for (i = 0; file->elements[i]; i++) {
-        if (file->type[0] == 'i') {
+    if (file->type[0] == 'i') {
+        prefix_t prefix;
 
-            prefix_t prefix;
+        for (i = 0; file->elements[i]; i++) {
             if (!ascii2prefix2(AF_INET, file->elements[i], &prefix)) {
                 LOG("Couldn't unload %s", file->elements[i]);
                 continue;
@@ -296,24 +343,37 @@ void tagger_unload_file(TaggerFile_t *file) {
             }
 
             tagger_remove_file(((TaggerIP_t *)(node->data))->infos, file);
-        } else if (file->type[0] == 'h') {
-            TaggerString_t *tstring;
-            HASH_FIND(s_, allDomains, file->elements[i], tstring);
+        }
+        return;
+    }
+
+    TaggerStringHash_t *hash = 0;
+    switch (file->type[0]) {
+    case 'h':
+        hash = (TaggerStringHash_t *)&allDomains;
+        break;
+    case 'm':
+        hash = (TaggerStringHash_t *)&allMD5s;
+        break;
+    case 'e':
+        hash = (TaggerStringHash_t *)&allEmails;
+        break;
+    case 'u':
+        hash = (TaggerStringHash_t *)&allURIs;
+        break;
+    default:
+        LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
+    }
+
+    TaggerString_t *tstring;
+    if (hash) {
+        for (i = 0; file->elements[i]; i++) {
+            HASH_FIND(s_, *hash, file->elements[i], tstring);
             if (tstring) {
                 tagger_remove_file(tstring->infos, file);
                 // We could check if files is now empty and remove the node, but the
                 // theory is most of the time it will be just readded in the load_file
             }
-        } else if (file->type[0] == 'm') {
-            TaggerString_t *tstring;
-            HASH_FIND(s_, allMD5s, file->elements[i], tstring);
-            if (tstring) {
-                tagger_remove_file(tstring->infos, file);
-                // We could check if files is now empty and remove the node, but the
-                // theory is most of the time it will be just readded in the load_file
-            }
-        } else {
-            LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
         }
     }
 
@@ -385,6 +445,9 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
         moloch_db_get_tag(NULL, tagsField, file->tags[tag], NULL);
     }
 
+    patricia_node_t *node;
+    TaggerIP_t *tip;
+
     for (i = 0; file->elements[i]; i++) {
 
         int p = 2;
@@ -445,21 +508,18 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
                 continue;
             }
 
-
-
-
             DLL_PUSH_TAIL(o_, &info->ops, op);
 
         }
 
-        if (file->type[0] == 'i') {
-            patricia_node_t *node;
+        TaggerStringHash_t *hash = 0;
+        switch (file->type[0]) {
+        case 'i':
             node = make_and_lookup(allIps, parts[0]);
             if (!node) {
                 LOG("Couldn't create node for %s", parts[0]);
                 continue;
             }
-            TaggerIP_t *tip;
             if (!node->data) {
                 tip = MOLOCH_TYPE_ALLOC(TaggerIP_t);
                 tip->infos = g_ptr_array_new_with_free_func(tagger_info_free);
@@ -468,33 +528,35 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
                 tip = node->data;
             }
             g_ptr_array_add(tip->infos, info);
-        } else if (file->type[0] == 'h') {
-            TaggerString_t *tstring;
-
-            HASH_FIND(s_, allDomains, parts[0], tstring);
-            if (!tstring) {
-                tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
-                tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
-                tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
-                HASH_ADD(s_, allDomains, tstring->str, tstring);
-            }
-            g_ptr_array_add(tstring->infos, info);
-        } else if (file->type[0] == 'm') {
-            TaggerString_t *tstring;
-
-            HASH_FIND(s_, allMD5s, parts[0], tstring);
-            if (!tstring) {
-                tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
-                tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
-                tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
-                HASH_ADD(s_, allMD5s, tstring->str, tstring);
-            }
-            g_ptr_array_add(tstring->infos, info);
-        } else {
+            continue;
+        case 'h':
+            hash = (TaggerStringHash_t *)&allDomains;
+            break;
+        case 'm':
+            hash = (TaggerStringHash_t *)&allMD5s;
+            break;
+        case 'e':
+            hash = (TaggerStringHash_t *)&allEmails;
+            break;
+        case 'u':
+            hash = (TaggerStringHash_t *)&allURIs;
+            break;
+        default:
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
             continue;
+        } 
+
+        TaggerString_t *tstring;
+
+        HASH_FIND(s_, *hash, parts[0], tstring);
+        if (!tstring) {
+            tstring = MOLOCH_TYPE_ALLOC(TaggerString_t);
+            tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
+            tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
+            HASH_ADD(s_, *hash, tstring->str, tstring);
         }
-    }
+        g_ptr_array_add(tstring->infos, info);
+    } /* for elements */
 }
 /******************************************************************************/
 /*
@@ -604,6 +666,8 @@ void moloch_plugin_init()
     HASH_INIT(s_, allFiles, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, allDomains, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(s_, allMD5s, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, allEmails, moloch_string_hash, moloch_string_cmp);
+    HASH_INIT(s_, allURIs, moloch_string_hash, moloch_string_cmp);
     allIps = New_Patricia(32);
 
     moloch_plugins_register("tagger", FALSE);
@@ -619,12 +683,15 @@ void moloch_plugin_init()
       NULL
     );
 
-    tagsField    = moloch_field_by_db("ta");
-    httpHostField = moloch_field_by_db("ho");
-    httpXffField  = moloch_field_by_db("xff");
-    httpMd5Field  = moloch_field_by_db("hmd5");
-    emailMd5Field = moloch_field_by_db("emd5");
-    dnsHostField  = moloch_field_by_db("dnsho");
+    tagsField      = moloch_field_by_db("ta");
+    httpHostField  = moloch_field_by_db("ho");
+    httpXffField   = moloch_field_by_db("xff");
+    httpMd5Field   = moloch_field_by_db("hmd5");
+    httpPathField  = moloch_field_by_db("hpath");
+    emailMd5Field  = moloch_field_by_db("emd5");
+    emailSrcField  = moloch_field_by_db("esrc");
+    emailDstField  = moloch_field_by_db("edst");
+    dnsHostField   = moloch_field_by_db("dnsho");
 
 
     /* Call right away sync, and schedule every 60 seconds async */
