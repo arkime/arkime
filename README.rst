@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Tested with **0.90.12** and **1.1.1**, requires at least 0.90.12 or 1.1.1, does **not** support 1.0.x
+Recommend version **1.3.x**, requires at least 1.1.x
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -83,7 +83,7 @@ Tested with **0.90.12** and **1.1.1**, requires at least 0.90.12 or 1.1.1, does 
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   0.90.10 <http://www.elasticsearch.org/downloads/0-90-10/>`_.
+   1.3.2 <http://www.elasticsearch.org/downloads/1-3-2/>`_.
 
 4. Uncompress the archive you downloaded.
 
