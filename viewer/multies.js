@@ -719,7 +719,7 @@ nodes.forEach(function(node) {
       process.exit();
     }
 
-    var vmatch = data.version.number.match(/^1\.[12]/);
+    var vmatch = data.version.number.match(/^1\.[123]/);
     if (vmatch) {
       var oldes = clients[node];
       setTimeout(function() {oldes.close();}, 2000);
