@@ -1765,7 +1765,7 @@ sub dbCheck {
         if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
             $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
         }
-        if (!(exists $node->{settings}->{"script.disable_dynamic"})) {
+        if ($version < 10200 && !(exists $node->{settings}->{"script.disable_dynamic"})) {
             $warnstr .= sprintf ("       ADD 'script.disable_dynamic: true'\n");
             $warnstr .= sprintf ("         - Closes a potential security issue\n");
         }
