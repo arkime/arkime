@@ -37,7 +37,7 @@ var internals = {tagId2Name: {},
                  apiVersion: "0.90",
                  q: []};
 
-exports.initialize = function (info) {
+exports.initialize = function (info, cb) {
   internals.dontMapTags = info.dontMapTags || false;
   delete info.dontMapTags;
   internals.info = info;
@@ -80,6 +80,7 @@ exports.initialize = function (info) {
         maxSockets: 21
       });
     }
+    return cb();
   });
 
   // Replace tag implementation
@@ -145,7 +146,7 @@ exports.search = function (index, type, query, options, cb) {
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
-  return exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing"}, cb);
+  return exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true"}, cb);
 };
 
 exports.msearch = function (index, type, queries, cb) {

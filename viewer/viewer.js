@@ -299,9 +299,9 @@ function createSessionDetail() {
   internals.sessionDetail =    "include views/mixins\n" +
                                "div.sessionDetail(sessionid='#{session.id}')\n" +
                                "  include views/sessionDetail-standard\n";
-  for (var k in found) {
+  Object.keys(found).sort().forEach(function(k) {
     internals.sessionDetail += "  include " + found[k] + "\n";
-  }
+  });
   internals.sessionDetail +=   "  include views/sessionDetail-body\n";
   internals.sessionDetail +=   "include views/sessionDetail-footer\n";
 }
@@ -312,12 +312,8 @@ createSessionDetail();
 //////////////////////////////////////////////////////////////////////////////////
 Db.initialize({host: internals.elasticBase,
                nodeName: Config.nodeName(),
-               dontMapTags: Config.get("multiES", false)});
+               dontMapTags: Config.get("multiES", false)}, main);
 
-Db.nodesStats({fs: 1}, function (err, info) {
-  info.nodes.timestamp = new Date().getTime();
-  internals.previousNodeStats.push(info.nodes);
-});
 //////////////////////////////////////////////////////////////////////////////////
 //// Requests
 //////////////////////////////////////////////////////////////////////////////////
@@ -4176,6 +4172,10 @@ function sendSessionWorker(options, cb) {
         pos += packets[i].length;
       }
     }
+    if (!session) {
+      console.log("no session" , session, "err", err, "id", options.id);
+      return;
+    }
     session.id = options.id;
     session.ps = ps;
     delete session.fs;
@@ -4734,40 +4734,46 @@ function processCronQueries() {
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
-Db.checkVersion(MIN_DB_VERSION, Config.get("passwordSecret") !== undefined);
-Db.healthCache(function(err, health) {
-  internals.clusterName = health.cluster_name;
-});
+function main () {
+  Db.checkVersion(MIN_DB_VERSION, Config.get("passwordSecret") !== undefined);
+  Db.healthCache(function(err, health) {
+    internals.clusterName = health.cluster_name;
+  });
 
-expireCheckAll();
-setInterval(expireCheckAll, 2*60*1000);
-loadFields();
-setInterval(loadFields, 2*60*1000);
+  Db.nodesStats({fs: 1}, function (err, info) {
+    info.nodes.timestamp = new Date().getTime();
+    internals.previousNodeStats.push(info.nodes);
+  });
 
-if (Config.get("cronQueries", false)) {
-  console.log("This node will process Cron Queries");
-  setInterval(processCronQueries, 60*1000);
-  setTimeout(function () {
-    processCronQueries();
-  }, 1000);
+  expireCheckAll();
+  setInterval(expireCheckAll, 2*60*1000);
+  loadFields();
+  setInterval(loadFields, 2*60*1000);
+
+  if (Config.get("cronQueries", false)) {
+    console.log("This node will process Cron Queries");
+    setInterval(processCronQueries, 60*1000);
+    setTimeout(function () {
+      processCronQueries();
+    }, 1000);
+  }
+
+  var server;
+  if (Config.isHTTPS()) {
+    server = https.createServer({key: fs.readFileSync(Config.get("keyFile")),
+                                cert: fs.readFileSync(Config.get("certFile"))}, app);
+  } else {
+    server = http.createServer(app);
+  }
+
+  server
+    .on('error', function (e) {
+      console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
+      process.exit(1);
+      throw new Error("Exiting");
+    })
+    .on('listening', function (e) {
+      console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
+    })
+    .listen(Config.get("viewPort", "8005"), Config.get("viewHost", undefined));
 }
-
-var server;
-if (Config.isHTTPS()) {
-  server = https.createServer({key: fs.readFileSync(Config.get("keyFile")),
-                              cert: fs.readFileSync(Config.get("certFile"))}, app);
-} else {
-  server = http.createServer(app);
-}
-
-server
-  .on('error', function (e) {
-    console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
-    process.exit(1);
-    throw new Error("Exiting");
-  })
-  .on('listening', function (e) {
-    console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
-  })
-  .listen(Config.get("viewPort", "8005"), Config.get("viewHost", undefined));
-
