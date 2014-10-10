@@ -179,7 +179,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
     }
 
-    if (session->fields[httpXffField]) {
+    if (httpXffField != -1 && session->fields[httpXffField]) {
         MolochIntHashStd_t *ihash = session->fields[httpXffField]->ihash;
         MolochInt_t        *xff;
 
@@ -193,7 +193,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     }
 
     MolochString_t *hstring;
-    if (session->fields[httpHostField]) {
+    if (httpHostField != -1 && session->fields[httpHostField]) {
         MolochStringHashStd_t *shash = session->fields[httpHostField]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
@@ -207,7 +207,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
             }
         );
     }
-    if (session->fields[dnsHostField]) {
+    if (dnsHostField != -1 && session->fields[dnsHostField]) {
         MolochStringHashStd_t *shash = session->fields[dnsHostField]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
@@ -222,7 +222,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[httpMd5Field]) {
+    if (httpMd5Field != -1 && session->fields[httpMd5Field]) {
         MolochStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
@@ -231,7 +231,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[httpPathField]) {
+    if (httpPathField != -1 && session->fields[httpPathField]) {
         MolochStringHashStd_t *shash = session->fields[httpPathField]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allURIs, hstring->s_hash, hstring->str, tstring);
@@ -241,7 +241,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[emailMd5Field]) {
+    if (emailMd5Field != -1 && session->fields[emailMd5Field]) {
         MolochStringHashStd_t *shash = session->fields[emailMd5Field]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allMD5s, hstring->s_hash, hstring->str, tstring);
@@ -250,7 +250,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[emailSrcField]) {
+    if (emailSrcField != -1 && session->fields[emailSrcField]) {
         MolochStringHashStd_t *shash = session->fields[emailSrcField]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
@@ -259,7 +259,7 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
-    if (session->fields[emailDstField]) {
+    if (emailDstField != -1 && session->fields[emailDstField]) {
         MolochStringHashStd_t *shash = session->fields[emailDstField]->shash;
         HASH_FORALL(s_, *shash, hstring,
             HASH_FIND_HASH(s_, allEmails, hstring->s_hash, hstring->str, tstring);
@@ -423,22 +423,34 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
         return;
     }
 
-    int i = 0;
+    unsigned int fieldShortHand[20];
+    memset(fieldShortHand, 0xff, sizeof(fieldShortHand));
+
+    int i;
     for (i = 0; out[i]; i+= 4) {
         if (out[i+1] == 3 && memcmp("md5", data + out[i], sizeof("md5")-1) == 0) {
             file->md5 = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (out[i+1] == 4 && memcmp("tags", data + out[i], sizeof("tags")-1) == 0) {
             data[out[i+2] + out[i+3]] = 0;
             file->tags = g_strsplit((char*)data + out[i+2], ",", 0);
-        } else if (out[i+1] == 4 && memcmp("type", data + out[i], sizeof("type")-1) == 0) {
+        } else if (out[i+1] == sizeof("type")-1 && memcmp("type", data + out[i], sizeof("type")-1) == 0) {
             file->type = g_strndup((char*)data + out[i+2], out[i+3]);
-        } else if (out[i+1] == 4 && memcmp("data", data + out[i], sizeof("data")-1) == 0) {
+        } else if (out[i+1] == sizeof("data")-1 && memcmp("data", data + out[i], sizeof("data")-1) == 0) {
             data[out[i+2] + out[i+3]] = 0;
             file->elements = g_strsplit((char*)data + out[i+2], ",", 0);
+        } else if (out[i+1] == sizeof("fields") - 1 && memcmp("fields", data + out[i], sizeof("fields")-1) == 0) {
+            data[out[i+2] + out[i+3]] = 0;
+            char **fields = g_strsplit((char*)data + out[i+2], ",", 0);
+            int f;
+            for (f = 0; fields[f] && f < 100; f++) {
+                int shortcut = -1;
+                int pos = moloch_field_define_text(fields[f], &shortcut);
+                if (shortcut != -1 && shortcut >= 0 && shortcut < 20)
+                    fieldShortHand[shortcut] = pos;
+            }
+            g_strfreev(fields);
         }
     }
-
-
 
     int tag = 0;
     for (tag = 0; file->tags[tag]; tag++) {
@@ -473,7 +485,14 @@ void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
 
         int j;
         for(j = 2; j < p; j+=2) {
-            int pos = moloch_field_by_exp(parts[j]);
+            int pos = -1;
+            if (isdigit(parts[j][0])) {
+                unsigned int f = atoi(parts[j]);
+                if (f < 20 && fieldShortHand[f] != 0xffffffff)
+                    pos = fieldShortHand[f];
+            } else {
+                pos = moloch_field_by_exp(parts[j]);
+            }
             if (pos == -1) {
                 LOG("WARNING - Unknown expression field %s", parts[j]);
                 continue;

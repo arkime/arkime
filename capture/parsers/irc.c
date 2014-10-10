@@ -24,11 +24,11 @@ static int channelsField;
 static int nickField;
 
 /******************************************************************************/
-int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     IRCInfo_t *irc = uw;
 
-    if (session->which == 1)
+    if (which == 1)
         return 0;
 
     while (remaining) {
@@ -80,7 +80,7 @@ void irc_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-void irc_classify(MolochSession_t *session, const unsigned char *data, int len)
+void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
     if (data[0] == ':' && !moloch_memstr((char *)data, len, " NOTICE ", 8))
         return;
@@ -99,7 +99,7 @@ void irc_classify(MolochSession_t *session, const unsigned char *data, int len)
     IRCInfo_t            *irc          = MOLOCH_TYPE_ALLOC0(IRCInfo_t);
 
     moloch_parsers_register(session, irc_parser, irc, irc_free);
-    irc_parser(session, irc, data, len);
+    irc_parser(session, irc, data, len, which);
 }
 /******************************************************************************/
 void moloch_parser_init()

@@ -26,10 +26,10 @@ static int dbField;
 static int appField;
 
 /******************************************************************************/
-int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len) 
+int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 
 {
     Info_t *info = uw;
-    if (session->which != info->which)
+    if (which != info->which)
         return 0;
 
     if (len == 8 && memcmp(data, "\x00\x00\x00\x08\x04\xd2\x16\x2f", 8) == 0) {
@@ -89,7 +89,7 @@ void postgresql_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len))
+void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which)
 {
     if (moloch_nids_has_protocol(session, "postgresql"))
         return;
@@ -98,7 +98,7 @@ void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*d
         (len > 8 && data[3] <= len && data[4] == 0 && data[5] == 3 && data[6] == 0)) {
 
         Info_t *info = MOLOCH_TYPE_ALLOC0(Info_t);
-        info->which = session->which;
+        info->which = which;
         moloch_parsers_register(session, postgresql_parser, info, postgresql_free);
     }
 }

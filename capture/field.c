@@ -72,6 +72,108 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
     return;
 }
 /******************************************************************************/
+int moloch_field_define_text(char *text, int *shortcut)
+{
+    int count = 0;
+    char *field = 0;
+    char *kind = 0;
+    char *help = 0;
+    char *db = 0;
+    char *group = 0;
+    char *friendly = 0;
+
+    if (config.debug)
+        LOG("Parsing %s", text);
+    char **elements = g_strsplit(text, ";", 0);
+    int e;
+    for (e = 0; elements[e]; e++) {
+        char *colon = strchr(elements[e], ':');
+        if (!colon)
+            continue;
+        *colon = 0;
+        colon++;
+        if (strcmp(elements[e], "field") == 0)
+            field = colon;
+        else if (strcmp(elements[e], "kind") == 0)
+            kind = colon;
+        else if (strcmp(elements[e], "group") == 0)
+            group = colon;
+        else if (strcmp(elements[e], "count") == 0)
+            count = strcmp(colon, "true") == 0;
+        else if (strcmp(elements[e], "friendly") == 0)
+            friendly = colon;
+        else if (strcmp(elements[e], "db") == 0)
+            db = colon;
+        else if (strcmp(elements[e], "help") == 0)
+            help = colon;
+        else if (strcmp(elements[e], "shortcut") == 0) {
+            if (shortcut)
+                *shortcut = atoi(colon);
+        }
+
+    }
+
+    if (!field) {
+        LOG("Didn't find field 'field:'");
+        g_strfreev(elements);
+        return -1;
+    }
+
+    if (!db) {
+        int pos = moloch_field_by_exp(field);
+        g_strfreev(elements);
+        if (pos != -1)
+            return pos;
+
+        LOG("Didn't find field 'db:'");
+        return -1;
+    }
+
+    if (!kind) {
+        LOG("Didn't find field 'kind:'");
+        g_strfreev(elements);
+        return -1;
+    }
+
+    if (strstr(kind, "termfield") != 0 && strstr(db, "-term") == 0) {
+        LOG("ERROR - db field %s for %s should end with -term", kind, db);
+        exit(1);
+    }
+
+    char groupbuf[100];
+    if (!group) {
+        char *dot = strchr(field, '.');
+        if (dot) {
+            memcpy(groupbuf, field, MIN(100, dot-field));
+            groupbuf[dot-field] = 0;
+            group = groupbuf;
+        } else {
+            group = "general";
+        }
+    }
+
+    if (!friendly)
+        friendly = field;
+
+    if (!help)
+        help = field;
+
+    int type, flags = 0;
+    if (strcmp(kind, "integer") == 0)
+        type = MOLOCH_FIELD_TYPE_INT_HASH;
+    else if (strcmp(kind, "ip") == 0)
+        type = MOLOCH_FIELD_TYPE_IP_HASH;
+    else
+        type = MOLOCH_FIELD_TYPE_STR_HASH;
+
+    if (count)
+        flags |= MOLOCH_FIELD_FLAG_COUNT;
+
+    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, NULL);
+    g_strfreev(elements);
+    return pos;
+}
+/******************************************************************************/
 /* Changes ... to va_list */
 static void moloch_nids_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
 {

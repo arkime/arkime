@@ -25,6 +25,7 @@
                   ""
                ]
             },
+            "hckey-term-cnt" : 1,
             "db2" : 478,
             "db" : 895,
             "mac2-term" : [
@@ -119,6 +120,9 @@
             "tacnt" : 8,
             "sl" : 916,
             "fb1" : "474554202f63726f",
+            "hckey-term" : [
+               "xxxxxxxxxx"
+            ],
             "us" : [
                "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
             ],

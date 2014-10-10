@@ -18,13 +18,13 @@
 #include "moloch.h"
 
 /******************************************************************************/
-void bt_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
+void bt_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
     moloch_nids_add_tag(session, "protocol:bittorrent");
     moloch_nids_add_protocol(session, "bittorrent");
 }
 /******************************************************************************/
-void rdp_classify(MolochSession_t *session, const unsigned char *data, int len)
+void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
         moloch_nids_add_tag(session, "protocol:rdp");
@@ -32,7 +32,7 @@ void rdp_classify(MolochSession_t *session, const unsigned char *data, int len)
     }
 }
 /******************************************************************************/
-void imap_classify(MolochSession_t *session, const unsigned char *data, int len)
+void imap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (moloch_memstr((const char *)data+5, len-5, "IMAP", 4)) {
         moloch_nids_add_tag(session, "protocol:imap");
@@ -40,13 +40,13 @@ void imap_classify(MolochSession_t *session, const unsigned char *data, int len)
     }
 }
 /******************************************************************************/
-void pop3_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
+void pop3_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
     moloch_nids_add_tag(session, "protocol:pop3");
     moloch_nids_add_protocol(session, "pop3");
 }
 /******************************************************************************/
-void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len)
+void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (data[13] == 0x78 &&  
         (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (data[5]&0xff)) == len)) ||  // Windows
@@ -61,7 +61,7 @@ void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len
     }
 }
 /******************************************************************************/
-void other220_classify(MolochSession_t *session, const unsigned char *data, int len)
+void other220_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (g_strstr_len((char *)data, len, "LMTP") != 0) {
         moloch_nids_add_tag(session, "protocol:lmtp");

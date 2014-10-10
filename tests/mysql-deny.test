@@ -56,8 +56,8 @@
             "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "prot-term" : [
-               "tcp",
-               "mysql"
+               "mysql",
+               "tcp"
             ],
             "mac1-term" : [
                "00:00:00:00:00:00"

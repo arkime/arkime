@@ -149,12 +149,13 @@ get_tlv_error:
     return 0;
 }
 /******************************************************************************/
-char *moloch_parsers_asn_decode_oid(unsigned char *oid, int len) {
-    static char buf[1000];
-    uint32_t buflen = 0;
+void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len) {
+    int buflen = 0;
     int pos = 0;
     int first = TRUE;
     int value = 0;
+
+    buf[0] = 0;
 
     for (pos = 0; pos < len; pos++) {
         value = (value << 7) | (oid[pos] & 0x7f);
@@ -165,17 +166,15 @@ char *moloch_parsers_asn_decode_oid(unsigned char *oid, int len) {
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen = snprintf(buf, sizeof(buf), "%d.%d", value/40, value % 40);
+                buflen = snprintf(buf, bufsz, "%d.%d", value/40, value % 40);
             else /* one value in first byte */
-                buflen = snprintf(buf, sizeof(buf), "%d", value);
-        } else if (buflen < sizeof(buf)) {
-            buflen += snprintf(buf+buflen, sizeof(buf)-buflen, ".%d", value);
+                buflen = snprintf(buf, bufsz, "%d", value);
+        } else if (buflen < bufsz) {
+            buflen += snprintf(buf+buflen, bufsz-buflen, ".%d", value);
         }
 
         value = 0;
     }
-
-    return buf;
 }
 
 /******************************************************************************/
@@ -474,7 +473,7 @@ void moloch_parsers_classifier_register_udp_internal(const char *name, int offse
     }
 }
 /******************************************************************************/
-void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining)
+void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which)
 {
     int i;
 
@@ -484,22 +483,22 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
     for (i = 0; i < classifersUdp0.cnt; i++) {
         MolochClassify_t *c = classifersUdp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining);
+            c->func(session, data, remaining, which);
         }
     }
 
     for (i = 0; i < classifersUdp1[data[0]].cnt; i++)
-        classifersUdp1[data[0]].arr[i]->func(session, data, remaining);
+        classifersUdp1[data[0]].arr[i]->func(session, data, remaining, which);
 
     for (i = 0; i < classifersUdp2[data[0]][data[1]].cnt; i++) {
         MolochClassify_t *c = classifersUdp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining);
+            c->func(session, data, remaining, which);
         }
     }
 }
 /******************************************************************************/
-void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining)
+void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which)
 {
     int i;
 
@@ -509,18 +508,18 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     for (i = 0; i < classifersTcp0.cnt; i++) {
         MolochClassify_t *c = classifersTcp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining);
+            c->func(session, data, remaining, which);
         }
     }
 
     for (i = 0; i < classifersTcp1[data[0]].cnt; i++) {
-        classifersTcp1[data[0]].arr[i]->func(session, data, remaining);
+        classifersTcp1[data[0]].arr[i]->func(session, data, remaining, which);
     }
 
     for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
         MolochClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining);
+            c->func(session, data, remaining, which);
         }
     }
 }

@@ -70,11 +70,11 @@
             "ehh" : [
                "content-type",
                "message-id",
-               "from",
                "mime-version",
+               "from",
                "to",
-               "date",
                "content-transfer-encoding",
+               "date",
                "subject"
             ],
             "ehhcnt" : 8,

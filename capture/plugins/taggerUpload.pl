@@ -25,17 +25,29 @@ my $response = $userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]/t
 
 my @ELEMENTS;
 open (FILE, $ARGV[2]);
+my $fields = "";
 while (<FILE>) {
+    if (/^#field:/) {
+        chop;
+        $fields = '"fields":"' if ($fields eq "");
+        $fields .= substr($_, 1) . ",";
+        next;
+    }
     next if (/^#/ || /^$/);
     chop;
     push(@ELEMENTS, $_);
+}
+
+if ($fields ne "") {
+    chop $fields;
+    $fields .= "\", ";
 }
 my $elements = join ',', @ELEMENTS;
 close (FILE);
 
 my $md5hex = md5_hex($elements);
 
-my $content  = '{"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '", "md5":"' . $md5hex .'", "type":"' . $ARGV[1] . '", "data":"' . $elements . '"}'. "\n";
+my $content  = '{' . $fields . '"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '", "md5":"' . $md5hex .'", "type":"' . $ARGV[1] . '", "data":"' . $elements . '"}'. "\n";
 #print $content,"\n";
 $response = $userAgent->post("http://$ARGV[0]/tagger/file/$ARGV[2]", Content => $content);
 print $response->content, "\n";

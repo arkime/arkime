@@ -45,7 +45,7 @@
             "fs" : [],
             "by2" : 5889,
             "g1" : "RUS",
-            "tlscnt" : 1,
+            "tlscnt" : 3,
             "pa2" : 19,
             "p1" : 57406,
             "by" : 8403,
@@ -104,6 +104,25 @@
             "mac2-term-cnt" : 2,
             "by1" : 2514,
             "tls" : [
+               {
+                  "sCn" : [
+                     "geotrust global ca"
+                  ],
+                  "sOn" : "GeoTrust Inc.",
+                  "sn" : "12bbe6",
+                  "iOn" : "Equifax"
+               },
+               {
+                  "sCn" : [
+                     "google internet authority g2"
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "023a69",
+                  "iOn" : "GeoTrust Inc.",
+                  "iCn" : [
+                     "geotrust global ca"
+                  ]
+               },
                {
                   "sCn" : [
                      "mx.google.com"

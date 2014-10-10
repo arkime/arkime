@@ -25,6 +25,7 @@
                   ""
                ]
             },
+            "hckey-term-cnt" : 1,
             "db2" : 744,
             "db" : 1196,
             "mac2-term" : [
@@ -116,6 +117,9 @@
             "tacnt" : 8,
             "sl" : 124,
             "fb1" : "474554202f6a732f",
+            "hckey-term" : [
+               "trafic_ranking"
+            ],
             "us" : [
                "//xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
             ],

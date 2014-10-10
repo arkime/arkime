@@ -51,9 +51,9 @@
             "by" : 3465,
             "ehh" : [
                "content-type",
-               "from",
                "message-id",
                "mime-version",
+               "from",
                "to",
                "user-agent",
                "x-ms-tnef-correlator",

@@ -396,15 +396,15 @@ void smtp_parse_email_received(MolochSession_t *session, char *data, int len)
     }
 }
 /******************************************************************************/
-int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SMTPInfo_t           *email        = uw;
-    GString              *line         = email->line[session->which];
-    char                 *state        = &email->state[session->which];
+    GString              *line         = email->line[which];
+    char                 *state        = &email->state[which];
     MolochString_t       *emailHeader  = 0;
 
 #ifdef EMAILDEBUG
-    LOG("EMAILDEBUG: enter %d %d %d %.*s", session->which, *state, email->needStatus[(session->which + 1) % 2], remaining, data);
+    LOG("EMAILDEBUG: enter %d %d %d %.*s", which, *state, email->needStatus[(which + 1) % 2], remaining, data);
 #endif
 
     while (remaining > 0) {
@@ -421,10 +421,10 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_CMD_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d cmd => %s\n", session->which, *state, line->str);
+            printf("%d %d cmd => %s\n", which, *state, line->str);
 #endif
-            if (email->needStatus[(session->which + 1) % 2]) {
-                email->needStatus[(session->which + 1) % 2] = 0;
+            if (email->needStatus[(which + 1) % 2]) {
+                email->needStatus[(which + 1) % 2] = 0;
                 char tag[200];
                 snprintf(tag, sizeof(tag), "smtp:statuscode:%d", atoi(line->str));
                 moloch_nids_add_tag(session, tag);
@@ -475,7 +475,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
                 moloch_nids_add_tag(session, "smtp:starttls");
                 *state = EMAIL_IGNORE;
-                email->state[(session->which+1)%2] = EMAIL_TLS_OK;
+                email->state[(which+1)%2] = EMAIL_TLS_OK;
                 return 0;
             } else {
                 *state = EMAIL_CMD;
@@ -520,10 +520,10 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_DATA_HEADER_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d header => %s\n", session->which, *state, line->str);
+            printf("%d %d header => %s\n", which, *state, line->str);
 #endif
             if (strcmp(line->str, ".") == 0) {
-                email->needStatus[session->which] = 1;
+                email->needStatus[which] = 1;
                 *state = EMAIL_CMD;
             } else if (*line->str == 0) {
                 *state = EMAIL_DATA;
@@ -540,7 +540,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_DATA_HEADER_DONE: {
 #ifdef EMAILDEBUG
-            printf("%d %d header done => %s (%c)\n", session->which, *state, line->str, *data);
+            printf("%d %d header done => %s (%c)\n", which, *state, line->str, *data);
 #endif
             *state = EMAIL_DATA_HEADER;
 
@@ -630,10 +630,10 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         case EMAIL_MIME_DATA_RETURN:
         case EMAIL_DATA_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d %sdata => %s\n", session->which, *state, (*state == EMAIL_MIME_DATA_RETURN?"mime ": ""), line->str);
+            printf("%d %d %sdata => %s\n", which, *state, (*state == EMAIL_MIME_DATA_RETURN?"mime ": ""), line->str);
 #endif
             if (strcmp(line->str, ".") == 0) {
-                email->needStatus[session->which] = 1;
+                email->needStatus[which] = 1;
                 *state = EMAIL_CMD;
             } else {
                 MolochString_t *string;
@@ -649,27 +649,27 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 }
 
                 if (found) {
-                    if (email->base64Decode & (1 << session->which)) {
-                        const char *md5 = g_checksum_get_string(email->checksum[session->which]);
+                    if (email->base64Decode & (1 << which)) {
+                        const char *md5 = g_checksum_get_string(email->checksum[which]);
                         moloch_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
                     }
-                    email->firstInContent |= (1 << session->which);
-                    email->base64Decode &= ~(1 << session->which);
-                    email->state64[session->which] = 0;
-                    email->save64[session->which] = 0;
-                    g_checksum_reset(email->checksum[session->which]);
+                    email->firstInContent |= (1 << which);
+                    email->base64Decode &= ~(1 << which);
+                    email->state64[which] = 0;
+                    email->save64[which] = 0;
+                    g_checksum_reset(email->checksum[which]);
                     *state = EMAIL_MIME;
                 } else if (*state == EMAIL_MIME_DATA_RETURN) {
-                    if (email->base64Decode & (1 << session->which)) {
+                    if (email->base64Decode & (1 << which)) {
                         guchar buf[20000];
                         if (sizeof(buf) > line->len) {
                             gsize  b = g_base64_decode_step (line->str, line->len, buf, 
-                                                            &(email->state64[session->which]),
-                                                            &(email->save64[session->which]));
-                            g_checksum_update(email->checksum[session->which], buf, b);
+                                                            &(email->state64[which]),
+                                                            &(email->save64[which]));
+                            g_checksum_update(email->checksum[which], buf, b);
 
-                            if (email->firstInContent & (1 << session->which)) {
-                                email->firstInContent &= ~(1 << session->which);
+                            if (email->firstInContent & (1 << which)) {
+                                email->firstInContent &= ~(1 << which);
                                 moloch_parsers_magic_tag(session, magicField, "smtp:content", (char *)buf, b);
                             }
                         }
@@ -699,7 +699,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_TLS_OK_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d tls => %s\n", session->which, *state, line->str);
+            printf("%d %d tls => %s\n", which, *state, line->str);
 #endif
             *state = EMAIL_TLS;
             if (*data != '\n')
@@ -708,7 +708,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_TLS: {
             *state = EMAIL_IGNORE;
-            moloch_parsers_classify_tcp(session, data, remaining);
+            moloch_parsers_classify_tcp(session, data, remaining, which);
             moloch_parsers_unregister(session, email);
             return 0;
         }
@@ -723,12 +723,12 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_MIME_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d mime => %s\n", session->which, *state, line->str);
+            printf("%d %d mime => %s\n", which, *state, line->str);
 #endif
             if (*line->str == 0) {
                 *state = EMAIL_MIME_DATA;
             } else if (strcmp(line->str, ".") == 0) {
-                email->needStatus[session->which] = 1;
+                email->needStatus[which] = 1;
                 *state = EMAIL_CMD;
             } else {
                 *state = EMAIL_MIME_DONE;
@@ -740,7 +740,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
         }
         case EMAIL_MIME_DONE: {
 #ifdef EMAILDEBUG
-            printf("%d %d mime done => %s (%c)\n", session->which, *state, line->str, *data);
+            printf("%d %d mime done => %s (%c)\n", which, *state, line->str, *data);
 #endif
             *state = EMAIL_MIME;
 
@@ -769,7 +769,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 }
             } else if (strncasecmp(line->str, "content-transfer-encoding:", 26) == 0) {
                 if(moloch_memcasestr(line->str+26, line->len - 26, "base64", 6)) {
-                    email->base64Decode |= (1 << session->which);
+                    email->base64Decode |= (1 << which);
                 }
             }
 
@@ -806,7 +806,7 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SMTPInfo_t, email);
 }
 /******************************************************************************/
-void smtp_classify(MolochSession_t *session, const unsigned char *data, int len)
+void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (len < 5)
         return;

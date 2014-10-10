@@ -93,6 +93,10 @@
             "hkeycnt" : 8,
             "hmd5cnt" : 2,
             "fb1" : "4e5a",
+            "hckey-term" : [
+               "NID",
+               "PREF"
+            ],
             "hh1" : [
                "http:header:accept",
                "http:header:accept-encoding",
@@ -148,6 +152,7 @@
                ]
             },
             "db2" : 954,
+            "hckey-term-cnt" : 2,
             "no" : "test",
             "lp" : 1386790404,
             "ho" : [
@@ -182,8 +187,8 @@
             "g2" : "CAN",
             "prot-term-cnt" : 3,
             "hkey" : [
-               "hl",
                "uule",
+               "hl",
                "client",
                "start",
                "rls",
@@ -235,8 +240,8 @@
             ],
             "hval" : [
                "firefox",
-               "en",
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "en",
                "sheepskin boots",
                "10",
                "0",

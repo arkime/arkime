@@ -51,10 +51,17 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_ADD(name, varname, key, element) \
   do { \
-      element->name##hash = (varname).hash(key); \
-      element->name##bucket = element->name##hash % (varname).size; \
-      DLL_PUSH_TAIL(name, &((varname).buckets[element->name##bucket]), element); \
-      (varname).count++; \
+      const uint32_t _hh = element->name##hash = (varname).hash(key); \
+      const int _b = element->name##bucket = element->name##hash % (varname).size; \
+      const void *_end = (void*)&((varname).buckets[_b]); \
+      for (element->name##next = (varname).buckets[_b].name##next; element->name##next != _end; element->name##next = element->name##next->name##next) { \
+          if (_hh > element->name##next->name##hash) break; \
+      }\
+     element->name##prev             = element->name##next->name##prev; \
+     element->name##prev->name##next = element; \
+     element->name##next->name##prev = element; \
+     (varname).buckets[_b].name##count++;\
+     (varname).count++; \
   } while(0)
 
 #define HASH_REMOVE(name, varname, element) \
@@ -65,13 +72,14 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_FIND_HASH(name, varname, h, key, element) \
   do { \
-      uint32_t hh = h; \
-      int b = hh % (varname).size; \
-      for (element = (varname).buckets[b].name##next; element != (void*)&((varname).buckets[b]); element = element->name##next) { \
-          if (hh == element->name##hash && (varname).cmp(key, element)) \
-              break; \
+      const uint32_t _hh = h; \
+      const int _b = _hh % (varname).size; \
+      const void *_end = (void*)&((varname).buckets[_b]); \
+      for (element = (varname).buckets[_b].name##next; element != _end; element = element->name##next) { \
+          if (_hh == element->name##hash && (varname).cmp(key, element)) break; \
+          if (_hh > element->name##hash) {element = 0; break;} \
       } \
-      if (element == (void *)&((varname).buckets[b])) element = 0; \
+      if (element == _end) element = 0; \
   } while(0)
 
 #define HASH_FIND_INT(name, varname, key, element) HASH_FIND_HASH(name, varname, (uint32_t)key, (void*)(long)key, element)

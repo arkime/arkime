@@ -40,14 +40,14 @@
             "p1" : 46671,
             "ehh" : [
                "content-type",
-               "from",
                "message-id",
                "mime-version",
+               "from",
                "to",
                "user-agent",
                "received",
-               "date",
                "content-disposition",
+               "date",
                "subject"
             ],
             "ehhcnt" : 10,

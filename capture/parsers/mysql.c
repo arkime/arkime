@@ -26,10 +26,10 @@ static int userField;
 static int versionField;
 
 /******************************************************************************/
-int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len) 
+int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 
 {
     Info_t *info = uw;
-    if (session->which != 0) {
+    if (which != 0) {
         return 0;
     }
 
@@ -71,9 +71,9 @@ void mysql_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void mysql_classify(MolochSession_t *session, const unsigned char *data, int len)
+void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
-    if (session->which != 1)
+    if (which != 1)
         return;
 
     if (moloch_nids_has_protocol(session, "mysql"))

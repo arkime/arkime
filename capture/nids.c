@@ -106,7 +106,7 @@ static MolochSessionHash_t *sessions[256];
 
 /******************************************************************************/
 void moloch_nids_session_free (MolochSession_t *session);
-void moloch_nids_process_udp(MolochSession_t *session, struct udphdr   *udphdr, unsigned char *data, int len);
+void moloch_nids_process_udp(MolochSession_t *session, struct udphdr   *udphdr, unsigned char *data, int len, int which);
 int  moloch_nids_next_file();
 void moloch_nids_init_nids();
 
@@ -127,38 +127,10 @@ uint32_t moloch_nids_session_hash(const void *key)
 /******************************************************************************/
 int moloch_nids_session_cmp(const void *keyv, const void *elementv)
 {
-    unsigned char *key = (unsigned char*)keyv;
-    MolochSession_t *element = (MolochSession_t *)elementv;
+    MolochSession_t *session = (MolochSession_t *)elementv;
 
-    if (element->addr1 < element->addr2) {
-        return key[5] == ((element->port1 >> 8) & 0xff) &&
-               key[4] == (element->port1 & 0xff) &&
-               key[11] == ((element->port2 >> 8) & 0xff) &&
-               key[10] == (element->port2 & 0xff) &&
-               memcmp(key, &element->addr1, 4) == 0 &&
-               memcmp(key + 6, &element->addr2, 4) == 0;
-    } else if (element->addr1 > element->addr2) {
-        return key[5] == ((element->port2 >> 8) & 0xff) &&
-               key[4] == (element->port2 & 0xff) &&
-               key[11] == ((element->port1 >> 8) & 0xff) &&
-               key[10] == (element->port1 & 0xff) &&
-               memcmp(key, &element->addr2, 4) == 0 &&
-               memcmp(key + 6, &element->addr1, 4) == 0;
-    } else if (element->port1 < element->port2) {
-        return key[5] == ((element->port1 >> 8) & 0xff) &&
-               key[4] == (element->port1 & 0xff) &&
-               key[11] == ((element->port2 >> 8) & 0xff) &&
-               key[10] == (element->port2 & 0xff) &&
-               memcmp(key, &element->addr1, 4) == 0 &&
-               memcmp(key + 6, &element->addr2, 4) == 0;
-    } else {
-        return key[5] == ((element->port2 >> 8) & 0xff) &&
-               key[4] == (element->port2 & 0xff) &&
-               key[11] == ((element->port1 >> 8) & 0xff) &&
-               key[10] == (element->port1 & 0xff) &&
-               memcmp(key, &element->addr2, 4) == 0 &&
-               memcmp(key + 6, &element->addr1, 4) == 0;
-    }
+    return (*(uint64_t *)keyv     == session->sessionIda && 
+            *(uint32_t *)(keyv+8) == session->sessionIdb);
 }
 
 /******************************************************************************/
@@ -186,7 +158,6 @@ char *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint3
 
     return buf;
 }
-#define MOLOCH_SESSIONID_LEN 12
 /******************************************************************************/
 void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
@@ -682,6 +653,8 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             session->pluginData = MOLOCH_SIZE_ALLOC0(pluginData, sizeof(void *)*config.numPlugins);
 
         moloch_parsers_initial_tag(session);
+        memcpy(&session->sessionIda, sessionId, 8);
+        memcpy(&session->sessionIdb, sessionId+8, 4);
 
         switch (packet->ip_p) {
         case IPPROTO_TCP:
@@ -714,30 +687,31 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         DLL_MOVE_TAIL(q_, sessionsQ, session);
     }
 
+    int which = 0;
     switch (packet->ip_p) {
     case IPPROTO_UDP:
-        session->which = (session->addr1 == packet->ip_src.s_addr &&
-                          session->addr2 == packet->ip_dst.s_addr &&
-                          session->port1 == ntohs(udphdr->uh_sport) &&
-                          session->port2 == ntohs(udphdr->uh_dport))?0:1;
-        session->databytes[session->which] += (nids_last_pcap_header->caplen - 8);
-        moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl);
+        which = (session->addr1 == packet->ip_src.s_addr &&
+                 session->addr2 == packet->ip_dst.s_addr &&
+                 session->port1 == ntohs(udphdr->uh_sport) &&
+                 session->port2 == ntohs(udphdr->uh_dport))?0:1;
+        session->databytes[which] += (nids_last_pcap_header->caplen - 8);
+        moloch_nids_process_udp(session, udphdr, (unsigned char*)udphdr+8, nids_last_pcap_header->caplen - 8 - 4 * packet->ip_hl, which);
         break;
     case IPPROTO_TCP:
-        session->which = (session->addr1 == packet->ip_src.s_addr &&
-                          session->addr2 == packet->ip_dst.s_addr &&
-                          session->port1 == ntohs(tcphdr->th_sport) &&
-                          session->port2 == ntohs(tcphdr->th_dport))?0:1;
+        which = (session->addr1 == packet->ip_src.s_addr &&
+                 session->addr2 == packet->ip_dst.s_addr &&
+                 session->port1 == ntohs(tcphdr->th_sport) &&
+                 session->port2 == ntohs(tcphdr->th_dport))?0:1;
         session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
         break;
     case IPPROTO_ICMP:
-        session->which = (session->addr1 == packet->ip_src.s_addr &&
-                          session->addr2 == packet->ip_dst.s_addr)?0:1;
+        which = (session->addr1 == packet->ip_src.s_addr &&
+                 session->addr2 == packet->ip_dst.s_addr)?0:1;
         break;
     }
 
     /* Handle MACs and vlans on first few packets in each direction */
-    if (pcapFileHeader.linktype == 1 && session->packets[session->which] <= 1) {
+    if (pcapFileHeader.linktype == 1 && session->packets[which] <= 1) {
         char str1[20];
         char str2[20];
         snprintf(str1, sizeof(str1), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -757,7 +731,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
                 nids_last_pcap_data[10],
                 nids_last_pcap_data[11]);
 
-        if (session->which == 1) {
+        if (which == 1) {
             moloch_field_string_add(mac1Field, session, str1, 17, TRUE);
             moloch_field_string_add(mac2Field, session, str2, 17, TRUE);
         } else {
@@ -773,13 +747,13 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         }
     }
 
-    session->bytes[session->which] += nids_last_pcap_header->caplen;
+    session->bytes[which] += nids_last_pcap_header->caplen;
     session->lastPacket = nids_last_pcap_header->ts;
 
     if (pluginsCbs & MOLOCH_PLUGIN_IP)
         moloch_plugins_cb_ip(session, packet, len);
 
-    session->packets[session->which]++;
+    session->packets[which]++;
     uint32_t packets = session->packets[0] + session->packets[1];
     if (!config.dryRun && (session->stopSaving == 0 || packets < session->stopSaving)) {
         if (config.copyPcap) {
@@ -991,18 +965,16 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             unsigned char *dataNew = (unsigned char*)(a_tcp->client.data + (a_tcp->client.count - a_tcp->client.offset - countNew));
             unsigned char *data    = (unsigned char*)a_tcp->client.data;
 
-            session->which = 1;
-
             if (a_tcp->client.offset == session->consumed[1])
-                moloch_parsers_classify_tcp(session, data, count);
+                moloch_parsers_classify_tcp(session, data, count, 1);
 
             int i;
             int totConsumed = 0;
             int consumed = 0;
 
-            for (i = 0; i < session->parserNum; i++)
+            for (i = 0; i < session->parserNum; i++) {
                 if (session->parserInfo[i].parserFunc) {
-                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, dataNew + totConsumed, countNew - totConsumed);
+                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, dataNew + totConsumed, countNew - totConsumed, 1);
                     if (consumed) {
                         totConsumed += consumed;
                         session->consumed[1] += consumed;
@@ -1011,6 +983,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                     if (consumed >= countNew)
                         break;
                 }
+            }
 
             if (config.yara) {
                 moloch_yara_execute(session, data, count, a_tcp->client.count-countNew == session->consumed[1]);
@@ -1026,6 +999,8 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                 session->firstBytesLen[1] = MIN(8, countNew);
                 memcpy(session->firstBytes[1], data, session->firstBytesLen[1]);
             }
+
+            session->databytes[1] += countNew;
         }
 
         if (a_tcp->server.count_new) {
@@ -1034,17 +1009,15 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             unsigned char *dataNew = (unsigned char*)(a_tcp->server.data + (a_tcp->server.count - a_tcp->server.offset - countNew));
             unsigned char *data    = (unsigned char*)a_tcp->server.data;
 
-            session->which = 0;
-
             if (a_tcp->server.offset == session->consumed[0])
-                moloch_parsers_classify_tcp(session, data, count);
+                moloch_parsers_classify_tcp(session, data, count, 0);
 
             int i;
             int totConsumed = 0;
             int consumed = 0;
-            for (i = 0; i < session->parserNum; i++)
+            for (i = 0; i < session->parserNum; i++) {
                 if (session->parserInfo[i].parserFunc) {
-                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, dataNew + totConsumed, countNew - totConsumed);
+                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, dataNew + totConsumed, countNew - totConsumed, 0);
 
                     if (consumed) {
                         totConsumed += consumed;
@@ -1054,6 +1027,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                     if (consumed >= countNew)
                         break;
                 }
+            }
 
             if (config.yara) {
                 moloch_yara_execute(session, data, count, a_tcp->server.count-countNew == session->consumed[0]);
@@ -1069,9 +1043,10 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
                 session->firstBytesLen[0] = MIN(8, countNew);
                 memcpy(session->firstBytes[0], data, session->firstBytesLen[0]);
             }
+
+            session->databytes[0] += countNew;
         }
 
-        session->databytes[session->which] += a_tcp->server.count_new + a_tcp->client.count_new;
 
         if (pluginsCbs & MOLOCH_PLUGIN_TCP)
             moloch_plugins_cb_tcp(session, a_tcp);
@@ -1351,16 +1326,16 @@ uint32_t moloch_nids_disk_queue()
     return count;
 }
 /******************************************************************************/
-void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len)
+void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len, int which)
 {
-    moloch_parsers_classify_udp(session, data, len);
+    moloch_parsers_classify_udp(session, data, len, which);
 
     if (pluginsCbs & MOLOCH_PLUGIN_UDP)
         moloch_plugins_cb_udp(session, udphdr, data, len);
 
-    if (session->firstBytesLen[session->which] == 0) {
-        session->firstBytesLen[session->which] = MIN(8, len);
-        memcpy(session->firstBytes[session->which], data, session->firstBytesLen[session->which]);
+    if (session->firstBytesLen[which] == 0) {
+        session->firstBytesLen[which] = MIN(8, len);
+        memcpy(session->firstBytes[which], data, session->firstBytesLen[which]);
     }
 }
 /******************************************************************************/

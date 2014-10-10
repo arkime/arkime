@@ -19,13 +19,21 @@
 
 extern MolochConfig_t        config;
 static int                   certsField;
+static int                   hostField;
+
+typedef struct {
+    unsigned char       buf[8192];
+    uint16_t            len;
+    char                which;
+} TLSInfo_t;
 
 /******************************************************************************/
 void
 tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 {
     int apc, atag, alen;
-    char *lastOid = NULL;
+    char lastOid[1000];
+    lastOid[0] = 0;
 
     while (BSB_REMAINING(*bsb)) {
         unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
@@ -37,8 +45,8 @@ tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
             BSB_INIT(tbsb, value, alen);
             tls_certinfo_process(ci, &tbsb);
         } else if (atag  == 6)  {
-            lastOid = moloch_parsers_asn_decode_oid(value, alen);
-        } else if (lastOid && (atag == 20 || atag == 19 || atag == 12))  {
+            moloch_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
+        } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12))  {
             /* 20 == BER_UNI_TAG_TeletexString
              * 19 == BER_UNI_TAG_PrintableString
              * 12 == BER_UNI_TAG_UTF8String
@@ -64,10 +72,9 @@ tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 }
 /******************************************************************************/
 void
-tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb)
+tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     int apc, atag, alen;
-    static char *lastOid = NULL;
 
     while (BSB_REMAINING(*bsb) >= 2) {
         unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
@@ -78,26 +85,27 @@ tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb)
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            tls_alt_names(certs, &tbsb);
+            tls_alt_names(certs, &tbsb, lastOid);
             if (certs->alt.s_count > 0) {
                 return;
             }
         } else if (atag == 6)  {
-            lastOid = moloch_parsers_asn_decode_oid(value, alen);
+            moloch_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.17") != 0)
-                lastOid = NULL;
-        } else if (lastOid && atag == 4) {
+                lastOid[0] = 0;
+        } else if (lastOid[0] && atag == 4) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            tls_alt_names(certs, &tbsb);
+            tls_alt_names(certs, &tbsb, lastOid);
             return;
-        } else if (lastOid && atag == 2) {
+        } else if (lastOid[0] && atag == 2) {
             MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
             element->str = g_ascii_strdown((char*)value, alen);
             element->len = alen;
             DLL_PUSH_TAIL(s_, &certs->alt, element);
         }
     }
+    lastOid[0] = 0;
     return;
 }
 /******************************************************************************/
@@ -196,7 +204,9 @@ tls_process(MolochSession_t *session, const unsigned char *data, int len)
                         {badreason = 10; goto bad_cert;}
                     BSB tbsb;
                     BSB_INIT(tbsb, value, alen);
-                    tls_alt_names(certs, &tbsb);
+                    char lastOid[100];
+                    lastOid[0] = 0;
+                    tls_alt_names(certs, &tbsb, lastOid);
                 }
 
                 if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
@@ -209,7 +219,7 @@ tls_process(MolochSession_t *session, const unsigned char *data, int len)
 
             bad_cert:
                 if (config.debug)
-                    LOG("bad cert %d - %d %.*s", badreason, clen, clen, cdata);
+                    LOG("bad cert %d - %d", badreason, clen);
                 moloch_field_certsinfo_free(certs);
                 break;
             }
@@ -224,8 +234,6 @@ tls_process(MolochSession_t *session, const unsigned char *data, int len)
 void
 tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 {
-static int hostField = -1;
-
     BSB sslbsb;
 
     BSB_INIT(sslbsb, data, len);
@@ -296,8 +304,6 @@ static int hostField = -1;
                         if (sni != BSB_REMAINING(snibsb))
                             continue;
 
-                        if (hostField == -1)
-                            hostField = moloch_field_by_db("ho");
                         moloch_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
                     }
                 }
@@ -307,23 +313,70 @@ static int hostField = -1;
         BSB_IMPORT_skip(sslbsb, ssllen + 5);
     }
 }
-void tls_classify(MolochSession_t *session, const unsigned char *data, int len)
+
+/******************************************************************************/
+int tls_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+{
+    TLSInfo_t            *tls          = uw;
+    if (which != tls->which)
+        return 0;
+
+    memcpy(tls->buf + tls->len, data, MIN(remaining, (int)sizeof(tls->buf)-tls->len));
+    tls->len += MIN(remaining, (int)sizeof(tls->buf)-tls->len);
+
+    if (tls->len > 4096) {
+        tls_process(session, tls->buf, tls->len);
+        tls->len = 0;
+        moloch_parsers_unregister(session, uw);
+    }
+    return 0;
+}
+/******************************************************************************/
+void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
+{
+    TLSInfo_t            *tls          = uw;
+
+    if (tls->len > 0) {
+        tls_process(session, tls->buf, tls->len);
+        tls->len = 0;
+    }
+}
+/******************************************************************************/
+void tls_free(MolochSession_t *UNUSED(session), void *uw)
+{
+    TLSInfo_t            *tls          = uw;
+
+    MOLOCH_TYPE_FREE(TLSInfo_t, tls);
+}
+/******************************************************************************/
+void tls_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
     if (len < 6 || data[2] > 0x03)
         return;
 
+    if (moloch_nids_has_protocol(session, "tls"))
+        return;
+
+
     /* 1 Content Type - 0x16
      * 2 Version 0x0301 - 0x03-03
      * 2 Length
-     * 1 Message Type 1 - Client Hello, 2 Server Hellow
+     * 1 Message Type 1 - Client Hello, 2 Server Hello
      */
-    if (data[2] <= 0x03) {
+    if (data[2] <= 0x03 && (data[5] == 1 || data[5] == 2)) {
+        moloch_nids_add_tag(session, "protocol:tls");
+        moloch_nids_add_protocol(session, "tls");
+
+        TLSInfo_t  *tls = MOLOCH_TYPE_ALLOC(TLSInfo_t);
+        tls->len        = 0;
+
+        moloch_parsers_register2(session, tls_parser, tls, tls_free, tls_save);
+
         if (data[5] == 1) {
             tls_process_client(session, data, (int)len);
-        } else if (data[5] == 2) {
-            moloch_nids_add_tag(session, "protocol:tls");
-            moloch_nids_add_protocol(session, "tls");
-            tls_process(session, data, len);
+            tls->which      = (which + 1) % 2;
+        } else {
+            tls->which      = which;
         }
     }
 }
@@ -331,48 +384,54 @@ void tls_classify(MolochSession_t *session, const unsigned char *data, int len)
 void moloch_parser_init()
 {
     certsField = moloch_field_define("cert", "notreal",
-        "cert", "tls", "tls", 
+        "cert", "tls", "tls",
         "TLS Info",
-        MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB, 
+        MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.alt", "Alt Name", "tls.alt", 
+        "cert.alt", "Alt Name", "tls.alt",
         "Certificate alternative names",
-        0,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FAKE, 
+        0,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.serial", "Serial Number", "tls.sn", 
+        "cert.serial", "Serial Number", "tls.sn",
         "Serial Number",
-        0, MOLOCH_FIELD_FLAG_FAKE, 
+        0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.issuer.cn", "Issuer CN", "tls.iCn", 
+        "cert.issuer.cn", "Issuer CN", "tls.iCn",
         "Issuer's common name",
-        0, MOLOCH_FIELD_FLAG_FAKE, 
+        0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
-        "cert.subject.cn", "Subject CN", "tls.sCn", 
+        "cert.subject.cn", "Subject CN", "tls.sCn",
         "Subject's common name",
-        0, MOLOCH_FIELD_FLAG_FAKE, 
+        0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotextfield",
-        "cert.issuer.on", "Issuer ON", "tls.iOn", 
+        "cert.issuer.on", "Issuer ON", "tls.iOn",
         "Issuer's organization name",
-        0, MOLOCH_FIELD_FLAG_FAKE, 
+        0, MOLOCH_FIELD_FLAG_FAKE,
         "rawField", "rawiOn",
         NULL);
 
     moloch_field_define("cert", "lotextfield",
-        "cert.subject.on", "Subject ON", "tls.sOn", 
+        "cert.subject.on", "Subject ON", "tls.sOn",
         "Subject's organization name",
-        0, MOLOCH_FIELD_FLAG_FAKE, 
+        0, MOLOCH_FIELD_FLAG_FAKE,
         "rawField", "rawsOn",
         NULL);
+
+    hostField = moloch_field_define("http", "lotermfield",
+        "host.http", "Hostname", "ho", 
+        "HTTP host header field", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "aliases", "[\"http.host\"]", NULL);
 
     moloch_parsers_classifier_register_tcp("tls", 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 }

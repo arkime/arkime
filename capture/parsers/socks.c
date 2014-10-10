@@ -38,13 +38,13 @@ static int hostField;
 /******************************************************************************/
 #define SOCKS4_STATE_REPLY        0
 #define SOCKS4_STATE_DATA         1
-int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
 
     switch(socks->state4) {
     case SOCKS4_STATE_REPLY:
-        if (session->which == socks->which)
+        if (which == socks->which)
             return 0;
         if (remaining >= 8 && data[0] == 0 && data[1] >= 0x5a && data[1] <= 0x5d) {
             if (socks->ip)
@@ -65,15 +65,15 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
                 }
                 socks->host = 0;
             }
-            moloch_parsers_classify_tcp(session, data+8, remaining-8);
+            moloch_parsers_classify_tcp(session, data+8, remaining-8, which);
             socks->state4 = SOCKS4_STATE_DATA;
             return 8;
         }
         break;
     case SOCKS4_STATE_DATA:
-        if (session->which != socks->which)
+        if (which != socks->which)
             return 0;
-        moloch_parsers_classify_tcp(session, data, remaining);
+        moloch_parsers_classify_tcp(session, data, remaining, which);
         moloch_parsers_unregister(session, uw);
         break;
     }
@@ -88,21 +88,21 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 #define SOCKS5_STATE_CONN_REQUEST   5
 #define SOCKS5_STATE_CONN_REPLY     6
 #define SOCKS5_STATE_CONN_DATA      7
-int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
 
-    //LOG("%d %d %d", session->which, socks->which, socks->state5[session->which]);
+    //LOG("%d %d %d", which, socks->which, socks->state5[which]);
     //moloch_print_hex_string(data, remaining);
 
-    switch(socks->state5[session->which]) {
+    switch(socks->state5[which]) {
     case SOCKS5_STATE_VER_REQUEST:
         if (data[2] == 0) {
-            socks->state5[session->which] = SOCKS5_STATE_CONN_REQUEST;
+            socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
         } else {
-            socks->state5[session->which] = SOCKS5_STATE_USER_REQUEST;
+            socks->state5[which] = SOCKS5_STATE_USER_REQUEST;
         }
-        socks->state5[(session->which+1)%2] = SOCKS5_STATE_VER_REPLY;
+        socks->state5[(which+1)%2] = SOCKS5_STATE_VER_REPLY;
         break;
     case SOCKS5_STATE_VER_REPLY:
         if (remaining != 2 || data[0] != 5 || data[1] > 2) {
@@ -115,13 +115,13 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 
         if (socks->state5[socks->which] == SOCKS5_STATE_CONN_DATA) {
             // Other side of connection already in data state
-            socks->state5[session->which] = SOCKS5_STATE_CONN_REPLY;
+            socks->state5[which] = SOCKS5_STATE_CONN_REPLY;
         } else if (data[1] == 0) {
             socks->state5[socks->which] = SOCKS5_STATE_CONN_REQUEST;
-            socks->state5[session->which] = SOCKS5_STATE_CONN_REPLY;
+            socks->state5[which] = SOCKS5_STATE_CONN_REPLY;
         } else if (data[1] == 2) {
             socks->state5[socks->which] = SOCKS5_STATE_USER_REQUEST;
-            socks->state5[session->which] = SOCKS5_STATE_USER_REPLY;
+            socks->state5[which] = SOCKS5_STATE_USER_REPLY;
         } else {
             // We don't handle other auth methods
             moloch_parsers_unregister(session, uw);
@@ -137,10 +137,10 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 
         moloch_field_string_add(userField, session, (char *)data + 2, data[1], TRUE);
         moloch_nids_add_tag(session, "socks:password");
-        socks->state5[session->which] = SOCKS5_STATE_CONN_REQUEST;
+        socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
         return data[1] + 1 + data[data[1]+2];
     case SOCKS5_STATE_USER_REPLY:
-        socks->state5[session->which] = SOCKS5_STATE_CONN_REPLY;
+        socks->state5[which] = SOCKS5_STATE_CONN_REPLY;
         return 2;
     case SOCKS5_STATE_CONN_REQUEST:
         if (remaining < 6 || data[0] != 5 || data[1] != 1 || data[2] != 0) {
@@ -148,7 +148,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 0;
         }
 
-        socks->state5[session->which] = SOCKS5_STATE_CONN_DATA;
+        socks->state5[which] = SOCKS5_STATE_CONN_DATA;
         if (data[3] == 1) { // IPV4
             socks->port = (data[8]&0xff) << 8 | (data[9]&0xff);
             memcpy(&socks->ip, data+4, 4);
@@ -173,7 +173,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 0;
         }
 
-        socks->state5[session->which] = SOCKS5_STATE_CONN_DATA;
+        socks->state5[which] = SOCKS5_STATE_CONN_DATA;
         if (data[3] == 1) { // IPV4
             return 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
@@ -182,7 +182,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 4 + 16 + 2;
         }
     case SOCKS5_STATE_CONN_DATA:
-        moloch_parsers_classify_tcp(session, data, remaining);
+        moloch_parsers_classify_tcp(session, data, remaining, which);
         moloch_parsers_unregister(session, uw);
         return 0;
     default:
@@ -204,7 +204,7 @@ void socks_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SocksInfo_t, socks);
 }
 /******************************************************************************/
-void socks4_classify(MolochSession_t *session, const unsigned char *data, int len)
+void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -214,7 +214,7 @@ void socks4_classify(MolochSession_t *session, const unsigned char *data, int le
         SocksInfo_t *socks;
 
         socks = MOLOCH_TYPE_ALLOC0(SocksInfo_t);
-        socks->which = session->which;
+        socks->which = which;
         socks->port = (data[2]&0xff) << 8 | (data[3]&0xff);
         if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] != 0) {
             socks->ip = 0;
@@ -244,7 +244,7 @@ void socks4_classify(MolochSession_t *session, const unsigned char *data, int le
 }
 
 /******************************************************************************/
-void socks5_classify(MolochSession_t *session, const unsigned char *data, int len)
+void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -254,8 +254,8 @@ void socks5_classify(MolochSession_t *session, const unsigned char *data, int le
         SocksInfo_t *socks;
 
         socks = MOLOCH_TYPE_ALLOC0(SocksInfo_t);
-        socks->which = session->which;
-        socks->state5[session->which] = SOCKS5_STATE_VER_REQUEST;
+        socks->which = which;
+        socks->state5[which] = SOCKS5_STATE_VER_REQUEST;
         moloch_parsers_register(session, socks5_parser, socks, socks_free);
         return;
     }

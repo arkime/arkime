@@ -26,7 +26,7 @@ static int verField;
 static int keyField;
 
 /******************************************************************************/
-int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SSHInfo_t *ssh = uw;
 
@@ -47,7 +47,7 @@ int ssh_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
         return 0;
     }
 
-    if (session->which != 1)
+    if (which != 1)
         return 0;
 
     while (remaining >= 6) {
@@ -92,7 +92,7 @@ void ssh_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len))
+void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which)
 {
     if (moloch_nids_has_protocol(session, "ssh"))
         return;
@@ -103,7 +103,7 @@ void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     SSHInfo_t            *ssh          = MOLOCH_TYPE_ALLOC0(SSHInfo_t);
 
     moloch_parsers_register(session, ssh_parser, ssh, ssh_free);
-    ssh_parser(session, ssh, data, len);
+    ssh_parser(session, ssh, data, len, which);
 }
 /******************************************************************************/
 void moloch_parser_init()

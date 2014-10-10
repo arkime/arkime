@@ -148,7 +148,7 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
     }
 }
 
-int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen)
+int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
     unsigned char cmd    = 0;
@@ -164,7 +164,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         BSB_IMPORT_u08(*bsb, cmd);
         BSB_IMPORT_skip(*bsb, 4);
         BSB_IMPORT_u08(*bsb, flags);
-        BSB_LIMPORT_u16(*bsb, smb->flags2[session->which]);
+        BSB_LIMPORT_u16(*bsb, smb->flags2[which]);
         BSB_IMPORT_skip(*bsb, 20);
         if ((flags & SMB1_FLAGS_REPLY) == 0) {
             switch (cmd) {
@@ -190,7 +190,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
             *state = SMB_SKIP;
         }
 #ifdef SMBDEBUG
-        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %d", session->which, cmd, smb->flags2[session->which], *state, *remlen);
+        LOG("%d cmd: %x flags2: %x newstate: %d remlen: %d", which, cmd, smb->flags2[which], *state, *remlen);
 #endif
         break;
     }
@@ -322,7 +322,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
     return 0;
 }
 /******************************************************************************/
-int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen)
+int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
 
@@ -356,7 +356,7 @@ int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char 
             *state = SMB_SKIP;
         }
 #ifdef SMBDEBUG
-        LOG("%d cmd: %x flags: %x newstate: %d remlen: %d", session->which, cmd, flags, *state, *remlen);
+        LOG("%d cmd: %x flags: %x newstate: %d remlen: %d", which, cmd, flags, *state, *remlen);
 #endif
         *remlen -= (BSB_WORK_PTR(*bsb) - start);
         break;
@@ -424,13 +424,13 @@ int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char 
     return 0;
 }
 /******************************************************************************/
-int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining)
+int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SMBInfo_t            *smb          = uw;
-    char                 *state        = &smb->state[session->which];
-    char                 *buf          = smb->buf[session->which];
-    short                *buflen       = &smb->buflen[session->which];
-    uint32_t             *remlen       = &smb->remlen[session->which];
+    char                 *state        = &smb->state[which];
+    char                 *buf          = smb->buf[which];
+    short                *buflen       = &smb->buflen[which];
+    uint32_t             *remlen       = &smb->remlen[which];
 
 #ifdef SMBDEBUG
     LOG("ENTER: remaining: %d state: %d buflen: %d remlen: %d", remaining, *state, *buflen, *remlen);
@@ -473,7 +473,7 @@ int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
                 BSB_IMPORT_skip(bsb, 1);
                 BSB_IMPORT_u24(bsb, *remlen);
                 // Peak at SMBHEADER for version
-                smb->version[session->which] = *(BSB_WORK_PTR(bsb));
+                smb->version[which] = *(BSB_WORK_PTR(bsb));
                 *state = SMB_SMBHEADER;
                 break;
             case SMB_SKIP:
@@ -487,10 +487,10 @@ int smb_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
                 }
                 break;
             default:
-                if (smb->version[session->which] == 0xff) {
-                    done = smb1_parse(session, smb, &bsb, state, remlen);
+                if (smb->version[which] == 0xff) {
+                    done = smb1_parse(session, smb, &bsb, state, remlen, which);
                 } else {
-                    done = smb2_parse(session, smb, &bsb, state, remlen);
+                    done = smb2_parse(session, smb, &bsb, state, remlen, which);
                 }
             }
 
@@ -527,7 +527,7 @@ void smb_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SMBInfo_t, smb);
 }
 /******************************************************************************/
-void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len))
+void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which))
 {
     if (data[4] != 0xff && data[4] != 0xfe)
         return;

@@ -30,7 +30,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 10
+#define MOLOCH_API_VERSION 11
 
 /******************************************************************************/
 /*
@@ -292,12 +292,12 @@ typedef struct {
 
 /******************************************************************************/
 /*
- * SPI Data Storage
+ * Parser
  */
 
 struct moloch_session;
 
-typedef int  (* MolochParserFunc) (struct moloch_session *session, void *uw, const unsigned char *data, int remaining);
+typedef int  (* MolochParserFunc) (struct moloch_session *session, void *uw, const unsigned char *data, int remaining, int which);
 typedef void (* MolochParserFreeFunc) (struct moloch_session *session, void *uw);
 typedef void (* MolochParserSaveFunc) (struct moloch_session *session, void *uw, int final);
 
@@ -309,6 +309,11 @@ typedef struct {
 
 } MolochParserInfo_t;
 
+/******************************************************************************/
+/*
+ * SPI Data Storage
+ */
+#define MOLOCH_SESSIONID_LEN 12
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
@@ -316,6 +321,8 @@ typedef struct moloch_session {
     int                    h_bucket;
     uint32_t               h_hash;
 
+    uint64_t               sessionIda;
+    uint32_t               sessionIdb;
     MolochField_t        **fields;
 
     void                  **pluginData;
@@ -357,7 +364,6 @@ typedef struct moloch_session {
 
     uint16_t               haveNidsTcp:1;
     uint16_t               needSave:1;
-    uint16_t               which:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -476,14 +482,14 @@ void     moloch_db_exit();
 void moloch_parsers_init();
 void moloch_parsers_initial_tag(MolochSession_t *session);
 unsigned char *moloch_parsers_asn_get_tlv(BSB *bsb, int *apc, int *atag, int *alen);
-char *moloch_parsers_asn_decode_oid(unsigned char *oid, int len);
-void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining);
-void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining);
+void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len);
+void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
+void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
 void moloch_parsers_exit();
 
 void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *base, const char *data, int len);
 
-typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining);
+typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining, int which);
 
 void  moloch_parsers_unregister(MolochSession_t *session, void *uw);
 void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc);
@@ -643,9 +649,10 @@ void moloch_yara_exit();
 
 void moloch_field_init();
 void moloch_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len);
+int  moloch_field_define_text(char *text, int *shortcut);
 int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...);
-int moloch_field_by_db(char *dbField);
-int moloch_field_by_exp(char *exp);
+int  moloch_field_by_db(char *dbField);
+int  moloch_field_by_exp(char *exp);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);

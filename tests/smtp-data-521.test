@@ -65,10 +65,10 @@
             "by" : 6494,
             "as1" : "AS0000 This is neat",
             "ehh" : [
-               "content-type",
                "reply-to",
-               "from",
+               "content-type",
                "mime-version",
+               "from",
                "to",
                "date",
                "subject"

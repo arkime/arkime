@@ -51,10 +51,10 @@
             "by" : 3766,
             "ehh" : [
                "content-type",
-               "from",
+               "x-mailer",
                "message-id",
                "mime-version",
-               "x-mailer",
+               "from",
                "to",
                "x-elnk-trace",
                "received",
