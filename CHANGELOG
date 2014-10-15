@@ -33,6 +33,7 @@
   - New http.cookie.key expression
   - Handle larger SSL/TLS certificates
   - New fields can be defined in tagger input files
+  - New tls.version and tls.cipher fields
 
 0.11.1 2014/08/07
   - NOTICE: ES 0.90.12+, 1.1.x, 1.2.0 are supported by this version. 

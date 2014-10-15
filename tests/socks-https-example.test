@@ -27,12 +27,15 @@
             "fs" : [],
             "by2" : 9145,
             "g1" : "USA",
-            "tlscnt" : 1,
+            "tlscnt" : 2,
             "pa2" : 13,
             "hocnt" : 1,
             "p1" : 53554,
             "by" : 10920,
             "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -69,6 +72,7 @@
             "prot-term-cnt" : 3,
             "lpd" : 1386004472629,
             "fp" : 1386004472,
+            "tlscipher-termcnt" : 1,
             "pa" : 30,
             "tacnt" : 4,
             "sl" : 57,
@@ -77,6 +81,9 @@
             "fb2" : "005a99b40ab49cf9",
             "db1" : 641,
             "rirsocksip" : "RIPE",
+            "tlsver-term" : [
+               "TLSv1"
+            ],
             "mac2-term-cnt" : 1,
             "by1" : 1775,
             "tls" : [
@@ -242,12 +249,24 @@
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ]
+               },
+               {
+                  "sCn" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ]
                }
             ],
-            "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "p2" : 1080,
             "gsocksip" : "USA",
             "mac1-term-cnt" : 1,
+            "tlsver-termcnt" : 1,
             "prot-term" : [
                "tls",
                "socks",
@@ -291,12 +310,15 @@
             "fs" : [],
             "by2" : 9120,
             "g1" : "USA",
-            "tlscnt" : 1,
+            "tlscnt" : 2,
             "pa2" : 13,
             "hocnt" : 1,
             "p1" : 53555,
             "by" : 10911,
             "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
             "pr" : 6,
             "ps" : [
                11424,
@@ -333,13 +355,17 @@
             "prot-term-cnt" : 3,
             "lpd" : 1386004475761,
             "fp" : 1386004475,
+            "tlscipher-termcnt" : 1,
             "pa" : 30,
+            "tacnt" : 4,
             "sl" : 69,
             "fb1" : "040101bb00000001",
-            "tacnt" : 4,
             "a1" : "10.180.156.185",
             "fb2" : "005a99b50ab49cf9",
             "db1" : 657,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
             "mac2-term-cnt" : 1,
             "by1" : 1791,
             "tls" : [
@@ -505,10 +531,22 @@
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ]
+               },
+               {
+                  "sCn" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ]
                }
             ],
             "p2" : 1080,
             "mac1-term-cnt" : 1,
+            "tlsver-termcnt" : 1,
             "prot-term" : [
                "tls",
                "socks",
@@ -552,12 +590,15 @@
             "fs" : [],
             "by2" : 9215,
             "g1" : "USA",
-            "tlscnt" : 1,
+            "tlscnt" : 2,
             "pa2" : 14,
             "hocnt" : 1,
             "p1" : 53556,
             "by" : 11127,
             "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
             "pr" : 6,
             "ps" : [
                22815,
@@ -597,6 +638,7 @@
             "prot-term-cnt" : 3,
             "lpd" : 1386004480888,
             "fp" : 1386004480,
+            "tlscipher-termcnt" : 1,
             "pa" : 33,
             "tacnt" : 4,
             "sl" : 35,
@@ -605,6 +647,9 @@
             "fb2" : "0500050000010ab4",
             "db1" : 646,
             "rirsocksip" : "RIPE",
+            "tlsver-term" : [
+               "TLSv1"
+            ],
             "mac2-term-cnt" : 1,
             "by1" : 1912,
             "tls" : [
@@ -770,12 +815,24 @@
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ]
+               },
+               {
+                  "sCn" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ]
                }
             ],
-            "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "p2" : 1080,
             "gsocksip" : "USA",
             "mac1-term-cnt" : 1,
+            "tlsver-termcnt" : 1,
             "prot-term" : [
                "tls",
                "socks",

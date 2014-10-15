@@ -157,7 +157,7 @@ my ($test, $debug) = @_;
 sub doViewer {
 my ($cmd) = @_;
 
-    plan tests => 951;
+    plan tests => 963;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
@@ -691,6 +691,16 @@ my ($cmd) = @_;
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=*:e*"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=/00:.*/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=[00:23:04:17:9b:00,00:1a:e3:dc:2e:c0]"));
+
+# tls.version tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap)&&tls.version==SSLv3"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap)&&tls.version==sslv3"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap)&&tls.version==TLS*"));
+
+# tls.cipher tests
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap)&&tls.cipher==TLS_ECDHE_RSA_WITH_RC4_128_SHA"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap)&&tls.cipher==*RC4*"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap)&&tls.cipher==tls_ECDHE_RSA_WITH_RC4_128_SHA"));
 
 # tagger tests 1
     countTest(7, "date=-1&expression=" . uri_escape("(file=$pwd/copytest.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=hosttaggertest1"));

@@ -31,6 +31,9 @@
             "p1" : 62599,
             "by" : 6166,
             "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -58,13 +61,17 @@
             "lpd" : 1385396821236,
             "fp" : 1385396821,
             "as2" : "AS36459 GitHub, Inc.",
+            "tlscipher-termcnt" : 1,
             "pa" : 20,
+            "tacnt" : 3,
             "sl" : 223,
             "fb1" : "1603010072010000",
-            "tacnt" : 3,
             "a1" : "10.180.156.141",
             "fb2" : "1603010055020000",
             "db1" : 630,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
             "mac2-term-cnt" : 2,
             "by1" : 1422,
             "tls" : [
@@ -99,6 +106,7 @@
             "p2" : 443,
             "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
+            "tlsver-termcnt" : 1,
             "prot-term" : [
                "tls",
                "tcp"

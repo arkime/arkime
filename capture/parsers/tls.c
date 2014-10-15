@@ -16,10 +16,13 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "moloch.h"
+#include "tls-cipher.h"
 
 extern MolochConfig_t        config;
 static int                   certsField;
 static int                   hostField;
+static int                   verField;
+static int                   cipherField;
 
 typedef struct {
     unsigned char       buf[8192];
@@ -109,126 +112,186 @@ tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
     return;
 }
 /******************************************************************************/
-void
-tls_process(MolochSession_t *session, const unsigned char *data, int len)
+void tls_process_server_hello(MolochSession_t *session, const unsigned char *data, int len)
 {
-    BSB sslbsb;
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
 
-    BSB_INIT(sslbsb, data, len);
+    unsigned char *ver;
+    BSB_IMPORT_ptr(bsb, ver, 2);
 
-    while (BSB_REMAINING(sslbsb) > 5) {
-        unsigned char *ssldata = BSB_WORK_PTR(sslbsb);
-        int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
+    BSB_IMPORT_skip(bsb, 32);     // Random
 
-        BSB pbsb;
-        BSB_INIT(pbsb, ssldata+5, ssllen);
+    int skiplen = 0;
+    BSB_IMPORT_u08(bsb, skiplen);   // Session Id Length
+    BSB_IMPORT_skip(bsb, skiplen);  // Session Id
 
-        while (BSB_REMAINING(pbsb) > 7) {
-            unsigned char *pdata = BSB_WORK_PTR(pbsb);
-            int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
+    unsigned char *cipher;
+    BSB_IMPORT_ptr(bsb, cipher, 2);
 
-            if (pdata[0] != 0x0b) {
-                BSB_IMPORT_skip(pbsb, plen + 4);
-                continue;
-            }
-
-            BSB cbsb;
-            BSB_INIT(cbsb, pdata+7, plen-3); // The - 4 for plen is done above, confusing
-
-            while(BSB_REMAINING(cbsb) > 3) {
-                int            badreason = 0;
-                unsigned char *cdata = BSB_WORK_PTR(cbsb);
-                int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
-
-                MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
-                DLL_INIT(s_, &certs->alt);
-                DLL_INIT(s_, &certs->subject.commonName);
-                DLL_INIT(s_, &certs->issuer.commonName);
-
-                int            atag, alen, apc;
-                unsigned char *value;
-
-                BSB            bsb;
-                BSB_INIT(bsb, cdata + 3, clen);
-
-                /* Certificate */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 1; goto bad_cert;}
-                BSB_INIT(bsb, value, alen);
-
-                /* signedCertificate */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 2; goto bad_cert;}
-                BSB_INIT(bsb, value, alen);
-
-                /* serialNumber or version*/
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 3; goto bad_cert;}
-
-                if (apc) {
-                    if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                        {badreason = 4; goto bad_cert;}
-                }
-                certs->serialNumberLen = alen;
-                certs->serialNumber = malloc(alen);
-                memcpy(certs->serialNumber, value, alen);
-
-                /* signature */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 5; goto bad_cert;}
-
-                /* issuer */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 6; goto bad_cert;}
-                BSB tbsb;
-                BSB_INIT(tbsb, value, alen);
-                tls_certinfo_process(&certs->issuer, &tbsb);
-
-                /* validity */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 7; goto bad_cert;}
-
-                /* subject */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 8; goto bad_cert;}
-                BSB_INIT(tbsb, value, alen);
-                tls_certinfo_process(&certs->subject, &tbsb);
-
-                /* subjectPublicKeyInfo */
-                if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                    {badreason = 9; goto bad_cert;}
-
-                /* extensions */
-                if (BSB_REMAINING(bsb)) {
-                    if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
-                        {badreason = 10; goto bad_cert;}
-                    BSB tbsb;
-                    BSB_INIT(tbsb, value, alen);
-                    char lastOid[100];
-                    lastOid[0] = 0;
-                    tls_alt_names(certs, &tbsb, lastOid);
-                }
-
-                if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
-                    moloch_field_certsinfo_free(certs);
-                }
-
-                BSB_IMPORT_skip(cbsb, clen + 3);
-
-                continue;
-
-            bad_cert:
-                if (config.debug)
-                    LOG("bad cert %d - %d", badreason, clen);
-                moloch_field_certsinfo_free(certs);
+    if (!BSB_IS_ERROR(bsb)) {
+        char str[100];
+        if (ver[0] == 3) {
+            switch (ver[1]) {
+            case 0:
+                moloch_field_string_add(verField, session, "SSLv3", 5, TRUE);
                 break;
+            case 1:
+                moloch_field_string_add(verField, session, "TLSv1", 5, TRUE);
+                break;
+            case 2:
+                moloch_field_string_add(verField, session, "TLSv1.1", 7, TRUE);
+                break;
+            case 3:
+                moloch_field_string_add(verField, session, "TLSv1.2", 7, TRUE);
+                break;
+            default:
+                snprintf(str, sizeof(str), "0x%02x.%02x", ver[0], ver[1]);
+                moloch_field_string_add(verField, session, str, 6, TRUE);
             }
-
-            BSB_IMPORT_skip(pbsb, plen + 4);
+        } else {
+            snprintf(str, sizeof(str), "0x%02x.%02x", ver[0], ver[1]);
+            moloch_field_string_add(verField, session, str, 6, TRUE);
         }
 
-        BSB_IMPORT_skip(sslbsb, ssllen + 5);
+
+        if (cipher[0] == 0x00 && cipher00[cipher[1]])
+            moloch_field_string_add(cipherField, session, cipher00[cipher[1]], -1, TRUE);
+        else if (cipher[0] == 0xC0 && cipherC0[cipher[1]])
+            moloch_field_string_add(cipherField, session, cipherC0[cipher[1]], -1, TRUE);
+        else {
+            snprintf(str, sizeof(str), "0x%02x.%02x", cipher[0], cipher[1]);
+            moloch_field_string_add(cipherField, session, str, 6, TRUE);
+        }
     }
+}
+/******************************************************************************/
+void tls_process_server_certificate(MolochSession_t *session, const unsigned char *data, int len)
+{
+    BSB cbsb;
+
+    BSB_INIT(cbsb, data, len);
+
+    BSB_IMPORT_skip(cbsb, 3); // Length again
+
+    while(BSB_REMAINING(cbsb) > 3) {
+        int            badreason = 0;
+        unsigned char *cdata = BSB_WORK_PTR(cbsb);
+        int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
+
+        MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
+        DLL_INIT(s_, &certs->alt);
+        DLL_INIT(s_, &certs->subject.commonName);
+        DLL_INIT(s_, &certs->issuer.commonName);
+
+        int            atag, alen, apc;
+        unsigned char *value;
+
+        BSB            bsb;
+        BSB_INIT(bsb, cdata + 3, clen);
+
+        /* Certificate */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 1; goto bad_cert;}
+        BSB_INIT(bsb, value, alen);
+
+        /* signedCertificate */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 2; goto bad_cert;}
+        BSB_INIT(bsb, value, alen);
+
+        /* serialNumber or version*/
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 3; goto bad_cert;}
+
+        if (apc) {
+            if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+                {badreason = 4; goto bad_cert;}
+        }
+        certs->serialNumberLen = alen;
+        certs->serialNumber = malloc(alen);
+        memcpy(certs->serialNumber, value, alen);
+
+        /* signature */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 5; goto bad_cert;}
+
+        /* issuer */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 6; goto bad_cert;}
+        BSB tbsb;
+        BSB_INIT(tbsb, value, alen);
+        tls_certinfo_process(&certs->issuer, &tbsb);
+
+        /* validity */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 7; goto bad_cert;}
+
+        /* subject */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 8; goto bad_cert;}
+        BSB_INIT(tbsb, value, alen);
+        tls_certinfo_process(&certs->subject, &tbsb);
+
+        /* subjectPublicKeyInfo */
+        if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+            {badreason = 9; goto bad_cert;}
+
+        /* extensions */
+        if (BSB_REMAINING(bsb)) {
+            if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
+                {badreason = 10; goto bad_cert;}
+            BSB tbsb;
+            BSB_INIT(tbsb, value, alen);
+            char lastOid[100];
+            lastOid[0] = 0;
+            tls_alt_names(certs, &tbsb, lastOid);
+        }
+
+        if (!moloch_field_certsinfo_add(certsField, session, certs, clen*2)) {
+            moloch_field_certsinfo_free(certs);
+        }
+
+        BSB_IMPORT_skip(cbsb, clen + 3);
+
+        continue;
+
+    bad_cert:
+        if (config.debug)
+            LOG("bad cert %d - %d", badreason, clen);
+        moloch_field_certsinfo_free(certs);
+        break;
+    }
+}
+/******************************************************************************/
+/* @data the data inside the record layer
+ * @len  the length of data inside record layer
+ */
+int
+tls_process_server_handshake_record(MolochSession_t *session, const unsigned char *data, int len)
+{
+    BSB rbsb;
+
+    BSB_INIT(rbsb, data, len);
+
+    while (BSB_REMAINING(rbsb) >= 4) {
+        unsigned char *hdata = BSB_WORK_PTR(rbsb);
+        int hlen = MIN(BSB_REMAINING(rbsb), (hdata[1] << 16 | hdata[2] << 8 | hdata[3]) + 4);
+
+        switch(hdata[0]) {
+        case 2:
+            tls_process_server_hello(session, hdata+4, hlen-4);
+            break;
+        case 11:
+            tls_process_server_certificate(session, hdata + 4, hlen - 4);
+            break;
+        case 14:
+            return 1;
+        }
+
+        BSB_IMPORT_skip(rbsb, hlen);
+    }
+    return 0;
 }
 /******************************************************************************/
 void
@@ -318,17 +381,44 @@ tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 int tls_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     TLSInfo_t            *tls          = uw;
+
+    // If not the server half ignore
     if (which != tls->which)
         return 0;
 
+    // Copy the data we have
     memcpy(tls->buf + tls->len, data, MIN(remaining, (int)sizeof(tls->buf)-tls->len));
     tls->len += MIN(remaining, (int)sizeof(tls->buf)-tls->len);
 
-    if (tls->len > 4096) {
-        tls_process(session, tls->buf, tls->len);
+    // Make sure we have header
+    if (tls->len < 5)
+        return 0;
+
+    // Not handshake protocol, stop looking
+    if (tls->buf[0] != 0x16) {
         tls->len = 0;
         moloch_parsers_unregister(session, uw);
+        return 0;
     }
+
+    // Need the whole record
+    int need = ((tls->buf[3] << 8) | tls->buf[4]) + 5;
+    if (need > tls->len)
+        return 0;
+
+    if (tls_process_server_handshake_record(session, tls->buf + 5, need - 5)) {
+        tls->len = 0;
+        moloch_parsers_unregister(session, uw);
+        return 0;
+    }
+    tls->len -= need;
+
+    // Still more data to process
+    if (tls->len) {
+        memmove(tls->buf, tls->buf+need, tls->len);
+        return 0;
+    }
+
     return 0;
 }
 /******************************************************************************/
@@ -336,8 +426,8 @@ void tls_save(MolochSession_t *session, void *uw, int UNUSED(final))
 {
     TLSInfo_t            *tls          = uw;
 
-    if (tls->len > 0) {
-        tls_process(session, tls->buf, tls->len);
+    if (tls->len > 5 && tls->buf[0] == 0x16) {
+        tls_process_server_handshake_record(session, tls->buf+5, tls->len-5);
         tls->len = 0;
     }
 }
@@ -432,6 +522,18 @@ void moloch_parser_init()
         "HTTP host header field", 
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
         "aliases", "[\"http.host\"]", NULL);
+
+    verField = moloch_field_define("tls", "termfield",
+        "tls.version", "Version", "tlsver-term", 
+        "SSL/TLS version field", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    cipherField = moloch_field_define("tls", "uptermfield",
+        "tls.cipher", "Cipher", "tlscipher-term", 
+        "SSL/TLS cipher field", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
 
     moloch_parsers_classifier_register_tcp("tls", 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 }

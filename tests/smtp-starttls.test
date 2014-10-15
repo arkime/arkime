@@ -51,6 +51,9 @@
             "by" : 8403,
             "as1" : "AS0000 This is neat",
             "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -94,13 +97,17 @@
             "lpd" : 1388017125239,
             "fp" : 1388017124,
             "as2" : "AS15169 Google Inc.",
+            "tlscipher-termcnt" : 1,
             "pa" : 36,
+            "tacnt" : 6,
             "sl" : 478,
             "fb1" : "45484c4f20787878",
-            "tacnt" : 6,
             "a1" : "10.0.0.1",
             "fb2" : "323230206d782e67",
             "db1" : 1384,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
             "mac2-term-cnt" : 2,
             "by1" : 2514,
             "tls" : [
@@ -161,6 +168,7 @@
             "p2" : 25,
             "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
+            "tlsver-termcnt" : 1,
             "prot-term" : [
                "tls",
                "smtp",
