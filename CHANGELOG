@@ -1,4 +1,4 @@
-0.11.2 2014/08/xx
+0.11.2 2014/10/16
   - NOTICE: ES 1.1.x, 1.2.x, 1.3.x are supported by this version. 
             ES 0.90.12 still works but will no longer be supported.
             Restart viewer AFTER upgrading ES versions
