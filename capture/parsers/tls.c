@@ -160,8 +160,8 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
         else if (cipher[0] == 0xC0 && cipherC0[cipher[1]])
             moloch_field_string_add(cipherField, session, cipherC0[cipher[1]], -1, TRUE);
         else {
-            snprintf(str, sizeof(str), "0x%02x.%02x", cipher[0], cipher[1]);
-            moloch_field_string_add(cipherField, session, str, 6, TRUE);
+            snprintf(str, sizeof(str), "%02X%02X", cipher[0], cipher[1]);
+            moloch_field_string_add(cipherField, session, str, 4, TRUE);
         }
     }
 }
