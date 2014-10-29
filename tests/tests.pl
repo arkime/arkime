@@ -17,7 +17,8 @@ $main::userAgent = LWP::UserAgent->new(timeout => 20);
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        system("wget https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
+        # Certs are hard MKAY
+        system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
     }
 
     if (! -f "GeoIPASNum.dat") {
