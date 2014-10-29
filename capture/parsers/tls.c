@@ -151,14 +151,13 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
             }
         } else {
             snprintf(str, sizeof(str), "0x%02x.%02x", ver[0], ver[1]);
-            moloch_field_string_add(verField, session, str, 6, TRUE);
+            moloch_field_string_add(verField, session, str, 7, TRUE);
         }
 
 
-        if (cipher[0] == 0x00 && cipher00[cipher[1]])
-            moloch_field_string_add(cipherField, session, cipher00[cipher[1]], -1, TRUE);
-        else if (cipher[0] == 0xC0 && cipherC0[cipher[1]])
-            moloch_field_string_add(cipherField, session, cipherC0[cipher[1]], -1, TRUE);
+        char *cipherStr = ciphers[cipher[0]][cipher[1]];
+        if (cipherStr)
+            moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
         else {
             snprintf(str, sizeof(str), "%02X%02X", cipher[0], cipher[1]);
             moloch_field_string_add(cipherField, session, str, 4, TRUE);

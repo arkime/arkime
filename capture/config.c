@@ -273,6 +273,18 @@ void moloch_config_load()
         }
     }
 
+    config.prefix           = moloch_config_str(keyfile, "prefix", "");
+    int len = strlen(config.prefix);
+    if (len > 0 && config.prefix[len - 1] != '_') {
+        char *tmp  = malloc(len + 2);
+        memcpy(tmp, config.prefix, len);
+        tmp[len] = '_';
+        tmp[len+1] = 0;
+        g_free(config.prefix);
+        config.prefix = tmp;
+    }
+
+
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = moloch_config_str(keyfile, "interface", NULL);
     config.pcapDir          = moloch_config_str_list(keyfile, "pcapDir", NULL);
@@ -502,6 +514,7 @@ void moloch_config_init()
     if (config.debug) {
         LOG("nodeClass: %s", config.nodeClass);
         LOG("elasticsearch: %s", config.elasticsearch);
+        LOG("prefix: %s", config.prefix);
         LOG("interface: %s", config.interface);
         if (config.pcapDir) {
             str = g_strjoinv(";", config.pcapDir);

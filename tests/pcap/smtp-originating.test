@@ -1,0 +1,156 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db2" : 517,
+            "db" : 2172,
+            "esrc" : [
+               "xxxxxxxx@xxxxxxxxx.net"
+            ],
+            "ectcnt" : 1,
+            "mac2-term" : [
+               "00:25:90:a2:c2:6c"
+            ],
+            "eid" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@xxxxxxxxx.net"
+            ],
+            "no" : "test",
+            "euacnt" : 1,
+            "lp" : 1389625274,
+            "emvcnt" : 1,
+            "a2" : "10.0.0.6",
+            "ss" : 1,
+            "ect" : [
+               "text/plain; charset=us-ascii"
+            ],
+            "esub" : [
+               "xxxxxxxxxxxxxxxxxx"
+            ],
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:smtp",
+               "smtp:statuscode:250",
+               "tcp"
+            ],
+            "eip" : [
+               "10.0.0.3",
+               "10.0.0.4",
+               "10.0.0.2"
+            ],
+            "eua" : [
+               "Apple Mail (2.1283)"
+            ],
+            "pa1" : 13,
+            "fpd" : 1389625273848,
+            "fs" : [],
+            "by2" : 1251,
+            "pa2" : 11,
+            "p1" : 55713,
+            "by" : 3766,
+            "ehh" : [
+               "content-type",
+               "x-mailer",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "x-elnk-trace",
+               "received",
+               "content-transfer-encoding",
+               "date",
+               "domainkey-signature",
+               "subject",
+               "x-originating-ip"
+            ],
+            "ehhcnt" : 13,
+            "eipcnt" : 3,
+            "eho" : [
+               "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               521,
+               644,
+               726,
+               988,
+               1169,
+               1291,
+               1373,
+               1511,
+               1593,
+               1721,
+               1803,
+               3333,
+               3476,
+               3558,
+               3671,
+               3759,
+               3841,
+               4016,
+               4098
+            ],
+            "prot-term-cnt" : 2,
+            "ehocnt" : 1,
+            "geip" : [
+               "---",
+               "---",
+               "CAN"
+            ],
+            "lpd" : 1389625274669,
+            "fp" : 1389625273,
+            "pa" : 24,
+            "tacnt" : 5,
+            "edst" : [
+               "xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com"
+            ],
+            "sl" : 822,
+            "fb1" : "45484c4f20787878",
+            "esubcnt" : 1,
+            "a1" : "10.0.0.5",
+            "fb2" : "3232302078787878",
+            "db1" : 1655,
+            "rireip" : [
+               "",
+               "",
+               "TEST"
+            ],
+            "aseip" : [
+               "AS0002 Hmm!@#$%^&*()",
+               "---",
+               "AS0001 Cool Beans!"
+            ],
+            "mac2-term-cnt" : 1,
+            "by1" : 2515,
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0 (Apple Message framework v1283)"
+            ],
+            "p2" : 25,
+            "mac1-term-cnt" : 2,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "eidcnt" : 1,
+            "mac1-term" : [
+               "00:00:5e:00:01:01",
+               "82:71:1f:83:98:f6"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-140113",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -21,14 +21,12 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-"use strict";
+'use strict';
 var Config = require("./config.js");
 var Db = require ("./db.js");
 var crypto = require('crypto');
 
 var escInfo = Config.get("elasticsearch", "http://localhost:9200");
-Db.initialize({host : escInfo}, main);
-
 function help() {
   console.log("addUser.js <user id> <user friendly name> <password> [<options>]");
   console.log("");
@@ -94,7 +92,7 @@ function main() {
     }
   }
 
-  Db.indexNow("users", "user", process.argv[2], nuser, function(err, info) {
+  Db.setUser(process.argv[2], nuser, function(err, info) {
     if (err) {
       console.log("Elastic search error", err);
     } else {
@@ -103,3 +101,5 @@ function main() {
     Db.close();
   });
 }
+
+Db.initialize({host : escInfo}, main);

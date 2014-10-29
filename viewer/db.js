@@ -2,13 +2,13 @@
 /* db.js -- Lowlevel and highlevel functions dealing with the database
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,7 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-(function () {'use strict';} ());
+'use strict';
 
 var ESC            = require('elasticsearch'),
     async          = require('async'),
@@ -34,13 +34,25 @@ var internals = {tagId2Name: {},
                  healthCache: {},
                  usersCache: {},
                  qInProgress: 0,
-                 apiVersion: "0.90",
+                 apiVersion: "1.2",
                  q: []};
 
 exports.initialize = function (info, cb) {
-  internals.dontMapTags = info.dontMapTags || false;
+  internals.dontMapTags = info.dontMapTags === 'true' || info.dontMapTags === true || false;
   delete info.dontMapTags;
   internals.info = info;
+
+  if (info.prefix && info.prefix.charAt(info.prefix.length-1) !== "_") {
+    internals.prefix = info.prefix + "_";
+  } else {
+    internals.prefix = info.prefix || "";
+  }
+
+  if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length-1) !== "_") {
+    internals.usersPrefix = info.usersPrefix + "_";
+  } else {
+    internals.usersPrefix = info.usersPrefix || internals.prefix;
+  }
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
@@ -54,31 +66,24 @@ exports.initialize = function (info, cb) {
     maxSockets: 21
   });
 
-  // See if this is 1.1
   internals.elasticSearchClient.info(function(err,data) {
-    if (data.version.number.match(/^1.0/)) {
-      console.log("ES 1.0 is not supported");
+    if (data.version.number.match(/^(1.[01]|0)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 1.2.x or 1.3.x required.");
       process.exit();
       throw new Error("Exiting");
     }
 
-    var vmatch = data.version.number.match(/^1\.[1-3]/);
-    if (vmatch) {
-      if (data.version.number.match(/^1\.[1-3]/)) {
-        internals.apiVersion = vmatch[0];
-      } else {
-        internals.apiVersion = "1.x";
-      }
-      var oldes = internals.elasticSearchClient;
-      setTimeout(function() {oldes.close();}, 2000);
-      internals.elasticSearchClient = new ESC.Client({
-        host: internals.info.host,
+    if (info.usersHost) {
+      internals.usersElasticSearchClient = new ESC.Client({
+        host: internals.info.usersHost,
         apiVersion: internals.apiVersion,
         requestTimeout: 300000,
         keepAlive: true,
-        minSockets: 20,
-        maxSockets: 21
+        minSockets: 5,
+        maxSockets: 6
       });
+    } else {
+      internals.usersElasticSearchClient = internals.elasticSearchClient;
     }
     return cb();
   });
@@ -87,12 +92,33 @@ exports.initialize = function (info, cb) {
   if (internals.dontMapTags) {
     exports.tagIdToName = function (id, cb) { return cb(id); };
     exports.tagNameToId = function (name, cb) { return cb(name); };
+    exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
+    internals.prefix = "MULTIPREFIX_";
   }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Low level functions to convert from old style to new
 //////////////////////////////////////////////////////////////////////////////////
+//
+//
+function fixIndex(index) {
+  if (Array.isArray(index)) {
+    return index.map(function(val) {
+      if (val.lastIndexOf(internals.prefix, 0) === 0) {
+        return val;
+      } else {
+        return internals.prefix + val;
+      }
+    });
+  }
+
+  if (index.lastIndexOf(internals.prefix, 0) === 0) {
+    return index;
+  } else {
+    return internals.prefix + index;
+  }
+}
 
 exports.merge = function(to, from) {
   for (var key in from) {
@@ -101,33 +127,21 @@ exports.merge = function(to, from) {
 };
 
 exports.get = function (index, type, id, cb) {
-  internals.elasticSearchClient.get({index: index, type: type, id: id}, function(err, data) {
-    if (data && data.exists !== undefined) {
-      data.found = data.exists;
-      delete data.exists;
-    }
-    cb(err, data);
-  });
+  internals.elasticSearchClient.get({index: fixIndex(index), type: type, id: id}, cb);
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
-  var params = {index: index, type:type, id: id};
+  var params = {index: fixIndex(index), type:type, id: id};
   exports.merge(params, options);
-  internals.elasticSearchClient.get(params, function(err, data) {
-    if (data && data.exists !== undefined) {
-      data.found = data.exists;
-      delete data.exists;
-    }
-    cb(err, data);
-  });
+  internals.elasticSearchClient.get(params, cb);
 };
 
 exports.index = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.index({index: index, type: type, body: document, id: id}, cb);
+  internals.elasticSearchClient.index({index: fixIndex(index), type: type, body: document, id: id}, cb);
 };
 
 exports.indexNow = function (index, type, id, document, cb) {
-  internals.elasticSearchClient.index({index: index, type: type, body: document, id: id, refresh: 1}, cb);
+  internals.elasticSearchClient.index({index: fixIndex(index), type: type, body: document, id: id, refresh: 1}, cb);
 };
 
 exports.search = function (index, type, query, options, cb) {
@@ -135,13 +149,8 @@ exports.search = function (index, type, query, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: index, type: type, body: query};
+  var params = {index: fixIndex(index), type: type, body: query};
   exports.merge(params, options);
-
-  if (query._source && internals.apiVersion === "0.90") {
-    query.fields = query._source;
-    delete query._source;
-  }
   internals.elasticSearchClient.search(params, cb);
 };
 
@@ -153,7 +162,7 @@ exports.msearch = function (index, type, queries, cb) {
   var body = [];
 
   for(var i = 0, ilen = queries.length; i < ilen; i++){
-    body.push({index: index, type: type});
+    body.push({index: fixIndex(index), type: type});
     body.push(queries[i]);
   }
 
@@ -165,7 +174,7 @@ exports.scroll = function (params, callback) {
 };
 
 exports.deleteByQuery = function (index, type, query, cb) {
-  internals.elasticSearchClient.deleteByQuery({index: index, type: type, body: query}, cb);
+  internals.elasticSearchClient.deleteByQuery({index: fixIndex(index), type: type, body: query}, cb);
 };
 
 exports.deleteDocument = function (index, type, id, options, cb) {
@@ -173,13 +182,34 @@ exports.deleteDocument = function (index, type, id, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: index, type: type, id: id};
+  var params = {index: fixIndex(index), type: type, id: id};
   exports.merge(params, options);
   internals.elasticSearchClient.delete(params, cb);
 };
 
 exports.status = function(index, cb) {
-  internals.elasticSearchClient.indices.status({index: index}, cb);
+  internals.elasticSearchClient.indices.status({index: fixIndex(index)}, cb);
+};
+
+exports.getAliases = function(index, cb) {
+  internals.elasticSearchClient.indices.getAliases({index: fixIndex(index)}, cb);
+};
+
+exports.getAliasesCache = function (index, cb) {
+  if (internals.aliasesCache && internals.aliasesCacheTimeStamp > Date.now() - 5000) {
+    return cb(null, internals.aliasesCache);
+  }
+
+  exports.getAliases(index, function(err, aliases) {
+    if (err) {
+      return cb(err, aliases);
+    }
+
+    internals.aliasesCacheTimeStamp = Date.now();
+    internals.aliasesCache = aliases;
+
+    cb(null, aliases);
+  });
 };
 
 exports.health = function(cb) {
@@ -187,11 +217,7 @@ exports.health = function(cb) {
 };
 
 exports.nodesStats = function (options, cb) {
-  if (internals.apiVersion === "0.90") {
-    internals.elasticSearchClient.cluster.nodeStats(options, function (err, data, status) {cb(err,data);});
-  } else {
-    internals.elasticSearchClient.nodes.stats(options, function (err, data, status) {cb(err,data);});
-  }
+  return internals.elasticSearchClient.nodes.stats(options, function (err, data, status) {cb(err,data);});
 };
 
 exports.update = function (index, type, id, document, options, cb) {
@@ -200,7 +226,7 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = {index: index, type: type, body: document, id: id};
+  var params = {index: fixIndex(index), type: type, body: document, id: id};
   exports.merge(params, options);
   internals.elasticSearchClient.update(params, cb);
 };
@@ -220,14 +246,23 @@ exports.flushCache = function () {
   internals.molochNodeStatsCache = {};
   internals.healthCache = {};
   internals.usersCache = {};
+  delete internals.aliasesCache;
+};
+
+exports.searchUsers = function(query, cb) {
+  return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query}, cb);
 };
 
 exports.getUser = function (name, cb) {
+  internals.usersElasticSearchClient.get({index: internals.usersPrefix + 'users', type: 'user', id: name}, cb);
+};
+
+exports.getUserCache = function (name, cb) {
   if (internals.usersCache[name] && internals.usersCache[name]._timeStamp > Date.now() - 5000) {
     return cb(null, internals.usersCache[name]);
   }
 
-  exports.get('users', 'user', name, function(err, suser) {
+  exports.getUser(name, function(err, suser) {
     if (err) {
       return cb(err, suser);
     }
@@ -237,6 +272,26 @@ exports.getUser = function (name, cb) {
 
     cb(null, suser);
   });
+};
+
+exports.numberOfUsers = function(cb) {
+  internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, function(err, result) {
+    if (err || result.error) {
+      return cb(null, 0);
+    }
+
+    return cb(null, result.count);
+  });
+};
+
+exports.deleteUser = function (name, cb) {
+  delete internals.usersCache[name];
+  return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: 'user', id: name, refresh: 1}, cb);
+};
+
+exports.setUser = function(name, doc, cb) {
+  delete internals.usersCache[name];
+  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: 1}, cb);
 };
 
 exports.molochNodeStats = function (name, cb) {
@@ -426,19 +481,12 @@ exports.createTag = function (name, cb) {
 };
 
 exports.numberOfDocuments = function (index, cb) {
-  exports.status(index, function(err, result) {
+  internals.elasticSearchClient.count({index: fixIndex(index), ignoreUnavailable:true}, function(err, result) {
     if (err || result.error) {
       return cb(null, 0);
     }
 
-    var i;
-    var num = 0;
-    for (i in result.indices) {
-      if (typeof result.indices[i] === "object" && result.indices[i].docs) {
-        num += result.indices[i].docs.num_docs;
-      }
-    }
-    cb(null, num);
+    return cb(null, result.count);
   });
 };
 
@@ -457,7 +505,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
 
   var index;
 
-  ["stats", "dstats", "tags", "sequence", "files", "users"].forEach(function(index) {
+  ["stats", "dstats", "tags", "sequence", "files"].forEach(function(index) {
     exports.status(index, function(err, status) {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
@@ -488,7 +536,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   });
 
   if (checkUsers) {
-    exports.numberOfDocuments("users", function(err, num) {
+    exports.numberOfUsers(function(err, num) {
       if (num === 0) {
         console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
       }
@@ -537,9 +585,9 @@ function twoDigitString(value) {
 
 exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
   var indices = [];
-  exports.status("sessions-*", function(err, status) {
+  exports.getAliasesCache("sessions-*", function(err, aliases) {
 
-    if (err || status.error) {
+    if (err || aliases.error) {
       return cb("");
     }
 
@@ -555,25 +603,25 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
       var d = new Date(startTime*1000);
       switch (rotateIndex) {
       case "monthly":
-        iname = "sessions-" +
+        iname = internals.prefix + "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) + 'm' +
           twoDigitString(d.getUTCMonth()+1);
         break;
       case "weekly":
         var jan = new Date(d.getUTCFullYear(), 0, 0);
-        iname = "sessions-" +
+        iname = internals.prefix + "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) + 'w' +
           twoDigitString(Math.floor((d - jan) / 604800000));
         break;
       case "hourly":
-        iname = "sessions-" +
+        iname = internals.prefix + "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate()) + 'h' +
           twoDigitString(d.getUTCHours());
         break;
       default:
-        iname = "sessions-" +
+        iname = internals.prefix + "sessions-" +
           twoDigitString(d.getUTCFullYear()%100) +
           twoDigitString(d.getUTCMonth()+1) +
           twoDigitString(d.getUTCDate());
@@ -582,7 +630,7 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
 
       startTime += offset;
 
-      if (status.indices[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
+      if (aliases[iname] && (indices.length === 0 || iname !== indices[indices.length-1])) {
         indices.push(iname);
       }
     }

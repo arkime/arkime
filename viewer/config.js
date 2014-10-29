@@ -19,7 +19,7 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-(function () {'use strict';} ());
+'use strict';
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Command Line Parsing

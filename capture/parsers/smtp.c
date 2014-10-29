@@ -890,7 +890,7 @@ void moloch_parser_init()
         "requiredRight", "emailSearch",
         NULL);
 
-    mvField = moloch_field_define("email", "lotermfield",
+    mvField = moloch_field_define("email", "termfield",
         "email.mime-version", "Mime-Version", "emv",
         "Email Mime-Header header",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
@@ -904,7 +904,7 @@ void moloch_parser_init()
         "requiredRight", "emailSearch",
         NULL);
 
-    md5Field = moloch_field_define("email", "lotermfield",
+    md5Field = moloch_field_define("email", "termfield",
         "email.md5", "Attach MD5s", "emd5",
         "Email attachment MD5s",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,

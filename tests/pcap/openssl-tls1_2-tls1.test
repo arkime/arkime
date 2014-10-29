@@ -1,0 +1,204 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "test" : {
+               "number" : [
+                  51711040
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:40291,51711040:443"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "db2" : 4005,
+            "db" : 4601,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "no" : "test",
+            "lp" : 1413338075,
+            "a2" : "64.12.21.3",
+            "ss" : 1,
+            "ta" : [
+               "node:test",
+               "protocol:tls",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 11,
+            "fpd" : 1413338074954,
+            "fs" : [],
+            "by2" : 4467,
+            "g1" : "RUS",
+            "tlscnt" : 2,
+            "pa2" : 8,
+            "p1" : 40291,
+            "by" : 5677,
+            "as1" : "AS0000 This is neat",
+            "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_MD5"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               196,
+               266,
+               599,
+               2129,
+               2199,
+               3729,
+               4841,
+               4911,
+               4981,
+               5361,
+               5437,
+               5550,
+               5620,
+               5713,
+               5783,
+               5859,
+               5935
+            ],
+            "prot-term-cnt" : 2,
+            "lpd" : 1413338075560,
+            "fp" : 1413338074,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "tlscipher-termcnt" : 1,
+            "pa" : 19,
+            "tacnt" : 4,
+            "sl" : 606,
+            "fb1" : "1603010102010000",
+            "a1" : "10.0.0.1",
+            "fb2" : "1603010f75020000",
+            "db1" : 596,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "mac2-term-cnt" : 2,
+            "by1" : 1210,
+            "tls" : [
+               {
+                  "sCn" : [
+                     "entrust certification authority - l1c"
+                  ],
+                  "sOn" : "Entrust, Inc.",
+                  "sn" : "4c0e8c39",
+                  "iOn" : "Entrust.net",
+                  "iCn" : [
+                     "entrust.net certification authority (2048)"
+                  ]
+               },
+               {
+                  "sCn" : [
+                     "www.aol.com"
+                  ],
+                  "alt" : [
+                     "toshiba.aol.ca",
+                     "main-w.welcomescreen.aol.com",
+                     "heroes.aol.com",
+                     "my.aol.com",
+                     "sb.welcomescreen.aol.com",
+                     "welcome.aol.com",
+                     "falltv.aol.com",
+                     "ipad.aol.com",
+                     "m.verizon.aol.com",
+                     "startpage.aol.com",
+                     "greenwich.patch.aol.com",
+                     "main.welcomescreen.aol.com",
+                     "skywire.aol.com",
+                     "n.main.welcomescreen.aol.com",
+                     "babylon-startpage.aol.com",
+                     "compaq-laptop.aol.com",
+                     "downloaded.aol.com",
+                     "netscape.aol.ca",
+                     "flyers.aol.ca",
+                     "m.verizon-b.aol.com",
+                     "fireworks.aol.com",
+                     "w.sb.welcomescreen.aol.com",
+                     "sportingnews-startpage.aol.com",
+                     "aolapps.aol.com",
+                     "compaq.aol.ca",
+                     "m.aol.com",
+                     "thr-startpage.aol.com",
+                     "debates.aol.com",
+                     "holiday.aol.com",
+                     "iphone.aol.com",
+                     "firefox-startpage.aol.com",
+                     "thevoiceof.aol.com",
+                     "n.sb.welcomescreen.aol.com",
+                     "freedompop.aol.com",
+                     "sb-w.welcomescreen.aol.com",
+                     "thanksgiving.aol.com",
+                     "favoritesbeta.aol.com",
+                     "live.aol.com",
+                     "www.aol.ca",
+                     "oscars.aol.com",
+                     "liveevents.aol.com",
+                     "main-n.welcomescreen.aol.com",
+                     "pokki.aol.com",
+                     "www.welcomescreen.aol.com",
+                     "compaq-desktop.aol.com",
+                     "hp-desktop.aol.com",
+                     "www.aol.com",
+                     "w.main.welcomescreen.aol.com",
+                     "thunderbird-startpage.aol.com",
+                     "w.verizon.aol.com",
+                     "netscape.aol.com",
+                     "t.verizon-b.aol.com",
+                     "sb-n.welcomescreen.aol.com",
+                     "hp-laptop.aol.com",
+                     "mypoints-startpage.aol.com",
+                     "olympics.aol.com",
+                     "homepage.aol.com",
+                     "oc-startpage.aol.com",
+                     "t.verizon.aol.com",
+                     "welcomescreen.aol.com",
+                     "m.article.aol.com",
+                     "hp.aol.ca"
+                  ],
+                  "sOn" : "AOL Inc.",
+                  "sn" : "4c235548",
+                  "iOn" : "Entrust, Inc.",
+                  "altcnt" : 62,
+                  "iCn" : [
+                     "entrust certification authority - l1c"
+                  ]
+               }
+            ],
+            "p2" : 443,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "tlsver-termcnt" : 1,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-141015",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

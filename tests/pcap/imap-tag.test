@@ -1,0 +1,91 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:4643,33554442:143"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "db2" : 18,
+            "db" : 18,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:1d:b5:ce:ef:c0"
+            ],
+            "no" : "test",
+            "lp" : 1387759542,
+            "a2" : "10.0.0.2",
+            "ss" : 1,
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:imap",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 2,
+            "fpd" : 1387759542002,
+            "fs" : [],
+            "by2" : 134,
+            "g1" : "RUS",
+            "pa2" : 2,
+            "p1" : 4643,
+            "by" : 256,
+            "as1" : "AS0000 This is neat",
+            "g2" : "CAN",
+            "pr" : 6,
+            "ps" : [
+               24,
+               102,
+               180,
+               256
+            ],
+            "prot-term-cnt" : 2,
+            "lpd" : 1387759542236,
+            "fp" : 1387759542,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 4,
+            "sl" : 233,
+            "tacnt" : 5,
+            "a1" : "10.0.0.1",
+            "fb2" : "2a204f4b20494d41",
+            "db1" : 0,
+            "mac2-term-cnt" : 2,
+            "by1" : 122,
+            "p2" : 143,
+            "mac1-term-cnt" : 1,
+            "rir2" : "TEST",
+            "prot-term" : [
+               "imap",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:0f:f7:76:82:80"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131223",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

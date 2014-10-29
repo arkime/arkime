@@ -1,0 +1,168 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db" : 1969,
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "ectcnt" : 1,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "emd5" : [
+               "40be8f5100e9beabab293c9d7bacaff0"
+            ],
+            "email" : {
+               "bodymagic-term" : [
+                  "application/zip"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
+            "a2" : "64.236.64.225",
+            "esub" : [
+               "zip test"
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "smtp:content:application/zip",
+               "smtp:statuscode:250",
+               "tcp"
+            ],
+            "eip" : [
+               "127.0.0.1"
+            ],
+            "by2" : 1402,
+            "g1" : "USA",
+            "pa2" : 14,
+            "p1" : 46671,
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "user-agent",
+               "received",
+               "content-disposition",
+               "date",
+               "subject"
+            ],
+            "ehhcnt" : 10,
+            "eho" : [
+               "localhost",
+               "xxxxxxxxxxxxx.xxx.com"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               521,
+               631,
+               713,
+               964,
+               1083,
+               1196,
+               1317,
+               1441,
+               1523,
+               1651,
+               1733,
+               3201,
+               3283,
+               3368,
+               3450,
+               3563,
+               3645,
+               3733,
+               3815,
+               3977,
+               4059,
+               4141,
+               4223
+            ],
+            "geip" : [
+               "---"
+            ],
+            "as2" : "AS1668 AOL Transit Data Network",
+            "edst" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "fb1" : "45484c4f20787878",
+            "esubcnt" : 1,
+            "a1" : "10.180.156.249",
+            "fb2" : "3232302078787878",
+            "efn" : [
+               "a.zip"
+            ],
+            "emd5cnt" : 1,
+            "p2" : 25,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "eidcnt" : 1,
+            "edstcnt" : 1,
+            "db2" : 470,
+            "no" : "test",
+            "eid" : [
+               "20131217145016.GA29077@xxx.net"
+            ],
+            "lp" : 1387291817,
+            "euacnt" : 1,
+            "emvcnt" : 1,
+            "ss" : 1,
+            "ect" : [
+               "multipart/mixed; boundary=\"HcAYCG3uE/tztfnV\""
+            ],
+            "fpd" : 1387291817187,
+            "pa1" : 14,
+            "eua" : [
+               "Mutt/1.5.20 (2009-12-10)"
+            ],
+            "fs" : [],
+            "by" : 3833,
+            "eipcnt" : 1,
+            "g2" : "USA",
+            "prot-term-cnt" : 2,
+            "ehocnt" : 2,
+            "efncnt" : 1,
+            "lpd" : 1387291817565,
+            "fp" : 1387291817,
+            "pa" : 28,
+            "sl" : 377,
+            "tacnt" : 5,
+            "db1" : 1499,
+            "rireip" : [
+               ""
+            ],
+            "aseip" : [
+               "---"
+            ],
+            "by1" : 2431,
+            "mac2-term-cnt" : 2,
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "rir2" : "ARIN",
+            "mac1-term-cnt" : 1,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131217",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

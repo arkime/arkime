@@ -1,0 +1,162 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "db2" : 485,
+            "db" : 2151,
+            "esrc" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "ectcnt" : 1,
+            "mac2-term" : [
+               "00:25:90:a2:c2:52"
+            ],
+            "eid" : [
+               "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
+            ],
+            "no" : "test",
+            "euacnt" : 1,
+            "lp" : 1386358271,
+            "emvcnt" : 1,
+            "a2" : "64.236.55.18",
+            "ss" : 1,
+            "ect" : [
+               "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
+            ],
+            "esub" : [
+               "test å é î ø ü"
+            ],
+            "ta" : [
+               "node:test",
+               "protocol:smtp",
+               "smtp:statuscode:250",
+               "tcp"
+            ],
+            "eip" : [
+               "10.0.0.4",
+               "10.180.121.108",
+               "169.254.4.195"
+            ],
+            "eua" : [
+               "Microsoft-MacOutlook/14.3.9.131030"
+            ],
+            "pa1" : 11,
+            "fpd" : 1386358271061,
+            "fs" : [],
+            "by2" : 1169,
+            "g1" : "USA",
+            "pa2" : 12,
+            "p1" : 11084,
+            "by" : 3465,
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "user-agent",
+               "x-ms-tnef-correlator",
+               "received",
+               "thread-index",
+               "date",
+               "subject",
+               "content-language",
+               "x-originating-ip",
+               "x-ms-has-attach",
+               "accept-language",
+               "thread-topic"
+            ],
+            "ehhcnt" : 16,
+            "eipcnt" : 3,
+            "eho" : [
+               "xxxxxxxxxxxxxxxxx2.xxxxx.net",
+               "xxxxxxxxxxxxxxxxx1.xxxxx.net"
+            ],
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               405,
+               510,
+               586,
+               830,
+               975,
+               1084,
+               1160,
+               1269,
+               1345,
+               1461,
+               2991,
+               3145,
+               3221,
+               3322,
+               3398,
+               3553,
+               3629,
+               3705,
+               3781
+            ],
+            "prot-term-cnt" : 2,
+            "ehocnt" : 2,
+            "geip" : [
+               "---",
+               "USA",
+               "---"
+            ],
+            "lpd" : 1386358271580,
+            "fp" : 1386358271,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "pa" : 23,
+            "tacnt" : 4,
+            "edst" : [
+               "xxxxxxxx@gmail.com"
+            ],
+            "sl" : 518,
+            "fb1" : "45484c4f20787878",
+            "esubcnt" : 1,
+            "a1" : "10.180.121.109",
+            "fb2" : "3232302078787878",
+            "db1" : 1666,
+            "rireip" : [
+               "",
+               "",
+               "ARIN"
+            ],
+            "aseip" : [
+               "---",
+               "---",
+               "---"
+            ],
+            "mac2-term-cnt" : 1,
+            "by1" : 2296,
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
+            ],
+            "p2" : 25,
+            "mac1-term-cnt" : 2,
+            "rir2" : "ARIN",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "eidcnt" : 1,
+            "mac1-term" : [
+               "00:00:0c:07:ac:02",
+               "00:0b:5f:6b:5c:00"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131206",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -231,6 +231,7 @@ typedef struct moloch_config {
 
     int                numPlugins;
 
+    char     *prefix;
     char     *nodeClass;
     char     *elasticsearch;
     char     *interface;

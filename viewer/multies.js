@@ -18,7 +18,7 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-"use strict";
+'use strict';
 
 
 //// Modules
@@ -40,7 +40,7 @@ var Config         = require('./config.js'),
 }
 
 var clients = {};
-var nodes;
+var nodes = [];
 var agent = new KAA({maxSockets: 100});
 
 function hasBody(req) {
@@ -83,12 +83,32 @@ app.configure(function() {
   });
 });
 
-function simpleGather(req, res, bodies, doneCb) {
-  console.log(req.method, req.url);
+function node2Url(node) {
+  return node.split(',')[0];
+}
 
+function node2Prefix(node) {
+  var parts = node.split(',');
+  for (var p = 1; p < parts.length; p++) {
+    var kv = parts[p].split(':');
+    if (kv[0] === "prefix") {
+      if (kv[1].charAt(kv[1].length-1) !== "_") {
+        return kv[1] + "_";
+      }
+      return kv[1];
+    }
+  }
+  return "";
+}
+
+function simpleGather(req, res, bodies, doneCb) {
   async.map(nodes, function (node, asyncCb) {
     var result = "";
-    var url = "http://" + node + req.url;
+    var nurl = node2Url(node);
+    var url = "http://" + nurl + req.url;
+    var prefix = node2Prefix(node);
+
+    url = url.replace(/MULTIPREFIX_/g, prefix);
     var info = URL.parse(url);
     info.method = req.method;
     info.agent  = agent;
@@ -163,6 +183,8 @@ app.get("/_cluster/nodes/stats", simpleGatherCopy);
 app.get("/_nodes/stats", simpleGatherCopy);
 app.get("/_cluster/health", simpleGatherAdd);
 
+app.get("/:index/_aliases", simpleGatherCopy);
+
 app.get("/:index/_status", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];
@@ -212,7 +234,7 @@ app.get("/:index/:type/_search", function(req, res) {
 app.get("/:index/:type/:id", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     for (var i = 0; i < results.length; i++) {
-      if (results[i].found || results[i].exists) {
+      if (results[i].found) {
         return res.send(results[i]);
       }
     }
@@ -247,13 +269,17 @@ function facet2Obj(field, facet) {
   return obj;
 }
 
-function facet2Arr(facet) {
+function facet2Arr(facet, type) {
   var arr = [];
   for (var attrname in facet) {
     arr.push(facet[attrname]);
   }
   
-  arr = arr.sort(function(a,b) {return b.count - a.count;});
+  if (type === "histogram") {
+    arr = arr.sort(function(a,b) {return a.key - b.key;});
+  } else {
+    arr = arr.sort(function(a,b) {return b.count - a.count;});
+  }
   return arr;
 }
 
@@ -272,7 +298,7 @@ function facetConvert2Obj(facets) {
 function facetConvert2Arr(facets) {
   for (var facetname in facets) {
     var facetarray = facets[facetname]._type === "histogram"?"entries":"terms";
-    facets[facetname][facetarray]= facet2Arr(facets[facetname][facetarray]);
+    facets[facetname][facetarray]= facet2Arr(facets[facetname][facetarray], facets[facetname]._type);
 
   }
 }
@@ -305,7 +331,7 @@ function tagNameToId(node, name, cb) {
   }
 
   clients[node].get({index: 'tags', type: 'tag', id: name}, function(err, tdata) {
-    if (!err && (tdata.found || tdata.exists)) {
+    if (!err && (tdata.found)) {
       tags[node].tagName2Id[name] = tdata._source.n;
       tags[node].tagId2Name[tdata._source.n] = name;
       return cb (tags[node].tagName2Id[name]);
@@ -320,7 +346,7 @@ function tagIdToName (node, id, cb) {
   }
 
   var query = {query: {term: {n:id}}};
-  clients[node].search({index: 'tags', type: 'tag', body: query}, function(err, tdata) {
+  clients[node].search({index: node2Prefix(node) + 'tags', type: 'tag', body: query}, function(err, tdata) {
     if (!err && tdata.hits.hits[0]) {
       tags[node].tagId2Name[id] = tdata.hits.hits[0]._id;
       tags[node].tagName2Id[tdata.hits.hits[0]._id] = id;
@@ -333,14 +359,6 @@ function tagIdToName (node, id, cb) {
 
 function fixQuery(node, body, doneCb) {
   body = JSON.parse(body);
-
-  if (clients[node].version === "0.90" && body._source) {
-    body.fields = body._source;
-    delete body._source;
-  } else if (clients[node].version !== "0.90" && body.fields) {
-    body._source = body.fields;
-    delete body.fields;
-  }
 
   // Reset from & size since we do aggregation
   if (body.size) {
@@ -366,10 +384,10 @@ function fixQuery(node, body, doneCb) {
         } else {
           query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
         }
-        clients[node].search({index: 'tags', type: 'tag', size:500, fields:["id", "n"], body: {query: query}}, function(err, result) {
+        clients[node].search({index: node2Prefix(node) + 'tags', type: 'tag', size:500, _source:["id", "n"], body: {query: query}}, function(err, result) {
           var terms = [];
           result.hits.hits.forEach(function (hit) {
-            terms.push(hit.fields.n);
+            terms.push(hit._source.n);
           });
           parent.terms = {};
           parent.terms[item] = terms;
@@ -651,6 +669,8 @@ function msearch(req, res) {
       });
     }, function(err) {
       bodies[node] = nlines.join("\n");
+      var prefix = node2Prefix(node);
+      bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
       nodeCb();
     });
   }, function(err) {
@@ -687,6 +707,17 @@ function msearch(req, res) {
 app.post("/:index/:type/_msearch", msearch);
 app.post("/_msearch", msearch);
 
+app.get("/:index/_count", simpleGatherAdd);
+app.post("/:index/_count", simpleGatherAdd);
+
+
+if (Config.get("regressionTests")) {
+  app.post('/shutdown', function(req, res) {
+    process.exit(0);
+    throw new Error("Exiting");
+  });
+}
+
 app.post(/./, function(req, res) {
   console.log("UNKNOWN", req.method, req.url, req.body);
 });
@@ -704,31 +735,16 @@ if (nodes.length === 0 || nodes[0] === "") {
 nodes.forEach(function(node) {
   tags[node] = {tagName2Id: {}, tagId2Name: {}};
 
-  // Try as 0.90
   clients[node] = new ESC.Client({
-    host: node,
-    apiVersion: "0.90",
+    host: node.split(",")[0],
+    apiVersion: "1.2",
     requestTimeout: 300000
   });
-  clients[node].version = "0.90";
 
-  // Switch to 1.x if need to
   clients[node].info(function(err,data) {
-    if (data.version.number.match(/^1.0/)) {
-      console.log("ES 1.0 is not supported: ", node);
+    if (data.version.number.match(/^(1.[01]|0)/)) {
+      console.log("ES", data.version.number,"is not supported, upgrade to 1.2.x or 1.3.x:", node);
       process.exit();
-    }
-
-    var vmatch = data.version.number.match(/^1\.[123]/);
-    if (vmatch) {
-      var oldes = clients[node];
-      setTimeout(function() {oldes.close();}, 2000);
-      clients[node]= new ESC.Client({
-        host: node,
-        apiVersion: vmatch[0],
-        requestTimeout: 300000
-      });
-      clients[node].version = vmatch[0];
     }
   });
 });

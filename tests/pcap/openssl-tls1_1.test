@@ -1,0 +1,200 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "test" : {
+               "number" : [
+                  3806625098
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:43868,-488342198:443"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "db2" : 4500,
+            "db" : 4872,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "no" : "test",
+            "lp" : 1413337838,
+            "a2" : "74.125.228.226",
+            "ss" : 1,
+            "ta" : [
+               "node:test",
+               "protocol:tls",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 12,
+            "fpd" : 1413337837095,
+            "fs" : [],
+            "by2" : 5036,
+            "g1" : "RUS",
+            "tlscnt" : 3,
+            "pa2" : 8,
+            "p1" : 43868,
+            "by" : 6208,
+            "as1" : "AS0000 This is neat",
+            "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               537,
+               619,
+               2119,
+               3619,
+               3701,
+               3783,
+               5125,
+               5357,
+               5439,
+               5521,
+               5753,
+               6089,
+               6171,
+               6306,
+               6388,
+               6470
+            ],
+            "prot-term-cnt" : 2,
+            "lpd" : 1413337838083,
+            "fp" : 1413337837,
+            "as2" : "AS15169 Google Inc.",
+            "tlscipher-termcnt" : 1,
+            "pa" : 20,
+            "tacnt" : 4,
+            "sl" : 988,
+            "fb1" : "16030100a4010000",
+            "a1" : "10.0.0.1",
+            "fb2" : "160302003d020000",
+            "db1" : 372,
+            "tlsver-term" : [
+               "TLSv1.1"
+            ],
+            "mac2-term-cnt" : 2,
+            "by1" : 1172,
+            "tls" : [
+               {
+                  "sCn" : [
+                     "geotrust global ca"
+                  ],
+                  "sOn" : "GeoTrust Inc.",
+                  "sn" : "12bbe6",
+                  "iOn" : "Equifax"
+               },
+               {
+                  "sCn" : [
+                     "google internet authority g2"
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "023a76",
+                  "iOn" : "GeoTrust Inc.",
+                  "iCn" : [
+                     "geotrust global ca"
+                  ]
+               },
+               {
+                  "sCn" : [
+                     "*.google.com"
+                  ],
+                  "alt" : [
+                     "*.google.com",
+                     "*.android.com",
+                     "*.appengine.google.com",
+                     "*.cloud.google.com",
+                     "*.google-analytics.com",
+                     "*.google.ca",
+                     "*.google.cl",
+                     "*.google.co.in",
+                     "*.google.co.jp",
+                     "*.google.co.uk",
+                     "*.google.com.ar",
+                     "*.google.com.au",
+                     "*.google.com.br",
+                     "*.google.com.co",
+                     "*.google.com.mx",
+                     "*.google.com.tr",
+                     "*.google.com.vn",
+                     "*.google.de",
+                     "*.google.es",
+                     "*.google.fr",
+                     "*.google.hu",
+                     "*.google.it",
+                     "*.google.nl",
+                     "*.google.pl",
+                     "*.google.pt",
+                     "*.googleadapis.com",
+                     "*.googleapis.cn",
+                     "*.googlecommerce.com",
+                     "*.googlevideo.com",
+                     "*.gstatic.cn",
+                     "*.gstatic.com",
+                     "*.gvt1.com",
+                     "*.gvt2.com",
+                     "*.urchin.com",
+                     "*.url.google.com",
+                     "*.youtube-nocookie.com",
+                     "*.youtube.com",
+                     "*.youtubeeducation.com",
+                     "*.ytimg.com",
+                     "android.com",
+                     "g.co",
+                     "goo.gl",
+                     "google-analytics.com",
+                     "google.com",
+                     "googlecommerce.com",
+                     "urchin.com",
+                     "youtu.be",
+                     "youtube.com",
+                     "youtubeeducation.com"
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "7a5b0bd895632f87",
+                  "iOn" : "Google Inc",
+                  "altcnt" : 49,
+                  "iCn" : [
+                     "google internet authority g2"
+                  ]
+               }
+            ],
+            "p2" : 443,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "tlsver-termcnt" : 1,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-141015",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

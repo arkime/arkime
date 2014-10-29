@@ -1,0 +1,129 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "edstcnt" : 1,
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:40531,33554442:25"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "db2" : 749,
+            "db" : 960,
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "no" : "test",
+            "lp" : 1394118475,
+            "a2" : "10.0.0.2",
+            "ss" : 1,
+            "esub" : [
+               "Awesome windows: See What’s Next in charset decoding!"
+            ],
+            "ta" : [
+               "dstip",
+               "node:test",
+               "protocol:smtp",
+               "srcip",
+               "tcp"
+            ],
+            "pa1" : 12,
+            "fpd" : 1394118475009,
+            "fs" : [],
+            "by2" : 1487,
+            "g1" : "RUS",
+            "pa2" : 11,
+            "p1" : 40531,
+            "by" : 2498,
+            "as1" : "AS0000 This is neat",
+            "ehh" : [
+               "from",
+               "to",
+               "subject"
+            ],
+            "ehhcnt" : 3,
+            "g2" : "CAN",
+            "pr" : 6,
+            "ps" : [
+               24,
+               114,
+               208,
+               290,
+               583,
+               665,
+               747,
+               829,
+               1002,
+               1084,
+               1599,
+               1681,
+               1803,
+               1885,
+               2010,
+               2092,
+               2224,
+               2306,
+               2444,
+               2526,
+               2644,
+               2726,
+               2808
+            ],
+            "prot-term-cnt" : 2,
+            "lpd" : 1394118475137,
+            "fp" : 1394118475,
+            "as2" : "AS0001 Cool Beans!",
+            "pa" : 23,
+            "tacnt" : 5,
+            "edst" : [
+               "xxxxx@xxx.net"
+            ],
+            "sl" : 128,
+            "fb1" : "45484c4f20787878",
+            "esubcnt" : 1,
+            "a1" : "10.0.0.1",
+            "fb2" : "3232302d78787878",
+            "db1" : 211,
+            "mac2-term-cnt" : 2,
+            "by1" : 1011,
+            "esrccnt" : 1,
+            "p2" : 25,
+            "mac1-term-cnt" : 1,
+            "rir2" : "TEST",
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-140306",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

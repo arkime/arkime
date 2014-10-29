@@ -1,0 +1,186 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db2" : 4208,
+            "db" : 4838,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "no" : "test",
+            "ho" : [
+               "www.github.com"
+            ],
+            "lp" : 1385396821,
+            "a2" : "192.30.252.130",
+            "ss" : 1,
+            "ta" : [
+               "node:test",
+               "protocol:tls",
+               "tcp"
+            ],
+            "pa1" : 12,
+            "fpd" : 1385396821013,
+            "fs" : [],
+            "by2" : 4744,
+            "g1" : "USA",
+            "tlscnt" : 2,
+            "pa2" : 8,
+            "hocnt" : 1,
+            "p1" : 62599,
+            "by" : 6166,
+            "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               491,
+               1997,
+               3503,
+               4478,
+               4560,
+               4642,
+               5038,
+               5167,
+               5249,
+               5501,
+               5976,
+               6058,
+               6167,
+               6249,
+               6358,
+               6440
+            ],
+            "prot-term-cnt" : 2,
+            "lpd" : 1385396821236,
+            "fp" : 1385396821,
+            "as2" : "AS36459 GitHub, Inc.",
+            "tlscipher-termcnt" : 1,
+            "pa" : 20,
+            "tacnt" : 3,
+            "sl" : 223,
+            "fb1" : "1603010072010000",
+            "a1" : "10.180.156.141",
+            "fb2" : "1603010055020000",
+            "db1" : 630,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "mac2-term-cnt" : 2,
+            "by1" : 1422,
+            "tls" : [
+               {
+                  "sCn" : [
+                     "github.com"
+                  ],
+                  "alt" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "sOn" : "GitHub, Inc.",
+                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "iOn" : "DigiCert Inc",
+                  "altcnt" : 2,
+                  "iCn" : [
+                     "digicert high assurance ev ca-1"
+                  ]
+               },
+               {
+                  "sCn" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0337b928347c60a6aec5adb1217f3860",
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ]
+               }
+            ],
+            "p2" : 443,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "tlsver-termcnt" : 1,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131125",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db2" : 0,
+            "db" : 0,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "no" : "test",
+            "lp" : 1385396821,
+            "a2" : "192.30.252.130",
+            "ss" : 1,
+            "ta" : [
+               "node:test",
+               "tcp"
+            ],
+            "pa1" : 2,
+            "fpd" : 1385396821236,
+            "fs" : [],
+            "by2" : 66,
+            "g1" : "USA",
+            "pa2" : 1,
+            "p1" : 62599,
+            "by" : 174,
+            "g2" : "USA",
+            "pr" : 6,
+            "ps" : [
+               6510,
+               6580,
+               6662
+            ],
+            "prot-term-cnt" : 1,
+            "lpd" : 1385396821236,
+            "fp" : 1385396821,
+            "as2" : "AS36459 GitHub, Inc.",
+            "pa" : 3,
+            "sl" : 0,
+            "tacnt" : 2,
+            "a1" : "10.180.156.141",
+            "db1" : 0,
+            "mac2-term-cnt" : 2,
+            "by1" : 108,
+            "p2" : 443,
+            "rir2" : "ARIN",
+            "mac1-term-cnt" : 1,
+            "prot-term" : [
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131125",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

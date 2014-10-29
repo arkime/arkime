@@ -1,3 +1,21 @@
+0.11.3 2014/xx/xx
+  - NOTICE: Only 1.2.x and 1.3.x are supported by this version. 
+            Restart viewer AFTER upgrading ES versions
+  - NOTICE: Requires running npm update for ES 1.3 support
+  - For NEW installs can now set a prefix= config variable and 
+    db.pl --prefix option that will prefix all ES tables.  This makes 
+    it easier for Moloch to share ES with other services OR multiple 
+    Moloch clusters can use 1 ES cluster with different prefixes.
+  - New usersElasticsearch= and usersPrefix= config that make it possible
+    for multiple Moloch clusters to share a single users table.
+  - viewer: removal of pre 1.2 ES things
+  - Some cron efficiency improvements
+  - Check more often if files need to be expired
+  - More SMB1 parsing
+  - More TLS cipherso
+  - Major viewer test suite restructure and improvements
+  
+
 0.11.2 2014/10/16
   - NOTICE: ES 1.1.x, 1.2.x, 1.3.x are supported by this version. 
             ES 0.90.12 still works but will no longer be supported.

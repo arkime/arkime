@@ -1,4 +1,4 @@
-/******************************************************************************/
+/******************************************************************************/ 
 /* viewer.js  -- The main moloch app
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
@@ -18,7 +18,7 @@
 /*jshint
   node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
 */
-(function () {'use strict';} ());
+'use strict';
 
 var MIN_DB_VERSION = 20;
 
@@ -93,7 +93,7 @@ function userCleanup(suser) {
 
 passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Moloch")},
   function(userid, done) {
-    Db.getUser(userid, function(err, suser) {
+    Db.getUserCache(userid, function(err, suser) {
       if (err && !suser) {return done(err);}
       if (!suser || !suser.found) {console.log("User", userid, "doesn't exist"); return done(null, false);}
       if (!suser._source.enabled) {console.log("User", userid, "not enabled"); return done("Not enabled");}
@@ -171,7 +171,7 @@ app.configure(function() {
           return next();
         }
 
-        Db.getUser(obj.user, function(err, suser) {
+        Db.getUserCache(obj.user, function(err, suser) {
           if (err) {return res.send("ERROR - user: " + obj.user + " err:" + err);}
           if (!suser || !suser.found) {return res.send(obj.user + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
@@ -185,7 +185,7 @@ app.configure(function() {
       // Header auth
       if (req.headers[Config.get("userNameHeader")] !== undefined) {
         var userName = req.headers[Config.get("userNameHeader")];
-        Db.getUser(userName, function(err, suser) {
+        Db.getUserCache(userName, function(err, suser) {
           if (err) {return res.send("ERROR - " +  err);}
           if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
           if (!suser._source.enabled) {return res.send(userName + " not enabled");}
@@ -306,13 +306,6 @@ function createSessionDetail() {
   internals.sessionDetail +=   "include views/sessionDetail-footer\n";
 }
 createSessionDetail();
-
-//////////////////////////////////////////////////////////////////////////////////
-//// DB
-//////////////////////////////////////////////////////////////////////////////////
-Db.initialize({host: internals.elasticBase,
-               nodeName: Config.nodeName(),
-               dontMapTags: Config.get("multiES", false)}, main);
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Requests
@@ -604,7 +597,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
     if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
       return res.send("Moloch Permision Denied");
     }
-    Db.get("users", 'user', req.query.userId, function(err, user) {
+    Db.getUser(req.query.userId, function(err, user) {
       if (err || !user.found) {
         console.log("ERROR - /password error", err, user);
         return res.send("Unknown user");
@@ -668,7 +661,7 @@ app.get('/style.css', function(req, res) {
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   var query = { _source: [ 'num', 'name', 'first', 'size', 'node' ],
                   from: '0',
-                  size: 20,
+                  size: 100,
                  query: { bool: {
                     must: [
                           {terms: {node: nodes}},
@@ -693,7 +686,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         return nextCb();
       }
       async.forEachSeries(data.hits.hits, function(item, forNextCb) {
-        if (data.hits.total <= query.size) {
+        if (data.hits.total <= 10) {
           return forNextCb("DONE");
         }
 
@@ -1051,7 +1044,7 @@ function buildSessionQuery(req, buildCb) {
 
   lookupQueryItems(query.query.filtered, function (lerr) {
     if (req.query.date && req.query.date === '-1') {
-      return buildCb(err || lerr, query, "sessions*");
+      return buildCb(err || lerr, query, "sessions-*");
     }
 
     Db.getIndices(req.query.startTime, req.query.stopTime, Config.get("rotateIndex", "daily"), function(indices) {
@@ -1143,6 +1136,10 @@ function sessionsListFromIds(req, ids, fields, cb) {
 
   async.eachLimit(ids, 10, function(id, nextCb) {
     Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: fields.join(",")}, function(err, session) {
+      if (err) {
+        return nextCb(null);
+      }
+
       for (var i = 0; i < fixFields.length; i++) {
         var field = fixFields[i];
         if (session.fields[field] && Array.isArray(session.fields[field])) {
@@ -1479,7 +1476,7 @@ app.post('/users.json', function(req, res) {
 
   async.parallel({
     users: function (cb) {
-      Db.search('users', 'user', query, function(err, result) {
+      Db.searchUsers(query, function(err, result) {
         if (err || result.error) {
           res.send({total: 0, results: []});
         } else {
@@ -1499,7 +1496,7 @@ app.post('/users.json', function(req, res) {
       });
     },
     total: function (cb) {
-      Db.numberOfDocuments('users', cb);
+      Db.numberOfUsers(cb);
     }
   },
   function(err, results) {
@@ -2268,8 +2265,6 @@ app.get('/unique.txt', function(req, res) {
         for (var key in counts) {
           facets.push({term: key, count: counts[key]});
         }
-        facets = facets.sort(function(a,b) {return b.count - a.count;});
-
 
         async.forEachSeries(facets, eachCb, function () {
           res.end();
@@ -2329,15 +2324,14 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
      * reduce the number of elasticsearch queries and problems
      */
     var outstanding = 0, finished = true;
-    if (limit > 1) {
-      function fileCb () {
-        outstanding--;
-        if (finished && outstanding === 0) {
-          finsished = false;
-          readyToProcess();
-        }
+    function fileCb () {
+      outstanding--;
+      if (finished && outstanding === 0) {
+        finished = false;
+        readyToProcess();
       }
-
+    }
+    if (limit > 1) {
       finished = false;
       for (var i = 0, ilen = fields.ps.length; i < ilen; i++) {
         if (fields.ps[i] < 0) {
@@ -2346,9 +2340,6 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
         }
       }
       finished = true;
-    }
-    if (finished && outstanding === 0) {
-      readyToProcess();
     }
 
     function readyToProcess() {
@@ -2462,6 +2453,10 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
           }
         );
       });
+    }
+
+    if (finished && outstanding === 0) {
+      readyToProcess();
     }
   });
 }
@@ -3374,7 +3369,7 @@ app.get('/:nodeName/entirePcap/:id.pcap', checkProxyRequest, function(req, res) 
 
   console.log("entirePcap query", JSON.stringify(query));
 
-  Db.searchPrimary('sessions*', 'session', query, function(err, data) {
+  Db.searchPrimary('sessions-*', 'session', query, function(err, data) {
     async.forEachSeries(data.hits.hits, function(item, nextCb) {
       writePcap(res, item._id, options, nextCb);
     }, function (err) {
@@ -3477,7 +3472,7 @@ app.post('/deleteUser/:userId', checkToken, function(req, res) {
     return res.send(JSON.stringify({success: false, text: "Can not delete yourself"}));
   }
 
-  Db.deleteDocument('users', 'user', req.params.userId, {refresh: 1}, function(err, data) {
+  Db.deleteUser(req.params.userId, function(err, data) {
     setTimeout(function (){res.send(JSON.stringify({success: true, text: "User deleted"}));}, 200);
   });
 });
@@ -3487,15 +3482,15 @@ app.post('/addUser', checkToken, function(req, res) {
     return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
-  if (req.body.userId.match(/[^\w.-]/)) {
-    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
-  }
-
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
     return res.send(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
   }
 
-  Db.get("users", 'user', req.body.userId, function(err, user) {
+  if (req.body.userId.match(/[^\w.-]/)) {
+    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
+  }
+
+  Db.getUser(req.body.userId, function(err, user) {
     if (!user || user.found) {
       console.log("Adding duplicate user", err, user);
       return res.send(JSON.stringify({success: false, text: "User already exists"}));
@@ -3510,15 +3505,16 @@ app.post('/addUser', checkToken, function(req, res) {
       webEnabled: req.body.webEnabled  === "on",
       emailSearch: req.body.emailSearch  === "on",
       headerAuthEnabled: req.body.headerAuthEnabled === "on",
-      createEnabled: req.body.createEnabled === "on"
+      createEnabled: req.body.createEnabled === "on",
+      removeEnabled: req.body.removeEnabled === "on"
     };
 
     console.log("Creating new user", nuser);
-    Db.indexNow("users", "user", req.body.userId, nuser, function(err, info) {
-      console.log("add user", err, info);
+    Db.setUser(req.body.userId, nuser, function(err, info) {
       if (!err) {
         return res.send(JSON.stringify({success: true}));
       } else {
+        console.log("ERROR - add user", err, info);
         return res.send(JSON.stringify({success: false, text: err}));
       }
     });
@@ -3530,52 +3526,56 @@ app.post('/updateUser/:userId', checkToken, function(req, res) {
     return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
 
-  Db.get("users", 'user', req.params.userId, function(err, user) {
+  Db.getUser(req.params.userId, function(err, user) {
     if (err || !user.found) {
       console.log("update user failed", err, user);
       return res.send(JSON.stringify({success: false, text: "User not found"}));
     }
     user = user._source;
 
-    if (req.query.enabled) {
+    if (req.query.enabled !== undefined) {
       user.enabled = req.query.enabled === "true";
     }
 
-    if (req.query.expression.match(/^\s*$/)) {
-      delete user.expression;
-    } else {
-      user.expression = req.query.expression;
+    if (req.query.expression !== undefined) {
+      if (req.query.expression.match(/^\s*$/)) {
+        delete user.expression;
+      } else {
+        user.expression = req.query.expression;
+      }
     }
 
-    if (req.query.userName.match(/^\s*$/)) {
-      console.log("empty username");
-      return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
-    } else {
-      user.userName = req.query.userName;
+    if (req.query.userName !== undefined) {
+      if (req.query.userName.match(/^\s*$/)) {
+        console.log("ERROR - empty username", req.query);
+        return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
+      } else {
+        user.userName = req.query.userName;
+      }
     }
 
-    if (req.query.webEnabled) {
+    if (req.query.webEnabled !== undefined) {
       user.webEnabled = req.query.webEnabled === "true";
     }
 
-    if (req.query.emailSearch) {
+    if (req.query.emailSearch !== undefined) {
       user.emailSearch = req.query.emailSearch === "true";
     }
 
-    if (req.query.headerAuthEnabled) {
+    if (req.query.headerAuthEnabled !== undefined) {
       user.headerAuthEnabled = req.query.headerAuthEnabled === "true";
     }
 
-    if (req.query.removeEnabled) {
+    if (req.query.removeEnabled !== undefined) {
       user.removeEnabled = req.query.removeEnabled === "true";
     }
 
     // Can only change createEnabled if it is currently turned on
-    if (req.user.createEnabled && req.query.createEnabled) {
+    if (req.query.createEnabled !== undefined && req.user.createEnabled && req.query.createEnabled) {
       user.createEnabled = req.query.createEnabled === "true";
     }
 
-    Db.indexNow("users", "user", req.params.userId, user, function(err, info) {
+    Db.setUser(req.params.userId, user, function(err, info) {
       return res.send(JSON.stringify({success: true}));
     });
   });
@@ -3599,14 +3599,14 @@ app.post('/changePassword', checkToken, function(req, res) {
     return error("Current password mismatch");
   }
 
-  Db.get("users", 'user', req.token.suserId, function(err, user) {
+  Db.getUser(req.token.suserId, function(err, user) {
     if (err || !user.found) {
       console.log("changePassword failed", err, user);
       return error("Unknown user");
     }
     user = user._source;
     user.passStore = Config.pass2store(user.userId, req.body.newPassword);
-    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+    Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("changePassword error", err, info);
         return error("Update failed");
@@ -3621,7 +3621,7 @@ app.post('/changeSettings', checkToken, function(req, res) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
 
-  Db.get("users", 'user', req.token.suserId, function(err, user) {
+  Db.getUser(req.token.suserId, function(err, user) {
     if (err || !user.found) {
       console.log("changeSettings failed", err, user);
       return error("Unknown user");
@@ -3631,7 +3631,7 @@ app.post('/changeSettings', checkToken, function(req, res) {
     user.settings = req.body;
     delete user.settings.token;
 
-    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+    Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("changeSettings error", err, info);
         return error("Change settings update failed");
@@ -3650,7 +3650,7 @@ app.post('/updateView', checkToken, function(req, res) {
     return error("Missing viewName or viewExpression");
   }
 
-  Db.get("users", 'user', req.token.suserId, function(err, user) {
+  Db.getUser(req.token.suserId, function(err, user) {
     if (err || !user.found) {
       console.log("updateView failed", err, user);
       return error("Unknown user");
@@ -3676,7 +3676,7 @@ app.post('/updateView', checkToken, function(req, res) {
       container[req.body.viewName] = {expression: req.body.viewExpression};
     }
 
-    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+    Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("updateView error", err, info);
         return error("Create View update failed");
@@ -3695,7 +3695,7 @@ app.post('/deleteView', checkToken, function(req, res) {
     return error("Missing view");
   }
 
-  Db.get("users", 'user', req.token.suserId, function(err, user) {
+  Db.getUser(req.token.suserId, function(err, user) {
     if (err || !user.found) {
       console.log("updateView failed", err, user);
       return error("Unknown user");
@@ -3705,7 +3705,7 @@ app.post('/deleteView', checkToken, function(req, res) {
     user.views = user.views || {};
     delete user.views[req.body.view];
 
-    Db.indexNow("users", "user", user.userId, user, function(err, info) {
+    Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("deleteView error", err, info);
         return error("Create View update failed");
@@ -3715,12 +3715,27 @@ app.post('/deleteView', checkToken, function(req, res) {
   });
 });
 
+app.post('/cronQueries.json', checkToken, function(req, res) {
+  var results = [];
+  Db.search("queries", "query", {size:1000, query: {term: {creator: req.user.userId}}}, function (err, data) {
+    if (err || !data.hits || !data.hits.hits) {
+      return res.send(JSON.stringify(results));
+    }
+
+    for (var i = 0, ilen = data.hits.hits.length; i < ilen; i++) {
+      results.push(data.hits.hits[i]._source);
+    }
+
+    res.send(JSON.stringify(results));
+  });
+});
+
 app.post('/updateCronQuery', checkToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
 
-  if (!req.body.key || !req.body.name || !req.body.query || !req.body.action) {
+  if (!req.body.key || !req.body.name || req.body.query === undefined || !req.body.action) {
     return error("Missing required parameter");
   }
 
@@ -3743,7 +3758,10 @@ app.post('/updateCronQuery', checkToken, function(req, res) {
     document.doc.count = 0;
     document.doc.creator = req.user.userId || "anonymous";
     Db.indexNow("queries", "query", null, document.doc, function(err, info) {
-      return res.send(JSON.stringify({success: true, text: "Success"}));
+      if (Config.get("cronQueries", false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({success: true, text: "Created", key: info._id}));
     });
     return;
   } 
@@ -3758,6 +3776,9 @@ app.post('/updateCronQuery', checkToken, function(req, res) {
       if (err) {
         console.log("updateCronQuery error", err, document, data);
         return error("Cron query update failed");
+      }
+      if (Config.get("cronQueries", false)) {
+        processCronQueries();
       }
       return res.send(JSON.stringify({success: true, text: "Updated cron query successfully"}));
     });
@@ -4106,10 +4127,12 @@ app.post('/scrub', function(req, res) {
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       scrubList(req, res, false, list);
     });
-  } else {
+  } else if (req.query.expression) {
     sessionsListFromQuery(req, res, ["no"], function(err, list) {
       scrubList(req, res, false, list);
     });
+  } else {
+    res.end("Missing expression or list of ids");
   }
 });
 
@@ -4124,10 +4147,12 @@ app.post('/delete', function(req, res) {
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       scrubList(req, res, true, list);
     });
-  } else {
+  } else if (req.query.expression) {
     sessionsListFromQuery(req, res, ["no"], function(err, list) {
       scrubList(req, res, true, list);
     });
+  } else {
+    res.end("Missing expression or list of ids");
   }
 });
 
@@ -4255,6 +4280,39 @@ app.get('/:nodeName/sendSession/:id', checkProxyRequest, function(req, res) {
   internals.sendSessionQueue.push(options, res.end);
 });
 
+app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
+  noCache(req, res);
+  res.statusCode = 200;
+
+  if (req.body.ids === undefined || 
+      req.query.cluster === undefined || 
+      req.query.saveId === undefined || 
+      req.query.tags === undefined) {
+    return res.end();
+  }
+
+  var count = 0;
+  var ids = req.body.ids.split(",");
+  ids.forEach(function(id) {
+    var options = {
+      user: req.user,
+      cluster: req.query.cluster,
+      id: id,
+      saveId: req.query.saveId,
+      tags: req.query.tags,
+      nodeName: req.params.nodeName
+    };
+
+    count++;
+    internals.sendSessionQueue.push(options, function () {
+      count--;
+      if (count === 0) {
+        return res.end();
+      }
+    });
+  });
+});
+
 
 function sendSessionsList(req, res, list) {
   if (!list) {
@@ -4312,28 +4370,50 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
   if (!list) {
     return;
   }
+
+  var nodes = {};
+
+  list.forEach(function (item) {
+    if (!nodes[item.no]) {
+      nodes[item.no] = [];
+    }
+    nodes[item.no].push(item.id);
+  });
+
+  var keys = Object.keys(nodes);
+
   var count = 0;
-  async.eachLimit(list, 15, function(item, nextCb) {
-    Db.isLocalView(item.no, function () {
-      var options = {
-        id: item.id,
-        nodeName: item.no
-      };
-      Db.merge(options, pOptions);
-      // Get from our DISK
-      internals.sendSessionQueue.push(options, nextCb);
+  async.eachLimit(keys, 15, function(node, nextCb) {
+    Db.isLocalView(node, function () {
+      var sent = 0;
+      nodes[node].forEach(function(item) {
+        var options = {
+          id: item,
+          nodeName: node
+        };
+        Db.merge(options, pOptions);
+
+        // Get from our DISK
+        internals.sendSessionQueue.push(options, function () {
+          sent++;
+          if (sent === nodes[node].length) {
+            nextCb();
+          }
+        });
+      });
     },
     function () {
       // Get from remote DISK
-      getViewUrl(item.no, function(err, viewUrl, client) {
+      getViewUrl(node, function(err, viewUrl, client) {
         var info = url.parse(viewUrl);
-        info.path = Config.basePath(item.no) + item.no + "/sendSession/" + item.id + "?saveId=" + pOptions.saveId + "&cluster=" + pOptions.cluster;
+        info.method = "POST";
+        info.path = Config.basePath(node) + node + "/sendSessions?saveId=" + pOptions.saveId + "&cluster=" + pOptions.cluster;
         info.agent = (client === http?internals.httpAgent:internals.httpsAgent);
         if (pOptions.tags) {
           info.path += "&tags=" + pOptions.tags;
         }
-        addAuth(info, pOptions.user, item.no);
-        addCaTrust(info, item.no);
+        addAuth(info, pOptions.user, node);
+        addCaTrust(info, node);
         var preq = client.request(info, function(pres) {
           pres.on('data', function (chunk) {
             qlworking[info.path] = "data";
@@ -4349,6 +4429,9 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
           console.log("ERROR - Couldn't proxy sendSession request=", info, "\nerror=", e);
           setImmediate(nextCb);
         });
+        preq.setHeader('content-type', "application/x-www-form-urlencoded");
+        preq.write("ids=");
+        preq.write(nodes[node].join(","));
         preq.end();
         qlworking[info.path] = "sent";
       });
@@ -4561,7 +4644,7 @@ if (Config.get("regressionTests")) {
   });
   app.post('/flushCache', function(req, res) {
     Db.flushCache();
-    res.send("");
+    res.send("{}");
   });
 }
 
@@ -4627,7 +4710,7 @@ function processCronQueries() {
         cluster = cq.action.substring(8);
       }
       
-      Db.getUser(cq.creator, function(err, user) {
+      Db.getUserCache(cq.creator, function(err, user) {
         if (err && !user) {return callback();}
         if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return callback(null);}
         if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return callback();}
@@ -4746,7 +4829,7 @@ function main () {
   });
 
   expireCheckAll();
-  setInterval(expireCheckAll, 2*60*1000);
+  setInterval(expireCheckAll, 60*1000);
   loadFields();
   setInterval(loadFields, 2*60*1000);
 
@@ -4777,3 +4860,12 @@ function main () {
     })
     .listen(Config.get("viewPort", "8005"), Config.get("viewHost", undefined));
 }
+//////////////////////////////////////////////////////////////////////////////////
+//// DB
+//////////////////////////////////////////////////////////////////////////////////
+Db.initialize({host: internals.elasticBase,
+               prefix: Config.get("prefix", ""),
+               usersHost: Config.get("usersElasticsearch"),
+               usersPrefix: Config.get("usersPrefix"),
+               nodeName: Config.nodeName(),
+               dontMapTags: Config.get("multiES", false)}, main);

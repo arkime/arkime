@@ -37,6 +37,7 @@ use strict;
 
 my $VERSION = 20;
 my $verbose = 0;
+my $PREFIX = "";
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -57,6 +58,7 @@ sub showHelp($)
     print "\n";
     print "Options:\n";
     print "  -v                    - Verbose, multiple increases level\n";
+    print "  --prefix <prefix>     - Prefix for table names\n";
     print "\n";
     print "Commands:\n";
     print "  init                  - Clear ALL elasticsearch moloch data and create schema\n";
@@ -150,7 +152,7 @@ sub esCopy
     my ($srci, $dsti, $type) = @_;
 
     my $status = esGet("/_status", 1);
-    print "Copying " . $status->{indices}->{$srci}->{docs}->{num_docs} . " elements from $srci/$type to $dsti/$type\n";
+    print "Copying " . $status->{indices}->{$PREFIX . $srci}->{docs}->{num_docs} . " elements from ${PREFIX}$srci/$type to ${PREFIX}$dsti/$type\n";
 
     my $id = "";
     while (1) {
@@ -160,7 +162,7 @@ sub esCopy
         }
         my $url;
         if ($id eq "") {
-            $url = "/$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
+            $url = "/${PREFIX}$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
@@ -171,7 +173,7 @@ sub esCopy
         last if (@{$incoming->{hits}->{hits}} == 0);
 
         foreach my $hit (@{$incoming->{hits}->{hits}}) {
-            $out .= "{\"index\": {\"_index\": \"$dsti\", \"_type\": \"$type\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
+            $out .= "{\"index\": {\"_index\": \"${PREFIX}$dsti\", \"_type\": \"$type\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
             $out .= to_json($hit->{_source}) . "\n";
         }
 
@@ -187,7 +189,7 @@ sub esAlias
     my ($cmd, $index, $alias) = @_;
 
     print "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
-    esPost("/_aliases", '{ actions: [ { ' . $cmd . ': { index: "' . $index . '", alias : "'. $alias .'" } } ] }', 1);
+    esPost("/_aliases", '{ actions: [ { ' . $cmd . ': { index: "' . $PREFIX . $index . '", alias : "'. $PREFIX . $alias .'" } } ] }', 1);
 }
 
 ################################################################################
@@ -203,7 +205,7 @@ sub tagsCreate
 }';
 
     print "Creating tags_v2 index\n" if ($verbose > 0);
-    esPut("/tags_v2/", $settings);
+    esPut("/${PREFIX}tags_v2/", $settings);
     esAlias("add", "tags_v2", "tags");
     tagsUpdate();
 }
@@ -225,7 +227,7 @@ sub tagsUpdate
 }';
 
     print "Setting tags_v2 mapping\n" if ($verbose > 0);
-    esPut("/tags_v2/tag/_mapping", $mapping);
+    esPut("/${PREFIX}tags_v2/tag/_mapping", $mapping);
 }
 ################################################################################
 sub sequenceCreate
@@ -240,7 +242,7 @@ sub sequenceCreate
 }';
 
     print "Creating sequence index\n" if ($verbose > 0);
-    esPut("/sequence", $settings);
+    esPut("/${PREFIX}sequence", $settings);
     sequenceUpdate();
 }
 
@@ -258,7 +260,7 @@ sub sequenceUpdate
 }';
 
     print "Setting sequence mapping\n" if ($verbose > 0);
-    esPut("/sequence/sequence/_mapping", $mapping);
+    esPut("/${PREFIX}sequence/sequence/_mapping", $mapping);
 }
 ################################################################################
 sub filesCreate
@@ -273,7 +275,7 @@ sub filesCreate
 }';
 
     print "Creating files_v3 index\n" if ($verbose > 0);
-    esPut("/files_v3", $settings);
+    esPut("/${PREFIX}files_v3", $settings);
     esAlias("add", "files_v3", "files");
     filesUpdate();
 }
@@ -319,7 +321,7 @@ sub filesUpdate
 }';
 
     print "Setting files_v3 mapping\n" if ($verbose > 0);
-    esPut("/files_v3/file/_mapping", $mapping);
+    esPut("/${PREFIX}files_v3/file/_mapping", $mapping);
 }
 ################################################################################
 sub statsCreate
@@ -339,7 +341,7 @@ sub statsCreate
 }';
 
     print "Creating stats index\n" if ($verbose > 0);
-    esPut("/stats", $settings);
+    esPut("/${PREFIX}stats", $settings);
     statsUpdate();
 }
 
@@ -417,7 +419,7 @@ my $mapping = '
 }';
 
     print "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/stats/stat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
+    esPut("/${PREFIX}stats/stat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -432,7 +434,7 @@ sub dstatsCreate
 }';
 
     print "Creating dstats_v1 index\n" if ($verbose > 0);
-    esPut("/dstats_v1", $settings);
+    esPut("/${PREFIX}dstats_v1", $settings);
     esAlias("add", "dstats_v1", "dstats");
     dstatsUpdate();
 }
@@ -498,7 +500,7 @@ my $mapping = '
 }';
 
     print "Setting dstats_v1 mapping\n" if ($verbose > 0);
-    esPut("/dstats_v1/dstat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
+    esPut("/${PREFIX}dstats_v1/dstat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -513,7 +515,7 @@ sub fieldsCreate
 }';
 
     print "Creating fields index\n" if ($verbose > 0);
-    esPut("/fields", $settings);
+    esPut("/${PREFIX}fields", $settings);
     fieldsUpdate();
 }
 ################################################################################
@@ -538,9 +540,9 @@ sub fieldsUpdate
 }';
 
     print "Setting fields mapping\n" if ($verbose > 0);
-    esPut("/fields/field/_mapping", $mapping);
+    esPut("/${PREFIX}fields/field/_mapping", $mapping);
 
-    esPost("/fields/field/ip", '{
+    esPost("/${PREFIX}fields/field/ip", '{
       "friendlyName": "All IP fields",
       "group": "general",
       "help": "Search all ip fields",
@@ -549,7 +551,7 @@ sub fieldsUpdate
       "portField": "portall",
       "noFacet": true
     }');
-    esPost("/fields/field/port", '{
+    esPost("/${PREFIX}fields/field/port", '{
       "friendlyName": "All port fields",
       "group": "general",
       "help": "Search all port fields",
@@ -557,7 +559,7 @@ sub fieldsUpdate
       "dbField": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
-    esPost("/fields/field/rir", '{
+    esPost("/${PREFIX}fields/field/rir", '{
       "friendlyName": "All rir fields",
       "group": "general",
       "help": "Search all rir fields",
@@ -565,7 +567,7 @@ sub fieldsUpdate
       "dbField": "all",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
-    esPost("/fields/field/country", '{
+    esPost("/${PREFIX}fields/field/country", '{
       "friendlyName": "All country fields",
       "group": "general",
       "help": "Search all country fields",
@@ -573,7 +575,7 @@ sub fieldsUpdate
       "dbField": "all",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
-    esPost("/fields/field/asn", '{
+    esPost("/${PREFIX}fields/field/asn", '{
       "friendlyName": "All ASN fields",
       "group": "general",
       "help": "Search all ASN fields",
@@ -581,7 +583,7 @@ sub fieldsUpdate
       "dbField": "all",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
-    esPost("/fields/field/host", '{
+    esPost("/${PREFIX}fields/field/host", '{
       "friendlyName": "All Host fields",
       "group": "general",
       "help": "Search all Host fields",
@@ -589,7 +591,7 @@ sub fieldsUpdate
       "dbField": "all",
       "regex": "(^host\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.host$)"
     }');
-    esPost("/fields/field/ip.src", '{
+    esPost("/${PREFIX}fields/field/ip.src", '{
       "friendlyName": "Src IP",
       "group": "general",
       "help": "Source IP",
@@ -597,14 +599,14 @@ sub fieldsUpdate
       "dbField": "a1",
       "portField": "p1"
     }');
-    esPost("/fields/field/port.src", '{
+    esPost("/${PREFIX}fields/field/port.src", '{
       "friendlyName": "Src Port",
       "group": "general",
       "help": "Source Port",
       "type": "integer",
       "dbField": "p1"
     }');
-    esPost("/fields/field/asn.src", '{
+    esPost("/${PREFIX}fields/field/asn.src", '{
       "friendlyName": "Src ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
@@ -612,21 +614,21 @@ sub fieldsUpdate
       "dbField": "as1",
       "rawField": "rawas1"
     }');
-    esPost("/fields/field/country.src", '{
+    esPost("/${PREFIX}fields/field/country.src", '{
       "friendlyName": "Src Country",
       "group": "general",
       "help": "Source Country",
       "type": "uptermfield",
       "dbField": "g1"
     }');
-    esPost("/fields/field/rir.src", '{
+    esPost("/${PREFIX}fields/field/rir.src", '{
       "friendlyName": "Src RIR",
       "group": "general",
       "help": "Source RIR",
       "type": "uptermfield",
       "dbField": "rir1"
     }');
-    esPost("/fields/field/ip.dst", '{
+    esPost("/${PREFIX}fields/field/ip.dst", '{
       "friendlyName": "Dst IP",
       "group": "general",
       "help": "Destination IP",
@@ -634,14 +636,14 @@ sub fieldsUpdate
       "dbField": "a2",
       "portField": "p2"
     }');
-    esPost("/fields/field/port.dst", '{
+    esPost("/${PREFIX}fields/field/port.dst", '{
       "friendlyName": "Dst Port",
       "group": "general",
       "help": "Source Port",
       "type": "integer",
       "dbField": "p2"
     }');
-    esPost("/fields/field/asn.dst", '{
+    esPost("/${PREFIX}fields/field/asn.dst", '{
       "friendlyName": "Dst ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
@@ -649,84 +651,84 @@ sub fieldsUpdate
       "dbField": "as2",
       "rawField": "rawas2"
     }');
-    esPost("/fields/field/country.dst", '{
+    esPost("/${PREFIX}fields/field/country.dst", '{
       "friendlyName": "Dst Country",
       "group": "general",
       "help": "Destination Country",
       "type": "uptermfield",
       "dbField": "g2"
     }');
-    esPost("/fields/field/rir.dst", '{
+    esPost("/${PREFIX}fields/field/rir.dst", '{
       "friendlyName": "Dst RIR",
       "group": "general",
       "help": "Destination RIR",
       "type": "uptermfield",
       "dbField": "rir2"
     }');
-    esPost("/fields/field/bytes", '{
+    esPost("/${PREFIX}fields/field/bytes", '{
       "friendlyName": "Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
       "type": "integer",
       "dbField": "by"
     }');
-    esPost("/fields/field/bytes.src", '{
+    esPost("/${PREFIX}fields/field/bytes.src", '{
       "friendlyName": "Src Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
       "type": "integer",
       "dbField": "by1"
     }');
-    esPost("/fields/field/bytes.dst", '{
+    esPost("/${PREFIX}fields/field/bytes.dst", '{
       "friendlyName": "Dst Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
       "type": "integer",
       "dbField": "by2"
     }');
-    esPost("/fields/field/databytes", '{
+    esPost("/${PREFIX}fields/field/databytes", '{
       "friendlyName": "Data bytes",
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
       "type": "integer",
       "dbField": "db"
     }');
-    esPost("/fields/field/databytes.src", '{
+    esPost("/${PREFIX}fields/field/databytes.src", '{
       "friendlyName": "Src data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
       "type": "integer",
       "dbField": "db1"
     }');
-    esPost("/fields/field/databytes.dst", '{
+    esPost("/${PREFIX}fields/field/databytes.dst", '{
       "friendlyName": "Dst data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
       "type": "integer",
       "dbField": "db2"
     }');
-    esPost("/fields/field/packets", '{
+    esPost("/${PREFIX}fields/field/packets", '{
       "friendlyName": "Packets",
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
       "type": "integer",
       "dbField": "pa"
     }');
-    esPost("/fields/field/packets.src", '{
+    esPost("/${PREFIX}fields/field/packets.src", '{
       "friendlyName": "Src Packets",
       "group": "general",
       "help": "Total number of packets sent by source in a session",
       "type": "integer",
       "dbField": "pa1"
     }');
-    esPost("/fields/field/packets.dst", '{
+    esPost("/${PREFIX}fields/field/packets.dst", '{
       "friendlyName": "Dst Packets",
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
       "type": "integer",
       "dbField": "pa2"
     }');
-    esPost("/fields/field/ip.protocol", '{
+    esPost("/${PREFIX}fields/field/ip.protocol", '{
       "friendlyName": "IP Protocol",
       "group": "general",
       "help": "IP protocol number or friendly name",
@@ -734,7 +736,7 @@ sub fieldsUpdate
       "dbField": "pr",
       "transform": "ipProtocolLookup"
     }');
-    esPost("/fields/field/id", '{
+    esPost("/${PREFIX}fields/field/id", '{
       "friendlyName": "Moloch ID",
       "group": "general",
       "help": "Moloch ID for the session",
@@ -743,28 +745,28 @@ sub fieldsUpdate
       "noFacet": true
 
     }');
-    esPost("/fields/field/rootId", '{
+    esPost("/${PREFIX}fields/field/rootId", '{
       "friendlyName": "Moloch Root ID",
       "group": "general",
       "help": "Moloch ID of the first session in a multi session stream",
       "type": "termfield",
       "dbField": "ro"
     }');
-    esPost("/fields/field/node", '{
+    esPost("/${PREFIX}fields/field/node", '{
       "friendlyName": "Moloch Node",
       "group": "general",
       "help": "Moloch node name the session was recorded on",
       "type": "termfield",
       "dbField": "no"
     }');
-    esPost("/fields/field/file", '{
+    esPost("/${PREFIX}fields/field/file", '{
       "friendlyName": "Filename",
       "group": "general",
       "help": "Moloch offline pcap filename",
       "type": "fileand",
       "dbField": "fileand"
     }');
-    esPost("/fields/field/payload8.src.hex", '{
+    esPost("/${PREFIX}fields/field/payload8.src.hex", '{
       "friendlyName": "Payload Src Hex",
       "group": "general",
       "help": "First 8 bytes of source payload in hex",
@@ -772,7 +774,7 @@ sub fieldsUpdate
       "dbField": "fb1",
       "aliases": ["payload.src"]
     }');
-    esPost("/fields/field/payload8.src.utf8", '{
+    esPost("/${PREFIX}fields/field/payload8.src.utf8", '{
       "friendlyName": "Payload Src UTF8",
       "group": "general",
       "help": "First 8 bytes of source payload in utf8",
@@ -781,7 +783,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": true
     }');
-    esPost("/fields/field/payload8.dst.hex", '{
+    esPost("/${PREFIX}fields/field/payload8.dst.hex", '{
       "friendlyName": "Payload Dst Hex",
       "group": "general",
       "help": "First 8 bytes of destination payload in hex",
@@ -789,7 +791,7 @@ sub fieldsUpdate
       "dbField": "fb2",
       "aliases": ["payload.dst"]
     }');
-    esPost("/fields/field/payload8.dst.utf8", '{
+    esPost("/${PREFIX}fields/field/payload8.dst.utf8", '{
       "friendlyName": "Payload Dst UTF8",
       "group": "general",
       "help": "First 8 bytes of destination payload in utf8",
@@ -798,7 +800,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": true
     }');
-    esPost("/fields/field/payload8.hex", '{
+    esPost("/${PREFIX}fields/field/payload8.hex", '{
       "friendlyName": "Payload Hex",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -806,7 +808,7 @@ sub fieldsUpdate
       "dbField": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
-    esPost("/fields/field/payload8.utf8", '{
+    esPost("/${PREFIX}fields/field/payload8.utf8", '{
       "friendlyName": "Payload UTF8",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -814,7 +816,7 @@ sub fieldsUpdate
       "dbField": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
-    esPost("/fields/field/scrubbed.by", '{
+    esPost("/${PREFIX}fields/field/scrubbed.by", '{
       "friendlyName": "Scrubbed By",
       "group": "general",
       "help": "SPI data was scrubbed by",
@@ -822,9 +824,9 @@ sub fieldsUpdate
       "dbField": "scrubby"
     }');
 
-    esPost("/fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
-    esPost("/fields/field/http.hasheader/_update", '{doc: {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
-    esPost("/fields/field/email.subject/_update", '{doc: {type: "textfield"}}', 1);
+    esPost("/${PREFIX}fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
+    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{doc: {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
+    esPost("/${PREFIX}fields/field/email.subject/_update", '{doc: {type: "textfield"}}', 1);
 }
 
 ################################################################################
@@ -840,7 +842,7 @@ sub queriesCreate
 }';
 
     print "Creating queries index\n" if ($verbose > 0);
-    esPut("/queries", $settings);
+    esPut("/${PREFIX}queries", $settings);
     queriesUpdate();
 }
 ################################################################################
@@ -890,7 +892,7 @@ sub queriesUpdate
 }';
 
     print "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/queries/query/_mapping?pretty&ignore_conflicts=true", $mapping);
+    esPut("/${PREFIX}queries/query/_mapping?pretty&ignore_conflicts=true", $mapping);
 }
 
 ################################################################################
@@ -1545,7 +1547,7 @@ sub sessionsUpdate
 
     my $template = '
 {
-  template: "session*",
+  template: "' . $PREFIX . 'session*",
   settings: {
     index: {
       "routing.allocation.total_shards_per_node": 1,
@@ -1568,14 +1570,12 @@ sub sessionsUpdate
 
     print "Creating sessions template\n" if ($verbose > 0);
     #print "$template\n";
-    esPut("/_template/template_1", $template);
+    esPut("/_template/${PREFIX}template_1", $template);
 
-    my $status = esGet("/sessions-*/_stats?clear=1", 1);
-    my $indices = $status->{indices} || $status->{_all}->{indices};
+    my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
-        next if ($i !~ /^sessions-/);
         progress($i);
         esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
 
@@ -1606,7 +1606,7 @@ sub usersCreate
 }';
 
     print "Creating users_v3 index\n" if ($verbose > 0);
-    esPut("/users_v3", $settings);
+    esPut("/${PREFIX}users_v3", $settings);
     esAlias("add", "users_v3", "users");
     usersUpdate();
 }
@@ -1667,7 +1667,7 @@ sub usersUpdate
 }';
 
     print "Setting users_v3 mapping\n" if ($verbose > 0);
-    esPut("/users_v3/user/_mapping?pretty&ignore_conflicts=true", $mapping);
+    esPut("/${PREFIX}users_v3/user/_mapping?pretty&ignore_conflicts=true", $mapping);
 }
 
 ################################################################################
@@ -1677,28 +1677,28 @@ my($type, $t) = @_;
 
     my @t = gmtime($t);
     if ($type eq "hourly") {
-        return sprintf("sessions-%02d%02d%02dh%0d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+        return sprintf("${PREFIX}sessions-%02d%02d%02dh%0d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
     } 
 
     if ($type eq "daily") {
-        return sprintf("sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
+        return sprintf("${PREFIX}sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
     } 
     
     if ($type eq "weekly") {
-        return sprintf("sessions-%02dw%02d", $t[5] % 100, int($t[7]/7));
+        return sprintf("${PREFIX}sessions-%02dw%02d", $t[5] % 100, int($t[7]/7));
     } 
     
     if ($type eq "monthly") {
-        return sprintf("sessions-%02dm%02d", $t[5] % 100, $t[4]+1);
+        return sprintf("${PREFIX}sessions-%02dm%02d", $t[5] % 100, $t[4]+1);
     }
 }
 ################################################################################
 sub dbVersion {
 my ($loud) = @_;
 
-    my $version = esGet("/dstats/version/version", 1);
+    my $version = esGet("/${PREFIX}dstats/version/version", 1);
 
-    my $found = $version->{exists} || $version->{found};
+    my $found = $version->{found};
 
     if (!defined $found) {
         print "This is a fresh Moloch install\n" if ($loud);
@@ -1731,11 +1731,10 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     my $version = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($version < 9012 || ($version >= 10000 && $version < 10100)) {
+    if ($version < 10200) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* 1.2.x or 1.3.x is recommended\n",
-              "* 1.0.x is not supported\n",
-              "* 0.90.12 or later is required\n",
+              "* 1.2.x is supported\n",
+              "* 1.3.x is recommended\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -1808,7 +1807,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("dstats_v1", "files_v3", "sequence", "tags_v2", "users_v3") {
+    foreach my $i ("${PREFIX}dstats_v1", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=1", 1);
     }
@@ -1817,8 +1816,12 @@ sub optimizeOther {
 }
 ################################################################################
 while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
-    if ($ARGV[0] =~ /-v+$/) {
+    if ($ARGV[0] =~ /(-v+|--verbose)$/) {
          $verbose += ($ARGV[0] =~ tr/v//);
+    } elsif ($ARGV[0] =~ /--prefix$/) {
+        $PREFIX = $ARGV[1];
+        shift @ARGV;
+        $PREFIX .= "_" if ($PREFIX !~ /_$/);
     } else {
         showHelp("Unknkown option $ARGV[0]")
     }
@@ -1843,7 +1846,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^users-?export$/) {
     open(my $fh, ">", $ARGV[2]) or die "cannot open > $ARGV[2]: $!";
-    my $users = esGet("/users/_search?size=1000");
+    my $users = esGet("/${PREFIX}users/_search?size=1000");
     foreach my $hit (@{$users->{hits}->{hits}}) {
         print $fh "{\"index\": {\"_index\": \"users\", \"_type\": \"user\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
         print $fh to_json($hit->{_source}) . "\n";
@@ -1852,8 +1855,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|daily|weekly|monthly)$/);
-    my $json = esGet("/sessions-*/_stats?clear=1", 1);
-    my $indices = $json->{indices} || $json->{_all}->{indices};
+    my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
     my $endTime = time();
     my $endTimeIndex = time2index($ARGV[2], $endTime);
@@ -1889,7 +1891,6 @@ if ($ARGV[1] =~ /^users-?import$/) {
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
-        next if ($i !~ /^sessions-/);
         progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esGet("/$i/_optimize?max_num_segments=4", 1);
@@ -1902,14 +1903,12 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
     exit 0;
 } elsif ($ARGV[1] eq "optimize") {
-    my $json = esGet("/sessions-*/_stats?clear=1", 1);
-    my $indices = $json->{indices} || $json->{_all}->{indices};
+    my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
     $main::userAgent->timeout(600);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
-        next if ($i !~ /^sessions-/);
         progress($i);
         esGet("/$i/_optimize?max_num_segments=4", 1);
     }
@@ -1922,9 +1921,9 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $status = esGet("/_status", 1);
     my $sessions = 0;
     my $sessionsBytes = 0;
-    my @sessions = grep /^session/, keys %{$status->{indices}};
+    my @sessions = grep /^${PREFIX}session/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
-        next if ($index !~ /^sessions-/);
+        next if ($index !~ /^${PREFIX}sessions-/);
         $sessions += $status->{indices}->{$index}->{docs}->{num_docs};
         $sessionsBytes += $status->{indices}->{$index}->{index}->{primary_size_in_bytes};
     }
@@ -1955,27 +1954,27 @@ sub printIndex {
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
-    my $results = esGet("/files/_search?q=name:$fn");
+    my $results = esGet("/${PREFIX}files/_search?q=name:$fn");
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
         my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
-        esPost("/files/file/" . $hit->{_id} . "/_update", $script);
+        esPost("/${PREFIX}files/file/" . $hit->{_id} . "/_update", $script);
     }
     print "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] eq "rm") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
-    my $results = esGet("/files/_search?q=name:$fn");
+    my $results = esGet("/${PREFIX}files/_search?q=name:$fn");
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
-        esDelete("/files/file/" . $hit->{_id}, 0);
+        esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
     }
     print "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?missing$/) {
-    my $results = esGet("/files/_search?size=10000&q=node:$ARGV[2]");
+    my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
     print "Need to remove references to these files from database:\n";
     my $cnt = 0;
@@ -1990,16 +1989,16 @@ sub printIndex {
     waitFor("YES", "Do you want to remove file references from database?");
     foreach my $hit (@{$results->{hits}->{hits}}) {
         if (! -f $hit->{_source}->{name}) {
-            esDelete("/files/file/" . $hit->{_id}, 0);
+            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
         }
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
-    my $result = esGet("/fields/field/$ARGV[3]", 1);
-    my $found = $result->{exists} || $result->{found};
+    my $result = esGet("/${PREFIX}fields/field/$ARGV[3]", 1);
+    my $found = $result->{found};
     die "Field $ARGV[3] isn't found" if (!$found);
 
-    esPost("/fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
+    esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
     
     exit 0;
 }
@@ -2046,27 +2045,27 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         waitFor("WIPE", "do you want to wipe everything?");
     }
     print "Erasing\n";
-    esDelete("/tags_v2", 1);
-    esDelete("/tags", 1);
-    esDelete("/sequence", 1);
-    esDelete("/files_v3", 1);
-    esDelete("/files_v2", 1);
-    esDelete("/files_v1", 1);
-    esDelete("/files", 1);
-    esDelete("/stats", 1);
-    esDelete("/dstats", 1);
-    esDelete("/fields", 1);
-    esDelete("/dstats_v1", 1);
-    esDelete("/sessions*", 1);
-    esDelete("/template_1", 1);
+    esDelete("/${PREFIX}tags_v2", 1);
+    esDelete("/${PREFIX}tags", 1);
+    esDelete("/${PREFIX}sequence", 1);
+    esDelete("/${PREFIX}files_v3", 1);
+    esDelete("/${PREFIX}files_v2", 1);
+    esDelete("/${PREFIX}files_v1", 1);
+    esDelete("/${PREFIX}files", 1);
+    esDelete("/${PREFIX}stats", 1);
+    esDelete("/${PREFIX}dstats", 1);
+    esDelete("/${PREFIX}fields", 1);
+    esDelete("/${PREFIX}dstats_v1", 1);
+    esDelete("/${PREFIX}sessions*", 1);
+    esDelete("/${PREFIX}template_1", 1);
     if ($ARGV[1] =~ "init") {
-        esDelete("/users_v1", 1);
-        esDelete("/users_v2", 1);
-        esDelete("/users_v3", 1);
-        esDelete("/users", 1);
-        esDelete("/queries", 1);
+        esDelete("/${PREFIX}users_v1", 1);
+        esDelete("/${PREFIX}users_v2", 1);
+        esDelete("/${PREFIX}users_v3", 1);
+        esDelete("/${PREFIX}users", 1);
+        esDelete("/${PREFIX}queries", 1);
     }
-    esDelete("/tagger", 1);
+    esDelete("/${PREFIX}tagger", 1);
 
     sleep(1);
 
@@ -2088,7 +2087,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     waitFor("UPGRADE", "do you want to upgrade?");
     print "Starting Upgrade\n";
 
-    esDelete("/stats", 1);
+    esDelete("/${PREFIX}stats", 1);
 
     tagsUpdate();
     sequenceUpdate();
@@ -2108,7 +2107,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esCopy("dstats", "dstats_v1", "user");
     sleep 1;
 
-    esDelete("/dstats", 1);
+    esDelete("/${PREFIX}dstats", 1);
     sleep 1;
 
     esAlias("add", "dstats_v1", "dstats");
@@ -2188,4 +2187,4 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 }
 
 sleep 1;
-esPost("/dstats/version/version", "{\"version\": $VERSION}");
+esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
