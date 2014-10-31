@@ -63,7 +63,7 @@ exports.initialize = function (info, cb) {
     requestTimeout: 300000,
     keepAlive: true,
     minSockets: 20,
-    maxSockets: 21
+    maxSockets: 51
   });
 
   internals.elasticSearchClient.info(function(err,data) {
