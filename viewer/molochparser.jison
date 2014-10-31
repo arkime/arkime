@@ -91,7 +91,7 @@ function parseIpPort(yy, field, ipPortStr) {
   function singleIp(dbField, ip1, ip2, port) {
     var obj;
 
-    if (ip1 !== -1) {
+    if (ip1 !== undefined) {
       if (ip1 === ip2) {
         obj = {term: {}};
         obj.term[dbField] = ip1>>>0;
@@ -109,7 +109,7 @@ function parseIpPort(yy, field, ipPortStr) {
         throw field + " doesn't support port";
       }
 
-      if (ip1 === -1) {
+      if (ip1 === undefined) {
         obj = obj.bool.must[1];
       }
     }
@@ -133,7 +133,7 @@ function parseIpPort(yy, field, ipPortStr) {
 
   // Support '10.10.10/16:4321'
 
-  var ip1 = -1, ip2 = -1;
+  var ip1, ip2;
   var colons = ipPortStr.split(':');
   var slash = colons[0].split('/');
   var dots = slash[0].split('.');
@@ -157,9 +157,12 @@ function parseIpPort(yy, field, ipPortStr) {
 
   // Can't shift by 32 bits in javascript, who knew!
   if (slash[1] && slash[1] !== '32') {
-     var s = parseInt(slash[1], 10);
-     ip1 = ip1 & (0xffffffff << (32 - s));
-     ip2 = ip2 | (0xffffffff >>> s);
+    if (ip1 === undefined) {
+      ip1 = ip2 = 0xffffffff;
+    }
+    var s = parseInt(slash[1], 10);
+    ip1 = ip1 & (0xffffffff << (32 - s));
+    ip2 = ip2 | (0xffffffff >>> s);
   }
   
   if (dbField !== "ipall") {

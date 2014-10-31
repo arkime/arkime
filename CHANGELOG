@@ -14,6 +14,7 @@
   - More SMB1 parsing
   - More TLS cipherso
   - Major viewer test suite restructure and improvements
+  - Handle searching for ip 255.255.255.255 (issue #301)
   
 
 0.11.2 2014/10/16
