@@ -310,7 +310,7 @@ void moloch_config_load()
     config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
     config.minFreeSpaceG         = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
     config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
-    config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 1, 60*30, 5);
+    config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);
     config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 5, 1000);
     config.maxESRequests         = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
     config.logEveryXPackets      = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
