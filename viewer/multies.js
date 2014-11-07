@@ -201,7 +201,7 @@ app.get("/:index/_status", function(req, res) {
   });
 });
 
-app.get("/dstats/version/version", function(req, res) {
+app.get("/MULTIPREFIX_dstats/version/version", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
@@ -562,7 +562,7 @@ function newResult(search) {
 }
 
 // Only tags search is for auto complete so unique the results
-app.post("/tags/tag/_search", function(req, res) {
+app.post("/MULTIPREFIX_tags/tag/_search", function(req, res) {
   var search = JSON.parse(req.body);
 
   simpleGather(req, res, null, function(err, results) {
@@ -592,7 +592,7 @@ app.post("/tags/tag/_search", function(req, res) {
 
 });
 
-app.post("/fields/field/_search", function(req, res) {
+app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = {
       hits: {
