@@ -327,7 +327,7 @@ var tags = {};
 
 function tagNameToId(node, name, cb) {
   if (tags[node].tagName2Id[name]) {
-    return cb (tags[node].tagName2Id[name]);
+    return setImmediate(cb, tags[node].tagName2Id[name]);
   }
 
   clients[node].get({index: 'tags', type: 'tag', id: name}, function(err, tdata) {
@@ -342,7 +342,7 @@ function tagNameToId(node, name, cb) {
 
 function tagIdToName (node, id, cb) {
   if (tags[node].tagId2Name[id]) {
-    return cb(tags[node].tagId2Name[id]);
+    return setImmediate(cb, tags[node].tagId2Name[id]);
   }
 
   var query = {query: {term: {n:id}}};

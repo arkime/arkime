@@ -359,7 +359,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
 function tagWorker(task, callback) {
   if (task.type === "tagIdToName") {
     if (internals.tagId2Name[task.id]) {
-      return callback(null, internals.tagId2Name[task.id]);
+      return setImmediate(callback, null, internals.tagId2Name[task.id]);
     }
     var query = {query: {term: {n:task.id}}};
     exports.search('tags', 'tag', query, function(err, tdata) {
@@ -372,7 +372,7 @@ function tagWorker(task, callback) {
     });
   } else {
     if (internals.tagName2Id[task.name]) {
-      return callback(null, internals.tagName2Id[task.name]);
+      return setImmediate(callback, null, internals.tagName2Id[task.name]);
     }
 
     exports.get('tags', 'tag', task.name, function(err, tdata) {
@@ -402,7 +402,7 @@ exports.tagNameToId = function (name, cb) {
 
 exports.fileIdToFile = function (node, num, cb) {
   var key = node + "!" + num;
-  if (internals.fileId2File[key]) {
+  if (internals.fileId2File[key] !== undefined) {
     return cb(internals.fileId2File[key]);
   }
 
@@ -414,6 +414,8 @@ exports.fileIdToFile = function (node, num, cb) {
       return cb(file);
     }
 
+    // Cache file is unknown
+    internals.fileId2File[key] = null;
     return cb(null);
   });
 };
