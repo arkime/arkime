@@ -12,10 +12,16 @@
   - Some cron efficiency improvements
   - Check more often if files need to be expired
   - More SMB1 parsing
-  - More TLS cipherso
+  - More TLS ciphers
   - Major viewer test suite restructure and improvements
   - Handle searching for ip 255.255.255.255 (issue #301)
   - Fixed RangeError (issue #299)
+  - CronQuery changes to split up multi day queries
+  - Fixed viewer crashes in pristine state (#304)
+  - Added MultiES and fress install test cases
+  - HTTP Authorization parsing (http.authtype, http.user)
+  - Moved HTTP URI parsing from message complete to headers complete
+  - Better Socks4 support
   
 
 0.11.2 2014/10/16

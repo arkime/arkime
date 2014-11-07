@@ -1,4 +1,4 @@
-/******************************************************************************/ 
+/******************************************************************************/
 /* viewer.js  -- The main moloch app
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
@@ -691,7 +691,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         }
 
         var fields = item._source || item.fields;
-         
+
         var freeG;
         try {
           var stat = fs.statVFS(fields.name);
@@ -1681,6 +1681,9 @@ app.get('/spigraph.json', function(req, res) {
         return res.send(results);
       }
       results.iTotalDisplayRecords = result.hits.total;
+      if (!result.facets) {
+        result.facets = {map: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}, field: {terms: []}};
+      }
       histoMerge(req, query, result.facets, results.graph);
       results.map = mapMerge(result.facets);
 
@@ -1738,7 +1741,7 @@ app.get('/spigraph.json', function(req, res) {
 
 app.get('/spiview.json', function(req, res) {
   if (req.query.spi === undefined) {
-    return res.send({spi:{}});
+    return res.send({spi:{}, iTotalRecords: 0, iTotalDisplayRecords: 0});
   }
 
   var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 1);
@@ -1792,6 +1795,10 @@ app.get('/spiview.json', function(req, res) {
           }
 
           iTotalDisplayRecords = result.hits.total;
+
+          if (!result.facets) {
+            result.facets = {};
+          }
 
           if (result.facets.pr) {
             result.facets.pr.terms.forEach(function (item) {
@@ -2540,18 +2547,18 @@ function toHex(input, offsets) {
 // Modified version of https://gist.github.com/penguinboy/762197
 function flattenObject1 (obj) {
   var toReturn = {};
-  
+
   for (var i in obj) {
     if (!obj.hasOwnProperty(i)) {
       continue;
     }
-    
+
     if ((typeof obj[i]) === 'object' && !Array.isArray(obj[i])) {
       for (var x in obj[i]) {
         if (!obj[i].hasOwnProperty(x)) {
           continue;
         }
-        
+
         toReturn[i + '.' + x] = obj[i][x];
       }
     } else {
@@ -3764,7 +3771,7 @@ app.post('/updateCronQuery', checkToken, function(req, res) {
       return res.send(JSON.stringify({success: true, text: "Created", key: info._id}));
     });
     return;
-  } 
+  }
 
   Db.get("queries", 'query', req.body.key, function(err, sq) {
     if (err || !sq.found) {
@@ -4284,9 +4291,9 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
   noCache(req, res);
   res.statusCode = 200;
 
-  if (req.body.ids === undefined || 
-      req.query.cluster === undefined || 
-      req.query.saveId === undefined || 
+  if (req.body.ids === undefined ||
+      req.query.cluster === undefined ||
+      req.query.saveId === undefined ||
       req.query.tags === undefined) {
     return res.end();
   }
@@ -4467,18 +4474,51 @@ app.post('/receiveSession', function receiveSession(req, res) {
       return cb(saveId.filename);
     }
 
+    // Just keep calling ourselves every 100 ms until we have a filename
     if (saveId.inProgress) {
       return setTimeout(makeFilename, 100, cb);
     }
 
     saveId.inProgress = 1;
     Db.getSequenceNumber("fn-" + Config.nodeName(), function (err, seq) {
-      saveId.filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "-" + req.query.saveId + ".pcap";
+      var filename = Config.get("pcapDir") + "/" + Config.nodeName() + "-" + seq + "-" + req.query.saveId + ".pcap";
       saveId.seq      = seq;
-      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: saveId.filename, first: session.fp, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
-        cb(saveId.filename);
+      Db.indexNow("files", "file", Config.nodeName() + "-" + saveId.seq, {num: saveId.seq, name: filename, first: session.fp, node: Config.nodeName(), filesize: -1, locked: 1}, function() {
+        cb(filename);
+        saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
       });
     });
+  }
+
+  function saveSession() {
+    function tags(container, field, prefix, cb) {
+      if (!container[field]) {
+        return cb(null);
+      }
+
+      mapTags(session[field], prefix, function (err, tagIds) {
+        session[field] = tagIds;
+        cb(null);
+      });
+    }
+
+    async.parallel([
+      function(parallelCb) {
+        tags(session, "ta", "", parallelCb);
+      },
+      function(parallelCb) {
+        tags(session, "hh1", "http:header:", parallelCb);
+      },
+      function(parallelCb) {
+        tags(session, "hh2", "http:header:", parallelCb);
+      }],
+      function() {
+        var id = session.id;
+        delete session.id;
+        Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
+        });
+      }
+    );
   }
 
   function chunkWrite(chunk) {
@@ -4517,68 +4557,45 @@ app.post('/receiveSession', function receiveSession(req, res) {
       session = JSON.parse(buffer.toString("utf8", 0, sessionlen));
       buffer = buffer.slice(sessionlen);
 
-      req.pause();
+      if (filelen > 0) {
+        req.pause();
 
-      makeFilename(function (filename) {
-        req.resume();
-        session.ps[0] = - saveId.seq;
-        session.fs = [saveId.seq];
-        session.no = Config.nodeName();
+        makeFilename(function (filename) {
+          req.resume();
+          session.ps[0] = - saveId.seq;
+          session.fs = [saveId.seq];
+          session.no = Config.nodeName();
 
-        if (saveId.start === 0) {
-          file = fs.createWriteStream(filename, {flags: "w"});
-        } else {
-          file = fs.createWriteStream(filename, {start: saveId.start, flags: "r+"});
-        }
-        writeHeader = saveId.start === 0;
-
-        // Adjust packet location based on where we start writing
-        if (saveId.start > 0) {
-          for (var p = 1, plen = session.ps.length; p < plen; p++) {
-            session.ps[p] += (saveId.start - 24);
+          if (saveId.start === 0) {
+            file = fs.createWriteStream(filename, {flags: "w"});
+          } else {
+            file = fs.createWriteStream(filename, {start: saveId.start, flags: "r+"});
           }
-        }
+          writeHeader = saveId.start === 0;
 
-        // Filelen always includes header, if we don't write header subtract it
-        saveId.start += filelen;
-        if (!writeHeader) {
-          saveId.start -= 24;
-        }
-
-        // Still more data in buffer, start of pcap
-        if (buffer.length > 0) {
-          chunkWrite(buffer);
-        }
-
-        function tags(container, field, prefix, cb) {
-          if (!container[field]) {
-            return cb(null);
+          // Adjust packet location based on where we start writing
+          if (saveId.start > 0) {
+            for (var p = 1, plen = session.ps.length; p < plen; p++) {
+              session.ps[p] += (saveId.start - 24);
+            }
           }
 
-          mapTags(session[field], prefix, function (err, tagIds) {
-            session[field] = tagIds;
-            cb(null);
-          });
-        }
-
-        async.parallel([
-          function(parallelCb) {
-            tags(session, "ta", "", parallelCb);
-          },
-          function(parallelCb) {
-            tags(session, "hh1", "http:header:", parallelCb);
-          },
-          function(parallelCb) {
-            tags(session, "hh2", "http:header:", parallelCb);
-          }],
-          function() {
-            var id = session.id;
-            delete session.id;
-            Db.indexNow(Db.id2Index(id), "session", id, session, function(err, info) {
-            });
+          // Filelen always includes header, if we don't write header subtract it
+          saveId.start += filelen;
+          if (!writeHeader) {
+            saveId.start -= 24;
           }
-        );
-      });
+
+          // Still more data in buffer, start of pcap
+          if (buffer.length > 0) {
+            chunkWrite(buffer);
+          }
+
+          saveSession();
+        });
+      } else {
+        saveSession();
+      }
     }
   });
 
@@ -4651,6 +4668,83 @@ if (Config.get("regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Cron Queries
 //////////////////////////////////////////////////////////////////////////////////
+
+/* Process a single cron query.  At max it will process 24 hours worth of data
+ * to give other queries a chance to run.  It searches for the first time range
+ * where there is an available index.
+ */
+function processCronQuery(cq, options, query, endTime, cb) {
+
+  var singleEndTime;
+  var count = 0;
+  async.doWhilst(function(whilstCb) {
+    // Process at most 24 hours
+    singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
+    query.query.filtered.query.range = {lp: {gt: cq.lpValue, lte: singleEndTime}};
+
+    Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
+
+      // There are no matching indices, continue while loop
+      if (indices === "sessions-*") {
+        cq.lpValue += 24*60*60;
+        return setImmediate(whilstCb, null);
+      }
+
+      // We have foudn some indices, now scroll thru ES
+      Db.search(indices, 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
+        function doNext() {
+          count += result.hits.hits.length;
+
+          // No more data, all done
+          if (result.hits.hits.length === 0) {
+            return setImmediate(whilstCb, "DONE");
+          } else {
+            var document = { doc: { count: (query.count || 0) + count} };
+            Db.update("queries", "query", options.qid, document, {refresh: 1}, function () {});
+          }
+
+          Db.scroll({
+            body: result._scroll_id,
+            scroll: '600s'
+          }, getMoreUntilDone);
+        }
+
+        if (err || result.error) {
+          console.log("cronQuery error", err, (result?result.error:null), "for", cq);
+          return setImmediate(whilstCb, "ERR");
+        }
+
+        var ids = [];
+        var hits = result.hits.hits;
+        var i, ilen;
+        if (cq.action.indexOf("forward:") === 0) {
+          for (i = 0, ilen = hits.length; i < ilen; i++) {
+            ids.push({id: hits[i]._id, no: hits[i]._source.no});
+          }
+
+          sendSessionsListQL(options, ids, doNext);
+        } else if (cq.action.indexOf("tag") === 0) {
+          for (i = 0, ilen = hits.length; i < ilen; i++) {
+            ids.push(hits[i]._id);
+          }
+          mapTags(options.tags.split(","), "", function(err, tagIds) {
+            sessionsListFromIds(null, ids, ["ta"], function(err, list) {
+              addTagsList(tagIds, list, doNext);
+            });
+          });
+        } else {
+          console.log("Unknown action", cq);
+          doNext();
+        }
+      });
+    });
+  }, function () {
+    return singleEndTime !== endTime;
+  }, function (err) {
+    cb(count, singleEndTime);
+  });
+}
+
 function processCronQueries() {
   if (internals.cronRunning) {
     console.log("processQueries already running", qlworking);
@@ -4658,159 +4752,115 @@ function processCronQueries() {
   }
   internals.cronRunning = true;
 
-  Db.search("queries", "query", "{size: 1000}", function(err, data) {
-    if (err) {
-      internals.cronRunning = false;
-      return console.log("processCronQueries", err);
-    }
-    var queries = {};
-    data.hits.hits.forEach(function(item) {
-      queries[item._id] = item._source;
-    });
-
-    // elasticsearch refresh is 60, so only retrieve older items
-    var nowPast = Math.floor(Date.now()/1000) - 70;
-
-    // Save incase load happens while running
-
-    function cleanupQuery(qid, count, cb) {
-      // Do the ES update
-      var document = {
-        doc: {
-          lpValue: nowPast,
-          lastRun: Math.floor(Date.now()/1000),
-          count: (queries[qid].count || 0) + count
-        }
-      };
-      Db.update("queries", "query", qid, document, {refresh: 1});
-      cb();
-    }
-
-    function updateCount(qid, count) {
-      var document = {
-        doc: {
-          count: (queries[qid].count || 0) + count
-        }
-      };
-      Db.update("queries", "query", qid, document, {refresh: 1});
-    }
-
-    var molochClusters = Config.configMap("moloch-clusters");
-
-    async.eachSeries(Object.keys(queries), function (qid, callback) {
-      var cq = queries[qid];
-      var cluster = null;
-      var req, res;
-
-      if (!cq.enabled || nowPast < cq.lpValue) {
-        return callback();
+  var repeat;
+  async.doWhilst(function(whilstCb) {
+    repeat = false;
+    Db.search("queries", "query", "{size: 1000}", function(err, data) {
+      if (err) {
+        internals.cronRunning = false;
+        console.log("processCronQueries", err);
+        return setImmediate(whilstCb, err);
       }
+      var queries = {};
+      data.hits.hits.forEach(function(item) {
+        queries[item._id] = item._source;
+      });
 
-      if (cq.action.indexOf("forward:") === 0) {
-        cluster = cq.action.substring(8);
-      }
-      
-      Db.getUserCache(cq.creator, function(err, user) {
-        if (err && !user) {return callback();}
-        if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return callback(null);}
-        if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return callback();}
-        user = user._source;
+      // elasticsearch refresh is 60, so only retrieve older items
+      var endTime = Math.floor(Date.now()/1000) - 70;
 
-        var options = {
-          user: user,
-          cluster: cluster,
-          saveId: Config.nodeName() + "-" + new Date().getTime().toString(36),
-          tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, "")
-        };
+      // Save incase reload happens while running
+      var molochClusters = Config.configMap("moloch-clusters");
 
-        molochparser.parser.yy = {emailSearch: user.emailSearch === true,
-                                    fieldsMap: Config.getFieldsMap()};
+      // Go thru the queries, fetch the user, make the query
+      async.eachSeries(Object.keys(queries), function (qid, forQueriesCb) {
+        var cq = queries[qid];
+        var cluster = null;
+        var req, res;
 
-        var query = {from: 0,
-                     size: 500,
-                     query: {filtered: {query: {}}},
-                     _source: ["_id", "no"]
-                    };
-
-        query.query.filtered.query.range = {lp: {gt: cq.lpValue, lte: nowPast}};
-
-        try {
-          query.query.filtered.filter = molochparser.parse(cq.query);
-        } catch (e) {
-          console.log("Couldn't compile cron query expression", cq, e);
-          return callback();
+        if (!cq.enabled || endTime < cq.lpValue) {
+          return forQueriesCb();
         }
 
-        if (user.expression && user.expression.length > 0) {
+        if (cq.action.indexOf("forward:") === 0) {
+          cluster = cq.action.substring(8);
+        }
+
+        Db.getUserCache(cq.creator, function(err, user) {
+          if (err && !user) {return forQueriesCb();}
+          if (!user || !user.found) {console.log("User", cq.creator, "doesn't exist"); return forQueriesCb(null);}
+          if (!user._source.enabled) {console.log("User", cq.creator, "not enabled"); return forQueriesCb();}
+          user = user._source;
+
+          var options = {
+            user: user,
+            cluster: cluster,
+            saveId: Config.nodeName() + "-" + new Date().getTime().toString(36),
+            tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ""),
+            qid: qid
+          };
+
+          molochparser.parser.yy = {emailSearch: user.emailSearch === true,
+                                      fieldsMap: Config.getFieldsMap()};
+
+          var query = {from: 0,
+                       size: 500,
+                       query: {filtered: {query: {}}},
+                       _source: ["_id", "no"]
+                      };
+
           try {
-            // Expression was set by admin, so assume email search ok
-            molochparser.parser.yy.emailSearch = true;
-            var userExpression = molochparser.parse(user.expression);
-            if (query.query.filtered.filter === undefined) {
-              query.query.filtered.filter = userExpression;
-            } else {
-              query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
-            }
+            query.query.filtered.filter = molochparser.parse(cq.query);
           } catch (e) {
-            console.log("Couldn't compile user forced expression", user.expression, e);
-            return callback();
+            console.log("Couldn't compile cron query expression", cq, e);
+            return forQueriesCb();
           }
-        }
 
-        lookupQueryItems(query.query.filtered, function (lerr) {
-          Db.getIndices(cq.lpValue, nowPast, Config.get("rotateIndex", "daily"), function(indices) {
-            var count = 0;
-
-            Db.search(indices, 'session', query, {scroll: '60s'}, function getMoreUntilDone(err, result) {
-              function doNext() {
-                count += result.hits.hits.length;
-                if (count === result.hits.total) {
-                  return cleanupQuery(qid, count, callback);
-                } else {
-                  updateCount(qid, count);
-                }
-
-                Db.scroll({
-                  body: result._scroll_id,
-                  scroll: '600s'
-                }, getMoreUntilDone);
-              }
-
-              if (err || result.error) {
-                console.log("cronQuery error", err, (result?result.error:null), "for", cq);
-                callback();
-                return;
-              }
-
-              var ids = [];
-              var hits = result.hits.hits;
-              var i, ilen;
-              if (cq.action.indexOf("forward:") === 0) {
-                for (i = 0, ilen = hits.length; i < ilen; i++) {
-                  ids.push({id: hits[i]._id, no: hits[i]._source.no});
-                }
-
-                sendSessionsListQL(options, ids, doNext);
-              } else if (cq.action.indexOf("tag") === 0) {
-                for (i = 0, ilen = hits.length; i < ilen; i++) {
-                  ids.push(hits[i]._id);
-                }
-                mapTags(options.tags.split(","), "", function(err, tagIds) {
-                  sessionsListFromIds(null, ids, ["ta"], function(err, list) {
-                    addTagsList(tagIds, list, doNext);
-                  });
-                });
+          if (user.expression && user.expression.length > 0) {
+            try {
+              // Expression was set by admin, so assume email search ok
+              molochparser.parser.yy.emailSearch = true;
+              var userExpression = molochparser.parse(user.expression);
+              if (query.query.filtered.filter === undefined) {
+                query.query.filtered.filter = userExpression;
               } else {
-                console.log("Unknown action", cq);
-                doNext();
+                query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
               }
+            } catch (e) {
+              console.log("Couldn't compile user forced expression", user.expression, e);
+              return forQueriesCb();
+            }
+          }
+
+          lookupQueryItems(query.query.filtered, function (lerr) {
+            processCronQuery(cq, options, query, endTime, function (count, lpValue) {
+              // Do the ES update
+              var document = {
+                doc: {
+                  lpValue: lpValue,
+                  lastRun: Math.floor(Date.now()/1000),
+                  count: (queries[qid].count || 0) + count
+                }
+              };
+              Db.update("queries", "query", qid, document, {refresh: 1}, function () {
+                // If there is more time to catch up on, repeat the loop, although other queries
+                // will get processed first to be fair
+                if (lpValue !== endTime) {
+                  repeat = true;
+                }
+                return forQueriesCb();
+              });
             });
           });
         });
+      }, function(err) {
+        return setImmediate(whilstCb, err);
       });
-    }, function(err) {
-      internals.cronRunning = false;
     });
+  }, function () {
+    return repeat;
+  }, function (err) {
+    internals.cronRunning = false;
   });
 }
 
@@ -4836,9 +4886,7 @@ function main () {
   if (Config.get("cronQueries", false)) {
     console.log("This node will process Cron Queries");
     setInterval(processCronQueries, 60*1000);
-    setTimeout(function () {
-      processCronQueries();
-    }, 1000);
+    setTimeout(processCronQueries, 1000);
   }
 
   var server;

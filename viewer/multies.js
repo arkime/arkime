@@ -118,6 +118,7 @@ function simpleGather(req, res, bodies, doneCb) {
       });
       pres.on('end', function () {
         if (result.length) {
+          result = result.replace(new RegExp('"' + prefix + "(sessions|stats|tags|dstats|sequence|fields|files|users)", "g"), "\"MULTIPREFIX_$1");
           result = JSON.parse(result);
         } else {
           result = {};
@@ -192,6 +193,7 @@ app.get("/:index/_status", function(req, res) {
       for (var index in results[i].indices) {
         if (obj.indices[index]) {
           obj.indices[index].docs.num_docs += results[i].indices[index].docs.num_docs;
+          obj.indices[index].docs.max_doc += results[i].indices[index].docs.max_doc;
         } else {
           obj.indices[index] = results[i].indices[index];
         }

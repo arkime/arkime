@@ -1,4 +1,4 @@
-use Test::More tests => 280;
+use Test::More tests => 284;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -160,3 +160,7 @@ my $pwd = getcwd() . "/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5=[40Be8f5100e9beabab293c9d7bacaff0,B0cecae354b9eab1f04f70e46a612cb1]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=[40be8f5100e9beabab293c9d7bacaff0,b0cecae354b9eab1f04f70e46a612cb1]"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-zip.pcap||file=$pwd/socks5-reverse.pcap)&&http.md5!=[40Be8f5100e9beabab293c9d7bacaff0,B0cecae354b9eab1f04f70e46a612cb1]"));
+
+# http.user tests
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-basicauth.pcap)&&http.user==userrrrr"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-basicauth.pcap)&&http.user==Userrrrr"));

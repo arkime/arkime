@@ -71,8 +71,8 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
         }
         break;
     case SOCKS4_STATE_DATA:
-        if (which != socks->which)
-            return 0;
+        /*if (which != socks->which)
+            return 0;*/
         moloch_parsers_classify_tcp(session, data, remaining, which);
         moloch_parsers_unregister(session, uw);
         break;
@@ -91,6 +91,7 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     SocksInfo_t            *socks          = uw;
+    int                     consumed;
 
     //LOG("%d %d %d", which, socks->which, socks->state5[which]);
     //moloch_print_hex_string(data, remaining);
@@ -154,7 +155,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             memcpy(&socks->ip, data+4, 4);
             moloch_field_int_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
-            return 4 + 4 + 2;
+            consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
             socks->port = (data[5+data[4]]&0xff) << 8 | (data[6+data[4]]&0xff);
             char *lower = g_ascii_strdown((char*)data+5, data[4]);
@@ -162,12 +163,16 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
                 g_free(lower);
             }
             moloch_field_int_add(portField, session, socks->port);
-            return 4 + 1 + data[4] + 2;
+            consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6
-            return 4 + 16 + 2;
+            consumed = 4 + 16 + 2;
+        } else {
+            break;
         }
-        break;
-    case SOCKS5_STATE_CONN_REPLY:
+
+        moloch_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
+        return consumed;
+    case SOCKS5_STATE_CONN_REPLY: {
         if (remaining < 6) {
             moloch_parsers_unregister(session, uw);
             return 0;
@@ -175,12 +180,17 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
 
         socks->state5[which] = SOCKS5_STATE_CONN_DATA;
         if (data[3] == 1) { // IPV4
-            return 4 + 4 + 2;
+            consumed = 4 + 4 + 2;
         } else if (data[3] == 3) { // Domain Name
-            return 4 + 1 + data[4] + 2;
+            consumed = 4 + 1 + data[4] + 2;
         } else if (data[3] == 4) { // IPV6
-            return 4 + 16 + 2;
+            consumed = 4 + 16 + 2;
+        } else {
+            break;
         }
+        moloch_parsers_classify_tcp(session, data+consumed, remaining-consumed, which);
+        return consumed;
+    }
     case SOCKS5_STATE_CONN_DATA:
         moloch_parsers_classify_tcp(session, data, remaining, which);
         moloch_parsers_unregister(session, uw);

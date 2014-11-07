@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGet2 viewerPost viewerPost2 countTest countTest2 errTest bin2hex getToken getToken2);
+@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGet2 viewerPost viewerPost2 countTest countTest2 errTest bin2hex getToken getToken2 mesGet mesPost);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -47,6 +47,24 @@ my ($url, $content) = @_;
 
     my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content);
     #print $url, " response:", $response->content;
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub mesGet {
+my ($url) = @_;
+
+    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8200$url");
+    #print $url, " response:", $response->content;
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub mesPost {
+my ($url, $content) = @_;
+
+    my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8200$url", Content => $content);
+    #print $url, " response:", $response->content, "\n";
     my $json = from_json($response->content);
     return ($json);
 }

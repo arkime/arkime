@@ -27,6 +27,7 @@ typedef struct {
     GString         *urlString;
     GString         *hostString;
     GString         *cookieString;
+    GString         *authString;
 
     GString         *valueString[2];
 
@@ -52,6 +53,8 @@ static MolochStringHashStd_t httpResHeaders;
 
 static int cookieKeyField;
 static int hostField;
+static int userField;
+static int atField;
 static int urlsField;
 static int xffField;
 static int uaField;
@@ -137,6 +140,60 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 }
 
 /******************************************************************************/
+void
+moloch_http_parse_authorization(MolochSession_t *session, char *str)
+{
+    gsize olen;
+
+    while (isspace(*str)) str++;
+
+    char *space = strchr(str, ' ');
+
+    if (!space)
+        return;
+
+    char *lower = g_ascii_strdown(str, space-str);
+    if (!moloch_field_string_add(atField, session, lower, space-str, FALSE)) {
+        g_free(lower);
+    }
+
+    if (strncasecmp("basic", str, 5) == 0) {
+        str += 5;
+        while (isspace(*str)) str++;
+
+        // Yahoo reused Basic
+        if (memcmp("token=", str, 6) != 0) {
+            g_base64_decode_inplace(str, &olen);
+            char *colon = strchr(str, ':');
+            if (colon)
+                *colon = 0;
+            moloch_field_string_add(userField, session, str, -1, TRUE);
+        }
+    } else if (strncasecmp("digest", str, 6) == 0) {
+        str += 5;
+        while (isspace(*str)) str++;
+
+        char *username = strstr(str, "username");
+        if (!username) return;
+        str = username + 8;
+        while (isspace(*str)) str++;
+        if (*str != '=') return;
+        str++; // equal
+        while (isspace(*str)) str++;
+
+        int quote = 0;
+        if (*str == '"') {
+            quote = 1;
+            str++;
+        }
+        char *end = str;
+        while (*end && (*end != '"' || !quote) && (*end != ',' || quote)) {
+            end++;
+        }
+        moloch_field_string_add(userField, session, str, end - str, TRUE);
+    }
+}
+/******************************************************************************/
 int
 moloch_hp_cb_on_message_complete (http_parser *parser)
 {
@@ -149,140 +206,6 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OMC)
         moloch_plugins_cb_hp_omc(session, parser);
-
-    http->header[0][0] = http->header[1][0] = 0;
-
-    if (http->urlString) {
-        char *ch = http->urlString->str;
-        while (*ch) {
-            if (*ch < 32) {
-                moloch_nids_add_tag(session, "http:control-char");
-                break;
-            }
-            ch++;
-        }
-    }
-
-    if (http->cookieString && http->cookieString->str[0]) {
-        char *start = http->cookieString->str;
-        while (1) {
-            while (isspace(*start)) start++;
-            char *equal = strchr(start, '=');
-            if (!equal)
-                break;
-            moloch_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
-            start = strchr(equal+1, ';');
-            if(!start)
-                break;
-            start++;
-        }
-        g_string_truncate(http->cookieString, 0);
-    }
-
-    if (http->hostString) {
-        g_string_ascii_down(http->hostString);
-    }
-
-    if (http->urlString && http->hostString) {
-        char *colon = strchr(http->hostString->str+2, ':');
-        if (colon) {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
-        } else {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
-        }
-
-        char *question = strchr(http->urlString->str, '?');
-        if (question) {
-            moloch_field_string_add(pathField, session, http->urlString->str, question - http->urlString->str, TRUE);
-            char *start = question+1;
-            char *ch;
-            int   field = keyField;
-            for (ch = start; *ch; ch++) {
-                if (*ch == '&') {
-                    if (ch != start && (config.parseQSValue || field == keyField)) {
-                        char *str = g_uri_unescape_segment(start, ch, NULL);
-                        if (!str) {
-                            moloch_field_string_add(field, session, start, ch-start, TRUE);
-                        } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
-                            g_free(str);
-                        }
-                    }
-                    start = ch+1;
-                    field = keyField;
-                    continue;
-                } else if (*ch == '=') {
-                    if (ch != start && (config.parseQSValue || field == keyField)) {
-                        char *str = g_uri_unescape_segment(start, ch, NULL);
-                        if (!str) {
-                            moloch_field_string_add(field, session, start, ch-start, TRUE);
-                        } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
-                            g_free(str);
-                        }
-                    }
-                    start = ch+1;
-                    field = valueField;
-                }
-            }
-            if (config.parseQSValue && field == valueField && ch > start) {
-                char *str = g_uri_unescape_segment(start, ch, NULL);
-                if (!str) {
-                    moloch_field_string_add(field, session, start, ch-start, TRUE);
-                } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
-                    g_free(str);
-                }
-            }
-        } else {
-            moloch_field_string_add(pathField, session, http->urlString->str, http->urlString->len, TRUE);
-        }
-
-        if (http->urlString->str[0] != '/') {
-            char *result = strstr(http->urlString->str, http->hostString->str+2);
-
-            /* If the host header is in the first 8 bytes of url then just use the url */
-            if (result && result - http->urlString->str <= 8) {
-                moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
-                g_string_free(http->urlString, FALSE);
-                g_string_free(http->hostString, TRUE);
-            } else {
-                /* Host header doesn't match the url */
-                g_string_append(http->hostString, ";");
-                g_string_append(http->hostString, http->urlString->str);
-                moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
-                g_string_free(http->urlString, TRUE);
-                g_string_free(http->hostString, FALSE);
-            }
-        } else {
-            /* Normal case, url starts with /, so no extra host in url */
-            g_string_append(http->hostString, http->urlString->str);
-            moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
-            g_string_free(http->urlString, TRUE);
-            g_string_free(http->hostString, FALSE);
-        }
-
-        moloch_nids_add_tag(session, "protocol:http");
-        moloch_nids_add_protocol(session, "http");
-
-        http->urlString = NULL;
-        http->hostString = NULL;
-    } else if (http->urlString) {
-        moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
-        g_string_free(http->urlString, FALSE);
-
-        moloch_nids_add_tag(session, "protocol:http");
-        moloch_nids_add_protocol(session, "http");
-
-        http->urlString = NULL;
-    } else if (http->hostString) {
-        char *colon = strchr(http->hostString->str+2, ':');
-        if (colon) {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
-        } else {
-            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
-        }
-
-        g_string_free(http->hostString, TRUE);
-        http->hostString = NULL;
-    }
 
     if (http->inBody & (1 << http->which)) {
         const char *md5 = g_checksum_get_string(http->checksum[http->which]);
@@ -417,18 +340,24 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
 
     moloch_plugins_cb_hp_ohv(session, parser, at, length);
 
-    if (parser->method && strcasecmp("host", http->header[http->which]) == 0) {
-        if (!http->hostString)
-            http->hostString = g_string_new_len("//", 2);
-        g_string_append_len(http->hostString, at, length);
-    } 
-
-    if (parser->method && strcasecmp("cookie", http->header[http->which]) == 0) {
-        if (!http->cookieString)
-            http->cookieString = g_string_new_len(at, length);
-        else
-            g_string_append_len(http->cookieString, at, length);
-    } 
+    // Request side
+    if (parser->method) {
+        if (strcasecmp("host", http->header[http->which]) == 0) {
+            if (!http->hostString)
+                http->hostString = g_string_new_len("//", 2);
+            g_string_append_len(http->hostString, at, length);
+        } else if (strcasecmp("cookie", http->header[http->which]) == 0) {
+            if (!http->cookieString)
+                http->cookieString = g_string_new_len(at, length);
+            else
+                g_string_append_len(http->cookieString, at, length);
+        } else if (strcasecmp("authorization", http->header[http->which]) == 0) {
+            if (!http->authString)
+                http->authString = g_string_new_len(at, length);
+            else
+                g_string_append_len(http->authString, at, length);
+        } 
+    }
 
     if (http->pos[http->which]) {
         if (!http->valueString[http->which])
@@ -474,6 +403,143 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
     if (http->inValue & (1 << http->which) && http->pos[http->which]) {
         http_add_value(session, http);
     }
+
+    http->header[0][0] = http->header[1][0] = 0;
+
+    if (http->urlString) {
+        char *ch = http->urlString->str;
+        while (*ch) {
+            if (*ch < 32) {
+                moloch_nids_add_tag(session, "http:control-char");
+                break;
+            }
+            ch++;
+        }
+    }
+
+    if (http->cookieString && http->cookieString->str[0]) {
+        char *start = http->cookieString->str;
+        while (1) {
+            while (isspace(*start)) start++;
+            char *equal = strchr(start, '=');
+            if (!equal)
+                break;
+            moloch_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
+            start = strchr(equal+1, ';');
+            if(!start)
+                break;
+            start++;
+        }
+        g_string_truncate(http->cookieString, 0);
+    }
+
+    if (http->authString && http->authString->str[0]) {
+        moloch_http_parse_authorization(session, http->authString->str);
+        g_string_truncate(http->authString, 0);
+    }
+
+    if (http->hostString) {
+        g_string_ascii_down(http->hostString);
+    }
+
+    if (http->urlString && http->hostString) {
+        char *colon = strchr(http->hostString->str+2, ':');
+        if (colon) {
+            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+        } else {
+            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+        }
+
+        char *question = strchr(http->urlString->str, '?');
+        if (question) {
+            moloch_field_string_add(pathField, session, http->urlString->str, question - http->urlString->str, TRUE);
+            char *start = question+1;
+            char *ch;
+            int   field = keyField;
+            for (ch = start; *ch; ch++) {
+                if (*ch == '&') {
+                    if (ch != start && (config.parseQSValue || field == keyField)) {
+                        char *str = g_uri_unescape_segment(start, ch, NULL);
+                        if (!str) {
+                            moloch_field_string_add(field, session, start, ch-start, TRUE);
+                        } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                            g_free(str);
+                        }
+                    }
+                    start = ch+1;
+                    field = keyField;
+                    continue;
+                } else if (*ch == '=') {
+                    if (ch != start && (config.parseQSValue || field == keyField)) {
+                        char *str = g_uri_unescape_segment(start, ch, NULL);
+                        if (!str) {
+                            moloch_field_string_add(field, session, start, ch-start, TRUE);
+                        } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                            g_free(str);
+                        }
+                    }
+                    start = ch+1;
+                    field = valueField;
+                }
+            }
+            if (config.parseQSValue && field == valueField && ch > start) {
+                char *str = g_uri_unescape_segment(start, ch, NULL);
+                if (!str) {
+                    moloch_field_string_add(field, session, start, ch-start, TRUE);
+                } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                    g_free(str);
+                }
+            }
+        } else {
+            moloch_field_string_add(pathField, session, http->urlString->str, http->urlString->len, TRUE);
+        }
+
+        if (http->urlString->str[0] != '/') {
+            char *result = strstr(http->urlString->str, http->hostString->str+2);
+
+            /* If the host header is in the first 8 bytes of url then just use the url */
+            if (result && result - http->urlString->str <= 8) {
+                moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
+                g_string_free(http->urlString, FALSE);
+                g_string_free(http->hostString, TRUE);
+            } else {
+                /* Host header doesn't match the url */
+                g_string_append(http->hostString, ";");
+                g_string_append(http->hostString, http->urlString->str);
+                moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
+                g_string_free(http->urlString, TRUE);
+                g_string_free(http->hostString, FALSE);
+            }
+        } else {
+            /* Normal case, url starts with /, so no extra host in url */
+            g_string_append(http->hostString, http->urlString->str);
+            moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
+            g_string_free(http->urlString, TRUE);
+            g_string_free(http->hostString, FALSE);
+        }
+
+        http->urlString = NULL;
+        http->hostString = NULL;
+    } else if (http->urlString) {
+        moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
+        g_string_free(http->urlString, FALSE);
+
+
+        http->urlString = NULL;
+    } else if (http->hostString) {
+        char *colon = strchr(http->hostString->str+2, ':');
+        if (colon) {
+            moloch_field_string_add(hostField, session, http->hostString->str+2, colon - http->hostString->str-2, TRUE);
+        } else {
+            moloch_field_string_add(hostField, session, http->hostString->str+2, http->hostString->len-2, TRUE);
+        }
+
+        g_string_free(http->hostString, TRUE);
+        http->hostString = NULL;
+    }
+
+    moloch_nids_add_tag(session, "protocol:http");
+    moloch_nids_add_protocol(session, "http");
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
         moloch_plugins_cb_hp_ohc(session, parser);
@@ -544,6 +610,8 @@ void http_free(MolochSession_t UNUSED(*session), void *uw)
         g_string_free(http->hostString, TRUE);
     if (http->cookieString)
         g_string_free(http->cookieString, TRUE);
+    if (http->authString)
+        g_string_free(http->authString, TRUE);
     if (http->valueString[0])
         g_string_free(http->valueString[0], TRUE);
     if (http->valueString[1])
@@ -693,6 +761,18 @@ static const char *method_strings[] =
         "http.bodymagic", "Body Magic", "http.bodymagic-term",
         "The content type of body determined by libfile/magic",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
+
+    userField = moloch_field_define("http", "termfield",
+        "http.user", "User", "huser-term", 
+        "HTTP Auth User", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    atField = moloch_field_define("http", "lotermfield",
+        "http.authtype", "Auth Type", "hat-term", 
+        "HTTP Auth Type", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
         NULL);
 
     statuscodeField = moloch_field_define("http", "integer",
