@@ -102,4 +102,7 @@ function main() {
   });
 }
 
-Db.initialize({host : escInfo}, main);
+Db.initialize({host : escInfo,
+               prefix: Config.get("prefix", ""),
+               usersHost: Config.get("usersElasticsearch"),
+               usersPrefix: Config.get("usersPrefix")}, main);
