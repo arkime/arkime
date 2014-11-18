@@ -22,6 +22,7 @@
   - HTTP Authorization parsing (http.authtype, http.user)
   - Moved HTTP URI parsing from message complete to headers complete
   - Better Socks4 support
+  - Updated easybutton versions of glib, es, node, geoip
   
 
 0.11.2 2014/10/16

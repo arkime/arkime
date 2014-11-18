@@ -9,9 +9,9 @@
 # * build moloch-capture
 
 
-GLIB=2.34.3
+GLIB=2.42.0
 YARA=1.7
-GEOIP=1.4.8
+GEOIP=1.6.0
 PCAP=1.5.3
 NIDS=1.24
 PFRING=5.6.1
@@ -70,7 +70,7 @@ cd thirdparty
 
 # glib
 if [ ! -f "glib-$GLIB.tar.xz" ]; then
-  wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-$GLIB.tar.xz
+  wget http://ftp.gnome.org/pub/gnome/sources/glib/2.42/glib-$GLIB.tar.xz
 fi
 
 if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
