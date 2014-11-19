@@ -96,13 +96,16 @@ fi
 if [ ! -f "GeoIP-$GEOIP.tar.gz" ]; then
   wget http://www.maxmind.com/download/geoip/api/c/GeoIP-$GEOIP.tar.gz
 fi
+
+if [ ! -f "GeoIP-$GEOIP/libGeoIP/.libs/libGeoIP.a" ]; then
 tar zxf GeoIP-$GEOIP.tar.gz
 
+# Crossing fingers, this is no longer needed
 # Not sure why this is required on some platforms
-if [ ! -f "GeoIP-$GEOIP/libGeoIP/.libs/libGeoIP.a" ]; then
-  if [ -f "/usr/bin/libtoolize" ]; then
-    (cd GeoIP-$GEOIP ; libtoolize -f)
-  fi
+#  if [ -f "/usr/bin/libtoolize" ]; then
+#    (cd GeoIP-$GEOIP ; libtoolize -f)
+#  fi
+
   (cd GeoIP-$GEOIP ; ./configure --enable-static; make)
 else
   echo "MOLOCH: Not rebuilding libGeoIP"
