@@ -1,0 +1,7 @@
+if (session.opendns)
+  div.sessionDetailMeta.bold OpenDNS
+  dl.sessionDetailMeta
+    +arrayList(session.opendns, "dmstatus-term", "Status", "opendns.domain.status")
+    +arrayList(session.opendns, "dmscat-term", "Security Cat", "opendns.domain.security")
+    +arrayList(session.opendns, "dmccat-term", "Content Cat", "opendns.domain.content")
+

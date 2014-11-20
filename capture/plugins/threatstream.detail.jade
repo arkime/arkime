@@ -1,0 +1,9 @@
+if (session.threatstream)
+  div.sessionDetailMeta.bold Threatstream
+  dl.sessionDetailMeta
+    +arrayList(session.threatstream, "severity-term", "Severity", "threatstream.severity")
+    +arrayList(session.threatstream, "confidence", "Confidence", "threatstream.confidence")
+    +arrayList(session.threatstream, "id", "Id", "threatstream.id")
+    +arrayList(session.threatstream, "type-term", "Type", "threatstream.type")
+    +arrayList(session.threatstream, "maltype-term", "Malware Type", "threatstream.maltype")
+
