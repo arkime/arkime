@@ -1,0 +1,2 @@
+cluster5.us.messagelabs.com;tags=wisebyhost1;irc.channel=wisebyhost1channel;email.x-priority=777
+www.example.com;tags=wisebyhost2;mysql.ver=wisebyhost2mysqlversion;test.ip=101.101.101.101

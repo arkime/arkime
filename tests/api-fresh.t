@@ -44,11 +44,11 @@ my $json;
     is ($json->{graph}->{interval}, 60, "Correct spigraph.json graph interval");
 
     $json = viewerGet2("/spiview.json");
-    is (scalar keys $json->{spi}, 0, "Empty spiview.json spi");
+    is (scalar keys %{$json->{spi}}, 0, "Empty spiview.json spi");
     is ($json->{iTotalRecords}, 0, "Correct spiview.json iTotalRecords");
 
     $json = viewerGet2("/spiview.json?spi=ta");
-    is (scalar keys $json->{spi}, 0, "Empty spiview.json spi");
+    is (scalar keys %{$json->{spi}}, 0, "Empty spiview.json spi");
     is ($json->{iTotalRecords}, 0, "Correct spiview.json iTotalRecords");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct spiview.json health number_of_data_nodes");
 

@@ -23,6 +23,8 @@
   - Moved HTTP URI parsing from message complete to headers complete
   - Better Socks4 support
   - Updated easybutton versions of glib, es, node, geoip
+  - New data feed framework, WISE - https://github.com/aol/moloch/wiki/WISE
+  - http LOG message has total time now
   
 
 0.11.2 2014/10/16

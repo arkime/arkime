@@ -44,6 +44,7 @@ $txt = get("date=-1&field=ta&expression=$files&counts=1");
 eq_or_diff($txt, 
 "byhost2, 7
 byip1, 1
+domainwise, 7
 dstip, 4
 hosttaggertest1, 7
 hosttaggertest2, 7
@@ -54,6 +55,8 @@ http:statuscode:200, 5
 http:statuscode:302, 2
 iptaggertest1, 1
 iptaggertest2, 1
+ipwise, 1
+ipwisecsv, 4
 node:test, 13
 protocol:http, 6
 protocol:rdp, 1
@@ -64,6 +67,8 @@ smtp:authlogin, 1
 socks:password, 2
 srcip, 4
 tcp, 13
+wisebyhost2, 7
+wisebyip1, 1
 ", "tags count", { context => 3 });
 
 $txt = get("date=-1&field=hh1&expression=$files&counts=1");

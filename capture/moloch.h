@@ -30,7 +30,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 11
+#define MOLOCH_API_VERSION 12
 
 /******************************************************************************/
 /*
@@ -334,6 +334,8 @@ typedef struct moloch_session {
     GArray                *fileNumArray;
     char                  *rootId;
 
+    struct tcp_stream *    tcpStream;
+
     struct timeval         firstPacket;
     struct timeval         lastPacket;
     char                   firstBytes[2][8];
@@ -363,7 +365,7 @@ typedef struct moloch_session {
     uint8_t                parserLen;
     uint8_t                parserNum;
 
-    uint16_t               haveNidsTcp:1;
+    uint8_t                maxFields;
     uint16_t               needSave:1;
 } MolochSession_t;
 
@@ -519,7 +521,8 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
 
 gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
-#define moloch_http_get_buffer(s) MOLOCH_SIZE_ALLOC(buffer, s)
+#define moloch_http_get_buffer(size) MOLOCH_SIZE_ALLOC(buffer, size)
+#define moloch_http_free_buffer(b) MOLOCH_SIZE_FREE(buffer, b)
 void moloch_http_exit();
 int moloch_http_queue_length(void *server);
 
@@ -543,8 +546,10 @@ uint32_t moloch_nids_monitoring_sessions();
 uint32_t moloch_nids_disk_queue();
 void     moloch_nids_exit();
 
-void     moloch_nids_incr_outstanding(MolochSession_t *session);
+#define  moloch_nids_incr_outstanding(session) (session)->outstandingQueries++
 void     moloch_nids_decr_outstanding(MolochSession_t *session);
+
+char    *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint32_t addr2, int port2);
 
 /******************************************************************************/
 /*
@@ -564,6 +569,7 @@ typedef void (* MolochPluginHttpFunc) (MolochSession_t *session, http_parser *hp
 
 typedef void (* MolochPluginSMTPHeaderFunc) (MolochSession_t *session, const char *field, size_t field_len, const char *value, size_t value_len);
 typedef void (* MolochPluginSMTPFunc) (MolochSession_t *session);
+typedef uint32_t (* MolochPluginOutstandingFunc) ();
 
 #define MOLOCH_PLUGIN_SAVE         0x00000001
 #define MOLOCH_PLUGIN_IP           0x00000002
@@ -613,6 +619,11 @@ void moloch_plugins_set_http_cb(const char *             name,
 void moloch_plugins_set_smtp_cb(const char *                name,
                                 MolochPluginSMTPHeaderFunc  on_header,
                                 MolochPluginSMTPFunc        on_header_complete);
+
+void moloch_plugins_set_outstanding_cb(const char *                name,
+                                       MolochPluginOutstandingFunc outstandingFunc);
+
+uint32_t moloch_plugins_outstanding();
 
 void moloch_plugins_cb_pre_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_save(MolochSession_t *session, int final);

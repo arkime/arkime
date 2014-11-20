@@ -1,0 +1,7 @@
+#field:wise.str;kind:lotermfield;count:true;friendly:Str;db:wise.str-term;help:Help String;shortcut:0
+#field:wise.int;kind:integer;count:true;friendly:Int;db:wise.ip;help:Help Int;shortcut:1
+#field:tags;shortcut:2
+#field:email.dst
+12345678@aol.com;email.dst=wiseadded1;2=wisesrcmatch;0=house;wise.str=boat
+xxxxx-xxxx@xxxx.xxx.xx.jp;email.src=wiseadded2;tags=wisedstmatch;1=1;wise.int=3
+fudge@fudge.com

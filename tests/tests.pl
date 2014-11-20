@@ -161,6 +161,9 @@ my ($cmd) = @_;
         system("../capture/plugins/taggerUpload.pl localhost:9200 email email.tagger2.json emailtaggertest2");
         system("../capture/plugins/taggerUpload.pl localhost:9200 uri uri.tagger2.json uritaggertest2");
 
+        # Start Wise
+        system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
+
         sleep 1;
         $main::userAgent->get("http://localhost:9200/_flush");
         $main::userAgent->get("http://localhost:9200/_refresh");
@@ -216,6 +219,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8124/shutdown");
         $main::userAgent->post("http://localhost:8125/shutdown");
         $main::userAgent->post("http://localhost:8200/shutdown");
+        $main::userAgent->post("http://localhost:8081/shutdown");
     }
 }
 ################################################################################

@@ -405,7 +405,7 @@ void moloch_drop_privileges()
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
-    if (moloch_db_tags_loading() == 0) {
+    if (moloch_db_tags_loading() == 0 && moloch_plugins_outstanding() == 0) {
         g_main_loop_quit(mainLoop);
         return FALSE;
     }
@@ -423,6 +423,8 @@ void moloch_quit()
 gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
 {
     if (moloch_db_tags_loading() == 0 && moloch_http_queue_length(esServer) == 0) {
+        if (config.debug)
+            LOG("maxField = %d", config.maxField);
         moloch_nids_init();
         return FALSE;
     }

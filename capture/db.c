@@ -226,7 +226,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
     jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
-    for (pos = 0; pos < config.maxField; pos++) {
+    for (pos = 0; pos < session->maxFields; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
         }
@@ -456,7 +456,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_cstr(jbsb, "],");
 
     int inGroupNum = 0;
-    for (pos = 0; pos < config.maxField; pos++) {
+    for (pos = 0; pos < session->maxFields; pos++) {
         const int flags = config.fields[pos]->flags;
         if (!session->fields[pos] || flags & MOLOCH_FIELD_FLAG_DISABLED)
             continue;

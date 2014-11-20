@@ -1,0 +1,44 @@
+# Configuration for WISE and the data sources are contained in this file.
+# See https://github.com/aol/moloch/wiki/WISE
+
+
+# Configuration for the wiseService itself.
+[wiseService]
+port=8081
+
+# OpenDNS Umbrella Integration - https://www.opendns.com/enterprise-security/
+[opendns]
+#key=
+
+# Threatstream OPTIC - http://threatstream.com/
+[threatstream]
+#user=
+#key=
+
+# Emerging Threats Pro - http://emergingthreats.net/
+[emergingthreats]
+#key=
+
+
+# To load local files, set a unique section title starting with file:
+# Type should be ip, domain, md5, email
+# Files are assumed to be CSV or use format=tagger
+[file:blah]
+file=/tmp/test.ips
+type=ip
+tags=TAG1,TAG2
+#column=1
+
+# To load URLs, set a unique section title starting with url:
+# Type should be ip, domain, md5, email
+[url:zeus.ips]
+url=https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
+tags=zeustracker,botnet
+type=ip
+reload=60
+
+[url:zeus.domain]
+url=https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
+tags=zeustracker,botnet
+type=domain
+reload=60

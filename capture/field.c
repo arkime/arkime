@@ -643,7 +643,7 @@ void moloch_field_free(MolochSession_t *session)
     MolochCertsInfo_t        *hci;
     MolochCertsInfoHashStd_t *cihash;
 
-    for (pos = 0; pos < config.maxField; pos++) {
+    for (pos = 0; pos < session->maxFields; pos++) {
         if (!(field = session->fields[pos]))
             continue;
 

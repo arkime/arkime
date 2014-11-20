@@ -49,6 +49,7 @@ typedef struct moloch_plugin {
     MolochPluginNewFunc          newFunc;
     MolochPluginExitFunc         exitFunc;
     MolochPluginReloadFunc       reloadFunc;
+    MolochPluginOutstandingFunc  outstandingFunc;
 
     MolochPluginHttpFunc         on_message_begin;
     MolochPluginHttpDataFunc     on_url;
@@ -273,6 +274,20 @@ void moloch_plugins_set_smtp_cb(const char *                name,
         pluginsCbs |= MOLOCH_PLUGIN_SMTP_OHC;
 }
 /******************************************************************************/
+void moloch_plugins_set_outstanding_cb(const char *                name,
+                                MolochPluginOutstandingFunc        outstanding)
+{
+    MolochPlugin_t *plugin;
+
+    HASH_FIND(p_, plugins, name, plugin);
+    if (!plugin) {
+        LOG("Can't find plugin with name %s", name);
+        return;
+    }
+
+    plugin->outstandingFunc = outstanding;
+}
+/******************************************************************************/
 void moloch_plugins_cb_pre_save(MolochSession_t *session, int final)
 {
     MolochPlugin_t *plugin;
@@ -446,4 +461,16 @@ void moloch_plugins_reload()
         if (plugin->reloadFunc)
             plugin->reloadFunc();
     );
+}
+/******************************************************************************/
+uint32_t moloch_plugins_outstanding()
+{
+    MolochPlugin_t *plugin;
+    uint32_t        outstanding = 0;
+
+    HASH_FORALL(p_, plugins, plugin,
+        if (plugin->outstandingFunc)
+            outstanding += plugin->outstandingFunc();
+    );
+    return outstanding;
 }

@@ -60,6 +60,7 @@ typedef struct molochconn_t {
     char                 line[1000];
     struct timeval       startTime;
     struct timeval       sendTime;
+    struct timeval       sentTime;
     struct timeval       endTime;
     char                 hp_data[10000000];
     uint32_t             sent;
@@ -136,19 +137,11 @@ gboolean moloch_http_write_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpoint
     MolochConn_t        *conn = data;
     GError              *gerror = 0;
 
-    /*struct timeval startTime;
-    struct timeval endTime;
-    gettimeofday(&startTime, 0); */
     if (!conn->request)
         return FALSE;
 
     int sent = g_socket_send(conn->conn, conn->request->data+conn->sent, conn->request->data_len-conn->sent, NULL, &gerror);
     conn->sent += sent;
-
-    /*gettimeofday(&endTime, 0);
-    LOG("%s WRITE %d %d %ldms", conn->line, sent, conn->sent,
-       (endTime.tv_sec - startTime.tv_sec)*1000 + (endTime.tv_usec/1000 - startTime.tv_usec/1000));*/
-
 
     if (gerror) {
         /* Should free stuff here */
@@ -175,12 +168,26 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
 
     if (gerror || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (gerror) {
-            LOG("ERROR: %p: Receive Error: %s", (void*)conn, gerror->message);
+            LOG("ERROR: %p:%p Receive Error: %s", (void*)conn, conn->request, gerror->message);
             g_error_free(gerror);
         } else if (cond & (G_IO_HUP | G_IO_ERR))
-            LOG("ERROR: %p: Lost connection to %s", (void*)conn, conn->name);
+            LOG("ERROR: %p:%p Lost connection to %s", (void*)conn, conn->request, conn->name);
         else if (len <= 0)
-            LOG("ERROR: %p: len: %d cond: %x", (void*)conn, len, cond);
+            LOG("ERROR: %p:%p len: %d cond: %x", (void*)conn, conn->request, len, cond);
+        else
+            LOG("ERROR HMM: %p:%p len: %d cond: %x", (void*)conn, conn->request, len, cond);
+
+        if (conn->request) {
+            // Must save, free, then call function because of recursive sync GETs
+            MolochResponse_cb  func = conn->request->func;
+            gpointer           uw = conn->request->uw;
+
+            MOLOCH_TYPE_FREE(MolochRequest_t, conn->request);
+
+            if (func) {
+                func(0, 0, uw);
+            }
+        }
 
         g_object_unref (conn->conn);
         conn->conn = 0;
@@ -194,6 +201,15 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
     http_parser_execute(&conn->parser, &parserSettings, buffer, len);
 
     if (conn->hp_complete) {
+        gettimeofday(&conn->endTime, NULL);
+        if (config.logESRequests)
+            LOG("%s %ldms %ldms %ldms",
+               conn->line,
+               (conn->sendTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->sendTime.tv_usec - conn->startTime.tv_usec)/1000,
+               (conn->sentTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->sentTime.tv_usec - conn->startTime.tv_usec)/1000,
+               (conn->endTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->endTime.tv_usec - conn->startTime.tv_usec)/1000
+               );
+
         conn->hp_data[conn->hp_len] = 0;
 
         /* Must save, free, then call function because of recursive sync GETs */
@@ -201,6 +217,7 @@ gboolean moloch_http_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data) 
         gpointer           uw = conn->request->uw;
 
         MOLOCH_TYPE_FREE(MolochRequest_t, conn->request);
+        conn->request = 0;
 
         if (func) {
             func((unsigned char*)conn->hp_data, conn->hp_len, uw);
@@ -331,14 +348,7 @@ void moloch_http_finish( MolochConn_t *conn, gboolean sync)
             break;
     }
 
-    gettimeofday(&conn->endTime, NULL);
-    if (config.logESRequests)
-        LOG("%s %ldms %ldms",
-           line,
-           (conn->sendTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->sendTime.tv_usec/1000 - conn->startTime.tv_usec/1000),
-           (conn->endTime.tv_sec - conn->startTime.tv_sec)*1000 + (conn->endTime.tv_usec/1000 - conn->startTime.tv_usec/1000)
-           );
-
+    gettimeofday(&conn->sentTime, NULL);
 }
 /******************************************************************************/
 char *moloch_http_get_name(MolochHttp_t *server)
@@ -362,7 +372,7 @@ gboolean moloch_http_process_send(MolochConn_t *conn, gboolean sync)
 
     if (conn->conn == 0) {
         if (moloch_http_connect(conn, moloch_http_get_name(conn->server), conn->server->port, TRUE)) {
-            LOG("%p: Couldn't connect from process", (void*)conn);
+            LOG("%p: Couldn't connect %s", (void*)conn, conn->name);
             return FALSE;
         }
     }

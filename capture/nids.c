@@ -649,6 +649,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         session->addr2 = packet->ip_dst.s_addr;
         session->ip_tos = packet->ip_tos;
         session->fields = MOLOCH_SIZE_ALLOC0(fields, sizeof(MolochField_t *)*config.maxField);
+        session->maxFields = config.maxField;
         if (config.numPlugins > 0)
             session->pluginData = MOLOCH_SIZE_ALLOC0(pluginData, sizeof(void *)*config.numPlugins);
 
@@ -829,13 +830,6 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             //LOG("Saving because of timeout %s", moloch_friendly_session_id(headSession->protocol, headSession->addr1, headSession->port1, headSession->addr2, headSession->port2));
             moloch_nids_mid_save_session(headSession);
     }
-}
-
-
-/******************************************************************************/
-void moloch_nids_incr_outstanding(MolochSession_t *session)
-{
-    session->outstandingQueries++;
 }
 /******************************************************************************/
 void moloch_nids_decr_outstanding(MolochSession_t *session)
