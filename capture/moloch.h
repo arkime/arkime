@@ -334,8 +334,6 @@ typedef struct moloch_session {
     GArray                *fileNumArray;
     char                  *rootId;
 
-    struct tcp_stream *    tcpStream;
-
     struct timeval         firstPacket;
     struct timeval         lastPacket;
     char                   firstBytes[2][8];
@@ -366,6 +364,7 @@ typedef struct moloch_session {
     uint8_t                parserNum;
 
     uint8_t                maxFields;
+    uint16_t               haveNidsTcp:1;
     uint16_t               needSave:1;
 } MolochSession_t;
 
