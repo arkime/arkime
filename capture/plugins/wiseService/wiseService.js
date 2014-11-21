@@ -23,11 +23,13 @@
 
 var ini            = require('iniparser')
   , express        = require('express')
+  , fs             = require('fs')
   , http           = require('http')
   , glob           = require('glob')
   , async          = require('async')
   , sprintf        = require('./sprintf.js').sprintf
   , csv            = require('csv')
+  , request        = require('request')
   ;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
@@ -97,6 +99,28 @@ function newFieldsTS()
   } else {
     internals.fieldsTS = now;
   }
+}
+//////////////////////////////////////////////////////////////////////////////////
+function doRequest(url, file, cb) {
+  var headers = {};
+  if (file) {
+    if (fs.existsSync(file)) {
+      var stat = fs.statSync(file);
+      headers['If-Modified-Since'] = stat.mtime.toUTCString();
+    }
+  }
+  var statusCode;
+  request({url: url, headers: headers})
+  .on('response', function(response) {
+    statusCode = response.statusCode;
+    if (response.statusCode === 200) {
+      this.pipe(fs.createWriteStream(file));
+    }
+  })
+  .on('end', function() {
+    setImmediate(cb, statusCode);
+  })
+  ;
 }
 //////////////////////////////////////////////////////////////////////////////////
 function addField(field) {
@@ -182,7 +206,7 @@ function result2Str(result, indent) {
   var offset = 1;
   for (var i = 0; i < result[0]; i++) {
     var pos   = result[offset];
-    var len   = result[offset+1]
+    var len   = result[offset+1];
     var value = result.toString('utf8', offset+2, offset+2+len-1);
     offset += 2 + len;
     if (i > 0) {
@@ -243,7 +267,7 @@ function parseTagger (body, options, cb) {
       }
       args.push(kv[1]);
     }
-    cache[parts[0]] = {num: args.length/2, buffer: doEncode.apply(null, args)}
+    cache[parts[0]] = {num: args.length/2, buffer: doEncode.apply(null, args)};
   }
   cb(null, cache);
 }
@@ -253,6 +277,7 @@ internals.sourceApi = {
   getConfigSections: getConfigSections,
   addField: addField,
   encode: doEncode,
+  request: doRequest,
   combineResults: combineResults,
   result2Str: result2Str,
   parseCSV: parseCSV,
@@ -325,8 +350,9 @@ app.post("/get", function(req, res) {
       buf.writeUInt32BE(0, 4);
       res.write(buf);
       for (var r = 0; r < results.length; r++) {
-        if (results[r][0] > 0)
+        if (results[r][0] > 0) {
           internals.fstats[queries[r].type]++;
+        }
         res.write(results[r]);
       }
       res.end();

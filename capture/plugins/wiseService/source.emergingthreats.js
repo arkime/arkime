@@ -22,12 +22,11 @@
 
 var fs             = require('fs')
   , unzip          = require('unzip')
-  , exec           = require('child_process').exec
   , csv            = require('csv')
   ;
 var internals = {
-  ips:     {},
-  domains: {},
+  ips:        {},
+  domains:    {},
   categories: {}
 };
 //////////////////////////////////////////////////////////////////////////////////
@@ -67,30 +66,27 @@ function parseCSV (fn, hash)
 //////////////////////////////////////////////////////////////////////////////////
 function loadFiles ()
 {
-  if (internals.skipFirstLoad) {
-    internals.skipFirstLoad = false;
+  console.log("ET - Downloading Files");
+  internals.api.request('https://rules.emergingthreatspro.com/' + internals.key + '/reputation/categories.txt', '/tmp/categories.txt', function (statusCode) {
+
     parseCAT("/tmp/categories.txt");
-    internals.ips = {};
-    parseCSV("/tmp/iprepdata.csv", internals.ips);
-    internals.domains = {};
-    parseCSV("/tmp/domainrepdata.csv", internals.domains);
-  } else {
-    console.log("ET - Downloading Files");
-    exec('wget -N "https://rules.emergingthreatspro.com/' + internals.key + '/reputation/categories.txt" -O /tmp/categories.txt', function (error, stdout, stderr) {
+  });
 
-      parseCAT("/tmp/categories.txt");
-    });
-
-    exec('wget -N "https://rules.emergingthreatspro.com/' + internals.key + '/reputation/iprepdata.csv" -O /tmp/iprepdata.csv', function (error, stdout, stderr) {
+  internals.api.request('https://rules.emergingthreatspro.com/' + internals.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', function (statusCode) {
+    if (statusCode === 200 || !internals.ipsLoaded) {
+      internals.ipsLoaded = true;
       internals.ips = {};
       parseCSV("/tmp/iprepdata.csv", internals.ips);
-    });
+    }
+  });
 
-    exec('wget -N "https://rules.emergingthreatspro.com/' + internals.key + '/reputation/domainrepdata.csv" -O /tmp/domainrepdata.csv', function (error, stdout, stderr) {
+  internals.api.request('https://rules.emergingthreatspro.com/' + internals.key + '/reputation/domainrepdata.csv', '/tmp/domainrepdata.csv', function (statusCode) {
+    if (statusCode === 200 || !internals.domainsLoaded) {
+      internals.domainsLoaded = true;
       internals.domains = {};
       parseCSV("/tmp/domainrepdata.csv", internals.domains);
-    });
-  }
+    }
+  });
 }
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
@@ -106,7 +102,6 @@ exports.initSource = function(api) {
   internals.scoreField = api.addField("field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true");
   internals.categoryField = api.addField("field:emergingthreats.category;db:et.category-term;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
 
-  internals.skipFirstLoad = fs.existsSync("/tmp/categories.txt") && fs.existsSync("/tmp/iprepdata.csv") && fs.existsSync("/tmp/domainrepdata.csv");
   loadFiles();
   setInterval(loadFiles, 60*60*1000); // Reload files every hour
 };

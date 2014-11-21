@@ -22,7 +22,6 @@
 
 var fs             = require('fs')
   , unzip          = require('unzip')
-  , exec           = require('child_process').exec
   ;
 var internals = {
   ips:     {},
@@ -88,15 +87,13 @@ function parseFile()
 //////////////////////////////////////////////////////////////////////////////////
 function loadFile()
 {
-  if (internals.skipFirstLoad) {
-    internals.skipFirstLoad = false;
-    parseFile();
-  } else {
-    console.log("Threatstream - Downloading files");
-    exec('wget -N "https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + internals.user + '&api_key=' + internals.key + '" -O /tmp/threatstream.zip', function (error, stdout, stderr) {
+  console.log("Threatstream - Downloading files");
+  internals.api.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + internals.user + '&api_key=' + internals.key,  '/tmp/threatstream.zip', function (statusCode) {
+    if (statusCode === 200 || !internals.loaded) {
+      internals.loaded = true;
       parseFile();
-    });
-  }
+    }
+  });
 }
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
@@ -122,7 +119,6 @@ exports.initSource = function(api) {
   internals.maltypeField = api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
 
 
-  internals.skipFirstLoad = fs.existsSync("/tmp/threatstream.zip");
   loadFile();
   setInterval(loadFile, 8*60*60*1000); // Reload file every 8 hours
 };
