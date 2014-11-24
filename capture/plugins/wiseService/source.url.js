@@ -15,140 +15,154 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
-var request        = require('request')
+var fs             = require('fs')
+  , util           = require('util')
+  , wiseSource     = require('./wiseSource.js')
+  , iptrie         = require('iptrie')
+  , request        = require('request')
   ;
 
-var internals = {};
 //////////////////////////////////////////////////////////////////////////////////
-function createImpl(section) {
-  var api = internals.api;
+function URLSource (api, section) {
+  URLSource.super_.call(this, api, section);
 
-  var impl = {
-    url: api.getConfig(section, "url"),
-    reload: +api.getConfig(section, "reload", -1),
-    column: +api.getConfig(section, "column", 0),
-    section: section,
-    cache: {},
-    load: function() {
-      var self = this;
-      request(self.url, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
-          self.parse(body, self, function(err, cache) {
-            if (err) {
-              console.log("ERROR loading", self.section, err);
-              return;
-            }
-            self.cache = cache;
-            var cnt = 0;
-            for (var key in self.cache) {
-              cnt++;
-            }
-            console.log(section, "- Done Loading", cnt, "elements");
-          });
-        } else {
-          console.log("Couldn't load", section, self.url, response.statusCode, error);
+  this.url     = api.getConfig(section, "url");
+  this.column  = +api.getConfig(section, "column", 0);
+  this.type    = api.getConfig(section, "type");
+  this.format  = api.getConfig(section, "format", "csv");
+  if (this.type === "ip") {
+    this.cache = {items: [], trie: new iptrie.IPTrie()};
+  } else {
+    this.cache = {};
+  }
+}
+util.inherits(URLSource, wiseSource);
+//////////////////////////////////////////////////////////////////////////////////
+URLSource.prototype.load = function() {
+  var self = this;
+  var setFunc;
+  var newCache;
+  var count = 0;
+  if (this.type === "ip") {
+    newCache = {items: [], trie: new iptrie.IPTrie()};
+    setFunc  = function(key, value) {
+      var parts = key.split("/");
+      newCache.trie.add(parts[0], +parts[1] || 32, value);
+      newCache.items[key] = value;
+      count++;
+    };
+  } else {
+    newCache ={};
+    setFunc = function(key, value) {
+      newCache[key] = value;
+      count++;
+    };
+  }
+  request(self.url, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      self.parse(body, setFunc, function(err) {
+        if (err) {
+          console.log("ERROR loading", self.section, err);
+          return;
         }
+        self.cache = newCache;
+        console.log(self.section, "- Done Loading", count, "elements");
       });
-    },
-    dump: function(res) {
-      var cache = this.cache;
-      for (var key in cache) {
-        var str = "{key: \"" + key + "\", ops:\n" + 
-          internals.api.result2Str(internals.api.combineResults([impl.result, cache[key]])) + "},\n";
-        res.write(str);
-      }
-      res.end();
-    },
-    sendResult: function(key, cb) {
-      var result = this.cache[key];
-
-      // Not found, or found but no extra values to add
-      if (!result) {
-        return cb(null, undefined);
-      }
-      if (result.num === 0) {
-        return cb(null, this.result);
-      }
-
-      // Found, so combine the two results (per item, and per source)
-      var newresult = {num: result.num + this.result.num, buffer: Buffer.concat([result.buffer, this.result.buffer])};
-      return cb(null, newresult);
+    } else {
+      console.log("Couldn't load", self.section, self.url, response.statusCode, error);
     }
-  };
+  });
+};
+//////////////////////////////////////////////////////////////////////////////////
+URLSource.prototype.dump = function(res) {
+  var cache = this.type === "ip"?this.cache.items:this.cache;
+  for (var key in cache) {
+    var str = "{key: \"" + key + "\", ops:\n" + 
+      wiseSource.result2Str(wiseSource.combineResults([this.result, cache[key]])) + "},\n";
+    res.write(str);
+  }
+  res.end();
+};
+//////////////////////////////////////////////////////////////////////////////////
+URLSource.prototype.sendResult = function(key, cb) {
+  var result = this.type === "ip"?this.cache.trie.find(key):this.cache[key];
 
-  if (impl.url === undefined) {
-    console.log("URL - ERROR not loading", section, "since no url specified in config file");
-    return null;
+  // Not found, or found but no extra values to add
+  if (!result) {
+    return cb(null, undefined);
+  }
+  if (result.num === 0) {
+    return cb(null, this.result);
   }
 
-  impl.type = api.getConfig(section, "type");
-  if (!impl.type) {
-    console.log("URL - ERROR not loading", section, "since no type specified in config file");
-    return null;
+  // Found, so combine the two results (per item, and per source)
+  var newresult = {num: result.num + this.result.num, buffer: Buffer.concat([result.buffer, this.result.buffer])};
+  return cb(null, newresult);
+};
+//////////////////////////////////////////////////////////////////////////////////
+URLSource.prototype.init = function() {
+  if (this.url === undefined) {
+    console.log("URL - ERROR not loading", this.section, "since no url specified in config file");
+    return;
   }
 
-  var tagsField = api.addField("field:tags");
-  var tags = api.getConfig(section, "tags");
+  if (!this.type) {
+    console.log("URL - ERROR not loading", this.section, "since no type specified in config file");
+    return;
+  }
+
+  var tagsField = this.api.addField("field:tags");
+  var tags = this.api.getConfig(this.section, "tags");
   if (!tags) {
-    console.log("URL - ERROR not loading", section, "since no tags specified in config file");
-    return null;
+    console.log("URL - ERROR not loading", this.section, "since no tags specified in config file");
+    return;
   }
   var args = [];
   tags.split(",").forEach(function (part) {
     args.push(tagsField, part);
   });
-  impl.result = {num: args.length/2, buffer: internals.api.encode.apply(null, args)};
+  this.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
-  impl.format = api.getConfig(section, "format", "csv");
-  if (impl.format === "csv") {
-    impl.parse = api.parseCSV
-  } else if (impl.format === "tagger") {
-    impl.parse = api.parseTagger
+
+  if (this.format === "csv") {
+    this.parse = this.parseCSV;
+  } else if (this.format === "tagger") {
+    this.parse = this.parseTagger;
   } else {
-    console.log("FILE - ERROR not loading", section, "unknown data format", impl.format);
-    return null;
+    console.log("URL - ERROR not loading", this.section, "unknown data format", this.format);
+    return;
   }
 
-  if (impl.type === "domain") {
-    impl.getDomain = function(domain, cb) {
-      if (impl.cache[domain]) {
-        return this.sendResult(domain, cb)
+  if (this.type === "domain") {
+    this.getDomain = function(domain, cb) {
+      if (this.cache[domain]) {
+        return this.sendResult(domain, cb);
       }
       domain = domain.substring(domain.indexOf(".")+1);
-      return this.sendResult(domain, cb)
+      return this.sendResult(domain, cb);
     };
-  } else if (impl.type === "ip") {
-    impl.getIp = impl.sendResult;
-  } else if (impl.type === "md5") {
-    impl.getMd5 = impl.sendResult;
-  } else if (impl.type === "email") {
-    impl.getEmail = impl.sendResult;
+  } else if (this.type === "ip") {
+    this.getIp = this.sendResult;
+  } else if (this.type === "md5") {
+    this.getMd5 = this.sendResult;
+  } else if (this.type === "email") {
+    this.getEmail = this.sendResult;
   } else {
-    console.log("URL - ERROR not loading", section, "since unknown type specified in config file", impl.type);
-    return null;
+    console.log("URL - ERROR not loading", this.section, "since unknown type specified in config file", this.type);
+    return;
   }
 
-  setImmediate(impl.load.bind(impl));
-  if (impl.reload !== -1) {
-    setInterval(impl.load.bind(impl), impl.reload*1000*60);
-  }
-  return impl;
-}
+  this.api.addSource(this.section, this);
+  setImmediate(this.load.bind(this));
+};
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  internals.api = api;
-
   var sections = api.getConfigSections().filter(function(e) {return e.match(/^url:/);});
   sections.forEach(function(section) {
-    var impl = createImpl(section);
-    if (impl) {
-      api.addSource(section, impl);
-    }
+    var source = new URLSource(api, section);
+    source.init();
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

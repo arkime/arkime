@@ -13,5 +13,7 @@
     , "csv": "~0.4.1"
     , "console-stamp": "~0.1.3"
     , "request": "~2.48.0"
+    , "iptrie": "~0.0.6"
+    , "native-dns": "~0.7.0"
   }
 }

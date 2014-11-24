@@ -16,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
 var ini            = require('iniparser')
@@ -30,6 +27,8 @@ var ini            = require('iniparser')
   , sprintf        = require('./sprintf.js').sprintf
   , csv            = require('csv')
   , request        = require('request')
+  , iptrie         = require('iptrie')
+  , wiseSource     = require('./wiseSource.js')
   ;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
@@ -40,8 +39,6 @@ var internals = {
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
-  field2Pos: {},
-  pos2Field: {},
   getIps: [],
   getDomains: [],
   getMd5s: [],
@@ -49,7 +46,8 @@ var internals = {
   printStats: [],
   sources: [],
   rstats: [0,0,0,0],
-  fstats: [0,0,0,0]
+  fstats: [0,0,0,0],
+  allowed: {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -101,34 +99,12 @@ function newFieldsTS()
   }
 }
 //////////////////////////////////////////////////////////////////////////////////
-function doRequest(url, file, cb) {
-  var headers = {};
-  if (file) {
-    if (fs.existsSync(file)) {
-      var stat = fs.statSync(file);
-      headers['If-Modified-Since'] = stat.mtime.toUTCString();
-    }
-  }
-  var statusCode;
-  request({url: url, headers: headers})
-  .on('response', function(response) {
-    statusCode = response.statusCode;
-    if (response.statusCode === 200) {
-      this.pipe(fs.createWriteStream(file));
-    }
-  })
-  .on('end', function() {
-    setImmediate(cb, statusCode);
-  })
-  ;
-}
-//////////////////////////////////////////////////////////////////////////////////
 function addField(field) {
   var match = field.match(/field:([^;]+)/);
   var name = match[1];
 
-  if (internals.field2Pos[name] !== undefined) {
-    return internals.field2Pos[name];
+  if (wiseSource.field2Pos[name] !== undefined) {
+    return wiseSource.field2Pos[name];
   }
 
   var pos = internals.fields.length;
@@ -149,142 +125,18 @@ function addField(field) {
   }
   internals.fieldsBuf.length = offset;
 
-  internals.pos2Field[pos] = name;
-  internals.field2Pos[name] = pos;
+  wiseSource.pos2Field[pos] = name;
+  wiseSource.field2Pos[name] = pos;
   return pos;
-}
-//////////////////////////////////////////////////////////////////////////////////
-function doEncode()
-{
-  var a, len = 0;
-  for (a = 1; a < arguments.length; a += 2) {
-    len += 3 + arguments[a].length;
-  }
-  var buf = new Buffer(len);
-  var offset = 0;
-  for (a = 1; a < arguments.length; a += 2) {
-      buf.writeUInt8(arguments[a-1], offset);
-      buf.writeUInt8(arguments[a].length+1, offset+1);
-      var l = buf.write(arguments[a], offset+2);
-      buf.writeUInt8(0, offset+l+2);
-      offset += 3 + l;
-  }
-  return buf;
-}
-//////////////////////////////////////////////////////////////////////////////////
-function combineResults(results)
-{
-  var a, num = 0, len = 1;
-  for (a = 0; a < results.length; a++) {
-    if (!results[a]) {
-      continue;
-    }
-    num += results[a].num;
-    len += results[a].buffer.length;
-  }
-
-  var buf = new Buffer(len);
-  var offset = 1;
-  for (a = 0; a < results.length; a++) {
-    if (!results[a]) {
-      continue;
-    }
-
-    results[a].buffer.copy(buf, offset);
-    offset += results[a].buffer.length;
-  }
-  buf[0] = num;
-  return buf;
-}
-//////////////////////////////////////////////////////////////////////////////////
-function result2Str(result, indent) {
-  if (!indent) {
-    indent = "";
-  }
-  
-  var str = "[";
-  var offset = 1;
-  for (var i = 0; i < result[0]; i++) {
-    var pos   = result[offset];
-    var len   = result[offset+1];
-    var value = result.toString('utf8', offset+2, offset+2+len-1);
-    offset += 2 + len;
-    if (i > 0) {
-      str += ",\n";
-    }
-    str += indent + "{field: \"" + internals.pos2Field[pos] + "\", len: " + len + ", value: \"" + value + "\"}";
-  }
-
-  return str + "]\n";
-}
-//////////////////////////////////////////////////////////////////////////////////
-internals.emptyResult = {num: 0, buffer: new Buffer(0)};
-function parseCSV (body, options, cb) {
-  var parser = csv.parse(body, {skip_empty_lines: true, comment: '#'}, function(err, data) {
-    if (err) {
-      return cb(err);
-    }
-
-    var cache = {};
-    for (var i = 0; i < data.length; i++) {
-      cache[data[i][options.column]] = internals.emptyResult;
-    }
-    cb(err, cache);
-  });
-}
-//////////////////////////////////////////////////////////////////////////////////
-function parseTagger (body, options, cb) {
-  var lines = body.toString().split("\n");
-  var cache = {};
-  var shortcuts = {};
-  for (var l = 0, llen = lines.length; l < llen; l++) {
-    if (lines[l][0] === "#") {
-      if (lines[l].lastIndexOf('#field:',0) === 0) {
-        var pos = addField(lines[l].substring(1));
-        var match = lines[l].match(/shortcut:([^;]+)/);
-        if (match) {
-          shortcuts[match[1]] = pos;
-        }
-      }
-      continue;
-    }
-
-    if (lines[l].match(/^\s*$/)) {
-      continue;
-    }
-
-
-    var args = [];
-    var parts = lines[l].split(";");
-    for (var p = 1; p < parts.length; p++) {
-      var kv = parts[p].split('=');
-      if (shortcuts[kv[0]] !== undefined) {
-        args.push(shortcuts[kv[0]]);
-      } else if (internals.field2Pos[kv[0]]) {
-        args.push(internals.field2Pos[kv[0]]);
-      } else {
-        args.push(addField("field:" + kv[0]));
-      }
-      args.push(kv[1]);
-    }
-    cache[parts[0]] = {num: args.length/2, buffer: doEncode.apply(null, args)};
-  }
-  cb(null, cache);
 }
 //////////////////////////////////////////////////////////////////////////////////
 internals.sourceApi = {
   getConfig: getConfig,
   getConfigSections: getConfigSections,
   addField: addField,
-  encode: doEncode,
-  request: doRequest,
-  combineResults: combineResults,
-  result2Str: result2Str,
-  parseCSV: parseCSV,
-  parseTagger: parseTagger,
   debug: internals.debug,
-  addSource: function(name, src) {
-    internals.sources[name] = src;
+  addSource: function(section, src) {
+    internals.sources[section] = src;
     if (src.getIp) {
       internals.getIps.push(src);
     }
@@ -319,6 +171,7 @@ app.get("/fields", function(req, res) {
 });
 //////////////////////////////////////////////////////////////////////////////////
 internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail"];
+internals.type2Name = ["ip", "domain", "md5", "email"];
 app.post("/get", function(req, res) {
   var offset = 0;
 
@@ -339,10 +192,14 @@ app.post("/get", function(req, res) {
       internals.rstats[type]++;
     }
     async.map(queries, function (query, cb) {
-      async.map(internals[internals.funcNames[query.type] + "s"], function(func, cb) {
-        func[internals.funcNames[query.type]](query.value, cb);
+      async.map(internals[internals.funcNames[query.type] + "s"], function(src, cb) {
+        if (internals.allowed[internals.type2Name[query.type]](src, query.value)) {
+          src[internals.funcNames[query.type]](query.value, cb);
+        } else {
+          setImmediate(cb, undefined);
+        }
       }, function (err, results) {
-        cb(null, combineResults(results));
+        cb(null, wiseSource.combineResults(results));
       });
     }, function (err, results) {
       var buf = new Buffer(8);
@@ -360,27 +217,27 @@ app.post("/get", function(req, res) {
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.name2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail"};
+internals.type2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail"};
 app.get("/:source/:type/:value", function(req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
     return res.end("Unknown source " + req.params.source);
   }
 
-  var fn = internals.name2func[req.params.type];
+  var fn = internals.type2func[req.params.type];
   if (!fn) {
     return res.end("Unknown type " + req.params.type);
   }
 
   if (!source[fn]) {
-    return res.end("The source doesn't support the query" + fn);
+    return res.end("The source doesn't support the query " + fn);
   }
 
   source[fn](req.params.value, function (err, result) {
     if (!result) {
       return res.end("Not found");
     }
-    res.end(result2Str(combineResults([result])));
+    res.end(wiseSource.result2Str(wiseSource.combineResults([result])));
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
@@ -398,15 +255,19 @@ app.get("/dump/:source", function(req, res) {
 });
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/:type/:value", function(req, res) {
-  var fn = internals.name2func[req.params.type];
+  var fn = internals.type2func[req.params.type];
   if (!fn) {
     return res.end("Unknown type " + req.params.type);
   }
-  async.map(internals[fn + "s"], function(func, cb) {
-    func[fn](req.params.value, cb);
+  async.map(internals[fn + "s"], function(src, cb) {
+    if (internals.allowed[req.params.type](src, req.params.value)) {
+      src[fn](req.params.value, cb);
+    } else {
+      setImmediate(cb, undefined);
+    }
   }, function (err, results) {
-    var result = combineResults(results);
-    res.end(result2Str(result));
+    var result = wiseSource.combineResults(results);
+    res.end(wiseSource.result2Str(result));
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
@@ -427,10 +288,106 @@ function printStats()
     fn.printStats();
   });
 }
+//////////////////////////////////////////////////////////////////////////////////
+internals.allowed.ip = function(src, value) {
+  if (internals.excludeIPs.find(value)) {
+    if (internals.debug > 0) {
+      console.log("Found in Global IP Exclude", value);
+    }
+    return false;
+  }
+  if (src.excludeIPs.find(value)) {
+    if (internals.debug > 0) {
+      console.log("Found in", src.section, "IP Exclude", value);
+    }
+    return false;
+  }
+  return true;
+};
+internals.allowed.md5 = function(src, value) {return true;};
+internals.allowed.email = function(src, value) {
+  var i;
+  for(i = 0; i < internals.excludeEmails.length; i++) {
+    if (value.match(internals.excludeEmails[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in Global Email Exclude", value);
+      }
+      return false;
+    }
+  }
+  for(i = 0; i < src.excludeEmails.length; i++) {
+    if (value.match(src.excludeEmails[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in", src.section, "Email Exclude", value);
+      }
+      return false;
+    }
+  }
+  return true;
+};
+internals.allowed.domain = function(src, value) {
+  var i;
+  for(i = 0; i < internals.excludeDomains.length; i++) {
+    if (value.match(internals.excludeDomains[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in Global Domain Exclude", value);
+      }
+      return false;
+    }
+  }
+  for(i = 0; i < src.excludeDomains.length; i++) {
+    if (value.match(src.excludeDomains[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in", src.section, "Domain Exclude", value);
+      }
+      return false;
+    }
+  }
+  return true;
+};
+//////////////////////////////////////////////////////////////////////////////////
+function loadExcludes() {
+  ["excludeDomains", "excludeEmails"].forEach(function(type) {
+    var items = getConfig("wiseService", type);
+    internals[type] = [];
+    if (!items) {return;}
+    items.split(";").forEach(function(item) {
+      internals[type].push(RegExp.fromWildExp(item, "ailop"));
+    });
+  });
 
+  internals.excludeIPs = new iptrie.IPTrie();
+  var items = getConfig("wiseService", "excludeIPs", "");
+  items.split(";").forEach(function(item) {
+    if (item === "") {
+      return;
+    }
+    var parts = item.split("/");
+    internals.excludeIPs.add(parts[0], +parts[1] || 32, true);
+  });
+}
+//////////////////////////////////////////////////////////////////////////////////
+//// jPaq
+//////////////////////////////////////////////////////////////////////////////////
+/*
+ jPaq - A fully customizable JavaScript/JScript library
+ http://jpaq.org/
+
+ Copyright (c) 2011 Christopher West
+ Licensed under the MIT license.
+ http://jpaq.org/license/
+
+ Version: 1.0.6.000m
+ Revised: April 6, 2011
+*/
+/* jshint ignore:start */
+RegExp.fromWildExp=function(c,a){for(var d=a&&a.indexOf("o")>-1,f,b,e="",g=a&&a.indexOf("l")>-1?"":"?",h=RegExp("~.|\\[!|"+(d?"{\\d+,?\\d*\\}|[":"[")+(a&&a.indexOf("p")>-1?"":"\\(\\)")+"\\{\\}\\\\\\.\\*\\+\\?\\:\\|\\^\\$%_#<>]");(f=c.search(h))>-1&&f<c.length;)e+=c.substring(0,f),e+=(b=c.match(h)[0])=="[!"?"[^":b.charAt(0)=="~"?"\\"+b.charAt(1):b=="*"||b=="%"?".*"+g:
+b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b==">"?"(?:\\b$|(?=\\W)\\b)":"\\"+b,c=c.substring(f+b.length);e+=c;a&&(/[ab]/.test(a)&&(e="^"+e),/[ae]/.test(a)&&(e+="$"));return RegExp(e,a?a.replace(/[^gim]/g,""):"")};
+/* jshint ignore:end */
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
+loadExcludes();
 loadSources();
 setInterval(printStats, 60*1000);
 var server = http.createServer(app);

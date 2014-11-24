@@ -15,42 +15,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
 var fs             = require('fs')
   , unzip          = require('unzip')
   , csv            = require('csv')
+  , wiseSource     = require('./wiseSource.js')
+  , util           = require('util')
   ;
-var internals = {
-  ips:        {},
-  domains:    {},
-  categories: {}
-};
+
 //////////////////////////////////////////////////////////////////////////////////
-function parseCAT (fn) 
+function EmergingThreatsSource (api, section) {
+  EmergingThreatsSource.super_.call(this, api, section);
+  this.key     = api.getConfig("emergingthreats", "key");
+  this.ips     = {};
+  this.domains = {};
+}
+util.inherits(EmergingThreatsSource, wiseSource);
+//////////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.parseCategories = function(fn) 
 {
-  internals.categories = {};
+  var self = this;
   var parser = csv.parse(function(err, data) {
+    self.categories = {};
     for (var i = 0; i < data.length; i++) {
-      internals.categories[data[i][0]] = data[i][1];
+      self.categories[data[i][0]] = data[i][1];
     }
   });
   fs.createReadStream('/tmp/categories.txt').pipe(parser);
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-function parseCSV (fn, hash)
+EmergingThreatsSource.prototype.parse = function (fn, hash)
 {
+  var self = this;
+
   var parser = csv.parse(function(err, data) {
     for (var i = 1; i < data.length; i++) {
       if (data[i].length !== 3) {
         continue;
       }
     
-      var encoded = internals.api.encode(internals.categoryField, internals.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
-                                         internals.scoreField, "" + data[i][2]);
+      var encoded = wiseSource.encode(self.categoryField, self.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
+                                      self.scoreField, "" + data[i][2]);
       if (hash[data[i][0]]) {
         hash[data[i][0]].num += 2;
         hash[data[i][0]].buffer = Buffer.concat([hash[data[i][0]].buffer, encoded]);
@@ -61,56 +67,74 @@ function parseCSV (fn, hash)
     console.log("ET - Done Loading", fn);
   });
   fs.createReadStream(fn).pipe(parser);
-
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-function loadFiles ()
+EmergingThreatsSource.prototype.loadFiles = function ()
 {
+  var self = this;
   console.log("ET - Downloading Files");
-  internals.api.request('https://rules.emergingthreatspro.com/' + internals.key + '/reputation/categories.txt', '/tmp/categories.txt', function (statusCode) {
+  wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/categories.txt', '/tmp/categories.txt', function (statusCode) {
 
-    parseCAT("/tmp/categories.txt");
+    self.parseCategories("/tmp/categories.txt");
   });
 
-  internals.api.request('https://rules.emergingthreatspro.com/' + internals.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', function (statusCode) {
-    if (statusCode === 200 || !internals.ipsLoaded) {
-      internals.ipsLoaded = true;
-      internals.ips = {};
-      parseCSV("/tmp/iprepdata.csv", internals.ips);
+  wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', function (statusCode) {
+    if (statusCode === 200 || !self.ipsLoaded) {
+      self.ipsLoaded = true;
+      self.ips = {};
+      self.parse("/tmp/iprepdata.csv", self.ips);
     }
   });
 
-  internals.api.request('https://rules.emergingthreatspro.com/' + internals.key + '/reputation/domainrepdata.csv', '/tmp/domainrepdata.csv', function (statusCode) {
-    if (statusCode === 200 || !internals.domainsLoaded) {
-      internals.domainsLoaded = true;
-      internals.domains = {};
-      parseCSV("/tmp/domainrepdata.csv", internals.domains);
+  wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/domainrepdata.csv', '/tmp/domainrepdata.csv', function (statusCode) {
+    if (statusCode === 200 || !self.domainsLoaded) {
+      self.domainsLoaded = true;
+      self.domains = {};
+      self.parse("/tmp/domainrepdata.csv", self.domains);
     }
   });
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  internals.api = api;
-  internals.key = api.getConfig("emergingthreats", "key");
-  if (internals.key === undefined) {
+EmergingThreatsSource.prototype.getDomain = function(domain, cb) {
+  cb(null, this.domains[domain] || this.domains[domain.substring(domain.indexOf(".")+1)]);
+};
+//////////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.getIp = function(ip, cb) {
+  cb(null, this.ips[ip]);
+};
+//////////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.dump = function(res) {
+  var self = this;
+
+  ["ips", "domains"].forEach(function (ckey) {
+    res.write("" + ckey + ":\n");
+    var cache = self[ckey];
+    for (var key in cache) {
+      var str = "{key: \"" + key + "\", ops:\n" + 
+        wiseSource.result2Str(wiseSource.combineResults([cache[key]])) + "},\n";
+      res.write(str);
+    }
+  });
+  res.end();
+};
+//////////////////////////////////////////////////////////////////////////////////
+EmergingThreatsSource.prototype.init = function ()
+{
+  if (this.key === undefined) {
     console.log("ET - No key defined");
     return;
   }
 
-  api.addSource("emergingthreats", exports);
+  this.api.addSource("emergingthreats", this);
 
-  internals.scoreField = api.addField("field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true");
-  internals.categoryField = api.addField("field:emergingthreats.category;db:et.category-term;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
+  this.scoreField = this.api.addField("field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true");
+  this.categoryField = this.api.addField("field:emergingthreats.category;db:et.category-term;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true");
 
-  loadFiles();
-  setInterval(loadFiles, 60*60*1000); // Reload files every hour
+  this.loadFiles();
+  setInterval(this.loadFiles.bind(this), 60*60*1000); // Reload files every hour
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.getDomain = function(domain, cb) {
-  var domains = internals.domains;
-  cb(null, domains[domain] || domains[domain.substring(domain.indexOf(".")+1)]);
-};
-//////////////////////////////////////////////////////////////////////////////////
-exports.getIp = function(ip, cb) {
-  cb(null, internals.ips[ip]);
+exports.initSource = function(api) {
+  var source = new EmergingThreatsSource(api, "emergingthreats");
+  source.init();
 };

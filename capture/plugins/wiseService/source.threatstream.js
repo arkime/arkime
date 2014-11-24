@@ -15,27 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
 var fs             = require('fs')
   , unzip          = require('unzip')
+  , wiseSource     = require('./wiseSource.js')
+  , util           = require('util')
   ;
-var internals = {
-  ips:     {},
-  domains: {},
-  emails:  {},
-  md5s:    {}
-};
 //////////////////////////////////////////////////////////////////////////////////
-function parseFile()
+function ThreatStreamSource (api, section) {
+  ThreatStreamSource.super_.call(this, api, section);
+  this.user    = api.getConfig("threatstream", "user");
+  this.key     = api.getConfig("threatstream", "key");
+  this.ips     = {};
+  this.domains = {};
+  this.emails  = {};
+  this.md5s    = {};
+}
+util.inherits(ThreatStreamSource, wiseSource);
+//////////////////////////////////////////////////////////////////////////////////
+ThreatStreamSource.prototype.parseFile = function()
 {
-  internals.ips = {};
-  internals.domains = {};
-  internals.emails = {};
-  internals.md5s = {};
+  var self = this;
+
+  self.ips = {};
+  self.domains = {};
+  self.emails = {};
+  self.md5s = {};
 
   fs.createReadStream('/tmp/threatstream.zip')
     .pipe(unzip.Parse())
@@ -53,29 +59,29 @@ function parseFile()
           var encoded;
           var num;
           if (item.maltype && item.maltype !== "null") {
-            encoded = internals.api.encode(internals.severityField, item.severity,
-                                 internals.confidenceField, "" + item.confidence,
-                                 internals.idField, "" + item.id,
-                                 internals.typeField, item.itype,
-                                 internals.maltypeField, item.maltype);
+            encoded = wiseSource.encode(self.severityField, item.severity,
+                                        self.confidenceField, "" + item.confidence,
+                                        self.idField, "" + item.id,
+                                        self.typeField, item.itype,
+                                        self.maltypeField, item.maltype);
             num = 5;
           } else {
-            encoded = internals.api.encode(internals.severityField, item.severity,
-                                 internals.confidenceField, "" + item.confidence,
-                                 internals.idField, "" + item.id,
-                                 internals.typeField, item.itype);
+            encoded = wiseSource.encode(self.severityField, item.severity,
+                                        self.confidenceField, "" + item.confidence,
+                                        self.idField, "" + item.id,
+                                        self.typeField, item.itype);
             num = 4;
           }
                                              
 
           if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-            internals.ips[item.ip] = {num: num, buffer: encoded};
+            self.ips[item.ip] = {num: num, buffer: encoded};
           } else if (item.itype.match(/_domain|_dns/)) {
-            internals.domains[item.domain] = {num: num, buffer: encoded};
+            self.domains[item.domain] = {num: num, buffer: encoded};
           } else if (item.itype.match(/_email/)) {
-            internals.emails[item.email] = {num: num, buffer: encoded};
+            self.emails[item.email] = {num: num, buffer: encoded};
           } else if (item.itype.match(/_md5/)) {
-            internals.md5s[item.md5] = {num: num, buffer: encoded};
+            self.md5s[item.md5] = {num: num, buffer: encoded};
           }
         });
       });
@@ -83,59 +89,77 @@ function parseFile()
     .on('close', function () {
       console.log("Threatstream - Done Loading");
     });
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-function loadFile()
-{
+ThreatStreamSource.prototype.loadFile = function() {
+  var self = this;
+
   console.log("Threatstream - Downloading files");
-  internals.api.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + internals.user + '&api_key=' + internals.key,  '/tmp/threatstream.zip', function (statusCode) {
-    if (statusCode === 200 || !internals.loaded) {
-      internals.loaded = true;
-      parseFile();
+  wiseSource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + self.user + '&api_key=' + self.key,  '/tmp/threatstream.zip', function (statusCode) {
+    if (statusCode === 200 || !self.loaded) {
+      self.loaded = true;
+      self.parseFile();
     }
   });
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  internals.key = api.getConfig("threatstream", "key");
-  internals.user = api.getConfig("threatstream", "user");
-  internals.api = api;
-  if (internals.user === undefined) {
+ThreatStreamSource.prototype.init = function() {
+  if (this.user === undefined) {
     console.log("Threatstream - No user defined");
     return;
   }
 
-  if (internals.key === undefined) {
+  if (this.key === undefined) {
     console.log("Threatstream - No key defined");
     return;
   }
 
-  api.addSource("threatstream", exports);
+  this.api.addSource("threatstream", this);
 
-  internals.severityField = api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;shortcut:0;count:true");
-  internals.confidenceField = api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;shortcut:1;count:true");
-  internals.idField = api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;shortcut:2;count:true");
-  internals.typeField = api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
-  internals.maltypeField = api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
+  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;shortcut:0;count:true");
+  this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;shortcut:1;count:true");
+  this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;shortcut:2;count:true");
+  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
+  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
 
 
-  loadFile();
-  setInterval(loadFile, 8*60*60*1000); // Reload file every 8 hours
+  this.loadFile();
+  setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.getDomain = function(domain, cb) {
-  var domains = internals.domains;
+ThreatStreamSource.prototype.getDomain = function(domain, cb) {
+  var domains = this.domains;
   cb(null, domains[domain] || domains[domain.substring(domain.indexOf(".")+1)]);
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.getIp = function(ip, cb) {
-  cb(null, internals.ips[ip]);
+ThreatStreamSource.prototype.getIp = function(ip, cb) {
+  cb(null, this.ips[ip]);
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.getMd5 = function(md5, cb) {
-  cb(null, internals.md5s[md5]);
+ThreatStreamSource.prototype.getMd5 = function(md5, cb) {
+  cb(null, this.md5s[md5]);
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.getEmail = function(email, cb) {
-  cb(null, internals.emails[email]);
+ThreatStreamSource.prototype.getEmail = function(email, cb) {
+  cb(null, this.emails[email]);
 };
+//////////////////////////////////////////////////////////////////////////////////
+ThreatStreamSource.prototype.dump = function(res) {
+  var self = this;
+  ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
+    res.write("" + ckey + ":\n");
+    var cache = self[ckey];
+    for (var key in cache) {
+      var str = "{key: \"" + key + "\", ops:\n" + 
+        wiseSource.result2Str(wiseSource.combineResults([cache[key]])) + "},\n";
+      res.write(str);
+    }
+  });
+  res.end();
+};
+//////////////////////////////////////////////////////////////////////////////////
+exports.initSource = function(api) {
+  var source = new ThreatStreamSource(api, "threatstream");
+  source.init();
+};
+//////////////////////////////////////////////////////////////////////////////////

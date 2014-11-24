@@ -15,157 +15,172 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
 var fs             = require('fs')
+  , util           = require('util')
+  , wiseSource     = require('./wiseSource.js')
+  , iptrie         = require('iptrie')
   ;
 
-var internals = {};
 //////////////////////////////////////////////////////////////////////////////////
-function createImpl(section) {
-  var api = internals.api;
+function FileSource (api, section) {
+  FileSource.super_.call(this, api, section);
 
-  var impl = {
-    file: api.getConfig(section, "file"),
-    column: +api.getConfig(section, "column", 0),
-    section: section,
-    cache: {},
-    load: function() {
-      var self = this;
-      fs.readFile(self.file, function (err, data) {
-        if (!err) {
-          self.parse(data, self, function(err, cache) {
-            if (err) {
-              console.log("ERROR loading", self.section, err);
-              return;
-            }
-            self.cache = cache;
-            var cnt = 0;
-            for (var key in self.cache) {
-              cnt++;
-            }
-            console.log(section, "- Done Loading", cnt, "elements");
-          });
-        } else {
-          console.log("Couldn't load", section, self.file, err);
+  this.file    = api.getConfig(section, "file");
+  this.column  = +api.getConfig(section, "column", 0);
+  this.type    = api.getConfig(section, "type");
+  this.format  = api.getConfig(section, "format", "csv");
+  if (this.type === "ip") {
+    this.cache = {items: [], trie: new iptrie.IPTrie()};
+  } else {
+    this.cache = {};
+  }
+}
+util.inherits(FileSource, wiseSource);
+//////////////////////////////////////////////////////////////////////////////////
+FileSource.prototype.load = function() {
+  var self = this;
+  var setFunc;
+  var newCache;
+  var count = 0;
+  if (this.type === "ip") {
+    newCache = {items: [], trie: new iptrie.IPTrie()};
+    setFunc  = function(key, value) {
+      var parts = key.split("/");
+      newCache.trie.add(parts[0], +parts[1] || 32, value);
+      newCache.items[key] = value;
+      count++;
+    };
+  } else {
+    newCache ={};
+    setFunc = function(key, value) {
+      newCache[key] = value;
+      count++;
+    };
+  }
+  fs.readFile(self.file, function (err, body) {
+    if (!err) {
+      self.parse(body, setFunc, function(err) {
+        if (err) {
+          console.log("ERROR loading", self.section, err);
+          return;
         }
+        self.cache = newCache;
+        console.log(self.section, "- Done Loading", count, "elements");
       });
-    },
-    dump: function(res) {
-      var cache = this.cache;
-      for (var key in cache) {
-        var str = "{key: \"" + key + "\", ops:\n" + 
-          internals.api.result2Str(internals.api.combineResults([impl.result, cache[key]])) + "},\n";
-        res.write(str);
-      }
-      res.end();
-    },
-    sendResult: function(key, cb) {
-      var result = this.cache[key];
-
-      // Not found, or found but no extra values to add
-      if (!result) {
-        return cb(null, undefined);
-      }
-      if (result.num === 0) {
-        return cb(null, this.result);
-      }
-
-      // Found, so combine the two results (per item, and per source)
-      var newresult = {num: result.num + this.result.num, buffer: Buffer.concat([result.buffer, this.result.buffer])};
-      return cb(null, newresult);
+    } else {
+      console.log("Couldn't load", self.section, self.file, err);
     }
-  };
+  });
+};
+//////////////////////////////////////////////////////////////////////////////////
+FileSource.prototype.dump = function(res) {
+  var cache = this.type === "ip"?this.cache.items:this.cache;
+  for (var key in cache) {
+    var str = "{key: \"" + key + "\", ops:\n" + 
+      wiseSource.result2Str(wiseSource.combineResults([this.result, cache[key]])) + "},\n";
+    res.write(str);
+  }
+  res.end();
+};
+//////////////////////////////////////////////////////////////////////////////////
+FileSource.prototype.sendResult = function(key, cb) {
+  var result = this.type === "ip"?this.cache.trie.find(key):this.cache[key];
 
-  if (impl.file === undefined) {
-    console.log("FILE - ERROR not loading", section, "since no file specified in config file");
-    return null;
+  // Not found, or found but no extra values to add
+  if (!result) {
+    return cb(null, undefined);
+  }
+  if (result.num === 0) {
+    return cb(null, this.result);
   }
 
-  if (!fs.existsSync(impl.file)) {
-    console.log("FILE - ERROR not loading", section, "since", impl.file, "doesn't exist");
-    return null;
+  // Found, so combine the two results (per item, and per source)
+  var newresult = {num: result.num + this.result.num, buffer: Buffer.concat([result.buffer, this.result.buffer])};
+  return cb(null, newresult);
+};
+//////////////////////////////////////////////////////////////////////////////////
+FileSource.prototype.init = function() {
+  if (this.file === undefined) {
+    console.log("FILE - ERROR not loading", this.section, "since no file specified in config file");
+    return;
   }
 
-  impl.type = api.getConfig(section, "type");
-  if (!impl.type) {
-    console.log("FILE - ERROR not loading", section, "since no type specified in config file");
-    return null;
+  if (!fs.existsSync(this.file)) {
+    console.log("FILE - ERROR not loading", this.section, "since", this.file, "doesn't exist");
+    return;
   }
 
-  var tagsField = api.addField("field:tags");
-  var tags = api.getConfig(section, "tags");
+  if (!this.type) {
+    console.log("FILE - ERROR not loading", this.section, "since no type specified in config file");
+    return;
+  }
+
+  var tagsField = this.api.addField("field:tags");
+  var tags = this.api.getConfig(this.section, "tags");
   if (!tags) {
-    console.log("FILE - ERROR not loading", section, "since no tags specified in config file");
-    return null;
+    console.log("FILE - ERROR not loading", this.section, "since no tags specified in config file");
+    return;
   }
   var args = [];
   tags.split(",").forEach(function (part) {
     args.push(tagsField, part);
   });
-  impl.result = {num: args.length/2, buffer: internals.api.encode.apply(null, args)};
+  this.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
 
-  impl.format = api.getConfig(section, "format", "csv");
-  if (impl.format === "csv") {
-    impl.parse = api.parseCSV
-  } else if (impl.format === "tagger") {
-    impl.parse = api.parseTagger
+  if (this.format === "csv") {
+    this.parse = this.parseCSV;
+  } else if (this.format === "tagger") {
+    this.parse = this.parseTagger;
   } else {
-    console.log("FILE - ERROR not loading", section, "unknown data format", impl.format);
-    return null;
+    console.log("FILE - ERROR not loading", this.section, "unknown data format", this.format);
+    return;
   }
 
-  if (impl.type === "domain") {
-    impl.getDomain = function(domain, cb) {
+  if (this.type === "domain") {
+    this.getDomain = function(domain, cb) {
       if (this.cache[domain]) {
-        return impl.sendResult(domain, cb)
+        return this.sendResult(domain, cb);
       }
       domain = domain.substring(domain.indexOf(".")+1);
-      return impl.sendResult(domain, cb)
+      return this.sendResult(domain, cb);
     };
-  } else if (impl.type === "ip") {
-    impl.getIp = impl.sendResult;
-  } else if (impl.type === "md5") {
-    impl.getMd5 = impl.sendResult;
-  } else if (impl.type === "email") {
-    impl.getEmail = impl.sendResult;
+  } else if (this.type === "ip") {
+    this.getIp = this.sendResult;
+  } else if (this.type === "md5") {
+    this.getMd5 = this.sendResult;
+  } else if (this.type === "email") {
+    this.getEmail = this.sendResult;
   } else {
-    console.log("FILE - ERROR not loading", section, "since unknown type specified in config file", impl.type);
-    return null;
+    console.log("FILE - ERROR not loading", this.section, "since unknown type specified in config file", this.type);
+    return;
   }
 
-  setImmediate(impl.load.bind(impl));
+  this.api.addSource(this.section, this);
+  setImmediate(this.load.bind(this));
 
 
   // Watch file for changes, have to do the 100 because of vim moving file
-  impl.watch = fs.watch(impl.file, function watchCb(event, filename) {
+  this.watch = fs.watch(this.file, function watchCb(event, filename) {
     if (event === "rename") {
-      impl.watch.close();
+      this.watch.close();
       setTimeout(function () {
-        impl.load();
-        impl.watch = fs.watch(impl.file, watchCb);
+        this.load();
+        this.watch = fs.watch(this.file, watchCb);
       }, 100);
     } else {
-      impl.load();
+      this.load();
     }
   });
-
-  return impl;
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  internals.api = api;
-
   var sections = api.getConfigSections().filter(function(e) {return e.match(/^file:/);});
   sections.forEach(function(section) {
-    var impl = createImpl(section);
-    if (impl) {
-      api.addSource(section, impl);
-    }
+    var source = new FileSource(api, section);
+    source.init();
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

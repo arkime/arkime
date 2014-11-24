@@ -19,6 +19,14 @@ port=8081
 [emergingthreats]
 #key=
 
+# ThreatQ - http://http://www.threatquotient.com/
+[threatq]
+#key=
+
+# ReverseDNS
+[reversedns]
+#ips=10.0.0.0/8;192.168.0.0/16
+#field=asset
 
 # To load local files, set a unique section title starting with file:
 # Type should be ip, domain, md5, email

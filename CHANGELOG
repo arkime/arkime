@@ -27,6 +27,10 @@
   - http LOG message has total time now
   - netflow plugin sends flows for both directions
   - netflow plugin more time fixes
+  - WISE - threatq support
+  - WISE - reversedns support (issue #217)
+  - WISE - CIDR support (issue #312)
+  - WISE - filtering (issue #314)
   
 
 0.11.2 2014/10/16

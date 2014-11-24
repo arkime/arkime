@@ -1722,6 +1722,12 @@ void moloch_nids_init()
         MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
+    moloch_field_define("general", "lotermfield",
+        "asset", "Asset", "asset-term",
+        "Asset name",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
     tagsField = moloch_field_by_db("ta");
     moloch_db_get_tag(NULL, tagsField, "tcp", NULL);
     moloch_db_get_tag(NULL, tagsField, "udp", NULL);

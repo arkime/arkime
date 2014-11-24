@@ -36,6 +36,7 @@ dl.sessionDetailMeta
     a(href='#', onclick='return addExpression("ip.protocol == #{session.pr}");') #{session.pr}
 
   +arrayList(session, "user", "Users", "user")
+  +arrayList(session, "asset-term", "Assets", "asset")
 
   if (session.by1 || session.by2)
     dt Src

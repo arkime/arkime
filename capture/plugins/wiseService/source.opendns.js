@@ -15,30 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
 var https          = require('https')
+  , wiseSource     = require('./wiseSource.js')
+  , util           = require('util')
   , LRU            = require('lru-cache')
   ;
-var internals = {
-  waiting: [],
-  statuses: {"-1": "malicious", "0":"unknown", "1":"benign"},
-  outgoing: 0,
-  inprogress: 0,
-  cached: 0,
-};
+
 //////////////////////////////////////////////////////////////////////////////////
-function getCategories() {
+function OpenDNSSource (api, section) {
+  OpenDNSSource.super_.call(this, api, section);
+  this.waiting    = [];
+  this.statuses   = {"-1": "malicious", "0":"unknown", "1":"benign"};
+  this.outgoing   = 0;
+  this.inprogress = 0;
+  this.cached     = 0;
+}
+util.inherits(OpenDNSSource, wiseSource);
+
+//////////////////////////////////////////////////////////////////////////////////
+OpenDNSSource.prototype.getCategories = function () {
+  var self = this;
   var options = {
       host: 'sgraph.api.opendns.com',
       port: '443',
       path: '/domains/categories',
       method: 'GET',
       headers: {
-          'Authorization': 'Bearer ' + internals.key,
+          'Authorization': 'Bearer ' + self.key,
       }
   };
 
@@ -48,7 +53,7 @@ function getCategories() {
       response += chunk;
     });
     res.on('end', function () {
-      internals.categories = JSON.parse(response);
+      self.categories = JSON.parse(response);
     });
   });
   request.on('error', function (err) {
@@ -56,24 +61,25 @@ function getCategories() {
   });
 
   request.end();
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-function performQuery()
-{
-  if (internals.waiting.length === 0) {
+OpenDNSSource.prototype.performQuery = function () {
+  var self = this;
+
+  if (self.waiting.length === 0) {
     return;
   }
 
-  if (internals.api.debug > 0) {
-    console.log("OpenDNS - Fetching %d", internals.waiting.length);
+  if (self.api.debug > 0) {
+    console.log("OpenDNS - Fetching %d", self.waiting.length);
   }
 
-  internals.outgoing++;
+  self.outgoing++;
 
   // http://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js/6158966
   // console.log("doing query:", waiting.length, "current cache", Object.keys(cache).length);
-  var postData = JSON.stringify(internals.waiting);
-  internals.waiting.length = 0;
+  var postData = JSON.stringify(self.waiting);
+  self.waiting.length = 0;
 
   var postOptions = {
       host: 'sgraph.api.opendns.com',
@@ -81,7 +87,7 @@ function performQuery()
       path: '/domains/categorization/',
       method: 'POST',
       headers: {
-          'Authorization': 'Bearer ' + internals.key,
+          'Authorization': 'Bearer ' + self.key,
           'Content-Type': 'application/x-www-form-urlencoded',
           'Content-Length': postData.length
       }
@@ -101,29 +107,29 @@ function performQuery()
         results = {};
       }
       for (var result in results) {
-        var info = internals.cache.get(result);
+        var info = self.cache.get(result);
         if (!info) {
           info = {};
-          internals.cache.set(result, info);
+          self.cache.set(result, info);
         }
-        var args = [internals.statusField, internals.statuses[results[result].status]];
+        var args = [self.statusField, self.statuses[results[result].status]];
 
         results[result].security_categories.forEach(function(value) {
-          if (internals.categories[value]) {
-            args.push(internals.scField, internals.categories[value]);
+          if (self.categories[value]) {
+            args.push(self.scField, self.categories[value]);
           } else {
             console.log("Bad OpenDNS SC", value);
           }
         });
         results[result].content_categories.forEach(function(value) {
-          if (internals.categories[value]) {
-            args.push(internals.ccField, internals.categories[value]);
+          if (self.categories[value]) {
+            args.push(self.ccField, self.categories[value]);
           } else {
             console.log("Bad OpenDNS CC", value);
           }
         });
 
-        info.result = {num: args.length/2, buffer: internals.api.encode.apply(null, args)};
+        info.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
         var cb;
         while ((cb = info.cbs.shift())) {
@@ -139,48 +145,64 @@ function performQuery()
   // post the data
   request.write(postData);
   request.end();
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  internals.key = api.getConfig("opendns", "key");
-  if (internals.key === undefined) {
+OpenDNSSource.prototype.init = function() {
+  this.key = this.api.getConfig("opendns", "key");
+  if (this.key === undefined) {
     console.log("OpenDNS - No key defined");
     return;
   }
 
-  internals.api = api;
-  internals.cache = LRU({max: api.getConfig("opendns", "cacheSize", 200000), 
-                      maxAge: 1000 * 60 * +api.getConfig("opendns", "cacheAgeMin", "60")});
+  this.cache = LRU({max: this.api.getConfig("opendns", "cacheSize", 200000), 
+                      maxAge: 1000 * 60 * +this.api.getConfig("opendns", "cacheAgeMin", "60")});
 
-  api.addSource("opendns", exports);
-  getCategories();
-  setInterval(getCategories, 10*60*1000);
-  setInterval(performQuery, 500);
+  this.api.addSource("opendns", this);
+  this.getCategories();
+  setInterval(this.getCategories.bind(this), 10*60*1000);
+  setInterval(this.performQuery.bind(this), 500);
 
-  internals.statusField = api.addField("field:opendns.domain.status;db:opendns.dmstatus-term;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
-  internals.scField = api.addField("field:opendns.domain.security;db:opendns.dmscat-term;kind:termfield;friendly:Security;help:OpenDNS domain security category;count:true");
-  internals.ccField = api.addField("field:opendns.domain.content;db:opendns.dmccat-term;kind:termfield;friendly:Security;help:OpenDNS domain content category;count:true");
+  this.statusField = this.api.addField("field:opendns.domain.status;db:opendns.dmstatus-term;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
+  this.scField = this.api.addField("field:opendns.domain.security;db:opendns.dmscat-term;kind:termfield;friendly:Security;help:OpenDNS domain security category;count:true");
+  this.ccField = this.api.addField("field:opendns.domain.content;db:opendns.dmccat-term;kind:termfield;friendly:Security;help:OpenDNS domain content category;count:true");
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.getDomain = function(domain, cb) {
-  var info = internals.cache.get(domain);
+OpenDNSSource.prototype.getDomain = function(domain, cb) {
+  var info = this.cache.get(domain);
   if (info) {
     if (info.result) {
-      internals.cached++;
+      this.cached++;
       return cb(null, info.result);
     }
-    internals.inprogress++;
+    this.inprogress++;
     info.cbs.push(cb);
     return;
   }
   info = {cbs:[cb]};
-  internals.cache.set(domain, info);
-  internals.waiting.push(domain);
-  if (internals.waiting.length > 1000) {
-    performQuery();
+  this.cache.set(domain, info);
+  this.waiting.push(domain);
+  if (this.waiting.length > 1000) {
+    this.performQuery();
   }
 };
 //////////////////////////////////////////////////////////////////////////////////
-exports.printStats = function() {
-  console.log("OpenDNS: outgoing:", internals.outgoing, "cached:", internals.cached, "inprogress:", internals.inprogress, "size:", internals.cache.itemCount);
+OpenDNSSource.prototype.dump = function(res) {
+  this.cache.forEach(function(value, key, cache) {
+    if (value.result) {
+      var str = "{key: \"" + key + "\", ops:\n" + 
+        wiseSource.result2Str(wiseSource.combineResults([value.result])) + "},\n";
+      res.write(str);
+    }
+  });
+  res.end();
 };
+//////////////////////////////////////////////////////////////////////////////////
+OpenDNSSource.prototype.printStats = function() {
+  console.log("OpenDNS: outgoing:", this.outgoing, "cached:", this.cached, "inprogress:", this.inprogress, "size:", this.cache.itemCount);
+};
+//////////////////////////////////////////////////////////////////////////////////
+exports.initSource = function(api) {
+  var source = new OpenDNSSource(api, "opendns");
+  source.init();
+};
+//////////////////////////////////////////////////////////////////////////////////
