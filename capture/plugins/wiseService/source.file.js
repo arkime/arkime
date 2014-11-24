@@ -102,6 +102,8 @@ FileSource.prototype.sendResult = function(key, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 FileSource.prototype.init = function() {
+  var self = this;
+
   if (this.file === undefined) {
     console.log("FILE - ERROR not loading", this.section, "since no file specified in config file");
     return;
@@ -163,15 +165,15 @@ FileSource.prototype.init = function() {
 
 
   // Watch file for changes, have to do the 100 because of vim moving file
-  this.watch = fs.watch(this.file, function watchCb(event, filename) {
+  self.watch = fs.watch(this.file, function watchCb(event, filename) {
     if (event === "rename") {
-      this.watch.close();
+      self.watch.close();
       setTimeout(function () {
-        this.load();
-        this.watch = fs.watch(this.file, watchCb);
+        self.load();
+        self.watch = fs.watch(self.file, watchCb);
       }, 100);
     } else {
-      this.load();
+      self.load();
     }
   });
 };
