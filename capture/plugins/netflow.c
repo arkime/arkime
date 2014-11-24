@@ -1,4 +1,7 @@
 /* netflow.c  -- Simple plugin that sends netflow data
+ *
+ * https://www.plixer.com/support/netflow_v5.html
+ * https://www.plixer.com/support/netflow_v7.html
  *     
  * Copyright 2012-2014 AOL Inc. All rights reserved.
  * 
@@ -63,14 +66,13 @@ void netflow_send()
     BSB_INIT(hbsb, buf, headerSize);
 
     uint32_t sys_uptime = (lastTime.tv_sec - initialPacket.tv_sec)*1000 + (lastTime.tv_usec - initialPacket.tv_usec)/1000;
-                 
 
     /* Header */
     BSB_EXPORT_u16(hbsb, netflowVersion);
     BSB_EXPORT_u16(hbsb, bufCount); // count
     BSB_EXPORT_u32(hbsb, sys_uptime); // sys_uptime
     BSB_EXPORT_u32(hbsb, lastTime.tv_sec);
-    BSB_EXPORT_u32(hbsb, lastTime.tv_usec);
+    BSB_EXPORT_u32(hbsb, lastTime.tv_usec*1000);
 
     switch (netflowVersion) {
     case 5:
@@ -113,56 +115,109 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         netflow_send();
     }
 
-    lastTime = session->lastPacket;
-
-    /* Body */
-    BSB_EXPORT_ptr(bsb, &session->addr1, 4);
-    BSB_EXPORT_ptr(bsb, &session->addr2, 4);
-    BSB_EXPORT_u32(bsb, 0); // nexthop
-    BSB_EXPORT_u16(bsb, netflowSNMPInput); // snmp input
-    BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
-    BSB_EXPORT_u32(bsb, session->packets[0] + session->packets[1]); 
-    BSB_EXPORT_u32(bsb, session->databytes[0] + session->databytes[1]);
+    if ((lastTime.tv_sec < session->lastPacket.tv_sec) || (lastTime.tv_sec == session->lastPacket.tv_sec && lastTime.tv_usec < session->lastPacket.tv_usec)) {
+        lastTime = session->lastPacket;
+    }
     uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->firstPacket.tv_usec - initialPacket.tv_usec)/1000;
     uint32_t last  = (session->lastPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->lastPacket.tv_usec - initialPacket.tv_usec)/1000;
-    BSB_EXPORT_u32(bsb, first);
-    BSB_EXPORT_u32(bsb, last);
-    BSB_EXPORT_u16(bsb, session->port1);
-    BSB_EXPORT_u16(bsb, session->port2);
 
-    switch (netflowVersion) {
-    case 1:
-        BSB_EXPORT_u08(bsb, 0); // pad
-        BSB_EXPORT_u08(bsb, session->protocol);
-        BSB_EXPORT_u08(bsb, session->ip_tos); // tos
-        BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
-        BSB_EXPORT_ptr(bsb, zero, 8); //pad
-        break;
-    case 5:
-        BSB_EXPORT_u08(bsb, 0); // pad
-        BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
-        BSB_EXPORT_u08(bsb, session->protocol);
-        BSB_EXPORT_u08(bsb, session->ip_tos); // tos
-        BSB_EXPORT_u16(bsb, 0); // src as
-        BSB_EXPORT_u16(bsb, 0); // dst as
-        BSB_EXPORT_u08(bsb, 0); // src_mask
-        BSB_EXPORT_u08(bsb, 0); // dst_mask
-        BSB_EXPORT_ptr(bsb, zero, 2); //pad
-        break;
-    case 7:
-        BSB_EXPORT_u08(bsb, 0); // pad
-        BSB_EXPORT_u08(bsb, session->tcp_flags);
-        BSB_EXPORT_u08(bsb, session->protocol);
-        BSB_EXPORT_u08(bsb, session->ip_tos);
-        BSB_EXPORT_u16(bsb, 0); // src as
-        BSB_EXPORT_u16(bsb, 0); // dst as
-        BSB_EXPORT_u08(bsb, 0); // src_mask
-        BSB_EXPORT_u08(bsb, 0); // dst_mask
-        BSB_EXPORT_u16(bsb, 0); // flags
-        BSB_EXPORT_u32(bsb, 0); // router_sc
-        break;
+    if (session->packets[0]) {
+        /* Body */
+        BSB_EXPORT_ptr(bsb, &session->addr1, 4);
+        BSB_EXPORT_ptr(bsb, &session->addr2, 4);
+        BSB_EXPORT_u32(bsb, 0); // nexthop
+        BSB_EXPORT_u16(bsb, netflowSNMPInput); // snmp input
+        BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
+        BSB_EXPORT_u32(bsb, session->packets[0]);
+        BSB_EXPORT_u32(bsb, session->bytes[0]);
+        BSB_EXPORT_u32(bsb, first);
+        BSB_EXPORT_u32(bsb, last);
+        BSB_EXPORT_u16(bsb, session->port1);
+        BSB_EXPORT_u16(bsb, session->port2);
+
+        switch (netflowVersion) {
+        case 1:
+            BSB_EXPORT_u08(bsb, 0); // pad
+            BSB_EXPORT_u08(bsb, session->protocol);
+            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
+            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_ptr(bsb, zero, 8); //pad
+            break;
+        case 5:
+            BSB_EXPORT_u08(bsb, 0); // pad
+            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_u08(bsb, session->protocol);
+            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
+            BSB_EXPORT_u16(bsb, 0); // src as
+            BSB_EXPORT_u16(bsb, 0); // dst as
+            BSB_EXPORT_u08(bsb, 0); // src_mask
+            BSB_EXPORT_u08(bsb, 0); // dst_mask
+            BSB_EXPORT_ptr(bsb, zero, 2); //pad
+            break;
+        case 7:
+            BSB_EXPORT_u08(bsb, 0); // pad
+            BSB_EXPORT_u08(bsb, session->tcp_flags);
+            BSB_EXPORT_u08(bsb, session->protocol);
+            BSB_EXPORT_u08(bsb, session->ip_tos);
+            BSB_EXPORT_u16(bsb, 0); // src as
+            BSB_EXPORT_u16(bsb, 0); // dst as
+            BSB_EXPORT_u08(bsb, 0); // src_mask
+            BSB_EXPORT_u08(bsb, 0); // dst_mask
+            BSB_EXPORT_u16(bsb, 0); // flags
+            BSB_EXPORT_u32(bsb, 0); // router_sc
+            break;
+        }
+        bufCount++;
     }
-    bufCount++;
+
+    if (session->packets[1]) {
+        /* Body */
+        BSB_EXPORT_ptr(bsb, &session->addr2, 4);
+        BSB_EXPORT_ptr(bsb, &session->addr1, 4);
+        BSB_EXPORT_u32(bsb, 0); // nexthop
+        BSB_EXPORT_u16(bsb, netflowSNMPInput); // snmp input
+        BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
+        BSB_EXPORT_u32(bsb, session->packets[1]);
+        BSB_EXPORT_u32(bsb, session->bytes[1]);
+        BSB_EXPORT_u32(bsb, first);
+        BSB_EXPORT_u32(bsb, last);
+        BSB_EXPORT_u16(bsb, session->port2);
+        BSB_EXPORT_u16(bsb, session->port1);
+
+        switch (netflowVersion) {
+        case 1:
+            BSB_EXPORT_u08(bsb, 0); // pad
+            BSB_EXPORT_u08(bsb, session->protocol);
+            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
+            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_ptr(bsb, zero, 8); //pad
+            break;
+        case 5:
+            BSB_EXPORT_u08(bsb, 0); // pad
+            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_u08(bsb, session->protocol);
+            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
+            BSB_EXPORT_u16(bsb, 0); // src as
+            BSB_EXPORT_u16(bsb, 0); // dst as
+            BSB_EXPORT_u08(bsb, 0); // src_mask
+            BSB_EXPORT_u08(bsb, 0); // dst_mask
+            BSB_EXPORT_ptr(bsb, zero, 2); //pad
+            break;
+        case 7:
+            BSB_EXPORT_u08(bsb, 0); // pad
+            BSB_EXPORT_u08(bsb, session->tcp_flags);
+            BSB_EXPORT_u08(bsb, session->protocol);
+            BSB_EXPORT_u08(bsb, session->ip_tos);
+            BSB_EXPORT_u16(bsb, 0); // src as
+            BSB_EXPORT_u16(bsb, 0); // dst as
+            BSB_EXPORT_u08(bsb, 0); // src_mask
+            BSB_EXPORT_u08(bsb, 0); // dst_mask
+            BSB_EXPORT_u16(bsb, 0); // flags
+            BSB_EXPORT_u32(bsb, 0); // router_sc
+            break;
+        }
+        bufCount++;
+    }
 }
 
 /******************************************************************************/
