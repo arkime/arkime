@@ -115,7 +115,7 @@ if [ $DOPFRING -eq 1 ]; then
     # pfring
     echo "MOLOCH: Building libpcap with pfring";
     if [ ! -f "PF_RING-$PFRING.tar.gz" ]; then
-      wget -O PF_RING-$PFRING.tar.gz http://sourceforge.net/projects/ntop/files/PF_RING/PF_RING-$PFRING.tar.gz/download
+      wget -O PF_RING-$PFRING.tar.gz http://sourceforge.net/projects/ntop/files/PF_RING/Old/PF_RING-$PFRING.tar.gz/download
     fi
     tar zxf PF_RING-$PFRING.tar.gz
     (cd PF_RING-$PFRING; make)
