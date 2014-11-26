@@ -4009,7 +4009,7 @@ $as_echo "$withval" >&6; }
       fi
 
       PCAP_CFLAGS="-I$withval/userland/libpcap"
-      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
+      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a -lnuma"
     elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
       owd=`pwd`
       if cd $withval; then
@@ -4018,7 +4018,7 @@ $as_echo "$withval" >&6; }
       fi
 
       PCAP_CFLAGS="-I$withval/userland/libpcap/include"
-      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a"
+      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a -lnuma"
     else
       as_fn_error $? "pcap.h or libpcap.a not found in $withval" "$LINENO" 5
     fi

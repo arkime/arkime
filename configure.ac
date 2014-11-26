@@ -55,7 +55,7 @@ AC_ARG_WITH(pfring,
       fi
 
       PCAP_CFLAGS="-I$withval/userland/libpcap"
-      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a"
+      PCAP_LIBS="$withval/userland/libpcap/libpcap.a $withval/userland/lib/libpfring.a -lnuma"
     elif test -f $withval/userland/libpcap/include/pcap.h -a -f $withval/userland/libpcap/lib/libpcap.a; then
       owd=`pwd`
       if cd $withval; then
@@ -64,7 +64,7 @@ AC_ARG_WITH(pfring,
       fi
 
       PCAP_CFLAGS="-I$withval/userland/libpcap/include"
-      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a"
+      PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a -lnuma"
     else
       AC_ERROR(pcap.h or libpcap.a not found in $withval)
     fi

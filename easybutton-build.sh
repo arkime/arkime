@@ -14,7 +14,7 @@ YARA=1.7
 GEOIP=1.6.0
 PCAP=1.5.3
 NIDS=1.24
-PFRING=5.6.1
+PFRING=6.0.2
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -119,6 +119,10 @@ if [ $DOPFRING -eq 1 ]; then
     fi
     tar zxf PF_RING-$PFRING.tar.gz
     (cd PF_RING-$PFRING; make)
+    if [ $? -ne 0 ]; then
+      echo "MOLOCH: pfring failed to build"
+      exit 1
+    fi
 
     PFRINGDIR=`pwd`/PF_RING-$PFRING
     PCAPDIR=$PFRINGDIR/userland/libpcap
