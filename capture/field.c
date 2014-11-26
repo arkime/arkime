@@ -114,7 +114,7 @@ int moloch_field_define_text(char *text, int *shortcut)
     }
 
     if (!field) {
-        LOG("Didn't find field 'field:'");
+        LOG("Didn't find field 'field:' in '%s'", text);
         g_strfreev(elements);
         return -1;
     }
@@ -125,18 +125,18 @@ int moloch_field_define_text(char *text, int *shortcut)
         if (pos != -1)
             return pos;
 
-        LOG("Didn't find field 'db:'");
+        LOG("Didn't find field 'db:' in '%s'", text);
         return -1;
     }
 
     if (!kind) {
-        LOG("Didn't find field 'kind:'");
+        LOG("Didn't find field 'kind:' in '%s'", text);
         g_strfreev(elements);
         return -1;
     }
 
     if (strstr(kind, "termfield") != 0 && strstr(db, "-term") == 0) {
-        LOG("ERROR - db field %s for %s should end with -term", kind, db);
+        LOG("ERROR - db field %s for %s should end with -term in '%s'", kind, db, text);
         exit(1);
     }
 
@@ -404,7 +404,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
     MolochStringHashStd_t *hash;
     MolochString_t        *hstring;
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED)
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     if (!session->fields[pos]) {
@@ -486,7 +486,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     MolochIntHashStd_t   *hash;
     MolochInt_t          *hint;
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED)
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     if (!session->fields[pos]) {

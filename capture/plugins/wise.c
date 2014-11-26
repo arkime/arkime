@@ -166,6 +166,8 @@ void wise_load_fields()
         int len = 0;
         BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
         fieldsMap[i] = moloch_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
+        if (fieldsMap[i] == -1)
+            fieldsTS = 0;
         if (config.debug)
             LOG("%d %d %s", i, fieldsMap[i], BSB_WORK_PTR(bsb));
         BSB_IMPORT_skip(bsb, len);
@@ -591,6 +593,6 @@ void moloch_plugin_init()
         HASH_INIT(wih_, itemHash[h], moloch_string_hash, wise_item_cmp);
         DLL_INIT(wil_, &itemList[h]);
     }
-    wise_load_fields();
     g_timeout_add_seconds( 1, wise_flush, 0);
+    wise_load_fields();
 }
