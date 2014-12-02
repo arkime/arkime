@@ -104,7 +104,7 @@ freeSpaceG = 600
 viewPort = 8005
 
 # The host/ip to listen on, by default 0.0.0.0 which is ALL
-#viewHost = localhost
+#viewHost = 127.0.0.1
 
 # By default the viewer process is https://hostname:<viewPort> for each node.
 #viewUrl = https://HOSTNAME:8005
@@ -169,7 +169,7 @@ pluginsDir=_TDIR_/plugins
 # Netflow version 1,5,7 supported, 7 by default
 #netflowVersion=1
 # Semicolon ';' seperated list of netflow destinations
-#netflowDestinations=localhost:9993
+#netflowDestinations=127.0.0.1:9993
 
 # Specify the max number of indices we calculate spidata for.
 # ES will blow up if we allow the spiData to search too many indices.

@@ -48,7 +48,7 @@ fi
 
 umask 022
 
-if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" ]; then
+if [ "$(stat --printf=%a easybutton-singlehost.sh)" != "755" -a "$(stat --printf=%a easybutton-singlehost.sh)" != "775" ]; then
    echo "WARNING - looks like a umask 022 wasn't used for git clone, this might cause strange errors" 1>&2
    sleep 3
 fi
@@ -225,7 +225,7 @@ cat ${INSTALL_DIR}/single-host/bin/run_viewer.sh | sed -e "s,_TDIR_,${TDIR},g" >
 chmod 755 ${TDIR}/bin/run*.sh
 
 
-cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,localhost:9200,g" > ${TDIR}/db/daily.sh
+cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,127.0.0.1:9200,g" > ${TDIR}/db/daily.sh
 
 
 chown daemon:daemon ${TDIR}/viewer/public
@@ -240,12 +240,18 @@ ${INSTALL_DIR}/easybutton-config.sh "$TDIR"
 echo "MOLOCH: Starting ElasticSearch"
 
 ${TDIR}/bin/run_es.sh
+sleep 5
+until curl -sS 'http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=5s'
+do
+    echo "Waiting for ES to start"
+    sleep 1
+done
+echo
 
-sleep 10
 
 echo "MOLOCH: Building database"
 cd ${TDIR}/db
-./db.pl localhost:9200 init
+./db.pl 127.0.0.1:9200 init
 
 
 echo "MOLOCH: Adding user admin/admin"
