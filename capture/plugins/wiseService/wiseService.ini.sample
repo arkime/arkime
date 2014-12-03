@@ -5,6 +5,7 @@
 # Configuration for the wiseService itself.
 [wiseService]
 port=8081
+excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa
 
 # OpenDNS Umbrella Integration - https://www.opendns.com/enterprise-security/
 [opendns]
@@ -39,6 +40,7 @@ tags=TAG1,TAG2
 
 # To load URLs, set a unique section title starting with url:
 # Type should be ip, domain, md5, email
+# URLs are assumed to be CSV or use format=tagger
 [url:zeus.ips]
 url=https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
 tags=zeustracker,botnet
