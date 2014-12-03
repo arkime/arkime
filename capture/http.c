@@ -331,9 +331,6 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
 /******************************************************************************/
 void moloch_http_finish( MolochConn_t *conn, gboolean sync)
 {
-    char line[1000];
-    strcpy(line, conn->line);
-
     conn->hp_complete = 0;
     http_parser_init(&conn->parser, HTTP_RESPONSE);
 
