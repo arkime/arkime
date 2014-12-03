@@ -51,10 +51,9 @@ static int                   fieldsMap[256];
 
 static uint32_t              inflight;
 
-static int validDNS[] = {
+static const int validDNS[256] = {
     ['-'] = 1,
     ['_'] = 1,
-    ['.'] = 1,
     ['a' ... 'z'] = 1,
     ['A' ... 'Z'] = 1,
     ['0' ... '9'] = 1
@@ -398,11 +397,17 @@ void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, 
 /******************************************************************************/
 void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *domain)
 {
-    char *end = domain;
-    char *colon = 0;
+    unsigned char *end = (unsigned char*)domain;
+    unsigned char *colon = 0;
+    int            period = 0;
 
     while (*end) {
-        if (!validDNS[(int)*end]) {
+        if (!validDNS[*end]) {
+            if (*end == '.') {
+                period++;
+                end++;
+                continue;
+            }
             if (*end == ':') {
                 colon = end;
                 *colon = 0;
@@ -414,6 +419,13 @@ void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *
             return;
         }
         end++;
+    }
+
+    if (period == 0) {
+        if (config.debug) {
+            LOG("Invalid DNS: %s", domain);
+        }
+        return;
     }
 
     wise_lookup(session, request, domain, INTEL_TYPE_DOMAIN);
