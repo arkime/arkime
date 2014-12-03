@@ -308,6 +308,7 @@ internals.global_allowed.ip = function(value) {
     }
     return false;
   }
+  return true;
 };
 internals.global_allowed.md5 = function(value) {return true;};
 internals.global_allowed.email = function(value) {
