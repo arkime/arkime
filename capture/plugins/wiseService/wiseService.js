@@ -47,7 +47,8 @@ var internals = {
   sources: [],
   rstats: [0,0,0,0],
   fstats: [0,0,0,0],
-  allowed: {}
+  global_allowed: {},
+  source_allowed: {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -191,9 +192,14 @@ app.post("/get", function(req, res) {
       queries.push({type: type, value: value});
       internals.rstats[type]++;
     }
+
     async.map(queries, function (query, cb) {
+      var name = internals.type2Name[query.type];
+      if (!internals.global_allowed[name](query.value)) {
+        return cb(null, wiseSource.combineResults([]));
+      }
       async.map(internals[internals.funcNames[query.type] + "s"], function(src, cb) {
-        if (internals.allowed[internals.type2Name[query.type]](src, query.value)) {
+        if (internals.source_allowed[name](src, query.value)) {
           src[internals.funcNames[query.type]](query.value, cb);
         } else {
           setImmediate(cb, undefined);
@@ -259,8 +265,14 @@ app.get("/:type/:value", function(req, res) {
   if (!fn) {
     return res.end("Unknown type " + req.params.type);
   }
+
+  if (!internals.global_allowed[req.params.type](req.params.value)) {
+    var result = wiseSource.combineResults([]);
+    return res.end(wiseSource.result2Str(result));
+  }
+
   async.map(internals[fn + "s"], function(src, cb) {
-    if (internals.allowed[req.params.type](src, req.params.value)) {
+    if (internals.source_allowed[req.params.type](src, req.params.value)) {
       src[fn](req.params.value, cb);
     } else {
       setImmediate(cb, undefined);
@@ -289,13 +301,38 @@ function printStats()
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
-internals.allowed.ip = function(src, value) {
+internals.global_allowed.ip = function(value) {
   if (internals.excludeIPs.find(value)) {
     if (internals.debug > 0) {
       console.log("Found in Global IP Exclude", value);
     }
     return false;
   }
+};
+internals.global_allowed.md5 = function(value) {return true;};
+internals.global_allowed.email = function(value) {
+  for(var i = 0; i < internals.excludeEmails.length; i++) {
+    if (value.match(internals.excludeEmails[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in Global Email Exclude", value);
+      }
+      return false;
+    }
+  }
+  return true;
+};
+internals.global_allowed.domain = function(value) {
+  for(var i = 0; i < internals.excludeDomains.length; i++) {
+    if (value.match(internals.excludeDomains[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in Global Domain Exclude", value);
+      }
+      return false;
+    }
+  }
+  return true;
+};
+internals.source_allowed.ip = function(src, value) {
   if (src.excludeIPs.find(value)) {
     if (internals.debug > 0) {
       console.log("Found in", src.section, "IP Exclude", value);
@@ -304,18 +341,9 @@ internals.allowed.ip = function(src, value) {
   }
   return true;
 };
-internals.allowed.md5 = function(src, value) {return true;};
-internals.allowed.email = function(src, value) {
-  var i;
-  for(i = 0; i < internals.excludeEmails.length; i++) {
-    if (value.match(internals.excludeEmails[i])) {
-      if (internals.debug > 0) {
-        console.log("Found in Global Email Exclude", value);
-      }
-      return false;
-    }
-  }
-  for(i = 0; i < src.excludeEmails.length; i++) {
+internals.source_allowed.md5 = function(src, value) {return true;};
+internals.source_allowed.email = function(src, value) {
+  for(var i = 0; i < src.excludeEmails.length; i++) {
     if (value.match(src.excludeEmails[i])) {
       if (internals.debug > 0) {
         console.log("Found in", src.section, "Email Exclude", value);
@@ -325,17 +353,8 @@ internals.allowed.email = function(src, value) {
   }
   return true;
 };
-internals.allowed.domain = function(src, value) {
-  var i;
-  for(i = 0; i < internals.excludeDomains.length; i++) {
-    if (value.match(internals.excludeDomains[i])) {
-      if (internals.debug > 0) {
-        console.log("Found in Global Domain Exclude", value);
-      }
-      return false;
-    }
-  }
-  for(i = 0; i < src.excludeDomains.length; i++) {
+internals.source_allowed.domain = function(src, value) {
+  for(var i = 0; i < src.excludeDomains.length; i++) {
     if (value.match(src.excludeDomains[i])) {
       if (internals.debug > 0) {
         console.log("Found in", src.section, "Domain Exclude", value);

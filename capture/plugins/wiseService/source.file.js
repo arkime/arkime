@@ -48,7 +48,11 @@ FileSource.prototype.load = function() {
     newCache = {items: [], trie: new iptrie.IPTrie()};
     setFunc  = function(key, value) {
       var parts = key.split("/");
-      newCache.trie.add(parts[0], +parts[1] || 32, value);
+      try {
+        newCache.trie.add(parts[0], +parts[1] || 32, value);
+      } catch (e) {
+        console.log("ERROR adding", this.section, key, e);
+      }
       newCache.items[key] = value;
       count++;
     };

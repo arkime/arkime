@@ -114,20 +114,25 @@ OpenDNSSource.prototype.performQuery = function () {
         }
         var args = [self.statusField, self.statuses[results[result].status]];
 
-        results[result].security_categories.forEach(function(value) {
-          if (self.categories[value]) {
-            args.push(self.scField, self.categories[value]);
-          } else {
-            console.log("Bad OpenDNS SC", value);
-          }
-        });
-        results[result].content_categories.forEach(function(value) {
-          if (self.categories[value]) {
-            args.push(self.ccField, self.categories[value]);
-          } else {
-            console.log("Bad OpenDNS CC", value);
-          }
-        });
+        if (results[result].security_categories) {
+          results[result].security_categories.forEach(function(value) {
+            if (self.categories[value]) {
+              args.push(self.scField, self.categories[value]);
+            } else {
+              console.log("Bad OpenDNS SC", value);
+            }
+          });
+        }
+
+        if (results[result].content_categories) {
+          results[result].content_categories.forEach(function(value) {
+            if (self.categories[value]) {
+              args.push(self.ccField, self.categories[value]);
+            } else {
+              console.log("Bad OpenDNS CC", value, results);
+            }
+          });
+        }
 
         info.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
