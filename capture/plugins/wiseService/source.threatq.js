@@ -26,6 +26,7 @@ var fs             = require('fs')
 function ThreatQSource (api, section) {
   ThreatQSource.super_.call(this, api, section);
   this.key     = api.getConfig("threatq", "key");
+  this.host    = api.getConfig("threatq", "host");
   this.ips     = {};
   this.domains = {};
   this.emails  = {};
@@ -88,7 +89,7 @@ ThreatQSource.prototype.parseFile = function()
 ThreatQSource.prototype.loadFile = function() {
   var self = this;
   console.log("ThreatQ - Downloading files");
-  wiseSource.request('https://demo.threatq.com/export/moloch/?export_key=' + self.key,  '/tmp/threatquotient.zip', function (statusCode) {
+  wiseSource.request('https://' + self.host + '/export/moloch/?export_key=' + self.key,  '/tmp/threatquotient.zip', function (statusCode) {
     if (statusCode === 200 || !self.loaded) {
       self.loaded = true;
       self.parseFile();
@@ -99,6 +100,11 @@ ThreatQSource.prototype.loadFile = function() {
 ThreatQSource.prototype.init = function() {
   if (this.key === undefined) {
     console.log("ThreatQ - No export key defined");
+    return;
+  }
+  
+  if (this.host === undefined) {
+    console.log("ThreatQ - No server host defined");
     return;
   }
 
