@@ -1,5 +1,5 @@
 0.11.3 2014/xx/xx
-  - NOTICE: Only 1.2.x and 1.3.x are supported by this version. 
+  - NOTICE: Only 1.[234].x are supported by this version. 
             Restart viewer AFTER upgrading ES versions
   - NOTICE: Requires running npm update for ES 1.3 support
   - For NEW installs can now set a prefix= config variable and 
