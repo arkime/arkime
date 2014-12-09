@@ -46,6 +46,7 @@ var Config         = require('./config.js'),
     http           = require('http'),
     jade           = require('jade'),
     https          = require('https'),
+    EventEmitter   = require('events').EventEmitter,
     KAA            = require('keep-alive-agent');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
@@ -74,6 +75,7 @@ var internals = {
   previousNodeStats: [],
   caTrustCerts: {},
   cronRunning: false,
+  pluginEmitter: new EventEmitter(),
 
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
@@ -230,6 +232,32 @@ function loadFields() {
   });
 }
 
+function loadPlugins() {
+  var plugins = Config.get("viewerPlugins", "").split(";");
+  var dirs = Config.get("pluginsDir", "/data/moloch/plugins").split(";");
+  plugins.forEach(function (plugin) {
+    plugin = plugin.trim();
+    if (plugin === "") {
+      return;
+    }
+    var found = false;
+    dirs.forEach(function (dir) {
+      dir = dir.trim();
+      if (found || dir === "") {
+        return;
+      }
+      if (fs.existsSync(dir + "/" + plugin)) {
+        found = true;
+        var p = require(dir + "/" + plugin);
+        p.init(Config, internals.pluginEmitter);
+      }
+    });
+    if (!found) {
+      console.log("WARNING - Couldn't find plugin", plugin, "in", dirs);
+    }
+  });
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Utility
 //////////////////////////////////////////////////////////////////////////////////
@@ -275,7 +303,7 @@ function createSessionDetail() {
         var files = fs.readdirSync(dir);
         files.forEach(function(file) {
           if (file.match(/\.detail\.jade$/i) && !found["plugin-" + file]) {
-            found[file] = dir + "/" + file;
+            found[file] = "  include " + dir + "/" + file + "\n";
           }
         });
       } catch (e) {}
@@ -289,23 +317,32 @@ function createSessionDetail() {
         var files = fs.readdirSync(dir);
         files.forEach(function(file) {
           if (file.match(/\.detail\.jade$/i) && !found["parser-" + file]) {
-            found[file] = dir + "/" + file;
+            found[file] = "  include " + dir + "/" + file + "\n";
           }
         });
       } catch (e) {}
     });
   }
 
-  internals.sessionDetail =    "include views/mixins\n" +
-                               "div.sessionDetail(sessionid='#{session.id}')\n" +
-                               "  include views/sessionDetail-standard\n";
-  Object.keys(found).sort().forEach(function(k) {
-    internals.sessionDetail += "  include " + found[k] + "\n";
+  var makers = internals.pluginEmitter.listeners("makeSessionDetail");
+  async.each(makers, function(cb, nextCb) {
+    cb(function (err, items) {
+      for (var k in items) {
+        found[k] = items[k].replace(/^/mg, "  ") + "\n";
+      }
+      return nextCb();
+    });
+  }, function () {
+    internals.sessionDetail =    "include views/mixins\n" +
+                                 "div.sessionDetail(sessionid='#{session.id}')\n" +
+                                 "  include views/sessionDetail-standard\n";
+    Object.keys(found).sort().forEach(function(k) {
+      internals.sessionDetail += found[k];
+    });
+    internals.sessionDetail +=   "  include views/sessionDetail-body\n";
+    internals.sessionDetail +=   "include views/sessionDetail-footer\n";
   });
-  internals.sessionDetail +=   "  include views/sessionDetail-body\n";
-  internals.sessionDetail +=   "include views/sessionDetail-footer\n";
 }
-createSessionDetail();
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Requests
@@ -4880,8 +4917,14 @@ function main () {
 
   expireCheckAll();
   setInterval(expireCheckAll, 60*1000);
+
   loadFields();
   setInterval(loadFields, 2*60*1000);
+
+  loadPlugins();
+
+  createSessionDetail();
+  setInterval(createSessionDetail, 5*60*1000);
 
   if (Config.get("cronQueries", false)) {
     console.log("This node will process Cron Queries");

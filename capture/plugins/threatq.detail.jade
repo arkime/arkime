@@ -1,7 +1,0 @@
-if (session.threatq)
-  div.sessionDetailMeta.bold ThreatQ
-  dl.sessionDetailMeta
-    +arrayList(session.threatq, "id", "Id", "threatq.id")
-    +arrayList(session.threatq, "type-term", "Type", "threatq.type")
-    +arrayList(session.threatq, "source-term", "Source", "threatq.source")
-    +arrayList(session.threatq, "campaign-term", "Campaign", "threatq.campaign")

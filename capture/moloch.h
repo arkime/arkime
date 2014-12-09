@@ -170,6 +170,7 @@ typedef struct moloch_field_info {
     char                     *dbGroup;
     int                       dbGroupLen;
     char                     *group;
+    char                     *kind;
     int                       pos;
     uint16_t                  type;
     uint16_t                  flags;

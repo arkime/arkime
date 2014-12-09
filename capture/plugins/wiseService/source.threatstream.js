@@ -122,6 +122,16 @@ ThreatStreamSource.prototype.init = function() {
   this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
   this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
 
+  this.api.addView("threatstream", 
+    "if (session.threatstream)\n" +
+    "  div.sessionDetailMeta.bold Threatstream\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.threatstream, 'severity-term', 'Severity', 'threatstream.severity')\n" +
+    "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
+    "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
+    "    +arrayList(session.threatstream, 'type-term', 'Type', 'threatstream.type')\n" +
+    "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n"
+  );
 
   this.loadFile();
   setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours

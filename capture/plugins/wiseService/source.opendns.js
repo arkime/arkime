@@ -170,6 +170,16 @@ OpenDNSSource.prototype.init = function() {
   this.statusField = this.api.addField("field:opendns.domain.status;db:opendns.dmstatus-term;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
   this.scField = this.api.addField("field:opendns.domain.security;db:opendns.dmscat-term;kind:termfield;friendly:Security;help:OpenDNS domain security category;count:true");
   this.ccField = this.api.addField("field:opendns.domain.content;db:opendns.dmccat-term;kind:termfield;friendly:Security;help:OpenDNS domain content category;count:true");
+
+  this.api.addView("opendns", 
+    "if (session.opendns)\n" +
+    "  div.sessionDetailMeta.bold OpenDNS\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.opendns, 'dmstatus-term', 'Status', 'opendns.domain.status')\n" +
+    "    +arrayList(session.opendns, 'dmscat-term', 'Security Cat', 'opendns.domain.security')\n" +
+    "    +arrayList(session.opendns, 'dmccat-term', 'Content Cat', 'opendns.domain.content')\n"
+  );
+
 };
 //////////////////////////////////////////////////////////////////////////////////
 OpenDNSSource.prototype.getDomain = function(domain, cb) {

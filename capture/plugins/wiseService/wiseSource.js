@@ -179,6 +179,11 @@ WISESource.request = function (url, file, cb) {
   if (file) {
     if (fs.existsSync(file)) {
       var stat = fs.statSync(file);
+
+      // Don't download again if file is less then 1 minutes old
+      if (Date.now() - stat.mtime.getTime() < 60000) {
+        return setImmediate(cb, 304);
+      }
       headers['If-Modified-Since'] = stat.mtime.toUTCString();
     }
   }

@@ -48,7 +48,8 @@ var internals = {
   rstats: [0,0,0,0],
   fstats: [0,0,0,0],
   global_allowed: {},
-  source_allowed: {}
+  source_allowed: {},
+  views: {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +136,9 @@ internals.sourceApi = {
   getConfig: getConfig,
   getConfigSections: getConfigSections,
   addField: addField,
+  addView: function (name, view) {
+    internals.views[name] = view;
+  },
   debug: internals.debug,
   addSource: function(section, src) {
     internals.sources[section] = src;
@@ -169,6 +173,10 @@ function loadSources() {
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/fields", function(req, res) {
   res.send(internals.fieldsBuf);
+});
+//////////////////////////////////////////////////////////////////////////////////
+app.get("/views", function(req, res) {
+  res.send(internals.views);
 });
 //////////////////////////////////////////////////////////////////////////////////
 internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail"];

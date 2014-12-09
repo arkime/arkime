@@ -52,7 +52,7 @@ URLSource.prototype.load = function() {
       try {
         newCache.trie.add(parts[0], +parts[1] || 32, value);
       } catch (e) {
-        console.log("ERROR adding", this.section, key, e);
+        console.log("ERROR adding", self, key, e);
       }
       newCache.items[key] = value;
       count++;

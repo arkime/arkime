@@ -5,7 +5,7 @@
 # Configuration for the wiseService itself.
 [wiseService]
 port=8081
-excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa
+excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.mcafee.com;*.avqs.mcafee.com;*.bl.barracuda.com;*.lbl8.mailshell.net;*.dnsbl.sorbs.net;*.s.sophosxl.net
 
 # OpenDNS Umbrella Integration - https://www.opendns.com/enterprise-security/
 [opendns]
@@ -24,6 +24,10 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa
 [threatq]
 #key=
 #host=
+
+Alien Vault - https://www.alienvault.com/
+[alienvault]
+#key=
 
 # ReverseDNS
 [reversedns]

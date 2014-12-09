@@ -31,6 +31,12 @@
   - WISE - reversedns support (issue #217)
   - WISE - CIDR support (issue #312)
   - WISE - filtering (issue #314)
+  - WISE - AlienVault support
+  - MultiES fixes with tags search
+  - Start of viewer plugins, set with viewerPlugins
+  - WISE - views now downloaded from wiseService
+    - Requires viewerPlugins=wise.js in ini file
+    - if upgrading (cd plugins ; rm emergingthreats.detail.jade opendns.detail.jade threatq.detail.jade threatstream.detail.jade)
   
 
 0.11.2 2014/10/16

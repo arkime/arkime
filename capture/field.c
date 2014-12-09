@@ -58,6 +58,8 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
         } else if (strncmp("dbField", (char*)data + out[i], 7) == 0) {
             info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen  = out[i+3];
+        } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
+            info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
                 info->flags    |= MOLOCH_FIELD_FLAG_DISABLED;
@@ -202,6 +204,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         minfo->pos         = -1;
         minfo->expression  = g_strdup(expression);
         minfo->group       = g_strdup(group);
+        minfo->kind        = g_strdup(kind);
         HASH_ADD(d_, fieldsByDb, minfo->dbField, minfo);
         HASH_ADD(e_, fieldsByExp, minfo->expression, minfo);
 
@@ -210,6 +213,10 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             va_start(args, flags);
             moloch_db_add_field(group, kind, expression, friendlyName, dbField, help, args);
             va_end(args);
+        }
+    } else {
+        if (strcmp(kind, minfo->kind) != 0) {
+            LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
         }
     }
 
@@ -394,6 +401,8 @@ void moloch_field_exit()
             g_free(info->expression);
         if (info->group)
             g_free(info->group);
+        if (info->kind)
+            g_free(info->kind);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
     );
 }

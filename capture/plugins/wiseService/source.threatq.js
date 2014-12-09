@@ -2,13 +2,13 @@
 /*
  *
  * Copyright 2012-2014 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -102,7 +102,7 @@ ThreatQSource.prototype.init = function() {
     console.log("ThreatQ - No export key defined");
     return;
   }
-  
+
   if (this.host === undefined) {
     console.log("ThreatQ - No server host defined");
     return;
@@ -115,6 +115,15 @@ ThreatQSource.prototype.init = function() {
   this.sourceField = this.api.addField("field:threatq.source;db:threatq.source-term;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true");
   this.campaignField = this.api.addField("field:threatq.camapign;db:threatq.camapign-term;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true");
 
+  this.api.addView("threatq", 
+    "if (session.threatq)\n" +
+    "  div.sessionDetailMeta.bold ThreatQ\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.threatq, 'id', 'Id', 'threatq.id')\n" +
+    "    +arrayList(session.threatq, 'type-term', 'Type', 'threatq.type')\n" +
+    "    +arrayList(session.threatq, 'source-term', 'Source', 'threatq.source')\n" +
+    "    +arrayList(session.threatq, 'campaign-term', 'Campaign', 'threatq.campaign')\n"
+  );
 
   this.loadFile();
   setInterval(this.loadFile.bind(this), 24*60*60*1000); // Reload file every 24 hours
@@ -143,7 +152,7 @@ ThreatQSource.prototype.dump = function(res) {
     res.write("" + ckey + ":\n");
     var cache = self[ckey];
     for (var key in cache) {
-      var str = "{key: \"" + key + "\", ops:\n" + 
+      var str = "{key: \"" + key + "\", ops:\n" +
         wiseSource.result2Str(wiseSource.combineResults([cache[key]])) + "},\n";
       res.write(str);
     }

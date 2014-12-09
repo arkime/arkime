@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "moloch.h"
 #include "nids.h"
 #include "bsb.h"
@@ -424,6 +425,15 @@ void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *
     if (period == 0) {
         if (config.debug) {
             LOG("Invalid DNS: %s", domain);
+        }
+        return;
+    }
+
+    // Last character is digit, can't be a domain, so either ip or bogus
+    if (isdigit(*(end-1))) {
+        struct in_addr addr;
+        if (inet_pton(AF_INET, domain, &addr) == 1) {
+            wise_lookup(session, request, domain, INTEL_TYPE_IP);
         }
         return;
     }
