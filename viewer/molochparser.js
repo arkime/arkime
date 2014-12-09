@@ -325,6 +325,10 @@ function parseIpPort(yy, field, ipPortStr) {
       ListToArray(ipPortStr).forEach(function(str) {
         obj.bool.should.push(parseIpPort(yy, field, str));
       });
+      // Optimize 1 item in array
+      if (obj.bool.should.length === 1) {
+        obj = obj.bool.should[0];
+      }
       return obj;
   }
 
@@ -562,8 +566,9 @@ function stringQuery(yy, field, str) {
       }
     }
 
-    var obj =  {query: {bool: {should: []}}};
+    var obj =  [];
     var terms = null;
+    var needQueryWrap = false;
     strs.forEach(function(str) {
       var should;
 
@@ -572,11 +577,12 @@ function stringQuery(yy, field, str) {
 
         should = {regexp: {}};
         should.regexp[rawField] = str.substring(1, str.length-1);
-        obj.query.bool.should.push(should);
+        obj.push(should);
       } else if (typeof str === "string" && str.indexOf("*") !== -1) {
         should = {wildcard: {}};
         should.wildcard[rawField] = str;
-        obj.query.bool.should.push(should);
+        obj.push(should);
+        needQueryWrap = true;
       } else {
         if (str[0] === "\"" && str[str.length -1] === "\"") {
           str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
@@ -587,17 +593,27 @@ function stringQuery(yy, field, str) {
           if (terms === null) {
             terms = {terms: {}};
             terms.terms[dbField] = [];
-            obj.query.bool.should.push(terms);
+            obj.push(terms);
           }
           terms.terms[dbField].push(str);
         } else {
           should = {match: {}};
           should.match[dbField] = {query: str, type: "phrase", operator: "and"}
-          obj.query.bool.should.push(should);
+          obj.push(should);
+          needQueryWrap = true;
         }
       }
     });
 
+    if (obj.length === 1) {
+      obj = obj[0];
+    } else {
+      obj = {bool: {should: obj}};
+    }
+
+    if (needQueryWrap) {
+      obj = {query: obj};
+    }
     return obj;
   }
 
