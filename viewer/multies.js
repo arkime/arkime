@@ -118,7 +118,7 @@ function simpleGather(req, res, bodies, doneCb) {
       });
       pres.on('end', function () {
         if (result.length) {
-          result = result.replace(new RegExp('"' + prefix + "(sessions|stats|tags|dstats|sequence|fields|files|users)", "g"), "\"MULTIPREFIX_$1");
+          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|tags|dstats|sequence|fields|files|users)", "g"), "$1\"MULTIPREFIX_$2");
           result = JSON.parse(result);
         } else {
           result = {};
