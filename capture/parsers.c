@@ -301,6 +301,12 @@ void moloch_parsers_init()
         MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
+    moloch_field_define("general", "lotermfield",
+        "asset", "Asset", "asset-term",
+        "Asset name",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
     snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
     moloch_db_get_tag(NULL, tagsField, nodeTag, NULL);
 
