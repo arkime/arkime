@@ -9,6 +9,7 @@ use strict;
 
 # Clear out node2
     system("../db/db.pl --prefix tests2 localhost:9200 initnoprompt 2>&1 1>/dev/null");
+    esCopy("tests_fields", "tests2_fields", "field");
 
 
 # Make sure no items

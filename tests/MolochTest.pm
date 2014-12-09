@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use JSON;
 use URI::Escape;
+use Data::Dumper;
 
 $MolochTest::userAgent = LWP::UserAgent->new(timeout => 120);
 $MolochTest::host = "127.0.0.1";
@@ -52,10 +53,10 @@ my ($url, $content) = @_;
 }
 ################################################################################
 sub mesGet {
-my ($url) = @_;
+my ($url, $debug) = @_;
 
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8200$url");
-    #print $url, " response:", $response->content;
+    diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }
@@ -123,12 +124,13 @@ sub esCopy
 
         esPost("/_bulk", $out);
     }
+    esGet("/_flush");
 }
 ################################################################################
 sub countTest {
 my ($count, $test, $debug) = @_;
     my $json = viewerGet("/sessions.json?$test");
-    print Dumper($json) if ($debug);
+    diag Dumper($json) if ($debug);
     is ($json->{iTotalDisplayRecords}, $count, uri_unescape($test) . " iTotalDisplayRecords");
     is (scalar @{$json->{aaData}}, $count, uri_unescape($test) . " aaData count");
 }
@@ -136,7 +138,7 @@ my ($count, $test, $debug) = @_;
 sub countTest2 {
 my ($count, $test, $debug) = @_;
     my $json = viewerGet2("/sessions.json?$test");
-    print Dumper($json) if ($debug);
+    diag Dumper($json) if ($debug);
     is ($json->{iTotalDisplayRecords}, $count, uri_unescape($test) . " iTotalDisplayRecords");
     is (scalar @{$json->{aaData}}, $count, uri_unescape($test) . " aaData count");
 }
@@ -144,7 +146,7 @@ my ($count, $test, $debug) = @_;
 sub errTest {
 my ($test, $debug) = @_;
     my $json = viewerGet("/sessions.json?$test");
-    print Dumper($json) if ($debug);
+    diag Dumper($json) if ($debug);
     ok (exists $json->{bsqErr}, uri_unescape($test) . " bsqErr exists");
 }
 ################################################################################

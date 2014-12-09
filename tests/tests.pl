@@ -141,6 +141,23 @@ my ($cmd) = @_;
     if ($cmd eq "--viewerfast") {
         print "Skipping ES Init and PCAP load\n";
         $main::userAgent->post("http://localhost:8123/flushCache");
+    } elsif ($cmd eq "--viewerstart") {
+        print "Skipping ES Init and PCAP load\n";
+        $main::userAgent->post("http://localhost:8123/flushCache");
+        print ("Starting viewer\n");
+        if ($main::debug) {
+            system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /tmp/moloch.wise &");
+            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /tmp/multies.all &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /tmp/moloch.test &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /tmp/moloch.all &");
+        } else {
+            system("cd ../capture/plugins/wiseService ; node wiseService.js -c ../../../tests/config.test.ini > /dev/null &");
+            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
+        }
     } else {
         print ("Initializing ES\n");
         if ($main::debug) {
@@ -214,7 +231,7 @@ my ($cmd) = @_;
 
 
 # Cleanup
-    if ($cmd eq "--viewer") {
+    if ($cmd ne "--viewerfast") {
         $main::userAgent->post("http://localhost:8123/shutdown");
         $main::userAgent->post("http://localhost:8124/shutdown");
         $main::userAgent->post("http://localhost:8125/shutdown");
@@ -234,7 +251,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewerfast|help)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewerfast|viewerstart|help)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^-/) {

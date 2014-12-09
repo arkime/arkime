@@ -54,6 +54,12 @@ eq_or_diff($wise, '{key: "10.0.0.3", ops:
 {field: "mysql.ver", len: 22, value: "wisebyip2mysqlversion"},
 {field: "test.ip", len: 12, value: "21.21.21.21"}]
 },
+{key: "128.128.128.0/24", ops:
+[{field: "tags", len: 7, value: "ipwise"},
+{field: "tags", len: 10, value: "wisebyip2"},
+{field: "mysql.ver", len: 22, value: "wisebyip2mysqlversion"},
+{field: "test.ip", len: 12, value: "21.21.21.21"}]
+},
 ', "file:ip dump");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ipcsv")->content;
