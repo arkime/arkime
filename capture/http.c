@@ -620,8 +620,6 @@ void *moloch_http_create_server(char *hostnames, int defaultPort, int maxConns, 
 /******************************************************************************/
 void moloch_http_init()
 {
-    g_type_init();
-
     z_strm.zalloc = Z_NULL;
     z_strm.zfree  = Z_NULL;
     z_strm.opaque = Z_NULL;
