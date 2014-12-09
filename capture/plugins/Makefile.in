@@ -20,7 +20,7 @@ all:$(SOS)
 
 install:
 	test -z "$(PLUGINDIR)" || $(mkdir_p) "$(PLUGINDIR)"
-	$(INSTALL) *.so *.jade $(PLUGINDIR)
+	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
 
 distclean realclean clean:
 	rm -f *.o *.so
