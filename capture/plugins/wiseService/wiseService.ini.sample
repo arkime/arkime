@@ -23,6 +23,7 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa
 # ThreatQ - http://http://www.threatquotient.com/
 [threatq]
 #key=
+#host=
 
 # ReverseDNS
 [reversedns]
