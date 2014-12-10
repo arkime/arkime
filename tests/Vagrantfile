@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1500"]
+  end
+
+  config.vm.define "ubuntu-12.04" do |ubuntu120464|
+    ubuntu120464.vm.box = "ubuntu/precise64"
+  end
+
+  config.vm.define "ubuntu-14.04" do |ubuntu140464|
+    ubuntu140464.vm.box = "ubuntu/trusty64"
+  end
+
+  config.vm.define "centos-5" do |centos645|
+    centos645.vm.box = "chef/centos-5.11"
+  end
+
+  config.vm.define "centos-6" do |centos646|
+    centos646.vm.box = "chef/centos-6.6"
+  end
+
+  config.vm.define "centos-7" do |centos647|
+    centos647.vm.box = "chef/centos-7.0"
+  end
+
+
+  config.vm.provision "shell", path:"node.test.sh"
+end
