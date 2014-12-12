@@ -62,7 +62,7 @@ if [ -f "/etc/debian_version" ]; then
 fi
 
 if [ $(uname) == "FreeBSD" ]; then
-    pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake
+    pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
     MAKE=gmake
 fi
 
