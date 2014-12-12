@@ -604,6 +604,8 @@ build_os
 build_vendor
 build_cpu
 build
+RESOLV_LIB
+DL_LIB
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
 CXXDEPMODE
@@ -3901,6 +3903,77 @@ _ACEOF
   LIBS="-lnet $LIBS"
 
 fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -ldl" >&5
+$as_echo_n "checking for main in -ldl... " >&6; }
+if ${ac_cv_lib_dl_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_dl_main=yes
+else
+  ac_cv_lib_dl_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_main" >&5
+$as_echo "$ac_cv_lib_dl_main" >&6; }
+if test "x$ac_cv_lib_dl_main" = xyes; then :
+  DL_LIB=-ldl
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lresolv" >&5
+$as_echo_n "checking for main in -lresolv... " >&6; }
+if ${ac_cv_lib_resolv_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lresolv  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_resolv_main=yes
+else
+  ac_cv_lib_resolv_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_resolv_main" >&5
+$as_echo "$ac_cv_lib_resolv_main" >&6; }
+if test "x$ac_cv_lib_resolv_main" = xyes; then :
+  RESOLV_LIB=-lresolv
+fi
+
 
 
 # Make sure we can run config.sub.

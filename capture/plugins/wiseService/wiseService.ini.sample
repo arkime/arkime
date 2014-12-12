@@ -5,10 +5,13 @@
 # Configuration for the wiseService itself.
 [wiseService]
 port=8081
+# Exclude common DNSBL style lookups
 excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.mcafee.com;*.avqs.mcafee.com;*.bl.barracuda.com;*.lbl8.mailshell.net;*.dnsbl.sorbs.net;*.s.sophosxl.net
 
 # OpenDNS Umbrella Integration - https://www.opendns.com/enterprise-security/
 [opendns]
+# Example, exclude office lookups to prevent DNS leakage
+# excludeDomains=*.office.example.com
 #key=
 
 # Threatstream OPTIC - http://threatstream.com/

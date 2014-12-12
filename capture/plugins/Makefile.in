@@ -6,6 +6,7 @@ INCLUDE_OTHER = -I.. -I../thirdparty \
                 @GLIB2_CFLAGS@ \
 	        @NIDS_CFLAGS@
 
+install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
 PLUGINDIR = @prefix@/plugins

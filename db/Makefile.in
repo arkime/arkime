@@ -1,3 +1,4 @@
+install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
 DBDIR = @prefix@/db

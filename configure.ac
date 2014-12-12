@@ -21,6 +21,11 @@ AC_CHECK_LIB(magic, main,,AC_MSG_ERROR(please install magic library))
 AC_CHECK_LIB(rt, main,,)
 AC_CHECK_LIB(net, main,,)
 
+AC_CHECK_LIB(dl, main,DL_LIB=-ldl,)
+AC_SUBST(DL_LIB)
+AC_CHECK_LIB(resolv, main,RESOLV_LIB=-lresolv,)
+AC_SUBST(RESOLV_LIB)
+
 dnl OS Stuff
 AC_CANONICAL_HOST
 case $host_os in

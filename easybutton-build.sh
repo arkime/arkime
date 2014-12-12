@@ -41,6 +41,8 @@ do
 done
 
 
+MAKE=make
+
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
@@ -59,6 +61,11 @@ if [ -f "/etc/debian_version" ]; then
   fi
 fi
 
+if [ $(uname) == "FreeBSD" ]; then
+    pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake
+    MAKE=gmake
+fi
+
 
 
 
@@ -69,15 +76,25 @@ fi
 cd thirdparty
 
 # glib
-if [ ! -f "glib-$GLIB.tar.xz" ]; then
-  wget http://ftp.gnome.org/pub/gnome/sources/glib/2.42/glib-$GLIB.tar.xz
-fi
-
-if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
-  xzcat glib-$GLIB.tar.xz | tar xf -
-  (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; make)
+if [ $(uname) == "FreeBSD" ]; then
+  #Screw it, use whatever the OS has
+  WITHGLIB=" "
 else
-  echo "MOLOCH: Not rebuilding glib"
+  WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
+  if [ ! -f "glib-$GLIB.tar.xz" ]; then
+    wget http://ftp.gnome.org/pub/gnome/sources/glib/2.42/glib-$GLIB.tar.xz
+  fi
+
+  if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
+    xzcat glib-$GLIB.tar.xz | tar xf -
+    (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "MOLOCH: $MAKE failed"
+      exit 1
+    fi
+  else
+    echo "MOLOCH: Not rebuilding glib"
+  fi
 fi
 
 # yara
@@ -87,7 +104,11 @@ fi
 
 if [ ! -f "yara-$YARA/libyara/.libs/libyara.a" ]; then
   tar zxf yara-$YARA.tar.gz
-  (cd yara-$YARA; ./configure --enable-static; make)
+  (cd yara-$YARA; ./configure --enable-static; $MAKE)
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: $MAKE failed"
+    exit 1
+  fi
 else
   echo "MOLOCH: Not rebuilding yara"
 fi
@@ -106,7 +127,11 @@ tar zxf GeoIP-$GEOIP.tar.gz
 #    (cd GeoIP-$GEOIP ; libtoolize -f)
 #  fi
 
-  (cd GeoIP-$GEOIP ; ./configure --enable-static; make)
+  (cd GeoIP-$GEOIP ; ./configure --enable-static; $MAKE)
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: $MAKE failed"
+    exit 1
+  fi
 else
   echo "MOLOCH: Not rebuilding libGeoIP"
 fi
@@ -118,7 +143,7 @@ if [ $DOPFRING -eq 1 ]; then
       wget -O PF_RING-$PFRING.tar.gz http://sourceforge.net/projects/ntop/files/PF_RING/PF_RING-$PFRING.tar.gz/download
     fi
     tar zxf PF_RING-$PFRING.tar.gz
-    (cd PF_RING-$PFRING; make)
+    (cd PF_RING-$PFRING; $MAKE)
     if [ $? -ne 0 ]; then
       echo "MOLOCH: pfring failed to build"
       exit 1
@@ -134,7 +159,11 @@ else
       wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
     fi
     tar zxf libpcap-$PCAP.tar.gz
-    (cd libpcap-$PCAP; ./configure --disable-dbus; make)
+    (cd libpcap-$PCAP; ./configure --disable-dbus; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "MOLOCH: $MAKE failed"
+      exit 1
+    fi
     PCAPDIR=`pwd`/libpcap-$PCAP
     PCAPBUILD="--with-libpcap=$PCAPDIR"
 fi
@@ -146,7 +175,14 @@ fi
 
 if [ ! -f "libnids-$NIDS/src/libnids.a" ]; then
   tar zxf libnids-$NIDS.tar.gz
-  ( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=$PCAPDIR --disable-libglib; make)
+  if [ $(uname) == "FreeBSD" ]; then
+    ( cd libnids-$NIDS; cp ../yara-$YARA/config.sub . ; touch src/alloca.h )
+  fi
+  ( cd libnids-$NIDS; ./configure --enable-static --disable-libnet --with-libpcap=$PCAPDIR --disable-libglib; $MAKE)
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: $MAKE failed"
+    exit 1
+  fi
 else 
   echo "MOLOCH: Not rebuilding libnids"
 fi
@@ -155,12 +191,12 @@ fi
 # Now build moloch
 echo "MOLOCH: Building capture"
 cd ..
-echo "./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB"
-./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP --with-glib2=thirdparty/glib-$GLIB
+echo "./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB"
+./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB
 
-make
+$MAKE
 if [ $? -ne 0 ]; then
-  echo "MOLOCH: make failed"
+  echo "MOLOCH: $MAKE failed"
   exit 1
 fi
 

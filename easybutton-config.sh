@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # This script fills in the values in the etc/*.template files.
 # This script is auto run by easybutton-singlehost.sh
 

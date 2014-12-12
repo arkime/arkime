@@ -22,7 +22,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
-		-ldl -lpthread
+		@DL_LIB@ -lpthread
 
 C_FILES         = main.c db.c nids.c yara.c http.c config.c parsers.c plugins.c field.c trie.c
 O_FILES         = $(C_FILES:.c=.o)
@@ -38,9 +38,9 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
-	    -lm -lresolv -lffi -lz
-	(cd parsers; make)
-	(cd plugins; make)
+	    -lm @RESOLV_LIB@ -lffi -lz
+	(cd parsers; $(MAKE))
+	(cd plugins; $(MAKE))
 
 snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	gcc -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
@@ -50,7 +50,7 @@ snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
             @UNDEFINED_FLAGS@ \
 	    $(LIB_SNF) \
 	    $(LIB_OTHER) \
-	    -lrt -lm -lpcre -lresolv -luuid -lmagic -lffi -lz
+	    -lrt -lm -lpcre @RESOLV_LIB@ -luuid -lmagic -lffi -lz
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o
@@ -66,8 +66,8 @@ install: installdirs
 
 installdirs:
 	$(INSTALL) -d $(bindir)
-	(cd parsers; make install)
-	(cd plugins; make install)
+	(cd parsers; $(MAKE) install)
+	(cd plugins; $(MAKE) install)
 
 distclean realclean clean:
 	rm -f *.o moloch-capture

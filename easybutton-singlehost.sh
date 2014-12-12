@@ -84,6 +84,8 @@ if [ $JAVA_VAL -ne 0 ]; then
             echo "ERROR - 'yum install java-1.7.0-openjdk' failed"
             exit
         fi
+    elif [ $(uname) == "FreeBSD" ]; then
+        pkg_add -Fr openjdk7
     else
         echo "ERROR - Not sure how to install java for this OS, please install and run again"
         exit
@@ -157,6 +159,12 @@ cd elasticsearch-${ES}
 ./bin/plugin -install lukas-vlcek/bigdesk
 
 
+#make
+MAKE=make
+if [ $(uname) == "FreeBSD" ]; then
+    MAKE=gmake
+fi
+
 # NodeJS
 echo "MOLOCH: Downloading and installing node"
 cd ${INSTALL_DIR}/thirdparty
@@ -167,10 +175,10 @@ fi
 tar xfz node-v${NODEJS}.tar.gz
 cd node-v${NODEJS}
 ./configure 
-make
-make install
+$MAKE
+$MAKE install
 ./configure --prefix=${TDIR}
-make install
+$MAKE install
 
 if [ "x$http_proxy" != "x" ]; then
     ${TDIR}/bin/npm config set proxy $http_proxy
@@ -202,10 +210,10 @@ fi
 echo "MOLOCH: Installing"
 cd ${INSTALL_DIR}
 PATH=${TDIR}/bin:${PATH}
-make install
+$MAKE install
 
 if [ $? -ne 0 ]; then
-  echo "ERROR - 'make install' in moloch directory failed"
+  echo "ERROR - '$MAKE install' in moloch directory failed"
   exit 1
 fi
 

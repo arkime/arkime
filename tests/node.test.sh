@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export PATH=/usr/local/bin:$PATH
+umask 022
 
 # Update and install any packages required for easybutton to run
 if [ -f "/etc/redhat-release" ]; then
@@ -18,15 +19,22 @@ if [ -f "/etc/redhat-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
+    apt-get -y update
     apt-get -y upgrade
     apt-get -y install git openjdk-7-jre-headless curl libtest-differences-perl libhttp-message-perl
+fi
+
+if [ $(uname) == "FreeBSD" ]; then
+    pkg_add -Fr git openjdk7 p5-libwww p5-JSON p5-Test-Differences
+    export LIBRARY_PATH=/usr/local/lib
+    export C_INCLUDE_PATH=/usr/local/include
 fi
 
 
 # Cleanup anything left around if just running script agian
 curl -s -XPOST http://127.0.0.1:9200/_shutdown
 /bin/rm -rf /data/moloch
-killall -q node moloch-capture
+killall node moloch-capture
 
 if [ -d moloch.github ]; then
   (cd moloch.github ; git pull)
