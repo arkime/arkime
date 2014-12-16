@@ -284,7 +284,6 @@ void moloch_config_load()
         config.prefix = tmp;
     }
 
-
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = moloch_config_str(keyfile, "interface", NULL);
     config.pcapDir          = moloch_config_str_list(keyfile, "pcapDir", NULL);
@@ -298,6 +297,13 @@ void moloch_config_load()
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
     config.parsersDir       = moloch_config_str_list(keyfile, "parsersDir", " /data/moloch/parsers ; ./parsers ");
+    char *offlineRegex      = moloch_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
+
+    config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
+    if (!config.offlineRegex || error) {
+        printf("Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
+        exit(1);
+    }
 
     config.maxFileSizeG          = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
     config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
@@ -597,6 +603,7 @@ void moloch_config_init()
         default:
             LOG("pcapWriteMethod = config.c needs to be updated");
         }
+        LOG("offlineFilenameRegex: %s", g_regex_get_pattern(config.offlineRegex));
 
         MolochString_t *tstring;
         HASH_FORALL(s_, config.dontSaveTags, tstring,

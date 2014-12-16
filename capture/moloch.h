@@ -233,6 +233,7 @@ typedef struct moloch_config {
 
     int                numPlugins;
 
+    GRegex  *offlineRegex;
     char     *prefix;
     char     *nodeClass;
     char     *elasticsearch;

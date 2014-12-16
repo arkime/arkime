@@ -820,8 +820,9 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             DLL_MOVE_TAIL(q_, sessionsQ, headSession);
 
             moloch_nids_mid_save_session(headSession);
-        } else
+        } else {
             moloch_nids_save_session(headSession);
+        }
     }
 
     if ((headSession = DLL_PEEK_HEAD(tcp_, &tcpWriteQ)) &&
@@ -831,6 +832,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
             moloch_nids_mid_save_session(headSession);
     }
 }
+
 /******************************************************************************/
 void moloch_nids_decr_outstanding(MolochSession_t *session)
 {
@@ -1435,8 +1437,7 @@ filesDone:
                 return moloch_nids_next_file();
             }
 
-            // If it doesn't end with pcap we ignore it
-            if (strcasecmp(".pcap", filename + strlen(filename)-5) != 0) {
+            if (!g_regex_match(config.offlineRegex, filename, 0, NULL)) {
                 g_free(fullfilename);
                 continue;
             }
@@ -1592,6 +1593,7 @@ void moloch_nids_init_nids()
     nids_register_ip(moloch_nids_cb_ip);
 }
 /******************************************************************************/
+void moloch_nids_monitor_dir(char *dirname);
 static void
 moloch_nids_monitor_changed (GFileMonitor      *UNUSED(monitor),
                              GFile             *file,
@@ -1599,15 +1601,29 @@ moloch_nids_monitor_changed (GFileMonitor      *UNUSED(monitor),
                              GFileMonitorEvent  event_type,
                              gpointer           UNUSED(user_data))
 {
-    if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
-        return;
-    gchar *path = g_file_get_path(file);
+    // Monitor new directories?
+    if (config.pcapRecursive &&
+        event_type == G_FILE_MONITOR_EVENT_CREATED &&
+        g_file_query_file_type(file, G_FILE_QUERY_INFO_NONE, NULL) == G_FILE_TYPE_DIRECTORY) {
 
-    if (strcasecmp(".pcap", path + strlen(path)-5) != 0) {
+        gchar *path = g_file_get_path(file);
+        moloch_nids_monitor_dir(path);
         g_free(path);
+
         return;
     }
 
+    if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
+        return;
+
+    gchar *basename = g_file_get_path(file);
+    if (!g_regex_match(config.offlineRegex, basename, 0, NULL)) {
+        g_free(basename);
+        return;
+    }
+    g_free(basename);
+
+    gchar *path = g_file_get_path(file);
     MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
     string->str = path;
 
@@ -1788,12 +1804,7 @@ void moloch_nids_init()
         moloch_nids_init_nids();
 
     if (config.writeMethod & MOLOCH_WRITE_THREAD) {
-        pthread_t thread;
-        int rc = pthread_create(&thread, NULL, &moloch_nids_output_thread, NULL);
-        if (rc) {
-            LOG("ERROR - thread create failed - %d %s (%d)", rc, strerror(errno), errno);
-            exit (2);
-        }
+        g_thread_new("moloch-output", &moloch_nids_output_thread, NULL);
     }
 
     if (config.pcapMonitor)
