@@ -39,6 +39,7 @@
     - if upgrading (cd plugins ; rm emergingthreats.detail.jade opendns.detail.jade threatq.detail.jade threatstream.detail.jade)
   - New offlineFilenameRegex setting to control witch files are matched with -R (issue #313)
   - monitor + recursive should monitor new directories (issue #305)
+  - Fixed addUser.js error with when mulitple es nodes are listed in config.ini (issue #322)
   
 
 0.11.2 2014/10/16
