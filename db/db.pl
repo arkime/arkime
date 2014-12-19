@@ -237,7 +237,7 @@ sub sequenceCreate
   settings: {
     number_of_shards: 1,
     number_of_replicas: 0,
-    auto_expand_replicas: "0-all"
+    auto_expand_replicas: "0-5"
   }
 }';
 
