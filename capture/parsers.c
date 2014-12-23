@@ -341,10 +341,12 @@ void moloch_print_hex_string(unsigned char* data, unsigned int length)
 /******************************************************************************/
 void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc)
 {
-    if (session->parserLen == 0) {
-        session->parserLen = 2;
-    } else {
-        session->parserLen *= 1.67;
+    if (session->parserNum >= session->parserLen) {
+        if (session->parserLen == 0) {
+            session->parserLen = 2;
+        } else {
+            session->parserLen *= 1.67;
+        }
     }
     session->parserInfo = realloc(session->parserInfo, sizeof(MolochParserInfo_t) * session->parserLen);
 
@@ -402,7 +404,7 @@ MolochClassifyHead_t classifersUdp2[256][256];
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
 {
-    if (ch->cnt <= ch->size) {
+    if (ch->cnt >= ch->size) {
         if (ch->size == 0) {
             ch->size = 2;
         } else {
