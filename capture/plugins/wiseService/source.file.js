@@ -168,16 +168,21 @@ FileSource.prototype.init = function() {
   setImmediate(this.load.bind(this));
 
 
-  // Watch file for changes, have to do the 100 because of vim moving file
+  // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
+  self.watchTimeout = null;
   self.watch = fs.watch(this.file, function watchCb(event, filename) {
+    clearTimeout(self.watchTimeout);
     if (event === "rename") {
       self.watch.close();
       setTimeout(function () {
         self.load();
         self.watch = fs.watch(self.file, watchCb);
-      }, 100);
+      }, 500);
     } else {
-      self.load();
+      self.watchTimeout = setTimeout(function () {
+        self.watchTimeout = null;
+        self.load();
+      }, 2000);
     }
   });
 };
