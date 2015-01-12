@@ -203,8 +203,12 @@ app.post("/get", function(req, res) {
 
     async.map(queries, function (query, cb) {
       var name = internals.type2Name[query.type];
-      if (!internals.global_allowed[name](query.value)) {
-        return cb(null, wiseSource.combineResults([]));
+      try {
+        if (!internals.global_allowed[name](query.value)) {
+          return cb(null, wiseSource.combineResults([]));
+        }
+      } catch (e) {
+        console.log("ERROR", name, query, e);
       }
       async.map(internals[internals.funcNames[query.type] + "s"], function(src, cb) {
         if (internals.source_allowed[name](src, query.value)) {
