@@ -76,6 +76,7 @@ WISESource.prototype.parseCSV = function (body, setCb, endCb) {
 WISESource.prototype.parseTagger = function(body, setCb, endCb) {
   var lines = body.toString().split("\n");
   var shortcuts = {};
+  var view = "";
   for (var l = 0, llen = lines.length; l < llen; l++) {
     if (lines[l][0] === "#") {
       if (lines[l].lastIndexOf('#field:',0) === 0) {
@@ -84,6 +85,8 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
         if (match) {
           shortcuts[match[1]] = pos;
         }
+      } else if (lines[l].lastIndexOf('#view:',0) === 0) {
+        view += lines[l].substring(6) + "\n";
       }
       continue;
     }
@@ -106,6 +109,9 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
       args.push(kv[1]);
     }
     setCb(parts[0], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+  }
+  if (view !== "") {
+    this.api.addView(this.section, view);
   }
   endCb(null);
 };
