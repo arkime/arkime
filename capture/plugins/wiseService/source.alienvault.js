@@ -85,7 +85,7 @@ AlienVaultSource.prototype.loadFile = function() {
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.init = function() {
   if (this.key === undefined) {
-    console.log("ThreatQ - No export key defined");
+    console.log("AlienVault - No export key defined");
     return;
   }
 
