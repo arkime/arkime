@@ -292,6 +292,11 @@ function errorString(err, result) {
   }
 }
 
+// http://stackoverflow.com/a/10934946
+function dot2value(obj, str) {
+      return str.split(".").reduce(function(o, x) { return o[x] }, obj);
+}
+
 function createSessionDetail() {
   var found = {};
   var dirs;
@@ -1039,6 +1044,7 @@ function buildSessionQuery(req, buildCb) {
 
   var err = null;
   molochparser.parser.yy = {emailSearch: req.user.emailSearch === true,
+                                  views: req.user.views,
                               fieldsMap: Config.getFieldsMap()};
   if (req.query.expression) {
     //req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
@@ -2016,12 +2022,7 @@ function buildConnections(req, res, cb) {
     }
 
     query._source = ["by", "db", "pa", "no"];
-    if (query._source.indexOf(fsrc) === -1) {
-      query._source.push(fsrc);
-    }
-    if (query._source.indexOf(fdst) === -1) {
-      query._source.push(fdst);
-    }
+    query.fields=[fsrc, fdst];
     if (dstipport) {
       query._source.push("p2");
     }
@@ -2033,17 +2034,26 @@ function buildConnections(req, res, cb) {
         console.log("Build Connections ERROR", err, graph.error);
         return cb(err || graph.error);
       }
-
       var i;
 
       async.eachLimit(graph.hits.hits, 10, function(hit, hitCb) {
-        var f = hit._source || hit.fields;
-        if (f[fsrc] === undefined || f[fdst] === undefined) {
+        var f = hit._source;
+
+        var asrc = hit.fields[fsrc];
+        var adst = hit.fields[fdst];
+
+
+        if (asrc === undefined || adst === undefined) {
           return setImmediate(hitCb);
         }
 
-        var asrc = Array.isArray(f[fsrc])? f[fsrc] : [f[fsrc]];
-        var adst = Array.isArray(f[fdst])? f[fdst] : [f[fdst]];
+        if (!Array.isArray(asrc)) {
+          asrc = [asrc];
+        }
+
+        if (!Array.isArray(adst)) {
+          adst = [adst];
+        }
 
         async.each(asrc, function(vsrc, srcCb) {
           if (tsrc === FMEnum.other) {

@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGet2 viewerPost viewerPost2 countTest countTest2 errTest bin2hex getToken getToken2 mesGet mesPost);
+@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGet2 viewerPost viewerPost2 countTest countTest2 errTest bin2hex getToken getToken2 mesGet mesPost multiGet);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -17,10 +17,10 @@ $MolochTest::host = "127.0.0.1";
 
 ################################################################################
 sub viewerGet {
-my ($url) = @_;
+my ($url, $debug) = @_;
 
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url");
-    #print $url, " response:", $response->content;
+    diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }
@@ -30,6 +30,15 @@ my ($url) = @_;
 
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8124$url");
     #print $url, " response:", $response->content;
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub multiGet {
+my ($url, $debug) = @_;
+
+    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8125$url");
+    diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }

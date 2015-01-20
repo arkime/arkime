@@ -97,6 +97,8 @@ typedef struct {
 typedef struct moloch_tlsinfo{
     struct moloch_tlsinfo *t_next, *t_prev;
     uint32_t               t_hash;
+    uint64_t               notBefore;
+    uint64_t               notAfter;
     MolochCertInfo_t       issuer;
     MolochCertInfo_t       subject;
     MolochStringHead_t     alt;

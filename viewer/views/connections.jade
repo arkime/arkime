@@ -220,6 +220,19 @@ block content
       }
 
       d3.json(url, function(json) {
+        var doConvert = 0;
+        doConvert |= (db2FieldType($("#srcField").val()) === "seconds")?1:0;
+        doConvert |= (db2FieldType($("#dstField").val()) === "seconds")?2:0;
+
+        if (doConvert) {
+          for (var i = 0; i < json.nodes.length; i++) {
+            var node = json.nodes[i];
+            if (doConvert & node.type) {
+              node.id = dateString(node.id, " ");
+            }
+          }
+        }
+
         $("#actionsForm").data("moloch-visible", +$("#graphSize").val())
                          .data("moloch-all", json.iTotalDisplayRecords);
         updateHealth(json.health);

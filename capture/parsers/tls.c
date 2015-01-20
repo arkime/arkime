@@ -23,12 +23,16 @@ static int                   certsField;
 static int                   hostField;
 static int                   verField;
 static int                   cipherField;
+static int                   srcIdField;
+static int                   dstIdField;
 
 typedef struct {
     unsigned char       buf[8192];
     uint16_t            len;
     char                which;
 } TLSInfo_t;
+
+extern unsigned char    moloch_char_to_hexstr[256][3];
 
 /******************************************************************************/
 void
@@ -124,7 +128,20 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
 
     int skiplen = 0;
     BSB_IMPORT_u08(bsb, skiplen);   // Session Id Length
+    if (skiplen > 0 && BSB_REMAINING(bsb) > skiplen) {
+        unsigned char *ptr = BSB_WORK_PTR(bsb);
+        char sessionId[513];
+        int  i;
+
+        for(i=0; i < skiplen; i++) {
+            sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
+            sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
+        }
+        sessionId[skiplen*2] = 0;
+        moloch_field_string_add(dstIdField, session, sessionId, skiplen*2, TRUE);
+    }
     BSB_IMPORT_skip(bsb, skiplen);  // Session Id
+
 
     unsigned char *cipher;
     BSB_IMPORT_ptr(bsb, cipher, 2);
@@ -163,6 +180,80 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
             moloch_field_string_add(cipherField, session, str, 4, TRUE);
         }
     }
+}
+
+#define char2num(ch) (isdigit(ch)?((ch) - '0'):0)
+#define str2num(str) (char2num((str)[0]) * 10 + char2num((str)[1]))
+#define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
+
+/******************************************************************************/
+uint64_t tls_parse_time(int tag, unsigned char* value, int len)
+{
+    int        offset = 0;
+    int        pos = 0;
+    struct tm  tm;
+
+    //UTCTime
+    if (tag == 23 && len > 12) {
+        if (len > 17 && value[12] != 'Z')
+            offset = str2num(value+13) * 60 + str2num(value+15);
+
+        if (value[12] == '-')
+            offset = -offset;
+
+        tm.tm_year = str2num(value+0);
+        tm.tm_mon  = str2num(value+2) - 1;
+        tm.tm_mday = str2num(value+4);
+        tm.tm_hour = str2num(value+6);
+        tm.tm_min  = str2num(value+8);
+        tm.tm_sec  = str2num(value+10);
+
+        if (tm.tm_year < 50)
+            tm.tm_year += 100;
+
+        return timegm(&tm) + offset;
+    }
+    //GeneralizedTime
+    else if (tag == 24 && len >= 10) {
+        memset(&tm, 0, sizeof(tm));
+        tm.tm_year = str4num(value+0) - 1900;
+        tm.tm_mon  = str2num(value+4) - 1;
+        tm.tm_mday = str2num(value+6);
+        tm.tm_hour = str2num(value+8);
+        if (len < 10 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
+            pos = 10;
+            goto gtdone;
+        }
+        tm.tm_min  = str2num(value+10);
+        if (len < 12 || value[12] == 'Z' || value[12] == '+' || value[12] == '-') {
+            pos = 12;
+            goto gtdone;
+        }
+        tm.tm_sec  = str2num(value+12);
+        if (len < 14 || value[14] == 'Z' || value[14] == '+' || value[14] == '-') {
+            pos = 14;
+            goto gtdone;
+        }
+        if (value[14] == '.') {
+            pos = 18;
+        } else {
+            pos = 14;
+        }
+    gtdone:
+        if (pos == len) {
+            return mktime(&tm);
+        }
+
+        if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
+            offset = str2num(value+pos+1) * 60 +  str2num(value+pos+3);
+
+            if (value[pos] == '-')
+                offset = -offset;
+        }
+
+        return timegm(&tm) + offset;
+    }
+    return 0;
 }
 /******************************************************************************/
 void tls_process_server_certificate(MolochSession_t *session, const unsigned char *data, int len)
@@ -225,6 +316,15 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
         /* validity */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
+
+        BSB_INIT(tbsb, value, alen);
+        if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
+            {badreason = 7; goto bad_cert;}
+        certs->notBefore = tls_parse_time(atag, value, alen);
+
+        if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
+            {badreason = 7; goto bad_cert;}
+        certs->notAfter = tls_parse_time(atag, value, alen);
 
         /* subject */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
@@ -319,6 +419,18 @@ tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
 
                 int skiplen = 0;
                 BSB_IMPORT_u08(cbsb, skiplen);   // Session Id Length
+                if (skiplen > 0 && BSB_REMAINING(cbsb) > skiplen) {
+                    unsigned char *ptr = BSB_WORK_PTR(cbsb);
+                    char sessionId[513];
+                    int  i;
+
+                    for(i=0; i < skiplen; i++) {
+                        sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
+                        sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
+                    }
+                    sessionId[skiplen*2] = 0;
+                    moloch_field_string_add(srcIdField, session, sessionId, skiplen*2, TRUE);
+                }
                 BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
                 BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
@@ -474,8 +586,14 @@ void moloch_parser_init()
 {
     certsField = moloch_field_define("cert", "notreal",
         "cert", "tls", "tls",
-        "TLS Info",
+        "CERT Info",
         MOLOCH_FIELD_TYPE_CERTSINFO,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_NODB,
+        NULL);
+
+    moloch_field_define("cert", "integer",
+        "cert.cnt", "Cert Cnt", "tlscnt",
+        "Count of certificates",
+        0, MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("cert", "lotermfield",
@@ -516,6 +634,24 @@ void moloch_parser_init()
         "rawField", "rawsOn",
         NULL);
 
+    moloch_field_define("cert", "seconds",
+        "cert.notbefore", "Not Before", "tls.notBefore",
+        "Certificate is not valid before this date",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("cert", "seconds",
+        "cert.notafter", "Not After", "tls.notAfter",
+        "Certificate is not valid after this date",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("cert", "integer",
+        "cert.validfor", "Days Valid For", "tls.diffDays",
+        "Certificate is valid for this may days",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
     hostField = moloch_field_define("http", "lotermfield",
         "host.http", "Hostname", "ho", 
         "HTTP host header field", 
@@ -532,6 +668,25 @@ void moloch_parser_init()
         "tls.cipher", "Cipher", "tlscipher-term", 
         "SSL/TLS cipher field", 
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        NULL);
+
+    dstIdField = moloch_field_define("tls", "lotermfield",
+        "tls.sessionid.dst", "Dst Session Id", "tlsdstid-term", 
+        "SSL/TLS Dst Session Id", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  0, 
+        NULL);
+
+    srcIdField = moloch_field_define("tls", "lotermfield",
+        "tls.sessionid.src", "Src Session Id", "tlssrcid-term", 
+        "SSL/TLS Src Session Id", 
+        MOLOCH_FIELD_TYPE_STR_HASH,  0, 
+        NULL);
+
+    moloch_field_define("general", "lotermfield",
+        "tls.sessionid", "Src or Dst Session Id", "tlsidall",
+        "Shorthand for tls.sessionid.src or tls.sessionid.dst",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        "regex", "^tls\\\\.sessionid\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
 
     moloch_parsers_classifier_register_tcp("tls", 0, (unsigned char*)"\x16\x03", 2, tls_classify);

@@ -39,8 +39,7 @@ script(type='text/javascript').
       });
     });
 
-    sessionDetail.find('.startTime').html(dateString(#{session.fp}, " "));
-    sessionDetail.find('.stopTime').html(dateString(#{session.lp}, " "));
+    sessionDetail.find('.formatSeconds').html(function () {formatSeconds(this);});
     sessionDetail.find('.format-line input, .format-gzip input, .format-image input, .format-base input').on('change', function(e) {
       var base = sessionDetail.find('.format-base input:checked').val();
       var line = sessionDetail.find('.format-line input').is(':checked')

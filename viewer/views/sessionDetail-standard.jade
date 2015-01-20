@@ -22,12 +22,10 @@ dl.sessionDetailMeta
   +arrayList(session, "prot-term", "Protocols", "protocols")
   dt Start
   dd
-    a(href='#', onclick='return setSessionStartTime(#{session.fp});')
-      span.startTime
+    a.formatSeconds(href='#', onclick='return setSessionStartTime(#{session.fp});') #{session.fp}
     | &nbsp;
     | Stop: 
-    a(href='#', onclick='return setSessionStopTime(#{session.lp});')
-      span.stopTime
+    a.formatSeconds(href='#', onclick='return setSessionStopTime(#{session.lp});') #{session.lp}
     | &nbsp;
     | Node: 
     a(href='#', onclick='return addExpression("node == #{session.no}");') #{session.no}

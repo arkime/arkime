@@ -138,10 +138,10 @@ my ($cmd) = @_;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
-    if ($cmd eq "--viewerfast") {
+    if ($cmd eq "--viewernostart") {
         print "Skipping ES Init and PCAP load\n";
         $main::userAgent->post("http://localhost:8123/flushCache");
-    } elsif ($cmd eq "--viewerstart") {
+    } elsif ($cmd eq "--viewerstart" || $cmd eq "--viewerhang") {
         print "Skipping ES Init and PCAP load\n";
         $main::userAgent->post("http://localhost:8123/flushCache");
         print ("Starting viewer\n");
@@ -158,6 +158,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
         }
+        sleep (10000) if ($cmd eq "--viewerhang");
     } else {
         print ("Initializing ES\n");
         if ($main::debug) {
@@ -231,7 +232,7 @@ my ($cmd) = @_;
 
 
 # Cleanup
-    if ($cmd ne "--viewerfast") {
+    if ($cmd ne "--viewernostart") {
         $main::userAgent->post("http://localhost:8123/shutdown");
         $main::userAgent->post("http://localhost:8124/shutdown");
         $main::userAgent->post("http://localhost:8125/shutdown");
@@ -251,7 +252,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewerfast|viewerstart|help)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|help)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^-/) {

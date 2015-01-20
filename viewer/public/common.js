@@ -216,6 +216,11 @@ function splitExpression(input ) {
   return output;
 }
 
+function formatSeconds (self) {
+  var j = $(self);
+  j.html(dateString(j.text(), " ")).removeClass("formatSeconds");
+}
+
 function updateHealth(health)
 {
   if (health === undefined || health.status === undefined) {
@@ -277,6 +282,19 @@ $(document).on("click", ".showMoreItems", function (e) {
   return false;
 });
 
+function db2Field(dbField) {
+  for (var k in molochFields) {
+    if (dbField === molochFields[k].dbField)
+      return molochFields[k];
+  }
+  return undefined;
+}
+
+function db2FieldType(dbField) {
+  var field = db2Field(dbField);
+  return (field?field.type:undefined);
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // layout Functions
 //////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +304,6 @@ function expressionResize() {
 
 $(document).ready(function() {
   $('.tooltip').qtip();
-
   $(".expressionsLink").click(function (e) {
     var data;
     if (typeof sessionsTable !== 'undefined') {
@@ -1040,6 +1057,10 @@ function addExpression (expression, op) {
     $("#expression").val(val + (op || " && ") + expression);
   }
   return false;
+}
+
+function addExpressionSeconds (expression, seconds) {
+  return addExpression(expression + " == \"" + dateString(seconds, " ") + "\"");
 }
 
 $(document).ready(function() {

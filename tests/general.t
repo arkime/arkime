@@ -1,4 +1,4 @@
-use Test::More tests => 509;
+use Test::More tests => 521;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -302,3 +302,12 @@ my $pwd = getcwd() . "/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=/00:.*/"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac=[00:23:04:17:9b:00,00:1a:e3:dc:2e:c0]"));
 
+#starttime
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&starttime==\"2014/02/26 10:27:57\""));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&starttime==\"2014/02/26 10:27:58\""));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&starttime<=\"2014/02/26 10:27:57\""));
+
+#stoptime
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime==\"2014/02/26 10:27:57\""));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime==\"2014/02/26 10:27:58\""));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime<=\"2014/02/26 10:27:57\""));

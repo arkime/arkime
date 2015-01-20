@@ -1,6 +1,10 @@
 #field:tagger.str;kind:lotermfield;count:true;friendly:Str;db:tagger.str-term;help:Help String;shortcut:0
 #field:tagger.int;kind:integer;count:true;friendly:Int;db:tagger.ip;help:Help Int;shortcut:1
 #field:tags;shortcut:2
+#view:if (session.tagger.str-term)
+#view:  div.sessionDetailMeta.bold Tagger
+#view:  dl.sessionDetailMeta.bold Tagger
+#view:    +arrayList(session.tagger, 'str-term', 'Str', 'tagger.str')
 12345678@aol.com;email.dst=added1;2=srcmatch;0=house;tagger.str=boat
 xxxxx-xxxx@xxxx.xxx.xx.jp;email.src=added2;tags=dstmatch;1=1;tagger.int=3
 

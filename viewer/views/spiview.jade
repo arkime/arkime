@@ -126,8 +126,9 @@ block content
               }
 
               var spiterm = "";
+              var finfo = db2Field(spii);
               if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
-                  (molochFields[spii] && molochFields[spii].type === "ip")) {
+                  (finfo && finfo.type === "ip")) {
                 $.each(spi.terms, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
@@ -138,6 +139,21 @@ block content
                                            .text(ipString(term.term))
                                            .click(function() {
                                              addExpression(spida.attr("molochexpr") + "==" + ipString(term.term));
+                                             return false;
+                                           }));
+                  spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
+                });
+              } else if (finfo && finfo.type === "seconds") {
+                $.each(spi.terms, function(i, term) {
+                  if (i !== 0) {
+                    spida.append(", ");
+                    spiterm += ",";
+                  }
+                  spiterm += dateString(term.term, " ");
+                  spida.append($('<a></a>').attr("href","#")
+                                           .text(dateString(term.term, " "))
+                                           .click(function() {
+                                             addExpression(spida.attr("molochexpr") + "==" + dateString(term.term, " "));
                                              return false;
                                            }));
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");

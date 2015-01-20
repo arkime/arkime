@@ -1,6 +1,6 @@
 {
   "name": "moloch",
-  "version": "0.11.3",
+  "version": "0.11.0",
   "description": "",
   "main": "viewer.js",
   "dependencies": {
@@ -11,6 +11,7 @@
     "jade": "~1.3.1",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "keep-alive-agent": "~0.0.1",
+    "moment": "~2.9.0",
     "passport-http": "~0.2.2",
     "passport": "~0.2.0",
     "stylus": "~0.44.0",

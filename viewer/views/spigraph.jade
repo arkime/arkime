@@ -123,6 +123,8 @@ block content
             updateMap(json.map);
             updateString("#bsqErr", json.bsqErr);
 
+            var finfo = db2Field($("#field").val());
+
             $("#actionsForm").data("moloch-visible", -1)
                              .data("moloch-all", json.iTotalDisplayRecords);
 
@@ -136,7 +138,12 @@ block content
             }
 
             json.items.forEach(function(item, i) {
-              var name = $('<div />').text(item.name).html();
+              var name;
+              if (finfo.type === "seconds") {
+                name = $('<div />').text(dateString(item.name, " ")).html();
+              } else {
+                name = $('<div />').text(item.name).html();
+              }
               $('#sessionGraphs').append("<div name=\"" +name + "\" count= " + item.count + ">" +
                                              "<h3 class='context-menu-one'>" + name + " <span class=\"spicount\">(" + item.count + ")</span></h3>" + 
                                              "<div class='sessionsInfo'>" +

@@ -1,0 +1,97 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "db2" : 459,
+            "db" : 1077,
+            "mac2-term" : [
+               "60:73:5c:b4:90:00"
+            ],
+            "no" : "test",
+            "ho" : [
+               "bl.a.im"
+            ],
+            "lp" : 1420490708,
+            "a2" : "74.217.87.13",
+            "ss" : 1,
+            "ta" : [
+               "node:test",
+               "protocol:tls",
+               "tcp"
+            ],
+            "pa1" : 7,
+            "fpd" : 1420490708340,
+            "fs" : [],
+            "by2" : 983,
+            "tlssrcid-term" : [
+               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+            ],
+            "pa2" : 9,
+            "hocnt" : 1,
+            "p1" : 62938,
+            "by" : 2005,
+            "g2" : "USA",
+            "tlscipher-term" : [
+               "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
+            ],
+            "pr" : 6,
+            "ps" : [
+               24,
+               102,
+               180,
+               256,
+               523,
+               599,
+               814,
+               943,
+               1019,
+               1451,
+               1527,
+               1874,
+               1981,
+               2057,
+               2133,
+               2209
+            ],
+            "prot-term-cnt" : 2,
+            "tlsdstid-term" : [
+               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+            ],
+            "lpd" : 1420490708431,
+            "fp" : 1420490708,
+            "as2" : "AS10913 Internap Network Services Corporation",
+            "tlscipher-termcnt" : 1,
+            "pa" : 16,
+            "tacnt" : 3,
+            "sl" : 91,
+            "fb1" : "16030100c0010000",
+            "a1" : "10.23.46.37",
+            "fb2" : "1603010051020000",
+            "db1" : 618,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "mac2-term-cnt" : 1,
+            "by1" : 1022,
+            "p2" : 443,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "tlsver-termcnt" : 1,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "b8:ca:3a:8d:c1:87"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-150105",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

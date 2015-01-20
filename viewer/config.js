@@ -292,11 +292,13 @@ exports.getCategories = function() {
 exports.loadFields = function(data) {
   internals.fields = [];
   internals.fieldsMap = {};
+  internals.dbFieldsMap = {};
   internals.categories =  {};
   data.forEach(function(field) {
     var source = field._source;
     source.exp = field._id;
     internals.fieldsMap[field._id] = source;
+    internals.dbFieldsMap[source.dbField] = source;
     internals.fields.push(source);
     if (!internals.categories[source.group]) {
       internals.categories[source.group] = [];

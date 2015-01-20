@@ -161,7 +161,8 @@ int moloch_field_define_text(char *text, int *shortcut)
         help = field;
 
     int type, flags = 0;
-    if (strcmp(kind, "integer") == 0)
+    if (strcmp(kind, "integer") == 0 ||
+        strcmp(kind, "seconds") == 0)
         type = MOLOCH_FIELD_TYPE_INT_HASH;
     else if (strcmp(kind, "ip") == 0)
         type = MOLOCH_FIELD_TYPE_IP_HASH;

@@ -425,8 +425,10 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         int count  = 0;
         char *kind = 0;
         for (v = 0; v < values_len; v++) {
-            if (strcmp(values[v], "type:integer") == 0) {
+            if (strcmp(values[v], "type:integer") == 0 ||
+                strcmp(values[v], "type:seconds") == 0) {
                 type = 1;
+                kind = values[v] + 5;
             } else if (strcmp(values[v], "type:ip") == 0) {
                 type = 2;
             } else if (strcmp(values[v], "unique:false") == 0) {
@@ -435,7 +437,6 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
                 count = 1;
             }
         }
-        g_strfreev(values);
 
         int f = flags;
 
@@ -451,7 +452,6 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
                 t = MOLOCH_FIELD_TYPE_STR_ARRAY;
             break;
         case 1:
-            kind = "integer";
             if (unique)
                 t = MOLOCH_FIELD_TYPE_INT_HASH;
             else
@@ -470,6 +470,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         HASH_FIND(s_, *hash, keys[k], hstring);
         if (hstring) {
             LOG("WARNING - ignoring field %s for %s", keys[k], section);
+            g_strfreev(values);
             continue;
         }
 
@@ -504,6 +505,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
                     t, f, NULL);
         }
         moloch_config_add_header(hash, g_strdup(keys[k]), pos);
+        g_strfreev(values);
     }
     g_strfreev(keys);
 }

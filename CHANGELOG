@@ -1,7 +1,8 @@
 0.11.3 2014/xx/xx
   - NOTICE: Only 1.[234].x are supported by this version. 
             Restart viewer AFTER upgrading ES versions
-  - NOTICE: Requires running npm update for ES 1.3 support
+  - NOTICE: Requires running npm update for ES 1.3 and moment support
+  - NOTICE: Requires running db.pl host:port upgrade
   - For NEW installs can now set a prefix= config variable and 
     db.pl --prefix option that will prefix all ES tables.  This makes 
     it easier for Moloch to share ES with other services OR multiple 
@@ -41,6 +42,12 @@
   - monitor + recursive should monitor new directories (issue #305)
   - Fixed addUser.js error with when mulitple es nodes are listed in config.ini (issue #322)
   - WISE - Tagger files can have views defined with #view:
+  - New cert.notbefore, cert.notafter, cert.validfor fields (issue #329)
+  - New starttime, stoptime, view fields (issue #307)
+  - New tls.sessionid.dst, tls.sessionid.src, tls.sessionid fields (issue #326) 
+  - Use ELS doc_values for some fields to reduce ES memory
+  - Added cert.cnt back
+
   
 
 0.11.2 2014/10/16

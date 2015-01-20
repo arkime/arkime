@@ -3,6 +3,8 @@ if (session.tls || session["tlsver-term"])
   dl.sessionDetailMeta
     +arrayList(session, "tlsver-term", "Version", "tls.version")
     +arrayList(session, "tlscipher-term", "Cipher", "tls.cipher")
+    +arrayList(session, "tlssrcid-term", "Src Session Id", "tls.sessionid.src")
+    +arrayList(session, "tlsdstid-term", "Dst Session Id", "tls.sessionid.dst")
     if (session.tls)
       each cert in session.tls
         dt Certificate
@@ -10,6 +12,12 @@ if (session.tls || session["tlsver-term"])
           - if (cert.sn)
             | Serial: 
             a(href='#', onclick='return addExpression("cert.serial == #{cert.sn}");') #{cert.sn}
+          - if (cert.notBefore)
+            |  Not Before: 
+            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}
+          - if (cert.notAfter)
+            |  Not After: 
+            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notBefore});') #{cert.notBefore}
           - if (cert.iCn && Array.isArray(cert.iCn))
             |  Issuer Common: 
             each cn,i in cert.iCn

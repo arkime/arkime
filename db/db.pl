@@ -27,6 +27,7 @@
 # 18 - fields db
 # 19 - users_v3
 # 20 - queries
+# 21 - doc_values, new tls fields, starttime/stoptime/view
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -35,7 +36,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 20;
+my $VERSION = 21;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -823,6 +824,28 @@ sub fieldsUpdate
       "type": "lotermfield",
       "dbField": "scrubby"
     }');
+    esPost("/${PREFIX}fields/field/view", '{
+      "friendlyName": "View Name",
+      "group": "general",
+      "help": "Moloch view name",
+      "type": "viewand",
+      "dbField": "viewand",
+      "noFacet": true
+    }');
+    esPost("/${PREFIX}fields/field/starttime", '{
+      "friendlyName": "Start Time",
+      "group": "general",
+      "help": "Session Start Time",
+      "type": "seconds",
+      "dbField": "fp"
+    }');
+    esPost("/${PREFIX}fields/field/stoptime", '{
+      "friendlyName": "Stop Time",
+      "group": "general",
+      "help": "Session Stop Time",
+      "type": "seconds",
+      "dbField": "lp"
+    }');
 
     esPost("/${PREFIX}fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
     esPost("/${PREFIX}fields/field/http.hasheader/_update", '{doc: {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
@@ -975,19 +998,24 @@ sub sessionsUpdate
         type: "long"
       },
       lp: {
-        type: "long"
+        type: "long",
+        doc_values: true
       },
       lpd: {
-        type: "date"
+        type: "date",
+        doc_values: true
       },
       fp: {
-        type: "long"
+        type: "long",
+        doc_values: true
       },
       fpd: {
-        type: "date"
+        type: "date",
+        doc_values: true
       },
       a1: {
-        type: "long"
+        type: "long",
+        doc_values: true
       },
       g1: {
         omit_norms: true,
@@ -1009,7 +1037,8 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       p1: {
-        type: "integer"
+        type: "integer",
+        doc_values: true
       },
       fb1: {
         omit_norms: true,
@@ -1017,7 +1046,8 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       a2: {
-        type: "long"
+        type: "long",
+        doc_values: true
       },
       g2: {
         omit_norms: true,
@@ -1039,7 +1069,8 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       p2: {
-        type: "integer"
+        type: "integer",
+        doc_values: true
       },
       fb2: {
         omit_norms: true,
@@ -1274,6 +1305,18 @@ sub sessionsUpdate
           },
           altcnt: {
             type: "integer"
+          },
+          notBefore: {
+            type: "long",
+            index: "not_analyzed"
+          },
+          notAfter: {
+            type: "long",
+            index: "not_analyzed"
+          },
+          diffDays: {
+            type: "integer",
+            index: "not_analyzed"
           }
         }
       },
@@ -2174,12 +2217,13 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
     queriesCreate();
+    fieldsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 20) {
+} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 21) {
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
-    queriesUpdate();
+    fieldsUpdate();
 
     print "Finished\n";
 } else {
