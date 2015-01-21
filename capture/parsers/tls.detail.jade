@@ -17,7 +17,7 @@ if (session.tls || session["tlsver-term"])
             a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}
           - if (cert.notAfter)
             |  Not After: 
-            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notBefore});') #{cert.notBefore}
+            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notAfter});') #{cert.notAfter}
           - if (cert.iCn && Array.isArray(cert.iCn))
             |  Issuer Common: 
             each cn,i in cert.iCn
