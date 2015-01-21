@@ -285,10 +285,22 @@ function fmenum(field) {
 }
 
 function errorString(err, result) {
-  if ((err || result.error).match("IndexMissingException")) {
+  var str;
+  if (err && typeof err === "string") {
+    str = err;
+  } else if (err && typeof err.message === "string") {
+    str = err.message;
+  } else if (result && result.error) {
+    str = result.error;
+  } else {
+    str == "Unknown issue, check logs";
+    console.log(err, result);
+  }
+
+  if (str.match("IndexMissingException")) {
     return "Moloch's Elasticsearch database has no matching session indices for timeframe selected";
   } else {
-    return "Elasticsearch error: " + (err || result.error);
+    return "Elasticsearch error: " + str;
   }
 }
 

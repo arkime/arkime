@@ -525,10 +525,14 @@ var protocols = {
 global.moloch.ipProtocolLookup = function (text) {
     if (typeof text !== "string") {
         for (var i = 0; i < text.length; i++) {
+            if (!protocols[text[i]] && isNaN(text[i]))
+                throw ("Unknown protocol string " + text);
             text[i] = protocols[text[i]] || +text[i];
         }
         return text;
     } else {
+        if (!protocols[text] && isNaN(text))
+            throw ("Unknown protocol string " + text);
         return protocols[text] || +text;
     }
 };

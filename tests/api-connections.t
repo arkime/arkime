@@ -1,4 +1,4 @@
-use Test::More tests => 3;
+use Test::More tests => 4;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -24,3 +24,7 @@ my $files = "(file=$pwd/socks-http-example.pcap||file=$pwd/socks-http-pass.pcap|
     $json = viewerGet("/connections.json?date=-1&dstField=tls.notAfter&expression=" . uri_escape("$files"));
     delete $json->{health};
     eq_or_diff($json, from_json('{ "nodes": [ { "id": "1418212800", "db": 26760, "by": 32958, "pa": 93, "cnt": 1, "sessions": 3, "type": 2, "pos": 0 }, { "id": "1648944000", "db": 26760, "by": 32958, "pa": 93, "cnt": 1, "sessions": 3, "type": 2, "pos": 1 }, { "id": "10.180.156.185", "db": 53520, "by": 65916, "pa": 186, "cnt": 2, "sessions": 6, "type": 1, "pos": 2 } ], "links": [ { "value": 3, "source": 2, "target": 0, "by": 32958, "db": 26760, "pa": 93, "no": { "test": 1 } }, { "value": 3, "source": 2, "target": 1, "by": 32958, "db": 26760, "pa": 93, "no": { "test": 1 } } ], "iTotalDisplayRecords": 3 }', {relaxed => 1}), "a1 to tls.notAfter", { context => 3 });
+
+    my $json = viewerGet("/connections.json?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
+    delete $json->{health};
+    eq_or_diff($json, from_json('{ "bsqErr": "Unknown protocol string blah" }', {relaxed => 1}), "ip.protocol==blah", { context => 3 });

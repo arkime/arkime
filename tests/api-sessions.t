@@ -1,4 +1,4 @@
-use Test::More tests => 26;
+use Test::More tests => 27;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -48,6 +48,10 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68]]'), "dbHisto ALL");
     is ($json->{iTotalDisplayRecords}, 5, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
+
+# Check ip.protocol=blah
+    my $json = viewerGet("/sessions.json?date=-1&&spi=a1&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    is($json->{bsqErr}, "Unknown protocol string blah", "ip.protocol==blah");
 
 # csv
     my $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;

@@ -47,6 +47,7 @@
   - New tls.sessionid.dst, tls.sessionid.src, tls.sessionid fields (issue #326) 
   - Use ELS doc_values for some fields to reduce ES memory
   - Added cert.cnt back
+  - Handle bad ip.protocol strings better (issue #330)
 
   
 
