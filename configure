@@ -4067,11 +4067,16 @@ $as_echo_n "checking for pfring... " >&6; }
 # Check whether --with-pfring was given.
 if test "${with_pfring+set}" = set; then :
   withval=$with_pfring;  case "$withval" in
-  yes|no)
+  no)
      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
      ;;
   *)
+
+  if test "x$withval" = xyes; then
+    withval=/usr/local
+  fi
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
 $as_echo "$withval" >&6; }
     if test -f $withval/userland/libpcap/pcap.h -a -f $withval/userland/libpcap/libpcap.a; then
@@ -4092,6 +4097,15 @@ $as_echo "$withval" >&6; }
 
       PCAP_CFLAGS="-I$withval/userland/libpcap/include"
       PCAP_LIBS="$withval/userland/libpcap/lib/libpcap.a $withval/userland/lib/libpfring.a -lnuma"
+    elif test -f $withval/pfring/include/pcap.h -a -f $withval/pfring/lib/libpcap.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+
+      PCAP_CFLAGS="-I$withval/pfring/include"
+      PCAP_LIBS="$withval/pfring/lib/libpcap.a $withval/pfring/lib/libpfring.a -lnuma"
     else
       as_fn_error $? "pcap.h or libpcap.a not found in $withval" "$LINENO" 5
     fi
