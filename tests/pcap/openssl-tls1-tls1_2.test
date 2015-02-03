@@ -94,25 +94,32 @@
             "by1" : 1220,
             "tls" : [
                {
+                  "notAfter" : 1534824000,
                   "sCn" : [
                      "geotrust global ca"
                   ],
                   "sOn" : "GeoTrust Inc.",
                   "sn" : "12bbe6",
-                  "iOn" : "Equifax"
+                  "notBefore" : 1021953600,
+                  "iOn" : "Equifax",
+                  "diffDays" : 5936
                },
                {
+                  "notAfter" : 1483228799,
                   "sCn" : [
                      "google internet authority g2"
                   ],
-                  "sOn" : "Google Inc",
-                  "sn" : "023a76",
+                  "notBefore" : 1365174955,
                   "iOn" : "GeoTrust Inc.",
                   "iCn" : [
                      "geotrust global ca"
-                  ]
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "023a76",
+                  "diffDays" : 1366
                },
                {
+                  "notAfter" : 1419292800,
                   "sCn" : [
                      "*.google.com"
                   ],
@@ -167,13 +174,15 @@
                      "youtube.com",
                      "youtubeeducation.com"
                   ],
-                  "sOn" : "Google Inc",
-                  "sn" : "7a5b0bd895632f87",
+                  "notBefore" : 1411553285,
                   "iOn" : "Google Inc",
                   "altcnt" : 49,
                   "iCn" : [
                      "google internet authority g2"
-                  ]
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "7a5b0bd895632f87",
+                  "diffDays" : 89
                }
             ],
             "p2" : 443,

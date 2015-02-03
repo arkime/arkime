@@ -58,6 +58,9 @@
                6440
             ],
             "prot-term-cnt" : 2,
+            "tlsdstid-term" : [
+               "dddbfd5162689bb01e3f0ba158a586de9097b26cfc83599391cbb5e128d34b97"
+            ],
             "lpd" : 1385396821236,
             "fp" : 1385396821,
             "as2" : "AS36459 GitHub, Inc.",
@@ -76,6 +79,7 @@
             "by1" : 1422,
             "tls" : [
                {
+                  "notAfter" : 1441195200,
                   "sCn" : [
                      "github.com"
                   ],
@@ -83,24 +87,29 @@
                      "github.com",
                      "www.github.com"
                   ],
-                  "sOn" : "GitHub, Inc.",
-                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "notBefore" : 1370822400,
                   "iOn" : "DigiCert Inc",
                   "altcnt" : 2,
                   "iCn" : [
                      "digicert high assurance ev ca-1"
-                  ]
+                  ],
+                  "sOn" : "GitHub, Inc.",
+                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "diffDays" : 814
                },
                {
+                  "notAfter" : 1636502400,
                   "sCn" : [
                      "digicert high assurance ev ca-1"
                   ],
-                  "sOn" : "DigiCert Inc",
-                  "sn" : "0337b928347c60a6aec5adb1217f3860",
+                  "notBefore" : 1194609600,
                   "iOn" : "DigiCert Inc",
                   "iCn" : [
                      "digicert high assurance ev root ca"
-                  ]
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0337b928347c60a6aec5adb1217f3860",
+                  "diffDays" : 5114
                }
             ],
             "p2" : 443,

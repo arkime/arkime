@@ -77,6 +77,9 @@
                6666
             ],
             "prot-term-cnt" : 3,
+            "tlsdstid-term" : [
+               "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
+            ],
             "lpd" : 1415053642702,
             "fp" : 1415053640,
             "as2" : "AS0001 Cool Beans!",
@@ -95,6 +98,7 @@
             "by1" : 404,
             "tls" : [
                {
+                  "notAfter" : 1448927999,
                   "sCn" : [
                      "login.live.com"
                   ],
@@ -110,32 +114,40 @@
                      "login.passport.com",
                      "msnialogin.passport.com"
                   ],
-                  "sOn" : "Microsoft Corporation",
-                  "sn" : "0dc04875701d090d9f3645da26f51fe7",
+                  "notBefore" : 1413504000,
                   "iOn" : "VeriSign, Inc.",
                   "altcnt" : 10,
                   "iCn" : [
                      "verisign class 3 extended validation ssl sgc ca"
-                  ]
+                  ],
+                  "sOn" : "Microsoft Corporation",
+                  "sn" : "0dc04875701d090d9f3645da26f51fe7",
+                  "diffDays" : 409
                },
                {
+                  "notAfter" : 1636329599,
                   "sCn" : [
                      "verisign class 3 public primary certification authority - g5"
                   ],
                   "sOn" : "VeriSign, Inc.",
                   "sn" : "35973187f3873a07327ece580c9b7eda",
-                  "iOn" : "VeriSign, Inc."
+                  "notBefore" : 1162944000,
+                  "iOn" : "VeriSign, Inc.",
+                  "diffDays" : 5478
                },
                {
+                  "notAfter" : 1478563199,
                   "sCn" : [
                      "verisign class 3 extended validation ssl sgc ca"
                   ],
-                  "sOn" : "VeriSign, Inc.",
-                  "sn" : "112a006d37e5106fd6ca7cc3efbacc18",
+                  "notBefore" : 1162944000,
                   "iOn" : "VeriSign, Inc.",
                   "iCn" : [
                      "verisign class 3 public primary certification authority - g5"
-                  ]
+                  ],
+                  "sOn" : "VeriSign, Inc.",
+                  "sn" : "112a006d37e5106fd6ca7cc3efbacc18",
+                  "diffDays" : 3652
                }
             ],
             "p2" : 9901,

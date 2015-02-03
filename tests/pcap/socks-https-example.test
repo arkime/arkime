@@ -70,6 +70,9 @@
                11342
             ],
             "prot-term-cnt" : 3,
+            "tlsdstid-term" : [
+               "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
+            ],
             "lpd" : 1386004472629,
             "fp" : 1386004472,
             "tlscipher-termcnt" : 1,
@@ -88,6 +91,7 @@
             "by1" : 1775,
             "tls" : [
                {
+                  "notAfter" : 1418212800,
                   "sCn" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
@@ -242,28 +246,33 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "sOn" : "EdgeCast Networks, Inc.",
-                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "notBefore" : 1317600000,
                   "iOn" : "DigiCert Inc",
                   "altcnt" : 149,
                   "iCn" : [
                      "digicert high assurance ca-3"
-                  ]
+                  ],
+                  "sOn" : "EdgeCast Networks, Inc.",
+                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "diffDays" : 1164
                },
                {
+                  "notAfter" : 1648944000,
                   "sCn" : [
                      "digicert high assurance ca-3"
                   ],
-                  "sOn" : "DigiCert Inc",
-                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600,
                   "iOn" : "DigiCert Inc",
                   "iCn" : [
                      "digicert high assurance ev root ca"
-                  ]
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "diffDays" : 5113
                }
             ],
-            "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "p2" : 1080,
             "gsocksip" : "USA",
             "mac1-term-cnt" : 1,
             "tlsver-termcnt" : 1,
@@ -353,6 +362,9 @@
                22733
             ],
             "prot-term-cnt" : 3,
+            "tlsdstid-term" : [
+               "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
+            ],
             "lpd" : 1386004475761,
             "fp" : 1386004475,
             "tlscipher-termcnt" : 1,
@@ -370,6 +382,7 @@
             "by1" : 1791,
             "tls" : [
                {
+                  "notAfter" : 1418212800,
                   "sCn" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
@@ -524,24 +537,29 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "sOn" : "EdgeCast Networks, Inc.",
-                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "notBefore" : 1317600000,
                   "iOn" : "DigiCert Inc",
                   "altcnt" : 149,
                   "iCn" : [
                      "digicert high assurance ca-3"
-                  ]
+                  ],
+                  "sOn" : "EdgeCast Networks, Inc.",
+                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "diffDays" : 1164
                },
                {
+                  "notAfter" : 1648944000,
                   "sCn" : [
                      "digicert high assurance ca-3"
                   ],
-                  "sOn" : "DigiCert Inc",
-                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600,
                   "iOn" : "DigiCert Inc",
                   "iCn" : [
                      "digicert high assurance ev root ca"
-                  ]
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "diffDays" : 5113
                }
             ],
             "p2" : 1080,
@@ -636,6 +654,9 @@
                34388
             ],
             "prot-term-cnt" : 3,
+            "tlsdstid-term" : [
+               "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
+            ],
             "lpd" : 1386004480888,
             "fp" : 1386004480,
             "tlscipher-termcnt" : 1,
@@ -654,6 +675,7 @@
             "by1" : 1912,
             "tls" : [
                {
+                  "notAfter" : 1418212800,
                   "sCn" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
@@ -808,28 +830,33 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "sOn" : "EdgeCast Networks, Inc.",
-                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "notBefore" : 1317600000,
                   "iOn" : "DigiCert Inc",
                   "altcnt" : 149,
                   "iCn" : [
                      "digicert high assurance ca-3"
-                  ]
+                  ],
+                  "sOn" : "EdgeCast Networks, Inc.",
+                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "diffDays" : 1164
                },
                {
+                  "notAfter" : 1648944000,
                   "sCn" : [
                      "digicert high assurance ca-3"
                   ],
-                  "sOn" : "DigiCert Inc",
-                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600,
                   "iOn" : "DigiCert Inc",
                   "iCn" : [
                      "digicert high assurance ev root ca"
-                  ]
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "diffDays" : 5113
                }
             ],
-            "p2" : 1080,
             "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "p2" : 1080,
             "gsocksip" : "USA",
             "mac1-term-cnt" : 1,
             "tlsver-termcnt" : 1,

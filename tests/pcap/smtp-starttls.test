@@ -112,25 +112,32 @@
             "by1" : 2514,
             "tls" : [
                {
+                  "notAfter" : 1534824000,
                   "sCn" : [
                      "geotrust global ca"
                   ],
                   "sOn" : "GeoTrust Inc.",
                   "sn" : "12bbe6",
-                  "iOn" : "Equifax"
+                  "notBefore" : 1021953600,
+                  "iOn" : "Equifax",
+                  "diffDays" : 5936
                },
                {
+                  "notAfter" : 1428160555,
                   "sCn" : [
                      "google internet authority g2"
                   ],
-                  "sOn" : "Google Inc",
-                  "sn" : "023a69",
+                  "notBefore" : 1365174955,
                   "iOn" : "GeoTrust Inc.",
                   "iCn" : [
                      "geotrust global ca"
-                  ]
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "023a69",
+                  "diffDays" : 729
                },
                {
+                  "notAfter" : 1410262355,
                   "sCn" : [
                      "mx.google.com"
                   ],
@@ -156,13 +163,15 @@
                      "aspmx4.googlemail.com",
                      "aspmx5.googlemail.com"
                   ],
-                  "sOn" : "Google Inc",
-                  "sn" : "325d8297987d50b0",
+                  "notBefore" : 1378726355,
                   "iOn" : "Google Inc",
                   "altcnt" : 20,
                   "iCn" : [
                      "google internet authority g2"
-                  ]
+                  ],
+                  "sOn" : "Google Inc",
+                  "sn" : "325d8297987d50b0",
+                  "diffDays" : 365
                }
             ],
             "p2" : 25,

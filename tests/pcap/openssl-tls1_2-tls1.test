@@ -75,6 +75,9 @@
                5935
             ],
             "prot-term-cnt" : 2,
+            "tlsdstid-term" : [
+               "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
+            ],
             "lpd" : 1413338075560,
             "fp" : 1413338074,
             "as2" : "AS1668 AOL Transit Data Network",
@@ -93,17 +96,21 @@
             "by1" : 1210,
             "tls" : [
                {
+                  "notAfter" : 1636685477,
                   "sCn" : [
                      "entrust certification authority - l1c"
                   ],
-                  "sOn" : "Entrust, Inc.",
-                  "sn" : "4c0e8c39",
+                  "notBefore" : 1321026040,
                   "iOn" : "Entrust.net",
                   "iCn" : [
                      "entrust.net certification authority (2048)"
-                  ]
+                  ],
+                  "sOn" : "Entrust, Inc.",
+                  "sn" : "4c0e8c39",
+                  "diffDays" : 3653
                },
                {
+                  "notAfter" : 1497242632,
                   "sCn" : [
                      "www.aol.com"
                   ],
@@ -171,13 +178,15 @@
                      "m.article.aol.com",
                      "hp.aol.ca"
                   ],
-                  "sOn" : "AOL Inc.",
-                  "sn" : "4c235548",
+                  "notBefore" : 1402510723,
                   "iOn" : "Entrust, Inc.",
                   "altcnt" : 62,
                   "iCn" : [
                      "entrust certification authority - l1c"
-                  ]
+                  ],
+                  "sOn" : "AOL Inc.",
+                  "sn" : "4c235548",
+                  "diffDays" : 1096
                }
             ],
             "p2" : 443,
