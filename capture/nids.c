@@ -99,6 +99,8 @@ uint64_t                     totalPackets = 0;
 uint64_t                     totalBytes = 0;
 uint64_t                     totalSessions = 0;
 
+static struct bpf_program   *bpf_programs = 0;
+
 /******************************************************************************/
 
 typedef HASH_VAR(h_, MolochSessionHash_t, MolochSessionHead_t, 199337);
@@ -748,6 +750,17 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         }
     }
 
+    /* Check if the stop saving bpf filters match */
+    if (bpf_programs && session->packets[which] == 0 && session->stopSaving == 0) {
+        int i;
+        for (i = 0; i < config.dontSaveBPFsNum; i++) {
+            if (bpf_filter(bpf_programs[i].bf_insns, nids_last_pcap_data, nids_last_pcap_header->len, nids_last_pcap_header->caplen)) {
+                session->stopSaving = config.dontSaveBPFsStop[i];
+                break;
+            }
+        }
+    }
+
     session->bytes[which] += nids_last_pcap_header->caplen;
     session->lastPacket = nids_last_pcap_header->ts;
 
@@ -1341,6 +1354,23 @@ void moloch_nids_pcap_opened()
     pcapFileHeader.linktype = dlt_to_linktype(pcap_datalink(nids_params.pcap_desc)) | pcap_datalink_ext(nids_params.pcap_desc);
     if (config.debug)
         LOG("linktype %x", pcapFileHeader.linktype);
+
+    if (config.dontSaveBPFs) {
+        int i;
+        if (bpf_programs) {
+            for (i = 0; i < config.dontSaveBPFsNum; i++) {
+                pcap_freecode(&bpf_programs[i]);
+            }
+        } else {
+            bpf_programs= malloc(config.dontSaveBPFsNum*sizeof(struct bpf_program));
+        }
+        for (i = 0; i < config.dontSaveBPFsNum; i++) {
+            if (pcap_compile(nids_params.pcap_desc, &bpf_programs[i], config.dontSaveBPFs[i], 0, PCAP_NETMASK_UNKNOWN) == -1) {
+                LOG("ERROR - Couldn't compile filter: '%s' with %s", config.dontSaveBPFs[i], pcap_geterr(nids_params.pcap_desc));
+                exit(1);
+            }
+        }
+    }
 }
 
 /******************************************************************************/
@@ -1511,8 +1541,8 @@ dirsDone:
             g_free(fullfilename);
             continue;
         }
-        offlineFile = pcap_file(nids_params.pcap_desc);
         moloch_nids_pcap_opened();
+        offlineFile = pcap_file(nids_params.pcap_desc);
         g_free(fullfilename);
         return 1;
     }

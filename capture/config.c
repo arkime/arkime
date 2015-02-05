@@ -83,18 +83,35 @@ gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
     if (!strs)
         return strs;
 
-    int i;
-    for (i = 0; strs[i]; i++) {
+    int i, j;
+    for (i = j = 0; strs[i]; i++) {
         char *str = strs[i];
+
+        /* Remove leading and trailing spaces */
         while (isspace(*str))
             str++;
         g_strchomp(str);
+
+        /* Empty string */
+        if (*str == 0) {
+            g_free(strs[i]);
+            continue;
+        }
+
+        /* Moved front of string, need to realloc so g_strfreev doesn't blow */
         if (str != strs[i]) {
             str = g_strdup(str);
             g_free(strs[i]);
-            strs[i] = str;
         }
+
+        /* Save string back */
+        strs[j] = str;
+        j++;
     }
+
+    /* NULL anything at the end that was moved forward */
+    for (; j < i; j++)
+        strs[j] = NULL;
 
     return strs;
 }
@@ -231,6 +248,29 @@ void moloch_config_load()
             moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tags[i], num, TRUE);
         }
         g_strfreev(tags);
+    }
+
+    config.dontSaveBPFs     = moloch_config_str_list(keyfile, "dontSaveBPFs", NULL);
+    if (config.dontSaveBPFs) {
+        for (i = 0; config.dontSaveBPFs[i]; i++);
+        config.dontSaveBPFsNum = i;
+        config.dontSaveBPFsStop = malloc(config.dontSaveBPFsNum*sizeof(int));
+
+        GRegex     *regex = g_regex_new(":\\s*(\\d+)\\s*$", 0, 0, 0);
+        GMatchInfo *match_info;
+        for (i = 0; config.dontSaveBPFs[i]; i++) {
+            g_regex_match(regex, config.dontSaveBPFs[i], 0, &match_info);
+            if (g_match_info_matches(match_info)) {
+                config.dontSaveBPFsStop[i] = atoi(g_match_info_fetch(match_info, 1));
+                gint pos;
+                g_match_info_fetch_pos(match_info, 0, &pos, NULL);
+                config.dontSaveBPFs[i][pos] = 0;
+            } else {
+                config.dontSaveBPFsStop[i] = 1;
+            }
+            g_match_info_free(match_info);
+        }
+        g_regex_unref(regex);
     }
 
     char *writeMethod       = moloch_config_str(keyfile, "pcapWriteMethod", "normal");
@@ -512,6 +552,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 /******************************************************************************/
 void moloch_config_init()
 {
+    int i;
     char *str;
     static char *rotates[] = {"hourly", "daily", "weekly", "monthly"};
 
@@ -611,6 +652,10 @@ void moloch_config_init()
         HASH_FORALL(s_, config.dontSaveTags, tstring,
           LOG("dontSaveTags: %s", tstring->str);
         );
+
+        for (i = 0; i < config.dontSaveBPFsNum; i++) {
+          LOG("dontSaveBPFs: %s:%d", config.dontSaveBPFs[i], config.dontSaveBPFsStop[i]);
+        }
     }
 
     if ((config.writeMethod & MOLOCH_WRITE_DIRECT) && sizeof(off_t) == 4 && config.maxFileSizeG > 2)

@@ -250,11 +250,14 @@ typedef struct moloch_config {
     char     *rirFile;
     char     *dropUser;
     char     *dropGroup;
-    char     **pluginsDir;
-    char     **parsersDir;
+    char    **pluginsDir;
+    char    **parsersDir;
+    char    **dontSaveBPFs;
+    int      *dontSaveBPFsStop;
+    int       dontSaveBPFsNum;
 
-    char     **plugins;
-    char     **smtpIpHeaders;
+    char    **plugins;
+    char    **smtpIpHeaders;
 
     uint32_t  maxFileSizeG;
     uint64_t  maxFileSizeB;
