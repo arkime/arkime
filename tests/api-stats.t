@@ -1,4 +1,4 @@
-use Test::More tests => 23;
+use Test::More tests => 24;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -19,7 +19,7 @@ my $pwd = getcwd() . "/pcap";
         is ($stats->{aaData}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
-    foreach my $i ("deltaMS", "totalPackets", "deltaSessions", "deltaPackets", "deltaBytes", "memory", "currentTime", "totalK", "totalSessions", "freeSpaceM", "deltaSessionsPerSec", "deltaBytesPerSec", "deltaPacketsPerSec") {
+    foreach my $i ("deltaMS", "totalPackets", "deltaSessions", "deltaPackets", "deltaBytes", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM", "deltaSessionsPerSec", "deltaBytesPerSec", "deltaPacketsPerSec") {
         cmp_ok ($stats->{aaData}->[0]->{$i}, '>', 0, "stats.json $i > 0");
     }
 

@@ -19,6 +19,11 @@ script(type='text/javascript').
                       "&interval=60" +
                       "&name=" + mname,
         "success": function(data) {
+          if (mname === "cpu") {
+            for (i = 0; i < data.length; i++) {
+              data[i] = data[i]/100.0;
+            }
+          }
           callback(null, data);
         }
       });
@@ -32,7 +37,7 @@ script(type='text/javascript').
         .call(dcontext.axis().orient("top"));
 
     div.selectAll(".horizon")
-        .data([dmetric("Packets/Min", "deltaPackets"), dmetric("Bytes/Min", "deltaBytes"), dmetric("Sessions/Min", "deltaSessions"), dmetric("Dropped/Min", "deltaDropped"), dmetric("Active Sessions", "monitoring"), dmetric("Free Space", "freeSpaceM"), dmetric("Memory", "memory"), dmetric("Disk Queue", "diskQueue")])
+        .data([dmetric("Packets/Min", "deltaPackets"), dmetric("Bytes/Min", "deltaBytes"), dmetric("Sessions/Min", "deltaSessions"), dmetric("Dropped/Min", "deltaDropped"), dmetric("Active Sessions", "monitoring"), dmetric("Free Space", "freeSpaceM"), dmetric("Memory", "memory"), dmetric("CPU", "cpu"), dmetric("Disk Queue", "diskQueue")])
       .enter().append("div")
         .attr("class", "horizon")
         .call(dcontext.horizon());

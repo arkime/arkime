@@ -49,6 +49,8 @@
   - Added cert.cnt back
   - Handle bad ip.protocol strings better (issue #330)
   - Added dontSaveBPFs config
+  - Switched capture memory reporting to more accurate getrusage
+  - Added capture cpu reporting to stats (requires db.pl upgrade)
 
   
 

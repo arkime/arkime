@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <errno.h>
+#include <sys/resource.h>
 #include <sys/statvfs.h>
 #include "glib.h"
 #include "moloch.h"
@@ -29,7 +30,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 21
+#define MOLOCH_MIN_DB_VERSION 22
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -906,12 +907,13 @@ void moloch_db_load_stats()
 /******************************************************************************/
 void moloch_db_update_stats()
 {
-    static uint64_t lastPackets = 0;
-    static uint64_t lastBytes = 0;
-    static uint64_t lastSessions = 0;
-    static uint64_t lastDropped = 0;
-    uint64_t        freeSpaceM = 0;
-    int             i;
+    static uint64_t       lastPackets = 0;
+    static uint64_t       lastBytes = 0;
+    static uint64_t       lastSessions = 0;
+    static uint64_t       lastDropped = 0;
+    uint64_t              freeSpaceM = 0;
+    static struct rusage  lastUsage;
+    int                   i;
 
     char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
@@ -933,8 +935,14 @@ void moloch_db_update_stats()
     dbTotalSessions += (totalSessions - lastSessions);
     dbTotalDropped += (totalDropped - lastDropped);
     dbTotalK += (totalBytes - lastBytes)/1024;
-    uint64_t mem = (uint64_t)sbrk(0);
+
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+
     int diffms = (currentTime.tv_sec - dbLastTime.tv_sec)*1000 + (currentTime.tv_usec/1000 - dbLastTime.tv_usec/1000);
+    uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage.ru_utime.tv_sec)*1000 + (usage.ru_utime.tv_usec/1000 - lastUsage.ru_utime.tv_usec/1000) +
+                         (usage.ru_stime.tv_sec - lastUsage.ru_stime.tv_sec)*1000 + (usage.ru_stime.tv_usec/1000 - lastUsage.ru_stime.tv_usec/1000);
+
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
         "\"hostname\": \"%s\", "
@@ -942,6 +950,7 @@ void moloch_db_update_stats()
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
+        "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"totalPackets\": %" PRIu64 ", "
         "\"totalK\": %" PRIu64 ", "
@@ -957,7 +966,12 @@ void moloch_db_update_stats()
         (uint32_t)currentTime.tv_sec,
         freeSpaceM,
         moloch_nids_monitoring_sessions(),
-        mem,
+#if defined(__APPLE__) && defined(__MACH__)
+        usage.ru_maxrss,
+#else
+        usage.ru_maxrss * 1024UL,
+#endif
+        diffusage*10000/diffms,
         moloch_nids_disk_queue(),
         dbTotalPackets,
         dbTotalK,
@@ -974,6 +988,7 @@ void moloch_db_update_stats()
     lastPackets  = totalPackets;
     lastSessions = totalSessions;
     lastDropped  = totalDropped;
+    lastUsage    = usage;
 
     moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
 }
@@ -981,16 +996,17 @@ void moloch_db_update_stats()
 /******************************************************************************/
 void moloch_db_update_dstats(int n)
 {
-    static uint64_t lastPackets[2] = {0, 0};
-    static uint64_t lastBytes[2] = {0, 0};
-    static uint64_t lastSessions[2] = {0, 0};
-    static uint64_t lastDropped[2] = {0, 0};
+    static uint64_t       lastPackets[2] = {0, 0};
+    static uint64_t       lastBytes[2] = {0, 0};
+    static uint64_t       lastSessions[2] = {0, 0};
+    static uint64_t       lastDropped[2] = {0, 0};
+    static struct rusage  lastUsage[2];
     static struct timeval lastTime[2];
-    static int      intervals[2] = {5, 60};
-    uint64_t        freeSpaceM = 0;
-    int             i;
-    char            key[200];
-    int             key_len = 0;
+    static int            intervals[2] = {5, 60};
+    uint64_t              freeSpaceM = 0;
+    int                   i;
+    char                  key[200];
+    int                   key_len = 0;
 
     char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
@@ -1012,7 +1028,12 @@ void moloch_db_update_dstats(int n)
 
     const uint64_t cursec = currentTime.tv_sec;
     const uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000);
-    uint64_t mem = (uint64_t)sbrk(0);
+
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+
+    uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage[n].ru_utime.tv_sec)*1000 + (usage.ru_utime.tv_usec/1000 - lastUsage[n].ru_utime.tv_usec/1000) +
+                         (usage.ru_stime.tv_sec - lastUsage[n].ru_stime.tv_sec)*1000 + (usage.ru_stime.tv_usec/1000 - lastUsage[n].ru_stime.tv_usec/1000);
 
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
@@ -1022,6 +1043,7 @@ void moloch_db_update_dstats(int n)
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
+        "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
@@ -1034,7 +1056,12 @@ void moloch_db_update_dstats(int n)
         cursec,
         freeSpaceM,
         moloch_nids_monitoring_sessions(),
-        mem,
+#if defined(__APPLE__) && defined(__MACH__)
+        usage.ru_maxrss,
+#else
+        usage.ru_maxrss * 1024UL,
+#endif
+        diffusage*10000/diffms,
         moloch_nids_disk_queue(),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
@@ -1047,6 +1074,7 @@ void moloch_db_update_dstats(int n)
     lastPackets[n]  = totalPackets;
     lastSessions[n] = totalSessions;
     lastDropped[n]  = totalDropped;
+    lastUsage[n]    = usage;
     moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
 }
 /******************************************************************************/

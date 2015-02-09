@@ -1310,7 +1310,7 @@ function mergeUnarray(to, from) {
 app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
-  var columns = ["_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "diskQueue", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
+  var columns = ["_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "cpu", "diskQueue", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
   var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),1000000):500);
 
   var query = {_source: columns,
@@ -1333,6 +1333,7 @@ app.get('/stats.json', function(req, res) {
             }
             fields.id        = result.hits.hits[i]._id;
             fields.memory    = fields.memory || 0;
+            fields.cpu       = fields.cpu || 0;
             fields.diskQueue = fields.diskQueue || 0;
             fields.deltaBytesPerSec = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
             fields.deltaPacketsPerSec = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);

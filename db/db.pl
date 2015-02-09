@@ -28,6 +28,7 @@
 # 19 - users_v3
 # 20 - queries
 # 21 - doc_values, new tls fields, starttime/stoptime/view
+# 22 - cpu to stats/dstats
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -36,7 +37,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 21;
+my $VERSION = 22;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -411,6 +412,10 @@ my $mapping = '
         type: "long",
         index: "no"
       },
+      cpu: {
+        type: "integer",
+        index: "no"
+      },
       diskQueue: {
         type: "long",
         index: "no"
@@ -490,6 +495,10 @@ my $mapping = '
       },
       memory: {
         type: "long",
+        index: "no"
+      },
+      cpu: {
+        type: "integer",
         index: "no"
       },
       diskQueue: {
@@ -2211,6 +2220,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     fieldsUpdate();
     sessionsUpdate();
     queriesCreate();
+    statsUpdate();
+    dstatsUpdate();
 
     print "Finished\n";
 } elsif ($main::versionNumber >= 19 && $main::versionNumber < 20) {
@@ -2218,12 +2229,16 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     sessionsUpdate();
     queriesCreate();
     fieldsUpdate();
+    statsUpdate();
+    dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 21) {
+} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 22) {
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
     fieldsUpdate();
+    statsUpdate();
+    dstatsUpdate();
 
     print "Finished\n";
 } else {
