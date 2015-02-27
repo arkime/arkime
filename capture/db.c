@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.c  -- Functions dealing with database queries and updates
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -24,13 +24,13 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <sys/statvfs.h>
-#include "glib.h"
 #include "moloch.h"
 #include "bsb.h"
+#include "glib.h"
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 22
+#define MOLOCH_MIN_DB_VERSION 23
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -226,7 +226,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         moloch_plugins_cb_save(session, final);
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len;
+    jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len + 10*session->fileLenArray->len;
     for (pos = 0; pos < session->maxFields; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
@@ -444,6 +444,14 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         if (i != 0)
             BSB_EXPORT_u08(jbsb, ',');
         BSB_EXPORT_sprintf(jbsb, "%" PRId64, (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
+    }
+    BSB_EXPORT_cstr(jbsb, "],");
+
+    BSB_EXPORT_cstr(jbsb, "\"psl\":[");
+    for(i = 0; i < session->fileLenArray->len; i++) {
+        if (i != 0)
+            BSB_EXPORT_u08(jbsb, ',');
+        BSB_EXPORT_sprintf(jbsb, "%u", (uint16_t)g_array_index(session->fileLenArray, uint16_t, i));
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
@@ -972,7 +980,7 @@ void moloch_db_update_stats()
         usage.ru_maxrss * 1024UL,
 #endif
         diffusage*10000/diffms,
-        moloch_nids_disk_queue(),
+        moloch_writer_queue_length?moloch_writer_queue_length():0,
         dbTotalPackets,
         dbTotalK,
         dbTotalSessions,
@@ -1062,7 +1070,7 @@ void moloch_db_update_dstats(int n)
         usage.ru_maxrss * 1024UL,
 #endif
         diffusage*10000/diffms,
-        moloch_nids_disk_queue(),
+        moloch_writer_queue_length?moloch_writer_queue_length():0,
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),
@@ -1163,7 +1171,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
 
     key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
 
-    data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, &data_len);
+    data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
     version = moloch_js0n_get(data, data_len, "_version", &version_len);
 
     if (!version_len || !version) {
@@ -1236,7 +1244,7 @@ void moloch_db_load_file_num()
 
     /* Now create the new style */
     key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/fn-%s?version_type=external&version=%d", config.prefix, config.nodeName, fileNum + 100);
-    moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL);
+    moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL);
 
 fetch_file_num:
     if (!config.pcapReadOffline) {
@@ -1246,7 +1254,7 @@ fetch_file_num:
     }
 }
 /******************************************************************************/
-char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id)
+char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id)
 {
     char               key[100];
     int                key_len;
@@ -1256,6 +1264,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     int                json_len;
     const uint64_t     fp = firstPacket;
+
 
     snprintf(key, sizeof(key), "fn-%s", config.nodeName);
     if (nextFileNum == 0) {
@@ -1270,7 +1279,20 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
 
 
     if (name) {
-        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":1}", num, name, fp, config.nodeName, size);
+        static GRegex     *numRegex;
+        static GRegex     *numHexRegex;
+        if (!numRegex) {
+            numRegex = g_regex_new("#NUM#", 0, 0, 0);
+            numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
+        }
+        char numstr[100];
+        snprintf(numstr, sizeof(numstr), "%d", num);
+
+        char *name1 = g_regex_replace_literal(numRegex, name, -1, 0, numstr, 0, NULL);
+        name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)moloch_char_to_hexstr[num%256], 0, NULL);
+        g_free(name1);
+
+        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d}", num, name, fp, config.nodeName, size, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
     } else {
         tmp = localtime(&firstPacket);
@@ -1283,7 +1305,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
             strcat(filename, "/");
         snprintf(filename+strlen(filename), sizeof(filename) - strlen(filename), "%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
-        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":0}", num, filename, fp, config.nodeName);
+        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d}", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
     }
 
@@ -1297,7 +1319,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint3
     if (name)
         return name;
 
-    return filename;
+    return g_strdup(filename);
 }
 /******************************************************************************/
 void moloch_db_check()
@@ -1444,7 +1466,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
         }
 
         key_len = snprintf(key, sizeof(key), "/%stags/tag/%s?fields=n", config.prefix, r->escaped);
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, moloch_db_tag_cb, r);
+        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         outstandingTagRequests++;
         break;
     }
@@ -1459,7 +1481,7 @@ void moloch_db_tag_create_cb(unsigned char *data, int UNUSED(data_len), gpointer
 
     if (strstr((char *)data, "{\"error\":") != 0) {
         key_len = snprintf(key, sizeof(key), "/%stags/tag/%s?fields=n", config.prefix, r->escaped);
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, moloch_db_tag_cb, r);
+        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         return;
     }
 
@@ -1572,7 +1594,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         int                key_len;
 
         key_len = snprintf(key, sizeof(key), "/%stags/tag/%s?fields=n", config.prefix, r->escaped);
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, moloch_db_tag_cb, r);
+        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         outstandingTagRequests++;
     } else {
         DLL_PUSH_TAIL(t_, &tagRequests, r);
@@ -1716,7 +1738,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     }
 
     BSB_EXPORT_u08(bsb, '}');
-    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), FALSE, NULL, NULL);
+    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, FALSE, NULL, NULL);
 }
 /******************************************************************************/
 gboolean moloch_db_file_exists(char *filename)

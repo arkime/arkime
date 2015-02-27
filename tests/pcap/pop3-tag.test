@@ -74,6 +74,12 @@
             "p2" : 110,
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
+            "psl" : [
+               78,
+               78,
+               76,
+               86
+            ],
             "prot-term" : [
                "pop3",
                "tcp"

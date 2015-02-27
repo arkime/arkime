@@ -68,6 +68,10 @@
             "p2" : 53,
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
+            "psl" : [
+               88,
+               163
+            ],
             "prot-term" : [
                "udp",
                "dns"

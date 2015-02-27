@@ -90,6 +90,13 @@
             "p2" : 25,
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
+            "psl" : [
+               90,
+               76,
+               70,
+               395,
+               70
+            ],
             "prot-term" : [
                "smtp",
                "tcp"

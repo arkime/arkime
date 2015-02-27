@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* multies.js  -- Make multiple ES servers look like one but merging results
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -434,21 +434,32 @@ function fixQuery(node, body, doneCb) {
           }
         });
       }
-    /*} else if (item === "fileand" && typeof obj[item] === "string") {
+    } else if (item === "fileand" && typeof obj[item] === "string") {
       var name = obj.fileand;
       delete obj.fileand;
       outstanding++;
-      Db.fileNameToFile(name, function (file) {
+
+      var query;
+      if (name[0] === "/" && name[name.length - 1] === "/") {
+        query = {query: {regexp: {name: name.substring(1, name.length-1)}}};
+      } else if (name.indexOf("*") !== -1) {
+        query = {query: {wildcard: {name: name}}};
+      } else {
+        query = {query: {term: {name: name}}};
+      }
+      clients[node].search({index: node2Prefix(node) + 'files', type: 'file', size:500, body: query}, function(err, result) {
         outstanding--;
-        if (file === null) {
-          err = "File '" + name + "' not found";
-        } else {
-          obj.bool = {must: [{term: {no: file.node}}, {term: {fs: file.num}}]};
+        obj.bool = {should: []};
+        result.hits.hits.forEach(function (file) {
+          obj.bool.should.push({bool: {must:[{term: {no: file._source.node}}, {term: {fs: file._source.num}}]}});
+        });
+        if (obj.bool.should.length === 0) {
+          err = "No matching files found";
         }
         if (finished && outstanding === 0) {
           doneCb(err, body);
         }
-      });*/
+      });
     } else if (typeof obj[item] === "object") {
       convert(obj, obj[item]);
     }

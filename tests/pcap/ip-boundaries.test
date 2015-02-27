@@ -40,6 +40,9 @@
             "mac2-term-cnt" : 1,
             "p2" : 3207,
             "mac1-term-cnt" : 1,
+            "psl" : [
+               161
+            ],
             "prot-term" : [
                "udp",
                "bittorrent"

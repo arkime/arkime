@@ -151,7 +151,7 @@ void wise_load_fields()
 
     key_len = snprintf(key, sizeof(key), "/fields");
     size_t         data_len;
-    unsigned char *data = moloch_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, &data_len);;
+    unsigned char *data = moloch_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len);;
 
     BSB bsb;
     BSB_INIT(bsb, data, data_len);
@@ -462,7 +462,7 @@ gboolean wise_flush(gpointer UNUSED(user_data))
         return TRUE;
 
     inflight += iRequest->numItems;
-    if (moloch_http_send(wiseService, "POST", "/get", 4, iBuf, BSB_LENGTH(iRequest->bsb), TRUE, wise_cb, iRequest) != 0) {
+    if (moloch_http_send(wiseService, "POST", "/get", 4, iBuf, BSB_LENGTH(iRequest->bsb), NULL, TRUE, wise_cb, iRequest) != 0) {
         LOG("Wise - request failed %p for %d items", iRequest, iRequest->numItems);
         wise_cb(NULL, 0, iRequest);
     }

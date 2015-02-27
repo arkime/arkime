@@ -102,6 +102,16 @@
             "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
             "hdvercnt" : 1,
+            "psl" : [
+               94,
+               90,
+               82,
+               227,
+               189,
+               82,
+               82,
+               82
+            ],
             "prot-term" : [
                "http",
                "tcp"

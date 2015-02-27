@@ -135,6 +135,14 @@
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
             "tlsver-termcnt" : 1,
+            "psl" : [
+               82,
+               82,
+               76,
+               587,
+               76,
+               5106
+            ],
             "prot-term" : [
                "tls",
                "tcp"

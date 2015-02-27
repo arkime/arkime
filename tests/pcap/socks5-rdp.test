@@ -61,6 +61,18 @@
             "gsocksip" : "RUS",
             "mac1-term-cnt" : 2,
             "rir2" : "TEST",
+            "psl" : [
+               82,
+               82,
+               76,
+               76,
+               76,
+               80,
+               80,
+               111,
+               89,
+               76
+            ],
             "prot-term" : [
                "rdp",
                "socks",

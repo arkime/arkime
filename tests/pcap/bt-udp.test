@@ -47,6 +47,9 @@
             "by1" : 145,
             "p2" : 3207,
             "mac1-term-cnt" : 1,
+            "psl" : [
+               161
+            ],
             "prot-term" : [
                "udp",
                "bittorrent"
@@ -99,10 +102,13 @@
             "tacnt" : 3,
             "a1" : "10.0.0.4",
             "db1" : 321,
-            "by1" : 329,
             "mac2-term-cnt" : 1,
+            "by1" : 329,
             "p2" : 12074,
             "mac1-term-cnt" : 1,
+            "psl" : [
+               345
+            ],
             "prot-term" : [
                "udp",
                "bittorrent"
@@ -158,6 +164,9 @@
             "mac2-term-cnt" : 1,
             "p2" : 20551,
             "mac1-term-cnt" : 1,
+            "psl" : [
+               352
+            ],
             "prot-term" : [
                "udp",
                "bittorrent"

@@ -50,9 +50,9 @@
             "fp" : 1393428477,
             "as2" : "AS15169 Google Inc.",
             "pa" : 1,
-            "tacnt" : 4,
             "sl" : 0,
             "fb1" : "f376011000010000",
+            "tacnt" : 4,
             "a1" : "10.0.0.1",
             "db1" : 66,
             "dnshocnt" : 1,
@@ -64,6 +64,9 @@
             "p2" : 53,
             "mac1-term-cnt" : 1,
             "rir2" : "ARIN",
+            "psl" : [
+               90
+            ],
             "prot-term" : [
                "udp",
                "dns"

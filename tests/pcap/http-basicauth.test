@@ -128,6 +128,14 @@
             "p2" : 2082,
             "mac1-term-cnt" : 1,
             "hdvercnt" : 1,
+            "psl" : [
+               94,
+               76,
+               76,
+               762,
+               76,
+               323
+            ],
             "prot-term" : [
                "http",
                "tcp"

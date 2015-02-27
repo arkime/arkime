@@ -29,6 +29,7 @@
 # 20 - queries
 # 21 - doc_values, new tls fields, starttime/stoptime/view
 # 22 - cpu to stats/dstats
+# 23 - packet lengths
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -37,7 +38,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 22;
+my $VERSION = 23;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -1001,6 +1002,10 @@ sub sessionsUpdate
       },
       ps: {
         type: "long",
+        index: "no"
+      },
+      psl: {
+        type: "short",
         index: "no"
       },
       fs: {
@@ -2233,7 +2238,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 22) {
+} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 23) {
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
     fieldsUpdate();

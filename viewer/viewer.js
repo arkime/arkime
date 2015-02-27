@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* viewer.js  -- The main moloch app
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -76,6 +76,7 @@ var internals = {
   caTrustCerts: {},
   cronRunning: false,
   pluginEmitter: new EventEmitter(),
+  writers: {},
 
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
@@ -233,6 +234,13 @@ function loadFields() {
 }
 
 function loadPlugins() {
+  var api = {
+    registerWriter: function(str, info) {
+      internals.writers[str] = info;
+    },
+    getDb: function() { return Db; },
+    getPcap: function() { return Pcap; },
+  }
   var plugins = Config.get("viewerPlugins", "").split(";");
   var dirs = Config.get("pluginsDir", "/data/moloch/plugins").split(";");
   plugins.forEach(function (plugin) {
@@ -249,7 +257,7 @@ function loadPlugins() {
       if (fs.existsSync(dir + "/" + plugin)) {
         found = true;
         var p = require(dir + "/" + plugin);
-        p.init(Config, internals.pluginEmitter);
+        p.init(Config, internals.pluginEmitter, api);
       }
     });
     if (!found) {
@@ -293,7 +301,7 @@ function errorString(err, result) {
   } else if (result && result.error) {
     str = result.error;
   } else {
-    str == "Unknown issue, check logs";
+    str = "Unknown issue, check logs";
     console.log(err, result);
   }
 
@@ -306,7 +314,7 @@ function errorString(err, result) {
 
 // http://stackoverflow.com/a/10934946
 function dot2value(obj, str) {
-      return str.split(".").reduce(function(o, x) { return o[x] }, obj);
+      return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
 function createSessionDetail() {
@@ -359,6 +367,17 @@ function createSessionDetail() {
     internals.sessionDetail +=   "  include views/sessionDetail-body\n";
     internals.sessionDetail +=   "include views/sessionDetail-footer\n";
   });
+}
+
+//https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain(str, separator, limit) {
+    str = str.split(separator);
+    if(str.length <= limit) {return str;}
+
+    var ret = str.splice(0, limit);
+    ret.push(str.join(separator));
+
+    return ret;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -490,11 +509,20 @@ function proxyRequest (req, res, errCb) {
   });
 }
 
+function isLocalView (node, yesCb, noCb) {
+  var pcapWriteMethod = Config.getFull(node, "pcapWriteMethod");
+  var writer = internals.writers[pcapWriteMethod];
+  if (writer && writer.localNode === false) {
+    return yesCb();
+  }
+  return Db.isLocalView(node, yesCb, noCb);
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Middleware
 //////////////////////////////////////////////////////////////////////////////////
 function checkProxyRequest(req, res, next) {
-  Db.isLocalView(req.params.nodeName, function () {
+  isLocalView(req.params.nodeName, function () {
     return next();
   },
   function () {
@@ -1470,7 +1498,7 @@ app.get('/files.json', function(req, res) {
             return cb(null);
           }
 
-          Db.isLocalView(item.node, function () {
+          isLocalView(item.node, function () {
             fs.stat(item.name, function (err, stats) {
               if (err || !stats) {
                 item.filesize = -1;
@@ -2350,13 +2378,13 @@ app.get('/unique.txt', function(req, res) {
   });
 });
 
-function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
+function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
   function processFile(pcap, pos, i, nextCb) {
     pcap.ref();
     pcap.readPacket(pos, function(packet) {
       switch(packet) {
       case null:
-        endCb("Error loading data for session " + id, null);
+        endCb("Error loading data for session " + session._id, null);
         break;
       case undefined:
         break;
@@ -2368,20 +2396,69 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     });
   }
 
+  var fields;
+
+  fields = session._source || session.fields;
+
+  var fileNum;
+  var itemPos = 0;
+  async.eachLimit(fields.ps, limit || 1, function(pos, nextCb) {
+    if (pos < 0) {
+      fileNum = pos * -1;
+      return nextCb(null);
+    }
+
+    // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
+    var opcap = Pcap.get(fields.no + ":" + fileNum);
+    if (!opcap.isOpen()) {
+      Db.fileIdToFile(fields.no, fileNum, function(file) {
+
+        if (!file) {
+          console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
+          return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
+        }
+
+        var ipcap = Pcap.get(fields.no + ":" + file.num);
+
+        try {
+          ipcap.open(file.name);
+        } catch (err) {
+          console.log("ERROR - Couldn't open file ", err);
+          return nextCb("Couldn't open file " + err);
+        }
+
+        if (headerCb) {
+          headerCb(ipcap, ipcap.readHeader());
+          headerCb = null;
+        }
+        processFile(ipcap, pos, itemPos++, nextCb);
+      });
+    } else {
+      if (headerCb) {
+        headerCb(opcap, opcap.readHeader());
+        headerCb = null;
+      }
+      processFile(opcap, pos, itemPos++, nextCb);
+    }
+  },
+  function (pcapErr, results) {
+    endCb(pcapErr, fields);
+  });
+}
+
+function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {fields: "no,ps"};
+    options  = {fields: "no,ps,psl"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
-    var fields;
-
     if (err || !session.found) {
       console.log("session get error", err, session);
       return endCb("Session not found", null);
     }
 
-    fields = session._source || session.fields;
+    var fields = session._source || session.fields;
 
     if (maxPackets && fields.ps.length > maxPackets) {
       fields.ps.length = maxPackets;
@@ -2390,80 +2467,41 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
     /* Go through the list of prefetch the id to file name if we are running in parallel to
      * reduce the number of elasticsearch queries and problems
      */
-    var outstanding = 0, finished = true;
-    function fileCb () {
-      outstanding--;
-      if (finished && outstanding === 0) {
-        finished = false;
-        readyToProcess();
+    var outstanding = 0;
+    var saveInfo;
+    for (var i = 0, ilen = fields.ps.length; i < ilen; i++) {
+      if (fields.ps[i] < 0) {
+        outstanding++;
+        Db.fileIdToFile(fields.no, -1 * fields.ps[i], function (info) {
+          outstanding--;
+          if (i === 0) {
+            saveInfo = info;
+          }
+          if (i === ilen && outstanding === 0) {
+            i++; // So not called again below
+            readyToProcess();
+          }
+        });
       }
     }
-    if (limit > 1) {
-      finished = false;
-      for (var i = 0, ilen = fields.ps.length; i < ilen; i++) {
-        if (fields.ps[i] < 0) {
-          outstanding++;
-          Db.fileIdToFile(fields.no, -1 * fields.ps[i], fileCb);
-        }
-      }
-      finished = true;
+
+    if (i === ilen && outstanding === 0) {
+      readyToProcess();
     }
 
     function readyToProcess() {
-      /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
-       * New Format: Negative numbers are file numbers until next neg number, otherwise file pos */
-      var newFormat = false;
-      var fileNum;
-      var itemPos = 0;
-      async.eachLimit(fields.ps, limit || 1, function(item, nextCb) {
-        var pos;
+      var pcapWriteMethod = Config.getFull(fields.no, "pcapWriteMethod");
+      var psid = processSessionIdDisk;
+      var writer = internals.writers[pcapWriteMethod];
+      if (writer && writer.processSessionId) {
+        psid = writer.processSessionId;
+      }
 
-        if (item < 0) {
-          newFormat = true;
-          fileNum = item * -1;
-          return nextCb(null);
-        } else if (newFormat) {
-          pos  = item;
-        } else  {
-          // javascript doesn't have 64bit bitwise operations
-          fileNum = Math.floor(item / 0xfffffffff);
-          pos  = item % 0x1000000000;
+      psid(session, headerCb, packetCb, function (err, fields) {
+        if (!fields) {
+          return endCb(err, fields);
         }
 
-        // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-        var opcap = Pcap.get(fields.no + ":" + fileNum);
-        if (!opcap.isOpen()) {
-          Db.fileIdToFile(fields.no, fileNum, function(file) {
-
-            if (!file) {
-              console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
-              return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
-            }
-
-            var ipcap = Pcap.get(fields.no + ":" + file.num);
-
-            try {
-              ipcap.open(file.name);
-            } catch (err) {
-              console.log("ERROR - Couldn't open file ", err);
-              return nextCb("Couldn't open file " + err);
-            }
-
-            if (headerCb) {
-              headerCb(ipcap, ipcap.readHeader());
-              headerCb = null;
-            }
-            processFile(ipcap, pos, itemPos++, nextCb);
-          });
-        } else {
-          if (headerCb) {
-            headerCb(opcap, opcap.readHeader());
-            headerCb = null;
-          }
-          processFile(opcap, pos, itemPos++, nextCb);
-        }
-      },
-      function (pcapErr, results) {
         function tags(container, field, doneCb, offset) {
           if (!container[field]) {
             return doneCb(null);
@@ -2516,14 +2554,10 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
             });
           }],
           function(err, results) {
-            endCb(pcapErr, fields);
+            endCb(err, fields);
           }
         );
-      });
-    }
-
-    if (finished && outstanding === 0) {
-      readyToProcess();
+      }, limit);
     }
   });
 }
@@ -3191,7 +3225,7 @@ function localSessionDetail(req, res) {
 }
 
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {
-  Db.isLocalView(req.params.nodeName, function () {
+  isLocalView(req.params.nodeName, function () {
     noCache(req, res);
     localSessionDetail(req, res);
   },
@@ -3457,7 +3491,7 @@ function sessionsPcapList(req, res, list, pcapWriter, extension) {
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    Db.isLocalView(fields.no, function () {
+    isLocalView(fields.no, function () {
       // Get from our DISK
       pcapWriter(res, item._id, options, nextCb);
     },
@@ -4050,27 +4084,17 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: "no,pr,ps"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: "no,pr,ps,psl"}, function(err, session) {
     var fields = session._source || session.fields;
 
-    /* Old Format: Every item in array had file num (top 28 bits) and file pos (lower 36 bits)
-     * New Format: Negative numbers are file numbers until next neg number, otherwise file pos */
-    var newFormat = false;
     var fileNum;
     var itemPos = 0;
-    async.eachLimit(fields.ps, 10, function(item, nextCb) {
+    async.eachLimit(fields.ps, 10, function(pos, nextCb) {
       var pos;
 
-      if (item < 0) {
-        newFormat = true;
-        fileNum = item * -1;
+      if (pos < 0) {
+        fileNum = pos * -1;
         return nextCb(null);
-      } else if (newFormat) {
-        pos  = item;
-      } else  {
-        // javascript doesn't have 64bit bitwise operations
-        fileNum = Math.floor(item / 0xfffffffff);
-        pos  = item % 0x1000000000;
       }
 
       // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
@@ -4154,7 +4178,7 @@ function scrubList(req, res, entire, list) {
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
 
-    Db.isLocalView(fields.no, function () {
+    isLocalView(fields.no, function () {
       // Get from our DISK
       pcapScrub(req, res, item._id, entire, nextCb);
     },
@@ -4390,7 +4414,7 @@ function sendSessionsList(req, res, list) {
 
   async.eachLimit(list, 10, function(item, nextCb) {
     var fields = item._source || item.fields;
-    Db.isLocalView(fields.no, function () {
+    isLocalView(fields.no, function () {
       var options = {
         user: req.user,
         cluster: req.body.cluster,
@@ -4451,7 +4475,7 @@ function sendSessionsListQL(pOptions, list, nextQLCb) {
 
   var count = 0;
   async.eachLimit(keys, 15, function(node, nextCb) {
-    Db.isLocalView(node, function () {
+    isLocalView(node, function () {
       var sent = 0;
       nodes[node].forEach(function(item) {
         var options = {

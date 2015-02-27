@@ -99,6 +99,30 @@
             "sshkey" : [
                "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
             ],
+            "psl" : [
+               82,
+               82,
+               70,
+               93,
+               70,
+               91,
+               76,
+               862,
+               76,
+               710,
+               94,
+               222,
+               214,
+               534,
+               86,
+               76,
+               118,
+               76,
+               118,
+               134,
+               150,
+               70
+            ],
             "prot-term" : [
                "ssh",
                "tcp"

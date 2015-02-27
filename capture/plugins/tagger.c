@@ -588,7 +588,7 @@ void tagger_load_file(TaggerFile_t *file)
 
     key_len = snprintf(key, sizeof(key), "/tagger/file/%s/_source", file->str);
 
-    moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_load_file_cb, file);
+    moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_load_file_cb, file);
 }
 /******************************************************************************/
 /*
@@ -661,12 +661,12 @@ gboolean tagger_fetch_files (gpointer sync)
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {
         size_t         data_len;
-        unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, &data_len);;
+        unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len);;
         unsigned char *datacopy = (unsigned char*)g_strndup((char*)data, data_len);
         tagger_fetch_files_cb(datacopy, data_len, NULL);
         g_free(datacopy);
     } else {
-        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, FALSE, tagger_fetch_files_cb, NULL);
+        moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_fetch_files_cb, NULL);
     }
 
     return TRUE;

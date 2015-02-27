@@ -114,6 +114,12 @@
             "p2" : 80,
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
+            "psl" : [
+               78,
+               78,
+               76,
+               651
+            ],
             "prot-term" : [
                "http",
                "tcp"

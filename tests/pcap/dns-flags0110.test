@@ -87,6 +87,10 @@
             ],
             "p2" : 62928,
             "mac1-term-cnt" : 2,
+            "psl" : [
+               151,
+               107
+            ],
             "prot-term" : [
                "udp",
                "dns"

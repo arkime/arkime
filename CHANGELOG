@@ -1,3 +1,15 @@
+0.11.4 2015/02/26
+  - NOTICE: db.pl upgrade is required
+  - http connection handling rework, hopefully better
+  - moloch-capture will no longer monitor itself even if it uses the same interface to talk to ES
+  - now save packet lengths to ES
+  - writing pcap to disk is now pluggable
+  - S3 is the first pcap writer plugin, currently experimental
+    https://github.com/aol/moloch/wiki/S3
+  - multies supports file query
+  - maxFileSizeG can now be a float
+  
+
 0.11.3 2015/02/26
   - NOTICE: Only 1.[234].x are supported by this version. 
             Restart viewer AFTER upgrading ES versions

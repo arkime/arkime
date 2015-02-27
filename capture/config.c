@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* config.c  -- Functions dealing with the config file
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -141,6 +141,30 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
 }
 
 /******************************************************************************/
+double moloch_config_double(GKeyFile *keyfile, char *key, double d, double min, double max)
+{
+    double value = d;
+
+    if (!keyfile)
+        keyfile = molochKeyFile;
+
+    if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
+        value = g_key_file_get_double(keyfile, config.nodeName, key, NULL);
+    } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
+        value = g_key_file_get_double(keyfile, config.nodeClass, key, NULL);
+    } else if (g_key_file_has_key(keyfile, "default", key, NULL)) {
+        value = g_key_file_get_double(keyfile, "default", key, NULL);
+    }
+
+    if (value < min)
+        value = min;
+    if (value > max)
+        value = max;
+
+    return value;
+}
+
+/******************************************************************************/
 char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
 {
     gboolean value = d;
@@ -245,7 +269,7 @@ void moloch_config_load()
                 if (num > 0xffff)
                     num = 0xffff;
             }
-            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tags[i], num, TRUE);
+            moloch_string_add((MolochStringHash_t *)(char*)&config.dontSaveTags, tags[i], (gpointer)(long)num, TRUE);
         }
         g_strfreev(tags);
     }
@@ -272,32 +296,6 @@ void moloch_config_load()
         }
         g_regex_unref(regex);
     }
-
-    char *writeMethod       = moloch_config_str(keyfile, "pcapWriteMethod", "normal");
-
-    if (strcmp(writeMethod, "normal") == 0)
-        config.writeMethod = MOLOCH_WRITE_NORMAL;
-    else if (strcmp(writeMethod, "direct") == 0)
-        config.writeMethod = MOLOCH_WRITE_DIRECT;
-    else if (strcmp(writeMethod, "thread") == 0)
-        config.writeMethod = MOLOCH_WRITE_THREAD | MOLOCH_WRITE_NORMAL;
-    else if (strcmp(writeMethod, "thread-direct") == 0)
-        config.writeMethod = MOLOCH_WRITE_THREAD | MOLOCH_WRITE_DIRECT;
-    /*else if (strcmp(writeMethod, "mmap") == 0)
-        config.writeMethod = MOLOCH_WRITE_MMAP;*/
-    else {
-        printf("Unknown pcapWriteMethod '%s'\n", writeMethod);
-        exit(1);
-    }
-    g_free(writeMethod);
-
-#ifndef O_DIRECT
-    if (config.writeMethod & MOLOCH_WRITE_DIRECT) {
-        printf("OS doesn't support direct write method\n");
-        exit(1);
-    }
-#endif
-
 
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);
     config.smtpIpHeaders    = moloch_config_str_list(keyfile, "smtpIpHeaders", NULL);
@@ -345,7 +343,7 @@ void moloch_config_load()
         exit(1);
     }
 
-    config.maxFileSizeG          = moloch_config_int(keyfile, "maxFileSizeG", 4, 1, 1024);
+    config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 4, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
     config.maxFileTimeM          = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
     config.icmpTimeout           = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
@@ -362,7 +360,7 @@ void moloch_config_load()
     config.logEveryXPackets      = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
     config.packetsPerPoll        = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
     config.pcapBufferSize        = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x400000);
+    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x800000);
     config.maxFreeOutputBuffers  = moloch_config_int(keyfile, "maxFreeOutputBuffers", 50, 0, 0xffff);
 
 
@@ -431,7 +429,7 @@ void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos)
     hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
     hstring->str = key;
     hstring->len = strlen(key);
-    hstring->uw = pos;
+    hstring->uw = (gpointer)(long)pos;
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
@@ -602,7 +600,8 @@ void moloch_config_init()
             g_free(str);
         }
 
-        LOG("maxFileSizeG: %u", config.maxFileSizeG);
+        LOG("maxFileSizeG: %lf", config.maxFileSizeG);
+        LOG("maxFileSizeB: %ld", config.maxFileSizeB);
         LOG("maxFileTimeM: %u", config.maxFileTimeM);
         LOG("icmpTimeout: %u", config.icmpTimeout);
         LOG("udpTimeout: %u", config.udpTimeout);
@@ -630,22 +629,6 @@ void moloch_config_init()
         LOG("compressES: %s", (config.compressES?"true":"false"));
 
         LOG("rotateIndex = %s", rotates[config.rotate]);
-        switch (config.writeMethod) {
-        case MOLOCH_WRITE_NORMAL:
-            LOG("pcapWriteMethod = normal");
-            break;
-        case MOLOCH_WRITE_DIRECT:
-            LOG("pcapWriteMethod = direct");
-            break;
-        case MOLOCH_WRITE_THREAD | MOLOCH_WRITE_NORMAL:
-            LOG("pcapWriteMethod = thread");
-            break;
-        case MOLOCH_WRITE_THREAD | MOLOCH_WRITE_DIRECT:
-            LOG("pcapWriteMethod = thread-direct");
-            break;
-        default:
-            LOG("pcapWriteMethod = config.c needs to be updated");
-        }
         LOG("offlineFilenameRegex: %s", g_regex_get_pattern(config.offlineRegex));
 
         MolochString_t *tstring;
@@ -656,15 +639,6 @@ void moloch_config_init()
         for (i = 0; i < config.dontSaveBPFsNum; i++) {
           LOG("dontSaveBPFs: %s:%d", config.dontSaveBPFs[i], config.dontSaveBPFsStop[i]);
         }
-    }
-
-    if ((config.writeMethod & MOLOCH_WRITE_DIRECT) && sizeof(off_t) == 4 && config.maxFileSizeG > 2)
-        printf("WARNING - DIRECT mode on 32bit machines may not work with maxFileSizeG > 2");
-
-    config.pagesize = getpagesize();
-    if (config.writeMethod & MOLOCH_WRITE_DIRECT && (config.pcapWriteSize % config.pagesize != 0)) {
-        printf("When using pcapWriteMethod of direct pcapWriteSize must be a multiple of %d", config.pagesize);
-        exit (1);
     }
 
     if (!config.interface && !config.pcapReadOffline) {

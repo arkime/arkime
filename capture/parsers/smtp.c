@@ -563,22 +563,22 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             if (emailHeader) {
                 int cpos = colon - line->str + 1;
 
-                if (emailHeader->uw == subField) {
+                if ((long)emailHeader->uw == subField) {
                     if (line->str[8] != ' ') {
                         moloch_nids_add_tag(session, "smtp:missing-subject-space");
                         smtp_email_add_encoded(session, subField, line->str+8, line->len-8);
                     } else {
                         smtp_email_add_encoded(session, subField, line->str+9, line->len-9);
                     }
-                } else if (emailHeader->uw == dstField) {
+                } else if ((long)emailHeader->uw == dstField) {
                     smtp_parse_email_addresses(dstField, session, line->str+cpos, line->len-cpos);
-                } else if (emailHeader->uw == srcField) {
+                } else if ((long)emailHeader->uw == srcField) {
                     smtp_parse_email_addresses(srcField, session, line->str+cpos, line->len-cpos);
-                } else if (emailHeader->uw == idField) {
+                } else if ((long)emailHeader->uw == idField) {
                     moloch_field_string_add(idField, session, smtp_remove_matching(line->str+cpos, '<', '>'), -1, TRUE);
-                } else if (emailHeader->uw == receivedField) {
+                } else if ((long)emailHeader->uw == receivedField) {
                     smtp_parse_email_received(session, line->str+cpos, line->len-cpos);
-                } else if (emailHeader->uw == ctField) {
+                } else if ((long)emailHeader->uw == ctField) {
                     char *s = line->str + 13;
                     while(isspace(*s)) s++;
 
@@ -591,7 +591,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                         DLL_PUSH_TAIL(s_, &email->boundaries, string);
                     }
                 } else {
-                    smtp_email_add_value(session, emailHeader->uw, line->str + cpos , line->len - cpos);
+                    smtp_email_add_value(session, (long)emailHeader->uw, line->str + cpos , line->len - cpos);
                 }
             } else {
                 int i;

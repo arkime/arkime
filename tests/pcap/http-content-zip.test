@@ -138,6 +138,18 @@
             "mac1-term-cnt" : 2,
             "rir2" : "TEST",
             "hdvercnt" : 1,
+            "psl" : [
+               94,
+               90,
+               82,
+               444,
+               82,
+               653,
+               82,
+               82,
+               82,
+               82
+            ],
             "prot-term" : [
                "http",
                "tcp"
@@ -204,6 +216,10 @@
             "p2" : 80,
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
+            "psl" : [
+               82,
+               82
+            ],
             "prot-term" : [
                "tcp"
             ],

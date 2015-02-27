@@ -40,6 +40,10 @@
             "mac2-term-cnt" : 1,
             "p2" : 0,
             "mac1-term-cnt" : 1,
+            "psl" : [
+               114,
+               114
+            ],
             "prot-term" : [
                "icmp"
             ],

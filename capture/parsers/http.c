@@ -98,7 +98,6 @@ moloch_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
     HTTPInfo_t            *http = parser->data;
 
 #ifdef HTTPDEBUG
-    MolochSession_t       *session = http->session;
     LOG("HTTPDEBUG: which:%d url %.*s", http->which, (int)length, at);
 #endif
 
@@ -328,7 +327,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
         else
             HASH_FIND(s_, httpResHeaders, lower, hstring);
 
-        http->pos[http->which] = (hstring?hstring->uw:0);
+        http->pos[http->which] = (long)(hstring?hstring->uw:0);
 
         snprintf(header, sizeof(header), "http:header:%s", lower);
         g_free(lower);

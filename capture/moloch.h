@@ -31,7 +31,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 12
+#define MOLOCH_API_VERSION 13
 
 /******************************************************************************/
 /*
@@ -55,7 +55,7 @@ typedef struct moloch_string {
     struct moloch_string *s_next, *s_prev;
     char                 *str;
     uint32_t              s_hash;
-    int                   uw;
+    gpointer              uw;
     short                 s_bucket;
     short                 len:15;
     short                 utf8:1;
@@ -198,11 +198,6 @@ typedef struct {
  */
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
 
-#define MOLOCH_WRITE_NORMAL 0x00
-#define MOLOCH_WRITE_DIRECT 0x01 
-#define MOLOCH_WRITE_MMAP   0x02
-#define MOLOCH_WRITE_THREAD 0x04
-
 typedef struct moloch_config {
     gboolean  exiting;
     char     *configFile;
@@ -215,15 +210,12 @@ typedef struct moloch_config {
     gboolean  debug;
     gboolean  dryRun;
     gboolean  noSPI;
-    gboolean  fakePcap;
     gboolean  copyPcap;
     gboolean  pcapRecursive;
     gboolean  tests;
     gboolean  pcapMonitor;
     gboolean  pcapDelete;
     gboolean  pcapSkip;
-
-    int       pagesize;
 
     enum MolochRotate rotate;
 
@@ -259,7 +251,7 @@ typedef struct moloch_config {
     char    **plugins;
     char    **smtpIpHeaders;
 
-    uint32_t  maxFileSizeG;
+    double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
     uint32_t  minFreeSpaceG;
@@ -339,6 +331,7 @@ typedef struct moloch_session {
     MolochParserInfo_t    *parserInfo;
 
     GArray                *filePosArray;
+    GArray                *fileLenArray;
     GArray                *fileNumArray;
     char                  *rootId;
 
@@ -374,6 +367,7 @@ typedef struct moloch_session {
     uint8_t                maxFields;
     uint16_t               haveNidsTcp:1;
     uint16_t               needSave:1;
+    uint16_t               stopSPI:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -433,7 +427,7 @@ gint moloch_watch_fd(gint fd, GIOCondition cond, MolochWatchFd_func func, gpoint
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen);
 char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key);
 
-gboolean moloch_string_add(void *hash, char *string, int uw, gboolean copy);
+gboolean moloch_string_add(void *hash, char *string, gpointer uw, gboolean copy);
 
 uint32_t moloch_string_hash(const void *key);
 uint32_t moloch_string_hash_len(const void *key, int len);
@@ -443,6 +437,10 @@ int moloch_string_ncmp(const void *keyv, const void *elementv);
 
 uint32_t moloch_int_hash(const void *key);
 int moloch_int_cmp(const void *keyv, const void *elementv);
+
+void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
+uint32_t moloch_session_hash(const void *key);
+int moloch_session_cmp(const void *keyv, const void *elementv);
 
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
 const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
@@ -474,7 +472,7 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 
 void     moloch_db_init();
 int      moloch_db_tags_loading();
-char    *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, uint32_t *id);
+char    *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id);
 void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
 uint32_t moloch_db_peek_tag(const char *tagname);
@@ -517,13 +515,15 @@ void moloch_print_hex_string(unsigned char* data, unsigned int length);
  * http.c
  */
 
+typedef void (*MolochHttpHeader_cb)(char *url, const char *field, const char *value, int valueLen, gpointer uw);
+
 
 #define MOLOCH_HTTP_BUFFER_SIZE 10000
 
 void moloch_http_init();
 
-unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, size_t *return_len);
-gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, gboolean dropable, MolochResponse_cb func, gpointer uw);
+unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char *headers, size_t *return_len);
+gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char *headers, gboolean dropable, MolochResponse_cb func, gpointer uw);
 
 
 gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochResponse_cb func, gpointer uw);
@@ -534,7 +534,10 @@ void moloch_http_exit();
 int moloch_http_queue_length(void *server);
 
 void *moloch_http_create_server(char *hostname, int defaultPort, int maxConns, int maxOutstandingRequests, int compress);
-void moloch_http_free_server(void *serverV);
+void moloch_http_set_header_cb(void *server, MolochHttpHeader_cb cb);
+void moloch_http_free_server(void *server);
+
+gboolean moloch_http_is_moloch(uint32_t hash, char *key);
 
 /******************************************************************************/
 /*
@@ -679,6 +682,31 @@ int  moloch_field_count(int pos, MolochSession_t *session);
 void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);
 void moloch_field_free(MolochSession_t *session);
 void moloch_field_exit();
+
+/******************************************************************************/
+/*
+ * writers.c
+ */
+
+typedef void (*MolochWriterInit)(char *name);
+typedef uint32_t (*MolochWriterQueueLength)();
+typedef void (*MolochWriterWrite)(const struct pcap_pkthdr *h, const u_char *sp, uint32_t *fileNum, uint64_t *filePos);
+typedef void (*MolochWriterFlush)(gboolean all);
+typedef void (*MolochWriterNextInput)(FILE *file, char *filename);
+typedef void (*MolochWriterExit)();
+typedef char * (*MolochWriterName)();
+
+extern MolochWriterQueueLength moloch_writer_queue_length;
+extern MolochWriterWrite moloch_writer_write;
+extern MolochWriterFlush moloch_writer_flush;
+extern MolochWriterExit moloch_writer_exit;
+extern MolochWriterNextInput moloch_writer_next_input;
+extern MolochWriterName moloch_writer_name;
+
+
+void moloch_writers_init();
+void moloch_writers_start(char *name);
+void moloch_writers_add(char *name, MolochWriterInit func);
 
 /******************************************************************************/
 /*

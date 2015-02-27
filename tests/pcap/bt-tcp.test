@@ -71,6 +71,12 @@
             "p2" : 26001,
             "mac1-term-cnt" : 1,
             "rir2" : "TEST",
+            "psl" : [
+               82,
+               82,
+               76,
+               138
+            ],
             "prot-term" : [
                "tcp",
                "bittorrent"

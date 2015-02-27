@@ -64,6 +64,10 @@
             "by1" : 66,
             "p2" : 53,
             "mac1-term-cnt" : 1,
+            "psl" : [
+               82,
+               232
+            ],
             "prot-term" : [
                "udp",
                "dns"

@@ -1,6 +1,6 @@
 /* main.c  -- Initialization of components
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -29,7 +29,6 @@
 #ifdef _POSIX_PRIORITY_SCHEDULING
 #include <sched.h>
 #endif
-#include "glib.h"
 #include "pcap.h"
 #include "moloch.h"
 #include "molochconfig.h"
@@ -42,8 +41,11 @@ char                  *moloch_char_to_hex = "0123456789abcdef"; /* don't change 
 unsigned char          moloch_char_to_hexstr[256][3];
 unsigned char          moloch_hex_to_char[256][256];
 
+extern MolochWriterQueueLength moloch_writer_queue_length;
+
 /******************************************************************************/
 static gboolean showVersion    = FALSE;
+static gboolean needNidsExit   = TRUE;
 
 static GOptionEntry entries[] =
 {
@@ -59,7 +61,6 @@ static GOptionEntry entries[] =
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
     { "debug",     'd',                    0, G_OPTION_ARG_NONE,           &config.debug,         "Turn on all debugging", NULL },
     { "copy",        0,                    0, G_OPTION_ARG_NONE,           &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file", NULL },
-    { "fakepcap",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.fakePcap,      "fake pcap", NULL },
     { "dryrun",      0,                    0, G_OPTION_ARG_NONE,           &config.dryRun,        "dry run, noting written to databases or filesystem", NULL },
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
@@ -160,7 +161,8 @@ int moloch_size_free(void *mem)
 void cleanup(int UNUSED(sig))
 {
     LOG("exiting");
-    moloch_nids_exit();
+    if (needNidsExit)
+        moloch_nids_exit();
     moloch_plugins_exit();
     moloch_parsers_exit();
     moloch_yara_exit();
@@ -252,7 +254,7 @@ const char *moloch_memcasestr(const char *haystack, int haysize, const char *nee
     return NULL;
 }
 /******************************************************************************/
-gboolean moloch_string_add(void *hashv, char *string, int uw, gboolean copy)
+gboolean moloch_string_add(void *hashv, char *string, gpointer uw, gboolean copy)
 {
     MolochStringHash_t *hash = hashv;
     MolochString_t *hstring;
@@ -327,6 +329,61 @@ int moloch_int_cmp(const void *keyv, const void *elementv)
     MolochInt_t *element = (MolochInt_t *)elementv;
 
     return key == element->i_hash;
+}
+/******************************************************************************/
+void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
+{
+    if (addr1 < addr2) {
+        memcpy(buf, &addr1, 4);
+        buf[4] = (port1 >> 8) & 0xff;
+        buf[5] = port1 & 0xff;
+        memcpy(buf + 6, &addr2, 4);
+        buf[10] = (port2 >> 8) & 0xff;
+        buf[11] = port2 & 0xff;
+    } else if (addr1 > addr2) {
+        memcpy(buf, &addr2, 4);
+        buf[4] = (port2 >> 8) & 0xff;
+        buf[5] = port2 & 0xff;
+        memcpy(buf + 6, &addr1, 4);
+        buf[10] = (port1 >> 8) & 0xff;
+        buf[11] = port1 & 0xff;
+    } else if (ntohs(port1) < ntohs(port2)) {
+        memcpy(buf, &addr1, 4);
+        buf[4] = (port1 >> 8) & 0xff;
+        buf[5] = port1 & 0xff;
+        memcpy(buf + 6, &addr2, 4);
+        buf[10] = (port2 >> 8) & 0xff;
+        buf[11] = port2 & 0xff;
+    } else {
+        memcpy(buf, &addr2, 4);
+        buf[4] = (port2 >> 8) & 0xff;
+        buf[5] = port2 & 0xff;
+        memcpy(buf + 6, &addr1, 4);
+        buf[10] = (port1 >> 8) & 0xff;
+        buf[11] = port1 & 0xff;
+    }
+}
+/******************************************************************************/
+/* Must match moloch_session_cmp and moloch_session_id
+ * a1 0-3
+ * p1 4-5
+ * a2 6-9
+ * p2 10-11
+ */
+uint32_t moloch_session_hash(const void *key)
+{
+    unsigned char *p = (unsigned char *)key;
+    //return ((p[2] << 16 | p[3] << 8 | p[4]) * 59) ^ (p[8] << 16 | p[9] << 8 |  p[10]);
+    return (((p[1]<<24) ^ (p[2]<<18) ^ (p[3]<<12) ^ (p[4]<<6) ^ p[5]) * 13) ^ (p[8]<<24|p[9]<<16 | p[10]<<8 | p[11]);
+}
+
+/******************************************************************************/
+int moloch_session_cmp(const void *keyv, const void *elementv)
+{
+    MolochSession_t *session = (MolochSession_t *)elementv;
+
+    return (*(uint64_t *)keyv     == session->sessionIda && 
+            *(uint32_t *)(keyv+8) == session->sessionIdb);
 }
 /******************************************************************************/
 typedef struct {
@@ -405,7 +462,12 @@ void moloch_drop_privileges()
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
-    if (moloch_db_tags_loading() == 0 && moloch_plugins_outstanding() == 0) {
+    if (needNidsExit) {
+        needNidsExit = FALSE;
+        moloch_nids_exit();
+        return TRUE;
+    }
+    if (moloch_db_tags_loading() == 0 && moloch_plugins_outstanding() == 0 && moloch_writer_queue_length() == 0) {
         g_main_loop_quit(mainLoop);
         return FALSE;
     }
@@ -434,7 +496,6 @@ gboolean moloch_nids_init_gfunc (gpointer UNUSED(user_data))
 void moloch_hex_init()
 {
     int i, j;
-    memset(moloch_hex_to_char, 0, sizeof(moloch_hex_to_char));
     for (i = 0; i < 16; i++) {
         for (j = 0; j < 16; j++) {
             moloch_hex_to_char[(unsigned char)moloch_char_to_hex[i]][(unsigned char)moloch_char_to_hex[j]] = i << 4 | j;
@@ -444,7 +505,6 @@ void moloch_hex_init()
         }
     }
 
-    memset(moloch_char_to_hexstr, 0, sizeof(moloch_char_to_hexstr));
     for (i = 0; i < 256; i++) {
         moloch_char_to_hexstr[i][0] = moloch_char_to_hex[(i >> 4) & 0xf];
         moloch_char_to_hexstr[i][1] = moloch_char_to_hex[i & 0xf];
@@ -504,6 +564,7 @@ int main(int argc, char **argv)
 
     parse_args(argc, argv);
     moloch_config_init();
+    moloch_writers_init();
     moloch_hex_init();
     moloch_nids_root_init();
     if (!config.pcapReadOffline) {

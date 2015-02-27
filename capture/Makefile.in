@@ -24,7 +24,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lpthread
 
-C_FILES         = main.c db.c nids.c yara.c http.c config.c parsers.c plugins.c field.c trie.c
+C_FILES         = main.c db.c nids.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
