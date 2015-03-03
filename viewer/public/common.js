@@ -947,32 +947,31 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////
   // Right Click Data Menus
   //////////////////////////////////////////////////////////////////////////////////
-  if ($.contextMenu) {
-    function contextCallback(e, items) {
-      return {
-        callback: function(key, options) {
-          var item = items[key];
-          if (item.exp) {
-            var text = item.value || $(e.target).text().trim();
-            if (typeof text == "string" && text.match(/[^\w.]/)) {
-              text = '"' + text + '"';
-            }
-            var molochexpr = $(e.target).closest("[molochexpr]");
-            if (molochexpr.length > 0) {
-              addExpression(molochexpr.attr("molochexpr") + item.exp + text);
-            } else {
-              var suffix = $(e.target).closest("[suffix]");
-              addExpression(item.prefix + (suffix.attr("suffix") || "") + item.exp + text);
-            }
-          } else {
-            console.log("opening", item.url);
-            window.open(item.url);
+  function contextCallback(e, items) {
+    return {
+      callback: function(key, options) {
+        var item = items[key];
+        if (item.exp) {
+          var text = item.value || $(e.target).text().trim();
+          if (typeof text == "string" && text.match(/[^\w.]/)) {
+            text = '"' + text + '"';
           }
-        },
-        items: items
-      };
-    }
-
+          var molochexpr = $(e.target).closest("[molochexpr]");
+          if (molochexpr.length > 0) {
+            addExpression(molochexpr.attr("molochexpr") + item.exp + text);
+          } else {
+            var suffix = $(e.target).closest("[suffix]");
+            addExpression(item.prefix + (suffix.attr("suffix") || "") + item.exp + text);
+          }
+        } else {
+          console.log("opening", item.url);
+          window.open(item.url);
+        }
+      },
+      items: items
+    };
+  }
+  if ($.contextMenu) {
     $.contextMenu({
       selector: '.context-menu-url',
       build: function($trigger, e) {
