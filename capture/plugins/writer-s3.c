@@ -52,7 +52,6 @@ static char                 *outputBuffer;
 static uint32_t              outputPos;
 static uint32_t              outputId;
 static uint64_t              outputFilePos = 0;
-static struct timeval        outputFileTime;
 
 SavepcapS3File_t            *currentFile;
 static SavepcapS3File_t      fileQ;
@@ -91,7 +90,7 @@ uint32_t writer_s3_queue_length()
     return q + moloch_http_queue_length(s3Server) + inprogress;
 }
 /******************************************************************************/
-void writer_s3_complete_cb (unsigned char *UNUSED(data), int UNUSED(len), gpointer uw)
+void writer_s3_complete_cb (unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
     inprogress--;
@@ -101,7 +100,7 @@ void writer_s3_complete_cb (unsigned char *UNUSED(data), int UNUSED(len), gpoint
     }
 
     if (config.debug)
-        LOG("Complete-Response: %s %d", file->outputFileName, len);
+        LOG("Complete-Response: %s %d %.*s", file->outputFileName, len, len, data);
 
     DLL_REMOVE(fs3_, &fileQ, file);
     if (file->uploadId)
@@ -141,8 +140,8 @@ void writer_s3_part_cb (unsigned char *data, int UNUSED(len), gpointer uw)
         BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
 
         writer_s3_request("POST", file->outputPath, qs, (unsigned char*)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
-        if (config.debug)
-            LOG("Complete-Request: %s", file->outputFileName);
+        if (config.debug > 1)
+            LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
     }
 
 }
@@ -215,12 +214,14 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
 GChecksum *checksum;
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochResponse_cb cb, gpointer uw)
 {
-    char canonicalRequest[1000];
-    char datetime[17];
-    char fullpath[1000];
-    char headers[2000];
-    char bodyHash[1000];
+    char           canonicalRequest[1000];
+    char           datetime[17];
+    char           fullpath[1000];
+    char           headers[2000];
+    char           bodyHash[1000];
+    struct timeval outputFileTime;
 
+    gettimeofday(&outputFileTime, 0);
     struct tm         *gm = gmtime(&outputFileTime.tv_sec);
     snprintf(datetime, sizeof(datetime), 
             "%04d%02d%02dT%02d%02d%02dZ",
@@ -375,8 +376,6 @@ void writer_s3_create(const struct pcap_pkthdr *h)
     char               filename[1000];
     struct tm         *tmp = localtime(&h->ts.tv_sec);
     int                offset = 0;
-
-    gettimeofday(&outputFileTime, 0);
 
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap", s3Region, s3Bucket, config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
     if (offset == 0)

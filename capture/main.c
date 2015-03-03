@@ -47,6 +47,13 @@ extern MolochWriterQueueLength moloch_writer_queue_length;
 static gboolean showVersion    = FALSE;
 static gboolean needNidsExit   = TRUE;
 
+/******************************************************************************/
+gboolean moloch_debug_flag()
+{
+    config.debug++;
+    return TRUE;
+}
+
 static GOptionEntry entries[] =
 {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
@@ -59,7 +66,7 @@ static GOptionEntry entries[] =
     { "node",      'n',                    0, G_OPTION_ARG_STRING,         &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
-    { "debug",     'd',                    0, G_OPTION_ARG_NONE,           &config.debug,         "Turn on all debugging", NULL },
+    { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       moloch_debug_flag,     "Turn on all debugging", NULL },
     { "copy",        0,                    0, G_OPTION_ARG_NONE,           &config.copyPcap,      "When in offline mode copy the pcap files into the pcapDir from the config file", NULL },
     { "dryrun",      0,                    0, G_OPTION_ARG_NONE,           &config.dryRun,        "dry run, noting written to databases or filesystem", NULL },
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
@@ -111,6 +118,7 @@ void parse_args(int argc, char **argv)
         config.hostName[100] = 0;
     }
     if (config.debug) {
+        LOG("debug = %d", config.debug);
         LOG("nodeName = %s", config.nodeName);
         LOG("hostName = %s", config.hostName);
     }

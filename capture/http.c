@@ -147,6 +147,7 @@ moloch_http_hp_cb_on_header_value (http_parser *parser, const char *at, size_t l
         conn->server->headerCb(conn->request->key, conn->header, at, length, conn->request->uw);
     }
     if (length == 5 && strcasecmp(conn->header, "connection") == 0 && memcmp(at, "close", 5) == 0 ) {
+        DEBUGCONN("AAA conn setclose %s %p ww:%d", conn->server->names[0], conn, conn->writeWatch);
         conn->doClose = 1;
     }
     return 0;
@@ -402,6 +403,10 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
             char sessionId[MOLOCH_SESSIONID_LEN];
             moloch_session_id(sessionId, localAddress.sin_addr.s_addr, localAddress.sin_port,
                               remoteAddress.sin_addr.s_addr, remoteAddress.sin_port);
+
+            DEBUGCONN("AAA connected %s %p %s", conn->server->names[0], conn, 
+                      moloch_friendly_session_id(17, localAddress.sin_addr.s_addr, htons(localAddress.sin_port),
+                                                 remoteAddress.sin_addr.s_addr, htons(remoteAddress.sin_port)));
 
             HASH_ADD(h_, connections, sessionId, conn);
             memcpy(&conn->sessionIda, sessionId, 8);

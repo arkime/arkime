@@ -207,7 +207,7 @@ typedef struct moloch_config {
     char    **pcapReadDirs;
     gboolean  pcapReadOffline;
     gchar   **extraTags;
-    gboolean  debug;
+    gchar     debug;
     gboolean  dryRun;
     gboolean  noSPI;
     gboolean  copyPcap;

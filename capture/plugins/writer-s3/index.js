@@ -79,7 +79,7 @@ function processSessionIdS3(session, headerCb, packetCb, endCb, limit) {
     //console.log("HEADER", params);
     s3.getObject(params, function (err, data) {
       if (err) {
-        console.log(err);
+        console.log(err, info);
         return endCb("Couldn't open s3 file, save might not be complete yet - " + info.name, fields);
       }
       header = data.Body;
@@ -149,6 +149,7 @@ function s3Expire()
     if (!data.hits || !data.hits.hits) {
       return;
     }
+    //console.log("HITS", data.hits.hits);
 
     data.hits.hits.forEach(function(item) {
       var parts = splitRemain(item._source.name,'/', 4);
@@ -174,7 +175,7 @@ exports.init = function (config, emitter, api) {
   Db = api.getDb();
   Pcap = api.getPcap();
 
-  if (Config.get("s3ExpireDays")) {
+  if (Config.get("s3ExpireDays") !== undefined) {
     s3Expire();
     setInterval(s3Expire, 600*1000);
   }
