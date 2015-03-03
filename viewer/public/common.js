@@ -944,6 +944,155 @@ $(document).ready(function() {
                            .removeClass("red");
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
+  // Right Click Data Menus
+  //////////////////////////////////////////////////////////////////////////////////
+  if ($.contextMenu) {
+    function contextCallback(e, items) {
+      return {
+        callback: function(key, options) {
+          var item = items[key];
+          if (item.exp) {
+            var text = item.value || $(e.target).text().trim();
+            if (typeof text == "string" && text.match(/[^\w.]/)) {
+              text = '"' + text + '"';
+            }
+            var molochexpr = $(e.target).closest("[molochexpr]");
+            if (molochexpr.length > 0) {
+              addExpression(molochexpr.attr("molochexpr") + item.exp + text);
+            } else {
+              var suffix = $(e.target).closest("[suffix]");
+              addExpression(item.prefix + (suffix.attr("suffix") || "") + item.exp + text);
+            }
+          } else {
+            console.log("opening", item.url);
+            window.open(item.url);
+          }
+        },
+        items: items
+      };
+    }
+
+    $.contextMenu({
+      selector: '.context-menu-url',
+      build: function($trigger, e) {
+        var text = $(e.target).text();
+        var url = text.indexOf('?') === -1?text:text.substring(0, text.indexOf('?'));
+        var pos = url.indexOf("//");
+        var host = url;
+        if (pos >= 0) {
+          host = url.substring(pos+2)
+        }
+        pos = host.indexOf("/");
+        if (pos >= 0) {
+          host = host.substring(0, pos)
+        }
+        pos = host.indexOf(":");
+        if (pos >= 0) {
+          host = host.substring(0, pos)
+        }
+        //console.log(text, url, host);
+        var items = {
+          and: {name: "<b>and</b> " + safeStr(url), exp: "==", prefix: "url"},
+          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!=", prefix: "url"},
+          open: {name: "<b>Open URL</b> " + safeStr(url), url: "http:" + url},
+          andhost: {name: "<b>and</b> " + host, exp: "==", prefix: "host", value: host},
+          andnothost: {name: "<b>and not</b> " + host, exp: "!=", prefix: "host", value: host}
+        };
+        for (var key in molochRightClick.url) {
+          items[key+"URL"] = {name: "<b>" + key + "</b> " + url, url: molochRightClick.url[key].url.replace("%URL%", url)};
+        }
+
+        for (var key in molochRightClick.host) {
+          items[key+"HOST"] = {name: "<b>" + key + "</b> " + host, url: molochRightClick.host[key].url.replace("%HOST%", host)};
+        }
+         
+        return contextCallback(e, items);
+      }
+    });
+
+    $.contextMenu({
+      selector: '.context-menu-host',
+      build: function($trigger, e) {
+        var host = $(e.target).text();
+        var items = {
+          and: {name: "<b>and</b> " + safeStr(host), exp: "==", prefix: "host"},
+          andnot: {name: "<b>and not</b> " + safeStr(host), exp: "!=", prefix: "host"},
+        };
+
+        for (var key in molochRightClick.host) {
+          items[key+"HOST"] = {name: "<b>" + key + "</b> " + host, url: molochRightClick.host[key].url.replace("%HOST%", host)};
+        }
+         
+        return contextCallback(e, items);
+      }
+    });
+
+    $.contextMenu({
+      selector: '.context-menu-ip',
+      build: function($trigger, e) {
+        var ip = $(e.target).text();
+        var items = {
+          and: {name: "<b>and</b> " + ip, exp: "==", prefix: "ip"},
+          andnot: {name: "<b>and not</b> " + ip, exp: "!=", prefix: "ip"},
+        };
+        for (var key in molochRightClick.ip) {
+          items[key+"IP"] = {name: "<b>" + key + "</b> " + ip, url: molochRightClick.ip[key].url.replace("%IP%", ip)};
+        }
+
+        return contextCallback(e, items);
+      }
+    });
+
+    $.contextMenu({
+      selector: '.context-menu-geo',
+      build: function($trigger, e) {
+        var geo = $(e.target).text();
+        var items = {
+          and: {name: "<b>and</b> " + geo, exp: "==", prefix: "country"},
+          andnot: {name: "<b>and not</b> " + geo, exp: "!=", prefix: "country"},
+        };
+        for (var key in molochRightClick.geo) {
+          items[key+"GEO"] = {name: "<b>" + key + "</b> " + geo, url: molochRightClick.geo[key].url.replace("%GEO%", geo)};
+        }
+
+        return contextCallback(e, items);
+      }
+    });
+
+    $.contextMenu({
+      selector: '.context-menu-asn',
+      build: function($trigger, e) {
+        var asn = $(e.target).text();
+        var items = {
+          and: {name: "<b>and</b> " + asn, exp: "==", prefix: "asn"},
+          andnot: {name: "<b>and not</b> " + asn, exp: "!=", prefix: "asn"},
+        };
+        for (var key in molochRightClick.asn) {
+          items[key+"GEO"] = {name: "<b>" + key + "</b> " + asn, url: molochRightClick.asn[key].url.replace("%ASN%", asn)};
+        }
+
+        return contextCallback(e, items);
+      }
+    });
+
+    $.contextMenu({
+      selector: '.context-menu-rir',
+      build: function($trigger, e) {
+        var rir = $(e.target).text();
+        var items = {
+          and: {name: "<b>and</b> " + rir, exp: "==", prefix: "rir"},
+          andnot: {name: "<b>and not</b> " + rir, exp: "!=", prefix: "rir"},
+        };
+        for (var key in molochRightClick.rir) {
+          items[key+"GEO"] = {name: "<b>" + key + "</b> " + rir, url: molochRightClick.rir[key].url.replace("%RIR%", rir)};
+        }
+
+        return contextCallback(e, items);
+      }
+    });
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////////
   // startDate/stopDate

@@ -47,5 +47,5 @@ if (session.tls || session["tlsver-term"])
             each alt,i in cert.alt
               if (i > 0)
                 |, 
-              a(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
+              a.context-menu-host(href='#', onclick='return addExpression("cert.alt == \\\"#{alt}\\\"");') #{alt}
             | ]

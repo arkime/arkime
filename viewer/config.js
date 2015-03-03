@@ -2,7 +2,7 @@
 /* config.js -- Code dealing with the config file, command line arguments, 
  *              and dropping privileges
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -245,14 +245,15 @@ exports.headers = function(section) {
   return headers;
 };
 
-exports.configMap = function(section, name) {
-  if (internals.config[section] === undefined) {return {};}
-  var keys = Object.keys(internals.config[section]);
+exports.configMap = function(section, name, d) {
+  var data = internals.config[section] || d;
+  if (data === undefined) {return {};}
+  var keys = Object.keys(data);
   if (!keys) {return {};}
   var map = {};
-  Object.keys(internals.config[section]).forEach(function(key) {
+  keys.forEach(function(key) {
     var obj = {};
-    internals.config[section][key].split(';').forEach(function(element) {
+    data[key].split(';').forEach(function(element) {
       var i = element.indexOf(':');
       if (i === -1) {
         return;

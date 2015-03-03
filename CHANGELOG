@@ -1,4 +1,4 @@
-0.11.4 2015/02/26
+0.11.4 2015/03/--
   - NOTICE: db.pl upgrade is required
   - http connection handling rework, hopefully better
   - moloch-capture will no longer monitor itself even if it uses the same interface to talk to ES
@@ -8,6 +8,8 @@
     https://github.com/aol/moloch/wiki/S3
   - multies supports file query
   - maxFileSizeG can now be a float
+  - Configurable right click actions on various data types
+    https://github.com/aol/moloch/wiki/Settings#rightclick
   
 
 0.11.3 2015/02/26

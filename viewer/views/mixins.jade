@@ -35,7 +35,7 @@ mixin arrayPrint(container, field, expr)
         a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
 
 //- Standard method to print an array of values with commas
-mixin arrayList(container, field, title, expr, extra, max)
+mixin arrayList(container, field, title, expr, extra, max, classstr)
   if (!max)
     - max = 25
   if ((container && container[field]) || extra)
@@ -50,9 +50,9 @@ mixin arrayList(container, field, title, expr, extra, max)
           if (value.length == 0)
             a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
           else if (typeof value == "string")
-            a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+            a(href='#', class=classstr, onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
           else
-            a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+            a(href='#', class=classstr, onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
         if (container[field].length > max)
           |</span>
           a.showMoreItems(href='#') &hellip;
@@ -81,39 +81,40 @@ mixin stringList(container, field, title, expr, extra)
 
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
-  - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
-  if (full)
-    a(href='#', onclick='return addExpression("#{expr} == #{ipstr}");') #{ipstr}
-  else
-    a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");') #{ipstr}
-  - if (port)
-    | :
+  span(suffix=".#{expr}")
+    - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
     if (full)
-      a(href='#', onclick='return addExpression("#{expr}.port == #{port}");') #{port}
+      a(href='#', onclick='return addExpression("#{expr} == #{ipstr}");').context-menu-ip #{ipstr}
     else
-      a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
+      a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");').context-menu-ip #{ipstr}
+    - if (port)
+      | :
+      if (full)
+        a(href='#', onclick='return addExpression("#{expr}.port == #{port}");') #{port}
+      else
+        a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
 
-  - if (geo)
-    |  (
-    if (full)
-      a(href='#', onclick='return addExpression("#{expr}.country == #{geo}");') #{geo}
-    else
-      a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");') #{geo}
-    |)
-  - if (as)
-    |  [
-    if (full)
-      a(href='#', onclick='return addExpression("#{expr}.asn == \\\"#{as}\\\"");') #{as}
-    else
-      a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");') #{as}
-    |]
-  - if (rir)
-    |  {
-    if (full)
-      a(href='#', onclick='return addExpression("#{expr}.rir == \\\"#{rir}\\\"");') #{rir}
-    else
-      a(href='#', onclick='return addExpression("rir.#{expr} == \\\"#{rir}\\\"");') #{rir}
-    |}
+    - if (geo)
+      |  (
+      if (full)
+        a(href='#', onclick='return addExpression("#{expr}.country == #{geo}");').context-menu-geo #{geo}
+      else
+        a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");').context-menu-geo #{geo}
+      |)
+    - if (as)
+      |  [
+      if (full)
+        a(href='#', onclick='return addExpression("#{expr}.asn == \\\"#{as}\\\"");').context-menu-asn #{as}
+      else
+        a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");').context-menu-asn #{as}
+      |]
+    - if (rir)
+      |  {
+      if (full)
+        a(href='#', onclick='return addExpression("#{expr}.rir == \\\"#{rir}\\\"");').context-menu-rir #{rir}
+      else
+        a(href='#', onclick='return addExpression("rir.#{expr} == \\\"#{rir}\\\"");').context-menu-rir #{rir}
+      |}
 
 //- Method to print ip info with commas when the field names use the old prefix method - shouldn't be used for new fields
 mixin ipArrayListPre(session, field, title, expr, max)

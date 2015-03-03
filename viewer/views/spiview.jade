@@ -127,6 +127,26 @@ block content
 
               var spiterm = "";
               var finfo = db2Field(spii);
+              var addClass;
+              if (finfo) {
+                if (finfo.exp.match(/^(host\.|cert.alt$)/))
+                  addClass = "context-menu-host";
+                else if (finfo.exp.match(/^ip\./))
+                  addClass = "context-menu-ip";
+                else if (finfo.exp.match(/^rir\./))
+                  addClass = "context-menu-rir";
+                else if (finfo.exp.match(/^country\./))
+                  addClass = "context-menu-geo";
+                else if (finfo.exp.match(/^asn\./))
+                  addClass = "context-menu-asn";
+                else if (finfo.exp.match(/^http.url/))
+                  addClass = "context-menu-url";
+              } else {
+                if (spii.match(/^(rawas1|rawas2|rawasdnsip|rawaseip|rawasxff)$/)) {
+                  addClass = "context-menu-asn";
+                }
+              }
+
               if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
                   (finfo && finfo.type === "ip")) {
                 $.each(spi.terms, function(i, term) {
@@ -137,6 +157,7 @@ block content
                   spiterm += ipString(term.term);
                   spida.append($('<a></a>').attr("href","#")
                                            .text(ipString(term.term))
+                                           .addClass("context-menu-ip")
                                            .click(function() {
                                              addExpression(spida.attr("molochexpr") + "==" + ipString(term.term));
                                              return false;
@@ -152,6 +173,7 @@ block content
                   spiterm += dateString(term.term, " ");
                   spida.append($('<a></a>').attr("href","#")
                                            .text(dateString(term.term, " "))
+                                           .addClass(addClass)
                                            .click(function() {
                                              addExpression(spida.attr("molochexpr") + "==" + dateString(term.term, " "));
                                              return false;
@@ -171,6 +193,7 @@ block content
                   spiterm += quoted;
                   spida.append($('<a></a>').attr("href","#")
                                            .text(""+term.term)
+                                           .addClass(addClass)
                                            .click(function() {
                                              addExpression(spida.attr("molochexpr") + "==" + quoted);
                                              return false;

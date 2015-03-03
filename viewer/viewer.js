@@ -122,6 +122,15 @@ app.configure(function() {
   app.locals.elasticBase = internals.elasticBase[0];
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
   app.locals.molochClusters = Config.configMap("moloch-clusters");
+  app.locals.molochRightClick = {ip: Config.configMap("right-click-ip"),
+                               host: Config.configMap("right-click-host"),
+                                url: Config.configMap("right-click-url"),
+                                geo: Config.configMap("right-click-geo"),
+                                asn: Config.configMap("right-click-asn"),
+                                rir: Config.configMap("right-click-rir"),
+                                md5: Config.configMap("right-click-md5")
+                                };
+
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
