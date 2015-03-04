@@ -29,6 +29,10 @@
 #include "moloch.h"
 #include <gio/gio.h>
 
+#ifndef O_NOATIME
+#define O_NOATIME 0
+#endif
+
 extern MolochConfig_t        config;
 
 
