@@ -992,14 +992,14 @@ $(document).ready(function() {
         }
         //console.log(text, url, host);
         var items = {
-          and: {name: "<b>and</b> " + safeStr(url), exp: "==", prefix: "url"},
-          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!=", prefix: "url"},
+          and: {name: "<b>and</b> " + safeStr(url), exp: "==", prefix: "http.uri"},
+          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!=", prefix: "http.uri"},
           open: {name: "<b>Open URL</b> " + safeStr(url), url: "http:" + url},
           andhost: {name: "<b>and</b> " + host, exp: "==", prefix: "host", value: host},
           andnothost: {name: "<b>and not</b> " + host, exp: "!=", prefix: "host", value: host}
         };
         for (var key in molochRightClick.url) {
-          items[key+"URL"] = {name: "<b>" + key + "</b> " + url, url: molochRightClick.url[key].url.replace("%URL%", url)};
+          items[key+"URL"] = {name: "<b>" + key + "</b> " + url, url: molochRightClick.url[key].url.replace("%URL%", encodeURIComponent("http:" + url))};
         }
 
         for (var key in molochRightClick.host) {
@@ -1087,6 +1087,23 @@ $(document).ready(function() {
           items[key+"GEO"] = {name: "<b>" + key + "</b> " + rir, url: molochRightClick.rir[key].url.replace("%RIR%", rir)};
         }
 
+        return contextCallback(e, items);
+      }
+    });
+
+    $.contextMenu({
+      selector: '.context-menu-other',
+      build: function($trigger, e) {
+        var other = $(e.target).text();
+        var items = {
+          and: {name: "<b>and</b> " + safeStr(other), exp: "=="},
+          andnot: {name: "<b>and not</b> " + safeStr(other), exp: "!="},
+        };
+
+        for (var key in molochRightClick.other) {
+          items[key+"HOST"] = {name: "<b>" + key + "</b> " + other, url: molochRightClick.other[key].url.replace("%OTHER%", other)};
+        }
+         
         return contextCallback(e, items);
       }
     });
@@ -1197,6 +1214,7 @@ function handleUrlParams() {
   return urlParams;
 }
 
+
 function addExpression (expression, op) {
   var val = $("#expression").val();
   if (val === "") {
@@ -1209,6 +1227,16 @@ function addExpression (expression, op) {
 
 function addExpressionSeconds (expression, seconds) {
   return addExpression(expression + " == \"" + dateString(seconds, " ") + "\"");
+}
+function addExpressionClick (e) {
+  var text = $(e.target).attr('molochvalue') || $(e.target).text();
+  text = text.trim();
+  if (typeof text == "string" && text.match(/[^\w.]/)) {
+    text = '"' + text + '"';
+  }
+  var molochexpr = $(e.target).closest("[molochexpr]");
+  addExpression(molochexpr.attr("molochexpr") + " == " + text);
+  return false;
 }
 
 $(document).ready(function() {

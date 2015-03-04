@@ -3,12 +3,12 @@ extends layout
 block content
   //-
   mixin spi(name, field, expr, c)
-    dt.context-menu-one #{name}
+    dt.context-menu-spi #{name}
       input(id="SPIck-#{field}", type="checkbox", class="#{c}-group")
     dd(id="SPIda-#{field}", molochexpr=expr)
 
   mixin spion(name, field, expr, c)
-    dt.context-menu-one #{name}
+    dt.context-menu-spi #{name}
       input.spion(id="SPIck-#{field}", type="checkbox", class="#{c}-group")
     dd(id="SPIda-#{field}", molochexpr=expr)
 
@@ -127,7 +127,7 @@ block content
 
               var spiterm = "";
               var finfo = db2Field(spii);
-              var addClass;
+              var addClass = "context-menu-other";
               if (finfo) {
                 if (finfo.exp.match(/^(host\.|cert.alt$)/))
                   addClass = "context-menu-host";
@@ -158,10 +158,8 @@ block content
                   spida.append($('<a></a>').attr("href","#")
                                            .text(ipString(term.term))
                                            .addClass("context-menu-ip")
-                                           .click(function() {
-                                             addExpression(spida.attr("molochexpr") + "==" + ipString(term.term));
-                                             return false;
-                                           }));
+                                           .click(addExpressionClick)
+                                           );
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               } else if (finfo && finfo.type === "seconds") {
@@ -174,10 +172,8 @@ block content
                   spida.append($('<a></a>').attr("href","#")
                                            .text(dateString(term.term, " "))
                                            .addClass(addClass)
-                                           .click(function() {
-                                             addExpression(spida.attr("molochexpr") + "==" + dateString(term.term, " "));
-                                             return false;
-                                           }));
+                                           .click(addExpressionClick)
+                                           );
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               } else {
@@ -194,10 +190,8 @@ block content
                   spida.append($('<a></a>').attr("href","#")
                                            .text(""+term.term)
                                            .addClass(addClass)
-                                           .click(function() {
-                                             addExpression(spida.attr("molochexpr") + "==" + quoted);
-                                             return false;
-                                           }));
+                                           .click(addExpressionClick)
+                                           );
                   spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
                 });
               }
@@ -324,7 +318,7 @@ block content
       setupMap();
 
       $.contextMenu({
-          selector: '.context-menu-one',
+          selector: '.context-menu-spi',
           build: function($trigger, e) {
             var checkbox = $(e.target).find("input");
             items = {

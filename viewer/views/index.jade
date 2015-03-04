@@ -209,11 +209,12 @@ block content
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
+              var result = "<span suffix='.src'> <span class='context-menu-ip'> " + ipString(oObj.aData.a1) + "</span>";
               if (oObj.aData.g1) {
-                return "<span suffix='.src'> <span class='context-menu-ip'> " + ipString(oObj.aData.a1) + "</span><br><span class='context-menu-geo'>" + oObj.aData.g1 + "</span></span>";
-              } else {
-                return "<span suffix='.src'> <span class='context-menu-ip'> " + ipString(oObj.aData.a1) + "</span></span>";
+                result += "<br><span class='context-menu-geo'>" + oObj.aData.g1 + "</span>";
               }
+              result += "</span>";
+              return result;
             }
           },
           { "mDataProp" : "p1",
@@ -224,11 +225,12 @@ block content
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
+              var result = "<span suffix='.src'> <span class='context-menu-ip'> " + ipString(oObj.aData.a2) + "</span>";
               if (oObj.aData.g2) {
-                return "<span suffix='.dst'><span class='context-menu-ip'> " + ipString(oObj.aData.a2) + "</span><br><span class='context-menu-geo'>" + oObj.aData.g2 + "</span></span>";
-              } else {
-                return "<span suffix='.dst'><span class='context-menu-ip'> " + ipString(oObj.aData.a2) + "</span></span>";
+                result += "<br><span class='context-menu-geo'>" + oObj.aData.g2 + "</span>";
               }
+              result += "</span>";
+              return result;
             }
           },
           { "mDataProp" : "p2",
@@ -469,8 +471,8 @@ block content
               };
             } else if (sPos[1] === 9)  {
               items = {
-                andport: {name: "and Node " + rowData.no, exp: "node==" + rowData.no},
-                andnotport: {name: "and NOT Node " + rowData.no, exp: "node!=" + rowData.no}
+                andport: {name: "and Node " + rowData.no, exp: "node ==" + rowData.no},
+                andnotport: {name: "and NOT Node " + rowData.no, exp: "node !=" + rowData.no}
               };
             } else {
               return false;
@@ -547,6 +549,8 @@ block content
           height += $(nTr).height();
         });
       });
+
+      $(document).on('click', '[molochexpr]', addExpressionClick);
     }); // document ready
 
     function unPinRow(nTr, updateRows) {

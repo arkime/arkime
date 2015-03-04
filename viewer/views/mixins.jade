@@ -28,11 +28,9 @@ mixin arrayPrint(container, field, expr)
       if (i > 0)
         |, 
       if (value.length == 0)
-        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
-      else if (typeof value == "string")
-        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+        a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
       else
-        a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+        a(href='#', molochexpr=expr) #{value}
 
 //- Standard method to print an array of values with commas
 mixin arrayList(container, field, title, expr, extra, max, classstr)
@@ -48,11 +46,9 @@ mixin arrayList(container, field, title, expr, extra, max, classstr)
           if (i == max)
             |<span style="display:none">
           if (value.length == 0)
-            a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
-          else if (typeof value == "string")
-            a(href='#', class=classstr, onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+            a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
           else
-            a(href='#', class=classstr, onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+            a(href='#', class=classstr, molochexpr=expr) #{value}
         if (container[field].length > max)
           |</span>
           a.showMoreItems(href='#') &hellip;
@@ -69,11 +65,9 @@ mixin stringList(container, field, title, expr, extra)
       if (container && container[field])
         - value = container[field]
         if (value.length == 0)
-          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') &lt;empty&gt;
-        else if (typeof value == "string")
-          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value.replace(/\\/g, "\\\\")}\\\"");') #{value}
+          a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
         else
-          a(href='#', onclick='return addExpression("#{expr} == \\\"#{value}\\\"");') #{value}
+          a(href='#', molochexpr=expr) #{value}
       if (extra)
         if (container && container[field] && container[field].length > 0)
           |, 
@@ -84,36 +78,36 @@ mixin ipPrint(ip,port,geo,as,rir,expr, full)
   span(suffix=".#{expr}")
     - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
     if (full)
-      a(href='#', onclick='return addExpression("#{expr} == #{ipstr}");').context-menu-ip #{ipstr}
+      a(href='#', molochexpr=expr).context-menu-ip #{ipstr}
     else
-      a(href='#', onclick='return addExpression("ip.#{expr} == #{ipstr}");').context-menu-ip #{ipstr}
+      a(href='#', molochexpr='ip.#{expr}').context-menu-ip #{ipstr}
     - if (port)
       | :
       if (full)
-        a(href='#', onclick='return addExpression("#{expr}.port == #{port}");') #{port}
+        a(href='#', molochexpr='#{expr}.port') #{port}
       else
-        a(href='#', onclick='return addExpression("port.#{expr} == #{port}");') #{port}
+        a(href='#', molochexpr='port.#{expr}') #{port}
 
     - if (geo)
       |  (
       if (full)
-        a(href='#', onclick='return addExpression("#{expr}.country == #{geo}");').context-menu-geo #{geo}
+        a(href='#', molochexpr='#{expr}.country').context-menu-geo #{geo}
       else
-        a(href='#', onclick='return addExpression("country.#{expr} == #{geo}");').context-menu-geo #{geo}
+        a(href='#', molochexpr='country.#{expr}').context-menu-geo #{geo}
       |)
     - if (as)
       |  [
       if (full)
-        a(href='#', onclick='return addExpression("#{expr}.asn == \\\"#{as}\\\"");').context-menu-asn #{as}
+        a(href='#', molochexpr='#{expr}.asn').context-menu-asn #{as}
       else
-        a(href='#', onclick='return addExpression("asn.#{expr} == \\\"#{as}\\\"");').context-menu-asn #{as}
+        a(href='#', molochexpr='asn.#{expr}').context-menu-asn #{as}
       |]
     - if (rir)
       |  {
       if (full)
-        a(href='#', onclick='return addExpression("#{expr}.rir == \\\"#{rir}\\\"");').context-menu-rir #{rir}
+        a(href='#', molochexpr='#{expr}.rir').context-menu-rir #{rir}
       else
-        a(href='#', onclick='return addExpression("rir.#{expr} == \\\"#{rir}\\\"");').context-menu-rir #{rir}
+        a(href='#', molochexpr='rir.#{expr}').context-menu-rir #{rir}
       |}
 
 //- Method to print ip info with commas when the field names use the old prefix method - shouldn't be used for new fields
