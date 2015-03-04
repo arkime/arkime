@@ -975,7 +975,7 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-url',
       build: function($trigger, e) {
-        var text = $(e.target).text();
+        var text = $(e.target).text().trim();
         var url = text.indexOf('?') === -1?text:text.substring(0, text.indexOf('?'));
         var pos = url.indexOf("//");
         var host = url;
@@ -1013,7 +1013,7 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-host',
       build: function($trigger, e) {
-        var host = $(e.target).text();
+        var host = $(e.target).text().trim();
         var items = {
           and: {name: "<b>and</b> " + safeStr(host), exp: "==", prefix: "host"},
           andnot: {name: "<b>and not</b> " + safeStr(host), exp: "!=", prefix: "host"},
@@ -1030,7 +1030,7 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-ip',
       build: function($trigger, e) {
-        var ip = $(e.target).text();
+        var ip = $(e.target).text().trim();
         var items = {
           and: {name: "<b>and</b> " + ip, exp: "==", prefix: "ip"},
           andnot: {name: "<b>and not</b> " + ip, exp: "!=", prefix: "ip"},
@@ -1046,7 +1046,7 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-geo',
       build: function($trigger, e) {
-        var geo = $(e.target).text();
+        var geo = $(e.target).text().trim();
         var items = {
           and: {name: "<b>and</b> " + geo, exp: "==", prefix: "country"},
           andnot: {name: "<b>and not</b> " + geo, exp: "!=", prefix: "country"},
@@ -1062,13 +1062,14 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-asn',
       build: function($trigger, e) {
-        var asn = $(e.target).text();
+        var asn = $(e.target).text().trim();
+        var matches = asn.match(/^AS(\d+) /);
         var items = {
           and: {name: "<b>and</b> " + asn, exp: "==", prefix: "asn"},
           andnot: {name: "<b>and not</b> " + asn, exp: "!=", prefix: "asn"},
         };
         for (var key in molochRightClick.asn) {
-          items[key+"GEO"] = {name: "<b>" + key + "</b> " + asn, url: molochRightClick.asn[key].url.replace("%ASN%", asn)};
+          items[key+"GEO"] = {name: "<b>" + key + "</b> " + asn, url: molochRightClick.asn[key].url.replace("%ASN%", encodeURIComponent(asn)).replace("%ASNUM%", matches[1])};
         }
 
         return contextCallback(e, items);
@@ -1078,7 +1079,7 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-rir',
       build: function($trigger, e) {
-        var rir = $(e.target).text();
+        var rir = $(e.target).text().trim();
         var items = {
           and: {name: "<b>and</b> " + rir, exp: "==", prefix: "rir"},
           andnot: {name: "<b>and not</b> " + rir, exp: "!=", prefix: "rir"},
@@ -1094,7 +1095,7 @@ $(document).ready(function() {
     $.contextMenu({
       selector: '.context-menu-other',
       build: function($trigger, e) {
-        var other = $(e.target).text();
+        var other = $(e.target).text().trim();
         var items = {
           and: {name: "<b>and</b> " + safeStr(other), exp: "=="},
           andnot: {name: "<b>and not</b> " + safeStr(other), exp: "!="},
