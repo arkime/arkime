@@ -49,7 +49,8 @@ var internals = {
   fstats: [0,0,0,0],
   global_allowed: {},
   source_allowed: {},
-  views: {}
+  views: {},
+  rightClicks: {},
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +140,9 @@ internals.sourceApi = {
   addView: function (name, view) {
     internals.views[name] = view;
   },
+  addRightClick: function (name, rightClick) {
+    internals.rightClicks[name] = rightClick;
+  },
   debug: internals.debug,
   addSource: function(section, src) {
     internals.sources[section] = src;
@@ -177,6 +181,10 @@ app.get("/fields", function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/views", function(req, res) {
   res.send(internals.views);
+});
+//////////////////////////////////////////////////////////////////////////////////
+app.get("/rightClicks", function(req, res) {
+  res.send(internals.rightClicks);
 });
 //////////////////////////////////////////////////////////////////////////////////
 internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail"];

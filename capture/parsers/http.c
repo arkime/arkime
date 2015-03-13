@@ -660,19 +660,23 @@ static const char *method_strings[] =
         "host.http", "Hostname", "ho", 
         "HTTP host header field", 
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
-        "aliases", "[\"http.host\"]", NULL);
+        "aliases", "[\"http.host\"]", 
+        "category", "host",
+        NULL);
 
     urlsField = moloch_field_define("http", "textfield",
         "http.uri", "URI", "us", 
         "URIs for request", 
         MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT, 
         "rawField", "rawus",
+        "category", "[\"url\",\"host\"]",
         NULL);
 
     xffField = moloch_field_define("http", "ip",
         "ip.xff", "XFF IP", "xff", 
         "X-Forwarded-For Header",
         MOLOCH_FIELD_TYPE_IP_HASH, MOLOCH_FIELD_FLAG_SCNT | MOLOCH_FIELD_FLAG_IPPRE, 
+        "category", "ip",
         NULL);
 
     uaField = moloch_field_define("http", "textfield",
@@ -705,6 +709,7 @@ static const char *method_strings[] =
         "http.md5", "Body MD5", "hmd5", 
         "MD5 of http body response",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "category", "md5",
         NULL);
 
     moloch_field_define("http", "termfield",
@@ -766,6 +771,7 @@ static const char *method_strings[] =
         "http.user", "User", "huser-term", 
         "HTTP Auth User", 
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "category", "user",
         NULL);
 
     atField = moloch_field_define("http", "lotermfield",

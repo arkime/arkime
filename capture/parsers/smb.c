@@ -603,12 +603,14 @@ void moloch_parser_init()
         "smb.user", "User", "smbuser",
         "SMB User",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "user",
         NULL);
 
     hostField = moloch_field_define("smb", "termfield",
         "host.smb", "Hostname", "smbho",
         "SMB Host name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "category", "host",
         "aliases", "[\"smb.host\"]", NULL);
 
     if (config.parseSMB) {

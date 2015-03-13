@@ -111,6 +111,7 @@ void moloch_parser_init()
         "postgresql.user", "User", "postgresql.user-term",
         "Postgresql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "category", "user",
         NULL);
 
     dbField = moloch_field_define("postgresql", "termfield",

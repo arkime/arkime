@@ -18,7 +18,6 @@
 'use strict';
 
 var fs             = require('fs')
-  , unzip          = require('unzip')
   , csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')

@@ -844,6 +844,7 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "aliases", "[\"email.host\"]", 
         "requiredRight", "emailSearch",
+        "category", "host",
         NULL);
 
     uaField = moloch_field_define("email", "lotextfield",
@@ -859,6 +860,7 @@ void moloch_parser_init()
         "Email from address",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
+        "category", "user",
         NULL);
 
     dstField = moloch_field_define("email", "lotermfield",
@@ -866,6 +868,7 @@ void moloch_parser_init()
         "Email to address",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
+        "category", "user",
         NULL);
 
     subField = moloch_field_define("email", "textfield",
@@ -909,6 +912,7 @@ void moloch_parser_init()
         "Email attachment MD5s",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "requiredRight", "emailSearch",
+        "category", "md5",
         NULL);
 
     fctField = moloch_field_define("email", "termfield",
@@ -923,6 +927,7 @@ void moloch_parser_init()
         "Email IP address", 
         MOLOCH_FIELD_TYPE_IP_HASH,   MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
         "requiredRight", "emailSearch",
+        "category", "ip",
         NULL);
 
     hhField = moloch_field_define("email", "lotermfield",

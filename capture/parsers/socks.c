@@ -279,25 +279,33 @@ void moloch_parser_init()
         "SOCKS destination IP",
         MOLOCH_FIELD_TYPE_IP, MOLOCH_FIELD_FLAG_IPPRE, 
         "aliases", "[\"ip.socks\"]",
-        "portField", "sockspo", NULL);
+        "portField", "sockspo", 
+        "category", "user",
+        NULL);
 
     hostField = moloch_field_define("socks", "lotermfield",
         "host.socks", "Host", "socksho",
         "SOCKS destination host",
         MOLOCH_FIELD_TYPE_STR,       0, 
-        "aliases", "[\"socks.host\"]", NULL);
+        "aliases", "[\"socks.host\"]", 
+        "category", "host",
+        NULL);
 
     portField = moloch_field_define("socks", "integer",
         "port.socks", "Port", "sockspo",
         "SOCKS destination port",
         MOLOCH_FIELD_TYPE_INT,       0, 
-        "aliases", "[\"socks.port\"]", NULL);
+        "aliases", "[\"socks.port\"]", 
+        "category", "port",
+        NULL);
 
     userField = moloch_field_define("socks", "termfield",
         "socks.user", "User", "socksuser",
         "SOCKS authenticated user",
         MOLOCH_FIELD_TYPE_STR,     0, 
-        "aliases", "[\"socksuser\"]", NULL);
+        "aliases", "[\"socksuser\"]", 
+        "category", "user",
+        NULL);
 
     moloch_parsers_classifier_register_tcp("socks5", 0, (unsigned char*)"\005", 1, socks5_classify);
     moloch_parsers_classifier_register_tcp("socks4", 0, (unsigned char*)"\004\000", 2, socks4_classify);

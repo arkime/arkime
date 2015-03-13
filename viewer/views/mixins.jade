@@ -30,10 +30,10 @@ mixin arrayPrint(container, field, expr)
       if (value.length == 0)
         a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
       else
-        a(href='#', molochexpr=expr) #{value}
+        a.moloch-right-click(href='#', molochexpr=expr) #{value}
 
 //- Standard method to print an array of values with commas
-mixin arrayList(container, field, title, expr, extra, max, classstr)
+mixin arrayList(container, field, title, expr, extra, max)
   if (!max)
     - max = 25
   if ((container && container[field]) || extra)
@@ -48,7 +48,7 @@ mixin arrayList(container, field, title, expr, extra, max, classstr)
           if (value.length == 0)
             a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
           else
-            a(href='#', class=classstr, molochexpr=expr) #{value}
+            a.moloch-right-click(href='#', molochexpr=expr) #{value}
         if (container[field].length > max)
           |</span>
           a.showMoreItems(href='#') &hellip;
@@ -67,7 +67,7 @@ mixin stringList(container, field, title, expr, extra)
         if (value.length == 0)
           a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
         else
-          a(href='#', molochexpr=expr) #{value}
+          a.moloch-right-click(href='#', molochexpr=expr) #{value}
       if (extra)
         if (container && container[field] && container[field].length > 0)
           |, 
@@ -75,12 +75,12 @@ mixin stringList(container, field, title, expr, extra)
 
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
-  span(suffix=".#{expr}")
+  span
     - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
     if (full)
-      a(href='#', molochexpr=expr).context-menu-ip #{ipstr}
+      a.moloch-right-click(href='#', molochexpr=expr) #{ipstr}
     else
-      a(href='#', molochexpr='ip.#{expr}').context-menu-ip #{ipstr}
+      a.moloch-right-click(href='#', molochexpr='ip.#{expr}') #{ipstr}
     - if (port)
       | :
       if (full)
@@ -91,23 +91,23 @@ mixin ipPrint(ip,port,geo,as,rir,expr, full)
     - if (geo)
       |  (
       if (full)
-        a(href='#', molochexpr='#{expr}.country').context-menu-geo #{geo}
+        a.moloch-right-click(href='#', molochexpr='#{expr}.country') #{geo}
       else
-        a(href='#', molochexpr='country.#{expr}').context-menu-geo #{geo}
+        a.moloch-right-click(href='#', molochexpr='country.#{expr}') #{geo}
       |)
     - if (as)
       |  [
       if (full)
-        a(href='#', molochexpr='#{expr}.asn').context-menu-asn #{as}
+        a.moloch-right-click(href='#', molochexpr='#{expr}.asn') #{as}
       else
-        a(href='#', molochexpr='asn.#{expr}').context-menu-asn #{as}
+        a.moloch-right-click(href='#', molochexpr='asn.#{expr}') #{as}
       |]
     - if (rir)
       |  {
       if (full)
-        a(href='#', molochexpr='#{expr}.rir').context-menu-rir #{rir}
+        a.moloch-right-click(href='#', molochexpr='#{expr}.rir') #{rir}
       else
-        a(href='#', molochexpr='rir.#{expr}').context-menu-rir #{rir}
+        a.moloch-right-click(href='#', molochexpr='rir.#{expr}') #{rir}
       |}
 
 //- Method to print ip info with commas when the field names use the old prefix method - shouldn't be used for new fields

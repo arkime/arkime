@@ -1741,6 +1741,31 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, FALSE, NULL, NULL);
 }
 /******************************************************************************/
+void moloch_db_update_field(char *expression, char *name, char *value)
+{
+    char                   key[100];
+    int                    key_len;
+    BSB                    bsb;
+
+    if (config.dryRun)
+        return;
+
+    char                  *json = moloch_http_get_buffer(1000);
+
+    BSB_INIT(bsb, json, 1000);
+
+    key_len = snprintf(key, sizeof(key), "/%sfields/field/%s/_update", config.prefix, expression);
+
+    BSB_EXPORT_sprintf(bsb, "{\"doc\": {\"%s\":", name);
+    if (*value == '[') {
+        BSB_EXPORT_sprintf(bsb, "%s", value);
+    } else {
+        moloch_db_js0n_str(&bsb, (unsigned char*)value, TRUE);
+    }
+    BSB_EXPORT_sprintf(bsb, "}}");
+    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, FALSE, NULL, NULL);
+}
+/******************************************************************************/
 gboolean moloch_db_file_exists(char *filename)
 {
     size_t                 data_len;

@@ -108,6 +108,7 @@ void moloch_parser_init()
         "irc.nick", "Nickname", "ircnck", 
         "Nicknames set", 
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
+        "category", "user",
         NULL);
 
     channelsField = moloch_field_define("irc", "termfield",

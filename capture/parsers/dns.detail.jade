@@ -2,7 +2,7 @@ if (session.dnsip || session.dnsho)
   div.sessionDetailMeta.bold DNS
   dl.sessionDetailMeta(suffix="dns")
     +ipArrayListPre(session, "dnsip", "IPs", "dns")
-    +arrayList(session, 'dnsho', "Hosts", "host.dns", undefined, undefined, "context-menu-host")
+    +arrayList(session, 'dnsho', "Hosts", "host.dns")
     +arrayList(session.dns, 'status-term', "Status Code", "dns.status")
     +arrayList(session.dns, 'qt-term', "Query Type", "dns.query.type")
     +arrayList(session.dns, 'qc-term', "Query Class", "dns.query.class")

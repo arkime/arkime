@@ -20,7 +20,7 @@
 */
 'use strict';
 
-var MIN_DB_VERSION = 20;
+var MIN_DB_VERSION = 24;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -122,15 +122,6 @@ app.configure(function() {
   app.locals.elasticBase = internals.elasticBase[0];
   app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
   app.locals.molochClusters = Config.configMap("moloch-clusters");
-  app.locals.molochRightClick = {ip: Config.configMap("right-click-ip"),
-                               host: Config.configMap("right-click-host"),
-                                url: Config.configMap("right-click-url"),
-                                geo: Config.configMap("right-click-geo"),
-                                asn: Config.configMap("right-click-asn"),
-                                rir: Config.configMap("right-click-rir"),
-                                md5: Config.configMap("right-click-md5")
-                                };
-
 
   app.use(express.favicon(__dirname + '/public/favicon.ico'));
   app.use(passport.initialize());
@@ -375,6 +366,27 @@ function createSessionDetail() {
     });
     internals.sessionDetail +=   "  include views/sessionDetail-body\n";
     internals.sessionDetail +=   "include views/sessionDetail-footer\n";
+  });
+}
+
+function createRightClicks() {
+
+  var mrc = Config.configMap("right-click");
+  for (var key in mrc) {
+    if (mrc[key].fields) {
+      mrc[key].fields = mrc[key].fields.split(",");
+    }
+  }
+  var makers = internals.pluginEmitter.listeners("makeRightClick");
+  async.each(makers, function(cb, nextCb) {
+    cb(function (err, items) {
+      for (var k in items) {
+        mrc[k] = items[k];
+      }
+      return nextCb();
+    });
+  }, function () {
+    app.locals.molochRightClick = mrc;
   });
 }
 
@@ -4282,7 +4294,7 @@ function sendSessionWorker(options, cb) {
     pcb(null);
   }, function (err, session) {
     var buffer;
-    if (err) {
+    if (err || !packetshdr) {
       console.log("WARNING - No PCAP only sending SPI data err:", err);
       buffer = new Buffer(0);
       ps = [];
@@ -4981,6 +4993,9 @@ function main () {
 
   createSessionDetail();
   setInterval(createSessionDetail, 5*60*1000);
+
+  createRightClicks();
+  setInterval(createRightClicks, 5*60*1000);
 
   if (Config.get("cronQueries", false)) {
     console.log("This node will process Cron Queries");

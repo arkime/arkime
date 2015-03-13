@@ -36,12 +36,33 @@ exports.init = function (Config, emitter) {
           return cb(null, {});
         }
         var result = JSON.parse(body);
-        console.log("WISE", result);
         return cb(null, result);
       });
     });
     req.on('error', function (err) {
-      console.log("WISE ERROR", err);
+      console.log("WISE Session Detail ERROR", err);
+      return cb(err, {});
+    });
+    req.end();
+  });
+
+  emitter.on("makeRightClick", function(cb) {
+    var url = "http://" + host + ":" + port + "/rightClicks";
+    var req = http.request(url, function (res) {
+      var body = "";
+      res.on('data', function (chunk) {
+        body += chunk;
+      });
+      res.on('end', function () {
+        if (res.statusCode !== 200) {
+          return cb(null, {});
+        }
+        var result = JSON.parse(body);
+        return cb(null, result);
+      });
+    });
+    req.on('error', function (err) {
+      console.log("WISE Right Click ERROR", err);
       return cb(err, {});
     });
     req.end();

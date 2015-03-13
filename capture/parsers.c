@@ -1,6 +1,6 @@
 /* parsers.c  -- Functions for dealing with classification and parsers
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,7 +20,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "glib.h"
 #include "gmodule.h"
 #include "nids.h"
 #include "magic.h"
@@ -185,6 +184,7 @@ void moloch_parsers_init()
         "user", "User", "user",
         "External user set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "category", "user",
         NULL);
 
     moloch_field_define("general", "integer",
@@ -333,7 +333,7 @@ void moloch_print_hex_string(unsigned char* data, unsigned int length)
 
     for (i = 0; i < length; i++)
     {
-        printf("%02X ", data[i]);
+        printf("%02x", data[i]);
     }
 
     printf("\n");

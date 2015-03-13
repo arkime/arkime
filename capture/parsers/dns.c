@@ -270,13 +270,17 @@ void moloch_parser_init()
         "ip.dns", "IP",  "dnsip", 
         "IP from DNS result", 
         MOLOCH_FIELD_TYPE_IP_HASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE, 
-        "aliases", "[\"dns.ip\"]", NULL);
+        "aliases", "[\"dns.ip\"]", 
+        "category", "ip", 
+        NULL);
 
     hostField = moloch_field_define("dns", "lotermfield",
         "host.dns", "Host", "dnsho", 
         "DNS host looked up",  
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
-        "aliases", "[\"dns.host\"]", NULL);
+        "aliases", "[\"dns.host\"]", 
+        "category", "host",
+        NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",
         "dns.status", "Status Code", "dns.status-term", 

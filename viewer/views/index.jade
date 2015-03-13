@@ -209,11 +209,10 @@ block content
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              var result = "<span suffix='.src'> <span class='context-menu-ip'> " + ipString(oObj.aData.a1) + "</span>";
+              var result = "<span molochexpr='ip.src' class='moloch-right-click'> " + ipString(oObj.aData.a1) + "</span>";
               if (oObj.aData.g1) {
-                result += "<br><span class='context-menu-geo'>" + oObj.aData.g1 + "</span>";
+                result += "<br><span molochexpr='country.src' class='moloch-right-click'>" + oObj.aData.g1 + "</span>";
               }
-              result += "</span>";
               return result;
             }
           },
@@ -225,11 +224,10 @@ block content
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              var result = "<span suffix='.src'> <span class='context-menu-ip'> " + ipString(oObj.aData.a2) + "</span>";
+              var result = "<span molochexpr='ip.dst' class='moloch-right-click'> " + ipString(oObj.aData.a2) + "</span>";
               if (oObj.aData.g2) {
-                result += "<br><span class='context-menu-geo'>" + oObj.aData.g2 + "</span>";
+                result += "<br><span molochexpr='country.dst' class='moloch-right-click'>" + oObj.aData.g2 + "</span>";
               }
-              result += "</span>";
               return result;
             }
           },
@@ -248,8 +246,11 @@ block content
             }
           },
           { "mDataProp" : "no",
-            "sClass": "context-menu-one",
-            "sWidth": "100px"
+            "sWidth": "100px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='node' class='moloch-right-click'> " + oObj.aData.no + "</span>";
+            }
           },
           { "bSortable": false,
             "mDataProp" : null,
@@ -261,12 +262,12 @@ block content
               if (oObj.aData.us) {
                 if (oObj.aData.infoAll) {
                   oObj.aData.us.forEach(function(item) {
-                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>";
+                    data += "<div molochexpr='http.uri' class=\"moloch-right-click\">" + safeStr(item) + "</div>";
                   });
                   data += '<img src="up-arrow.png">';
                 } else {
                   oObj.aData.us.slice(0,5).forEach(function(item) {
-                    data += "<div class=\"context-menu-url\">" + safeStr(item) + "</div>";
+                    data += "<div molochexpr='http.uri' class=\"moloch-right-click\">" + safeStr(item) + "</div>";
                   });
                   if (oObj.aData.us.length > 5) {
                     data += '<img src="down-arrow.png">';
@@ -292,31 +293,29 @@ block content
                   data += "<br>";
                 }
               } else if (oObj.aData.dnsho) {
-                data += "<span suffix='.dns'>";
                 if (oObj.aData.infoAll) {
                   oObj.aData.dnsho.forEach(function(item) {
-                    data += "<div class=\"context-menu-host\">" + safeStr(item) + "</div>";
+                    data += "<div molochexpr='host.dns' class=\"moloch-right-click\">" + safeStr(item) + "</div>";
                   });
                   data += '<br><img src="up-arrow.png">';
                 } else {
                   oObj.aData.dnsho.slice(0, 5).forEach(function(item) {
-                    data += "<div class=\"context-menu-host\">" + safeStr(item) + "</div>";
+                    data += "<div molochexpr='host.dns' class=\"moloch-right-click\">" + safeStr(item) + "</div>";
                   });
                   if (oObj.aData.dnsho.length > 5) {
                     data += '<br><img src="down-arrow.png">';
                   }
                 }
-                data += "</span>";
               } else if (oObj.aData.tls) {
                 oObj.aData.tls.forEach(function(tls) {
-                  data += "<span class='context-menu-host'>" + tls.sCn + "</span>";
+                  data += "<span molochexpr='cert.alt' class='moloch-right-click'>" + tls.sCn + "</span>";
                   if (tls.alt) {
                     data += " [";
                     for(var i = 0, ilen = tls.alt.length; i < ilen; i++) {
                       if (i > 0) {
                         data += ", ";
                       }
-                      data += "<span class='context-menu-host'>" + tls.alt[i] + "</span>";
+                      data += "<span molochexpr='cert.alt' class='moloch-right-click'>" + tls.alt[i] + "</span>";
                     }
                     data += "]";
                   }
@@ -468,11 +467,6 @@ block content
                 andnotport: {name: "and NOT Port " + port, exp: "port" + suffix + "!=" + port},
                 andipport: {name: "and " + ip + ":" + port, exp: "ip" + suffix + "==" + ip + ":" + port},
                 andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip" + suffix + "!=" + ip + ":" + port}
-              };
-            } else if (sPos[1] === 9)  {
-              items = {
-                andport: {name: "and Node " + rowData.no, exp: "node ==" + rowData.no},
-                andnotport: {name: "and NOT Node " + rowData.no, exp: "node !=" + rowData.no}
               };
             } else {
               return false;

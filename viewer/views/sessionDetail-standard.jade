@@ -28,10 +28,10 @@ dl.sessionDetailMeta
     a.formatSeconds(href='#', onclick='return setSessionStopTime(#{session.lp});') #{session.lp}
     | &nbsp;
     | Node: 
-    a.molochexpr(href='#', molochexpr='node') #{session.no}
+    a.moloch-right-click(href='#', molochexpr='node') #{session.no}
     | &nbsp;
     | IP Protocol: 
-    a(href='#', molochexpr='ip.protocol') #{session.pr}
+    a.moloch-right-click(href='#', molochexpr='ip.protocol') #{session.pr}
 
   +arrayList(session, "user", "Users", "user")
   +arrayList(session, "asset-term", "Assets", "asset")
@@ -41,19 +41,19 @@ dl.sessionDetailMeta
     dd
       span.sessionDetailSmall
         | Packets: 
-        a(href='#', molochexpr='packets.src') #{session.pa1}
+        a.moloch-right-click(href='#', molochexpr='packets.src') #{session.pa1}
         | &nbsp;Bytes: 
-        a(href='#', molochexpr='bytes.src') #{session.by1}
+        a.moloch-right-click(href='#', molochexpr='bytes.src') #{session.by1}
         | &nbsp;Databytes: 
-        a(href='#', molochexpr='databytes.src') #{session.db1}
+        a.moloch-right-click(href='#', molochexpr='databytes.src') #{session.db1}
       | &nbsp;Dst: 
       span.sessionDetailSmall
         | Packets: 
-        a(href='#', molochexpr='packets.dst') #{session.pa2}
+        a.moloch-right-click(href='#', molochexpr='packets.dst') #{session.pa2}
         | &nbsp;Bytes: 
-        a(href='#', molochexpr='bytes.dst') #{session.by2}
+        a.moloch-right-click(href='#', molochexpr='bytes.dst') #{session.by2}
         | &nbsp;Databytes: 
-        a(href='#', molochexpr='databytes.dst') #{session.db2}
+        a.moloch-right-click(href='#', molochexpr='databytes.dst') #{session.db2}
   if (session["mac1-term"])
     dt Ethernet
     dd
@@ -76,17 +76,17 @@ dl.sessionDetailMeta
         span.sessionDetailSmall
           | Src: 
           - var fb1a = new Buffer(session.fb1, "hex");
-          a(href='#', molochexpr='payload8.src.hex') #{session.fb1}
+          a.moloch-right-click(href='#', molochexpr='payload8.src.hex') #{session.fb1}
           | 
-          a(href='#', molochexpr='payload8.src.utf8', molochvalue=fb1a) (#{fb1a})
+          a.moloch-right-click(href='#', molochexpr='payload8.src.utf8', molochvalue=fb1a) (#{fb1a})
           | 
       if (session.fb2)
         span.sessionDetailSmall
           | Dst: 
           - var fb2a = new Buffer(session.fb2, "hex");
-          a(href='#', molochexpr='payload8.dst.hex') #{session.fb2}
+          a.moloch-right-click(href='#', molochexpr='payload8.dst.hex') #{session.fb2}
           | 
-          a(href='#', molochexpr='payload8.src.utf8', molochvalue=fb2a) (#{fb2a})
+          a.moloch-right-click(href='#', molochexpr='payload8.src.utf8', molochvalue=fb2a) (#{fb2a})
   +arrayList(session, "ta", "Tags", "tags", "<img class=\"addTagsAction\" src=\"DataTables-1.9.1/examples/examples_support/details_open.png\">")
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files", "file")
@@ -100,10 +100,10 @@ dl.sessionDetailMeta
   if (session.socksho)
     dt Socks Dst
     dd
-      a(href='#', molochexpr='host.socks') #{session.socksho}
+      a.moloch-right-click(href='#', molochexpr='host.socks') #{session.socksho}
       | :
-      a(href='#', molochexpr='port.socks') #{session.sockspo}
+      a.moloch-right-click(href='#', molochexpr='port.socks') #{session.sockspo}
   if (session.socksuser)
     dt Socks User
     dd
-      a(href='#', molochexpr='socks.user') #{session.socksuser}
+      a.moloch-right-click(href='#', molochexpr='socks.user') #{session.socksuser}

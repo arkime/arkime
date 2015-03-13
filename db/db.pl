@@ -30,6 +30,7 @@
 # 21 - doc_values, new tls fields, starttime/stoptime/view
 # 22 - cpu to stats/dstats
 # 23 - packet lengths
+# 24 - field category
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -38,7 +39,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 23;
+my $VERSION = 24;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -608,14 +609,16 @@ sub fieldsUpdate
       "help": "Source IP",
       "type": "ip",
       "dbField": "a1",
-      "portField": "p1"
+      "portField": "p1",
+      "category": "ip"
     }');
     esPost("/${PREFIX}fields/field/port.src", '{
       "friendlyName": "Src Port",
       "group": "general",
       "help": "Source Port",
       "type": "integer",
-      "dbField": "p1"
+      "dbField": "p1",
+      "category": "port"
     }');
     esPost("/${PREFIX}fields/field/asn.src", '{
       "friendlyName": "Src ASN",
@@ -623,21 +626,24 @@ sub fieldsUpdate
       "help": "GeoIP ASN string calculated from the source IP",
       "type": "textfield",
       "dbField": "as1",
-      "rawField": "rawas1"
+      "rawField": "rawas1",
+      "category": "asn"
     }');
     esPost("/${PREFIX}fields/field/country.src", '{
       "friendlyName": "Src Country",
       "group": "general",
       "help": "Source Country",
       "type": "uptermfield",
-      "dbField": "g1"
+      "dbField": "g1",
+      "category": "country"
     }');
     esPost("/${PREFIX}fields/field/rir.src", '{
       "friendlyName": "Src RIR",
       "group": "general",
       "help": "Source RIR",
       "type": "uptermfield",
-      "dbField": "rir1"
+      "dbField": "rir1",
+      "category": "rir"
     }');
     esPost("/${PREFIX}fields/field/ip.dst", '{
       "friendlyName": "Dst IP",
@@ -645,14 +651,16 @@ sub fieldsUpdate
       "help": "Destination IP",
       "type": "ip",
       "dbField": "a2",
-      "portField": "p2"
+      "portField": "p2",
+      "category": "ip"
     }');
     esPost("/${PREFIX}fields/field/port.dst", '{
       "friendlyName": "Dst Port",
       "group": "general",
       "help": "Source Port",
       "type": "integer",
-      "dbField": "p2"
+      "dbField": "p2",
+      "category": "port"
     }');
     esPost("/${PREFIX}fields/field/asn.dst", '{
       "friendlyName": "Dst ASN",
@@ -660,21 +668,24 @@ sub fieldsUpdate
       "help": "GeoIP ASN string calculated from the destination IP",
       "type": "textfield",
       "dbField": "as2",
-      "rawField": "rawas2"
+      "rawField": "rawas2",
+      "category": "asn"
     }');
     esPost("/${PREFIX}fields/field/country.dst", '{
       "friendlyName": "Dst Country",
       "group": "general",
       "help": "Destination Country",
       "type": "uptermfield",
-      "dbField": "g2"
+      "dbField": "g2",
+      "category": "country"
     }');
     esPost("/${PREFIX}fields/field/rir.dst", '{
       "friendlyName": "Dst RIR",
       "group": "general",
       "help": "Destination RIR",
       "type": "uptermfield",
-      "dbField": "rir2"
+      "dbField": "rir2",
+      "category": "rir"
     }');
     esPost("/${PREFIX}fields/field/bytes", '{
       "friendlyName": "Bytes",
@@ -2230,6 +2241,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
     print "Finished\n";
 } elsif ($main::versionNumber >= 19 && $main::versionNumber < 20) {
+    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
     queriesCreate();
@@ -2238,7 +2250,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 23) {
+} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 24) {
+    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();
     fieldsUpdate();

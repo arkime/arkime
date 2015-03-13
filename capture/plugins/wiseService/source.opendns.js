@@ -180,6 +180,10 @@ OpenDNSSource.prototype.init = function() {
     "    +arrayList(session.opendns, 'dmccat-term', 'Content Cat', 'opendns.domain.content')\n"
   );
 
+  this.api.addRightClick("opendnsip", {name:"OpenDNS", url:"https://sgraph.opendns.com/ip-view/%TEXT%", category:"ip"});
+  this.api.addRightClick("opendnsasn", {name:"OpenDNS", url:"https://sgraph.opendns.com/as-view/%REGEX%", category:"asn", regex:"^[Aa][Ss](\\d+)"});
+  this.api.addRightClick("opendnshost", {name:"OpenDNS", url:"https://sgraph.opendns.com/domain-view/name/%HOST%/view", category:"host"});
+
 };
 //////////////////////////////////////////////////////////////////////////////////
 OpenDNSSource.prototype.getDomain = function(domain, cb) {

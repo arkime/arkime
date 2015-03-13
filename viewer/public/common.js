@@ -947,7 +947,28 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////
   // Right Click Data Menus
   //////////////////////////////////////////////////////////////////////////////////
-  function contextCallback(e, items) {
+  function rightClickInfo(e) {
+    var molochexpr = $(e.target).closest("[molochexpr]");
+    if (molochexpr.length === 0) {
+      console.log("No molochexpr", $(e.target));
+      return {category:[]};
+    }
+    molochexpr = molochexpr.attr('molochexpr');
+
+    var field = molochFields[molochexpr];
+    if (!field) {
+      console.log("Unknown field", molochexpr);
+      return {category:[]};
+    }
+
+    if (Array.isArray(field.category)) {
+      return {field: molochexpr, category:field.category};
+    } else {
+      return {field: molochexpr, category:[field.category]};
+    }
+  }
+
+  function rightClickCallback(e, items) {
     return {
       callback: function(key, options) {
         var item = items[key];
@@ -957,12 +978,7 @@ $(document).ready(function() {
             text = '"' + text + '"';
           }
           var molochexpr = $(e.target).closest("[molochexpr]");
-          if (molochexpr.length > 0) {
-            addExpression(molochexpr.attr("molochexpr") + item.exp + text);
-          } else {
-            var suffix = $(e.target).closest("[suffix]");
-            addExpression(item.prefix + (suffix.attr("suffix") || "") + item.exp + text);
-          }
+          addExpression(molochexpr.attr("molochexpr") + item.exp + text);
         } else {
           console.log("opening", item.url);
           window.open(item.url);
@@ -973,12 +989,13 @@ $(document).ready(function() {
   }
   if ($.contextMenu) {
     $.contextMenu({
-      selector: '.context-menu-url',
+      selector: '.moloch-right-click',
       build: function($trigger, e) {
+        var info = rightClickInfo(e);
         var text = $(e.target).text().trim();
         var url = text.indexOf('?') === -1?text:text.substring(0, text.indexOf('?'));
-        var pos = url.indexOf("//");
         var host = url;
+        var pos = url.indexOf("//");
         if (pos >= 0) {
           host = url.substring(pos+2)
         }
@@ -990,122 +1007,50 @@ $(document).ready(function() {
         if (pos >= 0) {
           host = host.substring(0, pos)
         }
-        //console.log(text, url, host);
+        //console.log("text", text, "url", url, "host", host);
         var items = {
-          and: {name: "<b>and</b> " + safeStr(url), exp: "==", prefix: "http.uri"},
-          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!=", prefix: "http.uri"},
-          open: {name: "<b>Open URL</b> " + safeStr(url), url: "http:" + url},
-          andhost: {name: "<b>and</b> " + host, exp: "==", prefix: "host", value: host},
-          andnothost: {name: "<b>and not</b> " + host, exp: "!=", prefix: "host", value: host}
+          and: {name: "<b>and</b> " + safeStr(url), exp: "=="},
+          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!="}
         };
-        for (var key in molochRightClick.url) {
-          items[key+"URL"] = {name: "<b>" + key + "</b> " + url, url: molochRightClick.url[key].url.replace("%URL%", encodeURIComponent("http:" + url))};
-        }
 
-        for (var key in molochRightClick.host) {
-          items[key+"HOST"] = {name: "<b>" + key + "</b> " + host, url: molochRightClick.host[key].url.replace("%HOST%", host)};
+        for (var key in molochRightClick) {
+          var rc = molochRightClick[key];
+          if ((!rc.category || info.category.indexOf(rc.category) === -1) &&
+              (!rc.fields || rc.fields.indexOf(info.field) === -1)) {
+            continue;
+          }
+
+          var result = molochRightClick[key].url
+                                            .replace("%TEXT%", text)
+                                            .replace("%HOST%", host)
+                                            .replace("%URL%", encodeURIComponent("http:" + url));
+
+          var nameDisplay = "<b>" + (molochRightClick[key].name || key) + "</b> %URL%";
+          if (rc.category === "host") {
+            nameDisplay = "<b>" + (molochRightClick[key].name || key) + "</b> %HOST%";
+          }
+
+          var name = (molochRightClick[key].nameDisplay || nameDisplay)
+                                          .replace("%TEXT%", text)
+                                          .replace("%HOST%", host)
+                                          .replace("%URL%", url);
+
+          if (rc.regex) {
+            if (!rc.cregex) {
+              rc.cregex = new RegExp(rc.regex);
+            }
+            var matches = text.match(rc.cregex);
+            if (matches && matches[1]) {
+              result = result.replace("%REGEX%", matches[1]);
+            } else {
+              continue;
+            }
+          }
+          items[key] = {name: name,
+                         url: result};
         }
          
-        return contextCallback(e, items);
-      }
-    });
-
-    $.contextMenu({
-      selector: '.context-menu-host',
-      build: function($trigger, e) {
-        var host = $(e.target).text().trim();
-        var items = {
-          and: {name: "<b>and</b> " + safeStr(host), exp: "==", prefix: "host"},
-          andnot: {name: "<b>and not</b> " + safeStr(host), exp: "!=", prefix: "host"},
-        };
-
-        for (var key in molochRightClick.host) {
-          items[key+"HOST"] = {name: "<b>" + key + "</b> " + host, url: molochRightClick.host[key].url.replace("%HOST%", host)};
-        }
-         
-        return contextCallback(e, items);
-      }
-    });
-
-    $.contextMenu({
-      selector: '.context-menu-ip',
-      build: function($trigger, e) {
-        var ip = $(e.target).text().trim();
-        var items = {
-          and: {name: "<b>and</b> " + ip, exp: "==", prefix: "ip"},
-          andnot: {name: "<b>and not</b> " + ip, exp: "!=", prefix: "ip"},
-        };
-        for (var key in molochRightClick.ip) {
-          items[key+"IP"] = {name: "<b>" + key + "</b> " + ip, url: molochRightClick.ip[key].url.replace("%IP%", ip)};
-        }
-
-        return contextCallback(e, items);
-      }
-    });
-
-    $.contextMenu({
-      selector: '.context-menu-geo',
-      build: function($trigger, e) {
-        var geo = $(e.target).text().trim();
-        var items = {
-          and: {name: "<b>and</b> " + geo, exp: "==", prefix: "country"},
-          andnot: {name: "<b>and not</b> " + geo, exp: "!=", prefix: "country"},
-        };
-        for (var key in molochRightClick.geo) {
-          items[key+"GEO"] = {name: "<b>" + key + "</b> " + geo, url: molochRightClick.geo[key].url.replace("%GEO%", geo)};
-        }
-
-        return contextCallback(e, items);
-      }
-    });
-
-    $.contextMenu({
-      selector: '.context-menu-asn',
-      build: function($trigger, e) {
-        var asn = $(e.target).text().trim();
-        var matches = asn.match(/^AS(\d+) /);
-        var items = {
-          and: {name: "<b>and</b> " + asn, exp: "==", prefix: "asn"},
-          andnot: {name: "<b>and not</b> " + asn, exp: "!=", prefix: "asn"},
-        };
-        for (var key in molochRightClick.asn) {
-          items[key+"GEO"] = {name: "<b>" + key + "</b> " + asn, url: molochRightClick.asn[key].url.replace("%ASN%", encodeURIComponent(asn)).replace("%ASNUM%", matches[1])};
-        }
-
-        return contextCallback(e, items);
-      }
-    });
-
-    $.contextMenu({
-      selector: '.context-menu-rir',
-      build: function($trigger, e) {
-        var rir = $(e.target).text().trim();
-        var items = {
-          and: {name: "<b>and</b> " + rir, exp: "==", prefix: "rir"},
-          andnot: {name: "<b>and not</b> " + rir, exp: "!=", prefix: "rir"},
-        };
-        for (var key in molochRightClick.rir) {
-          items[key+"GEO"] = {name: "<b>" + key + "</b> " + rir, url: molochRightClick.rir[key].url.replace("%RIR%", rir)};
-        }
-
-        return contextCallback(e, items);
-      }
-    });
-
-    $.contextMenu({
-      selector: '.context-menu-other',
-      build: function($trigger, e) {
-        var other = $(e.target).text().trim();
-        var items = {
-          and: {name: "<b>and</b> " + safeStr(other), exp: "=="},
-          andnot: {name: "<b>and not</b> " + safeStr(other), exp: "!="},
-        };
-
-        for (var key in molochRightClick.other) {
-          items[key+"HOST"] = {name: "<b>" + key + "</b> " + other, url: molochRightClick.other[key].url.replace("%OTHER%", other)};
-        }
-         
-        return contextCallback(e, items);
+        return rightClickCallback(e, items);
       }
     });
   }

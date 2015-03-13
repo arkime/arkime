@@ -109,6 +109,7 @@ void moloch_parser_init()
         "mysql.user", "User", "mysql.user-term",
         "Mysql user name",
         MOLOCH_FIELD_TYPE_STR,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        "category", "user",
         NULL);
 
     versionField = moloch_field_define("mysql", "termfield",

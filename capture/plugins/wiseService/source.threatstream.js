@@ -133,6 +133,11 @@ ThreatStreamSource.prototype.init = function() {
     "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n"
   );
 
+  this.api.addRightClick("threatstreamip", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});
+  this.api.addRightClick("threatstreamhost", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/domain/%HOST%", category:"host"});
+  this.api.addRightClick("threatstreamemail", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
+  this.api.addRightClick("threatstreammd5", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
+
   this.loadFile();
   setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
 };

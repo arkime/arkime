@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* field.c  -- Functions dealing with declaring fields
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,7 +20,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include "glib.h"
 #include "moloch.h"
 #include "patricia.h"
 
@@ -60,6 +59,8 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             info->dbFieldLen  = out[i+3];
         } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
             info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
+        } else if (strncmp("category", (char*)data + out[i], 8) == 0) {
+            info->category = g_strndup((char*)data + out[i+2], out[i+3]);
         } else if (strncmp("disabled", (char*)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i+2], "true", 4) == 0) {
                 info->flags    |= MOLOCH_FIELD_FLAG_DISABLED;
@@ -83,6 +84,7 @@ int moloch_field_define_text(char *text, int *shortcut)
     char *db = 0;
     char *group = 0;
     char *friendly = 0;
+    char *category = 0;
 
     if (config.debug)
         LOG("Parsing %s", text);
@@ -108,6 +110,8 @@ int moloch_field_define_text(char *text, int *shortcut)
             db = colon;
         else if (strcmp(elements[e], "help") == 0)
             help = colon;
+        else if (strcmp(elements[e], "category") == 0)
+            category = colon;
         else if (strcmp(elements[e], "shortcut") == 0) {
             if (shortcut)
                 *shortcut = atoi(colon);
@@ -164,15 +168,17 @@ int moloch_field_define_text(char *text, int *shortcut)
     if (strcmp(kind, "integer") == 0 ||
         strcmp(kind, "seconds") == 0)
         type = MOLOCH_FIELD_TYPE_INT_HASH;
-    else if (strcmp(kind, "ip") == 0)
+    else if (strcmp(kind, "ip") == 0) {
         type = MOLOCH_FIELD_TYPE_IP_HASH;
-    else
+        if (!category)
+            category = "ip";
+    } else
         type = MOLOCH_FIELD_TYPE_STR_HASH;
 
     if (count)
         flags |= MOLOCH_FIELD_FLAG_COUNT;
 
-    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, NULL);
+    int pos =  moloch_field_define(group, kind, field, friendly, db, help, type, flags, "category", category, NULL);
     g_strfreev(elements);
     return pos;
 }
@@ -216,8 +222,24 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             va_end(args);
         }
     } else {
+        char *category = NULL;
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
+        }
+        va_list args;
+        va_start(args, flags);
+        while(1) {
+            char *field = va_arg(args, char *);
+            if (!field) break;
+            char *value = va_arg(args, char *);
+            if (strcmp(field, "category") == 0 && value) {
+                category = value;
+            }
+        }
+        va_end(args);
+        if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
+            LOG("UPDATING - Field category in db %s doesn't match field category %s in capture for field %s", minfo->category, category, expression);
+            moloch_db_update_field(expression, "category", category);
         }
     }
 
