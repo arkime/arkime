@@ -18,7 +18,6 @@
 'use strict';
 
 var fs             = require('fs')
-  , unzip          = require('unzip')
    ,csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
@@ -100,8 +99,8 @@ AlienVaultSource.prototype.init = function() {
     "if (session.alienvault)\n" +
     "  div.sessionDetailMeta.bold AlienVault\n" +
     "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.alienvault, 'activity-term', 'Activity', 'alienvault.severity')\n" +
-    "    +arrayList(session.alienvault, 'threatlevel', 'Threat Level', 'alienvault.threatlevel')\n" +
+    "    +arrayList(session.alienvault, 'activity-term', 'Activity', 'alienvault.activity')\n" +
+    "    +arrayList(session.alienvault, 'threatlevel', 'Threat Level', 'alienvault.threat-level')\n" +
     "    +arrayList(session.alienvault, 'reliability', 'Reliability', 'alienvault.reliability')\n" +
     "    +arrayList(session.alienvault, 'id', 'Id', 'alienvault.id')\n"
   );
