@@ -75,6 +75,7 @@ var internals = {
   previousNodeStats: [],
   caTrustCerts: {},
   cronRunning: false,
+  rightClicks: {},
   pluginEmitter: new EventEmitter(),
   writers: {},
 
@@ -221,6 +222,22 @@ app.configure(function() {
       next();
     });
   }
+
+  app.use(function(req, res, next) {
+    if (!req.user || !req.user.userId) {
+      return next();
+    }
+
+    var mrc = {};
+    for (var key in internals.rightClicks) {
+      var rc = internals.rightClicks[key];
+      if (!rc.users || rc.users[req.user.userId]) {
+        mrc[key] = rc;
+      }
+    }
+    app.locals.molochRightClick = mrc;
+    next();
+  });
 
   express.logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 });
@@ -376,6 +393,13 @@ function createRightClicks() {
     if (mrc[key].fields) {
       mrc[key].fields = mrc[key].fields.split(",");
     }
+    if (mrc[key].users) {
+      var users = {};
+      mrc[key].users.split(",").forEach(function(item) {
+        users[item] = 1;
+      });
+      mrc[key].users = users;
+    }
   }
   var makers = internals.pluginEmitter.listeners("makeRightClick");
   async.each(makers, function(cb, nextCb) {
@@ -386,7 +410,7 @@ function createRightClicks() {
       return nextCb();
     });
   }, function () {
-    app.locals.molochRightClick = mrc;
+    internals.rightClicks = mrc;
   });
 }
 
@@ -4111,8 +4135,6 @@ function pcapScrub(req, res, id, entire, endCb) {
     var fileNum;
     var itemPos = 0;
     async.eachLimit(fields.ps, 10, function(pos, nextCb) {
-      var pos;
-
       if (pos < 0) {
         fileNum = pos * -1;
         return nextCb(null);
