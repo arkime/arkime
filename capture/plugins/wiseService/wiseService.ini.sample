@@ -28,7 +28,7 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 #key=
 #host=
 
-Alien Vault - https://www.alienvault.com/
+# Alien Vault - https://www.alienvault.com/
 [alienvault]
 #key=
 
