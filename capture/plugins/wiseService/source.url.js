@@ -27,15 +27,27 @@ var fs             = require('fs')
 //////////////////////////////////////////////////////////////////////////////////
 function URLSource (api, section) {
   URLSource.super_.call(this, api, section);
+  var self = this;
 
-  this.url     = api.getConfig(section, "url");
-  this.column  = +api.getConfig(section, "column", 0);
-  this.type    = api.getConfig(section, "type");
-  this.format  = api.getConfig(section, "format", "csv");
-  if (this.type === "ip") {
-    this.cache = {items: [], trie: new iptrie.IPTrie()};
+  self.url     = api.getConfig(section, "url");
+  self.column  = +api.getConfig(section, "column", 0);
+  self.type    = api.getConfig(section, "type");
+  self.format  = api.getConfig(section, "format", "csv");
+  self.headers = {};
+  var headers = api.getConfig(section, "headers");
+  if (headers) {
+    headers.split(";").forEach(function(header) {
+      var parts = header.split(":");
+      if (parts.length === 2) {
+        self.headers[parts[0].trim()] = parts[1].trim();
+      }
+    });
+  }
+  
+  if (self.type === "ip") {
+    self.cache = {items: [], trie: new iptrie.IPTrie()};
   } else {
-    this.cache = {};
+    self.cache = {};
   }
 }
 util.inherits(URLSource, wiseSource);
@@ -64,7 +76,7 @@ URLSource.prototype.load = function() {
       count++;
     };
   }
-  request(self.url, function (error, response, body) {
+  request(self.url, {headers: self.headers}, function (error, response, body) {
     if (!error && response.statusCode === 200) {
       self.parse(body, setFunc, function(err) {
         if (err) {
@@ -75,7 +87,7 @@ URLSource.prototype.load = function() {
         console.log(self.section, "- Done Loading", count, "elements");
       });
     } else {
-      console.log("Couldn't load", self.section, self.url, response.statusCode, error);
+      console.log("Couldn't load", self.section, self.url, response, error);
     }
   });
 };
