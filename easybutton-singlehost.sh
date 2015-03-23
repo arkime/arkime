@@ -16,7 +16,10 @@
 # * build moloch-viewer
 # * build ElasticSearch
 
-
+USERNAME="daemon"
+GROUPNAME="daemon"
+PASSWORD="0mgMolochRules1"
+INTERFACE="eth0"
 
 # This is where everything is installed
 TDIR=/data/moloch
@@ -241,10 +244,24 @@ cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,127.0.0.1:9
 chown daemon:daemon ${TDIR}/viewer/public
 chown daemon:daemon ${TDIR}/raw
 
-echo "MOLOCH: Running config script"
+echo "MOLOCH: creating self signed certificate"
+
+# Start Certificate
+cd ${TDIR}/etc/
+openssl req -new -newkey rsa:2048 -nodes -keyout moloch.key -out moloch.csr << EOF 2>/dev/null
+US
+California
+Anytown
+Moloch
+Moloch
+moloch.test.com
 
 
-${INSTALL_DIR}/easybutton-config.sh "$TDIR"
+
+EOF
+openssl x509 -in moloch.csr -out moloch.crt -req -signkey moloch.key -days 3650 2>/dev/null
+cd -
+## End Certificate creation
 
 
 echo "MOLOCH: Starting ElasticSearch"
