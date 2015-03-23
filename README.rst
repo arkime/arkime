@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Recommend version **1.4.x**, requires at least 1.2.x
+Recommend version **1.4.4**, requires at least 1.2.x
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -83,7 +83,7 @@ Recommend version **1.4.x**, requires at least 1.2.x
 
 3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
    **Important:** At this time all development is done with `elasticsearch
-   1.4.1 <http://www.elasticsearch.org/downloads/1-4-1/>`_.
+   1.4.4 <http://www.elasticsearch.org/downloads/1-4-4/>`_.
 
 4. Uncompress the archive you downloaded.
 
@@ -202,11 +202,11 @@ Building Viewer
    from the `EPEL <http://fedoraproject.org/wiki/EPEL>`_ repository. Make sure
    ``python2.6`` is in your path before proceeding!
 
-2. Install `Node.js <http://nodejs.org/>`_ version 0.10.21 or higher.
+2. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.21 or higher).
 
    - **Binary install:** Please see the `platform-specific instructions
      <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
-   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.24/node-v0.10.24.tar.gz>`_, build, and install.
+   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.37/node-v0.10.37.tar.gz>`_, build, and install.
 
 3. In the ``viewer`` directory run ``npm update``.
 

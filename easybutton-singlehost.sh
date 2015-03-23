@@ -26,8 +26,8 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=1.4.1
-NODEJS=0.10.33
+ES=1.4.4
+NODEJS=0.10.37
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
@@ -149,7 +149,7 @@ mkdir -p ${TDIR}/db
 echo "MOLOCH: Downloading and installing elastic search"
 cd ${INSTALL_DIR}/thirdparty
 if [ ! -f "elasticsearch-${ES}.tar.gz" ]; then
-  wget http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ES}.tar.gz
+  wget http://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES}.tar.gz
 fi
 
 cd ${TDIR}
