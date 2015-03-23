@@ -2211,10 +2211,11 @@ app.get('/connections.csv', function(req, res) {
     if (err) {
       return res.send(err);
     }
-    res.write("Source, Destination, Packets, Bytes, Databytes\r\n");
+    res.write("Source, Destination, Sessions, Packets, Bytes, Databytes\r\n");
     for (var i = 0, ilen = links.length; i < ilen; i++) {
       res.write("\"" + nodes[links[i].source].id.replace('"', '""') + "\"" + seperator +
                 "\"" + nodes[links[i].target].id.replace('"', '""') + "\"" + seperator +
+                     links[i].value + seperator +
                      links[i].pa + seperator +
                      links[i].by + seperator +
                      links[i].db + "\r\n");
