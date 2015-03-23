@@ -268,6 +268,7 @@ cd ${TDIR}/viewer
 
 echo "MOLOCH: Starting viewer and capture"
 cd ${TDIR}/bin
+ln -s $TDIR/bin/node $TDIR/bin/node-viewer
 nohup ./run_viewer.sh &
 nohup ./run_capture.sh &
 
