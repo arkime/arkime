@@ -113,7 +113,7 @@ ThreatQSource.prototype.init = function() {
   this.idField = this.api.addField("field:threatq.id;db:threatq.id;kind:integer;friendly:Id;help:ThreatQ Reference ID;shortcut:0;count:true");
   this.typeField = this.api.addField("field:threatq.type;db:threatq.type-term;kind:lotermfield;friendly:Type;help:Indicator Type;shortcut:1;count:true");
   this.sourceField = this.api.addField("field:threatq.source;db:threatq.source-term;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true");
-  this.campaignField = this.api.addField("field:threatq.camapign;db:threatq.camapign-term;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true");
+  this.campaignField = this.api.addField("field:threatq.campaign;db:threatq.campaign-term;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true");
 
   this.api.addView("threatq", 
     "if (session.threatq)\n" +
