@@ -245,6 +245,7 @@ echo "MOLOCH: Running config script"
 
 
 ${INSTALL_DIR}/easybutton-config.sh "$TDIR"
+${INSTALL_DIR}/easybutton-wisesetup.sh "$TDIR"
 
 
 echo "MOLOCH: Starting ElasticSearch"
