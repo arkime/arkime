@@ -13,6 +13,7 @@ block content
     select#timezone.setting(name="timezone")
       option(value="local") local time
       option(value="gmt") gmt time
+    label#currentTime
     br
     h3 Sessions Tab
     label(for='detailFormat') Session Detail Format:
@@ -174,6 +175,11 @@ block content
     var settings  = !{JSON.stringify(suser.settings)};
 
 
+    function updateTime() {
+      $("#currentTime").text(dateString(new Date()/1000, " "));
+    }
+    setInterval(updateTime, 1000);
+
     $(document).ready(function() {
       // Selects
       var defaults = {
@@ -227,6 +233,7 @@ block content
           }
         ]
       });
+      updateTime();
     });
 
 
@@ -264,6 +271,11 @@ block content
           }
         }
       });
+    });
+
+    $(document).on('change', '#timezone', function (e) {
+      molochSettings.timezone = $("#timezone option:selected").val();
+      updateTime();
     });
 
     $('#createViewForm').submit(function() {
