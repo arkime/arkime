@@ -4683,6 +4683,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
     // If we know the session len and haven't read the session
     if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
       session = JSON.parse(buffer.toString("utf8", 0, sessionlen));
+      session.no = Config.nodeName();
       buffer = buffer.slice(sessionlen);
 
       if (filelen > 0) {
@@ -4692,7 +4693,6 @@ app.post('/receiveSession', function receiveSession(req, res) {
           req.resume();
           session.ps[0] = - saveId.seq;
           session.fs = [saveId.seq];
-          session.no = Config.nodeName();
 
           if (saveId.start === 0) {
             file = fs.createWriteStream(filename, {flags: "w"});
