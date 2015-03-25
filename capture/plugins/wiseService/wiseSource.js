@@ -58,6 +58,17 @@ WISESource.field2Pos = {};
 WISESource.pos2Field = {};
 
 //////////////////////////////////////////////////////////////////////////////////
+//https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain(str, separator, limit) {
+    str = str.split(separator);
+    if(str.length <= limit) {return str;}
+
+    var ret = str.splice(0, limit);
+    ret.push(str.join(separator));
+
+    return ret;
+}
+//////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
   var self = this;
 
@@ -98,7 +109,11 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
     var args = [];
     var parts = lines[l].split(";");
     for (var p = 1; p < parts.length; p++) {
-      var kv = parts[p].split('=');
+      var kv = splitRemain(parts[p], '=', 1);
+      if (kv.length != 2) {
+        console.log("WARNING -", this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
+        continue;
+      }
       if (shortcuts[kv[0]] !== undefined) {
         args.push(shortcuts[kv[0]]);
       } else if (WISESource.field2Pos[kv[0]]) {
