@@ -406,6 +406,9 @@ function createRightClicks() {
     cb(function (err, items) {
       for (var k in items) {
         mrc[k] = items[k];
+        if (mrc[k].fields && !Array.isArray(mrc[k].fields)) {
+          mrc[k].fields = mrc[k].fields.split(",");
+        }
       }
       return nextCb();
     });

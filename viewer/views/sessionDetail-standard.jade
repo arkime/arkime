@@ -19,6 +19,13 @@ div.sessionDetailToolbar
     label.sessionActionsMenu Actions 
       img#actionsButtonArrow(src="down-arrow.png")
 dl.sessionDetailMeta
+  dt Id
+  dd
+    a.moloch-right-click(href='#', molochexpr='id') #{session.id}
+    if (session.ro)
+      | &nbsp;
+      | Root Id: 
+      a.moloch-right-click(href='#', molochexpr='rootId') #{session.ro}
   +arrayList(session, "prot-term", "Protocols", "protocols")
   dt Start
   dd
