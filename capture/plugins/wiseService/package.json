@@ -15,5 +15,6 @@
     , "request": "~2.48.0"
     , "iptrie": "~0.0.6"
     , "native-dns": "~0.7.0"
+    , "elasticsearch": "~2.4.0"
   }
 }
