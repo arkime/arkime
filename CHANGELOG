@@ -19,6 +19,8 @@
   - connections.csv returns session count (issue #356)
   - Expose the id/rootId in SPI Meta (issue #355)
   - WISE - right click loading from files
+  - spiview improvements - collapsible sections, sorting, 
+    right click to set load on default (issue #360)
   
 
 0.11.3 2015/02/26

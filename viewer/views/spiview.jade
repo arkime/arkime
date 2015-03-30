@@ -7,18 +7,15 @@ block content
       input(id="SPIck-#{field}", type="checkbox", class="#{c}-group")
     dd(id="SPIda-#{field}", molochexpr=expr)
 
-  mixin spion(name, field, expr, c)
-    dt.context-menu-spi #{name}
-      input.spion(id="SPIck-#{field}", type="checkbox", class="#{c}-group")
-    dd(id="SPIda-#{field}", molochexpr=expr)
-
   mixin title(name, c)
-    h1 #{name}
-      input(id="SPItck-#{c}-group", type="checkbox")
+    h1.collapsible(id="spiview-#{name}") #{name}
+      span
 
   script(src='jquery-jvectormap-1.2.2.min.js')
   script(src='jquery-jvectormap-world-en.js')
   script(src='jquery.autocomplete.js')
+  script(src='jquery.cookie.js')
+  script(src='jquery.collapsible.js')
   script(src='jQuery-contextMenu/src/jquery.ui.position.js')
   script(src='jQuery-contextMenu/src/jquery.contextMenu.js')
   link(rel='stylesheet', type='text/css', href='jQuery-contextMenu/src/jquery.contextMenu.css')
@@ -42,12 +39,11 @@ block content
     each ckey in cats
       -var cvalue = categories[ckey]
       +title(ckey, ckey)
-      dl
-        each fvalue,fkey in cvalue
+      dl(style="display:none")
+        -cvalueSorted = cvalue.sort(function(a,b) {return a.friendlyName.localeCompare(b.friendlyName);});
+        each fvalue,fkey in cvalueSorted
           - if (fvalue.noFacet || fvalue.regex)
             - continue
-          - else if (fvalue.dbField.match(/^(a1|a2|prot-term)/))
-              +spion(fvalue.friendlyName, fvalue.dbField, fvalue.exp, ckey)
           - else if (fvalue.dbField.match(/\.snow$/))
             +spi(fvalue.friendlyName, fvalue.dbField.replace(".snow", ".raw"), fvalue.exp, ckey)
             +spi(fvalue.friendlyName + " Tokens", fvalue.dbField, fvalue.exp, ckey)
@@ -282,13 +278,25 @@ block content
     });
 
     $(document).ready(function() {
+
+      $('.collapsible').collapsible({
+        cookieName: 'spiview-collapsible'
+      });
+
+      if (!molochSettings.spiviewSPIs) {
+        molochSettings.spiviewSPIs = ["a1", "a2", "prot-term"];
+      }
+
       var initialParams = handleUrlParams();
       if (initialParams.spi) {
         initialParams.spi.split(",").forEach(function (item) {
           var parts = item.split(":");
-          var spick = $("[id='SPIck-" + parts[0] + "']");
           fetchSize[parts[0]] = +parts[1];
-          spick.prop("checked", "checked");
+          $("#SPIck-" + parts[0]).prop("checked", "checked");
+        });
+      } else {
+        molochSettings.spiviewSPIs.forEach(function(key) {
+          $("#SPIck-" + key).prop("checked", "checked");
         });
       }
 
@@ -302,11 +310,37 @@ block content
           selector: '.context-menu-spi',
           build: function($trigger, e) {
             var checkbox = $(e.target).find("input");
+            var field = checkbox.attr("id").substring(6);
             items = {
-              spigraph: {name: "Open SPI Graph " + $(e.target).text(), mtype:0, field: checkbox.attr("id").substring(6)},
-              items: {name: "Export Unique " + $(e.target).text(), mtype:1, counts:0, field: checkbox.attr("id").substring(6)},
-              itemcounts: {name: "Export Unique " + $(e.target).text() + " with Counts", mtype:1, counts:1, field: checkbox.attr("id").substring(6)},
-              pivot: {name: "Pivot on " + $(e.target).text(), mtype:2, counts:0, field: checkbox.attr("id").substring(6)}
+              spigraph: {name: "Open SPI Graph " + $(e.target).text(), mtype:0, field: field},
+              items: {name: "Export Unique " + $(e.target).text(), mtype:1, counts:0, field: field},
+              itemcounts: {name: "Export Unique " + $(e.target).text() + " with Counts", mtype:1, counts:1, field: field},
+              pivot: {name: "Pivot on " + $(e.target).text(), mtype:2, counts:0, field: field},
+              onopen: {name: "Load by default", type: "checkbox", 
+                       selected: molochSettings.spiviewSPIs.indexOf(field) !== -1,
+                       events: {
+                         change: function(e) {
+                           var checked = $(this).is(":checked");
+                           var pos = molochSettings.spiviewSPIs.indexOf(field);
+                           if (checked && pos === -1) {
+                             molochSettings.spiviewSPIs.push(field);
+                           } else if (!checked && pos !== -1) {
+                             molochSettings.spiviewSPIs.splice(pos, 1);
+                           }
+                           molochSettings.token = "#{token}";
+                           $.ajax( {
+                             "dataType": 'json',
+                             "type": "POST",
+                             "url": "#{basePath}changeSettings",
+                             "data": molochSettings,
+                             "success": function(data) {
+                               if (!data.success) {
+                                 alert(data.text);
+                               }
+                             }
+                           });
+                         }
+                      }}
             };
             return {
               callback: function(key, options) {

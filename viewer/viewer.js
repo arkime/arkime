@@ -257,7 +257,7 @@ function loadPlugins() {
     },
     getDb: function() { return Db; },
     getPcap: function() { return Pcap; },
-  }
+  };
   var plugins = Config.get("viewerPlugins", "").split(";");
   var dirs = Config.get("pluginsDir", "/data/moloch/plugins").split(";");
   plugins.forEach(function (plugin) {
@@ -584,9 +584,15 @@ function checkToken(req, res, next) {
   }
 
   req.token = Config.auth2obj(req.body.token);
-  if (Math.abs(Date.now() - req.token.date) > 600000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
+  var diff = Math.abs(Date.now() - req.token.date);
+  if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
     console.trace("bad token", req.token);
     return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+  }
+  // Shorter token timeout if editing someone elses info
+  if (req.token.suserId && req.token.userId !== req.user.userId && diff > 600000) {
+    console.trace("admin bad token", req.token);
+    return res.send(JSON.stringify({success: false, text: "Admin Timeout - Please try reloading page and repeating the action"}));
   }
 
   return next();
@@ -630,7 +636,8 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
     emailFields: Config.headers("headers-email"),
-    categories: Config.getCategories()
+    categories: Config.getCategories(),
+    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: req.user.userId})
   });
 });
 
