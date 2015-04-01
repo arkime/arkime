@@ -245,8 +245,7 @@ block content
       var state = fetchState(spick, true);
       fetchData(clickQueue, "spi=" + state);
       return false;
-    }
-
+    } 
     $('#searchForm').submit(function() {
       loadData();
       return false;
@@ -257,22 +256,9 @@ block content
     });
 
     $(":checkbox").on('change', function(e) {
-      if (e.target.id.match(/SPItck/)) {
-        var item = $(e.target);
-        if (item.prop("checked")) {
-          $("." + e.target.id.substring(7)).each(function() {
-            $(this).prop("checked", "checked").triggerHandler('change');
-          });
-        } else {
-          $("." + e.target.id.substring(7)).each(function() {
-            $(this).prop("checked", false).triggerHandler('change');
-          });
-        }
-        return true;
-      }
       var state = fetchState($(e.target), true);
       if (state !== "") {
-        fetchData(clickQueue, "spi=" + state);
+        setTimeout(fetchData, 100, clickQueue, "spi=" + state);
       }
       return false;
     });
@@ -366,6 +352,24 @@ block content
               },
               items: items
             };
+          }
+      });
+
+      $.contextMenu({
+          selector: '.collapsible',
+          items: {
+            "load": {name: "Load all items in section", callback: function(key, options) {
+              var items = $(options.$trigger).next().find("input").prop("checked", "checked");
+              items.each(function(index, element) {
+                $(element).triggerHandler('change');
+              });
+            }},
+            "unload": {name: "Unload all items in section", callback: function(key, options) {
+              var items = $(options.$trigger).next().find("input").prop("checked", false);
+              items.each(function(index, element) {
+                $(element).triggerHandler('change');
+              });
+            }}
           }
       });
 
