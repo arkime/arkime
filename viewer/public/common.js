@@ -73,6 +73,15 @@ function ipString(ip) {
   return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
 }
 
+function removeArray(arr, value) {
+  var pos = 0;
+  while ((pos = arr.indexOf(value, pos)) !== -1) {
+    arr.splice(pos, 1);
+  }
+  return arr;
+}
+
+
 function parseUrlParams() {
   var urlParams = {};
   var e,
