@@ -71,11 +71,11 @@ sub showHelp($)
     print "  info                  - Information about the database\n";
     print "  users-export <fn>     - Save the users info to <fn>\n";
     print "  users-import <fn>     - Load the users info from <fn>\n";
-    print "  optimize              - Optimize all indices\n";
+    print "  optimize              - Optimize all indices in ES\n";
     print "  mv <old fn> <new fn>  - Move a pcap file in the database (doesn't change disk)\n";
     print "  rm <fn>               - Remove a pcap file in the database (doesn't change disk)\n";
     print "  rm-missing <node>     - Remove from db any file that is missing from disk for given node\n";
-    print "  expire <type> <num>   - Perform daily maintenance and optimize all indices\n";
+    print "  expire <type> <num>   - Perform daily maintenance and optimize all indices in ES\n";
     print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num              - number of indexes to keep\n";
     print "  field disable <exp >  - disable a field from being indexed\n";
@@ -1760,6 +1760,14 @@ my($type, $t) = @_;
         return sprintf("${PREFIX}sessions-%02dm%02d", $t[5] % 100, $t[4]+1);
     }
 }
+
+################################################################################
+sub dbESVersion {
+    my $esversion = esGet("/");
+    my @parts = split(/\./, $esversion->{version}->{number});
+    $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
+    return $esversion;
+}
 ################################################################################
 sub dbVersion {
 my ($loud) = @_;
@@ -1795,11 +1803,11 @@ sub dbCheckHealth {
 }
 ################################################################################
 sub dbCheck {
-    my $esversion = esGet("/");
+    my $esversion = dbESVersion();
     my @parts = split(/\./, $esversion->{version}->{number});
-    my $version = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
+    $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($version < 10200) {
+    if ($main::esVersion < 10200) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
               "* 1.2.x is supported\n",
               "* 1.3.x is recommended\n",
@@ -1823,16 +1831,19 @@ sub dbCheck {
             $errstr .= sprintf ("    REMOVE 'index.cache.field.type'\n");
         }
 
-        if (!(exists $node->{settings}->{"index.fielddata.cache"})) {
-            $errstr .= sprintf ("       ADD 'index.fielddata.cache: node'\n");
-        } elsif ($node->{settings}->{"index.fielddata.cache"} ne  "node") {
-            $errstr .= sprintf ("    CHANGE 'index.fielddata.cache' to 'node'\n");
+        if ($main::esVersion < 10400) {
+            if (!(exists $node->{settings}->{"index.fielddata.cache"})) {
+                $errstr .= sprintf ("       ADD 'index.fielddata.cache: node'\n");
+            } elsif ($node->{settings}->{"index.fielddata.cache"} ne  "node") {
+                $errstr .= sprintf ("    CHANGE 'index.fielddata.cache' to 'node'\n");
+            }
+
+            if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
+                $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
+            }
         }
 
-        if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
-            $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
-        }
-        if ($version < 10200 && !(exists $node->{settings}->{"script.disable_dynamic"})) {
+        if ($main::esVersion < 10200 && !(exists $node->{settings}->{"script.disable_dynamic"})) {
             $warnstr .= sprintf ("       ADD 'script.disable_dynamic: true'\n");
             $warnstr .= sprintf ("         - Closes a potential security issue\n");
         }
@@ -1878,6 +1889,9 @@ sub optimizeOther {
     foreach my $i ("${PREFIX}dstats_v1", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=1", 1);
+        if ($main::esVersion >= 10400) {
+            esGet("/$i/_upgrade", 1);
+        }
     }
     print "\n";
     print "\n" if ($verbose > 0);
@@ -1955,6 +1969,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
         }
     }
 
+    dbESVersion();
     $main::userAgent->timeout(600);
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
@@ -1973,18 +1988,22 @@ if ($ARGV[1] =~ /^users-?import$/) {
 } elsif ($ARGV[1] eq "optimize") {
     my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
+    dbESVersion();
     $main::userAgent->timeout(600);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=4", 1);
+        if ($main::esVersion >= 10400) {
+            esGet("/$i/_upgrade", 1);
+        }
     }
     print "\n";
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
-    my $esversion = esGet("/");
+    my $esversion = dbESVersion();
     my $nodes = esGet("/_nodes");
     my $status = esGet("/_status", 1);
     my $sessions = 0;
