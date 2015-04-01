@@ -233,13 +233,14 @@ cat ${INSTALL_DIR}/single-host/bin/run_viewer.sh | sed -e "s,_TDIR_,${TDIR},g" >
 cat ${INSTALL_DIR}/single-host/bin/run_wise.sh | sed -e "s,_TDIR_,${TDIR},g" > ${TDIR}/bin/run_wise.sh
 
 chmod 755 ${TDIR}/bin/run*.sh
-
+find ${TDIR} -type d -exec chmod og+rx {} \; 
+find ${TDIR} -type f -exec chmod og+r {} \; 
 
 cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,127.0.0.1:9200,g" > ${TDIR}/db/daily.sh
+chmod 755 ${TDIR}/db/daily.sh
 
-
-chown daemon:daemon ${TDIR}/viewer/public
 chown daemon:daemon ${TDIR}/raw
+
 
 echo "MOLOCH: Running config script"
 
