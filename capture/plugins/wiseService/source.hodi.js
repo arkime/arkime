@@ -47,15 +47,24 @@ HODISource.prototype.init = function() {
                       maxAge: 1000 * 60 * +this.api.getConfig("hodi", "cacheAgeMin", "5")});
 
   this.client = new elasticsearch.Client({
-                      host: this.esHost
+                      host: this.esHost,
+                      keepAlive: true,
+                      minSockets: 5,
+                      maxSockets: 51
                     });
 
   ["hodi-domain", "hodi-ip", "hodi-md5", "hodi-email"].forEach(function(index) {
     self.client.indices.exists({index: index}, function (err, exists) {
       if (exists) {
+        self.client.indices.putSettings({index: index, body: {
+          "index.refresh_interval": "60s"
+        }});
         return;
       }
       self.client.indices.create({index: index, body: {
+        settings: {
+          "index.refresh_interval": "60s"
+        },
         mappings: {
           hodi: {
             _all : {enabled: false},
@@ -79,11 +88,14 @@ HODISource.prototype.sendBulk = function () {
   if (self.bulk.length === 0) {
     return;
   }
+  console.log("HODI", self.bulk.length);
   self.client.bulk({body: self.bulk});
   self.bulk = [];
 }
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.process = function (index, id, cb) {
+  cb(null, undefined);
+
   var self = this;
 
   var info = this[index].get(id);
@@ -96,7 +108,9 @@ HODISource.prototype.process = function (index, id, cb) {
   var date = new Date().toISOString();
   self.bulk.push({update: {_index: "hodi-" + index, _type: "hodi", _id: id}});
   self.bulk.push({script_file: "hodi", params: {lastSeen: date}, upsert: {count: 1, firstSeen: date, lastSeen: date}});
-  cb(null, undefined);
+  if (self.bulk.length >= 1000) {
+    self.sendBulk();
+  }
 }
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.getDomain = function(domain, cb) {
