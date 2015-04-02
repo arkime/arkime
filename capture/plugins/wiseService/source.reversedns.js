@@ -17,17 +17,26 @@
  */
 'use strict';
 
-var dns      = require('dns')
+var dns            = require('dns')
   , iptrie         = require('iptrie')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , LRU            = require('lru-cache')
   ;
 //////////////////////////////////////////////////////////////////////////////////
+function removeArray(arr, value) {
+  var pos = 0;
+  while ((pos = arr.indexOf(value, pos)) !== -1) {
+    arr.splice(pos, 1);
+  }
+  return arr;
+}
+//////////////////////////////////////////////////////////////////////////////////
 function ReverseDNSSource (api, section) {
   ReverseDNSSource.super_.call(this, api, section);
-  this.field     = api.getConfig("reversedns", "field");
-  this.ips       = api.getConfig("reversedns", "ips");
+  this.field        = api.getConfig("reversedns", "field");
+  this.ips          = api.getConfig("reversedns", "ips");
+  this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";"), "");
 }
 util.inherits(ReverseDNSSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -79,8 +88,18 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
     }
     var args = [];
     for (var i = 0; i < domains.length; i++) {
-      var parts = domains[i].split(".");
-      args.push(self.theField, parts[0].toLowerCase());
+      var domain = domains[i];
+      if (self.stripDomains.length === 0) {
+        var parts = domain.split(".");
+        args.push(self.theField, parts[0].toLowerCase());
+      } else {
+        for (var j = 0; j < self.stripDomains.length; j++) {
+          var stripDomain = self.stripDomains[j];
+          if (domain.indexOf(stripDomain, domain.length - stripDomain.length) !== -1) {
+            args.push(self.theField, domain.slice(0, domain.length - stripDomain.length));
+          }
+        }
+      }
     }
     info = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
     self.cache.set(ip, info);
