@@ -293,7 +293,8 @@ $(document).on("click", ".showMoreItems", function (e) {
 
 function db2Field(dbField) {
   for (var k in molochFields) {
-    if (dbField === molochFields[k].dbField)
+    if (dbField === molochFields[k].dbField ||
+        dbField === molochFields[k].rawField)
       return molochFields[k];
   }
   return undefined;
