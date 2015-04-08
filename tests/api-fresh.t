@@ -1,5 +1,5 @@
 # Tests on a fresh install
-use Test::More tests => 21;
+use Test::More tests => 39;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -38,24 +38,42 @@ my $json;
     is ($json->{iTotalRecords}, 0, "Correct sessions.json iTotalRecords");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct sessions.json health number_of_data_nodes");
     is ($json->{graph}->{interval}, 60, "Correct sessions.json graph interval");
+    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct sessions.json graph lpHisto");
+    is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct sessions.json graph paHisto");
+    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct sessions.json graph lpHisto");
+    is (scalar keys %{$json->{map}}, 0, "Correct sessions.json map");
 
     $json = viewerGet2("/spigraph.json");
     is ($json->{iTotalRecords}, 0, "Correct spigraph.json iTotalRecords");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct spigraph.json health number_of_data_nodes");
     is ($json->{graph}->{interval}, 60, "Correct spigraph.json graph interval");
+    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spigraph.json graph lpHisto");
+    is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct spigraph.json graph paHisto");
+    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spigraph.json graph lpHisto");
+    is (scalar keys %{$json->{map}}, 0, "Correct spigraph.json map");
 
     $json = viewerGet2("/spiview.json");
     is (scalar keys %{$json->{spi}}, 0, "Empty spiview.json spi");
     is ($json->{iTotalRecords}, 0, "Correct spiview.json iTotalRecords");
+    is (!exists $json->{graph}, 1, "Shouldn't have spiview.json graph");
+    is (!exists $json->{map}, 1, "Shouldn't have spiview.json map");
+    is (!exists $json->{health}, 1, "Shouldn't have spiview.json health");
 
-    $json = viewerGet2("/spiview.json?spi=ta");
-    is (scalar keys %{$json->{spi}}, 0, "Empty spiview.json spi");
+    $json = viewerGet2("/spiview.json?spi=ta&facets=1");
+    is (scalar keys %{$json->{spi}}, 1, "one spiview.json spi");
+    is (scalar keys %{$json->{spi}->{ta}}, 5, "Five spiview.json ta");
     is ($json->{iTotalRecords}, 0, "Correct spiview.json iTotalRecords");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct spiview.json health number_of_data_nodes");
+    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spiview.json graph lpHisto");
+    is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct spiview.json graph paHisto");
+    is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spiview.json graph lpHisto");
+    is (scalar keys %{$json->{map}}, 0, "Correct spiview.json map");
 
     $json = viewerGet2("/connections.json");
     is ($json->{iTotalDisplayRecords}, 0, "Correct connections.json iTotalDisplayRecords");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct connections.json health number_of_data_nodes");
+    is (!exists $json->{graph}, 1, "Shouldn't have connections.json graph");
+    is (!exists $json->{map}, 1, "Shouldn't have connections.json map");
 
     $json = viewerGet2("/uniqueValue.json?type=tags");
     is (scalar @{$json}, 0, "Empty uniqueValue");
