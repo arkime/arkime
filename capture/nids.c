@@ -40,10 +40,6 @@
 #include "moloch.h"
 #include <gio/gio.h>
 
-#ifndef O_NOATIME
-#define O_NOATIME 0
-#endif
-
 /******************************************************************************/
 extern MolochConfig_t        config;
 extern GMainLoop            *mainLoop;
@@ -238,6 +234,9 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
         sessionTimeout = config.tcpTimeout;
 
         tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
+
+        //LOG("ip (%d) %x %d", len, tcphdr->th_flags, tcphdr->th_flags & TH_RST);
+        //fflush(stdout);
 
         moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->th_sport,
                           packet->ip_dst.s_addr, tcphdr->th_dport);
@@ -977,12 +976,11 @@ uint32_t moloch_nids_monitoring_sessions()
 /******************************************************************************/
 void moloch_nids_process_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len, int which)
 {
-    moloch_parsers_classify_udp(session, data, len, which);
-
     if (pluginsCbs & MOLOCH_PLUGIN_UDP)
         moloch_plugins_cb_udp(session, udphdr, data, len);
 
     if (session->firstBytesLen[which] == 0) {
+        moloch_parsers_classify_udp(session, data, len, which);
         session->firstBytesLen[which] = MIN(8, len);
         memcpy(session->firstBytes[which], data, session->firstBytesLen[which]);
     }
