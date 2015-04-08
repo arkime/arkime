@@ -589,6 +589,7 @@ function checkToken(req, res, next) {
     console.trace("bad token", req.token);
     return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
   }
+
   // Shorter token timeout if editing someone elses info
   if (req.token.suserId && req.token.userId !== req.user.userId && diff > 600000) {
     console.trace("admin bad token", req.token);
@@ -1128,11 +1129,10 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.facets = {
-                     dbHisto: {histogram : {key_field: "lp", value_field: "db", interval: interval, size:1440}},
-                     paHisto: {histogram : {key_field: "lp", value_field: "pa", interval: interval, size:1440}},
-                     map: {terms : {fields: ["g1", "g2"], size:1000}}
-                   };
+    query.aggregations = {g1: {terms: {field: "g1", size:1000}}, 
+                          g2: {terms: {field: "g2", size:1000}},
+                     dbHisto: {histogram : {field: "lp", interval: interval}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
+                 };
   }
 
   addSortToQuery(query, req.query, "fp");
@@ -1202,7 +1202,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     haveIds[item._id] = true;
   });
 
-  delete query.facets;
+  delete query.aggregations;
   if (req.query.segments === "all") {
     indices = "sessions-*";
     query.query.filtered.query = {match_all: {}};
@@ -1647,47 +1647,50 @@ app.post('/users.json', function(req, res) {
   });
 });
 
-function mapMerge(facets) {
-  var map = {};
+function mapMerge(aggregations) {
+  var map = {src: {}, dst: {}};
+  if (!aggregations || !aggregations.g1) {
+    return {};
+  }
 
-  facets.map.terms.forEach(function (item) {
-    if (item.count < 0) {
-      item.count = 0x7fffffff;
-    }
-    map[item.term] = item.count;
+  aggregations.g1.buckets.forEach(function (item) {
+    map.src[item.key] = item.doc_count;
+  });
+
+  aggregations.g2.buckets.forEach(function (item) {
+    map.dst[item.key] = item.doc_count;
   });
 
   return map;
 }
 
-function histoMerge(req, query, facets, graph) {
-  graph.lpHisto = [];
-  graph.dbHisto = [];
-  graph.paHisto = [];
-  graph.xmin = req.query.startTime  * 1000|| null;
-  graph.xmax = req.query.stopTime * 1000 || null;
-  graph.interval = query.facets?query.facets.dbHisto.histogram.interval || 60 : 60;
+function graphMerge(req, query, aggregations) {
+  var graph = {
+    lpHisto: [],
+    dbHisto: [],
+    paHisto: [],
+    xmin: req.query.startTime * 1000|| null,
+    xmax: req.query.stopTime * 1000 || null,
+    interval: query.aggregations?query.aggregations.dbHisto.histogram.interval || 60 : 60
+  };
 
-  facets.paHisto.entries.forEach(function (item) {
-    graph.lpHisto.push([item.key*1000, item.count]);
-    graph.paHisto.push([item.key*1000, item.total]);
+  if (!aggregations || !aggregations.dbHisto) {
+    return graph;
+  }
+
+  aggregations.dbHisto.buckets.forEach(function (item) {
+    var key = item.key*1000;
+    graph.lpHisto.push([key, item.doc_count]);
+    graph.paHisto.push([key, item.pa.value]);
+    graph.dbHisto.push([key, item.db.value]);
   });
-
-  facets.dbHisto.entries.forEach(function (item) {
-    graph.dbHisto.push([item.key*1000, item.total]);
-  });
-
+  return graph;
 }
 
 app.get('/sessions.json', function(req, res) {
   var i;
 
-  var graph = {
-        interval: 60,
-        lpHisto: [],
-        dbHisto: [],
-        paHisto: []
-      };
+  var graph = {};
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
@@ -1703,8 +1706,8 @@ app.get('/sessions.json', function(req, res) {
     }
     query._source = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
 
-    if (query.facets && query.facets.dbHisto) {
-      graph.interval = query.facets.dbHisto.histogram.interval;
+    if (query.aggregations && query.aggregations.dbHisto) {
+      graph.interval = query.aggregations.dbHisto.histogram.interval;
     }
 
     console.log("sessions.json query", JSON.stringify(query));
@@ -1712,19 +1715,17 @@ app.get('/sessions.json', function(req, res) {
     async.parallel({
       sessions: function (sessionsCb) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
-          //console.log("sessions query = ", util.inspect(result, false, 50));
+          if (Config.debug) {
+            console.log("sessions.json result", util.inspect(result, false, 50));
+          }
           if (err || result.error) {
             console.log("sessions.json error", err, (result?result.error:null));
             sessionsCb(null, {total: 0, results: []});
             return;
           }
 
-          if (!result.facets) {
-            result.facets = {map: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}};
-          }
-
-          histoMerge(req, query, result.facets, graph);
-          map = mapMerge(result.facets);
+          graph = graphMerge(req, query, result.aggregations);
+          map = mapMerge(result.aggregations);
 
           var results = {total: result.hits.total, results: []};
           var hits = result.hits.hits;
@@ -1779,7 +1780,7 @@ app.get('/spigraph.json', function(req, res) {
     var size = +req.query.size || 20;
 
     var field = req.query.field || "no";
-    query.facets.field = {terms: {field: field, size: size}};
+    query.aggregations.field = {terms: {field: field, size: size}};
 
     /* Need the setImmediate so we don't blow max stack frames */
     var eachCb;
@@ -1820,14 +1821,16 @@ app.get('/spigraph.json', function(req, res) {
         return res.send(results);
       }
       results.iTotalDisplayRecords = result.hits.total;
-      if (!result.facets) {
-        result.facets = {map: {terms: []}, dbHisto: {entries: []}, paHisto: {entries: []}, field: {terms: []}};
-      }
-      histoMerge(req, query, result.facets, results.graph);
-      results.map = mapMerge(result.facets);
 
-      var facets = result.facets.field.terms;
-      var interval = query.facets.dbHisto.histogram.interval;
+      results.graph = graphMerge(req, query, result.aggregations);
+      results.map = mapMerge(result.aggregations);
+
+      if (!result.aggregations) {
+        result.aggregations = {field: {buckets: []}};
+      }
+
+      var facets = result.aggregations.field.buckets;
+      var interval = query.aggregations.dbHisto.histogram.interval;
       var filter;
 
       if (query.query.filtered.filter === undefined) {
@@ -1838,11 +1841,11 @@ app.get('/spigraph.json', function(req, res) {
         filter = query.query.filtered.filter.bool.must[0];
       }
 
-      delete query.facets.field;
+      delete query.aggregations.field;
 
       var queries = [];
       facets.forEach(function(item) {
-        filter.term[field] = item.term;
+        filter.term[field] = item.key;
         queries.push(JSON.stringify(query));
       });
 
@@ -1851,11 +1854,10 @@ app.get('/spigraph.json', function(req, res) {
           return res.send(results);
         }
 
-
         result.responses.forEach(function(item, i) {
-          var r = {name: facets[i].term, count: facets[i].count, graph: {lpHisto: [], dbHisto: [], paHisto: []}};
+          var r = {name: facets[i].key, count: facets[i].doc_count};
 
-          histoMerge(req, query, result.responses[i].facets, r.graph);
+          r.graph = graphMerge(req, query, result.responses[i].aggregations);
           if (r.graph.xmin === null) {
             r.graph.xmin = results.graph.xmin || results.graph.paHisto[0][0];
           }
@@ -1864,7 +1866,7 @@ app.get('/spigraph.json', function(req, res) {
             r.graph.xmax = results.graph.xmax || results.graph.paHisto[results.graph.paHisto.length-1][0];
           }
 
-          r.map = mapMerge(result.responses[i].facets);
+          r.map = mapMerge(result.responses[i].aggregations);
           eachCb(r, function () {
             results.items.push(r);
             if (results.items.length === result.responses.length) {
@@ -1926,6 +1928,9 @@ app.get('/spiview.json', function(req, res) {
     async.parallel({
       spi: function (sessionsCb) {
         Db.searchPrimary(indices, 'session', query, function(err, result) {
+          if (Config.debug) {
+            console.log("spiview.json result", util.inspect(result, false, 50));
+          }
           if (err || result.error) {
             bsqErr = errorString(err, result);
             console.log("spiview.json ERROR", err, (result?result.error:null));
@@ -1937,6 +1942,13 @@ app.get('/spiview.json', function(req, res) {
 
           if (!result.facets) {
             result.facets = {};
+            for (var spi in query.facets) {
+              result.facets[spi] = {_type: "terms", missing: 0, total: 0, other: 0, terms: []};
+            }
+          }
+
+          if (!result.aggregations) {
+            result.aggregations = {};
           }
 
           if (result.facets.pr) {
@@ -1945,20 +1957,14 @@ app.get('/spiview.json', function(req, res) {
             });
           }
 
-          if (result.facets.dbHisto) {
-            graph = {
-              interval: query.facets.dbHisto.histogram.interval,
-              lpHisto: [],
-              dbHisto: [],
-              paHisto: []
-            };
-
-            histoMerge(req, query, result.facets, graph);
-            map = mapMerge(result.facets);
-            delete result.facets.dbHisto;
-            delete result.facets.paHisto;
-            delete result.facets.map;
+          if (req.query.facets) {
+            graph = graphMerge(req, query, result.aggregations);
+            map = mapMerge(result.aggregations);
           }
+          delete result.aggregations.dbHisto;
+          delete result.aggregations.paHisto;
+          delete result.aggregations.g1;
+          delete result.aggregations.g2;
 
           sessionsCb(null, result.facets);
         });
@@ -2221,6 +2227,7 @@ app.get('/connections.csv', function(req, res) {
     if (err) {
       return res.send(err);
     }
+
     res.write("Source, Destination, Sessions, Packets, Bytes, Databytes\r\n");
     for (var i = 0, ilen = links.length; i < ilen; i++) {
       res.write("\"" + nodes[links[i].source].id.replace('"', '""') + "\"" + seperator +

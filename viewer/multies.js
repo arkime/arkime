@@ -118,7 +118,8 @@ function simpleGather(req, res, bodies, doneCb) {
       });
       pres.on('end', function () {
         if (result.length) {
-          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|tags|dstats|sequence|fields|files|users)", "g"), "$1\"MULTIPREFIX_$2");
+          result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|tags|dstats|sequence|files|users)", "g"), "$1\"MULTIPREFIX_$2");
+          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields)\"", "g"), "$1\"MULTIPREFIX_$2\"");
           result = JSON.parse(result);
         } else {
           result = {};
@@ -228,7 +229,6 @@ app.get("/:index/:type/_search", function(req, res) {
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
     }
-    console.log("GET", req.url, obj);
     res.send(obj);
   });
 });
@@ -263,6 +263,9 @@ app.get(/./, function(req, res) {
 });
 
 
+// Facets are a pain, we convert from array to map to back to array
+//////////////////////////////////////////////////////////////////////////////////
+
 function facet2Obj(field, facet) {
   var obj = {};
   for (var i = 0; i < facet.length; i++) {
@@ -276,7 +279,7 @@ function facet2Arr(facet, type) {
   for (var attrname in facet) {
     arr.push(facet[attrname]);
   }
-  
+
   if (type === "histogram") {
     arr = arr.sort(function(a,b) {return a.key - b.key;});
   } else {
@@ -309,6 +312,10 @@ function facetAdd(obj1, obj2) {
   for (var facetname in obj2) {
     var facetarray = obj1[facetname]._type === "histogram"?"entries":"terms";
 
+    obj1[facetname].total += obj2[facetname].total;
+    obj1[facetname].missing += obj2[facetname].missing;
+    obj1[facetname].other += obj2[facetname].other;
+
     for (var entry in obj2[facetname][facetarray]) {
       if (!obj1[facetname][facetarray][entry]) {
         obj1[facetname][facetarray][entry] = obj2[facetname][facetarray][entry];
@@ -324,6 +331,64 @@ function facetAdd(obj1, obj2) {
     }
   }
 }
+
+// Aggregations are a pain, we convert from array to map to back to array
+//////////////////////////////////////////////////////////////////////////////////
+
+function agg2Obj(field, agg) {
+  var obj = {};
+  for (var i = 0; i < agg.length; i++) {
+    obj[agg[i][field]] = agg[i];
+  }
+  return obj;
+}
+
+function agg2Arr(agg, type) {
+  var arr = [];
+  for (var attrname in agg) {
+    arr.push(agg[attrname]);
+  }
+
+  if (type === "histogram") {
+    arr = arr.sort(function(a,b) {return a.key - b.key;});
+  } else {
+    arr = arr.sort(function(a,b) {return b.doc_count - a.doc_count;});
+  }
+  return arr;
+}
+
+function aggConvert2Obj(aggs) {
+  for (var aggname in aggs) {
+    aggs[aggname].buckets = agg2Obj("key", aggs[aggname].buckets);
+  }
+}
+
+function aggConvert2Arr(aggs) {
+  for (var aggname in aggs) {
+    aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
+  }
+}
+
+function aggAdd(obj1, obj2) {
+  for (var aggname in obj2) {
+    for (var entry in obj2[aggname].buckets) {
+      if (!obj1[aggname].buckets[entry]) {
+        obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
+      } else {
+        var o1 = obj1[aggname].buckets[entry];
+        var o2 = obj2[aggname].buckets[entry];
+
+        o1.doc_count += o2.doc_count;
+        if (o1.db) {
+          o1.db.value += o2.db.value;
+          o1.pa.value += o2.pa.value;
+        }
+      }
+    }
+  }
+}
+
+// Tags Fun
 
 var tags = {};
 
@@ -373,7 +438,7 @@ function fixQuery(node, body, doneCb) {
   var err = null;
 
   function process(parent, obj, item) {
-    if ((item === "ta" || item === "hh" || item === "hh1" || item === "hh2") && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
+    if (item.match(/^(ta|hh1|hh2)$/) && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
       if (obj[item].indexOf("*") !== -1) {
         delete parent.wildcard;
         outstanding++;
@@ -402,7 +467,7 @@ function fixQuery(node, body, doneCb) {
         outstanding++;
 
         async.map(obj[item], function(str, cb) {
-          var tag = (item !== "ta"?"http:header:" + str.toLowerCase():str);
+          var tag = (item !== "ta" && str.indexOf("http:header:") !== 0?"http:header:" + str.toLowerCase():str);
           tagNameToId(node, tag, function (id) {
             if (id === null) {
               cb(null, -1);
@@ -420,7 +485,7 @@ function fixQuery(node, body, doneCb) {
         });
       } else {
         outstanding++;
-        var tag = (item !== "ta"?"http:header:" + obj[item].toLowerCase():obj[item]);
+        var tag = (item !== "ta" && obj[item].indexOf("http:header:") !== 0?"http:header:" + obj[item].toLowerCase():obj[item]);
 
         tagNameToId(node, tag, function (id) {
           outstanding--;
@@ -479,13 +544,9 @@ function fixQuery(node, body, doneCb) {
   finished = 1;
 }
 
-function fixResult(node, result, doneCb) {
-  if (!result.facets) {
-    return doneCb(null);
-  }
-
-  function tags(container, field, doneCb) {
-    if (!container[field]) {
+function fixResult(node, result, doField, doneCb) {
+  function facetTags(container, field, doneCb) {
+    if (!container || !container[field]) {
       return doneCb(null);
     }
 
@@ -501,33 +562,69 @@ function fixResult(node, result, doneCb) {
     });
   }
 
+  function aggTags(container, field, doneCb) {
+    if (!container || !container[field]) {
+      return doneCb(null);
+    }
+
+    async.map(container[field].buckets, function (item, cb) {
+      tagIdToName(node, item.key, function (name) {
+        item.key = name;
+        cb(null, item);
+      });
+    },
+    function(err, tagsResults) {
+      container[field].buckets = tagsResults;
+      doneCb(err);
+    });
+  }
+
   async.parallel([
     function(parallelCb) {
-      tags(result.facets, "ta", parallelCb);
+      facetTags(result.facets, "ta", parallelCb);
     },
     function(parallelCb) {
-      tags(result.facets, "hh", parallelCb);
+      facetTags(result.facets, "hh1", parallelCb);
     },
     function(parallelCb) {
-      tags(result.facets, "hh1", parallelCb);
+      facetTags(result.facets, "hh2", parallelCb);
     },
     function(parallelCb) {
-      tags(result.facets, "hh2", parallelCb);
+      aggTags(result.aggregations, "ta", parallelCb);
+    },
+    function(parallelCb) {
+      aggTags(result.aggregations, "hh1", parallelCb);
+    },
+    function(parallelCb) {
+      aggTags(result.aggregations, "hh2", parallelCb);
+    },
+    function(parallelCb) {
+      if (!doField) {
+        return parallelCb();
+      }
+      aggTags(result.aggregations, "field", parallelCb);
     }], function () {
       doneCb();
     });
 }
-
 function combineResults(obj, result) {
   if (!result.hits) {
     console.log("NO RESULTS", result);
     return;
   }
+
   obj.hits.total += result.hits.total;
+  obj.hits.missing += result.hits.missing;
+  obj.hits.other += result.hits.other;
   obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   if (obj.facets) {
     facetConvert2Obj(result.facets);
     facetAdd(obj.facets, result.facets);
+  }
+
+  if (obj.aggregations) {
+    aggConvert2Obj(result.aggregations);
+    aggAdd(obj.aggregations, result.aggregations);
   }
 }
 
@@ -565,9 +662,19 @@ function newResult(search) {
     result.facets = {};
     for (var facet in search.facets) {
       if (search.facets[facet].histogram) {
-        result.facets[facet] = {entries: [], _type: "histogram"};
+        result.facets[facet] = {entries: [], _type: "histogram", total: 0, other: 0, missing: 0};
       } else {
-        result.facets[facet] = {terms: [], _type: "terms"};
+        result.facets[facet] = {terms: [], _type: "terms", total: 0, other: 0, missing: 0};
+      }
+    }
+  }
+  if (search.aggregations) {
+    result.aggregations = {};
+    for (var agg in search.aggregations) {
+      if (search.aggregations[agg].histogram) {
+        result.aggregations[agg] = {buckets: {}, _type: "histogram"};
+      } else {
+        result.aggregations[agg] = {buckets: {}, _type: "terms"};
       }
     }
   }
@@ -580,7 +687,7 @@ app.post("/MULTIPREFIX_tags/tag/_search", function(req, res) {
 
   simpleGather(req, res, null, function(err, results) {
     async.each(results, function (result, asyncCb) {
-      fixResult(result._node, result, asyncCb);
+      fixResult(result._node, result, false, asyncCb);
     }, function (err) {
       var tags = {};
       for (var i = 0; i < results.length; i++) {
@@ -635,6 +742,11 @@ app.post("/:index/:type/_search", function(req, res) {
   var search = JSON.parse(req.body);
   //console.log("DEBUG - INCOMING SEARCH", util.inspect(search, false, 50));
 
+  var doField = search.aggregations &&
+                search.aggregations.field &&
+                search.aggregations.field.terms &&
+                search.aggregations.field.terms.field.match(/^(ta|hh1|hh2)$/);
+
   async.each(nodes, function (node, asyncCb) {
     fixQuery(node, req.body, function(err, body) {
       //console.log("DEBUG - OUTGOING SEARCH", node, util.inspect(body, false, 50));
@@ -645,7 +757,7 @@ app.post("/:index/:type/_search", function(req, res) {
     simpleGather(req, res, bodies, function(err, results) {
       async.each(results, function (result, asyncCb) {
         //console.log("DEBUG - RESULT", util.inspect(result, false, 50));
-        fixResult(result._node, result, asyncCb);
+        fixResult(result._node, result, doField, asyncCb);
       }, function (err) {
         var obj = newResult(search);
 
@@ -655,6 +767,10 @@ app.post("/:index/:type/_search", function(req, res) {
 
         if (obj.facets) {
           facetConvert2Arr(obj.facets);
+        }
+
+        if (obj.aggregations) {
+          aggConvert2Arr(obj.aggregations);
         }
 
         sortResults(search, obj);
@@ -691,7 +807,7 @@ function msearch(req, res) {
     simpleGather(req, res, bodies, function(err, results) {
       async.eachSeries(results, function(result, resultCb) {
         async.eachSeries(result.responses, function(response, responseCb) {
-          fixResult(result._node, response, responseCb);
+          fixResult(result._node, response, false, responseCb);
         }, function(err) {
           resultCb();
         });
@@ -706,6 +822,10 @@ function msearch(req, res) {
 
           if (obj.responses[h].facets) {
             facetConvert2Arr(obj.responses[h].facets);
+          }
+
+          if (obj.responses[h].aggregations) {
+            aggConvert2Arr(obj.responses[h].aggregations);
           }
 
           sortResults(JSON.parse(lines[h*2+1]), obj.responses[h]);

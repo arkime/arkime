@@ -1,3 +1,17 @@
+0.11.5 2015/04/xx
+  - NOTICE: Only ES 1.[45].x is supported by this version. 
+            Restart viewer AFTER upgrading ES versions
+  - NOTICE: If using multies all viewers must be upgraded at once
+  - capture - http logs connecting time
+  - capture - fix http crash issue
+  - capture - compiles on OSX again
+  - capture - only classify initial udp traffic, performance increase
+  - tests - new spigraph tests
+  - tests - many new multi tests
+  - viewer - switched from ES facets to ES aggregations
+  - viewer - maps support src vs dst now
+  - multi - fixed hasheader/tag support
+
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required
   - NOTICE: Only ES 1.4.x is supported by this version. 

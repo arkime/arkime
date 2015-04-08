@@ -1527,10 +1527,35 @@ function updateMap(data, mapId) {
   }
 
   var map = $(mapId).children('.jvectormap-container').data('mapObject');
+  $(mapId).children('.jvectormap-container').data('data', data);
   map.series.regions[0].clear();
   delete map.series.regions[0].params.min;
   delete map.series.regions[0].params.max;
-  map.series.regions[0].setValues(data);
+
+  var doSrc = $(mapId).find('.jvectormap-src.jvectormap-sel').length === 1;
+  var doDst = $(mapId).find('.jvectormap-dst.jvectormap-sel').length === 1;
+  if (doSrc && doDst) {
+    if (!data.tot) {
+      data.tot = {};
+      for (var k in data.src) {
+        data.tot[k] = data.src[k];
+      }
+
+      for (var k in data.dst) {
+        if (data.tot[k]) {
+          data.tot[k] += data.dst[k];
+        } else {
+          data.tot[k] = data.dst[k];
+        }
+      }
+
+    }
+    map.series.regions[0].setValues(data.tot);
+  } else if (doSrc) {
+    map.series.regions[0].setValues(data.src);
+  } else if (doDst) {
+    map.series.regions[0].setValues(data.dst);
+  }
 }
 
 function setupMap(mapId) {
@@ -1560,6 +1585,18 @@ function setupMap(mapId) {
     var map = $(mapId).children('.jvectormap-container').data('mapObject');
     $(document).data("countries", map.regions);
   }
+
+  function handleClick () {
+    if ($(this).hasClass("jvectormap-sel")) {
+      $(this).removeClass("jvectormap-sel");
+    } else {
+      $(this).addClass("jvectormap-sel");
+    }
+    updateMap($(mapId).children('.jvectormap-container').data('data'), mapId);
+  }
+
+  var src = $("<div/>").addClass("jvectormap-src").addClass("jvectormap-sel").text("S").appendTo($(mapId).find(".jvectormap-zoomin").parent()).click(handleClick);
+  var dst = $("<div/>").addClass("jvectormap-dst").addClass("jvectormap-sel").text("D").appendTo($(mapId).find(".jvectormap-zoomin").parent()).click(handleClick);
 
   $(mapId).children().hoverIntent (
     function() {
