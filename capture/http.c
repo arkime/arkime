@@ -361,10 +361,10 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
     GSocketConnectable       *connectable;
     GSocketAddressEnumerator *enumerator;
     GSocketAddress           *sockaddr;
+    struct timeval            startTime;
+    struct timeval            stopTime;
 
-    if (config.logESRequests)
-        LOG("Connecting %p %s", (void*)conn, name);
-
+    gettimeofday(&startTime, NULL);
 
     connectable = g_network_address_parse(name, defaultport, &error);
 
@@ -427,6 +427,8 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
     }
 
     if (error || !conn->conn) {
+        if (config.logESRequests)
+            LOG("Connecting %p %s %d %d FAIL", (void*)conn, name, defaultport, blocking);
         conn->server->lastFailedConnect = time(0);
         return 1;
     }
@@ -457,6 +459,11 @@ int moloch_http_connect(MolochConn_t *conn, char *name, int defaultport, int blo
         setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, sizeof(sendbuff));
     }
 #endif
+
+    gettimeofday(&stopTime, NULL);
+    if (config.logESRequests)
+        LOG("Connecting %p %s %d %d %ldms", (void*)conn, name, defaultport, blocking, 
+            (stopTime.tv_sec - startTime.tv_sec)*1000 + (stopTime.tv_usec - startTime.tv_usec)/1000);
 
     return 0;
 }
@@ -815,11 +822,10 @@ void moloch_http_free_server(void *serverV)
 
     MolochConn_t *conn = 0;
     while (DLL_POP_HEAD(e_, &server->connQ, conn)) {
-        HASH_REMOVE(h_, connections, conn);
-        MOLOCH_TYPE_FREE(MolochConn_t, conn);
+        moloch_http_free_conn(conn, FALSE);
     }
 
-    MOLOCH_TYPE_FREE(MolochConn_t, server->syncConn);
+    moloch_http_free_conn(server->syncConn, FALSE);
     server->syncConn = 0;
     g_strfreev(server->names);
 
