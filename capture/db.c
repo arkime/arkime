@@ -957,7 +957,11 @@ void moloch_db_update_stats()
         "\"currentTime\": %u, "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
+#if defined(__APPLE__) && defined(__MACH__)
+        "\"memory\": %ld, "
+#else
         "\"memory\": %" PRIu64 ", "
+#endif
         "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"totalPackets\": %" PRIu64 ", "
@@ -1050,7 +1054,11 @@ void moloch_db_update_dstats(int n)
         "\"currentTime\": %" PRIu64 ", "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
+#if defined(__APPLE__) && defined(__MACH__)
+        "\"memory\": %ld, "
+#else
         "\"memory\": %" PRIu64 ", "
+#endif
         "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
