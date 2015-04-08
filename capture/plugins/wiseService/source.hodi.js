@@ -88,10 +88,12 @@ HODISource.prototype.sendBulk = function () {
   if (self.bulk.length === 0) {
     return;
   }
-  console.log("HODI", self.bulk.length);
+  if (self.api.debug > 0) {
+    console.log("HODI", self.bulk.length);
+  }
   self.client.bulk({body: self.bulk});
   self.bulk = [];
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.process = function (index, id, cb) {
   cb(null, undefined);
@@ -111,7 +113,7 @@ HODISource.prototype.process = function (index, id, cb) {
   if (self.bulk.length >= 1000) {
     self.sendBulk();
   }
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.getDomain = function(domain, cb) {
   this.process("domain", domain, cb);
