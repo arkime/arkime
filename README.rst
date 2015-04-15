@@ -81,9 +81,9 @@ Recommend version **1.4.4**, requires at least 1.2.x
 2. If this is a dedicated machine, disable swap by commenting out the ``swap``
    lines in ``/etc/fstab`` and either reboot or use the ``swapoff`` command.
 
-3. `Download elasticsearch <http://www.elasticsearch.org/download/>`_.
+3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   1.4.4 <http://www.elasticsearch.org/downloads/1-4-4/>`_.
+   1.5.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-5-1>`_.
 
 4. Uncompress the archive you downloaded.
 
@@ -160,9 +160,9 @@ Building Capture
      here are the pieces you need:
 
      + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.30 or
-       higher (2.34 is recommended for static builds)::
+       higher (2.42 is recommended for static builds)::
 
-            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.34/glib-2.34.3.tar.xz
+            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.42/glib-2.42.0.tar.xz
             ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux
 
      + `yara <http://yara-project.googlecode.com>`_ version 1.6 or higher::
@@ -172,14 +172,14 @@ Building Capture
 
      + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be
        recent enough::
-            wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.4.8.tar.gz
+            wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.6.0.tar.gz
             libtoolize -f # Only some platforms need this
             ./configure --enable-static
 
      + `libpcap <http://www.tcpdump.org/#latest-release>`_ - version 1.3 or
        higher (most OS versions are older)::
        
-             wget http://www.tcpdump.org/release/libpcap-1.5.1.tar.gz
+             wget http://www.tcpdump.org/release/libpcap-1.7.2.tar.gz
              ./configure --disable-dbus
 
      + `libnids <http://libnids.sourceforge.net/>`_ - version 1.24 or higher::
@@ -202,11 +202,11 @@ Building Viewer
    from the `EPEL <http://fedoraproject.org/wiki/EPEL>`_ repository. Make sure
    ``python2.6`` is in your path before proceeding!
 
-2. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.21 or higher).
+2. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.21 or higher), currently 0.12.x is not supported.
 
    - **Binary install:** Please see the `platform-specific instructions
      <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
-   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.37/node-v0.10.37.tar.gz>`_, build, and install.
+   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.38/node-v0.10.38.tar.gz>`_, build, and install.
 
 3. In the ``viewer`` directory run ``npm update``.
 
@@ -215,10 +215,11 @@ Building Viewer
 Configuration
 -------------
 
-1. Make sure you download the latest freely available GeoIP files. 
+1. Make sure you download the latest freely available GeoIP and RIR files. 
 
    - `GeoLiteCountry <http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz>`_ - Geographic IP data
    - `GeoIPASNum <http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz>`_ - Geographic Autonomous System (AS) number data
+   - `ipv4-address-space <https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv>`_ - RIR assignments   
 
 2. Edit the ``config.ini`` file.
    

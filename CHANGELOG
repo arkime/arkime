@@ -11,6 +11,7 @@
   - viewer - switched from ES facets to ES aggregations
   - viewer - maps support src vs dst now
   - multi - fixed hasheader/tag support
+  - easybutton - ES 1.5.1, node 0.10.38
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required

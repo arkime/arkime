@@ -26,8 +26,8 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=1.4.4
-NODEJS=0.10.37
+ES=1.5.1
+NODEJS=0.10.38
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
