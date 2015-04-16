@@ -1970,16 +1970,14 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
 
     dbESVersion();
-    $main::userAgent->timeout(600);
+    $main::userAgent->timeout(900);
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
         progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
+            esPut("/$i/_settings?index.codec.bloom.load=false", "", 1);
             esGet("/$i/_optimize?max_num_segments=4", 1);
-            esPost("/$i/_close", "");
-            esPut("/$i/_settings?index.codec.bloom.load=false", 1);
-            esPost("/$i/_open", "");
         } else {
             esDelete("/$i", 1);
         }
