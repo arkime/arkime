@@ -305,6 +305,7 @@ void writer_disk_flush(gboolean all)
 void writer_disk_exit()
 {
     moloch_writer_flush(TRUE);
+    outputFileName = 0;
     if (writeMethod & MOLOCH_WRITE_THREAD) {
         while (writer_disk_queue_length_thread() >0) {
             usleep(10000);
@@ -382,6 +383,7 @@ writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
 
     if (outputFileName && outputFilePos > 24 && (tv.tv_sec - outputFileTime.tv_sec) >= config.maxFileTimeM*60) {
         writer_disk_flush(TRUE);
+        outputFileName = 0;
     }
 
     return TRUE;
