@@ -83,7 +83,7 @@ Recommend version **1.4.4**, requires at least 1.2.x
 
 3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   1.5.1 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-5-1>`_.
+   1.5.2 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-5-2>`_.
 
 4. Uncompress the archive you downloaded.
 

@@ -26,7 +26,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=1.5.1
+ES=1.5.2
 NODEJS=0.10.38
 INSTALL_DIR=$PWD
 
@@ -65,7 +65,7 @@ which java
 JAVA_VAL=$?
 
 if [ $JAVA_VAL -ne 0 ]; then
-    echo -n "java command not found, real Java 7 is recommended for large install, however would you like to install openjdk 7 now? [yes] "
+    echo -n "java command not found, real Java 8 is recommended for large install, however would you like to install openjdk 7 now? [yes] "
     read INSTALLJAVA
     if [ -n "$INSTALLJAVA" -a "x$INSTALLJAVA" != "xyes" ]; then 
         echo "Install java and try again"
