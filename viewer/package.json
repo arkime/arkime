@@ -4,7 +4,7 @@
   "description": "",
   "main": "viewer.js",
   "dependencies": {
-    "async": "~0.8.0",
+    "async": "",
     "elasticsearch": "~2.4.0",
     "express": "~3.5.2",
     "fs-ext": "~0.3.2",
@@ -15,6 +15,8 @@
     "passport-http": "~0.2.2",
     "passport": "~0.2.0",
     "stylus": "~0.44.0",
-    "png": "~3.0.3"
+    "png": "~3.0.3",
+    "through2": "~0.6.5",
+    "peek-stream": "~1.1.1"
   }
 }

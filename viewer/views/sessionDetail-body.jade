@@ -11,7 +11,7 @@ div.sessionDetailToolbar
   li
     label.format-gzip
       input(type='checkbox', checked=query.gzip=='true')
-      | Decode GZip
+      | Uncompress
   li
     label.format-image
       input(type='checkbox', checked=query.image=='true')
@@ -20,6 +20,10 @@ div.sessionDetailToolbar
     label.format-ts
       input(type='checkbox', checked=query.ts=='true')
       | Show Timestamps
+  li
+    label.format-other
+      img(src="down-arrow.png") 
+      | Other Decodings
 br
 if (session._err)
   b #{session._err}
@@ -33,7 +37,7 @@ else
 
     each item, i in data
       tr
-        if i % 2 == 0
+        if item.client == 0
           td.sessionsrc
             if (item.ts)
               span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.bytes}")

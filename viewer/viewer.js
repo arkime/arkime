@@ -15,9 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
 
 var MIN_DB_VERSION = 24;
@@ -47,6 +44,7 @@ var Config         = require('./config.js'),
     jade           = require('jade'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
+    decode         = require('./decode.js'),
     KAA            = require('keep-alive-agent');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
@@ -620,11 +618,24 @@ function makeTitle(req, page) {
 }
 
 app.get("/", checkWebEnabled, function(req, res) {
+  var settings = decode.settings();
+  var decodeItems = {};
+  for (var key in settings) {
+    var setting = settings[key];
+    var obj = {name: setting.name || key, items: {}};
+    obj.items[key + ":enabled"] = {name: "Enable", type: "checkbox"};
+    setting.fields.forEach(function(field) {
+      obj.items[key + ":" + field.key] = {name: field.name || field.key, type: field.type};
+    });
+    decodeItems[key] = obj;
+  }
+
   res.render('index', {
     user: req.user,
     title: makeTitle(req, 'Sessions'),
     titleLink: 'sessionsLink',
-    isIndex: true
+    isIndex: true,
+    decodeItems: JSON.stringify(decodeItems)
   });
 });
 
@@ -2727,42 +2738,11 @@ function flattenObject1 (obj) {
 }
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
-  var outgoing = [];
-  for (var r = 0, rlen = incoming.length; r < rlen; r++) {
-    outgoing[r]= {ts: incoming[r].ts, html: "", bytes:0};
-    for (var p = 0, plen = incoming[r].pieces.length; p < plen; p++) {
-      outgoing[r].bytes += incoming[r].pieces[p].raw.length;
-      if (req.query.base === "hex") {
-        outgoing[r].html += '<pre>' + toHex(incoming[r].pieces[p].raw, req.query.line === "true") + '</pre>';
-      } else if (req.query.base === "ascii") {
-        outgoing[r].html += '<pre>' + safeStr(incoming[r].pieces[p].raw.toString("binary")) + '</pre>';
-      } else if (req.query.base === "utf8") {
-        outgoing[r].html += '<pre>' + safeStr(incoming[r].pieces[p].raw.toString("utf8")) + '</pre>';
-      } else {
-        outgoing[r].html += safeStr(incoming[r].pieces[p].raw.toString()).replace(/\r?\n/g, '<br>');
-      }
-
-      if(incoming[r].pieces[p].bodyNum !== undefined) {
-        var url = req.params.nodeName + "/" +
-                  session.id + "/body/" +
-                  incoming[r].pieces[p].bodyType + "/" +
-                  incoming[r].pieces[p].bodyNum + "/" +
-                  incoming[r].pieces[p].bodyName + ".pellet";
-
-        if (incoming[r].pieces[p].bodyType === "image") {
-          outgoing[r].html += "<img src=\"" + url + "\">";
-        } else {
-          outgoing[r].html += "<a class='imagetag' href=\"" + url + "\">" + incoming[r].pieces[p].bodyName + "</a>";
-        }
-      }
-    }
-  }
-
   jade.render(internals.sessionDetail, {
     filename: "sessionDetail",
     user: req.user,
     session: session,
-    data: outgoing,
+    data: incoming,
     query: req.query,
     basedir: "/",
     reqFields: Config.headers("headers-http-request"),
@@ -2777,439 +2757,80 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
   });
 }
 
-
-// Needs to be rewritten, this sucks
-function gzipDecode(req, res, session, incoming) {
-  var kind;
-
-  var outgoing = [];
-
-  if (incoming[0].data.slice(0,4).toString() === "HTTP") {
-    kind = [HTTPParser.RESPONSE, HTTPParser.REQUEST];
-  } else {
-    kind = [HTTPParser.REQUEST, HTTPParser.RESPONSE];
-  }
-  var parsers = [new HTTPParser(kind[0]), new HTTPParser(kind[1])];
-
-  parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
-    //console.log("onBody", this.pos, this.gzip);
-    var pos = this.pos;
-
-    // This isn't a gziped request
-    if (!this.gzip) {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: buf}]};
-      return;
-    }
-
-    // Copy over the headers
-    if (!outgoing[pos]) {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: buf.slice(0, start)}]};
-    }
-
-    if (!this.inflator) {
-      this.inflator = zlib.createGunzip()
-        .on("data", function (b) {
-          var tmp = Buffer.concat([outgoing[pos].pieces[0].raw, new Buffer(b)]);
-          outgoing[pos].pieces[0].raw = tmp;
-        })
-        .on("error", function (e) {
-          outgoing[pos].pieces[0].raw = buf;
-        })
-        .on("end", function () {
-        });
-    }
-
-    this.inflator.write(buf.slice(start,start+len));
-  };
-
-  parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
-    //console.log("onMessageComplete", this.pos, this.gzip);
-    var pos = this.pos;
-
-    if (pos > 0) {
-      parsers[(pos+1)%2].reinitialize(kind[(pos+1)%2]);
-    }
-
-    var nextCb = this.nextCb;
-    this.nextCb = null;
-    if (this.inflator) {
-      this.inflator.end(null, function () {
-        setImmediate(nextCb);
-      });
-      this.inflator = null;
-    } else {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
-      if (nextCb) {
-        setImmediate(nextCb);
-      }
-    }
-  };
-
-  parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
-    this.gzip = false;
-    for (var h = 0, hlen = info.headers.length; h < hlen; h += 2) {
-      // If Content-Type is gzip then stop, otherwise look for encoding
-      if (info.headers[h].match(/Content-Type/i) && info.headers[h+1].match(/gzip/i)) {
-        this.gzip = true;
-        break;
-      }
-
-      // Seperate if since we break after 1 content-encoding no matter what
-      if (info.headers[h].match(/Content-Encoding/i)) {
-        if (info.headers[h+1].match(/gzip/i)) {
-          this.gzip = true;
-        }
-        break;
-      }
-    }
-    //console.log("onHeadersComplete", this.pos, this.gzip);
-  };
-
-  var p = 0;
-  async.forEachSeries(incoming, function(item, nextCb) {
-    var pos = p;
-    p++;
-    parsers[(pos%2)].pos = pos;
-
-    if (!item) {
-    } else if (item.data.length === 0) {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: item.data}]};
-      setImmediate(nextCb);
-    } else {
-      parsers[(pos%2)].nextCb = nextCb;
-      var out = parsers[(pos%2)].execute(item.data, 0, item.data.length);
-      if (typeof out === "object") {
-        outgoing[pos] = {ts: incoming[pos].ts, pieces:[{raw: item.data}]};
-        console.log("ERROR", out);
-      }
-      if (parsers[(pos%2)].nextCb) {
-        setImmediate(parsers[(pos%2)].nextCb);
-        parsers[(pos%2)].nextCb = null;
-      }
-    }
-  }, function (err) {
-    req.query.needgzip = "false";
-    parsers[0].finish();
-    parsers[1].finish();
-    setTimeout(localSessionDetailReturnFull, 100, req, res, session, outgoing);
-  });
-}
-
-function imageDecodeHTTP(req, res, session, incoming, findBody) {
-  var kind;
-
-  if (incoming[0].data.slice(0,4).toString() === "HTTP") {
-    kind = [HTTPParser.RESPONSE, HTTPParser.REQUEST];
-  } else {
-    kind = [HTTPParser.REQUEST, HTTPParser.RESPONSE];
-  }
-  var parsers = [new HTTPParser(kind[0]), new HTTPParser(kind[1])];
-
-  var bodyNum = 0;
-  var bodyType = "file";
-  var foundBody = false;
-
-  parsers[0].onBody = parsers[1].onBody = function(buf, start, len) {
-    //console.log("onBody", this.pos, bodyNum, start, len, outgoing[this.pos]);
-    if (findBody === bodyNum) {
-      foundBody = true;
-      return res.write(buf.slice(start, start+len));
-    }
-
-    var pos = this.pos;
-
-    // Copy over the headers
-    if (outgoing[pos] === undefined) {
-      if (this.image) {
-        outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"image", bodyName:"image" + bodyNum}]};
-      } else {
-        outgoing[pos] = {ts: incoming[pos].ts, pieces: [{bodyNum: bodyNum, bodyType:"file", bodyName:"file" + bodyNum}]};
-      }
-      outgoing[pos].pieces[0].raw = buf.slice(0, start);
-    } else if (incoming[pos].data === undefined) {
-      outgoing[pos].pieces[0].raw = new Buffer(0);
-    }
-  };
-
-  parsers[0].onMessageComplete = parsers[1].onMessageComplete = function() {
-    if (foundBody) {
-      return res.end();
-    }
-    if (this.pos > 0 && this.hinfo && this.hinfo.statusCode !== 100) {
-      parsers[(this.pos+1)%2].reinitialize(kind[(this.pos+1)%2]);
-    }
-    var pos = this.pos;
-
-    //console.log("onMessageComplete", this.pos, outgoing[this.pos]);
-
-    if (!outgoing[pos]) {
-      outgoing[pos] = {ts: incoming[pos].ts, pieces: [{raw: incoming[pos].data}]};
-    } else if (outgoing[pos].pieces && outgoing[pos].pieces[0].bodyNum !== undefined) {
-      bodyNum++;
-    }
-  };
-
-  parsers[0].onHeadersComplete = parsers[1].onHeadersComplete = function(info) {
-    var pos = this.pos;
-    this.hinfo = info;
-
-    //console.log("onHeadersComplete", this.pos, info);
-
-    this.image = false;
-    for (var h = 0, hlen = info.headers.length; h < hlen; h += 2) {
-      if (info.headers[h].match(/Content-Type/i)) {
-        if (info.headers[h+1].match(/^image/i)) {
-          this.image = true;
-        }
-        break;
-      }
-    }
-  };
-
-  var outgoing = [];
-
-  var p = 0;
-  async.forEachSeries(incoming, function(item, nextCb) {
-    parsers[(p%2)].pos = p;
-    //console.log("for", p);
-
-    if (!item) {
-    } else if (item.data.length === 0) {
-      outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: item.data}]};
-    } else {
-      var out = parsers[(p%2)].execute(item.data, 0, item.data.length);
-      if (typeof out === "object") {
-        outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: item.data}]};
-        console.log("ERROR", out);
-      }
-
-      if (!outgoing[p]) {
-        outgoing[p] = {ts: incoming[p].ts, pieces: [{raw: incoming[p].data}]};
-      }
-    }
-
-    if (res.finished === true) {
-      return nextCb("Done!");
-    } else {
-      setImmediate(nextCb);
-    }
-    p++;
-  }, function (err) {
-    if (findBody === -1) {
-      setImmediate(localSessionDetailReturnFull,req, res, session, outgoing);
-    }
-  });
-}
-
-function imageDecodeSMTP(req, res, session, incoming, findBody) {
-  var outgoing = [];
-
-  var STATES = {
-    cmd: 1,
-    header: 2,
-    data: 3,
-    mime: 4,
-    mime_data: 5,
-    ignore: 6
-  };
-
-  var states = [STATES.cmd, STATES.cmd];
-  var bodyNum = 0;
-  var bodyType = "file";
-  var bodyName = "unknown";
-
-  function parse(data, p) {
-    var lines = data.toString("binary").replace(/\r?\n$/, '').split(/\r?\n|\r/);
-    var state = states[p%2];
-    var header = "";
-    var mime;
-    var boundaries = [];
-    var pieces = [{raw: ""}];
-    var matches;
-    var b, blen;
-
-    linesloop:
-    for (var l = 0, llen = lines.length; l < llen; l++) {
-      switch (state) {
-      case STATES.cmd:
-        pieces[pieces.length-1].raw += lines[l] + "\n";
-
-        if (lines[l].toUpperCase() === "DATA") {
-          state = STATES.header;
-          header = "";
-          boundaries = [];
-        } else if (lines[l].toUpperCase() === "STARTTLS") {
-          state = STATES.ignore;
-        }
-        break;
-      case STATES.header:
-        pieces[pieces.length-1].raw += lines[l] + "\n";
-        if (lines[l][0] === " " || lines[l][0] === "\t") {
-          header += lines[l];
-          continue;
-        }
-        if (header.substr(0, 13).toLowerCase() === "content-type:") {
-          if ((matches = header.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
-            boundaries.push(matches[2]);
-          }
-        }
-        if (lines[l] === "") {
-          state = STATES.data;
-          continue;
-        }
-        header = lines[l];
-        break;
-      case STATES.data:
-        pieces[pieces.length-1].raw += lines[l] + "\n";
-        if (lines[l] === ".") {
-          state = STATES.cmd;
-          continue;
-        }
-
-        if (lines[l][0] === '-') {
-          for (b = 0, blen = boundaries.length; b < blen; b++) {
-            if (lines[l].substr(2, boundaries[b].length) === boundaries[b]) {
-              state = STATES.mime;
-              mime = {line:"", base64:0};
-              continue linesloop;
-            }
-          }
-        }
-        break;
-      case STATES.mime:
-        if (lines[l] === ".") {
-          state = STATES.cmd;
-          continue;
-        }
-
-        pieces[pieces.length-1].raw += lines[l] + "\n";
-
-        if (lines[l][0] === " " || lines[l][0] === "\t") {
-          mime.line += lines[l];
-          continue;
-        }
-        if (mime.line.substr(0, 13).toLowerCase() === "content-type:") {
-          if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
-            boundaries.push(matches[2]);
-          }
-          if ((matches = mime.line.match(/name\s*=\s*("?)([^"]*)\1/))) {
-            bodyName = matches[2];
-          }
-
-          if (mime.line.match(/content-type: image/i)) {
-            bodyType = "image";
-          }
-
-        } else if (mime.line.match(/content-disposition:/i)) {
-          if ((matches = mime.line.match(/filename\s*=\s*("?)([^"]*)\1/))) {
-            bodyName = matches[2];
-          }
-        } else if (mime.line.match(/content-transfer-encoding:.*base64/i)) {
-          mime.base64 = 1;
-          mime.doit = 1;
-        }
-        if (lines[l] === "") {
-          if (mime.doit) {
-            pieces[pieces.length-1].bodyNum = bodyNum+1;
-            pieces[pieces.length-1].bodyType = bodyType;
-            pieces[pieces.length-1].bodyName = bodyName;
-            pieces.push({raw: ""});
-            bodyType = "file";
-            bodyName = "unknown";
-            bodyNum++;
-          }
-          state = STATES.mimedata;
-          continue;
-        }
-        mime.line = lines[l];
-        break;
-      case STATES.mimedata:
-        if (lines[l] === ".") {
-          if (findBody === bodyNum) {
-            return res.end();
-          }
-          state = STATES.cmd;
-          continue;
-        }
-
-        if (lines[l][0] === '-') {
-          for (b = 0, blen = boundaries.length; b < blen; b++) {
-            if (lines[l].substr(2, boundaries[b].length) === boundaries[b]) {
-              if (findBody === bodyNum) {
-                return res.end();
-              }
-              state = STATES.mime;
-              mime = {line:"", base64:0};
-              continue linesloop;
-            }
-          }
-        }
-
-        if (!mime.doit) {
-          pieces[pieces.length-1].raw += lines[l] + "\n";
-        } else if (findBody === bodyNum) {
-          res.write(new Buffer(lines[l], 'base64'));
-        }
-        break;
-      }
-    }
-    states[p%2] = state;
-
-    return pieces;
-  }
-
-  for (var p = 0, plen = incoming.length; p < plen; p++) {
-    if (incoming[p].data.length === 0) {
-      outgoing[p] = {ts: incoming[p].ts, pieces:[{raw: incoming[p].data}]};
-    } else {
-      outgoing[p] = {ts: incoming[p].ts, pieces: parse(incoming[p].data, p)};
-    }
-    if (res.finished === true) {
-      break;
-    }
-  }
-
-  if (findBody === -1) {
-    setImmediate(localSessionDetailReturnFull, req, res, session, outgoing);
-  }
-}
-
-function imageDecode(req, res, session, results, findBody) {
-  if ((results[0].data.length >= 4 && results[0].data.slice(0,4).toString() === "HTTP") ||
-      (results[1] && results[1].data.length >= 4 && results[1].data.slice(0,4).toString() === "HTTP")) {
-    return imageDecodeHTTP(req, res, session, results, findBody);
-  }
-
-  if ((results[0].data.length >= 4 && results[0].data.slice(0,4).toString().match(/(HELO|EHLO)/)) ||
-      (results[1] && results[1].data.length >= 4 && results[1].data.slice(0,4).toString().match(/(HELO|EHLO)/)) ||
-      (results[2] && results[1].data.length >= 4 && results[2].data.slice(0,4).toString().match(/(HELO|EHLO)/))) {
-    return imageDecodeSMTP(req, res, session, results, findBody);
-  }
-
-  req.query.needimage = "false";
-  if (findBody === -1) {
-    setImmediate(localSessionDetailReturn, req, res, session, results);
-  }
-}
-
 function localSessionDetailReturn(req, res, session, incoming) {
+  //console.log("ALW", JSON.stringify(incoming));
   if (incoming.length > 200) {
     incoming.length = 200;
   }
 
-  if (req.query.needgzip === "true" && incoming.length > 0) {
-    return gzipDecode(req, res, session, incoming);
+  if (incoming.length === 0) {
+    return localSessionDetailReturnFull(req, res, session, []);
   }
 
-  if (req.query.needimage === "true" && incoming.length > 0) {
-    return imageDecode(req, res, session, incoming, -1);
+  var options = {
+    id: session.id,
+    nodeName: req.params.nodeName,
+    order: [],
+    "ITEM-HTTP": {
+      order: []
+    },
+    "ITEM-SMTP": {
+      order: []
+    },
+    "ITEM-CB": {
+    }
+  };
+
+  if (req.query.needgzip) {
+    options["ITEM-HTTP"].order.push("BODY-UNCOMPRESS");
+    options["ITEM-SMTP"].order.push("BODY-UNBASE64");
+    options["ITEM-SMTP"].order.push("BODY-UNCOMPRESS");
   }
 
-  var outgoing = [];
-  for (var r = 0, rlen = incoming.length; r < rlen; r++) {
-    outgoing.push({pieces: [{raw: incoming[r].data}], ts: incoming[r].ts});
+  options.order.push("ITEM-HTTP");
+  options.order.push("ITEM-SMTP");
+
+  var decodeOptions = JSON.parse(req.query.decode || "{}");
+  for (var key in decodeOptions) {
+    if (key.match(/^ITEM/)) {
+      options.order.push(key);
+    } else {
+      options["ITEM-HTTP"].order.push(key);
+      options["ITEM-SMTP"].order.push(key);
+    }
+    options[key] = decodeOptions[key]
   }
-  localSessionDetailReturnFull(req, res, session, outgoing);
+
+  if (req.query.needgzip) {
+    options["ITEM-HTTP"].order.push("BODY-UNCOMPRESS");
+    options["ITEM-SMTP"].order.push("BODY-UNCOMPRESS");
+  }
+
+  options.order.push("ITEM-BYTES");
+  options.order.push("ITEM-SORTER");
+  if (req.query.needimage) {
+    options.order.push("ITEM-LINKBODY");
+  }
+  if (req.query.base === "hex") {
+    options.order.push("ITEM-HEX");
+    options["ITEM-HEX"]= {showOffsets: req.query.line === "true"};
+  } else if (req.query.base === "ascii") {
+    options.order.push("ITEM-ASCII");
+  } else if (req.query.base === "utf8") {
+    options.order.push("ITEM-UTF8");
+  } else {
+    options.order.push("ITEM-NATURAL");
+  }
+  options.order.push("ITEM-CB");
+  options["ITEM-CB"].cb = function(err, outgoing) {
+    localSessionDetailReturnFull(req, res, session, outgoing);
+  };
+
+  if (Config.debug) {
+    console.log("Pipeline options", options);
+  }
+
+  decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
 }
 
 
@@ -3218,8 +2839,8 @@ function localSessionDetail(req, res) {
     req.query = {gzip: false, line: false, base: "natural"};
   }
 
-  req.query.needgzip  = req.query.gzip  || false;
-  req.query.needimage = req.query.image || false;
+  req.query.needgzip  = req.query.gzip === "true" || false;
+  req.query.needimage = req.query.image === "true" || false;
   req.query.line  = req.query.line  || false;
   req.query.base  = req.query.base  || "ascii";
 
@@ -3285,7 +2906,7 @@ function localSessionDetail(req, res) {
       localSessionDetailReturn(req, res, session, []);
     }
   },
-  req.query.needimage === "true"?10000:400, 10);
+  req.query.needimage?10000:400, 10);
 }
 
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {
@@ -3305,16 +2926,69 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
 
 });
 
+function reqGetRawBody(req, cb) {
+  processSessionIdAndDecode(req.params.id, 10000, function(err, session, incoming) {
+    if (err) {
+      return cb(err);
+    }
+
+
+    if (incoming.length === 0) {
+      return cb(null, null);
+    }
+
+    var options = {
+      id: session.id,
+      nodeName: req.params.nodeName,
+      order: [],
+      "ITEM-HTTP": {
+        order: []
+      },
+      "ITEM-SMTP": {
+        order: ["BODY-UNBASE64"]
+      },
+      "ITEM-CB": {
+      },
+      "ITEM-RAWBODY": {
+        bodyNumber: +req.params.bodyNum
+      }
+    };
+
+    if (req.query.needgzip) {
+      options["ITEM-HTTP"].order.push("BODY-UNCOMPRESS");
+      options["ITEM-SMTP"].order.push("BODY-UNCOMPRESS");
+    }
+
+    options.order.push("ITEM-HTTP");
+    options.order.push("ITEM-SMTP");
+
+    options.order.push("ITEM-RAWBODY");
+    options.order.push("ITEM-CB");
+    options["ITEM-CB"].cb = function(err, items) {
+      if (err) {
+        return cb(err);
+      }
+      if (items.length === 0) {
+        return cb("No match");
+      }
+      cb(err, items[0].data);
+    };
+
+    decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
+  });
+}
 
 app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, function(req, res) {
-  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
+  reqGetRawBody(req, function (err, data) {
     if (err) {
+      console.trace(err);
       return res.send("Error");
     }
+
     if (req.params.bodyType === "file") {
       res.setHeader("Content-Type", "application/force-download");
     }
-    return imageDecode(req, res, session, results, +req.params.bodyNum);
+    res.end(data);
   });
 });
 
@@ -3322,30 +2996,16 @@ app.get('/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', checkProxyRequest
   if (!Png) {
     return res.send (internals.emptyPNG);
   }
-  processSessionIdAndDecode(req.params.id, 10000, function(err, session, results) {
-    if (err) {
+  reqGetRawBody(req, function (err, data) {
+    if (err || data === null || data.length === 0) {
       return res.send (internals.emptyPNG);
     }
     res.setHeader("Content-Type", "image/png");
-    var newres = {
-      finished: false,
-      fullbuf: new Buffer(0),
-      write: function(buf) {
-        this.fullbuf = Buffer.concat([this.fullbuf, buf]);
-      },
-      end: function(buf) {
-        this.finished = true;
-        if (buf) {this.write(buf);}
-        if (this.fullbuf.length === 0) {
-          return res.send (internals.emptyPNG);
-        }
-        var png = new Png(this.fullbuf, internals.PNG_LINE_WIDTH, Math.ceil(this.fullbuf.length/internals.PNG_LINE_WIDTH), 'gray');
-        var png_image = png.encodeSync();
 
-        res.send(png_image);
-      }
-    };
-    return imageDecode(req, newres, session, results, +req.params.bodyNum);
+    var png = new Png(data, internals.PNG_LINE_WIDTH, Math.ceil(data.length/internals.PNG_LINE_WIDTH), 'gray');
+    var png_image = png.encodeSync();
+
+    res.send(png_image);
   });
 });
 

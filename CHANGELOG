@@ -2,6 +2,7 @@
   - NOTICE: Only ES 1.[45].x is supported by this version. 
             Restart viewer AFTER upgrading ES versions
   - NOTICE: If using multies all viewers must be upgraded at once
+  - NOTICE: Requires running npm update
   - capture - http logs connecting time
   - capture - fix http crash issue
   - capture - compiles on OSX again
@@ -12,6 +13,12 @@
   - viewer - maps support src vs dst now
   - multi - fixed hasheader/tag support
   - easybutton - ES 1.5.2, node 0.10.38
+  - viewer - Fixed incorrect expression for http.cookie.key
+  - viewer - Added --debug to viewer
+  - viewer - Only keep 10 files on expire instead of 100, delete up to 200 at a time
+  - viewer - Switched hacking viewer 
+  - viewer - Decoding is now handled with node streams which will allow
+             chaining and plugin decoders eventually - npm update required
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required

@@ -37,6 +37,7 @@ block content
           div.infoColumn Info
     tbody
   br
+  -if (!decodeItems) decodeItems = '{empty:{name:"None defined", disabled: true}}'
   script(type='text/javascript').
     var sessionsTable = null;
     var initialDisplayLength;
@@ -543,6 +544,28 @@ block content
           height += $(nTr).height();
         });
       });
+
+      $.contextMenu({
+        selector: ".format-other",
+        trigger: "hover",
+        items: !{decodeItems},
+        events: {
+          show: function(opt) {
+            var sessionDetail = this.closest(".sessionDetail");
+            if (sessionDetail.parent().data("decodeOptions")) {
+              $.contextMenu.setInputValues(opt, sessionDetail.parent().data("decodeOptions"));
+            }
+          },
+          hide: function(opt) {
+            var sessionDetail = this.closest(".sessionDetail");
+            sessionDetail.parent().data("decodeOptions", $.contextMenu.getInputValues(opt));
+            console.log("Calling change", this);
+            this.change();
+          }
+        }
+      });
+
+
 
       $(document).on('click', '[molochexpr]', addExpressionClick);
     }); // document ready
