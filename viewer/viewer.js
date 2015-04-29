@@ -623,6 +623,9 @@ app.get("/", checkWebEnabled, function(req, res) {
   for (var key in settings) {
     var setting = settings[key];
     var obj = {name: setting.name || key, items: {}};
+    if (setting.title) {
+      obj.items.title = {name: setting.title, disabled: true};
+    }
     obj.items[key + ":enabled"] = {name: "Enable", type: "checkbox"};
     setting.fields.forEach(function(field) {
       obj.items[key + ":" + field.key] = {name: field.name || field.key, type: field.type};

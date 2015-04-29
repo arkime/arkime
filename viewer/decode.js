@@ -122,12 +122,15 @@ function createUncompressStream (options, context) {
     }
 
     if (data[0] === 0x1f && data[1] === 0x8b && data[2] === 8) {
+      if (context.headersMap && context.headersMap["content-encoding"] === "deflate") {
+        context.headersMap["content-encoding"] = "moloch-gzip";
+      }
       var s = zlib.createGunzip();
-      s.reset();
       return swap(null, s);
     }
 
     if (context.headersMap && context.headersMap["content-encoding"] === "deflate") {
+      context.headersMap["content-encoding"] = "moloch-deflate";
       return swap(null, zlib.createDeflate());
     }
 
@@ -611,7 +614,14 @@ exports.settings = function() {
   return internals.settings;
 }
 
-exports.register("BODY-UNXOR", createKeyUnxorStream, {name: "UnXOR", fields: [{key: "skip", name: "Skip Bytes", type: "text"}, {key:"keyLength", name:"Key Length", type: "text"}]});
+exports.register("BODY-UNXOR", createKeyUnxorStream, 
+  {name: "UnXOR", 
+   title: "XOR decoding<br>Only set keyLength or key",
+  fields: [{key: "skip", name: "Skip Bytes", type: "text"}, 
+           {key:"keyLength", name:"Key is in data length", type: "text"},
+           {key:"key", name:"Fixed key in hex", type: "text"}
+          ]});
+
 exports.register("BODY-UNCOMPRESS", createUncompressStream);
 exports.register("BODY-UNBASE64", createUnbase64Stream, {name: "Unbase64", fields: []});
 
