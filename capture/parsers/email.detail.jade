@@ -13,7 +13,7 @@ if (user.emailSearch && (session.esub || session.esrc || session.edst || session
     +arrayList(session, 'ect', "Content Types", "email.ct")
     +arrayList(session, 'efn', "Filenames", "email.fn")
     +arrayList(session, 'emd5', "Attachment MD5s", "email.md5")
-    +arrayList(session.email, "bodymagic-term", "Attachement libfile content type", "email.bodymagic")
+    +arrayList(session.email, "bodymagic-term", "Attachment libfile", "email.bodymagic")
     if (session.hdrs)
       each value,i in emailFields
         +arrayList(session.hdrs, "ehead-" + value.name, value.name + " Header", "email." + value.name)
