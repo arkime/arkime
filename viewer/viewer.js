@@ -799,7 +799,7 @@ app.get('/style.css', function(req, res) {
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   var query = { _source: [ 'num', 'name', 'first', 'size', 'node' ],
                   from: '0',
-                  size: 100,
+                  size: 200,
                  query: { bool: {
                     must: [
                           {terms: {node: nodes}},
@@ -819,8 +819,9 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     query.query.bool.must[1].bool.should.push(obj);
   });
 
+  // Keep at least 10 files
   Db.search('files', 'file', query, function(err, data) {
-      if (err || data.error || !data.hits || data.hits.total <= query.size) {
+      if (err || data.error || !data.hits || data.hits.total <= 10) {
         return nextCb();
       }
       async.forEachSeries(data.hits.hits, function(item, forNextCb) {
