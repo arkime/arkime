@@ -29,6 +29,7 @@ var ini    = require('iniparser'),
     fs     = require('fs'),
     crypto = require('crypto');
 
+exports.debug = false;
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
     nodeName: os.hostname().split(".")[0],
@@ -46,6 +47,8 @@ function processArgs() {
     } else if (process.argv[i] === "-n") {
       i++;
       internals.nodeName = process.argv[i];
+    } else if (process.argv[i] === "--debug") {
+      exports.debug = true;
     } else {
       args.push(process.argv[i]);
     }
