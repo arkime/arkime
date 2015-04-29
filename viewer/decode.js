@@ -129,10 +129,10 @@ function createUncompressStream (options, context) {
       return swap(null, s);
     }
 
-    if (context.headersMap && context.headersMap["content-encoding"] === "deflate") {
+    /*if (context.headersMap && context.headersMap["content-encoding"] === "deflate") {
       context.headersMap["content-encoding"] = "moloch-deflate";
       return swap(null, zlib.createDeflate());
-    }
+    }*/
 
     return swap(null, through());
   });
