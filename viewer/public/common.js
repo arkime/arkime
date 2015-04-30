@@ -98,6 +98,27 @@ function parseUrlParams() {
 
 }
 
+function decodeParam(decodeOptions) {
+  var param = {};
+
+  for (var key in decodeOptions) {
+    if (decodeOptions[key] === true || (typeof decodeOptions[key] === "string" && decodeOptions[key] !== "")) {
+      var parts = key.split(":");
+      if (decodeOptions[parts[0] + ":" + "enabled"] !== true) {
+        continue;
+      }
+      if (!param[parts[0]]) {
+        param[parts[0]] = {};
+      }
+      if (parts[1] === "enabled") {
+        continue;
+      }
+      param[parts[0]][parts[1]] = decodeOptions[key];
+    }
+  }
+  return JSON.stringify(param);
+}
+
 function safeStr(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
 }

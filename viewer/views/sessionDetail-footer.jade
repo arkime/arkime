@@ -43,32 +43,14 @@ script(type='text/javascript').
     sessionDetail.find('.format-line input, .format-gzip input, .format-image input, .format-base input, .format-other').on('change', function(e) {
       var base = sessionDetail.find('.format-base input:checked').val();
       var line = sessionDetail.find('.format-line input').is(':checked')
-      var decodeOptionsIn = sessionDetail.parent().data("decodeOptions") || {};
-      var decodeOptionsOut = {};
-
-      for (var key in decodeOptionsIn) {
-        if (decodeOptionsIn[key] === true || (typeof decodeOptionsIn[key] === "string" && decodeOptionsIn[key] !== "")) {
-          var parts = key.split(":");
-          if (decodeOptionsIn[parts[0] + ":" + "enabled"] !== true) {
-            continue;
-          }
-          if (!decodeOptionsOut[parts[0]]) {
-            decodeOptionsOut[parts[0]] = {};
-          }
-          if (parts[1] === "enabled") {
-            continue;
-          }
-          decodeOptionsOut[parts[0]][parts[1]] = decodeOptionsIn[key];
-        }
-      }
-
+      var decode = decodeParam(sessionDetail.parent().data("decodeOptions") || {});
       var url = "#{session.no}/#{session.id}/sessionDetail" +
                  "?base=" + base +
                  "&line=" + line +
                  "&image=" + sessionDetail.find('.format-image input').is(':checked') +
                  "&gzip=" + sessionDetail.find('.format-gzip input').is(':checked') +
                  "&ts=" + sessionDetail.find('.format-ts input').is(':checked') +
-                 "&decode=" + JSON.stringify(decodeOptionsOut);
+                 "&decode=" + decode;
 
       sessionDetail.parent().load(url);
       if (localStorage) {

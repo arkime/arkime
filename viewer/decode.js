@@ -154,18 +154,77 @@ function createKeyUnxorStream (options, context) {
         return callback(null, data);
       }
 
+      this.pos = 0;
+      this.state = 1;
+
       if (+options["BODY-UNXOR"].skip) {
         data = data.slice(+options["BODY-UNXOR"].skip);
+
       }
       if (options["BODY-UNXOR"].key !== undefined) {
         this.key = new Buffer(options["BODY-UNXOR"].key, "hex");
       } else if (+options["BODY-UNXOR"].keyLength) {
         this.key = data.slice(0, +options["BODY-UNXOR"].keyLength);
         data = data.slice(+options["BODY-UNXOR"].keyLength);
+      } else {
+        this.state = 2;
       }
-      this.pos = 0;
-      this.state = 1;
     } 
+
+    if (this.state === 1) {
+      var pos = this.pos;
+      var key = this.key;
+      for (var i = 0; i < data.length; i++) {
+        data[i] ^= key[pos];
+        pos = (pos + 1) % key.length;
+      }
+      this.pos = pos;
+    }
+
+    callback(null, data);
+  });
+}
+////////////////////////////////////////////////////////////////////////////////
+function createUnxorBruteGzip (options, context) {
+  return through(function(data, encoding, callback) {
+    if (this.state === undefined) {
+      if (!options["BODY-UNXORBRUTEGZ"]) {
+        this.state = 2;
+        return callback(null, data);
+      }
+
+      var gzip = new Buffer("1f8b08000000000002", "hex");
+      var tmp = new Buffer(gzip.length*2);
+      this.state = 2;
+
+      done:
+      for (var klen = 1; klen <= 4; klen++) {
+        var key = new Buffer(klen);
+        for (var d = 0; d < data.length - gzip.length; d++) {
+          for (var k = 0; k < klen; k++) {
+            key[k] = data[d+k] ^ gzip[k];
+          }
+          for (var i = 0; i < gzip.length; i++) {
+            tmp[i] = data[d+i] ^ key[i%key.length];
+          }
+          for (var j = 0; j < gzip.length; j++) {
+            if (tmp[j] !== gzip[j]) {
+              break;
+            }
+          }
+          if (j === gzip.length) {
+            data = data.slice(d);
+            for (var i = 0; i < gzip.length+4; i++) {
+              tmp[i] = data[d+i] ^ key[(i%key.length)];
+            }
+            this.key = key;
+            this.pos = 0;
+            this.state = 1;
+            break done;
+          }
+        }
+      }
+    }
 
     if (this.state === 1) {
       var pos = this.pos;
@@ -614,6 +673,7 @@ exports.settings = function() {
   return internals.settings;
 }
 
+exports.register("BODY-UNXORBRUTEGZ", createUnxorBruteGzip, {name: "UnXOR Brute GZip Header"});
 exports.register("BODY-UNXOR", createKeyUnxorStream, 
   {name: "UnXOR", 
    title: "XOR decoding<br>Only set keyLength or key",
@@ -623,7 +683,7 @@ exports.register("BODY-UNXOR", createKeyUnxorStream,
           ]});
 
 exports.register("BODY-UNCOMPRESS", createUncompressStream);
-exports.register("BODY-UNBASE64", createUnbase64Stream, {name: "Unbase64", fields: []});
+exports.register("BODY-UNBASE64", createUnbase64Stream, {name: "Unbase64"});
 
 exports.register("ITEM-HTTP", ItemHTTPStream);
 exports.register("ITEM-SMTP", ItemSMTPStream);
@@ -753,6 +813,9 @@ if(require.main === module) {
       options["ITEM-SMTP"].order.push("BODY-UNCOMPRESS");
     } else if (process.argv[aa] === "--unbase64") {
       options["ITEM-SMTP"].order.push("BODY-UNBASE64");
+    } else if (process.argv[aa] === "--unxorbrutegz") {
+      options["ITEM-HTTP"].order.push("BODY-UNXORBRUTEGZ");
+      options["BODY-UNXORBRUTEGZ"] = {};
     } else if (process.argv[aa] === "--unxor") {
       options["ITEM-HTTP"].order.push("BODY-UNXOR");
       options["BODY-UNXOR"] = {skip: +process.argv[aa+1], keyLength: process.argv[aa+2]};

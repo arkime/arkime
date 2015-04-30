@@ -89,6 +89,10 @@ block content
           if (!ts || ts === "last") {
             ts = localStorage['moloch-ts'];
           }
+
+          if (localStorage['moloch-decode']) {
+            data.push({name: "decode", value: decodeParam(localStorage['moloch-decode'])});
+          }
         }
 
         if (ts !== undefined) {
@@ -554,12 +558,17 @@ block content
             var sessionDetail = this.closest(".sessionDetail");
             if (sessionDetail.parent().data("decodeOptions")) {
               $.contextMenu.setInputValues(opt, sessionDetail.parent().data("decodeOptions"));
+            } else if (localStorage && localStorage['moloch-decode']) {
+              $.contextMenu.setInputValues(opt, JSON.parse(localStorage['moloch-decode']));
             }
           },
           hide: function(opt) {
             var sessionDetail = this.closest(".sessionDetail");
-            sessionDetail.parent().data("decodeOptions", $.contextMenu.getInputValues(opt));
-            console.log("Calling change", this);
+            var decode = $.contextMenu.getInputValues(opt);
+            sessionDetail.parent().data("decodeOptions", decode);
+            if (localStorage) {
+              localStorage['moloch-decode'] = JSON.stringify(decode);
+            }
             this.change();
           }
         }
