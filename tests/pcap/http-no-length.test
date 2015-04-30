@@ -2,6 +2,92 @@
    "packets" : [
       {
          "body" : {
+            "db" : 1196,
+            "mac2-term" : [
+               "00:c0:ca:30:eb:0c"
+            ],
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "http:content:text/plain",
+               "http:method:GET",
+               "http:statuscode:200",
+               "node:test",
+               "protocol:http",
+               "srcip",
+               "tcp"
+            ],
+            "by2" : 1026,
+            "g1" : "RUS",
+            "hsver" : [
+               "1.1"
+            ],
+            "pa2" : 5,
+            "hocnt" : 1,
+            "p1" : 50384,
+            "as1" : "AS0000 This is neat",
+            "pr" : 6,
+            "ps" : [
+               24,
+               106,
+               188,
+               258,
+               780,
+               850,
+               937,
+               1734,
+               1804,
+               1874
+            ],
+            "hpathcnt" : 1,
+            "as2" : "AS0001 Cool Beans!",
+            "hmd5cnt" : 1,
+            "fb1" : "474554202f6a732f",
+            "hcval-term-cnt" : 1,
+            "hckey-term" : [
+               "trafic_ranking"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-charset",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:keep-alive",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "a1" : "10.0.0.1",
+            "fb2" : "485454502f312e30",
+            "hdrs" : {
+               "hreq-referercnt" : 1,
+               "hreq-referer" : [
+                  "http://www.xxxxxxxx.com/xxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx.html"
+               ]
+            },
+            "hh1cnt" : 10,
+            "p2" : 80,
+            "psl" : [
+               82,
+               82,
+               70,
+               522,
+               70,
+               87,
+               797,
+               70,
+               70,
+               70
+            ],
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hdver" : [
+               "1.0"
+            ],
             "ua" : [
                "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
             ],
@@ -25,18 +111,14 @@
                   ""
                ]
             },
-            "hckey-term-cnt" : 1,
             "db2" : 744,
-            "db" : 1196,
-            "mac2-term" : [
-               "00:c0:ca:30:eb:0c"
-            ],
+            "hckey-term-cnt" : 1,
             "no" : "test",
+            "lp" : 1273479693,
             "ho" : [
                "xxxxxxx.xxxxxx.xx"
             ],
-            "lp" : 1273479693,
-            "a2" : "10.0.0.2",
+            "ss" : 1,
             "http" : {
                "method-term-cnt" : 1,
                "method-term" : [
@@ -51,51 +133,18 @@
                ],
                "bodymagic-term-cnt" : 1
             },
-            "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "dstip",
-               "http:content:text/plain",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
-            ],
+            "fpd" : 1273479692982,
+            "pa1" : 5,
             "hpath" : [
                "/js/xxxxxx.js"
             ],
-            "pa1" : 5,
-            "fpd" : 1273479692982,
             "fs" : [],
-            "by2" : 1026,
-            "g1" : "RUS",
-            "hsver" : [
-               "1.1"
-            ],
-            "pa2" : 5,
             "uscnt" : 1,
-            "hocnt" : 1,
-            "p1" : 50384,
             "by" : 1760,
-            "as1" : "AS0000 This is neat",
             "g2" : "CAN",
-            "pr" : 6,
-            "ps" : [
-               24,
-               106,
-               188,
-               258,
-               780,
-               850,
-               937,
-               1734,
-               1804,
-               1874
-            ],
             "prot-term-cnt" : 2,
-            "hpathcnt" : 1,
+            "lpd" : 1273479693105,
             "hh2" : [
                "http:header:cache-control",
                "http:header:connection",
@@ -108,71 +157,26 @@
                "http:header:server",
                "http:header:set-cookie"
             ],
-            "lpd" : 1273479693105,
             "fp" : 1273479692,
-            "as2" : "AS0001 Cool Beans!",
-            "hmd5cnt" : 1,
-            "hh2cnt" : 10,
             "pa" : 10,
-            "tacnt" : 8,
+            "hh2cnt" : 10,
             "sl" : 124,
-            "fb1" : "474554202f6a732f",
-            "hckey-term" : [
-               "trafic_ranking"
+            "hcval-term" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
             ],
+            "tacnt" : 8,
             "us" : [
                "//xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
             ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-charset",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:keep-alive",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "a1" : "10.0.0.1",
-            "fb2" : "485454502f312e30",
             "db1" : 452,
             "hmd5" : [
                "9fb54a2726ca3cf54a82804d0e66d08a"
             ],
-            "hdrs" : {
-               "hreq-referercnt" : 1,
-               "hreq-referer" : [
-                  "http://www.xxxxxxxx.com/xxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx.html"
-               ]
-            },
-            "mac2-term-cnt" : 1,
             "by1" : 734,
-            "hh1cnt" : 10,
-            "p2" : 80,
-            "mac1-term-cnt" : 1,
+            "mac2-term-cnt" : 1,
             "rir2" : "TEST",
+            "mac1-term-cnt" : 1,
             "hdvercnt" : 1,
-            "psl" : [
-               82,
-               82,
-               70,
-               522,
-               70,
-               87,
-               797,
-               70,
-               70,
-               70
-            ],
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "hdver" : [
-               "1.0"
-            ],
             "mac1-term" : [
                "00:16:44:a0:a0:7e"
             ],

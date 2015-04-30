@@ -93,6 +93,7 @@
             "hkeycnt" : 8,
             "hmd5cnt" : 2,
             "fb1" : "4e5a",
+            "hcval-term-cnt" : 2,
             "hckey-term" : [
                "NID",
                "PREF"
@@ -271,8 +272,12 @@
             "fp" : 1386790367,
             "pa" : 52,
             "hh2cnt" : 15,
-            "sl" : 37537,
             "tacnt" : 11,
+            "sl" : 37537,
+            "hcval-term" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
             "us" : [
                "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"

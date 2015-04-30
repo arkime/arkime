@@ -1,4 +1,4 @@
-use Test::More tests => 284;
+use Test::More tests => 296;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -164,3 +164,13 @@ my $pwd = getcwd() . "/pcap";
 # http.user tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-basicauth.pcap)&&http.user==userrrrr"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/http-basicauth.pcap)&&http.user==Userrrrr"));
+
+# http.cookie.key
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.key==NID"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.key==[NID,xxxxxxxxxx]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.key!=FRED"));
+
+# http.cookie.value
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.value==xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.value==[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,xxx]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/http-content-gzip.pcap||file=$pwd/socks5-reverse.pcap)&&http.cookie.value!=FRED"));

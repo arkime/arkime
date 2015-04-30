@@ -50,6 +50,7 @@
             "as2" : "AS0001 Cool Beans!",
             "hmd5cnt" : 1,
             "fb1" : "050100050100030e",
+            "hcval-term-cnt" : 1,
             "hckey-term" : [
                "PREF"
             ],
@@ -170,6 +171,9 @@
             "pa" : 14,
             "hh2cnt" : 11,
             "sl" : 117939,
+            "hcval-term" : [
+               "ID=xxxxxxxxxxxxxxxx:TM=xxxxxxxxxx:LM=xxxxxxxxxx:S=xxxxxxxxxxxx_6oz"
+            ],
             "tacnt" : 9,
             "us" : [
                "//www.google.com/"
@@ -178,8 +182,8 @@
             "hmd5" : [
                "222315d36e1313774cb1c2f0eb06864f"
             ],
-            "by1" : 886,
             "mac2-term-cnt" : 2,
+            "by1" : 886,
             "rir2" : "TEST",
             "mac1-term-cnt" : 1,
             "hdvercnt" : 1,

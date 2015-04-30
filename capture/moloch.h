@@ -280,6 +280,7 @@ typedef struct moloch_config {
     char      parseSMTP;
     char      parseSMB;
     char      parseQSValue;
+    char      parseCookieValue;
     char      compressES;
     char      antiSynDrop;
 } MolochConfig_t;

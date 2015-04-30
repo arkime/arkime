@@ -19,6 +19,8 @@
   - viewer - Switched hacking viewer 
   - viewer - Decoding is now handled with node streams which will allow
              chaining and plugin decoders eventually - npm update required
+  - capture - Added cookie value parsing, default off controled by
+              parseCookieValue (issue #371)
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required

@@ -370,6 +370,7 @@ void moloch_config_load()
     config.parseSMTP             = moloch_config_boolean(keyfile, "parseSMTP", TRUE);
     config.parseSMB              = moloch_config_boolean(keyfile, "parseSMB", TRUE);
     config.parseQSValue          = moloch_config_boolean(keyfile, "parseQSValue", FALSE);
+    config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
 
@@ -626,6 +627,7 @@ void moloch_config_init()
         LOG("parseSMTP: %s", (config.parseSMTP?"true":"false"));
         LOG("parseSMB: %s", (config.parseSMB?"true":"false"));
         LOG("parseQSValue: %s", (config.parseQSValue?"true":"false"));
+        LOG("parseCookieValue: %s", (config.parseCookieValue?"true":"false"));
         LOG("compressES: %s", (config.compressES?"true":"false"));
 
         LOG("rotateIndex = %s", rotates[config.rotate]);

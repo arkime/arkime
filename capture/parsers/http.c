@@ -52,6 +52,7 @@ static MolochStringHashStd_t httpReqHeaders;
 static MolochStringHashStd_t httpResHeaders;
 
 static int cookieKeyField;
+static int cookieValueField;
 static int hostField;
 static int userField;
 static int atField;
@@ -425,6 +426,13 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
                 break;
             moloch_field_string_add(cookieKeyField, session, start, equal-start, TRUE);
             start = strchr(equal+1, ';');
+            if (config.parseCookieValue) {
+                equal++;
+                while (isspace(*equal)) equal++;
+                if (*equal && equal != start)
+                    moloch_field_string_add(cookieValueField, session, equal, start?start-equal:-1, TRUE);
+            }
+
             if(!start)
                 break;
             start++;
@@ -752,6 +760,12 @@ static const char *method_strings[] =
     cookieKeyField = moloch_field_define("http", "termfield",
         "http.cookie.key", "Cookie Keys", "hckey-term",
         "The keys to cookies sent up in requests",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
+
+    cookieValueField = moloch_field_define("http", "termfield",
+        "http.cookie.value", "Cookie Keys", "hcval-term",
+        "The values to cookies sent up in requests",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
