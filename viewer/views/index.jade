@@ -78,9 +78,11 @@ block content
         var ts = molochSettings.showTimestamps;
 
         if (localStorage) {
-          if (localStorage['moloch-line'] !== undefined) {
-            data.push({name: "line", value: localStorage['moloch-line']});
-          }
+          ["line", "image", "gzip"].forEach(function(key) {
+            if (localStorage['moloch-' + key] !== undefined) {
+              data.push({name: key, value: localStorage['moloch-' + key]});
+            }
+          });
 
           if (!base || base === "last") {
             base = localStorage['moloch-base'];

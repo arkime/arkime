@@ -22,6 +22,7 @@
   - capture - Added cookie value parsing, default off controled by
               parseCookieValue (issue #371)
   - viewer - EXISTS! fixes, tests, and docs (issue #367)
+  - viewer - Reuse Uncompress and Files settings between sessions
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required

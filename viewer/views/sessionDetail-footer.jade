@@ -43,12 +43,14 @@ script(type='text/javascript').
     sessionDetail.find('.format-line input, .format-gzip input, .format-image input, .format-base input, .format-other').on('change', function(e) {
       var base = sessionDetail.find('.format-base input:checked').val();
       var line = sessionDetail.find('.format-line input').is(':checked')
+      var image = sessionDetail.find('.format-image input').is(':checked')
+      var gzip = sessionDetail.find('.format-gzip input').is(':checked')
       var decode = decodeParam(sessionDetail.parent().data("decodeOptions") || {});
       var url = "#{session.no}/#{session.id}/sessionDetail" +
                  "?base=" + base +
                  "&line=" + line +
-                 "&image=" + sessionDetail.find('.format-image input').is(':checked') +
-                 "&gzip=" + sessionDetail.find('.format-gzip input').is(':checked') +
+                 "&image=" + image +
+                 "&gzip=" + gzip +
                  "&ts=" + sessionDetail.find('.format-ts input').is(':checked') +
                  "&decode=" + decode;
 
@@ -56,6 +58,8 @@ script(type='text/javascript').
       if (localStorage) {
         localStorage['moloch-line'] = line;
         localStorage['moloch-base'] = base;
+        localStorage['moloch-gzip'] = gzip;
+        localStorage['moloch-image'] = image;
       }
     });
     function showTimestamps() {
