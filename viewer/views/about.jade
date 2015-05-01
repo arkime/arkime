@@ -13,20 +13,20 @@ block content
         dt Token
         dd Some string fields are tokenized for faster searching.  The query engine will automatically turn the search string(s) into tokens using the same algorithms as the indexing system.
         dt Lists
-        dd This is a short hand method for doing multiple OR queries.  For example http.uri == [www, moloch].  Currently a list containing wildcard or regex strings will be processed as normal tokens instead of wildcards and regexs.
+        dd This is a short hand method for doing multiple OR queries.  For example <code>http.uri == [www, moloch]</code>.  Currently a list containing wildcard or regex strings will be processed as normal tokens instead of wildcards and regexs.
         dt Wildcard
-        dd If a * appears in a expression, it is assumed a wildcard match is being used.  Supported wildcards are *, which matches any character sequence (including the empty one), and ?, which matches any single character.  The wildcard query is run against the full text strings, after case normalization if enabled for the field. For example 'http.uri == "www.f*k.com"'
+        dd If a * appears in a expression, it is assumed a wildcard match is being used.  Supported wildcards are *, which matches any character sequence (including the empty one), and ?, which matches any single character.  The wildcard query is run against the full text strings, after case normalization if enabled for the field. For example <code>http.uri == "www.f*k.com"</code>.
         dt Regex
-        dd A regex query needs to be surrounded by forward slashes, and is always anchored.  This means you will almost always want to include a leading and trailing ".*".  The regex query is run against the full text strings, after case normalization if enabled for the field.  For example 'http.uri == /.*www\.f.*k\.com.*/'.  It uses the Lucene regex implementation which doesn't support most PCRE features.
+        dd A regex query needs to be surrounded by forward slashes, and is always anchored.  This means you will almost always want to include a leading and trailing <code>.*</code>.  The regex query is run against the full text strings, after case normalization if enabled for the field.  For example <code>http.uri == /.*www\.f.*k\.com.*/</code>.  It uses the Lucene regex implementation which doesn't support most PCRE features.
 
     h3 IP Searches    
-    p IP searching is very flexible and can be performed using the full ip address, a partial ip address, or using CIDR representation.  For fields that include a port number, it is possible to follow any of the ip representations with a colon and then the port number.  Ports are also first class searchable and may be searched for directly.  For example ip == 1.2.3/24:80.  IP search can also be done with list of IPs.  ip == [1.2.3.4, 1.3/16]
+    p IP searching is very flexible and can be performed using the full ip address, a partial ip address, or using CIDR representation.  For fields that include a port number, it is possible to follow any of the ip representations with a colon and then the port number.  Ports are also first class searchable and may be searched for directly.  For example <code>ip == 1.2.3/24:80</code>.  IP search can also be done with list of IPs.  <code>ip == [1.2.3.4, 1.3/16]</code>
 
     h3 Numeric Searches
-    p Numeric fields support simple range operators besides the default equals and not equals.  For example port == 80.  They also support lists for a simple OR query. For example port==[80,443,23]
+    p Numeric fields support simple range operators besides the default equals and not equals.  For <code>example port == 80</code>.  They also support lists for a simple OR query. For example <code>port==[80,443,23]</code>
 
     h3 Date Searches
-    p Date fields support simple range operators besides the default equals and not equals.  For example starttime == "2004/07/31 05:33:41".  They also support lists for a simple OR query. For example stoptime==["2004/07/31 05:33:41", "2004/07/31 06:33:41"].  Finally relative dates and optional snapping are supported using the splunk syntax.
+    p Date fields support simple range operators besides the default equals and not equals.  For example <code>starttime == "2004/07/31 05:33:41"</code>.  They also support lists for a simple OR query. For example <code>stoptime==["2004/07/31 05:33:41", "2004/07/31 06:33:41"]</code>.  Finally relative dates and optional snapping are supported using the splunk syntax.
     ol
       li Begin string with a plus (+) or minus (-) to indicate the offset from the current time.
       li Define time amount with a number and a unit; the supported time units are:
@@ -40,6 +40,8 @@ block content
           li quarter: q, qtr, qtrs, quarter, quarters
           li year: y, yr, yrs, year, years
       li Optionally  specify a "snap to" time unit; this indicates the nearest or latest time to which the time amount rounds down. Separate the time amount from the "snap to" time unit with an "@" character
+    h3 Field Exists Searches
+    p It is possible to check if a field has been set or not in the session by using the special comparison value of EXISTS!.  For example to verify that a certificate doesn't have a issuer common name, but does have a issuer organizational name the follow query could be used: <code>cert.issuer.cn != EXISTS! && cert.issuer.on == EXISTS!</code>
     h2 All supported fields
     table(border=1)
       tr

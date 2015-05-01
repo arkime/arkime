@@ -1,4 +1,4 @@
-use Test::More tests => 521;
+use Test::More tests => 529;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,6 +9,12 @@ my $pwd = getcwd() . "/pcap";
 # Regex missing backslash tests
     errTest("date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/js/xxxxxx/"));
     errTest("date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/js/xxxxxx/]"));
+
+# Exists check
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&node==EXISTS!"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&node!=EXISTS!"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&asn==EXISTS!"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&asn!=EXISTS!"));
 
 # file tests
     countTest(0, "date=-1&expression=file=nofile.pcap");

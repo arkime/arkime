@@ -235,10 +235,15 @@ function formatExists(yy, field, op)
         completed[yy.fieldsMap[f].dbField] = 1;
       }
     }
-    if (op === "ne")
+    if (op === "ne") {
       return {bool: {must_not: obj}};
-    else
+    } else {
       return {bool: {should: obj}};
+    }
+  }
+
+  if (op === "ne") {
+    return {not: {exists: {field: field2Raw(yy, field)}}};
   }
 
   return {exists: {field: field2Raw(yy, field)}};
