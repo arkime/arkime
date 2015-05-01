@@ -764,7 +764,7 @@ static const char *method_strings[] =
         NULL);
 
     cookieValueField = moloch_field_define("http", "termfield",
-        "http.cookie.value", "Cookie Keys", "hcval-term",
+        "http.cookie.value", "Cookie Values", "hcval-term",
         "The values to cookies sent up in requests",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
