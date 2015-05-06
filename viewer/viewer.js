@@ -1725,7 +1725,7 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
-    query._source = ["pr", "ro", "db", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "by", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
+    query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
 
     if (query.aggregations && query.aggregations.dbHisto) {
       graph.interval = query.aggregations.dbHisto.histogram.interval;

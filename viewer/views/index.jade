@@ -31,7 +31,13 @@ block content
         th#a2.context-menu-one Dst IP
         th Dst Port
         th Packets
+        th Src Packets
+        th Dst Packets
         th Bytes
+        th Src Bytes
+        th Dst Bytes
+        th Src Databytes
+        th Dst Databytes
         th Node
         th#info.context-menu-one
           div.infoColumn Info
@@ -144,8 +150,14 @@ block content
         dstip: 6,
         dstport: 7,
         packets: 8,
-        bytes: 9,
-        node: 10
+        srcpackets: 9,
+        dstpackets: 10,
+        bytes: 11,
+        srcbytes: 12,
+        dstbytes: 13,
+        srcdatabytes: 14,
+        dstdatabytes: 15,
+        node: 16
       };
 
       function visibleColumn(name) {
@@ -260,6 +272,14 @@ block content
             "bVisible": visibleColumn("packets"),
             "sWidth": "55px"
             },
+          { "mDataProp" : "pa1",
+            "bVisible": visibleColumn("srcpackets"),
+            "sWidth": "55px"
+            },
+          { "mDataProp" : "pa2",
+            "bVisible": visibleColumn("dstpackets"),
+            "sWidth": "55px"
+            },
           { "mDataProp" : "by",
             "bVisible": visibleColumn("bytes"),
             "sWidth": "80px",
@@ -267,6 +287,22 @@ block content
             "fnRender" : function(oObj) {
               return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
             }
+          },
+          { "mDataProp" : "by1",
+            "bVisible": visibleColumn("srcbytes"),
+            "sWidth": "80px",
+          },
+          { "mDataProp" : "by2",
+            "bVisible": visibleColumn("dstbytes"),
+            "sWidth": "80px",
+          },
+          { "mDataProp" : "db1",
+            "bVisible": visibleColumn("srcdatabytes"),
+            "sWidth": "80px",
+          },
+          { "mDataProp" : "db2",
+            "bVisible": visibleColumn("dstdatabytes"),
+            "sWidth": "80px",
           },
           { "mDataProp" : "no",
             "bVisible": visibleColumn("node"),
