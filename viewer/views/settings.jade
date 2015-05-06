@@ -44,6 +44,17 @@ block content
     select#sortDirection.setting(name="sortDirection")
       option(value="asc") Ascending
       option(value="desc") Descending
+    br
+    label(for='visibleColumns') Sessions Visible Columns:
+    select#visibleColumns.setting(name="visibleColumns",multiple="multiple",size="6")
+      option(value="srcip") Src IP
+      option(value="srcport") Src Port
+      option(value="dstip") Dst IP
+      option(value="dstport") Dst Port
+      option(value="packets") Packets
+      option(value="bytes") Bytes
+      option(value="node") Node
+      option(value="info") Info
     h3 SPI Graph Tab
     label(for='spiGraph') Default Graph:
     +fieldsSelect("spiGraph", "setting", false)
@@ -185,14 +196,27 @@ block content
       var defaults = {
         spiGraph: "no",
         connSrcField: "a1",
-        connDstField: "ip.dst:port"
+        connDstField: "ip.dst:port",
+        visibleColumns: ["start", "stop", "srcip", "srcport", "dstip", "dstport", "packets", "bytes", "node", "info"]
       };
 
-      ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
+      ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "visibleColumns", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
         if (settings[field]) {
-          $("#" + field + " option[value='" + settings[field] + "']").attr('selected', 'selected');
+          if (Array.isArray(settings[field])) {
+            for (key in settings[field]) {
+              $("#" + field + " option[value='" + settings[field][key] + "']").attr('selected', 'selected');
+            }
+          } else {
+            $("#" + field + " option[value='" + settings[field] + "']").attr('selected', 'selected');
+          }
         } else if (defaults[field]) {
-          $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
+          if (Array.isArray(defaults[field])) {
+            for (key in defaults[field]) {
+              $("#" + field + " option[value='" + defaults[field][key] + "']").attr('selected', 'selected');
+            }
+          } else {
+            $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
+          }
         }
       });
 
