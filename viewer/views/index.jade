@@ -160,14 +160,32 @@ block content
         node: 16
       };
 
+      var pinnedColWidths = {
+        plusminus:30,
+        start:105,
+        stop:105,
+        srcip:160,
+        srcport:40,
+        dstip:160,
+        dstport:40,
+        packets:80,
+        srcpackets:80,
+        dstpackets:80,
+        bytes:150,
+        srcbytes:80,
+        dstbytes:80,
+        srcdatabytes:80,
+        dstdatabytes:80,
+        node:150
+      };
+
+      var visibleColumns = ["plusminus", "start", "stop", "srcip", "srcport", "dstip", "dstport", "packets", "bytes", "node", "info"];
+      if(molochSettings.visibleColumns){
+        visibleColumns = ["plusminus", "start", "stop"].concat(molochSettings.visibleColumns);
+      }
+
       function visibleColumn(name) {
-        if(molochSettings.visibleColumns){
-          if (Array.isArray(molochSettings.visibleColumns)) {
-            return molochSettings.visibleColumns.indexOf(name)>=0;
-          } else return molochSettings.visibleColumns == name;
-        } else {
-          return ["start", "stop", "srcip", "srcport", "dstip", "dstport", "packets", "bytes", "node", "info"].indexOf(name)>=0;
-        }
+        return visibleColumns.indexOf(name)>=0;
       }
 
       sessionsTable = $('#sessions').dataTable( {
@@ -582,18 +600,9 @@ block content
               var td = $(nTr).children("td");
               $(td).each(function(i, e) {
                 $(e).html($(e).html().replace("<br>", "&nbsp;"));
+                $(e).width(pinnedColWidths[visibleColumns[i]]);
               });
-              $(td[0]).width(50); // +-
-              $(td[1]).width(105); // Start
-              $(td[2]).width(105); // Stop
-              $(td[3]).width(160); // Src
-              $(td[4]).width(40);  // SPort
-              $(td[5]).width(160); // Dst
-              $(td[6]).width(40);  // DPort
-              $(td[7]).width(80);  // Packets
-              $(td[8]).width(150); // Bytes
-              $(td[9]).width(150); // Node
-              $(td[10]).hide();
+              $($(nTr).find(".infoColumn")).hide();
               $($(nTr).find(".protocolText")).hide();
             }
           } else {
@@ -636,6 +645,7 @@ block content
     }); // document ready
 
     function unPinRow(nTr, updateRows) {
+      $($(nTr).find(".infoColumn")).show();
       $($(nTr).find(".protocolText")).show();
       $($(nTr).children("td")[10]).show();
       $(nTr).removeClass('fixedrow');
