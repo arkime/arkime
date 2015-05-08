@@ -213,11 +213,16 @@ app.configure(function() {
       });
     });
   } else {
-    /* Shared password isn't set, who cares about auth */
+    /* Shared password isn't set, who cares about auth, db is only used for settings */
     app.locals.alwaysShowESStatus = true;
     app.use(function(req, res, next) {
       req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
-      next();
+      Db.getUserCache("anonymous", function(err, suser) {
+          if (!err && suser && suser.found) {
+            req.user.settings = suser._source.settings;
+          }
+        next();
+      });
     });
   }
 
@@ -1150,7 +1155,7 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.aggregations = {g1: {terms: {field: "g1", size:1000}}, 
+    query.aggregations = {g1: {terms: {field: "g1", size:1000}},
                           g2: {terms: {field: "g2", size:1000}},
                      dbHisto: {histogram : {field: "lp", interval: interval}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
                  };
@@ -1721,6 +1726,7 @@ app.get('/sessions.json', function(req, res) {
                graph: graph,
                map: map,
                bsqErr: bsqErr.toString(),
+               health: Db.healthCache(),
                aaData:[]};
       res.send(r);
       return;
@@ -1792,6 +1798,7 @@ app.get('/spigraph.json', function(req, res) {
     var results = {items: [], graph: {}, map: {}, iTotalReords: 0};
     if (bsqErr) {
       results.bsqErr = bsqErr.toString();
+      results.health = Db.healthCache();
       res.send(results);
       return;
     }

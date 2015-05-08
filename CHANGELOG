@@ -23,6 +23,7 @@
               parseCookieValue (issue #371)
   - viewer - EXISTS! fixes, tests, and docs (issue #367)
   - viewer - Reuse Uncompress and Files settings between sessions
+  - viewer - Anonymous users still have a singled saved settings
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required
