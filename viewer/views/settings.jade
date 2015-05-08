@@ -39,11 +39,34 @@ block content
       option(value="dstip") Dst IP
       option(value="dstport") Dst Port
       option(value="packets") Packets
+      option(value="srcpackets") Src Packets
+      option(value="dstpackets") Dst Packets
       option(value="bytes") Bytes
+      option(value="srcbytes") Src Bytes
+      option(value="dstbytes") Dst Bytes
+      option(value="srcdatabytes") Src Databytes
+      option(value="dstdatabytes") Dst Databytes
       option(value="node") Node
     select#sortDirection.setting(name="sortDirection")
       option(value="asc") Ascending
       option(value="desc") Descending
+    br
+    label(for='visibleColumns') Sessions Visible Columns:
+    select#visibleColumns.setting(name="visibleColumns",multiple="multiple",size="6")
+      option(value="a1") Src IP
+      option(value="p1") Src Port
+      option(value="a2") Dst IP
+      option(value="p2") Dst Port
+      option(value="pa") Packets
+      option(value="pa1") Src Packets
+      option(value="pa2") Dst Packets
+      option(value="bytes") Bytes
+      option(value="by1") Src Bytes
+      option(value="by2") Dst Bytes
+      option(value="db1") Src Databytes
+      option(value="db2") Dst Databytes
+      option(value="no") Node
+      option(value="info") Info
     h3 SPI Graph Tab
     label(for='spiGraph') Default Graph:
     +fieldsSelect("spiGraph", "setting", false)
@@ -185,14 +208,27 @@ block content
       var defaults = {
         spiGraph: "no",
         connSrcField: "a1",
-        connDstField: "ip.dst:port"
+        connDstField: "ip.dst:port",
+        visibleColumns: ["a1", "p1", "a2", "p2", "pa", "bytes", "no", "info"]
       };
 
-      ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
+      ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "visibleColumns", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
         if (settings[field]) {
-          $("#" + field + " option[value='" + settings[field] + "']").attr('selected', 'selected');
+          if (Array.isArray(settings[field])) {
+            for (key in settings[field]) {
+              $("#" + field + " option[value='" + settings[field][key] + "']").attr('selected', 'selected');
+            }
+          } else {
+            $("#" + field + " option[value='" + settings[field] + "']").attr('selected', 'selected');
+          }
         } else if (defaults[field]) {
-          $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
+          if (Array.isArray(defaults[field])) {
+            for (key in defaults[field]) {
+              $("#" + field + " option[value='" + defaults[field][key] + "']").attr('selected', 'selected');
+            }
+          } else {
+            $("#" + field + " option[value='" + defaults[field] + "']").attr('selected', 'selected');
+          }
         }
       });
 

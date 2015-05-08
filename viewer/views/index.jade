@@ -31,7 +31,13 @@ block content
         th#a2.context-menu-one Dst IP
         th Dst Port
         th Packets
+        th Src Packets
+        th Dst Packets
         th Bytes
+        th Src Bytes
+        th Dst Bytes
+        th Src Databytes
+        th Dst Databytes
         th Node
         th#info.context-menu-one
           div.infoColumn Info
@@ -144,9 +150,43 @@ block content
         dstip: 6,
         dstport: 7,
         packets: 8,
-        bytes: 9,
-        node: 10
+        srcpackets: 9,
+        dstpackets: 10,
+        bytes: 11,
+        srcbytes: 12,
+        dstbytes: 13,
+        srcdatabytes: 14,
+        dstdatabytes: 15,
+        node: 16
       };
+
+      var pinnedColWidths = {
+        "plusminus":30,
+        "fp":105,
+        "lp":105,
+        "a1":160,
+        "p1":40,
+        "a2":160,
+        "p2":40,
+        "pa":80,
+        "pa1":80,
+        "pa2":80,
+        "bytes":150,
+        "by1":80,
+        "by2":80,
+        "db1":80,
+        "db2":80,
+        "no":150
+      };
+
+      var visibleColumns = ["plusminus", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "bytes", "no", "info"];
+      if(molochSettings.visibleColumns){
+        visibleColumns = ["plusminus", "fp", "lp"].concat(molochSettings.visibleColumns);
+      }
+
+      function visibleColumn(name) {
+        return visibleColumns.indexOf(name)>=0;
+      }
 
       sessionsTable = $('#sessions').dataTable( {
         "oLanguage": {
@@ -213,6 +253,7 @@ block content
             }
           },
           { "mDataProp" : "a1",
+            "bVisible": visibleColumn("a1"),
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
@@ -224,10 +265,12 @@ block content
             }
           },
           { "mDataProp" : "p1",
+            "bVisible": visibleColumn("p1"),
             "sClass": "context-menu-one",
             "sWidth": "55px"
           },
           { "mDataProp" : "a2",
+            "bVisible": visibleColumn("a2"),
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
@@ -239,20 +282,48 @@ block content
             }
           },
           { "mDataProp" : "p2",
+            "bVisible": visibleColumn("p2"),
             "sClass": "context-menu-one",
             "sWidth": "55px"
           },
           { "mDataProp" : "pa",
+            "bVisible": visibleColumn("pa"),
+            "sWidth": "55px"
+            },
+          { "mDataProp" : "pa1",
+            "bVisible": visibleColumn("pa1"),
+            "sWidth": "55px"
+            },
+          { "mDataProp" : "pa2",
+            "bVisible": visibleColumn("pa2"),
             "sWidth": "55px"
             },
           { "mDataProp" : "by",
+            "bVisible": visibleColumn("bytes"),
             "sWidth": "80px",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
               return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
             }
           },
+          { "mDataProp" : "by1",
+            "bVisible": visibleColumn("by1"),
+            "sWidth": "80px",
+          },
+          { "mDataProp" : "by2",
+            "bVisible": visibleColumn("by2"),
+            "sWidth": "80px",
+          },
+          { "mDataProp" : "db1",
+            "bVisible": visibleColumn("db1"),
+            "sWidth": "80px",
+          },
+          { "mDataProp" : "db2",
+            "bVisible": visibleColumn("db2"),
+            "sWidth": "80px",
+          },
           { "mDataProp" : "no",
+            "bVisible": visibleColumn("no"),
             "sWidth": "100px",
             bUseRendered: false,
             "fnRender" : function(oObj) {
@@ -261,6 +332,7 @@ block content
           },
           { "bSortable": false,
             "mDataProp" : null,
+            "bVisible": visibleColumn("info"),
             "sDefaultContent": "",
             "sClass": "infoColumn",
             "bUseRendered": false,
@@ -528,18 +600,9 @@ block content
               var td = $(nTr).children("td");
               $(td).each(function(i, e) {
                 $(e).html($(e).html().replace("<br>", "&nbsp;"));
+                $(e).width(pinnedColWidths[visibleColumns[i]]);
               });
-              $(td[0]).width(50); // +-
-              $(td[1]).width(105); // Start
-              $(td[2]).width(105); // Stop
-              $(td[3]).width(160); // Src
-              $(td[4]).width(40);  // SPort
-              $(td[5]).width(160); // Dst
-              $(td[6]).width(40);  // DPort
-              $(td[7]).width(80);  // Packets
-              $(td[8]).width(150); // Bytes
-              $(td[9]).width(150); // Node
-              $(td[10]).hide();
+              $($(nTr).find(".infoColumn")).hide();
               $($(nTr).find(".protocolText")).hide();
             }
           } else {
@@ -582,6 +645,7 @@ block content
     }); // document ready
 
     function unPinRow(nTr, updateRows) {
+      $($(nTr).find(".infoColumn")).show();
       $($(nTr).find(".protocolText")).show();
       $($(nTr).children("td")[10]).show();
       $(nTr).removeClass('fixedrow');
