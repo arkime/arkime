@@ -53,19 +53,19 @@ block content
     br
     label(for='visibleColumns') Sessions Visible Columns:
     select#visibleColumns.setting(name="visibleColumns",multiple="multiple",size="6")
-      option(value="srcip") Src IP
-      option(value="srcport") Src Port
-      option(value="dstip") Dst IP
-      option(value="dstport") Dst Port
-      option(value="packets") Packets
-      option(value="srcpackets") Src Packets
-      option(value="dstpackets") Dst Packets
+      option(value="a1") Src IP
+      option(value="p1") Src Port
+      option(value="a2") Dst IP
+      option(value="p2") Dst Port
+      option(value="pa") Packets
+      option(value="pa1") Src Packets
+      option(value="pa2") Dst Packets
       option(value="bytes") Bytes
-      option(value="srcbytes") Src Bytes
-      option(value="dstbytes") Dst Bytes
-      option(value="srcdatabytes") Src Databytes
-      option(value="dstdatabytes") Dst Databytes
-      option(value="node") Node
+      option(value="by1") Src Bytes
+      option(value="by2") Dst Bytes
+      option(value="db1") Src Databytes
+      option(value="db2") Dst Databytes
+      option(value="no") Node
       option(value="info") Info
     h3 SPI Graph Tab
     label(for='spiGraph') Default Graph:
@@ -209,7 +209,7 @@ block content
         spiGraph: "no",
         connSrcField: "a1",
         connDstField: "ip.dst:port",
-        visibleColumns: ["start", "stop", "srcip", "srcport", "dstip", "dstport", "packets", "bytes", "node", "info"]
+        visibleColumns: ["a1", "p1", "a2", "p2", "pa", "bytes", "no", "info"]
       };
 
       ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "visibleColumns", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {

@@ -161,27 +161,27 @@ block content
       };
 
       var pinnedColWidths = {
-        plusminus:30,
-        start:105,
-        stop:105,
-        srcip:160,
-        srcport:40,
-        dstip:160,
-        dstport:40,
-        packets:80,
-        srcpackets:80,
-        dstpackets:80,
-        bytes:150,
-        srcbytes:80,
-        dstbytes:80,
-        srcdatabytes:80,
-        dstdatabytes:80,
-        node:150
+        "plusminus":30,
+        "fp":105,
+        "lp":105,
+        "a1":160,
+        "p1":40,
+        "a2":160,
+        "p2":40,
+        "pa":80,
+        "pa1":80,
+        "pa2":80,
+        "bytes":150,
+        "by1":80,
+        "by2":80,
+        "db1":80,
+        "db2":80,
+        "no":150
       };
 
-      var visibleColumns = ["plusminus", "start", "stop", "srcip", "srcport", "dstip", "dstport", "packets", "bytes", "node", "info"];
+      var visibleColumns = ["plusminus", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "bytes", "no", "info"];
       if(molochSettings.visibleColumns){
-        visibleColumns = ["plusminus", "start", "stop"].concat(molochSettings.visibleColumns);
+        visibleColumns = ["plusminus", "fp", "lp"].concat(molochSettings.visibleColumns);
       }
 
       function visibleColumn(name) {
@@ -253,7 +253,7 @@ block content
             }
           },
           { "mDataProp" : "a1",
-            "bVisible": visibleColumn("srcip"),
+            "bVisible": visibleColumn("a1"),
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
@@ -265,12 +265,12 @@ block content
             }
           },
           { "mDataProp" : "p1",
-            "bVisible": visibleColumn("srcport"),
+            "bVisible": visibleColumn("p1"),
             "sClass": "context-menu-one",
             "sWidth": "55px"
           },
           { "mDataProp" : "a2",
-            "bVisible": visibleColumn("dstip"),
+            "bVisible": visibleColumn("a2"),
             "sWidth": "100",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
@@ -282,20 +282,20 @@ block content
             }
           },
           { "mDataProp" : "p2",
-            "bVisible": visibleColumn("dstport"),
+            "bVisible": visibleColumn("p2"),
             "sClass": "context-menu-one",
             "sWidth": "55px"
           },
           { "mDataProp" : "pa",
-            "bVisible": visibleColumn("packets"),
+            "bVisible": visibleColumn("pa"),
             "sWidth": "55px"
             },
           { "mDataProp" : "pa1",
-            "bVisible": visibleColumn("srcpackets"),
+            "bVisible": visibleColumn("pa1"),
             "sWidth": "55px"
             },
           { "mDataProp" : "pa2",
-            "bVisible": visibleColumn("dstpackets"),
+            "bVisible": visibleColumn("pa2"),
             "sWidth": "55px"
             },
           { "mDataProp" : "by",
@@ -307,23 +307,23 @@ block content
             }
           },
           { "mDataProp" : "by1",
-            "bVisible": visibleColumn("srcbytes"),
+            "bVisible": visibleColumn("by1"),
             "sWidth": "80px",
           },
           { "mDataProp" : "by2",
-            "bVisible": visibleColumn("dstbytes"),
+            "bVisible": visibleColumn("by2"),
             "sWidth": "80px",
           },
           { "mDataProp" : "db1",
-            "bVisible": visibleColumn("srcdatabytes"),
+            "bVisible": visibleColumn("db1"),
             "sWidth": "80px",
           },
           { "mDataProp" : "db2",
-            "bVisible": visibleColumn("dstdatabytes"),
+            "bVisible": visibleColumn("db2"),
             "sWidth": "80px",
           },
           { "mDataProp" : "no",
-            "bVisible": visibleColumn("node"),
+            "bVisible": visibleColumn("no"),
             "sWidth": "100px",
             bUseRendered: false,
             "fnRender" : function(oObj) {
