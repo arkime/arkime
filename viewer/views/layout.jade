@@ -137,55 +137,37 @@ html
         input#exportfilename(size=45, value="sessions.pcap")
         br
         button Export
-      div#actionsMenu
-        ul
-          li
-            label(style='font-weight:bold') Search Result Actions
-          li
-            a#exportButton Export PCAP
-          li
-            a#exportCSVButton Export CSV
-          li
-            a#addTagsButton Add Tags
-          - if (user.removeEnabled)
-            li
-              a#removeTagsButton Remove Tags
-            li
-              a#scrubButton Scrub PCAP Storage
-            li
-              a#deleteButton Delete SPI &amp; PCAP
-          - if (molochClusters)
-            each key in Object.keys(molochClusters)
-              li
-                a.sendSessionButton(cluster=key) Send Session to #{molochClusters[key].name}
-      div#sessionActionsMenu
-        ul
-          li
-            label(style='font-weight:bold') Session Actions
-          li
-            a#sessionExportButton.exportAction Export PCAP
-          li
-            a#sessionAddTagsButton.addTagsAction Add Tags
-          - if (user.removeEnabled)
-            li
-              a#sessionRemoveTagsButton.removeTagsAction Remove Tags
-            li
-              a#sessionScrubButton.scrubAction Scrub PCAP Storage
-            li
-              a#sessionDeleteButton.deleteAction Delete SPI &amp; PCAP
-          - if (molochClusters)
-            each key in Object.keys(molochClusters)
-              li
-                a.sessionSendSessionButton.sendSessionAction(cluster=key) Send Session to #{molochClusters[key].name}
+      menu#actionsMenu
+        span 
+          b Search Result Actions
+        command#exportButton(label="Export PCAP")
+        command#exportCSVButton(label="Export CSV")
+        command#addTagsButton(label="Add Tags")
+        - if (user.removeEnabled)
+          command#removeTagsButton(label="Remove Tags")
+          command#scrubButton(label="Scrub PCAP Storage")
+          command#deleteButton(label="Delete SPI &amp; PCAP")
+        - if (molochClusters)
+          each key in Object.keys(molochClusters)
+            command.sendSessionButton(cluster=key,label="Send Session to #{molochClusters[key].name}")
+      menu#sessionActionsMenu
+        span 
+          b Session Actions
+        command#sessionExportButton.exportAction(label="Export PCAP")
+        command#sessionAddTagsButton.addTagsAction(label="Add Tags")
+        - if (user.removeEnabled)
+          command#sessionRemoveTagsButton.removeTagsAction(label="Remove Tags")
+          command#sessionScrubButton.scrubAction(label="Scrub PCAP Storage")
+          command#sessionDeleteButton.deleteAction(label="Delete SPI &amp; PCAP")
+        - if (molochClusters)
+          each key in Object.keys(molochClusters)
+            command.sessionSendSessionButton.sendSessionAction(cluster=key,label="Send Session to #{molochClusters[key].name}")
       if (user.views)
-        div#viewsMenu
-          ul
-            li.viewMenuOption
-              a.viewMenuOption None
-            - var keys = Object.keys(user.views).sort()
-            each key in keys
-              li
-                a.viewMenuOption(exp=user.views[key].expression) #{key}
+        menu#viewsMenu
+          command.viewMenuOption(label="None")
+          - var keys = Object.keys(user.views).sort()
+          each key in keys
+            command.viewMenuOption(label="#{key}")
 
 script(type='text/javascript').
   var molochTitle = "#{title}";

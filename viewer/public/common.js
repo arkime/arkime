@@ -459,8 +459,6 @@ $(document).ready(function() {
 
 
   function showActionsDialog(options, cb) {
-    actionsMenu.hide();
-    sessionActionsMenu.hide();
     actionsDialog.set('content.title', options.title);
     if (options.message) {
       $("#actions-message").show();
@@ -522,59 +520,6 @@ $(document).ready(function() {
     actionsDialog.show();
     actionsDialog.molochCb = cb;
   }
-
-  //////////////////////////////////////////////////////////////////////////////////
-  // Sessions Actions Menu
-  //////////////////////////////////////////////////////////////////////////////////
-  var sessionActionsMenu = $('<div/>').qtip({
-    id: "sessionActionsMenu",
-    content: {
-      text: $('#sessionActionsMenu')
-    },
-    position: {
-      my: 'top right',
-      at: 'bottom right',
-      target: "event"
-    },
-    hide: {
-      fixed: true,
-      delay: 300
-    },
-    style: {
-      classes: 'qtip-light qtip-rounded',
-      tip: false
-    },
-    adjust: {
-      screen: true
-    }
-  }).qtip('api');
-
-  $(document).on("mouseover", ".sessionActionsMenu", function (e) {
-    $("#sessionActionsMenu").attr("sessionid", $(e.target).parents("div[sessionid]").attr("sessionid"));
-    sessionActionsMenu.show(e);
-  });
-
-  //////////////////////////////////////////////////////////////////////////////////
-  // Actions Menu
-  //////////////////////////////////////////////////////////////////////////////////
-  var actionsMenu = $('#actionsButton').qtip({
-    id: "actionsMenu",
-    content: {
-      text: $('#actionsMenu')
-    },
-    position: {
-      my: 'top right',
-      at: 'bottom right',
-    },
-    hide: {
-      fixed: true,
-      delay: 300
-    },
-    style: {
-      classes: 'qtip-light qtip-rounded',
-      tip: false
-    }
-  }).qtip('api');
 
   //////////////////////////////////////////////////////////////////////////////////
   // Tags Dialogs
@@ -907,49 +852,8 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////
   // Views Menu
   //////////////////////////////////////////////////////////////////////////////////
-  var viewsMenu = $('#viewsButton').qtip({
-    id: "viewsMenu",
-    content: {
-      text: $('#viewsMenu')
-    },
-    position: {
-      my: 'top right',
-      at: 'bottom right',
-    },
-    hide: {
-      fixed: true,
-      delay: 300
-    },
-    style: {
-      classes: 'qtip-light qtip-rounded',
-      tip: false
-    },
-    events: {
-      render: function(event, api) {
-        var content = api.elements.content;
-        $('a[exp]', content).qtip({
-          style: {
-            classes: 'qtip-rounded',
-          },
-          show: {
-            delay: 500
-          },
-          position: {
-            my: 'top right',
-            at: 'bottom left'
-          },
-          container: content,
-          content: function (a,b) {
-            return $(this).attr('exp');
-          }
-        });
-      }
-    }
-  }).qtip('api');
-
   $(".viewMenuOption").click(function (e) {
-    viewsMenu.hide();
-    var view = $(e.target).text();
+    var view = $(this).attr("label");
     if (view === "None") {
       if (sessionStorage['moloch-view']) {
         delete sessionStorage['moloch-view'];
@@ -1019,6 +923,10 @@ $(document).ready(function() {
     };
   }
   if ($.contextMenu) {
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // Right Click Menu
+    //////////////////////////////////////////////////////////////////////////////////
     $.contextMenu({
       selector: '.moloch-right-click',
       build: function($trigger, e) {
@@ -1084,8 +992,51 @@ $(document).ready(function() {
         return rightClickCallback(e, items);
       }
     });
-  }
 
+    //////////////////////////////////////////////////////////////////////////////////
+    // Actions Menu
+    //////////////////////////////////////////////////////////////////////////////////
+    $.contextMenu({
+      selector: '#actionsButton',
+      trigger: "hover",
+      items: $.contextMenu.fromMenu($('#actionsMenu')),
+      zIndex: 10
+    });
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // Session Actions Menu
+    //////////////////////////////////////////////////////////////////////////////////
+    $.contextMenu({
+      selector: '.sessionActionsMenu',
+      trigger: "hover",
+      items: $.contextMenu.fromMenu($('#sessionActionsMenu')),
+      zIndex: 10
+    });
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // Views Menu
+    //////////////////////////////////////////////////////////////////////////////////
+    if ($('#viewsMenu').children().length > 0) {
+      $.contextMenu({
+        selector: '#viewsButton',
+        trigger: "hover",
+        items: $.contextMenu.fromMenu($('#viewsMenu')),
+        zIndex: 10,
+        className: "viewMenuLi"
+      });
+    }
+
+    $(".viewMenuLi").each(function (i, obj) {
+      $(obj).children().each(function(i, obj) {
+        var view = $(this).text();
+        if (view !== "None") {
+          $(this).attr('title', molochViews[view].expression);
+        }
+      });
+    });
+
+  //////////////////////////////////////////////////////////////////////////////////
+  } // End if ($.contextMenu)
 
   //////////////////////////////////////////////////////////////////////////////////
   // startDate/stopDate
