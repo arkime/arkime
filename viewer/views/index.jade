@@ -531,8 +531,8 @@ block content
             }
             var sPos = sessionsTable.fnGetPosition( e.target );
             var ip, country, port, suffix;
-            if (sPos[1] === 4 || sPos[1] === 6) {
-              if (sPos[1] === 4) {
+            if (visibleColumns[sPos[1]] === "p1" || visibleColumns[sPos[1]] === "p2") {
+              if (visibleColumns[sPos[1]] === "p1") {
                 ip = ipString(rowData.a1);
                 port = rowData.p1;
                 suffix = ".src";
