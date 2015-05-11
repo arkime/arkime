@@ -1,4 +1,4 @@
-/* Copyright 2012-2014 AOL Inc. All rights reserved.
+/* Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -59,7 +59,27 @@ typedef struct {
 // SMB2 Flags
 #define SMB2_FLAGS_SERVER_TO_REDIR 0x00000001
 
+/******************************************************************************/
+void smb_add_string(MolochSession_t *session, int field, char *buf, int len, int useunicode)
+{
+    GError *error = 0;
+    gsize bread, bwritten;
 
+    if (useunicode) {
+        char *out = g_convert(buf, len, "utf-8", "ucs-2le", &bread, &bwritten, &error);
+        if (error) {
+            LOG("ERROR %s", error->message);
+            g_error_free(error);
+        } else {
+            if (!moloch_field_string_add(field, session, out, -1, FALSE)) {
+                g_free(out);
+            }
+        }
+    } else {
+        moloch_field_string_add(field, session, buf, len, TRUE);
+    }
+}
+/******************************************************************************/
 // 2.2.13 AUTHENTICATE_MESSAGE from  http://download.microsoft.com/download/9/5/E/95EF66AF-9026-4BB0-A41D-A4F81802D92C/[MS-NLMP].pdf
 void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
 {
@@ -100,7 +120,6 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
     if (type != 3) // auth type
         return;
 
-    gsize bread, bwritten;
     int lens[6], offsets[6];
     int i;
     for (i = 0; i < 6; i++) {
@@ -113,50 +132,86 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
         return;
 
     if (lens[1]) {
-        GError      *error = 0;
-        char *out = g_convert((char *)value + offsets[2], lens[2], "utf-8", "ucs-2le", &bread, &bwritten, &error);
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(domainField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
+        smb_add_string(session, domainField, (char*)value + offsets[2], lens[2], TRUE);
     }
     if (lens[2]) {
-        GError      *error = 0;
-        char *out = g_convert((char *)value + offsets[3], lens[3], "utf-8", "ucs-2le", &bread, &bwritten, &error);
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(userField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
+        smb_add_string(session, userField, (char*)value + offsets[3], lens[3], TRUE);
     }
     if (lens[3]) {
-        GError      *error = 0;
-        char *out = g_convert((char *)value + offsets[4], lens[4], "utf-8", "ucs-2le", &bread, &bwritten, &error);
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(hostField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
+        smb_add_string(session, hostField, (char*)value + offsets[4], lens[4], TRUE);
     }
 }
+/******************************************************************************/
+void smb1_parse_osverdomain(MolochSession_t *session, char *buf, int len, int useunicode)
+{
+    char        *out;
+    gsize        bread, bwritten;
+    GError      *error = 0;
 
+    if (useunicode)
+        out = g_convert(buf, len, "utf-8", "ucs-2le", &bread, &bwritten, &error);
+    else
+        out = buf;
+
+    if (error) {
+        LOG("ERROR %s", error->message);
+        g_error_free(error);
+        return;
+    }
+
+    if (*out)
+        moloch_field_string_add(osField, session, out, -1, TRUE);
+    char *ver = out + strlen(out) + 1;
+    if (*ver)
+        moloch_field_string_add(verField, session, ver, -1, TRUE);
+    char *domain = ver + strlen(ver) + 1;
+    if (*domain)
+        moloch_field_string_add(domainField, session, domain, -1, TRUE);
+
+    if (useunicode) {
+        g_free(out);
+    }
+}
+/******************************************************************************/
+void smb1_parse_userdomainosver(MolochSession_t *session, char *buf, int len, int useunicode)
+{
+    char        *out;
+    gsize        bread, bwritten;
+    GError      *error = 0;
+
+    if (useunicode)
+        out = g_convert(buf, len, "utf-8", "ucs-2le", &bread, &bwritten, &error);
+    else
+        out = buf;
+
+    if (error) {
+        LOG("ERROR %s", error->message);
+        g_error_free(error);
+        return;
+    }
+
+    if (*out)
+        moloch_field_string_add(userField, session, out, -1, TRUE);
+    char *domain = out + strlen(out) + 1;
+    if (*domain)
+        moloch_field_string_add(domainField, session, domain, -1, TRUE);
+    char *os = domain + strlen(domain) + 1;
+    if (*os)
+        moloch_field_string_add(osField, session, os, -1, TRUE);
+    char *ver = os + strlen(os) + 1;
+    if (*ver)
+        moloch_field_string_add(verField, session, ver, -1, TRUE);
+
+    if (useunicode) {
+        g_free(out);
+    }
+}
+/******************************************************************************/
 int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     unsigned char *start = BSB_WORK_PTR(*bsb);
     unsigned char cmd    = 0;
 
-    gsize bread, bwritten;
-    GError      *error = 0;
     int          offset;
 
     switch (*state) {
@@ -208,15 +263,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
         BSB_IMPORT_skip(*bsb, wordcount*2 + 3);
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(fnField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
+        smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
     }
@@ -227,16 +274,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         int wordcount = 0;
         BSB_IMPORT_u08(*bsb, wordcount);
         BSB_IMPORT_skip(*bsb, wordcount*2+3);
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
-
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(fnField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
+        smb_add_string(session, fnField, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
     }
@@ -250,16 +288,7 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
         BSB_IMPORT_skip(*bsb, 2 + passlength);
 
         int offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?2:1;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(shareField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
-
+        smb_add_string(session, shareField, (char*)BSB_WORK_PTR(*bsb)+offset, BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         *state = SMB_SKIP;
         break;
     }
@@ -285,22 +314,8 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
             offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
-            char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
-            if (error) {
-                LOG("ERROR %s", error->message);
-                g_error_free(error);
-            } else if (!BSB_IS_ERROR(*bsb)) {
-                if (*out)
-                    moloch_field_string_add(osField, session, out, -1, TRUE);
-                char *ver = out + strlen(out) + 1;
-                if (*ver)
-                    moloch_field_string_add(verField, session, ver, -1, TRUE);
-                char *domain = ver + strlen(ver) + 1;
-                if (*domain)
-                    moloch_field_string_add(domainField, session, domain, -1, TRUE);
-                g_free(out);
-            } else {
-                g_free(out);
+            if (!BSB_IS_ERROR(*bsb)) {
+                smb1_parse_osverdomain(session, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
         } else if (wordcount == 13) {
             BSB_IMPORT_skip(*bsb, 14);
@@ -315,25 +330,8 @@ int smb1_parse(MolochSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, 
             offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0)?0:1;
             BSB_IMPORT_skip(*bsb, offset);
 
-            char *out = g_convert((char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), "utf-8", "ucs-2le", &bread, &bwritten, &error);
-            if (error) {
-                LOG("ERROR %s", error->message);
-                g_error_free(error);
-            } else if (!BSB_IS_ERROR(*bsb)) {
-                if (*out)
-                    moloch_field_string_add(userField, session, out, -1, TRUE);
-                char *domain = out + strlen(out) + 1;
-                if (*domain)
-                    moloch_field_string_add(domainField, session, domain, -1, TRUE);
-                char *os = domain + strlen(domain) + 1;
-                if (*os)
-                    moloch_field_string_add(osField, session, os, -1, TRUE);
-                char *ver = os + strlen(os) + 1;
-                if (*ver)
-                    moloch_field_string_add(verField, session, ver, -1, TRUE);
-                g_free(out);
-            } else {
-                g_free(out);
+            if (!BSB_IS_ERROR(*bsb)) {
+                smb1_parse_userdomainosver(session, (char*)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
         }
 
@@ -398,17 +396,7 @@ int smb2_parse(MolochSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char 
         pathoffset -= (64 + 8);
         BSB_IMPORT_skip(*bsb, pathoffset);
 
-        gsize bread, bwritten;
-        GError      *error = 0;
-        char *out = g_convert((char*)BSB_WORK_PTR(*bsb), pathlen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
-        if (error) {
-            LOG("ERROR %s", error->message);
-            g_error_free(error);
-        } else {
-            if (!moloch_field_string_add(shareField, session, out, -1, FALSE)) {
-                g_free(out);
-            }
-        }
+        smb_add_string(session, shareField, (char*)BSB_WORK_PTR(*bsb), pathlen, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
 
         *remlen -= (BSB_WORK_PTR(*bsb) - start);
         *state = SMB_SKIP;

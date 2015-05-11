@@ -25,6 +25,7 @@
   - viewer - Reuse Uncompress and Files settings between sessions
   - viewer - Anonymous users still have a singled saved settings
   - viewer - Switch actions/views menu to jquery-ContextMenu which looks more like a menu
+  - capture - Handle ASCII formated SMB strings
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required
