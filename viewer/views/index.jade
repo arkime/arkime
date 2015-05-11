@@ -33,11 +33,14 @@ block content
         th Packets
         th Src Packets
         th Dst Packets
-        th Bytes
+        th Src / Dst Packets
+        th(title="Databytes / Bytes") Bytes
         th Src Bytes
         th Dst Bytes
+        th Src / Dst Bytes
         th Src Databytes
         th Dst Databytes
+        th Src / Dst Databytes
         th Node
         th#info.context-menu-one
           div.infoColumn Info
@@ -152,12 +155,15 @@ block content
         packets: 8,
         srcpackets: 9,
         dstpackets: 10,
-        bytes: 11,
-        srcbytes: 12,
-        dstbytes: 13,
-        srcdatabytes: 14,
-        dstdatabytes: 15,
-        node: 16
+        srcdstpackets: 11,
+        bytes: 12,
+        srcbytes: 13,
+        dstbytes: 14,
+        srcdstbytes: 15,
+        srcdatabytes: 16,
+        dstdatabytes: 17,
+        srcdstdatabytes: 18,
+        node: 19
       };
 
       var pinnedColWidths = {
@@ -171,11 +177,14 @@ block content
         "pa":80,
         "pa1":80,
         "pa2":80,
+        "pa1pa2":150,
         "bytes":150,
         "by1":80,
         "by2":80,
+        "by1by2":150,
         "db1":80,
         "db2":80,
+        "db1db2":150,
         "no":150
       };
 
@@ -298,6 +307,14 @@ block content
             "bVisible": visibleColumn("pa2"),
             "sWidth": "55px"
             },
+          { "mDataProp" : "pa1",
+            "bVisible": visibleColumn("pa1pa2"),
+            "sWidth": "55px",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              return "" + numberWithCommas(oObj.aData.pa1) + " /<br>" + numberWithCommas(oObj.aData.pa2);
+            }
+          },
           { "mDataProp" : "by",
             "bVisible": visibleColumn("bytes"),
             "sWidth": "80px",
@@ -314,6 +331,14 @@ block content
             "bVisible": visibleColumn("by2"),
             "sWidth": "80px",
           },
+          { "mDataProp" : "by1",
+            "bVisible": visibleColumn("by1by2"),
+            "sWidth": "80px",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              return "" + numberWithCommas(oObj.aData.by1) + " /<br>" + numberWithCommas(oObj.aData.by2);
+            }
+          },
           { "mDataProp" : "db1",
             "bVisible": visibleColumn("db1"),
             "sWidth": "80px",
@@ -321,6 +346,14 @@ block content
           { "mDataProp" : "db2",
             "bVisible": visibleColumn("db2"),
             "sWidth": "80px",
+          },
+          { "mDataProp" : "db1",
+            "bVisible": visibleColumn("db1db2"),
+            "sWidth": "80px",
+            "bUseRendered": false,
+            "fnRender" : function(oObj) {
+              return "" + numberWithCommas(oObj.aData.db1) + " /<br>" + numberWithCommas(oObj.aData.db2);
+            }
           },
           { "mDataProp" : "no",
             "bVisible": visibleColumn("no"),
