@@ -659,7 +659,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             }
 
             if (a_tcp->client.offset == 0) {
-                session->firstBytesLen[1] = MIN(8, countNew);
+                session->firstBytesLen[1] = MIN(8, count);
                 memcpy(session->firstBytes[1], data, session->firstBytesLen[1]);
             }
 
@@ -703,7 +703,7 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             }
 
             if (a_tcp->server.offset == 0) {
-                session->firstBytesLen[0] = MIN(8, countNew);
+                session->firstBytesLen[0] = MIN(8, count);
                 memcpy(session->firstBytes[0], data, session->firstBytesLen[0]);
             }
 
