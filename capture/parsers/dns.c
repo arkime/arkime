@@ -383,6 +383,7 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x81\x90");
     DNS_CLASSIFY("\x81\xb0");
     DNS_CLASSIFY("\x84\x10");
+    DNS_CLASSIFY("\x85\x00");
     DNS_CLASSIFY("\x85\x83");
 }
 
