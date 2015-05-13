@@ -897,9 +897,9 @@ $(document).ready(function() {
     }
 
     if (Array.isArray(field.category)) {
-      return {field: molochexpr, category:field.category};
+      return {field: molochexpr, category:field.category, info: field};
     } else {
-      return {field: molochexpr, category:[field.category]};
+      return {field: molochexpr, category:[field.category], info: field};
     }
   }
 
@@ -909,6 +909,9 @@ $(document).ready(function() {
         var item = items[key];
         if (item.exp) {
           var text = item.value || $(e.target).text().trim();
+          if (item.info.info && item.info.info.type === "integer") {
+            text = text.replace(/,/g, "");
+          }
           if (typeof text == "string" && text.match(/[^\w.]/)) {
             text = '"' + text + '"';
           }
@@ -948,8 +951,8 @@ $(document).ready(function() {
         }
         //console.log("text", text, "url", url, "host", host);
         var items = {
-          and: {name: "<b>and</b> " + safeStr(url), exp: "=="},
-          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!="}
+          and: {name: "<b>and</b> " + safeStr(url), exp: "==", info: info},
+          andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!=", info: info}
         };
 
         for (var key in molochRightClick) {

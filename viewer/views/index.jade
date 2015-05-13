@@ -297,22 +297,35 @@ block content
           },
           { "mDataProp" : "pa",
             "bVisible": visibleColumn("pa"),
-            "sWidth": "55px"
-            },
+            "sWidth": "55px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='packets' class='moloch-right-click'> " + oObj.aData.pa + "</span>";
+            }
+          },
           { "mDataProp" : "pa1",
             "bVisible": visibleColumn("pa1"),
-            "sWidth": "55px"
-            },
+            "sWidth": "55px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='packets.src' class='moloch-right-click'> " + oObj.aData.pa1 + "</span>";
+            }
+          },
           { "mDataProp" : "pa2",
             "bVisible": visibleColumn("pa2"),
-            "sWidth": "55px"
-            },
+            "sWidth": "55px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='packets.dst' class='moloch-right-click'> " + oObj.aData.pa2 + "</span>";
+            }
+          },
           { "mDataProp" : "pa1",
             "bVisible": visibleColumn("pa1pa2"),
             "sWidth": "55px",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              return "" + numberWithCommas(oObj.aData.pa1) + " /<br>" + numberWithCommas(oObj.aData.pa2);
+              return "<span molochexpr='packets.src' class='moloch-right-click'> " + numberWithCommas(oObj.aData.pa1) + "</span> /<br>" +
+                     "<span molochexpr='packets.dst' class='moloch-right-click'> " + numberWithCommas(oObj.aData.pa2) + "</span>";
             }
           },
           { "mDataProp" : "by",
@@ -320,39 +333,58 @@ block content
             "sWidth": "80px",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              return "" + numberWithCommas(oObj.aData.db) + " /<br>" + numberWithCommas(oObj.aData.by);
+              return "<span molochexpr='databytes' class='moloch-right-click'> " + numberWithCommas(oObj.aData.db) + "</span> /<br>" +
+                     "<span molochexpr='bytes' class='moloch-right-click'> " + numberWithCommas(oObj.aData.by) + "</span>";
             }
           },
           { "mDataProp" : "by1",
             "bVisible": visibleColumn("by1"),
             "sWidth": "80px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='bytes.src' class='moloch-right-click'> " + oObj.aData.by1 + "</span>";
+            }
           },
           { "mDataProp" : "by2",
             "bVisible": visibleColumn("by2"),
             "sWidth": "80px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='bytes.dst' class='moloch-right-click'> " + oObj.aData.by2 + "</span>";
+            }
           },
           { "mDataProp" : "by1",
             "bVisible": visibleColumn("by1by2"),
             "sWidth": "80px",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              return "" + numberWithCommas(oObj.aData.by1) + " /<br>" + numberWithCommas(oObj.aData.by2);
+              return "<span molochexpr='bytes.src' class='moloch-right-click'> " + numberWithCommas(oObj.aData.by1) + "</span> /<br>" +
+                     "<span molochexpr='bytes.dst' class='moloch-right-click'> " + numberWithCommas(oObj.aData.by2) + "</span>";
             }
           },
           { "mDataProp" : "db1",
             "bVisible": visibleColumn("db1"),
             "sWidth": "80px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='databytes.src' class='moloch-right-click'> " + oObj.aData.db1 + "</span>";
+            }
           },
           { "mDataProp" : "db2",
             "bVisible": visibleColumn("db2"),
             "sWidth": "80px",
+            bUseRendered: false,
+            "fnRender" : function(oObj) {
+              return "<span molochexpr='databytes.dst' class='moloch-right-click'> " + oObj.aData.db2 + "</span>";
+            }
           },
           { "mDataProp" : "db1",
             "bVisible": visibleColumn("db1db2"),
             "sWidth": "80px",
             "bUseRendered": false,
             "fnRender" : function(oObj) {
-              return "" + numberWithCommas(oObj.aData.db1) + " /<br>" + numberWithCommas(oObj.aData.db2);
+              return "<span molochexpr='databytes.src' class='moloch-right-click'> " + numberWithCommas(oObj.aData.db1) + "</span> /<br>" +
+                     "<span molochexpr='databytes.dst' class='moloch-right-click'> " + numberWithCommas(oObj.aData.db2) + "</span>";
             }
           },
           { "mDataProp" : "no",
@@ -558,6 +590,8 @@ block content
               };
             }
 
+            console.log(id);
+
             var rowData = sessionsTable.fnGetData($(e.target).closest("tr")[0]);
             if (rowData === null) {
               return false;
@@ -575,10 +609,10 @@ block content
                 suffix = ".dst";
               }
               items = {
-                andport: {name: "and Port " + port, exp: "port" + suffix + "==" + port},
-                andnotport: {name: "and NOT Port " + port, exp: "port" + suffix + "!=" + port},
-                andipport: {name: "and " + ip + ":" + port, exp: "ip" + suffix + "==" + ip + ":" + port},
-                andnotipport: {name: "and NOT " + ip + ":" + port, exp: "ip" + suffix + "!=" + ip + ":" + port}
+                andport: {name: "<b>and</b> Port " + port, exp: "port" + suffix + "==" + port},
+                andnotport: {name: "<b>and not</b> Port " + port, exp: "port" + suffix + "!=" + port},
+                andipport: {name: "<b>and<b> " + ip + ":" + port, exp: "ip" + suffix + "==" + ip + ":" + port},
+                andnotipport: {name: "<b>and not</b> " + ip + ":" + port, exp: "ip" + suffix + "!=" + ip + ":" + port}
               };
             } else {
               return false;
