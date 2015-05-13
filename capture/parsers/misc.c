@@ -1,4 +1,4 @@
-/* Copyright 2012-2014 AOL Inc. All rights reserved.
+/* Copyright 2012-2015 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -63,14 +63,20 @@ void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len
 /******************************************************************************/
 void other220_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
-    if (g_strstr_len((char *)data, len, "LMTP") != 0) {
+    if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
         moloch_nids_add_tag(session, "protocol:lmtp");
         moloch_nids_add_protocol(session, "lmtp");
     }
-    else if (g_strstr_len((char *)data, len, "SMTP") == 0) {
+    else if (g_strstr_len((char *)data, len, "SMTP") == NULL) {
         moloch_nids_add_tag(session, "protocol:ftp");
         moloch_nids_add_protocol(session, "ftp");
     }
+}
+/******************************************************************************/
+void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
+{
+    if (len >= 12 && data[7] == '.' && data[11] == 0xa)
+        moloch_nids_add_protocol(session, "vnc");
 }
 /******************************************************************************/
 void moloch_parser_init()
@@ -80,7 +86,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("imap", 0, (unsigned char*)"* OK ", 5, imap_classify);
     moloch_parsers_classifier_register_tcp("pop3", 0, (unsigned char*)"+OK POP3 ", 9, pop3_classify);
     moloch_parsers_classifier_register_tcp("gh0st", 14, 0, 0, gh0st_classify);
-    moloch_parsers_classifier_register_tcp("other220", 0, (unsigned char*)"220 ", 5, other220_classify);
+    moloch_parsers_classifier_register_tcp("other220", 0, (unsigned char*)"220 ", 4, other220_classify);
+    moloch_parsers_classifier_register_tcp("vnc", 0, (unsigned char*)"RFB 0", 5, vnc_classify);
 
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:a", 4, bt_classify);
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:r", 4, bt_classify);
