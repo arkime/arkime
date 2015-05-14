@@ -80,7 +80,9 @@ void
 writer_inplace_next_input(FILE *file, char *filename) {
     inputFile = file;
     strcpy(inputFilename, filename);
-    g_free(outputFileName);
+    if (!config.dryRun) {
+        g_free(outputFileName);
+    }
     outputFileName = 0;
 }
 /******************************************************************************/
