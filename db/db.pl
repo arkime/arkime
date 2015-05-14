@@ -1016,7 +1016,7 @@ sub sessionsUpdate
         index: "no"
       },
       psl: {
-        type: "short",
+        type: "integer",
         index: "no"
       },
       fs: {
