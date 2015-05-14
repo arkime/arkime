@@ -382,7 +382,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
                  session->addr2 == packet->ip_dst.s_addr &&
                  session->port1 == ntohs(tcphdr->th_sport) &&
                  session->port2 == ntohs(tcphdr->th_dport))?0:1;
-        session->tcp_flags |= *((char*)packet + 4 * packet->ip_hl+12);
+        session->tcp_flags |= tcphdr->th_flags;
         break;
     case IPPROTO_ICMP:
         which = (session->addr1 == packet->ip_src.s_addr &&
