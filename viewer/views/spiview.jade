@@ -115,7 +115,7 @@ block content
 
             $.each(json.spi, function(spii, spi) {
               var spida = $("[id='SPIda-" + spii + "']"); // not # because period in field name
-              if (spi.terms.length !== 0) {
+              if (spi.buckets.length !== 0) {
                 spida.text("");
               } else {
                 spida.html("&nbsp;");
@@ -126,59 +126,59 @@ block content
 
               if (spii.match(/^(a1|a2|xff|dnsip|eip|socksip)$/) !== null ||
                   (finfo && finfo.type === "ip")) {
-                $.each(spi.terms, function(i, term) {
+                $.each(spi.buckets, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
                     spiterm += ",";
                   }
-                  spiterm += ipString(term.term);
+                  spiterm += ipString(term.key);
                   spida.append($('<a></a>').attr("href","#")
-                                           .text(ipString(term.term))
+                                           .text(ipString(term.key))
                                            .addClass("moloch-right-click")
                                            .click(addExpressionClick)
                                            );
-                  spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
+                  spida.append("<span class=\"spicount\">(" + term.doc_count + ")</span>");
                 });
               } else if (finfo && finfo.type === "seconds") {
-                $.each(spi.terms, function(i, term) {
+                $.each(spi.buckets, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
                     spiterm += ",";
                   }
-                  spiterm += dateString(term.term, " ");
+                  spiterm += dateString(term.key, " ");
                   spida.append($('<a></a>').attr("href","#")
-                                           .text(dateString(term.term, " "))
+                                           .text(dateString(term.key, " "))
                                            .addClass("moloch-right-click")
                                            .click(addExpressionClick)
                                            );
-                  spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
+                  spida.append("<span class=\"spicount\">(" + term.doc_count + ")</span>");
                 });
               } else {
-                $.each(spi.terms, function(i, term) {
+                $.each(spi.buckets, function(i, term) {
                   if (i !== 0) {
                     spida.append(", ");
                     spiterm += ",";
                   }
-                  var quoted = term.term;
-                  if (typeof term.term == "string" && term.term.match(/[^\w]/)) {
+                  var quoted = term.key;
+                  if (typeof quoted == "string" && quoted.match(/[^\w]/)) {
                     quoted = '"' + quoted + '"';
                   }
                   spiterm += quoted;
                   spida.append($('<a></a>').attr("href","#")
-                                           .text(""+term.term)
+                                           .text(""+term.key)
                                            .addClass("moloch-right-click")
                                            .click(addExpressionClick)
                                            );
-                  spida.append("<span class=\"spicount\">(" + term.count + ")</span>");
+                  spida.append("<span class=\"spicount\">(" + term.doc_count + ")</span>");
                 });
               }
               spiTerms[spii] = spiterm;
 
-              if (spi.other > 0) {
+              if (spi.sum_other_doc_count > 0) {
                   spida.append(", <a href=\"#\" onclick='return moreSPI(\"" +
                                spii +
                                "\");'</a> &hellip;</a>");
-                  spida.append("<span class=\"spicount\">(" + spi.other + ")</span>");
+                  spida.append("<span class=\"spicount\">(" + spi.sum_other_doc_count + ")</span>");
               }
             });
           }
@@ -213,13 +213,13 @@ block content
       loadQueue.clearQueue();
       clickQueue.clearQueue();
 
-      var state = "facets=1&spi=";
+      var state = "facets=1&spi=prot-term:1000,";
       var num = 0;
       $("[id^=SPIck]").each(function(index, item) {
         var istate = fetchState($(item), false);
 
         if (istate !== "") {
-          if (num > 0) {
+          if (num !== 0) {
             state += ",";
           }
           num++;

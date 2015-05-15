@@ -1155,9 +1155,9 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.aggregations = {g1: {terms: {field: "g1", size:1000}},
-                          g2: {terms: {field: "g2", size:1000}},
-                     dbHisto: {histogram : {field: "lp", interval: interval}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
+    query.aggregations = {mapG1: {terms: {field: "g1", size:1000}},
+                          mapG2: {terms: {field: "g2", size:1000}},
+                        dbHisto: {histogram : {field: "lp", interval: interval}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
                  };
   }
 
@@ -1675,15 +1675,15 @@ app.post('/users.json', function(req, res) {
 
 function mapMerge(aggregations) {
   var map = {src: {}, dst: {}};
-  if (!aggregations || !aggregations.g1) {
+  if (!aggregations || !aggregations.mapG1) {
     return {};
   }
 
-  aggregations.g1.buckets.forEach(function (item) {
+  aggregations.mapG1.buckets.forEach(function (item) {
     map.src[item.key] = item.doc_count;
   });
 
-  aggregations.g2.buckets.forEach(function (item) {
+  aggregations.mapG2.buckets.forEach(function (item) {
     map.dst[item.key] = item.doc_count;
   });
 
@@ -1929,13 +1929,17 @@ app.get('/spiview.json', function(req, res) {
 
     delete query.sort;
 
-    if (!query.facets) {
-      query.facets = {};
+    if (!query.aggregations) {
+      query.aggregations = {};
     }
 
     req.query.spi.split(",").forEach(function (item) {
       var parts = item.split(":");
-      query.facets[parts[0]] = {terms: {field: parts[0], size:parseInt(parts[1], 10)}};
+      query.aggregations[parts[0]] = {terms: {field: parts[0]}};
+
+      if (parts.length > 1) {
+        query.aggregations[parts[0]].terms.size = parseInt(parts[1], 10);
+      } 
     });
     query.size = 0;
 
@@ -1968,33 +1972,30 @@ app.get('/spiview.json', function(req, res) {
 
           iTotalDisplayRecords = result.hits.total;
 
-          if (!result.facets) {
-            result.facets = {};
-            for (var spi in query.facets) {
-              result.facets[spi] = {_type: "terms", missing: 0, total: 0, other: 0, terms: []};
+          if (!result.aggregations) {
+            result.aggregations = {};
+            for (var spi in query.aggregations) {
+              result.aggregations[spi] = {sum_other_doc_count: 0, buckets: []};
             }
           }
 
-          if (!result.aggregations) {
-            result.aggregations = {};
-          }
-
-          if (result.facets.pr) {
-            result.facets.pr.terms.forEach(function (item) {
-              item.term = Pcap.protocol2Name(item.term);
+          if (result.aggregations.pr) {
+            result.aggregations.pr.buckets.forEach(function (item) {
+              item.key = Pcap.protocol2Name(item.key);
             });
           }
 
           if (req.query.facets) {
             graph = graphMerge(req, query, result.aggregations);
             map = mapMerge(result.aggregations);
-          }
-          delete result.aggregations.dbHisto;
-          delete result.aggregations.paHisto;
-          delete result.aggregations.g1;
-          delete result.aggregations.g2;
 
-          sessionsCb(null, result.facets);
+            delete result.aggregations.dbHisto;
+            delete result.aggregations.paHisto;
+            delete result.aggregations.mapG1;
+            delete result.aggregations.mapG2;
+          }
+
+          sessionsCb(null, result.aggregations);
         });
       },
       total: function (totalCb) {
@@ -2007,14 +2008,14 @@ app.get('/spiview.json', function(req, res) {
         if (!container[field]) {
           return doneCb(null);
         }
-        async.map(container[field].terms, function (item, cb) {
-          Db.tagIdToName(item.term, function (name) {
-            item.term = name.substring(offset);
+        async.map(container[field].buckets, function (item, cb) {
+          Db.tagIdToName(item.key, function (name) {
+            item.key = name.substring(offset);
             cb(null, item);
           });
         },
         function(err, tagsResults) {
-          container[field].terms = tagsResults;
+          container[field].buckets = tagsResults;
           doneCb(err);
         });
       }

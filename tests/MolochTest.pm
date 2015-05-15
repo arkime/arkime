@@ -26,10 +26,10 @@ my ($url, $debug) = @_;
 }
 ################################################################################
 sub viewerGet2 {
-my ($url) = @_;
+my ($url, $debug) = @_;
 
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8124$url");
-    #print $url, " response:", $response->content;
+    diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }

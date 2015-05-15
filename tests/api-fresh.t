@@ -61,13 +61,13 @@ my $json;
 
     $json = viewerGet2("/spiview.json?spi=ta&facets=1");
     is (scalar keys %{$json->{spi}}, 1, "one spiview.json spi");
-    is (scalar keys %{$json->{spi}->{ta}}, 5, "Five spiview.json ta");
+    is (scalar keys %{$json->{spi}->{ta}}, 2, "Two spiview.json ta elements");
     is ($json->{iTotalRecords}, 0, "Correct spiview.json iTotalRecords");
     is ($json->{health}->{number_of_data_nodes}, 1, "Correct spiview.json health number_of_data_nodes");
     is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spiview.json graph lpHisto");
     is (scalar @{$json->{graph}->{paHisto}}, 0, "Correct spiview.json graph paHisto");
     is (scalar @{$json->{graph}->{lpHisto}}, 0, "Correct spiview.json graph lpHisto");
-    is (scalar keys %{$json->{map}}, 0, "Correct spiview.json map");
+    is (scalar keys %{$json->{map}}, 2, "Correct spiview.json map");
 
     $json = viewerGet2("/connections.json");
     is ($json->{iTotalDisplayRecords}, 0, "Correct connections.json iTotalDisplayRecords");

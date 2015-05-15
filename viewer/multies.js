@@ -352,7 +352,12 @@ function agg2Arr(agg, type) {
   if (type === "histogram") {
     arr = arr.sort(function(a,b) {return a.key - b.key;});
   } else {
-    arr = arr.sort(function(a,b) {return b.doc_count - a.doc_count;});
+    arr = arr.sort(function(a,b) {
+      if (b.doc_count !== a.doc_count) {
+        return b.doc_count - a.doc_count;
+      }
+      return a.key - b.key;
+    });
   }
   return arr;
 }
@@ -366,11 +371,14 @@ function aggConvert2Obj(aggs) {
 function aggConvert2Arr(aggs) {
   for (var aggname in aggs) {
     aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
+    delete aggs[aggname]._type;
   }
 }
 
 function aggAdd(obj1, obj2) {
   for (var aggname in obj2) {
+    obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
+    obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
     for (var entry in obj2[aggname].buckets) {
       if (!obj1[aggname].buckets[entry]) {
         obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
@@ -438,11 +446,12 @@ function fixQuery(node, body, doneCb) {
   var err = null;
 
   function process(parent, obj, item) {
+    var query;
+
     if (item.match(/^(ta|hh1|hh2)$/) && (typeof obj[item] === "string" || Array.isArray(obj[item]))) {
       if (obj[item].indexOf("*") !== -1) {
         delete parent.wildcard;
         outstanding++;
-        var query;
         if (item === "ta") {
           query = {bool: {must: {wildcard: {_id: obj[item]}},
                           must_not: {wildcard: {_id: "http:header:*"}}
@@ -504,7 +513,6 @@ function fixQuery(node, body, doneCb) {
       delete obj.fileand;
       outstanding++;
 
-      var query;
       if (name[0] === "/" && name[name.length - 1] === "/") {
         query = {query: {regexp: {name: name.substring(1, name.length-1)}}};
       } else if (name.indexOf("*") !== -1) {
@@ -672,9 +680,9 @@ function newResult(search) {
     result.aggregations = {};
     for (var agg in search.aggregations) {
       if (search.aggregations[agg].histogram) {
-        result.aggregations[agg] = {buckets: {}, _type: "histogram"};
+        result.aggregations[agg] = {buckets: {}, _type: "histogram", doc_count_error_upper_bound: 0, sum_other_doc_count: 0};
       } else {
-        result.aggregations[agg] = {buckets: {}, _type: "terms"};
+        result.aggregations[agg] = {buckets: {}, _type: "terms", doc_count_error_upper_bound: 0, sum_other_doc_count: 0};
       }
     }
   }
