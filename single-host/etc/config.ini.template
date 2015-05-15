@@ -98,7 +98,7 @@ maxPackets = 10000
 # expressed as a percentage (ex: 5%).  This does NOT delete the session records in 
 # the database. It is recommended this value is between 5% and 10% of the disk.  
 # Database deletes are done by the db.pl expire script
-freeSpaceG = 600
+freeSpaceG = 5%
 
 # The port to listen on, by default 8005
 viewPort = 8005
