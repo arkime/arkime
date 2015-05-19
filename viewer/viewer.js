@@ -1922,8 +1922,9 @@ app.get('/spiview.json', function(req, res) {
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
       var r = {spi: {},
-               bsqErr: bsqErr.toString()
-               };
+               bsqErr: bsqErr.toString(),
+               health: Db.healthCache()
+              };
       return res.send(r);
     }
 
@@ -1931,6 +1932,10 @@ app.get('/spiview.json', function(req, res) {
 
     if (!query.aggregations) {
       query.aggregations = {};
+    }
+
+    if (req.query.facets) {
+      query.aggregations.protocols = {terms: {field: "prot-term", size:1000}};
     }
 
     req.query.spi.split(",").forEach(function (item) {
@@ -1956,6 +1961,7 @@ app.get('/spiview.json', function(req, res) {
     }
 
     var iTotalDisplayRecords = 0;
+    var protocols;
 
     async.parallel({
       spi: function (sessionsCb) {
@@ -1988,11 +1994,16 @@ app.get('/spiview.json', function(req, res) {
           if (req.query.facets) {
             graph = graphMerge(req, query, result.aggregations);
             map = mapMerge(result.aggregations);
+            protocols = {};
+            result.aggregations.protocols.buckets.forEach(function (item) {
+              protocols[item.key] = item.doc_count;
+            });
 
             delete result.aggregations.dbHisto;
             delete result.aggregations.paHisto;
             delete result.aggregations.mapG1;
             delete result.aggregations.mapG2;
+            delete result.aggregations.protocols;
           }
 
           sessionsCb(null, result.aggregations);
@@ -2040,6 +2051,7 @@ app.get('/spiview.json', function(req, res) {
                iTotalDisplayRecords: iTotalDisplayRecords,
                graph: graph,
                map: map,
+               protocols: protocols,
                bsqErr: bsqErr
           };
           try {

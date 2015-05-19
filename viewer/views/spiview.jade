@@ -9,7 +9,8 @@ block content
 
   mixin title(name, c)
     h1.collapsible(id="spiview-#{name}") #{name}
-      span
+      span.collapse-display
+      span.info
 
   script(src='jquery-jvectormap-1.2.2.min.js')
   script(src='jquery-jvectormap-world-en.js')
@@ -102,6 +103,37 @@ block content
               }
               if ($("#stopDate").val() === "") {
                 $("#stopDate").val(dateString(json.lpHisto[json.lpHisto.length-1][0]/1000) + 59, ' ');
+              }
+            }
+
+            if (json.protocols) {
+              $(".info").text("");
+              for (var key in json.protocols) {
+                $("#spiview-" + key + " .info").each(function(i, o) {
+                  $(o)
+                    .append($('<span>').text(key).addClass("moloch-right-click").attr("molochexpr", "protocols"))
+                    .append($('<span>').text("(" + json.protocols[key] + ")").addClass("spicount"))
+                    ;
+                });
+              }
+
+              // Should be in db
+              var extras = {
+                tcp: "general",
+                udp: "general",
+                icmp: "general",
+                smtp: "email",
+                lmtp: "email"
+              };
+
+
+              for (key in extras) {
+                if (json.protocols[key]) {
+                  $("#spiview-" + extras[key] + " .info")
+                    .append($('<span>').text(key).addClass("moloch-right-click").attr("molochexpr", "protocols"))
+                    .append($('<span>').text("(" + json.protocols[key] + ")").addClass("spicount"))
+                    ;
+                }
               }
             }
 
@@ -213,7 +245,7 @@ block content
       loadQueue.clearQueue();
       clickQueue.clearQueue();
 
-      var state = "facets=1&spi=prot-term:1000,";
+      var state = "facets=1&spi=";
       var num = 0;
       $("[id^=SPIck]").each(function(index, item) {
         var istate = fetchState($(item), false);

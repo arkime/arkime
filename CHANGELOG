@@ -30,7 +30,8 @@
   - viewer - Initial configration of displayed columns (issue #257)
   - capture - reenabled ftp/lmtp classify
   - capture - vnc classify (issue #382)
-  - capture - fixed tcp_flags for netflow (#386)
+  - capture - fixed tcp_flags for netflow (pr #386)
+  - viewer - spiview shows protocols per category (issue #385)
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required
