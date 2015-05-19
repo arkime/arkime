@@ -1857,7 +1857,7 @@ app.get('/spigraph.json', function(req, res) {
         result.aggregations = {field: {buckets: []}};
       }
 
-      var facets = result.aggregations.field.buckets;
+      var aggs = result.aggregations.field.buckets;
       var interval = query.aggregations.dbHisto.histogram.interval;
       var filter;
 
@@ -1872,7 +1872,7 @@ app.get('/spigraph.json', function(req, res) {
       delete query.aggregations.field;
 
       var queries = [];
-      facets.forEach(function(item) {
+      aggs.forEach(function(item) {
         filter.term[field] = item.key;
         queries.push(JSON.stringify(query));
       });
@@ -1883,7 +1883,7 @@ app.get('/spigraph.json', function(req, res) {
         }
 
         result.responses.forEach(function(item, i) {
-          var r = {name: facets[i].key, count: facets[i].doc_count};
+          var r = {name: aggs[i].key, count: aggs[i].doc_count};
 
           r.graph = graphMerge(req, query, result.responses[i].aggregations);
           if (r.graph.xmin === null) {
@@ -2362,7 +2362,7 @@ app.get('/unique.txt', function(req, res) {
   var writes = 0;
   if (parseInt(req.query.counts, 10) || 0) {
     writeCb = function (item, cb) {
-      res.write("" + item.term + ", " + item.count + "\n");
+      res.write("" + item.key + ", " + item.doc_count + "\n");
       if (writes++ > 1000) {
         writes = 0;
         setImmediate(cb);
@@ -2372,7 +2372,7 @@ app.get('/unique.txt', function(req, res) {
     };
   } else {
     writeCb = function (item, cb) {
-      res.write("" + item.term + "\n");
+      res.write("" + item.key + "\n");
       if (writes++ > 1000) {
         writes = 0;
         setImmediate(cb);
@@ -2390,22 +2390,22 @@ app.get('/unique.txt', function(req, res) {
     break;
   case FMEnum.ip:
     eachCb = function(item, cb) {
-      item.term = Pcap.inet_ntoa(item.term);
+      item.key = Pcap.inet_ntoa(item.key);
       writeCb(item, cb);
     };
     break;
   case FMEnum.tags:
     eachCb = function(item, cb) {
-      Db.tagIdToName(item.term, function (name) {
-        item.term = name;
+      Db.tagIdToName(item.key, function (name) {
+        item.key = name;
         writeCb(item, cb);
       });
     };
     break;
   case FMEnum.hh:
     eachCb = function(item, cb) {
-      Db.tagIdToName(item.term, function (name) {
-        item.term = name.substring(12);
+      Db.tagIdToName(item.key, function (name) {
+        item.key = name.substring(12);
         writeCb(item, cb);
       });
     };
@@ -2414,7 +2414,7 @@ app.get('/unique.txt', function(req, res) {
 
   buildSessionQuery(req, function(err, query, indices) {
     delete query.sort;
-    delete query.facets;
+    delete query.aggregations;
 
     if (req.query.field.match(/^(rawus|rawua)$/)) {
       var field = req.query.field.substring(3);
@@ -2447,22 +2447,26 @@ app.get('/unique.txt', function(req, res) {
           }
         }
 
-        // Change to facet looking array
-        var facets = [];
+        // Change to aggregations looking array
+        var aggregations = [];
         for (var key in counts) {
-          facets.push({term: key, count: counts[key]});
+          aggregations.push({key: key, doc_count: counts[key]});
         }
 
-        async.forEachSeries(facets, eachCb, function () {
+        async.forEachSeries(aggregations, eachCb, function () {
           res.end();
         });
       });
     } else {
-      console.log("unique facet", indices, JSON.stringify(query));
-      query.facets = {facets: { terms : {field : req.query.field, size: 1000000}}};
+      query.aggregations = {field: { terms : {field : req.query.field, size: 1000000}}};
+      console.log("unique aggregations", indices, JSON.stringify(query));
       query.size = 0;
       Db.searchPrimary(indices, 'session', query, function(err, result) {
-        async.forEachSeries(result.facets.facets.terms, eachCb, function () {
+        if (Config.debug) {
+          console.log("unique.txt result", util.inspect(result, false, 50));
+        }
+
+        async.forEachSeries(result.aggregations.field.buckets, eachCb, function () {
           res.end();
         });
       });
