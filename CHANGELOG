@@ -32,6 +32,7 @@
   - capture - vnc classify (issue #382)
   - capture - fixed tcp_flags for netflow (pr #386)
   - viewer - spiview shows protocols per category (issue #385)
+  - viewer - spiview supports filename (issue #389)
 
 0.11.4 2015/04/08
   - NOTICE: db.pl upgrade is required

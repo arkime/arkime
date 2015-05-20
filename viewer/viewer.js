@@ -1940,11 +1940,15 @@ app.get('/spiview.json', function(req, res) {
 
     req.query.spi.split(",").forEach(function (item) {
       var parts = item.split(":");
-      query.aggregations[parts[0]] = {terms: {field: parts[0]}};
+      if (parts[0] === "fileand") {
+        query.aggregations[parts[0]] = {terms: {field: "no", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
+      } else {
+        query.aggregations[parts[0]] = {terms: {field: parts[0]}};
 
-      if (parts.length > 1) {
-        query.aggregations[parts[0]].terms.size = parseInt(parts[1], 10);
-      } 
+        if (parts.length > 1) {
+          query.aggregations[parts[0]].terms.size = parseInt(parts[1], 10);
+        }
+      }
     });
     query.size = 0;
 
@@ -2032,6 +2036,35 @@ app.get('/spiview.json', function(req, res) {
       }
 
       async.parallel([
+        function(parallelCb) {
+          if (!results.spi.fileand) {
+            return parallelCb();
+          }
+          var nresults = [];
+          var sodc = 0;
+          async.each(results.spi.fileand.buckets, function(nobucket, cb) {
+            sodc += nobucket.fs.sum_other_doc_count;
+            async.each(nobucket.fs.buckets, function (fsitem, cb) {
+              Db.fileIdToFile(nobucket.key, fsitem.key, function(file) {
+                if (file && file.name) {
+                  nresults.push({key: file.name, doc_count: fsitem.doc_count})
+                }
+                cb();
+              });
+            }, function () {
+              cb();
+            });
+          }, function () {
+            nresults = nresults.sort(function(a, b) {
+              if (a.doc_count === b.doc_count) {
+                return a.key.localeCompare(b.key);
+              }
+              return b.doc_count - a.doc_count;
+            });
+            results.spi.fileand = {doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults};
+            parallelCb();
+          });
+        },
         function(parallelCb) {
           tags(results.spi, "ta", parallelCb, 0);
         },
