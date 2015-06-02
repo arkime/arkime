@@ -15,6 +15,7 @@ GEOIP=1.6.0
 PCAP=1.7.2
 NIDS=1.24
 PFRING=6.0.2
+CURL=7.42.1
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -187,12 +188,28 @@ else
   echo "MOLOCH: Not rebuilding libnids"
 fi
 
+# curl
+if [ ! -f "curl-$CURL.tar.gz" ]; then
+  wget http://curl.haxx.se/download/curl-CURL.tar.gz
+fi
+
+if [ ! -f "curl-$CURL/lib/.libs/curl.a" ]; then
+  tar zxf curl-$CURL.tar.gz
+  ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn; $MAKE)
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: $MAKE failed"
+    exit 1
+  fi
+else 
+  echo "MOLOCH: Not rebuilding curl"
+fi
+
 
 # Now build moloch
 echo "MOLOCH: Building capture"
 cd ..
-echo "./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB"
-./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB
+echo "./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL"
+./configure --prefix=$TDIR $PCAPBUILD --with-libnids=thirdparty/libnids-$NIDS --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL
 
 $MAKE
 if [ $? -ne 0 ]; then

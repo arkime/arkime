@@ -579,7 +579,7 @@ void moloch_nids_add_tag_type(MolochSession_t *session, int tagtype, const char 
 void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
 {
     MolochSession_t *session;
-    char             key[1024];
+    char             sessionId[1024];
 
     //LOG("TCP (%d) - %s", a_tcp->nids_state, moloch_friendly_session_id(IPPROTO_TCP, a_tcp->addr.saddr, a_tcp->addr.source, a_tcp->addr.daddr, a_tcp->addr.dest));
     //fflush(stdout);
@@ -587,8 +587,10 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
     switch (a_tcp->nids_state) {
     case NIDS_JUST_EST:
 
-        moloch_session_id(key, a_tcp->addr.saddr, htons(a_tcp->addr.source), a_tcp->addr.daddr, htons(a_tcp->addr.dest));
-        HASH_FIND(h_, sessions[SESSION_TCP], key, session);
+        moloch_session_id(sessionId, a_tcp->addr.saddr, htons(a_tcp->addr.source), a_tcp->addr.daddr, htons(a_tcp->addr.dest));
+
+        HASH_FIND(h_, sessions[SESSION_TCP], sessionId, session);
+
         if (session) {
             if (session->stopSPI) {
                 a_tcp->client.collect = 0;
@@ -607,6 +609,23 @@ void moloch_nids_cb_tcp(struct tcp_stream *a_tcp, void *UNUSED(params))
             moloch_plugins_cb_tcp(session, a_tcp);
         return;
     case NIDS_DATA: {
+
+        // libcurl requires we check on first data also since no connect callback
+        if (a_tcp->client.offset == 0 || a_tcp->server.offset == 0) {
+            moloch_session_id(sessionId, a_tcp->addr.saddr, htons(a_tcp->addr.source), a_tcp->addr.daddr, htons(a_tcp->addr.dest));
+            uint32_t hash = HASH_HASH(sessions[SESSION_TCP], sessionId);
+            HASH_FIND_HASH(h_, sessions[SESSION_TCP], hash, sessionId, session);
+
+            if (moloch_http_is_moloch(hash, sessionId)) {
+                if (config.debug)
+                    LOG("Ignoring connection %s", moloch_friendly_session_id(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
+                session->stopSPI = 1;
+                session->stopSaving = 1;
+                a_tcp->client.collect = 0;
+                a_tcp->server.collect = 0;
+            }
+        }
+            
         session = a_tcp->user;
         if (!session) {
             LOG("ERROR - data - a_tcp->user not set for %s", moloch_friendly_session_id(IPPROTO_TCP, a_tcp->addr.saddr, a_tcp->addr.source, a_tcp->addr.daddr, a_tcp->addr.dest));
@@ -759,8 +778,9 @@ void moloch_nids_session_free (MolochSession_t *session)
         }
     }
 
-    if (session->tcp_next)
+    if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ, session);
+    }
 
     g_array_free(session->filePosArray, TRUE);
     g_array_free(session->fileLenArray, TRUE);
@@ -1467,6 +1487,7 @@ void moloch_nids_init()
 }
 /******************************************************************************/
 void moloch_nids_exit() {
+
     config.exiting = 1;
     LOG("sessions: %d tcp: %d udp: %d icmp: %d",
             moloch_nids_monitoring_sessions(),

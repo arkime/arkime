@@ -9,7 +9,8 @@ INCLUDE_OTHER = -Ithirdparty \
                 @GLIB2_CFLAGS@ \
 	        @YARA_CFLAGS@ \
 	        @GEOIP_CFLAGS@ \
-	        @NIDS_CFLAGS@
+	        @NIDS_CFLAGS@ \
+	        @CURL_CFLAGS@
 
 
 LIB_PCAP      = @PCAP_LIBS@
@@ -18,11 +19,12 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
 	        @GEOIP_LIBS@ \
+	        @CURL_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
-		@DL_LIB@ -lpthread
+		@DL_LIB@ -lpthread -lssl
 
 C_FILES         = main.c db.c nids.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c
 O_FILES         = $(C_FILES:.c=.o)

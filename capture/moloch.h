@@ -400,7 +400,7 @@ int   moloch_size_free(void *mem);
  */
 typedef int (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
-typedef void (*MolochResponse_cb)(unsigned char *data, int len, gpointer uw);
+typedef void (*MolochHttpResponse_cb)(int code, unsigned char *data, int len, gpointer uw);
 
 typedef void (*MolochTag_cb)(void *uw, int tagType, const char *tagName, uint32_t tagValue);
 
@@ -525,11 +525,11 @@ typedef void (*MolochHttpHeader_cb)(char *url, const char *field, const char *va
 
 void moloch_http_init();
 
-unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char *headers, size_t *return_len);
-gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char *headers, gboolean dropable, MolochResponse_cb func, gpointer uw);
+unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len);
+gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw);
 
 
-gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochResponse_cb func, gpointer uw);
+gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochHttpResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);
 #define moloch_http_get_buffer(size) MOLOCH_SIZE_ALLOC(buffer, size)
 #define moloch_http_free_buffer(b) MOLOCH_SIZE_FREE(buffer, b)

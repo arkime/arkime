@@ -69,7 +69,7 @@ static uint32_t               s3MaxRequests;
 
 static int                    inprogress;
 
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochResponse_cb cb, gpointer uw);
+void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochHttpResponse_cb cb, gpointer uw);
 
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
@@ -90,13 +90,13 @@ uint32_t writer_s3_queue_length()
     return q + moloch_http_queue_length(s3Server) + inprogress;
 }
 /******************************************************************************/
-void writer_s3_complete_cb (unsigned char *data, int len, gpointer uw)
+void writer_s3_complete_cb (int code, unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
     inprogress--;
 
-    if (!data) {
-        LOG("Bad Response: %s", file->outputFileName);
+    if (code != 200) {
+        LOG("Bad Response: %d %s", code, file->outputFileName);
     }
 
     if (config.debug)
@@ -109,14 +109,14 @@ void writer_s3_complete_cb (unsigned char *data, int len, gpointer uw)
     MOLOCH_TYPE_FREE(SavepcapS3File_t, file);
 }
 /******************************************************************************/
-void writer_s3_part_cb (unsigned char *data, int UNUSED(len), gpointer uw)
+void writer_s3_part_cb (int code, unsigned char *UNUSED(data), int UNUSED(len), gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
     inprogress--;
 
-    if (!data) {
-        LOG("Bad Response: %s", file->outputFileName);
+    if (code != 200) {
+        LOG("Bad Response: %d %s", code, file->outputFileName);
     }
 
     if (config.debug)
@@ -146,7 +146,7 @@ void writer_s3_part_cb (unsigned char *data, int UNUSED(len), gpointer uw)
 
 }
 /******************************************************************************/
-void writer_s3_init_cb (unsigned char *data, int len, gpointer uw)
+void writer_s3_init_cb (int UNUSED(code), unsigned char *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -212,12 +212,11 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
 }
 /******************************************************************************/
 GChecksum *checksum;
-void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochResponse_cb cb, gpointer uw)
+void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[1000];
     char           datetime[17];
     char           fullpath[1000];
-    char           headers[2000];
     char           bodyHash[1000];
     struct timeval outputFileTime;
 
@@ -318,19 +317,31 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     //LOG("signature: %s", signature);
 
     snprintf(fullpath, sizeof(fullpath), "/%s%s?%s", s3Bucket, path, qs);
-    snprintf(headers, sizeof(headers), 
-            "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s,Signature=%s\n"
-            "x-amz-content-sha256: %s\n"
-            "x-amz-date: %s\n"
-            "%s"
+
+    char strs[3][1000];
+    char *headers[7];
+    headers[0] = "Expect:";
+    headers[1] = "Content-Type:";
+    headers[2] = strs[0];
+    headers[3] = strs[1];
+    headers[4] = strs[2];
+    headers[6] = NULL;
+
+    snprintf(strs[0], 1000,
+            "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s,Signature=%s"
             , 
             s3AccessKeyId, datetime, s3Region, 
             (reduce?";x-amz-storage-class":""),
-            signature, 
-            bodyHash,
-            datetime,
-            (reduce?"x-amz-storage-class: REDUCED_REDUNDANCY\n":"")
+            signature
             );
+
+    snprintf(strs[1], 1000, "x-amz-content-sha256: %s" , bodyHash);
+    snprintf(strs[2], 1000, "x-amz-date: %s", datetime);
+    if (reduce) {
+        headers[5] = "x-amz-storage-class: REDUCED_REDUNDANCY";
+    } else {
+        headers[5] = NULL;
+    }
 
     inprogress++;
     moloch_http_send(s3Server, method, fullpath, strlen(fullpath), (char*)data, len, headers, FALSE, cb, uw);
@@ -503,7 +514,9 @@ void writer_s3_init(char *UNUSED(name))
         LOG("s3MaxRequests: %u", s3MaxRequests);
     }
 
-    s3Server = moloch_http_create_server(s3Host, 80, s3MaxConns, s3MaxRequests, s3Compress);
+    char host[200];
+    snprintf(host, sizeof(host), "https://%s", s3Host);
+    s3Server = moloch_http_create_server(host, 443, s3MaxConns, s3MaxRequests, s3Compress);
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
 
     checksum = g_checksum_new(G_CHECKSUM_SHA256);

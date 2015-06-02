@@ -923,13 +923,14 @@ void moloch_db_update_stats()
     static struct rusage  lastUsage;
     int                   i;
 
-    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
 
     gettimeofday(&currentTime, NULL);
 
     if (lastPackets != 0 && currentTime.tv_sec == dbLastTime.tv_sec)
         return;
+
+    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
 
     uint64_t totalDropped = moloch_nids_dropped_packets();
 
@@ -1135,7 +1136,7 @@ typedef struct moloch_seq_request {
 } MolochSeqRequest_t;
 
 void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw);
-void moloch_db_get_sequence_number_cb(unsigned char *data, int data_len, gpointer uw)
+void moloch_db_get_sequence_number_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
     MolochSeqRequest_t *r = uw;
     uint32_t            version_len;
@@ -1441,7 +1442,7 @@ typedef struct moloch_tag_request {
 static int                     outstandingTagRequests = 0;
 static MolochTagRequest_t      tagRequests;
 
-void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw);
+void moloch_db_tag_cb(int code, unsigned char *data, int data_len, gpointer uw);
 
 /******************************************************************************/
 int moloch_db_tags_loading() {
@@ -1481,7 +1482,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
 }
 /******************************************************************************/
 
-void moloch_db_tag_create_cb(unsigned char *data, int UNUSED(data_len), gpointer uw)
+void moloch_db_tag_create_cb(int UNUSED(code), unsigned char *data, int UNUSED(data_len), gpointer uw)
 {
     MolochTagRequest_t *r = uw;
     char                key[500];
@@ -1518,7 +1519,7 @@ void moloch_db_tag_seq_cb(uint32_t newSeq, gpointer uw)
     moloch_http_set(esServer, key, key_len, json, json_len, moloch_db_tag_create_cb, r);
 }
 /******************************************************************************/
-void moloch_db_tag_cb(unsigned char *data, int data_len, gpointer uw)
+void moloch_db_tag_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
     MolochTagRequest_t *r = uw;
 

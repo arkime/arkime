@@ -229,7 +229,7 @@ void wise_free_item(WiseItem_t *wi)
     MOLOCH_TYPE_FREE(WiseItem_t, wi);
 }
 /******************************************************************************/
-void wise_cb(unsigned char *data, int data_len, gpointer uw)
+void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
 
     BSB             bsb;
@@ -464,7 +464,7 @@ gboolean wise_flush(gpointer UNUSED(user_data))
     inflight += iRequest->numItems;
     if (moloch_http_send(wiseService, "POST", "/get", 4, iBuf, BSB_LENGTH(iRequest->bsb), NULL, TRUE, wise_cb, iRequest) != 0) {
         LOG("Wise - request failed %p for %d items", iRequest, iRequest->numItems);
-        wise_cb(NULL, 0, iRequest);
+        wise_cb(500, NULL, 0, iRequest);
     }
 
     iRequest = 0;

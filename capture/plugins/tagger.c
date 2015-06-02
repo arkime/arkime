@@ -398,7 +398,7 @@ void tagger_info_free(gpointer data)
 /*
  * File data from ES
  */
-void tagger_load_file_cb(unsigned char *data, int data_len, gpointer uw)
+void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 {
     TaggerFile_t *file = uw;
     uint32_t out[4*100];
@@ -594,7 +594,7 @@ void tagger_load_file(TaggerFile_t *file)
 /*
  * Process the list of files from ES
  */
-void tagger_fetch_files_cb(unsigned char *data, int data_len, gpointer UNUSED(uw))
+void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer UNUSED(uw))
 {
     uint32_t           hits_len;
     unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
@@ -663,7 +663,7 @@ gboolean tagger_fetch_files (gpointer sync)
         size_t         data_len;
         unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len);;
         unsigned char *datacopy = (unsigned char*)g_strndup((char*)data, data_len);
-        tagger_fetch_files_cb(datacopy, data_len, NULL);
+        tagger_fetch_files_cb(200, datacopy, data_len, NULL);
         g_free(datacopy);
     } else {
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_fetch_files_cb, NULL);

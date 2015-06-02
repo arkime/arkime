@@ -342,33 +342,25 @@ int moloch_int_cmp(const void *keyv, const void *elementv)
 void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
     if (addr1 < addr2) {
-        memcpy(buf, &addr1, 4);
-        buf[4] = (port1 >> 8) & 0xff;
-        buf[5] = port1 & 0xff;
-        memcpy(buf + 6, &addr2, 4);
-        buf[10] = (port2 >> 8) & 0xff;
-        buf[11] = port2 & 0xff;
+        *(uint32_t *)buf = addr1;
+        *(uint16_t *)(buf+4) = port1;
+        *(uint32_t *)(buf+6) = addr2;
+        *(uint16_t *)(buf+10) = port2;
     } else if (addr1 > addr2) {
-        memcpy(buf, &addr2, 4);
-        buf[4] = (port2 >> 8) & 0xff;
-        buf[5] = port2 & 0xff;
-        memcpy(buf + 6, &addr1, 4);
-        buf[10] = (port1 >> 8) & 0xff;
-        buf[11] = port1 & 0xff;
+        *(uint32_t *)buf = addr2;
+        *(uint16_t *)(buf+4) = port2;
+        *(uint32_t *)(buf+6) = addr1;
+        *(uint16_t *)(buf+10) = port1;
     } else if (ntohs(port1) < ntohs(port2)) {
-        memcpy(buf, &addr1, 4);
-        buf[4] = (port1 >> 8) & 0xff;
-        buf[5] = port1 & 0xff;
-        memcpy(buf + 6, &addr2, 4);
-        buf[10] = (port2 >> 8) & 0xff;
-        buf[11] = port2 & 0xff;
+        *(uint32_t *)buf = addr1;
+        *(uint16_t *)(buf+4) = port1;
+        *(uint32_t *)(buf+6) = addr2;
+        *(uint16_t *)(buf+10) = port2;
     } else {
-        memcpy(buf, &addr2, 4);
-        buf[4] = (port2 >> 8) & 0xff;
-        buf[5] = port2 & 0xff;
-        memcpy(buf + 6, &addr1, 4);
-        buf[10] = (port1 >> 8) & 0xff;
-        buf[11] = port1 & 0xff;
+        *(uint32_t *)buf = addr2;
+        *(uint16_t *)(buf+4) = port2;
+        *(uint32_t *)(buf+6) = addr1;
+        *(uint16_t *)(buf+10) = port1;
     }
 }
 /******************************************************************************/
@@ -475,7 +467,7 @@ gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
         moloch_nids_exit();
         return TRUE;
     }
-    if (moloch_db_tags_loading() == 0 && moloch_plugins_outstanding() == 0 && moloch_writer_queue_length() == 0) {
+    if (moloch_db_tags_loading() == 0 && moloch_plugins_outstanding() == 0 && moloch_writer_queue_length() == 0 && moloch_http_queue_length(esServer) == 0) {
         g_main_loop_quit(mainLoop);
         return FALSE;
     }
