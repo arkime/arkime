@@ -1,4 +1,4 @@
-0.11.5 2015/04/xx
+0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 
             Restart viewer AFTER upgrading ES versions
   - NOTICE: If using multies all viewers must be upgraded at once
