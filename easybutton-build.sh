@@ -193,7 +193,7 @@ if [ ! -f "curl-$CURL.tar.gz" ]; then
   wget http://curl.haxx.se/download/curl-$CURL.tar.gz
 fi
 
-if [ ! -f "curl-$CURL/lib/.libs/curl.a" ]; then
+if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
   tar zxf curl-$CURL.tar.gz
   ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn; $MAKE)
   if [ $? -ne 0 ]; then
