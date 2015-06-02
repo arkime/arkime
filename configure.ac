@@ -31,11 +31,11 @@ AC_CANONICAL_HOST
 case $host_os in
 darwin*)
   SHARED_FLAGS="--shared -undefined suppress -flat_namespace"
-  UNDEFINED_FLAGS="-u _g_checksum_update"
+  UNDEFINED_FLAGS="-u _g_checksum_update -u _g_hmac_update"
   ;;
 *)
   SHARED_FLAGS="--shared"
-  UNDEFINED_FLAGS="-u g_checksum_update"
+  UNDEFINED_FLAGS="-u g_checksum_update -u g_hmac_update"
 esac
 AC_SUBST(SHARED_FLAGS)
 AC_SUBST(UNDEFINED_FLAGS)
@@ -403,5 +403,45 @@ esac ], [
 AC_MSG_RESULT(yes) ])
 AC_SUBST(GLIB2_CFLAGS)
 AC_SUBST(GLIB2_LIBS)
+
+dnl Checks for curl
+AC_MSG_CHECKING(for curl)
+AC_ARG_WITH(curl,
+[  --with-curl=DIR use curl build directory],
+[ case "$withval" in
+  yes)
+    AC_CHECK_LIB(curl, main,,AC_MSG_ERROR(please install curl library))
+     ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+  AC_MSG_RESULT($withval)
+    if test -f $withval/include/curl/curl.h -a -f $withval/lib/.libs/libcurl.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      CURL_CFLAGS="-I$withval/include"
+      CURL_LIBS="$withval/lib/.libs/libcurl.a"
+    elif test -f $withval/include/curl/curl.h -a -f $withval/lib/libcurl.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      CURL_CFLAGS="-I$withval/include"
+      CURL_LIBS="$withval/lib/libcurl.a"
+    else
+      AC_ERROR(curl.h or libcurl.a not found in $withval)
+    fi
+    ;;
+esac ], [
+  CURL_CFLAGS=`pkg-config libcurl --cflags`
+  CURL_LIBS=`pkg-config libcurl --libs`
+AC_MSG_RESULT(yes) ])
+AC_SUBST(CURL_CFLAGS)
+AC_SUBST(CURL_LIBS)
 
 AC_OUTPUT

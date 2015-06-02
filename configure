@@ -584,6 +584,8 @@ PACKAGE_URL=''
 ac_default_prefix="/data/moloch"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+CURL_LIBS
+CURL_CFLAGS
 GLIB2_LIBS
 GLIB2_CFLAGS
 GEOIP_LIBS
@@ -698,6 +700,7 @@ with_libnids
 with_yara
 with_GeoIP
 with_glib2
+with_curl
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1342,6 +1345,7 @@ Optional Packages:
   --with-yara=DIR use yara build directory
   --with-GeoIP=DIR use GeoIP build directory
   --with-glib2=DIR use glib2 build directory
+  --with-curl=DIR use curl build directory
 
 Some influential environment variables:
   CC          C compiler command
@@ -4050,11 +4054,11 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 case $host_os in
 darwin*)
   SHARED_FLAGS="--shared -undefined suppress -flat_namespace"
-  UNDEFINED_FLAGS="-u _g_checksum_update"
+  UNDEFINED_FLAGS="-u _g_checksum_update -u _g_hmac_update"
   ;;
 *)
   SHARED_FLAGS="--shared"
-  UNDEFINED_FLAGS="-u g_checksum_update"
+  UNDEFINED_FLAGS="-u g_checksum_update -u g_hmac_update"
 esac
 
 
@@ -4649,6 +4653,94 @@ else
 
   GLIB2_CFLAGS=`pkg-config gio-2.0 gobject-2.0 gthread-2.0 glib-2.0 gmodule-2.0 --cflags`
   GLIB2_LIBS=`pkg-config gio-2.0 gobject-2.0 gthread-2.0 glib-2.0 gmodule-2.0 --libs`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl" >&5
+$as_echo_n "checking for curl... " >&6; }
+
+# Check whether --with-curl was given.
+if test "${with_curl+set}" = set; then :
+  withval=$with_curl;  case "$withval" in
+  yes)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcurl" >&5
+$as_echo_n "checking for main in -lcurl... " >&6; }
+if ${ac_cv_lib_curl_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcurl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_curl_main=yes
+else
+  ac_cv_lib_curl_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_main" >&5
+$as_echo "$ac_cv_lib_curl_main" >&6; }
+if test "x$ac_cv_lib_curl_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBCURL 1
+_ACEOF
+
+  LIBS="-lcurl $LIBS"
+
+else
+  as_fn_error $? "please install curl library" "$LINENO" 5
+fi
+
+     ;;
+  no)
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+     ;;
+  *)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
+    if test -f $withval/include/curl/curl.h -a -f $withval/lib/.libs/libcurl.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      CURL_CFLAGS="-I$withval/include"
+      CURL_LIBS="$withval/lib/.libs/libcurl.a"
+    elif test -f $withval/include/curl/curl.h -a -f $withval/lib/libcurl.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      CURL_CFLAGS="-I$withval/include"
+      CURL_LIBS="$withval/lib/libcurl.a"
+    else
+      as_fn_error $? "curl.h or libcurl.a not found in $withval" "$LINENO" 5
+    fi
+    ;;
+esac
+else
+
+  CURL_CFLAGS=`pkg-config libcurl --cflags`
+  CURL_LIBS=`pkg-config libcurl --libs`
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 fi
