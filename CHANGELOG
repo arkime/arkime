@@ -4,6 +4,8 @@
   - capture/s3 - S3 traffic now sent over https
   - viewer - upgraded to DataTables 1.10.7 (issue #379)
   - viewer - add search to files tab (issue #70)
+  - viewer - handle older indexes without bytes/databytes/packets 
+             per src/dst (issue #396)
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

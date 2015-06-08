@@ -1820,6 +1820,11 @@ app.get('/sessions.json', function(req, res) {
             }
             fields.index = hits[i]._index;
             fields.id = hits[i]._id;
+            ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
+              if (fields[item] === undefined) {
+                fields[item] = -1;
+              }
+            });
             results.results.push(fields);
           }
           sessionsCb(null, results);
