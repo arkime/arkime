@@ -128,51 +128,6 @@ function numberWithCommas(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// From http://datatables.net/plug-ins/api#fnLengthChange
-$.fn.dataTableExt.oApi.fnLengthChange = function ( oSettings, iDisplay )
-{
-    oSettings._iDisplayLength = iDisplay;
-    oSettings.oApi._fnCalculateEnd( oSettings );
-
-    /* If we have space to show extra rows (backing up from the end point - then do so */
-    if ( oSettings._iDisplayEnd === oSettings.aiDisplay.length )
-    {
-        oSettings._iDisplayStart = oSettings._iDisplayEnd - oSettings._iDisplayLength;
-        if ( oSettings._iDisplayStart < 0 )
-        {
-            oSettings._iDisplayStart = 0;
-        }
-    }
-
-    if ( oSettings._iDisplayLength === -1 )
-    {
-        oSettings._iDisplayStart = 0;
-    }
-
-    oSettings.oApi._fnDraw( oSettings );
-
-    if ( oSettings.aanFeatures.l )
-    {
-        $('select', oSettings.aanFeatures.l).val( iDisplay );
-    }
-};
-
-//From http://datatables.net/plug-ins/sorting
-jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-    "formatted-num-pre": function ( a ) {
-        a = (a==="-") ? 0 : a.replace( /[^\d\-\.]/g, "" );
-        return parseFloat( a );
-    },
-
-    "formatted-num-asc": function ( a, b ) {
-        return a - b;
-    },
-
-    "formatted-num-desc": function ( a, b ) {
-        return b - a;
-    }
-} );
-
 // From http://stackoverflow.com/a/8999941
 (function ($, undefined) {
     $.fn.getCursorPosition = function() {
@@ -338,13 +293,14 @@ $(document).ready(function() {
   $(".expressionsLink").click(function (e) {
     var data;
     if (typeof sessionsTable !== 'undefined') {
-      data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+      var info = sessionsTable.page.info();
+      data = [{name: "length", value: info.length}];
     } else {
       data = [];
     }
 
     var params = buildParams();
-    params = $.merge(data, params);
+    params = $.merge(params, data);
 
     var url = $(e.target).attr("href") + "?" + $.param(params);
 
@@ -385,22 +341,23 @@ $(document).ready(function() {
       var type = $('input[name=actions-type]:checked').val();
 
       if (typeof sessionsTable !== 'undefined') {
-        qs = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
+        var info = sessionsTable.page.info();
+        qs = [{name: length, value: info.length}];
         if (type === "all") {
-          updateParam(qs, "iDisplayStart", 0);
-          updateParam(qs, "iDisplayLength", sessionsTable.fnSettings().fnRecordsDisplay());
+          updateParam(qs, "start", 0);
+          updateParam(qs, "length", info.recordsDisplay);
         } else if (type === "opened") {
           ids = [];
           $("tr.opened").each(function(n, nTr) {
-            var rowData = sessionsTable.fnGetData(nTr);
+            var rowData = sessionsTable.row(nTr).data();
             ids.push(rowData.id);
           });
         }
       } else {
         if (type === "visible") {
-          updateParam(qs, "iDisplayLength", $("#actionsForm").data("moloch-visible"));
+          updateParam(qs, "length", $("#actionsForm").data("moloch-visible"));
         } else  {
-          updateParam(qs, "iDisplayLength", $("#actionsForm").data("moloch-all"));
+          updateParam(qs, "length", $("#actionsForm").data("moloch-all"));
         }
       }
       if (type === "opened") {
@@ -1079,7 +1036,7 @@ function handleUrlParams() {
     $("#expression").val("");
   }
 
-  initialDisplayLength = urlParams.iDisplayLength || 100;
+  initialDisplayLength = urlParams.length || urlParams.iDisplayLength || 100;
   $("#graphSize").val(String(initialDisplayLength));
   $("#sessions_length").val(String(initialDisplayLength));
 
@@ -1315,8 +1272,8 @@ function buildParams(params) {
 
   window.document.title = title;
 
-  if (typeof sessionsTable === 'undefined') {
-    params.push({name: "iDisplayLength", value: initialDisplayLength});
+  if (typeof sessionsTable === 'undefined' && typeof initialDisplayLength !== 'undefined') {
+    params.push({name: "length", value: initialDisplayLength});
   }
 
   return params;

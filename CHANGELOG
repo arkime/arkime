@@ -2,6 +2,8 @@
   - NOTICE: libcurl (>= 7.21.7) is now required, sorry
   - capture - http module rewritten to use libcurl, woot!
   - capture/s3 - S3 traffic now sent over https
+  - viewer - upgraded to DataTables 1.10.7 (issue #379)
+  - viewer - add search to files tab (issue #70)
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

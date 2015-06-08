@@ -174,143 +174,178 @@ block content
         d3.selectAll(".value").style("right", i === null ? null : context.size() - i + "px");
     });
 
+    function numberRender(data, type, row, meta) {
+      if (type === "display") {
+        return numberWithCommas(data);
+      } else {
+        return data;
+      }
+    }
+
+    function numberRenderM(data, type, row, meta) {
+      if (type === "display") {
+        return numberWithCommas(Math.ceil(data/1000000));
+      } else {
+        return data;
+      }
+    }
+
+    function dateRender(data, type, row, meta) {
+      if (type === "display") {
+        return dateString(data, " ");
+      } else {
+        return data;
+      }
+    }
+
+
+
 
     $(document).ready(function() {
-      statsTable = $('#stats').dataTable( {
-        "oLanguage": {
-          "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
-          "sLengthMenu": "_MENU_",
-          "sInfo" : "Showing _START_ - _END_ of _TOTAL_",
-          "sInfoFiltered" : "(_MAX_ total)"
+      statsTable = $('#stats').DataTable( {
+        language: {
+          processing: "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+          lengthMenu: "_MENU_",
+          search: "Node filter: "
         },
-        "sDom": '<"H"lipr>t<"F"ip>',
-        "iDisplayLength": 500,
-        "aLengthMenu": [100, 500, 1000, 5000],
-        "bRetrieve": true,
-        "bFilter": false,
-        "bScrollCollapse": true,
-        "bAutoWidth": false,
-        "aoColumns": [
+        dom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"ipfr>t<"fg-toolbar ui-widget-header ui-helper-clearfix"ip>',
+        paginationType: "full_numbers",
+        pageLength: 500,
+        lengthMenu: [100, 500, 1000, 5000],
+        retrieve: true,
+        scrollCollapse: true,
+        autoWidth: false,
+        columns: [
           {
-            "mDataProp" : "detail",
-            "sWidth": "30",
-            "bSortable": false,
-            "sClass": "right"
-          },
-          { "mDataProp" : "id",
-            "sClass": "right",
-            "sType": "string"
-          },
-          { "mDataProp" : "currentTime",
-            "fnRender" : function(oObj) {
-              return dateString(oObj.aData.currentTime, " ");
+            data : null,
+            width: "30",
+            sortable: false,
+            render: function (data, type, row, meta) {
+              if (statsTable.row(meta.row).child.isShown()) {
+                return '<img src="images/details_close.png" height="20px">';
+              } else {
+                return '<img src="images/details_open.png" height="20px">';
+              }
             },
-            "sClass": "right"
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "totalPackets",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "id",
+            type: "string",
+            className: "right",
+            searchable: true
           },
-          { "mDataProp" : "totalK",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "currentTime",
+            render: dateRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "totalSessions",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "totalPackets",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "monitoring",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "totalK",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "freeSpaceM",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "totalSessions",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "memory",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(Math.ceil(oObj.aData[oObj.mDataProp]/1000000));
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "monitoring",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "cpu",
-            "fnRender" : function(oObj) {
-              return "" + oObj.aData[oObj.mDataProp]/100.0;
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "freeSpaceM",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "diskQueue",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(Math.ceil(oObj.aData[oObj.mDataProp]));
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "memory",
+            render: numberRenderM,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "deltaPacketsPerSec",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
+          {
+            data : "cpu",
+            render: function (data, type, row, meta) {
+              if (type === "display") {
+                return data/100.0;
+              } else {
+                return data;
+              }
             },
-            "sClass": "right",
-            "sType": "formatted-num"
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "deltaBytesPerSec",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
+          {
+            data : "diskQueue",
+            render: function (data, type, row, meta) {
+              if (type === "display") {
+                return numberWithCommas(Math.ceil(data));
+              } else {
+                return data;
+              }
             },
-            "sClass": "right",
-            "sType": "formatted-num"
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "deltaSessionsPerSec",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "deltaPacketsPerSec",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "deltaDroppedPerSec",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "deltaBytesPerSec",
+            render: numberRender,
+            className: "right",
+            searchable: false
+          },
+          {
+            data : "deltaSessionsPerSec",
+            render: numberRender,
+            className: "right",
+            searchable: false
+          },
+          {
+            data : "deltaDroppedPerSec",
+            render: numberRender,
+            className: "right",
+            searchable: false
           }
         ],
-        "aaSorting": [[1, "asc"]],
-        "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+        order: [[1, "asc"]],
+        footerCallback: function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
           var avgCells = $('tr#avg > th');
           var totCells = $('tr#tot > th');
 
           var totals = {totalPackets: 0, totalK: 0, totalSessions:0, deltaPacketsPerSec:0, deltaBytesPerSec:0 , deltaSessionsPerSec: 0, deltaDroppedPerSec: 0, monitoring: 0, memory: 0, cpu: 0, diskQueue: 0};
           for (var r = 0, rlen = aaData.length; r < rlen; r++) {
-              totals.totalPackets += parseInt(aaData[r].totalPackets.replace(/\,/g,''), 10);
-              totals.totalK += parseInt(aaData[r].totalK.replace(/\,/g,''), 10);
-              totals.totalSessions += parseInt(aaData[r].totalSessions.replace(/\,/g,''), 10);
+              totals.totalPackets += aaData[r].totalPackets;
+              totals.totalK += aaData[r].totalK;
+              totals.totalSessions += aaData[r].totalSessions;
 
-              totals.deltaDroppedPerSec += parseInt(aaData[r].deltaDroppedPerSec.replace(/\,/g,''), 10);
-              totals.deltaSessionsPerSec += parseInt(aaData[r].deltaSessionsPerSec.replace(/\,/g,''), 10);
-              totals.deltaPacketsPerSec += parseInt(aaData[r].deltaPacketsPerSec.replace(/\,/g,''), 10);
-              totals.deltaBytesPerSec += parseInt(aaData[r].deltaBytesPerSec.replace(/\,/g,''), 10);
-              totals.monitoring += parseInt(aaData[r].monitoring.replace(/\,/g,''), 10);
-              totals.memory += parseInt(aaData[r].memory.replace(/\,/g,''), 10);
-              totals.cpu += parseFloat(aaData[r].cpu.replace(/\,/g,''), 10)*100;
-              totals.diskQueue += parseInt(aaData[r].diskQueue.replace(/\,/g,''), 10);
+              totals.deltaDroppedPerSec += aaData[r].deltaDroppedPerSec;
+              totals.deltaSessionsPerSec += aaData[r].deltaSessionsPerSec;
+              totals.deltaPacketsPerSec += aaData[r].deltaPacketsPerSec;
+              totals.deltaBytesPerSec += aaData[r].deltaBytesPerSec;
+              totals.monitoring += aaData[r].monitoring;
+              totals.memory += aaData[r].memory;
+              totals.cpu += aaData[r].cpu;
+              totals.diskQueue += aaData[r].diskQueue;
           }
 
           totCells[3].innerHTML = numberWithCommas(totals.totalPackets);
@@ -339,94 +374,104 @@ block content
         }
       } );
 
-      esstatsTable = $('#esstats').dataTable( {
-        "oLanguage": {
-          "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
-          "sLengthMenu": "_MENU_",
-          "sInfo" : "Showing _START_ - _END_ of _TOTAL_",
-          "sInfoFiltered" : "(_MAX_ total)"
+      esstatsTable = $('#esstats').DataTable( {
+        language: {
+          processing: "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+          lengthMenu: "_MENU_",
+          search: "Node filter: "
         },
-        "sDom": '<"H"lipr>t<"F"ip>',
-        "iDisplayLength": 500,
-        "aLengthMenu": [100, 500, 1000, 5000],
-        "bRetrieve": true,
-        "bFilter": false,
-        "bScrollCollapse": true,
-        "bAutoWidth": false,
-        "aoColumns": [
-          { "mDataProp" : "name",
-            "sClass": "right",
-            "sType": "string"
+        dom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"ipfr>t<"fg-toolbar ui-widget-header ui-helper-clearfix"ip>',
+        paginationType: "full_numbers",
+        pageLength: 500,
+        lengthMenu: [100, 500, 1000, 5000],
+        scrollCollapse: true,
+        autoWidth: false,
+        columns: [
+          {
+            data : "name",
+            className: "right",
+            type: "string",
+            searchable: true
           },
-          { "mDataProp" : "docs",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "docs",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "storeSize",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(Math.floor(oObj.aData[oObj.mDataProp]/1000000));
+          {
+            data : "storeSize",
+            render: function (data, type, row, meta) {
+              if (type === "display") {
+                return numberWithCommas(Math.floor(data)/1000000);
+              } else {
+                return data;
+              }
             },
-            "sClass": "right",
-            "sType": "formatted-num"
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "heapSize",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(Math.floor(oObj.aData[oObj.mDataProp]/1000000));
+          {
+            data : "heapSize",
+            render: function (data, type, row, meta) {
+              if (type === "display") {
+                return numberWithCommas(Math.floor(data)/1000000);
+              } else {
+                return data;
+              }
             },
-            "sClass": "right",
-            "sType": "formatted-num"
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "load",
-            "fnRender" : function(oObj) {
-              return "[" + oObj.aData.load[0].toFixed(2) + ", " + oObj.aData.load[1].toFixed(2) + ", " + oObj.aData.load[2].toFixed(2) + "]";
+          {
+            data : "load",
+            render: function (data, type, row, meta) {
+              if (type === "display") {
+                return "[" + data[0].toFixed(2) + ", " + data[1].toFixed(2) + ", " + data[2].toFixed(2) + "]";
+              } else {
+                return data;
+              }
             },
-            "sClass": "right",
-            "sType": "formatted-num"
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "cpu",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "cpu",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "read",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "read",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "write",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "write",
+            render: numberRender,
+            className: "right",
+            searchable: false
           },
-          { "mDataProp" : "searches",
-            "fnRender" : function(oObj) {
-              return numberWithCommas(oObj.aData[oObj.mDataProp]);
-            },
-            "sClass": "right",
-            "sType": "formatted-num"
+          {
+            data : "searches",
+            render: numberRender,
+            className: "right",
+            searchable: false
           }
         ],
-        "aaSorting": [[3, "desc"]],
-        "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+        order: [[3, "desc"]],
+        footerCallback: function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
           var totals = {docs: 0, storeSize: 0, heapSize:0, load: [0,0,0], cpu:0, read:0, write:0, searches:0};
           for (var r = 0, rlen = aaData.length; r < rlen; r++) {
-              totals.docs += parseInt(aaData[r].docs.replace(/\,/g,''), 10);
-              totals.storeSize += parseInt(aaData[r].storeSize.replace(/\,/g,''), 10);
-              totals.heapSize += parseInt(aaData[r].heapSize.replace(/\,/g,''), 10);
-              totals.cpu += parseInt(aaData[r].cpu.replace(/\,/g,''), 10);
-              totals.read += parseInt(aaData[r].read.replace(/\,/g,''), 10);
-              totals.write += parseInt(aaData[r].write.replace(/\,/g,''), 10);
-              totals.searches += parseInt(aaData[r].searches.replace(/\,/g,''), 10);
-              var load = JSON.parse(aaData[r].load);
+              totals.docs += aaData[r].docs;
+              totals.storeSize += aaData[r].storeSize;
+              totals.heapSize += aaData[r].heapSize;
+              totals.cpu += aaData[r].cpu;
+              totals.read += aaData[r].read;
+              totals.write += aaData[r].write;
+              totals.searches += aaData[r].searches;
+              var load = aaData[r].load;
               totals.load[0] += load[0];
               totals.load[1] += load[1];
               totals.load[2] += load[2];
@@ -457,21 +502,18 @@ block content
 
       $(document).on('click', '#stats tbody td img', function () {
         var nTr = this.parentNode.parentNode;
-        var aData = statsTable.fnGetData( nTr );
-        if ( this.src.match('details_close') )
-        {
-          this.src = "DataTables-1.9.1/examples/examples_support/details_open.png";
-          statsTable.fnClose( nTr );
-        }
-        else
-        {
-          this.src = "DataTables-1.9.1/examples/examples_support/details_close.png";
+        var row = statsTable.row(nTr);
+        if (row.child.isShown()) {
+          this.src = "images/details_open.png";
+          row.child.hide();
+        } else {
+          this.src = "images/details_close.png";
           $.ajax( {
             "dataType": 'html',
             "type": "GET",
-            "url": '#{basePath}' + aData.id + '/statsDetail',
+            "url": '#{basePath}' + row.data().id + '/statsDetail',
             "success": function(data) {
-              statsTable.fnOpen( nTr, data, 'details' );
+              statsTable.row(nTr).child(data, 'details').show();
             }
           } );
 
@@ -484,28 +526,22 @@ block content
           "type": "GET",
           "url": '#{basePath}stats.json',
           "success": function(data) {
-            var nNodes = statsTable.fnGetNodes();
-            for (var i = 0, ilen = data.aaData.length; i < ilen; i++) {
+            var nNodes = statsTable.rows().nodes().flatten().toArray();
+            for (var i = 0, ilen = data.data.length; i < ilen; i++) {
               var found = false;
               for (var n = 0, nlen = nNodes.length; n < nlen; n++) {
-                var id = statsTable.fnGetData(n, 1);
-                if (id === data.aaData[i].id) {
+                var id = statsTable.cell(n, 1).data();
+                if (id === data.data[i].id) {
                   found = true;
-                  if (statsTable.fnIsOpen(nNodes[n])) {
-                    data.aaData[i].detail = '<img src="DataTables-1.9.1/examples/examples_support/details_close.png" height="20px">';
-                  } else {
-                    data.aaData[i].detail = '<img src="DataTables-1.9.1/examples/examples_support/details_open.png" height="20px">';
-                  }
-                  statsTable.fnUpdate(data.aaData[i], n, 0, false, false);
+                  statsTable.row(n).data(data.data[i]);
                   break;
                 }
               }
               if (!found) {
-                data.aaData[i].detail = '<img src="DataTables-1.9.1/examples/examples_support/details_open.png" height="20px">';
-                statsTable.fnAddData(data.aaData[i], false);
+                statsTable.row.add(data.data[i]);
               }
             }
-            statsTable.fnDraw();
+            statsTable.draw();
           }
         } );
 
@@ -515,22 +551,22 @@ block content
           "url": '#{basePath}esstats.json',
           "success": function(data) {
             updateHealth(data.health);
-            var nNodes = esstatsTable.fnGetNodes();
-            for (var i = 0, ilen = data.aaData.length; i < ilen; i++) {
+            var nNodes = esstatsTable.rows().nodes().flatten().toArray();
+            for (var i = 0, ilen = data.data.length; i < ilen; i++) {
               var found = false;
               for (var n = 0, nlen = nNodes.length; n < nlen; n++) {
-                var name = esstatsTable.fnGetData(n, 0);
-                if (name === data.aaData[i].name) {
+                var name = esstatsTable.cell(n, 0).data();
+                if (name === data.data[i].name) {
                   found = true;
-                  esstatsTable.fnUpdate(data.aaData[i], n, 0, false, false);
+                  esstatsTable.row(n).data(data.data[i]);
                   break;
                 }
               }
               if (!found) {
-                esstatsTable.fnAddData(data.aaData[i], false);
+                esstatsTable.row.add(data.data[i]);
               }
             }
-            esstatsTable.fnDraw();
+            esstatsTable.draw();
           }
         } );
       }

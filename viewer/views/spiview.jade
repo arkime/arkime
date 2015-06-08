@@ -142,8 +142,8 @@ block content
             updateString("#bsqErr", json.bsqErr);
 
             $("#actionsForm").data("moloch-visible", -1)
-                             .data("moloch-all", json.iTotalDisplayRecords);
-            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords) + " entries filtered from " + numberWithCommas(json.iTotalRecords) + " total entries");
+                             .data("moloch-all", json.recordsFiltered);
+            $("#recordsText").text("Showing " + numberWithCommas(json.recordsFiltered) + " entries filtered from " + numberWithCommas(json.recordsTotal) + " total entries");
 
             $.each(json.spi, function(spii, spi) {
               var spida = $("[id='SPIda-" + spii + "']"); // not # because period in field name

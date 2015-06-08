@@ -126,9 +126,9 @@ block content
             var finfo = db2Field($("#field").val());
 
             $("#actionsForm").data("moloch-visible", -1)
-                             .data("moloch-all", json.iTotalDisplayRecords);
+                             .data("moloch-all", json.recordsFiltered);
 
-            $("#recordsText").text("Showing " + numberWithCommas(json.iTotalDisplayRecords || 0) + " entries filtered from " + numberWithCommas(json.iTotalRecords || 0) + " total entries");
+            $("#recordsText").text("Showing " + numberWithCommas(json.recordsFiltered || 0) + " entries filtered from " + numberWithCommas(json.recordsTotal || 0) + " total entries");
 
             $('#sessionGraphs').empty();
             if ($("#sort").val() === "name") {

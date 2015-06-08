@@ -80,6 +80,33 @@ body
   background-color: rgba(255, 255, 255, 0)
   z-index: 5
 
+// Data Tables
+
+tr.odd td.sorting_1 {
+	background-color: #D3D6FF;
+}
+
+tr.odd td.sorting_2 {
+	background-color: #DADCFF;
+}
+
+tr.odd td.sorting_3 {
+	background-color: #E0E2FF;
+}
+
+tr.even td.sorting_1 {
+	background-color: #EAEBFF;
+}
+
+tr.even td.sorting_2 {
+	background-color: #F2F3FF;
+}
+
+tr.even td.sorting_3 {
+	background-color: #F9F9FF;
+}
+
+
 // layout.jade
 #headers
   font-family: Arial, sans-serif
@@ -173,7 +200,8 @@ body
 // index
 .dataTables_length
   padding-top: 4px
-  width: 10%
+  width: auto
+  padding-right: 10px
 
 .dataTables_info
   font-size: 14px
@@ -184,8 +212,13 @@ body
   padding-top: 4px
   padding-bottom: 2px
 
+.dataTables_filter
+  padding-top: 4px
+  width: auto
+
 .paging_full_numbers
   font-size: 14px
+  width: auto
 
 .paging_full_numbers a.paginate_button, .paging_full_numbers a.paginate_button:hover
   text-shadow: none
@@ -200,7 +233,7 @@ body
 .paginate_enabled_next, .paginate_enabled_previous
   color: white !important
 
-.paging_full_numbers a.paginate_active 
+.paging_full_numbers a.paginate_button.current 
   text-shadow: none
   background-color: white
 

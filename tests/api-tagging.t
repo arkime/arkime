@@ -22,9 +22,9 @@ my $pwd = getcwd() . "/pcap";
 
 # adding/removing tags test ids
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
-    viewerPost("/addTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{aaData}->[0]->{id});
+    viewerPost("/addTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
     countTest(1, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
-    viewerPost("/removeTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{aaData}->[0]->{id});
+    viewerPost("/removeTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));

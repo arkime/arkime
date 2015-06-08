@@ -220,6 +220,7 @@ app.configure(function() {
       Db.getUserCache("anonymous", function(err, suser) {
           if (!err && suser && suser.found) {
             req.user.settings = suser._source.settings;
+            req.user.views = suser._source.views;
           }
         next();
       });
@@ -944,17 +945,61 @@ function expireCheckAll () {
 //// Sessions Query
 //////////////////////////////////////////////////////////////////////////////////
 function addSortToQuery(query, info, d, missing) {
-  if (!info || !info.iSortingCols || parseInt(info.iSortingCols, 10) === 0) {
+  function addSortDefault() {
     if (d) {
       if (!query.sort) {
         query.sort = [];
       }
-      query.sort.push({});
-      query.sort[query.sort.length-1][d] = {order: "asc"};
+      var obj = {};
+      obj[d] = {order: "asc"};
       if (missing && missing[d] !== undefined) {
-        query.sort[query.sort.length-1][d].missing = missing[d];
+        obj[d].missing = missing[d];
       }
+      query.sort.push(obj);
     }
+  }
+
+
+  if (!info) {
+    addSortDefault();
+    return;
+  }
+
+  // New Method
+  if (info.order) {
+    if (info.order.length === 0) {
+      addSortDefault();
+      return;
+    }
+
+    if (!query.sort) {
+      query.sort = [];
+    }
+
+    info.order.split(",").forEach(function(item) {
+      var parts = item.split(":");
+      var field = parts[0];
+
+      var obj = {};
+      if (field === "fp") {
+        obj.fpd = {order: parts[1]};
+      } else if (field === "lp") {
+        obj.lpd = {order: parts[1]};
+      } else {
+        obj[field] = {order: parts[1]};
+      }
+
+      if (missing && missing[field] !== undefined) {
+        obj[field].missing = missing[field];
+      }
+      query.sort.push(obj);
+    });
+    return;
+  }
+
+  // Old Method
+  if (!info.iSortingCols || parseInt(info.iSortingCols, 10) === 0) {
+    addSortDefault();
     return;
   }
 
@@ -1101,11 +1146,11 @@ function lookupQueryItems(query, doneCb) {
 }
 
 function buildSessionQuery(req, buildCb) {
-  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),2000000):100);
+  var limit = Math.min(2000000, +req.query.length || +req.query.iDisplayLength || 100);
   var i;
 
 
-  var query = {from: req.query.iDisplayStart || 0,
+  var query = {from: req.query.start || req.query.iDisplayStart || 0,
                size: limit,
                query: {filtered: {query: {}}}
               };
@@ -1350,11 +1395,11 @@ app.get('/esstats.json', function(req, res) {
   function(err, results) {
     if (err || !results.nodes) {
       console.log ("ERROR", err);
-      r = {sEcho: req.query.sEcho,
+      r = {draw: req.query.draw,
            health: results.health,
-           iTotalRecords: 0,
-           iTotalDisplayRecords: 0,
-           aaData: []};
+           recordsTotal: 0,
+           recordsFiltered: 0,
+           data: []};
       return res.send(r);
     }
 
@@ -1398,11 +1443,11 @@ app.get('/esstats.json', function(req, res) {
     results.nodes.nodes.timestamp = new Date().getTime();
     internals.previousNodeStats.push(results.nodes.nodes);
 
-    r = {sEcho: req.query.sEcho,
+    r = {draw: req.query.draw,
          health: results.health,
-         iTotalRecords: stats.length,
-         iTotalDisplayRecords: stats.length,
-         aaData: stats};
+         recordsTotal: stats.length,
+         recordsFiltered: stats.length,
+         data: stats};
     res.send(r);
   });
 });
@@ -1420,11 +1465,10 @@ app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
   var columns = ["_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "cpu", "diskQueue", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
-  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),1000000):500);
 
   var query = {_source: columns,
-               from: req.query.iDisplayStart || 0,
-               size: limit
+               from: +req.query.start || 0,
+               size: Math.min(10000, +req.query.length || 500)
               };
   addSortToQuery(query, req.query, "_uid");
 
@@ -1459,10 +1503,10 @@ app.get('/stats.json', function(req, res) {
     }
   },
   function(err, results) {
-    var r = {sEcho: req.query.sEcho,
-             iTotalRecords: results.total,
-             iTotalDisplayRecords: results.stats.total,
-             aaData: results.stats.results};
+    var r = {draw: req.query.draw,
+             recordsTotal: results.total,
+             recordsFiltered: results.stats.total,
+             data: results.stats.results};
     res.send(r);
   });
 });
@@ -1548,12 +1592,15 @@ app.get('/files.json', function(req, res) {
   noCache(req, res);
 
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
-  var limit = (req.query.iDisplayLength?Math.min(parseInt(req.query.iDisplayLength, 10),10000):500);
 
   var query = {_source: columns,
-               from: req.query.iDisplayStart || 0,
-               size: limit
+               from: +req.query.start || 0,
+               size: +req.query.length || 500
               };
+
+  if (req.query.filter) {
+    query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
+  }
 
   addSortToQuery(query, req.query, "num");
 
@@ -1609,10 +1656,10 @@ app.get('/files.json', function(req, res) {
       return res.send({total: 0, results: []});
     }
 
-    var r = {sEcho: req.query.sEcho,
-             iTotalRecords: results.total,
-             iTotalDisplayRecords: results.files.total,
-             aaData: results.files.results};
+    var r = {draw: req.query.draw,
+             recordsTotal: results.total,
+             recordsFiltered: results.files.total,
+             data: results.files.results};
     res.send(r);
   });
 });
@@ -1630,12 +1677,19 @@ internals.usersMissing = {
 };
 app.post('/users.json', function(req, res) {
   var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
-  var limit = (req.body.iDisplayLength?Math.min(parseInt(req.body.iDisplayLength, 10),10000):500);
 
   var query = {_source: columns,
-               from: req.body.iDisplayStart || 0,
-               size: limit
+               from: +req.body.start || 0,
+               size: +req.body.length
               };
+
+  if (req.body.filter) {
+    query.query = {bool: {should: [{wildcard: {userName: "*" + req.body.filter + "*"}},
+                                   {wildcard: {userId: "*" + req.body.filter + "*"}}
+                                  ]
+                         }
+                  };
+  }
 
   addSortToQuery(query, req.body, "userId", internals.usersMissing);
 
@@ -1665,10 +1719,10 @@ app.post('/users.json', function(req, res) {
     }
   },
   function(err, results) {
-    var r = {sEcho: req.body.sEcho,
-             iTotalRecords: results.total,
-             iTotalDisplayRecords: results.users.total,
-             aaData: results.users.results};
+    var r = {draw: req.body.draw,
+             recordsTotal: results.total,
+             recordsFiltered: results.users.total,
+             data: results.users.results};
     res.send(r);
   });
 });
@@ -1720,14 +1774,14 @@ app.get('/sessions.json', function(req, res) {
   var map = {};
   buildSessionQuery(req, function(bsqErr, query, indices) {
     if (bsqErr) {
-      var r = {sEcho: req.query.sEcho,
-               iTotalRecords: 0,
-               iTotalDisplayRecords: 0,
+      var r = {draw: req.query.draw,
+               recordsTotal: 0,
+               recordsFiltered: 0,
                graph: graph,
                map: map,
                bsqErr: bsqErr.toString(),
                health: Db.healthCache(),
-               aaData:[]};
+               data:[]};
       res.send(r);
       return;
     }
@@ -1777,13 +1831,13 @@ app.get('/sessions.json', function(req, res) {
       health: Db.healthCache
     },
     function(err, results) {
-      var r = {sEcho: req.query.sEcho,
-               iTotalRecords: results.total,
-               iTotalDisplayRecords: (results.sessions?results.sessions.total:0),
+      var r = {draw: req.query.draw,
+               recordsTotal: results.total,
+               recordsFiltered: (results.sessions?results.sessions.total:0),
                graph: graph,
                health: results.health,
                map: map,
-               aaData: (results.sessions?results.sessions.results:[])};
+               data: (results.sessions?results.sessions.results:[])};
       try {
         res.send(r);
       } catch (c) {
@@ -1841,14 +1895,14 @@ app.get('/spigraph.json', function(req, res) {
     }
 
     Db.healthCache(function(err, health) {results.health = health;});
-    Db.numberOfDocuments('sessions-*', function (err, total) {results.iTotalRecords = total;});
+    Db.numberOfDocuments('sessions-*', function (err, total) {results.recordsTotal = total;});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
         results.bsqErr = errorString(err, result);
         console.log("spigraph.json error", err, (result?result.error:null));
         return res.send(results);
       }
-      results.iTotalDisplayRecords = result.hits.total;
+      results.recordsFiltered = result.hits.total;
 
       results.graph = graphMerge(req, query, result.aggregations);
       results.map = mapMerge(result.aggregations);
@@ -1910,7 +1964,7 @@ app.get('/spigraph.json', function(req, res) {
 
 app.get('/spiview.json', function(req, res) {
   if (req.query.spi === undefined) {
-    return res.send({spi:{}, iTotalRecords: 0, iTotalDisplayRecords: 0});
+    return res.send({spi:{}, recordsTotal: 0, recordsFiltered: 0});
   }
 
   var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 1);
@@ -1964,7 +2018,7 @@ app.get('/spiview.json', function(req, res) {
       bsqErr += indices;
     }
 
-    var iTotalDisplayRecords = 0;
+    var recordsFiltered = 0;
     var protocols;
 
     async.parallel({
@@ -1980,7 +2034,7 @@ app.get('/spiview.json', function(req, res) {
             return;
           }
 
-          iTotalDisplayRecords = result.hits.total;
+          recordsFiltered = result.hits.total;
 
           if (!result.aggregations) {
             result.aggregations = {};
@@ -2079,9 +2133,9 @@ app.get('/spiview.json', function(req, res) {
         }],
         function() {
           r = {health: results.health,
-               iTotalRecords: results.total,
+               recordsTotal: results.total,
                spi: results.spi,
-               iTotalDisplayRecords: iTotalDisplayRecords,
+               recordsFiltered: recordsFiltered,
                graph: graph,
                map: map,
                protocols: protocols,
@@ -2290,7 +2344,7 @@ app.get('/connections.json', function(req, res) {
     if (err) {
       return res.send({health: health, bsqErr: err.toString()});
     }
-    res.send({health: health, nodes: nodes, links: links, iTotalDisplayRecords: total});
+    res.send({health: health, nodes: nodes, links: links, recordsFiltered: total});
   });
 });
 

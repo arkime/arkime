@@ -8,19 +8,19 @@ my $pwd = getcwd() . "/pcap";
 
 # stats.json
     my $stats = viewerGet("/stats.json");
-    is (@{$stats->{aaData}}, 1, "stats.json aaData set ");
-    is ($stats->{iTotalRecords}, 1, "stats.json iTotalRecords");
-    is ($stats->{aaData}->[0]->{id}, "test", "stats.json name");
+    is (@{$stats->{data}}, 1, "stats.json data set ");
+    is ($stats->{recordsTotal}, 1, "stats.json recordsTotal");
+    is ($stats->{data}->[0]->{id}, "test", "stats.json name");
     foreach my $i ("diskQueue", "deltaDroppedPerSec") {
-        is ($stats->{aaData}->[0]->{$i}, 0, "stats.json $i 0");
+        is ($stats->{data}->[0]->{$i}, 0, "stats.json $i 0");
     }
 
     foreach my $i ("monitoring", "diskQueue", "deltaDropped", "deltaDroppedPerSec") {
-        is ($stats->{aaData}->[0]->{$i}, 0, "stats.json $i == 0");
+        is ($stats->{data}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
     foreach my $i ("deltaMS", "totalPackets", "deltaSessions", "deltaPackets", "deltaBytes", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM", "deltaSessionsPerSec", "deltaBytesPerSec", "deltaPacketsPerSec") {
-        cmp_ok ($stats->{aaData}->[0]->{$i}, '>', 0, "stats.json $i > 0");
+        cmp_ok ($stats->{data}->[0]->{$i}, '>', 0, "stats.json $i > 0");
     }
 
 # dstats.json

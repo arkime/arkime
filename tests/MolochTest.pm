@@ -44,10 +44,10 @@ my ($url, $debug) = @_;
 }
 ################################################################################
 sub viewerPost {
-my ($url, $content) = @_;
+my ($url, $content, $debug) = @_;
 
     my $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content);
-    #print $url, " response:", $response->content;
+    diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
 }
@@ -140,16 +140,16 @@ sub countTest {
 my ($count, $test, $debug) = @_;
     my $json = viewerGet("/sessions.json?$test");
     diag Dumper($json) if ($debug);
-    is ($json->{iTotalDisplayRecords}, $count, uri_unescape($test) . " iTotalDisplayRecords");
-    is (scalar @{$json->{aaData}}, $count, uri_unescape($test) . " aaData count");
+    is ($json->{recordsFiltered}, $count, uri_unescape($test) . " recordsFiltered");
+    is (scalar @{$json->{data}}, $count, uri_unescape($test) . " data count");
 }
 ################################################################################
 sub countTest2 {
 my ($count, $test, $debug) = @_;
     my $json = viewerGet2("/sessions.json?$test");
     diag Dumper($json) if ($debug);
-    is ($json->{iTotalDisplayRecords}, $count, uri_unescape($test) . " iTotalDisplayRecords");
-    is (scalar @{$json->{aaData}}, $count, uri_unescape($test) . " aaData count");
+    is ($json->{recordsFiltered}, $count, uri_unescape($test) . " recordsFiltered");
+    is (scalar @{$json->{data}}, $count, uri_unescape($test) . " data count");
 }
 ################################################################################
 sub errTest {

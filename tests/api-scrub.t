@@ -22,7 +22,7 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 # scrub 1 id
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$copytest"));
 
-    viewerPost("/scrub?date=-1", "ids=" . $idQuery->{aaData}->[0]->{id});
+    viewerPost("/scrub?date=-1", "ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
     esGet("/_flush");
 

@@ -20,40 +20,61 @@ block content
 
     $(document).ready(function() {
       filesTable = $('#files').dataTable( {
-        "oLanguage": {
-          "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
-          "sLengthMenu": "_MENU_"
+        language: {
+          processing: "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+          lengthMenu: "_MENU_",
+          search: "Name filter: "
         },
-        "sDom": '<"H"lipr>t<"F"ip>',
-        "iDisplayLength": 500,
-        "aLengthMenu": [100, 500, 1000, 5000],
-        "bProcessing": true,
-        "bServerSide": true,
-        "sAjaxSource": "#{basePath}files.json",
-        "bRetrieve": true,
-        "bFilter": false,
-        "bScrollCollapse": true,
-        "bAutoWidth": false,
-        "aoColumns": [
-          { "mDataProp" : "num"
+        dom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipfr>t<"fg-toolbar ui-widget-header ui-helper-clearfix"ipr>',
+        pageLength: 500,
+        lengthMenu: [100, 500, 1000, 5000],
+        processing: true,
+        serverSide: true,
+        ajax: {
+          url: "#{basePath}files.json",
+          data: function (d) {
+            neworder = [];
+            for (var o in d.order) {
+              neworder.push(d.columns[d.order[o].column].data + ":" + d.order[o].dir);
+            }
+            d.order = neworder.join(",");
+            delete d.columns;
+            if (d.search) {
+              d.filter = d.search.value;
+              delete d.search;
+            }
+          }
+        },
+        searching: true,
+        scrollCollapse: true,
+        autoWidth: false,
+        paginationType: "full_numbers",
+        columns: [
+          {
+            data: "num"
           },
-          { "mDataProp" : "node"
+          {
+            data: "node"
           },
-          { "mDataProp" : "name"
+          {
+            data: "name"
           },
-          { "mDataProp" : "locked",
-            "fnRender" : function(oObj) {
-              return oObj.aData.locked === 1?true:"false";
+          {
+            data: "locked",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html(rowData.locked === 1?true:"false");
             }
           },
-          { "mDataProp" : "first",
-            "fnRender" : function(oObj) {
-              return dateString(oObj.aData.first, " ");
+          {
+            data: "first",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html(dateString(rowData.first, " "));
             }
           },
-          { "mDataProp" : "filesize"
+          {
+            data: "filesize"
           }
         ],
-        "aaSorting": [[3, "desc"]]
+        order: [[3, "desc"]]
       } );
     } );

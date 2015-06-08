@@ -69,93 +69,110 @@ block content
     var usersTable;
 
     $(document).ready(function() {
-      usersTable = $('#users').dataTable( {
-        "oLanguage": {
-          "sProcessing": "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
-          "sLengthMenu": "_MENU_"
+      usersTable = $('#users').DataTable( {
+        language: {
+          processing: "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
+          lengthMenu: "_MENU_",
+          search: "Name filter: "
         },
-        "sDom": '<"H"lipr>t<"F"ip>',
-        "iDisplayLength": 500,
-        "aLengthMenu": [100, 500, 1000, 5000],
-        "bProcessing": true,
-        "bServerSide": true,
-        "sAjaxSource": "#{basePath}users.json",
-        "fnServerData": function ( sSource, aoData, fnCallback ) {
-          $.ajax( {
-           "dataType": 'json',
-            "type": "POST",
-            "url": sSource,
-            "data": aoData,
-            "success": fnCallback
-          } );
+        dom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipfr>t<"fg-toolbar ui-widget-header ui-helper-clearfix"ip>',
+        pageLength: 500,
+        lengthMenu: [100, 500, 1000, 5000],
+        processing: true,
+        serverSide: true,
+        ajax: {
+          url: "#{basePath}users.json",
+          type: "POST",
+          data: function (d) {
+            neworder = [];
+            for (var o in d.order) {
+              neworder.push(d.columns[d.order[o].column].data + ":" + d.order[o].dir);
+            }
+            d.order = neworder.join(",");
+            delete d.columns;
+            if (d.search) {
+              d.filter = d.search.value;
+              delete d.search;
+            }
+          }
         },
-        "bRetrieve": true,
-        "bFilter": false,
-        "bScrollCollapse": true,
-        "bAutoWidth": false,
-        "aoColumns": [
-          { mDataProp : "userId"
+        paginationType: "full_numbers",
+        retrieve: true,
+        scrollCollapse: true,
+        autoWidth: false,
+        columns: [
+          {
+            data: "userId"
           },
-          { mDataProp : "userName",
-            sClass: "userName",
-            fnRender: function(oObj) {
-              return "<div contentEditable>" + oObj.aData.userName + "</div>";
+          {
+            data: "userName",
+            className: "userName",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<div contentEditable>" + rowData.userName + "</div>");
             }
           },
-          { mDataProp : "expression",
-            sClass: "forcedExpression",
-            fnRender: function(oObj) {
-              return "<div contentEditable>" + oObj.aData.expression + "</div>";
+          {
+            data : "expression",
+            className: "forcedExpression",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<div contentEditable>" + rowData.expression + "</div>");
             }
           },
-          { mDataProp : "enabled",
-            sClass: "enabled",
-            fnRender : function(oObj) {
-              return "<input type='checkbox' " + (oObj.aData.enabled?"CHECKED":"") + ">";
+          {
+            data : "enabled",
+            className: "enabled",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<input type='checkbox' " + (rowData.enabled?"CHECKED":"") + ">");
             }
           },
-          { mDataProp : "createEnabled",
-            sClass: "createEnabled",
-            fnRender : function(oObj) {
-              return "<input type='checkbox' " + (oObj.aData.createEnabled?"CHECKED":"") + ">";
+          {
+            data : "createEnabled",
+            className: "createEnabled",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<input type='checkbox' " + (rowData.createEnabled?"CHECKED":"") + ">");
             }
           },
-          { mDataProp : "webEnabled",
-            sClass: "webEnabled",
-            fnRender : function(oObj) {
-              return "<input type='checkbox' " + (oObj.aData.webEnabled?"CHECKED":"") + ">";
+          {
+            data : "webEnabled",
+            className: "webEnabled",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<input type='checkbox' " + (rowData.webEnabled?"CHECKED":"") + ">");
             }
           },
-          { mDataProp : "headerAuthEnabled",
-            sClass: "headerAuthEnabled",
-            fnRender : function(oObj) {
-              return "<input type='checkbox' " + (oObj.aData.headerAuthEnabled?"CHECKED":"") + ">";
+          {
+            data : "headerAuthEnabled",
+            className: "headerAuthEnabled",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<input type='checkbox' " + (rowData.headerAuthEnabled?"CHECKED":"") + ">");
             }
           },
-          { mDataProp : "emailSearch",
-            sClass: "emailSearch",
-            fnRender : function(oObj) {
-              return "<input type='checkbox' " + (oObj.aData.emailSearch?"CHECKED":"") + ">";
+          {
+            data : "emailSearch",
+            className: "emailSearch",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<input type='checkbox' " + (rowData.emailSearch?"CHECKED":"") + ">");
             }
           },
-          { mDataProp : "removeEnabled",
-            sClass: "removeEnabled",
-            fnRender : function(oObj) {
-              return "<input type='checkbox' " + (oObj.aData.removeEnabled?"CHECKED":"") + ">";
+          {
+            data : "removeEnabled",
+            className: "removeEnabled",
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<input type='checkbox' " + (rowData.removeEnabled?"CHECKED":"") + ">");
             }
           },
-          { mDataProp : null,
+          {
+            data : null,
             bSortable : false,
-            fnRender : function(oObj) {
-              return "<a href='#' class='deleteUserAction'>Delete</a> " + 
-                     "<a href='#' class='settingsUserAction'>Settings</a>";
+            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+              $(cell).html("<a href='#' class='deleteUserAction'>Delete</a> " +
+                           "<a href='#' class='settingsUserAction'>Settings</a>");
             }
           }
         ]
       } );
 
       function saveRow(row) {
-        var aData = usersTable.fnGetData( row );
+        var aData = usersTable.row(row).data();
         $.ajax( {
           "dataType": 'json',
           "type": "POST",
@@ -179,12 +196,12 @@ block content
       }
 
       $(document).on('click', '.settingsUserAction', function (e) {
-        var aData = usersTable.fnGetData( this.parentNode.parentNode );
+        var aData = usersTable.row(this.parentNode.parentNode).data();
         window.location = 'settings?userId=' + aData.userId;
       });
 
       $(document).on('click', '.deleteUserAction', function (e) {
-        var aData = usersTable.fnGetData( this.parentNode.parentNode );
+        var aData = usersTable.row(this.parentNode.parentNode).data();
         return deleteUser(aData.userId);
       });
 
@@ -219,7 +236,7 @@ block content
               $("#userName").val("");
               $("#password").val("");
             }
-            usersTable.fnDraw();
+            usersTable.draw();
           }
         });
         return false;
@@ -235,7 +252,7 @@ block content
           if (!data.success) {
             alert(data.text);
           }
-          usersTable.fnDraw();
+          usersTable.draw();
         }
       });
       return false;

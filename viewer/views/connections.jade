@@ -234,7 +234,7 @@ block content
         }
 
         $("#actionsForm").data("moloch-visible", +$("#graphSize").val())
-                         .data("moloch-all", json.iTotalDisplayRecords);
+                         .data("moloch-all", json.recordsFiltered);
         updateHealth(json.health);
         updateString("#bsqErr", json.bsqErr);
         force

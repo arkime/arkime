@@ -54,7 +54,7 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "lpHisto short");
     eq_or_diff($json->{graph}->{paHisto}, from_json('[["1386004309000", 14], ["1386004312000", 15], [1386004317000, 17]]'), "paHisto short");
     eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1386004309000", 1754], ["1386004312000", 1770], [1386004317000, 1763]]'), "dbHisto short");
-    is ($json->{iTotalDisplayRecords}, 3, "records short");
+    is ($json->{recordsFiltered}, 3, "records short");
     is ($json->{graph}->{interval}, 1, "correct interval short");
     is ($json->{graph}->{xmax}, 1386004400000, "correct xmax short");
     is ($json->{graph}->{xmin}, 1386004308000, "correct xmin short");
@@ -76,7 +76,7 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1386004260000", 3]]'), "lpHisto medium");
     eq_or_diff($json->{graph}->{paHisto}, from_json('[["1386004260000", 46]]'), "paHisto medium");
     eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1386004260000", 5287]]'), "dbHisto medium");
-    is ($json->{iTotalDisplayRecords}, 3, "records medium");
+    is ($json->{recordsFiltered}, 3, "records medium");
     is ($json->{graph}->{interval}, 60, "correct interval medium");
     is ($json->{graph}->{xmax}, 1386349908000, "correct xmax medium");
     is ($json->{graph}->{xmin}, 1386004308000, "correct xmin medium");
@@ -100,7 +100,7 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1]]'), "lpHisto ALL");
     eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4]]'), "paHisto ALL");
     eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68]]'), "dbHisto ALL");
-    is ($json->{iTotalDisplayRecords}, 5, "records ALL");
+    is ($json->{recordsFiltered}, 5, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
     eq_or_diff($json->{spi}->{a1}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
