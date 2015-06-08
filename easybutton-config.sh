@@ -9,26 +9,36 @@ fi
 
 clear
 
-echo -n "Moloch service userid: [daemon] "
-read USERNAME
+if [ -z $USERNAME ]; then
+	echo -n "Moloch service userid: [daemon] "
+	read USERNAME
+fi
 if [ -z $USERNAME ]; then USERNAME="daemon"; fi
 
-echo -n "Moloch service groupid: [daemon] "
-read GROUPNAME
+if [ -z $GROUPNAME ]; then
+	echo -n "Moloch service groupid: [daemon] "
+	read GROUPNAME
+fi
 if [ -z $GROUPNAME ]; then GROUPNAME="daemon"; fi
 
-echo -n "Moloch INTERNAL encryption phrase: [0mgMolochRules1] "
-read PASSWORD
+if [ -z $PASSWORD ]; then
+	echo -n "Moloch INTERNAL encryption phrase: [0mgMolochRules1] "
+	read PASSWORD
+fi
 if [ -z $PASSWORD ]; then PASSWORD="0mgMolochRules1"; fi
 
-echo -n "Moloch interface to listen on: [eth0] "
-read INTERFACE
+if [ -z $INTERFACE ]; then
+	echo -n "Moloch interface to listen on: [eth0] "
+	read INTERFACE
+fi
 if [ -z $INTERFACE ]; then INTERFACE="eth0"; fi
 
-echo "You are about to attempt a Moloch build (Proceed?)"
-echo
-echo "Hit Ctrl-C *now* to stop!   Hit enter to proceed"
-read OK
+if [ -z $BATCHRUN ]; then 
+	echo "You are about to attempt a Moloch build (Proceed?)"
+	echo
+	echo "Hit Ctrl-C *now* to stop!   Hit enter to proceed"
+	read OK
+fi
 
 cat ${TDIR}/etc/config.ini.template | sed -e 's/_PASSWORD_/'${PASSWORD}'/g' -e 's/_USERNAME_/'${USERNAME}'/g' -e 's/_GROUPNAME_/'${GROUPNAME}'/g' -e 's/_INTERFACE_/'${INTERFACE}'/g'  -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/config.ini
 

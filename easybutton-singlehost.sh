@@ -106,8 +106,10 @@ if [ "x$https_proxy" != "x" ]; then
     sleep 1
 fi
 
-echo -n "Use pfring? ('yes' enables) [no] "
-read USEPFRING
+if [ -z $USEPFRING ]; then
+	echo -n "Use pfring? ('yes' enables) [no] "
+	read USEPFRING
+fi
 PFRING=""
 if [ -n "$USEPFRING" -a "x$USEPFRING" = "xyes" ]; then 
     echo "MOLOCH - Using pfring - Make sure to install the kernel modules"
@@ -223,8 +225,10 @@ fi
 
 
 
-echo -n "Memory to give to elasticsearch, box MUST have more then this available: [512M] "
-read ESMEM
+if [ -z $ESMEM ]; then
+	echo -n "Memory to give to elasticsearch, box MUST have more then this available: [512M] "
+	read ESMEM
+fi
 if [ -z $ESMEM ]; then ESMEM="512M"; fi
 
 echo "MOLOCH: Copying single-host config files"
@@ -273,11 +277,12 @@ echo "MOLOCH: Adding user admin/admin"
 cd ${TDIR}/viewer
 ../bin/node addUser.js -c ../etc/config.ini admin "Admin" admin -admin
 
-echo "MOLOCH: Starting viewer and capture"
-cd ${TDIR}/bin
-nohup ./run_viewer.sh &
-nohup ./run_capture.sh &
-
+if [ -z $DONOTSTART ]; then
+	echo "MOLOCH: Starting viewer and capture"
+	cd ${TDIR}/bin
+	nohup ./run_viewer.sh &
+	nohup ./run_capture.sh &
+fi
 
 HOSTNAME=`hostname`
 echo "MOLOCH: Complete use https://$HOSTNAME:8005 to access.  You should also make the run_* scripts in ${TDIR}/bin run on start up and look at the config files in ${TDIR}/etc"
