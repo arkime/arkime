@@ -9,11 +9,11 @@ fi
 
 clear
 
-if [ -z $USERNAME ]; then
+if [ -z $MOLOCHUSER ]; then
 	echo -n "Moloch service userid: [daemon] "
-	read USERNAME
+	read MOLOCHUSER
 fi
-if [ -z $USERNAME ]; then USERNAME="daemon"; fi
+if [ -z $MOLOCHUSER ]; then MOLOCHUSER="daemon"; fi
 
 if [ -z $GROUPNAME ]; then
 	echo -n "Moloch service groupid: [daemon] "
@@ -40,7 +40,7 @@ if [ -z $BATCHRUN ]; then
 	read OK
 fi
 
-cat ${TDIR}/etc/config.ini.template | sed -e 's/_PASSWORD_/'${PASSWORD}'/g' -e 's/_USERNAME_/'${USERNAME}'/g' -e 's/_GROUPNAME_/'${GROUPNAME}'/g' -e 's/_INTERFACE_/'${INTERFACE}'/g'  -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/config.ini
+cat ${TDIR}/etc/config.ini.template | sed -e 's/_PASSWORD_/'${PASSWORD}'/g' -e 's/_USERNAME_/'${MOLOCHUSER}'/g' -e 's/_GROUPNAME_/'${GROUPNAME}'/g' -e 's/_INTERFACE_/'${INTERFACE}'/g'  -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/config.ini
 
 cd ${TDIR}/etc/
 echo "MOLOCH: creating self signed certificate"
