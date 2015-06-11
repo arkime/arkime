@@ -116,10 +116,11 @@
                   "sCn" : [
                      "geotrust global ca"
                   ],
-                  "sOn" : "GeoTrust Inc.",
-                  "sn" : "12bbe6",
                   "notBefore" : 1021953600,
                   "iOn" : "Equifax",
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "sOn" : "GeoTrust Inc.",
+                  "sn" : "12bbe6",
                   "diffDays" : 5936
                },
                {
@@ -132,6 +133,7 @@
                   "iCn" : [
                      "geotrust global ca"
                   ],
+                  "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
                   "sOn" : "Google Inc",
                   "sn" : "023a69",
                   "diffDays" : 729
@@ -169,6 +171,7 @@
                   "iCn" : [
                      "google internet authority g2"
                   ],
+                  "hash" : "45:15:6a:e7:49:63:40:94:f9:ab:09:1e:f5:a7:33:6d:f3:7b:28:fc",
                   "sOn" : "Google Inc",
                   "sn" : "325d8297987d50b0",
                   "diffDays" : 365

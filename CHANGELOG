@@ -1,5 +1,6 @@
 0.12.0 2015/06/XX
   - NOTICE: libcurl (>= 7.21.7) is now required, sorry
+  - NOTICE: db.pl upgrade is required
   - capture - http module rewritten to use libcurl, woot!
   - capture/s3 - S3 traffic now sent over https
   - viewer - upgraded to DataTables 1.10.7 (issue #379)
@@ -9,6 +10,7 @@
   - viewer - upgrade D3 to 3.5.5 and switch to min version
   - viewer - upgrade jquery to 2.1.4
   - db - New rm-node command to delete from ES nodes that are no longer active
+  - capture - cert.hash is sha1 hash for SSL certificate (issue #388)
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

@@ -34,6 +34,8 @@ typedef struct {
 
 extern unsigned char    moloch_char_to_hexstr[256][3];
 
+static GChecksum       *checksum;
+
 /******************************************************************************/
 void
 tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
@@ -269,6 +271,7 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
         unsigned char *cdata = BSB_WORK_PTR(cbsb);
         int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
+
         MolochCertsInfo_t *certs = MOLOCH_TYPE_ALLOC0(MolochCertsInfo_t);
         DLL_INIT(s_, &certs->alt);
         DLL_INIT(s_, &certs->subject.commonName);
@@ -279,6 +282,22 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
 
         BSB            bsb;
         BSB_INIT(bsb, cdata + 3, clen);
+
+        guchar digest[20];
+        gsize  len = sizeof(digest);
+
+        g_checksum_update(checksum, cdata+3, clen);
+        g_checksum_get_digest(checksum, digest, &len);
+        if (len > 0) {
+            int i;
+            for(i = 0; i < 20; i++) {
+                certs->hash[i*3] = moloch_char_to_hexstr[digest[i]][0];
+                certs->hash[i*3+1] = moloch_char_to_hexstr[digest[i]][1];
+                certs->hash[i*3+2] = ':';
+            }
+        }
+        certs->hash[59] = 0;
+        g_checksum_reset(checksum);
 
         /* Certificate */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
@@ -634,6 +653,12 @@ void moloch_parser_init()
         "rawField", "rawsOn",
         NULL);
 
+    moloch_field_define("cert", "lotextfield",
+        "cert.hash", "Hash", "tls.hash",
+        "SHA1 hash of entire certificate",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
     moloch_field_define("cert", "seconds",
         "cert.notbefore", "Not Before", "tls.notBefore",
         "Certificate is not valid before this date",
@@ -690,5 +715,7 @@ void moloch_parser_init()
         NULL);
 
     moloch_parsers_classifier_register_tcp("tls", 0, (unsigned char*)"\x16\x03", 2, tls_classify);
+
+    checksum = g_checksum_new(G_CHECKSUM_SHA1);
 }
 

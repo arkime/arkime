@@ -12,6 +12,10 @@ if (session.tls || session["tlsver-term"])
           - if (cert.sn)
             | Serial: 
             a.moloch-right-click(href='#', molochexpr='cert.serial') #{cert.sn}
+          if (cert.hash)
+            |  [
+            a.moloch-right-click(href='#', molochexpr='cert.hash') #{cert.hash}
+            | ]
           - if (cert.notBefore)
             |  Not Before: 
             a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}

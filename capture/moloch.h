@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* moloch.h -- General Moloch include file
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2015 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -31,7 +31,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 13
+#define MOLOCH_API_VERSION 14
 
 /******************************************************************************/
 /*
@@ -94,7 +94,7 @@ typedef struct {
     char                orgUtf8;
 } MolochCertInfo_t;
 
-typedef struct moloch_tlsinfo{
+typedef struct moloch_tlsinfo {
     struct moloch_tlsinfo *t_next, *t_prev;
     uint32_t               t_hash;
     uint64_t               notBefore;
@@ -105,6 +105,7 @@ typedef struct moloch_tlsinfo{
     unsigned char         *serialNumber;
     short                  serialNumberLen;
     short                  t_bucket;
+    unsigned char          hash[60];
 } MolochCertsInfo_t;
 
 typedef struct {

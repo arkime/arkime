@@ -30,7 +30,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 23
+#define MOLOCH_MIN_DB_VERSION 25
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -764,6 +764,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_u08(jbsb, ']');
                     BSB_EXPORT_u08(jbsb, ',');
                 }
+
+                BSB_EXPORT_sprintf(jbsb, "\"hash\":\"%s\",", certs->hash);
 
                 if (certs->issuer.orgName) {
                     BSB_EXPORT_cstr(jbsb, "\"iOn\":");

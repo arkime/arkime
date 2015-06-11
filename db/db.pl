@@ -31,6 +31,7 @@
 # 22 - cpu to stats/dstats
 # 23 - packet lengths
 # 24 - field category
+# 25 - cert hash
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -39,7 +40,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 24;
+my $VERSION = 25;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -1343,6 +1344,11 @@ sub sessionsUpdate
           diffDays: {
             type: "integer",
             index: "not_analyzed"
+          },
+          hash : {
+            omit_norms: true,
+            type : "string",
+            index : "not_analyzed"
           }
         }
       },
@@ -2281,7 +2287,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     dstatsUpdate();
 
     print "Finished\n";
-} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 24) {
+} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 25) {
     print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
     waitFor("UPGRADE", "do you want to upgrade?");
     sessionsUpdate();

@@ -112,6 +112,7 @@
                   "iCn" : [
                      "certum level iv ca"
                   ],
+                  "hash" : "59:4d:51:83:75:d0:9c:29:82:26:58:5f:ec:83:7b:60:ce:33:ba:d8",
                   "sOn" : "Yandex LLC",
                   "sn" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
                   "diffDays" : 415
@@ -126,6 +127,7 @@
                   "iCn" : [
                      "certum ca"
                   ],
+                  "hash" : "12:e1:89:f7:dc:2f:a2:82:38:0b:48:77:31:9f:5f:1d:fe:af:6d:69",
                   "sOn" : "Unizeto Technologies S.A.",
                   "sn" : "4ca5fec6617c48b056382a8280e0508c",
                   "diffDays" : 5479

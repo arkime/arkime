@@ -1,4 +1,4 @@
-use Test::More tests => 58;
+use Test::More tests => 64;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -57,3 +57,8 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
 # cert.validfor
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.validfor==5936"));
     countTest(3, "date=-1&expression=" . uri_escape("$files&&cert.validfor>=5114"));
+
+# cert.hash
+    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.hash==0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91"));
+    countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.hash!=0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&cert.hash==d*"));

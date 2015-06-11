@@ -120,6 +120,7 @@
                   "iCn" : [
                      "verisign class 3 extended validation ssl sgc ca"
                   ],
+                  "hash" : "d4:18:6b:6e:6d:82:6a:53:c9:a6:2e:f2:c0:cd:1b:45:c0:e7:e6:c4",
                   "sOn" : "Microsoft Corporation",
                   "sn" : "0dc04875701d090d9f3645da26f51fe7",
                   "diffDays" : 409
@@ -129,10 +130,11 @@
                   "sCn" : [
                      "verisign class 3 public primary certification authority - g5"
                   ],
-                  "sOn" : "VeriSign, Inc.",
-                  "sn" : "35973187f3873a07327ece580c9b7eda",
                   "notBefore" : 1162944000,
                   "iOn" : "VeriSign, Inc.",
+                  "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
+                  "sOn" : "VeriSign, Inc.",
+                  "sn" : "35973187f3873a07327ece580c9b7eda",
                   "diffDays" : 5478
                },
                {
@@ -145,6 +147,7 @@
                   "iCn" : [
                      "verisign class 3 public primary certification authority - g5"
                   ],
+                  "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
                   "sOn" : "VeriSign, Inc.",
                   "sn" : "112a006d37e5106fd6ca7cc3efbacc18",
                   "diffDays" : 3652

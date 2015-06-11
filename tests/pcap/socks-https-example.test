@@ -252,6 +252,7 @@
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ],
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "sOn" : "EdgeCast Networks, Inc.",
                   "sn" : "062d488986c9a6d7f94901c2b5906882",
                   "diffDays" : 1164
@@ -266,13 +267,14 @@
                   "iCn" : [
                      "digicert high assurance ev root ca"
                   ],
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
                   "sOn" : "DigiCert Inc",
                   "sn" : "0a5f114d035b179117d2efd4038c3f3b",
                   "diffDays" : 5113
                }
             ],
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "p2" : 1080,
+            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "gsocksip" : "USA",
             "mac1-term-cnt" : 1,
             "tlsver-termcnt" : 1,
@@ -575,6 +577,7 @@
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ],
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "sOn" : "EdgeCast Networks, Inc.",
                   "sn" : "062d488986c9a6d7f94901c2b5906882",
                   "diffDays" : 1164
@@ -589,6 +592,7 @@
                   "iCn" : [
                      "digicert high assurance ev root ca"
                   ],
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
                   "sOn" : "DigiCert Inc",
                   "sn" : "0a5f114d035b179117d2efd4038c3f3b",
                   "diffDays" : 5113
@@ -900,6 +904,7 @@
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ],
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
                   "sOn" : "EdgeCast Networks, Inc.",
                   "sn" : "062d488986c9a6d7f94901c2b5906882",
                   "diffDays" : 1164
@@ -914,13 +919,14 @@
                   "iCn" : [
                      "digicert high assurance ev root ca"
                   ],
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
                   "sOn" : "DigiCert Inc",
                   "sn" : "0a5f114d035b179117d2efd4038c3f3b",
                   "diffDays" : 5113
                }
             ],
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "p2" : 1080,
+            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
             "gsocksip" : "USA",
             "mac1-term-cnt" : 1,
             "tlsver-termcnt" : 1,

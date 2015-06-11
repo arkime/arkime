@@ -105,6 +105,7 @@
                   "iCn" : [
                      "entrust.net certification authority (2048)"
                   ],
+                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
                   "sOn" : "Entrust, Inc.",
                   "sn" : "4c0e8c39",
                   "diffDays" : 3653
@@ -184,6 +185,7 @@
                   "iCn" : [
                      "entrust certification authority - l1c"
                   ],
+                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
                   "sOn" : "AOL Inc.",
                   "sn" : "4c235548",
                   "diffDays" : 1096
