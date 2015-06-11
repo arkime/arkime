@@ -257,11 +257,14 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
-viewer/public/jquery-1.7.2.min.js - MIT - http://jquery.com
+viewer/public/jquery-2.1.4.min.js - MIT - http://jquery.com
 viewer/public/jquery-ui.css - MIT or GPL - http://jqueryui.com
 
-Copyright 2012 jQuery Foundation and other contributors
-http://jquery.com/
+Copyright jQuery Foundation and other contributors, https://jquery.org/
+
+This software consists of voluntary contributions made by many
+individuals. For exact contribution history, see the revision history
+available at https://github.com/jquery/jquery
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
