@@ -589,10 +589,7 @@ block content
               }
               return {
                 callback: function(key, options) {
-                  var data = sessionsTable.fnSettings().oApi._fnAjaxParameters(sessionsTable.fnSettings());
                   var params = buildParams();
-                  params = $.merge(data, params);
-
                   params.push({name:'field', value:items[key].field});
                   params.push({name:'counts', value:items[key].counts});
                   var url = "unique.txt?" + $.param(params);
@@ -603,14 +600,15 @@ block content
               };
             }
 
-            var rowData = sessionsTable.fnGetData($(e.target).closest("tr")[0]);
-            if (rowData === null) {
+            var rowData = sessionsTable.row($(e.target).closest("tr")).data();
+            if (!rowData) {
               return false;
             }
-            var sPos = sessionsTable.fnGetPosition( e.target );
+
+            var cell = sessionsTable.cell(e.target).index();
             var ip, country, port, suffix;
-            if (visibleColumns[sPos[1]] === "p1" || visibleColumns[sPos[1]] === "p2") {
-              if (visibleColumns[sPos[1]] === "p1") {
+            if (visibleColumns[cell.columnVisible] === "p1" || visibleColumns[cell.columnVisible] === "p2") {
+              if (visibleColumns[cell.columnVisible] === "p1") {
                 ip = ipString(rowData.a1);
                 port = rowData.p1;
                 suffix = ".src";
