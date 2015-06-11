@@ -74,7 +74,8 @@ sub showHelp($)
     print "  optimize              - Optimize all indices in ES\n";
     print "  mv <old fn> <new fn>  - Move a pcap file in the database (doesn't change disk)\n";
     print "  rm <fn>               - Remove a pcap file in the database (doesn't change disk)\n";
-    print "  rm-missing <node>     - Remove from db any file that is missing from disk for given node\n";
+    print "  rm-missing <node>     - Remove from db any MISSING file on THIS machine for named node\n";
+    print "  rm-node <node>        - Remove from db all data for node (doesn't change disk)\n";
     print "  expire <type> <num>   - Perform daily maintenance and optimize all indices in ES\n";
     print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num              - number of indexes to keep\n";
@@ -1912,8 +1913,8 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|field)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|field)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
@@ -2059,7 +2060,7 @@ sub printIndex {
     print "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?missing$/) {
-    my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
+    my $results = esGet("/${PREFIX}files/_search?size=50000&q=node:$ARGV[2]");
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
     print "Need to remove references to these files from database:\n";
     my $cnt = 0;
@@ -2076,6 +2077,19 @@ sub printIndex {
         if (! -f $hit->{_source}->{name}) {
             esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
         }
+    }
+    exit 0;
+} elsif ($ARGV[1] =~ /^rm-?node$/) {
+    my $results = esGet("/${PREFIX}files/_search?size=50000&q=node:$ARGV[2]");
+    print "Deleting ", $results->{hits}->{total}, " files\n";
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+    }
+    esDelete("/${PREFIX}stats/stat/" . $ARGV[2], 1);
+    my $results = esGet("/${PREFIX}dstats/_search?size=50000&q=nodeName:$ARGV[2]");
+    print "Deleting ", $results->{hits}->{total}, " stats\n";
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {

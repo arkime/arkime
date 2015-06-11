@@ -8,6 +8,7 @@
              per src/dst (issue #396)
   - viewer - upgrade D3 to 3.5.5 and switch to min version
   - viewer - upgrade jquery to 2.1.4
+  - db - New rm-node command to delete from ES nodes that are no longer active
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 
