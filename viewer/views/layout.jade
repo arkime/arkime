@@ -76,6 +76,8 @@ html
                   option(value=4380) Last 6 Months
                   option(value=-1) All
                   option(value=-2) Custom
+                  if (titleLink !== "connectionsLink")
+                    option(value=-3) Snap To
               input#expression(type='search', name='expression')
               span#searchStuffRight
                 button#searchButton(type="submit") Search

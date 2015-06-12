@@ -11,6 +11,8 @@
   - viewer - upgrade jquery to 2.1.4
   - db - New rm-node command to delete from ES nodes that are no longer active
   - capture - cert.hash is sha1 hash for SSL certificate (issue #388)
+  - viewer - New snapto time search that uses current query result for future
+             queries (issue #398)
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 
