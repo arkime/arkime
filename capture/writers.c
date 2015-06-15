@@ -40,7 +40,7 @@ static MolochStringHashStd_t writersHash;
 void moloch_writers_start(char *name) {
     MolochString_t *str;
     if (!name)
-        name = moloch_config_str(NULL, "pcapWriteMethod", "normal");
+        name = moloch_config_str(NULL, "pcapWriteMethod", "thread-direct");
 
 
     HASH_FIND(s_, writersHash, name, str);

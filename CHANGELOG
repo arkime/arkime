@@ -17,6 +17,7 @@
              queries (issue #398)
   - capture - Removed most tags items
   - viewer - Delta Time display (issue #398)
+  - capture - pcapWriteMethod defaults to thread-direct now
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

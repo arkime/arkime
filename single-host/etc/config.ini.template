@@ -203,7 +203,7 @@ spiDataMaxIndices=3
 #                  pcapWriteSize (>= 256k, must be multiple of 4096) and packetsPerPoll (>= 100k)
 #  thread        = like normal, but use a thread for all the writes
 #  thread-direct = like direct, but use a thread for all the writes
-pcapWriteMethod=normal
+pcapWriteMethod=thread-direct
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
 # stripe size.  Defaults to 256k
