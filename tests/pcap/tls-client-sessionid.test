@@ -14,11 +14,6 @@
             "lp" : 1420490708,
             "a2" : "74.217.87.13",
             "ss" : 1,
-            "ta" : [
-               "node:test",
-               "protocol:tls",
-               "tcp"
-            ],
             "pa1" : 7,
             "fpd" : 1420490708340,
             "fs" : [],
@@ -62,7 +57,6 @@
             "as2" : "AS10913 Internap Network Services Corporation",
             "tlscipher-termcnt" : 1,
             "pa" : 16,
-            "tacnt" : 3,
             "sl" : 91,
             "fb1" : "16030100c0010000",
             "a1" : "10.23.46.37",

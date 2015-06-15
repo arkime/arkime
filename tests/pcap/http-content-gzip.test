@@ -10,13 +10,7 @@
             "a2" : "10.0.0.2",
             "ta" : [
                "dstip",
-               "http:content:application/x-gzip",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "by2" : 1250,
             "g1" : "RUS",
@@ -168,7 +162,7 @@
             "hcval-term" : [
                "xxx"
             ],
-            "tacnt" : 8,
+            "tacnt" : 2,
             "us" : [
                "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
             ],

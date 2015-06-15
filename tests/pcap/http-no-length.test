@@ -9,13 +9,7 @@
             "a2" : "10.0.0.2",
             "ta" : [
                "dstip",
-               "http:content:text/plain",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "by2" : 1026,
             "g1" : "RUS",
@@ -164,7 +158,7 @@
             "hcval-term" : [
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
             ],
-            "tacnt" : 8,
+            "tacnt" : 2,
             "us" : [
                "//xxxxxxx.xxxxxx.xx/js/xxxxxx.js"
             ],

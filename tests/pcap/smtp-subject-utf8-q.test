@@ -53,12 +53,8 @@
                "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL_xxxxxxxxxxxxx_xxxxxx.zip"
             ],
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "smtp:content:application/octet-stream",
                "smtp:statuscode:250",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "eip" : [
                "10.168.0.1",
@@ -121,7 +117,7 @@
             "fp" : 1384762012,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 19,
-            "tacnt" : 6,
+            "tacnt" : 2,
             "edst" : [
                "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
             ],

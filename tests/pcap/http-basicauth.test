@@ -10,12 +10,7 @@
             "a2" : "10.0.0.1",
             "ta" : [
                "dstip",
-               "http:method:GET",
-               "http:statuscode:304",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "by2" : 427,
             "g1" : "CAN",
@@ -139,7 +134,7 @@
                "auto",
                "no"
             ],
-            "tacnt" : 7,
+            "tacnt" : 2,
             "us" : [
                "//10.000.000.001:1234/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxx/xxxxxxxxxxxxxxxxxxxx.js"
             ],

@@ -25,11 +25,7 @@
                "zip test"
             ],
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "smtp:content:application/zip",
-               "smtp:statuscode:250",
-               "tcp"
+               "smtp:statuscode:250"
             ],
             "eip" : [
                "127.0.0.1"
@@ -166,7 +162,7 @@
             "fp" : 1387291817,
             "pa" : 28,
             "sl" : 377,
-            "tacnt" : 5,
+            "tacnt" : 1,
             "db1" : 1499,
             "rireip" : [
                ""
@@ -174,8 +170,8 @@
             "aseip" : [
                "---"
             ],
-            "by1" : 2431,
             "mac2-term-cnt" : 2,
+            "by1" : 2431,
             "esrccnt" : 1,
             "emv" : [
                "1.0"

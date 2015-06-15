@@ -47,11 +47,7 @@
             "hsvercnt" : 1,
             "ta" : [
                "dstip",
-               "http:method:GET",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "hpath" : [
                "/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
@@ -91,7 +87,7 @@
                "user12345678@domain.xxxx"
             ],
             "pa" : 4,
-            "tacnt" : 6,
+            "tacnt" : 2,
             "sl" : 194,
             "fb1" : "474554202f787878",
             "us" : [

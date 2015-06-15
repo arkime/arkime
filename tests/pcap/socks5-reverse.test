@@ -12,16 +12,7 @@
             "a2" : "10.0.0.2",
             "ta" : [
                "dstip",
-               "http:content:application/x-gzip",
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:200",
-               "http:statuscode:302",
-               "node:test",
-               "protocol:http",
-               "protocol:socks",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "by2" : 2199,
             "g1" : "RUS",
@@ -272,7 +263,7 @@
             "fp" : 1386790367,
             "pa" : 52,
             "hh2cnt" : 15,
-            "tacnt" : 11,
+            "tacnt" : 2,
             "sl" : 37537,
             "hcval-term" : [
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

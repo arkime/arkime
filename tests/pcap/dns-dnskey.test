@@ -23,10 +23,7 @@
             "a2" : "8.8.8.8",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:dns",
-               "srcip",
-               "udp"
+               "srcip"
             ],
             "pa1" : 1,
             "fpd" : 1393428477365,
@@ -50,9 +47,9 @@
             "fp" : 1393428477,
             "as2" : "AS15169 Google Inc.",
             "pa" : 1,
+            "tacnt" : 1,
             "sl" : 0,
             "fb1" : "f376011000010000",
-            "tacnt" : 4,
             "a1" : "10.0.0.1",
             "db1" : 66,
             "dnshocnt" : 1,

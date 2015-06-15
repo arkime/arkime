@@ -34,10 +34,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:pop3",
                "srcip",
-               "tcp",
                "yara:Pop3Yara",
                "yara:tag1",
                "yara:tag2"
@@ -65,7 +62,7 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 4,
             "sl" : 973,
-            "tacnt" : 8,
+            "tacnt" : 5,
             "a1" : "10.0.0.1",
             "fb2" : "2b4f4b20504f5033",
             "db1" : 0,

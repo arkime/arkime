@@ -670,7 +670,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 
                             if (email->firstInContent & (1 << which)) {
                                 email->firstInContent &= ~(1 << which);
-                                moloch_parsers_magic_tag(session, magicField, "smtp:content", (char *)buf, b);
+                                moloch_parsers_magic(session, magicField, (char *)buf, b);
                             }
                         }
 
@@ -819,7 +819,6 @@ void smtp_classify(MolochSession_t *session, const unsigned char *data, int len,
         if (moloch_nids_has_protocol(session, "smtp"))
             return;
 
-        moloch_nids_add_tag(session, "protocol:smtp");
         moloch_nids_add_protocol(session, "smtp");
 
         SMTPInfo_t *email = MOLOCH_TYPE_ALLOC0(SMTPInfo_t);

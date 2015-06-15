@@ -97,7 +97,6 @@ void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     if (moloch_nids_has_protocol(session, "ssh"))
         return;
 
-    moloch_nids_add_tag(session, "protocol:ssh");
     moloch_nids_add_protocol(session, "ssh");
 
     SSHInfo_t            *ssh          = MOLOCH_TYPE_ALLOC0(SSHInfo_t);

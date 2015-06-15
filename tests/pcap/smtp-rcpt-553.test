@@ -37,10 +37,7 @@
             "a2" : "64.12.168.40",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 9,
             "fpd" : 1386252622425,
@@ -76,7 +73,7 @@
             "fp" : 1386252622,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 16,
-            "tacnt" : 4,
+            "tacnt" : 1,
             "edst" : [
                "123456@example"
             ],

@@ -51,12 +51,9 @@
                "12345678@aol.com"
             ],
             "ta" : [
-               "node:test",
-               "protocol:smtp",
                "smtp:authplain",
                "smtp:statuscode:250",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 14,
             "fpd" : 1386338020379,
@@ -117,7 +114,7 @@
             "fp" : 1386338020,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 30,
-            "tacnt" : 6,
+            "tacnt" : 3,
             "edst" : [
                "xxxx.xxxxxx@xxxxx.com"
             ],

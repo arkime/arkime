@@ -35,9 +35,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 3,
             "fpd" : 1401385380102,
@@ -62,7 +60,7 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 4,
             "sl" : 908493,
-            "tacnt" : 4,
+            "tacnt" : 2,
             "a1" : "10.0.0.1",
             "db1" : 0,
             "mac2-term-cnt" : 2,
@@ -125,10 +123,7 @@
             "ss" : 2,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 0,
             "fpd" : 1401385380102,
@@ -151,7 +146,7 @@
             "pa" : 1,
             "sl" : 908494,
             "fb1" : "4745540d0a",
-            "tacnt" : 5,
+            "tacnt" : 2,
             "a1" : "10.0.0.1",
             "db1" : 5,
             "mac2-term-cnt" : 2,

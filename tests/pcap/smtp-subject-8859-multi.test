@@ -29,10 +29,7 @@
                "4spaces    å é î ø ü     5spaces"
             ],
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "smtp:statuscode:250",
-               "tcp"
+               "smtp:statuscode:250"
             ],
             "eip" : [
                "127.0.0.1"
@@ -107,7 +104,7 @@
             "fp" : 1386877497,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 28,
-            "tacnt" : 4,
+            "tacnt" : 1,
             "edst" : [
                "xxxxxxxxx@xxxxxxx.com"
             ],

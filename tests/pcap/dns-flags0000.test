@@ -23,10 +23,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:dns",
-               "srcip",
-               "udp"
+               "srcip"
             ],
             "pa1" : 1,
             "fpd" : 1393422583830,
@@ -52,7 +49,7 @@
             "fp" : 1393422583,
             "as2" : "AS0000 This is neat",
             "pa" : 2,
-            "tacnt" : 5,
+            "tacnt" : 2,
             "sl" : 102,
             "fb1" : "b2b5000000010000",
             "a1" : "10.0.0.2",

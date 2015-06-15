@@ -127,7 +127,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             moloch_nids_add_tag(session, "http:password");
         }
 
-        moloch_parsers_magic_tag(session, magicField, "http:content", at, length);
+        moloch_parsers_magic(session, magicField, at, length);
         http->inBody |= (1 << http->which);
     }
 
@@ -374,7 +374,6 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     MolochSession_t       *session = http->session;
-    char                   tag[200];
     char                   version[20];
 
 
@@ -385,17 +384,9 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
     int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
 
     if (parser->status_code == 0) {
-#ifndef REMOVEOLD
-        snprintf(tag, sizeof(tag), "http:method:%s", http_method_str(parser->method));
-        moloch_nids_add_tag(session, tag);
-#endif
         moloch_field_string_add(methodField, session, http_method_str(parser->method), -1, TRUE);
         moloch_field_string_add(verReqField, session, version, len, TRUE);
     } else {
-#ifndef REMOVEOLD
-        snprintf(tag, sizeof(tag), "http:statuscode:%d", parser->status_code);
-        moloch_nids_add_tag(session, tag);
-#endif
         moloch_field_int_add(statuscodeField, session, parser->status_code);
         moloch_field_string_add(verResField, session, version, len, TRUE);
     }
@@ -545,7 +536,6 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
         http->hostString = NULL;
     }
 
-    moloch_nids_add_tag(session, "protocol:http");
     moloch_nids_add_protocol(session, "http");
 
     if (pluginsCbs & MOLOCH_PLUGIN_HP_OHC)
@@ -635,7 +625,6 @@ void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), 
     if (moloch_nids_has_protocol(session, "http"))
         return;
 
-    moloch_nids_add_tag(session, "protocol:http");
     moloch_nids_add_protocol(session, "http");
 
     HTTPInfo_t            *http          = MOLOCH_TYPE_ALLOC0(HTTPInfo_t);

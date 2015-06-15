@@ -28,10 +28,7 @@
             "a2" : "10.0.0.1",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:dns",
-               "srcip",
-               "udp"
+               "srcip"
             ],
             "pa1" : 1,
             "fpd" : 1393428477363,
@@ -68,7 +65,7 @@
             "as2" : "AS0000 This is neat",
             "dnsipcnt" : 3,
             "pa" : 2,
-            "tacnt" : 4,
+            "tacnt" : 1,
             "sl" : 4294967260,
             "fb1" : "5aae819000010003",
             "a1" : "8.8.8.8",

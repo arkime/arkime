@@ -28,13 +28,6 @@
             },
             "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "http:method:HEAD",
-               "http:statuscode:500",
-               "node:test",
-               "protocol:http",
-               "tcp"
-            ],
             "hpath" : [
                "/UpdataConfig.dat"
             ],
@@ -75,7 +68,6 @@
             "fp" : 1361891420,
             "hh2cnt" : 4,
             "pa" : 10,
-            "tacnt" : 5,
             "sl" : 775,
             "fb1" : "48454144202f5570",
             "us" : [

@@ -50,7 +50,6 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             if (socks->ip)
                 moloch_field_int_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
-            moloch_nids_add_tag(session, "protocol:socks");
             moloch_nids_add_protocol(session, "socks");
 
             if (socks->user) {
@@ -111,7 +110,6 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 0;
         }
 
-        moloch_nids_add_tag(session, "protocol:socks");
         moloch_nids_add_protocol(session, "socks");
 
         if (socks->state5[socks->which] == SOCKS5_STATE_CONN_DATA) {

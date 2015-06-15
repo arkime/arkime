@@ -33,10 +33,7 @@
             "a2" : "74.125.228.37",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:tls",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 12,
             "fpd" : 1413337896106,
@@ -81,7 +78,7 @@
             "as2" : "AS15169 Google Inc.",
             "tlscipher-termcnt" : 1,
             "pa" : 20,
-            "tacnt" : 4,
+            "tacnt" : 1,
             "sl" : 477,
             "fb1" : "1603010102010000",
             "a1" : "10.0.0.1",

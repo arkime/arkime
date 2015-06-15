@@ -34,10 +34,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:ssh",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 11,
             "fpd" : 1387565111946,
@@ -85,7 +82,7 @@
             "fp" : 1387565111,
             "as2" : "AS0001 Cool Beans!",
             "pa" : 22,
-            "tacnt" : 5,
+            "tacnt" : 2,
             "sl" : 106,
             "fb1" : "5353482d322e302d",
             "a1" : "10.0.0.1",

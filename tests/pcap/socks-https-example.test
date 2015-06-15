@@ -16,12 +16,6 @@
             "sockspo" : 443,
             "a2" : "10.180.156.249",
             "ss" : 1,
-            "ta" : [
-               "node:test",
-               "protocol:socks",
-               "protocol:tls",
-               "tcp"
-            ],
             "pa1" : 17,
             "fpd" : 1386004472572,
             "fs" : [],
@@ -77,7 +71,6 @@
             "fp" : 1386004472,
             "tlscipher-termcnt" : 1,
             "pa" : 30,
-            "tacnt" : 4,
             "sl" : 57,
             "fb1" : "040101bb5db8d877",
             "a1" : "10.180.156.185",
@@ -342,12 +335,6 @@
             "sockspo" : 443,
             "a2" : "10.180.156.249",
             "ss" : 1,
-            "ta" : [
-               "node:test",
-               "protocol:socks",
-               "protocol:tls",
-               "tcp"
-            ],
             "pa1" : 17,
             "fpd" : 1386004475691,
             "fs" : [],
@@ -403,7 +390,6 @@
             "fp" : 1386004475,
             "tlscipher-termcnt" : 1,
             "pa" : 30,
-            "tacnt" : 4,
             "sl" : 69,
             "fb1" : "040101bb00000001",
             "a1" : "10.180.156.185",
@@ -665,12 +651,6 @@
             "sockspo" : 443,
             "a2" : "10.180.156.249",
             "ss" : 1,
-            "ta" : [
-               "node:test",
-               "protocol:socks",
-               "protocol:tls",
-               "tcp"
-            ],
             "pa1" : 19,
             "fpd" : 1386004480852,
             "fs" : [],
@@ -729,7 +709,6 @@
             "fp" : 1386004480,
             "tlscipher-termcnt" : 1,
             "pa" : 33,
-            "tacnt" : 4,
             "sl" : 35,
             "fb1" : "0502000105010001",
             "a1" : "10.180.156.185",

@@ -24,11 +24,7 @@
                "test 测试"
             ],
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "smtp:content:text/plain",
-               "smtp:statuscode:250",
-               "tcp"
+               "smtp:statuscode:250"
             ],
             "eip" : [
                "10.0.0.4",
@@ -163,7 +159,7 @@
             "fp" : 1386358422,
             "pa" : 24,
             "sl" : 7755,
-            "tacnt" : 5,
+            "tacnt" : 1,
             "db1" : 1573,
             "rireip" : [
                "",

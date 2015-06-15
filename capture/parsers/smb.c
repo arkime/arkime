@@ -547,7 +547,6 @@ void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSE
     if (moloch_nids_has_protocol(session, "smb"))
         return;
 
-    moloch_nids_add_tag(session, "protocol:smb");
     moloch_nids_add_protocol(session, "smb");
 
     SMBInfo_t            *smb          = MOLOCH_TYPE_ALLOC0(SMBInfo_t);

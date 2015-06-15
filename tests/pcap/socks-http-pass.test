@@ -11,10 +11,6 @@
             "lp" : 1386090517,
             "a2" : "10.180.156.249",
             "ss" : 1,
-            "ta" : [
-               "node:test",
-               "tcp"
-            ],
             "pa1" : 6,
             "fpd" : 1386090517357,
             "fs" : [],
@@ -44,7 +40,6 @@
             "pa" : 11,
             "sl" : 1,
             "fb1" : "05020001",
-            "tacnt" : 2,
             "a1" : "10.180.156.185",
             "fb2" : "05ff",
             "db1" : 4,
@@ -92,10 +87,7 @@
             "a2" : "10.180.156.249",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:socks",
-               "socks:password",
-               "tcp"
+               "socks:password"
             ],
             "pa1" : 8,
             "fpd" : 1386090528538,
@@ -129,7 +121,7 @@
             "pa" : 14,
             "sl" : 8,
             "fb1" : "0503000102010874",
-            "tacnt" : 4,
+            "tacnt" : 1,
             "a1" : "10.180.156.185",
             "fb2" : "050201ff",
             "db1" : 24,
@@ -204,14 +196,7 @@
             "ss" : 1,
             "hsvercnt" : 1,
             "ta" : [
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "protocol:socks",
-               "socks:password",
-               "tcp"
+               "socks:password"
             ],
             "hpath" : [
                "/"
@@ -273,7 +258,7 @@
             "hmd5cnt" : 1,
             "hh2cnt" : 11,
             "pa" : 20,
-            "tacnt" : 8,
+            "tacnt" : 1,
             "sl" : 153,
             "fb1" : "0503000102010874",
             "us" : [

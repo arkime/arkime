@@ -110,8 +110,8 @@ my $pwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{pr}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":4, "key":"tcp"}, {"doc_count":1, "key":"icmp"}]}'), "ALL pr");
     eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$pwd/socks-http-example.pcap"}, {"doc_count":1, "key":"$pwd/bigendian.pcap"},{"doc_count":1, "key":"$pwd/bt-tcp.pcap"}]})), "bigendian fileand");
-    eq_or_diff($json->{spi}->{ta}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 38,
-            "buckets":[{"doc_count":5, "key":"node:test"},{"doc_count":4, "key":"tcp"}]}'), "ALL ta");
+    eq_or_diff($json->{spi}->{ta}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 15,
+            "buckets":[{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"}]}'), "ALL ta");
     eq_or_diff($json->{spi}->{hh1}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":3, "key":"user-agent"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"accept"}]}'), "ALL hh1");
 

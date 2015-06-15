@@ -29,10 +29,7 @@
                "é î ø ü                                                                                                                                                                                         test"
             ],
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "smtp:statuscode:250",
-               "tcp"
+               "smtp:statuscode:250"
             ],
             "eip" : [
                "127.0.0.1"
@@ -107,7 +104,7 @@
             "fp" : 1386817725,
             "as2" : "AS1668 AOL Transit Data Network",
             "pa" : 28,
-            "tacnt" : 4,
+            "tacnt" : 1,
             "edst" : [
                "xxxxxxxxx@xxxxxxx.com"
             ],
@@ -189,10 +186,6 @@
             "lp" : 1386817726,
             "a2" : "10.180.156.249",
             "ss" : 1,
-            "ta" : [
-               "node:test",
-               "tcp"
-            ],
             "pa1" : 1,
             "fpd" : 1386817726156,
             "fs" : [],
@@ -213,7 +206,6 @@
             "fp" : 1386817726,
             "pa" : 1,
             "sl" : 0,
-            "tacnt" : 2,
             "a1" : "64.236.55.17",
             "db1" : 0,
             "mac2-term-cnt" : 1,

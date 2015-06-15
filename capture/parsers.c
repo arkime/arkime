@@ -28,28 +28,26 @@
 
 /******************************************************************************/
 extern MolochConfig_t        config;
-static gchar                 nodeTag[100];
 static gchar                 classTag[100];
 
 static magic_t               cookie;
 
 /******************************************************************************/
-void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *base, const char *data, int len)
+void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
 {
     if (len < 3)
         return;
 
     const char *m = magic_buffer(cookie, data, MIN(len,50));
     if (m) {
-        char tmp[500];
-        snprintf(tmp, sizeof(tmp), "%s:%s", base, m);
-        char *semi = strchr(tmp, ';');
+        int len;
+        char *semi = strchr(m, ';');
         if (semi) {
-            *semi = 0;
+            len = semi - m;
+        } else {
+            len = strlen(m);
         }
-        moloch_nids_add_tag(session, tmp);
-        if (field != -1)
-          moloch_field_string_add(field, session, tmp+strlen(base)+1, -1, TRUE);
+        moloch_field_string_add(field, session, m, len, TRUE);
     }
 }
 /******************************************************************************/
@@ -57,7 +55,6 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
 {
     int i;
 
-    moloch_nids_add_tag(session, nodeTag);
     if (config.nodeClass)
         moloch_nids_add_tag(session, classTag);
 
@@ -69,15 +66,12 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
 
     switch(session->protocol) {
     case IPPROTO_TCP:
-        moloch_nids_add_tag(session, "tcp");
         moloch_nids_add_protocol(session, "tcp");
         break;
     case IPPROTO_UDP:
-        moloch_nids_add_tag(session, "udp");
         moloch_nids_add_protocol(session, "udp");
         break;
     case IPPROTO_ICMP:
-        moloch_nids_add_tag(session, "ICMP");
         moloch_nids_add_protocol(session, "icmp");
         break;
     }
@@ -306,9 +300,6 @@ void moloch_parsers_init()
         "Asset name",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
-
-    snprintf(nodeTag, sizeof(nodeTag), "node:%s", config.nodeName);
-    moloch_db_get_tag(NULL, tagsField, nodeTag, NULL);
 
     if (config.nodeClass) {
         snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);

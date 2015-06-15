@@ -1401,36 +1401,6 @@ void moloch_nids_init()
         NULL);
 
     tagsField = moloch_field_by_db("ta");
-    moloch_db_get_tag(NULL, tagsField, "tcp", NULL);
-    moloch_db_get_tag(NULL, tagsField, "udp", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:http", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:ssh", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:smtp", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:ftp", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:pop3", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:gh0st", NULL);
-    moloch_db_get_tag(NULL, tagsField, "protocol:dns", NULL);
-
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:200", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:204", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:301", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:302", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:304", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:400", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:404", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:statuscode:500", NULL);
-
-    moloch_db_get_tag(NULL, tagsField, "http:method:GET", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:method:POST", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:method:HEAD", NULL);
-
-    moloch_db_get_tag(NULL, tagsField, "http:content:application/octet-stream", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:content:text/plain", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:content:text/html", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:content:application/x-gzip", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:content:application/x-shockwave-flash", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:content:image/gif", NULL);
-    moloch_db_get_tag(NULL, tagsField, "http:content:image/jpg", NULL);
 
     HASH_INIT(h_, sessions[SESSION_UDP], moloch_session_hash, moloch_session_cmp);
     HASH_INIT(h_, sessions[SESSION_TCP], moloch_session_hash, moloch_session_cmp);

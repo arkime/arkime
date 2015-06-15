@@ -16,12 +16,8 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:smtp",
-               "protocol:socks",
                "smtp:authlogin",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 10,
             "fpd" : 1385474626674,
@@ -62,7 +58,7 @@
             "fp" : 1385474626,
             "as2" : "AS0000 This is neat",
             "pa" : 20,
-            "tacnt" : 7,
+            "tacnt" : 3,
             "sl" : 12781,
             "fb1" : "050100050100030e",
             "a1" : "10.0.0.2",

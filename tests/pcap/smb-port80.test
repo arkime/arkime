@@ -13,10 +13,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:smb",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 5,
             "fpd" : 1379519109833,
@@ -48,7 +45,7 @@
             "pa" : 9,
             "sl" : 784,
             "fb1" : "000000a4ff534d42",
-            "tacnt" : 5,
+            "tacnt" : 2,
             "a1" : "10.0.0.2",
             "fb2" : "b378fd2aae2d4aee",
             "db1" : 168,

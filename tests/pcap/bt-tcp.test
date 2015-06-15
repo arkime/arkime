@@ -34,10 +34,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:bittorrent",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 3,
             "fpd" : 1387744084182,
@@ -63,7 +60,7 @@
             "pa" : 4,
             "sl" : 123,
             "fb1" : "13426974546f7272",
-            "tacnt" : 5,
+            "tacnt" : 2,
             "a1" : "10.0.0.1",
             "db1" : 68,
             "mac2-term-cnt" : 2,

@@ -54,13 +54,7 @@
             "hsvercnt" : 1,
             "ta" : [
                "dstip",
-               "http:content:application/zip",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "hpath" : [
                "/a.zip"
@@ -111,7 +105,7 @@
             "hmd5cnt" : 1,
             "hh2cnt" : 8,
             "pa" : 10,
-            "tacnt" : 8,
+            "tacnt" : 2,
             "sl" : 27,
             "fb1" : "474554202f612e7a",
             "us" : [
@@ -183,9 +177,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 2,
             "fpd" : 1388428585167,
@@ -208,7 +200,7 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 2,
             "sl" : 8,
-            "tacnt" : 4,
+            "tacnt" : 2,
             "a1" : "10.0.0.1",
             "db1" : 0,
             "mac2-term-cnt" : 1,

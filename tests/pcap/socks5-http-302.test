@@ -11,14 +11,7 @@
             "a2" : "10.0.0.2",
             "ta" : [
                "dstip",
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:302",
-               "node:test",
-               "protocol:http",
-               "protocol:socks",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "by2" : 1290,
             "g1" : "RUS",
@@ -174,7 +167,7 @@
             "hcval-term" : [
                "ID=xxxxxxxxxxxxxxxx:TM=xxxxxxxxxx:LM=xxxxxxxxxx:S=xxxxxxxxxxxx_6oz"
             ],
-            "tacnt" : 9,
+            "tacnt" : 2,
             "us" : [
                "//www.google.com/"
             ],

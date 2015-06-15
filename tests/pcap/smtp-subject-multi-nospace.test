@@ -41,10 +41,7 @@
             ],
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:smtp",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 4,
             "fpd" : 1394730057309,
@@ -75,7 +72,7 @@
             "fp" : 1394730057,
             "as2" : "AS0001 Cool Beans!",
             "pa" : 5,
-            "tacnt" : 5,
+            "tacnt" : 2,
             "edst" : [
                "xxxxx@xxx.net"
             ],

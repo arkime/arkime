@@ -156,7 +156,6 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             g_free(lower);
         }
     }
-    moloch_nids_add_tag(session, "protocol:dns");
     moloch_nids_add_protocol(session, "dns");
 
     if (qr == 0)
@@ -252,7 +251,6 @@ int dns_tcp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned ch
 void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which)
 {
     if (which == 0 && session->port2 == 53 && !moloch_nids_has_protocol(session, "dns")) {
-        moloch_nids_add_tag(session, "protocol:dns");
         moloch_nids_add_protocol(session, "dns");
         moloch_parsers_register(session, dns_tcp_parser, 0, 0);
     }

@@ -499,7 +499,7 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
 void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
 void moloch_parsers_exit();
 
-void moloch_parsers_magic_tag(MolochSession_t *session, int field, const char *base, const char *data, int len);
+void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len);
 
 typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining, int which);
 

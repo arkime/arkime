@@ -37,10 +37,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:tls",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 3,
             "fpd" : 1421771550035,
@@ -75,7 +72,7 @@
             "as2" : "AS0001 Cool Beans!",
             "tlscipher-termcnt" : 1,
             "pa" : 6,
-            "tacnt" : 5,
+            "tacnt" : 2,
             "sl" : 188,
             "fb1" : "1603010200010001",
             "a1" : "10.0.0.1",

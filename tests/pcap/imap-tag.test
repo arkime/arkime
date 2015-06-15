@@ -34,10 +34,7 @@
             "ss" : 1,
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:imap",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 2,
             "fpd" : 1387759542002,
@@ -62,7 +59,7 @@
             "as2" : "AS0001 Cool Beans!",
             "pa" : 4,
             "sl" : 233,
-            "tacnt" : 5,
+            "tacnt" : 2,
             "a1" : "10.0.0.1",
             "fb2" : "2a204f4b20494d41",
             "db1" : 0,

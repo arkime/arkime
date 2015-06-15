@@ -29,10 +29,7 @@
             ],
             "ta" : [
                "dstip",
-               "node:test",
-               "protocol:smtp",
-               "smtp:statuscode:250",
-               "tcp"
+               "smtp:statuscode:250"
             ],
             "eip" : [
                "10.0.0.3",
@@ -106,7 +103,7 @@
             "lpd" : 1389625274669,
             "fp" : 1389625273,
             "pa" : 24,
-            "tacnt" : 5,
+            "tacnt" : 2,
             "edst" : [
                "xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com"
             ],

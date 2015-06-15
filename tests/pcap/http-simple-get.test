@@ -32,14 +32,6 @@
             },
             "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:403",
-               "node:test",
-               "protocol:http",
-               "tcp"
-            ],
             "hpath" : [
                "/"
             ],
@@ -91,7 +83,6 @@
             "hmd5cnt" : 1,
             "hh2cnt" : 6,
             "pa" : 16,
-            "tacnt" : 6,
             "sl" : 5,
             "fb1" : "474554202f204854",
             "us" : [

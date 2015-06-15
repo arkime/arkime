@@ -33,12 +33,8 @@
             "a2" : "173.194.68.26",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:smtp",
-               "protocol:tls",
                "smtp:starttls",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 17,
             "fpd" : 1388017124762,
@@ -99,7 +95,7 @@
             "as2" : "AS15169 Google Inc.",
             "tlscipher-termcnt" : 1,
             "pa" : 36,
-            "tacnt" : 6,
+            "tacnt" : 2,
             "sl" : 478,
             "fb1" : "45484c4f20787878",
             "a1" : "10.0.0.1",

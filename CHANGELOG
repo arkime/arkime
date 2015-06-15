@@ -1,6 +1,8 @@
 0.12.0 2015/06/XX
   - NOTICE: libcurl (>= 7.21.7) is now required, sorry
   - NOTICE: db.pl upgrade is required
+  - NOTICE: duplicate items in available both in tags and elsewhere have been 
+            removed from tags for future data
   - capture - http module rewritten to use libcurl, woot!
   - capture/s3 - S3 traffic now sent over https
   - viewer - upgraded to DataTables 1.10.7 (issue #379)
@@ -13,6 +15,7 @@
   - capture - cert.hash is sha1 hash for SSL certificate (issue #388)
   - viewer - New snapto time search that uses current query result for future
              queries (issue #398)
+  - capture - Removed most tags items
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

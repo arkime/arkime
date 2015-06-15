@@ -33,10 +33,7 @@
             "a2" : "64.12.21.3",
             "ss" : 1,
             "ta" : [
-               "node:test",
-               "protocol:tls",
-               "srcip",
-               "tcp"
+               "srcip"
             ],
             "pa1" : 11,
             "fpd" : 1413338074954,
@@ -83,7 +80,7 @@
             "as2" : "AS1668 AOL Transit Data Network",
             "tlscipher-termcnt" : 1,
             "pa" : 19,
-            "tacnt" : 4,
+            "tacnt" : 1,
             "sl" : 606,
             "fb1" : "1603010102010000",
             "a1" : "10.0.0.1",

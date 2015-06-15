@@ -29,13 +29,6 @@
             },
             "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "http:method:GET",
-               "http:statuscode:301",
-               "node:test",
-               "protocol:http",
-               "tcp"
-            ],
             "hpath" : [
                "/"
             ],
@@ -76,7 +69,6 @@
             "as2" : "AS36459 GitHub, Inc.",
             "hh2cnt" : 3,
             "pa" : 8,
-            "tacnt" : 5,
             "sl" : 125,
             "fb1" : "474554202f204854",
             "us" : [

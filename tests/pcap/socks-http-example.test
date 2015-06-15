@@ -34,15 +34,6 @@
             },
             "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "protocol:socks",
-               "tcp"
-            ],
             "hpath" : [
                "/"
             ],
@@ -97,7 +88,6 @@
             "hmd5cnt" : 1,
             "hh2cnt" : 11,
             "pa" : 14,
-            "tacnt" : 7,
             "sl" : 10,
             "fb1" : "040100505db8d877",
             "us" : [
@@ -193,15 +183,6 @@
             },
             "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "protocol:socks",
-               "tcp"
-            ],
             "hpath" : [
                "/"
             ],
@@ -257,7 +238,6 @@
             "hmd5cnt" : 1,
             "hh2cnt" : 11,
             "pa" : 15,
-            "tacnt" : 7,
             "sl" : 53,
             "fb1" : "0401005000000001",
             "us" : [
@@ -351,15 +331,6 @@
             },
             "ss" : 1,
             "hsvercnt" : 1,
-            "ta" : [
-               "http:content:text/html",
-               "http:method:GET",
-               "http:statuscode:200",
-               "node:test",
-               "protocol:http",
-               "protocol:socks",
-               "tcp"
-            ],
             "hpath" : [
                "/"
             ],
@@ -417,7 +388,6 @@
             "hmd5cnt" : 1,
             "hh2cnt" : 11,
             "pa" : 17,
-            "tacnt" : 7,
             "sl" : 9,
             "fb1" : "0502000105010001",
             "us" : [

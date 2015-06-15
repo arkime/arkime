@@ -93,7 +93,6 @@ void irc_classify(MolochSession_t *session, const unsigned char *data, int len, 
     if (moloch_nids_has_protocol(session, "irc"))
         return;
 
-    moloch_nids_add_tag(session, "protocol:irc");
     moloch_nids_add_protocol(session, "irc");
 
     IRCInfo_t            *irc          = MOLOCH_TYPE_ALLOC0(IRCInfo_t);
