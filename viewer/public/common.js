@@ -285,10 +285,29 @@ function db2FieldType(dbField) {
 // layout Functions
 //////////////////////////////////////////////////////////////////////////////////
 //
+function updateDelta()
+{
+  var extra = (molochSettings.timezone === "gmt"?" UTC":"");
+
+  var start = new Date($("#startDate").val() + extra);
+  if (start < 0) {start.setFullYear(start.getFullYear() + 100);}
+
+  var stop = new Date($("#stopDate").val() + extra);
+  if (stop < 0) {stop.setFullYear(stop.getFullYear() + 100);}
+
+  var delta = (stop - start)/1000;
+  $("#deltaDate").text("" +
+      Math.floor((delta / (24*60*60))) + " " +
+      twoDigitString(Math.floor((delta % (24*60*60))/(60*60))) + ":" +
+      twoDigitString(Math.floor((delta % (60*60))/60)) + ":" +
+      twoDigitString((delta % 60))
+   );
+}
 function updateSnapTo(data) {
   if ($("#date").val() === "-3" && data.dbHisto.length !== 0) {
     $("#startDate").val(dateString(data.dbHisto[0][0]/1000, ' '));
     $("#stopDate").val(dateString(Math.ceil(data.dbHisto[data.dbHisto.length-1][0]/1000.0) + data.interval, ' '));
+    updateDelta();
   }
 }
 
@@ -319,10 +338,12 @@ $(document).ready(function() {
   $('#date').change(function() {
     var hours = parseInt($("#date").val(), 10);
     if (hours === -2) {
+      updateDelta();
       $("#customDate").show();
     } else if (hours === -3) {
       var data = $("#sessionGraph").data("molochGraphData");
       updateSnapTo(data);
+      updateDelta();
       $("#customDate").show();
     } else {
       if (hours !== -1) {
@@ -1013,6 +1034,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////
   // startDate/stopDate
   //////////////////////////////////////////////////////////////////////////////////
+  $('#startDate,#stopDate').keyup(updateDelta);
   $('#startDate,#stopDate').keypress(function (e) {
     if ((e.keyCode ? e.keyCode : e.which) === 13) {
       $('#searchForm').submit();
@@ -1241,6 +1263,7 @@ function addDateParams(params) {
   if ($("#date").length) {
     var val = $("#date").val();
     if (val.match(/^(-2|-3)/)) {
+      updateDelta();
       $("#customDate").show();
       /* Date madness because of firefox on windows */
       var extra = (molochSettings.timezone === "gmt"?" UTC":"");

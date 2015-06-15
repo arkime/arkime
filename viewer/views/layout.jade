@@ -84,12 +84,14 @@ html
                 label#actionsButton Actions 
                   img#actionsButtonArrow(src="down-arrow.png")
       div#customDate
-        span Beginning Time:
+        span Beginning Time: 
         input#startDate(size=21)
-        span Ending Time:
+        span &nbsp;Ending Time: 
         input#stopDate(size=21)
+        | &nbsp;Delta Time: 
+        label#deltaDate
         input(type='checkbox', id='strictly', name='strictly', size=21)
-        label(for='strictly') Bounded By 
+        label(for='strictly') Results bounded
       block customMenu
           
     div.pageBody(id="pageBody-#{titleLink}")

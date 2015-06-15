@@ -16,6 +16,7 @@
   - viewer - New snapto time search that uses current query result for future
              queries (issue #398)
   - capture - Removed most tags items
+  - viewer - Delta Time display (issue #398)
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 
