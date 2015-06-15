@@ -883,7 +883,7 @@ function expireCheckDevice (nodes, stat, nextCb) {
   var doit = false;
   var minFreeSpaceG = 0;
   async.forEach(nodes, function(node, cb) {
-    var freeSpaceG = Config.getFull(node, "freeSpaceG", 301);
+    var freeSpaceG = Config.getFull(node, "freeSpaceG", "5%");
     if (freeSpaceG[freeSpaceG.length-1] === "%") {
       freeSpaceG = (+freeSpaceG.substr(0,freeSpaceG.length-1)) * 0.01 * stat.f_frsize/1024.0*stat.f_blocks/(1024.0*1024.0);
     }
