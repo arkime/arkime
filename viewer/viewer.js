@@ -139,7 +139,7 @@ app.configure(function() {
   if (_accesslogfile) {
     _stream = fs.createWriteStream(_accesslogfile, {flags: 'a'});
   }
-  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms', stream: _stream }));
+  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', stream: _stream }));
   app.use(express.compress());
   app.use(express.methodOverride());
   app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
@@ -4595,6 +4595,21 @@ if (Config.get("regressionTests")) {
     res.send("{}");
   });
 }
+
+app.use(function(req,res) {
+  res.status(404);
+  // respond with html page
+  if (req.accepts('html')) {
+    return res.render('404', {
+      user: req.user,
+      title: makeTitle(req, 'Error'),
+      titleLink: 'errorLink'
+    });
+  }
+  res.type('txt').send('Page not found');
+
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Cron Queries
