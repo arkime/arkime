@@ -401,25 +401,13 @@ block content
           },
           {
             data : "storeSize",
-            render: function (data, type, row, meta) {
-              if (type === "display") {
-                return numberWithCommas(Math.floor(data)/1000000);
-              } else {
-                return data;
-              }
-            },
+            render: numberRenderM,
             className: "right",
             searchable: false
           },
           {
             data : "heapSize",
-            render: function (data, type, row, meta) {
-              if (type === "display") {
-                return numberWithCommas(Math.floor(data)/1000000);
-              } else {
-                return data;
-              }
-            },
+            render: numberRenderM,
             className: "right",
             searchable: false
           },
@@ -481,8 +469,8 @@ block content
           var totCells = $('tr#totes > th');
 
           $(totCells[1]).html(numberWithCommas(totals.docs));
-          $(totCells[2]).html(numberWithCommas(totals.storeSize));
-          $(totCells[3]).html(numberWithCommas(totals.heapSize));
+          $(totCells[2]).html(numberWithCommas(Math.ceil(totals.storeSize/1000000)));
+          $(totCells[3]).html(numberWithCommas(Math.ceil(totals.heapSize/1000000)));
           $(totCells[4]).html("[" + totals.load[0].toFixed(2) + ", " + totals.load[1].toFixed(2) + ", " + totals.load[2].toFixed(2) + "]");
           $(totCells[5]).html(numberWithCommas(totals.cpu));
           $(totCells[6]).html(numberWithCommas(totals.read));
@@ -490,8 +478,8 @@ block content
           $(totCells[8]).html(numberWithCommas(totals.searches));
 
           $(avgCells[1]).html(numberWithCommas(Math.floor(totals.docs/aaData.length)));
-          $(avgCells[2]).html(numberWithCommas(Math.floor(totals.storeSize/aaData.length)));
-          $(avgCells[3]).html(numberWithCommas(Math.floor(totals.heapSize/aaData.length)));
+          $(avgCells[2]).html(numberWithCommas(Math.floor(totals.storeSize/aaData.length/1000000)));
+          $(avgCells[3]).html(numberWithCommas(Math.floor(totals.heapSize/aaData.length/1000000)));
           $(avgCells[4]).html("[" + (totals.load[0]/aaData.length).toFixed(2) + ", " + (totals.load[1]/aaData.length).toFixed(2) + ", " + (totals.load[2]/aaData.length).toFixed(2) + "]");
           $(avgCells[5]).html(numberWithCommas(Math.floor(totals.cpu/aaData.length)));
           $(avgCells[6]).html(numberWithCommas(Math.floor(totals.read/aaData.length)));
