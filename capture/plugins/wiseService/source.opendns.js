@@ -40,7 +40,7 @@ OpenDNSSource.prototype.getCategories = function () {
   var options = {
       host: 'sgraph.api.opendns.com',
       port: '443',
-      path: '/domains/categories',
+      path: '/domains/categories/',
       method: 'GET',
       headers: {
           'Authorization': 'Bearer ' + self.key,
