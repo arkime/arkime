@@ -93,7 +93,7 @@ dl.sessionDetailMeta
           - var fb2a = new Buffer(session.fb2, "hex");
           a.moloch-right-click(href='#', molochexpr='payload8.dst.hex') #{session.fb2}
           | 
-          a.moloch-right-click(href='#', molochexpr='payload8.src.utf8', molochvalue=fb2a) (#{fb2a})
+          a.moloch-right-click(href='#', molochexpr='payload8.dst.utf8', molochvalue=fb2a) (#{fb2a})
   +arrayList(session, "ta", "Tags", "tags", "<img class=\"addTagsAction\" src=\"images/details_open.png\">")
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files", "file")
