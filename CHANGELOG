@@ -20,6 +20,9 @@
   - capture - pcapWriteMethod defaults to thread-direct now
   - viewer - freeSpaceG defaults to 5% now
   - viewer - 404 page and status code logged (issue #397)
+  - easybutton - ES 1.6.1
+  - easybutton - build curl with --without-librtmp (issue #403)
+  - easybutton - mirror sourceforge downloads for now (issue #406)
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 
