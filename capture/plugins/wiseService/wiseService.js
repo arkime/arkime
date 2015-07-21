@@ -43,6 +43,7 @@ var internals = {
   getDomains: [],
   getMd5s: [],
   getEmails: [],
+  get5Tuples: [],  
   printStats: [],
   sources: [],
   rstats: [0,0,0,0],
@@ -158,6 +159,9 @@ internals.sourceApi = {
     if (src.getEmail) {
       internals.getEmails.push(src);
     }
+    if (src.get5Tuple) {
+      internals.get5Tuples.push(src);
+    }
     if (src.printStats) {
       internals.printStats.push(src);
     }
@@ -187,8 +191,8 @@ app.get("/rightClicks", function(req, res) {
   res.send(internals.rightClicks);
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail"];
-internals.type2Name = ["ip", "domain", "md5", "email"];
+internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail","get5Tuple"];
+internals.type2Name = ["ip", "domain", "md5", "email","_5tuple"];
 app.post("/get", function(req, res) {
   var offset = 0;
 
@@ -243,7 +247,7 @@ app.post("/get", function(req, res) {
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.type2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail"};
+internals.type2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail",_5tuple:"get5Tuple",4:"get5Tuple"};
 app.get("/:source/:type/:value", function(req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
@@ -312,10 +316,10 @@ if (getConfig("wiseService", "regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 function printStats()
 {
-  console.log(sprintf("REQUESTS: domain: %7d ip: %7d email: %7d md5: %7d",
-      internals.rstats[1], internals.rstats[0], internals.rstats[3], internals.rstats[2]));
-  console.log(sprintf("FOUND:    domain: %7d ip: %7d email: %7d md5: %7d",
-      internals.fstats[1], internals.fstats[0], internals.fstats[3], internals.fstats[2]));
+  console.log(sprintf("REQUESTS: domain: %7d ip: %7d email: %7d md5: %7d 5tuples: %7d",
+      internals.rstats[1], internals.rstats[0], internals.rstats[3], internals.rstats[2],internals.rstats[4]));
+  console.log(sprintf("FOUND:    domain: %7d ip: %7d email: %7d md5: %7d 5tuples: %7d",
+      internals.fstats[1], internals.fstats[0], internals.fstats[3], internals.fstats[2],internals.fstats[4]));
   internals.printStats.forEach(function(fn) {
     fn.printStats();
   });
@@ -352,7 +356,9 @@ internals.global_allowed.domain = function(value) {
     }
   }
   return true;
+
 };
+internals.global_allowed._5tuple = function(value) {return true;};
 internals.source_allowed.ip = function(src, value) {
   if (src.excludeIPs.find(value)) {
     if (internals.debug > 0) {
@@ -385,6 +391,7 @@ internals.source_allowed.domain = function(src, value) {
   }
   return true;
 };
+internals.source_allowed._5tuple = function(src,value) {return true;};
 //////////////////////////////////////////////////////////////////////////////////
 function loadExcludes() {
   ["excludeDomains", "excludeEmails"].forEach(function(type) {

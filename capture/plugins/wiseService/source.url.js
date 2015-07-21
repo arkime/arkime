@@ -165,6 +165,8 @@ URLSource.prototype.init = function() {
     this.getMd5 = this.sendResult;
   } else if (this.type === "email") {
     this.getEmail = this.sendResult;
+  } else if (this.type === "email") {
+    this.get5Tuple = this.sendResult;
   } else {
     console.log("URL - ERROR not loading", this.section, "since unknown type specified in config file", this.type);
     return;
