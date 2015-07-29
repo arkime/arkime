@@ -8,7 +8,7 @@
 
 # This script will 
 # * Use easybutton-build.sh to
-# ** download known working versions of moloch dependancies, 
+# ** download known working versions of moloch dependencies, 
 # ** build them statically 
 # ** configure moloch-capture to use them
 # ** build moloch-capture
