@@ -1977,7 +1977,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
 
     dbESVersion();
-    $main::userAgent->timeout(900);
+    $main::userAgent->timeout(3600);
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
@@ -1994,7 +1994,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
     dbESVersion();
-    $main::userAgent->timeout(600);
+    $main::userAgent->timeout(3600);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
