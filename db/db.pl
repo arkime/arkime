@@ -1,5 +1,5 @@
-#!/usr/bin/perl 
-# This script can initialize, upgrade or provide simple maintenance for the 
+#!/usr/bin/perl
+# This script can initialize, upgrade or provide simple maintenance for the
 # moloch elastic search db
 #
 # Schema Versions
@@ -9,7 +9,7 @@
 #  2 - Added email items
 #  3 - Added email md5
 #  4 - Added email host and ip; added help, usersimport, usersexport, wipe commands
-#  5 - No schema change, new rotate command, encoding of file pos is different.  
+#  5 - No schema change, new rotate command, encoding of file pos is different.
 #      Negative is file num, positive is file pos
 #  6 - Multi fields for spi view, added xffcnt, 0.90 fixes, need to type INIT/UPGRADE
 #      instead of YES
@@ -172,7 +172,7 @@ sub esCopy
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
-        
+
 
         my $incoming = esGet($url);
         my $out = "";
@@ -1753,16 +1753,16 @@ my($type, $t) = @_;
     my @t = gmtime($t);
     if ($type eq "hourly") {
         return sprintf("${PREFIX}sessions-%02d%02d%02dh%0d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
-    } 
+    }
 
     if ($type eq "daily") {
         return sprintf("${PREFIX}sessions-%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
-    } 
-    
+    }
+
     if ($type eq "weekly") {
         return sprintf("${PREFIX}sessions-%02dw%02d", $t[5] % 100, int($t[7]/7));
-    } 
-    
+    }
+
     if ($type eq "monthly") {
         return sprintf("${PREFIX}sessions-%02dm%02d", $t[5] % 100, $t[4]+1);
     }
@@ -1977,7 +1977,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     }
 
     dbESVersion();
-    $main::userAgent->timeout(900);
+    $main::userAgent->timeout(3600);
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
@@ -1994,7 +1994,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     my $indices = esGet("/${PREFIX}sessions-*/_aliases", 1);
 
     dbESVersion();
-    $main::userAgent->timeout(600);
+    $main::userAgent->timeout(3600);
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
@@ -2032,7 +2032,7 @@ sub printIndex {
     printf "Session Indices:     %s\n", commify(scalar(@sessions));
     printf "Sessions:            %s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
-        printf "Session Density:     %s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))), 
+        printf "Session Density:     %s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))),
                                                        commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
     }
     printIndex($status->{indices}->{files_v3}, "files_v3");
@@ -2104,7 +2104,7 @@ sub printIndex {
     die "Field $ARGV[3] isn't found" if (!$found);
 
     esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
-    
+
     exit 0;
 }
 
