@@ -64,10 +64,8 @@ static const int validDNS[256] = {
 #define INTEL_TYPE_DOMAIN  1
 #define INTEL_TYPE_MD5     2
 #define INTEL_TYPE_EMAIL   3
-#define INTEL_TYPE_5TUPLE  4
 
-static char *wiseStrings[] = {"ip", "domain", "md5", "email","5tuple"};
-#define WSS_SIZE (sizeof(wiseStrings)/sizeof(*wiseStrings))
+static char *wiseStrings[] = {"ip", "domain", "md5", "email"};
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
@@ -75,7 +73,7 @@ static char *wiseStrings[] = {"ip", "domain", "md5", "email","5tuple"};
 #define INTEL_STAT_INPROGRESS 3
 #define INTEL_STAT_FAIL       4
 
-static uint32_t stats[WSS_SIZE][5];
+static uint32_t stats[4][5];
 /******************************************************************************/
 typedef struct wise_op {
     char                 *str;
@@ -116,8 +114,8 @@ typedef struct wiserequest {
 
 typedef HASH_VAR(h_, WiseItemHash_t, WiseItemHead_t, 199337);
 
-WiseItemHash_t itemHash[WSS_SIZE];
-WiseItemHead_t itemList[WSS_SIZE];
+WiseItemHash_t itemHash[4];
+WiseItemHead_t itemList[4];
 
 /******************************************************************************/
 int wise_item_cmp(const void *keyv, const void *elementv)
@@ -131,7 +129,7 @@ int wise_item_cmp(const void *keyv, const void *elementv)
 void wise_print_stats()
 {
     int i;
-    for (i = 0; i < WSS_SIZE; i++) {
+    for (i = 0; i < 4; i++) {
         LOG("%8s lookups:%7d cache:%7d requests:%7d inprogress:%7d fail:%7d hash:%7d list:%7d",
             wiseStrings[i],
             stats[i][0],
@@ -398,35 +396,6 @@ void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, 
     request->items[request->numItems++] = wi;
 }
 /******************************************************************************/
-void wise_lookup_5tuple(MolochSession_t *session, WiseRequest_t *request){
-  char query[64];
-  char proto[8];
-  uint32_t ip1,ip2;
-  switch(session->protocol){
-  case IPPROTO_TCP:
-    sprintf(proto,"tcp");
-    break;
-  case IPPROTO_UDP:
-    sprintf(proto,"udp");
-    break;
-  case IPPROTO_ICMP:
-    sprintf(proto,"icmp");
-    break;
-  default:
-    sprintf(proto,"undef");
-  }
-  ip1= session->addr1;
-  ip2 = session->addr2;
-  snprintf(query,sizeof(query),"%s:%d.%d.%d.%d:%d:%d.%d.%d.%d:%d",proto,
-	  ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,session->port1,
-	  ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,session->port2
-	  );
-	  
-  wise_lookup(session,request,query,INTEL_TYPE_5TUPLE);
-  
-}
-
-/******************************************************************************/
 void wise_lookup_domain(MolochSession_t *session, WiseRequest_t *request, char *domain)
 {
     unsigned char *end = (unsigned char*)domain;
@@ -521,9 +490,6 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     wise_lookup_ip(session, iRequest, session->addr2);
 
 
-    // 5-Tuple
-    wise_lookup_5tuple(session,iRequest);
-    
     //Domains
     if (session->fields[httpHostField]) {
         MolochStringHashStd_t *shash = session->fields[httpHostField]->shash;
@@ -645,7 +611,7 @@ void moloch_plugin_init()
     moloch_plugins_set_outstanding_cb("wise", wise_plugin_outstanding);
 
     int h;
-    for (h = 0; h < WSS_SIZE; h++) {
+    for (h = 0; h < 4; h++) {
         HASH_INIT(wih_, itemHash[h], moloch_string_hash, wise_item_cmp);
         DLL_INIT(wil_, &itemList[h]);
     }
