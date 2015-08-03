@@ -1814,16 +1814,24 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 10200) {
+    if ($main::esVersion < 10400) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* 1.2.x is supported\n",
-              "* 1.3.x is recommended\n",
+              "* 1.4.x is supported\n",
+              "* 1.6.x is recommended\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
              );
         exit (1);
+    }
 
+    if ($main::esVersion < 10602) {
+        print("WARNING - ALL elasticsearch versions before 1.6.2 have security and corruption issues.  Please also protect Elasticsearch with iptables.\n",
+              "\n",
+              "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
+              "Make sure to restart any viewer or capture after upgrading!\n"
+             );
+        sleep(2);
     }
 
     my $error = 0;
@@ -1919,7 +1927,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|field)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|field|force-?put-?version)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -1983,7 +1991,6 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $i (sort (keys %{$indices})) {
         progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
-            esPut("/$i/_settings?index.codec.bloom.load=false", "", 1);
             esGet("/$i/_optimize?max_num_segments=4", 1);
         } else {
             esDelete("/$i", 1);
@@ -2104,7 +2111,9 @@ sub printIndex {
     die "Field $ARGV[3] isn't found" if (!$found);
 
     esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
-
+    exit 0;
+} elsif ($ARGV[1] =~ /^force-?put-?version$/) {
+    esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
     exit 0;
 }
 

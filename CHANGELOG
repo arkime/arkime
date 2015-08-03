@@ -23,6 +23,10 @@
   - easybutton - ES 1.6.2
   - easybutton - build curl with --without-librtmp (issue #403)
   - easybutton - mirror sourceforge downloads for now (issue #406)
+  - db - Increased optimize timeout
+  - db - Require 1.4.x or later
+  - db - Removed "index.codec.bloom.load=false"
+  - db - Added warning for ES below 1.6.2
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 
