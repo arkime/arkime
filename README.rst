@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Recommend version **1.4.4**, requires at least 1.2.x
+Recommend version **1.6.2**, requires at least 1.4.x
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -83,7 +83,7 @@ Recommend version **1.4.4**, requires at least 1.2.x
 
 3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   1.5.2 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-5-2>`_.
+   1.6.2 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-6-2>`_.
 
 4. Uncompress the archive you downloaded.
 

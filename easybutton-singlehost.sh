@@ -26,7 +26,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=1.6.1
+ES=1.6.2
 NODEJS=0.10.38
 INSTALL_DIR=$PWD
 
