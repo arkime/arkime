@@ -1,4 +1,4 @@
-0.12.0 2015/06/XX
+0.12.0 2015/10/XX
   - NOTICE: libcurl (>= 7.21.7) is now required, sorry
   - NOTICE: db.pl upgrade is required
   - NOTICE: duplicate items in available both in tags and elsewhere have been 
@@ -27,6 +27,7 @@
   - db - Require 1.4.x or later
   - db - Removed "index.codec.bloom.load=false"
   - db - Added warning for ES below 1.6.2
+  - wise - use native hashtable, required for threatstream
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

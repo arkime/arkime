@@ -21,6 +21,7 @@ var fs             = require('fs')
   , util           = require('util')
   , wiseSource     = require('./wiseSource.js')
   , iptrie         = require('iptrie')
+  , HashTable      = require('hashtable')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -32,9 +33,9 @@ function FileSource (api, section) {
   this.type    = api.getConfig(section, "type");
   this.format  = api.getConfig(section, "format", "csv");
   if (this.type === "ip") {
-    this.cache = {items: [], trie: new iptrie.IPTrie()};
+    this.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
   } else {
-    this.cache = {};
+    this.cache = new HashTable();
   }
 }
 util.inherits(FileSource, wiseSource);
@@ -45,7 +46,7 @@ FileSource.prototype.load = function() {
   var newCache;
   var count = 0;
   if (this.type === "ip") {
-    newCache = {items: [], trie: new iptrie.IPTrie()};
+    newCache = {items: new HashTable(), trie: new iptrie.IPTrie()};
     setFunc  = function(key, value) {
       var parts = key.split("/");
       try {
@@ -53,13 +54,13 @@ FileSource.prototype.load = function() {
       } catch (e) {
         console.log("ERROR adding", self.section, key, e);
       }
-      newCache.items[key] = value;
+      newCache.items.put(key, value);
       count++;
     };
   } else {
-    newCache ={};
+    newCache = new HashTable();
     setFunc = function(key, value) {
-      newCache[key] = value;
+      newCache.put(key, value);
       count++;
     };
   }
@@ -80,17 +81,19 @@ FileSource.prototype.load = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 FileSource.prototype.dump = function(res) {
-  var cache = this.type === "ip"?this.cache.items:this.cache;
-  for (var key in cache) {
-    var str = "{key: \"" + key + "\", ops:\n" + 
-      wiseSource.result2Str(wiseSource.combineResults([this.result, cache[key]])) + "},\n";
-    res.write(str);
+  if (this.type === "ip") {
+    var cache = this.type==="ip"?this.cache.items:this.cache;
+    cache.forEach(function(key, value) {
+      var str = "{key: \"" + key + "\", ops:\n" + 
+        wiseSource.result2Str(wiseSource.combineResults([this.result, value])) + "},\n";
+      res.write(str);
+    });
   }
   res.end();
 };
 //////////////////////////////////////////////////////////////////////////////////
 FileSource.prototype.sendResult = function(key, cb) {
-  var result = this.type === "ip"?this.cache.trie.find(key):this.cache[key];
+  var result = this.type === "ip"?this.cache.trie.find(key):this.cache.get(key);
 
   // Not found, or found but no extra values to add
   if (!result) {
@@ -147,7 +150,7 @@ FileSource.prototype.init = function() {
 
   if (this.type === "domain") {
     this.getDomain = function(domain, cb) {
-      if (this.cache[domain]) {
+      if (this.cache.get(domain)) {
         return this.sendResult(domain, cb);
       }
       domain = domain.substring(domain.indexOf(".")+1);

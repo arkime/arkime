@@ -21,16 +21,17 @@ var fs             = require('fs')
   , unzip          = require('unzip')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
+  , HashTable      = require('hashtable')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatStreamSource (api, section) {
   ThreatStreamSource.super_.call(this, api, section);
   this.user    = api.getConfig("threatstream", "user");
   this.key     = api.getConfig("threatstream", "key");
-  this.ips     = {};
-  this.domains = {};
-  this.emails  = {};
-  this.md5s    = {};
+  this.ips     = new HashTable();
+  this.domains = new HashTable();
+  this.emails  = new HashTable();
+  this.md5s    = new HashTable();
 }
 util.inherits(ThreatStreamSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -38,10 +39,14 @@ ThreatStreamSource.prototype.parseFile = function()
 {
   var self = this;
 
-  self.ips = {};
-  self.domains = {};
-  self.emails = {};
-  self.md5s = {};
+  self.ips.clear();
+  self.ips.reserve(2000000);
+  self.domains.clear();
+  self.domains.reserve(2000000);
+  self.emails.clear();
+  self.emails.reserve(2000000);
+  self.md5s.clear();
+  self.md5s.reserve(2000000);
 
   fs.createReadStream('/tmp/threatstream.zip')
     .pipe(unzip.Parse())
@@ -58,32 +63,38 @@ ThreatStreamSource.prototype.parseFile = function()
 
           var encoded;
           var num;
-          if (item.maltype && item.maltype !== "null") {
-            encoded = wiseSource.encode(self.severityField, item.severity,
-                                        self.confidenceField, "" + item.confidence,
-                                        self.idField, "" + item.id,
-                                        self.typeField, item.itype,
-                                        self.maltypeField, item.maltype);
-            num = 5;
-          } else {
-            encoded = wiseSource.encode(self.severityField, item.severity,
-                                        self.confidenceField, "" + item.confidence,
-                                        self.idField, "" + item.id,
-                                        self.typeField, item.itype);
-            num = 4;
+          try {
+            if (item.maltype && item.maltype !== "null") {
+              encoded = wiseSource.encode(self.severityField, item.severity.toLowerCase(),
+                                          self.confidenceField, "" + item.confidence,
+                                          self.idField, "" + item.id,
+                                          self.typeField, item.itype.toLowerCase(),
+                                          self.maltypeField, item.maltype.toLowerCase());
+              num = 5;
+            } else {
+              encoded = wiseSource.encode(self.severityField, item.severity.toLowerCase(),
+                                          self.confidenceField, "" + item.confidence,
+                                          self.idField, "" + item.id,
+                                          self.typeField, item.itype.toLowerCase());
+              num = 4;
+            }
+          } catch (e) {
+            console.log("ERROR -", entry.path, e, item);
+            return;
           }
                                              
 
           if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-            self.ips[item.ip] = {num: num, buffer: encoded};
+            self.ips.put(item.ip, {num: num, buffer: encoded});
           } else if (item.itype.match(/_domain|_dns/)) {
-            self.domains[item.domain] = {num: num, buffer: encoded};
+            self.domains.put(item.domain, {num: num, buffer: encoded});
           } else if (item.itype.match(/_email/)) {
-            self.emails[item.email] = {num: num, buffer: encoded};
+            self.emails.put(item.email, {num: num, buffer: encoded});
           } else if (item.itype.match(/_md5/)) {
-            self.md5s[item.md5] = {num: num, buffer: encoded};
+            self.md5s.put(item.md5, {num: num, buffer: encoded});
           }
         });
+        //console.log("Threatstream - Done", entry.path);
       });
     })
     .on('close', function () {
@@ -144,31 +155,30 @@ ThreatStreamSource.prototype.init = function() {
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getDomain = function(domain, cb) {
   var domains = this.domains;
-  cb(null, domains[domain] || domains[domain.substring(domain.indexOf(".")+1)]);
+  cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf(".")+1)));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getIp = function(ip, cb) {
-  cb(null, this.ips[ip]);
+  cb(null, this.ips.get(ip));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getMd5 = function(md5, cb) {
-  cb(null, this.md5s[md5]);
+  cb(null, this.md5s.get(md5));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.getEmail = function(email, cb) {
-  cb(null, this.emails[email]);
+  cb(null, this.emails.get(email));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.dump = function(res) {
   var self = this;
   ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
     res.write("" + ckey + ":\n");
-    var cache = self[ckey];
-    for (var key in cache) {
+    self[ckey].forEach(function(key, value) {
       var str = "{key: \"" + key + "\", ops:\n" + 
-        wiseSource.result2Str(wiseSource.combineResults([cache[key]])) + "},\n";
+        wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
-    }
+    });
   });
   res.end();
 };
