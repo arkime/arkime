@@ -3764,9 +3764,13 @@ function addTagsList(allTagIds, list, doneCb) {
 
     var fields = session._source || session.fields;
 
-    if (!fields || !fields.ta) {
-      console.log("NO TA", session);
+    if (!fields) {
+      console.log("No Fields", session);
       return nextCb(null);
+    }
+
+    if (!fields.ta) {
+      fields.ta = [];
     }
 
     // Find which tags need to be added to this session

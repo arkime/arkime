@@ -1,4 +1,4 @@
-use Test::More tests => 14;
+use Test::More tests => 30;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -11,6 +11,7 @@ my $pwd = getcwd() . "/pcap";
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
 
 # adding/removing tags test expression
     viewerPost("/addTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
@@ -19,6 +20,7 @@ my $pwd = getcwd() . "/pcap";
     viewerPost("/removeTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
     esGet("/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
 
 # adding/removing tags test ids
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
@@ -28,3 +30,15 @@ my $pwd = getcwd() . "/pcap";
     viewerPost("/removeTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
+
+# adding tag to no tag item
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
+    viewerPost("/addTags?date=-1&expression=file=$pwd/irc.pcap", "tags=TAGTEST3");
+    esGet("/_refresh");
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==TAGTEST3"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
+    viewerPost("/removeTags?date=-1&expression=file=$pwd/irc.pcap", "tags=TAGTEST3");
+    esGet("/_refresh");
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==TAGTEST3"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
