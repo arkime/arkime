@@ -82,7 +82,7 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
 
 /******************************************************************************/
 unsigned char *
-moloch_parsers_asn_get_tlv(BSB *bsb, int *apc, int *atag, int *alen)
+moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen)
 {
 
     if (BSB_REMAINING(*bsb) < 2)
@@ -120,9 +120,6 @@ moloch_parsers_asn_get_tlv(BSB *bsb, int *apc, int *atag, int *alen)
     } else {
         (*alen) = ch;
     }
-
-    if (*alen < 0)
-        goto get_tlv_error;
 
     if (*alen > BSB_REMAINING(*bsb))
         *alen = BSB_REMAINING(*bsb);

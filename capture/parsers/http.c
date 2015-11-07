@@ -460,7 +460,7 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
                         char *str = g_uri_unescape_segment(start, ch, NULL);
                         if (!str) {
                             moloch_field_string_add(field, session, start, ch-start, TRUE);
-                        } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                        } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
                             g_free(str);
                         }
                     }
@@ -472,7 +472,7 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
                         char *str = g_uri_unescape_segment(start, ch, NULL);
                         if (!str) {
                             moloch_field_string_add(field, session, start, ch-start, TRUE);
-                        } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                        } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
                             g_free(str);
                         }
                     }
@@ -484,7 +484,7 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
                 char *str = g_uri_unescape_segment(start, ch, NULL);
                 if (!str) {
                     moloch_field_string_add(field, session, start, ch-start, TRUE);
-                } else if (!moloch_field_string_add(field, session, str, strlen(str), FALSE)) {
+                } else if (!moloch_field_string_add(field, session, str, -1, FALSE)) {
                     g_free(str);
                 }
             }

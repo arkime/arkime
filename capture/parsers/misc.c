@@ -60,7 +60,7 @@ void other220_classify(MolochSession_t *session, const unsigned char *data, int 
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
         moloch_nids_add_protocol(session, "lmtp");
     }
-    else if (g_strstr_len((char *)data, len, "SMTP") == NULL) {
+    else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
         moloch_nids_add_protocol(session, "ftp");
     }
 }

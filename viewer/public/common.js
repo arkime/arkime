@@ -120,7 +120,11 @@ function decodeParam(decodeOptions) {
 }
 
 function safeStr(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
+  if (Array.isArray(str)) {
+    return str.map(safeStr);
+  } else {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
+  }
 }
 
 // From http://stackoverflow.com/a/2901298
@@ -903,7 +907,7 @@ $(document).ready(function() {
             text = text.replace(/,/g, "");
           }
           if (typeof text == "string" && text.match(/[^\w.]/)) {
-            text = '"' + text + '"';
+            text = '"' + safeStr(text) + '"';
           }
           var molochexpr = $(e.target).closest("[molochexpr]");
           addExpression(molochexpr.attr("molochexpr") + item.exp + text);

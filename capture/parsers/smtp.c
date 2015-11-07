@@ -198,12 +198,14 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
     /* =?charset?encoding?encoded-text?= */
 
 
-    char  output[0xffff];
-    int   outputlen = 0;
+    char  output[0xfff];
     char *str = string;
     char *end = str + len;
     GError  *error = 0;
     gsize    bread, bwritten, olen;
+
+    BSB bsb;
+    BSB_INIT(bsb, output, sizeof(output));
 
     while (str < end) {
         char *startquestion = strstr(str, "=?");
@@ -226,8 +228,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
                 return;
             }
 
-            strcpy(output+outputlen, out);
-            outputlen += bwritten;
+            BSB_EXPORT_ptr_some(bsb, out, bwritten);
             g_free(out);
 
             str = startquestion;
@@ -267,8 +268,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
                 return;
             }
 
-            strcpy(output+outputlen, out);
-            outputlen += bwritten;
+            BSB_EXPORT_ptr_some(bsb, out, bwritten);
             g_free(out);
         } else if (*(question+1) == 'Q' || *(question+1) == 'q') {
             *question = 0;
@@ -283,8 +283,7 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
                 return;
             }
 
-            strcpy(output+outputlen, out);
-            outputlen += bwritten;
+            BSB_EXPORT_ptr_some(bsb, out, bwritten);
             g_free(out);
         } else {
             moloch_field_string_add(pos, session, string, len, TRUE);
@@ -293,8 +292,12 @@ smtp_email_add_encoded(MolochSession_t *session, int pos, char *string, int len)
         str = endquestion + 2;
     }
 
-    output[outputlen] = 0;
-    moloch_field_string_add(pos, session, output, outputlen, TRUE);
+    if (BSB_IS_ERROR(bsb)) {
+        moloch_field_string_add(pos, session, output, sizeof(output), TRUE);
+    }
+    else {
+        moloch_field_string_add(pos, session, output, BSB_LENGTH(bsb), TRUE);
+    }
 }
 /******************************************************************************/
 void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)

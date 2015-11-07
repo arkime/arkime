@@ -493,7 +493,7 @@ void     moloch_db_exit();
 
 void moloch_parsers_init();
 void moloch_parsers_initial_tag(MolochSession_t *session);
-unsigned char *moloch_parsers_asn_get_tlv(BSB *bsb, int *apc, int *atag, int *alen);
+unsigned char *moloch_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen);
 void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len);
 void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
 void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which);

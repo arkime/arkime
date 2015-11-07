@@ -160,7 +160,7 @@ block content
 
     function showNodePopup(that, d) {
       currentNode = d;
-      var content = d.id + "<br>" + 
+      var content = safeStr(d.id) + "<br>" + 
                     "Type: " + ["", "Source", "Target", "Both"][d.type] + "<br>" + 
                     "Links: " + d.weight + "<br>" +
                     "Sessions: " + numberWithCommas(d.sessions) + "<br>" +

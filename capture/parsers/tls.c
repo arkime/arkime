@@ -40,7 +40,7 @@ static GChecksum       *checksum;
 void
 tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 {
-    int apc, atag, alen;
+    uint32_t apc, atag, alen;
     char lastOid[1000];
     lastOid[0] = 0;
 
@@ -83,7 +83,7 @@ tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
 void
 tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
-    int apc, atag, alen;
+    uint32_t apc, atag, alen;
 
     while (BSB_REMAINING(*bsb) >= 2) {
         unsigned char *value = moloch_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
@@ -277,7 +277,7 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
         DLL_INIT(s_, &certs->subject.commonName);
         DLL_INIT(s_, &certs->issuer.commonName);
 
-        int            atag, alen, apc;
+        uint32_t       atag, alen, apc;
         unsigned char *value;
 
         BSB            bsb;

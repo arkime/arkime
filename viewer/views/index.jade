@@ -217,7 +217,7 @@ block content
             sortable: false,
             className: "sessionDetails",
             defaultContent: "",
-            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+            render: function (rowData, type, row, meta) {
               var pr;
               switch (rowData.pr) {
               case 1:
@@ -231,9 +231,9 @@ block content
                 break;
               }
               if (rowData.isOpen) {
-                $(cell).html('<img src="images/details_close.png"><div class="protocolText">' + pr + '</div>');
+                return '<img src="images/details_close.png"><div class="protocolText">' + pr + '</div>';
               } else {
-                $(cell).html('<img src="images/details_open.png"><div class="protocolText">' + pr + '</div>');
+                return '<img src="images/details_open.png"><div class="protocolText">' + pr + '</div>';
               }
             },
           },
@@ -399,7 +399,7 @@ block content
             visible: visibleColumn("info"),
             defaultContent: "",
             className: "infoColumn",
-            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+            render: function (rowData, type, row, meta) {
               var data = "<div class=infoColumn>";
               if (rowData.us) {
                 if (rowData.infoAll) {
@@ -417,21 +417,21 @@ block content
                 }
               } else if (rowData.esrc) {
                 data += "<b>From:</b> ";
-                data += rowData.esrc.join(", ");
+                data += rowData.esrc.map(safeStr).join(", ");
                 data += "<br>";
                 if (rowData.edst) {
                   data += "<b>To:</b> ";
-                  data += rowData.edst.join(", ");
+                  data += rowData.edst.map(safeStr).join(", ");
                   data += "<br>";
                 }
                 if (rowData.esub) {
                   data += "<b>Subject:</b> ";
-                  data += rowData.esub.join(", ");
+                  data += rowData.esub.map(safeStr).join(", ");
                   data += "<br>";
                 }
                 if (rowData.efn) {
                   data += "<b>Files:</b> ";
-                  data += rowData.efn.join(", ");
+                  data += rowData.efn.map(safeStr).join(", ");
                   data += "<br>";
                 }
               } else if (rowData.dnsho) {
@@ -450,14 +450,14 @@ block content
                 }
               } else if (rowData.tls) {
                 rowData.tls.forEach(function(tls) {
-                  data += "<span molochexpr='cert.alt' class='moloch-right-click'>" + tls.sCn + "</span>";
+                  data += "<span molochexpr='cert.subject.cn' class='moloch-right-click'>" + safeStr(tls.sCn) + "</span>";
                   if (tls.alt) {
                     data += " [";
                     for(var i = 0, ilen = tls.alt.length; i < ilen; i++) {
                       if (i > 0) {
                         data += ", ";
                       }
-                      data += "<span molochexpr='cert.alt' class='moloch-right-click'>" + tls.alt[i] + "</span>";
+                      data += "<span molochexpr='cert.alt' class='moloch-right-click'>" + safeStr(tls.alt[i]) + "</span>";
                     }
                     data += "]";
                   }
@@ -465,13 +465,13 @@ block content
                 });
               } else if (rowData.ircch) {
                 data += "<b>Channel:</b> ";
-                data += rowData.ircch.join(", ");
+                data += rowData.ircch.map(safeStr).join(", ");
                 data += "<br>";
               }
 
               data += "</div>";
 
-              $(cell).html(data);
+              return data;
             }
           }
         ],

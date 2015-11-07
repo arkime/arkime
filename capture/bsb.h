@@ -21,9 +21,11 @@ do {                                              \
         (b).end = (unsigned char*)buffer + size;  \
 } while (0)
 
+#define BSB_SET_ERROR(b) ((b).end = NULL)
 #define BSB_IS_ERROR(b)  ((b).end == NULL)
 #define BSB_NOT_ERROR(b) ((b).end != NULL)
 #define BSB_LENGTH(b)    ((b).ptr - (b).buf)
+#define BSB_POSITION     BSB_LENGTH
 #define BSB_SIZE(b)      ((b).end - (b).buf)
 #define BSB_REMAINING(b) ((b).end?(b).end-(b).ptr:0)
 #define BSB_WORK_PTR(b)  ((b).ptr)
@@ -33,7 +35,7 @@ do {                                              \
     if ((b).ptr + 1 <= (b).end) {                 \
         *(((b).ptr)++) = (unsigned char)x;        \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_EXPORT_u16(b, x)                      \
@@ -43,7 +45,7 @@ do {                                              \
         *(((b).ptr)++) = (t & 0xff00) >> 8;       \
         *(((b).ptr)++) = (t & 0x00ff);            \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_EXPORT_u32(b, x)                      \
@@ -55,7 +57,7 @@ do {                                              \
         *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
         *(((b).ptr)++) = (t & 0x000000ff);        \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_EXPORT_ptr(b, x, size)                \
@@ -64,7 +66,18 @@ do {                                              \
         memcpy((b).ptr, x, size);                 \
         (b).ptr += size;                          \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
+} while (0)
+
+#define BSB_EXPORT_ptr_some(b, x, size)           \
+do {                                              \
+    if ((b).ptr + size <= (b).end) {              \
+        memcpy((b).ptr, x, size);                 \
+        (b).ptr += size;                          \
+    } else if (BSB_NOT_ERROR(b)) {                \
+        memcpy((b).ptr, x, BSB_REMAINING(b));     \
+        (b).ptr += BSB_REMAINING(b);              \
+    }                                             \
 } while (0)
 
 #define BSB_EXPORT_cstr(b, x)                     \
@@ -74,7 +87,7 @@ do {                                              \
         memcpy((b).ptr, x, size);                 \
         (b).ptr += size;                          \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_EXPORT_skip(b, size)                  \
@@ -84,7 +97,7 @@ do {                                              \
         if ((b).ptr < (b).buf)                    \
             (b).end = 0;                          \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_EXPORT_rewind(b, size)                \
@@ -94,7 +107,7 @@ do {                                              \
         if ((b).ptr < (b).buf)                    \
             (b).end = 0;                          \
     } else {                                      \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
     }                                             \
 } while (0)
 
@@ -109,7 +122,7 @@ do {                                              \
         if (l <= (b).end - (b).ptr) {             \
             (b).ptr += l;                         \
         } else {                                  \
-            (b).end = 0;                          \
+            BSB_SET_ERROR(b);                     \
         }                                         \
     }                                             \
 } while (0)
@@ -125,7 +138,7 @@ do {                                              \
         if (l <= (b).end - (b).ptr) {             \
             (b).ptr += l;                         \
         } else {                                  \
-            (b).end = 0;                          \
+            BSB_SET_ERROR(b);                     \
         }                                         \
     }                                             \
 } while (0)
@@ -136,7 +149,7 @@ do {                                              \
     if ((b).ptr + 1 <= (b).end) {                 \
         x = *(((b).ptr)++);                       \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_IMPORT_u16(b, x)                      \
@@ -146,7 +159,7 @@ do {                                              \
             ((b).ptr)[1]);                        \
         (b).ptr += 2;                             \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_IMPORT_u24(b, x)                      \
@@ -157,7 +170,7 @@ do {                                              \
             ((b).ptr)[2]);                        \
         (b).ptr += 3;                             \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_IMPORT_u32(b, x)                      \
@@ -169,7 +182,31 @@ do {                                              \
             ((b).ptr)[3]);                        \
         (b).ptr += 4;                             \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
+} while (0)
+
+#define BSB_LEXPORT_u08(b, x) BSB_EXPORT_u08(b, x)
+
+#define BSB_LEXPORT_u16(b, x)                     \
+do {                                              \
+    if ((b).ptr + 2 <= (b).end) {                 \
+        uint16_t t = (uint16_t)x;                 \
+        *(((b).ptr)++) = (t & 0x00ff);            \
+        *(((b).ptr)++) = (t & 0xff00) >> 8;       \
+    } else                                        \
+        BSB_SET_ERROR(b);                         \
+} while (0)
+
+#define BSB_LEXPORT_u32(b, x)                     \
+do {                                              \
+    if ((b).ptr + 4 <= (b).end) {                 \
+        uint32_t t = x;                           \
+        *(((b).ptr)++) = (t & 0x000000ff);        \
+        *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
+        *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
+        *(((b).ptr)++) = (t & 0xff000000) >> 24;  \
+    } else                                        \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_LIMPORT_u08(b, x) BSB_IMPORT_u08(b, x)
@@ -181,7 +218,7 @@ do {                                              \
             ((b).ptr)[0]);                        \
         (b).ptr += 2;                             \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_LIMPORT_u24(b, x)                     \
@@ -192,7 +229,7 @@ do {                                              \
             ((b).ptr)[0]);                        \
         (b).ptr += 3;                             \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_LIMPORT_u32(b, x)                     \
@@ -204,7 +241,7 @@ do {                                              \
             ((b).ptr)[0]);                        \
         (b).ptr += 4;                             \
     } else                                        \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_IMPORT_ptr(b, x, size)                \
@@ -213,7 +250,7 @@ do {                                              \
         (x) = (b).ptr;                            \
         (b).ptr += size;                          \
     } else {                                      \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
         x = 0;                                    \
     }                                             \
 } while (0)
@@ -228,7 +265,7 @@ do {                                              \
         (x)[size] = 0;                            \
         (b).ptr += size;                          \
     } else {                                      \
-        (b).end = 0;                              \
+        BSB_SET_ERROR(b);                         \
         (x)[0] = 0;                               \
     }                                             \
 } while (0)

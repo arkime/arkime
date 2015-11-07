@@ -45,8 +45,8 @@ function safeStr(str) {
 ////////////////////////////////////////////////////////////////////////////////
 function ItemTransform(options) {
   Transform.call(this, {objectMode: true});
-  this._itemTransform = {state: 0, 
-                            max: options.maxPeekItems || 1, 
+  this._itemTransform = {state: 0,
+                            max: options.maxPeekItems || 1,
                           items: []};
 }
 util.inherits(ItemTransform, Transform);
@@ -169,7 +169,7 @@ function createKeyUnxorStream (options, context) {
       } else {
         this.state = 2;
       }
-    } 
+    }
 
     if (this.state === 1) {
       var pos = this.pos;
@@ -310,8 +310,8 @@ ItemSMTPStream.prototype._process = function(item, callback) {
       pipes[pipes.length-1].pipe(heb);
       bufferStream.end(new Buffer(self.buffers.join("\n")+"\n"));
     } else {
-      var buf = {client: item.client, 
-                     ts: item.ts, 
+      var buf = {client: item.client,
+                     ts: item.ts,
                    data: new Buffer(self.buffers.join("\n")+"\n"),
                 itemPos: ++self.itemPos};
 
@@ -387,6 +387,10 @@ ItemSMTPStream.prototype._process = function(item, callback) {
         mime.line += lines[l];
         continue;
       }
+      if (!mime) {
+          mime = {line:"", base64:0, doit:0};
+      }
+
       if (mime.line.substr(0, 13).toLowerCase() === "content-type:") {
         if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
           boundaries[matches[2]] = 1;
@@ -674,10 +678,10 @@ exports.settings = function() {
 }
 
 exports.register("BODY-UNXORBRUTEGZ", createUnxorBruteGzip, {name: "UnXOR Brute GZip Header"});
-exports.register("BODY-UNXOR", createKeyUnxorStream, 
-  {name: "UnXOR", 
+exports.register("BODY-UNXOR", createKeyUnxorStream,
+  {name: "UnXOR",
    title: "XOR decoding<br>Only set keyLength or key",
-  fields: [{key: "skip", name: "Skip Bytes", type: "text"}, 
+  fields: [{key: "skip", name: "Skip Bytes", type: "text"},
            {key:"keyLength", name:"Key is in data length", type: "text"},
            {key:"key", name:"Fixed key in hex", type: "text"}
           ]});
@@ -743,7 +747,7 @@ exports.register("ITEM-LINKBODY", through.ctor({objectMode: true}, function(item
 exports.register("ITEM-CB", through.ctor({objectMode: true}, function(item, encoding, callback) {
   if (this.items === undefined) {
     this.items = [];
-  } 
+  }
   this.items.push(item);
   callback();
 }, function(callback) {

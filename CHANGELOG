@@ -29,6 +29,10 @@
   - db - Added warning for ES below 1.6.2
   - wise - use native hashtable, required for threatstream
   - viewer - fixed addTags to work with session that have no tags
+  - capture - fixed multiple smtp, smb and ssh buffer overflow read/writes (reported by jbremer)
+  - viewer - fixed multiple XSS injections (reported by jbremer)
+  - viewer - fixed crash when viewing large mime messages
+  - capture - irc detection improvement
 
 0.11.5 2015/06/02
   - NOTICE: Only ES 1.[45].x is supported by this version. 

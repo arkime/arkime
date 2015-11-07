@@ -213,7 +213,7 @@ block content
               exp = $("#field option:selected").text() + " == \"" + text + "\"";
             }
             items = {
-              and: {name: "and " + exp, exp: exp}
+              and: {name: "and " + safeStr(exp), exp: exp}
             };
             return {
               callback: function(key, options) {

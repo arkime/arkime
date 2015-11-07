@@ -12,7 +12,7 @@ Run ./tests.pl <optional PCAP files>
 
 PCAP files with known non Moloch source:
 bigendian.pcap - https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=7221
-
+smbtorture-ntlmssp*.pcap - Subset of https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=smbtorture.cap.gz
 
 
 

@@ -82,11 +82,14 @@ void irc_free(MolochSession_t UNUSED(*session), void *uw)
 /******************************************************************************/
 void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
+    if (len < 8)
+        return;
+
     if (data[0] == ':' && !moloch_memstr((char *)data, len, " NOTICE ", 8))
         return;
 
-    //If a USER packet must have NICK with it so we don't pickup FTP
-    if (data[0] == 'U' && !moloch_memstr((char *)data, len, "\nNICK ", 6)) {
+    //If a USER packet must have NICK or +iw with it so we don't pickup FTP
+    if (data[0] == 'U' && !moloch_memstr((char *)data, len, "\nNICK ", 6) && !moloch_memstr((char *)data, len, " +iw ", 5)) {
         return;
     }
 
