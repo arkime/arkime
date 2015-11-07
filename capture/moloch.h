@@ -210,6 +210,7 @@ typedef struct moloch_config {
     gboolean  pcapReadOffline;
     gchar   **extraTags;
     gchar     debug;
+    gboolean  quiet;
     gboolean  dryRun;
     gboolean  noSPI;
     gboolean  copyPcap;
@@ -409,12 +410,14 @@ typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
 
 /******************************************************************************/
 #define LOG(...) do { \
-    time_t _t = time(NULL); \
-    printf("%15.15s %s:%d %s(): ",\
-        ctime(&_t)+4, __FILE__,\
-        __LINE__, __FUNCTION__); \
-    printf(__VA_ARGS__); \
-    printf("\n"); \
+    if(config.quiet == FALSE) { \
+        time_t _t = time(NULL); \
+        printf("%15.15s %s:%d %s(): ", \
+            ctime(&_t)+4, __FILE__, \
+            __LINE__, __FUNCTION__); \
+        printf(__VA_ARGS__); \
+        printf("\n"); \
+    } \
 } while(0) /* no trailing ; */
 
 
