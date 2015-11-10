@@ -1,5 +1,7 @@
 0.12.1 2015/11/10
   - capture - fixed startup glib error
+  - configure - fixed version number
+  - easybutton - ES 1.7.3
 
 0.12.0 2015/11/09
   - NOTICE: libcurl (>= 7.21.7) is now required, sorry
