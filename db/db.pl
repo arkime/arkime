@@ -1817,7 +1817,7 @@ sub dbCheck {
     if ($main::esVersion < 10400) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
               "* 1.4.x is supported\n",
-              "* 1.6.x is recommended\n",
+              "* 1.7.x is recommended\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
