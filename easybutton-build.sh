@@ -9,7 +9,7 @@
 # * build moloch-capture
 
 
-GLIB=2.42.0
+GLIB=2.46.2
 YARA=1.7
 GEOIP=1.6.0
 PCAP=1.7.2
@@ -83,7 +83,8 @@ if [ $(uname) == "FreeBSD" ]; then
 else
   WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
   if [ ! -f "glib-$GLIB.tar.xz" ]; then
-    wget http://ftp.gnome.org/pub/gnome/sources/glib/2.42/glib-$GLIB.tar.xz
+    GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
+    wget http://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz
   fi
 
   if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
@@ -161,7 +162,7 @@ else
       wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
     fi
     tar zxf libpcap-$PCAP.tar.gz
-    (cd libpcap-$PCAP; ./configure --disable-dbus; $MAKE)
+    (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb; $MAKE)
     if [ $? -ne 0 ]; then
       echo "MOLOCH: $MAKE failed"
       exit 1

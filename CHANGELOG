@@ -1,6 +1,8 @@
 0.12.2 2015/12/xx
   - capture - basic redis detection
   - viewer - connections node distance (issue #428)
+  - easybutton - glib 2.46.2 (issue #423)
+  - easybutton - disable usb support for libpcap (issue #426)
 
 
 0.12.1 2015/11/10

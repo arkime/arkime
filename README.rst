@@ -161,9 +161,9 @@ Building Capture
      here are the pieces you need:
 
      + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.30 or
-       higher (2.42 is recommended for static builds)::
+       higher (2.46.2 is recommended)::
 
-            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.42/glib-2.42.0.tar.xz
+            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.46/glib-2.46.2.tar.xz
             ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux
 
      + `yara <http://yara-project.googlecode.com>`_ version 1.6 or higher::
