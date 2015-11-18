@@ -71,6 +71,11 @@ void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, 
         moloch_nids_add_protocol(session, "vnc");
 }
 /******************************************************************************/
+void redis_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
+{
+    moloch_session_add_protocol(session, "redis");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, bt_classify);
@@ -81,8 +86,16 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("other220", 0, (unsigned char*)"220 ", 4, other220_classify);
     moloch_parsers_classifier_register_tcp("vnc", 0, (unsigned char*)"RFB 0", 5, vnc_classify);
 
+    moloch_parsers_classifier_register_tcp("redis", 0, (unsigned char*)"+PONG", 5, redis_classify);
+    moloch_parsers_classifier_register_tcp("redis", 0, (unsigned char*)"\x2a\x31\x0d\x0a\x24", 5, redis_classify);
+    moloch_parsers_classifier_register_tcp("redis", 0, (unsigned char*)"\x2a\x32\x0d\x0a\x24", 5, redis_classify);
+    moloch_parsers_classifier_register_tcp("redis", 0, (unsigned char*)"\x2a\x33\x0d\x0a\x24", 5, redis_classify);
+    moloch_parsers_classifier_register_tcp("redis", 0, (unsigned char*)"\x2a\x34\x0d\x0a\x24", 5, redis_classify);
+    moloch_parsers_classifier_register_tcp("redis", 0, (unsigned char*)"\x2a\x35\x0d\x0a\x24", 5, redis_classify);
+
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:a", 4, bt_classify);
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:r", 4, bt_classify);
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:q", 4, bt_classify);
+
 }
 
