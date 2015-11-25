@@ -112,9 +112,9 @@ block content
       var width = $(window).width() - 4;
       var height = $(window).height() - $("#headers").height() - 4;
 
-      svgMain.attr("width", width)
-             .attr("height", height)
-             ;
+      svgMain
+        .attr("width", width)
+        .attr("height", height);
 
       if (force) {
         force.size([width, height]);
@@ -132,26 +132,24 @@ block content
       scale=d3.event.scale;
 
       //transform the vis
-       svg.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");
+      svg.attr("transform", "translate(" + trans + ")" + " scale(" + scale + ")");
     }
 
     function hideNode(node) {
       $('#networkLabel').hide();
       svg.select("#id"+node.replace(/[:\.]/g,"_")).remove();
       svg.selectAll(".link")
-         .filter(function(d, i) {
-           return d.source.id === node || d.target.id === node;
-         })
-         .remove();
+        .filter(function(d, i) {
+          return d.source.id === node || d.target.id === node;
+        }).remove();
     }
 
     function hideLink(t,s) {
       $('#networkLabel').hide();
       svg.selectAll(".link")
-         .filter(function(d, i) {
-           return d.source.id === t && d.target.id === s;
-         })
-         .remove();
+        .filter(function(d, i) {
+          return d.source.id === t && d.target.id === s;
+        }).remove();
     }
 
     function exprLookup(expr) {
@@ -465,8 +463,7 @@ block content
 
       svg = svgMain.append('svg:g')
           .call(zoom)
-          .append('svg:g')
-          ;
+          .append('svg:g');
 
       svg.append('svg:rect')
         .attr('width', $("#network").width() + 1000)
@@ -475,15 +472,13 @@ block content
         .attr('id', 'zoomCanvas')
         .on("mousedown", function(){
           $('#networkLabel').hide();
-        })
-        ;
+        });
 
       force = d3.layout.force()
           .gravity(0.05)
           .distance(params.nodeDist || 125)
           .charge(-300)
-          .size([width, height])
-          ;
+          .size([width, height]);
 
       loadData();
       expressionResize();
