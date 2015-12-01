@@ -73,7 +73,7 @@ void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, 
 /******************************************************************************/
 void redis_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
-    moloch_session_add_protocol(session, "redis");
+    moloch_nids_add_protocol(session, "redis");
 }
 /******************************************************************************/
 void moloch_parser_init()
