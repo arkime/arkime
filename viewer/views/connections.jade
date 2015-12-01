@@ -313,6 +313,7 @@ block content
                 window.clearTimeout(popupTimer);
               }
               popupTimer = window.setTimeout(showNodePopup, 800, this, d);
+              set_highlight(d);
             }).on("mouseout",function(d){
               window.clearTimeout(popupTimer);
             })
@@ -352,10 +353,7 @@ block content
             focus_node = null,
             highlight_node = null;
 
-        node.on("mouseover", function(d) {
-          set_highlight(d);
-        })
-        .on("mousedown", function(d) {
+        node.on("mousedown", function(d) {
           d3.event.stopPropagation();
           focus_node = d;
           set_focus(d);
