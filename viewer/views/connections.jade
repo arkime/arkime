@@ -314,8 +314,17 @@ block content
               }
               popupTimer = window.setTimeout(showNodePopup, 800, this, d);
               set_highlight(d);
-            }).on("mouseout",function(d){
+            })
+            .on("mousedown", function(d) {
+              d3.event.stopPropagation();
+              focus_node = d;
+              set_focus(d);
+              if (highlight_node === null)
+                set_highlight(d);
+            })
+            .on("mouseout",function(d){
               window.clearTimeout(popupTimer);
+              exit_highlight();
             })
             ;
 
@@ -352,17 +361,6 @@ block content
             highlight_color = "blue",
             focus_node = null,
             highlight_node = null;
-
-        node.on("mousedown", function(d) {
-          d3.event.stopPropagation();
-          focus_node = d;
-          set_focus(d);
-          if (highlight_node === null)
-            set_highlight(d);
-        })
-        .on("mouseout", function(d) {
-          exit_highlight();
-        });
 
         d3.select(window).on("mouseup", function() {
           if(focus_node !== null) {
