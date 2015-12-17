@@ -76,6 +76,12 @@ void redis_classify(MolochSession_t *session, const unsigned char *UNUSED(data),
     moloch_nids_add_protocol(session, "redis");
 }
 /******************************************************************************/
+void mongo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
+{
+    if (data[12] == 0xd4 && data[13] == 0x07 && g_strstr_len((gchar*)data+20, len-20, ".$cmd") != NULL)
+        moloch_nids_add_protocol(session, "mongo");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, bt_classify);
@@ -97,5 +103,16 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:r", 4, bt_classify);
     moloch_parsers_classifier_register_udp("bt", 0, (unsigned char*)"d1:q", 4, bt_classify);
 
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x35\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x36\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x37\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x38\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x39\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3a\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3b\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3c\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3d\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3e\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3f\x00\x00\x00", 4, mongo_classify);
 }
 

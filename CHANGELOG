@@ -4,6 +4,7 @@
   - easybutton - glib 2.46.2 (issue #423)
   - easybutton - disable usb support for libpcap (issue #426)
   - viewer - connections highlighting (issue #431)
+  - capture - basic mongo detection
 
 
 0.12.1 2015/11/10
