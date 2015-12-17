@@ -3876,13 +3876,13 @@ app.post('/addTags', function(req, res) {
     if (req.body.ids) {
       var ids = req.body.ids.split(",");
 
-      sessionsListFromIds(req, ids, ["ta"], function(err, list) {
+      sessionsListFromIds(req, ids, ["ta", "no"], function(err, list) {
         addTagsList(tagIds, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });
     } else {
-      sessionsListFromQuery(req, res, ["ta"], function(err, list) {
+      sessionsListFromQuery(req, res, ["ta", "no"], function(err, list) {
         addTagsList(tagIds, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
@@ -4700,7 +4700,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
             ids.push(hits[i]._id);
           }
           mapTags(options.tags.split(","), "", function(err, tagIds) {
-            sessionsListFromIds(null, ids, ["ta"], function(err, list) {
+            sessionsListFromIds(null, ids, ["ta", "no"], function(err, list) {
               addTagsList(tagIds, list, doNext);
             });
           });
