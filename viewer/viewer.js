@@ -2521,6 +2521,17 @@ app.get('/unique.txt', function(req, res) {
     break;
   }
 
+  if (req.query.field === "a1:p1" || req.query.field === "a2:p2") {
+    eachCb = function(item, cb) {
+      var key = Pcap.inet_ntoa(item.key);
+      item.field2.buckets.forEach(function (item2) {
+        item2.key = key + ":" + item2.key;
+        writeCb(item2, function() {});
+      });
+      cb();
+    };
+  }
+
   buildSessionQuery(req, function(err, query, indices) {
     delete query.sort;
     delete query.aggregations;
@@ -2567,7 +2578,13 @@ app.get('/unique.txt', function(req, res) {
         });
       });
     } else {
-      query.aggregations = {field: { terms : {field : req.query.field, size: 1000000}}};
+      if (req.query.field === "a1:p1") {
+        query.aggregations = {field: { terms : {field : "a1", size: 1000000}, aggregations: {field2: {terms: {field: "p1", size: 100}}}}};
+      } else if (req.query.field === "a2:p2") {
+        query.aggregations = {field: { terms : {field : "a2", size: 1000000}, aggregations: {field2: {terms: {field: "p2", size: 100}}}}};
+      } else  {
+        query.aggregations = {field: { terms : {field : req.query.field, size: 1000000}}};
+      }
       console.log("unique aggregations", indices, JSON.stringify(query));
       query.size = 0;
       Db.searchPrimary(indices, 'session', query, function(err, result) {

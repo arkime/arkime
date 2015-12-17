@@ -584,7 +584,9 @@ block content
               } else {
                 items = {
                   items: {name: "Export Unique IPs", counts:0, field: e.target.id},
-                  itemcounts: {name: "Export Unique IPs with Counts", counts:1, field: e.target.id}
+                  itemcounts: {name: "Export Unique IPs with Counts", counts:1, field: e.target.id},
+                  itemports: {name: "Export Unique IP:Ports", counts:0, field: e.target.id + ":p" + e.target.id[1]},
+                  itemportcounts: {name: "Export Unique IP:Ports with Counts", counts:1, field: e.target.id + ":p" + e.target.id[1]}
                 };
               }
               return {
