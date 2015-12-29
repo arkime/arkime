@@ -245,28 +245,28 @@ block content
             data: "fp",
             className: "dateColumn",
             width: "50",
-            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
-              $(cell).html(dateString(rowData.fp, "<br>"));
+            render: function (rowData, type, row, meta) {
+              return dateString(rowData, "<br>");
             }
           },
           {
             data: "lp",
             className: "dateColumn",
             width: "50",
-            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
-              $(cell).html(dateString(rowData.lp, "<br>"));
+            render: function (rowData, type, row, meta) {
+              return dateString(rowData, "<br>");
             }
           },
           {
             data: "a1",
             visible: visibleColumn("a1"),
             width: "100",
-            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+            render: function (rcData, type, rowData, meta) {
               var result = "<span molochexpr='ip.src' class='moloch-right-click'> " + ipString(rowData.a1) + "</span>";
               if (rowData.g1) {
                 result += "<br><span molochexpr='country.src' class='moloch-right-click'>" + rowData.g1 + "</span>";
               }
-              $(cell).html(result);
+              return(result);
             }
           },
           {
@@ -279,12 +279,12 @@ block content
             data: "a2",
             visible: visibleColumn("a2"),
             width: "100",
-            createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
+            render: function (rcData, type, rowData, meta) {
               var result = "<span molochexpr='ip.dst' class='moloch-right-click'> " + ipString(rowData.a2) + "</span>";
               if (rowData.g2) {
                 result += "<br><span molochexpr='country.dst' class='moloch-right-click'>" + rowData.g2 + "</span>";
               }
-              $(cell).html(result);
+              return(result);
             }
           },
           {
