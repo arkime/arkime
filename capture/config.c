@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include "moloch.h"
 
 extern MolochConfig_t        config;
@@ -602,7 +603,7 @@ void moloch_config_init()
         }
 
         LOG("maxFileSizeG: %lf", config.maxFileSizeG);
-        LOG("maxFileSizeB: %ld", config.maxFileSizeB);
+        LOG("maxFileSizeB: %" PRIu64, config.maxFileSizeB);
         LOG("maxFileTimeM: %u", config.maxFileTimeM);
         LOG("icmpTimeout: %u", config.icmpTimeout);
         LOG("udpTimeout: %u", config.udpTimeout);
