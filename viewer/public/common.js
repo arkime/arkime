@@ -120,11 +120,15 @@ function decodeParam(decodeOptions) {
 }
 
 function safeStr(str) {
+  if (str === undefined) {
+    return ""
+  }
+
   if (Array.isArray(str)) {
     return str.map(safeStr);
-  } else {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
   }
+
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
 }
 
 // From http://stackoverflow.com/a/2901298
