@@ -167,9 +167,9 @@ int moloch_field_define_text(char *text, int *shortcut)
     int type, flags = 0;
     if (strcmp(kind, "integer") == 0 ||
         strcmp(kind, "seconds") == 0)
-        type = MOLOCH_FIELD_TYPE_INT_HASH;
+        type = MOLOCH_FIELD_TYPE_INT_GHASH;
     else if (strcmp(kind, "ip") == 0) {
-        type = MOLOCH_FIELD_TYPE_IP_HASH;
+        type = MOLOCH_FIELD_TYPE_IP_GHASH;
         if (!category)
             category = "ip";
     } else
@@ -355,7 +355,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             sprintf(help2, "Regional Internet Registry string calculated from %s", help);
             moloch_db_add_field(group, "uptermfield", expression2, friendlyName2, dbField2, help2, NULL);
         }
-    } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH) {
+    } else if (type == MOLOCH_FIELD_TYPE_IP || type == MOLOCH_FIELD_TYPE_IP_HASH || type == MOLOCH_FIELD_TYPE_IP_GHASH) {
         sprintf(dbField2, "%s-geo", dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
@@ -544,6 +544,12 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
             HASH_ADD(i_, *hash, (void *)(long)i, hint);
             return TRUE;
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+            field->jsonSize += 100;
+        case MOLOCH_FIELD_TYPE_INT_GHASH:
+            field->ghash = g_hash_table_new(NULL, NULL);
+            g_hash_table_insert(field->ghash, (void *)(long)i, NULL);
+            return TRUE;
         default:
             LOG("Not a int %s", config.fields[pos]->dbField);
             exit (1);
@@ -569,6 +575,11 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             return FALSE;
         hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
         HASH_ADD(i_, *(field->ihash), (void *)(long)i, hint);
+        return TRUE;
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
+        field->jsonSize += 100;
+    case MOLOCH_FIELD_TYPE_INT_GHASH:
+        g_hash_table_insert(field->ghash, (void *)(long)i, NULL);
         return TRUE;
     default:
         LOG("Not a int %s", config.fields[pos]->dbField);
@@ -707,6 +718,10 @@ void moloch_field_free(MolochSession_t *session)
             );
             MOLOCH_TYPE_FREE(MolochIntHashStd_t, ihash);
             break;
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+        case MOLOCH_FIELD_TYPE_INT_GHASH:
+            g_hash_table_destroy(session->fields[pos]->ghash);
+            break;
         case MOLOCH_FIELD_TYPE_CERTSINFO:
             cihash = session->fields[pos]->cihash;
             HASH_FORALL_POP_HEAD(t_, *cihash, hci,
@@ -773,6 +788,9 @@ int moloch_field_count(int pos, MolochSession_t *session)
     case MOLOCH_FIELD_TYPE_INT_HASH:
     case MOLOCH_FIELD_TYPE_IP_HASH:
         return HASH_COUNT(s_, *(field->ihash));
+    case MOLOCH_FIELD_TYPE_INT_GHASH:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
+        return g_hash_table_size(field->ghash);
     case MOLOCH_FIELD_TYPE_CERTSINFO:
         return HASH_COUNT(s_, *(field->cihash));
     default:

@@ -493,13 +493,13 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
             break;
         case 1:
             if (unique)
-                t = MOLOCH_FIELD_TYPE_INT_HASH;
+                t = MOLOCH_FIELD_TYPE_INT_GHASH;
             else
                 t = MOLOCH_FIELD_TYPE_INT_ARRAY;
             break;
         case 2:
             kind = "ip";
-            t = MOLOCH_FIELD_TYPE_IP_HASH;
+            t = MOLOCH_FIELD_TYPE_IP_GHASH;
             break;
         }
 

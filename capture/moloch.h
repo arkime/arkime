@@ -129,8 +129,10 @@ typedef HASH_VAR(s_, MolochCertsInfoHashStd_t, MolochCertsInfoHead_t, 5);
 #define MOLOCH_FIELD_TYPE_STR_ARRAY  4
 #define MOLOCH_FIELD_TYPE_STR_HASH   5
 #define MOLOCH_FIELD_TYPE_IP         6
-#define MOLOCH_FIELD_TYPE_IP_HASH    7
+#define MOLOCH_FIELD_TYPE_IP_GHASH   7
 #define MOLOCH_FIELD_TYPE_CERTSINFO  8
+#define MOLOCH_FIELD_TYPE_INT_GHASH  9
+#define MOLOCH_FIELD_TYPE_IP_HASH   10
 
 /* These are ones you should set */
 /* Field should be set on all linked sessions */
@@ -190,6 +192,7 @@ typedef struct {
         GArray                   *iarray;
         MolochIntHashStd_t       *ihash;
         MolochCertsInfoHashStd_t *cihash;
+        GHashTable               *ghash;
     };
     uint32_t                   jsonSize;
 } MolochField_t;

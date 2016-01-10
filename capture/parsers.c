@@ -289,7 +289,7 @@ void moloch_parsers_init()
     int tagsField = moloch_field_define("general", "termfield",
         "tags", "Tags", "ta",
         "Tags set for session",
-        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     moloch_field_define("general", "lotermfield",
