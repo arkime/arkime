@@ -68,7 +68,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Recommend version **1.7.3**, requires at least 1.4.x, versions before 1.6.1
+Recommend version **1.7.3**, requires at least 1.6.x, versions before 1.6.1
 have several security issues.
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add

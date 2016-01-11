@@ -67,8 +67,8 @@ exports.initialize = function (info, cb) {
   });
 
   internals.elasticSearchClient.info(function(err,data) {
-    if (data.version.number.match(/^(1.[01]|0)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 1.2.x or 1.3.x required.");
+    if (data.version.number.match(/^(1.[0-5]|0)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 1.6.x or later required.");
       process.exit();
       throw new Error("Exiting");
     }
@@ -187,8 +187,8 @@ exports.deleteDocument = function (index, type, id, options, cb) {
   internals.elasticSearchClient.delete(params, cb);
 };
 
-exports.status = function(index, cb) {
-  internals.elasticSearchClient.indices.status({index: fixIndex(index)}, cb);
+exports.indexStats = function(index, cb) {
+  internals.elasticSearchClient.indices.stats({index: fixIndex(index)}, cb);
 };
 
 exports.getAliases = function(index, cb) {
@@ -513,7 +513,7 @@ exports.checkVersion = function(minVersion, checkUsers) {
   var index;
 
   ["stats", "dstats", "tags", "sequence", "files"].forEach(function(index) {
-    exports.status(index, function(err, status) {
+    exports.indexStats(index, function(err, status) {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
         process.exit(1);

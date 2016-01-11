@@ -204,6 +204,24 @@ app.get("/:index/_status", function(req, res) {
   });
 });
 
+app.get("/:index/_stats", function(req, res) {
+  simpleGather(req, res, null, function(err, results) {
+    //console.log("DEBUG - _stats results", util.inspect(results, false, 50));
+    var obj = results[0];
+    for (var i = 1; i < results.length; i++) {
+      for (var index in results[i].indices) {
+        if (obj.indices[index]) {
+          obj.indices[index].total.docs.count += results[i].indices[index].total.docs.count;
+          obj.indices[index].total.docs.deleted += results[i].indices[index].total.docs.deleted;
+        } else {
+          obj.indices[index] = results[i].indices[index];
+        }
+      }
+    }
+    res.send(obj);
+  });
+});
+
 app.get("/MULTIPREFIX_dstats/version/version", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];

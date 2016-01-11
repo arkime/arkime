@@ -1,4 +1,5 @@
-0.12.2 2015/12/xx
+0.12.2 2016/01/xx
+  - NOTICE: Only ES 1.[67].x is supported by this version. 
   - capture - basic redis detection
   - viewer - connections node distance (issue #428)
   - easybutton - glib 2.46.2 (issue #423)

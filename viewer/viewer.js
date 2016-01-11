@@ -1049,12 +1049,12 @@ function lookupQueryItems(query, doneCb) {
         outstanding++;
         var query;
         if (item === "ta") {
-          query = {bool: {must: {wildcard: {_id: obj[item]}},
-                          must_not: {wildcard: {_id: "http:header:*"}}
+          query = {bool: {must: {wildcard: {_uid: "tag#" + obj[item]}},
+                          must_not: {wildcard: {_uid: "tag#" + "http:header:*"}}
                          }
                   };
         } else {
-          query = {wildcard: {_id: "http:header:" + obj[item].toLowerCase()}};
+          query = {wildcard: {_uid: "tag#http:header:" + obj[item].toLowerCase()}};
         }
         Db.search('tags', 'tag', {size:500, _source:["id", "n"], query: query}, function(err, result) {
           var terms = [];
@@ -1200,9 +1200,9 @@ function buildSessionQuery(req, buildCb) {
   }
 
   if (req.query.facets) {
-    query.aggregations = {mapG1: {terms: {field: "g1", size:1000}},
-                          mapG2: {terms: {field: "g2", size:1000}},
-                        dbHisto: {histogram : {field: "lp", interval: interval}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
+    query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
+                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}},
+                        dbHisto: {histogram : {field: "lp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
                  };
   }
 
@@ -2435,12 +2435,12 @@ app.get('/uniqueValue.json', function(req, res) {
   var query;
 
   if (req.query.type === "tags") {
-    query = {bool: {must: {wildcard: {_id: req.query.filter + "*"}},
-                  must_not: {wildcard: {_id: "http:header:*"}}
+    query = {bool: {must: {wildcard: {_uid: "tag#" + req.query.filter + "*"}},
+                  must_not: {wildcard: {_uid: "tag#http:header:*"}}
                      }
           };
   } else {
-    query = {wildcard: {_id: "http:header:" + req.query.filter + "*"}};
+    query = {wildcard: {_uid: "tag#http:header:" + req.query.filter + "*"}};
   }
 
   console.log("uniqueValue query", JSON.stringify(query));
