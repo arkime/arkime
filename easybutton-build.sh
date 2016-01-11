@@ -9,7 +9,7 @@
 # * build moloch-capture
 
 
-GLIB=2.46.2
+GLIB=2.47.4
 YARA=1.7
 GEOIP=1.6.0
 PCAP=1.7.2
