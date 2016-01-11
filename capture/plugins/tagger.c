@@ -134,8 +134,10 @@ void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
             case  MOLOCH_FIELD_TYPE_INT:
             case  MOLOCH_FIELD_TYPE_INT_ARRAY:
             case  MOLOCH_FIELD_TYPE_INT_HASH:
+            case  MOLOCH_FIELD_TYPE_INT_GHASH:
             case  MOLOCH_FIELD_TYPE_IP:
             case  MOLOCH_FIELD_TYPE_IP_HASH:
+            case  MOLOCH_FIELD_TYPE_IP_GHASH:
                 if (op->fieldPos == tagsField) {
                     moloch_nids_add_tag(session, op->str);
                 } else {
@@ -504,6 +506,7 @@ void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gp
             case  MOLOCH_FIELD_TYPE_INT:
             case  MOLOCH_FIELD_TYPE_INT_ARRAY:
             case  MOLOCH_FIELD_TYPE_INT_HASH:
+            case  MOLOCH_FIELD_TYPE_INT_GHASH:
                 if (pos == tagsField) {
                     moloch_db_get_tag(NULL, tagsField, parts[j+1], NULL); // Preload the tagname -> tag mapping
                     op->str = parts[j+1];
@@ -520,6 +523,7 @@ void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gp
                 break;
             case  MOLOCH_FIELD_TYPE_IP:
             case  MOLOCH_FIELD_TYPE_IP_HASH:
+            case  MOLOCH_FIELD_TYPE_IP_GHASH:
                 op->strLenOrInt = inet_addr(parts[j+1]);
                 break;
             default:

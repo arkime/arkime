@@ -181,6 +181,7 @@ void wise_process_ops(MolochSession_t *session, WiseItem_t *wi)
         WiseOp_t *op = &(wi->ops[i]);
         switch (config.fields[op->fieldPos]->type) {
         case  MOLOCH_FIELD_TYPE_INT_HASH:
+        case  MOLOCH_FIELD_TYPE_INT_GHASH:
             if (op->fieldPos == tagsField) {
                 moloch_nids_add_tag(session, op->str);
                 continue;
@@ -190,6 +191,7 @@ void wise_process_ops(MolochSession_t *session, WiseItem_t *wi)
         case  MOLOCH_FIELD_TYPE_INT_ARRAY:
         case  MOLOCH_FIELD_TYPE_IP:
         case  MOLOCH_FIELD_TYPE_IP_HASH:
+        case  MOLOCH_FIELD_TYPE_IP_GHASH:
             moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
             break;
         case  MOLOCH_FIELD_TYPE_STR:
@@ -280,6 +282,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 
                 switch (config.fields[op->fieldPos]->type) {
                 case  MOLOCH_FIELD_TYPE_INT_HASH:
+                case  MOLOCH_FIELD_TYPE_INT_GHASH:
                     if (op->fieldPos == tagsField) {
                         moloch_db_get_tag(NULL, tagsField, str, NULL); // Preload the tagname -> tag mapping
                         op->str = g_strdup(str);
@@ -300,6 +303,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
                     break;
                 case  MOLOCH_FIELD_TYPE_IP:
                 case  MOLOCH_FIELD_TYPE_IP_HASH:
+                case  MOLOCH_FIELD_TYPE_IP_GHASH:
                     op->str = 0;
                     op->strLenOrInt = inet_addr(str);
                     break;
