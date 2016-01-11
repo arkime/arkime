@@ -1,10 +1,11 @@
 # WISE tests
-use Test::More tests => 34;
+use Test::More tests => 32;
 use MolochTest;
 use Cwd;
 use URI::Escape;
 use Data::Dumper;
 use Test::Differences;
+use JSON;
 use strict;
 
 
@@ -41,18 +42,15 @@ eq_or_diff($wise, '[]
 
 # IP File Dump
 
-$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ip")->content;
-eq_or_diff($wise, '{key: "10.0.0.3", ops:
+$wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ip")->content . "]";
+my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+eq_or_diff(\@wise, 
+from_json('[
+{key: "10.0.0.3", ops:
 [{field: "tags", len: 7, value: "ipwise"},
 {field: "tags", len: 10, value: "wisebyip1"},
 {field: "irc.channel", len: 17, value: "wisebyip1channel"},
 {field: "email.x-priority", len: 4, value: "999"}]
-},
-{key: "192.168.177.160", ops:
-[{field: "tags", len: 7, value: "ipwise"},
-{field: "tags", len: 10, value: "wisebyip2"},
-{field: "mysql.ver", len: 22, value: "wisebyip2mysqlversion"},
-{field: "test.ip", len: 12, value: "21.21.21.21"}]
 },
 {key: "128.128.128.0/24", ops:
 [{field: "tags", len: 7, value: "ipwise"},
@@ -60,16 +58,25 @@ eq_or_diff($wise, '{key: "10.0.0.3", ops:
 {field: "mysql.ver", len: 22, value: "wisebyip2mysqlversion"},
 {field: "test.ip", len: 12, value: "21.21.21.21"}]
 },
-', "file:ip dump");
+{key: "192.168.177.160", ops:
+[{field: "tags", len: 7, value: "ipwise"},
+{field: "tags", len: 10, value: "wisebyip2"},
+{field: "mysql.ver", len: 22, value: "wisebyip2mysqlversion"},
+{field: "test.ip", len: 12, value: "21.21.21.21"}]
+}
+]', {relaxed=>1, allow_barekey=>1}), "file:ip dump");
 
-$wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ipcsv")->content;
-eq_or_diff($wise, '{key: "10.0.0.3", ops:
-[{field: "tags", len: 10, value: "ipwisecsv"}]
-},
+$wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ipcsv")->content . "]";
+@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+eq_or_diff(\@wise, 
+from_json('[
 {key: "10.0.0.2", ops:
 [{field: "tags", len: 10, value: "ipwisecsv"}]
 },
-', "file:ipcsv dump");
+{key: "10.0.0.3", ops:
+[{field: "tags", len: 10, value: "ipwisecsv"}]
+}
+]', {relaxed=>1, allow_barekey=>1}), "file:ipcsv dump");
 
 # Email Query
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/email/fudge\@aol.com")->content;
@@ -88,6 +95,7 @@ eq_or_diff($wise, '[{field: "email.dst", len: 11, value: "wiseadded1"},
 {field: "tags", len: 10, value: "emailwise"}]
 ', "ALL 12345678\@aol.com");
 
+if (0) {
 # Zeus Query
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/url:zeus.domain")->content;
 $wise =~ /key: "(.*)"/;
@@ -99,6 +107,7 @@ eq_or_diff($wise, '[{field: "tags", len: 12, value: "zeustracker"},
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/url:zeus.domain/domain/aol.com")->content;
 eq_or_diff($wise, 'Not found', "Zeus aol.com");
+}
 
 
 my $pwd = getcwd() . "/pcap";
@@ -125,8 +134,8 @@ my $pwd = getcwd() . "/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/http-content-gzip.pcap)&&tags=wisebymd51&&mysql.ver=wisebymd51mysqlversion&&test.ip=144.144.144.144"));
 
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=emailwise"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=srcmatch"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=dstmatch"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=wisesrcmatch"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&tags=wisedstmatch"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&email.dst=added1"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&email.src=added2"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/smtp-data-250.pcap||file=$pwd/smtp-data-521.pcap)&&wise.str=house"));
