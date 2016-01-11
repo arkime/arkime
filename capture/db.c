@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <sys/statvfs.h>
+#include <fcntl.h>
 #include "moloch.h"
 #include "bsb.h"
 #include "glib.h"
