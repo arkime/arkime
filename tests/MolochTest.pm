@@ -138,25 +138,28 @@ sub esCopy
 ################################################################################
 sub countTest {
 my ($count, $test, $debug) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $json = viewerGet("/sessions.json?$test");
     diag Dumper($json) if ($debug);
-    is ($json->{recordsFiltered}, $count, uri_unescape($test) . " recordsFiltered");
-    is (scalar @{$json->{data}}, $count, uri_unescape($test) . " data count");
+    is ($json->{recordsFiltered}, $count, " recordsFiltered");
+    is (scalar @{$json->{data}}, $count, " data count");
 }
 ################################################################################
 sub countTest2 {
 my ($count, $test, $debug) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $json = viewerGet2("/sessions.json?$test");
     diag Dumper($json) if ($debug);
-    is ($json->{recordsFiltered}, $count, uri_unescape($test) . " recordsFiltered");
-    is (scalar @{$json->{data}}, $count, uri_unescape($test) . " data count");
+    is ($json->{recordsFiltered}, $count, " recordsFiltered");
+    is (scalar @{$json->{data}}, $count, " data count");
 }
 ################################################################################
 sub errTest {
 my ($test, $debug) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $json = viewerGet("/sessions.json?$test");
     diag Dumper($json) if ($debug);
-    ok (exists $json->{bsqErr}, uri_unescape($test) . " bsqErr exists");
+    ok (exists $json->{bsqErr}, " bsqErr exists");
 }
 ################################################################################
 sub bin2hex {
