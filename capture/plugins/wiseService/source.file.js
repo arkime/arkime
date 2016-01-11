@@ -81,14 +81,13 @@ FileSource.prototype.load = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 FileSource.prototype.dump = function(res) {
-  if (this.type === "ip") {
-    var cache = this.type==="ip"?this.cache.items:this.cache;
-    cache.forEach(function(key, value) {
-      var str = "{key: \"" + key + "\", ops:\n" + 
-        wiseSource.result2Str(wiseSource.combineResults([this.result, value])) + "},\n";
-      res.write(str);
-    });
-  }
+  var self = this;
+  var cache = this.type==="ip"?this.cache.items:this.cache;
+  cache.forEach(function(key, value) {
+    var str = "{key: \"" + key + "\", ops:\n" + 
+      wiseSource.result2Str(wiseSource.combineResults([self.result, value])) + "},\n";
+    res.write(str);
+  });
   res.end();
 };
 //////////////////////////////////////////////////////////////////////////////////
