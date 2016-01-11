@@ -1058,6 +1058,43 @@ void moloch_db_load_stats()
     gettimeofday(&dbLastTime, 0);
 }
 /******************************************************************************/
+#if defined(__APPLE__) && defined(__MACH__)
+uint64_t moloch_db_memory_size()
+{
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    return usage.ru_maxrss;
+}
+#elif  defined(__linux__)
+uint64_t moloch_db_memory_size()
+{
+    int fd = open("/proc/self/statm", O_RDONLY, 0);
+    if (fd == -1)
+        return 0;
+
+    char buf[1024];
+    int len = read(fd, buf, sizeof(buf));
+    close(fd);
+
+    if (len <= 10) 
+        return 0;
+
+    buf[len] = 0;
+
+    uint64_t size;
+    sscanf(buf, "%ld", &size);
+
+    return getpagesize() * size;
+}
+#else
+uint64_t moloch_db_memory_size()
+{
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    return usage.ru_maxrss * 1024UL
+}
+#endif
+/******************************************************************************/
 void moloch_db_update_stats()
 {
     static uint64_t       lastPackets = 0;
@@ -1103,11 +1140,7 @@ void moloch_db_update_stats()
         "\"currentTime\": %u, "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
-#if defined(__APPLE__) && defined(__MACH__)
-        "\"memory\": %ld, "
-#else
         "\"memory\": %" PRIu64 ", "
-#endif
         "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"totalPackets\": %" PRIu64 ", "
@@ -1124,11 +1157,7 @@ void moloch_db_update_stats()
         (uint32_t)currentTime.tv_sec,
         freeSpaceM,
         moloch_nids_monitoring_sessions(),
-#if defined(__APPLE__) && defined(__MACH__)
-        usage.ru_maxrss,
-#else
-        usage.ru_maxrss * 1024UL,
-#endif
+        moloch_db_memory_size(),
         diffusage*10000/diffms,
         moloch_writer_queue_length?moloch_writer_queue_length():0,
         dbTotalPackets,
@@ -1200,11 +1229,7 @@ void moloch_db_update_dstats(int n)
         "\"currentTime\": %" PRIu64 ", "
         "\"freeSpaceM\": %" PRIu64 ", "
         "\"monitoring\": %u, "
-#if defined(__APPLE__) && defined(__MACH__)
-        "\"memory\": %ld, "
-#else
         "\"memory\": %" PRIu64 ", "
-#endif
         "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
@@ -1218,11 +1243,7 @@ void moloch_db_update_dstats(int n)
         cursec,
         freeSpaceM,
         moloch_nids_monitoring_sessions(),
-#if defined(__APPLE__) && defined(__MACH__)
-        usage.ru_maxrss,
-#else
-        usage.ru_maxrss * 1024UL,
-#endif
+        moloch_db_memory_size(),
         diffusage*10000/diffms,
         moloch_writer_queue_length?moloch_writer_queue_length():0,
         (totalPackets - lastPackets[n]),

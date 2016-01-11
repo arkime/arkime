@@ -7,6 +7,7 @@
   - viewer - connections highlighting (issue #431)
   - capture - basic mongo detection
   - viewer - added Export Unique IP:Ports
+  - capture - switched memory reporting to even more accurate statm on linux
 
 
 0.12.1 2015/11/10
