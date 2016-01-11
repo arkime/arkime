@@ -1,0 +1,655 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "TXT"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
+            "db2" : 1232,
+            "db" : 2028,
+            "mac2-term" : [
+               "00:c0:9f:32:41:8c"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "192.168.170.20",
+            "ss" : 1,
+            "pa1" : 12,
+            "fpd" : 1112172466496,
+            "fs" : [],
+            "by2" : 1328,
+            "pa2" : 12,
+            "p1" : 32795,
+            "by" : 2220,
+            "rir1" : "ARIN",
+            "pr" : 17,
+            "ps" : [
+               24,
+               110,
+               224,
+               310,
+               624,
+               710,
+               796,
+               897,
+               1042,
+               1132,
+               1238,
+               1328,
+               1446,
+               1536,
+               1654,
+               1744,
+               1854,
+               1946,
+               2038,
+               2129,
+               2220,
+               2315,
+               2410,
+               2497
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "google.com"
+            ],
+            "lpd" : 1112172737733,
+            "fp" : 1112172466,
+            "pa" : 24,
+            "sl" : 271237,
+            "fb1" : "1032010000010000",
+            "a1" : "192.168.170.8",
+            "fb2" : "1032818000010001",
+            "db1" : 796,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 892,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "psl" : [
+               86,
+               114,
+               86,
+               314,
+               86,
+               86,
+               101,
+               145,
+               90,
+               106,
+               90,
+               118,
+               90,
+               118,
+               90,
+               110,
+               92,
+               92,
+               91,
+               91,
+               95,
+               95,
+               87,
+               131
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:e0:18:b1:0c:ad"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "qt-term" : [
+                  "PTR"
+               ]
+            },
+            "db2" : 97,
+            "db" : 171,
+            "mac2-term" : [
+               "00:c0:9f:32:41:8c"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "192.168.170.20",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172737737,
+            "fs" : [],
+            "by2" : 105,
+            "pa2" : 1,
+            "p1" : 32796,
+            "by" : 187,
+            "rir1" : "ARIN",
+            "pr" : 17,
+            "ps" : [
+               2628,
+               2726
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "1.0.0.127.in-addr.arpa"
+            ],
+            "lpd" : 1112172737737,
+            "fp" : 1112172737,
+            "pa" : 2,
+            "sl" : 0,
+            "fb1" : "5a53010000010000",
+            "a1" : "192.168.170.8",
+            "fb2" : "5a53858000010001",
+            "db1" : 74,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 82,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "psl" : [
+               98,
+               121
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:e0:18:b1:0c:ad"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "NS"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
+            "db2" : 158,
+            "db" : 217,
+            "mac2-term" : [
+               "00:c0:9f:32:41:8c"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "192.168.170.20",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172737740,
+            "fs" : [],
+            "by2" : 166,
+            "pa2" : 1,
+            "p1" : 32797,
+            "by" : 233,
+            "rir1" : "ARIN",
+            "pr" : 17,
+            "ps" : [
+               2847,
+               3075
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "isc.org"
+            ],
+            "lpd" : 1112172737758,
+            "fp" : 1112172737,
+            "pa" : 2,
+            "sl" : 18,
+            "fb1" : "208a010000010000",
+            "a1" : "192.168.170.8",
+            "fb2" : "208a818000010004",
+            "db1" : 59,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 67,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "psl" : [
+               83,
+               182
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:e0:18:b1:0c:ad"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "SRV"
+               ],
+               "status-term" : [
+                  "NXDOMAIN"
+               ]
+            },
+            "db2" : 121,
+            "db" : 242,
+            "mac2-term" : [
+               "00:12:a9:00:32:23"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "217.13.4.24",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172737755,
+            "fs" : [],
+            "by2" : 129,
+            "pa2" : 1,
+            "p1" : 1707,
+            "by" : 258,
+            "rir1" : "ARIN",
+            "g2" : "NOR",
+            "pr" : 17,
+            "ps" : [
+               2930,
+               3257
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
+            ],
+            "lpd" : 1112172737775,
+            "fp" : 1112172737,
+            "as2" : "AS15659 NextGenTel AS",
+            "pa" : 2,
+            "sl" : 19,
+            "fb1" : "326e010000010000",
+            "a1" : "192.168.170.56",
+            "fb2" : "326e858300010000",
+            "db1" : 121,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 129,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "RIPE",
+            "psl" : [
+               145,
+               145
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:60:08:45:e4:55"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "SRV"
+               ],
+               "status-term" : [
+                  "NXDOMAIN"
+               ]
+            },
+            "db2" : 90,
+            "db" : 180,
+            "mac2-term" : [
+               "00:12:a9:00:32:23"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "217.13.4.24",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172737776,
+            "fs" : [],
+            "by2" : 98,
+            "pa2" : 1,
+            "p1" : 1708,
+            "by" : 196,
+            "rir1" : "ARIN",
+            "g2" : "NOR",
+            "pr" : 17,
+            "ps" : [
+               3402,
+               3516
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "_ldap._tcp.dc._msdcs.utelsystems.local"
+            ],
+            "lpd" : 1112172737793,
+            "fp" : 1112172737,
+            "as2" : "AS15659 NextGenTel AS",
+            "pa" : 2,
+            "sl" : 17,
+            "fb1" : "f161010000010000",
+            "a1" : "192.168.170.56",
+            "fb2" : "f161858300010000",
+            "db1" : 90,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 98,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "RIPE",
+            "psl" : [
+               114,
+               114
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:60:08:45:e4:55"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "SRV"
+               ],
+               "status-term" : [
+                  "NXDOMAIN"
+               ]
+            },
+            "db2" : 132,
+            "db" : 264,
+            "mac2-term" : [
+               "00:12:a9:00:32:23"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "217.13.4.24",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172737794,
+            "fs" : [],
+            "by2" : 140,
+            "pa2" : 1,
+            "p1" : 1709,
+            "by" : 280,
+            "rir1" : "ARIN",
+            "g2" : "NOR",
+            "pr" : 17,
+            "ps" : [
+               3630,
+               3786
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
+            ],
+            "lpd" : 1112172737813,
+            "fp" : 1112172737,
+            "as2" : "AS15659 NextGenTel AS",
+            "pa" : 2,
+            "sl" : 19,
+            "fb1" : "8361010000010000",
+            "a1" : "192.168.170.56",
+            "fb2" : "8361858300010000",
+            "db1" : 132,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 140,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "RIPE",
+            "psl" : [
+               156,
+               156
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:60:08:45:e4:55"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NXDOMAIN"
+               ]
+            },
+            "db2" : 75,
+            "db" : 150,
+            "mac2-term" : [
+               "00:12:a9:00:32:23"
+            ],
+            "no" : "test",
+            "lp" : 1112172737,
+            "a2" : "217.13.4.24",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172737915,
+            "fs" : [],
+            "by2" : 83,
+            "pa2" : 1,
+            "p1" : 1710,
+            "by" : 166,
+            "rir1" : "ARIN",
+            "g2" : "NOR",
+            "pr" : 17,
+            "ps" : [
+               3942,
+               4041
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "grimm.utelsystems.local"
+            ],
+            "lpd" : 1112172737932,
+            "fp" : 1112172737,
+            "as2" : "AS15659 NextGenTel AS",
+            "pa" : 2,
+            "sl" : 16,
+            "fb1" : "d060010000010000",
+            "a1" : "192.168.170.56",
+            "fb2" : "d060858300010000",
+            "db1" : 75,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 83,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "RIPE",
+            "psl" : [
+               99,
+               99
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:60:08:45:e4:55"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NXDOMAIN"
+               ]
+            },
+            "db2" : 75,
+            "db" : 150,
+            "mac2-term" : [
+               "00:12:a9:00:32:23"
+            ],
+            "no" : "test",
+            "lp" : 1112172745,
+            "a2" : "217.13.4.24",
+            "ss" : 1,
+            "pa1" : 1,
+            "fpd" : 1112172745357,
+            "fs" : [],
+            "by2" : 83,
+            "pa2" : 1,
+            "p1" : 1711,
+            "by" : 166,
+            "rir1" : "ARIN",
+            "g2" : "NOR",
+            "pr" : 17,
+            "ps" : [
+               4140,
+               4239
+            ],
+            "prot-term-cnt" : 2,
+            "dnsho" : [
+               "grimm.utelsystems.local"
+            ],
+            "lpd" : 1112172745375,
+            "fp" : 1112172745,
+            "as2" : "AS15659 NextGenTel AS",
+            "pa" : 2,
+            "sl" : 18,
+            "fb1" : "7663010000010000",
+            "a1" : "192.168.170.56",
+            "fb2" : "7663858300010000",
+            "db1" : 75,
+            "dnshocnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by1" : 83,
+            "p2" : 53,
+            "mac1-term-cnt" : 1,
+            "rir2" : "RIPE",
+            "psl" : [
+               99,
+               99
+            ],
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "mac1-term" : [
+               "00:60:08:45:e4:55"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-050330",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
