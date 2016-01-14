@@ -233,6 +233,7 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
     case MOLOCH_FIELD_TYPE_INT:
     case MOLOCH_FIELD_TYPE_INT_ARRAY:
     case MOLOCH_FIELD_TYPE_INT_HASH:
+    case MOLOCH_FIELD_TYPE_INT_GHASH:
         moloch_field_int_add(pos, session, atoi(s));
         break;
     case MOLOCH_FIELD_TYPE_STR:
@@ -241,6 +242,7 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
         moloch_field_string_add(pos, session, s, l, TRUE);
         break;
     case MOLOCH_FIELD_TYPE_IP_HASH:
+    case MOLOCH_FIELD_TYPE_IP_GHASH:
     {
         int i;
         gchar **parts = g_strsplit(http->valueString[http->which]->str, ",", 0);
@@ -356,7 +358,7 @@ moloch_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length
                 http->authString = g_string_new_len(at, length);
             else
                 g_string_append_len(http->authString, at, length);
-        } 
+        }
     }
 
     if (http->pos[http->which]) {
@@ -654,96 +656,96 @@ static const char *method_strings[] =
     };
 
     hostField = moloch_field_define("http", "lotermfield",
-        "host.http", "Hostname", "ho", 
-        "HTTP host header field", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
-        "aliases", "[\"http.host\"]", 
+        "host.http", "Hostname", "ho",
+        "HTTP host header field",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "aliases", "[\"http.host\"]",
         "category", "host",
         NULL);
 
     urlsField = moloch_field_define("http", "textfield",
-        "http.uri", "URI", "us", 
-        "URIs for request", 
-        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT, 
+        "http.uri", "URI", "us",
+        "URIs for request",
+        MOLOCH_FIELD_TYPE_STR_ARRAY, MOLOCH_FIELD_FLAG_CNT,
         "rawField", "rawus",
         "category", "[\"url\",\"host\"]",
         NULL);
 
     xffField = moloch_field_define("http", "ip",
-        "ip.xff", "XFF IP", "xff", 
+        "ip.xff", "XFF IP", "xff",
         "X-Forwarded-For Header",
-        MOLOCH_FIELD_TYPE_IP_HASH, MOLOCH_FIELD_FLAG_SCNT | MOLOCH_FIELD_FLAG_IPPRE, 
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_SCNT | MOLOCH_FIELD_FLAG_IPPRE,
         "category", "ip",
         NULL);
 
     uaField = moloch_field_define("http", "textfield",
-        "http.user-agent", "Useragent", "ua", 
-        "User-Agent Header", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "http.user-agent", "Useragent", "ua",
+        "User-Agent Header",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "rawField", "rawua",
         NULL);
 
     tagsReqField = moloch_field_define("http", "lotermfield",
-        "http.hasheader.src", "Has Src Header", "hh1", 
-        "Request has header present",   
-        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "http.hasheader.src", "Has Src Header", "hh1",
+        "Request has header present",
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     tagsResField = moloch_field_define("http", "lotermfield",
-        "http.hasheader.dst", "Has Dst Header", "hh2", 
-        "Response has header present",   
-        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "http.hasheader.dst", "Has Dst Header", "hh2",
+        "Response has header present",
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     moloch_field_define("http", "lotermfield",
-        "http.hasheader", "Has Src or Dst Header", "hhall", 
-        "Shorthand for http.hasheader.src or http.hasheader.dst",   
-        0,  MOLOCH_FIELD_FLAG_FAKE, 
+        "http.hasheader", "Has Src or Dst Header", "hhall",
+        "Shorthand for http.hasheader.src or http.hasheader.dst",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
 
     md5Field = moloch_field_define("http", "lotermfield",
-        "http.md5", "Body MD5", "hmd5", 
+        "http.md5", "Body MD5", "hmd5",
         "MD5 of http body response",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "md5",
         NULL);
 
     moloch_field_define("http", "termfield",
-        "http.version", "Version", "httpversion", 
+        "http.version", "Version", "httpversion",
         "HTTP version number",
         0, MOLOCH_FIELD_FLAG_FAKE,
         "regex", "^http.version.[a-z]+$",
         NULL);
 
     verReqField = moloch_field_define("http", "termfield",
-        "http.version.src", "Src Version", "hsver", 
+        "http.version.src", "Src Version", "hsver",
         "Request HTTP version number",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     verResField = moloch_field_define("http", "termfield",
-        "http.version.dst", "Dst Version", "hdver", 
+        "http.version.dst", "Dst Version", "hdver",
         "Response HTTP version number",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     pathField = moloch_field_define("http", "termfield",
-        "http.uri.path", "URI Path", "hpath", 
+        "http.uri.path", "URI Path", "hpath",
         "Path portion of URI",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     keyField = moloch_field_define("http", "termfield",
-        "http.uri.key", "QS Keys", "hkey", 
+        "http.uri.key", "QS Keys", "hkey",
         "Keys from query string of URI",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     valueField = moloch_field_define("http", "termfield",
-        "http.uri.value", "QS Values", "hval", 
-        "Values from query string of URI",  
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "http.uri.value", "QS Values", "hval",
+        "Values from query string of URI",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     cookieKeyField = moloch_field_define("http", "termfield",
@@ -771,22 +773,22 @@ static const char *method_strings[] =
         NULL);
 
     userField = moloch_field_define("http", "termfield",
-        "http.user", "User", "huser-term", 
-        "HTTP Auth User", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "http.user", "User", "huser-term",
+        "HTTP Auth User",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         "category", "user",
         NULL);
 
     atField = moloch_field_define("http", "lotermfield",
-        "http.authtype", "Auth Type", "hat-term", 
-        "HTTP Auth Type", 
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
+        "http.authtype", "Auth Type", "hat-term",
+        "HTTP Auth Type",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
     statuscodeField = moloch_field_define("http", "integer",
         "http.statuscode", "Status Code", "http.statuscode",
         "Response HTTP numeric status code",
-        MOLOCH_FIELD_TYPE_INT_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
     HASH_INIT(s_, httpReqHeaders, moloch_string_hash, moloch_string_cmp);
