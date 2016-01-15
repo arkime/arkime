@@ -3,7 +3,7 @@
  *
  * addUser.js <user id> <user friendly name> <password> [-noweb] [-admin]
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.

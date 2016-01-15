@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.js -- Lowlevel and highlevel functions dealing with the database
  *
- * Copyright 2012-2015 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -34,7 +34,7 @@ var internals = {tagId2Name: {},
                  healthCache: {},
                  usersCache: {},
                  qInProgress: 0,
-                 apiVersion: "1.2",
+                 apiVersion: "1.3",
                  q: []};
 
 exports.initialize = function (info, cb) {
