@@ -1,4 +1,4 @@
-0.12.2 2016/01/xx
+0.12.2 2016/01/15
   - NOTICE: Only ES 1.[67].x is supported by this version. 
   - capture - basic redis detection
   - viewer - connections node distance (issue #428)
