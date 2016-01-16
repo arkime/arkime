@@ -111,140 +111,150 @@ passport.use(new DigestStrategy({qop: 'auth', realm: Config.get("httpRealm", "Mo
   }
 ));
 
-app.configure(function() {
-  app.enable("jsonp callback");
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
-  app.locals.molochversion =  molochversion.version;
-  app.locals.isIndex = false;
-  app.locals.basePath = Config.basePath();
-  app.locals.elasticBase = internals.elasticBase[0];
-  app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
-  app.locals.molochClusters = Config.configMap("moloch-clusters");
+// app.configure
+var logger = require("morgan");
+var favicon = require("serve-favicon");
+var bodyParser = require('body-parser');
+var multer = require('multer');
+var methodOverride = require('method-override');
+var compression = require('compression');
 
-  app.use(express.favicon(__dirname + '/public/favicon.ico'));
-  app.use(passport.initialize());
-  app.use(function(req, res, next) {
-    if (res.setTimeout) {
-      res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
-    }
-    req.url = req.url.replace(Config.basePath(), "/");
-    return next();
-  });
-  app.use(express.bodyParser({uploadDir: Config.get("pcapDir")}));
+app.enable("jsonp callback");
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
+app.locals.molochversion =  molochversion.version;
+app.locals.isIndex = false;
+app.locals.basePath = Config.basePath();
+app.locals.elasticBase = internals.elasticBase[0];
+app.locals.allowUploads = Config.get("uploadCommand") !== undefined;
+app.locals.molochClusters = Config.configMap("moloch-clusters");
+
+app.use(favicon(__dirname + '/public/favicon.ico'));
+app.use(passport.initialize());
+app.use(function(req, res, next) {
+  if (res.setTimeout) {
+    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
+  }
+  req.url = req.url.replace(Config.basePath(), "/");
+  return next();
+});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+//app.use(multer({dest: Config.get("pcapDir")}));
 
 // send req to access log file or stdout
-  var _stream = process.stdout;
-  var _accesslogfile = Config.get("accessLogFile");
-  if (_accesslogfile) {
-    _stream = fs.createWriteStream(_accesslogfile, {flags: 'a'});
-  }
-  app.use(express.logger({ format: ':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', stream: _stream }));
-  app.use(express.compress());
-  app.use(express.methodOverride());
-  app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
-  if (Config.get("passwordSecret")) {
-    app.locals.alwaysShowESStatus = false;
-    app.use(function(req, res, next) {
-      // 200 for NS
-      if (req.url === "/_ns_/nstest.html") {
-        return res.end();
-      }
+var _stream = process.stdout;
+var _accesslogfile = Config.get("accessLogFile");
+if (_accesslogfile) {
+  _stream = fs.createWriteStream(_accesslogfile, {flags: 'a'});
+}
 
-      // No auth for stats.json, dstats.json, esstats.json, eshealth.json
-      if (req.url.match(/^\/([e]*[ds]*stats|eshealth).json/)) {
-        return next();
-      }
 
-      // S2S Auth
-      if (req.headers['x-moloch-auth']) {
-        var obj = Config.auth2obj(req.headers['x-moloch-auth']);
-        obj.path = obj.path.replace(Config.basePath(), "/");
-        if (obj.path !== req.url) {
-          console.log("ERROR - mismatch url", obj.path, req.url);
-          return res.send("Unauthorized based on bad url, check logs on ", os.hostname());
-        }
-        if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
-          console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?", Date.now(), obj.date);
-          return res.send("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
-        }
-
-        if (req.url.match(/^\/receiveSession/)) {
-          return next();
-        }
-
-        Db.getUserCache(obj.user, function(err, suser) {
-          if (err) {return res.send("ERROR - user: " + obj.user + " err:" + err);}
-          if (!suser || !suser.found) {return res.send(obj.user + " doesn't exist");}
-          if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
-          userCleanup(suser._source);
-          req.user = suser._source;
-          return next();
-        });
-        return;
-      }
-
-      // Header auth
-      if (req.headers[Config.get("userNameHeader")] !== undefined) {
-        var userName = req.headers[Config.get("userNameHeader")];
-        Db.getUserCache(userName, function(err, suser) {
-          if (err) {return res.send("ERROR - " +  err);}
-          if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
-          if (!suser._source.enabled) {return res.send(userName + " not enabled");}
-          if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
-
-          userCleanup(suser._source);
-          req.user = suser._source;
-          return next();
-        });
-        return;
-      }
-
-      // Browser auth
-      req.url = req.url.replace("/", Config.basePath());
-      passport.authenticate('digest', {session: false})(req, res, function (err) {
-        req.url = req.url.replace(Config.basePath(), "/");
-        if (err) {
-          res.send(JSON.stringify({success: false, text: err}));
-          return;
-        } else {
-          return next();
-        }
-      });
-    });
-  } else {
-    /* Shared password isn't set, who cares about auth, db is only used for settings */
-    app.locals.alwaysShowESStatus = true;
-    app.use(function(req, res, next) {
-      req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
-      Db.getUserCache("anonymous", function(err, suser) {
-          if (!err && suser && suser.found) {
-            req.user.settings = suser._source.settings;
-            req.user.views = suser._source.views;
-          }
-        next();
-      });
-    });
-  }
-
+app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms',{stream: _stream}));
+app.use(compression());
+app.use(methodOverride());
+app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
+if (Config.get("passwordSecret")) {
+  app.locals.alwaysShowESStatus = false;
   app.use(function(req, res, next) {
-    if (!req.user || !req.user.userId) {
+    // 200 for NS
+    if (req.url === "/_ns_/nstest.html") {
+      return res.end();
+    }
+
+    // No auth for stats.json, dstats.json, esstats.json, eshealth.json
+    if (req.url.match(/^\/([e]*[ds]*stats|eshealth).json/)) {
       return next();
     }
 
-    var mrc = {};
-    for (var key in internals.rightClicks) {
-      var rc = internals.rightClicks[key];
-      if (!rc.users || rc.users[req.user.userId]) {
-        mrc[key] = rc;
+    // S2S Auth
+    if (req.headers['x-moloch-auth']) {
+      var obj = Config.auth2obj(req.headers['x-moloch-auth']);
+      obj.path = obj.path.replace(Config.basePath(), "/");
+      if (obj.path !== req.url) {
+        console.log("ERROR - mismatch url", obj.path, req.url);
+        return res.send("Unauthorized based on bad url, check logs on ", os.hostname());
       }
-    }
-    app.locals.molochRightClick = mrc;
-    next();
-  });
+      if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
+        console.log("ERROR - Denying server to server based on timestamp, are clocks out of sync?", Date.now(), obj.date);
+        return res.send("Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks");
+      }
 
-  express.logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
+      if (req.url.match(/^\/receiveSession/)) {
+        return next();
+      }
+
+      Db.getUserCache(obj.user, function(err, suser) {
+        if (err) {return res.send("ERROR - user: " + obj.user + " err:" + err);}
+        if (!suser || !suser.found) {return res.send(obj.user + " doesn't exist");}
+        if (!suser._source.enabled) {return res.send(obj.user + " not enabled");}
+        userCleanup(suser._source);
+        req.user = suser._source;
+        return next();
+      });
+      return;
+    }
+
+    // Header auth
+    if (req.headers[Config.get("userNameHeader")] !== undefined) {
+      var userName = req.headers[Config.get("userNameHeader")];
+      Db.getUserCache(userName, function(err, suser) {
+        if (err) {return res.send("ERROR - " +  err);}
+        if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
+        if (!suser._source.enabled) {return res.send(userName + " not enabled");}
+        if (!suser._source.headerAuthEnabled) {return res.send(userName + " header auth not enabled");}
+
+        userCleanup(suser._source);
+        req.user = suser._source;
+        return next();
+      });
+      return;
+    }
+
+    // Browser auth
+    req.url = req.url.replace("/", Config.basePath());
+    passport.authenticate('digest', {session: false})(req, res, function (err) {
+      req.url = req.url.replace(Config.basePath(), "/");
+      if (err) {
+        res.send(JSON.stringify({success: false, text: err}));
+        return;
+      } else {
+        return next();
+      }
+    });
+  });
+} else {
+  /* Shared password isn't set, who cares about auth, db is only used for settings */
+  app.locals.alwaysShowESStatus = true;
+  app.use(function(req, res, next) {
+    req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
+    Db.getUserCache("anonymous", function(err, suser) {
+        if (!err && suser && suser.found) {
+          req.user.settings = suser._source.settings;
+          req.user.views = suser._source.views;
+        }
+      next();
+    });
+  });
+}
+
+app.use(function(req, res, next) {
+  if (!req.user || !req.user.userId) {
+    return next();
+  }
+
+  var mrc = {};
+  for (var key in internals.rightClicks) {
+    var rc = internals.rightClicks[key];
+    if (!rc.users || rc.users[req.user.userId]) {
+      mrc[key] = rc;
+    }
+  }
+  app.locals.molochRightClick = mrc;
+  next();
 });
+
+logger.token('username', function(req, res){ return req.user?req.user.userId:"-"; });
 
 function loadFields() {
   Db.loadFields(function (data) {

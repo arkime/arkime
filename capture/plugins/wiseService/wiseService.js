@@ -76,10 +76,13 @@ processArgs();
 //////////////////////////////////////////////////////////////////////////////////
 internals.config = ini.parseSync(internals.configFile);
 var app = express();
-app.configure(function() {
-  app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'}));
-  app.use(express.timeout(5*1000));
-});
+
+var logger = require("morgan");
+var timeout = require("connect-timeout");
+
+app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+app.use(timeout(5*1000));
+
 function getConfig(section, name, d) {
   if (!internals.config[section]) {
     return d;
