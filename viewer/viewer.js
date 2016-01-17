@@ -1432,7 +1432,7 @@ app.get('/esstats.json', function(req, res) {
         cpu: (typeof node.process.cpu !== 'undefined') ? node.process.cpu.percent : 0,
         read: 0,
         write: 0,
-        load: (typeof node.os.load_average !== 'undefined') ? node.os.load_average : [0, 0, 0]
+        load: (typeof node.os.load_average === 'undefined') ? 0 : Array.isArray(node.os.load_average)?node.os.load_average[0] : node.os.load_average
       });
 
       var oldnode = internals.previousNodeStats[0][nodes[n]];

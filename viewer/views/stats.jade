@@ -415,7 +415,7 @@ block content
             data : "load",
             render: function (data, type, row, meta) {
               if (type === "display") {
-                return "[" + data[0].toFixed(2) + ", " + data[1].toFixed(2) + ", " + data[2].toFixed(2) + "]";
+                return data.toFixed(2);
               } else {
                 return data;
               }
@@ -450,7 +450,7 @@ block content
         ],
         order: [[3, "desc"]],
         footerCallback: function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
-          var totals = {docs: 0, storeSize: 0, heapSize:0, load: [0,0,0], cpu:0, read:0, write:0, searches:0};
+          var totals = {docs: 0, storeSize: 0, heapSize:0, load: 0, cpu:0, read:0, write:0, searches:0};
           for (var r = 0, rlen = aaData.length; r < rlen; r++) {
               totals.docs += aaData[r].docs;
               totals.storeSize += aaData[r].storeSize;
@@ -459,10 +459,7 @@ block content
               totals.read += aaData[r].read;
               totals.write += aaData[r].write;
               totals.searches += aaData[r].searches;
-              var load = aaData[r].load;
-              totals.load[0] += load[0];
-              totals.load[1] += load[1];
-              totals.load[2] += load[2];
+              totals.load += aaData[r].load;
           }
 
           var avgCells = $('tr#avges > th');
@@ -471,7 +468,7 @@ block content
           $(totCells[1]).html(numberWithCommas(totals.docs));
           $(totCells[2]).html(numberWithCommas(Math.ceil(totals.storeSize/1000000)));
           $(totCells[3]).html(numberWithCommas(Math.ceil(totals.heapSize/1000000)));
-          $(totCells[4]).html("[" + totals.load[0].toFixed(2) + ", " + totals.load[1].toFixed(2) + ", " + totals.load[2].toFixed(2) + "]");
+          $(totCells[4]).html(totals.load.toFixed(2));
           $(totCells[5]).html(numberWithCommas(totals.cpu));
           $(totCells[6]).html(numberWithCommas(totals.read));
           $(totCells[7]).html(numberWithCommas(totals.write));
@@ -480,7 +477,7 @@ block content
           $(avgCells[1]).html(numberWithCommas(Math.floor(totals.docs/aaData.length)));
           $(avgCells[2]).html(numberWithCommas(Math.floor(totals.storeSize/aaData.length/1000000)));
           $(avgCells[3]).html(numberWithCommas(Math.floor(totals.heapSize/aaData.length/1000000)));
-          $(avgCells[4]).html("[" + (totals.load[0]/aaData.length).toFixed(2) + ", " + (totals.load[1]/aaData.length).toFixed(2) + ", " + (totals.load[2]/aaData.length).toFixed(2) + "]");
+          $(avgCells[4]).html((totals.load/aaData.length).toFixed(2));
           $(avgCells[5]).html(numberWithCommas(Math.floor(totals.cpu/aaData.length)));
           $(avgCells[6]).html(numberWithCommas(Math.floor(totals.read/aaData.length)));
           $(avgCells[7]).html(numberWithCommas(Math.floor(totals.write/aaData.length)));
