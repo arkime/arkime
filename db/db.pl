@@ -1894,9 +1894,7 @@ sub optimizeOther {
     foreach my $i ("${PREFIX}dstats_v1", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=1", 1);
-        if ($main::esVersion >= 10400) {
-            esGet("/$i/_upgrade", 1);
-        }
+        esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
     print "\n" if ($verbose > 0);
@@ -1997,9 +1995,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $i (sort (keys %{$indices})) {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=4", 1);
-        if ($main::esVersion >= 10400) {
-            esGet("/$i/_upgrade", 1);
-        }
+        esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
     exit 0;
