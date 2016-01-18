@@ -1542,7 +1542,7 @@ app.get('/dstats.json', function(req, res) {
                          term: { nodeName: req.query.nodeName}
                        },
                        {
-                         numeric_range: { currentTime: { from: req.query.start, to: req.query.stop } }
+                         range: { currentTime: { from: req.query.start, to: req.query.stop } }
                        },
                        {
                          term: { interval: req.query.interval || 60}
