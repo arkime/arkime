@@ -2,12 +2,14 @@
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 
   - NOTICE: Requires running npm update
   - NOTICE: See https://github.com/aol/moloch/wiki/FAQ/_edit#How_do_I_upgrade_to_ES_2x_from_ES_1x
-            to learn how to upgrade to ES 2
+            to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to es 2
   - all - added support for ES 2
   - viewer - upgraded to express 4
   - viewer - ES load is now a single number to support ES 2
   - db.pl - fixed _upgrade call, needed to be POST
   - tests - http.referer tests
+  - capture - smtp now handles no space for mail from, rcpt to (issue #442)
+  - capture - basic jabber/sip protocol detection
 
 0.12.2 2016/01/15
   - NOTICE: Only ES 1.[67].x is supported by this version. 
@@ -19,7 +21,6 @@
   - capture - basic mongo detection
   - viewer - added Export Unique IP:Ports
   - capture - switched memory reporting to even more accurate statm on linux
-  - capture - smtp now handles no space for mail from, rcpt to (issue #442)
 
 
 0.12.1 2015/11/10

@@ -82,6 +82,17 @@ void mongo_classify(MolochSession_t *session, const unsigned char *data, int len
         moloch_nids_add_protocol(session, "mongo");
 }
 /******************************************************************************/
+void sip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
+{
+    moloch_nids_add_protocol(session, "sip");
+}
+/******************************************************************************/
+void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
+{
+    if (g_strstr_len((gchar*)data+5, len-5, "jabber") != NULL)
+        moloch_nids_add_protocol(session, "jabber");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, bt_classify);
@@ -114,5 +125,10 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3d\x00\x00\x00", 4, mongo_classify);
     moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3e\x00\x00\x00", 4, mongo_classify);
     moloch_parsers_classifier_register_tcp("mongo", 0, (unsigned char*)"\x3f\x00\x00\x00", 4, mongo_classify);
+
+    moloch_parsers_classifier_register_tcp("sip", 0, (unsigned char*)"SIP/2.0", 7, sip_classify);
+    moloch_parsers_classifier_register_tcp("sip", 0, (unsigned char*)"REGISTER sip:", 13, sip_classify);
+
+    moloch_parsers_classifier_register_tcp("jabber", 0, (unsigned char*)"<?xml", 5, jabber_classify);
 }
 
