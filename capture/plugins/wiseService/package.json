@@ -3,7 +3,10 @@
   , "version": "0.0.1"
   , "private": true
   , "dependencies": {
-     "express": "~3.5.3"
+    "elasticsearch": "~10.1.2"
+    , "express": "~4.13.3"
+    , "morgan": "~1.6.1"
+    , "connect-timeout": ""
     , "async": "~0.9.0"
     , "keep-alive-agent": "~0.0.1"
     , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
@@ -16,6 +19,5 @@
     , "iptrie": "~0.0.6"
     , "native-dns": "~0.7.0"
     , "hashtable": "~0.5.3"
-    , "elasticsearch": "~2.4.0"
   }
 }

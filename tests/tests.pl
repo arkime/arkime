@@ -192,7 +192,7 @@ my ($cmd) = @_;
         if (!$main::debug) {
             $cmd .= " 2>&1 1>/dev/null";
         } else {
-            $cmd .= " --debug";
+            $cmd .= " --debug 2>&1 1>/tmp/moloch.capture";
         }
 
 

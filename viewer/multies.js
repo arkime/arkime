@@ -68,19 +68,22 @@ function saveBody (req, res, next) {
   });
 }
 
+// app.configure
+var logger = require("morgan");
+var favicon = require("serve-favicon");
+var compression = require('compression');
+
 var app = express();
-app.configure(function() {
-  app.enable("jsonp callback");
-  app.use(express.favicon(__dirname + '/public/favicon.ico'));
-  app.use(express.logger({ format: ':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms' }));
-  app.use(saveBody);
-  app.use(express.compress());
-  app.use(function(req, res, next) {
-    if (res.setTimeout) {
-      res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
-      return next();
-    }
-  });
+app.enable("jsonp callback");
+app.use(favicon(__dirname + '/public/favicon.ico'));
+app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+app.use(saveBody);
+app.use(compression());
+app.use(function(req, res, next) {
+  if (res.setTimeout) {
+    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
+    return next();
+  }
 });
 
 function node2Url(node) {

@@ -32,6 +32,7 @@
 # 23 - packet lengths
 # 24 - field category
 # 25 - cert hash
+# 26 - dynamic stats, ES 2.0
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -40,7 +41,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 25;
+my $VERSION = 26;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -222,7 +223,6 @@ sub tagsUpdate
     my $mapping = '
 {
   tag: {
-    _id: { index: "not_analyzed"},
     dynamic: "strict",
     properties: {
       n: {
@@ -260,7 +260,6 @@ sub sequenceUpdate
   sequence: {
     _source : { enabled : 0 },
     _all    : { enabled : 0 },
-    _type   : { index : "no" },
     enabled : 0
   }
 }';
@@ -359,7 +358,7 @@ my $mapping = '
   stat: {
     _all : {enabled : false},
     _source : {enabled : true},
-    dynamic: "strict",
+    dynamic: "true",
     properties: {
       hostname: {
         type: "string",
@@ -457,7 +456,7 @@ my $mapping = '
   dstat: {
     _all : {enabled : false},
     _source : {enabled : true},
-    dynamic: "strict",
+    dynamic: "true",
     properties: {
       nodeName: {
         type: "string",
@@ -990,25 +989,27 @@ sub sessionsUpdate
     ],
     properties: {
       us: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          us: {type: "string", analyzer: "url_analyzer"},
-          rawus: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "url_analyzer",
+        copy_to: "rawus",
+        omit_norms: true
+      },
+      rawus: {
+        type: "string",
+        index: "not_analyzed"
       },
       uscnt: {
         type: "integer"
       },
       ua: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          ua: {type: "string", analyzer: "snowball"},
-          rawua: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawua",
+        omit_norms: true
+      },
+      rawua: {
+        type: "string",
+        index: "not_analyzed"
       },
       uacnt: {
         type: "integer"
@@ -1050,13 +1051,14 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       as1: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          as1: {type: "string", analyzer: "snowball"},
-          rawas1: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawas1",
+        omit_norms: true
+      },
+      rawas1: {
+        type: "string",
+        index: "not_analyzed"
       },
       rir1: {
         omit_norms: true,
@@ -1082,13 +1084,14 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       as2: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          as2: {type: "string", analyzer: "snowball"},
-          rawas2: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawas2",
+        omit_norms: true
+      },
+      rawas2: {
+        type: "string",
+        index: "not_analyzed"
       },
       rir2: {
         omit_norms: true,
@@ -1119,13 +1122,14 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       asxff: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          asxff: {type: "string", analyzer: "snowball"},
-          rawasxff: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawasxff",
+        omit_norms: true
+      },
+      rawasxff: {
+        type: "string",
+        index: "not_analyzed"
       },
       rirxff: {
         omit_norms: true,
@@ -1160,13 +1164,14 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       asdnsip: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          asdnsip: {type: "string", analyzer: "snowball"},
-          rawasdnsip: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawasdnsip",
+        omit_norms: true
+      },
+      rawasdnsip: {
+        type: "string",
+        index: "not_analyzed"
       },
       rirdnsip: {
         omit_norms: true,
@@ -1301,9 +1306,8 @@ sub sessionsUpdate
           },
           iOn : {
             type: "multi_field",
-            omit_norms: true,
             fields: {
-              "iOn": {type: "string", analyzer: "snowball"},
+              "iOn": {type: "string", analyzer: "snowball", omit_norms: true},
               "rawiOn": {type: "string", index: "not_analyzed"}
             }
           },
@@ -1314,9 +1318,8 @@ sub sessionsUpdate
           },
           sOn : {
             type: "multi_field",
-            omit_norms: true,
             fields: {
-              "sOn": {type: "string", analyzer: "snowball"},
+              "sOn": {type: "string", analyzer: "snowball", omit_norms: true},
               "rawsOn": {type: "string", index: "not_analyzed"}
             }
           },
@@ -1374,26 +1377,28 @@ sub sessionsUpdate
       euacnt: {
         type: "short"
       },
-      eua : {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          eua: {type: "string", analyzer: "snowball"},
-          raweua: {type: "string", index: "not_analyzed"}
-        }
+      eua: {
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "raweua",
+        omit_norms: true
+      },
+      raweua: {
+        type: "string",
+        index: "not_analyzed"
       },
       esubcnt: {
         type: "short"
       },
-      esub : {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          esub: {type: "string", analyzer: "snowball"},
-          rawesub: {type: "string", index: "not_analyzed"}
-        }
+      esub: {
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawesub",
+        omit_norms: true
+      },
+      rawesub: {
+        type: "string",
+        index: "not_analyzed"
       },
       eidcnt: {
         type: "short"
@@ -1479,13 +1484,14 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       aseip: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          aseip: {type: "string", analyzer: "snowball"},
-          rawaseip: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawaseip",
+        omit_norms: true
+      },
+      rawaseip: {
+        type: "string",
+        index: "not_analyzed"
       },
       rireip: {
         omit_norms: true,
@@ -1589,13 +1595,14 @@ sub sessionsUpdate
         index: "not_analyzed"
       },
       assocksip: {
-        type: "multi_field",
-        path: "just_name",
-        omit_norms: true,
-        fields: {
-          assocksip: {type: "string", analyzer: "snowball"},
-          rawassocksip: {type: "string", index: "not_analyzed"}
-        }
+        type: "string",
+        analyzer: "snowball",
+        copy_to: "rawassocksip",
+        omit_norms: true
+      },
+      rawassocksip: {
+        type: "string",
+        index: "not_analyzed"
       },
       rirsocksip: {
         omit_norms: true,
@@ -1626,7 +1633,7 @@ sub sessionsUpdate
   settings: {
     index: {
       "routing.allocation.total_shards_per_node": 1,
-      refresh_interval: 60,
+      refresh_interval: "60s",
       number_of_shards: ' . $main::numberOfNodes . ',
       number_of_replicas: 0,
       analysis: {
@@ -1807,6 +1814,8 @@ sub dbCheckHealth {
         print "Changing threadpool.search.queue_size to 10000 to work around bug\n";
         esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
     }
+
+    return $health;
 }
 ################################################################################
 sub dbCheck {
@@ -1814,9 +1823,9 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 10400) {
+    if ($main::esVersion < 10602) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* 1.4.x is supported\n",
+              "* 1.6.2 is supported\n",
               "* 1.7.x is recommended\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
@@ -1825,20 +1834,18 @@ sub dbCheck {
         exit (1);
     }
 
-    if ($main::esVersion < 10602) {
-        print("WARNING - ALL elasticsearch versions before 1.6.2 have security and corruption issues.  Please also protect Elasticsearch with iptables.\n",
-              "\n",
-              "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
-              "Make sure to restart any viewer or capture after upgrading!\n"
-             );
-        sleep(2);
-    }
-
     my $error = 0;
     my $nodes = esGet("/_nodes?settings&process&flat_settings");
+    my $nodeStats;
+    if ($main::esVersion < 20000) {
+        $nodeStats = $nodes;
+    } else {
+        $nodeStats = esGet("/_nodes/stats?process");
+    }
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
         my $node = $nodes->{nodes}->{$key};
+        my $nodeStat = $nodeStats->{nodes}->{$key};
         my $errstr;
         my $warnstr;
 
@@ -1846,24 +1853,7 @@ sub dbCheck {
             $errstr .= sprintf ("    REMOVE 'index.cache.field.type'\n");
         }
 
-        if ($main::esVersion < 10400) {
-            if (!(exists $node->{settings}->{"index.fielddata.cache"})) {
-                $errstr .= sprintf ("       ADD 'index.fielddata.cache: node'\n");
-            } elsif ($node->{settings}->{"index.fielddata.cache"} ne  "node") {
-                $errstr .= sprintf ("    CHANGE 'index.fielddata.cache' to 'node'\n");
-            }
-
-            if (!(exists $node->{settings}->{"indices.fielddata.cache.size"})) {
-                $errstr .= sprintf ("       ADD 'indices.fielddata.cache.size: 40%'\n");
-            }
-        }
-
-        if ($main::esVersion < 10200 && !(exists $node->{settings}->{"script.disable_dynamic"})) {
-            $warnstr .= sprintf ("       ADD 'script.disable_dynamic: true'\n");
-            $warnstr .= sprintf ("         - Closes a potential security issue\n");
-        }
-
-        if (!(exists $node->{process}->{max_file_descriptors}) || int($node->{process}->{max_file_descriptors}) < 4000) {
+        if (!(exists $nodeStat->{process}->{max_file_descriptors}) || int($nodeStat->{process}->{max_file_descriptors}) < 4000) {
             $errstr .= sprintf ("  INCREASE max file descriptors in /etc/security/limits.conf and restart all ES node\n");
             $errstr .= sprintf ("                (change root to the user that runs ES)\n");
             $errstr .= sprintf ("          root hard nofile 128000\n");
@@ -1904,9 +1894,7 @@ sub optimizeOther {
     foreach my $i ("${PREFIX}dstats_v1", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=1", 1);
-        if ($main::esVersion >= 10400) {
-            esGet("/$i/_upgrade", 1);
-        }
+        esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
     print "\n" if ($verbose > 0);
@@ -1927,7 +1915,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|field|force-?put-?version)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|field|force-?put-?version)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -2007,9 +1995,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     foreach my $i (sort (keys %{$indices})) {
         progress($i);
         esGet("/$i/_optimize?max_num_segments=4", 1);
-        if ($main::esVersion >= 10400) {
-            esGet("/$i/_upgrade", 1);
-        }
+        esPost("/$i/_upgrade", "", 1);
     }
     print "\n";
     exit 0;
@@ -2130,7 +2116,7 @@ my ($nodes) = @_;
 }
 
 
-dbCheckHealth();
+my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
@@ -2196,118 +2182,109 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         queriesCreate();
     }
     print "Finished.  Have fun!\n";
-} elsif ($main::versionNumber == 0) {
-    print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elasticsearch moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
-    waitFor("UPGRADE", "do you want to upgrade?");
-    print "Starting Upgrade\n";
-
-    esDelete("/${PREFIX}stats", 1);
-
-    tagsUpdate();
-    sequenceUpdate();
-    statsCreate();
-    sessionsUpdate();
-    fieldsCreate();
-
-    filesCreate();
-    esAlias("remove", "files_v1", "files");
-    esCopy("files_v1", "files_v3", "file");
-
-    usersCreate();
-    esAlias("remove", "users_v1", "users");
-    esCopy("users_v1", "users_v3", "user");
-
-    dstatsCreate();
-    esCopy("dstats", "dstats_v1", "user");
-    sleep 1;
-
-    esDelete("/${PREFIX}dstats", 1);
-    sleep 1;
-
-    esAlias("add", "dstats_v1", "dstats");
-
-    queriesCreate();
-
-    print "users_v1 and files_v1 tables can be deleted now\n";
-    print "Finished\n";
-} elsif ($main::versionNumber >= 1 && $main::versionNumber < 7) {
-    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    waitFor("UPGRADE", "do you want to upgrade?");
-    print "Starting Upgrade\n";
-
-    filesCreate();
-    esAlias("remove", "files_v2", "files");
-    esCopy("files_v2", "files_v3", "file");
-
-    usersCreate();
-    esAlias("remove", "users_v2", "users");
-    esCopy("users_v2", "users_v3", "user");
-    print "users_v2 and files_v2 table can be deleted now\n";
-
-    sessionsUpdate();
-    statsUpdate();
-    dstatsUpdate();
-    fieldsCreate();
-    queriesCreate();
-
-    print "Finished\n";
-} elsif ($main::versionNumber >= 7 && $main::versionNumber < 18) {
-    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    waitFor("UPGRADE", "do you want to upgrade?");
-    print "Starting Upgrade\n";
-
-    usersCreate();
-    esAlias("remove", "users_v2", "users");
-    esCopy("users_v2", "users_v3", "user");
-    print "users_v2 table can be deleted now\n";
-
-    filesUpdate();
-    sessionsUpdate();
-    statsUpdate();
-    dstatsUpdate();
-    fieldsCreate();
-    queriesCreate();
-
-    print "Finished\n";
-} elsif ($main::versionNumber >= 18 && $main::versionNumber < 19) {
-    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    waitFor("UPGRADE", "do you want to upgrade?");
-    print "Starting Upgrade\n";
-
-    usersCreate();
-    esAlias("remove", "users_v2", "users");
-    esCopy("users_v2", "users_v3", "user");
-    print "users_v2 table can be deleted now\n";
-
-    fieldsUpdate();
-    sessionsUpdate();
-    queriesCreate();
-    statsUpdate();
-    dstatsUpdate();
-
-    print "Finished\n";
-} elsif ($main::versionNumber >= 19 && $main::versionNumber < 20) {
-    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    waitFor("UPGRADE", "do you want to upgrade?");
-    sessionsUpdate();
-    queriesCreate();
-    fieldsUpdate();
-    statsUpdate();
-    dstatsUpdate();
-
-    print "Finished\n";
-} elsif ($main::versionNumber >= 20 && $main::versionNumber <= 25) {
-    print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-    waitFor("UPGRADE", "do you want to upgrade?");
-    sessionsUpdate();
-    fieldsUpdate();
-    statsUpdate();
-    dstatsUpdate();
-
-    print "Finished\n";
 } else {
-    print "db.pl is hosed\n";
+
+# Remaing is upgrade or upgradenoprompt
+
+# For really old versions don't support upgradenoprompt
+    if ($main::versionNumber == 0) {
+        print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elasticsearch moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
+        waitFor("UPGRADE", "do you want to upgrade?");
+    } elsif ($main::versionNumber < 19 || $ARGV[1] ne "upgradenoprompt") {
+        print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
+        waitFor("UPGRADE", "do you want to upgrade?");
+    } elsif ($health->{status} eq "red") {
+        print "Not auto upgrading when elasticsearch status is red.\n\n";
+        waitFor("RED", "do you want to really want to upgrade?");
+    }
+
+    print "Starting Upgrade\n";
+
+    if ($main::versionNumber == 0) {
+        esDelete("/${PREFIX}stats", 1);
+
+        tagsUpdate();
+        sequenceUpdate();
+        statsCreate();
+        sessionsUpdate();
+        fieldsCreate();
+
+        filesCreate();
+        esAlias("remove", "files_v1", "files");
+        esCopy("files_v1", "files_v3", "file");
+
+        usersCreate();
+        esAlias("remove", "users_v1", "users");
+        esCopy("users_v1", "users_v3", "user");
+
+        dstatsCreate();
+        esCopy("dstats", "dstats_v1", "user");
+        sleep 1;
+
+        esDelete("/${PREFIX}dstats", 1);
+        sleep 1;
+
+        esAlias("add", "dstats_v1", "dstats");
+
+        queriesCreate();
+
+        print "users_v1 and files_v1 tables can be deleted now\n";
+    } elsif ($main::versionNumber >= 1 && $main::versionNumber < 7) {
+        filesCreate();
+        esAlias("remove", "files_v2", "files");
+        esCopy("files_v2", "files_v3", "file");
+
+        usersCreate();
+        esAlias("remove", "users_v2", "users");
+        esCopy("users_v2", "users_v3", "user");
+        print "users_v2 and files_v2 table can be deleted now\n";
+
+        sessionsUpdate();
+        statsUpdate();
+        dstatsUpdate();
+        fieldsCreate();
+        queriesCreate();
+    } elsif ($main::versionNumber >= 7 && $main::versionNumber < 18) {
+        usersCreate();
+        esAlias("remove", "users_v2", "users");
+        esCopy("users_v2", "users_v3", "user");
+        print "users_v2 table can be deleted now\n";
+
+        filesUpdate();
+        sessionsUpdate();
+        statsUpdate();
+        dstatsUpdate();
+        fieldsCreate();
+        queriesCreate();
+    } elsif ($main::versionNumber >= 18 && $main::versionNumber < 19) {
+        usersCreate();
+        esAlias("remove", "users_v2", "users");
+        esCopy("users_v2", "users_v3", "user");
+        print "users_v2 table can be deleted now\n";
+
+        fieldsUpdate();
+        sessionsUpdate();
+        queriesCreate();
+        statsUpdate();
+        dstatsUpdate();
+    } elsif ($main::versionNumber >= 19 && $main::versionNumber < 20) {
+        sessionsUpdate();
+        queriesCreate();
+        fieldsUpdate();
+        statsUpdate();
+        dstatsUpdate();
+    } elsif ($main::versionNumber >= 20 && $main::versionNumber <= 26) {
+        sessionsUpdate();
+        fieldsUpdate();
+        statsUpdate();
+        dstatsUpdate();
+    } else {
+        print "db.pl is hosed\n";
+    }
+
 }
+
+print "Finished\n";
 
 sleep 1;
 esPost("/${PREFIX}dstats/version/version", "{\"version\": $VERSION}");
