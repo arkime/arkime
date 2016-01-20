@@ -433,12 +433,12 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 moloch_nids_add_tag(session, tag);
             } else if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
-                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+11, '<', '>'), -1);
+                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+10, '<', '>'), -1);
                 if (!moloch_field_string_add(srcField, session, lower, -1, FALSE)) {
                     g_free(lower);
                 }
             } else if (strncasecmp(line->str, "RCPT TO:", 8) == 0) {
-                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+9, '<', '>'), -1);
+                char *lower = g_ascii_strdown(smtp_remove_matching(line->str+8, '<', '>'), -1);
                 if (!moloch_field_string_add(dstField, session, lower, -1, FALSE)) {
                     g_free(lower);
                 }

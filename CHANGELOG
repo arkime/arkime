@@ -8,6 +8,7 @@
   - capture - basic mongo detection
   - viewer - added Export Unique IP:Ports
   - capture - switched memory reporting to even more accurate statm on linux
+  - capture - smtp now handles no space for mail from, rcpt to (issue #442)
 
 
 0.12.1 2015/11/10
