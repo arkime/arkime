@@ -17,6 +17,10 @@
 #include <ctype.h>
 #include "moloch.h"
 
+extern MolochConfig_t        config;
+
+static int userField;
+
 /******************************************************************************/
 void bt_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
@@ -93,6 +97,21 @@ void jabber_classify(MolochSession_t *session, const unsigned char *data, int le
         moloch_nids_add_protocol(session, "jabber");
 }
 /******************************************************************************/
+void user_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
+{
+    //If a USER packet must have not NICK or +iw with it so we don't pickup IRC
+    if (len <= 5 || moloch_memstr((char *)data, len, "\nNICK ", 6) || moloch_memstr((char *)data, len, " +iw ", 5)) {
+        return;
+    }
+    int i;
+    for (i = 5; i < len; i++) {
+        if (isspace(data[i]))
+            break;
+    }
+
+    moloch_field_string_add(userField, session, (char*)data+5, i-5, TRUE);
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, bt_classify);
@@ -130,5 +149,9 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("sip", 0, (unsigned char*)"REGISTER sip:", 13, sip_classify);
 
     moloch_parsers_classifier_register_tcp("jabber", 0, (unsigned char*)"<?xml", 5, jabber_classify);
+
+    moloch_parsers_classifier_register_tcp("user", 0, (unsigned char*)"USER ", 5, user_classify);
+
+    userField = moloch_field_by_db("user");
 }
 
