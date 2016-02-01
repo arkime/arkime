@@ -120,19 +120,20 @@ if (internals.config["default"] === undefined) {
 }
 
 exports.getFull = function(node, key, defaultValue) {
+  var value;
   if (internals.config[node] && internals.config[node][key] !== undefined ) {
-    return internals.config[node][key];
+    value = internals.config[node][key];
+  } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
+    value = internals.config[internals.config[node].nodeClass][key];
+  } else if (internals.config["default"][key]) {
+    value = internals.config["default"][key];
+  } else {
+    value = defaultValue;
   }
-
-  if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
-    return internals.config[internals.config[node].nodeClass][key];
+  if (value === "false") {
+    return false;
   }
-
-  if (internals.config["default"][key]) {
-    return internals.config["default"][key];
-  }
-
-  return defaultValue;
+  return value;
 };
 
 exports.get = function(key, defaultValue) {
