@@ -123,7 +123,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 #endif
 
     if (!(http->inBody & (1 << http->which))) {
-        if (moloch_memstr(at, length, "password=", 9)) {
+        if (moloch_memcasestr(at, length, "password=", 9)) {
             moloch_nids_add_tag(session, "http:password");
         }
 
