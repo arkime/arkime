@@ -29,8 +29,14 @@ void bt_classify(MolochSession_t *session, const unsigned char *UNUSED(data), in
 /******************************************************************************/
 void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
+
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
         moloch_nids_add_protocol(session, "rdp");
+        if (len > 30 && memcmp(data+11, "Cookie: mstshash=", 17) == 0) {
+            char *end = g_strstr_len((char *)data+28, len-28, "\r\n");
+            if (end)
+                moloch_field_string_add(userField, session, (char*)data+28, end - (char *)data - 28, TRUE);
+        }
     }
 }
 /******************************************************************************/

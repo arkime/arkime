@@ -11,6 +11,7 @@
   - capture - smtp now handles no space for mail from, rcpt to (issue #442)
   - capture - basic jabber/sip protocol detection
   - capture - http:password set for case insensitve password= now
+  - capture - rdp "Cookie" if present is stored in user field
 
 0.12.2 2016/01/15
   - NOTICE: Only ES 1.[67].x is supported by this version. 
