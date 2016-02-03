@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -1226,11 +1226,11 @@ $(document).ready(function() {
         return callback(Object.keys($(document).data("countries")));
       }
 
+      if (filter.length < 1) {
+        return callback([]);
+      }
 
       if (/^(tags|http.hasheader)/.test(token)) {
-        if (filter.length < 1) {
-          return callback([]);
-        }
         $.ajax( {
             "dataType": 'html',
             "type": "GET",
@@ -1241,6 +1241,33 @@ $(document).ready(function() {
         } );
         return;
       }
+
+      // Try and do autocomplete if at least 2 chars entered
+      if (filter.length < 2) {
+        return callback([]);
+      }
+
+      var params = [];
+      addDateParams(params);
+      if (sessionStorage['moloch-view']) {
+        params.push({name:'view', value:sessionStorage['moloch-view']});
+      }
+      if (field.type === "ip") {
+        params.push({name:'expression', value:token + '==' + filter});
+      } else {
+        params.push({name:'expression', value:token + '==' + filter + "*"});
+      }
+      params.push({name:'autocomplete', value:true});
+      params.push({name:'field', value:field.dbField});
+
+      $.ajax( {
+          "dataType": 'html',
+          "type": "GET",
+          "url": 'unique.txt?' + $.param(params),
+          "success": function(data) {
+            return callback(JSON.parse(data));
+          }
+      } );
 
       return callback([]);
     };

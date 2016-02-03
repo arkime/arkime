@@ -2478,8 +2478,25 @@ app.get('/unique.txt', function(req, res) {
 
   /* How should the results be written.  Use setImmediate to not blow stack frame */
   var writeCb;
+  var doneCb;
   var writes = 0;
-  if (parseInt(req.query.counts, 10) || 0) {
+  var items = [];
+  var aggSize = 1000000;
+  if (req.query.autocomplete !== undefined) {
+    aggSize = 1000;
+    doneCb = function() {
+      res.send(items);
+    }
+    writeCb = function (item, cb) {
+      items.push(item.key);
+      if (writes++ > 1000) {
+        writes = 0;
+        setImmediate(cb);
+      } else {
+        cb();
+      }
+    };
+  } else if (parseInt(req.query.counts, 10) || 0) {
     writeCb = function (item, cb) {
       res.write("" + item.key + ", " + item.doc_count + "\n");
       if (writes++ > 1000) {
@@ -2584,26 +2601,26 @@ app.get('/unique.txt', function(req, res) {
         }
 
         async.forEachSeries(aggregations, eachCb, function () {
-          res.end();
+          doneCb?doneCb():res.end();
         });
       });
     } else {
       if (req.query.field === "a1:p1") {
-        query.aggregations = {field: { terms : {field : "a1", size: 1000000}, aggregations: {field2: {terms: {field: "p1", size: 100}}}}};
+        query.aggregations = {field: { terms : {field : "a1", size: aggSize}, aggregations: {field2: {terms: {field: "p1", size: 100}}}}};
       } else if (req.query.field === "a2:p2") {
-        query.aggregations = {field: { terms : {field : "a2", size: 1000000}, aggregations: {field2: {terms: {field: "p2", size: 100}}}}};
+        query.aggregations = {field: { terms : {field : "a2", size: aggSize}, aggregations: {field2: {terms: {field: "p2", size: 100}}}}};
       } else  {
-        query.aggregations = {field: { terms : {field : req.query.field, size: 1000000}}};
+        query.aggregations = {field: { terms : {field : req.query.field, size: aggSize}}};
       }
-      console.log("unique aggregations", indices, JSON.stringify(query));
       query.size = 0;
+      console.log("unique aggregations", indices, JSON.stringify(query));
       Db.searchPrimary(indices, 'session', query, function(err, result) {
         if (Config.debug) {
           console.log("unique.txt result", util.inspect(result, false, 50));
         }
 
         async.forEachSeries(result.aggregations.field.buckets, eachCb, function () {
-          res.end();
+          doneCb?doneCb():res.end();
         });
       });
     }
