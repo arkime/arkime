@@ -13,6 +13,7 @@
   - capture - http:password set for case insensitve password= now
   - capture - rdp "Cookie" if present is stored in user field
   - viewer - support auto complete on all fields (experimental)
+  - capture - fix for tagger.so crash on XFF fields introduced in 0.12.2
 
 0.12.2 2016/01/15
   - NOTICE: Only ES 1.[67].x is supported by this version. 

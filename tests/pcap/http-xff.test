@@ -1,0 +1,198 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "hdrs" : {
+               "hreq-referer" : [
+                  "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
+               ],
+               "hreq-referercnt" : 1
+            },
+            "p1" : 41954,
+            "mac2-term-cnt" : 2,
+            "hkeycnt" : 1,
+            "us" : [
+               "//www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
+            ],
+            "pa2" : 5,
+            "fb1" : "474554202f78782f",
+            "fs" : [],
+            "hsvercnt" : 1,
+            "as2" : "AS0001 Cool Beans!",
+            "hh1" : [
+               "http:header:accept-encoding",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent",
+               "http:header:x-forwarded-for"
+            ],
+            "fp" : 1454513228,
+            "db1" : 312,
+            "g1" : "RUS",
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
+            ],
+            "hmd5" : [
+               "9daa848cbed13db71c8cce96e14a6d57"
+            ],
+            "pa" : 11,
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "string" : [
+                  "16777226:41954,33554442:80"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "number" : [
+                  33554442
+               ]
+            },
+            "hvalcnt" : 1,
+            "fb2" : "485454502f312e31",
+            "hh1cnt" : 6,
+            "prot-term-cnt" : 2,
+            "hdver" : [
+               "1.1"
+            ],
+            "as1" : "AS0000 This is neat",
+            "uacnt" : 1,
+            "hdvercnt" : 1,
+            "sl" : 145,
+            "gxff" : [
+               "---"
+            ],
+            "ps" : [
+               24,
+               114,
+               196,
+               272,
+               654,
+               730,
+               1349,
+               1439,
+               1515,
+               1591,
+               1667
+            ],
+            "xff" : [
+               167772163
+            ],
+            "rirxff" : [
+               ""
+            ],
+            "db2" : 569,
+            "pa1" : 6,
+            "xffscnt" : 1,
+            "rir2" : "TEST",
+            "fpd" : 1454513228371,
+            "hmd5cnt" : 1,
+            "by2" : 863,
+            "by" : 1543,
+            "hpathcnt" : 1,
+            "hh2" : [
+               "http:header:cf-ray",
+               "http:header:connection",
+               "http:header:content-encoding",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:server",
+               "http:header:set-cookie",
+               "http:header:transfer-encoding"
+            ],
+            "hval" : [
+               "xxxxxxxxxxxx"
+            ],
+            "uscnt" : 1,
+            "tacnt" : 2,
+            "psl" : [
+               90,
+               82,
+               76,
+               382,
+               76,
+               619,
+               90,
+               76,
+               76,
+               76,
+               76
+            ],
+            "hsver" : [
+               "1.1"
+            ],
+            "p2" : 80,
+            "g2" : "CAN",
+            "asxff" : [
+               "AS0002 Hmm!@#$%^&*()"
+            ],
+            "a2" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "a1" : "10.0.0.1",
+            "ho" : [
+               "www.xxxxxxxxx.xx"
+            ],
+            "pr" : 6,
+            "mac1-term" : [
+               "00:0a:f3:31:90:00"
+            ],
+            "db" : 881,
+            "no" : "test",
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "5c:5e:ab:b3:67:c2"
+            ],
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hpath" : [
+               "/xx/xxxxx"
+            ],
+            "hkey" : [
+               "xx"
+            ],
+            "mac1-term-cnt" : 1,
+            "ss" : 1,
+            "hocnt" : 1,
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "application/x-gzip"
+               ],
+               "statuscode" : [
+                  403
+               ],
+               "method-term-cnt" : 1
+            },
+            "by1" : 680,
+            "hh2cnt" : 8,
+            "lpd" : 1454513228516,
+            "lp" : 1454513228
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-160203"
+            }
+         }
+      }
+   ]
+}
+

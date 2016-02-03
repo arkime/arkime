@@ -182,16 +182,32 @@ void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
     }
 
     if (httpXffField != -1 && session->fields[httpXffField]) {
-        MolochIntHashStd_t *ihash = session->fields[httpXffField]->ihash;
-        MolochInt_t        *xff;
+        if (config.fields[httpXffField]->type == MOLOCH_FIELD_TYPE_IP_HASH) {
+            MolochIntHashStd_t *ihash = session->fields[httpXffField]->ihash;
+            MolochInt_t        *xff;
 
-        HASH_FORALL(i_, *ihash, xff,
-            prefix.add.sin.s_addr = xff->i_hash;
-            cnt = patricia_search_all(allIps, &prefix, 1, nodes);
-            for (i = 0; i < cnt; i++) {
-                tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+            HASH_FORALL(i_, *ihash, xff,
+                prefix.add.sin.s_addr = xff->i_hash;
+                cnt = patricia_search_all(allIps, &prefix, 1, nodes);
+                for (i = 0; i < cnt; i++) {
+                    tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+                }
+            );
+        } else {
+            GHashTable            *ghash;
+            GHashTableIter         iter;
+            gpointer               ikey;
+
+            ghash = session->fields[httpXffField]->ghash;
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                prefix.add.sin.s_addr = (int)(long)ikey;
+                cnt = patricia_search_all(allIps, &prefix, 1, nodes);
+                for (i = 0; i < cnt; i++) {
+                    tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos);
+                }
             }
-        );
+        }
     }
 
     MolochString_t *hstring;
