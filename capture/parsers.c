@@ -30,25 +30,137 @@
 extern MolochConfig_t        config;
 static gchar                 classTag[100];
 
-static magic_t               cookie;
+typedef struct moloch_magic_t {
+    struct moloch_magic_t  *magic_next, *magic_prev;
 
+    MolochSession_t        *session;
+    char                    data[64];
+    int                     field;
+    char                    len;
+} MolochMagic_t;
+
+typedef struct {
+    struct moloch_magic_t  *magic_next, *magic_prev;
+    int                     magic_count;
+} MolochMagicHead_t;
+
+
+static MOLOCH_LOCK_DEFINE(magicRequests);
+static MOLOCH_COND_DEFINE(magicRequests);
+static MOLOCH_LOCK_DEFINE(magicResponses);
+
+static MolochMagicHead_t     magicRequests;
+static MolochMagicHead_t     magicResponses;
+static uint32_t              inProgress;
+
+static magic_t               inlineCookie;
+
+/******************************************************************************/
+static void *moloch_parsers_magic_thread(void *UNUSED(arg))
+{
+    magic_t cookie;
+
+    cookie = magic_open(MAGIC_MIME);
+    if (!cookie) {
+        LOG("Error with libmagic %s", magic_error(cookie));
+    } else {
+        magic_load(cookie, NULL);
+    }
+
+    MOLOCH_LOCK(magicRequests);
+    inProgress++;
+    MOLOCH_UNLOCK(magicRequests);
+
+    MolochMagic_t *magic;
+    while (1) {
+        MOLOCH_LOCK(magicRequests);
+        inProgress--;
+        while (DLL_COUNT(magic_, &magicRequests) == 0) {
+            MOLOCH_COND_WAIT(magicRequests);
+        }
+        inProgress++;
+        DLL_POP_HEAD(magic_, &magicRequests, magic);
+        MOLOCH_UNLOCK(magicRequests);
+
+        const char *m = magic_buffer(cookie, magic->data, magic->len);
+        if (m) {
+            int len;
+            char *semi = strchr(m, ';');
+            if (semi) {
+                len = MIN(semi - m, 64);
+            } else {
+                len = MIN(strlen(m), 64);
+            }
+
+            memcpy(magic->data, m, len);
+            magic->len = len;
+
+            MOLOCH_LOCK(magicResponses);
+            DLL_PUSH_TAIL(magic_, &magicResponses, magic);
+            MOLOCH_UNLOCK(magicResponses);
+        }
+    }
+
+    return NULL;
+}
 /******************************************************************************/
 void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
 {
     if (len < 3)
         return;
 
-    const char *m = magic_buffer(cookie, data, MIN(len,50));
-    if (m) {
-        int len;
-        char *semi = strchr(m, ';');
-        if (semi) {
-            len = semi - m;
-        } else {
-            len = strlen(m);
+    if (config.magicThreads == 0) {
+        const char *m = magic_buffer(inlineCookie, data, MIN(len,50));
+        if (m) {
+            int len;
+            char *semi = strchr(m, ';');
+            if (semi) {
+                len = semi - m;
+            } else {
+                len = strlen(m);
+            }
+            moloch_field_string_add(field, session, m, len, TRUE);
         }
-        moloch_field_string_add(field, session, m, len, TRUE);
+        return;
     }
+
+    moloch_session_incr_outstanding(session);
+    MolochMagic_t *magic = MOLOCH_TYPE_ALLOC(MolochMagic_t);
+    magic->session = session;
+    magic->field = field;
+    magic->len = MIN(len, 64);
+    memcpy(magic->data, data, magic->len);
+
+
+    MOLOCH_LOCK(magicRequests);
+    DLL_PUSH_TAIL(magic_, &magicRequests, magic);
+    MOLOCH_UNLOCK(magicRequests);
+    MOLOCH_COND_BROADCAST(magicRequests);
+}
+/******************************************************************************/
+gboolean moloch_parsers_magic_finish( gpointer UNUSED(user_data))
+{
+    if (DLL_COUNT(magic_, &magicResponses) == 0)
+        return G_SOURCE_CONTINUE;
+
+    MolochMagic_t *magic;
+    MOLOCH_LOCK(magicResponses);
+    while (DLL_COUNT(magic_, &magicResponses)) {
+        DLL_POP_HEAD(magic_, &magicResponses, magic);
+        moloch_field_string_add(magic->field, magic->session, magic->data, magic->len, TRUE);
+        moloch_session_decr_outstanding(magic->session);
+        MOLOCH_TYPE_FREE(MolochMagic_t, magic);
+    }
+    MOLOCH_UNLOCK(magicResponses);
+    return G_SOURCE_CONTINUE;
+}
+/******************************************************************************/
+int moloch_parsers_magic_outstanding()
+{
+    if (config.debug)
+        LOG("%d %d %d", DLL_COUNT(magic_, &magicRequests), DLL_COUNT(magic_, &magicResponses), inProgress);
+
+    return DLL_COUNT(magic_, &magicRequests) + inProgress + DLL_COUNT(magic_, &magicResponses);
 }
 /******************************************************************************/
 void moloch_parsers_initial_tag(MolochSession_t *session)
@@ -170,6 +282,20 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int
 /******************************************************************************/
 void moloch_parsers_init()
 {
+    int i;
+    for (i = 0; i < config.magicThreads; i++) {
+        char name[100];
+        snprintf(name, sizeof(name), "moloch-magic%d", i);
+        g_thread_new(name, &moloch_parsers_magic_thread, NULL);
+    }
+
+    if (config.magicThreads > 0) {
+        g_timeout_add(1, moloch_parsers_magic_finish, NULL);
+        moloch_add_can_quit(moloch_parsers_magic_outstanding);
+    }
+
+    DLL_INIT(magic_, &magicRequests);
+    DLL_INIT(magic_, &magicResponses);
 
     moloch_field_define("general", "lotermfield",
         "user", "User", "user",
@@ -179,15 +305,15 @@ void moloch_parsers_init()
         NULL);
 
     moloch_field_define("general", "integer",
-        "session.segments", "Session Segments", "ss", 
+        "session.segments", "Session Segments", "ss",
         "Number of segments in session so far",
-        0,  MOLOCH_FIELD_FLAG_FAKE, 
+        0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     moloch_field_define("general", "integer",
-        "session.length", "Session Length", "sl", 
+        "session.length", "Session Length", "sl",
         "Session Length in milliseconds so far",
-        0,  MOLOCH_FIELD_FLAG_FAKE, 
+        0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     int flags = MAGIC_MIME;
@@ -201,11 +327,11 @@ void moloch_parsers_init()
 #ifdef MAGIC_NO_CHECK_CDF
     flags |= MAGIC_NO_CHECK_CDF;
 #endif
-    cookie = magic_open(flags);
-    if (!cookie) {
-        LOG("Error with libmagic %s", magic_error(cookie));
+    inlineCookie = magic_open(flags);
+    if (!inlineCookie) {
+        LOG("Error with libmagic %s", magic_error(inlineCookie));
     } else {
-        magic_load(cookie, NULL);
+        magic_load(inlineCookie, NULL);
     }
 
     MolochStringHashStd_t loaded;
@@ -312,7 +438,7 @@ void moloch_parsers_init()
 }
 /******************************************************************************/
 void moloch_parsers_exit() {
-    magic_close(cookie);
+    magic_close(inlineCookie);
 }
 /******************************************************************************/
 void moloch_print_hex_string(unsigned char* data, unsigned int length)

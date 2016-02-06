@@ -235,7 +235,7 @@ void moloch_nids_cb_ip(struct ip *packet, int len)
 
         tcphdr = (struct tcphdr *)((char*)packet + 4 * packet->ip_hl);
 
-        //LOG("ip (%d) %x %d", len, tcphdr->th_flags, tcphdr->th_flags & TH_RST);
+        //LOG("ip (%d - %d) %x %d", len, nids_last_pcap_header->caplen, tcphdr->th_flags, tcphdr->th_flags & TH_RST);
         //fflush(stdout);
 
         moloch_session_id(sessionId, packet->ip_src.s_addr, tcphdr->th_sport,

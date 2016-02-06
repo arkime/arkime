@@ -364,6 +364,8 @@ void moloch_config_load()
     config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x800000);
     config.maxFreeOutputBuffers  = moloch_config_int(keyfile, "maxFreeOutputBuffers", 50, 0, 0xffff);
 
+    config.magicThreads          = moloch_config_int(keyfile, "magicThreads", 0, 0, 16);
+
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
     config.logESRequests         = moloch_config_boolean(keyfile, "logESRequests", config.debug);
@@ -621,6 +623,8 @@ void moloch_config_init()
         LOG("pcapBufferSize: %u", config.pcapBufferSize);
         LOG("pcapWriteSize: %u", config.pcapWriteSize);
         LOG("maxFreeOutputBuffers: %u", config.maxFreeOutputBuffers);
+
+        LOG("magicThreads: %d", config.magicThreads);
 
         LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));

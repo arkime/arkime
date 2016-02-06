@@ -197,6 +197,18 @@ typedef struct {
     uint32_t                   jsonSize;
 } MolochField_t;
 
+#define MOLOCH_LOCK_DEFINE(var)    pthread_mutex_t var##_mutex = PTHREAD_MUTEX_INITIALIZER
+#define MOLOCH_LOCK_EXTERN(var)    pthread_mutex_t var##_mutex
+#define MOLOCH_LOCK_INIT(var)      pthread_mutex_init(&var##_mutex, NULL)
+#define MOLOCH_LOCK(var)           pthread_mutex_lock(&var##_mutex)
+#define MOLOCH_UNLOCK(var)         pthread_mutex_unlock(&var##_mutex)
+
+#define MOLOCH_COND_DEFINE(var)    pthread_cond_t var##_cond = PTHREAD_COND_INITIALIZER
+#define MOLOCH_COND_EXTERN(var)    pthread_cond_t var##_cond
+#define MOLOCH_COND_INIT(var)      pthread_cond_init(&var##_cond, NULL)
+#define MOLOCH_COND_WAIT(var)      pthread_cond_wait(&var##_cond, &var##_mutex)
+#define MOLOCH_COND_BROADCAST(var) pthread_cond_broadcast(&var##_cond)
+
 /******************************************************************************/
 /*
  * Configuration Information
@@ -278,6 +290,7 @@ typedef struct moloch_config {
     uint32_t  maxWriteBuffers;
     uint32_t  maxFreeOutputBuffers;
 
+    int       magicThreads;
 
     char      logUnknownProtocols;
     char      logESRequests;
@@ -429,6 +442,9 @@ typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
  * main.c
  */
 
+// Return 0 if ready to quit
+typedef int  (* MolochCanQuitFunc) ();
+
 #define MOLOCH_GIO_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 #define MOLOCH_GIO_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
@@ -453,6 +469,8 @@ int moloch_session_cmp(const void *keyv, const void *elementv);
 
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
 const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
+
+void moloch_add_can_quit(MolochCanQuitFunc func);
 
 void moloch_quit();
 
@@ -570,6 +588,9 @@ void     moloch_nids_exit();
 void     moloch_nids_decr_outstanding(MolochSession_t *session);
 
 char    *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint32_t addr2, int port2);
+
+#define moloch_session_incr_outstanding moloch_nids_incr_outstanding
+#define moloch_session_decr_outstanding moloch_nids_decr_outstanding
 
 /******************************************************************************/
 /*

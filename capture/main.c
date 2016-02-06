@@ -384,7 +384,7 @@ int moloch_session_cmp(const void *keyv, const void *elementv)
 {
     MolochSession_t *session = (MolochSession_t *)elementv;
 
-    return (*(uint64_t *)keyv     == session->sessionIda && 
+    return (*(uint64_t *)keyv     == session->sessionIda &&
             *(uint32_t *)(keyv+8) == session->sessionIdb);
 }
 /******************************************************************************/
@@ -459,8 +459,23 @@ void moloch_drop_privileges()
 
 }
 /******************************************************************************/
+static MolochCanQuitFunc  canQuitFuncs[20];
+int                       canQuitFuncsNum;
+
+void moloch_add_can_quit (MolochCanQuitFunc func)
+{
+    if (canQuitFuncsNum >= 20) {
+        LOG("Can't add canQuitFunc");
+        exit(1);
+        return;
+    }
+    canQuitFuncs[canQuitFuncsNum++] = func;
+}
+/******************************************************************************/
 /*
  * Don't actually end main loop until all tags are loaded
+ * TRUE - call again in 100ms
+ * FALSE - don't call again
  */
 gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
 {
@@ -469,11 +484,15 @@ gboolean moloch_quit_gfunc (gpointer UNUSED(user_data))
         moloch_nids_exit();
         return TRUE;
     }
-    if (moloch_db_tags_loading() == 0 && moloch_plugins_outstanding() == 0 && moloch_writer_queue_length() == 0 && moloch_http_queue_length(esServer) == 0) {
-        g_main_loop_quit(mainLoop);
-        return FALSE;
+
+    int i;
+    for (i = 0; i < canQuitFuncsNum; i++) {
+        if (canQuitFuncs[i]() != 0)
+            return TRUE;
     }
-    return TRUE;
+
+    g_main_loop_quit(mainLoop);
+    return FALSE;
 }
 /******************************************************************************/
 void moloch_quit()

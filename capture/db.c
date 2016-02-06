@@ -1972,6 +1972,36 @@ gboolean moloch_db_file_exists(char *filename)
     return FALSE;
 }
 /******************************************************************************/
+int moloch_db_can_quit() 
+{
+    if (outstandingTagRequests > 0) {
+        if (config.debug)
+            LOG ("Can't quit, outstandingTagRequests %d", outstandingTagRequests);
+        return 1;
+    }
+
+    if (tagRequests.t_count > 0) {
+        if (config.debug)
+            LOG ("Can't quit, tagRequests %d", tagRequests.t_count);
+        return 1;
+    }
+
+    if (sJson && BSB_LENGTH(jbsb) > 0) {
+        moloch_db_flush_gfunc((gpointer)1);
+        if (config.debug)
+            LOG ("Can't quit, sJson %ld", BSB_LENGTH(jbsb));
+        return 1;
+    }
+
+    if (moloch_http_queue_length(esServer) > 0) {
+        if (config.debug)
+            LOG ("Can't quit, moloch_http_queue_length(esServer) %d", moloch_http_queue_length(esServer));
+        return 1;
+    }
+
+    return 0;
+}
+/******************************************************************************/
 guint timers[5];
 void moloch_db_init()
 {
@@ -1992,6 +2022,8 @@ void moloch_db_init()
         moloch_db_load_stats();
         moloch_db_load_fields();
     }
+
+    moloch_add_can_quit(moloch_db_can_quit);
 
     if (config.geoipFile) {
         gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE);

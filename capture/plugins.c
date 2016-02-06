@@ -80,6 +80,8 @@ void moloch_plugins_init()
         return;
     }
 
+    moloch_add_can_quit((MolochCanQuitFunc)moloch_plugins_outstanding);
+
     int         i;
 
     for (i = 0; config.plugins[i]; i++) {
