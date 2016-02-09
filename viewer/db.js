@@ -155,7 +155,7 @@ exports.search = function (index, type, query, options, cb) {
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
-  if ((query.size || 0) + (query.from || 0) >= 10000) {
+  if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
     var totalResults;
     exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true", scroll: '1m'},
       function getMoreUntilDone(error, response) {
@@ -167,8 +167,8 @@ exports.searchPrimary = function (index, type, query, cb) {
           });
         }
 
-        if (!error && response.hits.total !== totalResults.hits.hits.length) {
-          client.scroll({
+        if (!error && totalResults.hits.hits.length < Math.min(response.hits.total, query.size)) {
+          exports.scroll({
             scrollId: response._scroll_id,
             scroll: '1m'
           }, getMoreUntilDone);
