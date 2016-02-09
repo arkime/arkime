@@ -155,7 +155,30 @@ exports.search = function (index, type, query, options, cb) {
 };
 
 exports.searchPrimary = function (index, type, query, cb) {
-  return exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true"}, cb);
+  if ((query.size || 0) + (query.from || 0) >= 10000) {
+    var totalResults;
+    exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true", scroll: '1m'},
+      function getMoreUntilDone(error, response) {
+        if (totalResults === undefined) {
+          totalResults = response;
+        } else {
+          response.hits.hits.forEach(function (hit) {
+            totalResults.hits.hits.push(hit);
+          });
+        }
+
+        if (!error && response.hits.total !== totalResults.hits.hits.length) {
+          client.scroll({
+            scrollId: response._scroll_id,
+            scroll: '1m'
+          }, getMoreUntilDone);
+        } else {
+            cb(error, totalResults);
+        }
+      });
+  } else {
+    return exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true"}, cb);
+  }
 };
 
 exports.msearch = function (index, type, queries, cb) {
