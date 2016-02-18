@@ -1659,7 +1659,7 @@ sub sessionsUpdate
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress($i);
-        esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping);
+        esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping, 1);
 
         # Before version 12 had soft, change to node, requires a close and open
         if ($main::versionNumber < 12) {
