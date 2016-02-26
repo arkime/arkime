@@ -154,6 +154,14 @@ html
         - if (molochClusters)
           each key in Object.keys(molochClusters)
             command.sendSessionButton(cluster=key,label="Send Session to #{molochClusters[key].name}")
+        - if (titleLink == "sessionsLink")
+          span 
+            b Reports
+          - if (user.fragments)
+            - var keys = Object.keys(user.fragments).sort()
+            each key in keys
+              - if (user.fragments[key].type == "query")
+                command#queryReport(label="#{user.fragments[key].name}", data-filename="#{user.fragments[key].filename}")
       menu#sessionActionsMenu
         span 
           b Session Actions
@@ -166,6 +174,13 @@ html
         - if (molochClusters)
           each key in Object.keys(molochClusters)
             command.sessionSendSessionButton.sendSessionAction(cluster=key,label="Send Session to #{molochClusters[key].name}")
+        span 
+          b Reports
+        - if (user.fragments)
+          - var keys = Object.keys(user.fragments).sort()
+          each key in keys
+            - if (user.fragments[key].type == "session")
+              command#sessionReport(label="#{user.fragments[key].name}", data-filename="#{user.fragments[key].filename}")
       if (user.views)
         menu#viewsMenu
           command.viewMenuOption(label="None")

@@ -119,6 +119,10 @@ var multer = require('multer');
 var methodOverride = require('method-override');
 var compression = require('compression');
 
+var multerStorage = multer.memoryStorage();
+var memoryUpload = multer({storage: multerStorage});
+var fragmentUpload = memoryUpload.fields([{ name: 'fragment', maxCount: 1 }]);
+
 app.enable("jsonp callback");
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
@@ -750,7 +754,8 @@ app.get('/settings', checkWebEnabled, function(req, res) {
         });
       }
       actions = actions.sort();
-
+      if (typeof user.fragments !== 'object')
+        user.fragments = {};
       res.render('settings', {
         user: req.user,
         suser: user,
@@ -3578,6 +3583,204 @@ app.post('/updateUser/:userId', checkToken, function(req, res) {
       return res.send(JSON.stringify({success: true}));
     });
   });
+});
+
+app.post('/uploadFragment', checkWebEnabled, fragmentUpload, function(req, res) {
+  Db.getUser(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      return error("Unknown user");
+    }
+    
+    var fragmentName = req.body.fragmentName;
+    if (fragmentName.length < 3 && fragmentName.length > 20) {
+      return error("Invalid fragment name.");
+    }
+    
+    if (req.files.fragment[0].originalname.indexOf(' ') !== -1) {
+      return error("Fragment filename must not contain spaces.");
+    }
+    
+    user = user._source;
+    var file = req.files.fragment[0];
+    var fragment = {
+      body: file.buffer.toString(),
+      name: fragmentName,
+      type: req.body.fragmentType,
+      filename: file.originalname
+    };
+    if (typeof user.fragments !== 'object') {
+      user.fragments = {};
+    }
+    user.fragments[fragment.filename] = fragment;
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("ES fragment add error", err, info);
+        return error("Adding fragment failed");
+      }
+      res.redirect('/settings');
+    });
+  });
+});
+
+app.get('/downloadFragment', checkWebEnabled, function(req, res) {
+  Db.getUser(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      return error("Unknown user");
+    }
+    user = user._source;
+    var fragment = user.fragments[req.query.name];
+    if (fragment) {
+      res.set('Content-Type', 'text/plain');
+      res.set('Content-Length', Buffer.byteLength(fragment.body));
+      res.send(new Buffer(fragment.body));
+      res.end();
+    } else {
+      res.status(404).send('Not found');
+    }
+  });
+});
+
+app.post('/deleteFragment', checkToken, function(req, res) {
+  Db.getUser(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      return error("Unknown user");
+    }
+    user = user._source;
+    delete user.fragments[req.body.key];
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("ES fragment delete error", err, info);
+        return error("Delete fragment failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Fragment " + req.body.key + " deleted."}))
+    });
+  });
+});
+
+app.get('/queryReport/:fragmentName/:fileName', function(req, res) {
+  var fragmentName = req.params.fragmentName;
+  Db.getUser(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      return error("Unknown user");
+    }
+    user = user._source;
+    
+    noCache(req, res, "text/html");
+    var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
+
+    if (req.query.ids) {
+      var ids = req.query.ids.split(",");
+
+      sessionsListFromIds(req, ids, fields, function(err, list) {
+        sendHTMLResponse(user, err, list);
+      });
+    } else {
+      sessionsListFromQuery(req, res, fields, function(err, list) {
+        sendHTMLResponse(user, err, list);
+      });
+    }
+  });
+  
+  function sendHTMLResponse(user, err, list) {
+    if (err) {
+      console.trace("ERROR GENERATING SESSION LIST - ", err);
+      return req.next(err);
+    }    
+    list.forEach(function (data) {
+      data._source.a1 = Pcap.inet_ntoa(data._source.a1);
+      data._source.a2 = Pcap.inet_ntoa(data._source.a2);
+    });
+    jade.render(user.fragments[fragmentName].body, {
+      user: user,
+      sessions: list
+    }, function(err, data) {
+      if (err) {
+        console.trace("ERROR GENERATING REPORT - ", err);
+        return req.next(err);
+      }
+      res.send(data);
+    });
+  }
+});
+
+app.get('/sessionReport/:fragmentName/:fileName', function(req, res) {
+  var fragmentName = req.params.fragmentName;
+  Db.getUser(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      return error("Unknown user");
+    }
+    user = user._source;
+    
+    noCache(req, res, "text/html");
+    var packets = [];
+    processSessionId(req.query.ids.toString(), true, null, function(pcap, buffer, cb, i) {
+      var obj = {};
+      if (buffer.length > 16) {
+        try {
+          pcap.decode(buffer, obj);
+        } catch (e) {
+          obj = {ip: {p: "Error decoding" + e}};
+          console.trace("sessionReport error", e);
+        }
+      } else {
+        obj = {ip: {p: "Empty"}};
+      }
+      packets[i] = obj;
+      cb(null);
+    }, function(err, session) {
+      if (err) {
+        console.trace(err);
+        req.next(err);
+      }
+      
+      if (packets.length === 0) {
+        session._err = err || "No pcap data found";
+        sendHTMLResponse(user, err, session, []);
+      } else if (packets[0].ip === undefined) {
+        session._err = "Couldn't decode pcap file, check viewer log";
+        sendHTMLResponse(user, err, session, []);
+      } else if (packets[0].ip.p === 1) {
+        Pcap.reassemble_icmp(packets, function(err, results) {
+          session._err = err;
+          sendHTMLResponse(user, err, session, results || []);
+        });
+      } else if (packets[0].ip.p === 6) {
+        Pcap.reassemble_tcp(packets, Pcap.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
+          session._err = err;
+          sendHTMLResponse(user, err, session, results || []);
+        });
+      } else if (packets[0].ip.p === 17) {
+        Pcap.reassemble_udp(packets, function(err, results) {
+          session._err = err;
+          sendHTMLResponse(user, err, session, results || []);
+        });
+      } else {
+        session._err = "Unknown ip.p=" + packets[0].ip.p;
+        sendHTMLResponse(user, err, session, []);
+      }
+    });
+  });
+  
+  function sendHTMLResponse(user, err, list, results) {
+    if (err) {
+      console.trace("ERROR GENERATING SESSION REPORT - ", err);
+      return req.next(err);
+    }
+    list.a1 = Pcap.inet_ntoa(list.a1);
+    list.a2 = Pcap.inet_ntoa(list.a2);
+    
+    jade.render(user.fragments[fragmentName].body, {
+      user: user,
+      sessions: list,
+      data: results
+    }, function(err, data) {
+      if (err) {
+        console.trace("ERROR PARSING FRAGMENT - ", err);
+        return req.next(err);
+      }
+      res.send(data);
+    });
+  }
 });
 
 app.post('/changePassword', checkToken, function(req, res) {
