@@ -1,0 +1,28 @@
+
+table
+    thead
+        tr
+            th Protocol
+            th Source IP
+            th Source Port 
+            th Destination IP
+            th Destination Port
+            th Packets          
+    tbody
+    each session in sessions
+        - var source = session._source
+        tr
+            if source.pr == 6
+                td tcp
+            else if source.pr == 1
+                td icmp
+            else if source.pr == 17
+                td udp
+            else
+                td #{source.pr}
+            td #{source.a1}
+            td #{source.p1}
+            td #{source.a2}
+            td #{source.p2}
+            td #{source.pa}
+
