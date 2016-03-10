@@ -130,7 +130,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
         int namelen;
         unsigned char *name = dns_name(data, len, &bsb, &namelen);
 
-        if (BSB_IS_ERROR(bsb))
+        if (BSB_IS_ERROR(bsb) || !name)
             break;
 
         if (!namelen) {
@@ -166,9 +166,9 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 
     for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
         int namelen;
-        dns_name(data, len, &bsb, &namelen);
+        unsigned char *name = dns_name(data, len, &bsb, &namelen);
 
-        if (BSB_IS_ERROR(bsb))
+        if (BSB_IS_ERROR(bsb) || !name)
             break;
 
         uint16_t antype = 0;
@@ -206,7 +206,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             int namelen;
             unsigned char *name = dns_name(data, len, &rdbsb, &namelen);
 
-            if (!namelen || BSB_IS_ERROR(rdbsb))
+            if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
             char *lower = g_ascii_strdown((char*)name, namelen);
@@ -224,7 +224,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             int namelen;
             unsigned char *name = dns_name(data, len, &rdbsb, &namelen);
 
-            if (!namelen || BSB_IS_ERROR(rdbsb))
+            if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
 
             char *lower = g_ascii_strdown((char*)name, namelen);
