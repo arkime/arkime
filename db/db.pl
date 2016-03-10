@@ -2059,7 +2059,7 @@ sub printIndex {
     print "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?missing$/) {
-    my $results = esGet("/${PREFIX}files/_search?size=50000&q=node:$ARGV[2]");
+    my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
     print "Need to remove references to these files from database:\n";
     my $cnt = 0;
@@ -2079,13 +2079,13 @@ sub printIndex {
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?node$/) {
-    my $results = esGet("/${PREFIX}files/_search?size=50000&q=node:$ARGV[2]");
+    my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
     print "Deleting ", $results->{hits}->{total}, " files\n";
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
     }
     esDelete("/${PREFIX}stats/stat/" . $ARGV[2], 1);
-    my $results = esGet("/${PREFIX}dstats/_search?size=50000&q=nodeName:$ARGV[2]");
+    my $results = esGet("/${PREFIX}dstats/_search?size=10000&q=nodeName:$ARGV[2]");
     print "Deleting ", $results->{hits}->{total}, " stats\n";
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
