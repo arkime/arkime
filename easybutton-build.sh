@@ -12,7 +12,7 @@
 GLIB=2.47.4
 YARA=1.7
 GEOIP=1.6.0
-PCAP=1.7.2
+PCAP=1.7.4
 NIDS=1.24
 PFRING=6.0.2
 CURL=7.42.1
@@ -162,7 +162,7 @@ else
       wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
     fi
     tar zxf libpcap-$PCAP.tar.gz
-    (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb; $MAKE)
+    (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth; $MAKE)
     if [ $? -ne 0 ]; then
       echo "MOLOCH: $MAKE failed"
       exit 1
