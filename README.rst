@@ -5,7 +5,7 @@
 What is Moloch?
 ===============
 
-Moloch is an open source, large scale IPv4 packet capturing (PCAP), indexing
+Moloch is an open source, large scale IPv4 (IPv6 soon) packet capturing (PCAP), indexing
 and database system. A simple web interface is provided for PCAP browsing,
 searching, and exporting. APIs are exposed that allow PCAP data and
 JSON-formatted session data to be downloaded directly. Simple security is
