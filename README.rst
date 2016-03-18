@@ -15,6 +15,9 @@ them to store and index all the network traffic in standard PCAP format, providi
 fast access.  Moloch is built to be deployed across many systems and can scale to 
 handle multiple gigabits/sec of traffic. 
 
+**We have a job opening, come and** `work on Moloch <http://smrtr.io/f2M-pA>`_.
+
+
 Sessions Tab
 
 .. image:: https://raw.github.com/wiki/aol/moloch/sessions.png
