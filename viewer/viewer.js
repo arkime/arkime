@@ -1497,7 +1497,12 @@ app.get('/stats.json', function(req, res) {
               mergeUnarray(fields, result.hits.hits[i].fields);
             }
             fields.id        = result.hits.hits[i]._id;
-            ["memory", "cpu", "diskQueue", "packetQueue", "fragsQueue", "closeQueue", "tcpSessions", "udpSessions", "icmpSessions", "frags", "deltaFragsDropped", "deltaOverloadDropped"].forEach(function(key) {
+
+            ["totalPackets", "totalK", "totalSessions",
+             "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
+             "freeSpaceM", "memory", "frags", "cpu",
+             "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue"
+            ].forEach(function(key) {
               fields[key] = fields[key] || 0;
             });
 
