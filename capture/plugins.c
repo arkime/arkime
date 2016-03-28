@@ -15,16 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "moloch.h"
 #include <inttypes.h>
 #include <errno.h>
-#include <ctype.h>
-#include "glib.h"
 #include "gmodule.h"
-#include "moloch.h"
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -68,11 +62,15 @@ HASH_VAR(p_, plugins, MolochPlugin_t, 11);
 void moloch_plugins_init()
 {
     HASH_INIT(p_, plugins, moloch_string_hash, moloch_string_cmp);
+}
+
+/******************************************************************************/
+void moloch_plugins_load(char **plugins) {
 
     if (!config.pluginsDir)
         return;
 
-    if (!config.plugins)
+    if (!plugins)
         return;
 
     if (!g_module_supported ()) {
@@ -84,8 +82,8 @@ void moloch_plugins_init()
 
     int         i;
 
-    for (i = 0; config.plugins[i]; i++) {
-        const char *name = config.plugins[i];
+    for (i = 0; plugins[i]; i++) {
+        const char *name = plugins[i];
 
         int d;
         GModule *plugin = 0;
@@ -320,13 +318,13 @@ void moloch_plugins_cb_new(MolochSession_t *session)
     );
 }
 /******************************************************************************/
-void moloch_plugins_cb_tcp(MolochSession_t *session, struct tcp_stream *a_tcp)
+void moloch_plugins_cb_tcp(MolochSession_t *session, unsigned char *data, int len)
 {
     MolochPlugin_t *plugin;
 
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->tcpFunc)
-            plugin->tcpFunc(session, a_tcp);
+            plugin->tcpFunc(session, data, len);
     );
 }
 /******************************************************************************/
@@ -337,16 +335,6 @@ void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsi
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->udpFunc)
             plugin->udpFunc(session, udphdr, data, len);
-    );
-}
-/******************************************************************************/
-void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len)
-{
-    MolochPlugin_t *plugin;
-
-    HASH_FORALL(p_, plugins, plugin,
-        if (plugin->ipFunc)
-            plugin->ipFunc(session, packet, len);
     );
 }
 /******************************************************************************/

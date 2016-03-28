@@ -21,21 +21,22 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <curl/curl.h>
 #include "moloch.h"
 #include "zlib.h"
+#include <errno.h>
 
 extern MolochConfig_t        config;
 
 struct molochhttpserver_t;
 typedef struct molochhttpserver_t MolochHttpServer_t;
 
-typedef struct molochttprequest_t {
+typedef struct molochhttprequest_t {
+    struct molochhttprequest_t *rqt_next, *rqt_prev;
+
     MolochHttpResponse_cb func;
     gpointer              uw;
 
@@ -53,13 +54,17 @@ typedef struct molochttprequest_t {
 
 } MolochHttpRequest_t;
 
+typedef struct {
+    struct molochhttprequest_t *rqt_next, *rqt_prev;
+    int                         rqt_count;
+} MolochHttpRequestHead_t;
+
 typedef struct molochhttpconn_t {
     struct molochhttpconn_t *h_next, *h_prev;
     uint32_t                 h_hash;
     short                    h_bucket;
 
-    uint64_t                 sessionIda;
-    uint32_t                 sessionIdb;
+    char                     sessionId[MOLOCH_SESSIONID_LEN];
 } MolochHttpConn_t;
 
 typedef struct molochhttpconnhead_t {
@@ -68,7 +73,12 @@ typedef struct molochhttpconnhead_t {
 
 } MolochHttpConnHead_t;
 
-HASH_VAR(s_, connections, MolochHttpConnHead_t, 119);
+static HASH_VAR(s_, connections, MolochHttpConnHead_t, 119);
+static MOLOCH_LOCK_DEFINE(connections);
+
+static MolochHttpRequestHead_t requests;
+static int                     requestsTimer;
+static MOLOCH_LOCK_DEFINE(requests);
 
 uint64_t connectionsSet[2048];
 #define BIT_ISSET(bit, bits) ((bits[bit/64] & (1 << (bit % 64))) != 0)
@@ -102,57 +112,8 @@ int moloch_http_conn_cmp(const void *keyv, const void *elementv)
 {
     MolochHttpConn_t *conn = (MolochHttpConn_t *)elementv;
 
-    return (*(uint64_t *)keyv     == conn->sessionIda && 
-            *(uint32_t *)(keyv+8) == conn->sessionIdb);
+    return memcmp(keyv, conn->sessionId, MIN(((uint8_t *)keyv)[0], conn->sessionId[0])) == 0;
 }
-/******************************************************************************/
-void moloch_http_init()
-{
-    z_strm.zalloc = Z_NULL;
-    z_strm.zfree  = Z_NULL;
-    z_strm.opaque = Z_NULL;
-    deflateInit(&z_strm, Z_DEFAULT_COMPRESSION);
-
-    curl_global_init(CURL_GLOBAL_SSL);
-
-    HASH_INIT(h_, connections, moloch_session_hash, moloch_http_conn_cmp);
-    memset(&connectionsSet, 0, sizeof(connectionsSet));
-}
-/******************************************************************************/
-void moloch_http_exit()
-{
-    curl_global_cleanup();
-}
-/******************************************************************************/
-void *moloch_http_create_server(char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
-{
-    MolochHttpServer_t *server = MOLOCH_TYPE_ALLOC0(MolochHttpServer_t);
-
-    server->names = g_strsplit(hostnames, ",", 0);
-    uint32_t i;
-    for (i = 0; server->names[i]; i++) {
-        if (strncmp(server->names[i], "http://", 7) == 0) {
-            char *tmp = g_strdup(server->names[i] + 7);
-            g_free(server->names[i]);
-            server->names[i] = tmp;
-        } else if (strncmp(server->names[i], "https://", 8) == 0) {
-            char *tmp = g_strdup(server->names[i] + 8);
-            g_free(server->names[i]);
-            server->names[i] = tmp;
-            server->https = TRUE;
-        }
-    }
-    server->namesCnt = i;
-    server->defaultPort = defaultPort;
-    server->maxConns = maxConns;
-    server->maxOutstandingRequests = maxOutstandingRequests;
-    server->compress = compress;
-    LOG("https = %d", server->https);
-
-    return server;
-}
-
-
 /******************************************************************************/
 static size_t moloch_http_curl_write_callback(void *contents, size_t size, size_t nmemb, void *requestP)
 {
@@ -319,19 +280,24 @@ static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
 
             curl_multi_remove_handle(server->multi, easy);
             curl_easy_cleanup(easy);
+            MOLOCH_LOCK(requests);
             server->outstanding--;
+            MOLOCH_UNLOCK(requests);
         }
     }
 }
 /******************************************************************************/
-static gboolean moloch_http_curlm_watch_callback(int fd, GIOCondition condition, gpointer serverV)
+static gboolean moloch_http_watch_callback(int fd, GIOCondition condition, gpointer serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
     int action = (condition & G_IO_IN ? CURL_CSELECT_IN : 0) |
-                 (condition & G_IO_OUT ? CURL_CSELECT_OUT : 0);
-    CURLMcode rc;
-    while ((rc = curl_multi_socket_action(server->multi, fd, action, &server->multiRunning)) == CURLM_CALL_MULTI_PERFORM);
+                 (condition & G_IO_OUT ? CURL_CSELECT_OUT : 0) |
+                 (condition & (G_IO_HUP | G_IO_ERR) ? CURL_CSELECT_ERR : 0);
+
+    while (curl_multi_socket_action(server->multi, fd, action, &server->multiRunning) == CURLM_CALL_MULTI_PERFORM) {
+    }
+
     moloch_http_curlm_check_multi_info(server);
     return TRUE;
 }
@@ -351,7 +317,7 @@ static int moloch_http_curlm_socket_callback(CURL *UNUSED(easy), curl_socket_t f
             g_source_remove(ev);
         }
 
-        ev = moloch_watch_fd(fd, (what&CURL_POLL_IN?G_IO_IN:0)|(what&CURL_POLL_OUT?G_IO_OUT:0), moloch_http_curlm_watch_callback, server);
+        ev = moloch_watch_fd(fd, (what&CURL_POLL_IN?MOLOCH_GIO_READ_COND:0)|(what&CURL_POLL_OUT?MOLOCH_GIO_WRITE_COND:0), moloch_http_watch_callback, server);
         curl_multi_assign(server->multi, fd, (void*)ev);
     }
 
@@ -359,31 +325,23 @@ static int moloch_http_curlm_socket_callback(CURL *UNUSED(easy), curl_socket_t f
 }
 /******************************************************************************/
 /* Called by glib when our timeout expires */
-static gboolean moloch_http_curlm_timer_callback(gpointer serverV)
+static gboolean moloch_http_timer_callback(gpointer serverV)
 {
     MolochHttpServer_t        *server = serverV;
-    CURLMcode rc;
 
-    while ((rc = curl_multi_socket_action(server->multi, CURL_SOCKET_TIMEOUT, 0, &server->multiRunning)) == CURLM_CALL_MULTI_PERFORM);
+    while (curl_multi_perform(server->multi, &server->multiRunning) == CURLM_CALL_MULTI_PERFORM) {
+    }
     moloch_http_curlm_check_multi_info(server);
-    server->multiTimer = 0;
-    return G_SOURCE_REMOVE;
+    return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-/* Update the event timer after curl_multi library calls */
 static int moloch_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_ms, void *serverV)
 {
-  MolochHttpServer_t        *server = serverV;
-
-  if (server->multiTimer)
-      g_source_remove(server->multiTimer);
-
-  if (timeout_ms != -1)
-      server->multiTimer = g_timeout_add(timeout_ms, moloch_http_curlm_timer_callback, server);
-  else
-      server->multiTimer = 0;
-  return 0;
+    if (timeout_ms < 10)
+        moloch_http_timer_callback(serverV);
+    return CURLE_OK;
 }
+
 /******************************************************************************/
 size_t moloch_http_curlm_header_function(char *buffer, size_t size, size_t nitems, void *requestP)
 {
@@ -410,34 +368,52 @@ size_t moloch_http_curlm_header_function(char *buffer, size_t size, size_t nitem
 /******************************************************************************/
 static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condition, gpointer serverV)
 {
-    LOG("enter");
     MolochHttpServer_t        *server = serverV;
 
-    BIT_SET(fd, connectionsSet);
 
     struct sockaddr_in localAddress, remoteAddress;
-    socklen_t addressLength = sizeof(localAddress);
-    getsockname(fd, (struct sockaddr*)&localAddress, &addressLength);
-    addressLength = sizeof(remoteAddress);
-    getpeername(fd, (struct sockaddr*)&remoteAddress, &addressLength);
-    char sessionId[MOLOCH_SESSIONID_LEN];
 
+    socklen_t addressLength = sizeof(localAddress);
+    int rc = getsockname(fd, (struct sockaddr*)&localAddress, &addressLength);
+    if (rc != 0)
+        return FALSE;
+
+    addressLength = sizeof(remoteAddress);
+    rc = getpeername(fd, (struct sockaddr*)&remoteAddress, &addressLength);
+    if (rc != 0)
+        return FALSE;
+
+    char sessionId[MOLOCH_SESSIONID_LEN];
     moloch_session_id(sessionId, localAddress.sin_addr.s_addr, localAddress.sin_port,
                       remoteAddress.sin_addr.s_addr, remoteAddress.sin_port);
 
+    LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d", 
+            server->outstanding,
+            server->connections,
+            server->names[0],
+            ntohs(localAddress.sin_port),
+            inet_ntoa(remoteAddress.sin_addr),
+            ntohs(remoteAddress.sin_port),
+            fd);
+
     MolochHttpConn_t *conn;
+
+    MOLOCH_LOCK(connections);
+    BIT_SET(fd, connectionsSet);
     HASH_FIND(h_, connections, sessionId, conn);
     if (!conn) {
         conn = MOLOCH_TYPE_ALLOC0(MolochHttpConn_t);
 
         HASH_ADD(h_, connections, sessionId, conn);
-        memcpy(&conn->sessionIda, sessionId, 8);
-        memcpy(&conn->sessionIdb, sessionId+8, 4);
+        memcpy(&conn->sessionId, sessionId, sessionId[0]);
         server->connections++;
     } else {
-        LOG("ERROR - Already added %x %s", condition, moloch_friendly_session_id(6, localAddress.sin_addr.s_addr, htons(localAddress.sin_port),
-                                                                                 remoteAddress.sin_addr.s_addr, htons(remoteAddress.sin_port)));
+        char buf[1000];
+        LOG("ERROR - Already added %x %s", condition, moloch_session_id_string(sessionId, buf));
     }
+    MOLOCH_UNLOCK(connections);
+
+    moloch_http_curlm_check_multi_info(server);
 
     return FALSE;
 }
@@ -455,11 +431,14 @@ int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
     MolochHttpServer_t        *server = serverV;
 
     if (! BIT_ISSET(fd, connectionsSet)) {
-        close (fd);
+        LOG("Couldn't connect %s defaultPort: %d", server->names[0], server->defaultPort);
         return 0;
     }
 
     struct sockaddr_in localAddress, remoteAddress;
+    memset(&localAddress, 0, sizeof(localAddress));
+    memset(&remoteAddress, 0, sizeof(localAddress));
+
     socklen_t addressLength = sizeof(localAddress);
     getsockname(fd, (struct sockaddr*)&localAddress, &addressLength);
     addressLength = sizeof(remoteAddress);
@@ -471,17 +450,49 @@ int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
                       remoteAddress.sin_addr.s_addr, remoteAddress.sin_port);
 
     MolochHttpConn_t *conn;
-    HASH_FIND(h_, connections, sessionId, conn);
     BIT_CLR(fd, connectionsSet);
+
+    MOLOCH_LOCK(connections);
+    HASH_FIND(h_, connections, sessionId, conn);
     if (conn) {
         HASH_REMOVE(h_, connections, conn);
         MOLOCH_TYPE_FREE(MolochHttpConn_t, conn);
     }
+    MOLOCH_UNLOCK(connections);
 
     server->connections--;
 
+    LOG("Close %d/%d - %s   %d->%s:%d fd:%d", 
+            server->outstanding,
+            server->connections,
+            server->names[0],
+            ntohs(localAddress.sin_port),
+            inet_ntoa(remoteAddress.sin_addr),
+            ntohs(remoteAddress.sin_port),
+            fd);
+
     close (fd);
     return 0;
+}
+/******************************************************************************/
+static gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
+{
+    MolochHttpRequest_t       *request;
+
+    while (1) {
+        MOLOCH_LOCK(requests);
+        DLL_POP_HEAD(rqt_, &requests, request);
+        if (!request) {
+            requestsTimer = 0;
+            MOLOCH_UNLOCK(requests);
+            return G_SOURCE_REMOVE;
+        }
+        MOLOCH_UNLOCK(requests);
+
+        curl_multi_add_handle(request->server->multi, request->easy);
+    }
+
+    return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
 gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
@@ -535,16 +546,6 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
     request->dataOut    = data;
     request->dataOutLen = data_len;
 
-    if (!server->multi) {
-        server->multi = curl_multi_init();
-        curl_multi_setopt(server->multi, CURLMOPT_SOCKETFUNCTION, moloch_http_curlm_socket_callback);
-        curl_multi_setopt(server->multi, CURLMOPT_SOCKETDATA, server);
-        curl_multi_setopt(server->multi, CURLMOPT_TIMERFUNCTION, moloch_http_curlm_timeout_callback);
-        curl_multi_setopt(server->multi, CURLMOPT_TIMERDATA, server);
-        LOG("maxConns = %d", server->maxConns);
-        curl_multi_setopt(server->multi, CURLMOPT_MAX_HOST_CONNECTIONS, server->maxConns);
-    }
-
     request->easy = curl_easy_init();
     if (config.debug >= 2) {
         curl_easy_setopt(request->easy, CURLOPT_VERBOSE, 1);
@@ -578,7 +579,7 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
         curl_easy_setopt(request->easy, CURLOPT_HEADERDATA, request);
     }
 
-    curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 30);
+    curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
 
     char *host = server->names[server->namesPos];
     server->namesPos = (server->namesPos + 1) % server->namesCnt;
@@ -591,14 +592,17 @@ gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_l
 
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
 
+    MOLOCH_LOCK(requests);
     server->outstanding++;
-    curl_multi_add_handle(server->multi, request->easy);
-    curl_multi_socket_action(server->multi, CURL_SOCKET_TIMEOUT, 0, &server->multiRunning);
 
+    DLL_PUSH_TAIL(rqt_, &requests, request);
+
+    if (!requestsTimer)
+        requestsTimer = g_timeout_add(0, moloch_http_send_timer_callback, NULL);
+    MOLOCH_UNLOCK(requests);
 
     return 0;
 }
-
 
 /******************************************************************************/
 gboolean moloch_http_set(void *serverV, char *key, int key_len, char *data, uint32_t data_len, MolochHttpResponse_cb func, gpointer uw)
@@ -630,6 +634,8 @@ void moloch_http_free_server(void *serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
+    g_source_remove(server->multiTimer);
+
     // Finish any still running requests
     while (server->multiRunning) {
         curl_multi_perform(server->multi, &server->multiRunning);
@@ -658,6 +664,64 @@ gboolean moloch_http_is_moloch(uint32_t hash, char *key)
 {
     MolochHttpConn_t *conn;
 
+    MOLOCH_LOCK(connections);
     HASH_FIND_HASH(h_, connections, hash, key, conn);
+    MOLOCH_UNLOCK(connections);
     return (conn?1:0);
+}
+/******************************************************************************/
+void *moloch_http_create_server(char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
+{
+    MolochHttpServer_t *server = MOLOCH_TYPE_ALLOC0(MolochHttpServer_t);
+
+    server->names = g_strsplit(hostnames, ",", 0);
+    uint32_t i;
+    for (i = 0; server->names[i]; i++) {
+        if (strncmp(server->names[i], "http://", 7) == 0) {
+            char *tmp = g_strdup(server->names[i] + 7);
+            g_free(server->names[i]);
+            server->names[i] = tmp;
+        } else if (strncmp(server->names[i], "https://", 8) == 0) {
+            char *tmp = g_strdup(server->names[i] + 8);
+            g_free(server->names[i]);
+            server->names[i] = tmp;
+            server->https = TRUE;
+        }
+    }
+    server->namesCnt = i;
+    server->defaultPort = defaultPort;
+    server->maxConns = maxConns;
+    server->maxOutstandingRequests = maxOutstandingRequests;
+    server->compress = compress;
+
+    server->multi = curl_multi_init();
+    curl_multi_setopt(server->multi, CURLMOPT_SOCKETFUNCTION, moloch_http_curlm_socket_callback);
+    curl_multi_setopt(server->multi, CURLMOPT_SOCKETDATA, server);
+    curl_multi_setopt(server->multi, CURLMOPT_TIMERFUNCTION, moloch_http_curlm_timeout_callback);
+    curl_multi_setopt(server->multi, CURLMOPT_TIMERDATA, server);
+    curl_multi_setopt(server->multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, server->maxConns);
+    curl_multi_setopt(server->multi, CURLMOPT_MAXCONNECTS, server->maxConns);
+
+    server->multiTimer = g_timeout_add(50, moloch_http_timer_callback, server);
+
+    return server;
+}
+/******************************************************************************/
+void moloch_http_init()
+{
+    z_strm.zalloc = Z_NULL;
+    z_strm.zfree  = Z_NULL;
+    z_strm.opaque = Z_NULL;
+    deflateInit(&z_strm, Z_DEFAULT_COMPRESSION);
+
+    curl_global_init(CURL_GLOBAL_SSL);
+
+    HASH_INIT(h_, connections, moloch_session_hash, moloch_http_conn_cmp);
+    memset(&connectionsSet, 0, sizeof(connectionsSet));
+    DLL_INIT(rqt_, &requests);
+}
+/******************************************************************************/
+void moloch_http_exit()
+{
+    curl_global_cleanup();
 }

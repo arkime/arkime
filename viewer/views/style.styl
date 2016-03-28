@@ -15,6 +15,9 @@ body
 .red
   color: red
 
+.hidden
+  display:none
+
 .ulist-nav li
   display:inline
   font-size:1em
@@ -217,8 +220,13 @@ tr.even td.sorting_3 {
   width: auto
 
 .paging_full_numbers
+a.dt-button.paginate_button
+a.dt-button.paginate_button:hover
   font-size: 14px
   width: auto
+  background-image: none
+  display: inline
+
 
 .paging_full_numbers a.paginate_button, .paging_full_numbers a.paginate_button:hover
   text-shadow: none
@@ -327,7 +335,7 @@ table#sessions td.infoColumn
 .infoColumn
   min-width: 200px
 
-table#sessions td.dateColumn
+table#sessions td.dateColumn, table#sessions span.ip6Column
   font-size: 12px
 
 .sessionDetails
@@ -847,9 +855,6 @@ table#sessions td.dateColumn
   float:right
   padding:18px
   background:url(plus.png) center center no-repeat
-
-#spiview .hidden
-  display:none
 
 #spiview dt.hidden-show
   text-decoration: line-through

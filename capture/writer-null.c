@@ -16,16 +16,17 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include "moloch.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <pthread.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 extern MolochConfig_t        config;
 
 static uint32_t              outputFilePos = 24;
-
 
 /******************************************************************************/
 uint32_t writer_null_queue_length()
@@ -41,24 +42,16 @@ void writer_null_exit()
 {
 }
 /******************************************************************************/
-void
-writer_null_write(const struct pcap_pkthdr *h, const u_char *UNUSED(sp), uint32_t *fileNum, uint64_t *filePos)
+void writer_null_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
-    *fileNum = 0;
-    *filePos = outputFilePos;
-    outputFilePos += 16 + h->caplen;
-}
-/******************************************************************************/
-char *
-writer_null_name() {
-    return "null";
+    packet->writerFileNum = 0;
+    packet->writerFilePos = outputFilePos;
+    outputFilePos += 16 + packet->pktlen;
 }
 /******************************************************************************/
 void writer_null_init(char *UNUSED(name))
 {
     moloch_writer_queue_length = writer_null_queue_length;
-    moloch_writer_flush        = writer_null_flush;
     moloch_writer_exit         = writer_null_exit;
     moloch_writer_write        = writer_null_write;
-    moloch_writer_name         = writer_null_name;
 }

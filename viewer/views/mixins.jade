@@ -74,11 +74,12 @@ mixin stringList(container, field, title, expr, extra)
         |!{extra}
 
 //- Standard method to print ip, port, geo, asn, and rir info
-mixin ipPrint(ip,port,geo,as,rir,expr, full)
+mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
   span
-    - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
     if (full)
       a.moloch-right-click(href='#', molochexpr=expr) #{ipstr}
+    else if (v6)
+      a.moloch-right-click(href='#', molochexpr='tipv6.#{expr}') #{ipstr}
     else
       a.moloch-right-click(href='#', molochexpr='ip.#{expr}') #{ipstr}
     - if (port)
@@ -109,6 +110,14 @@ mixin ipPrint(ip,port,geo,as,rir,expr, full)
       else
         a.moloch-right-click(href='#', molochexpr='rir.#{expr}') #{rir}
       |}
+
+mixin ipPrint(ip,port,geo,as,rir,expr, full)
+  - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
+  +ipPrintCommon(ipstr, port, geo, as, rir, expr, full, 0)
+
+mixin ipPrint6(ip,port,geo,as,rir,expr, full)
+  - var ipstr = ip.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
+  +ipPrintCommon("[" + ipstr + "]", port, geo, as, rir, expr, full, 1)
 
 //- Method to print ip info with commas when the field names use the old prefix method - shouldn't be used for new fields
 mixin ipArrayListPre(session, field, title, expr, max)

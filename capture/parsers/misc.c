@@ -12,9 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "moloch.h"
 
 extern MolochConfig_t        config;
@@ -24,14 +21,14 @@ static int userField;
 /******************************************************************************/
 void bt_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
-    moloch_nids_add_protocol(session, "bittorrent");
+    moloch_session_add_protocol(session, "bittorrent");
 }
 /******************************************************************************/
 void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
 
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
-        moloch_nids_add_protocol(session, "rdp");
+        moloch_session_add_protocol(session, "rdp");
         if (len > 30 && memcmp(data+11, "Cookie: mstshash=", 17) == 0) {
             char *end = g_strstr_len((char *)data+28, len-28, "\r\n");
             if (end)
@@ -43,13 +40,13 @@ void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, 
 void imap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (moloch_memstr((const char *)data+5, len-5, "IMAP", 4)) {
-        moloch_nids_add_protocol(session, "imap");
+        moloch_session_add_protocol(session, "imap");
     }
 }
 /******************************************************************************/
 void pop3_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
-    moloch_nids_add_protocol(session, "pop3");
+    moloch_session_add_protocol(session, "pop3");
 }
 /******************************************************************************/
 void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
@@ -57,50 +54,50 @@ void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len
     if (data[13] == 0x78 &&  
         (((data[8] == 0) && (data[7] == 0) && (((data[6]&0xff) << (uint32_t)8 | (data[5]&0xff)) == len)) ||  // Windows
          ((data[5] == 0) && (data[6] == 0) && (((data[7]&0xff) << (uint32_t)8 | (data[8]&0xff)) == len)))) { // Mac
-        moloch_nids_add_protocol(session, "gh0st");
+        moloch_session_add_protocol(session, "gh0st");
     }
 
     if (data[7] == 0 && data[8] == 0 && data[11] == 0 && data[12] == 0 && data[13] == 0x78 && data[14] == 0x9c) {
-        moloch_nids_add_protocol(session, "gh0st");
+        moloch_session_add_protocol(session, "gh0st");
     }
 }
 /******************************************************************************/
 void other220_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
-        moloch_nids_add_protocol(session, "lmtp");
+        moloch_session_add_protocol(session, "lmtp");
     }
     else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
-        moloch_nids_add_protocol(session, "ftp");
+        moloch_session_add_protocol(session, "ftp");
     }
 }
 /******************************************************************************/
 void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (len >= 12 && data[7] == '.' && data[11] == 0xa)
-        moloch_nids_add_protocol(session, "vnc");
+        moloch_session_add_protocol(session, "vnc");
 }
 /******************************************************************************/
 void redis_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
-    moloch_nids_add_protocol(session, "redis");
+    moloch_session_add_protocol(session, "redis");
 }
 /******************************************************************************/
 void mongo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (data[12] == 0xd4 && data[13] == 0x07 && g_strstr_len((gchar*)data+20, len-20, ".$cmd") != NULL)
-        moloch_nids_add_protocol(session, "mongo");
+        moloch_session_add_protocol(session, "mongo");
 }
 /******************************************************************************/
 void sip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
-    moloch_nids_add_protocol(session, "sip");
+    moloch_session_add_protocol(session, "sip");
 }
 /******************************************************************************/
 void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
 {
     if (g_strstr_len((gchar*)data+5, len-5, "jabber") != NULL)
-        moloch_nids_add_protocol(session, "jabber");
+        moloch_session_add_protocol(session, "jabber");
 }
 /******************************************************************************/
 void user_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))

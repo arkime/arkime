@@ -15,12 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdarg.h>
 #include "moloch.h"
+#include <stdarg.h>
 #include "patricia.h"
 
 extern patricia_tree_t *ipTree;
@@ -184,7 +180,7 @@ int moloch_field_define_text(char *text, int *shortcut)
 }
 /******************************************************************************/
 /* Changes ... to va_list */
-static void moloch_nids_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
+static void moloch_session_add_field_proxy(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ...)
 {
     va_list args;
     va_start(args, help);
@@ -320,6 +316,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
         g_free(minfo->expression);
         g_free(minfo->dbField);
         g_free(minfo->group);
+        g_free(minfo->kind);
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, minfo);
@@ -344,7 +341,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             sprintf(friendlyName2, "%.*s ASN", fnlen-2, friendlyName);
             sprintf(help2, "GeoIP ASN string calculated from the %s", help);
             sprintf(rawField, "raw%s", dbField2);
-            moloch_nids_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
+            moloch_session_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
         }
 
         sprintf(dbField2, "rir%s", dbField);
@@ -373,7 +370,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             sprintf(friendlyName2, "%s ASN", friendlyName);
             sprintf(rawField, "%s-asn.raw", dbField);
             sprintf(help2, "GeoIP ASN string calculated from the %s", help);
-            moloch_nids_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
+            moloch_session_add_field_proxy(group, "textfield", expression2, friendlyName2, dbField2, help2, "rawField", rawField, NULL);
         }
 
         sprintf(dbField2, "%s-rir", dbField);
@@ -426,6 +423,8 @@ void moloch_field_exit()
             g_free(info->group);
         if (info->kind)
             g_free(info->kind);
+        if (info->category)
+            g_free(info->category);
         MOLOCH_TYPE_FREE(MolochFieldInfo_t, info);
     );
 }

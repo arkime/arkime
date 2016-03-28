@@ -12,9 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "moloch.h"
 
 //#define SMBDEBUG
@@ -127,8 +124,8 @@ void smb_security_blob(MolochSession_t *session, unsigned char *data, int len)
         BSB_IMPORT_skip(bsb, 2);
         BSB_LIMPORT_u32(bsb, offsets[i]);
 
-        if (offsets[i] > BSB_SIZE(bsb) || lens[i] > BSB_SIZE(bsb) || offsets[i] + lens[i] > BSB_SIZE(bsb)) {
-            moloch_nids_add_tag(session, "smb:bad-security-blob");
+        if (BSB_IS_ERROR(bsb) || offsets[i] > BSB_SIZE(bsb) || lens[i] > BSB_SIZE(bsb) || offsets[i] + lens[i] > BSB_SIZE(bsb)) {
+            moloch_session_add_tag(session, "smb:bad-security-blob");
             return;
         }
     }
@@ -152,7 +149,7 @@ void smb1_str_null_split(char *buf, int len, char **out, int max)
     memset(out, 0, max*sizeof(char *));
     out[0] = buf;
     int i, p;
-    for (i = 0, p=1; i < len && p < max; i++) {
+    for (i = 0, p=1; i < len-1 && p < max; i++) {
         if (buf[i] == 0) {
             out[p] = buf + i + 1;
             p++;
@@ -571,10 +568,10 @@ void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSE
     if (data[4] != 0xff && data[4] != 0xfe)
         return;
 
-    if (moloch_nids_has_protocol(session, "smb"))
+    if (moloch_session_has_protocol(session, "smb"))
         return;
 
-    moloch_nids_add_protocol(session, "smb");
+    moloch_session_add_protocol(session, "smb");
 
     SMBInfo_t            *smb          = MOLOCH_TYPE_ALLOC0(SMBInfo_t);
 

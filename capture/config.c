@@ -16,14 +16,9 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <ctype.h>
+#include "moloch.h"
 #include <fcntl.h>
 #include <inttypes.h>
-#include "moloch.h"
 
 extern MolochConfig_t        config;
 
@@ -133,10 +128,14 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
         value = g_key_file_get_integer(keyfile, "default", key, NULL);
     }
 
-    if (value < min)
+    if (value < min) {
+        LOG ("INFO: Reseting %s since %u is less then the min %u", key, value, min);
         value = min;
-    if (value > max)
+    }
+    if (value > max) {
+        LOG ("INFO: Reseting %s since %u is greater then the max %u", key, value, max);
         value = max;
+    }
 
     return value;
 }
@@ -299,6 +298,7 @@ void moloch_config_load()
     }
 
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);
+    config.rootPlugins      = moloch_config_str_list(keyfile, "rootPlugins", NULL);
     config.smtpIpHeaders    = moloch_config_str_list(keyfile, "smtpIpHeaders", NULL);
 
     if (config.smtpIpHeaders) {
@@ -324,7 +324,7 @@ void moloch_config_load()
     }
 
     config.elasticsearch    = moloch_config_str(keyfile, "elasticsearch", "localhost:9200");
-    config.interface        = moloch_config_str(keyfile, "interface", NULL);
+    config.interface        = moloch_config_str_list(keyfile, "interface", NULL);
     config.pcapDir          = moloch_config_str_list(keyfile, "pcapDir", NULL);
     config.bpf              = moloch_config_str(keyfile, "bpf", NULL);
     config.yara             = moloch_config_str(keyfile, "yara", NULL);
@@ -332,6 +332,8 @@ void moloch_config_load()
     config.geoipFile        = moloch_config_str(keyfile, "geoipFile", NULL);
     config.rirFile          = moloch_config_str(keyfile, "rirFile", NULL);
     config.geoipASNFile     = moloch_config_str(keyfile, "geoipASNFile", NULL);
+    config.geoip6File       = moloch_config_str(keyfile, "geoip6File", NULL);
+    config.geoipASN6File    = moloch_config_str(keyfile, "geoipASN6File", NULL);
     config.dropUser         = moloch_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = moloch_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = moloch_config_str_list(keyfile, "pluginsDir", NULL);
@@ -343,28 +345,30 @@ void moloch_config_load()
         printf("Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
         exit(1);
     }
+    g_free(offlineRegex);
 
     config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 4, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
     config.maxFileTimeM          = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
-    config.icmpTimeout           = moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
-    config.udpTimeout            = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
-    config.tcpTimeout            = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
+    config.timeouts[SESSION_ICMP]= moloch_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
+    config.timeouts[SESSION_UDP] = moloch_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
+    config.timeouts[SESSION_TCP] = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
     config.tcpSaveTimeout        = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
     config.maxStreams            = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
-    config.minFreeSpaceG         = moloch_config_int(keyfile, "freeSpaceG", 100, 1, 100000);
+    config.maxPacketsInQueue     = moloch_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
     config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
     config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);
     config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 5, 1000);
     config.maxESRequests         = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
     config.logEveryXPackets      = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 1000000);
-    config.packetsPerPoll        = moloch_config_int(keyfile, "packetsPerPoll", 50000, 1000, 1000000);
     config.pcapBufferSize        = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x40000, 0x800000);
+    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x10000, 0x40000, 0x800000);
     config.maxFreeOutputBuffers  = moloch_config_int(keyfile, "maxFreeOutputBuffers", 50, 0, 0xffff);
+    config.fragsTimeout          = moloch_config_int(keyfile, "fragsTimeout", 60*8, 60, 0xffff);
+    config.maxFrags              = moloch_config_int(keyfile, "maxFrags", 50000, 1000, 0xffffff);
 
-    config.magicThreads          = moloch_config_int(keyfile, "magicThreads", 0, 0, 16);
+    config.packetThreads         = moloch_config_int(keyfile, "packetThreads", 1, 1, MOLOCH_MAX_PACKET_THREADS);
 
 
     config.logUnknownProtocols   = moloch_config_boolean(keyfile, "logUnknownProtocols", config.debug);
@@ -566,7 +570,11 @@ void moloch_config_init()
         LOG("nodeClass: %s", config.nodeClass);
         LOG("elasticsearch: %s", config.elasticsearch);
         LOG("prefix: %s", config.prefix);
-        LOG("interface: %s", config.interface);
+        if (config.interface) {
+            str = g_strjoinv(";", config.interface);
+            LOG("pcapDir: %s", str);
+            g_free(str);
+        }
         if (config.pcapDir) {
             str = g_strjoinv(";", config.pcapDir);
             LOG("pcapDir: %s", str);
@@ -576,6 +584,8 @@ void moloch_config_init()
         LOG("yara: %s", config.yara);
         LOG("geoipFile: %s", config.geoipFile);
         LOG("geoipASNFile: %s", config.geoipASNFile);
+        LOG("geoip6File: %s", config.geoip6File);
+        LOG("geoipASN6File: %s", config.geoipASN6File);
         LOG("rirFile: %s", config.rirFile);
         LOG("dropUser: %s", config.dropUser);
         LOG("dropGroup: %s", config.dropGroup);
@@ -598,6 +608,12 @@ void moloch_config_init()
             g_free(str);
         }
 
+        if (config.rootPlugins) {
+            str = g_strjoinv(";", config.rootPlugins);
+            LOG("rootPlugins: %s", str);
+            g_free(str);
+        }
+
         if (config.parsersDir) {
             str = g_strjoinv(";", config.parsersDir);
             LOG("parsersDir: %s", str);
@@ -607,24 +623,25 @@ void moloch_config_init()
         LOG("maxFileSizeG: %lf", config.maxFileSizeG);
         LOG("maxFileSizeB: %" PRIu64, config.maxFileSizeB);
         LOG("maxFileTimeM: %u", config.maxFileTimeM);
-        LOG("icmpTimeout: %u", config.icmpTimeout);
-        LOG("udpTimeout: %u", config.udpTimeout);
-        LOG("tcpTimeout: %u", config.tcpTimeout);
+        LOG("icmpTimeout: %u", config.timeouts[SESSION_ICMP]);
+        LOG("udpTimeout: %u", config.timeouts[SESSION_UDP]);
+        LOG("tcpTimeout: %u", config.timeouts[SESSION_TCP]);
         LOG("tcpSaveTimeout: %u", config.tcpSaveTimeout);
         LOG("maxStreams: %u", config.maxStreams);
         LOG("maxPackets: %u", config.maxPackets);
-        LOG("minFreeSpaceG: %u", config.minFreeSpaceG);
+        LOG("maxPacketsInQueue: %u", config.maxPacketsInQueue);
         LOG("dbBulkSize: %u", config.dbBulkSize);
         LOG("dbFlushTimeout: %u", config.dbFlushTimeout);
         LOG("maxESConns: %u", config.maxESConns);
         LOG("maxESRequests: %u", config.maxESRequests);
         LOG("logEveryXPackets: %u", config.logEveryXPackets);
-        LOG("packetsPerPoll: %u", config.packetsPerPoll);
         LOG("pcapBufferSize: %u", config.pcapBufferSize);
         LOG("pcapWriteSize: %u", config.pcapWriteSize);
         LOG("maxFreeOutputBuffers: %u", config.maxFreeOutputBuffers);
+        LOG("fragsTimeout: %u", config.fragsTimeout);
+        LOG("maxFrags: %u", config.maxFrags);
 
-        LOG("magicThreads: %d", config.magicThreads);
+        LOG("packetThreads: %d", config.packetThreads);
 
         LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
         LOG("logESRequests: %s", (config.logESRequests?"true":"false"));
@@ -666,7 +683,7 @@ void moloch_config_exit()
     if (config.nodeClass)
         g_free(config.nodeClass);
     if (config.interface)
-        g_free(config.interface);
+        g_strfreev(config.interface);
     if (config.elasticsearch)
         g_free(config.elasticsearch);
     if (config.bpf)
@@ -683,6 +700,8 @@ void moloch_config_exit()
         g_strfreev(config.parsersDir);
     if (config.plugins)
         g_strfreev(config.plugins);
+    if (config.rootPlugins)
+        g_strfreev(config.rootPlugins);
     if (config.smtpIpHeaders)
         g_strfreev(config.smtpIpHeaders);
 }

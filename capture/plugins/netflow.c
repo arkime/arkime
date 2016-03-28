@@ -30,7 +30,6 @@
 #include <errno.h>
 #include "moloch.h"
 #include "bsb.h"
-#include "nids.h"
 
 extern struct timeval initialPacket;
 
@@ -41,48 +40,48 @@ typedef struct {
     uint32_t            seq;
 } NetflowDest_t;
 
-static int           netflowVersion;
-static int           netflowSNMPInput = 0;
-static int           netflowSNMPOutput = 0;
-static int           numDests = 0;
-static NetflowDest_t dests[100];
-static int           headerSize;
+LOCAL int           netflowVersion;
+LOCAL int           netflowSNMPInput = 0;
+LOCAL int           netflowSNMPOutput = 0;
+LOCAL int           numDests = 0;
+LOCAL NetflowDest_t dests[100];
+LOCAL int           headerSize;
 
 /******************************************************************************/
 
 extern MolochConfig_t        config;
 
-struct timeval        lastTime;
-static char           buf[1500];
-static BSB            bsb;
-static int            bufCount = -1;
-static uint32_t       totalFlows = 0;
+LOCAL struct timeval lastTime[MOLOCH_MAX_PACKET_THREADS];
+LOCAL char           buf[MOLOCH_MAX_PACKET_THREADS][1500];
+LOCAL BSB            bsb[MOLOCH_MAX_PACKET_THREADS];
+LOCAL int            bufCount[MOLOCH_MAX_PACKET_THREADS];
+LOCAL uint32_t       totalFlows[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
-void netflow_send()
+void netflow_send(const int thread)
 {
     BSB hbsb;
 
-    BSB_INIT(hbsb, buf, headerSize);
+    BSB_INIT(hbsb, buf[thread], headerSize);
 
-    uint32_t sys_uptime = (lastTime.tv_sec - initialPacket.tv_sec)*1000 + (lastTime.tv_usec - initialPacket.tv_usec)/1000;
+    uint32_t sys_uptime = (lastTime[thread].tv_sec - initialPacket.tv_sec)*1000 + (lastTime[thread].tv_usec - initialPacket.tv_usec)/1000;
 
     /* Header */
     BSB_EXPORT_u16(hbsb, netflowVersion);
-    BSB_EXPORT_u16(hbsb, bufCount); // count
+    BSB_EXPORT_u16(hbsb, bufCount[thread]); // count
     BSB_EXPORT_u32(hbsb, sys_uptime); // sys_uptime
-    BSB_EXPORT_u32(hbsb, lastTime.tv_sec);
-    BSB_EXPORT_u32(hbsb, lastTime.tv_usec*1000);
+    BSB_EXPORT_u32(hbsb, lastTime[thread].tv_sec);
+    BSB_EXPORT_u32(hbsb, lastTime[thread].tv_usec*1000);
 
     switch (netflowVersion) {
     case 5:
-        BSB_EXPORT_u32(hbsb, totalFlows); // flow_sequence
+        BSB_EXPORT_u32(hbsb, totalFlows[thread]); // flow_sequence
         BSB_EXPORT_u08(hbsb, 0); // engine_type
         BSB_EXPORT_u08(hbsb, 0); // engine_id
         BSB_EXPORT_u16(hbsb, 0); // mode/interval
         break;
     case 7:
-        BSB_EXPORT_u32(hbsb, totalFlows); // flow_sequence
+        BSB_EXPORT_u32(hbsb, totalFlows[thread]); // flow_sequence
         BSB_EXPORT_u32(hbsb, 0); // reserved
         break;
     }
@@ -91,14 +90,14 @@ void netflow_send()
     for (i = 0; i < numDests; i++) {
         int rc;
         
-        if ((rc = send(dests[i].fd, buf, BSB_LENGTH(bsb)+headerSize, 0)) < BSB_LENGTH(bsb)+headerSize) {
-            LOG("Failed to send rc=%d size=%ld error=%s", rc, BSB_LENGTH(bsb)+headerSize, strerror(errno));
+        if ((rc = send(dests[i].fd, buf, BSB_LENGTH(bsb[thread])+headerSize, 0)) < BSB_LENGTH(bsb[thread])+headerSize) {
+            LOG("Failed to send rc=%d size=%ld error=%s", rc, BSB_LENGTH(bsb[thread])+headerSize, strerror(errno));
         }
     }
 
-    totalFlows += bufCount;
-    BSB_INIT(bsb, buf + headerSize, sizeof(buf) - headerSize);
-    bufCount = 0;
+    totalFlows[thread] += bufCount[thread];
+    BSB_INIT(bsb[thread], buf[thread] + headerSize, sizeof(buf[thread]) - headerSize);
+    bufCount[thread] = 0;
 }
 /******************************************************************************/
 /* 
@@ -107,116 +106,117 @@ void netflow_send()
 void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
     static char zero[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    const int thread = session->thread;
 
-    if (bufCount == -1) {
-        bufCount = 0;
-        BSB_INIT(bsb, buf + headerSize, sizeof(buf) - headerSize);
-    } else if (bufCount > 20) {
-        netflow_send();
+    if (bufCount[thread] == -1) {
+        bufCount[thread] = 0;
+        BSB_INIT(bsb[thread], buf[thread] + headerSize, sizeof(buf[thread]) - headerSize);
+    } else if (bufCount[thread] > 20) {
+        netflow_send(thread);
     }
 
-    if ((lastTime.tv_sec < session->lastPacket.tv_sec) || (lastTime.tv_sec == session->lastPacket.tv_sec && lastTime.tv_usec < session->lastPacket.tv_usec)) {
-        lastTime = session->lastPacket;
+    if ((lastTime[thread].tv_sec < session->lastPacket.tv_sec) || (lastTime[thread].tv_sec == session->lastPacket.tv_sec && lastTime[thread].tv_usec < session->lastPacket.tv_usec)) {
+        lastTime[thread] = session->lastPacket;
     }
     uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->firstPacket.tv_usec - initialPacket.tv_usec)/1000;
     uint32_t last  = (session->lastPacket.tv_sec - initialPacket.tv_sec)*1000 + (session->lastPacket.tv_usec - initialPacket.tv_usec)/1000;
 
     if (session->packets[0]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb, &session->addr1, 4);
-        BSB_EXPORT_ptr(bsb, &session->addr2, 4);
-        BSB_EXPORT_u32(bsb, 0); // nexthop
-        BSB_EXPORT_u16(bsb, netflowSNMPInput); // snmp input
-        BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
-        BSB_EXPORT_u32(bsb, session->packets[0]);
-        BSB_EXPORT_u32(bsb, session->bytes[0]);
-        BSB_EXPORT_u32(bsb, first);
-        BSB_EXPORT_u32(bsb, last);
-        BSB_EXPORT_u16(bsb, session->port1);
-        BSB_EXPORT_u16(bsb, session->port2);
+        BSB_EXPORT_ptr(bsb[thread], &session->addr1, 4);
+        BSB_EXPORT_ptr(bsb[thread], &session->addr2, 4);
+        BSB_EXPORT_u32(bsb[thread], 0); // nexthop
+        BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
+        BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
+        BSB_EXPORT_u32(bsb[thread], session->packets[0]);
+        BSB_EXPORT_u32(bsb[thread], session->bytes[0]);
+        BSB_EXPORT_u32(bsb[thread], first);
+        BSB_EXPORT_u32(bsb[thread], last);
+        BSB_EXPORT_u16(bsb[thread], session->port1);
+        BSB_EXPORT_u16(bsb[thread], session->port2);
 
         switch (netflowVersion) {
         case 1:
-            BSB_EXPORT_u08(bsb, 0); // pad
-            BSB_EXPORT_u08(bsb, session->protocol);
-            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
-            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
-            BSB_EXPORT_ptr(bsb, zero, 8); //pad
+            BSB_EXPORT_u08(bsb[thread], 0); // pad
+            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
+            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
+            BSB_EXPORT_ptr(bsb[thread], zero, 8); //pad
             break;
         case 5:
-            BSB_EXPORT_u08(bsb, 0); // pad
-            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
-            BSB_EXPORT_u08(bsb, session->protocol);
-            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
-            BSB_EXPORT_u16(bsb, 0); // src as
-            BSB_EXPORT_u16(bsb, 0); // dst as
-            BSB_EXPORT_u08(bsb, 0); // src_mask
-            BSB_EXPORT_u08(bsb, 0); // dst_mask
-            BSB_EXPORT_ptr(bsb, zero, 2); //pad
+            BSB_EXPORT_u08(bsb[thread], 0); // pad
+            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
+            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
+            BSB_EXPORT_u16(bsb[thread], 0); // src as
+            BSB_EXPORT_u16(bsb[thread], 0); // dst as
+            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
+            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
+            BSB_EXPORT_ptr(bsb[thread], zero, 2); //pad
             break;
         case 7:
-            BSB_EXPORT_u08(bsb, 0); // pad
-            BSB_EXPORT_u08(bsb, session->tcp_flags);
-            BSB_EXPORT_u08(bsb, session->protocol);
-            BSB_EXPORT_u08(bsb, session->ip_tos);
-            BSB_EXPORT_u16(bsb, 0); // src as
-            BSB_EXPORT_u16(bsb, 0); // dst as
-            BSB_EXPORT_u08(bsb, 0); // src_mask
-            BSB_EXPORT_u08(bsb, 0); // dst_mask
-            BSB_EXPORT_u16(bsb, 0); // flags
-            BSB_EXPORT_u32(bsb, 0); // router_sc
+            BSB_EXPORT_u08(bsb[thread], 0); // pad
+            BSB_EXPORT_u08(bsb[thread], session->tcp_flags);
+            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ip_tos);
+            BSB_EXPORT_u16(bsb[thread], 0); // src as
+            BSB_EXPORT_u16(bsb[thread], 0); // dst as
+            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
+            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
+            BSB_EXPORT_u16(bsb[thread], 0); // flags
+            BSB_EXPORT_u32(bsb[thread], 0); // router_sc
             break;
         }
-        bufCount++;
+        bufCount[thread]++;
     }
 
     if (session->packets[1]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb, &session->addr2, 4);
-        BSB_EXPORT_ptr(bsb, &session->addr1, 4);
-        BSB_EXPORT_u32(bsb, 0); // nexthop
-        BSB_EXPORT_u16(bsb, netflowSNMPInput); // snmp input
-        BSB_EXPORT_u16(bsb, netflowSNMPOutput); // snmp output
-        BSB_EXPORT_u32(bsb, session->packets[1]);
-        BSB_EXPORT_u32(bsb, session->bytes[1]);
-        BSB_EXPORT_u32(bsb, first);
-        BSB_EXPORT_u32(bsb, last);
-        BSB_EXPORT_u16(bsb, session->port2);
-        BSB_EXPORT_u16(bsb, session->port1);
+        BSB_EXPORT_ptr(bsb[thread], &session->addr2, 4);
+        BSB_EXPORT_ptr(bsb[thread], &session->addr1, 4);
+        BSB_EXPORT_u32(bsb[thread], 0); // nexthop
+        BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
+        BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
+        BSB_EXPORT_u32(bsb[thread], session->packets[1]);
+        BSB_EXPORT_u32(bsb[thread], session->bytes[1]);
+        BSB_EXPORT_u32(bsb[thread], first);
+        BSB_EXPORT_u32(bsb[thread], last);
+        BSB_EXPORT_u16(bsb[thread], session->port2);
+        BSB_EXPORT_u16(bsb[thread], session->port1);
 
         switch (netflowVersion) {
         case 1:
-            BSB_EXPORT_u08(bsb, 0); // pad
-            BSB_EXPORT_u08(bsb, session->protocol);
-            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
-            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
-            BSB_EXPORT_ptr(bsb, zero, 8); //pad
+            BSB_EXPORT_u08(bsb[thread], 0); // pad
+            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
+            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
+            BSB_EXPORT_ptr(bsb[thread], zero, 8); //pad
             break;
         case 5:
-            BSB_EXPORT_u08(bsb, 0); // pad
-            BSB_EXPORT_u08(bsb, session->tcp_flags); // tcp_flags
-            BSB_EXPORT_u08(bsb, session->protocol);
-            BSB_EXPORT_u08(bsb, session->ip_tos); // tos
-            BSB_EXPORT_u16(bsb, 0); // src as
-            BSB_EXPORT_u16(bsb, 0); // dst as
-            BSB_EXPORT_u08(bsb, 0); // src_mask
-            BSB_EXPORT_u08(bsb, 0); // dst_mask
-            BSB_EXPORT_ptr(bsb, zero, 2); //pad
+            BSB_EXPORT_u08(bsb[thread], 0); // pad
+            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
+            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
+            BSB_EXPORT_u16(bsb[thread], 0); // src as
+            BSB_EXPORT_u16(bsb[thread], 0); // dst as
+            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
+            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
+            BSB_EXPORT_ptr(bsb[thread], zero, 2); //pad
             break;
         case 7:
-            BSB_EXPORT_u08(bsb, 0); // pad
-            BSB_EXPORT_u08(bsb, session->tcp_flags);
-            BSB_EXPORT_u08(bsb, session->protocol);
-            BSB_EXPORT_u08(bsb, session->ip_tos);
-            BSB_EXPORT_u16(bsb, 0); // src as
-            BSB_EXPORT_u16(bsb, 0); // dst as
-            BSB_EXPORT_u08(bsb, 0); // src_mask
-            BSB_EXPORT_u08(bsb, 0); // dst_mask
-            BSB_EXPORT_u16(bsb, 0); // flags
-            BSB_EXPORT_u32(bsb, 0); // router_sc
+            BSB_EXPORT_u08(bsb[thread], 0); // pad
+            BSB_EXPORT_u08(bsb[thread], session->tcp_flags);
+            BSB_EXPORT_u08(bsb[thread], session->protocol);
+            BSB_EXPORT_u08(bsb[thread], session->ip_tos);
+            BSB_EXPORT_u16(bsb[thread], 0); // src as
+            BSB_EXPORT_u16(bsb[thread], 0); // dst as
+            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
+            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
+            BSB_EXPORT_u16(bsb[thread], 0); // flags
+            BSB_EXPORT_u32(bsb[thread], 0); // router_sc
             break;
         }
-        bufCount++;
+        bufCount[thread]++;
     }
 }
 
@@ -226,7 +226,10 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
  */
 void netflow_plugin_exit()
 {
-    netflow_send();
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        netflow_send(thread);
+    }
 }
 
 /******************************************************************************/
@@ -303,4 +306,9 @@ void moloch_plugin_init()
         freeaddrinfo(res);
     }
     g_strfreev(dsts);
+
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        bufCount[thread] = -1;
+    }
 }

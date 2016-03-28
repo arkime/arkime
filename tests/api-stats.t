@@ -19,8 +19,12 @@ my $pwd = getcwd() . "/pcap";
         is ($stats->{data}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
-    foreach my $i ("deltaMS", "totalPackets", "deltaSessions", "deltaPackets", "deltaBytes", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM", "deltaSessionsPerSec", "deltaBytesPerSec", "deltaPacketsPerSec") {
+    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM") {
         cmp_ok ($stats->{data}->[0]->{$i}, '>', 0, "stats.json $i > 0");
+    }
+
+    foreach my $i ("deltaPackets", "deltaBytes", "deltaBytesPerSec", "deltaPacketsPerSec", "deltaSessions", "deltaSessionsPerSec") {
+        is (exists $stats->{data}->[0]->{$i}, 1, "stats.json $i");
     }
 
 # dstats.json

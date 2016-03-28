@@ -17,20 +17,19 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/stat.h>
 #include "moloch.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <pthread.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 extern MolochConfig_t        config;
 
 
-static char                 *outputFileName;
-static uint32_t              outputId;
-static FILE                 *inputFile;
-static char                  inputFilename[PATH_MAX+1];
+LOCAL GHashTable           *filePtr2Id;
+MOLOCH_LOCK_DEFINE(filePtr2Id);
 
 /******************************************************************************/
 uint32_t writer_inplace_queue_length()
@@ -46,52 +45,45 @@ void writer_inplace_exit()
 {
 }
 /******************************************************************************/
-void writer_inplace_create(char *filename)
+long writer_inplace_create(MolochPacket_t * const packet)
 {
-    if (config.dryRun) {
-        outputFileName = "dryrun.pcap";
-        return;
-    }
-
     struct stat st;
 
-    fstat(fileno(inputFile), &st);
+    stat(packet->readerName, &st);
 
-    outputFileName = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, st.st_size, 1, &outputId);
+    uint32_t outputId;
+    char *filename = moloch_db_create_file(packet->ts.tv_sec, packet->readerName, st.st_size, 1, &outputId);
+    g_free(filename);
+    g_hash_table_insert(filePtr2Id, packet->readerName, (gpointer)(long)outputId);
+    return outputId;
 }
 
 /******************************************************************************/
-void
-writer_inplace_write(const struct pcap_pkthdr *h, const u_char *UNUSED(sp), uint32_t *fileNum, uint64_t *filePos)
+void writer_inplace_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
-    if (!outputFileName)
-        writer_inplace_create(inputFilename);
+    MOLOCH_LOCK(filePtr2Id);
+    long outputId = (long)g_hash_table_lookup(filePtr2Id, packet->readerName);
+    if (!outputId)
+        outputId = writer_inplace_create(packet);
+    MOLOCH_UNLOCK(filePtr2Id);
 
-    *fileNum = outputId;
-    *filePos = ftell(inputFile) - 16 - h->caplen;
+    packet->writerFileNum = outputId;
+    packet->writerFilePos = packet->readerFilePos;
 }
 /******************************************************************************/
-char *
-writer_inplace_name() {
-    return inputFilename;
-}
-/******************************************************************************/
-void
-writer_inplace_next_input(FILE *file, char *filename) {
-    inputFile = file;
-    strcpy(inputFilename, filename);
-    if (!config.dryRun) {
-        g_free(outputFileName);
-    }
-    outputFileName = 0;
+void writer_inplace_write_dryrun(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
+{
+    packet->writerFilePos = packet->readerFilePos;
 }
 /******************************************************************************/
 void writer_inplace_init(char *UNUSED(name))
 {
     moloch_writer_queue_length = writer_inplace_queue_length;
-    moloch_writer_flush        = writer_inplace_flush;
     moloch_writer_exit         = writer_inplace_exit;
-    moloch_writer_write        = writer_inplace_write;
-    moloch_writer_next_input   = writer_inplace_next_input;
-    moloch_writer_name         = writer_inplace_name;
+    if (config.dryRun)
+        moloch_writer_write    = writer_inplace_write_dryrun;
+    else
+        moloch_writer_write    = writer_inplace_write;
+
+    filePtr2Id = g_hash_table_new(g_direct_hash, g_direct_equal);
 }

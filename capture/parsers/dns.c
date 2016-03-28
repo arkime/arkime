@@ -12,8 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
-#include <ctype.h>
 #include "moloch.h"
 
 static char                 *qclasses[256];
@@ -57,15 +55,14 @@ int dns_name_element(BSB *nbsb, BSB *bsb)
     return 0;
 }
 /******************************************************************************/
-unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, int *namelen)
+unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsigned char *name, int *namelen)
 {
-    static unsigned char  name[8000];
     BSB  nbsb;
     int  didPointer = 0;
     BSB  tmpbsb;
     BSB *curbsb;
 
-    BSB_INIT(nbsb, name, sizeof(name));
+    BSB_INIT(nbsb, name, *namelen);
 
     curbsb = inbsb;
 
@@ -127,8 +124,9 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
     /* QD Section */
     int i;
     for (i = 0; BSB_NOT_ERROR(bsb) && i < qdcount; i++) {
-        int namelen;
-        unsigned char *name = dns_name(data, len, &bsb, &namelen);
+        unsigned char  namebuf[8000];
+        int namelen = sizeof(namebuf);
+        unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
         if (BSB_IS_ERROR(bsb) || !name)
             break;
@@ -156,7 +154,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             g_free(lower);
         }
     }
-    moloch_nids_add_protocol(session, "dns");
+    moloch_session_add_protocol(session, "dns");
 
     if (qr == 0)
         return;
@@ -165,8 +163,9 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
     moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
 
     for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
-        int namelen;
-        unsigned char *name = dns_name(data, len, &bsb, &namelen);
+        unsigned char  namebuf[8000];
+        int namelen = sizeof(namebuf);
+        unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
         if (BSB_IS_ERROR(bsb) || !name)
             break;
@@ -203,8 +202,8 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             BSB rdbsb;
             BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
-            int namelen;
-            unsigned char *name = dns_name(data, len, &rdbsb, &namelen);
+            namelen = sizeof(namebuf);
+            unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
@@ -221,8 +220,8 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
             BSB_IMPORT_skip(rdbsb, 2); // preference
 
-            int namelen;
-            unsigned char *name = dns_name(data, len, &rdbsb, &namelen);
+            namelen = sizeof(namebuf);
+            unsigned char *name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
             if (!namelen || BSB_IS_ERROR(rdbsb) || !name)
                 continue;
@@ -250,8 +249,8 @@ int dns_tcp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned ch
 /******************************************************************************/
 void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which)
 {
-    if (which == 0 && session->port2 == 53 && !moloch_nids_has_protocol(session, "dns")) {
-        moloch_nids_add_protocol(session, "dns");
+    if (which == 0 && session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
+        moloch_session_add_protocol(session, "dns");
         moloch_parsers_register(session, dns_tcp_parser, 0, 0);
     }
 }
@@ -267,7 +266,7 @@ void moloch_parser_init()
     ipField = moloch_field_define("dns", "ip",
         "ip.dns", "IP",  "dnsip", 
         "IP from DNS result", 
-        MOLOCH_FIELD_TYPE_IP_HASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE, 
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE, 
         "aliases", "[\"dns.ip\"]", 
         "category", "ip", 
         NULL);

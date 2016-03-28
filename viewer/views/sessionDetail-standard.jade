@@ -73,9 +73,15 @@ dl.sessionDetailMeta
         +arrayPrint(session, "vlan", "vlan")
   dt Src IP/Port
   dd
-    +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
+    if (session['tipv61-term'])
+      +ipPrint6(session['tipv61-term'], session.p1, session.g1, session.as1, session.rir1, "src")
+    else
+      +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
     |  Dst IP/Port: 
-    +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
+    if (session['tipv62-term'])
+      +ipPrint6(session['tipv62-term'], session.p2, session.g2, session.as2, session.rir2, "dst")
+    else
+      +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
   if (session.fb1 || session.fb2)
     dt Payload8
     dd 

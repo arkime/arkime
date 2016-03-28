@@ -71,6 +71,7 @@ static int                    inprogress;
 
 void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, int len, gboolean reduce, MolochHttpResponse_cb cb, gpointer uw);
 
+static MOLOCH_LOCK_DEFINE(output);
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
 {
@@ -371,7 +372,7 @@ void writer_s3_flush(gboolean all)
         currentFile->doClose = TRUE;
         currentFile = NULL;
     } else {
-        outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + 8192);
+        outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
         outputPos = 0;
     }
 }
@@ -381,11 +382,11 @@ void writer_s3_exit()
     writer_s3_flush(TRUE);
 }
 /******************************************************************************/
-extern struct pcap_file_header pcapFileHeader;
-void writer_s3_create(const struct pcap_pkthdr *h)
+extern MolochPcapFileHdr_t pcapFileHeader;
+void writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];
-    struct tm         *tmp = localtime(&h->ts.tv_sec);
+    struct tm         *tmp = localtime(&packet->ts.tv_sec);
     int                offset = 0;
 
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap", s3Region, s3Bucket, config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
@@ -396,11 +397,11 @@ void writer_s3_create(const struct pcap_pkthdr *h)
     DLL_INIT(os3_, &currentFile->outputQ);
     DLL_PUSH_TAIL(fs3_, &fileQ, currentFile);
 
-    currentFile->outputFileName = moloch_db_create_file(nids_last_pcap_header->ts.tv_sec, filename, 0, 0, &outputId);
+    currentFile->outputFileName = moloch_db_create_file(packet->ts.tv_sec, filename, 0, 0, &outputId);
     currentFile->outputPath = currentFile->outputFileName + offset;
     outputFilePos = 24;
 
-    outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + 8192);
+    outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
     outputPos = 24;
     memcpy(outputBuffer, &pcapFileHeader, 24);
 
@@ -421,52 +422,45 @@ struct pcap_sf_pkthdr {
     uint32_t len;		/* length this packet (off wire) */
 };
 void
-writer_s3_write(const struct pcap_pkthdr *h, const u_char *sp, uint32_t *fileNum, uint64_t *filePos)
+writer_s3_write(const MolochSession_t *const UNUSED(session), MolochPacket_t * const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
-    hdr.ts.tv_sec  = h->ts.tv_sec;
-    hdr.ts.tv_usec = h->ts.tv_usec;
-    hdr.caplen     = h->caplen;
-    hdr.len        = h->len;
+    hdr.ts.tv_sec  = packet->ts.tv_sec;
+    hdr.ts.tv_usec = packet->ts.tv_usec;
+    hdr.caplen     = packet->pktlen;
+    hdr.len        = packet->pktlen;
 
+    MOLOCH_LOCK(output);
     if (!currentFile) {
-        writer_s3_create(h);
+        writer_s3_create(packet);
     }
 
     memcpy(outputBuffer + outputPos, (char *)&hdr, sizeof(hdr));
     outputPos += sizeof(hdr);
 
-    memcpy(outputBuffer + outputPos, sp, h->caplen);
-    outputPos += h->caplen;
+    memcpy(outputBuffer + outputPos, packet->pkt, packet->pktlen);
+    outputPos += packet->pktlen;
 
     if(outputPos > config.pcapWriteSize) {
         writer_s3_flush(FALSE);
     }
 
-    *fileNum = outputId;
-    *filePos = outputFilePos;
-    outputFilePos += 16 + h->caplen;
+    packet->writerFileNum = outputId;
+    packet->writerFilePos = outputFilePos;
+    outputFilePos += 16 + packet->pktlen;
 
     if (outputFilePos >= config.maxFileSizeB) {
         writer_s3_flush(TRUE);
     }
-}
-/******************************************************************************/
-char *
-writer_s3_name() {
-    if (currentFile)
-        return currentFile->outputFileName;
-    return "s3-unknown";
+    MOLOCH_LOCK(output);
 }
 /******************************************************************************/
 void writer_s3_init(char *UNUSED(name))
 {
     moloch_writer_queue_length = writer_s3_queue_length;
-    moloch_writer_flush        = writer_s3_flush;
     moloch_writer_exit         = writer_s3_exit;
     moloch_writer_write        = writer_s3_write;
-    moloch_writer_name         = writer_s3_name;
 
     s3Region              = moloch_config_str(NULL, "s3Region", "us-east-1");
     s3Bucket              = moloch_config_str(NULL, "s3Bucket", NULL);

@@ -12,9 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "moloch.h"
 
 typedef struct {
@@ -51,7 +48,7 @@ int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, 
         ptr++;
     }
 
-    moloch_nids_add_protocol(session, "mysql");
+    moloch_session_add_protocol(session, "mysql");
     moloch_field_string_add(versionField, session, info->version, info->versionLen, FALSE);
     info->version = 0;
 
@@ -76,7 +73,7 @@ void mysql_classify(MolochSession_t *session, const unsigned char *data, int len
     if (which != 1)
         return;
 
-    if (moloch_nids_has_protocol(session, "mysql"))
+    if (moloch_session_has_protocol(session, "mysql"))
         return;
 
     unsigned char *ptr = (unsigned char*)data + 5;

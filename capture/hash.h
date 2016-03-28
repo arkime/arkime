@@ -48,6 +48,30 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
        } \
      } while (0)
 
+// Allocated buckets
+#define HASHP_VAR(name, varname, elementtype) \
+   struct \
+   { \
+       HASH_KEY_FUNC hash; \
+       HASH_CMP_FUNC cmp; \
+       int size; \
+       int count; \
+       elementtype *buckets; \
+   } varname
+
+#define HASHP_INIT(name, varname, sz, hashfunc, cmpfunc) \
+  do { \
+       int i; \
+       (varname).size = sz; \
+       (varname).hash = hashfunc; \
+       (varname).cmp = cmpfunc; \
+       (varname).count = 0; \
+       (varname).buckets = malloc(sz * sizeof((varname).buckets[0])); \
+       for (i = 0; i < (varname).size; i++) { \
+           DLL_INIT(name, &((varname).buckets[i])); \
+       } \
+     } while (0)
+
 #define HASH_HASH(varname, key) (varname).hash(key)
 
 

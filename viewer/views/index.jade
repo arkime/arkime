@@ -19,7 +19,7 @@ block content
       option(value="lpHisto") sessions
       option(value="paHisto") packets
       option(value="dbHisto") databytes
-  table#sessions(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
+  table#sessions.hidden(cellpadding="0",cellspacing="0",border="0",class="display",style="table { clear: both }")
     thead
       tr
         th
@@ -186,21 +186,16 @@ block content
         "no":150
       };
 
-      var visibleColumns = ["plusminus", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "bytes", "no", "info"];
-      if(molochSettings.visibleColumns){
-        visibleColumns = ["plusminus", "fp", "lp"].concat(molochSettings.visibleColumns);
-      }
-
-      function visibleColumn(name) {
-        return visibleColumns.indexOf(name)>=0;
-      }
-
-      sessionsTable = $('#sessions').DataTable( {
+      sessionsTable = $('#sessions')
+      .on ("preInit.dt", function (e) {
+        loadTableState($(e.target).DataTable(), ["", "Start", "Stop", "Src IP", "Src Port", "Dst IP", "Dst Port", "Packets", "Bytes", "Node", "Info"]);
+      })
+      .DataTable( {
         language: {
           processing: "<img src=\"watching.gif\"><div class='blink'>I'm Hootin' :D</div>",
           lengthMenu: "_MENU_"
         },
-        dom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"lipr>t',
+        dom: '<"fg-toolbar ui-widget-header ui-helper-clearfix"liprB>t',
         pageLength: initialDisplayLength,
         lengthMenu: [100, 500, 1000, 5000],
         processing: true,
@@ -210,6 +205,24 @@ block content
         scrollCollapse: true,
         autoWidth: false,
         paginationType: "full_numbers",
+        colReorder: {
+          fixedColumnsLeft: 2
+        },
+        buttons: {
+          dom: {
+            container: {
+              className: 'dataTables_paginate paging_full_numbers'
+            }
+          }, 
+          buttons: [
+            {
+              className: 'paginate_button',
+              extend: 'colvis',
+              columns: ':gt(1)',
+              collectionLayout: 'fixed two-column'
+            }
+          ]
+        },
         columns: [
           {
             data: null,
@@ -228,6 +241,15 @@ block content
                 break;
               case 17:
                 pr =  "udp";
+                break;
+              case 47:
+                pr =  "gre";
+                break;
+              case 58:
+                pr =  "icmp6";
+                break;
+              default:
+                pr = "" + rowData.pr;
                 break;
               }
               if (rowData.isOpen) {
@@ -259,10 +281,14 @@ block content
           },
           {
             data: "a1",
-            visible: visibleColumn("a1"),
-            width: "100",
+            width: "150",
             render: function (rcData, type, rowData, meta) {
-              var result = "<span molochexpr='ip.src' class='moloch-right-click'> " + ipString(rowData.a1) + "</span>";
+              var result;
+              if (rowData['tipv61-term']) {
+                result = "<span molochexpr='tipv6.src' class='moloch-right-click ip6Column'> " + ip6String(rowData['tipv61-term']) + "</span>";
+              } else {
+                result = "<span molochexpr='ip.src' class='moloch-right-click'> " + ipString(rowData.a1) + "</span>";
+              }
               if (rowData.g1) {
                 result += "<br><span molochexpr='country.src' class='moloch-right-click'>" + rowData.g1 + "</span>";
               }
@@ -271,16 +297,19 @@ block content
           },
           {
             data: "p1",
-            visible: visibleColumn("p1"),
             className: "context-menu-one",
             width: "55px"
           },
           {
             data: "a2",
-            visible: visibleColumn("a2"),
-            width: "100",
+            width: "150",
             render: function (rcData, type, rowData, meta) {
-              var result = "<span molochexpr='ip.dst' class='moloch-right-click'> " + ipString(rowData.a2) + "</span>";
+              var result;
+              if (rowData['tipv62-term']) {
+                result = "<span molochexpr='tipv6.dst' class='moloch-right-click ip6Column'> " + ip6String(rowData['tipv62-term']) + "</span>";
+              } else {
+                result = "<span molochexpr='ip.dst' class='moloch-right-click'> " + ipString(rowData.a2) + "</span>";
+              }
               if (rowData.g2) {
                 result += "<br><span molochexpr='country.dst' class='moloch-right-click'>" + rowData.g2 + "</span>";
               }
@@ -289,13 +318,11 @@ block content
           },
           {
             data: "p2",
-            visible: visibleColumn("p2"),
             className: "context-menu-one",
             width: "55px"
           },
           {
             data: "pa",
-            visible: visibleColumn("pa"),
             width: "55px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='packets' class='moloch-right-click'> " + rowData.pa + "</span>");
@@ -303,7 +330,6 @@ block content
           },
           {
             data: "pa1",
-            visible: visibleColumn("pa1"),
             width: "55px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='packets.src' class='moloch-right-click'> " + rowData.pa1 + "</span>");
@@ -311,7 +337,6 @@ block content
           },
           {
             data: "pa2",
-            visible: visibleColumn("pa2"),
             width: "55px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='packets.dst' class='moloch-right-click'> " + rowData.pa2 + "</span>");
@@ -319,7 +344,6 @@ block content
           },
           {
             data: "pa1",
-            visible: visibleColumn("pa1pa2"),
             width: "55px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='packets.src' class='moloch-right-click'> " + numberWithCommas(rowData.pa1) + "</span> /<br>" +
@@ -328,7 +352,6 @@ block content
           },
           {
             data: "by",
-            visible: visibleColumn("bytes"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='databytes' class='moloch-right-click'> " + numberWithCommas(rowData.db) + "</span> /<br>" +
@@ -337,7 +360,6 @@ block content
           },
           {
             data: "by1",
-            visible: visibleColumn("by1"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='bytes.src' class='moloch-right-click'> " + rowData.by1 + "</span>");
@@ -345,7 +367,6 @@ block content
           },
           {
             data: "by2",
-            visible: visibleColumn("by2"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='bytes.dst' class='moloch-right-click'> " + rowData.by2 + "</span>");
@@ -353,7 +374,6 @@ block content
           },
           {
             data: "by1",
-            visible: visibleColumn("by1by2"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='bytes.src' class='moloch-right-click'> " + numberWithCommas(rowData.by1) + "</span> /<br>" +
@@ -362,7 +382,6 @@ block content
           },
           {
             data: "db1",
-            visible: visibleColumn("db1"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='databytes.src' class='moloch-right-click'> " + rowData.db1 + "</span>");
@@ -370,7 +389,6 @@ block content
           },
           {
             data: "db2",
-            visible: visibleColumn("db2"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='databytes.dst' class='moloch-right-click'> " + rowData.db2 + "</span>");
@@ -378,7 +396,6 @@ block content
           },
           {
             data: "db1",
-            visible: visibleColumn("db1db2"),
             width: "80px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='databytes.src' class='moloch-right-click'> " + numberWithCommas(rowData.db1) + "</span> /<br>" +
@@ -387,7 +404,6 @@ block content
           },
           {
             data: "no",
-            visible: visibleColumn("no"),
             width: "100px",
             createdCell: function (cell, cellData, rowData, rowIndex, colIndex) {
               $(cell).html("<span molochexpr='node' class='moloch-right-click'> " + rowData.no + "</span>");
@@ -396,7 +412,6 @@ block content
           {
             sortable: false,
             data: null,
-            visible: visibleColumn("info"),
             defaultContent: "",
             className: "infoColumn",
             render: function (rowData, type, row, meta) {
@@ -607,10 +622,10 @@ block content
               return false;
             }
 
-            var cell = sessionsTable.cell(e.target).index();
+            var dataSrc = sessionsTable.column(e.target).dataSrc();
             var ip, country, port, suffix;
-            if (visibleColumns[cell.columnVisible] === "p1" || visibleColumns[cell.columnVisible] === "p2") {
-              if (visibleColumns[cell.columnVisible] === "p1") {
+            if (dataSrc === "p1" || dataSrc === "p2") {
+              if (dataSrc === "p1") {
                 ip = ipString(rowData.a1);
                 port = rowData.p1;
                 suffix = ".src";
@@ -678,7 +693,7 @@ block content
               var td = $(nTr).children("td");
               $(td).each(function(i, e) {
                 $(e).html($(e).html().replace("<br>", "&nbsp;"));
-                $(e).width(pinnedColWidths[visibleColumns[i]]);
+                $(e).width(pinnedColWidths[sessionsTable.column.index("fromVisible", i)]);
               });
               $($(nTr).find(".infoColumn")).hide();
               $($(nTr).find(".protocolText")).hide();

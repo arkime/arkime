@@ -1,0 +1,23 @@
+CC            = @CC@
+
+INCLUDE_PCAP  = @PCAP_CFLAGS@
+
+INCLUDE_OTHER = -I../.. -I../../thirdparty \
+                @GLIB2_CFLAGS@
+
+install_sh = @install_sh@
+mkdir_p = @mkdir_p@
+INSTALL = @INSTALL@
+PLUGINDIR = @prefix@/plugins
+WISEDIR = @prefix@/wiseService
+
+SRCS=$(wildcard *.c)
+SOS=$(patsubst %.c,../%.so,$(SRCS))
+
+../%.so : %.c ../../moloch.h ../../hash.h ../../dll.h
+	$(CC) @SHARED_FLAGS@ -o $@ -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) -lpfring $<
+
+all:$(SOS)
+
+distclean realclean clean:
+	rm -f *.o *.so

@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 24;
+var MIN_DB_VERSION = 27;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -1350,7 +1350,7 @@ function sessionsListFromQuery(req, res, fields, cb) {
 
 function sessionsListFromIds(req, ids, fields, cb) {
   var list = [];
-  var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro"];
+  var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro", "tipv61-term", "tipv62-term"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
   async.eachLimit(ids, 10, function(id, nextCb) {
@@ -1479,10 +1479,7 @@ function mergeUnarray(to, from) {
 app.get('/stats.json', function(req, res) {
   noCache(req, res);
 
-  var columns = ["_id", "currentTime", "totalPackets", "totalK", "totalSessions", "monitoring", "memory", "cpu", "diskQueue", "freeSpaceM", "deltaPackets", "deltaBytes", "deltaSessions", "deltaDropped", "deltaMS"];
-
-  var query = {_source: columns,
-               from: +req.query.start || 0,
+  var query = {from: +req.query.start || 0,
                size: Math.min(10000, +req.query.length || 500)
               };
   addSortToQuery(query, req.query, "_uid");
@@ -1500,13 +1497,18 @@ app.get('/stats.json', function(req, res) {
               mergeUnarray(fields, result.hits.hits[i].fields);
             }
             fields.id        = result.hits.hits[i]._id;
-            fields.memory    = fields.memory || 0;
-            fields.cpu       = fields.cpu || 0;
-            fields.diskQueue = fields.diskQueue || 0;
-            fields.deltaBytesPerSec = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
-            fields.deltaPacketsPerSec = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
-            fields.deltaSessionsPerSec = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
-            fields.deltaDroppedPerSec = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
+            ["memory", "cpu", "diskQueue", "packetQueue", "fragsQueue", "closeQueue", "tcpSessions", "udpSessions", "icmpSessions", "frags", "deltaFragsDropped", "deltaOverloadDropped"].forEach(function(key) {
+              fields[key] = fields[key] || 0;
+            });
+
+            fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+            fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
+            fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+            fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+            fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
+            fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
+            fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
+            fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
             results.results.push(fields);
           }
           cb(null, results);
@@ -1574,12 +1576,15 @@ app.get('/dstats.json', function(req, res) {
           mergeUnarray(fields, result.hits.hits[i].fields);
         }
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
-        fields.deltaBits           = Math.floor(fields.deltaBytes * 8.0);
-        fields.deltaBytesPerSec    = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
-        fields.deltaBitsPerSec     = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
-        fields.deltaPacketsPerSec  = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
-        fields.deltaSessionsPerSec = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
-        fields.deltaDroppedPerSec  = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
+        fields.deltaBits                  = Math.floor(fields.deltaBytes * 8.0);
+        fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
+        fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
+        fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
+        fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
+        fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
+        fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
+        fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
+        fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
         data[pos] = mult * (fields[req.query.name] || 0);
       }
     }
@@ -1800,7 +1805,7 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
-    query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch"];
+    query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
 
     if (query.aggregations && query.aggregations.dbHisto) {
       graph.interval = query.aggregations.dbHisto.histogram.interval;
@@ -2415,6 +2420,9 @@ function csvListWriter(req, res, list, pcapWriter, extension) {
     case 17:
       pr =  "udp";
       break;
+    case 58:
+      pr =  "icmpv6";
+      break;
     }
 
 
@@ -2837,7 +2845,13 @@ function processSessionIdAndDecode(id, numPackets, doneCb) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 6) {
-      Pcap.reassemble_tcp(packets, Pcap.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
+      var key;
+      if (session["tipv61-term"]) {
+        key = session["tipv61-term"];
+      } else {
+        key = Pcap.inet_ntoa(session.a1);
+      }
+      Pcap.reassemble_tcp(packets, key + ':' + session.p1, function(err, results) {
         return doneCb(err, session, results);
       });
     } else if (packets[0].ip.p === 17) {
@@ -3026,7 +3040,7 @@ function localSessionDetail(req, res) {
         pcap.decode(buffer, obj);
       } catch (e) {
         obj = {ip: {p: "Error decoding" + e}};
-        console.trace("loadSessionDetail error", e);
+        console.trace("loadSessionDetail error", e.stack);
       }
     } else {
       obj = {ip: {p: "Empty"}};
@@ -3066,12 +3080,23 @@ function localSessionDetail(req, res) {
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 6) {
-      Pcap.reassemble_tcp(packets, Pcap.inet_ntoa(session.a1) + ':' + session.p1, function(err, results) {
+      var key;
+      if (session["tipv61-term"]) {
+        key = session["tipv61-term"];
+      } else {
+        key = Pcap.inet_ntoa(session.a1);
+      }
+      Pcap.reassemble_tcp(packets, key + ':' + session.p1, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
     } else if (packets[0].ip.p === 17) {
       Pcap.reassemble_udp(packets, function(err, results) {
+        session._err = err;
+        localSessionDetailReturn(req, res, session, results || []);
+      });
+    } else if (packets[0].ip.p === 58) {
+      Pcap.reassemble_icmp(packets, function(err, results) {
         session._err = err;
         localSessionDetailReturn(req, res, session, results || []);
       });
@@ -3696,7 +3721,7 @@ app.post('/deleteView', checkToken, function(req, res) {
 
   Db.getUser(req.token.suserId, function(err, user) {
     if (err || !user.found) {
-      console.log("updateView failed", err, user);
+      console.log("deleteView failed", err, user);
       return error("Unknown user");
     }
 
@@ -3795,6 +3820,45 @@ app.post('/deleteCronQuery', checkToken, function(req, res) {
 
   Db.deleteDocument("queries", 'query', req.body.key, {refresh: 1}, function(err, sq) {
     res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
+  });
+});
+
+app.post('/tableState/:tablename', function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+  Db.getUser(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("save tableState failed", err, user);
+      return error("Unknown user");
+    }
+    user = user._source;
+
+    if (!user.tableStates) {
+      user.tableStates = {};
+    }
+    user.tableStates[req.params.tablename] = req.body;
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("tableState error", err, info);
+        return error("tableState update failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "updated table state successfully"}));
+    });
+  });
+});
+
+app.get('/tableState/:tablename', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Unknown user", err, user);
+      return res.send("{}");
+    }
+    user = user._source;
+    if (!user.tableStates || !user.tableStates[req.params.tablename]) {
+      return res.send("{}");
+    }
+    return res.send(user.tableStates[req.params.tablename]);
   });
 });
 

@@ -283,7 +283,7 @@ Deref_Prefix(prefix_t * prefix)
     prefix->ref_count--;
     assert(prefix->ref_count >= 0);
     if (prefix->ref_count <= 0) {
-        // Delete(prefix);
+        free(prefix);
         return;
     }
 }
@@ -336,7 +336,7 @@ Clear_Patricia(patricia_tree_t * patricia, void_fn_t func)
             } else {
                 assert(Xrn->data == NULL);
             }
-            // Delete(Xrn);
+            free(Xrn);
             patricia->num_active_node--;
 
             if (l) {
@@ -354,9 +354,6 @@ Clear_Patricia(patricia_tree_t * patricia, void_fn_t func)
         }
     }
     assert(patricia->num_active_node == 0);
-    /*
-     * Delete (patricia); 
-     */
 }
 
 
@@ -364,7 +361,7 @@ void
 Destroy_Patricia(patricia_tree_t * patricia, void_fn_t func)
 {
     Clear_Patricia(patricia, func);
-    // Delete(patricia);
+    free(patricia);
     //num_active_patricia--;
 }
 
@@ -766,15 +763,16 @@ patricia_remove(patricia_tree_t * patricia, patricia_node_t * node)
     if (node->r == NULL && node->l == NULL) {
         parent = node->parent;
         Deref_Prefix(node->prefix);
-        // Delete(node);
         patricia->num_active_node--;
 
         if (parent == NULL) {
             assert(patricia->head == node);
             patricia->head = NULL;
+            free(node);
             return;
         }
 
+        free(node);
         if (parent->r == node) {
             parent->r = NULL;
             child = parent->l;
@@ -801,7 +799,7 @@ patricia_remove(patricia_tree_t * patricia, patricia_node_t * node)
             parent->parent->l = child;
         }
         child->parent = parent->parent;
-        // Delete(parent);
+        free(parent);
         patricia->num_active_node--;
         return;
     }
@@ -815,12 +813,12 @@ patricia_remove(patricia_tree_t * patricia, patricia_node_t * node)
     child->parent = parent;
 
     Deref_Prefix(node->prefix);
-    // Delete(node);
     patricia->num_active_node--;
 
     if (parent == NULL) {
         assert(patricia->head == node);
         patricia->head = child;
+        free(node);
         return;
     }
 
@@ -830,6 +828,7 @@ patricia_remove(patricia_tree_t * patricia, patricia_node_t * node)
         assert(parent->l == node);
         parent->l = child;
     }
+    free(node);
 }
 
 patricia_node_t *

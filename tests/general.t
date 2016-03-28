@@ -1,4 +1,4 @@
-use Test::More tests => 529;
+use Test::More tests => 513;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -271,6 +271,7 @@ my $pwd = getcwd() . "/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*TP.*/"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*NOT.*/"));
 
+if (0) {
 # session.segments tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments=2"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments=1"));
@@ -281,6 +282,7 @@ my $pwd = getcwd() . "/pcap";
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length>=908493"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length<908493"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length=[908493,908494]"));
+}
 
 # vlan tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan=500"));

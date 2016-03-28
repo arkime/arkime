@@ -54,32 +54,6 @@ block content
       option(value="asc") Ascending
       option(value="desc") Descending
 
-    mixin visibleColumnsCB(value,text)
-      span(style="white-space:nowrap;")
-        label(style="display:inline-block; text-align:left; width:auto")
-          input#visibleColumns.setting(type="checkbox", name="visibleColumns", value=value)
-          = text
-      | 
-    br
-    label Sessions Visible Columns:
-    +visibleColumnsCB("a1","Src IP")
-    +visibleColumnsCB("p1","Src Port")
-    +visibleColumnsCB("a2","Dst IP")
-    +visibleColumnsCB("p2","Dst Port")
-    +visibleColumnsCB("pa","Packets")
-    +visibleColumnsCB("pa1","Src Packets")
-    +visibleColumnsCB("pa2","Dst Packets")
-    +visibleColumnsCB("pa1pa2","Src / Dst Packets")
-    +visibleColumnsCB("bytes","Bytes")
-    +visibleColumnsCB("by1","Src Bytes")
-    +visibleColumnsCB("by2","Dst Bytes")
-    +visibleColumnsCB("by1by2","Src / Dst Bytes")
-    +visibleColumnsCB("db1","Src Databytes")
-    +visibleColumnsCB("db2","Dst Databytes")
-    +visibleColumnsCB("db1db2","Src / Dst Databytes")
-    +visibleColumnsCB("no","Node")
-    +visibleColumnsCB("info","Info")
-
     h3 SPI Graph Tab
     label(for='spiGraph') Default Graph:
     +fieldsSelect("spiGraph", "setting", false)
@@ -221,8 +195,7 @@ block content
       var defaults = {
         spiGraph: "no",
         connSrcField: "a1",
-        connDstField: "ip.dst:port",
-        visibleColumns: ["a1", "p1", "a2", "p2", "pa", "bytes", "no", "info"]
+        connDstField: "ip.dst:port"
       };
 
       ["timezone", "detailFormat", "showTimestamps", "sortColumn", "sortDirection", "spiGraph", "connSrcField", "connDstField"].forEach(function(field) {
@@ -245,24 +218,6 @@ block content
         }
       });
 
-      var field = "visibleColumns";
-      if (settings[field]) {
-        if (Array.isArray(settings[field])) {
-          for (key in settings[field]) {
-            $("input[value='" + settings[field][key] + "']").attr('checked', 'checked');
-          }
-        } else {
-          $("input[value='" + settings[field] + "']").attr('checked', 'checked');
-        }
-      } else if (defaults[field]) {
-        if (Array.isArray(defaults[field])) {
-          for (key in defaults[field]) {
-            $("input[value='" + defaults[field][key] + "']").attr('checked', 'checked');
-          }
-        } else {
-          $("input[value='" + defaults[field] + "']").attr('checked', 'checked');
-        }
-      }
 
       $('#views').dataTable({
         language: {

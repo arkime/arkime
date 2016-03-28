@@ -12,9 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "moloch.h"
 
 typedef struct {
@@ -33,7 +30,7 @@ int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *d
         return 0;
 
     if (len == 8 && memcmp(data, "\x00\x00\x00\x08\x04\xd2\x16\x2f", 8) == 0) {
-        moloch_nids_add_protocol(session, "postgresql");
+        moloch_session_add_protocol(session, "postgresql");
         return 0;
     }
 
@@ -70,7 +67,7 @@ int postgresql_parser(MolochSession_t *session, void *uw, const unsigned char *d
 
         if (strcmp(key, "user") == 0) {
             moloch_field_string_add(userField, session, value, vlen, TRUE);
-            moloch_nids_add_protocol(session, "postgresql");
+            moloch_session_add_protocol(session, "postgresql");
         } else if (strcmp(key, "database") == 0)
             moloch_field_string_add(dbField, session, value, vlen, TRUE);
         else if (strcmp(key, "application_name") == 0)
@@ -91,7 +88,7 @@ void postgresql_free(MolochSession_t UNUSED(*session), void *uw)
 /******************************************************************************/
 void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which)
 {
-    if (moloch_nids_has_protocol(session, "postgresql"))
+    if (moloch_session_has_protocol(session, "postgresql"))
         return;
 
     if ((len == 8 && memcmp(data+3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||

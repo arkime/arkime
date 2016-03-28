@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.12.3])
+AC_INIT([moloch], [0.14.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -8,6 +8,8 @@ AC_CONFIG_FILES([
   Makefile
   capture/Makefile
   capture/plugins/Makefile
+  capture/plugins/daq/Makefile
+  capture/plugins/pfring/Makefile
   capture/parsers/Makefile
   db/Makefile
   tests/plugins/Makefile
@@ -208,58 +210,6 @@ fi
 
 AC_SUBST(PCAP_CFLAGS)
 AC_SUBST(PCAP_LIBS)
-
-dnl Checks for libnids
-AC_MSG_CHECKING(for libnids)
-AC_ARG_WITH(libnids,
-[  --with-libnids=DIR use libnids build directory],
-[ case "$withval" in
-  yes|no)
-     AC_MSG_RESULT(no)
-     ;;
-  *)
-  AC_MSG_RESULT($withval)
-    if test -f $withval/src/nids.h -a -f $withval/src/libnids.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-      NIDS_CFLAGS="-I$withval/src"
-      NIDS_LIBS="$withval/src/libnids.a"
-    elif test -f $withval/include/nids.h -a -f $withval/lib/libnids.a; then
-      owd=`pwd`
-      if cd $withval; then
-        withval=`pwd`;
-        cd $owd;
-      fi
-      NIDS_CFLAGS="-I$withval/include"
-      NIDS_LIBS="$withval/lib/libnids.a"
-    else
-      AC_ERROR(nids.h or libnids.a not found in $withval)
-    fi
-    ;;
-esac ], [
-  if test -f ${prefix}/include/nids.h; then
-     NIDS_CFLAGS="-I${prefix}/include"
-     NIDS_LIBS="-L${exec_prefix}/lib -lnids"
-  elif test -f /usr/include/nids.h; then
-     NIDS_CFLAGS=""
-     NIDS_LIBS="-lnids"
-  else
-    TMP=$LIBS
-    LIBS="-lnids $LIBS"
-    AC_TRY_LINK([#include <nids.h>], nids_init(), LIBNIDS_FOUND=1,LIBNIDS_FOUND=0)
-    LIBS=$TMP
-    if test $LIBNIDS_FOUND = 1 ; then
-      NIDS_LIBS="-lnids"
-    else
-      AC_ERROR(libnids not found)
-    fi
-  fi
-AC_MSG_RESULT(yes) ])
-AC_SUBST(NIDS_CFLAGS)
-AC_SUBST(NIDS_LIBS)
 
 dnl Checks for yara
 AC_MSG_CHECKING(for yara)

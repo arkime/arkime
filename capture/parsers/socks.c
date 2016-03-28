@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
 #include "moloch.h"
 
 /******************************************************************************/
@@ -50,7 +49,7 @@ int socks4_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             if (socks->ip)
                 moloch_field_int_add(ipField, session, socks->ip);
             moloch_field_int_add(portField, session, socks->port);
-            moloch_nids_add_protocol(session, "socks");
+            moloch_session_add_protocol(session, "socks");
 
             if (socks->user) {
                 if (!moloch_field_string_add(userField, session, socks->user, socks->userlen, FALSE)) {
@@ -110,7 +109,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
             return 0;
         }
 
-        moloch_nids_add_protocol(session, "socks");
+        moloch_session_add_protocol(session, "socks");
 
         if (socks->state5[socks->which] == SOCKS5_STATE_CONN_DATA) {
             // Other side of connection already in data state
@@ -135,7 +134,7 @@ int socks5_parser(MolochSession_t *session, void *uw, const unsigned char *data,
         }
 
         moloch_field_string_add(userField, session, (char *)data + 2, data[1], TRUE);
-        moloch_nids_add_tag(session, "socks:password");
+        moloch_session_add_tag(session, "socks:password");
         socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
         return data[1] + 1 + data[data[1]+2];
     case SOCKS5_STATE_USER_REPLY:

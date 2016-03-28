@@ -12,13 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include "moloch.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 //#define EMAILDEBUG
 
@@ -36,7 +32,7 @@ static int ipField;
 static int hostField;
 static int srcField;
 static int dstField;
-static int userField;
+extern int userField;
 static int hhField;
 static int subField;
 static int ctField;
@@ -135,7 +131,7 @@ smtp_email_add_value(MolochSession_t *session, int pos, char *s, int l)
 
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
-                moloch_nids_add_tag(session, "http:bad-xff");
+                moloch_session_add_tag(session, "http:bad-xff");
                 LOG("ERROR - Didn't understand ip: %s %s %d", s, ip, ia);
                 continue;
             }
@@ -430,7 +426,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                 email->needStatus[(which + 1) % 2] = 0;
                 char tag[200];
                 snprintf(tag, sizeof(tag), "smtp:statuscode:%d", atoi(line->str));
-                moloch_nids_add_tag(session, tag);
+                moloch_session_add_tag(session, tag);
             } else if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
                 char *lower = g_ascii_strdown(smtp_remove_matching(line->str+10, '<', '>'), -1);
@@ -446,7 +442,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
             } else if (strncasecmp(line->str, "AUTH LOGIN", 10) == 0) {
-                moloch_nids_add_tag(session, "smtp:authlogin");
+                moloch_session_add_tag(session, "smtp:authlogin");
                 if (line->len > 11) {
                     gsize out_len = 0;
                     g_base64_decode_inplace(line->str+11, &out_len);
@@ -458,7 +454,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     *state = EMAIL_AUTHLOGIN;
                 }
             } else if (strncasecmp(line->str, "AUTH PLAIN", 10) == 0) {
-                moloch_nids_add_tag(session, "smtp:authplain");
+                moloch_session_add_tag(session, "smtp:authplain");
                 if (line->len > 11) {
                     gsize out_len = 0;
                     gsize zation = 0;
@@ -476,7 +472,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
                     *state = EMAIL_AUTHPLAIN;
                 }
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
-                moloch_nids_add_tag(session, "smtp:starttls");
+                moloch_session_add_tag(session, "smtp:starttls");
                 *state = EMAIL_IGNORE;
                 email->state[(which+1)%2] = EMAIL_TLS_OK;
                 return 0;
@@ -568,7 +564,7 @@ int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 
                 if ((long)emailHeader->uw == subField) {
                     if (line->str[8] != ' ') {
-                        moloch_nids_add_tag(session, "smtp:missing-subject-space");
+                        moloch_session_add_tag(session, "smtp:missing-subject-space");
                         smtp_email_add_encoded(session, subField, line->str+8, line->len-8);
                     } else {
                         smtp_email_add_encoded(session, subField, line->str+9, line->len-9);
@@ -819,10 +815,10 @@ void smtp_classify(MolochSession_t *session, const unsigned char *data, int len,
         (memcmp("220 ", data, 4) == 0 &&
          g_strstr_len((char *)data, len, "SMTP") != 0)) {
 
-        if (moloch_nids_has_protocol(session, "smtp"))
+        if (moloch_session_has_protocol(session, "smtp"))
             return;
 
-        moloch_nids_add_protocol(session, "smtp");
+        moloch_session_add_protocol(session, "smtp");
 
         SMTPInfo_t *email = MOLOCH_TYPE_ALLOC0(SMTPInfo_t);
 

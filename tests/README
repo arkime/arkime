@@ -14,6 +14,7 @@ PCAP files with known non Moloch source:
 bigendian.pcap - https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=7221
 smbtorture-ntlmssp*.pcap - Subset of https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=smbtorture.cap.gz
 dns-wireshark.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=dns.cap
+v6-http.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=v6-http.cap
 
 
 

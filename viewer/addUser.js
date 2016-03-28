@@ -54,7 +54,8 @@ function main() {
     headerAuthEnabled: false,
     emailSearch: false,
     createEnabled: false,
-    removeEnabled: false
+    removeEnabled: false,
+    settings: {}
   };
 
   var i;

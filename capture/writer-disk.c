@@ -16,17 +16,13 @@
  * limitations under the License.
  */
 #define _FILE_OFFSET_BITS 64
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#include "moloch.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include "moloch.h"
 #include <gio/gio.h>
 
 #ifndef O_NOATIME
@@ -49,13 +45,14 @@ typedef struct moloch_output {
 
 
 static MolochDiskOutput_t   *output;
+static MOLOCH_LOCK_DEFINE(output);
 
 static MolochDiskOutput_t    outputQ;
-static pthread_mutex_t       outputQMutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t        outputQCond = PTHREAD_COND_INITIALIZER;
+static MOLOCH_LOCK_DEFINE(outputQ);
+static MOLOCH_COND_DEFINE(outputQ);
 
 static MolochIntHead_t       freeOutputBufs;
-static pthread_mutex_t       freeOutputMutex = PTHREAD_MUTEX_INITIALIZER;
+static MOLOCH_LOCK_DEFINE(freeOutputBufs);
 
 static uint32_t              outputId;
 static char                 *outputFileName;
@@ -73,9 +70,7 @@ static int                   pageSize;
 /******************************************************************************/
 uint32_t writer_disk_queue_length_thread()
 {
-    pthread_mutex_lock(&outputQMutex);
     int count = DLL_COUNT(mo_, &outputQ);
-    pthread_mutex_unlock(&outputQMutex);
     return count;
 }
 /******************************************************************************/
@@ -87,27 +82,27 @@ uint32_t writer_disk_queue_length_nothread()
 void writer_disk_alloc_buf(MolochDiskOutput_t *out)
 {
     if (writeMethod & MOLOCH_WRITE_THREAD)
-        pthread_mutex_lock(&freeOutputMutex);
+        MOLOCH_LOCK(freeOutputBufs);
 
     if (freeOutputBufs.i_count > 0) {
         MolochInt_t *tmp;
         DLL_POP_HEAD(i_, &freeOutputBufs, tmp);
         out->buf = (void*)tmp;
     } else {
-        out->buf = mmap (0, config.pcapWriteSize + 8192, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+        out->buf = mmap (0, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     }
 
     if (writeMethod & MOLOCH_WRITE_THREAD)
-        pthread_mutex_unlock(&freeOutputMutex);
+        MOLOCH_UNLOCK(freeOutputBufs);
 }
 /******************************************************************************/
 void writer_disk_free_buf(MolochDiskOutput_t *out)
 {
     if (writeMethod & MOLOCH_WRITE_THREAD)
-        pthread_mutex_lock(&freeOutputMutex);
+        MOLOCH_LOCK(freeOutputBufs);
 
     if (freeOutputBufs.i_count > (int)config.maxFreeOutputBuffers) {
-        munmap(out->buf, config.pcapWriteSize + 8192);
+        munmap(out->buf, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
     } else {
         MolochInt_t *tmp = (MolochInt_t *)out->buf;
         DLL_PUSH_HEAD(i_, &freeOutputBufs, tmp);
@@ -115,9 +110,11 @@ void writer_disk_free_buf(MolochDiskOutput_t *out)
     out->buf = 0;
 
     if (writeMethod & MOLOCH_WRITE_THREAD)
-        pthread_mutex_unlock(&freeOutputMutex);
+        MOLOCH_UNLOCK(freeOutputBufs);
 }
 /******************************************************************************/
+/* Only used in non thread mode to write out data
+ */
 gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUSED(data))
 {
     if (config.exiting && fd)
@@ -185,8 +182,8 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
     }
 
     // Cleanup buffer
-    writer_disk_free_buf(out);
     DLL_REMOVE(mo_, &outputQ, out);
+    writer_disk_free_buf(out);
     MOLOCH_TYPE_FREE(MolochDiskOutput_t, out);
 
     // More waiting to write on different fd, setup a new watch
@@ -200,17 +197,19 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
 /******************************************************************************/
 void *writer_disk_output_thread(void *UNUSED(arg))
 {
+    LOG("THREAD %p", (gpointer)pthread_self());
+
     MolochDiskOutput_t *out;
     int outputFd = 0;
 
     while (1) {
         uint64_t filelen = 0;
-        pthread_mutex_lock(&outputQMutex);
+        MOLOCH_LOCK(outputQ);
         while (DLL_COUNT(mo_, &outputQ) == 0) {
-            pthread_cond_wait(&outputQCond, &outputQMutex);
+            MOLOCH_COND_WAIT(outputQ);
         }
         DLL_POP_HEAD(mo_, &outputQ, out);
-        pthread_mutex_unlock(&outputQMutex);
+        MOLOCH_UNLOCK(outputQ);
 
         if (!outputFd) {
             LOG("Opening %s", out->name);
@@ -257,7 +256,7 @@ void *writer_disk_output_thread(void *UNUSED(arg))
 /******************************************************************************/
 void writer_disk_flush(gboolean all)
 {
-    if (config.dryRun || !output) {
+    if (unlikely(config.dryRun || !output)) {
         return;
     }
 
@@ -275,17 +274,17 @@ void writer_disk_flush(gboolean all)
         output->max = output->pos;
     } else {
         noutput->pos = output->pos - output->max;
-        memcpy(noutput->buf, output->buf + output->max, noutput->pos);
+        memmove(noutput->buf, output->buf + output->max, noutput->pos);
     }
     output->pos = 0;
 
     int count;
     if (writeMethod & MOLOCH_WRITE_THREAD) {
-        pthread_mutex_lock(&outputQMutex);
+        MOLOCH_LOCK(outputQ);
         DLL_PUSH_TAIL(mo_, &outputQ, output);
         count = DLL_COUNT(mo_, &outputQ);
-        pthread_mutex_unlock(&outputQMutex);
-        pthread_cond_broadcast(&outputQCond);
+        MOLOCH_UNLOCK(outputQ);
+        MOLOCH_COND_BROADCAST(outputQ);
     } else {
         DLL_PUSH_TAIL(mo_, &outputQ, output);
         count = DLL_COUNT(mo_, &outputQ);
@@ -304,7 +303,7 @@ void writer_disk_flush(gboolean all)
 /******************************************************************************/
 void writer_disk_exit()
 {
-    moloch_writer_flush(TRUE);
+    writer_disk_flush(TRUE);
     outputFileName = 0;
     if (writeMethod & MOLOCH_WRITE_THREAD) {
         while (writer_disk_queue_length_thread() >0) {
@@ -318,10 +317,10 @@ void writer_disk_exit()
     }
 }
 /******************************************************************************/
-extern struct pcap_file_header pcapFileHeader;
-void writer_disk_create(const struct pcap_pkthdr *h)
+extern MolochPcapFileHdr_t pcapFileHeader;
+void writer_disk_create(MolochPacket_t * const packet)
 {
-    outputFileName = moloch_db_create_file(h->ts.tv_sec, NULL, 0, 0, &outputId);
+    outputFileName = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &outputId);
     outputFilePos = 24;
 
     output = MOLOCH_TYPE_ALLOC0(MolochDiskOutput_t);
@@ -340,39 +339,41 @@ struct pcap_timeval {
 struct pcap_sf_pkthdr {
     struct pcap_timeval ts;	/* time stamp */
     uint32_t caplen;		/* length of portion present */
-    uint32_t len;		/* length this packet (off wire) */
+    uint32_t pktlen;		/* length this packet (off wire) */
 };
 void
-writer_disk_write(const struct pcap_pkthdr *h, const u_char *sp, uint32_t *fileNum, uint64_t *filePos)
+writer_disk_write(const MolochSession_t * const UNUSED(session), MolochPacket_t * const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
-    hdr.ts.tv_sec  = h->ts.tv_sec;
-    hdr.ts.tv_usec = h->ts.tv_usec;
-    hdr.caplen     = h->caplen;
-    hdr.len        = h->len;
+    hdr.ts.tv_sec  = packet->ts.tv_sec;
+    hdr.ts.tv_usec = packet->ts.tv_usec;
+    hdr.caplen     = packet->pktlen;
+    hdr.pktlen     = packet->pktlen;
 
+    MOLOCH_LOCK(output);
     if (!outputFileName) {
-        writer_disk_create(h);
+        writer_disk_create(packet);
     }
 
     memcpy(output->buf + output->pos, (char *)&hdr, sizeof(hdr));
     output->pos += sizeof(hdr);
 
-    memcpy(output->buf + output->pos, sp, h->caplen);
-    output->pos += h->caplen;
+    memcpy(output->buf + output->pos, packet->pkt, packet->pktlen);
+    output->pos += packet->pktlen;
 
     if(output->pos > output->max) {
         writer_disk_flush(FALSE);
     }
-    *fileNum = outputId;
-    *filePos = outputFilePos;
-    outputFilePos += 16 + h->caplen;
+    packet->writerFileNum = outputId;
+    packet->writerFilePos = outputFilePos;
+    outputFilePos += 16 + packet->pktlen;
 
     if (outputFilePos >= config.maxFileSizeB) {
         writer_disk_flush(TRUE);
         outputFileName = 0;
     }
+    MOLOCH_UNLOCK(output);
 }
 /******************************************************************************/
 gboolean 
@@ -389,11 +390,6 @@ writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 
-/******************************************************************************/
-char *
-writer_disk_name () {
-    return outputFileName;
-}
 /******************************************************************************/
 void writer_disk_init(char *name)
 {
@@ -439,10 +435,8 @@ void writer_disk_init(char *name)
         moloch_writer_queue_length = writer_disk_queue_length_nothread;
     }
 
-    moloch_writer_flush        = writer_disk_flush;
     moloch_writer_exit         = writer_disk_exit;
     moloch_writer_write        = writer_disk_write;
-    moloch_writer_name         = writer_disk_name;
 
     if (config.maxFileTimeM > 0) {
         g_timeout_add_seconds( 30, writer_disk_file_time_gfunc, 0);

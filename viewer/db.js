@@ -236,7 +236,14 @@ exports.getAliasesCache = function (index, cb) {
 };
 
 exports.health = function(cb) {
-  internals.elasticSearchClient.cluster.health({}, cb);
+  internals.elasticSearchClient.info(function(err,data) {
+    internals.elasticSearchClient.cluster.health({}, function(err, result) {
+      if (data && result) {
+        result.version = data.version.number;
+      }
+      return cb(err, result);
+    });
+  });
 };
 
 exports.nodesStats = function (options, cb) {

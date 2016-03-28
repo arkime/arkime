@@ -33,6 +33,7 @@
 # 24 - field category
 # 25 - cert hash
 # 26 - dynamic stats, ES 2.0
+# 27 - table states
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -41,7 +42,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 26;
+my $VERSION = 27;
 my $verbose = 0;
 my $PREFIX = "";
 
@@ -1743,6 +1744,10 @@ sub usersUpdate
       views : {
         type : "object",
         dynamic: "true"
+      },
+      tableStates : {
+        type : "object",
+        dynamic: "true"
       }
     }
   }
@@ -2229,7 +2234,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         queriesCreate();
 
         print "users_v1 and files_v1 tables can be deleted now\n";
-    } elsif ($main::versionNumber >= 1 && $main::versionNumber < 7) {
+    } elsif ($main::versionNumber < 7) {
         filesCreate();
         esAlias("remove", "files_v2", "files");
         esCopy("files_v2", "files_v3", "file");
@@ -2244,7 +2249,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         dstatsUpdate();
         fieldsCreate();
         queriesCreate();
-    } elsif ($main::versionNumber >= 7 && $main::versionNumber < 18) {
+    } elsif ($main::versionNumber < 18) {
         usersCreate();
         esAlias("remove", "users_v2", "users");
         esCopy("users_v2", "users_v3", "user");
@@ -2256,7 +2261,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         dstatsUpdate();
         fieldsCreate();
         queriesCreate();
-    } elsif ($main::versionNumber >= 18 && $main::versionNumber < 19) {
+    } elsif ($main::versionNumber < 19) {
         usersCreate();
         esAlias("remove", "users_v2", "users");
         esCopy("users_v2", "users_v3", "user");
@@ -2267,17 +2272,20 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         queriesCreate();
         statsUpdate();
         dstatsUpdate();
-    } elsif ($main::versionNumber >= 19 && $main::versionNumber < 20) {
+    } elsif ($main::versionNumber < 20) {
+        usersUpdate();
         sessionsUpdate();
         queriesCreate();
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
-    } elsif ($main::versionNumber >= 20 && $main::versionNumber <= 26) {
+    } elsif ($main::versionNumber <= 26) {
+        usersUpdate();
         sessionsUpdate();
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
+    } elsif ($main::versionNumber <= 27) {
     } else {
         print "db.pl is hosed\n";
     }

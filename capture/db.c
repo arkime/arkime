@@ -15,45 +15,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "moloch.h"
+#include "molochconfig.h"
 #include <uuid/uuid.h>
-#include <unistd.h>
 #include <inttypes.h>
 #include <errno.h>
 #include <sys/resource.h>
 #include <sys/statvfs.h>
 #include <fcntl.h>
-#include "moloch.h"
-#include "bsb.h"
-#include "glib.h"
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 25
+#define MOLOCH_MIN_DB_VERSION 26
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
 extern uint64_t         totalSessions;
 static uint16_t         myPid;
-static time_t           dbLastSave;
 extern uint32_t         pluginsCbs;
 
-struct timeval          startTime;
-static GeoIP           *gi = 0;
-static GeoIP           *giASN = 0;
-static char            *rirs[256];
+LOCAL struct timeval    startTime;
+LOCAL GeoIP            *gi = 0;
+LOCAL GeoIP            *giASN = 0;
+LOCAL GeoIP            *gi6 = 0;
+LOCAL GeoIP            *giASN6 = 0;
+LOCAL char             *rirs[256];
 
 void *                  esServer = 0;
 
-patricia_tree_t        *ipTree = 0;
+LOCAL patricia_tree_t  *ipTree = 0;
 
 extern char            *moloch_char_to_hex;
 extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
 
-static int tagsField = -1;
+LOCAL int               tagsField = -1;
+
+LOCAL uint32_t          nextFileNum;
+LOCAL MOLOCH_LOCK_DEFINE(nextFileNum);
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -68,14 +67,14 @@ typedef struct moloch_tag {
     short              tag_count;
 } MolochTag_t;
 
-HASH_VAR(tag_, tags, MolochTag_t, 9337);
+HASH_VAR(tag_, tags, MolochTag_t, 19991);
 
 /******************************************************************************/
 void moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii)
 {
     patricia_node_t *node;
     if (!ipTree) {
-        ipTree = New_Patricia(32);
+        ipTree = New_Patricia(128);
     }
     node = make_and_lookup(ipTree, str);
     node->data = ii;
@@ -89,10 +88,41 @@ void moloch_db_free_local_ip(MolochIpInfo_t *ii)
         g_free(ii->asn);
     if (ii->rir)
         g_free(ii->rir);
+    MOLOCH_TYPE_FREE(MolochIpInfo_t, ii);
 }
 /******************************************************************************/
-#define int_ntoa(x)     inet_ntoa(*((struct in_addr *)(int*)&x))
-MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip)
+MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, struct in6_addr *ip)
+{
+    prefix_t prefix;
+    patricia_node_t *node;
+
+    if (IN6_IS_ADDR_V4MAPPED(ip)) {
+        prefix.family = AF_INET;
+        prefix.bitlen = 32;
+        prefix.add.sin.s_addr = ((uint32_t *)ip->s6_addr)[3];
+    } else {
+        prefix.family = AF_INET6;
+        prefix.bitlen = 128;
+        memcpy(&prefix.add.sin6.s6_addr, ip, 16);
+    }
+
+    if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
+        return 0;
+
+    if (tagsField == -1)
+        tagsField = moloch_field_by_db("ta");
+
+    MolochIpInfo_t *ii = node->data;
+    int t;
+
+    for (t = 0; t < ii->numtags; t++) {
+        moloch_field_int_add(tagsField, session, ii->tags[t]);
+    }
+
+    return ii;
+}
+/******************************************************************************/
+MolochIpInfo_t *moloch_db_get_local_ip4(MolochSession_t *session, uint32_t ip)
 {
     prefix_t prefix;
     patricia_node_t *node;
@@ -203,8 +233,13 @@ void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
 }
 
 /******************************************************************************/
-static char *sJson = 0;
-static BSB jbsb;
+LOCAL char   *sJson[MOLOCH_MAX_PACKET_THREADS];
+LOCAL BSB     jbsbs[MOLOCH_MAX_PACKET_THREADS];
+LOCAL time_t  dbLastSave[MOLOCH_MAX_PACKET_THREADS];
+LOCAL char    prefix[MOLOCH_MAX_PACKET_THREADS][100];
+LOCAL time_t  prefix_time[MOLOCH_MAX_PACKET_THREADS];
+LOCAL int     inuse[MOLOCH_MAX_PACKET_THREADS];
+LOCAL MOLOCH_LOCK_DEFINE(inuse);
 
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
@@ -241,32 +276,34 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (!config.dryRun && !session->filePosArray->len)
         return;
 
+
     totalSessions++;
     session->segments++;
 
-    static char     prefix[100];
-    static time_t   prefix_time = 0;
+    const int thread = session->thread;
 
-    if (prefix_time != session->lastPacket.tv_sec) {
-        prefix_time = session->lastPacket.tv_sec;
-        struct tm *tmp = gmtime(&prefix_time);
+    if (prefix_time[thread] != session->lastPacket.tv_sec) {
+        prefix_time[thread] = session->lastPacket.tv_sec;
+
+        struct tm tmp;
+        gmtime_r(&prefix_time[thread], &tmp);
 
         switch(config.rotate) {
         case MOLOCH_ROTATE_HOURLY:
-            snprintf(prefix, sizeof(prefix), "%02d%02d%02dh%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, tmp->tm_hour);
+            snprintf(prefix[thread], sizeof(prefix[thread]), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, tmp.tm_hour);
             break;
         case MOLOCH_ROTATE_DAILY:
-            snprintf(prefix, sizeof(prefix), "%02d%02d%02d", tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday);
+            snprintf(prefix[thread], sizeof(prefix[thread]), "%02d%02d%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday);
             break;
         case MOLOCH_ROTATE_WEEKLY:
-            snprintf(prefix, sizeof(prefix), "%02dw%02d", tmp->tm_year%100, tmp->tm_yday/7);
+            snprintf(prefix[thread], sizeof(prefix[thread]), "%02dw%02d", tmp.tm_year%100, tmp.tm_yday/7);
             break;
         case MOLOCH_ROTATE_MONTHLY:
-            snprintf(prefix, sizeof(prefix), "%02dm%02d", tmp->tm_year%100, tmp->tm_mon+1);
+            snprintf(prefix[thread], sizeof(prefix[thread]), "%02dm%02d", tmp.tm_year%100, tmp.tm_mon+1);
             break;
         }
     }
-    uint32_t id_len = snprintf(id, sizeof(id), "%s-", prefix);
+    uint32_t id_len = snprintf(id, sizeof(id), "%s-", prefix[thread]);
 
     uuid_generate(uuid);
     gint state = 0, save = 0;
@@ -282,30 +319,36 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
+    MOLOCH_LOCK(inuse);
+    inuse[thread] = 1;
+    MOLOCH_UNLOCK(inuse);
+
     /* If no room left to add, send the buffer */
-    if (sJson && (uint32_t)BSB_REMAINING(jbsb) < jsonSize) {
-        if (BSB_LENGTH(jbsb) > 0) {
-            moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
+    if (sJson[thread] && (uint32_t)BSB_REMAINING(jbsbs[thread]) < jsonSize) {
+        if (BSB_LENGTH(jbsbs[thread]) > 0) {
+            moloch_http_set(esServer, key, key_len, sJson[thread], BSB_LENGTH(jbsbs[thread]), NULL, NULL);
         }
-        sJson = 0;
+        sJson[thread] = 0;
 
         struct timeval currentTime;
         gettimeofday(&currentTime, NULL);
-        dbLastSave = currentTime.tv_sec;
+        dbLastSave[thread] = currentTime.tv_sec;
     }
 
     /* Allocate a new buffer using the max of the bulk size or estimated size. */
-    if (!sJson) {
+    if (!sJson[thread]) {
         const int size = MAX(config.dbBulkSize, jsonSize);
-        sJson = moloch_http_get_buffer(size);
-        BSB_INIT(jbsb, sJson, size);
+        sJson[thread] = moloch_http_get_buffer(size);
+        BSB_INIT(jbsbs[thread], sJson[thread], size);
     }
 
     uint32_t timediff = (session->lastPacket.tv_sec - session->firstPacket.tv_sec)*1000 +
                         (session->lastPacket.tv_usec - session->firstPacket.tv_usec)/1000;
 
+    BSB jbsb = jbsbs[thread];
+
     startPtr = BSB_WORK_PTR(jbsb);
-    BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, prefix, id);
+    BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, prefix[thread], id);
 
     dataPtr = BSB_WORK_PTR(jbsb);
     BSB_EXPORT_sprintf(jbsb,
@@ -324,9 +367,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       ((uint64_t)session->firstPacket.tv_sec)*1000 + ((uint64_t)session->firstPacket.tv_usec)/1000,
                       ((uint64_t)session->lastPacket.tv_sec)*1000 + ((uint64_t)session->lastPacket.tv_usec)/1000,
                       timediff,
-                      htonl(session->addr1),
+                      htonl(MOLOCH_V6_TO_V4(session->addr1)),
                       session->port1,
-                      htonl(session->addr2),
+                      htonl(MOLOCH_V6_TO_V4(session->addr2)),
                       session->port2,
                       session->protocol);
 
@@ -351,25 +394,77 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     char *g1 = 0, *g2 = 0, *as1 = 0, *as2 = 0, *rir1 = 0, *rir2 = 0;
 
     if (ipTree) {
-        if ((ii1 = moloch_db_get_local_ip(session, session->addr1))) {
+        if ((ii1 = moloch_db_get_local_ip(session, &session->addr1))) {
             g1 = ii1->country;
             as1 = ii1->asn;
             rir1 = ii1->rir;
         }
 
-        if ((ii2 = moloch_db_get_local_ip(session, session->addr2))) {
+        if ((ii2 = moloch_db_get_local_ip(session, &session->addr2))) {
             g2 = ii2->country;
             as2 = ii2->asn;
             rir2 = ii2->rir;
         }
     }
 
-    if (gi) {
-        if (!g1)
-            g1 = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(session->addr1));
+    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+        if (gi) {
+            if (!g1) {
+                g1 = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(MOLOCH_V6_TO_V4(session->addr1)));
+            }
 
-        if (!g2)
-            g2 = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(session->addr2));
+            if (!g2) {
+                g2 = (char *)GeoIP_country_code3_by_ipnum(gi, htonl(MOLOCH_V6_TO_V4(session->addr2)));
+            }
+        }
+
+        if (giASN) {
+            if (!as1) {
+                as1 = GeoIP_name_by_ipnum(giASN, htonl(MOLOCH_V6_TO_V4(session->addr1)));
+            }
+
+            if (!as2) {
+                as2 = GeoIP_name_by_ipnum(giASN, htonl(MOLOCH_V6_TO_V4(session->addr2)));
+            }
+        }
+
+        if (!rir1)
+            rir1 = rirs[MOLOCH_V6_TO_V4(session->addr1) & 0xff];
+        if (!rir2)
+            rir2 = rirs[MOLOCH_V6_TO_V4(session->addr2) & 0xff];
+
+    } else {
+        BSB_EXPORT_cstr(jbsb, "\"tipv61-term\":\"");
+        for (i = 0; i < 16; i++) {
+            BSB_EXPORT_ptr(jbsb, moloch_char_to_hexstr[(unsigned char)session->addr1.s6_addr[i]], 2);
+        }
+        BSB_EXPORT_cstr(jbsb, "\",");
+
+        BSB_EXPORT_cstr(jbsb, "\"tipv62-term\":\"");
+        for (i = 0; i < 16; i++) {
+            BSB_EXPORT_ptr(jbsb, moloch_char_to_hexstr[(unsigned char)session->addr2.s6_addr[i]], 2);
+        }
+        BSB_EXPORT_cstr(jbsb, "\",");
+
+        if (gi6) {
+            if (!g1) {
+                g1 = (char *)GeoIP_country_code3_by_ipnum_v6(gi6, session->addr1);
+            }
+
+            if (!g2) {
+                g2 = (char *)GeoIP_country_code3_by_ipnum_v6(gi6, session->addr2);
+            }
+        }
+
+        if (giASN6) {
+            if (!as1) {
+                as1 = GeoIP_name_by_ipnum_v6(giASN6, session->addr1);
+            }
+
+            if (!as2) {
+                as2 = GeoIP_name_by_ipnum_v6(giASN6, session->addr2);
+            }
+        }
     }
 
     if (g1)
@@ -377,15 +472,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (g2)
         BSB_EXPORT_sprintf(jbsb, "\"g2\":\"%s\",", g2);
 
-    if (giASN) {
-        if (!as1) {
-            as1 = GeoIP_name_by_ipnum(giASN, htonl(session->addr1));
-        }
 
-        if (!as2) {
-            as2 = GeoIP_name_by_ipnum(giASN, htonl(session->addr2));
-        }
-    }
     if (as1) {
         BSB_EXPORT_cstr(jbsb, "\"as1\":");
         moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
@@ -402,14 +489,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             free(as2);
     }
 
-    if (!rir1)
-        rir1 = rirs[session->addr1 & 0xff];
 
     if (rir1)
         BSB_EXPORT_sprintf(jbsb, "\"rir1\":\"%s\",", rir1);
-
-    if (!rir2)
-        rir2 = rirs[session->addr2 & 0xff];
 
     if (rir2)
         BSB_EXPORT_sprintf(jbsb, "\"rir2\":\"%s\",", rir2);
@@ -587,7 +669,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             break;
         case MOLOCH_FIELD_TYPE_IP: {
             const int             value = session->fields[pos]->i;
-            const MolochIpInfo_t *ii = ipTree?moloch_db_get_local_ip(session, value):0;
+            const MolochIpInfo_t *ii = ipTree?moloch_db_get_local_ip4(session, value):0;
             char                 *as = NULL;
             const char           *g = NULL;
             const char           *rir = NULL;
@@ -667,7 +749,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                     BSB_EXPORT_sprintf(jbsb, "\"g%s\":[", config.fields[pos]->dbField);
                 HASH_FORALL(i_, *ihash, hint,
                     const char *g = NULL;
-                    if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                    if (ipTree && (ii = moloch_db_get_local_ip4(session, hint->i_hash))) {
                         g = ii->country;
                     }
 
@@ -696,7 +778,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 HASH_FORALL(i_, *ihash, hint,
                     char *as = NULL;
 
-                    if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                    if (ipTree && (ii = moloch_db_get_local_ip4(session, hint->i_hash))) {
                         as = ii->asn;
                     }
 
@@ -728,7 +810,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 HASH_FORALL(i_, *ihash, hint,
                     char *rir = NULL;
 
-                    if (ipTree && (ii = moloch_db_get_local_ip(session, hint->i_hash))) {
+                    if (ipTree && (ii = moloch_db_get_local_ip4(session, hint->i_hash))) {
                         rir = ii->rir;
                     }
 
@@ -785,7 +867,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     const char *g = NULL;
-                    if (ipTree && (ii = moloch_db_get_local_ip(session, (int)(long)ikey))) {
+                    if (ipTree && (ii = moloch_db_get_local_ip4(session, (int)(long)ikey))) {
                         g = ii->country;
                     }
 
@@ -799,7 +881,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                         BSB_EXPORT_cstr(jbsb, "\"---\"");
                     }
                     BSB_EXPORT_u08(jbsb, ',');
-                } 
+                }
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
                 BSB_EXPORT_cstr(jbsb, "],");
             }
@@ -816,7 +898,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     char *as = NULL;
 
-                    if (ipTree && (ii = moloch_db_get_local_ip(session, (int)(long)ikey))) {
+                    if (ipTree && (ii = moloch_db_get_local_ip4(session, (int)(long)ikey))) {
                         as = ii->asn;
                     }
 
@@ -850,7 +932,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     char *rir = NULL;
 
-                    if (ipTree && (ii = moloch_db_get_local_ip(session, (int)(long)ikey))) {
+                    if (ipTree && (ii = moloch_db_get_local_ip4(session, (int)(long)ikey))) {
                         rir = ii->rir;
                     }
 
@@ -996,23 +1078,23 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     if (BSB_IS_ERROR(jbsb)) {
         LOG("ERROR - Ran out of memory creating DB record supposed to be %d", jsonSize);
-        return;
+        goto cleanup;
     }
 
     if (config.dryRun) {
         if (config.tests) {
             const int hlen = dataPtr - startPtr;
-            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, sJson, (int)(BSB_LENGTH(jbsb)-hlen-1), sJson+hlen);
+            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, sJson[thread], (int)(BSB_LENGTH(jbsb)-hlen-1), sJson[thread]+hlen);
         } else if (config.debug) {
-            LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson);
+            LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson[thread]);
         }
-        BSB_INIT(jbsb, sJson, BSB_SIZE(jbsb));
-        return;
+        BSB_INIT(jbsb, sJson[thread], BSB_SIZE(jbsb));
+        goto cleanup;
     }
 
     if (config.noSPI) {
-        BSB_INIT(jbsb, sJson, BSB_SIZE(jbsb));
-        return;
+        BSB_INIT(jbsb, sJson[thread], BSB_SIZE(jbsb));
+        goto cleanup;
     }
 
     if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
@@ -1020,6 +1102,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
+cleanup:
+    jbsbs[thread] = jbsb;
+    MOLOCH_LOCK(inuse);
+    inuse[thread] = 0;
+    MOLOCH_UNLOCK(inuse);
 }
 /******************************************************************************/
 long long zero_atoll(char *v) {
@@ -1029,11 +1116,10 @@ long long zero_atoll(char *v) {
 }
 
 /******************************************************************************/
-static uint64_t dbTotalPackets = 0;
-static uint64_t dbTotalK = 0;
-static uint64_t dbTotalSessions = 0;
-static uint64_t dbTotalDropped = 0;
-static struct timeval dbLastTime;
+static uint64_t dbTotalPackets[3];
+static uint64_t dbTotalK[3];
+static uint64_t dbTotalSessions[3];
+static uint64_t dbTotalDropped[3];
 
 static char     stats_key[200];
 static int      stats_key_len = 0;
@@ -1051,12 +1137,11 @@ void moloch_db_load_stats()
 
     source = moloch_js0n_get(data, data_len, "_source", &source_len);
     if (source) {
-        dbTotalPackets = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalPackets", &len));
-        dbTotalK = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalK", &len));
-        dbTotalSessions = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalSessions", &len));
-        dbTotalDropped = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalDropped", &len));
+        dbTotalPackets[0] = dbTotalPackets[1] = dbTotalPackets[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalPackets", &len));
+        dbTotalK[0] = dbTotalK[1] = dbTotalK[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalK", &len));
+        dbTotalSessions[0] = dbTotalSessions[1] = dbTotalSessions[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalSessions", &len));
+        dbTotalDropped[0] = dbTotalDropped[1] = dbTotalDropped[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalDropped", &len));
     }
-    gettimeofday(&dbLastTime, 0);
 }
 /******************************************************************************/
 #if defined(__APPLE__) && defined(__MACH__)
@@ -1077,7 +1162,7 @@ uint64_t moloch_db_memory_size()
     int len = read(fd, buf, sizeof(buf));
     close(fd);
 
-    if (len <= 10) 
+    if (len <= 10)
         return 0;
 
     buf[len] = 0;
@@ -1096,101 +1181,17 @@ uint64_t moloch_db_memory_size()
 }
 #endif
 /******************************************************************************/
-void moloch_db_update_stats()
+void moloch_db_update_stats(int n)
 {
-    static uint64_t       lastPackets = 0;
-    static uint64_t       lastBytes = 0;
-    static uint64_t       lastSessions = 0;
-    static uint64_t       lastDropped = 0;
-    uint64_t              freeSpaceM = 0;
-    static struct rusage  lastUsage;
-    int                   i;
-
-    struct timeval currentTime;
-
-    gettimeofday(&currentTime, NULL);
-
-    if (lastPackets != 0 && currentTime.tv_sec == dbLastTime.tv_sec)
-        return;
-
-    char *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
-
-    uint64_t totalDropped = moloch_nids_dropped_packets();
-
-    for (i = 0; config.pcapDir[i]; i++) {
-        struct statvfs vfs;
-        statvfs(config.pcapDir[i], &vfs);
-        freeSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0);
-    }
-
-    dbTotalPackets += (totalPackets - lastPackets);
-    dbTotalSessions += (totalSessions - lastSessions);
-    dbTotalDropped += (totalDropped - lastDropped);
-    dbTotalK += (totalBytes - lastBytes)/1024;
-
-    struct rusage usage;
-    getrusage(RUSAGE_SELF, &usage);
-
-    int diffms = (currentTime.tv_sec - dbLastTime.tv_sec)*1000 + (currentTime.tv_usec/1000 - dbLastTime.tv_usec/1000);
-    uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage.ru_utime.tv_sec)*1000 + (usage.ru_utime.tv_usec/1000 - lastUsage.ru_utime.tv_usec/1000) +
-                         (usage.ru_stime.tv_sec - lastUsage.ru_stime.tv_sec)*1000 + (usage.ru_stime.tv_usec/1000 - lastUsage.ru_stime.tv_usec/1000);
-
-    int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
-        "{"
-        "\"hostname\": \"%s\", "
-        "\"currentTime\": %u, "
-        "\"freeSpaceM\": %" PRIu64 ", "
-        "\"monitoring\": %u, "
-        "\"memory\": %" PRIu64 ", "
-        "\"cpu\": %" PRIu64 ", "
-        "\"diskQueue\": %u, "
-        "\"totalPackets\": %" PRIu64 ", "
-        "\"totalK\": %" PRIu64 ", "
-        "\"totalSessions\": %" PRIu64 ", "
-        "\"totalDropped\": %" PRIu64 ", "
-        "\"deltaPackets\": %" PRIu64 ", "
-        "\"deltaBytes\": %" PRIu64 ", "
-        "\"deltaSessions\": %" PRIu64 ", "
-        "\"deltaDropped\": %" PRIu64 ", "
-        "\"deltaMS\": %u"
-        "}",
-        config.hostName,
-        (uint32_t)currentTime.tv_sec,
-        freeSpaceM,
-        moloch_nids_monitoring_sessions(),
-        moloch_db_memory_size(),
-        diffusage*10000/diffms,
-        moloch_writer_queue_length?moloch_writer_queue_length():0,
-        dbTotalPackets,
-        dbTotalK,
-        dbTotalSessions,
-        dbTotalDropped,
-        (totalPackets - lastPackets),
-        (totalBytes - lastBytes),
-        (totalSessions - lastSessions),
-        (totalDropped - lastDropped),
-        diffms);
-
-    dbLastTime   = currentTime;
-    lastBytes    = totalBytes;
-    lastPackets  = totalPackets;
-    lastSessions = totalSessions;
-    lastDropped  = totalDropped;
-    lastUsage    = usage;
-
-    moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
-}
-
-/******************************************************************************/
-void moloch_db_update_dstats(int n)
-{
-    static uint64_t       lastPackets[2] = {0, 0};
-    static uint64_t       lastBytes[2] = {0, 0};
-    static uint64_t       lastSessions[2] = {0, 0};
-    static uint64_t       lastDropped[2] = {0, 0};
-    static struct rusage  lastUsage[2];
-    static struct timeval lastTime[2];
-    static int            intervals[2] = {5, 60};
+    static uint64_t       lastPackets[3] = {0, 0, 0};
+    static uint64_t       lastBytes[3] = {0, 0, 0};
+    static uint64_t       lastSessions[3] = {0, 0, 0};
+    static uint64_t       lastDropped[3] = {0, 0, 0};
+    static uint64_t       lastFragsDropped[3] = {0, 0, 0};
+    static uint64_t       lastOverloadDropped[3] = {0, 0, 0};
+    static struct rusage  lastUsage[3];
+    static struct timeval lastTime[3];
+    static int            intervals[3] = {1, 5, 60};
     uint64_t              freeSpaceM = 0;
     int                   i;
     char                  key[200];
@@ -1201,12 +1202,13 @@ void moloch_db_update_dstats(int n)
 
     gettimeofday(&currentTime, NULL);
 
-    key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
     if (lastPackets[n] == 0) {
         lastTime[n] = startTime;
     }
 
-    uint64_t totalDropped = moloch_nids_dropped_packets();
+    uint64_t overloadDropped = moloch_packet_dropped_overload();
+    uint64_t totalDropped = moloch_packet_dropped_packets();
+    uint64_t fragsDropped = moloch_packet_dropped_frags();
 
     for (i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
@@ -1223,9 +1225,16 @@ void moloch_db_update_dstats(int n)
     uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage[n].ru_utime.tv_sec)*1000 + (usage.ru_utime.tv_usec/1000 - lastUsage[n].ru_utime.tv_usec/1000) +
                          (usage.ru_stime.tv_sec - lastUsage[n].ru_stime.tv_sec)*1000 + (usage.ru_stime.tv_usec/1000 - lastUsage[n].ru_stime.tv_usec/1000);
 
+    dbTotalPackets[n] += (totalPackets - lastPackets[n]);
+    dbTotalSessions[n] += (totalSessions - lastSessions[n]);
+    dbTotalDropped[n] += (totalDropped - lastDropped[n]);
+    dbTotalK[n] += (totalBytes - lastBytes[n])/1024;
+
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
+        "\"ver\": \"%s\", "
         "\"nodeName\": \"%s\", "
+        "\"hostname\": \"%s\", "
         "\"interval\": %d, "
         "\"currentTime\": %" PRIu64 ", "
         "\"freeSpaceM\": %" PRIu64 ", "
@@ -1233,65 +1242,100 @@ void moloch_db_update_dstats(int n)
         "\"memory\": %" PRIu64 ", "
         "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
+        "\"esQueue\": %u, "
+        "\"packetQueue\": %u, "
+        "\"fragsQueue\": %u, "
+        "\"frags\": %u, "
+        "\"needSave\": %u, "
+        "\"closeQueue\": %u, "
+        "\"totalPackets\": %" PRIu64 ", "
+        "\"totalK\": %" PRIu64 ", "
+        "\"totalSessions\": %" PRIu64 ", "
+        "\"totalDropped\": %" PRIu64 ", "
+        "\"tcpSessions\": %u, " 
+        "\"udpSessions\": %u, " 
+        "\"icmpSessions\": %u, " 
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
         "\"deltaDropped\": %" PRIu64 ", "
+        "\"deltaFragsDropped\": %" PRIu64 ", "
+        "\"deltaOverloadDropped\": %" PRIu64 ", "
         "\"deltaMS\": %" PRIu64
         "}",
+        VERSION,
         config.nodeName,
+        config.hostName,
         intervals[n],
         cursec,
         freeSpaceM,
-        moloch_nids_monitoring_sessions(),
+        moloch_session_monitoring(),
         moloch_db_memory_size(),
         diffusage*10000/diffms,
         moloch_writer_queue_length?moloch_writer_queue_length():0,
+        moloch_http_queue_length(esServer),
+        moloch_packet_outstanding(),
+        moloch_packet_frags_outstanding(),
+        moloch_packet_frags_size(),
+        moloch_session_need_save_outstanding(),
+        moloch_session_close_outstanding(),
+        dbTotalPackets[n],
+        dbTotalK[n],
+        dbTotalSessions[n],
+        dbTotalDropped[n],
+        moloch_session_watch_count(SESSION_TCP),
+        moloch_session_watch_count(SESSION_UDP),
+        moloch_session_watch_count(SESSION_ICMP),
         (totalPackets - lastPackets[n]),
         (totalBytes - lastBytes[n]),
         (totalSessions - lastSessions[n]),
         (totalDropped - lastDropped[n]),
+        (fragsDropped - lastFragsDropped[n]),
+        (overloadDropped - lastOverloadDropped[n]),
         diffms);
 
-    lastTime[n]     = currentTime;
-    lastBytes[n]    = totalBytes;
-    lastPackets[n]  = totalPackets;
-    lastSessions[n] = totalSessions;
-    lastDropped[n]  = totalDropped;
-    lastUsage[n]    = usage;
-    moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
+    lastTime[n]            = currentTime;
+    lastBytes[n]           = totalBytes;
+    lastPackets[n]         = totalPackets;
+    lastSessions[n]        = totalSessions;
+    lastDropped[n]         = totalDropped;
+    lastFragsDropped[n]    = fragsDropped;
+    lastOverloadDropped[n] = overloadDropped;
+    lastUsage[n]           = usage;
+
+    if (n == 0) {
+        moloch_http_set(esServer, stats_key, stats_key_len, json, json_len, NULL, NULL);
+    } else {
+        key_len = snprintf(key, sizeof(key), "/%sdstats/dstat/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
+        moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
+    }
 }
 /******************************************************************************/
 gboolean moloch_db_update_stats_gfunc (gpointer user_data)
 {
-    if (user_data == (gpointer)0)
-        moloch_db_update_stats();
-    else if (user_data == (gpointer)1)
-        moloch_db_update_dstats(0);
-    else if (user_data == (gpointer)2)
-        moloch_db_update_dstats(1);
+    moloch_db_update_stats((long)user_data);
 
     return TRUE;
 }
 /******************************************************************************/
 gboolean moloch_db_flush_gfunc (gpointer user_data )
 {
-    char            key[100];
-    int             key_len;
+    int             i;
+    struct timeval  currentTime;
 
-    if (!sJson || BSB_LENGTH(jbsb) == 0)
-        return TRUE;
-
-    struct timeval currentTime;
     gettimeofday(&currentTime, NULL);
 
-    if (user_data == 0 && (currentTime.tv_sec - dbLastSave) < config.dbFlushTimeout)
-        return TRUE;
+    MOLOCH_LOCK(inuse);
+    for (i = 0; i < config.packetThreads; i++) {
+        if (sJson[i] && !inuse[i] && BSB_LENGTH(jbsbs[i]) > 0 &&
+            ((currentTime.tv_sec - dbLastSave[i]) >= config.dbFlushTimeout || user_data == (gpointer)1)) {
 
-    key_len = snprintf(key, sizeof(key), "/_bulk");
-    moloch_http_set(esServer, key, key_len, sJson, BSB_LENGTH(jbsb), NULL, NULL);
-    sJson = 0;
-    dbLastSave = currentTime.tv_sec;
+            moloch_http_set(esServer, "/_bulk", 6, sJson[i], BSB_LENGTH(jbsbs[i]), NULL, NULL);
+            sJson[i] = 0;
+            dbLastSave[i] = currentTime.tv_sec;
+        }
+    }
+    MOLOCH_UNLOCK(inuse);
 
     return TRUE;
 }
@@ -1351,17 +1395,18 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
     version = moloch_js0n_get(data, data_len, "_version", &version_len);
 
     if (!version_len || !version) {
-        LOG("ERROR - Couldn't fetch sequence: %.*s", (int)data_len, data);
+        LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
         return moloch_db_get_sequence_number_sync(name);
     } else {
         return atoi((char *)version);
     }
 }
 /******************************************************************************/
-uint32_t nextFileNum;
 void moloch_db_fn_seq_cb(uint32_t newSeq, gpointer UNUSED(uw))
 {
+    MOLOCH_LOCK(nextFileNum);
     nextFileNum = newSeq;
+    MOLOCH_UNLOCK(nextFileNum);
 }
 /******************************************************************************/
 void moloch_db_load_file_num()
@@ -1435,13 +1480,14 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
     char               key[100];
     int                key_len;
     uint32_t           num;
-    static char        filename[1024];
+    char               filename[1024];
     struct tm         *tmp;
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     int                json_len;
     const uint64_t     fp = firstPacket;
 
 
+    MOLOCH_LOCK(nextFileNum);
     snprintf(key, sizeof(key), "fn-%s", config.nodeName);
     if (nextFileNum == 0) {
         /* If doing an offline file OR the last async call hasn't returned, just get a sync filenum */
@@ -1486,6 +1532,8 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
     }
 
     moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
+
+    MOLOCH_UNLOCK(nextFileNum);
 
     if (config.logFileCreation)
         LOG("Creating file %d with key >%s< using >%s<", num, key, json);
@@ -1540,7 +1588,7 @@ void moloch_db_load_tags()
     char               key[100];
     int                key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%stags/tag/_search?size=300&fields=n", config.prefix);
+    key_len = snprintf(key, sizeof(key), "/%stags/tag/_search?size=3000&fields=n", config.prefix);
     unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data) {
@@ -1606,8 +1654,9 @@ typedef struct moloch_tag_request {
     uint32_t                   newSeq;
 } MolochTagRequest_t;
 
-static int                     outstandingTagRequests = 0;
-static MolochTagRequest_t      tagRequests;
+LOCAL int                     outstandingTagRequests = 0;
+LOCAL MolochTagRequest_t      tagRequests;
+LOCAL MOLOCH_LOCK_DEFINE(tagRequests);
 
 void moloch_db_tag_cb(int code, unsigned char *data, int data_len, gpointer uw);
 
@@ -1627,14 +1676,16 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
         char               key[500];
         int                key_len;
 
+        MOLOCH_LOCK(tagRequests);
         DLL_POP_HEAD(t_, &tagRequests, r);
+        MOLOCH_UNLOCK(tagRequests);
 
         MolochTag_t *tag;
         HASH_FIND(tag_, tags, r->tag, tag);
 
         if (tag) {
             if (r->func)
-                r->func(r->uw, r->tagtype, r->tag, tag->tagValue);
+                r->func(r->uw, r->tagtype, r->tag, tag->tagValue, TRUE);
             g_free(r->escaped);
             free(r->tag);
             MOLOCH_TYPE_FREE(MolochTagRequest_t, r);
@@ -1667,7 +1718,7 @@ void moloch_db_tag_create_cb(int UNUSED(code), unsigned char *data, int UNUSED(d
     HASH_ADD(tag_, tags, tag->tagName, tag);
 
     if (r->func)
-        r->func(r->uw, r->tagtype, r->tag, r->newSeq);
+        r->func(r->uw, r->tagtype, r->tag, r->newSeq, TRUE);
     moloch_db_free_tag_request(r);
 }
 /******************************************************************************/
@@ -1692,7 +1743,7 @@ void moloch_db_tag_cb(int UNUSED(code), unsigned char *data, int data_len, gpoin
 
     if (!data) {
         if (r->func)
-            r->func(r->uw, r->tagtype, r->tag, 0);
+            r->func(r->uw, r->tagtype, r->tag, 0, TRUE);
         moloch_db_free_tag_request(r);
         return;
     }
@@ -1715,7 +1766,7 @@ void moloch_db_tag_cb(int UNUSED(code), unsigned char *data, int data_len, gpoin
         HASH_ADD(tag_, tags, tag->tagName, tag);
 
         if (r->func)
-            r->func(r->uw, r->tagtype, r->tag, tag->tagValue);
+            r->func(r->uw, r->tagtype, r->tag, tag->tagValue, TRUE);
         moloch_db_free_tag_request(r);
         return;
     }
@@ -1740,7 +1791,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
 
     if (tag) {
         if (func)
-            func(uw, tagtype, tagname, tag->tagValue);
+            func(uw, tagtype, tagname, tag->tagValue, FALSE);
         return;
     }
 
@@ -1752,7 +1803,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         HASH_ADD(tag_, tags, tag->tagName, tag);
 
         if (func)
-            func(uw, tagtype, tagname, tag->tagValue);
+            func(uw, tagtype, tagname, tag->tagValue, FALSE);
         return;
     }
 
@@ -1773,7 +1824,9 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         outstandingTagRequests++;
     } else {
+        MOLOCH_LOCK(tagRequests);
         DLL_PUSH_TAIL(t_, &tagRequests, r);
+        MOLOCH_UNLOCK(tagRequests);
     }
 }
 /******************************************************************************/
@@ -1972,7 +2025,7 @@ gboolean moloch_db_file_exists(char *filename)
     return FALSE;
 }
 /******************************************************************************/
-int moloch_db_can_quit() 
+int moloch_db_can_quit()
 {
     if (outstandingTagRequests > 0) {
         if (config.debug)
@@ -1986,11 +2039,14 @@ int moloch_db_can_quit()
         return 1;
     }
 
-    if (sJson && BSB_LENGTH(jbsb) > 0) {
-        moloch_db_flush_gfunc((gpointer)1);
-        if (config.debug)
-            LOG ("Can't quit, sJson %ld", BSB_LENGTH(jbsb));
-        return 1;
+    int i;
+    for (i = 0; i < config.packetThreads; i++) {
+        if (sJson[i] && BSB_LENGTH(jbsbs[i]) > 0) {
+            moloch_db_flush_gfunc((gpointer)1);
+            if (config.debug)
+                LOG ("Can't quit, sJson[%d] %ld", i, BSB_LENGTH(jbsbs[i]));
+            return 1;
+        }
     }
 
     if (moloch_http_queue_length(esServer) > 0) {
@@ -2034,6 +2090,15 @@ void moloch_db_init()
         GeoIP_set_charset(gi, GEOIP_CHARSET_UTF8);
     }
 
+    if (config.geoip6File) {
+        gi6 = GeoIP_open(config.geoip6File, GEOIP_MEMORY_CACHE);
+        if (!gi6) {
+            printf("Couldn't initialize GeoIP %s from %s", strerror(errno), config.geoip6File);
+            exit(1);
+        }
+        GeoIP_set_charset(gi6, GEOIP_CHARSET_UTF8);
+    }
+
     if (config.geoipASNFile) {
         giASN = GeoIP_open(config.geoipASNFile, GEOIP_MEMORY_CACHE);
         if (!giASN) {
@@ -2041,6 +2106,15 @@ void moloch_db_init()
             exit(1);
         }
         GeoIP_set_charset(giASN, GEOIP_CHARSET_UTF8);
+    }
+
+    if (config.geoipASN6File) {
+        giASN6 = GeoIP_open(config.geoipASN6File, GEOIP_MEMORY_CACHE);
+        if (!giASN6) {
+            printf("Couldn't initialize GeoIP ASN 6 %s from %s", strerror(errno), config.geoipASN6File);
+            exit(1);
+        }
+        GeoIP_set_charset(giASN6, GEOIP_CHARSET_UTF8);
     }
 
     moloch_db_load_rir();
@@ -2063,7 +2137,7 @@ void moloch_db_exit()
         }
 
         moloch_db_flush_gfunc((gpointer)1);
-        moloch_db_update_stats();
+        moloch_db_update_stats(TRUE);
         moloch_http_free_server(esServer);
     }
 
@@ -2084,7 +2158,8 @@ void moloch_db_exit()
     }
 
     if (ipTree) {
-        Clear_Patricia(ipTree, moloch_db_free_local_ip);
+        Destroy_Patricia(ipTree, moloch_db_free_local_ip);
+        ipTree = 0;
     }
 
     MolochTag_t *tag;

@@ -1,87 +1,107 @@
 {
    "packets" : [
       {
-         "body" : {
-            "dns" : {
-               "qc-term" : [
-                  "IN"
-               ],
-               "qc-term-cnt" : 1,
-               "qt-term-cnt" : 1,
-               "status-term-cnt" : 1,
-               "qt-term" : [
-                  "A"
-               ],
-               "status-term" : [
-                  "NXDOMAIN"
-               ]
-            },
-            "db2" : 139,
-            "db" : 203,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "no" : "test",
-            "lp" : 1394587409,
-            "a2" : "10.0.0.2",
-            "ss" : 1,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "pa1" : 1,
-            "fpd" : 1394587409097,
-            "fs" : [],
-            "by2" : 147,
-            "g1" : "RUS",
-            "pa2" : 1,
-            "p1" : 56329,
-            "by" : 219,
-            "as1" : "AS0000 This is neat",
-            "g2" : "CAN",
-            "pr" : 17,
-            "ps" : [
-               24,
-               112
-            ],
-            "prot-term-cnt" : 2,
-            "dnsho" : [
-               "no.such.host"
-            ],
-            "lpd" : 1394587409103,
-            "fp" : 1394587409,
-            "as2" : "AS0001 Cool Beans!",
-            "pa" : 2,
-            "tacnt" : 2,
-            "sl" : 5,
-            "fb1" : "a9ba010000010000",
-            "a1" : "10.0.0.1",
-            "fb2" : "a9ba858300010000",
-            "db1" : 64,
-            "dnshocnt" : 1,
-            "mac2-term-cnt" : 2,
-            "by1" : 72,
-            "p2" : 53,
-            "mac1-term-cnt" : 1,
-            "rir2" : "TEST",
-            "psl" : [
-               88,
-               163
-            ],
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ]
-         },
          "header" : {
             "index" : {
                "_index" : "tests_sessions-140312",
                "_type" : "session"
             }
+         },
+         "body" : {
+            "as1" : "AS0000 This is neat",
+            "p2" : 53,
+            "ps" : [
+               24,
+               112
+            ],
+            "sl" : 5,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "a1" : "10.0.0.1",
+            "fb2" : "a9ba858300010000",
+            "g2" : "CAN",
+            "mac1-term-cnt" : 1,
+            "tacnt" : 2,
+            "g1" : "RUS",
+            "prot-term-cnt" : 2,
+            "no" : "test",
+            "mac2-term-cnt" : 2,
+            "dnsho" : [
+               "no.such.host"
+            ],
+            "ss" : 1,
+            "a2" : "10.0.0.2",
+            "lpd" : 1394587409103,
+            "pa1" : 1,
+            "test" : {
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:56329,33554442:53"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ]
+            },
+            "db" : 203,
+            "dnshocnt" : 1,
+            "fp" : 1394587409,
+            "as2" : "AS0001 Cool Beans!",
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term-cnt" : 1,
+               "status-term" : [
+                  "NXDOMAIN"
+               ],
+               "qt-term-cnt" : 1,
+               "qc-term-cnt" : 1
+            },
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "by2" : 147,
+            "fpd" : 1394587409097,
+            "by1" : 72,
+            "db2" : 139,
+            "pr" : 17,
+            "psl" : [
+               88,
+               163
+            ],
+            "fs" : [],
+            "pa" : 2,
+            "p1" : 56329,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "fb1" : "a9ba010000010000",
+            "db1" : 64,
+            "rir2" : "TEST",
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "lp" : 1394587409,
+            "by" : 219,
+            "pa2" : 1
          }
       }
    ]

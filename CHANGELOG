@@ -1,3 +1,17 @@
+0.14.0 2016/03/XX
+  - NOTICE: libnids is no longer required
+  - NOTICE: You'll want to rerun configure if using the same build directory
+  - NOTICE: db.pl upgrade is required
+  - NOTICE: ipv6 support is experimental, and will change with ES 5.0
+  - capture - replace libnids with internal tcp
+  - capture - basic threads
+  - capture - memory reporting on linux uses /proc/self/statm now
+  - capture - more stats
+  - capture - basic ipv6
+  - viewer - Columns can be hidden/moved on stats, sessions pages
+  - capture - pfring and daq support are now plugins (capture/plugins)
+  - capture - can monitor multiple interfaces
+
 0.12.3 2016/03/28
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 
   - NOTICE: Requires running npm update

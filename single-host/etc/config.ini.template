@@ -48,7 +48,7 @@ httpRealm = Moloch
 # Default: "/"
 # webBasePath = /moloch/
 
-# The interface to listen on for traffic
+# Semicolon ';' seperated list of interfaces to listen on for traffic
 interface=_INTERFACE_
 
 # The bpf filter
@@ -161,6 +161,9 @@ pluginsDir=_TDIR_/plugins
 # Semicolon ';' seperated list of plugins to load and the order to load them
 #plugins=tagger.so; netflow.so
 
+# Plugins to load as root, usually just readers
+#rootPlugins=reader-pfring; reader-daq.so
+
 # Semicolon ';' seperated list of viewer plugins to load and the order to load in
 # viewerPlugins=wise.js
 
@@ -192,18 +195,17 @@ spiDataMaxIndices=3
 # _-view_ = " - " + current view if set, otherwise blank, prior spaces removed
 #titleTemplate=_cluster_ - _page_ _-view_ _-expression_
 
+# Number of threads processing packets
+packetThreads=2
+
 # ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
 # in order and can replace values set in this file or previous files.
 #includes=
 
 # ADVANCED - How is pcap written to disk
-#  normal        = just normal open/writes uses the linux page cache heavily (default)
-#                  probably want to tune vm.dirty_ratio and vm.dirty_background_ratio
-#  direct        = use O_DIRECT with open/write - writes directly to drives, no page cache, increase
-#                  pcapWriteSize (>= 256k, must be multiple of 4096) and packetsPerPoll (>= 100k)
-#  thread        = like normal, but use a thread for all the writes
-#  thread-direct = like direct, but use a thread for all the writes
-pcapWriteMethod=thread-direct
+#  simple        = use O_DIRECT if available, writes in pcapWriteSize chunks,
+#                  a file per packet thread.
+pcapWriteMethod=simple
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs 
 # stripe size.  Defaults to 256k

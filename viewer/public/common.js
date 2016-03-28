@@ -73,6 +73,24 @@ function ipString(ip) {
   return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
 }
 
+function ip6String(ip) {
+  var ip = ip.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
+  [/(^|:)0:0:0:0:0:0:0:0($|:)/,
+   /(^|:)0:0:0:0:0:0:0($|:)/,
+   /(^|:)0:0:0:0:0:0($|:)/,
+   /(^|:)0:0:0:0:0($|:)/,
+   /(^|:)0:0:0:0($|:)/,
+   /(^|:)0:0:0($|:)/,
+   /(^|:)0:0($|:)/].every(function(re) {
+     if (ip.match(re)) {
+       ip = ip.replace(re, "::");
+       return false;
+     }
+     return true;
+   });
+  return ip;
+}
+
 function removeArray(arr, value) {
   var pos = 0;
   while ((pos = arr.indexOf(value, pos)) !== -1) {
@@ -133,6 +151,9 @@ function safeStr(str) {
 
 // From http://stackoverflow.com/a/2901298
 function numberWithCommas(x) {
+  if (x === undefined) {
+    return "0";
+  }
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
@@ -225,6 +246,8 @@ function updateHealth(health)
   $("#esstatus").qtip({
     content:
       "Elasticsearch:<br>" +
+      " Version: " + health.version + "<br>" +
+      " Cluster: " + health.cluster_name + "<br>" +
       " Status: " + health.status + "<br>" +
       " Nodes: " + health.number_of_data_nodes + "<br>" +
       " Shards: " + health.active_shards + "<br>" +
@@ -1644,6 +1667,86 @@ function setupMap(mapId) {
       $(this).parent().resize();
     }
   );
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Table State Functions
+//////////////////////////////////////////////////////////////////////////////////
+function saveTableState(e) {
+  if ($(e.target).data("molochts_loaded") === undefined) {
+    return;
+  }
+
+  var table = $(e.target).DataTable();
+  var state = {
+    visibleHeaders: $("#"+ e.target.id + " thead tr th").map(function() {return $(this).text()}).toArray(),
+    order: []
+  };
+  var order = table.order();
+  for (var i = 0; i < order.length; i++) {
+    state.order[i] = [
+      $(table.column(order[i][0]).header()).text(),
+      order[i][1]
+    ];
+  }
+  var json = JSON.stringify(state);
+  if ($(e.target).data("molochts") !== json) {
+    $(e.target).data("molochts", json);
+    $.ajax( {
+      "dataType": 'json',
+      "type": "POST",
+      "data": state,
+      "url": "tableState/" + e.target.id,
+      "success": function(data) {
+      }
+    });
+  }
+}
+
+function loadTableState(table, defaultHeaders) {
+
+  table.on('column-reorder.dt', saveTableState)
+       .on('column-visibility.dt', saveTableState)
+       .on('order.dt', saveTableState);
+
+  var name = table.settings()[0].sInstance;
+
+  $.ajax( {
+    "dataType": 'json',
+    "type": "GET",
+    "url": "tableState/" + name,
+    "success": function(state) {
+      if (!state.visibleHeaders) {
+        if (!defaultHeaders) {
+          $("#"+name).data("molochts_loaded", 1).show();
+          return;
+        }
+        state.visibleHeaders = defaultHeaders;
+      }
+      var headerNames = table.columns().header().to$().map(function() {return $(this).text()}).toArray();
+
+      for (var i = 0; i < headerNames.length; i++) {
+        table.column(i).visible(state.visibleHeaders.indexOf(headerNames[i]) !== -1);
+      }
+
+      var colorder = [];
+      var extra = state.visibleHeaders.length;
+      var possible = d3.range(headerNames.length);
+
+
+      for (var i = 0; i < state.visibleHeaders.length; i++) {
+        var pos = headerNames.indexOf(state.visibleHeaders[i]);
+        if (pos !== -1) {
+          colorder.push(pos);
+          possible.splice(possible.indexOf(pos), 1);
+        }
+      }
+      colorder = colorder.concat(possible);
+      table.colReorder.order(colorder);
+
+      $("#"+name).data("molochts_loaded", 1).show();
+    }
+  });
 }
 
 /*

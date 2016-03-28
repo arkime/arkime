@@ -16,22 +16,35 @@
  * limitations under the License.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <unistd.h>
+#define __FAVOR_BSD
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <netinet/ip6.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <sys/time.h>
 #include "http_parser.h"
 #include "dll.h"
 #include "hash.h"
 #include "bsb.h"
-#include "nids.h"
 #include "glib.h"
 
 #define UNUSED(x) x __attribute((unused))
 
 
 #define MOLOCH_API_VERSION 14
+
+#define MOLOCH_SESSIONID_LEN 37
+
+#define MOLOCH_V6_TO_V4(_addr) (((uint32_t *)(_addr).s6_addr)[3])
+
+#define MOLOCH_SNAPLEN 16384
+#define MOLOCH_PACKET_MAX_LEN 0x10000
 
 /******************************************************************************/
 /*
@@ -197,17 +210,31 @@ typedef struct {
     uint32_t                   jsonSize;
 } MolochField_t;
 
-#define MOLOCH_LOCK_DEFINE(var)    pthread_mutex_t var##_mutex = PTHREAD_MUTEX_INITIALIZER
-#define MOLOCH_LOCK_EXTERN(var)    pthread_mutex_t var##_mutex
-#define MOLOCH_LOCK_INIT(var)      pthread_mutex_init(&var##_mutex, NULL)
-#define MOLOCH_LOCK(var)           pthread_mutex_lock(&var##_mutex)
-#define MOLOCH_UNLOCK(var)         pthread_mutex_unlock(&var##_mutex)
+#define MOLOCH_LOCK_DEFINE(var)         pthread_mutex_t var##_mutex = PTHREAD_MUTEX_INITIALIZER
+#define MOLOCH_LOCK_EXTERN(var)         pthread_mutex_t var##_mutex
+#define MOLOCH_LOCK_INIT(var)           pthread_mutex_init(&var##_mutex, NULL)
+#define MOLOCH_LOCK(var)                pthread_mutex_lock(&var##_mutex)
+#define MOLOCH_UNLOCK(var)              pthread_mutex_unlock(&var##_mutex)
 
-#define MOLOCH_COND_DEFINE(var)    pthread_cond_t var##_cond = PTHREAD_COND_INITIALIZER
-#define MOLOCH_COND_EXTERN(var)    pthread_cond_t var##_cond
-#define MOLOCH_COND_INIT(var)      pthread_cond_init(&var##_cond, NULL)
-#define MOLOCH_COND_WAIT(var)      pthread_cond_wait(&var##_cond, &var##_mutex)
-#define MOLOCH_COND_BROADCAST(var) pthread_cond_broadcast(&var##_cond)
+#define MOLOCH_COND_DEFINE(var)         pthread_cond_t var##_cond = PTHREAD_COND_INITIALIZER
+#define MOLOCH_COND_EXTERN(var)         pthread_cond_t var##_cond
+#define MOLOCH_COND_INIT(var)           pthread_cond_init(&var##_cond, NULL)
+#define MOLOCH_COND_WAIT(var)           pthread_cond_wait(&var##_cond, &var##_mutex)
+#define MOLOCH_COND_TIMEDWAIT(var, abt) pthread_cond_timedwait(&var##_cond, &var##_mutex, &abs)
+#define MOLOCH_COND_BROADCAST(var)      pthread_cond_broadcast(&var##_cond)
+
+#define MOLOCH_MAX_PACKET_THREADS 8
+
+#ifndef LOCAL
+#define LOCAL static
+#endif
+
+/******************************************************************************/
+
+#define SESSION_TCP  0
+#define SESSION_UDP  1
+#define SESSION_ICMP 2
+#define SESSION_MAX  3
 
 /******************************************************************************/
 /*
@@ -234,6 +261,7 @@ typedef struct moloch_config {
     gboolean  pcapMonitor;
     gboolean  pcapDelete;
     gboolean  pcapSkip;
+    gboolean  flushBetween;
 
     enum MolochRotate rotate;
 
@@ -249,7 +277,7 @@ typedef struct moloch_config {
     char     *prefix;
     char     *nodeClass;
     char     *elasticsearch;
-    char     *interface;
+    char    **interface;
     int       pcapDirPos;
     char    **pcapDir;
     char     *bpf;
@@ -257,6 +285,8 @@ typedef struct moloch_config {
     char     *emailYara;
     char     *geoipFile;
     char     *geoipASNFile;
+    char     *geoip6File;
+    char     *geoipASN6File;
     char     *rirFile;
     char     *dropUser;
     char     *dropGroup;
@@ -266,31 +296,31 @@ typedef struct moloch_config {
     int      *dontSaveBPFsStop;
     int       dontSaveBPFsNum;
 
+    char    **rootPlugins;
     char    **plugins;
     char    **smtpIpHeaders;
 
     double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
-    uint32_t  minFreeSpaceG;
-    uint32_t  icmpTimeout;
-    uint32_t  udpTimeout;
-    uint32_t  tcpTimeout;
+    uint32_t  timeouts[SESSION_MAX];
     uint32_t  tcpSaveTimeout;
     uint32_t  maxStreams;
     uint32_t  maxPackets;
+    uint32_t  maxPacketsInQueue;
     uint32_t  dbBulkSize;
     uint32_t  dbFlushTimeout;
     uint32_t  maxESConns;
     uint32_t  maxESRequests;
     uint32_t  logEveryXPackets;
-    uint32_t  packetsPerPoll;
     uint32_t  pcapBufferSize;
     uint32_t  pcapWriteSize;
     uint32_t  maxWriteBuffers;
     uint32_t  maxFreeOutputBuffers;
+    uint32_t  fragsTimeout;
+    uint32_t  maxFrags;
 
-    int       magicThreads;
+    int       packetThreads;
 
     char      logUnknownProtocols;
     char      logESRequests;
@@ -330,11 +360,59 @@ typedef struct {
 
 } MolochParserInfo_t;
 
+
+/******************************************************************************/
+typedef struct molochpacket_t
+{
+    struct molochpacket_t   *packet_next, *packet_prev;
+    struct timeval ts;             // timestamp
+    uint8_t       *pkt;            // full packet
+    uint64_t       writerFilePos;  // where in output file
+    uint64_t       readerFilePos;  // where in input file
+    char          *readerName;     // file name reader used
+    uint32_t       writerFileNum;  // file number in db
+    uint16_t       pktlen;         // length of packet
+    uint16_t       payloadLen;     // length of ip payload
+    uint16_t       payloadOffset;  // offset to ip payload from start
+    uint8_t        ipOffset;       // offset to ip header from start
+    uint8_t        protocol;       // ip protocol
+    uint8_t        direction:1;    // direction of packet
+    uint8_t        ses:3;          // type of session
+    uint8_t        v6:1;           // v6 or not
+    uint8_t        copied:1;       // don't need to copy
+    uint8_t        wasfrag:1;      // was a fragment
+} MolochPacket_t;
+
+typedef struct
+{
+    struct molochpacket_t   *packet_next, *packet_prev;
+    uint32_t                 packet_count;
+    MOLOCH_LOCK_EXTERN(lock);
+    MOLOCH_COND_EXTERN(lock);
+} MolochPacketHead_t;
+/******************************************************************************/
+typedef struct moloch_tcp_data {
+    struct moloch_tcp_data *td_next, *td_prev;
+
+    MolochPacket_t *packet;
+    uint32_t        seq;
+    uint32_t        ack;
+    uint16_t        len;
+    uint16_t        dataOffset;
+} MolochTcpData_t;
+
+typedef struct {
+    struct moloch_tcp_data *td_next, *td_prev;
+    int td_count;
+} MolochTcpDataHead_t;
+
+#define MOLOCH_TCP_STATE_FIN     1
+#define MOLOCH_TCP_STATE_FIN_ACK 2
+
 /******************************************************************************/
 /*
  * SPI Data Storage
  */
-#define MOLOCH_SESSIONID_LEN 12
 typedef struct moloch_session {
     struct moloch_session *tcp_next, *tcp_prev;
     struct moloch_session *q_next, *q_prev;
@@ -342,13 +420,17 @@ typedef struct moloch_session {
     int                    h_bucket;
     uint32_t               h_hash;
 
-    uint64_t               sessionIda;
-    uint32_t               sessionIdb;
+    char                   sessionId[MOLOCH_SESSIONID_LEN];
+
     MolochField_t        **fields;
 
     void                  **pluginData;
 
     MolochParserInfo_t    *parserInfo;
+
+    MolochTcpDataHead_t   tcpData;
+    uint32_t              tcpSeq[2];
+    char                  tcpState[2];
 
     GArray                *filePosArray;
     GArray                *fileLenArray;
@@ -361,12 +443,13 @@ typedef struct moloch_session {
 
     uint64_t               bytes[2];
     uint64_t               databytes[2];
+    uint64_t               totalDatabytes[2];
 
 
     uint32_t               lastFileNum;
-    uint32_t               lastSave;
-    uint32_t               addr1;
-    uint32_t               addr2;
+    uint32_t               saveTime;
+    struct in6_addr        addr1;
+    struct in6_addr        addr2;
     uint32_t               packets[2];
 
     uint16_t               port1;
@@ -385,9 +468,13 @@ typedef struct moloch_session {
     uint8_t                parserNum;
 
     uint8_t                maxFields;
-    uint16_t               haveNidsTcp:1;
+    uint8_t                thread;
+    uint16_t               haveTcpSession:1;
     uint16_t               needSave:1;
     uint16_t               stopSPI:1;
+    uint16_t               closingQ:1;
+    uint16_t               stopTCP:1;
+    uint16_t               ses:3;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
@@ -401,6 +488,17 @@ typedef struct moloch_session_head {
 } MolochSessionHead_t;
 
 
+//#define MOLOCH_USE_MALLOC
+
+#ifdef MOLOCH_USE_MALLOC
+#define MOLOCH_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
+#define MOLOCH_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
+#define MOLOCH_TYPE_FREE(type,mem) free(mem)
+
+#define MOLOCH_SIZE_ALLOC(name, s)  malloc(s)
+#define MOLOCH_SIZE_ALLOC0(name, s) calloc(s, 1)
+#define MOLOCH_SIZE_FREE(name, mem) free(mem)
+#else
 #define MOLOCH_TYPE_ALLOC(type) (type *)(g_slice_alloc(sizeof(type)))
 #define MOLOCH_TYPE_ALLOC0(type) (type *)(g_slice_alloc0(sizeof(type)))
 #define MOLOCH_TYPE_FREE(type,mem) g_slice_free1(sizeof(type),mem)
@@ -410,7 +508,26 @@ int   moloch_size_free(void *mem);
 #define MOLOCH_SIZE_ALLOC(name, s)  moloch_size_alloc(s, 0)
 #define MOLOCH_SIZE_ALLOC0(name, s) moloch_size_alloc(s, 1)
 #define MOLOCH_SIZE_FREE(name, mem) moloch_size_free(mem)
+#endif
 
+// pcap_file_header
+typedef struct {
+	uint32_t magic;
+	uint16_t version_major;
+	uint16_t version_minor;
+	int32_t  thiszone;	/* gmt to local correction */
+	uint32_t sigfigs;	/* accuracy of timestamps */
+	uint32_t snaplen;	/* max length saved portion of each pkt */
+	uint32_t linktype;	/* data link type (LINKTYPE_*) */
+} MolochPcapFileHdr_t;
+
+#ifndef likely
+#define likely(x)       __builtin_expect((x),1)
+#endif
+
+#ifndef unlikely
+#define unlikely(x)     __builtin_expect((x),0)
+#endif
 
 /******************************************************************************/
 /*
@@ -420,19 +537,24 @@ typedef int (*MolochWatchFd_func)(gint fd, GIOCondition cond, gpointer data);
 
 typedef void (*MolochHttpResponse_cb)(int code, unsigned char *data, int len, gpointer uw);
 
-typedef void (*MolochTag_cb)(void *uw, int tagType, const char *tagName, uint32_t tagValue);
+typedef void (*MolochTag_cb)(void *uw, int tagType, const char *tagName, uint32_t tagValue, gboolean async);
 
 typedef void (*MolochSeqNum_cb)(uint32_t seq, gpointer uw);
 
 /******************************************************************************/
+extern MOLOCH_LOCK_EXTERN(LOG);
 #define LOG(...) do { \
     if(config.quiet == FALSE) { \
+        MOLOCH_LOCK(LOG); \
         time_t _t = time(NULL); \
+        char   _b[26]; \
         printf("%15.15s %s:%d %s(): ",\
-            ctime(&_t)+4, __FILE__,\
+            ctime_r(&_t, _b)+4, __FILE__,\
             __LINE__, __FUNCTION__); \
         printf(__VA_ARGS__); \
         printf("\n"); \
+        fflush(stdout); \
+        MOLOCH_UNLOCK(LOG); \
     } \
 } while(0) /* no trailing ; */
 
@@ -462,10 +584,6 @@ int moloch_string_ncmp(const void *keyv, const void *elementv);
 
 uint32_t moloch_int_hash(const void *key);
 int moloch_int_cmp(const void *keyv, const void *elementv);
-
-void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
-uint32_t moloch_session_hash(const void *key);
-int moloch_session_cmp(const void *keyv, const void *elementv);
 
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
 const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
@@ -506,7 +624,6 @@ uint32_t moloch_db_peek_tag(const char *tagname);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
 void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap);
 void     moloch_db_update_field(char *expression, char *name, char *value);
-MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, uint32_t ip);
 gboolean moloch_db_file_exists(char *filename);
 void     moloch_db_exit();
 
@@ -536,7 +653,9 @@ void  moloch_parsers_classifier_register_tcp_internal(const char *name, int offs
 
 void  moloch_parsers_classifier_register_udp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
 #define moloch_parsers_classifier_register_udp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_udp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
-void moloch_print_hex_string(unsigned char* data, unsigned int length);
+
+void  moloch_print_hex_string(unsigned char* data, unsigned int length);
+char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length);
 
 /******************************************************************************/
 /*
@@ -569,28 +688,71 @@ gboolean moloch_http_is_moloch(uint32_t hash, char *key);
 
 /******************************************************************************/
 /*
- * nids.c
+ * session.c
  */
 
-void     moloch_nids_root_init();
-void     moloch_nids_init();
-void     moloch_nids_add_protocol(MolochSession_t *session, const char *protocol);
-gboolean moloch_nids_has_protocol(MolochSession_t *session, const char *protocol);
-void     moloch_nids_add_tag(MolochSession_t *session, const char *tag);
-void     moloch_nids_add_tag_type(MolochSession_t *session, int field, const char *tag);
-gboolean moloch_nids_has_tag(MolochSession_t *session, const char *tag);
-uint32_t moloch_nids_dropped_packets();
-uint32_t moloch_nids_monitoring_sessions();
-uint32_t moloch_nids_disk_queue();
-void     moloch_nids_exit();
 
-#define  moloch_nids_incr_outstanding(session) (session)->outstandingQueries++
-void     moloch_nids_decr_outstanding(MolochSession_t *session);
+void     moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
+void     moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
+char    *moloch_session_id_string (char *sessionId, char *buf);
 
-char    *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, uint32_t addr2, int port2);
+uint32_t moloch_session_hash(const void *key);
+int      moloch_session_cmp(const void *keyv, const void *elementv);
 
-#define moloch_session_incr_outstanding moloch_nids_incr_outstanding
-#define moloch_session_decr_outstanding moloch_nids_decr_outstanding
+MolochSession_t *moloch_session_find(int ses, char *sessionId);
+MolochSession_t *moloch_session_find_or_create(int ses, char *sessionId, int *isNew);
+
+void     moloch_session_init();
+void     moloch_session_exit();
+void     moloch_session_add_protocol(MolochSession_t *session, const char *protocol);
+gboolean moloch_session_has_protocol(MolochSession_t *session, const char *protocol);
+void     moloch_session_add_tag(MolochSession_t *session, const char *tag);
+void     moloch_session_add_tag_type(MolochSession_t *session, int field, const char *tag);
+gboolean moloch_session_has_tag(MolochSession_t *session, const char *tag);
+
+#define  moloch_session_incr_outstanding(session) (session)->outstandingQueries++
+gboolean moloch_session_decr_outstanding(MolochSession_t *session);
+
+void     moloch_session_mark_for_close (MolochSession_t *session, int ses);
+
+void     moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec);
+
+int      moloch_session_watch_count(int ses);
+int      moloch_session_idle_seconds(int ses);
+int      moloch_session_close_outstanding();
+
+void     moloch_session_flush();
+void     moloch_session_flush_internal(int thread);
+uint32_t moloch_session_monitoring();
+void     moloch_session_process_commands(int thread);
+
+int      moloch_session_need_save_outstanding();
+
+typedef enum { 
+    MOLOCH_SES_CMD_ADD_TAG,
+    MOLOCH_SES_CMD_FUNC
+} MolochSesCmd;
+typedef void (*MolochCmd_func)(MolochSession_t *session, gpointer uw1, gpointer uw2);
+
+void moloch_session_add_cmd(MolochSession_t *session, MolochSesCmd cmd, gpointer uw1, gpointer uw2, MolochCmd_func func);
+
+/******************************************************************************/
+/*
+ * packet.c
+ */
+
+void     moloch_packet_init();
+uint64_t moloch_packet_dropped_packets();
+void     moloch_packet_exit();
+void     moloch_packet_tcp_free(MolochSession_t *session);
+int      moloch_packet_outstanding();
+int      moloch_packet_frags_outstanding();
+int      moloch_packet_frags_size();
+uint64_t moloch_packet_dropped_frags();
+uint64_t moloch_packet_dropped_overload();
+void     moloch_packet_thread_wake(int thread);
+void     moloch_packet_flush();
+void     moloch_packet(MolochPacket_t * const packet);
 
 /******************************************************************************/
 /*
@@ -599,7 +761,7 @@ char    *moloch_friendly_session_id (int protocol, uint32_t addr1, int port1, ui
 typedef void (* MolochPluginInitFunc) ();
 typedef void (* MolochPluginIpFunc) (MolochSession_t *session, struct ip *packet, int len);
 typedef void (* MolochPluginUdpFunc) (MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len);
-typedef void (* MolochPluginTcpFunc) (MolochSession_t *session, struct tcp_stream *a_tcp);
+typedef void (* MolochPluginTcpFunc) (MolochSession_t *session, unsigned char *data, int len);
 typedef void (* MolochPluginSaveFunc) (MolochSession_t *session, int final);
 typedef void (* MolochPluginNewFunc) (MolochSession_t *session);
 typedef void (* MolochPluginExitFunc) ();
@@ -633,6 +795,7 @@ typedef uint32_t (* MolochPluginOutstandingFunc) ();
 #define MOLOCH_PLUGIN_SMTP_OHC     0x00200000
 
 void moloch_plugins_init();
+void moloch_plugins_load(char **plugins);
 void moloch_plugins_reload();
 
 int  moloch_plugins_register_internal(const char *name, gboolean storeData, size_t sessionsize, int apiversion);
@@ -669,9 +832,9 @@ uint32_t moloch_plugins_outstanding();
 void moloch_plugins_cb_pre_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_save(MolochSession_t *session, int final);
 void moloch_plugins_cb_new(MolochSession_t *session);
-void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len);
+//void moloch_plugins_cb_ip(MolochSession_t *session, struct ip *packet, int len);
 void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len);
-void moloch_plugins_cb_tcp(MolochSession_t *session, struct tcp_stream *a_tcp);
+//void moloch_plugins_cb_tcp(MolochSession_t *session, struct tcp_stream *a_tcp);
 
 void moloch_plugins_cb_hp_omb(MolochSession_t *session, http_parser *parser);
 void moloch_plugins_cb_hp_ou(MolochSession_t *session, http_parser *parser, const char *at, size_t length);
@@ -691,8 +854,8 @@ void moloch_plugins_exit();
  * yara.c
  */
 void moloch_yara_init();
-void moloch_yara_execute(MolochSession_t *session, unsigned char *data, int len, int first);
-void moloch_yara_email_execute(MolochSession_t *session, unsigned char *data, int len, int first);
+void moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len, int first);
+void moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, int len, int first);
 void moloch_yara_exit();
 
 /******************************************************************************/
@@ -721,23 +884,45 @@ void moloch_field_exit();
 
 typedef void (*MolochWriterInit)(char *name);
 typedef uint32_t (*MolochWriterQueueLength)();
-typedef void (*MolochWriterWrite)(const struct pcap_pkthdr *h, const u_char *sp, uint32_t *fileNum, uint64_t *filePos);
-typedef void (*MolochWriterFlush)(gboolean all);
-typedef void (*MolochWriterNextInput)(FILE *file, char *filename);
+typedef void (*MolochWriterWrite)(const MolochSession_t * const session, MolochPacket_t * const packet);
 typedef void (*MolochWriterExit)();
-typedef char * (*MolochWriterName)();
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
 extern MolochWriterWrite moloch_writer_write;
-extern MolochWriterFlush moloch_writer_flush;
 extern MolochWriterExit moloch_writer_exit;
-extern MolochWriterNextInput moloch_writer_next_input;
-extern MolochWriterName moloch_writer_name;
 
 
 void moloch_writers_init();
 void moloch_writers_start(char *name);
 void moloch_writers_add(char *name, MolochWriterInit func);
+
+/******************************************************************************/
+/*
+ * readers.c
+ */
+
+typedef struct {
+    uint64_t total;
+    uint64_t dropped;
+} MolochReaderStats_t;
+
+typedef void (*MolochReaderInit)(char *name);
+typedef int  (*MolochReaderStats)(MolochReaderStats_t *stats);
+typedef void (*MolochReaderStart)();
+typedef int  (*MolochReaderFilter)(const MolochPacket_t *packet);
+typedef void (*MolochReaderStop)();
+
+extern MolochReaderStart moloch_reader_start;
+extern MolochReaderStats moloch_reader_stats;
+extern MolochReaderFilter moloch_reader_should_filter;
+extern MolochReaderStop moloch_reader_stop;
+
+
+void moloch_readers_init();
+void moloch_readers_set(char *name);
+void moloch_readers_start();
+void moloch_readers_add(char *name, MolochReaderInit func);
+void moloch_readers_exit();
 
 /******************************************************************************/
 /*

@@ -9,14 +9,12 @@ INCLUDE_OTHER = -Ithirdparty \
                 @GLIB2_CFLAGS@ \
 	        @YARA_CFLAGS@ \
 	        @GEOIP_CFLAGS@ \
-	        @NIDS_CFLAGS@ \
 	        @CURL_CFLAGS@
 
 
 LIB_PCAP      = @PCAP_LIBS@
 LIB_SNF       = /opt/snf/lib/*.so
-LIB_OTHER     = @NIDS_LIBS@ \
-	        @GLIB2_LIBS@ \
+LIB_OTHER     = @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
 	        @GEOIP_LIBS@ \
 	        @CURL_LIBS@ \
@@ -26,7 +24,7 @@ LIB_OTHER     = @NIDS_LIBS@ \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lpthread -lssl -lcrypto
 
-C_FILES         = main.c db.c nids.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c
+C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c packet.c session.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
