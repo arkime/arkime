@@ -1,4 +1,4 @@
-0.12.3 2016/02/XX
+0.12.3 2016/03/28
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 
   - NOTICE: Requires running npm update
   - NOTICE: See https://github.com/aol/moloch/wiki/FAQ/_edit#How_do_I_upgrade_to_ES_2x_from_ES_1x
