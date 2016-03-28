@@ -1501,7 +1501,8 @@ app.get('/stats.json', function(req, res) {
             ["totalPackets", "totalK", "totalSessions",
              "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
              "freeSpaceM", "memory", "frags", "cpu",
-             "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue"
+             "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
+             "deltaFragsDropped", "deltaOverloadDropped"
             ].forEach(function(key) {
               fields[key] = fields[key] || 0;
             });
