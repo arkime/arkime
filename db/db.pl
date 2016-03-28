@@ -1743,6 +1743,10 @@ sub usersUpdate
       views : {
         type : "object",
         dynamic: "true"
+      },
+      fragments : {
+        type : "object",
+        dynamic: "true"
       }
     }
   }
