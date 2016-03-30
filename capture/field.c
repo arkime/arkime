@@ -474,7 +474,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
         len = strlen(string);
 
     field = session->fields[pos];
-    field->jsonSize += 6 + 2*len;
+    field->jsonSize += (6 + 2*len);
 
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_STR:
@@ -491,8 +491,10 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
     case MOLOCH_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(string, len), string, hstring);
 
-        if (hstring)
+        if (hstring) {
+            field->jsonSize -= (6 + 2*len);
             return FALSE;
+        }
         hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
         if (copy) {
             hstring->str = g_strndup(string, len);
@@ -556,7 +558,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
     }
 
     field = session->fields[pos];
-    field->jsonSize += 3 + 10;
+    field->jsonSize += (3 + 10);
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_IP:
         field->jsonSize += 100;
@@ -570,8 +572,10 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         field->jsonSize += 100;
     case MOLOCH_FIELD_TYPE_INT_HASH:
         HASH_FIND_INT(i_, *(field->ihash), i, hint);
-        if (hint)
+        if (hint) {
+            field->jsonSize -= (3 + 10);
             return FALSE;
+        }
         hint = MOLOCH_TYPE_ALLOC(MolochInt_t);
         HASH_ADD(i_, *(field->ihash), (void *)(long)i, hint);
         return TRUE;
@@ -660,12 +664,12 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
     }
 
     field = session->fields[pos];
-    field->jsonSize += 3 + len;
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_CERTSINFO:
         HASH_FIND(t_, *(field->cihash), certs, hci);
         if (hci)
             return FALSE;
+        field->jsonSize += 3 + len;
         HASH_ADD(t_, *(field->cihash), certs, certs);
         return TRUE;
     default:
