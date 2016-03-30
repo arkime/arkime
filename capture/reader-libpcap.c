@@ -54,7 +54,9 @@ int reader_libpcap_stats(MolochReaderStats_t *stats)
 void reader_libpcap_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
 {
     if (unlikely(h->caplen != h->len)) {
-        LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
+        LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
+            "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'", 
+            h->caplen, h->len);
         exit (0);
     }
 
