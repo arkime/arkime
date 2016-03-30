@@ -123,7 +123,7 @@ void reader_pfring_start() {
     pcap_close(pcap);
 
     int i;
-    for (i = 0; i < config.dontSaveBPFsNum; i++) {
+    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         char name[100];
         snprintf(name, sizeof(name), "moloch-pfring%d", i);
         g_thread_new(name, &reader_pfring_thread, rings[i]);
