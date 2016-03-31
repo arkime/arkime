@@ -146,25 +146,41 @@ block content
   table(cellpadding="3", id="existingFragments")
     thead
       tr
+        th ID
         th Name
         th File name
         th Type
         th Download
         th Delete
     tbody
-    - var keys = Object.keys(user.fragments).sort()
+    - var keys = Object.keys(user.fragments.query).sort()
     each key in keys
-      tr(data-fragment-name="#{user.fragments[key].filename}")
-        td #{user.fragments[key].name}
-        td #{user.fragments[key].filename}
-        td.capitalize #{user.fragments[key].type}
+      tr(data-fragment-name="#{user.fragments.query[key].identifier}", data-fragment-type="#{user.fragments.query[key].type}")
+        td #{user.fragments.query[key].identifier}
+        td #{user.fragments.query[key].name}
+        td #{user.fragments.query[key].filename}
+        td.capitalize #{user.fragments.query[key].type}
         td 
-          a(href="/downloadFragment?name=#{user.fragments[key].filename}" download="#{user.fragments[key].filename}") Download
+          a(href="/downloadFragment?name=#{user.fragments.query[key].identifier}&type=#{user.fragments.query[key].type}" download="#{user.fragments.query[key].filename}") Download
+        td 
+          button.deleteFragment Delete
+    - var keys = Object.keys(user.fragments.session).sort()
+    each key in keys
+      tr(data-fragment-name="#{user.fragments.session[key].identifier}", data-fragment-type="#{user.fragments.session[key].type}")
+        td #{user.fragments.session[key].identifier}
+        td #{user.fragments.session[key].name}
+        td #{user.fragments.session[key].filename}
+        td.capitalize #{user.fragments.session[key].type}
+        td 
+          a(href="/downloadFragment?name=#{user.fragments.session[key].identifier}&type=#{user.fragments.session[key].type}" download="#{user.fragments.session[key].filename}") Download
         td 
           button.deleteFragment Delete
   form(action='/uploadFragment', id='uploadReportFragment', method='post', enctype="multipart/form-data")
     h3 New Fragment
-    p Fragment filename must not contain spaces. Must be unique (new upload with the same filename replaces the old fragment).
+    p Fragment identifier must not contain spaces. Must be unique (new upload with the same identifier replaces the old fragment of the same type).
+    label(for='identifier') Identifier:
+    input(type='text', id='identifier', required='required', name='identifier')
+    br
     label(for='fragmentName') Fragment name:
     input(type='text', id='fragmentName', required='required', name='fragmentName', pattern='.{3,20}')
     br
@@ -486,6 +502,7 @@ block content
         "type": "POST",
         "url": "#{basePath}deleteFragment",
         "data": [{name: "key", value: tableRow.attr("data-fragment-name")},
+                 {name: "type", value: tableRow.attr("data-fragment-type")},
                  {name: "token", value: "#{token}"}],
         "success": function(data) {
           if (!data.success) {

@@ -755,7 +755,11 @@ app.get('/settings', checkWebEnabled, function(req, res) {
       }
       actions = actions.sort();
       if (typeof user.fragments !== 'object')
-        user.fragments = {};
+        user.fragments = {
+          query: {},
+          session: {}
+        };
+        
       res.render('settings', {
         user: req.user,
         suser: user,
@@ -3592,12 +3596,13 @@ app.post('/uploadFragment', checkWebEnabled, fragmentUpload, function(req, res) 
     }
     
     var fragmentName = req.body.fragmentName;
+    var identifier = req.body.identifier;
     if (fragmentName.length < 3 && fragmentName.length > 20) {
       return error("Invalid fragment name.");
     }
     
-    if (req.files.fragment[0].originalname.indexOf(' ') !== -1) {
-      return error("Fragment filename must not contain spaces.");
+    if (identifier.indexOf(' ') !== -1 && identifier.length > 12) {
+      return error("Fragment identifier must not contain spaces and be 12 or less characters.");
     }
     
     user = user._source;
@@ -3606,12 +3611,28 @@ app.post('/uploadFragment', checkWebEnabled, fragmentUpload, function(req, res) 
       body: file.buffer.toString(),
       name: fragmentName,
       type: req.body.fragmentType,
-      filename: file.originalname
+      filename: file.originalname,
+      identifier: identifier    
     };
     if (typeof user.fragments !== 'object') {
-      user.fragments = {};
+      user.fragments = {
+        session: {},
+        query: {}
+      };
     }
-    user.fragments[fragment.filename] = fragment;
+    switch (fragment.type) {
+      case "session":
+        user.fragments.session = user.fragments.session || {};
+        user.fragments.session[identifier] = fragment;
+        break;
+      case "query":
+        user.fragments.query = user.fragments.query || {};
+        user.fragments.query[identifier] = fragment;
+        break;
+      default:
+        return error("Invalid fragment type.");
+    }
+    console.log(user.fragments);
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("ES fragment add error", err, info);
@@ -3620,6 +3641,10 @@ app.post('/uploadFragment', checkWebEnabled, fragmentUpload, function(req, res) 
       res.redirect('/settings');
     });
   });
+  
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
 });
 
 app.get('/downloadFragment', checkWebEnabled, function(req, res) {
@@ -3628,7 +3653,7 @@ app.get('/downloadFragment', checkWebEnabled, function(req, res) {
       return error("Unknown user");
     }
     user = user._source;
-    var fragment = user.fragments[req.query.name];
+    var fragment = user.fragments[req.query.type][req.query.name];
     if (fragment) {
       res.set('Content-Type', 'text/plain');
       res.set('Content-Length', Buffer.byteLength(fragment.body));
@@ -3638,6 +3663,10 @@ app.get('/downloadFragment', checkWebEnabled, function(req, res) {
       res.status(404).send('Not found');
     }
   });
+  
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
 });
 
 app.post('/deleteFragment', checkToken, function(req, res) {
@@ -3646,7 +3675,7 @@ app.post('/deleteFragment', checkToken, function(req, res) {
       return error("Unknown user");
     }
     user = user._source;
-    delete user.fragments[req.body.key];
+    delete user.fragments[req.body.type][req.body.key];
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log("ES fragment delete error", err, info);
@@ -3655,6 +3684,10 @@ app.post('/deleteFragment', checkToken, function(req, res) {
       return res.send(JSON.stringify({success: true, text: "Fragment " + req.body.key + " deleted."}))
     });
   });
+  
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
 });
 
 app.get('/queryReport/:fragmentName/:fileName', function(req, res) {
@@ -3690,7 +3723,7 @@ app.get('/queryReport/:fragmentName/:fileName', function(req, res) {
       data._source.a1 = Pcap.inet_ntoa(data._source.a1);
       data._source.a2 = Pcap.inet_ntoa(data._source.a2);
     });
-    jade.render(user.fragments[fragmentName].body, {
+    jade.render(user.fragments.query[fragmentName].body, {
       user: user,
       sessions: list
     }, function(err, data) {
@@ -3700,6 +3733,10 @@ app.get('/queryReport/:fragmentName/:fileName', function(req, res) {
       }
       res.send(data);
     });
+  }
+  
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
   }
 });
 
@@ -3759,6 +3796,9 @@ app.get('/sessionReport/:fragmentName/:fileName', function(req, res) {
         sendHTMLResponse(user, err, session, []);
       }
     });
+    function error(text) {
+      return res.send(JSON.stringify({success: false, text: text}));
+    }
   });
   
   function sendHTMLResponse(user, err, list, results) {
@@ -3769,7 +3809,7 @@ app.get('/sessionReport/:fragmentName/:fileName', function(req, res) {
     list.a1 = Pcap.inet_ntoa(list.a1);
     list.a2 = Pcap.inet_ntoa(list.a2);
     
-    jade.render(user.fragments[fragmentName].body, {
+    jade.render(user.fragments.session[fragmentName].body, {
       user: user,
       sessions: list,
       data: results
@@ -3780,6 +3820,10 @@ app.get('/sessionReport/:fragmentName/:fileName', function(req, res) {
       }
       res.send(data);
     });
+  }
+  
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
   }
 });
 

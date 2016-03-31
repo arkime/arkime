@@ -154,14 +154,13 @@ html
         - if (molochClusters)
           each key in Object.keys(molochClusters)
             command.sendSessionButton(cluster=key,label="Send Session to #{molochClusters[key].name}")
-        - if (titleLink == "sessionsLink")
-          span 
-            b Reports
-          - if (user.fragments)
-            - var keys = Object.keys(user.fragments).sort()
+        - if (user.fragments && user.fragments.query)
+          - var keys = Object.keys(user.fragments.query).sort()
+          - if (titleLink == "sessionsLink" && keys.length > 0)
+            span 
+              b Reports
             each key in keys
-              - if (user.fragments[key].type == "query")
-                command#queryReport(label="#{user.fragments[key].name}", data-filename="#{user.fragments[key].filename}")
+              command#queryReport(label="#{user.fragments.query[key].name}", data-filename="#{user.fragments.query[key].identifier}")
       menu#sessionActionsMenu
         span 
           b Session Actions
@@ -174,13 +173,13 @@ html
         - if (molochClusters)
           each key in Object.keys(molochClusters)
             command.sessionSendSessionButton.sendSessionAction(cluster=key,label="Send Session to #{molochClusters[key].name}")
-        span 
-          b Reports
-        - if (user.fragments)
-          - var keys = Object.keys(user.fragments).sort()
-          each key in keys
-            - if (user.fragments[key].type == "session")
-              command#sessionReport(label="#{user.fragments[key].name}", data-filename="#{user.fragments[key].filename}")
+        - if (user.fragments && user.fragments.session)
+          - var keys = Object.keys(user.fragments.session).sort()
+          - if (keys.length > 0)
+            span 
+              b Reports
+            each key in keys
+              command#sessionReport(label="#{user.fragments.session[key].name}", data-filename="#{user.fragments.session[key].identifier}")
       if (user.views)
         menu#viewsMenu
           command.viewMenuOption(label="None")
