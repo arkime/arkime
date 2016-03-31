@@ -115,6 +115,10 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
         netflow_send(thread);
     }
 
+    if (!IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+        return;
+    }
+
     if ((lastTime[thread].tv_sec < session->lastPacket.tv_sec) || (lastTime[thread].tv_sec == session->lastPacket.tv_sec && lastTime[thread].tv_usec < session->lastPacket.tv_usec)) {
         lastTime[thread] = session->lastPacket;
     }
@@ -123,8 +127,8 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     if (session->packets[0]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb[thread], &session->addr1, 4);
-        BSB_EXPORT_ptr(bsb[thread], &session->addr2, 4);
+        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr1), 4);
+        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr2), 4);
         BSB_EXPORT_u32(bsb[thread], 0); // nexthop
         BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
         BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
@@ -172,8 +176,8 @@ void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 
     if (session->packets[1]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb[thread], &session->addr2, 4);
-        BSB_EXPORT_ptr(bsb[thread], &session->addr1, 4);
+        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr2), 4);
+        BSB_EXPORT_ptr(bsb[thread], &MOLOCH_V6_TO_V4(session->addr1), 4);
         BSB_EXPORT_u32(bsb[thread], 0); // nexthop
         BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
         BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
