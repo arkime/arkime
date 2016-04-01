@@ -752,6 +752,13 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
         return;
     }
 
+    // Packet is too large, hacker
+    if (payloadLen + packet->payloadOffset >= MOLOCH_PACKET_MAX_LEN) {
+        droppedFrags++;
+        moloch_packet_frags_free(frags);
+        return;
+    }
+
     // Now alloc the full packet
     packet->pktlen = packet->payloadOffset + payloadLen;
     uint8_t *pkt = malloc(packet->pktlen);
