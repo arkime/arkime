@@ -197,6 +197,13 @@ void moloch_packet_process_udp(MolochSession_t * const session, MolochPacket_t *
         if (!session->stopSPI)
             moloch_parsers_classify_udp(session, data, len, packet->direction);
     }
+
+    int i;
+    for (i = 0; i < session->parserNum; i++) {
+        if (session->parserInfo[i].parserFunc) {
+            session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, packet->direction);
+        }
+    }
 }
 /******************************************************************************/
 int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * const packet)

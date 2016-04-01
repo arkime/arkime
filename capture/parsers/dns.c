@@ -47,7 +47,7 @@ int dns_name_element(BSB *nbsb, BSB *bsb)
         if (!isprint(c)) {
             BSB_EXPORT_u08(*nbsb, '^');
             c ^= 0x40;
-        } 
+        }
 
         BSB_EXPORT_u08(*nbsb, c);
     }
@@ -86,7 +86,7 @@ unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsi
             BSB_INIT(tmpbsb, full+tpos, fulllen - tpos);
             curbsb = &tmpbsb;
             continue;
-        } 
+        }
 
         if (BSB_LENGTH(nbsb)) {
             BSB_EXPORT_u08(nbsb, '.');
@@ -100,7 +100,7 @@ unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsi
     return name;
 }
 /******************************************************************************/
-void dns_parser(MolochSession_t *session, const unsigned char *data, int len) 
+void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 {
 
     if (len < 18)
@@ -238,7 +238,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 }
 
 /******************************************************************************/
-int dns_tcp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int which) 
+int dns_tcp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int which)
 {
     if (which == 1) {
         int l = ((data[0]&0xff) << 8) | (data[1] & 0xff);
@@ -255,46 +255,52 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
     }
 }
 /******************************************************************************/
+int dns_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+{
+    dns_parser(session, data, len);
+    return 0;
+}
+/******************************************************************************/
 void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
 {
     if (session->port1 == 53 || session->port2 == 53)
-        dns_parser(session, data, len);
+        moloch_parsers_register(session, dns_udp_parser, 0, 0);
 }
 /******************************************************************************/
 void moloch_parser_init()
 {
     ipField = moloch_field_define("dns", "ip",
-        "ip.dns", "IP",  "dnsip", 
-        "IP from DNS result", 
-        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE, 
-        "aliases", "[\"dns.ip\"]", 
-        "category", "ip", 
+        "ip.dns", "IP",  "dnsip",
+        "IP from DNS result",
+        MOLOCH_FIELD_TYPE_IP_GHASH, MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_IPPRE,
+        "aliases", "[\"dns.ip\"]",
+        "category", "ip",
         NULL);
 
     hostField = moloch_field_define("dns", "lotermfield",
-        "host.dns", "Host", "dnsho", 
-        "DNS host looked up",  
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT, 
-        "aliases", "[\"dns.host\"]", 
+        "host.dns", "Host", "dnsho",
+        "DNS host looked up",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        "aliases", "[\"dns.host\"]",
         "category", "host",
         NULL);
 
     statusField = moloch_field_define("dns", "uptermfield",
-        "dns.status", "Status Code", "dns.status-term", 
-        "DNS lookup return code",  
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
+        "dns.status", "Status Code", "dns.status-term",
+        "DNS lookup return code",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
     queryTypeField = moloch_field_define("dns", "uptermfield",
-        "dns.query.type", "Query Type", "dns.qt-term", 
-        "DNS lookup query type",  
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
+        "dns.query.type", "Query Type", "dns.qt-term",
+        "DNS lookup query type",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
     queryClassField = moloch_field_define("dns", "uptermfield",
-        "dns.query.class", "Query Class", "dns.qc-term", 
-        "DNS lookup query class",  
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT, 
+        "dns.query.class", "Query Class", "dns.qc-term",
+        "DNS lookup query class",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
 

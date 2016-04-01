@@ -11,6 +11,8 @@
   - viewer - Columns can be hidden/moved on stats, sessions pages
   - capture - pfring and daq support are now plugins (capture/plugins)
   - capture - can monitor multiple interfaces
+  - capture - udp can parse all packets in session now
+  - dns - now parses all requests/responses
 
 0.12.3 2016/03/28
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 
