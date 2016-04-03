@@ -375,6 +375,7 @@ typedef struct molochpacket_t
     uint16_t       payloadLen;     // length of ip payload
     uint16_t       payloadOffset;  // offset to ip payload from start
     uint8_t        ipOffset;       // offset to ip header from start
+    uint8_t        vpnIpOffset;    // offset to vpn ip header from start
     uint8_t        protocol;       // ip protocol
     uint8_t        direction:1;    // direction of packet
     uint8_t        ses:3;          // type of session

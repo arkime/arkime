@@ -1,4 +1,4 @@
-use Test::More tests => 513;
+use Test::More tests => 521;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -319,3 +319,9 @@ if (0) {
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime==\"2014/02/26 10:27:57\""));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime==\"2014/02/26 10:27:58\""));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/socks5-reverse.pcap)&&stoptime<=\"2014/02/26 10:27:57\""));
+
+#gre
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip==172.27.1.66"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.cnt==2"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.cnt==1"));
+    countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.rir==ARIN"));

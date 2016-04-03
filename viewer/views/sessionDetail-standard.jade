@@ -110,6 +110,8 @@ dl.sessionDetailMeta
     dt Socks Dst
     dd
       +ipPrint(session.socksip, session.sockspo, session.gsocksip, session.assocksip, session.rirsocksip, "socks")
+  if (session.greip)
+    +ipArrayList(session, "greip", "GRE IPs", "gre.ip")
   if (session.socksho)
     dt Socks Dst
     dd

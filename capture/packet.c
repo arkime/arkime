@@ -584,7 +584,15 @@ LOCAL void *moloch_packet_thread(void *threadp)
                 moloch_field_int_add(vlanField, session, vlan);
                 n += 4;
             }
+
+            if (packet->vpnIpOffset) {
+                ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
+                moloch_field_int_add(greIpField, session, ip4->ip_src.s_addr);
+                moloch_field_int_add(greIpField, session, ip4->ip_dst.s_addr);
+                moloch_session_add_protocol(session, "gre");
+            }
         }
+
 
         int freePacket = 1;
         switch(packet->ses) {
@@ -608,14 +616,14 @@ LOCAL void *moloch_packet_thread(void *threadp)
     return NULL;
 }
 
-#ifdef REDOAGAIN
 /******************************************************************************/
-void moloch_packet_gre4(MolochPacket_t * const packet, const struct ip *ip4, const uint8_t *data, int len)
+int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int len);
+int moloch_packet_gre4(MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     BSB bsb;
 
     if (len < 4)
-        return;
+        return 1;
 
     BSB_INIT(bsb, data, len);
     uint16_t flags_version = 0;
@@ -626,7 +634,7 @@ void moloch_packet_gre4(MolochPacket_t * const packet, const struct ip *ip4, con
     if (type != 0x0800) {
         if (config.logUnknownProtocols)
             LOG("Unknown GRE protocol 0x%04x(%d)", type, type);
-        return;
+        return 1;
     }
 
     uint16_t offset = 0;
@@ -658,18 +666,11 @@ void moloch_packet_gre4(MolochPacket_t * const packet, const struct ip *ip4, con
         }
     }
 
-    if (BSB_NOT_ERROR(bsb)) {
-        MolochSession_t *session = moloch_packet_ip4(packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
-        if (!session)
-            return;
+    if (BSB_IS_ERROR(bsb)) 
+        return 1;
 
-        moloch_field_int_add(greIpField, session, ip4->ip_src.s_addr);
-        moloch_field_int_add(greIpField, session, ip4->ip_dst.s_addr);
-        moloch_session_add_protocol(session, "gre");
-    }
+    return moloch_packet_ip4(packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
 }
-#endif
-
 /******************************************************************************/
 void moloch_packet_frags_free(MolochFrags_t * const frags)
 {
@@ -974,10 +975,9 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
                           ip4->ip_dst.s_addr, 0);
         packet->ses = SESSION_ICMP;
         break;
-#ifdef LATER
     case IPPROTO_GRE:
-        return moloch_packet_gre4(packet, ip4, data + ip_hdr_len, len - ip_hdr_len);
-#endif
+        packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
+        return moloch_packet_gre4(packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", ip4->ip_p);
@@ -1060,10 +1060,6 @@ int moloch_packet_ip6(MolochPacket_t * const UNUSED(packet), const uint8_t *data
             packet->ses = SESSION_ICMP;
             done = 1;
             break;
-#ifdef LATER
-        case IPPROTO_GRE:
-            return moloch_packet_gre4(packet, ip4, data + ip_hdr_len, len - ip_hdr_len);
-#endif
         default:
             LOG("Unknown protocol %d", ip6->ip6_nxt);
             return 1;
