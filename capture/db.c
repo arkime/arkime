@@ -1181,6 +1181,12 @@ uint64_t moloch_db_memory_size()
 }
 #endif
 /******************************************************************************/
+uint64_t moloch_db_memory_max()
+{
+    return (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
+}
+
+/******************************************************************************/
 void moloch_db_update_stats(int n)
 {
     static uint64_t       lastPackets[3] = {0, 0, 0};
@@ -1193,6 +1199,7 @@ void moloch_db_update_stats(int n)
     static struct timeval lastTime[3];
     static int            intervals[3] = {1, 5, 60};
     uint64_t              freeSpaceM = 0;
+    uint64_t              totalSpaceM = 0;
     int                   i;
     char                  key[200];
     int                   key_len = 0;
@@ -1214,6 +1221,7 @@ void moloch_db_update_stats(int n)
         struct statvfs vfs;
         statvfs(config.pcapDir[i], &vfs);
         freeSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_bavail/1024.0);
+        totalSpaceM += (uint64_t)(vfs.f_frsize/1024.0*vfs.f_blocks/1024.0);
     }
 
     const uint64_t cursec = currentTime.tv_sec;
@@ -1230,6 +1238,10 @@ void moloch_db_update_stats(int n)
     dbTotalDropped[n] += (totalDropped - lastDropped[n]);
     dbTotalK[n] += (totalBytes - lastBytes[n])/1024;
 
+    uint64_t mem = moloch_db_memory_size();
+    double   memMax = moloch_db_memory_max();
+    float    memUse = mem/memMax*100.0;
+
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
         "\"ver\": \"%s\", "
@@ -1238,8 +1250,10 @@ void moloch_db_update_stats(int n)
         "\"interval\": %d, "
         "\"currentTime\": %" PRIu64 ", "
         "\"freeSpaceM\": %" PRIu64 ", "
+        "\"freeSpaceP\": %.2f, "
         "\"monitoring\": %u, "
         "\"memory\": %" PRIu64 ", "
+        "\"memoryP\": %.2f, "
         "\"cpu\": %" PRIu64 ", "
         "\"diskQueue\": %u, "
         "\"esQueue\": %u, "
@@ -1269,8 +1283,10 @@ void moloch_db_update_stats(int n)
         intervals[n],
         cursec,
         freeSpaceM,
+        freeSpaceM*100.0/totalSpaceM,
         moloch_session_monitoring(),
         moloch_db_memory_size(),
+        memUse,
         diffusage*10000/diffms,
         moloch_writer_queue_length?moloch_writer_queue_length():0,
         moloch_http_queue_length(esServer),

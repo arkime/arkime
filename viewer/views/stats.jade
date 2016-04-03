@@ -17,8 +17,10 @@ block content
       option(value="tcpSessions") Active TCP Sessions
       option(value="udpSessions") Active UDP Sessions
       option(value="icmpSessions") Active ICMP Sessions
-      option(value="freeSpaceM") Free Space
+      option(value="freeSpaceM") Free Space MB
+      option(value="freeSpaceP") Free Space %
       option(value="memory") Memory
+      option(value="memoryP") Memory %
       option(value="cpu") CPU
       option(value="diskQueue") Disk Queue
       option(value="esQueue") ES Queue
@@ -41,11 +43,13 @@ block content
         th Kilobytes Saved
         th Sessions Saved
         th Active Sessions
-        th TCP Active 
+        th TCP Active
         th UDP Active
         th ICMP Active
         th Free Space MB
+        th Free Space %
         th Memory MB
+        th Memory %
         th CPU
         th Packets / Sec
         th Bytes / Sec
@@ -76,7 +80,9 @@ block content
         th#avg_udpSessions
         th#avg_icmpSessions
         th#avg_freeSpaceM
+        th#avg_freeSpaceP
         th#avg_memory
+        th#avg_memoryP
         th#avg_cpu
         th#avg_deltaPacketsPerSec
         th#avg_deltaBytesPerSec
@@ -105,7 +111,9 @@ block content
         th#tot_udpSessions
         th#tot_icmpSessions
         th#tot_freeSpaceM
+        th#tot_freeSpaceP
         th#tot_memory
+        th#tot_memoryP
         th#tot_cpu
         th#tot_deltaPacketsPerSec
         th#tot_deltaBytesPerSec
@@ -256,7 +264,7 @@ block content
     $(document).ready(function() {
       statsTable = $('#stats')
       .on ("preInit.dt", function (e) {
-        loadTableState($(e.target).DataTable(), ["", "Node", "Time", "Packets Captured", "Active Sessions", "Free Space MB", "Memory MB", "CPU", "Packet Queue", "Packets / Sec", "Bytes / Sec", "Sessions / Sec", "Packet Drops / Sec"]);
+        loadTableState($(e.target).DataTable(), ["", "Node", "Time", "Packets Captured", "Active Sessions", "Free Space %", "Memory MB", "CPU", "Packet Queue", "Packets / Sec", "Bytes / Sec", "Sessions / Sec", "Packet Drops / Sec"]);
       })
       .DataTable( {
         language: {
@@ -279,7 +287,7 @@ block content
             container: {
               className: 'dataTables_paginate paging_full_numbers'
             }
-          }, 
+          },
           buttons: [
             {
               className: 'paginate_button',
@@ -365,8 +373,18 @@ block content
             searchable: false
           },
           {
+            data : "freeSpaceP",
+            className: "right",
+            searchable: false
+          },
+          {
             data : "memory",
             render: numberRenderM,
+            className: "right",
+            searchable: false
+          },
+          {
+            data : "memoryP",
             className: "right",
             searchable: false
           },
@@ -487,8 +505,8 @@ block content
           var totals = {};
           var keys = ["totalPackets", "totalK", "totalSessions",
                       "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
-                      "freeSpaceM", "memory", "frags", "cpu", 
-                      "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue", 
+                      "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
+                      "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
                       "deltaDroppedPerSec", "deltaSessionsPerSec", "deltaPacketsPerSec", "deltaBytesPerSec", "deltaBitsPerSec", "deltaFragsDroppedPerSec", "deltaOverloadDroppedPerSec", "deltaTotalDroppedPerSec"];
 
           keys.forEach(function(key) {
@@ -500,6 +518,9 @@ block content
             if (key === "cpu") {
               $("#tot_" + key).html("" + (totals[key]/100.0));
               $("#avg_" + key).html("" + Math.floor(totals[key]/aaData.length)/100);
+            } else if (key === "freeSpaceP" || key === "memoryP") {
+              $("#tot_" + key).html(numberWithCommas(totals[key]));
+              $("#avg_" + key).html(numberWithCommas(totals[key]/aaData.length));
             } else if (key === "memory") {
               $("#tot_" + key).html(numberWithCommas(Math.ceil(totals[key]/1000000)));
               $("#avg_" + key).html(numberWithCommas(Math.ceil((totals[key]/aaData.length)/1000000)));
@@ -535,7 +556,7 @@ block content
             container: {
               className: 'dataTables_paginate paging_full_numbers'
             }
-          }, 
+          },
           buttons: [
             {
               className: 'paginate_button',

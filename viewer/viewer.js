@@ -1500,7 +1500,7 @@ app.get('/stats.json', function(req, res) {
 
             ["totalPackets", "totalK", "totalSessions",
              "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
-             "freeSpaceM", "memory", "frags", "cpu",
+             "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
              "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
              "deltaFragsDropped", "deltaOverloadDropped"
             ].forEach(function(key) {
@@ -1583,6 +1583,8 @@ app.get('/dstats.json', function(req, res) {
         }
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
         fields.deltaBits                  = Math.floor(fields.deltaBytes * 8.0);
+        fields.deltaTotalDropped          = Math.floor(fields.deltaDropped + fields.deltaOverloadDropped);
+
         fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
         fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
         fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
@@ -1590,7 +1592,7 @@ app.get('/dstats.json', function(req, res) {
         fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
         fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
         fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
-        fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
+        fields.deltaTotalDroppedPerSec    = Math.floor(fields.deltaTotalDropped * 1000.0/fields.deltaMS);
         data[pos] = mult * (fields[req.query.name] || 0);
       }
     }

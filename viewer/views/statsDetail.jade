@@ -29,6 +29,16 @@ script(type='text/javascript').
       });
     }, name);
   }
+  var headerNames = statsTable.columns(":visible").header().to$().map(function() {return $(this).text()}).toArray();
+  var dataSrcs = statsTable.columns(":visible").dataSrc();
+  var metrics = [];
+  for (var i = 3; i < headerNames.length; i++) {
+    if (headerNames[i].match("/ Sec")) {
+      metrics.push(dmetric(headerNames[i].replace("/ Sec", "/ Min"), dataSrcs[i].replace("PerSec", "")));
+    } else {
+      metrics.push(dmetric(headerNames[i], dataSrcs[i]));
+    }
+  }
 
   d3.select("#graph-#{nodeName}").call(function(div) {
 
@@ -37,20 +47,7 @@ script(type='text/javascript').
         .call(dcontext.axis().orient("top"));
 
     div.selectAll(".horizon")
-      .data([
-        dmetric("Packets/Min", "deltaPackets"), 
-        dmetric("Bytes/Min", "deltaBytes"), 
-        dmetric("Sessions/Min", "deltaSessions"), 
-        dmetric("Dropped/Min", "deltaDropped"), 
-        dmetric("Active Sessions", "monitoring"), 
-        dmetric("Free Space", "freeSpaceM"), 
-        dmetric("Memory", "memory"), 
-        dmetric("CPU", "cpu"), 
-        dmetric("Disk Queue", "diskQueue"),
-        dmetric("ES Queue", "esQueue"),
-        dmetric("Packet Queue", "packetQueue"), 
-        dmetric("Waiting Queue", "needSave"),
-      ])
+      .data(metrics)
       .enter().append("div")
         .attr("class", "horizon")
         .call(dcontext.horizon());
