@@ -25,7 +25,8 @@ static int                   queryClassField;
 static int                   statusField;
 
 typedef struct {
-    unsigned char       data[2][0xffff];
+    unsigned char      *data[2];
+    uint16_t            size[2];
     uint16_t            pos[2];
     uint16_t            len[2];
 } DNSInfo_t;
@@ -37,6 +38,10 @@ void dns_free(MolochSession_t *UNUSED(session), void *uw)
 {
     DNSInfo_t            *info          = uw;
 
+    if (info->data[0])
+        free(info->data[0]);
+    if (info->data[1])
+        free(info->data[1]);
     MOLOCH_TYPE_FREE(DNSInfo_t, info);
 }
 /******************************************************************************/
@@ -251,7 +256,6 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
         BSB_IMPORT_skip(bsb, rdlength);
     }
 }
-
 /******************************************************************************/
 int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
@@ -260,16 +264,30 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
 
         // First packet of request
         if (info->len[which] == 0) {
-            int l = ((data[0]&0xff) << 8) | (data[1] & 0xff);
+            int dnslength = ((data[0]&0xff) << 8) | (data[1] & 0xff);
+
+            if (dnslength < 18) {
+                moloch_parsers_unregister(session, uw);
+                return 0;
+            }
+
+            if (info->size[which] == 0) {
+                info->size[which] = MAX(1024,dnslength);
+                info->data[which] = malloc(info->size[which]);
+            } else if (info->size[which] < dnslength) {
+                free(info->data[which]);
+                info->data[which] = malloc(dnslength);
+                info->size[which] = dnslength;
+            }
 
             // Have all the data in this first packet, just parse it
-            if (l <= len-2) {
-                dns_parser(session, data+2, l);
-                data += 2 + l;
-                len -= 2 + l;
+            if (dnslength <= len-2) {
+                dns_parser(session, data+2, dnslength);
+                data += 2 + dnslength;
+                len -= 2 + dnslength;
             } else {
                 memcpy(info->data[which], data+2, len-2);
-                info->len[which] = l;
+                info->len[which] = dnslength;
                 info->pos[which] = len-2;
                 return 0;
             }
@@ -295,9 +313,7 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
 {
     if (which == 0 && session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
         moloch_session_add_protocol(session, "dns");
-        DNSInfo_t  *info= MOLOCH_TYPE_ALLOC(DNSInfo_t);
-        info->len[0] = 0;
-        info->len[1] = 0;
+        DNSInfo_t  *info= MOLOCH_TYPE_ALLOC0(DNSInfo_t);
         moloch_parsers_register(session, dns_tcp_parser, info, dns_free);
     }
 }
