@@ -16,6 +16,7 @@
   - dns - parse multi packet tcp requests
   - capture - gre support
   - all - memory/free space percentage (issue #164)
+  - addUser - New option --webauthonly 
 
 0.12.3 2016/03/28
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 

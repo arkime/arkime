@@ -31,11 +31,12 @@ function help() {
   console.log("addUser.js <user id> <user friendly name> <password> [<options>]");
   console.log("");
   console.log("Options:");
-  console.log("  --admin      Has admin privileges");
-  console.log("  --apionly    Can only use api, not web pages");
-  console.log("  --email      Can do email searches");
-  console.log("  --remove     Can remove data (scrub, delete tags)");
-  console.log("  --webauth    Can auth using the web auth header");
+  console.log("  --admin       Has admin privileges");
+  console.log("  --apionly     Can only use api, not web pages");
+  console.log("  --email       Can do email searches");
+  console.log("  --remove      Can remove data (scrub, delete tags)");
+  console.log("  --webauth     Can auth using the web auth header or password");
+  console.log("  --webauthonly Can auth using the web auth header only, password ignored");
 
   process.exit(0);
 }
@@ -77,6 +78,9 @@ function main() {
       nuser.webEnabled = false;
       break;
       
+    case "--webauthonly":
+    case "-webauthonly":
+      nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
     case "--webauth":
     case "-webauth":
       nuser.headerAuthEnabled = true;
