@@ -821,6 +821,7 @@ LOCAL void *moloch_packet_frags_thread(void *UNUSED(unused))
 
         moloch_packet_frags_process(packet);
     }
+    return NULL;
 }
 /******************************************************************************/
 void moloch_packet_frags4(MolochPacket_t * const packet)

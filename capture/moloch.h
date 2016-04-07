@@ -331,6 +331,7 @@ typedef struct moloch_config {
     char      parseCookieValue;
     char      compressES;
     char      antiSynDrop;
+    char      readTruncatedPackets;
 } MolochConfig_t;
 
 typedef struct {

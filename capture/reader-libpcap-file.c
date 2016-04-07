@@ -326,14 +326,20 @@ void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *
 {
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
 
-    if (h->caplen != h->len) {
-        LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
-        exit (0);
+    if (unlikely(h->caplen != h->len)) {
+        if (!config.readTruncatedPackets) {
+            LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d. "
+                "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                h->caplen, h->len);
+            exit (0);
+        }
+        packet->pktlen     = h->caplen;
+    } else {
+        packet->pktlen     = h->len;
     }
 
     packet->pkt           = (u_char *)bytes;
     packet->ts            = h->ts;
-    packet->pktlen        = h->len;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerName    = offlinePcapName;
     moloch_packet(packet);

@@ -380,6 +380,7 @@ void moloch_config_load()
     config.parseCookieValue      = moloch_config_boolean(keyfile, "parseCookieValue", FALSE);
     config.compressES            = moloch_config_boolean(keyfile, "compressES", FALSE);
     config.antiSynDrop           = moloch_config_boolean(keyfile, "antiSynDrop", TRUE);
+    config.readTruncatedPackets  = moloch_config_boolean(keyfile, "readTruncatedPackets", FALSE);
 
 }
 /******************************************************************************/
@@ -651,6 +652,8 @@ void moloch_config_init()
         LOG("parseQSValue: %s", (config.parseQSValue?"true":"false"));
         LOG("parseCookieValue: %s", (config.parseCookieValue?"true":"false"));
         LOG("compressES: %s", (config.compressES?"true":"false"));
+        LOG("antiSynDrop: %s", (config.antiSynDrop?"true":"false"));
+        LOG("readTruncatedPackets: %s", (config.readTruncatedPackets?"true":"false"));
 
         LOG("rotateIndex = %s", rotates[config.rotate]);
         LOG("offlineFilenameRegex: %s", g_regex_get_pattern(config.offlineRegex));
