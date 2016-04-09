@@ -64,6 +64,7 @@ MolochSimple_t *writer_simple_alloc(MolochSimple_t *previous)
     if (previous) {
         info->fd = previous->fd;
         info->pos = previous->pos;
+        info->id = previous->id;
     }
     return info;
 }
