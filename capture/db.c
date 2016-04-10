@@ -233,13 +233,14 @@ void moloch_db_js0n_str(BSB *bsb, unsigned char *in, gboolean utf8)
 }
 
 /******************************************************************************/
-LOCAL char   *sJson[MOLOCH_MAX_PACKET_THREADS];
-LOCAL BSB     jbsbs[MOLOCH_MAX_PACKET_THREADS];
-LOCAL time_t  dbLastSave[MOLOCH_MAX_PACKET_THREADS];
-LOCAL char    prefix[MOLOCH_MAX_PACKET_THREADS][100];
-LOCAL time_t  prefix_time[MOLOCH_MAX_PACKET_THREADS];
-LOCAL int     inuse[MOLOCH_MAX_PACKET_THREADS];
-LOCAL MOLOCH_LOCK_DEFINE(inuse);
+LOCAL struct {
+    char   *json;
+    BSB     bsb;
+    time_t  lastSave;
+    char    prefix[100];
+    time_t  prefixTime;
+    MOLOCH_LOCK_EXTERN(lock);
+} dbInfo[MOLOCH_MAX_PACKET_THREADS];
 
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
@@ -282,28 +283,28 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     const int thread = session->thread;
 
-    if (prefix_time[thread] != session->lastPacket.tv_sec) {
-        prefix_time[thread] = session->lastPacket.tv_sec;
+    if (dbInfo[thread].prefixTime != session->lastPacket.tv_sec) {
+        dbInfo[thread].prefixTime = session->lastPacket.tv_sec;
 
         struct tm tmp;
-        gmtime_r(&prefix_time[thread], &tmp);
+        gmtime_r(&dbInfo[thread].prefixTime, &tmp);
 
         switch(config.rotate) {
         case MOLOCH_ROTATE_HOURLY:
-            snprintf(prefix[thread], sizeof(prefix[thread]), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, tmp.tm_hour);
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, tmp.tm_hour);
             break;
         case MOLOCH_ROTATE_DAILY:
-            snprintf(prefix[thread], sizeof(prefix[thread]), "%02d%02d%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday);
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02d", tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday);
             break;
         case MOLOCH_ROTATE_WEEKLY:
-            snprintf(prefix[thread], sizeof(prefix[thread]), "%02dw%02d", tmp.tm_year%100, tmp.tm_yday/7);
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02dw%02d", tmp.tm_year%100, tmp.tm_yday/7);
             break;
         case MOLOCH_ROTATE_MONTHLY:
-            snprintf(prefix[thread], sizeof(prefix[thread]), "%02dm%02d", tmp.tm_year%100, tmp.tm_mon+1);
+            snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02dm%02d", tmp.tm_year%100, tmp.tm_mon+1);
             break;
         }
     }
-    uint32_t id_len = snprintf(id, sizeof(id), "%s-", prefix[thread]);
+    uint32_t id_len = snprintf(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
     uuid_generate(uuid);
     gint state = 0, save = 0;
@@ -319,36 +320,33 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     key_len = snprintf(key, sizeof(key), "/_bulk");
 
-    MOLOCH_LOCK(inuse);
-    inuse[thread] = 1;
-    MOLOCH_UNLOCK(inuse);
-
+    MOLOCH_LOCK(dbInfo[thread].lock);
     /* If no room left to add, send the buffer */
-    if (sJson[thread] && (uint32_t)BSB_REMAINING(jbsbs[thread]) < jsonSize) {
-        if (BSB_LENGTH(jbsbs[thread]) > 0) {
-            moloch_http_set(esServer, key, key_len, sJson[thread], BSB_LENGTH(jbsbs[thread]), NULL, NULL);
+    if (dbInfo[thread].json && (uint32_t)BSB_REMAINING(dbInfo[thread].bsb) < jsonSize) {
+        if (BSB_LENGTH(dbInfo[thread].bsb) > 0) {
+            moloch_http_set(esServer, key, key_len, dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb), NULL, NULL);
         }
-        sJson[thread] = 0;
+        dbInfo[thread].json = 0;
 
         struct timeval currentTime;
         gettimeofday(&currentTime, NULL);
-        dbLastSave[thread] = currentTime.tv_sec;
+        dbInfo[thread].lastSave = currentTime.tv_sec;
     }
 
     /* Allocate a new buffer using the max of the bulk size or estimated size. */
-    if (!sJson[thread]) {
+    if (!dbInfo[thread].json) {
         const int size = MAX(config.dbBulkSize, jsonSize);
-        sJson[thread] = moloch_http_get_buffer(size);
-        BSB_INIT(jbsbs[thread], sJson[thread], size);
+        dbInfo[thread].json = moloch_http_get_buffer(size);
+        BSB_INIT(dbInfo[thread].bsb, dbInfo[thread].json, size);
     }
 
     uint32_t timediff = (session->lastPacket.tv_sec - session->firstPacket.tv_sec)*1000 +
                         (session->lastPacket.tv_usec - session->firstPacket.tv_usec)/1000;
 
-    BSB jbsb = jbsbs[thread];
+    BSB jbsb = dbInfo[thread].bsb;
 
     startPtr = BSB_WORK_PTR(jbsb);
-    BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, prefix[thread], id);
+    BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions-%s\", \"_type\": \"session\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
 
     dataPtr = BSB_WORK_PTR(jbsb);
     BSB_EXPORT_sprintf(jbsb,
@@ -1084,16 +1082,16 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (config.dryRun) {
         if (config.tests) {
             const int hlen = dataPtr - startPtr;
-            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, sJson[thread], (int)(BSB_LENGTH(jbsb)-hlen-1), sJson[thread]+hlen);
+            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb)-hlen-1), dbInfo[thread].json+hlen);
         } else if (config.debug) {
-            LOG("%.*s\n", (int)BSB_LENGTH(jbsb), sJson[thread]);
+            LOG("%.*s\n", (int)BSB_LENGTH(jbsb), dbInfo[thread].json);
         }
-        BSB_INIT(jbsb, sJson[thread], BSB_SIZE(jbsb));
+        BSB_INIT(jbsb, dbInfo[thread].json, BSB_SIZE(jbsb));
         goto cleanup;
     }
 
     if (config.noSPI) {
-        BSB_INIT(jbsb, sJson[thread], BSB_SIZE(jbsb));
+        BSB_INIT(jbsb, dbInfo[thread].json, BSB_SIZE(jbsb));
         goto cleanup;
     }
 
@@ -1103,10 +1101,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
 cleanup:
-    jbsbs[thread] = jbsb;
-    MOLOCH_LOCK(inuse);
-    inuse[thread] = 0;
-    MOLOCH_UNLOCK(inuse);
+    dbInfo[thread].bsb = jbsb;
+    MOLOCH_UNLOCK(dbInfo[thread].lock);
 }
 /******************************************************************************/
 long long zero_atoll(char *v) {
@@ -1336,22 +1332,22 @@ gboolean moloch_db_update_stats_gfunc (gpointer user_data)
 /******************************************************************************/
 gboolean moloch_db_flush_gfunc (gpointer user_data )
 {
-    int             i;
+    int             thread;
     struct timeval  currentTime;
 
     gettimeofday(&currentTime, NULL);
 
-    MOLOCH_LOCK(inuse);
-    for (i = 0; i < config.packetThreads; i++) {
-        if (sJson[i] && !inuse[i] && BSB_LENGTH(jbsbs[i]) > 0 &&
-            ((currentTime.tv_sec - dbLastSave[i]) >= config.dbFlushTimeout || user_data == (gpointer)1)) {
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        MOLOCH_LOCK(dbInfo[thread].lock);
+        if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0 &&
+            ((currentTime.tv_sec - dbInfo[thread].lastSave) >= config.dbFlushTimeout || user_data == (gpointer)1)) {
 
-            moloch_http_set(esServer, "/_bulk", 6, sJson[i], BSB_LENGTH(jbsbs[i]), NULL, NULL);
-            sJson[i] = 0;
-            dbLastSave[i] = currentTime.tv_sec;
+            moloch_http_set(esServer, "/_bulk", 6, dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb), NULL, NULL);
+            dbInfo[thread].json = 0;
+            dbInfo[thread].lastSave = currentTime.tv_sec;
         }
+        MOLOCH_UNLOCK(dbInfo[thread].lock);
     }
-    MOLOCH_UNLOCK(inuse);
 
     return TRUE;
 }
@@ -2055,12 +2051,12 @@ int moloch_db_can_quit()
         return 1;
     }
 
-    int i;
-    for (i = 0; i < config.packetThreads; i++) {
-        if (sJson[i] && BSB_LENGTH(jbsbs[i]) > 0) {
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0) {
             moloch_db_flush_gfunc((gpointer)1);
             if (config.debug)
-                LOG ("Can't quit, sJson[%d] %ld", i, BSB_LENGTH(jbsbs[i]));
+                LOG ("Can't quit, sJson[%d] %ld", thread, BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
     }
@@ -2140,6 +2136,10 @@ void moloch_db_init()
         timers[1] = g_timeout_add_seconds( 5, moloch_db_update_stats_gfunc, (gpointer)1);
         timers[2] = g_timeout_add_seconds(60, moloch_db_update_stats_gfunc, (gpointer)2);
         timers[3] = g_timeout_add_seconds( 1, moloch_db_flush_gfunc, 0);
+    }
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        MOLOCH_LOCK_INIT(dbInfo[thread].lock);
     }
 }
 /******************************************************************************/
