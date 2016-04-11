@@ -477,6 +477,7 @@ typedef struct moloch_session {
     uint16_t               closingQ:1;
     uint16_t               stopTCP:1;
     uint16_t               ses:3;
+    uint16_t               midSave:1;
 } MolochSession_t;
 
 typedef struct moloch_session_head {

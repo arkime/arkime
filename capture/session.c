@@ -226,7 +226,6 @@ void moloch_session_add_tag_type(MolochSession_t *session, int tagtype, const ch
     }
 }
 /******************************************************************************/
-// session should already be locked
 void moloch_session_mark_for_close (MolochSession_t *session, int ses)
 {
     session->closingQ = 1;
@@ -308,7 +307,6 @@ LOCAL void moloch_session_save(MolochSession_t *session)
     moloch_session_free(session);
 }
 /******************************************************************************/
-// session should already be locked
 void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
 {
     if (session->parserInfo) {
@@ -354,9 +352,9 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
     session->databytes[1] = 0;
     session->packets[0] = 0;
     session->packets[1] = 0;
+    session->midSave = 0;
 }
 /******************************************************************************/
-// session should already be locked
 gboolean moloch_session_decr_outstanding(MolochSession_t *session)
 {
     session->outstandingQueries--;

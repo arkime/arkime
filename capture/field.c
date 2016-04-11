@@ -476,6 +476,9 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
     field = session->fields[pos];
     field->jsonSize += (6 + 2*len);
 
+    if (field->jsonSize > 20000)
+        session->midSave = 1;
+
     switch (config.fields[pos]->type) {
     case MOLOCH_FIELD_TYPE_STR:
         if (copy)

@@ -544,7 +544,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
             len = 16 + packet->pktlen;
             g_array_append_val(session->fileLenArray, len);
 
-            if (packets >= config.maxPackets) {
+            if (packets >= config.maxPackets || session->midSave) {
                 moloch_session_mid_save(session, packet->ts.tv_sec);
             }
         }
