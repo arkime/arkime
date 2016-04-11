@@ -19,6 +19,7 @@
   - addUser - New option --webauthonly 
   - capture - Added readTruncatedPackets config option
   - capture - truncate urls at 4096 bytes and mid save sessions with large fields (issue #458)
+  - capture - warn if hostname isn't a FQDN (issue #459)
 
 0.12.3 2016/03/28
   - NOTICE: Only ES 1.7.x and ES 2.x is supported by this version. 

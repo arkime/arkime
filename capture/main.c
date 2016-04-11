@@ -122,8 +122,11 @@ void parse_args(int argc, char **argv)
         config.nodeName[100] = 0;
         config.hostName[100] = 0;
         char *dot = strchr(config.nodeName, '.');
-        if (dot)
+        if (dot) {
             *dot = 0;
+        } else {
+            LOG("WARNING: gethostname doesn't return a fully qualified name, this may cause issues when viewing pcaps - %s", config.hostName);
+        }
     }
     if (!config.hostName) {
         config.hostName = malloc(101);
