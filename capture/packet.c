@@ -910,6 +910,7 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
         MOLOCH_UNLOCK(packetQ[thread].lock);
         free(packet->pkt);
         packet->pkt = 0;
+        MOLOCH_COND_BROADCAST(packetQ[thread].lock);
         return 1;
     }
     DLL_PUSH_TAIL(packet_, &packetQ[thread], packet);
