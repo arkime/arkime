@@ -465,7 +465,8 @@ void moloch_session_process_commands(int thread)
 {
     // Commands
     MolochSesCmd_t *cmd = 0;
-    while (1) {
+    int count;
+    for (count = 0; count < 100; count++) {
         MOLOCH_LOCK(sessionCmds[thread].lock);
         DLL_POP_HEAD(cmd_, &sessionCmds[thread], cmd);
         MOLOCH_UNLOCK(sessionCmds[thread].lock);
@@ -488,7 +489,7 @@ void moloch_session_process_commands(int thread)
 
     // Closing Q
     MolochSession_t *session;
-    while (1) {
+    for (count = 0; count < 100; count++) {
         session = DLL_PEEK_HEAD(q_, &closingQ[thread]);
 
         if (session && session->saveTime < (uint64_t)lastPacketSecs[thread]) {
@@ -501,7 +502,7 @@ void moloch_session_process_commands(int thread)
     // Sessions Idle Long Time
     int ses;
     for (ses = 0; ses < SESSION_MAX; ses++) {
-        while (1) {
+        for (count = 0; count < 100; count++) {
             session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
 
             if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams ||
@@ -515,7 +516,7 @@ void moloch_session_process_commands(int thread)
     }
 
     // TCP Sessions Open Long Time
-    while (1) {
+    for (count = 0; count < 100; count++) {
         session = DLL_PEEK_HEAD(tcp_, &tcpWriteQ[thread]);
 
         if (session && (uint64_t)session->saveTime < (uint64_t)lastPacketSecs[thread]) {
