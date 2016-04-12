@@ -325,6 +325,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (dbInfo[thread].json && (uint32_t)BSB_REMAINING(dbInfo[thread].bsb) < jsonSize) {
         if (BSB_LENGTH(dbInfo[thread].bsb) > 0) {
             moloch_http_set(esServer, key, key_len, dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb), NULL, NULL);
+        } else {
+            moloch_http_free_buffer(dbInfo[thread].json);
         }
         dbInfo[thread].json = 0;
 
@@ -1330,6 +1332,7 @@ gboolean moloch_db_update_stats_gfunc (gpointer user_data)
     return TRUE;
 }
 /******************************************************************************/
+// Runs on main thread
 gboolean moloch_db_flush_gfunc (gpointer user_data )
 {
     int             thread;
@@ -1342,11 +1345,17 @@ gboolean moloch_db_flush_gfunc (gpointer user_data )
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0 &&
             ((currentTime.tv_sec - dbInfo[thread].lastSave) >= config.dbFlushTimeout || user_data == (gpointer)1)) {
 
-            moloch_http_set(esServer, "/_bulk", 6, dbInfo[thread].json, BSB_LENGTH(dbInfo[thread].bsb), NULL, NULL);
+            char   *json = dbInfo[thread].json;
+            int     len = BSB_LENGTH(dbInfo[thread].bsb);
+
             dbInfo[thread].json = 0;
             dbInfo[thread].lastSave = currentTime.tv_sec;
+            MOLOCH_UNLOCK(dbInfo[thread].lock);
+            // Unlock and then send buffer
+            moloch_http_set(esServer, "/_bulk", 6, json, len, NULL, NULL);
+        } else {
+            MOLOCH_UNLOCK(dbInfo[thread].lock);
         }
-        MOLOCH_UNLOCK(dbInfo[thread].lock);
     }
 
     return TRUE;
