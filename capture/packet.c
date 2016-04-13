@@ -1218,20 +1218,21 @@ void moloch_packet_init()
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         char name[100];
-        snprintf(name, sizeof(name), "moloch-pkt%d", t);
-        g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t);
         DLL_INIT(packet_, &packetQ[t]);
         MOLOCH_LOCK_INIT(packetQ[t].lock);
         MOLOCH_COND_INIT(packetQ[t].lock);
+        snprintf(name, sizeof(name), "moloch-pkt%d", t);
+        g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t);
     }
 
-    g_thread_new("moloch-frags4", &moloch_packet_frags_thread, NULL);
     DLL_INIT(packet_, &fragsQ);
     MOLOCH_LOCK_INIT(fragsQ.lock);
     MOLOCH_COND_INIT(fragsQ.lock);
 
     HASH_INIT(fragh_, fragsHash, moloch_packet_frag_hash, moloch_packet_frag_cmp);
     DLL_INIT(fragl_, &fragsList);
+
+    g_thread_new("moloch-frags4", &moloch_packet_frags_thread, NULL);
 
     moloch_add_can_quit(moloch_packet_outstanding);
     moloch_add_can_quit(moloch_packet_frags_outstanding);
