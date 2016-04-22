@@ -511,22 +511,22 @@ block content
 
           keys.forEach(function(key) {
             totals[key] = 0;
-            for (var r = 0, rlen = aaData.length; r < rlen; r++) {
-              totals[key] += aaData[r][key];
+            for (var r = 0, rlen = aiDisplay.length; r < rlen; r++) {
+              totals[key] += aaData[aiDisplay[r]][key];
             }
 
             if (key === "cpu") {
               $("#tot_" + key).html("" + (totals[key]/100.0));
-              $("#avg_" + key).html("" + Math.floor(totals[key]/aaData.length)/100);
+              $("#avg_" + key).html("" + Math.floor(totals[key]/aiDisplay.length)/100);
             } else if (key === "freeSpaceP" || key === "memoryP") {
               $("#tot_" + key).html(numberWithCommas(totals[key]));
-              $("#avg_" + key).html(numberWithCommas(totals[key]/aaData.length));
+              $("#avg_" + key).html(numberWithCommas(totals[key]/aiDisplay.length));
             } else if (key === "memory") {
               $("#tot_" + key).html(numberWithCommas(Math.ceil(totals[key]/1000000)));
-              $("#avg_" + key).html(numberWithCommas(Math.ceil((totals[key]/aaData.length)/1000000)));
+              $("#avg_" + key).html(numberWithCommas(Math.ceil((totals[key]/aiDisplay.length)/1000000)));
             } else {
               $("#tot_" + key).html(numberWithCommas(totals[key]));
-              $("#avg_" + key).html(numberWithCommas(Math.floor(totals[key]/aaData.length)));
+              $("#avg_" + key).html(numberWithCommas(Math.floor(totals[key]/aiDisplay.length)));
             }
           });
         }
@@ -631,15 +631,16 @@ block content
         order: [[3, "desc"]],
         footerCallback: function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
           var totals = {docs: 0, storeSize: 0, heapSize:0, load: 0, cpu:0, read:0, write:0, searches:0};
-          for (var r = 0, rlen = aaData.length; r < rlen; r++) {
-              totals.docs += aaData[r].docs;
-              totals.storeSize += aaData[r].storeSize;
-              totals.heapSize += aaData[r].heapSize;
-              totals.cpu += aaData[r].cpu;
-              totals.read += aaData[r].read;
-              totals.write += aaData[r].write;
-              totals.searches += aaData[r].searches;
-              totals.load += aaData[r].load;
+          for (var a = 0, alen = aiDisplay.length; a < alen; a++) {
+            var r = aiDisplay[a];
+            totals.docs += aaData[r].docs;
+            totals.storeSize += aaData[r].storeSize;
+            totals.heapSize += aaData[r].heapSize;
+            totals.cpu += aaData[r].cpu;
+            totals.read += aaData[r].read;
+            totals.write += aaData[r].write;
+            totals.searches += aaData[r].searches;
+            totals.load += aaData[r].load;
           }
 
           $("#estotdocs").html(numberWithCommas(totals.docs));
@@ -651,14 +652,14 @@ block content
           $("#estotwrite").html(numberWithCommas(totals.write));
           $("#estotsearches").html(numberWithCommas(totals.searches));
 
-          $("#esavgdocs").html(numberWithCommas(Math.floor(totals.docs/aaData.length)));
-          $("#esavgdisk").html(numberWithCommas(Math.floor(totals.storeSize/aaData.length/1000000)));
-          $("#esavgheap").html(numberWithCommas(Math.floor(totals.heapSize/aaData.length/1000000)));
-          $("#esavgload").html((totals.load/aaData.length).toFixed(2));
-          $("#esavgcpu").html(numberWithCommas(Math.floor(totals.cpu/aaData.length)));
-          $("#esavgread").html(numberWithCommas(Math.floor(totals.read/aaData.length)));
-          $("#esavgwrite").html(numberWithCommas(Math.floor(totals.write/aaData.length)));
-          $("#esavgsearches").html(numberWithCommas(Math.floor(totals.searches/aaData.length)));
+          $("#esavgdocs").html(numberWithCommas(Math.floor(totals.docs/aiDisplay.length)));
+          $("#esavgdisk").html(numberWithCommas(Math.floor(totals.storeSize/aiDisplay.length/1000000)));
+          $("#esavgheap").html(numberWithCommas(Math.floor(totals.heapSize/aiDisplay.length/1000000)));
+          $("#esavgload").html((totals.load/aiDisplay.length).toFixed(2));
+          $("#esavgcpu").html(numberWithCommas(Math.floor(totals.cpu/aiDisplay.length)));
+          $("#esavgread").html(numberWithCommas(Math.floor(totals.read/aiDisplay.length)));
+          $("#esavgwrite").html(numberWithCommas(Math.floor(totals.write/aiDisplay.length)));
+          $("#esavgsearches").html(numberWithCommas(Math.floor(totals.searches/aiDisplay.length)));
         }
       } );
 
