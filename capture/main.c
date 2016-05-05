@@ -115,24 +115,31 @@ void parse_args(int argc, char **argv)
     }
 
     if (!config.nodeName) {
-        config.nodeName = g_malloc(101);
-        config.hostName = g_malloc(101);
-        gethostname(config.nodeName, 101);
-        gethostname(config.hostName, 101);
-        config.nodeName[100] = 0;
-        config.hostName[100] = 0;
+        config.nodeName = g_malloc(256);
+        gethostname(config.nodeName, 256);
+        config.nodeName[255] = 0;
         char *dot = strchr(config.nodeName, '.');
         if (dot) {
             *dot = 0;
-        } else {
-            LOG("WARNING: gethostname doesn't return a fully qualified name, this may cause issues when viewing pcaps - %s", config.hostName);
         }
     }
+
     if (!config.hostName) {
-        config.hostName = malloc(101);
-        gethostname(config.hostName, 101);
-        config.hostName[100] = 0;
+        config.hostName = malloc(256);
+        gethostname(config.hostName, 256);
+        char *dot = strchr(config.hostName, '.');
+        if (!dot) {
+            char domainname[256];
+            if (getdomainname(domainname, 255) == 0 && strlen(domainname) > 0) {
+                g_strlcat(config.hostName, ".", 255);
+                g_strlcat(config.hostName, domainname, 255);
+            } else {
+                LOG("WARNING: gethostname doesn't return a fully qualified name and getdomainname failed, this may cause issues when viewing pcaps - %s", config.hostName);
+            }
+        }
+        config.hostName[255] = 0;
     }
+
     if (config.debug) {
         LOG("debug = %d", config.debug);
         LOG("nodeName = %s", config.nodeName);
