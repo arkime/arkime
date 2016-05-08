@@ -309,7 +309,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which)
+void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
 {
     if (which == 0 && session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
         moloch_session_add_protocol(session, "dns");
@@ -324,7 +324,7 @@ int dns_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned ch
     return 0;
 }
 /******************************************************************************/
-void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
+void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (session->port1 == 53 || session->port2 == 53)
         moloch_parsers_register(session, dns_udp_parser, 0, 0);
@@ -435,8 +435,8 @@ void moloch_parser_init()
     qtypes[255] = "ANY";
 
 #define DNS_CLASSIFY(_str) \
-    moloch_parsers_classifier_register_tcp("dns", 4, (unsigned char*)_str, 2, dns_tcp_classify); \
-    moloch_parsers_classifier_register_udp("dns", 2, (unsigned char*)_str, 2, dns_udp_classify);
+    moloch_parsers_classifier_register_tcp("dns", NULL, 4, (unsigned char*)_str, 2, dns_tcp_classify); \
+    moloch_parsers_classifier_register_udp("dns", NULL, 2, (unsigned char*)_str, 2, dns_udp_classify);
 
     DNS_CLASSIFY("\x00\x00");
     DNS_CLASSIFY("\x00\x10");

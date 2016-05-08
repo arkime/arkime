@@ -68,7 +68,7 @@ void mysql_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
+void mysql_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (which != 1)
         return;
@@ -100,7 +100,7 @@ void mysql_classify(MolochSession_t *session, const unsigned char *data, int len
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("mysql", 1, (unsigned char*)"\x00\x00\x00\x0a", 4, mysql_classify);
+    moloch_parsers_classifier_register_tcp("mysql", NULL, 1, (unsigned char*)"\x00\x00\x00\x0a", 4, mysql_classify);
 
     userField = moloch_field_define("mysql", "lotermfield",
         "mysql.user", "User", "mysql.user-term",

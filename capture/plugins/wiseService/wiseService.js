@@ -164,7 +164,8 @@ internals.sourceApi = {
     if (src.printStats) {
       internals.printStats.push(src);
     }
-  }
+  },
+  app: app
 };
 //////////////////////////////////////////////////////////////////////////////////
 function loadSources() {
@@ -284,6 +285,63 @@ app.get("/dump/:source", function(req, res) {
   }
 
   source.dump(res);
+});
+//////////////////////////////////////////////////////////////////////////////////
+app.get("/bro/:type", function(req, res) {
+  var hashes = req.query.items.split(",");
+  var needsep = false;
+
+  var fn = internals.type2func[req.params.type];
+  var srcs = internals[fn + "s"];
+  async.map(hashes, function(hash, doneCb) {
+    async.map(srcs, function(src, cb) {
+      if (internals.source_allowed[req.params.type](src, hash)) {
+        src[fn](hash, cb);
+      } else {
+        setImmediate(cb, undefined);
+      }
+    }, function (err, results) {
+      doneCb(null, results);
+    });
+  },
+  function (err, results) {
+
+    for (var hashi = 0; hashi < hashes.length; hashi++) {
+      if (hashi != 0) {
+        res.write("\tBRONEXT\t");
+      }
+      res.write(hashes[hashi]);
+      res.write("\tBROIS\t");
+      var resulti, found = false;
+      for (resulti = 0; resulti < results[hashi].length; resulti++) {
+        if (!results[hashi][resulti]) {
+          continue;
+        }
+        if (found) {
+          res.write("\tBROMORE\t");
+        }
+        found = true;
+        res.write(srcs[resulti].section);
+        res.write("\tBROSUB\t");
+        var offset = 0;
+        var buffer = results[hashi][resulti].buffer;
+        for (var n = 0; n < results[hashi][resulti].num; n++) {
+          if (n != 0) {
+            res.write(" ");
+          }
+          var pos = buffer[offset++];
+          var len = buffer[offset++];
+          var value = buffer.toString('utf8', offset, offset+len-1);
+          offset += len;
+          res.write(wiseSource.pos2Field[pos] + ": " + value);
+        }
+      }
+      if (!found) {
+        res.write("BRONONE");
+      }
+    }
+    res.end();
+  });
 });
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/:type/:value", function(req, res) {

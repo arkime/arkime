@@ -393,6 +393,7 @@ void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
 typedef struct moloch_classify_t
 {
     const char          *name;
+    void                *uw;
     int                  offset;
     const unsigned char *match;
     int                  matchlen;
@@ -418,6 +419,20 @@ MolochClassifyHead_t classifersUdp2[256][256];
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
 {
+    int i;
+    for (i = 0; i < ch->cnt; i++) {
+        if (ch->arr[i]->offset == c->offset &&
+            ch->arr[i]->func == c->func &&
+            strcmp(ch->arr[i]->name, c->name) == 0 &&
+            memcmp(ch->arr[i]->match, c->match, c->matchlen) == 0) {
+
+            if (config.debug > 1) {
+                LOG("Info, duplicate (could be normal) %s %s", c->name, c->match);
+            }
+            MOLOCH_TYPE_FREE(MolochClassify_t, c);
+            return;
+        }
+    }
     if (ch->cnt >= ch->size) {
         if (ch->size == 0) {
             ch->size = 2;
@@ -431,7 +446,7 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
     ch->cnt++;
 }
 /******************************************************************************/
-void moloch_parsers_classifier_register_tcp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
+void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
         LOG("Plugin '%s' built with different version of moloch.h", name);
@@ -445,6 +460,7 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, int offse
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
     c->name     = name;
+    c->uw       = uw;
     c->offset   = offset;
     c->match    = match;
     c->matchlen = matchlen;
@@ -464,7 +480,7 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, int offse
     }
 }
 /******************************************************************************/
-void moloch_parsers_classifier_register_udp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
+void moloch_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
         LOG("Plugin '%s' built with different version of moloch.h", name);
@@ -478,12 +494,15 @@ void moloch_parsers_classifier_register_udp_internal(const char *name, int offse
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
     c->name     = name;
+    c->uw       = uw;
     c->offset   = offset;
     c->match    = match;
     c->matchlen = matchlen;
     c->minlen   = matchlen + offset;
     c->func     = func;
 
+    if (config.debug)
+        LOG("adding %s matchlen:%d offset:%d match %s ", name, matchlen, offset, match);
     if (matchlen == 0 || offset != 0) {
         moloch_parsers_classifier_add(&classifersUdp0, c);
     } else if (matchlen == 1) {
@@ -505,17 +524,17 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
     for (i = 0; i < classifersUdp0.cnt; i++) {
         MolochClassify_t *c = classifersUdp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining, which);
+            c->func(session, data, remaining, which, c->uw);
         }
     }
 
     for (i = 0; i < classifersUdp1[data[0]].cnt; i++)
-        classifersUdp1[data[0]].arr[i]->func(session, data, remaining, which);
+        classifersUdp1[data[0]].arr[i]->func(session, data, remaining, which, classifersUdp1[data[0]].arr[i]->uw);
 
     for (i = 0; i < classifersUdp2[data[0]][data[1]].cnt; i++) {
         MolochClassify_t *c = classifersUdp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining, which);
+            c->func(session, data, remaining, which, c->uw);
         }
     }
 }
@@ -535,18 +554,18 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
     for (i = 0; i < classifersTcp0.cnt; i++) {
         MolochClassify_t *c = classifersTcp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining, which);
+            c->func(session, data, remaining, which, c->uw);
         }
     }
 
     for (i = 0; i < classifersTcp1[data[0]].cnt; i++) {
-        classifersTcp1[data[0]].arr[i]->func(session, data, remaining, which);
+        classifersTcp1[data[0]].arr[i]->func(session, data, remaining, which, classifersTcp1[data[0]].arr[i]);
     }
 
     for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
         MolochClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data+2, c->match, c->matchlen) == 0) {
-            c->func(session, data, remaining, which);
+            c->func(session, data, remaining, which, c->uw);
         }
     }
 }

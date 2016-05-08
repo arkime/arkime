@@ -624,15 +624,6 @@ void moloch_plugin_init()
     int   port = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
 
-    if (config.debug) {
-        LOG("wise max conns = %d", maxConns);
-        LOG("wise max requests = %d", maxRequests);
-        LOG("wise max cache = %d", maxCache);
-        LOG("wise cache seconds = %d", cacheSecs);
-        LOG("wise host = %s", host);
-        LOG("wise port = %d", port);
-    }
-
     httpHostField  = moloch_field_by_db("ho");
     httpXffField   = moloch_field_by_db("xff");
     httpMd5Field   = moloch_field_by_db("hmd5");

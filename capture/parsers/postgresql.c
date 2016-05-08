@@ -86,7 +86,7 @@ void postgresql_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which)
+void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "postgresql"))
         return;
@@ -102,7 +102,7 @@ void postgresql_classify(MolochSession_t *session, const unsigned char UNUSED(*d
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("postgresql", 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
+    moloch_parsers_classifier_register_tcp("postgresql", NULL, 0, (unsigned char*)"\x00\x00\x00", 3, postgresql_classify);
 
     userField = moloch_field_define("postgresql", "termfield",
         "postgresql.user", "User", "postgresql.user-term",

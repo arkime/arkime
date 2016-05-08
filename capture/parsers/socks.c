@@ -211,7 +211,7 @@ void socks_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SocksInfo_t, socks);
 }
 /******************************************************************************/
-void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
+void socks4_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -251,7 +251,7 @@ void socks4_classify(MolochSession_t *session, const unsigned char *data, int le
 }
 
 /******************************************************************************/
-void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
+void socks5_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
 #ifdef SOCKSDEBUG
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
@@ -304,8 +304,8 @@ void moloch_parser_init()
         "category", "user",
         NULL);
 
-    moloch_parsers_classifier_register_tcp("socks5", 0, (unsigned char*)"\005", 1, socks5_classify);
-    moloch_parsers_classifier_register_tcp("socks4", 0, (unsigned char*)"\004\000", 2, socks4_classify);
-    moloch_parsers_classifier_register_tcp("socks4", 0, (unsigned char*)"\004\001", 2, socks4_classify);
+    moloch_parsers_classifier_register_tcp("socks5", NULL, 0, (unsigned char*)"\005", 1, socks5_classify);
+    moloch_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\000", 2, socks4_classify);
+    moloch_parsers_classifier_register_tcp("socks4", NULL, 0, (unsigned char*)"\004\001", 2, socks4_classify);
 }
 

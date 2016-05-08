@@ -106,7 +106,7 @@ void ssh_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which)
+void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "ssh"))
         return;
@@ -133,6 +133,6 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
-    moloch_parsers_classifier_register_tcp("ssh", 0, (unsigned char*)"SSH", 3, ssh_classify);
+    moloch_parsers_classifier_register_tcp("ssh", NULL, 0, (unsigned char*)"SSH", 3, ssh_classify);
 }
 

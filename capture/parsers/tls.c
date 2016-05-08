@@ -569,7 +569,7 @@ void tls_free(MolochSession_t *UNUSED(session), void *uw)
     MOLOCH_TYPE_FREE(TLSInfo_t, tls);
 }
 /******************************************************************************/
-void tls_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
+void tls_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 6 || data[2] > 0x03)
         return;
@@ -713,7 +713,7 @@ void moloch_parser_init()
         "regex", "^tls\\\\.sessionid\\\\.(?:(?!\\\\.cnt$).)*$",
         NULL);
 
-    moloch_parsers_classifier_register_tcp("tls", 0, (unsigned char*)"\x16\x03", 2, tls_classify);
+    moloch_parsers_classifier_register_tcp("tls", NULL, 0, (unsigned char*)"\x16\x03", 2, tls_classify);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {

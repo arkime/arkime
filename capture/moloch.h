@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 14
+#define MOLOCH_API_VERSION 15
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -645,17 +645,17 @@ void moloch_parsers_exit();
 
 void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len);
 
-typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining, int which);
+typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining, int which, void *uw);
 
 void  moloch_parsers_unregister(MolochSession_t *session, void *uw);
 void  moloch_parsers_register2(MolochSession_t *session, MolochParserFunc func, void *uw, MolochParserFreeFunc ffunc, MolochParserSaveFunc sfunc);
 #define moloch_parsers_register(session, func, uw, ffunc) moloch_parsers_register2(session, func, uw, ffunc, NULL)
 
-void  moloch_parsers_classifier_register_tcp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
-#define moloch_parsers_classifier_register_tcp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_tcp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+void  moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
+#define moloch_parsers_classifier_register_tcp(name, uw, offset, match, matchlen, func) moloch_parsers_classifier_register_tcp_internal(name, uw, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
 
-void  moloch_parsers_classifier_register_udp_internal(const char *name, int offset, unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
-#define moloch_parsers_classifier_register_udp(name, offset, match, matchlen, func) moloch_parsers_classifier_register_udp_internal(name, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+void  moloch_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
+#define moloch_parsers_classifier_register_udp(name, uw, offset, match, matchlen, func) moloch_parsers_classifier_register_udp_internal(name, uw, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
 
 void  moloch_print_hex_string(unsigned char* data, unsigned int length);
 char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length);
@@ -870,8 +870,8 @@ void moloch_field_init();
 void moloch_field_define_json(unsigned char *expression, int expression_len, unsigned char *data, int data_len);
 int  moloch_field_define_text(char *text, int *shortcut);
 int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...);
-int  moloch_field_by_db(char *dbField);
-int  moloch_field_by_exp(char *exp);
+int  moloch_field_by_db(const char *dbField);
+int  moloch_field_by_exp(const char *exp);
 gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);

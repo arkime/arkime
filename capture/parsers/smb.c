@@ -563,7 +563,7 @@ void smb_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SMBInfo_t, smb);
 }
 /******************************************************************************/
-void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which))
+void smb_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (data[4] != 0xff && data[4] != 0xfe)
         return;
@@ -625,6 +625,6 @@ void moloch_parser_init()
         "aliases", "[\"smb.host\"]", NULL);
 
     if (config.parseSMB) {
-        moloch_parsers_classifier_register_tcp("smb", 5, (unsigned char*)"SMB", 3, smb_classify);
+        moloch_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
     }
 }

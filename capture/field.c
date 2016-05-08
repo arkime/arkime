@@ -385,7 +385,7 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     return minfo->pos;
 }
 /******************************************************************************/
-int moloch_field_by_db(char *dbField)
+int moloch_field_by_db(const char *dbField)
 {
     MolochFieldInfo_t *info = 0;
     HASH_FIND(d_, fieldsByDb, dbField, info);
@@ -394,7 +394,7 @@ int moloch_field_by_db(char *dbField)
     return -1;
 }
 /******************************************************************************/
-int moloch_field_by_exp(char *exp)
+int moloch_field_by_exp(const char *exp)
 {
     MolochFieldInfo_t *info = 0;
     HASH_FIND(e_, fieldsByExp, exp, info);

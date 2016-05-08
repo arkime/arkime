@@ -27,57 +27,63 @@ static GKeyFile             *molochKeyFile;
 /******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
 {
+    char *result;
+
     if (!keyfile)
         keyfile = molochKeyFile;
 
     if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
-        return g_key_file_get_string(keyfile, config.nodeName, key, NULL);
+        result = g_key_file_get_string(keyfile, config.nodeName, key, NULL);
+    } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
+        result = g_key_file_get_string(keyfile, config.nodeClass, key, NULL);
+    } else if (g_key_file_has_key(keyfile, "default", key, NULL)) {
+        result = g_key_file_get_string(keyfile, "default", key, NULL);
+    } else if (d) {
+        result = g_strdup(d);
+    } else {
+        result = NULL;
     }
 
-    if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
-        return g_key_file_get_string(keyfile, config.nodeClass, key, NULL);
+    if (config.debug) {
+        LOG("%s=%s", key, result?result:"(null)");
     }
 
-    if (g_key_file_has_key(keyfile, "default", key, NULL)) {
-        return g_key_file_get_string(keyfile, "default", key, NULL);
-    }
-
-    if (!d)
-        return NULL;
-
-    return g_strdup(d);
+    return result;
 }
 
 /******************************************************************************/
 gchar **moloch_config_raw_str_list(GKeyFile *keyfile, char *key, char *d)
 {
+    gchar **result;
+
     if (!keyfile)
         keyfile = molochKeyFile;
 
     if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
-        return g_key_file_get_string_list(keyfile, config.nodeName, key, NULL, NULL);
+        result = g_key_file_get_string_list(keyfile, config.nodeName, key, NULL, NULL);
+    } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
+        result = g_key_file_get_string_list(keyfile, config.nodeClass, key, NULL, NULL);
+    } else if (g_key_file_has_key(keyfile, "default", key, NULL)) {
+        result = g_key_file_get_string_list(keyfile, "default", key, NULL, NULL);
+    } else if (d) {
+        result = g_strsplit(d, ";", 0);
+    } else {
+        result = NULL;
     }
 
-    if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
-        return g_key_file_get_string_list(keyfile, config.nodeClass, key, NULL, NULL);
-    }
-
-    if (g_key_file_has_key(keyfile, "default", key, NULL)) {
-        return g_key_file_get_string_list(keyfile, "default", key, NULL, NULL);
-    }
-
-    if (!d)
-        return NULL;
-
-    return g_strsplit(d, ";", 0);
+    return result;
 }
 
 /******************************************************************************/
 gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
 {
     gchar **strs = moloch_config_raw_str_list(keyfile, key, d);
-    if (!strs)
+    if (!strs) {
+        if (config.debug) {
+            LOG("%s=(null)", key);
+        }
         return strs;
+    }
 
     int i, j;
     for (i = j = 0; strs[i]; i++) {
@@ -109,6 +115,11 @@ gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d)
     for (; j < i; j++)
         strs[j] = NULL;
 
+    if (config.debug) {
+        gchar *str = g_strjoinv(";", strs);
+        LOG("%s=%s", key, str);
+        g_free(str);
+    }
     return strs;
 }
 
@@ -137,6 +148,10 @@ uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t mi
         value = max;
     }
 
+    if (config.debug) {
+        LOG("%s=%d", key, value);
+    }
+
     return value;
 }
 
@@ -161,6 +176,10 @@ double moloch_config_double(GKeyFile *keyfile, char *key, double d, double min, 
     if (value > max)
         value = max;
 
+    if (config.debug) {
+        LOG("%s=%lf", key, value);
+    }
+
     return value;
 }
 
@@ -178,6 +197,10 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d)
         value = g_key_file_get_boolean(keyfile, config.nodeClass, key, NULL);
     } else if (g_key_file_has_key(keyfile, "default", key, NULL)) {
         value = g_key_file_get_boolean(keyfile, "default", key, NULL);
+    }
+
+    if (config.debug) {
+        LOG("%s=%s", key, value?"true": "false");
     }
 
     return value;
@@ -525,7 +548,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         char field[100];
         char rawfield[100];
         char help[100];
-        
+
         if (type == 0) {
             sprintf(expression, "%s%s", expBase, name);
             sprintf(field, "%s%s.snow", dbBase, name);
@@ -543,7 +566,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
             pos = moloch_field_define(group, kind,
                     expression, expression, field,
                     help,
-                    t, f, 
+                    t, f,
                     "rawField", rawfield, NULL);
         } else {
             pos = moloch_field_define(group, kind,
@@ -559,113 +582,12 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 /******************************************************************************/
 void moloch_config_init()
 {
-    int i;
-    char *str;
-    static char *rotates[] = {"hourly", "daily", "weekly", "monthly"};
-
     HASH_INIT(s_, config.dontSaveTags, moloch_string_hash, moloch_string_cmp);
 
     moloch_config_load();
 
     if (config.debug) {
-        LOG("nodeClass: %s", config.nodeClass);
-        LOG("elasticsearch: %s", config.elasticsearch);
-        LOG("prefix: %s", config.prefix);
-        if (config.interface) {
-            str = g_strjoinv(";", config.interface);
-            LOG("pcapDir: %s", str);
-            g_free(str);
-        }
-        if (config.pcapDir) {
-            str = g_strjoinv(";", config.pcapDir);
-            LOG("pcapDir: %s", str);
-            g_free(str);
-        }
-        LOG("bpf: %s", config.bpf);
-        LOG("yara: %s", config.yara);
-        LOG("geoipFile: %s", config.geoipFile);
-        LOG("geoipASNFile: %s", config.geoipASNFile);
-        LOG("geoip6File: %s", config.geoip6File);
-        LOG("geoipASN6File: %s", config.geoipASN6File);
-        LOG("rirFile: %s", config.rirFile);
-        LOG("dropUser: %s", config.dropUser);
-        LOG("dropGroup: %s", config.dropGroup);
-
-        if (config.smtpIpHeaders) {
-            str = g_strjoinv(";", config.smtpIpHeaders);
-            LOG("smtpIpHeaders: %s", str);
-            g_free(str);
-        }
-
-        if (config.pluginsDir) {
-            str = g_strjoinv(";", config.pluginsDir);
-            LOG("pluginsDir: %s", str);
-            g_free(str);
-        }
-
-        if (config.plugins) {
-            str = g_strjoinv(";", config.plugins);
-            LOG("plugins: %s", str);
-            g_free(str);
-        }
-
-        if (config.rootPlugins) {
-            str = g_strjoinv(";", config.rootPlugins);
-            LOG("rootPlugins: %s", str);
-            g_free(str);
-        }
-
-        if (config.parsersDir) {
-            str = g_strjoinv(";", config.parsersDir);
-            LOG("parsersDir: %s", str);
-            g_free(str);
-        }
-
-        LOG("maxFileSizeG: %lf", config.maxFileSizeG);
         LOG("maxFileSizeB: %" PRIu64, config.maxFileSizeB);
-        LOG("maxFileTimeM: %u", config.maxFileTimeM);
-        LOG("icmpTimeout: %u", config.timeouts[SESSION_ICMP]);
-        LOG("udpTimeout: %u", config.timeouts[SESSION_UDP]);
-        LOG("tcpTimeout: %u", config.timeouts[SESSION_TCP]);
-        LOG("tcpSaveTimeout: %u", config.tcpSaveTimeout);
-        LOG("maxStreams: %u", config.maxStreams);
-        LOG("maxPackets: %u", config.maxPackets);
-        LOG("maxPacketsInQueue: %u", config.maxPacketsInQueue);
-        LOG("dbBulkSize: %u", config.dbBulkSize);
-        LOG("dbFlushTimeout: %u", config.dbFlushTimeout);
-        LOG("maxESConns: %u", config.maxESConns);
-        LOG("maxESRequests: %u", config.maxESRequests);
-        LOG("logEveryXPackets: %u", config.logEveryXPackets);
-        LOG("pcapBufferSize: %u", config.pcapBufferSize);
-        LOG("pcapWriteSize: %u", config.pcapWriteSize);
-        LOG("maxFreeOutputBuffers: %u", config.maxFreeOutputBuffers);
-        LOG("fragsTimeout: %u", config.fragsTimeout);
-        LOG("maxFrags: %u", config.maxFrags);
-
-        LOG("packetThreads: %d", config.packetThreads);
-
-        LOG("logUnknownProtocols: %s", (config.logUnknownProtocols?"true":"false"));
-        LOG("logESRequests: %s", (config.logESRequests?"true":"false"));
-        LOG("logFileCreation: %s", (config.logFileCreation?"true":"false"));
-        LOG("parseSMTP: %s", (config.parseSMTP?"true":"false"));
-        LOG("parseSMB: %s", (config.parseSMB?"true":"false"));
-        LOG("parseQSValue: %s", (config.parseQSValue?"true":"false"));
-        LOG("parseCookieValue: %s", (config.parseCookieValue?"true":"false"));
-        LOG("compressES: %s", (config.compressES?"true":"false"));
-        LOG("antiSynDrop: %s", (config.antiSynDrop?"true":"false"));
-        LOG("readTruncatedPackets: %s", (config.readTruncatedPackets?"true":"false"));
-
-        LOG("rotateIndex = %s", rotates[config.rotate]);
-        LOG("offlineFilenameRegex: %s", g_regex_get_pattern(config.offlineRegex));
-
-        MolochString_t *tstring;
-        HASH_FORALL(s_, config.dontSaveTags, tstring,
-          LOG("dontSaveTags: %s", tstring->str);
-        );
-
-        for (i = 0; i < config.dontSaveBPFsNum; i++) {
-          LOG("dontSaveBPFs: %s:%d", config.dontSaveBPFs[i], config.dontSaveBPFsStop[i]);
-        }
     }
 
     if (!config.interface && !config.pcapReadOffline) {

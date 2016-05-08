@@ -632,7 +632,7 @@ void http_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(HTTPInfo_t, http);
 }
 /******************************************************************************/
-void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which))
+void http_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "http"))
         return;
@@ -812,7 +812,7 @@ static const char *method_strings[] =
 
     int i;
     for (i = 0; method_strings[i]; i++) {
-        moloch_parsers_classifier_register_tcp("http", 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
+        moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
     }
 
     memset(&parserSettings, 0, sizeof(parserSettings));

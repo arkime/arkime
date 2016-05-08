@@ -497,17 +497,6 @@ void writer_s3_init(char *UNUSED(name))
 
     config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize*2000);
 
-    if (config.debug) {
-        LOG("s3Region: %s", s3Region);
-        LOG("s3Host: %s", s3Host);
-        LOG("s3Bucket: %s", s3Bucket);
-        LOG("s3AccessKeyId: %s", s3AccessKeyId);
-        LOG("s3SecretAccessKey: %s", s3SecretAccessKey);
-        LOG("s3Compress: %s", (s3Compress?"true":"false"));
-        LOG("s3MaxConns: %u", s3MaxConns);
-        LOG("s3MaxRequests: %u", s3MaxRequests);
-    }
-
     char host[200];
     snprintf(host, sizeof(host), "https://%s", s3Host);
     s3Server = moloch_http_create_server(host, 443, s3MaxConns, s3MaxRequests, s3Compress);

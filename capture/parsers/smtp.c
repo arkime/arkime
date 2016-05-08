@@ -805,7 +805,7 @@ void smtp_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SMTPInfo_t, email);
 }
 /******************************************************************************/
-void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which))
+void smtp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 5)
         return;
@@ -955,8 +955,8 @@ void moloch_parser_init()
     moloch_config_load_header("headers-email", "email", "Email header ", "email.", "hdrs.ehead-", &emailHeaders, 0);
 
     if (config.parseSMTP) {
-        moloch_parsers_classifier_register_tcp("smtp", 0, (unsigned char*)"HELO", 4, smtp_classify);
-        moloch_parsers_classifier_register_tcp("smtp", 0, (unsigned char*)"EHLO", 4, smtp_classify);
-        moloch_parsers_classifier_register_tcp("smtp", 0, (unsigned char*)"220 ", 4, smtp_classify);
+        moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"HELO", 4, smtp_classify);
+        moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"EHLO", 4, smtp_classify);
+        moloch_parsers_classifier_register_tcp("smtp", NULL, 0, (unsigned char*)"220 ", 4, smtp_classify);
     }
 }

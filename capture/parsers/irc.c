@@ -78,7 +78,7 @@ void irc_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which)
+void irc_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
     if (len < 8)
         return;
@@ -117,9 +117,9 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT, 
         NULL);
 
-    moloch_parsers_classifier_register_tcp("irc", 0, (unsigned char*)":", 1, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", 0, (unsigned char*)"NICK ", 5, irc_classify);
-    moloch_parsers_classifier_register_tcp("irc", 0, (unsigned char*)"USER ", 5, irc_classify);
+    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)":", 1, irc_classify);
+    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
+    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NICK ", 5, irc_classify);
+    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"USER ", 5, irc_classify);
 }
 
