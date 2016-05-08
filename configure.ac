@@ -10,6 +10,7 @@ AC_CONFIG_FILES([
   capture/plugins/Makefile
   capture/plugins/daq/Makefile
   capture/plugins/pfring/Makefile
+  capture/plugins/lau/Makefile
   capture/parsers/Makefile
   db/Makefile
   tests/plugins/Makefile
