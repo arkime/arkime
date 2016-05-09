@@ -28,6 +28,15 @@
 extern MolochConfig_t        config;
 
 static lua_State *Ls[MOLOCH_MAX_PACKET_THREADS];
+static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
+
+typedef struct {
+    long ref;
+    int  thread;
+    int code; 
+    unsigned char *data;
+    int len;
+} LuaHttp_t;
 
 /******************************************************************************/
 static void stackDump (lua_State *L) {
@@ -102,11 +111,7 @@ void lua_parsers_free_cb(MolochSession_t *session, void *uw)
 /******************************************************************************/
 static int lua_parsers_classifier_register_tcp(lua_State *L) 
 {
-    if (lua_gettop(L) != 4) {
-        return luaL_error(L, "wrong number of arguments");
-    }
-
-    if (!lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
+    if (lua_gettop(L) != 4 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
     }
 
@@ -122,10 +127,7 @@ static int lua_parsers_classifier_register_tcp(lua_State *L)
 /******************************************************************************/
 static int lua_parsers_classifier_register_udp(lua_State *L) 
 {
-    if (lua_gettop(L) != 4) {
-        return luaL_error(L, "wrong number of arguments");
-    }
-    if (!lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
+    if (lua_gettop(L) != 4 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
     }
 
@@ -141,11 +143,7 @@ static int lua_parsers_classifier_register_udp(lua_State *L)
 /******************************************************************************/
 static int lua_parsers_register(lua_State *L) 
 {
-    if (lua_gettop(L) != 2) {
-        return luaL_error(L, "wrong number of arguments");
-    }
-
-    if (!lua_isuserdata(L, 1) || !lua_isfunction(L, 2)) {
+    if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isfunction(L, 2)) {
         return luaL_error(L, "usage: <session> <function>");
     }
 
@@ -159,11 +157,7 @@ static int lua_parsers_register(lua_State *L)
 /******************************************************************************/
 static int lua_session_add_tag(lua_State *L) 
 {
-    if (lua_gettop(L) != 2) {
-        return luaL_error(L, "wrong number of arguments");
-    }
-
-    if (!lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
+    if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
         return luaL_error(L, "usage: <session> <tag>");
     }
 
@@ -174,13 +168,35 @@ static int lua_session_add_tag(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_field_string_add(lua_State *L) 
+static int lua_session_incr_oustanding(lua_State *L) 
 {
-    if (lua_gettop(L) != 3) {
-        return luaL_error(L, "wrong number of arguments");
+    if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
+        return luaL_error(L, "usage: <session>");
     }
 
-    if (!lua_isuserdata(L, 1) || !(lua_isstring(L, 2) || lua_isinteger(L, 2)) || !lua_isstring(L, 3)) {
+    MolochSession_t *session = lua_touserdata(L, 1);
+    moloch_session_incr_outstanding(session);
+
+    return 0;
+}
+/******************************************************************************/
+static int lua_session_decr_oustanding(lua_State *L) 
+{
+    if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
+        return luaL_error(L, "usage: <session>");
+    }
+
+    moloch_session_decr_outstanding(lua_touserdata(L, 1));
+
+    return 0;
+}
+/******************************************************************************/
+static int lua_field_string_add(lua_State *L) 
+{
+    if (config.debug > 2)
+        stackDump(L);
+
+    if (lua_gettop(L) != 3 || !lua_isuserdata(L, 1) || !(lua_isstring(L, 2) || lua_isinteger(L, 2)) || !lua_isstring(L, 3)) {
         return luaL_error(L, "usage: <session> <field string or field num(faster)> <string>");
     }
 
@@ -202,11 +218,10 @@ static int lua_field_string_add(lua_State *L)
 /******************************************************************************/
 static int lua_field_int_add(lua_State *L) 
 {
-    if (lua_gettop(L) != 3) {
-        return luaL_error(L, "wrong number of arguments");
-    }
+    if (config.debug > 2)
+        stackDump(L);
 
-    if (!lua_isuserdata(L, 1) || !(lua_isstring(L, 2) || lua_isinteger(L, 2)) || !lua_isinteger(L, 3)) {
+    if (lua_gettop(L) != 3 || !lua_isuserdata(L, 1) || !(lua_isstring(L, 2) || lua_isinteger(L, 2)) || !lua_isinteger(L, 3)) {
         return luaL_error(L, "usage: <session> <field string or field num(faster)> <integer>");
     }
 
@@ -227,11 +242,7 @@ static int lua_field_int_add(lua_State *L)
 /******************************************************************************/
 static int lua_field_by_exp(lua_State *L) 
 {
-    if (lua_gettop(L) != 1) {
-        return luaL_error(L, "wrong number of arguments");
-    }
-
-    if (!lua_isstring(L, 1)) {
+    if (lua_gettop(L) != 1 || !lua_isstring(L, 1)) {
         return luaL_error(L, "usage: <field expression>");
     }
 
@@ -239,6 +250,101 @@ static int lua_field_by_exp(lua_State *L)
     lua_pushinteger(L, pos);
 
     return 1;
+}
+/******************************************************************************/
+static int lua_http_create_server(lua_State *L) 
+{
+    if (lua_gettop(L) != 3 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isinteger(L, 3)) {
+        return luaL_error(L, "usage: <hosts:ports> <maxConnections> <maxRequests>");
+    }
+
+    void *server = moloch_http_create_server(lua_tostring(L, 1), 0, lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
+    lua_pushlightuserdata(L, server);
+    return 1;
+}
+/******************************************************************************/
+void lua_http_response_cb_process(MolochSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
+{
+    LuaHttp_t *lhttp = uw1;
+
+    lua_State *L = Ls[lhttp->thread];
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lhttp->ref);
+    lua_pushinteger(L, lhttp->code);
+    lua_pushlstring(L, (char *)lhttp->data, lhttp->len);
+
+    if (lua_pcall(L, 2, 0, 0) != 0) {
+       LOG("error running http callback function %s", lua_tostring(L, -1));
+       exit(0);
+    }
+
+    g_free(lhttp->data);
+    MOLOCH_TYPE_FREE(LuaHttp_t, lhttp);
+}
+/******************************************************************************/
+void lua_http_response_cb(int code, unsigned char *data, int len, gpointer uw)
+{
+    LuaHttp_t *lhttp = uw;
+    lhttp->code = code;
+    lhttp->len = len;
+    lhttp->data = g_memdup(data, len); // Sucks
+
+    moloch_session_add_cmd(&fakeSessions[lhttp->thread], MOLOCH_SES_CMD_FUNC, lhttp, NULL, lua_http_response_cb_process);
+}
+/******************************************************************************/
+static int lua_http_request(lua_State *L) 
+{
+    if (config.debug > 2)
+        stackDump(L);
+
+    if (lua_gettop(L) != 5 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || !lua_isfunction(L, 5)) {
+        return luaL_error(L, "usage: <server> <method> <path> <data> <function>");
+    }
+
+    void *server = lua_touserdata(L, 1);
+    int data_len = lua_rawlen(L, 4);
+    char *data;
+
+    if (data_len > 0) {
+        data = moloch_http_get_buffer(data_len);
+        memcpy(data, lua_tostring(L, 4), data_len);
+    } else {
+        data = NULL;
+    }
+
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        if (L == Ls[thread])
+            break;
+    }
+
+    LuaHttp_t *lhttp = MOLOCH_TYPE_ALLOC(LuaHttp_t);
+    lhttp->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lhttp->thread = thread;
+
+    gboolean result;
+    result = moloch_http_send(lua_touserdata(L, 1), // server
+                              lua_tostring(L, 2),   // method
+                              lua_tostring(L, 3),   // key
+                              lua_rawlen(L, 3),     // key_len
+                              data,
+                              data_len,
+                              NULL,
+                              0,
+                              lua_http_response_cb,
+                              lhttp);
+
+    lua_pushboolean(L, result);
+    return 1;
+}
+/******************************************************************************/
+static int lua_http_free_server(lua_State *L) 
+{
+    if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
+        return luaL_error(L, "usage: <server>");
+    }
+
+    moloch_http_free_server(lua_touserdata(L, 1));
+    return 0;
 }
 /******************************************************************************/
 void moloch_plugin_init()
@@ -250,6 +356,7 @@ void moloch_plugin_init()
     for (thread = 0; thread < config.packetThreads; thread++) {
         L = Ls[thread] = luaL_newstate();
         luaL_openlibs(L);
+        fakeSessions[thread].thread = thread;
 
         for (int i = 0; names[i]; i++) {
             if (luaL_loadfile(L, names[i])) {
@@ -257,13 +364,22 @@ void moloch_plugin_init()
                 exit(0);
             }
 
-            lua_register( L, "moloch_parsers_classifier_register_tcp", lua_parsers_classifier_register_tcp);
-            lua_register( L, "moloch_parsers_classifier_register_udp", lua_parsers_classifier_register_udp);
-            lua_register( L, "moloch_parsers_register", lua_parsers_register);
-            lua_register( L, "moloch_session_add_tag", lua_session_add_tag);
-            lua_register( L, "moloch_field_add_string", lua_field_string_add);
-            lua_register( L, "moloch_field_add_int", lua_field_int_add);
-            lua_register( L, "moloch_field_by_exp", lua_field_by_exp);
+            lua_register(L, "moloch_parsers_classifier_register_tcp", lua_parsers_classifier_register_tcp);
+            lua_register(L, "moloch_parsers_classifier_register_udp", lua_parsers_classifier_register_udp);
+            lua_register(L, "moloch_parsers_register", lua_parsers_register);
+
+            lua_register(L, "moloch_session_add_tag", lua_session_add_tag);
+            lua_register(L, "moloch_session_incr_outstanding", lua_session_incr_oustanding);
+            lua_register(L, "moloch_session_decr_outstanding", lua_session_decr_oustanding);
+
+            lua_register(L, "moloch_field_add_string", lua_field_string_add);
+            lua_register(L, "moloch_field_add_int", lua_field_int_add);
+            lua_register(L, "moloch_field_by_exp", lua_field_by_exp);
+
+            lua_register(L, "moloch_http_create_server", lua_http_create_server);
+            lua_register(L, "moloch_http_request", lua_http_request);
+            lua_register(L, "moloch_http_free_server", lua_http_free_server);
+
 
             if (lua_pcall(L, 0, 0, 0)) {
                 LOG("Error initing %s: %s", names[i], lua_tostring(L, -1));

@@ -141,7 +141,7 @@ static size_t moloch_http_curl_write_callback(void *contents, size_t size, size_
     return sz;
 }
 /******************************************************************************/
-unsigned char *moloch_http_send_sync(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char **UNUSED(headers), size_t *return_len)
+unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **UNUSED(headers), size_t *return_len)
 {
     MolochHttpServer_t        *server = serverV;
 
@@ -495,7 +495,7 @@ static gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-gboolean moloch_http_send(void *serverV, char *method, char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
+gboolean moloch_http_send(void *serverV, const char *method, const char *key, uint32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
 {
     MolochHttpServer_t        *server = serverV;
 
@@ -670,7 +670,7 @@ gboolean moloch_http_is_moloch(uint32_t hash, char *key)
     return (conn?1:0);
 }
 /******************************************************************************/
-void *moloch_http_create_server(char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
+void *moloch_http_create_server(const char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress)
 {
     MolochHttpServer_t *server = MOLOCH_TYPE_ALLOC0(MolochHttpServer_t);
 
