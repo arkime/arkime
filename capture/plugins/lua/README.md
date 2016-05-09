@@ -19,14 +19,14 @@ Callback when the initial part of the data stream matches the details set by eit
 * data = the binary data, will always be from start of session
 * direction = traffic direction
 
-parserFunction(session, data, direction)
+### parserFunction(session, data, direction)
 Callback that receives the stream of data for session.  Will be called multiple times, basically for each packet received although for TCP sometimes packets are combined before calling.
 * session = opaque userdata to moloch session
 * data = the next chunk of binary data
 * direction = traffic direction
 * returns = -1 to stop parsing
  
-httpResponseFunction(code, data)
+### httpResponseFunction(code, data)
 Callback to moloch_http_request.  It received the full data response.
 * code = response code
 * data = the response data
