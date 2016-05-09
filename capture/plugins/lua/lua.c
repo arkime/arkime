@@ -33,7 +33,7 @@ static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
 typedef struct {
     long ref;
     int  thread;
-    int code; 
+    int code;
     unsigned char *data;
     int len;
 } LuaHttp_t;
@@ -109,7 +109,7 @@ void lua_parsers_free_cb(MolochSession_t *session, void *uw)
     luaL_unref(L, LUA_REGISTRYINDEX, (long)uw);
 }
 /******************************************************************************/
-static int lua_parsers_classifier_register_tcp(lua_State *L) 
+static int lua_parsers_classifier_register_tcp(lua_State *L)
 {
     if (lua_gettop(L) != 4 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
@@ -125,7 +125,7 @@ static int lua_parsers_classifier_register_tcp(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_parsers_classifier_register_udp(lua_State *L) 
+static int lua_parsers_classifier_register_udp(lua_State *L)
 {
     if (lua_gettop(L) != 4 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
@@ -141,7 +141,7 @@ static int lua_parsers_classifier_register_udp(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_parsers_register(lua_State *L) 
+static int lua_parsers_register(lua_State *L)
 {
     if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isfunction(L, 2)) {
         return luaL_error(L, "usage: <session> <function>");
@@ -155,7 +155,7 @@ static int lua_parsers_register(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_session_add_tag(lua_State *L) 
+static int lua_session_add_tag(lua_State *L)
 {
     if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
         return luaL_error(L, "usage: <session> <tag>");
@@ -168,7 +168,7 @@ static int lua_session_add_tag(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_session_incr_oustanding(lua_State *L) 
+static int lua_session_incr_oustanding(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
         return luaL_error(L, "usage: <session>");
@@ -180,7 +180,7 @@ static int lua_session_incr_oustanding(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_session_decr_oustanding(lua_State *L) 
+static int lua_session_decr_oustanding(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
         return luaL_error(L, "usage: <session>");
@@ -191,7 +191,32 @@ static int lua_session_decr_oustanding(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-static int lua_field_string_add(lua_State *L) 
+static int lua_session_add_protocol(lua_State *L)
+{
+    if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
+        return luaL_error(L, "usage: <session> <protocol>");
+    }
+
+    MolochSession_t *session = lua_touserdata(L, 1);
+    moloch_session_add_protocol(session, lua_tostring(L, 2));
+
+    return 0;
+}
+/******************************************************************************/
+static int lua_session_has_protocol(lua_State *L)
+{
+    if (lua_gettop(L) != 2 || !lua_isuserdata(L, 1) || !lua_isstring(L, 2)) {
+        return luaL_error(L, "usage: <session> <protocol>");
+    }
+
+    MolochSession_t *session = lua_touserdata(L, 1);
+    gboolean result = moloch_session_has_protocol(session, lua_tostring(L, 2));
+
+    lua_pushboolean(L, result);
+    return 1;
+}
+/******************************************************************************/
+static int lua_field_string_add(lua_State *L)
 {
     if (config.debug > 2)
         stackDump(L);
@@ -216,7 +241,7 @@ static int lua_field_string_add(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int lua_field_int_add(lua_State *L) 
+static int lua_field_int_add(lua_State *L)
 {
     if (config.debug > 2)
         stackDump(L);
@@ -240,7 +265,7 @@ static int lua_field_int_add(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int lua_field_by_exp(lua_State *L) 
+static int lua_field_by_exp(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isstring(L, 1)) {
         return luaL_error(L, "usage: <field expression>");
@@ -252,13 +277,13 @@ static int lua_field_by_exp(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int lua_http_create_server(lua_State *L) 
+static int lua_http_create_server(lua_State *L)
 {
     if (lua_gettop(L) != 3 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isinteger(L, 3)) {
         return luaL_error(L, "usage: <hosts:ports> <maxConnections> <maxRequests>");
     }
 
-    void *server = moloch_http_create_server(lua_tostring(L, 1), 0, lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
+    void *server = moloch_http_create_server(lua_tostring(L, 1), 80, lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
     lua_pushlightuserdata(L, server);
     return 1;
 }
@@ -291,7 +316,7 @@ void lua_http_response_cb(int code, unsigned char *data, int len, gpointer uw)
     moloch_session_add_cmd(&fakeSessions[lhttp->thread], MOLOCH_SES_CMD_FUNC, lhttp, NULL, lua_http_response_cb_process);
 }
 /******************************************************************************/
-static int lua_http_request(lua_State *L) 
+static int lua_http_request(lua_State *L)
 {
     if (config.debug > 2)
         stackDump(L);
@@ -300,7 +325,6 @@ static int lua_http_request(lua_State *L)
         return luaL_error(L, "usage: <server> <method> <path> <data> <function>");
     }
 
-    void *server = lua_touserdata(L, 1);
     int data_len = lua_rawlen(L, 4);
     char *data;
 
@@ -337,7 +361,7 @@ static int lua_http_request(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-static int lua_http_free_server(lua_State *L) 
+static int lua_http_free_server(lua_State *L)
 {
     if (lua_gettop(L) != 1 || !lua_isuserdata(L, 1)) {
         return luaL_error(L, "usage: <server>");
@@ -371,6 +395,8 @@ void moloch_plugin_init()
             lua_register(L, "moloch_session_add_tag", lua_session_add_tag);
             lua_register(L, "moloch_session_incr_outstanding", lua_session_incr_oustanding);
             lua_register(L, "moloch_session_decr_outstanding", lua_session_decr_oustanding);
+            lua_register(L, "moloch_session_add_protocol", lua_session_add_protocol);
+            lua_register(L, "moloch_session_has_protocol", lua_session_has_protocol);
 
             lua_register(L, "moloch_field_add_string", lua_field_string_add);
             lua_register(L, "moloch_field_add_int", lua_field_int_add);

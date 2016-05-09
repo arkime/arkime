@@ -42,18 +42,31 @@ Add a string value to a session
 * session = opaque userdata to moloch session
 * fieldExpressionOrFieldId = the field expression or a fieldId
 * value = the string to add
+* returns = true if added, false if already there
 
 ### moloch_field_add_int(session, fieldexpressionOrFieldId, value)
 Add a integer value to a session
 * session = opaque userdata to moloch session
 * fieldExpressionOrFieldId = the field expression or a fieldId
 * value = the string to add
+* returns = true if added, false if already there
 
 ## Session Commands
 ### moloch_session_add_tag(session, tag)
 Add a tag to a session
 * session = opaque userdata to moloch session
 * tag = the string to add to the tags field
+
+### moloch_session_add_protocol(session, protocol)
+Short cut to moloch_field_add_string(session, "protocols", protocol)
+* session = opaque userdata to moloch session
+* protocol = the protocol string
+
+### moloch_session_has_protocol(session, protocol)
+Check to see if protocol has already been added session
+* session = opaque userdata to moloch session
+* protocol = the protocol string
+* returns = true if already present
 
 ### moloch_session_incr_outstanding(session)
 Tell moloch that there is an async operation happening to the session, such as waiting for a http response
