@@ -1101,7 +1101,7 @@ function handleUrlParams() {
     $("#expression").val("");
   }
 
-  initialDisplayLength = urlParams.length || urlParams.iDisplayLength || 100;
+  initialDisplayLength = parseInt(urlParams.length, 10) || parseInt(urlParams.iDisplayLength, 10) || 100;
   $("#graphSize").val(String(initialDisplayLength));
   $("#sessions_length").val(String(initialDisplayLength));
 
