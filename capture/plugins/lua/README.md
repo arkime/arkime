@@ -1,4 +1,8 @@
-Simple lua integration, currently experimental.  It supports writing simple protocol classifiers and parsers and http requests.
+Simple lua integration, currently experimental.  It supports (with more coming all the time)
+* writing simple protocol classifiers 
+* writing simple protocol parsers
+* performing async http requests
+* parsing http bodies
 
 To use:
 * install the lua package for your OS, requires at least 5.3
@@ -8,34 +12,85 @@ To use:
 
 
 How it works:
-Each packet thread gets its own lua interpreter.
-All interpreters load the same lua files configured by ```luaFiles```
+* Each packet thread gets its own lua interpreter.
+* Packets/Sessions are consistantly load balanced, so a 5 tuple will hit the same thread/lua interpreter
+* All interpreters load the same lua files configured by ```luaFiles```
 
 ## Callbacks:
 
-### classifyFunction(session, data, direction)
+### classifyFunction(session, str, direction)
 Callback when the initial part of the data stream matches the details set by either moloch_parsers_classifier_register_tcp or moloch_parsers_classifier_register_udp.  It may be called multiple times for the same session if the first packets in each direction matches.  It is only called with the first packet of data, you want to see more call moloch_parseres_register
-* session = MolochSession object
-* data = the binary data, will always be from start of session
+* session = A MolochSession object
+* str = A lua string with the binary data from start of session
 * direction = traffic direction
 
-### parserFunction(session, data, direction)
+### parserFunction(session, str, direction)
 Callback that receives the stream of data for session.  Will be called multiple times, basically for each packet received although for TCP sometimes packets are combined before calling.
-* session = MolochSession object
-* data = the next chunk of binary data
+* session = A MolochSession object
+* str = A lua string with the next chunk of binary data
 * direction = traffic direction
 * returns = -1 to stop parsing
  
-### httpResponseFunction(code, data)
+### httpResponseFunction(code, str)
 Callback to moloch_http_request.  It received the full data response.
 * code = response code
-* data = the response data
+* str = A lua string with full response
+
+### bodyFeedFunction(session, data)
+Generic body feed function
+* session = A MolochSession object
+* data = A MolochData object with the next chunk of binary data
 
 ## Moloch
 Moloch.expression_to_fieldId(fieldExpression)
 Look up a field expression and return the fieldId
 * fieldExpression = the expression used in search box
 * returns = the fieldId
+
+## MolochData
+A MolochData object is a wrapper for a C string that has access to pcre and other commands.  The main purpose is so we don't have to copy strings back and forth from lua and C.  The object can NOT be saved in a table or used in a closure directly, however a :copy version can be.
+### MolochData.pcre_create(str)
+Create a PCRE pattern to use for matching
+* str = the expression
+* returns = a user data object of compiled pcre expression
+
+### MolochData.pattern_create(str)
+Create a glob pattern to use for matching
+* str = the expression
+* returns = a user data object of compiled pattern
+
+### MolochData.new(str)
+* str = the lua string to convert into a new MolochData
+* returns = the new MolochData object
+
+### data:memmem(str)
+Is str inside of data
+* str = the lua string to check for
+* returns = true if present
+
+### data:pattern_ismatch(compiledPattern)
+Perform a glob match
+* compiledPattern = results of a previous MolochData.pattern_create call
+* returns = true if match
+
+### data:pcre_ismatch(compiledPCRE)
+Perform a pcre match
+* compiledPCRE = results of a previous MolochData.pcre_create call
+* returns = true if match
+
+### data:pcre_match(compiledPCRE)
+Perform a pcre match with results
+* compiledPCRE = results of a previous MolochData.pcre_create call
+* returns = true if match, the match, any groupings
+
+### data:get()
+Return the lua string version
+* returns = the lua string version
+
+### data:copy()
+Make a copy of a MolochData for later use, such as in a table or in a closure
+* returns = a copy of the MolochData
+
 
 ## MolochSession
 ### MolochSession.register_tcp_classifier(name, offset, match, classifyFunctionName)
@@ -51,6 +106,11 @@ Add a UDP classifier to match initial session packets against.
 * offset = Where in the initial packet the match will be made
 * match = Binary data to match
 * classifyFunctionName = the string name of the lua function to call.  Function should implement the classifyFunction signature above.
+
+### MolochSession.register_body_feed(type, bodyFeedFunctionName)
+Register to receive a feed of chunks of data from payload bodies
+* type = The type of body feed to receive ("http", "smtp")
+* bodyFeedFunctionName = the string name of the lua function to call.  Function should implmenet that bodyFeedFunction signature above.
 
 
 
