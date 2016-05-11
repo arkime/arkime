@@ -126,7 +126,8 @@ void moloch_plugin_init()
         luaL_openlibs(L);
         moluaFakeSessions[thread].thread = thread;
 
-        for (int i = 0; names[i]; i++) {
+        int i;
+        for (i = 0; names[i]; i++) {
 
             luaopen_moloch(L);
             luaopen_molochhttpservice(L);

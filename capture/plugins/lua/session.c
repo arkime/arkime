@@ -54,7 +54,7 @@ void molua_classify_cb(MolochSession_t *session, const unsigned char *data, int 
     lua_pushlstring(L, (char *)data, len);
     lua_pushnumber(L, which);
     if (lua_pcall(L, 3, 0, 0) != 0) {
-       LOG("error running function %s: %s", uw, lua_tostring(L, -1));
+       LOG("error running function %s: %s", (char *)uw, lua_tostring(L, -1));
        exit(0);
     }
 }
