@@ -1,4 +1,4 @@
-/* lua.c  -- lua interface
+/* molua.c  -- lua interface
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
@@ -24,8 +24,10 @@ extern MolochConfig_t        config;
 lua_State *Ls[MOLOCH_MAX_PACKET_THREADS];
 MolochSession_t moluaFakeSessions[MOLOCH_MAX_PACKET_THREADS];
 
+int molua_pluginIndex;
+
 /******************************************************************************/
-void molua_stackDump (lua_State *L) 
+void molua_stackDump (lua_State *L)
 {
   int i;
   int top = lua_gettop(L);
@@ -60,34 +62,13 @@ void lua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), con
 {
     lua_State *L = Ls[session->thread];
     lua_rawgeti(L, LUA_REGISTRYINDEX, refs[0]);
-    lua_pushlightuserdata(L, session);
-    molua_pushMolochString(L, at, length);
+    molua_pushMolochSession(L, session);
+    molua_pushMolochData(L, at, length);
 
     if (lua_pcall(L, 2, 0, 0) != 0) {
        LOG("error running http callback function %s", lua_tostring(L, -1));
        exit(0);
     }
-}
-
-/******************************************************************************/
-static int lua_parsers_feed(lua_State *L)
-{
-    if (lua_gettop(L) != 2 || !lua_isstring(L, 1) || !lua_isfunction(L, 2)) {
-        return luaL_error(L, "usage: <type> <function>");
-    }
-
-    const char *type = lua_tostring(L, 1);
-    long ref = luaL_ref(L, LUA_REGISTRYINDEX);
-
-    if (strcmp(type, "http_body") == 0) {
-        LOG("ALW - Set http_body");
-        moloch_plugins_set_http_cb("lua", NULL, NULL, NULL, NULL, NULL, lua_http_on_body_cb, NULL);
-        refs[0] = ref;
-    } else {
-        return luaL_error(L, "Unknown type: %s", type);
-    }
-
-    return 0;
 }
 /******************************************************************************/
 static int M_expression_to_fieldId(lua_State *L)
@@ -121,13 +102,24 @@ void luaopen_moloch(lua_State *L)
     lua_setglobal(L, "Moloch");
 }
 /******************************************************************************/
+void molua_session_save(MolochSession_t *session, int final)
+{
+    if (final && session->pluginData[molua_pluginIndex]) {
+        MOLOCH_TYPE_FREE(MoluaPlugin_t, session->pluginData[molua_pluginIndex]);
+        session->pluginData[molua_pluginIndex] = 0;
+    }
+}
+/******************************************************************************/
 void moloch_plugin_init()
 {
     int thread;
     char **names = moloch_config_str_list(NULL, "luaFiles", "moloch.lua");
     lua_State *L;
 
-    moloch_plugins_register("lua", FALSE);
+    molua_pluginIndex = moloch_plugins_register("lua", TRUE);
+
+    moloch_plugins_set_cb("name", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
+
 
     for (thread = 0; thread < config.packetThreads; thread++) {
         L = Ls[thread] = luaL_newstate();
@@ -136,12 +128,10 @@ void moloch_plugin_init()
 
         for (int i = 0; names[i]; i++) {
 
-            lua_register(L, "moloch_parsers_feed", lua_parsers_feed);
-
             luaopen_moloch(L);
             luaopen_molochhttpservice(L);
             luaopen_molochsession(L);
-            luaopen_molochstring(L);
+            luaopen_molochdata(L);
 
             if (luaL_loadfile(L, names[i])) {
                 LOG("Error loading %s: %s", names[i], lua_tostring(L, -1));

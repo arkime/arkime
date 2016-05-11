@@ -36,21 +36,21 @@ static void *checkMolochSession (lua_State *L, int index)
     return ms;
 }
 /******************************************************************************/
-static void *pushMolochSession (lua_State *L, void *ms)
+void *molua_pushMolochSession (lua_State *L, const MolochSession_t *ms)
 {
     void **pms = (void **)lua_newuserdata(L, sizeof(void *));
-    *pms = ms;
+    *pms = (void*)ms;
     luaL_getmetatable(L, "MolochSession");
     lua_setmetatable(L, -2);
     return pms;
 }
 
 /******************************************************************************/
-void lua_classify_cb(MolochSession_t *session, const unsigned char *data, int len, int which, void *uw)
+void molua_classify_cb(MolochSession_t *session, const unsigned char *data, int len, int which, void *uw)
 {
     lua_State *L = Ls[session->thread];
     lua_getglobal(L, uw);
-    pushMolochSession(L, session);
+    molua_pushMolochSession(L, session);
     lua_pushlstring(L, (char *)data, len);
     lua_pushnumber(L, which);
     if (lua_pcall(L, 3, 0, 0) != 0) {
@@ -61,11 +61,11 @@ void lua_classify_cb(MolochSession_t *session, const unsigned char *data, int le
 
 
 /******************************************************************************/
-int lua_parsers_cb(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+int molua_parsers_cb(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
 {
     lua_State *L = Ls[session->thread];
     lua_rawgeti(L, LUA_REGISTRYINDEX, (long)uw);
-    pushMolochSession(L, session);
+    molua_pushMolochSession(L, session);
     lua_pushlstring(L, (char *)data, remaining);
     lua_pushnumber(L, which);
 
@@ -81,7 +81,7 @@ int lua_parsers_cb(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void lua_parsers_free_cb(MolochSession_t *session, void *uw)
+void molua_parsers_free_cb(MolochSession_t *session, void *uw)
 {
     lua_State *L = Ls[session->thread];
     luaL_unref(L, LUA_REGISTRYINDEX, (long)uw);
@@ -89,6 +89,9 @@ void lua_parsers_free_cb(MolochSession_t *session, void *uw)
 /******************************************************************************/
 static int MS_register_tcp_classifier(lua_State *L)
 {
+    if (L != Ls[0]) // Only do once
+        return 0;
+
     if (lua_gettop(L) != 4 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
     }
@@ -99,12 +102,15 @@ static int MS_register_tcp_classifier(lua_State *L)
     guchar *match     = g_memdup(lua_tostring(L, 3), match_len);
     char *function  = g_strdup(lua_tostring(L, 4));
 
-    moloch_parsers_classifier_register_tcp(name, function, offset, match, match_len, lua_classify_cb);
+    moloch_parsers_classifier_register_tcp(name, function, offset, match, match_len, molua_classify_cb);
     return 0;
 }
 /******************************************************************************/
 static int MS_register_udp_classifier(lua_State *L)
 {
+    if (L != Ls[0]) // Only do once
+        return 0;
+
     if (lua_gettop(L) != 4 || !lua_isstring(L, 1) || !lua_isinteger(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
     }
@@ -115,7 +121,64 @@ static int MS_register_udp_classifier(lua_State *L)
     guchar *match     = g_memdup(lua_tostring(L, 3), match_len);
     char *function  = g_strdup(lua_tostring(L, 4));
 
-    moloch_parsers_classifier_register_udp(name, function, offset, match, match_len, lua_classify_cb);
+    moloch_parsers_classifier_register_udp(name, function, offset, match, match_len, molua_classify_cb);
+    return 0;
+}
+static char *callbackRefs[MOLUA_REF_SIZE][MOLUA_REF_MAX_CNT];
+static int   callbackRefsCnt[MOLUA_REF_SIZE];
+/******************************************************************************/
+void molua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), const char *at, size_t length)
+{
+    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    lua_State *L = Ls[session->thread];
+    int i;
+    for (i = 0; i < callbackRefsCnt[MOLUA_REF_HTTP]; i++) {
+        if (mp && mp->callbackOff[MOLUA_REF_HTTP] & (1 << i))
+            continue;
+
+        lua_getglobal(L, callbackRefs[MOLUA_REF_HTTP][i]);
+        molua_pushMolochSession(L, session);
+        molua_pushMolochData(L, at, length);
+
+        if (lua_pcall(L, 2, 1, 0) != 0) {
+           LOG("error running http callback function %s", lua_tostring(L, -1));
+           exit(0);
+        }
+
+        molua_stackDump(L);
+
+        int num = lua_tointeger(L, -1);
+        if (num == -1) {
+            if (!mp) {
+                mp = session->pluginData[molua_pluginIndex] = MOLOCH_TYPE_ALLOC0(MoluaPlugin_t);
+            }
+            mp->callbackOff[MOLUA_REF_HTTP] |= (1 << i);
+        }
+    }
+}
+/******************************************************************************/
+static int MS_register_body_feed(lua_State *L)
+{
+    if (L != Ls[0]) // Only do once
+        return 0;
+
+    if (lua_gettop(L) != 2 || !lua_isstring(L, 1) || !lua_isstring(L, 2)) {
+        return luaL_error(L, "usage: <type> <functionName>");
+    }
+
+    const char *type = lua_tostring(L, 1);
+
+    if (strcmp(type, "http") == 0) {
+        moloch_plugins_set_http_cb("lua", NULL, NULL, NULL, NULL, NULL, molua_http_on_body_cb, NULL);
+        if (callbackRefsCnt[MOLUA_REF_HTTP] < MOLUA_REF_MAX_CNT) {
+            callbackRefs[MOLUA_REF_HTTP][callbackRefsCnt[MOLUA_REF_HTTP]++] = g_strdup(lua_tostring(L, 2));
+        } else {
+            return luaL_error(L, "Can't have more then %d %s callbacks", MOLUA_REF_MAX_CNT, type);
+        }
+    } else {
+        return luaL_error(L, "Unknown type: %s", type);
+    }
+
     return 0;
 }
 /******************************************************************************/
@@ -128,7 +191,7 @@ static int MS_register_parser(lua_State *L)
     MolochSession_t *session = checkMolochSession(L, 1);
     long ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    moloch_parsers_register2(session, lua_parsers_cb, (void*)ref, lua_parsers_free_cb, NULL);
+    moloch_parsers_register2(session, molua_parsers_cb, (void*)ref, molua_parsers_free_cb, NULL);
 
     return 0;
 }
@@ -266,6 +329,7 @@ void luaopen_molochsession(lua_State *L)
         { NULL, NULL }
     };
     static const struct luaL_Reg functions[] = {
+        { "register_body_feed", MS_register_body_feed},
         { "register_tcp_classifier", MS_register_tcp_classifier},
         { "register_udp_classifier", MS_register_udp_classifier},
         { NULL, NULL }
