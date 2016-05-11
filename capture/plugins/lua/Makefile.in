@@ -7,13 +7,13 @@ install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
 PLUGINDIR = @prefix@/plugins
-INCLUDE_LUA = -I/opt/local/include
-LIB_LUA=/opt/local/lib/liblua.a
+LUA_CFLAGS = @LUA_CFLAGS@
+LUA_LIBS = @LUA_LIBS@
 
 SRCS=$(wildcard *.c)
 
 ../lua.so : $(SRCS) ../../moloch.h ../../hash.h ../../dll.h
-	$(CC) @SHARED_FLAGS@ -o $@ -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $(INCLUDE_LUA) $(LIB_LUA) $(SRCS)
+	$(CC) @SHARED_FLAGS@ -o $@ -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $(LUA_CFAGS) $(LUA_LIBS) $(SRCS)
 
 all:$(SOS)
 

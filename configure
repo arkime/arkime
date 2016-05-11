@@ -584,6 +584,8 @@ PACKAGE_URL=''
 ac_default_prefix="/data/moloch"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LUA_LIBS
+LUA_CFLAGS
 CURL_LIBS
 CURL_CFLAGS
 GLIB2_LIBS
@@ -698,6 +700,7 @@ with_yara
 with_GeoIP
 with_glib2
 with_curl
+with_lua
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1342,6 +1345,7 @@ Optional Packages:
   --with-GeoIP=DIR use GeoIP build directory
   --with-glib2=DIR use glib2 build directory
   --with-curl=DIR use curl build directory
+  --with-lua=DIR use lua build directory
 
 Some influential environment variables:
   CC          C compiler command
@@ -4660,6 +4664,86 @@ else
 
   CURL_CFLAGS=`pkg-config libcurl --cflags`
   CURL_LIBS=`pkg-config libcurl --libs`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for lua" >&5
+$as_echo_n "checking for lua... " >&6; }
+
+# Check whether --with-lua was given.
+if test "${with_lua+set}" = set; then :
+  withval=$with_lua;  case "$withval" in
+  yes)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -llua" >&5
+$as_echo_n "checking for main in -llua... " >&6; }
+if ${ac_cv_lib_lua_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-llua  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_lua_main=yes
+else
+  ac_cv_lib_lua_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_lua_main" >&5
+$as_echo "$ac_cv_lib_lua_main" >&6; }
+if test "x$ac_cv_lib_lua_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBLUA 1
+_ACEOF
+
+  LIBS="-llua $LIBS"
+
+else
+  as_fn_error $? "please install lua library" "$LINENO" 5
+fi
+
+     ;;
+  no)
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+     ;;
+  *)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
+    if test -f $withval/src/lauxlib.h -a -f $withval/src/lua.h; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      LUA_CFLAGS="-I$withval/src"
+      LUA_LIBS="$withval/src/liblua.a"
+    else
+      as_fn_error $? "lua.h or liblua.a not found in $withval" "$LINENO" 5
+    fi
+    ;;
+esac
+else
+
+  LUA_CFLAGS=
+  LUA_LIBS=-llua
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 fi

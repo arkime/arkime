@@ -395,4 +395,36 @@ AC_MSG_RESULT(yes) ])
 AC_SUBST(CURL_CFLAGS)
 AC_SUBST(CURL_LIBS)
 
+dnl Checks for lua
+AC_MSG_CHECKING(for lua)
+AC_ARG_WITH(lua,
+[  --with-lua=DIR use lua build directory],
+[ case "$withval" in
+  yes)
+    AC_CHECK_LIB(lua, main,,AC_MSG_ERROR(please install lua library))
+     ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+  AC_MSG_RESULT($withval)
+    if test -f $withval/src/lauxlib.h -a -f $withval/src/lua.h; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      LUA_CFLAGS="-I$withval/src"
+      LUA_LIBS="$withval/src/liblua.a"
+    else
+      AC_ERROR(lua.h or liblua.a not found in $withval)
+    fi
+    ;;
+esac ], [
+  LUA_CFLAGS=
+  LUA_LIBS=-llua
+AC_MSG_RESULT(yes) ])
+AC_SUBST(LUA_CFLAGS)
+AC_SUBST(LUA_LIBS)
+
 AC_OUTPUT
