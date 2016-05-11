@@ -118,7 +118,7 @@ void moloch_plugin_init()
 
     molua_pluginIndex = moloch_plugins_register("lua", TRUE);
 
-    moloch_plugins_set_cb("name", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
+    moloch_plugins_set_cb("lua", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
 
 
     for (thread = 0; thread < config.packetThreads; thread++) {
