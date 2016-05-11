@@ -145,8 +145,6 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), c
            exit(0);
         }
 
-        molua_stackDump(L);
-
         int num = lua_tointeger(L, -1);
         if (num == -1) {
             if (!mp) {
