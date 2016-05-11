@@ -106,6 +106,26 @@ int MD_pcre_ismatch(lua_State *L)
     return 1;
 }
 /******************************************************************************/
+int MD_pcre_match(lua_State *L)
+{
+    MD_t *data = checkMolochData(L, 1);
+    GRegex *pattern = lua_touserdata(L, 2);
+    GMatchInfo *match_info;
+    gboolean result = g_regex_match_full (pattern, data->str, data->len, 0, 0, &match_info, NULL);
+    lua_pushboolean(L, result);
+
+    int i;
+    int cnt = g_match_info_get_match_count(match_info);
+    lua_checkstack(L, cnt+1);
+    for (i = 0; i < cnt; i++) {
+        gint start, end;
+        g_match_info_fetch_pos(match_info, i, &start, &end);
+        lua_pushlstring(L, data->str + start, end-start);
+    }
+    g_match_info_free(match_info);
+    return cnt+1;
+}
+/******************************************************************************/
 int MD_pattern_create(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
@@ -131,6 +151,7 @@ void luaopen_molochdata(lua_State *L)
         {"memmem", MD_memmem},
         {"pattern_ismatch", MD_pattern_ismatch},
         {"pcre_ismatch", MD_pcre_ismatch},
+        {"pcre_match", MD_pcre_match},
         {"get", MD_tostring},
         {"copy", MD_copy},
         { NULL, NULL }
