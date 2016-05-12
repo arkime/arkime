@@ -904,6 +904,9 @@ nodes.forEach(function(node) {
   });
 
   clients[node].info(function(err,data) {
+    if (err) {
+      console.log(err);
+    }
     if (data.version.number.match(/^(1.[01]|0)/)) {
       console.log("ES", data.version.number,"is not supported, upgrade to 1.2.x or 1.3.x:", node);
       process.exit();
