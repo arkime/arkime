@@ -141,8 +141,9 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), c
         molua_pushMolochData(L, at, length);
 
         if (lua_pcall(L, 2, 1, 0) != 0) {
-           LOG("error running http callback function %s", lua_tostring(L, -1));
-           exit(0);
+            molua_stackDump(L);
+            LOG("error running http callback function %s", lua_tostring(L, -1));
+            exit(0);
         }
 
         int num = lua_tointeger(L, -1);
