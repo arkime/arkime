@@ -27,6 +27,7 @@ typedef struct {
 
 typedef struct {
     uint32_t callbackOff[MOLUA_REF_SIZE];
+    long     table;
 } MoluaPlugin_t;
 
 MD_t *molua_pushMolochData (lua_State *L, const char *str, int len);

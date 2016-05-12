@@ -20,6 +20,10 @@ function luhn_checksum(card)
     return ((num % 10) == 0)
 end
 
+--[[
+Find credit cards by doing a quick match, luhn check, and then better match.
+Set possible-credit-card if one match found, set has-credit-cards if 3 matches found
+--]]
 function cc_http_body(session, data)
     local matched, match = data:pcre_match(fastCreditCard)
 
@@ -28,8 +32,17 @@ function cc_http_body(session, data)
 	if luhn_checksum(match) then
 	    local dmatch = MolochData.new(match);
 	    if dmatch:pcre_ismatch(fullCreditCard) then
-		session:add_tag("has-credit-card")
-		return -1
+                local t = session:table()
+                if (t.cccount == nil) then
+                    t.cccount = 1
+                    session:add_tag("possible-credit-card")
+                else
+                    t.cccount = t.cccount + 1
+                    if (t.cccount > 2) then
+                        session:add_tag("has-credit-cards")
+                        return -1
+                    end
+                end
 	    end
 	end
     end

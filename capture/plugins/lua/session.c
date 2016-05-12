@@ -290,7 +290,7 @@ static int MS_add_int(lua_State *L)
         return luaL_error(L, "usage: <session> <field string or field num(faster)> <integer>");
     }
 
-    MolochSession_t *session = lua_touserdata(L, 1);
+    MolochSession_t *session = checkMolochSession(L, 1);
     int              value   = lua_tointeger(L, 3);
     int              pos;
     if (lua_isinteger(L, 2)) {
@@ -304,11 +304,28 @@ static int MS_add_int(lua_State *L)
 
     return 1;
 }
-
 /******************************************************************************/
 static int MS_tostring(lua_State *L)
 {
-    lua_pushfstring(L, "MolochSession: %p", lua_touserdata(L, 1));
+    MolochSession_t *session = checkMolochSession(L, 1);
+    lua_pushfstring(L, "MolochSession: %p", session);
+    return 1;
+}
+
+/******************************************************************************/
+static int MS_table(lua_State *L)
+{
+    MolochSession_t *session = checkMolochSession(L, 1);
+    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    if (!mp) {
+        mp = session->pluginData[molua_pluginIndex] = MOLOCH_TYPE_ALLOC0(MoluaPlugin_t);
+    }
+
+    if (!mp->table) {
+        lua_newtable(L);
+        mp->table = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+    lua_rawgeti(L, LUA_REGISTRYINDEX, mp->table);
     return 1;
 }
 /******************************************************************************/
@@ -324,6 +341,7 @@ void luaopen_molochsession(lua_State *L)
         {"add_string", MS_add_string},
         {"incr_outstanding", MS_incr_outstanding},
         {"decr_outstanding", MS_decr_outstanding},
+        {"table", MS_table},
         { NULL, NULL }
     };
     static const struct luaL_Reg functions[] = {

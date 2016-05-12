@@ -150,6 +150,10 @@ Tell moloch that an async operation for the session finished
 Used usually inside a classify callback this function registers that the entire stream should be parsed.
 * function = the lua function to call with all the data.  Function should implement the parserFunction signature above.
 
+### session:table()
+Return a table that can be used to set/get lua variables to share state across all callbacks for session
+* returns = a lua table
+
 
 ## MolochHttpService
 

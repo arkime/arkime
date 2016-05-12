@@ -105,7 +105,12 @@ void luaopen_moloch(lua_State *L)
 void molua_session_save(MolochSession_t *session, int final)
 {
     if (final && session->pluginData[molua_pluginIndex]) {
-        MOLOCH_TYPE_FREE(MoluaPlugin_t, session->pluginData[molua_pluginIndex]);
+        MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+
+        if (mp->table) {
+            luaL_unref(Ls[session->thread], LUA_REGISTRYINDEX, mp->table);
+        }
+        MOLOCH_TYPE_FREE(MoluaPlugin_t, mp);
         session->pluginData[molua_pluginIndex] = 0;
     }
 }
