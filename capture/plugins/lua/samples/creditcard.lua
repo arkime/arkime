@@ -21,15 +21,30 @@ function luhn_checksum(card)
 end
 
 function cc_http_body(session, data)
-    local matched, match = data:pcre_match(cc)
+    local matched, match = data:pcre_match(fastCreditCard)
 
-    if (matched and luhn_checksum(match)) then
-        session:add_tag("has-credit-card")
-        return -1
+    if matched then
+        match = match:gsub("[ -]", "")
+	if luhn_checksum(match) then
+	    local dmatch = MolochData.new(match);
+	    if dmatch:pcre_ismatch(fullCreditCard) then
+		session:add_tag("has-credit-card")
+		return -1
+	    end
+	end
     end
 end
 
--- From https://gist.github.com/kevinsearle/4213783
-cc = MolochData.pcre_create("(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|622((12[6-9]|1[3-9][0-9])|([2-8][0-9][0-9])|(9(([0-1][0-9])|(2[0-5]))))[0-9]{10}|64[4-9][0-9]{13}|65[0-9]{14}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13})")
+-- From http://www.regular-expressions.info/creditcard.html
+-- [[ ]] means ignore escapes in lua
+fullCreditCard = MolochData.pcre_create([[^(?:4[0-9]{12}(?:[0-9]{3})?(?#Visa
+)|5[1-5][0-9]{14}(?#MasterCard
+)|3[47][0-9]{13}(?#American Express
+)|3(?:0[0-5]|[68][0-9])[0-9]{11}(?#Diners Club
+)|6(?:011|5[0-9]{2})[0-9]{12}(?#Discover
+)|(?:2131|1800|35\d{3})\d{11}(?#JCB
+))$]])
+
+fastCreditCard = MolochData.pcre_create([[\b(?:\d[ -]*?){13,16}\b]])
 MolochSession.register_body_feed("http", "cc_http_body")
 
