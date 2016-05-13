@@ -116,7 +116,9 @@ int MD_pcre_match(lua_State *L)
 
     int i;
     int cnt = g_match_info_get_match_count(match_info);
-    lua_checkstack(L, cnt+1);
+    if (!lua_checkstack(L, cnt+2)) {
+        LOG("ERROR - Failed to increase stack from %d by %d", lua_gettop(L), cnt+2);
+    }
     for (i = 0; i < cnt; i++) {
         gint start, end;
         g_match_info_fetch_pos(match_info, i, &start, &end);
