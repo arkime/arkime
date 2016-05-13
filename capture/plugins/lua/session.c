@@ -77,6 +77,7 @@ int molua_parsers_cb(MolochSession_t *session, void *uw, const unsigned char *da
     int num = lua_tointeger(L, -1);
     if (num == -1)
         moloch_parsers_unregister(session, uw);
+    lua_pop(L, 1);
 
     return 0;
 }
@@ -153,6 +154,7 @@ void molua_http_on_body_cb (MolochSession_t *session, http_parser *UNUSED(hp), c
             }
             mp->callbackOff[MOLUA_REF_HTTP] |= (1 << i);
         }
+        lua_pop(L, 1);
     }
 }
 /******************************************************************************/
