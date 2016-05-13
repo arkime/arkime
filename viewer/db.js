@@ -67,6 +67,9 @@ exports.initialize = function (info, cb) {
   });
 
   internals.elasticSearchClient.info(function(err,data) {
+    if (err) {
+      console.log(err, data);
+    }
     if (data.version.number.match(/^(1.[0-5]|0)/)) {
       console.log("ERROR - ES", data.version.number, "not supported, ES 1.6.x or later required.");
       process.exit();
