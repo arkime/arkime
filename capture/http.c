@@ -29,6 +29,8 @@
 #include "zlib.h"
 #include <errno.h>
 
+//#define MOLOCH_HTTP_DEBUG
+
 extern MolochConfig_t        config;
 
 struct molochhttpserver_t;
@@ -258,6 +260,9 @@ static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
                    totalTime*1000);
             }
 
+#ifdef MOLOCH_HTTP_DEBUG
+            LOG("HTTPDEBUG DECR %s %p %d %s", server->names[0], request, server->outstanding, request->url);
+#endif
 
 
             if (request->func) {
@@ -489,6 +494,9 @@ static gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
         }
         MOLOCH_UNLOCK(requests);
 
+#ifdef MOLOCH_HTTP_DEBUG
+        LOG("HTTPDEBUG DO %s %p %d %s", request->server->names[0], request, request->server->outstanding, request->url);
+#endif
         curl_multi_add_handle(request->server->multi, request->easy);
     }
 
@@ -593,6 +601,9 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
 
     MOLOCH_LOCK(requests);
+#ifdef MOLOCH_HTTP_DEBUG
+    LOG("HTTPDEBUG INCR %s %p %d %s", server->names[0], request, server->outstanding, request->url);
+#endif
     server->outstanding++;
 
     DLL_PUSH_TAIL(rqt_, &requests, request);
