@@ -15,9 +15,88 @@
 #include "moloch.h"
 
 extern MolochConfig_t        config;
+
+typedef struct {
+    unsigned char       buf[2][8192];
+    int                 len[2];
+} LDAPInfo_t;
+/******************************************************************************/
+void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
+{
+    BSB bsb;
+    BSB_INIT(bsb, ldap->buf[which], ldap->len[which]);
+    uint32_t opc, otag, olen;
+    uint32_t ipc, itag, ilen;
+    uint32_t protocolOp;
+    unsigned char *ovalue, *ivalue;
+
+    ovalue = moloch_parsers_asn_get_tlv(&bsb, &opc, &otag, &olen);
+
+    BSB_INIT(bsb, ovalue, olen);
+
+    // messageID
+    ivalue = moloch_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
+    if (ipc != 0 || itag != 2)
+        return;
+
+    // protocolOp
+    ivalue = moloch_parsers_asn_get_tlv(&bsb, &ipc, &protocolOp, &ilen);
+    if (ipc != 1 || protocolOp > 25)
+        return;
+
+    if (protocolOp == 23) {
+        moloch_parsers_classify_tcp(session, ldap->buf[which] + olen + 2, ldap->len[which] - olen - 2, which);
+        moloch_packet_process_data(session, ldap->buf[which] + olen + 2, ldap->len[which] - olen - 2, which);
+        ldap->len[which] = -1;
+    } else if (protocolOp == 24) {
+        moloch_packet_process_data(session, ldap->buf[which] + olen + 2, ldap->len[which] - olen - 2, which);
+        ldap->len[which] = -1;
+        moloch_parsers_unregister(session, ldap);
+    } else {
+        moloch_parsers_unregister(session, ldap);
+    }
+}
+/******************************************************************************/
+int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+{
+    LDAPInfo_t            *ldap          = uw;
+
+    if (ldap->len[which] == -1) {
+        return 0;
+    }
+
+    // Copy the data we have
+    memcpy(ldap->buf[which] + ldap->len[which], data, MIN(remaining, (int)sizeof(ldap->buf[which])-ldap->len[which]));
+    ldap->len[which] += MIN(remaining, (int)sizeof(ldap->buf[which])-ldap->len[which]);
+
+    if (ldap->len[which] > 6000)
+        ldap_process(session, ldap, which);
+
+    return 0;
+}
+/******************************************************************************/
+void ldap_save(MolochSession_t *session, void *uw, int UNUSED(final))
+{
+    LDAPInfo_t            *ldap          = uw;
+
+    if (ldap->len[0] > 5) {
+        ldap_process(session, ldap, 0);
+        ldap_process(session, ldap, 1);
+    }
+}
+/******************************************************************************/
+void ldap_free(MolochSession_t *UNUSED(session), void *uw)
+{
+    LDAPInfo_t            *ldap          = uw;
+
+    MOLOCH_TYPE_FREE(LDAPInfo_t, ldap);
+}
 /******************************************************************************/
 void ldap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (moloch_session_has_protocol(session, "ldap"))
+        return;
+
     BSB bsb;
     BSB_INIT(bsb, data, len);
 
@@ -37,6 +116,11 @@ void ldap_classify(MolochSession_t *session, const unsigned char *data, int len,
             return;
 
         moloch_session_add_protocol(session, "ldap");
+        LDAPInfo_t  *ldap = MOLOCH_TYPE_ALLOC(LDAPInfo_t);
+        ldap->len[0]         = 0;
+        ldap->len[1]         = 0;
+
+        moloch_parsers_register2(session, ldap_parser, ldap, ldap_free, ldap_save);
     }
 }
 /******************************************************************************/

@@ -111,6 +111,26 @@ LOCAL int32_t moloch_packet_sequence_diff (uint32_t a, uint32_t b)
     return b - a;
 }
 /******************************************************************************/
+void moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which)
+{
+    int i;
+    int totConsumed = 0;
+    int consumed = 0;
+
+    for (i = 0; i < session->parserNum; i++) {
+        if (session->parserInfo[i].parserFunc) {
+            consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, which);
+            if (consumed) {
+                totConsumed += consumed;
+                session->consumed[which] += consumed;
+            }
+
+            if (consumed >= len)
+                break;
+        }
+    }
+}
+/******************************************************************************/
 void moloch_packet_tcp_finish(MolochSession_t *session)
 {
     MolochTcpData_t            *ftd;
@@ -144,22 +164,7 @@ void moloch_packet_tcp_finish(MolochSession_t *session)
                 moloch_parsers_classify_tcp(session, data, len, which);
             }
 
-            int i;
-            int totConsumed = 0;
-            int consumed = 0;
-
-            for (i = 0; i < session->parserNum; i++) {
-                if (session->parserInfo[i].parserFunc) {
-                    consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, which);
-                    if (consumed) {
-                        totConsumed += consumed;
-                        session->consumed[which] += consumed;
-                    }
-
-                    if (consumed >= len)
-                        break;
-                }
-            }
+            moloch_packet_process_data(session, data, len, which);
             session->tcpSeq[which] += len;
             session->databytes[which] += len;
             session->totalDatabytes[which] += len;

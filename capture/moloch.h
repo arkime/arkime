@@ -756,6 +756,7 @@ uint64_t moloch_packet_dropped_overload();
 void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
 void     moloch_packet(MolochPacket_t * const packet);
+void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);
 
 /******************************************************************************/
 /*
