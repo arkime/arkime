@@ -45,12 +45,14 @@ void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
         return;
 
     if (protocolOp == 23) {
-        moloch_parsers_classify_tcp(session, ldap->buf[which] + olen + 2, ldap->len[which] - olen - 2, which);
-        moloch_packet_process_data(session, ldap->buf[which] + olen + 2, ldap->len[which] - olen - 2, which);
+        int len = ldap->len[which] - olen - 2;
         ldap->len[which] = -1;
+        moloch_parsers_classify_tcp(session, ldap->buf[which] + olen + 2, len, which);
+        moloch_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
     } else if (protocolOp == 24) {
-        moloch_packet_process_data(session, ldap->buf[which] + olen + 2, ldap->len[which] - olen - 2, which);
+        int len = ldap->len[which] - olen - 2;
         ldap->len[which] = -1;
+        moloch_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
         moloch_parsers_unregister(session, ldap);
     } else {
         moloch_parsers_unregister(session, ldap);
@@ -61,7 +63,7 @@ int ldap_parser(MolochSession_t *session, void *uw, const unsigned char *data, i
 {
     LDAPInfo_t            *ldap          = uw;
 
-    if (ldap->len[which] == -1) {
+    if (ldap->len[which] == -1) { // Stop recursion
         return 0;
     }
 
