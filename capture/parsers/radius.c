@@ -36,14 +36,19 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     unsigned char *value;
     char str[100];
     struct in_addr in;
+    int i;
 
     while (BSB_REMAINING(bsb) > 2) {
         BSB_IMPORT_u08(bsb, type);
         BSB_IMPORT_u08(bsb, length);
-        BSB_IMPORT_ptr(bsb, value, length-2);
+        length -= 2; // length includes the type/length
+        BSB_IMPORT_ptr(bsb, value, length);
+        if (BSB_IS_ERROR(bsb)) {
+            break;
+        }
         switch (type) {
         case 1:
-            moloch_field_string_add(userField, session, (char *)value, length-2, TRUE);
+            moloch_field_string_add(userField, session, (char *)value, length, TRUE);
             break;
     /*    case 4:
             LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
@@ -53,7 +58,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
             moloch_field_int_add(framedIpField, session, in.s_addr);
             break;
         case 31:
-            if (length == 14) {
+            if (length == 12) {
                 sprintf(str, "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
                         value[0], value[1],
                         value[2], value[3],
@@ -61,18 +66,22 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
                         value[6], value[7],
                         value[8], value[9],
                         value[10], value[11]);
+                for (i = 0; i < length; i++) {
+                    if (isupper (str[i]))
+                      str[i] = tolower (str[i]);
+                }
                 moloch_field_string_add(macField, session, str, 17, TRUE);
             }
             break;
         case 66:
-            memcpy(str, value, length-2);
-            str[length-2] = 0;
+            memcpy(str, value, length);
+            str[length] = 0;
             inet_aton(str, &in);
             moloch_field_int_add(endpointIpField, session, in.s_addr);
             break;
 
 /*        default:
-            LOG("%d %d %.*s", type, length, length-2, value);*/
+            LOG("%d %d %.*s", type, length, length, value);*/
         }
     }
     return 0;
