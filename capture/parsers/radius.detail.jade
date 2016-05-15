@@ -1,0 +1,6 @@
+if (session.radius)
+  div.sessionDetailMeta.bold radius
+  dl.sessionDetailMeta
+    +stringList(session.radius, "user-term", "User", "radius.user")
+    +stringList(session.radius, "mac-term", "Mac", "radius.mac")
+    +ipArrayList(session.radius, "ip", "IPs", "radius.ip")

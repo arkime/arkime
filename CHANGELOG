@@ -3,7 +3,8 @@
   - wise - initial bro quering support
   - capture - debug all config requests with --debug
   - viewer - fixed XSS (issue #471)
-  - capture - simple ldap parser (more to come)
+  - capture - simple ldap parser
+  - capture - simple radius parser
 
 0.14.0 2016/05/08
   - NOTICE: libnids is no longer required
