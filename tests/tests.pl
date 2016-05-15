@@ -109,6 +109,11 @@ my ($json) = @_;
         foreach my $field ("a1", "a2", "dnsip", "socksip", "eip") {
             $body->{$field} = fixIp($body->{$field}) if (exists $body->{$field});
         }
+        if ($body->{radius}) {
+            foreach my $field ("eip", "fip") {
+                $body->{radius}->{$field} = fixIp($body->{radius}->{$field}) if (exists $body->{radius}->{$field});
+            }
+        }
 
         foreach my $field ("ta", "hh1", "hh2") {
             $body->{$field} = fixTags($json, $body->{$field}) if (exists $body->{$field});

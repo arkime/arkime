@@ -1,0 +1,116 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "pa1" : 1,
+            "pa2" : 1,
+            "ss" : 1,
+            "rir2" : "TEST",
+            "db1" : 381,
+            "vlan" : [
+               50
+            ],
+            "mac2-term" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "db" : 439,
+            "p2" : 1813,
+            "g1" : "RUS",
+            "ps" : [
+               24,
+               429
+            ],
+            "vlan-cnt" : 1,
+            "fpd" : 1463339353458,
+            "pa" : 2,
+            "lp" : 1463339353,
+            "psl" : [
+               405,
+               82
+            ],
+            "test" : {
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string" : [
+                  "16777226:45210,33554442:1813"
+               ],
+               "ip" : [
+                  167772161
+               ]
+            },
+            "as1" : "AS0000 This is neat",
+            "radius" : {
+               "fip-rir" : [
+                  ""
+               ],
+               "mac-term" : [
+                  "98:5A:EB:89:80:00"
+               ],
+               "fip" : [
+                  "10.0.0.3"
+               ],
+               "fip-geo" : [
+                  "---"
+               ],
+               "fip-cnt" : 1,
+               "user-term" : [
+                  "xxxxxxxxx"
+               ],
+               "mac-term-cnt" : 1,
+               "fip-asn" : [
+                  "AS0002 Hmm!@#$%^&*()"
+               ]
+            },
+            "fp" : 1463339353,
+            "pr" : 17,
+            "a2" : "10.0.0.2",
+            "no" : "test",
+            "prot-term" : [
+               "udp",
+               "radius"
+            ],
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "fs" : [],
+            "fb1" : "04e3015700000000",
+            "mac2-term-cnt" : 1,
+            "sl" : 3,
+            "by1" : 389,
+            "a1" : "10.0.0.1",
+            "mac1-term-cnt" : 1,
+            "g2" : "CAN",
+            "tacnt" : 2,
+            "by2" : 66,
+            "mac1-term" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "prot-term-cnt" : 2,
+            "by" : 455,
+            "as2" : "AS0001 Cool Beans!",
+            "lpd" : 1463339353461,
+            "fb2" : "05e3001400000000",
+            "p1" : 45210,
+            "db2" : 58
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160515",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

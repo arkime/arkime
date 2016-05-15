@@ -19,6 +19,7 @@ extern MolochConfig_t        config;
 static int userField;
 static int macField;
 static int endpointIpField;
+static int framedIpField;
 
 /******************************************************************************/
 int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
@@ -31,7 +32,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     BSB_IMPORT_u08(bsb, code);
     BSB_IMPORT_skip(bsb, 19);
 
-    int type, length;
+    int type = 0, length = 0;
     unsigned char *value;
     char str[100];
     struct in_addr in;
@@ -47,17 +48,22 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     /*    case 4:
             LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
             break;*/
+        case 8:
+            memcpy(&in.s_addr, value, 4);
+            moloch_field_int_add(framedIpField, session, in.s_addr);
+            break;
         case 31:
             if (length == 14) {
                 sprintf(str, "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
+                        value[0], value[1],
                         value[2], value[3],
                         value[4], value[5],
                         value[6], value[7],
                         value[8], value[9],
-                        value[10], value[11],
-                        value[12], value[13]);
+                        value[10], value[11]);
                 moloch_field_string_add(macField, session, str, 17, TRUE);
             }
+            break;
         case 66:
             memcpy(str, value, length-2);
             str[length-2] = 0;
@@ -103,8 +109,14 @@ void moloch_parser_init()
         NULL); 
 
     endpointIpField = moloch_field_define("radius", "ip",
-        "radius.endpointIp", "Endpoint IP", "radius.ip",
-        "Radius Endpoint ip addresses for session",
+        "radius.endpointIp", "Endpoint IP", "radius.eip",
+        "Radius endpoint ip addresses for session",
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
+
+    framedIpField = moloch_field_define("radius", "ip",
+        "radius.framedIp", "Framed IP", "radius.fip",
+        "Radius framed ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
