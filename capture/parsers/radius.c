@@ -97,7 +97,7 @@ void moloch_parser_init()
         NULL);
 
     macField = moloch_field_define("radius", "lotermfield",
-        "radius.mac", "MAC", "mac-term",
+        "radius.mac", "MAC", "radius.mac-term",
         "Radius Mac",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL); 
