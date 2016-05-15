@@ -3,4 +3,5 @@ if (session.radius)
   dl.sessionDetailMeta
     +stringList(session.radius, "user-term", "User", "radius.user")
     +stringList(session.radius, "mac-term", "Mac", "radius.mac")
-    +ipArrayList(session.radius, "ip", "IPs", "radius.ip")
+    +ipArrayList(session.radius, "eip", "IPs", "radius.endpoint-ip")
+    +ipArrayList(session.radius, "fip", "IPs", "radius.framed-ip")

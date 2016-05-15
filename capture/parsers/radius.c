@@ -109,13 +109,13 @@ void moloch_parser_init()
         NULL); 
 
     endpointIpField = moloch_field_define("radius", "ip",
-        "radius.endpointIp", "Endpoint IP", "radius.eip",
+        "radius.endpoint-ip", "Endpoint IP", "radius.eip",
         "Radius endpoint ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
 
     framedIpField = moloch_field_define("radius", "ip",
-        "radius.framedIp", "Framed IP", "radius.fip",
+        "radius.framed-ip", "Framed IP", "radius.fip",
         "Radius framed ip addresses for session",
         MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
