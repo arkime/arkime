@@ -66,7 +66,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
                         value[6], value[7],
                         value[8], value[9],
                         value[10], value[11]);
-                for (i = 0; i < length; i++) {
+                for (i = 0; i < 17; i++) {
                     if (isupper (str[i]))
                       str[i] = tolower (str[i]);
                 }
@@ -93,10 +93,10 @@ void radius_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(d
         return;
     }
 
-    if (session->port1 >= 1812 || session->port1 <= 1813 ||
-        session->port1 >= 1645 || session->port1 <= 1646 ||
-        session->port2 >= 1812 || session->port2 <= 1813 ||
-        session->port2 >= 1645 || session->port2 <= 1646) {
+    if ((session->port1 >= 1812 && session->port1 <= 1813) ||
+        (session->port1 >= 1645 && session->port1 <= 1646) ||
+        (session->port2 >= 1812 && session->port2 <= 1813) ||
+        (session->port2 >= 1645 && session->port2 <= 1646)) {
         moloch_parsers_register(session, radius_udp_parser, 0, 0);
         moloch_session_add_protocol(session, "radius");
     }
