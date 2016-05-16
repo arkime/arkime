@@ -187,7 +187,7 @@ void moloch_parser_init()
         NULL);
 
     bindNameField = moloch_field_define("ldap", "termfield",
-        "ldap.bindname", "Auth Type", "ldap.bindname-term",
+        "ldap.bindname", "Bind Name", "ldap.bindname-term",
         "The bind name of ldap bind",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
