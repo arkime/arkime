@@ -407,11 +407,13 @@ void moloch_config_load()
 
 }
 /******************************************************************************/
-void moloch_config_get_tag_cb(MolochIpInfo_t *ii, int UNUSED(tagtype), const char UNUSED(*tagName), uint32_t tag)
+void moloch_config_get_tag_cb(MolochIpInfo_t *ii, int UNUSED(tagtype), const char *tagName, uint32_t tag)
 {
     if (ii->numtags >= 10) return;
 
-    ii->tags[ii->numtags++] = tag;
+    ii->tags[ii->numtags] = tag;
+    ii->tagsStr[ii->numtags] = strdup(tagName);
+    ii->numtags++;
 }
 /******************************************************************************/
 void moloch_config_load_local_ips()

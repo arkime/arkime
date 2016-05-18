@@ -1,180 +1,180 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131125"
+            }
+         },
          "body" : {
-            "dns" : {
-               "qc-term" : [
-                  "IN"
-               ],
-               "qc-term-cnt" : 1,
-               "qt-term-cnt" : 1,
-               "status-term-cnt" : 1,
-               "qt-term" : [
-                  "A"
-               ],
-               "status-term" : [
-                  "NOERROR"
-               ]
-            },
-            "db2" : 246,
-            "db" : 312,
+            "fb1" : "e039010000010000",
+            "a2" : "10.2.95.39",
+            "sl" : 0,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
-            "no" : "test",
-            "lp" : 1385400647,
-            "a2" : "10.2.95.39",
-            "ss" : 1,
-            "pa1" : 1,
-            "fpd" : 1385400647217,
-            "fs" : [],
-            "by2" : 254,
-            "g1" : "USA",
-            "pa2" : 1,
-            "p1" : 62563,
-            "by" : 328,
-            "dnsip" : [
-               "192.30.252.128"
-            ],
-            "asdnsip" : [
-               "AS36459 GitHub, Inc."
-            ],
-            "pr" : 17,
-            "ps" : [
-               24,
-               114
-            ],
-            "prot-term-cnt" : 2,
-            "dnsho" : [
-               "www.github.com",
-               "github.com"
-            ],
-            "lpd" : 1385400647218,
-            "fp" : 1385400647,
-            "dnsipcnt" : 1,
-            "pa" : 2,
-            "sl" : 0,
-            "fb1" : "e039010000010000",
-            "a1" : "10.180.156.141",
-            "fb2" : "e039818000010002",
-            "dnshocnt" : 2,
             "db1" : 66,
-            "gdnsip" : [
-               "USA"
-            ],
-            "mac2-term-cnt" : 2,
-            "by1" : 74,
-            "p2" : 53,
-            "mac1-term-cnt" : 1,
+            "pa1" : 1,
+            "fb2" : "e039818000010002",
             "psl" : [
                90,
                270
             ],
-            "prot-term" : [
-               "udp",
-               "dns"
+            "by2" : 254,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "dnshocnt" : 2,
+            "db2" : 246,
+            "dnsipcnt" : 1,
+            "pr" : 17,
+            "dnsip" : [
+               "192.30.252.128"
+            ],
+            "mac1-term-cnt" : 1,
+            "fp" : 1385400647,
+            "mac2-term-cnt" : 2,
+            "fpd" : 1385400647217,
+            "by1" : 74,
+            "asdnsip" : [
+               "AS36459 GitHub, Inc."
+            ],
+            "dnsho" : [
+               "www.github.com",
+               "github.com"
             ],
             "rirdnsip" : [
                "ARIN"
             ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131125",
-               "_type" : "session"
-            }
-         }
-      },
-      {
-         "body" : {
+            "p2" : 53,
+            "pa2" : 1,
+            "prot-term-cnt" : 2,
+            "p1" : 62563,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "gdnsip" : [
+               "USA"
+            ],
+            "ss" : 1,
+            "fs" : [],
             "dns" : {
+               "qt-term-cnt" : 1,
+               "status-term" : [
+                  "NOERROR"
+               ],
                "qc-term" : [
                   "IN"
                ],
-               "qc-term-cnt" : 1,
-               "qt-term-cnt" : 1,
                "status-term-cnt" : 1,
                "qt-term" : [
                   "A"
                ],
-               "status-term" : [
-                  "NOERROR"
-               ]
+               "qc-term-cnt" : 1
             },
-            "db2" : 246,
-            "db" : 312,
+            "a1" : "10.180.156.141",
+            "pa" : 2,
+            "g1" : "USA",
+            "by" : 328,
+            "ps" : [
+               24,
+               114
+            ],
+            "lp" : 1385400647,
+            "lpd" : 1385400647218,
+            "no" : "test",
+            "db" : 312
+         }
+      },
+      {
+         "body" : {
+            "psl" : [
+               90,
+               270
+            ],
+            "fb2" : "e039818000010002",
+            "pa1" : 1,
+            "db1" : 66,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "no" : "test",
-            "lp" : 1385400648,
+            "sl" : 9,
             "a2" : "10.178.8.71",
-            "ss" : 1,
-            "pa1" : 1,
-            "fpd" : 1385400648218,
-            "fs" : [],
-            "by2" : 254,
-            "g1" : "USA",
-            "pa2" : 1,
-            "p1" : 62416,
-            "by" : 328,
+            "fb1" : "e039010000010000",
+            "mac1-term-cnt" : 1,
             "dnsip" : [
                "192.30.252.130"
             ],
-            "asdnsip" : [
-               "AS36459 GitHub, Inc."
-            ],
             "pr" : 17,
-            "ps" : [
-               384,
-               474
+            "dnsipcnt" : 1,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
+            "by2" : 254,
+            "db2" : 246,
+            "dnshocnt" : 2,
             "prot-term-cnt" : 2,
             "dnsho" : [
                "www.github.com",
                "github.com"
             ],
-            "lpd" : 1385400648228,
-            "fp" : 1385400648,
-            "dnsipcnt" : 1,
-            "pa" : 2,
-            "sl" : 9,
-            "fb1" : "e039010000010000",
-            "a1" : "10.180.156.141",
-            "fb2" : "e039818000010002",
-            "dnshocnt" : 2,
-            "db1" : 66,
-            "gdnsip" : [
-               "USA"
+            "asdnsip" : [
+               "AS36459 GitHub, Inc."
             ],
-            "mac2-term-cnt" : 2,
-            "by1" : 74,
+            "pa2" : 1,
             "p2" : 53,
-            "mac1-term-cnt" : 1,
-            "psl" : [
-               90,
-               270
-            ],
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
             "rirdnsip" : [
                "ARIN"
             ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
+            "fpd" : 1385400648218,
+            "by1" : 74,
+            "mac2-term-cnt" : 2,
+            "fp" : 1385400648,
+            "lp" : 1385400648,
+            "lpd" : 1385400648228,
+            "db" : 312,
+            "no" : "test",
+            "pa" : 2,
+            "a1" : "10.180.156.141",
+            "ps" : [
+               384,
+               474
+            ],
+            "g1" : "USA",
+            "by" : 328,
+            "ss" : 1,
+            "fs" : [],
+            "gdnsip" : [
+               "USA"
+            ],
+            "dns" : {
+               "status-term" : [
+                  "NOERROR"
+               ],
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "qt-term-cnt" : 1
+            },
+            "p1" : 62416,
+            "prot-term" : [
+               "udp",
+               "dns"
             ]
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131125",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-131125"
             }
          }
       }

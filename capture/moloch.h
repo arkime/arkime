@@ -340,6 +340,7 @@ typedef struct {
     char     *rir;
     int       numtags;
     int       tags[10];
+    char     *tagsStr[10];
 } MolochIpInfo_t;
 
 /******************************************************************************/

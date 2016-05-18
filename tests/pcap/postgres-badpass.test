@@ -1,51 +1,79 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-140505"
+            }
+         },
          "body" : {
+            "fpd" : 1399312748531,
             "test" : {
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
+               "ip-rir" : [
+                  ""
                ],
                "string" : [
                   "16777226:53499,33554442:5432"
                ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "number" : [
+                  33554442
+               ],
                "ip-geo" : [
                   "RUS"
                ],
-               "ip-rir" : [
-                  ""
+               "ip" : [
+                  167772161
                ]
             },
-            "db2" : 14,
-            "db" : 96,
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
-            "no" : "test",
-            "lp" : 1399312748,
-            "a2" : "10.0.0.2",
+            "pa1" : 8,
+            "fb1" : "0000000804d2162f",
+            "mac1-term-cnt" : 2,
             "ss" : 1,
+            "fb2" : "4e520000000c0000",
+            "pr" : 6,
+            "as1" : "AS0000 This is neat",
+            "fs" : [],
+            "lpd" : 1399312748549,
+            "lp" : 1399312748,
+            "g1" : "RUS",
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "pa1" : 8,
-            "fpd" : 1399312748531,
-            "fs" : [],
-            "by2" : 352,
-            "g1" : "RUS",
-            "pa2" : 5,
-            "p1" : 53499,
+            "rir2" : "TEST",
+            "no" : "test",
+            "mac2-term-cnt" : 1,
             "by" : 974,
-            "as1" : "AS0000 This is neat",
+            "p1" : 53499,
+            "fp" : 1399312748,
+            "as2" : "AS0001 Cool Beans!",
+            "db1" : 82,
+            "by2" : 352,
+            "by1" : 622,
+            "postgresql" : {
+               "user-term" : "foo",
+               "app-term" : "psql",
+               "db-term" : "bar"
+            },
+            "tacnt" : 2,
             "g2" : "CAN",
-            "pr" : 6,
+            "a2" : "10.0.0.2",
+            "p2" : 5432,
+            "db" : 96,
+            "pa" : 13,
+            "prot-term" : [
+               "tcp",
+               "postgresql"
+            ],
+            "db2" : 14,
             "ps" : [
                24,
                118,
@@ -61,27 +89,10 @@
                1042,
                1124
             ],
-            "prot-term-cnt" : 2,
-            "lpd" : 1399312748549,
-            "fp" : 1399312748,
-            "as2" : "AS0001 Cool Beans!",
-            "pa" : 13,
-            "tacnt" : 2,
-            "sl" : 18,
-            "fb1" : "0000000804d2162f",
-            "a1" : "10.0.0.1",
-            "fb2" : "4e520000000c0000",
-            "db1" : 82,
-            "postgresql" : {
-               "app-term" : "psql",
-               "db-term" : "bar",
-               "user-term" : "foo"
-            },
-            "mac2-term-cnt" : 1,
-            "by1" : 622,
-            "p2" : 5432,
-            "mac1-term-cnt" : 2,
-            "rir2" : "TEST",
+            "mac1-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "psl" : [
                94,
                90,
@@ -97,20 +108,13 @@
                82,
                82
             ],
-            "prot-term" : [
-               "tcp",
-               "postgresql"
+            "sl" : 18,
+            "prot-term-cnt" : 2,
+            "pa2" : 5,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "mac1-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-140505",
-               "_type" : "session"
-            }
+            "a1" : "10.0.0.1"
          }
       }
    ]

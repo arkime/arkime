@@ -8,18 +8,70 @@
             }
          },
          "body" : {
-            "mac2-term-cnt" : 1,
-            "lp" : 1388428585,
-            "hocnt" : 1,
             "us" : [
                "//xxxxxxxxxxxxx.xxx.com/a.zip"
             ],
-            "hmd5cnt" : 1,
-            "a2" : "10.0.0.2",
+            "no" : "test",
+            "as1" : "AS0000 This is neat",
+            "a1" : "10.0.0.1",
+            "pr" : 6,
+            "hsvercnt" : 1,
+            "ua" : [
+               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"
+            ],
+            "pa1" : 7,
+            "uscnt" : 1,
+            "hh2cnt" : 8,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hpathcnt" : 1,
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "string" : [
+                  "16777226:52925,33554442:80"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ]
+            },
+            "p2" : 80,
+            "by2" : 909,
+            "hh1cnt" : 6,
+            "p1" : 52925,
+            "hdvercnt" : 1,
             "ho" : [
                "xxxxxxxxxxxxx.xxx.com"
             ],
-            "fb2" : "485454502f312e31",
+            "g1" : "RUS",
+            "prot-term-cnt" : 2,
+            "pa" : 12,
+            "lpd" : 1388428585176,
+            "hocnt" : 1,
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:etag",
+               "http:header:last-modified",
+               "http:header:server"
+            ],
+            "fpd" : 1388428585136,
+            "ss" : 1,
             "ps" : [
                24,
                118,
@@ -34,26 +86,32 @@
                1797,
                1879
             ],
-            "prot-term-cnt" : 2,
-            "hdvercnt" : 1,
-            "p1" : 52925,
-            "ta" : [
-               "dstip",
-               "srcip"
+            "mac1-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
             ],
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:connection",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:etag",
-               "http:header:last-modified",
-               "http:header:server"
+            "pa2" : 5,
+            "db1" : 362,
+            "fs" : [],
+            "fb1" : "474554202f612e7a",
+            "rir2" : "TEST",
+            "by1" : 836,
+            "g2" : "CAN",
+            "hpath" : [
+               "/a.zip"
             ],
-            "pr" : 6,
-            "uacnt" : 1,
+            "db" : 933,
+            "hmd5" : [
+               "40be8f5100e9beabab293c9d7bacaff0"
+            ],
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "mac2-term-cnt" : 1,
+            "by" : 1745,
             "db2" : 571,
+            "mac1-term-cnt" : 2,
             "psl" : [
                94,
                90,
@@ -68,60 +126,8 @@
                82,
                82
             ],
-            "lpd" : 1388428585176,
-            "db1" : 362,
-            "ua" : [
-               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"
-            ],
-            "rir2" : "TEST",
-            "p2" : 80,
-            "mac1-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "test" : {
-               "string" : [
-                  "16777226:52925,33554442:80"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "ss" : 1,
-            "hh1cnt" : 6,
-            "no" : "test",
-            "sl" : 39,
-            "by" : 1745,
-            "mac1-term-cnt" : 2,
-            "a1" : "10.0.0.1",
-            "by1" : 836,
-            "hmd5" : [
-               "40be8f5100e9beabab293c9d7bacaff0"
-            ],
-            "hsver" : [
-               "1.1"
-            ],
-            "g2" : "CAN",
-            "as1" : "AS0000 This is neat",
-            "as2" : "AS0001 Cool Beans!",
-            "hpathcnt" : 1,
-            "fp" : 1388428585,
-            "by2" : 909,
-            "pa1" : 7,
-            "db" : 933,
-            "pa2" : 5,
+            "hmd5cnt" : 1,
+            "lp" : 1388428585,
             "hh1" : [
                "http:header:accept",
                "http:header:accept-encoding",
@@ -130,42 +136,40 @@
                "http:header:host",
                "http:header:user-agent"
             ],
-            "fb1" : "474554202f612e7a",
-            "hpath" : [
-               "/a.zip"
+            "a2" : "10.0.0.2",
+            "fp" : 1388428585,
+            "as2" : "AS0001 Cool Beans!",
+            "ta" : [
+               "dstip",
+               "srcip"
             ],
-            "fpd" : 1388428585136,
-            "hh2cnt" : 8,
-            "uscnt" : 1,
+            "uacnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "tacnt" : 2,
             "mac2-term" : [
                "00:13:72:c4:f1:e1"
             ],
-            "pa" : 12,
-            "tacnt" : 2,
-            "prot-term" : [
-               "http",
-               "tcp"
+            "fb2" : "485454502f312e31",
+            "hsver" : [
+               "1.1"
             ],
             "http" : {
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1,
+               "bodymagic-term-cnt" : 1,
                "method-term" : [
                   "GET"
                ],
-               "bodymagic-term-cnt" : 1,
                "bodymagic-term" : [
                   "application/zip"
                ],
                "statuscode" : [
                   200
-               ],
-               "method-term-cnt" : 1,
-               "statuscode-cnt" : 1
+               ]
             },
-            "hdver" : [
-               "1.1"
-            ],
-            "fs" : [],
-            "hsvercnt" : 1,
-            "g1" : "RUS"
+            "sl" : 39
          }
       }
    ]

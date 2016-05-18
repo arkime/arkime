@@ -2,15 +2,12 @@
    "packets" : [
       {
          "body" : {
-            "p1" : 40848,
-            "a2" : "127.0.0.1",
-            "db2" : 28,
-            "pr" : 6,
-            "lpd" : 1132019262678,
-            "mac2-term" : [
+            "fpd" : 1132019262677,
+            "mac1-term" : [
                "00:00:00:00:00:00"
             ],
-            "pa2" : 5,
+            "by" : 976,
+            "by2" : 366,
             "ps" : [
                24,
                114,
@@ -26,44 +23,38 @@
                1044,
                1126
             ],
-            "a1" : "127.0.0.1",
-            "by" : 976,
-            "by1" : 610,
-            "sl" : 0,
-            "by2" : 366,
-            "prot-term-cnt" : 2,
-            "db" : 102,
+            "a2" : "127.0.0.1",
             "pa" : 13,
+            "no" : "test",
+            "fp" : 1132019262,
             "p2" : 389,
-            "fpd" : 1132019262677,
-            "fb2" : "300c02010161070a",
+            "mac1-term-cnt" : 1,
+            "ss" : 1,
+            "pa1" : 8,
+            "sl" : 0,
+            "fs" : [],
             "ldap" : {
-               "bindname-term-cnt" : 1,
                "bindname-term" : [
                   "<ROOT>"
                ],
+               "bindname-term-cnt" : 1,
+               "authtype-term-cnt" : 1,
                "authtype-term" : [
                   "none"
-               ],
-               "authtype-term-cnt" : 1
+               ]
             },
-            "db1" : 74,
             "fb1" : "300c020101600702",
-            "prot-term" : [
-               "ldap",
-               "tcp"
-            ],
-            "fp" : 1132019262,
-            "ss" : 1,
-            "mac1-term" : [
-               "00:00:00:00:00:00"
-            ],
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "lp" : 1132019262,
-            "pa1" : 8,
-            "mac2-term-cnt" : 1,
-            "no" : "test",
+            "lpd" : 1132019262678,
+            "a1" : "127.0.0.1",
+            "db1" : 74,
+            "prot-term-cnt" : 2,
+            "by1" : 610,
+            "fb2" : "300c02010161070a",
+            "pa2" : 5,
+            "db2" : 28,
+            "p1" : 40848,
+            "db" : 102,
+            "pr" : 6,
             "psl" : [
                90,
                90,
@@ -78,12 +69,21 @@
                82,
                82,
                82
+            ],
+            "mac2-term-cnt" : 1,
+            "lp" : 1132019262,
+            "prot-term" : [
+               "ldap",
+               "tcp"
+            ],
+            "mac2-term" : [
+               "00:00:00:00:00:00"
             ]
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-051115",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-051115"
             }
          }
       }

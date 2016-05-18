@@ -47,7 +47,7 @@ sub sortJson {
 
     foreach my $packet (@{$json->{packets}}) {
         my $body = $packet->{body};
-        foreach my $i ("dnsip") {
+        foreach my $i ("dnsip", "tags-term", "ta") {
             if (exists $body->{$i}) {
                 my @tmp = sort (@{$body->{$i}});
                 $body->{$i} = \@tmp;

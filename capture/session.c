@@ -26,6 +26,7 @@ extern time_t                lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 /******************************************************************************/
 
 LOCAL int                   tagsField;
+LOCAL int                   tagsStringField;
 LOCAL int                   protocolField;
 
 LOCAL MolochSessionHead_t   closingQ[MOLOCH_MAX_PACKET_THREADS];
@@ -200,6 +201,7 @@ gboolean moloch_session_has_protocol(MolochSession_t *session, const char *proto
 void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
     moloch_session_incr_outstanding(session);
     moloch_db_get_tag(session, tagsField, tag, moloch_session_get_tag_cb);
+    moloch_field_string_add(tagsStringField, session, tag, -1, TRUE);
 
     if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
         MolochString_t *tstring;
@@ -576,6 +578,12 @@ void moloch_session_init()
         "protocols", "Protocols", "prot-term",
         "Protocols set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    tagsStringField = moloch_field_define("general", "notreal",
+        "tags", "Tags", "tags-term",
+        "Tags set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
     if (config.debug)

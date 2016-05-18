@@ -1,56 +1,30 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160201",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "db2" : 90,
-            "db" : 128,
-            "mac2-term" : [
-               "58:f3:9c:f7:2f:9f"
-            ],
-            "no" : "test",
-            "lp" : 1454301531,
-            "a2" : "129.21.171.72",
-            "ss" : 1,
             "user" : [
                "anonymous"
             ],
-            "pa1" : 5,
-            "fpd" : 1454301530932,
-            "fs" : [],
-            "by2" : 428,
-            "pa2" : 5,
-            "p1" : 43958,
-            "by" : 804,
-            "g2" : "USA",
-            "pr" : 6,
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               401,
-               483,
-               581,
-               663,
-               779,
-               883
-            ],
-            "prot-term-cnt" : 2,
-            "lpd" : 1454301531009,
-            "fp" : 1454301530,
-            "as2" : "AS4385 Rochester Institute of Technology",
-            "pa" : 10,
-            "sl" : 78,
-            "fb1" : "5553455220616e6f",
-            "a1" : "10.10.30.26",
-            "fb2" : "3232302057656c63",
-            "db1" : 38,
-            "usercnt" : 1,
-            "mac2-term-cnt" : 1,
             "by1" : 376,
+            "no" : "test",
+            "a2" : "129.21.171.72",
+            "fs" : [],
+            "mac2-term" : [
+               "58:f3:9c:f7:2f:9f"
+            ],
             "p2" : 21,
-            "mac1-term-cnt" : 1,
-            "rir2" : "ARIN",
+            "mac2-term-cnt" : 1,
+            "fb1" : "5553455220616e6f",
+            "g2" : "USA",
+            "fb2" : "3232302057656c63",
+            "pa" : 10,
+            "pa1" : 5,
             "psl" : [
                90,
                90,
@@ -63,19 +37,45 @@
                104,
                105
             ],
+            "ss" : 1,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               401,
+               483,
+               581,
+               663,
+               779,
+               883
+            ],
+            "db" : 128,
+            "by" : 804,
+            "sl" : 78,
+            "as2" : "AS4385 Rochester Institute of Technology",
+            "by2" : 428,
             "prot-term" : [
                "ftp",
                "tcp"
             ],
+            "lpd" : 1454301531009,
             "mac1-term" : [
                "00:08:e3:ff:fc:28"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-160201",
-               "_type" : "session"
-            }
+            ],
+            "db2" : 90,
+            "p1" : 43958,
+            "a1" : "10.10.30.26",
+            "rir2" : "ARIN",
+            "fpd" : 1454301530932,
+            "fp" : 1454301530,
+            "usercnt" : 1,
+            "mac1-term-cnt" : 1,
+            "pr" : 6,
+            "db1" : 38,
+            "lp" : 1454301531,
+            "prot-term-cnt" : 2,
+            "pa2" : 5
          }
       }
    ]

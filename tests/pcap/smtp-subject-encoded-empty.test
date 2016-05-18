@@ -2,64 +2,126 @@
    "packets" : [
       {
          "body" : {
-            "edstcnt" : 1,
-            "test" : {
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:62855,33554442:25"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
-            "db2" : 756,
-            "db" : 1106,
-            "esrc" : [
-               "user1@xxx.net"
-            ],
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "no" : "test",
-            "lp" : 1398431453,
-            "a2" : "10.0.0.2",
-            "ss" : 1,
-            "esub" : [
-               "Can this 10 Second Trick Help Prevent YOUR Heart Attack?"
-            ],
-            "ta" : [
-               "dstip",
-               "smtp:statuscode:250",
-               "srcip"
-            ],
             "pa1" : 19,
-            "fpd" : 1398431422481,
-            "fs" : [],
-            "by2" : 1688,
+            "esubcnt" : 1,
+            "fb2" : "3232302d78787878",
             "g1" : "RUS",
-            "pa2" : 14,
+            "by1" : 1616,
+            "no" : "test",
             "p1" : 62855,
+            "ehhcnt" : 3,
+            "psl" : [
+               94,
+               90,
+               82,
+               391,
+               82,
+               110,
+               82,
+               290,
+               82,
+               109,
+               122,
+               82,
+               107,
+               125,
+               82,
+               88,
+               132,
+               82,
+               103,
+               82,
+               316,
+               82,
+               85,
+               82,
+               138,
+               82,
+               88,
+               132,
+               82,
+               82,
+               82,
+               82,
+               82
+            ],
+            "edst" : [
+               "user2@xxx.net"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "a1" : "10.0.0.1",
+            "edstcnt" : 1,
+            "esrccnt" : 1,
+            "fs" : [],
             "by" : 3304,
-            "as1" : "AS0000 This is neat",
+            "by2" : 1688,
+            "db1" : 350,
+            "db" : 1106,
+            "fpd" : 1398431422481,
+            "lp" : 1398431453,
+            "pa2" : 14,
             "ehh" : [
                "from",
                "to",
                "subject"
             ],
-            "ehhcnt" : 3,
+            "tacnt" : 3,
+            "lpd" : 1398431453159,
+            "prot-term-cnt" : 2,
+            "db2" : 756,
+            "esrc" : [
+               "user1@xxx.net"
+            ],
+            "esub" : [
+               "Can this 10 Second Trick Help Prevent YOUR Heart Attack?"
+            ],
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "string" : [
+                  "16777226:62855,33554442:25"
+               ],
+               "number" : [
+                  33554442
+               ]
+            },
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "pa" : 33,
+            "fb1" : "45484c4f20787878",
+            "sl" : 30678,
+            "mac2-term-cnt" : 2,
+            "fp" : 1398431422,
+            "p2" : 25,
+            "rir2" : "TEST",
+            "as1" : "AS0000 This is neat",
             "g2" : "CAN",
+            "mac1-term-cnt" : 1,
+            "ta" : [
+               "dstip",
+               "smtp:statuscode:250",
+               "srcip"
+            ],
+            "a2" : "10.0.0.2",
+            "as2" : "AS0001 Cool Beans!",
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "pr" : 6,
             "ps" : [
                24,
@@ -96,69 +158,12 @@
                3692,
                3774
             ],
-            "prot-term-cnt" : 2,
-            "lpd" : 1398431453159,
-            "fp" : 1398431422,
-            "as2" : "AS0001 Cool Beans!",
-            "pa" : 33,
-            "tacnt" : 3,
-            "edst" : [
-               "user2@xxx.net"
+            "tags-term" : [
+               "smtp:statuscode:250",
+               "srcip",
+               "dstip"
             ],
-            "sl" : 30678,
-            "fb1" : "45484c4f20787878",
-            "esubcnt" : 1,
-            "a1" : "10.0.0.1",
-            "fb2" : "3232302d78787878",
-            "db1" : 350,
-            "mac2-term-cnt" : 2,
-            "by1" : 1616,
-            "esrccnt" : 1,
-            "p2" : 25,
-            "mac1-term-cnt" : 1,
-            "rir2" : "TEST",
-            "psl" : [
-               94,
-               90,
-               82,
-               391,
-               82,
-               110,
-               82,
-               290,
-               82,
-               109,
-               122,
-               82,
-               107,
-               125,
-               82,
-               88,
-               132,
-               82,
-               103,
-               82,
-               316,
-               82,
-               85,
-               82,
-               138,
-               82,
-               88,
-               132,
-               82,
-               82,
-               82,
-               82,
-               82
-            ],
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ]
+            "ss" : 1
          },
          "header" : {
             "index" : {

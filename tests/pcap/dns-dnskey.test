@@ -1,102 +1,105 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140226"
-            }
-         },
          "body" : {
-            "dnshocnt" : 1,
-            "fs" : [],
-            "by1" : 74,
-            "g2" : "USA",
+            "pa" : 1,
+            "vlan-cnt" : 1,
             "ps" : [
                24
             ],
-            "lpd" : 1393428477365,
+            "by" : 74,
+            "by2" : 0,
             "g1" : "RUS",
-            "ta" : [
-               "srcip"
+            "fs" : [],
+            "mac1-term" : [
+               "00:1a:e3:dc:2e:c0"
             ],
             "pa1" : 1,
-            "tacnt" : 1,
-            "pa2" : 0,
-            "fp" : 1393428477,
-            "mac1-term-cnt" : 1,
+            "tags-term" : [
+               "srcip"
+            ],
+            "lpd" : 1393428477365,
+            "dnsho" : [
+               "<root>"
+            ],
+            "a1" : "10.0.0.1",
+            "p1" : 53869,
             "pr" : 17,
-            "p2" : 53,
+            "pa2" : 0,
+            "rir2" : "ARIN",
             "psl" : [
                90
             ],
-            "by2" : 0,
-            "prot-term-cnt" : 2,
-            "as2" : "AS15169 Google Inc.",
+            "fb1" : "f376011000010000",
+            "a2" : "8.8.8.8",
             "mac2-term-cnt" : 1,
-            "mac2-term" : [
-               "00:19:e2:ba:2f:c1"
-            ],
-            "db" : 66,
+            "g2" : "USA",
+            "prot-term-cnt" : 2,
             "vlan" : [
                500
             ],
-            "by" : 74,
-            "vlan-cnt" : 1,
+            "as2" : "AS15169 Google Inc.",
+            "lp" : 1393428477,
+            "fpd" : 1393428477365,
+            "fp" : 1393428477,
+            "ss" : 1,
+            "dnshocnt" : 1,
+            "p2" : 53,
+            "ta" : [
+               "srcip"
+            ],
             "as1" : "AS0000 This is neat",
             "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
                "ip-rir" : [
                   ""
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "number" : [
-                  134744072
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
                "string" : [
                   "16777226:53869,134744072:53"
+               ],
+               "number" : [
+                  134744072
                ]
             },
-            "a2" : "8.8.8.8",
-            "no" : "test",
-            "rir2" : "ARIN",
-            "mac1-term" : [
-               "00:1a:e3:dc:2e:c0"
-            ],
-            "fb1" : "f376011000010000",
-            "sl" : 0,
-            "dnsho" : [
-               "<root>"
-            ],
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "pa" : 1,
-            "db2" : 0,
-            "fpd" : 1393428477365,
-            "p1" : 53869,
-            "lp" : 1393428477,
             "db1" : 66,
-            "ss" : 1,
             "dns" : {
                "qc-term" : [
                   "IN"
                ],
-               "qc-term-cnt" : 1,
                "qt-term" : [
                   "DNSKEY"
                ],
+               "qc-term-cnt" : 1,
                "qt-term-cnt" : 1
             },
-            "a1" : "10.0.0.1"
+            "no" : "test",
+            "db" : 66,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "db2" : 0,
+            "mac2-term" : [
+               "00:19:e2:ba:2f:c1"
+            ],
+            "sl" : 0,
+            "tacnt" : 1,
+            "mac1-term-cnt" : 1,
+            "by1" : 74
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-140226",
+               "_type" : "session"
+            }
          }
       }
    ]

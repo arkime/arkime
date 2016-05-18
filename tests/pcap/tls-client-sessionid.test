@@ -1,35 +1,35 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-150105"
+            }
+         },
          "body" : {
-            "db2" : 459,
-            "db" : 1077,
-            "mac2-term" : [
-               "60:73:5c:b4:90:00"
-            ],
-            "no" : "test",
-            "ho" : [
-               "bl.a.im"
-            ],
-            "lp" : 1420490708,
-            "a2" : "74.217.87.13",
-            "ss" : 1,
-            "pa1" : 7,
-            "fpd" : 1420490708340,
-            "fs" : [],
-            "by2" : 983,
-            "tlssrcid-term" : [
-               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-            ],
-            "pa2" : 9,
-            "hocnt" : 1,
-            "p1" : 62938,
-            "by" : 2005,
-            "g2" : "USA",
+            "a1" : "10.23.46.37",
             "tlscipher-term" : [
                "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
             ],
-            "pr" : 6,
+            "tlsver-termcnt" : 1,
+            "pa1" : 7,
+            "mac2-term-cnt" : 1,
+            "fs" : [],
+            "tlssrcid-term" : [
+               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+            ],
+            "g2" : "USA",
+            "tlsdstid-term" : [
+               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+            ],
+            "db2" : 459,
+            "mac2-term" : [
+               "60:73:5c:b4:90:00"
+            ],
+            "sl" : 91,
+            "db1" : 618,
+            "db" : 1077,
             "ps" : [
                24,
                102,
@@ -48,29 +48,39 @@
                2133,
                2209
             ],
-            "prot-term-cnt" : 2,
-            "tlsdstid-term" : [
-               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-            ],
-            "lpd" : 1420490708431,
+            "pr" : 6,
+            "mac1-term-cnt" : 1,
+            "pa2" : 9,
+            "p1" : 62938,
             "fp" : 1420490708,
-            "as2" : "AS10913 Internap Network Services Corporation",
-            "tlscipher-termcnt" : 1,
-            "pa" : 16,
-            "sl" : 91,
-            "fb1" : "16030100c0010000",
-            "a1" : "10.23.46.37",
-            "fb2" : "1603010051020000",
-            "db1" : 618,
+            "by" : 2005,
+            "hocnt" : 1,
+            "rir2" : "ARIN",
+            "prot-term-cnt" : 2,
+            "ho" : [
+               "bl.a.im"
+            ],
             "tlsver-term" : [
                "TLSv1"
             ],
-            "mac2-term-cnt" : 1,
-            "by1" : 1022,
+            "fb2" : "1603010051020000",
+            "mac1-term" : [
+               "b8:ca:3a:8d:c1:87"
+            ],
+            "ss" : 1,
+            "tlscipher-termcnt" : 1,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "lpd" : 1420490708431,
+            "pa" : 16,
+            "by2" : 983,
+            "fpd" : 1420490708340,
+            "a2" : "74.217.87.13",
+            "no" : "test",
             "p2" : 443,
-            "mac1-term-cnt" : 1,
-            "rir2" : "ARIN",
-            "tlsver-termcnt" : 1,
+            "fb1" : "16030100c0010000",
             "psl" : [
                78,
                78,
@@ -89,19 +99,9 @@
                76,
                76
             ],
-            "prot-term" : [
-               "tls",
-               "tcp"
-            ],
-            "mac1-term" : [
-               "b8:ca:3a:8d:c1:87"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-150105",
-               "_type" : "session"
-            }
+            "by1" : 1022,
+            "lp" : 1420490708,
+            "as2" : "AS10913 Internap Network Services Corporation"
          }
       }
    ]

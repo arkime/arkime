@@ -2,85 +2,89 @@
    "packets" : [
       {
          "body" : {
-            "dnsho" : [
-               "flashservice.adobe.com"
+            "as1" : "AS0001 Cool Beans!",
+            "ss" : 1,
+            "ps" : [
+               24,
+               122
             ],
-            "no" : "test",
-            "dnshocnt" : 1,
-            "mac1-term-cnt" : 2,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
+            "db" : 148,
+            "pa1" : 1,
             "pr" : 17,
-            "sl" : 102,
+            "p2" : 53,
+            "fpd" : 1393422583830,
             "psl" : [
                98,
                98
             ],
+            "pa" : 2,
+            "db1" : 74,
+            "a2" : "10.0.0.1",
+            "dnsho" : [
+               "flashservice.adobe.com"
+            ],
             "g2" : "RUS",
+            "mac1-term-cnt" : 2,
+            "no" : "test",
             "db2" : 74,
-            "lp" : 1393422583,
+            "sl" : 102,
+            "by2" : 82,
+            "by1" : 82,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "tacnt" : 2,
+            "by" : 164,
+            "as2" : "AS0000 This is neat",
             "pa2" : 1,
+            "fp" : 1393422583,
+            "mac2-term" : [
+               "00:10:db:ff:26:00"
+            ],
+            "rir1" : "TEST",
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "lpd" : 1393422583932,
+            "fs" : [],
+            "fb1" : "b2b5000000010000",
+            "dnshocnt" : 1,
+            "fb2" : "b2b5800500010000",
+            "p1" : 61912,
+            "a1" : "10.0.0.2",
+            "g1" : "CAN",
             "prot-term-cnt" : 2,
-            "as1" : "AS0001 Cool Beans!",
             "dns" : {
-               "qt-term-cnt" : 1,
-               "qc-term" : [
-                  "IN"
-               ],
                "status-term" : [
                   "REFUSED"
                ],
                "status-term-cnt" : 1,
+               "qc-term" : [
+                  "IN"
+               ],
+               "qt-term-cnt" : 1,
                "qt-term" : [
                   "A"
                ],
                "qc-term-cnt" : 1
             },
-            "fb2" : "b2b5800500010000",
-            "by" : 164,
             "mac2-term-cnt" : 1,
-            "a2" : "10.0.0.1",
-            "g1" : "CAN",
-            "lpd" : 1393422583932,
-            "as2" : "AS0000 This is neat",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "pa1" : 1,
             "mac1-term" : [
                "00:00:5e:00:01:03",
                "88:e0:f3:f1:91:f2"
             ],
-            "a1" : "10.0.0.2",
-            "fb1" : "b2b5000000010000",
-            "db1" : 74,
-            "ps" : [
-               24,
-               122
-            ],
-            "pa" : 2,
-            "p2" : 53,
-            "mac2-term" : [
-               "00:10:db:ff:26:00"
-            ],
-            "by1" : 82,
-            "fs" : [],
-            "fp" : 1393422583,
-            "ss" : 1,
-            "tacnt" : 2,
-            "p1" : 61912,
-            "fpd" : 1393422583830,
-            "db" : 148,
-            "rir1" : "TEST",
-            "by2" : 82
+            "lp" : 1393422583
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140226"
+               "_index" : "tests_sessions-140226",
+               "_type" : "session"
             }
          }
       }

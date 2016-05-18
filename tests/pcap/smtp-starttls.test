@@ -2,9 +2,45 @@
    "packets" : [
       {
          "body" : {
+            "as1" : "AS0000 This is neat",
+            "a1" : "10.0.0.1",
+            "lp" : 1388017125,
+            "a2" : "173.194.68.26",
+            "fp" : 1388017124,
+            "mac1-term-cnt" : 1,
+            "tlsver-termcnt" : 1,
+            "by" : 8403,
+            "fb1" : "45484c4f20787878",
+            "tlscipher-termcnt" : 1,
+            "tlscnt" : 3,
+            "pa" : 36,
+            "p2" : 25,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "fs" : [],
+            "tacnt" : 2,
+            "db" : 6011,
+            "pa1" : 17,
+            "rir2" : "ARIN",
+            "mac2-term-cnt" : 2,
+            "as2" : "AS15169 Google Inc.",
+            "ta" : [
+               "smtp:starttls",
+               "srcip"
+            ],
+            "pa2" : 19,
+            "g2" : "USA",
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "test" : {
-               "number" : [
-                  440713901
+               "string" : [
+                  "16777226:57406,440713901:25"
                ],
                "ip" : [
                   167772161
@@ -12,171 +48,33 @@
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "string" : [
-                  "16777226:57406,440713901:25"
-               ],
                "ip-geo" : [
                   "RUS"
                ],
                "ip-rir" : [
                   ""
+               ],
+               "number" : [
+                  440713901
                ]
             },
-            "db2" : 4627,
-            "db" : 6011,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "no" : "test",
-            "lp" : 1388017125,
-            "a2" : "173.194.68.26",
+            "sl" : 478,
             "ss" : 1,
-            "ta" : [
-               "smtp:starttls",
-               "srcip"
-            ],
-            "pa1" : 17,
             "fpd" : 1388017124762,
-            "fs" : [],
-            "by2" : 5889,
-            "g1" : "RUS",
-            "tlscnt" : 3,
-            "pa2" : 19,
+            "db1" : 1384,
+            "no" : "test",
+            "by1" : 2514,
+            "lpd" : 1388017125239,
             "p1" : 57406,
-            "by" : 8403,
-            "as1" : "AS0000 This is neat",
-            "g2" : "USA",
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
+            "by2" : 5889,
+            "tags-term" : [
+               "srcip",
+               "smtp:starttls"
             ],
             "pr" : 6,
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               419,
-               501,
-               611,
-               693,
-               929,
-               1021,
-               1133,
-               1327,
-               2827,
-               4327,
-               4409,
-               5344,
-               5740,
-               6032,
-               6167,
-               6414,
-               6557,
-               6704,
-               6847,
-               6929,
-               7117,
-               7885,
-               7967,
-               8077,
-               8159,
-               8317,
-               8399,
-               8512,
-               8675,
-               8757,
-               8839,
-               8921
-            ],
-            "prot-term-cnt" : 3,
-            "lpd" : 1388017125239,
-            "fp" : 1388017124,
-            "as2" : "AS15169 Google Inc.",
-            "tlscipher-termcnt" : 1,
-            "pa" : 36,
-            "tacnt" : 2,
-            "sl" : 478,
-            "fb1" : "45484c4f20787878",
-            "a1" : "10.0.0.1",
+            "g1" : "RUS",
+            "db2" : 4627,
             "fb2" : "323230206d782e67",
-            "db1" : 1384,
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "mac2-term-cnt" : 2,
-            "by1" : 2514,
-            "tls" : [
-               {
-                  "notAfter" : 1534824000,
-                  "sCn" : [
-                     "geotrust global ca"
-                  ],
-                  "notBefore" : 1021953600,
-                  "iOn" : "Equifax",
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
-                  "sOn" : "GeoTrust Inc.",
-                  "sn" : "12bbe6",
-                  "diffDays" : 5936
-               },
-               {
-                  "notAfter" : 1428160555,
-                  "sCn" : [
-                     "google internet authority g2"
-                  ],
-                  "notBefore" : 1365174955,
-                  "iOn" : "GeoTrust Inc.",
-                  "iCn" : [
-                     "geotrust global ca"
-                  ],
-                  "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
-                  "sOn" : "Google Inc",
-                  "sn" : "023a69",
-                  "diffDays" : 729
-               },
-               {
-                  "notAfter" : 1410262355,
-                  "sCn" : [
-                     "mx.google.com"
-                  ],
-                  "alt" : [
-                     "aspmx.l.google.com",
-                     "alt1.aspmx.l.google.com",
-                     "alt2.aspmx.l.google.com",
-                     "alt3.aspmx.l.google.com",
-                     "alt4.aspmx.l.google.com",
-                     "gmail-smtp-in.l.google.com",
-                     "alt1.gmail-smtp-in.l.google.com",
-                     "alt2.gmail-smtp-in.l.google.com",
-                     "alt3.gmail-smtp-in.l.google.com",
-                     "alt4.gmail-smtp-in.l.google.com",
-                     "gmr-smtp-in.l.google.com",
-                     "alt1.gmr-smtp-in.l.google.com",
-                     "alt2.gmr-smtp-in.l.google.com",
-                     "alt3.gmr-smtp-in.l.google.com",
-                     "alt4.gmr-smtp-in.l.google.com",
-                     "mx.google.com",
-                     "aspmx2.googlemail.com",
-                     "aspmx3.googlemail.com",
-                     "aspmx4.googlemail.com",
-                     "aspmx5.googlemail.com"
-                  ],
-                  "notBefore" : 1378726355,
-                  "iOn" : "Google Inc",
-                  "altcnt" : 20,
-                  "iCn" : [
-                     "google internet authority g2"
-                  ],
-                  "hash" : "45:15:6a:e7:49:63:40:94:f9:ab:09:1e:f5:a7:33:6d:f3:7b:28:fc",
-                  "sOn" : "Google Inc",
-                  "sn" : "325d8297987d50b0",
-                  "diffDays" : 365
-               }
-            ],
-            "p2" : 25,
-            "mac1-term-cnt" : 1,
-            "rir2" : "ARIN",
-            "tlsver-termcnt" : 1,
             "psl" : [
                90,
                90,
@@ -215,19 +113,125 @@
                82,
                82
             ],
+            "prot-term-cnt" : 3,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               419,
+               501,
+               611,
+               693,
+               929,
+               1021,
+               1133,
+               1327,
+               2827,
+               4327,
+               4409,
+               5344,
+               5740,
+               6032,
+               6167,
+               6414,
+               6557,
+               6704,
+               6847,
+               6929,
+               7117,
+               7885,
+               7967,
+               8077,
+               8159,
+               8317,
+               8399,
+               8512,
+               8675,
+               8757,
+               8839,
+               8921
+            ],
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
+            "tls" : [
+               {
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "sOn" : "GeoTrust Inc.",
+                  "sCn" : [
+                     "geotrust global ca"
+                  ],
+                  "notBefore" : 1021953600,
+                  "diffDays" : 5936,
+                  "iOn" : "Equifax",
+                  "notAfter" : 1534824000,
+                  "sn" : "12bbe6"
+               },
+               {
+                  "iOn" : "GeoTrust Inc.",
+                  "notAfter" : 1428160555,
+                  "sn" : "023a69",
+                  "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
+                  "sCn" : [
+                     "google internet authority g2"
+                  ],
+                  "sOn" : "Google Inc",
+                  "notBefore" : 1365174955,
+                  "diffDays" : 729,
+                  "iCn" : [
+                     "geotrust global ca"
+                  ]
+               },
+               {
+                  "altcnt" : 20,
+                  "sCn" : [
+                     "mx.google.com"
+                  ],
+                  "sOn" : "Google Inc",
+                  "notBefore" : 1378726355,
+                  "diffDays" : 365,
+                  "iCn" : [
+                     "google internet authority g2"
+                  ],
+                  "hash" : "45:15:6a:e7:49:63:40:94:f9:ab:09:1e:f5:a7:33:6d:f3:7b:28:fc",
+                  "notAfter" : 1410262355,
+                  "alt" : [
+                     "aspmx.l.google.com",
+                     "alt1.aspmx.l.google.com",
+                     "alt2.aspmx.l.google.com",
+                     "alt3.aspmx.l.google.com",
+                     "alt4.aspmx.l.google.com",
+                     "gmail-smtp-in.l.google.com",
+                     "alt1.gmail-smtp-in.l.google.com",
+                     "alt2.gmail-smtp-in.l.google.com",
+                     "alt3.gmail-smtp-in.l.google.com",
+                     "alt4.gmail-smtp-in.l.google.com",
+                     "gmr-smtp-in.l.google.com",
+                     "alt1.gmr-smtp-in.l.google.com",
+                     "alt2.gmr-smtp-in.l.google.com",
+                     "alt3.gmr-smtp-in.l.google.com",
+                     "alt4.gmr-smtp-in.l.google.com",
+                     "mx.google.com",
+                     "aspmx2.googlemail.com",
+                     "aspmx3.googlemail.com",
+                     "aspmx4.googlemail.com",
+                     "aspmx5.googlemail.com"
+                  ],
+                  "sn" : "325d8297987d50b0",
+                  "iOn" : "Google Inc"
+               }
+            ],
             "prot-term" : [
                "tls",
                "smtp",
                "tcp"
-            ],
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
             ]
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131226",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-131226"
             }
          }
       }

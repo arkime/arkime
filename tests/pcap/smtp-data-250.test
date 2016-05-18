@@ -1,81 +1,54 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131206"
+            }
+         },
          "body" : {
-            "edstcnt" : 1,
+            "a2" : "64.12.168.40",
+            "emv" : [
+               "1.0"
+            ],
             "test" : {
-               "number" : [
-                  682101824
+               "string" : [
+                  "16777226:3293,682101824:587"
                ],
-               "ip" : [
-                  167772161
+               "ip-rir" : [
+                  ""
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "string" : [
-                  "16777226:3293,682101824:587"
+               "ip" : [
+                  167772161
                ],
                "ip-geo" : [
                   "RUS"
                ],
-               "ip-rir" : [
-                  ""
+               "number" : [
+                  682101824
                ]
             },
-            "db2" : 835,
-            "db" : 1898,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "esrccnt" : 1,
+            "g2" : "USA",
+            "db1" : 1063,
             "esrc" : [
                "12345678@aol.com"
             ],
-            "ectcnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:02",
-               "80:71:1f:82:cf:c6"
-            ],
-            "eid" : [
-               "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
-            ],
+            "rir2" : "ARIN",
+            "a1" : "10.0.0.1",
             "no" : "test",
-            "lp" : 1386338052,
-            "emvcnt" : 1,
-            "a2" : "64.12.168.40",
-            "ss" : 1,
-            "ect" : [
-               "text/plain; charset=utf-8"
-            ],
-            "esub" : [
-               "Re: xxx xxx xxxxx xxxxxx..."
-            ],
-            "user" : [
-               "12345678@aol.com"
-            ],
-            "ta" : [
-               "smtp:authplain",
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "pa1" : 14,
-            "fpd" : 1386338020379,
-            "fs" : [],
-            "by2" : 1753,
             "g1" : "RUS",
-            "pa2" : 16,
-            "p1" : 3293,
-            "by" : 3620,
-            "as1" : "AS0000 This is neat",
-            "ehh" : [
-               "content-type",
-               "message-id",
-               "mime-version",
-               "from",
-               "to",
-               "content-transfer-encoding",
-               "date",
-               "subject"
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
             ],
-            "ehhcnt" : 8,
-            "g2" : "USA",
             "pr" : 6,
             "ps" : [
                24,
@@ -109,31 +82,73 @@
                3972,
                4048
             ],
+            "esubcnt" : 1,
+            "usercnt" : 1,
+            "mac2-term" : [
+               "00:00:5e:00:01:02",
+               "80:71:1f:82:cf:c6"
+            ],
+            "by" : 3620,
+            "ss" : 1,
+            "ectcnt" : 1,
+            "lp" : 1386338052,
+            "as1" : "AS0000 This is neat",
+            "p1" : 3293,
+            "p2" : 587,
+            "pa2" : 16,
+            "db" : 1898,
+            "fb1" : "45484c4f206c6f63",
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "content-transfer-encoding",
+               "date",
+               "subject"
+            ],
             "prot-term-cnt" : 2,
-            "lpd" : 1386338052390,
-            "fp" : 1386338020,
+            "ta" : [
+               "smtp:authplain",
+               "smtp:statuscode:250",
+               "srcip"
+            ],
+            "eid" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
+            ],
             "as2" : "AS1668 AOL Transit Data Network",
-            "pa" : 30,
+            "mac1-term-cnt" : 1,
+            "user" : [
+               "12345678@aol.com"
+            ],
+            "tags-term" : [
+               "smtp:statuscode:250",
+               "smtp:authplain",
+               "srcip"
+            ],
+            "emvcnt" : 1,
+            "mac2-term-cnt" : 2,
+            "fb2" : "3232302d6d74616f",
+            "sl" : 32010,
+            "lpd" : 1386338052390,
+            "edstcnt" : 1,
             "tacnt" : 3,
+            "by2" : 1753,
+            "pa" : 30,
+            "db2" : 835,
+            "fp" : 1386338020,
+            "esub" : [
+               "Re: xxx xxx xxxxx xxxxxx..."
+            ],
+            "fs" : [],
+            "pa1" : 14,
+            "fpd" : 1386338020379,
             "edst" : [
                "xxxx.xxxxxx@xxxxx.com"
             ],
-            "sl" : 32010,
-            "fb1" : "45484c4f206c6f63",
-            "esubcnt" : 1,
-            "a1" : "10.0.0.1",
-            "fb2" : "3232302d6d74616f",
-            "db1" : 1063,
-            "usercnt" : 1,
-            "mac2-term-cnt" : 2,
             "by1" : 1867,
-            "esrccnt" : 1,
-            "emv" : [
-               "1.0"
-            ],
-            "p2" : 587,
-            "mac1-term-cnt" : 1,
-            "rir2" : "ARIN",
+            "ehhcnt" : 8,
             "psl" : [
                82,
                82,
@@ -166,20 +181,10 @@
                76,
                76
             ],
-            "prot-term" : [
-               "smtp",
-               "tcp"
+            "ect" : [
+               "text/plain; charset=utf-8"
             ],
-            "eidcnt" : 1,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131206",
-               "_type" : "session"
-            }
+            "eidcnt" : 1
          }
       }
    ]

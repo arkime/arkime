@@ -2,30 +2,15 @@
    "packets" : [
       {
          "body" : {
-            "http" : {
-               "statuscode" : [
-                  302
-               ],
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "statuscode-cnt" : 1
-            },
-            "db" : 1361,
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 5.1; rv:25.0) Gecko/20100101 Firefox/25.0"
+            ],
+            "pa1" : 8,
+            "hmd5" : [
+               "222315d36e1313774cb1c2f0eb06864f"
+            ],
+            "lpd" : 1385474412431,
             "by" : 2133,
-            "hsver" : [
-               "1.1"
-            ],
-            "p2" : 21477,
-            "by1" : 859,
-            "mac1-term" : [
-               "00:0b:45:b7:16:c0"
-            ],
             "psl" : [
                78,
                78,
@@ -42,9 +27,24 @@
                70,
                70
             ],
-            "pa1" : 8,
-            "db2" : 942,
-            "db1" : 419,
+            "http" : {
+               "statuscode" : [
+                  302
+               ],
+               "method-term" : [
+                  "GET"
+               ],
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1
+            },
+            "no" : "test",
+            "hsver" : [
+               "1.1"
+            ],
             "hh1" : [
                "http:header:accept",
                "http:header:accept-encoding",
@@ -54,85 +54,38 @@
                "http:header:host",
                "http:header:user-agent"
             ],
-            "fb2" : "0500050000010a00",
-            "hh1cnt" : 7,
-            "g2" : "CAN",
-            "fs" : [],
-            "ss" : 1,
-            "hmd5" : [
-               "222315d36e1313774cb1c2f0eb06864f"
+            "hh2cnt" : 11,
+            "ta" : [
+               "dstip",
+               "srcip"
             ],
-            "no" : "test",
-            "by2" : 1274,
-            "sockspo" : 80,
-            "hmd5cnt" : 1,
+            "fs" : [],
+            "hdvercnt" : 1,
             "as1" : "AS0000 This is neat",
+            "db2" : 942,
+            "as2" : "AS0001 Cool Beans!",
+            "uscnt" : 1,
+            "mac1-term" : [
+               "00:0b:45:b7:16:c0"
+            ],
+            "hsvercnt" : 1,
+            "hcval-term-cnt" : 1,
+            "by1" : 859,
             "hcval-term" : [
                "ID=xxxxxxxxxxxxxxxx:TM=xxxxxxxxxx:LM=xxxxxxxxxx:S=xxxxxxxxxxxx_6oz"
             ],
+            "lp" : 1385474412,
+            "a1" : "10.0.0.1",
+            "fb2" : "0500050000010a00",
+            "a2" : "10.0.0.2",
             "hdver" : [
                "1.1"
             ],
-            "hckey-term" : [
-               "PREF"
+            "us" : [
+               "//www.google.com/"
             ],
-            "fpd" : 1385474294492,
-            "p1" : 1637,
-            "pa2" : 6,
-            "prot-term-cnt" : 3,
-            "pr" : 6,
-            "test" : {
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:1637,33554442:21477"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "rir2" : "TEST",
-            "hocnt" : 1,
-            "ho" : [
-               "www.google.com"
-            ],
-            "hdvercnt" : 1,
-            "sl" : 117939,
-            "as2" : "AS0001 Cool Beans!",
-            "mac2-term" : [
-               "00:26:88:df:17:c7",
-               "00:00:5e:00:01:01"
-            ],
-            "a1" : "10.0.0.1",
-            "tacnt" : 2,
-            "lpd" : 1385474412431,
-            "pa" : 14,
-            "hckey-term-cnt" : 1,
-            "socksho" : "www.google.com",
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 5.1; rv:25.0) Gecko/20100101 Firefox/25.0"
-            ],
-            "fb1" : "050100050100030e",
-            "fp" : 1385474294,
-            "uscnt" : 1,
-            "hcval-term-cnt" : 1,
             "mac2-term-cnt" : 2,
-            "hpath" : [
-               "/"
-            ],
-            "g1" : "RUS",
-            "hsvercnt" : 1,
-            "lp" : 1385474412,
+            "db1" : 419,
             "hh2" : [
                "http:header:alternate-protocol",
                "http:header:cache-control",
@@ -146,6 +99,46 @@
                "http:header:x-frame-options",
                "http:header:x-xss-protection"
             ],
+            "hh1cnt" : 7,
+            "ss" : 1,
+            "uacnt" : 1,
+            "hocnt" : 1,
+            "hckey-term" : [
+               "PREF"
+            ],
+            "pa" : 14,
+            "db" : 1361,
+            "fb1" : "050100050100030e",
+            "g1" : "RUS",
+            "hpath" : [
+               "/"
+            ],
+            "test" : {
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:1637,33554442:21477"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ]
+            },
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "hmd5cnt" : 1,
             "ps" : [
                24,
                102,
@@ -162,33 +155,44 @@
                5141,
                5211
             ],
-            "us" : [
-               "//www.google.com/"
+            "sockspo" : 80,
+            "pr" : 6,
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
+            "mac1-term-cnt" : 1,
+            "prot-term-cnt" : 3,
+            "fpd" : 1385474294492,
             "hpathcnt" : 1,
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
+            "hckey-term-cnt" : 1,
+            "rir2" : "TEST",
+            "by2" : 1274,
+            "p2" : 21477,
+            "mac2-term" : [
+               "00:26:88:df:17:c7",
+               "00:00:5e:00:01:01"
             ],
+            "p1" : 1637,
+            "socksho" : "www.google.com",
+            "sl" : 117939,
+            "pa2" : 6,
+            "tacnt" : 2,
+            "fp" : 1385474294,
+            "ho" : [
+               "www.google.com"
+            ],
+            "g2" : "CAN",
             "hdrs" : {
                "hres-location" : [
                   "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
                ]
-            },
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "uacnt" : 1,
-            "mac1-term-cnt" : 1,
-            "a2" : "10.0.0.2",
-            "hh2cnt" : 11
+            }
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131126"
+               "_index" : "tests_sessions-131126",
+               "_type" : "session"
             }
          }
       }

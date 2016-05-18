@@ -50,6 +50,7 @@ extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
 
 LOCAL int               tagsField = -1;
+LOCAL int               tagsStringField = -1;
 
 LOCAL uint32_t          nextFileNum;
 LOCAL MOLOCH_LOCK_DEFINE(nextFileNum);
@@ -109,14 +110,17 @@ MolochIpInfo_t *moloch_db_get_local_ip(MolochSession_t *session, struct in6_addr
     if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
         return 0;
 
-    if (tagsField == -1)
+    if (tagsField == -1) {
         tagsField = moloch_field_by_db("ta");
+        tagsStringField = moloch_field_by_db("tags-term");
+    }
 
     MolochIpInfo_t *ii = node->data;
     int t;
 
     for (t = 0; t < ii->numtags; t++) {
         moloch_field_int_add(tagsField, session, ii->tags[t]);
+        moloch_field_string_add(tagsStringField, session, ii->tagsStr[t], -1, TRUE);
     }
 
     return ii;
@@ -134,14 +138,17 @@ MolochIpInfo_t *moloch_db_get_local_ip4(MolochSession_t *session, uint32_t ip)
     if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
         return 0;
 
-    if (tagsField == -1)
+    if (tagsField == -1) {
         tagsField = moloch_field_by_db("ta");
+        tagsStringField = moloch_field_by_db("tags-term");
+    }
 
     MolochIpInfo_t *ii = node->data;
     int t;
 
     for (t = 0; t < ii->numtags; t++) {
         moloch_field_int_add(tagsField, session, ii->tags[t]);
+        moloch_field_string_add(tagsStringField, session, ii->tagsStr[t], -1, TRUE);
     }
 
     return ii;
