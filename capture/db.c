@@ -1230,7 +1230,11 @@ void moloch_db_update_stats(int n)
     }
 
     const uint64_t cursec = currentTime.tv_sec;
-    const uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000);
+    uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec)*1000 + (currentTime.tv_usec/1000 - lastTime[n].tv_usec/1000);
+
+    // Prevent FPE
+    if (diffms == 0)
+        diffms = 1;
 
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
@@ -1271,9 +1275,9 @@ void moloch_db_update_stats(int n)
         "\"totalK\": %" PRIu64 ", "
         "\"totalSessions\": %" PRIu64 ", "
         "\"totalDropped\": %" PRIu64 ", "
-        "\"tcpSessions\": %u, " 
-        "\"udpSessions\": %u, " 
-        "\"icmpSessions\": %u, " 
+        "\"tcpSessions\": %u, "
+        "\"udpSessions\": %u, "
+        "\"icmpSessions\": %u, "
         "\"deltaPackets\": %" PRIu64 ", "
         "\"deltaBytes\": %" PRIu64 ", "
         "\"deltaSessions\": %" PRIu64 ", "
