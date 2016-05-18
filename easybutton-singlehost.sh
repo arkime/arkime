@@ -26,7 +26,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 
-ES=2.3.2
+ES=2.2.2
 NODEJS=0.10.45
 INSTALL_DIR=$PWD
 
@@ -140,8 +140,9 @@ fi
 echo "MOLOCH: Creating install area"
 mkdir -p ${TDIR}/data
 mkdir -p ${TDIR}/logs
+mkdir -p ${TDIR}/plugins
 mkdir -p ${TDIR}/raw
-mkdir -p ${TDIR}/etc
+mkdir -p ${TDIR}/etc/scripts
 mkdir -p ${TDIR}/bin
 mkdir -p ${TDIR}/db
 
@@ -157,8 +158,13 @@ fi
 cd ${TDIR}
 tar xfz ${INSTALL_DIR}/thirdparty/elasticsearch-${ES}.tar.gz
 cd elasticsearch-${ES}
-./bin/plugin -install mobz/elasticsearch-head
-./bin/plugin -install lukas-vlcek/bigdesk
+./bin/plugin install mobz/elasticsearch-head
+./bin/plugin install lukas-vlcek/bigdesk
+
+cd ..
+if [ ! -f "etc/logging.yml" ]; then
+    cp elasticsearch-${ES}/config/logging.yml etc/logging.yml
+fi
 
 
 #make
