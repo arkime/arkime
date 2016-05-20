@@ -130,7 +130,7 @@ void parse_args(int argc, char **argv)
         char *dot = strchr(config.hostName, '.');
         if (!dot) {
             char domainname[256];
-            if (getdomainname(domainname, 255) == 0 && strlen(domainname) > 0) {
+            if (getdomainname(domainname, 255) == 0 && strlen(domainname) > 0 && strcmp(domainname, "(none)") != 0) {
                 g_strlcat(config.hostName, ".", 255);
                 g_strlcat(config.hostName, domainname, 255);
             } else {
