@@ -808,6 +808,42 @@ $(document).ready(function() {
     });
     return false;
   });
+  
+  //////////////////////////////////////////////////////////////////////////////////
+  // Reports
+  //////////////////////////////////////////////////////////////////////////////////
+  $(".queryReport").click(function (e) {
+    var that = this;
+    showActionsDialog({
+      submit: "Download report",
+      title: "Report - " + $(this).attr("label"),
+      input: "Filename",
+      query: "Export",
+      defaultInput: $(this).attr("label") + ".html"
+    }, function(qs, ids, filename) {
+      if (ids) {
+        qs.push({name: "ids", value: ids});
+      }
+      window.location = "queryReport/" + $(that).attr("data-filename") + "/" + filename + "?" + $.param(qs);
+    });
+    return false;
+  });
+  
+  $(".sessionReport").click(function (e) {
+    var that = this;
+    showActionsDialog({
+      submit: "Download report",
+      title: "Report - " + $(this).attr("label"),
+      input: "Filename",
+      query: "Export",
+      defaultInput: $(this).attr("label") + ".html"
+    }, function(qs, ids, filename) {
+      qs.push({name: "ids", value: $(".sessionDetail").attr("sessionid")});
+
+      window.location = "sessionReport/" + $(that).attr("data-filename") + "/" + filename + "?" + $.param(qs);
+    });
+    return false;
+  });
 
   //////////////////////////////////////////////////////////////////////////////////
   // Send Session Dialog

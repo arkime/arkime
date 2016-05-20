@@ -114,6 +114,63 @@ block content
       button#change Change Password
   p
   hr
+  h2 Report Fragments
+  p Report fragments enable to create custom reports for session queries.
+  h3 Available Fragments
+  table(cellpadding="3", id="existingFragments")
+    thead
+      tr
+        th ID
+        th Name
+        th File name
+        th Type
+        th Download
+        th Delete
+    tbody
+    - var keys = Object.keys(user.fragments.query).sort()
+    each key in keys
+      tr(data-fragment-name="#{user.fragments.query[key].identifier}", data-fragment-type="#{user.fragments.query[key].type}")
+        td #{user.fragments.query[key].identifier}
+        td #{user.fragments.query[key].name}
+        td #{user.fragments.query[key].filename}
+        td.capitalize #{user.fragments.query[key].type}
+        td 
+          a(href="/downloadFragment?name=#{user.fragments.query[key].identifier}&type=#{user.fragments.query[key].type}" download="#{user.fragments.query[key].filename}") Download
+        td 
+          button.deleteFragment Delete
+    - var keys = Object.keys(user.fragments.session).sort()
+    each key in keys
+      tr(data-fragment-name="#{user.fragments.session[key].identifier}", data-fragment-type="#{user.fragments.session[key].type}")
+        td #{user.fragments.session[key].identifier}
+        td #{user.fragments.session[key].name}
+        td #{user.fragments.session[key].filename}
+        td.capitalize #{user.fragments.session[key].type}
+        td 
+          a(href="/downloadFragment?name=#{user.fragments.session[key].identifier}&type=#{user.fragments.session[key].type}" download="#{user.fragments.session[key].filename}") Download
+        td 
+          button.deleteFragment Delete
+  form(action='/uploadFragment', id='uploadReportFragment', method='post', enctype="multipart/form-data")
+    h3 New Fragment
+    p Fragment identifier must not contain spaces. Must be unique (new upload with the same identifier replaces the old fragment of the same type).
+    label(for='identifier') Identifier:
+    input(type='text', id='identifier', required='required', name='identifier')
+    br
+    label(for='fragmentName') Fragment name:
+    input(type='text', id='fragmentName', required='required', name='fragmentName', pattern='.{3,20}')
+    br
+    label Fragment type:
+    input(type='radio', id='fragmentTypeSession', name='fragmentType', value='session')
+    label(for='fragmentTypeSession', class='fragmentTypeLabel') Session
+    input(type='radio', id='fragmentTypeQuery', name='fragmentType', value='query')
+    label(for='fragmentTypeQuery', class='fragmentTypeLabel', checked="checked") Query
+    br
+    label(for='fragment') Jade fragment:
+    input(type='file', id='fragment', required='required', accept='.jade', name='fragment')
+    br
+    br
+    center
+      input(type='submit', value='Upload')
+  hr
   h2 Cron Queries
   p Allow queries to be run periodically that can perform actions on sessions that match the queries.  The query runs against sessions delayed by 90 second to make sure all updates have been completed for that session.
   if (suser.queries)
@@ -390,6 +447,26 @@ block content
         }
       });
       return false;
+    });
+    
+    $(document).on('click', '.deleteFragment', function (e) {
+      var that = $(this);
+      var tableRow = $(this).closest("tr");
+      $.ajax({
+        "dataType": 'json',
+        "type": "POST",
+        "url": "#{basePath}deleteFragment",
+        "data": [{name: "key", value: tableRow.attr("data-fragment-name")},
+                 {name: "type", value: tableRow.attr("data-fragment-type")},
+                 {name: "token", value: "#{token}"}],
+        "success": function(data) {
+          if (!data.success) {
+            alert(data.text);
+          } else {
+            tableRow.remove();
+          }
+        }
+      });
     });
 
     function saveCQRow(row) {

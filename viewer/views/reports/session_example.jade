@@ -1,0 +1,93 @@
+table
+    tbody
+        tr
+            td First Packet
+            td.toNormalizedDate #{sessions.fp}
+        tr
+            td Last Packet
+            td.toNormalizedDate #{sessions.lp}
+        tr
+            td Src IP
+            td #{sessions.a1}
+        tr
+            td Src Port
+            td #{sessions.p1}
+        tr
+            td Dest IP
+            td #{sessions.a2}
+        tr 
+            td Dest Port
+            td #{sessions.p2}
+
+table#textpacket
+  tr
+    th.textcol.srccol Source
+    th.textcol.dstcol Destination
+
+  each item, i in data
+    tr
+      if item.key == sessions.a1 + ":" + sessions.p1
+        td.sessionsrc
+          if (item.ts)
+            span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.data}")
+          |!{item.html}
+        td
+      else
+        td
+        td.sessiondst
+          if (item.ts)
+            span.sessionDetailTS(ts="#{item.ts}", bytes="#{item.data}")
+          |!{item.html}
+
+script(type='text/javascript').
+    document.addEventListener("DOMContentLoaded", function(event) {
+        //Normalize date fields
+        var dateFields = document.querySelectorAll('.toNormalizedDate');
+        [].forEach.call(dateFields, function (field) {
+            var date = new Date(field.innerText * 1000);
+            field.innerText = date.toString();
+        }); 
+        
+        //Make data human readable
+        var bufferFields = document.querySelectorAll('.sessionDetailTS');
+        [].forEach.call(bufferFields, function (item) {
+            if (item.getAttribute("ts")) {
+                var val = +item.getAttribute("ts");
+                var str = dateString(val/1000, " ") + "." + fourDigitString(val%1000);
+                str += " <span style='float:right;'>" + item.getAttribute("bytes") + "</span>";
+                item.innerHTML = str + "<hr>";
+            }
+        });
+    });
+     
+    function fourDigitString(value) {
+      if (value < 10) {
+        return ("000" + value);
+      }
+      if (value < 100) {
+        return ("00" + value);
+      }
+      if (value < 1000) {
+        return ("0" + value);
+      }
+      return "" + value;
+    }
+    
+    function twoDigitString(value) {
+      return (value < 10) ? ("0" + value) : value.toString();
+    }
+    
+    function dateString(seconds, sep) {
+      var d = new Date(seconds*1000);
+      return d.getUTCFullYear() +
+              "/" +
+              twoDigitString(d.getUTCMonth()+ 1) +
+              "/" +
+              twoDigitString(d.getUTCDate()) +
+              sep +
+              twoDigitString(d.getUTCHours()) +
+              ":" +
+              twoDigitString(d.getUTCMinutes()) +
+              ":" +
+              twoDigitString(d.getUTCSeconds());
+    }

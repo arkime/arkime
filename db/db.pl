@@ -1748,6 +1748,10 @@ sub usersUpdate
       tableStates : {
         type : "object",
         dynamic: "true"
+      },
+      fragments : {
+        type : "object",
+        dynamic: "true"
       }
     }
   }
