@@ -163,7 +163,7 @@ Building Capture
    - Or if you want build yourself, or use some already installed packages then
      here are the pieces you need:
 
-     + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.30 or
+     + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.40 or
        higher (2.47.4 is recommended)::
 
             wget http://ftp.gnome.org/pub/gnome/sources/glib/2.47/glib-2.47.4.tar.xz

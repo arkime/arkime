@@ -583,9 +583,18 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         HASH_ADD(i_, *(field->ihash), (void *)(long)i, hint);
         return TRUE;
     case MOLOCH_FIELD_TYPE_IP_GHASH:
-        field->jsonSize += 100;
+        if (!g_hash_table_insert(field->ghash, (void *)(long)i, NULL)) {
+            field->jsonSize -= 13;
+            return FALSE;
+        } else {
+            field->jsonSize += 100;
+            return TRUE;
+        }
     case MOLOCH_FIELD_TYPE_INT_GHASH:
-        g_hash_table_insert(field->ghash, (void *)(long)i, NULL);
+        if (!g_hash_table_insert(field->ghash, (void *)(long)i, NULL)) {
+            field->jsonSize -= 13;
+            return FALSE;
+        }
         return TRUE;
     default:
         LOG("Not a int %s", config.fields[pos]->dbField);

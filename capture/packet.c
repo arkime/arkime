@@ -554,7 +554,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
             }
         }
 
-        if (pcapFileHeader.linktype == 1 && session->firstBytesLen[packet->direction] < 8) {
+        if (pcapFileHeader.linktype == 1 && session->firstBytesLen[packet->direction] < 8 && session->packets[packet->direction] < 10) {
             const uint8_t *pcapData = packet->pkt;
             char str1[20];
             char str2[20];
