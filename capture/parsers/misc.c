@@ -115,6 +115,11 @@ void user_classify(MolochSession_t *session, const unsigned char *data, int len,
     moloch_field_string_add(userField, session, (char*)data+5, i-5, TRUE);
 }
 /******************************************************************************/
+void thrift_classify(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    moloch_session_add_protocol(session, "thrift");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", NULL, 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, bt_classify);
@@ -154,6 +159,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("jabber", NULL, 0, (unsigned char*)"<?xml", 5, jabber_classify);
 
     moloch_parsers_classifier_register_tcp("user", NULL, 0, (unsigned char*)"USER ", 5, user_classify);
+
+    moloch_parsers_classifier_register_tcp("thrift", NULL, 0, (unsigned char*)"\x80\x01\x00\x01\x00\x00\x00", 7, thrift_classify);
 
     userField = moloch_field_by_db("user");
 }

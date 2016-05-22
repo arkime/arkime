@@ -10,6 +10,7 @@
   - capture - new db field tags-term with tags in text format
   - capture - fixed FPE crash in stats (issue #475)
   - capture - calculate jsonSize better (issue #476)
+  - capture - basic thrift detection
 
 0.14.0 2016/05/08
   - NOTICE: libnids is no longer required
