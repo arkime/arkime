@@ -27,6 +27,8 @@ function WISESource (api, section) {
   var self = this;
   self.api = api;
   self.section = section;
+  self.view = "";
+  self.shortcuts = {};
 
   ["excludeDomains", "excludeEmails"].forEach(function(type) {
     var items = api.getConfig(section, type);
@@ -84,21 +86,27 @@ WISESource.prototype.parseCSV = function (body, setCb, endCb) {
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.parseFieldDef = function(line) {
+  if (line[0] === "#") {
+    line = line.substring(1);
+  }
+
+  if (line.lastIndexOf('field:',0) === 0) {
+    var pos = this.api.addField(line);
+    var match = line.match(/shortcut:([^;]+)/);
+    if (match) {
+      this.shortcuts[match[1]] = pos;
+    }
+  } else if (line.lastIndexOf('view:',0) === 0) {
+      this.view += line.substring(6) + "\n";
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseTagger = function(body, setCb, endCb) {
   var lines = body.toString().split("\n");
-  var shortcuts = {};
-  var view = "";
   for (var l = 0, llen = lines.length; l < llen; l++) {
     if (lines[l][0] === "#") {
-      if (lines[l].lastIndexOf('#field:',0) === 0) {
-        var pos = this.api.addField(lines[l].substring(1));
-        var match = lines[l].match(/shortcut:([^;]+)/);
-        if (match) {
-          shortcuts[match[1]] = pos;
-        }
-      } else if (lines[l].lastIndexOf('#view:',0) === 0) {
-        view += lines[l].substring(6) + "\n";
-      }
+      this.parseFieldDef(lines[l]);
       continue;
     }
 
@@ -114,8 +122,8 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
         console.log("WARNING -", this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
         continue;
       }
-      if (shortcuts[kv[0]] !== undefined) {
-        args.push(shortcuts[kv[0]]);
+      if (this.shortcuts[kv[0]] !== undefined) {
+        args.push(this.shortcuts[kv[0]]);
       } else if (WISESource.field2Pos[kv[0]]) {
         args.push(WISESource.field2Pos[kv[0]]);
       } else {
@@ -125,8 +133,32 @@ WISESource.prototype.parseTagger = function(body, setCb, endCb) {
     }
     setCb(parts[0], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
   }
-  if (view !== "") {
-    this.api.addView(this.section, view);
+  if (this.view !== "") {
+    this.api.addView(this.section, this.view);
+  }
+  endCb(null);
+};
+//////////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.parseJSON = function (body, setCb, endCb) {
+  var self = this;
+  var json = JSON.parse(body);
+
+  if (self.keyColumn === undefined) {
+    return endCb("No keyColumn set");
+  }
+
+  for(var i = 0; i < json.length; i++) {
+    var key = json[i][self.keyColumn];
+    var args = [];
+    if (key === undefined)
+      continue;
+    for (var k in self.shortcuts) {
+      if (json[i][k] !== undefined) {
+        args.push(self.shortcuts[k]);
+        args.push(json[i][k]);
+      }
+    }
+    setCb(key, {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
   }
   endCb(null);
 };

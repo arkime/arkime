@@ -30,12 +30,33 @@ function FileSource (api, section) {
 
   this.file    = api.getConfig(section, "file");
   this.column  = +api.getConfig(section, "column", 0);
+  this.keyColumn  = api.getConfig(section, "keyColumn", 0);
   this.type    = api.getConfig(section, "type");
   this.format  = api.getConfig(section, "format", "csv");
   if (this.type === "ip") {
     this.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
   } else {
     this.cache = new HashTable();
+  }
+  var fields = api.getConfig(section, "fields");
+  if (fields !== undefined) {
+    fields = fields.split("\\n");
+    for (var i = 0; i < fields.length; i++) {
+      this.parseFieldDef(fields[i]);
+    }
+    if (this.view !== "") {
+      this.api.addView(this.section, this.view);
+    }
+  }
+  var view = api.getConfig(section, "view");
+  if (view !== undefined) {
+    view = view.split("\\n");
+    for (var i = 0; i < view.length; i++) {
+      this.parseFieldDef(view[i]);
+    }
+    if (this.view !== "") {
+      this.api.addView(this.section, this.view);
+    }
   }
 }
 util.inherits(FileSource, wiseSource);
@@ -127,21 +148,23 @@ FileSource.prototype.init = function() {
 
   var tagsField = this.api.addField("field:tags");
   var tags = this.api.getConfig(this.section, "tags");
-  if (!tags) {
-    console.log("FILE - ERROR not loading", this.section, "since no tags specified in config file");
-    return;
+  if (tags) {
+    var args = [];
+    tags.split(",").forEach(function (part) {
+      args.push(tagsField, part);
+    });
+    this.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+  } else {
+    this.result = wiseSource.emptyResult;
   }
-  var args = [];
-  tags.split(",").forEach(function (part) {
-    args.push(tagsField, part);
-  });
-  this.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
 
   if (this.format === "csv") {
     this.parse = this.parseCSV;
   } else if (this.format === "tagger") {
     this.parse = this.parseTagger;
+  } else if (this.format === "json") {
+    this.parse = this.parseJSON;
   } else {
     console.log("FILE - ERROR not loading", this.section, "unknown data format", this.format);
     return;
