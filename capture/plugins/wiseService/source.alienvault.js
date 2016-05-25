@@ -34,6 +34,10 @@ AlienVaultSource.prototype.parseFile = function()
 {
   var self = this;
   var parser = csv.parse({delimiter: "#"}, function(err, data) {
+    if (err) {
+      console.log("Alien Vault - Couldn't parse csv", err);
+      return;
+    }
     var count = 0;
     self.ips = {};
     for (var i = 0; i < data.length; i++) {

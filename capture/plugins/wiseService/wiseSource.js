@@ -98,7 +98,7 @@ WISESource.prototype.parseFieldDef = function(line) {
       this.shortcuts[match[1]] = pos;
     }
   } else if (line.lastIndexOf('view:',0) === 0) {
-      this.view += line.substring(6) + "\n";
+      this.view += line.substring(5) + "\n";
   }
 }
 //////////////////////////////////////////////////////////////////////////////////

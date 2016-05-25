@@ -30,6 +30,7 @@ function URLSource (api, section) {
   var self = this;
 
   self.url     = api.getConfig(section, "url");
+  self.reload  = +api.getConfig(section, "reload", -1)
   self.column  = +api.getConfig(section, "column", 0);
   this.keyColumn  = api.getConfig(section, "keyColumn", 0);
   self.type    = api.getConfig(section, "type");
@@ -56,19 +57,15 @@ function URLSource (api, section) {
     for (var i = 0; i < fields.length; i++) {
       this.parseFieldDef(fields[i]);
     }
-    if (this.view !== "") {
-      this.api.addView(this.section, this.view);
-    }
   }
+
   var view = api.getConfig(section, "view");
   if (view !== undefined) {
-    view = view.split("\\n");
-    for (var i = 0; i < view.length; i++) {
-      this.parseFieldDef(view[i]);
-    }
-    if (this.view !== "") {
-      this.api.addView(this.section, this.view);
-    }
+    this.view = view.replace(/\\n/g, "\n");
+  }
+
+  if (this.view !== "") {
+    this.api.addView(this.section, this.view);
   }
 }
 util.inherits(URLSource, wiseSource);
@@ -195,6 +192,9 @@ URLSource.prototype.init = function() {
 
   this.api.addSource(this.section, this);
   setImmediate(this.load.bind(this));
+  if (this.reload > 0) {
+    setInterval(this.load.bind(this), this.reload*1000*60);
+  }
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {

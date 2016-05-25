@@ -36,6 +36,11 @@ EmergingThreatsSource.prototype.parseCategories = function(fn)
 {
   var self = this;
   var parser = csv.parse(function(err, data) {
+    if (err) {
+      console.log("Emerging Threats - Couldn't parse csv", err);
+      return;
+    }
+
     self.categories = {};
     for (var i = 0; i < data.length; i++) {
       self.categories[data[i][0]] = data[i][1];

@@ -38,25 +38,22 @@ function FileSource (api, section) {
   } else {
     this.cache = new HashTable();
   }
+
   var fields = api.getConfig(section, "fields");
   if (fields !== undefined) {
     fields = fields.split("\\n");
     for (var i = 0; i < fields.length; i++) {
       this.parseFieldDef(fields[i]);
     }
-    if (this.view !== "") {
-      this.api.addView(this.section, this.view);
-    }
   }
+
   var view = api.getConfig(section, "view");
   if (view !== undefined) {
-    view = view.split("\\n");
-    for (var i = 0; i < view.length; i++) {
-      this.parseFieldDef(view[i]);
-    }
-    if (this.view !== "") {
-      this.api.addView(this.section, this.view);
-    }
+    this.view = view.replace(/\\n/g, "\n");
+  }
+
+  if (this.view !== "") {
+    this.api.addView(this.section, this.view);
   }
 }
 util.inherits(FileSource, wiseSource);
