@@ -33,7 +33,7 @@ util.inherits(AlienVaultSource, wiseSource);
 AlienVaultSource.prototype.parseFile = function()
 {
   var self = this;
-  var parser = csv.parse({delimiter: "#"}, function(err, data) {
+  var parser = csv.parse({delimiter: "#", skip_empty_lines:true}, function(err, data) {
     if (err) {
       console.log("Alien Vault - Couldn't parse csv", err);
       return;
