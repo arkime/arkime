@@ -223,18 +223,28 @@ app.post("/get", function(req, res) {
         console.log("ERROR", name, query, e);
       }
       async.map(internals[internals.funcNames[query.type] + "s"], function(src, cb) {
+        if (req.timedout) {
+          return cb("Timed out " + internals.type2Name[query.type] + " " + query.value + " " + src.section);
+        }
         if (internals.source_allowed[name](src, query.value)) {
           src[internals.funcNames[query.type]](query.value, cb);
         } else {
           setImmediate(cb, undefined);
         }
       }, function (err, results) {
+        if (err || req.timedout) {
+          return cb(err || "Timed out " + internals.type2Name[query.type] + " " + query.value);
+        }
         if (internals.debug > 2) {
           console.log("RESULT", internals.funcNames[query.type], query.value, wiseSource.result2Str(wiseSource.combineResults(results)));
         }
         cb(null, wiseSource.combineResults(results));
       });
     }, function (err, results) {
+      if (err || req.timedout) {
+        console.log("Error", err || "Timed out" );
+        return;
+      }
       var buf = new Buffer(8);
       buf.writeUInt32BE(internals.fieldsTS, 0);
       buf.writeUInt32BE(0, 4);
