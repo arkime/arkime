@@ -1813,7 +1813,11 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
-    query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
+    if (req.query.fields) {
+      query._source = req.query.fields.split(",");
+    } else {
+      query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
+    }
 
     if (query.aggregations && query.aggregations.dbHisto) {
       graph.interval = query.aggregations.dbHisto.histogram.interval;
@@ -3874,7 +3878,7 @@ app.get('/tableState/:tablename', function(req, res) {
 //// Session Add/Remove Tags
 //////////////////////////////////////////////////////////////////////////////////
 
-function addTagsList(allTagIds, list, doneCb) {
+function addTagsList(allTagIds, allTagNames, list, doneCb) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var tagIds = [];
 
@@ -3885,9 +3889,11 @@ function addTagsList(allTagIds, list, doneCb) {
       return nextCb(null);
     }
 
-    if (!fields.ta) {
+    if (fields.ta === undefined) {
       fields.ta = [];
+      fields["tags-term"] = [];
     }
+
 
     // Find which tags need to be added to this session
     for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
@@ -3902,6 +3908,17 @@ function addTagsList(allTagIds, list, doneCb) {
         ta: fields.ta
       }
     };
+
+    // Do the same for tags-term if it exists.  (it won't for old sessions)
+    if (fields["tags-term"]) {
+      for (var i = 0, ilen = allTagNames.length; i < ilen; i++) {
+        if (fields["tags-term"].indexOf(allTagNames[i]) === -1) {
+          fields["tags-term"].push(allTagNames[i]);
+        }
+      }
+      document.doc["tags-term"] = fields["tags-term"];
+    }
+
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
       if (err) {
         console.log("CAN'T UPDATE", session, err, data);
@@ -3911,7 +3928,7 @@ function addTagsList(allTagIds, list, doneCb) {
   }, doneCb);
 }
 
-function removeTagsList(res, allTagIds, list) {
+function removeTagsList(res, allTagIds, allTagNames, list) {
   async.eachLimit(list, 10, function(session, nextCb) {
     var tagIds = [];
 
@@ -3934,6 +3951,18 @@ function removeTagsList(res, allTagIds, list) {
         ta: fields.ta
       }
     };
+
+    // Do the same for tags-term if it exists.  (it won't for old sessions)
+    if (fields["tags-term"]) {
+      for (var i = 0, ilen = allTagNames.length; i < ilen; i++) {
+        var pos = fields["tags-term"].indexOf(allTagNames[i]);
+        if (pos !== -1) {
+          fields["tags-term"].splice(pos, 1);
+        }
+      }
+      document.doc["tags-term"] = fields["tags-term"];
+    }
+
     Db.update(Db.id2Index(session._id), 'session', session._id, document, function(err, data) {
       if (err) {
         console.log("removeTagsList error", err);
@@ -3975,14 +4004,14 @@ app.post('/addTags', function(req, res) {
     if (req.body.ids) {
       var ids = req.body.ids.split(",");
 
-      sessionsListFromIds(req, ids, ["ta", "no"], function(err, list) {
-        addTagsList(tagIds, list, function () {
+      sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
+        addTagsList(tagIds, tags, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });
     } else {
-      sessionsListFromQuery(req, res, ["ta", "no"], function(err, list) {
-        addTagsList(tagIds, list, function () {
+      sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
+        addTagsList(tagIds, tags, list, function () {
           return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
         });
       });
@@ -4007,12 +4036,75 @@ app.post('/removeTags', function(req, res) {
     if (req.body.ids) {
       var ids = req.body.ids.split(",");
 
-      sessionsListFromIds(req, ids, ["ta"], function(err, list) {
-        removeTagsList(res, tagIds, list);
+      sessionsListFromIds(req, ids, ["ta", "tags-term"], function(err, list) {
+        removeTagsList(res, tagIds, tags, list);
       });
     } else {
-      sessionsListFromQuery(req, res, ["ta"], function(err, list) {
-        removeTagsList(res, tagIds, list);
+      sessionsListFromQuery(req, res, ["ta", "tags-term"], function(err, list) {
+        removeTagsList(res, tagIds, tags, list);
+      });
+    }
+  });
+});
+
+function searchAndTagList(allTagIds, list, doneCb) {
+  async.eachLimit(list, 10, function(session, nextCb) {
+    var fields = session._source || session.fields;
+    if (!fields) {
+      console.log("No Fields", session);
+      return nextCb(null);
+    }
+
+    var doit = false;
+    if (fields.ta) {
+      for (var i = 0, ilen = allTagIds.length; i < ilen; i++) {
+        if (fields.ta.indexOf(allTagIds[i]) === -1) {
+          doit = true;
+          break;
+        }
+      }
+    } else {
+      doit = true;
+    }
+
+    if (doit) {
+      console.log("doit", session._id);
+    } else {
+      console.log("dont doit", session._id);
+    }
+    nextCb(null);
+  }, doneCb);
+}
+
+app.post('/searchAndTag', function(req, res) {
+  var tags = [];
+  var regex = req.body.regex;
+  if (req.body.tags) {
+    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, "").split(",");
+  }
+
+  if (tags.length === 0) {
+    return res.send(JSON.stringify({success: false, text: "No tags specified"}));
+  }
+
+  if (regex.length === 0) {
+    return res.send(JSON.stringify({success: false, text: "No regex specified"}));
+  }
+
+  mapTags(tags, "", function(err, tagIds) {
+    if (req.body.ids) {
+      var ids = req.body.ids.split(",");
+
+      sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
+        searchAndTagList(tagIds, list, function () {
+          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
+        });
+      });
+    } else {
+      sessionsListFromQuery(req, res, ["ta", "tags-term", "no"], function(err, list) {
+        searchAndTagList(tagIds, list, function () {
+          return res.send(JSON.stringify({success: true, text: "Tags added successfully"}));
+        });
       });
     }
   });
@@ -4798,9 +4890,10 @@ function processCronQuery(cq, options, query, endTime, cb) {
           for (i = 0, ilen = hits.length; i < ilen; i++) {
             ids.push(hits[i]._id);
           }
-          mapTags(options.tags.split(","), "", function(err, tagIds) {
-            sessionsListFromIds(null, ids, ["ta", "no"], function(err, list) {
-              addTagsList(tagIds, list, doNext);
+          var tags = options.tags.split(",");
+          mapTags(tags, "", function(err, tagIds) {
+            sessionsListFromIds(null, ids, ["ta", "tags-term", "no"], function(err, list) {
+              addTagsList(tagIds, tags, list, doNext);
             });
           });
         } else {

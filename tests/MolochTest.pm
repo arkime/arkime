@@ -143,6 +143,7 @@ my ($count, $test, $debug) = @_;
     diag Dumper($json) if ($debug);
     is ($json->{recordsFiltered}, $count, " recordsFiltered");
     is (scalar @{$json->{data}}, $count, " data count");
+    return $json
 }
 ################################################################################
 sub countTest2 {
@@ -152,6 +153,7 @@ my ($count, $test, $debug) = @_;
     diag Dumper($json) if ($debug);
     is ($json->{recordsFiltered}, $count, " recordsFiltered");
     is (scalar @{$json->{data}}, $count, " data count");
+    return $json
 }
 ################################################################################
 sub errTest {

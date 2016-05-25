@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 36;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -6,6 +6,8 @@ use JSON;
 use strict;
 
 my $pwd = getcwd() . "/pcap";
+
+my $json;
 
 # Make sure 3 items with no tags
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
@@ -16,11 +18,17 @@ my $pwd = getcwd() . "/pcap";
 # adding/removing tags test expression
     viewerPost("/addTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
     esGet("/_refresh");
-    countTest(3, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
+    $json = countTest(3, "date=-1&fields=ta,tags-term&expression=" . uri_escape("tags==TAGTEST1"));
+    foreach my $item (@{$json->{data}}) {
+        is (scalar @{$item->{ta}}, scalar @{$item->{"tags-term"}}, "ta and tags-term match");
+    }
     viewerPost("/removeTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
     esGet("/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
-    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
+    $json = countTest(3, "date=-1&fields=ta,tags-term&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
+    foreach my $item (@{$json->{data}}) {
+        is (scalar @{$item->{ta}}, scalar @{$item->{"tags-term"}}, "ta and tags-term match");
+    }
 
 # adding/removing tags test ids
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
