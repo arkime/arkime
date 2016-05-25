@@ -35,9 +35,9 @@ util.inherits(EmergingThreatsSource, wiseSource);
 EmergingThreatsSource.prototype.parseCategories = function(fn) 
 {
   var self = this;
-  var parser = csv.parse(function(err, data) {
+  var parser = csv.parse({skip_empty_lines:true}, function(err, data) {
     if (err) {
-      console.log("Emerging Threats - Couldn't parse csv", err);
+      console.log("Emerging Threats - Couldn't parse", fn, "csv", err);
       return;
     }
 
@@ -53,7 +53,12 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
 {
   var self = this;
 
-  var parser = csv.parse(function(err, data) {
+  var parser = csv.parse({skip_empty_lines:true}, function(err, data) {
+    if (err) {
+      console.log("Emerging Threats - Couldn't parse", fn, "csv", err);
+      return;
+    }
+
     for (var i = 1; i < data.length; i++) {
       if (data[i].length !== 3) {
         continue;
