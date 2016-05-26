@@ -29,6 +29,7 @@ var ini            = require('iniparser')
   , request        = require('request')
   , iptrie         = require('iptrie')
   , wiseSource     = require('./wiseSource.js')
+  , cluster        = require("cluster")
   ;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
@@ -51,26 +52,38 @@ var internals = {
   source_allowed: {},
   views: {},
   rightClicks: {},
+  workers: 1
 };
 
 //////////////////////////////////////////////////////////////////////////////////
 //// Command Line Parsing
 //////////////////////////////////////////////////////////////////////////////////
-function processArgs() {
-  var args = [];
-  for (var i = 0, ilen = process.argv.length; i < ilen; i++) {
-    if (process.argv[i] === "-c") {
+function processArgs(argv) {
+  for (var i = 0, ilen = argv.length; i < ilen; i++) {
+    if (argv[i] === "-c") {
       i++;
-      internals.configFile = process.argv[i];
-    } else if (process.argv[i] === "--debug") {
+      internals.configFile = argv[i];
+    } else if (argv[i] === "--debug") {
       internals.debug++;
-    } else {
-      args.push(process.argv[i]);
+    } else if (argv[i] === "--workers") {
+      i++;
+      internals.workers = +argv[i];
     }
   }
-  process.argv = args;
 }
-processArgs();
+processArgs(process.argv);
+
+if (internals.workers > 1) {
+  if (cluster.isMaster) {
+    for (var i = 0; i < internals.workers; i++) {
+      cluster.fork();
+    }
+    cluster.on('exit', function(worker, code, signal) {
+      console.log('worker ' + worker.process.pid + ' died, restarting new worker');
+      cluster.fork();
+    });
+  }
+}
 //////////////////////////////////////////////////////////////////////////////////
 //// Config
 //////////////////////////////////////////////////////////////////////////////////
@@ -501,16 +514,22 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 //////////////////////////////////////////////////////////////////////////////////
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
-loadExcludes();
-loadSources();
-setInterval(printStats, 60*1000);
-var server = http.createServer(app);
-server
-  .on('error', function (e) {
-    console.log("ERROR - couldn't listen on port", getConfig("wiseService", "port", 8081), "is wiseService already running?");
-    process.exit(1);
-  })
-  .on('listening', function (e) {
-    console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
-  })
-  .listen(getConfig("wiseService", "port", 8081));
+function main() {
+  loadExcludes();
+  loadSources();
+  setInterval(printStats, 60*1000);
+  var server = http.createServer(app);
+  server
+    .on('error', function (e) {
+      console.log("ERROR - couldn't listen on port", getConfig("wiseService", "port", 8081), "is wiseService already running?");
+      process.exit(1);
+    })
+    .on('listening', function (e) {
+      console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
+    })
+    .listen(getConfig("wiseService", "port", 8081));
+}
+
+if (internals.workers <= 1 || cluster.isWorker) {
+  main();
+}
