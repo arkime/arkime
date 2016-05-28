@@ -117,7 +117,7 @@ void writer_disk_free_buf(MolochDiskOutput_t *out)
  */
 gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUSED(data))
 {
-    if (config.exiting && fd)
+    if (fd && config.quitting)
         return FALSE;
 
     static int outputFd = 0;
@@ -187,7 +187,7 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
     MOLOCH_TYPE_FREE(MolochDiskOutput_t, out);
 
     // More waiting to write on different fd, setup a new watch
-    if (outputFd && !config.exiting && DLL_COUNT(mo_, &outputQ) > 0) {
+    if (outputFd && !config.quitting && DLL_COUNT(mo_, &outputQ) > 0) {
         moloch_watch_fd(outputFd, MOLOCH_GIO_WRITE_COND, writer_disk_output_cb, NULL);
         return FALSE;
     }

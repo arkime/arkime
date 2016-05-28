@@ -42,7 +42,7 @@ void moloch_writers_start(char *name) {
     }
     MolochWriterInit func = str->uw;
     func(name);
-    moloch_add_can_quit((MolochCanQuitFunc)moloch_writer_queue_length);
+    moloch_add_can_quit((MolochCanQuitFunc)moloch_writer_queue_length, "writer queue length");
 }
 /******************************************************************************/
 void moloch_writers_add(char *name, MolochWriterInit func) {

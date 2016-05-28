@@ -78,7 +78,7 @@ void moloch_plugins_load(char **plugins) {
         return;
     }
 
-    moloch_add_can_quit((MolochCanQuitFunc)moloch_plugins_outstanding);
+    moloch_add_can_quit((MolochCanQuitFunc)moloch_plugins_outstanding, "plugin outstanding");
 
     int         i;
 

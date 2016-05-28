@@ -1090,8 +1090,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     if (config.dryRun) {
         if (config.tests) {
+            static int outputed;
+            outputed++;
             const int hlen = dataPtr - startPtr;
-            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (totalSessions==1 ? "":","), hlen-1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb)-hlen-1), dbInfo[thread].json+hlen);
+            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (outputed==1 ? "":","), hlen-1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb)-hlen-1), dbInfo[thread].json+hlen);
         } else if (config.debug) {
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), dbInfo[thread].json);
         }
@@ -2111,7 +2113,7 @@ void moloch_db_init()
         moloch_db_load_fields();
     }
 
-    moloch_add_can_quit(moloch_db_can_quit);
+    moloch_add_can_quit(moloch_db_can_quit, "DB");
 
     if (config.geoipFile) {
         gi = GeoIP_open(config.geoipFile, GEOIP_MEMORY_CACHE);

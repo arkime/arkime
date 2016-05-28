@@ -277,9 +277,9 @@ LOCAL void moloch_session_save(MolochSession_t *session)
         HASH_REMOVE(h_, sessions[session->thread][session->ses], session);
     }
 
-    if (session->closingQ)
+    if (session->closingQ) {
         DLL_REMOVE(q_, &closingQ[session->thread], session);
-    else
+    } else
         DLL_REMOVE(q_, &sessionsQ[session->thread][session->ses], session);
 
     moloch_packet_tcp_free(session);
@@ -401,6 +401,11 @@ int moloch_session_need_save_outstanding()
     return count;
 }
 /******************************************************************************/
+int moloch_session_thread_outstanding(int thread)
+{
+    return DLL_COUNT(q_, &closingQ[thread]) + DLL_COUNT(cmd_, &sessionCmds[thread]);
+}
+/******************************************************************************/
 MolochSession_t *moloch_session_find(int ses, char *sessionId)
 {
     MolochSession_t *session;
@@ -490,9 +495,8 @@ void moloch_session_process_commands(int thread)
     }
 
     // Closing Q
-    MolochSession_t *session;
     for (count = 0; count < 100; count++) {
-        session = DLL_PEEK_HEAD(q_, &closingQ[thread]);
+        MolochSession_t *session = DLL_PEEK_HEAD(q_, &closingQ[thread]);
 
         if (session && session->saveTime < (uint64_t)lastPacketSecs[thread]) {
             moloch_session_save(session);
@@ -505,7 +509,7 @@ void moloch_session_process_commands(int thread)
     int ses;
     for (ses = 0; ses < SESSION_MAX; ses++) {
         for (count = 0; count < 100; count++) {
-            session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
+            MolochSession_t *session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
 
             if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams ||
                             ((uint64_t)session->lastPacket.tv_sec + config.timeouts[ses] < (uint64_t)lastPacketSecs[thread]))) {
@@ -519,7 +523,7 @@ void moloch_session_process_commands(int thread)
 
     // TCP Sessions Open Long Time
     for (count = 0; count < 100; count++) {
-        session = DLL_PEEK_HEAD(tcp_, &tcpWriteQ[thread]);
+        MolochSession_t *session = DLL_PEEK_HEAD(tcp_, &tcpWriteQ[thread]);
 
         if (session && (uint64_t)session->saveTime < (uint64_t)lastPacketSecs[thread]) {
             moloch_session_mid_save(session, lastPacketSecs[thread]);
@@ -603,9 +607,21 @@ void moloch_session_init()
         MOLOCH_LOCK_INIT(sessionCmds[t].lock);
     }
 
-    moloch_add_can_quit(moloch_session_cmd_outstanding);
-    moloch_add_can_quit(moloch_session_close_outstanding);
-    moloch_add_can_quit(moloch_session_need_save_outstanding);
+    moloch_add_can_quit(moloch_session_cmd_outstanding, "session commands outstanding");
+    moloch_add_can_quit(moloch_session_close_outstanding, "session close outstanding");
+    moloch_add_can_quit(moloch_session_need_save_outstanding, "session save outstanding");
+}
+/******************************************************************************/
+static void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
+{
+    int thread = session->thread;
+    int i;
+
+    for (i = 0; i < SESSION_MAX; i++) {
+        HASH_FORALL_POP_HEAD(h_, sessions[thread][i], session,
+            moloch_session_save(session);
+        );
+    }
 }
 /******************************************************************************/
 /* Only called on main thread. Wait for all packet threads to be empty and then 
@@ -615,15 +631,12 @@ void moloch_session_flush()
 {
     moloch_packet_flush();
 
-    MolochSession_t *session;
+    static MolochSession_t fakeSessions[MOLOCH_MAX_PACKET_THREADS];
+
     int thread;
-    int i;
     for (thread = 0; thread < config.packetThreads; thread++) {
-        for (i = 0; i < SESSION_MAX; i++) {
-            HASH_FORALL_POP_HEAD(h_, sessions[thread][i], session,
-                moloch_session_save(session);
-            );
-        }
+        fakeSessions[thread].thread = thread;
+        moloch_session_add_cmd(&fakeSessions[thread], MOLOCH_SES_CMD_FUNC, NULL, NULL, moloch_session_flush_close);
     }
 }
 /******************************************************************************/
@@ -639,7 +652,6 @@ void moloch_session_exit()
         counts[SESSION_ICMP] += sessionsQ[t][SESSION_ICMP].q_count;
     }
 
-    config.exiting = 1;
     LOG("sessions: %d tcp: %d udp: %d icmp: %d",
             moloch_session_monitoring(),
             counts[SESSION_TCP],

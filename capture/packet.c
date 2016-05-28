@@ -351,7 +351,8 @@ void moloch_packet_flush()
     int flushed = 0;
     int t;
     while (!flushed) {
-        flushed = 1;
+        flushed = !moloch_session_cmd_outstanding();
+
         for (t = 0; t < config.packetThreads; t++) {
             MOLOCH_LOCK(packetQ[t].lock);
             if (DLL_COUNT(packet_, &packetQ[t]) > 0) {
@@ -370,7 +371,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
     while (1) {
         MOLOCH_LOCK(packetQ[thread].lock);
-        if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
+        if (DLL_COUNT(packet_, &packetQ[thread]) == 0 && moloch_session_thread_outstanding(thread) == 0) {
             MOLOCH_COND_WAIT(packetQ[thread].lock);
         }
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
@@ -1239,8 +1240,8 @@ void moloch_packet_init()
 
     g_thread_new("moloch-frags4", &moloch_packet_frags_thread, NULL);
 
-    moloch_add_can_quit(moloch_packet_outstanding);
-    moloch_add_can_quit(moloch_packet_frags_outstanding);
+    moloch_add_can_quit(moloch_packet_outstanding, "packet outstanding");
+    moloch_add_can_quit(moloch_packet_frags_outstanding, "packet frags outstanding");
 }
 /******************************************************************************/
 uint64_t moloch_packet_dropped_packets()

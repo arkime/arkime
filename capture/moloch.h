@@ -243,7 +243,7 @@ typedef struct {
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
 
 typedef struct moloch_config {
-    gboolean  exiting;
+    gboolean  quitting;
     char     *configFile;
     char     *nodeName;
     char     *hostName;
@@ -592,7 +592,7 @@ int moloch_int_cmp(const void *keyv, const void *elementv);
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
 const char *moloch_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
 
-void moloch_add_can_quit(MolochCanQuitFunc func);
+void moloch_add_can_quit(MolochCanQuitFunc func, const char *name);
 
 void moloch_quit();
 
@@ -731,6 +731,8 @@ uint32_t moloch_session_monitoring();
 void     moloch_session_process_commands(int thread);
 
 int      moloch_session_need_save_outstanding();
+int      moloch_session_thread_outstanding(int thread);
+int      moloch_session_cmd_outstanding();
 
 typedef enum { 
     MOLOCH_SES_CMD_ADD_TAG,

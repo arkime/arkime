@@ -508,7 +508,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     MolochHttpServer_t        *server = serverV;
 
     // Are we overloaded
-    if (!config.exiting && dropable && server->outstanding > server->maxOutstandingRequests) {
+    if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
         LOG("ERROR - Dropping request %.*s of size %d queue %d is too big", key_len, key, data_len, server->outstanding);
 
         if (data) {

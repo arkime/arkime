@@ -418,16 +418,19 @@ void moloch_drop_privileges()
 }
 /******************************************************************************/
 static MolochCanQuitFunc  canQuitFuncs[20];
+static const char        *canQuitNames[20];
 int                       canQuitFuncsNum;
 
-void moloch_add_can_quit (MolochCanQuitFunc func)
+void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
         LOG("Can't add canQuitFunc");
         exit(1);
         return;
     }
-    canQuitFuncs[canQuitFuncsNum++] = func;
+    canQuitFuncs[canQuitFuncsNum] = func;
+    canQuitNames[canQuitFuncsNum] = name;
+    canQuitFuncsNum++;
 }
 /******************************************************************************/
 /*
@@ -452,8 +455,13 @@ static gboolean firstRun   = TRUE;
 
     int i;
     for (i = 0; i < canQuitFuncsNum; i++) {
-        if (canQuitFuncs[i]() != 0)
+        int val = canQuitFuncs[i]();
+        if (val != 0) {
+            if (config.debug && canQuitNames[i]) {
+                LOG ("Can't quit, %s is %d", canQuitNames[i], val);
+            }
             return TRUE;
+        }
     }
 
     g_main_loop_quit(mainLoop);
@@ -462,6 +470,7 @@ static gboolean firstRun   = TRUE;
 /******************************************************************************/
 void moloch_quit()
 {
+    config.quitting = TRUE;
     g_timeout_add(100, moloch_quit_gfunc, 0);
 }
 /******************************************************************************/
