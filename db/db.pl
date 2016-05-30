@@ -104,10 +104,10 @@ sub waitFor
 sub esGet
 {
     my ($url, $dontcheck) = @_;
-    print "GET http://$ARGV[0]$url\n" if ($verbose > 2);
-    my $response = $main::userAgent->get("http://$ARGV[0]$url");
+    print "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
+    my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init") || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't GET http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -117,10 +117,10 @@ sub esGet
 sub esPost
 {
     my ($url, $content, $dontcheck) = @_;
-    print "POST http://$ARGV[0]$url\n" if ($verbose > 2);
-    my $response = $main::userAgent->post("http://$ARGV[0]$url", Content => $content);
+    print "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
+    my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content);
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
-      die "Couldn't POST http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
 
     my $json = from_json($response->content);
@@ -131,11 +131,11 @@ sub esPost
 sub esPut
 {
     my ($url, $content, $dontcheck) = @_;
-    print "PUT http://$ARGV[0]$url\n" if ($verbose > 2);
-    my $response = $main::userAgent->request(HTTP::Request::Common::PUT("http://$ARGV[0]$url", Content => $content));
+    print "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
+    my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
       print Dumper($response);
-      die "Couldn't PUT http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
+      die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
     }
     my $json = from_json($response->content);
     return $json
@@ -145,10 +145,10 @@ sub esPut
 sub esDelete
 {
     my ($url, $dontcheck) = @_;
-    print "DELETE http://$ARGV[0]$url\n" if ($verbose > 2);
-    my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ARGV[0]$url"));
+    print "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
+    my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "${main::elasticsearch}$url"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't DELETE http://$ARGV[0]$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
+      die "Couldn't DELETE ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
     return $json
@@ -1927,6 +1927,12 @@ showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
+
+if ($ARGV[0] =~ /^http/) {
+    $main::elasticsearch = $ARGV[0];
+} else {
+    $main::elasticsearch = "http://$ARGV[0]";
+}
 
 if ($ARGV[1] =~ /^users-?import$/) {
     open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
