@@ -187,6 +187,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     int res = curl_easy_perform(easy);
 
     if (res != CURLE_OK) {
+        LOG("libcurl failure %s error '%s'", url, curl_easy_strerror(res));
         return 0;
     }
 
