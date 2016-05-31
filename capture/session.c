@@ -386,6 +386,8 @@ int moloch_session_cmd_outstanding()
     int count = 0;
     int t;
     for (t = 0; t < config.packetThreads; t++) {
+        if (DLL_COUNT(cmd_, &sessionCmds[t]))
+            moloch_packet_thread_wake(t);
         count += DLL_COUNT(cmd_, &sessionCmds[t]);
     }
     return count;
