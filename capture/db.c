@@ -2108,7 +2108,8 @@ void moloch_db_init()
     if (!config.dryRun) {
         moloch_db_check();
         moloch_db_load_file_num();
-        moloch_db_load_tags();
+        if (!config.noLoadTags)
+            moloch_db_load_tags();
         moloch_db_load_stats();
         moloch_db_load_fields();
     }

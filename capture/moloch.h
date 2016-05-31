@@ -262,6 +262,7 @@ typedef struct moloch_config {
     gboolean  pcapDelete;
     gboolean  pcapSkip;
     gboolean  flushBetween;
+    gboolean  noLoadTags;
 
     enum MolochRotate rotate;
 

@@ -71,6 +71,7 @@ static GOptionEntry entries[] =
     { "flush",       0,                    0, G_OPTION_ARG_NONE,           &config.flushBetween,  "In offline mode flush streams between files", NULL },
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
     { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
+    { "noLoadTags",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noLoadTags,    "Don't load tags at startup", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
