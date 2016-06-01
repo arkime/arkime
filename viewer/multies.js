@@ -33,6 +33,7 @@ var Config         = require('./config.js'),
     URL            = require('url'),
     ESC            = require('elasticsearch'),
     http           = require('http'),
+    https          = require('https'),
     KAA            = require('keep-alive-agent');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
@@ -41,7 +42,8 @@ var Config         = require('./config.js'),
 
 var clients = {};
 var nodes = [];
-var agent = new KAA({maxSockets: 100});
+var httpAgent = new KAA({maxSockets: 100});
+var httpsAgent = new KAA.Secure({maxSockets: 100});
 
 function hasBody(req) {
   var encoding = 'transfer-encoding' in req.headers;
@@ -87,7 +89,10 @@ app.use(function(req, res, next) {
 });
 
 function node2Url(node) {
-  return node.split(',')[0];
+  var url = node.split(',')[0];
+  if (url.match(/^http/))
+    return url
+  return "http://" + url;
 }
 
 function node2Prefix(node) {
@@ -107,15 +112,21 @@ function node2Prefix(node) {
 function simpleGather(req, res, bodies, doneCb) {
   async.map(nodes, function (node, asyncCb) {
     var result = "";
-    var nurl = node2Url(node);
-    var url = "http://" + nurl + req.url;
+    var url = node2Url(node) + req.url;
     var prefix = node2Prefix(node);
 
     url = url.replace(/MULTIPREFIX_/g, prefix);
     var info = URL.parse(url);
     info.method = req.method;
-    info.agent  = agent;
-    var preq = http.request(info, function(pres) {
+    var client;
+    if (url.match(/^https:/)) {
+      info.agent  = httpsAgent;
+      client = https;
+    } else {
+      info.agent  = httpAgent;
+      client = http;
+    }
+    var preq = client.request(info, function(pres) {
       pres.on('data', function (chunk) {
         result += chunk.toString();
       });

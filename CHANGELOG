@@ -14,6 +14,7 @@
   - wise - new json format for file/url file types
   - wise - passivetotal tagging support
   - wise - new source that proxies to another wise 
+  - all - support https elasticsearch
 
 0.14.0 2016/05/08
   - NOTICE: libnids is no longer required
