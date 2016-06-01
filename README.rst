@@ -291,7 +291,7 @@ single machine is fine.
 
 2. Moloch ``elasticsearch`` systems (some black magic here!)
 
-   * ``1/4 * Number_Highly_Utilized_Interfaces * Number_of_Days_of_History`` is
+   * ``1/4 * Average_Total_Gigabit_Sec * Number_of_Days_of_History`` is
      a **ROUGH** guideline for number of ``elasticsearch`` instances (nodes)
      required. (Example: 1/4 * 8 interfaces * 7 days = 14 nodes)
    * Each ``elasticsearch`` node should have ~30G-40G memory (20G-30G [no
