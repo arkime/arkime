@@ -1,4 +1,8 @@
 0.14.1 2016/05/XX
+  - NOTICE: 0.14.x will be the last version to support ES 2.x
+  - NOTICE: See https://github.com/aol/moloch/wiki/FAQ/_edit#How_do_I_upgrade_to_ES_2x_from_ES_1x
+            to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
+            should be run BEFORE upgrading.
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)
   - capture - initial lua scripting support
   - wise - initial bro quering support
@@ -6,7 +10,7 @@
   - viewer - fixed XSS (issue #471)
   - capture - simple ldap parser
   - capture - simple radius parser
-  - easybutton - ES 2.2.2, run ES as daemon, new config
+  - easybutton - ES 2.3.3, run ES as daemon, new config
   - capture - new db field tags-term with tags in text format
   - capture - fixed FPE crash in stats (issue #475)
   - capture - calculate jsonSize better (issue #476)

@@ -71,8 +71,7 @@ guidelines. (Improvements to these instructions are always welcome!)
 Installing Elasticsearch
 ------------------------
 
-Recommend version **1.7.3**, requires at least 1.6.x, versions before 1.6.1
-have several security issues.
+Recommend version **2.3.3**, requires at least 1.7.x
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -87,16 +86,15 @@ have several security issues.
 
 3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   1.7.3 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-7-3>`_.
+   2.3.3 <https://www.elastic.co/downloads/past-releases/elasticsearch-2-3-3>`_.
 
 4. Uncompress the archive you downloaded.
 
-5. Install ``bigdesk`` and ``elasticsearch-head`` **BEFORE** pushing to all
+5. Install ``elasticsearch-head`` **BEFORE** pushing to all
    machines::
 
     cd elasticsearch-*
     bin/plugin -install mobz/elasticsearch-head
-    bin/plugin -install lukas-vlcek/bigdesk
 
 6. Create or modify ``elasticsearch.yml`` and push it to all machines. (See
    ``db/elasticsearch.yml.sample`` in the Moloch source distribution for an
@@ -106,7 +104,6 @@ have several security issues.
    - set ``node.name`` to ``${ES_HOSTNAME}``
    - set ``node.max_local_storage_nodes`` to number of nodes per machine
    - set ``index.fielddata.cache: node``
-   - set ``indices.fielddata.cache.size: 40%``
    - set ``path.data`` and ``path.logs``
    - set ``gateway.type: local``
    - set ``gateway.recover_after_nodes`` should match the number of nodes you
@@ -201,7 +198,7 @@ Building Viewer
    from the `EPEL <http://fedoraproject.org/wiki/EPEL>`_ repository. Make sure
    ``python2.6`` is in your path before proceeding!
 
-2. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.21 or higher), currently 0.12.x is not supported.
+2. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.42 or higher), currently 0.12.x is not supported.
 
    - **Binary install:** Please see the `platform-specific instructions
      <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
