@@ -253,8 +253,6 @@ find ${TDIR} -type f -exec chmod og+r {} \;
 cat ${INSTALL_DIR}/db/daily.sh | sed -e "s,CHANGEMEHOST:CHANGEMEPORT,127.0.0.1:9200,g" > ${TDIR}/db/daily.sh
 chmod 755 ${TDIR}/db/daily.sh
 
-chown daemon:daemon ${TDIR}/raw
-
 
 echo "MOLOCH: Running config script"
 

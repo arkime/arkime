@@ -34,11 +34,13 @@ fi
 if [ -z $INTERFACE ]; then INTERFACE="eth0"; fi
 
 if [ -z $BATCHRUN ]; then 
-	echo "You are about to attempt a Moloch build (Proceed?)"
+	echo "You are about to attempt a Moloch install (Proceed?)"
 	echo
 	echo "Hit Ctrl-C *now* to stop!   Hit enter to proceed"
 	read OK
 fi
+
+chown ${MOLOCHUSER}:${GROUPNAME} ${TDIR}/raw
 
 cat ${TDIR}/etc/config.ini.template | sed -e 's/_PASSWORD_/'${PASSWORD}'/g' -e 's/_USERNAME_/'${MOLOCHUSER}'/g' -e 's/_GROUPNAME_/'${GROUPNAME}'/g' -e 's/_INTERFACE_/'${INTERFACE}'/g'  -e "s,_TDIR_,${TDIR},g" > ${TDIR}/etc/config.ini
 
