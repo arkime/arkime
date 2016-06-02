@@ -107,12 +107,13 @@ if [ "x$https_proxy" != "x" ]; then
 fi
 
 if [ -z $USEPFRING ]; then
-	echo -n "Use pfring? ('yes' enables) [no] "
+	echo -n "Use pfring pcap bridge? ('yes' enables) [no] "
 	read USEPFRING
 fi
 PFRING=""
 if [ -n "$USEPFRING" -a "x$USEPFRING" = "xyes" ]; then 
-    echo "MOLOCH - Using pfring - Make sure to install the kernel modules"
+    echo "MOLOCH - Using pfring pcap bridge - Make sure to install the kernel modules"
+    echo "MOLOCH - versions >= 0.14 support a faster pfring plugin, see capture/plugins/pfring/README.md"
     sleep 1
     PFRING="--pfring"
 fi
