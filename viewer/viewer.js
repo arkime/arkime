@@ -2503,6 +2503,15 @@ app.get('/unique.txt', function(req, res) {
   var items = [];
   var aggSize = 1000000;
   if (req.query.autocomplete !== undefined) {
+    var spiDataMaxIndices = +Config.get("spiDataMaxIndices", 3);
+    if (spiDataMaxIndices !== -1) {
+      if (req.query.date === '-1' ||
+          (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
+        console.log("INFO For autocomplete replacing date="+ req.query.date, "with", spiDataMaxIndices);
+        req.query.date = spiDataMaxIndices;
+      }
+    }
+
     aggSize = 1000;
     doneCb = function() {
       res.send(items);
@@ -2635,6 +2644,10 @@ app.get('/unique.txt', function(req, res) {
       query.size = 0;
       console.log("unique aggregations", indices, JSON.stringify(query));
       Db.searchPrimary(indices, 'session', query, function(err, result) {
+        if (err) {
+          console.log("Error", query, err);
+          return doneCb?doneCb():res.end();
+        }
         if (Config.debug) {
           console.log("unique.txt result", util.inspect(result, false, 50));
         }
