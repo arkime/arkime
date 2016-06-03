@@ -3075,7 +3075,7 @@ function localSessionDetail(req, res) {
   },
   function(err, session) {
     if (err && session === null) {
-      return res.send("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
+      return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
     }
     session.id = req.params.id;
     session.ta = session.ta.sort();
