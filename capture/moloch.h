@@ -223,7 +223,7 @@ typedef struct {
 #define MOLOCH_COND_TIMEDWAIT(var, abt) pthread_cond_timedwait(&var##_cond, &var##_mutex, &abs)
 #define MOLOCH_COND_BROADCAST(var)      pthread_cond_broadcast(&var##_cond)
 
-#define MOLOCH_MAX_PACKET_THREADS 8
+#define MOLOCH_MAX_PACKET_THREADS 24
 
 #ifndef LOCAL
 #define LOCAL static
