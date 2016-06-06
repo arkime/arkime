@@ -899,26 +899,28 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
           );
     }
 
+    uint32_t thread = moloch_session_hash(sessionId) % config.packetThreads;
+
+    if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
+        MOLOCH_LOCK(packetQ[thread].lock);
+        overloadDrops[thread]++;
+        if ((overloadDrops[thread] % 1000) == 1) {
+            LOG("WARNING - Packet Q %d is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue", thread, overloadDrops[thread]);
+        }
+        MOLOCH_UNLOCK(packetQ[thread].lock);
+        packet->pkt = 0;
+        MOLOCH_COND_BROADCAST(packetQ[thread].lock);
+        return 1;
+    }
+
     if (!packet->copied) {
         uint8_t *pkt = malloc(packet->pktlen);
         memcpy(pkt, packet->pkt, packet->pktlen);
         packet->pkt = pkt;
         packet->copied = 1;
     }
-    uint32_t thread = moloch_session_hash(sessionId) % config.packetThreads;
 
     MOLOCH_LOCK(packetQ[thread].lock);
-    if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
-        overloadDrops[thread]++;
-        if ((overloadDrops[thread] % 1000) == 1) {
-            LOG("WARNING - Packet Q %d is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue", thread, overloadDrops[thread]);
-        }
-        MOLOCH_UNLOCK(packetQ[thread].lock);
-        free(packet->pkt);
-        packet->pkt = 0;
-        MOLOCH_COND_BROADCAST(packetQ[thread].lock);
-        return 1;
-    }
     DLL_PUSH_TAIL(packet_, &packetQ[thread], packet);
     MOLOCH_UNLOCK(packetQ[thread].lock);
     MOLOCH_COND_BROADCAST(packetQ[thread].lock);
