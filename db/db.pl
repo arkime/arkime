@@ -46,7 +46,7 @@ my $VERSION = 27;
 my $verbose = 0;
 my $PREFIX = "";
 my $SHARDS = -1;
-my $REPLICAS = 0;
+my $REPLICAS = -1;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -63,33 +63,34 @@ sub showHelp($)
 {
     my ($str) = @_;
     print "\n", $str,"\n\n";
-    print "$0 [GlobalOptions] <ESHOST:ESPORT> <command> [<options>]\n";
+    print "$0 [Global Options] <ESHOST:ESPORT> <command> [<command arguments>]\n";
     print "\n";
-    print "GlobalOptions:\n";
-    print "  -v                    - Verbose, multiple increases level\n";
-    print "  --prefix <prefix>     - Prefix for table names\n";
+    print "Global Options:\n";
+    print "  -v                           - Verbose, multiple increases level\n";
+    print "  --prefix <prefix>            - Prefix for table names\n";
     print "\n";
     print "Commands:\n";
-    print "  init                  - Clear ALL elasticsearch moloch data and create schema\n";
-    print "    --shards <shards>   - Number of shards for sessions, default number of nodes\n";
-    print "    --replicas <num>    - Number of replicas for sessions, default 0\n";
-    print "  upgrade               - Upgrade Moloch's schema in elasticsearch from previous versions\n";
-    print "    --shards <shards>   - Number of shards for sessions, default number of nodes\n";
-    print "    --replicas <num>    - Number of replicas for sessions, default 0\n";
-    print "  wipe                  - Same as init, but leaves user database untouched\n";
-    print "  info                  - Information about the database\n";
-    print "  users-export <fn>     - Save the users info to <fn>\n";
-    print "  users-import <fn>     - Load the users info from <fn>\n";
-    print "  optimize              - Optimize all indices in ES\n";
-    print "  mv <old fn> <new fn>  - Move a pcap file in the database (doesn't change disk)\n";
-    print "  rm <fn>               - Remove a pcap file in the database (doesn't change disk)\n";
-    print "  rm-missing <node>     - Remove from db any MISSING file on THIS machine for named node\n";
-    print "  rm-node <node>        - Remove from db all data for node (doesn't change disk)\n";
-    print "  expire <type> <num>   - Perform daily maintenance and optimize all indices in ES\n";
-    print "       type             - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
-    print "       num              - number of indexes to keep\n";
-    print "  field disable <exp >  - disable a field from being indexed\n";
-    print "  field enable <exp >   - enable a field from being indexed\n";
+    print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
+    print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
+    print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
+    print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "  wipe                         - Same as init, but leaves user database untouched\n";
+    print "  info                         - Information about the database\n";
+    print "  users-export <fn>            - Save the users info to <fn>\n";
+    print "  users-import <fn>            - Load the users info from <fn>\n";
+    print "  optimize                     - Optimize all indices in ES\n";
+    print "  mv <old fn> <new fn>         - Move a pcap file in the database (doesn't change disk)\n";
+    print "  rm <fn>                      - Remove a pcap file in the database (doesn't change disk)\n";
+    print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
+    print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
+    print "  expire <type> <num> [<opts>] - Perform daily maintenance and optimize all indices in ES\n";
+    print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
+    print "       num                     - number of indexes to keep\n";
+    print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
+    print "  field disable <exp >         - disable a field from being indexed\n";
+    print "  field enable <exp >          - enable a field from being indexed\n";
     exit 1;
 }
 ################################################################################
@@ -1634,6 +1635,7 @@ sub sessionsUpdate
 }
 ';
 
+$REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     my $template = '
@@ -1924,7 +1926,7 @@ sub parseArgs {
             $pos++;
             $REPLICAS = int($ARGV[$pos]);
         } else {
-            print "Unknown option", $ARGV[$pos], "\n";
+            print "Unknown option '", $ARGV[$pos], "'\n";
         }
     }
 }
@@ -1994,6 +1996,8 @@ if ($ARGV[1] =~ /^users-?import$/) {
         $startTime[4] -= int($ARGV[3]);
     }
 
+    parseArgs(4);
+
     my $optimizecnt = 0;
     my $startTime = mktime(@startTime);
     while ($startTime <= $endTime) {
@@ -2017,6 +2021,10 @@ if ($ARGV[1] =~ /^users-?import$/) {
         progress($i);
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esGet("/$i/_optimize?max_num_segments=4", 1);
+            if ($REPLICAS != -1) {
+                esGet("/$i/_flush", 1);
+                esPut("/$i/_settings", '{index: {"number_of_replicas":' . $REPLICAS . '}}', 1);
+            }
         } else {
             esDelete("/$i", 1);
         }
