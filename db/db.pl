@@ -2332,6 +2332,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         statsUpdate();
         dstatsUpdate();
     } elsif ($main::versionNumber <= 27) {
+        sessionsUpdate();
     } else {
         print "db.pl is hosed\n";
     }
