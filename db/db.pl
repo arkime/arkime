@@ -45,6 +45,8 @@ use strict;
 my $VERSION = 27;
 my $verbose = 0;
 my $PREFIX = "";
+my $SHARDS = -1;
+my $REPLICAS = 0;
 
 ################################################################################
 sub MIN ($$) { $_[$_[0] > $_[1]] }
@@ -61,16 +63,20 @@ sub showHelp($)
 {
     my ($str) = @_;
     print "\n", $str,"\n\n";
-    print "$0 [Options] <ESHOST:ESPORT> <command> [<options>]\n";
+    print "$0 [GlobalOptions] <ESHOST:ESPORT> <command> [<options>]\n";
     print "\n";
-    print "Options:\n";
+    print "GlobalOptions:\n";
     print "  -v                    - Verbose, multiple increases level\n";
     print "  --prefix <prefix>     - Prefix for table names\n";
     print "\n";
     print "Commands:\n";
     print "  init                  - Clear ALL elasticsearch moloch data and create schema\n";
-    print "  wipe                  - Same as init, but leaves user database untouched\n";
+    print "    --shards <shards>   - Number of shards for sessions, default number of nodes\n";
+    print "    --replicas <num>    - Number of replicas for sessions, default 0\n";
     print "  upgrade               - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "    --shards <shards>   - Number of shards for sessions, default number of nodes\n";
+    print "    --replicas <num>    - Number of replicas for sessions, default 0\n";
+    print "  wipe                  - Same as init, but leaves user database untouched\n";
     print "  info                  - Information about the database\n";
     print "  users-export <fn>     - Save the users info to <fn>\n";
     print "  users-import <fn>     - Load the users info from <fn>\n";
@@ -1628,15 +1634,17 @@ sub sessionsUpdate
 }
 ';
 
+my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
+
     my $template = '
 {
   template: "' . $PREFIX . 'session*",
   settings: {
     index: {
-      "routing.allocation.total_shards_per_node": 1,
+      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
       refresh_interval: "60s",
-      number_of_shards: ' . $main::numberOfNodes . ',
-      number_of_replicas: 0,
+      number_of_shards: ' . $SHARDS . ',
+      number_of_replicas: ' . $REPLICAS . ',
       analysis: {
         analyzer : {
           url_analyzer : {
@@ -1905,6 +1913,22 @@ sub optimizeOther {
     print "\n" if ($verbose > 0);
 }
 ################################################################################
+sub parseArgs {
+    my ($pos) = @_;
+
+    for (;$pos <= $#ARGV; $pos++) {
+        if ($ARGV[$pos] eq "--shards") {
+            $pos++;
+            $SHARDS = $ARGV[$pos];
+        } elsif ($ARGV[$pos] eq "--replicas") {
+            $pos++;
+            $REPLICAS = int($ARGV[$pos]);
+        } else {
+            print "Unknown option", $ARGV[$pos], "\n";
+        }
+    }
+}
+################################################################################
 while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
     if ($ARGV[0] =~ /(-v+|--verbose)$/) {
          $verbose += ($ARGV[0] =~ tr/v//);
@@ -1925,6 +1949,8 @@ showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|user
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
+
+parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
@@ -2136,6 +2162,12 @@ if ($main::numberOfNodes == 1) {
     print "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
     print "There are $main::numberOfNodes elastic search data nodes, if you expect more please fix first before proceeding.\n\n";
+}
+
+if (int($SHARDS) > $main::numberOfNodes) {
+    die "Can't set shards ($SHARDS) greater then the number of nodes ($main::numberOfNodes)";
+} elsif ($SHARDS == -1) {
+    $SHARDS = $main::numberOfNodes;
 }
 
 dbVersion(1);
