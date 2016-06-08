@@ -20,6 +20,7 @@ typedef struct {
 
 static int verField;
 static int keyField;
+extern MolochConfig_t        config;
 
 /******************************************************************************/
 // SSH Parsing currently assumes the parts we want from a SSH Packet will be
@@ -116,7 +117,6 @@ void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     SSHInfo_t            *ssh          = MOLOCH_TYPE_ALLOC0(SSHInfo_t);
 
     moloch_parsers_register(session, ssh_parser, ssh, ssh_free);
-    ssh_parser(session, ssh, data, len, which);
 }
 /******************************************************************************/
 void moloch_parser_init()
