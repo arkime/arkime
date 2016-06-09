@@ -1204,7 +1204,7 @@ void moloch_packet_init()
     greIpField = moloch_field_define("general", "ip",
         "gre.ip", "GRE IP", "greip",
         "GRE ip addresses for session",
-        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT,
+        MOLOCH_FIELD_TYPE_IP_GHASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         NULL);
 
     moloch_field_define("general", "lotermfield",
