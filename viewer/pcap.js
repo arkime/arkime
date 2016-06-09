@@ -288,6 +288,42 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   obj.udp.data = buffer.slice(8);
 };
 
+Pcap.prototype.gre = function (buffer, obj, pos) {
+  obj.gre = {
+    flags_version: buffer.readUInt16BE(0),
+    type:          buffer.readUInt16BE(2)
+  };
+  var bpos = 4;
+  var offset = 0;
+  if (obj.gre.flags_version & (0x8000 | 0x4000)) {
+    bpos += 2;
+    offset = buffer.readUInt16BE(bpos);
+    bpos += 2;
+  }
+
+  // key
+  if (obj.gre.flags_version & 0x2000) {
+    bpos += 4;
+  }
+
+  // sequence number
+  if (obj.gre.flags_version & 0x1000) {
+    bpos += 4;
+  }
+
+  // routing
+  if (obj.gre.flags_version & 0x4000) {
+    bpos += 3;
+    while (1) {
+      var len = buffer.readUInt16BE(bpos);
+      if (len === 0)
+        break;
+      bpos += len;
+    }
+  }
+  this.ip4(buffer.slice(bpos), obj, pos+bpos);
+};
+
 Pcap.prototype.ip4 = function (buffer, obj, pos) {
   obj.ip = {
     length: buffer.length,
@@ -313,6 +349,9 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     break;
   case 17:
     this.udp(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
+    break;
+  case 47:
+    this.gre(buffer.slice(obj.ip.hl*4, obj.ip.len), obj, pos + obj.ip.hl*4);
     break;
   default:
     console.log("Unknown ip.p", obj);
