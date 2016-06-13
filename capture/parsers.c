@@ -140,6 +140,45 @@ get_tlv_error:
     return 0;
 }
 /******************************************************************************/
+int moloch_parsers_asn_get_sequence(MolochASNSeq_t *seqs, int maxSeq, const unsigned char *data, int len, gboolean wrapper)
+{
+    int num = 0;
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+    if (wrapper) {
+        uint32_t ipc, itag, ilen;
+        unsigned char *ivalue;
+        ivalue = moloch_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
+        if (!ipc || itag != 16)
+            return 0;
+        BSB_INIT(bsb, ivalue, ilen);
+    }
+    while (BSB_NOT_ERROR(bsb) && num < maxSeq) {
+        seqs[num].value = moloch_parsers_asn_get_tlv(&bsb, &seqs[num].pc, &seqs[num].tag, &seqs[num].len);
+        if (seqs[num].value == 0)
+            break;
+        LOG("%d %p %d %d %d %d", num, seqs[num].value, seqs[num].pc, seqs[num].tag, seqs[num].len, BSB_IS_ERROR(bsb));
+        num++;
+    }
+    return num;
+}
+/******************************************************************************/
+const char *moloch_parsers_asn_sequence_to_string(MolochASNSeq_t *seq, int *len)
+{
+    if (!seq->pc) {
+        *len = seq->len;
+        return (const char*)seq->value;
+    }
+
+    BSB bsb;
+    BSB_INIT(bsb, seq->value, seq->len);
+    uint32_t ipc, itag, ilen;
+    char *ivalue;
+    ivalue = (char *)moloch_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
+    *len = ilen;
+    return ivalue;
+}
+/******************************************************************************/
 void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int len) {
     int buflen = 0;
     int pos = 0;
@@ -329,7 +368,7 @@ void moloch_parsers_exit() {
     }
 }
 /******************************************************************************/
-void moloch_print_hex_string(unsigned char* data, unsigned int length)
+void moloch_print_hex_string(const unsigned char* data, unsigned int length)
 {
     unsigned int i;
 
@@ -449,12 +488,12 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
 void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOG("Plugin '%s' built with different version of moloch.h", name);
+        LOG("Plugin '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
         exit(-1);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOG("Plugin '%s' built with different version of moloch.h", name);
+        LOG("Plugin '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
         exit(-1);
     }
 
@@ -520,6 +559,11 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
 
     if (remaining < 2)
         return;
+
+#ifdef DEBUG_PARSERS
+    char buf[101];
+    LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, moloch_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
+#endif
 
     for (i = 0; i < classifersUdp0.cnt; i++) {
         MolochClassify_t *c = classifersUdp0.arr[i];

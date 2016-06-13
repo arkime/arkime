@@ -107,7 +107,7 @@ void ssh_free(MolochSession_t UNUSED(*session), void *uw)
     MOLOCH_TYPE_FREE(SSHInfo_t, ssh);
 }
 /******************************************************************************/
-void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
+void ssh_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (moloch_session_has_protocol(session, "ssh"))
         return;
