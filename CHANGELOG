@@ -6,6 +6,7 @@
   - viewer - limit autocomplete indexes searched (issue #479)
   - db.pl - support setting shards and replicas for sessions
   - capture - simple tds5 parser
+  - capture - fix pfring stats (issue #488)
 
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)

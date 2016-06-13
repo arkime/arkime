@@ -70,6 +70,7 @@ static void *reader_pfring_thread(void *ringv)
 {
     pfring                *ring = ringv;
 
+    pfring_enable_ring(ring);
     while (1) {
         int r = pfring_loop(ring, reader_pfring_packet_cb, NULL, -1);
 
