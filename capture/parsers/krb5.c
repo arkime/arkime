@@ -22,6 +22,12 @@ static int realmField;
 static int cnameField;
 static int snameField;
 
+#define KRB5_MAX_SIZE 4096
+typedef struct {
+    unsigned char  data[2][KRB5_MAX_SIZE];
+    int            pos[2];
+} KRB5Info_t;
+
 /******************************************************************************/
 /* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --PrincipalName ::= SEQUENCE {
@@ -224,6 +230,44 @@ void krb5_udp_classify(MolochSession_t *session, const unsigned char *data, int 
     }
 }
 /******************************************************************************/
+void krb5_free(MolochSession_t UNUSED(*session), void *uw)
+{
+    KRB5Info_t            *krb5          = uw;
+
+    MOLOCH_TYPE_FREE(KRB5Info_t, krb5);
+}
+/******************************************************************************/
+int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int remaining, int which)
+{
+    KRB5Info_t *krb5 = uw;
+
+    remaining = MIN(remaining, KRB5_MAX_SIZE - krb5->pos[which]);
+    memcpy(krb5->data[which] + krb5->pos[which], data, remaining);
+    krb5->pos[which] += remaining;
+
+    if (krb5->pos[which] < 4)
+        return 0;
+
+    int len = (krb5->data[which][2] << 8) | krb5->data[which][3];
+    if (krb5->pos[which] < len)
+        return 0;
+    krb5_parse(session, krb5->data[which]+4, len);
+    memmove(krb5->data[which], krb5->data[which]+len+4, krb5->pos[which] - len - 4);
+    krb5->pos[which] -= (len + 4);
+    return 0;
+}
+/******************************************************************************/
+void krb5_tcp_classify(MolochSession_t *session, const unsigned char *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    if (which !=0 || data[0] != 0 || data[1] != 0)
+        return;
+
+    KRB5Info_t            *krb5          = MOLOCH_TYPE_ALLOC(KRB5Info_t);
+    krb5->pos[0] = krb5->pos[1] = 0;
+
+    moloch_parsers_register(session, krb5_tcp_parser, krb5, krb5_free);
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
 
@@ -245,7 +289,8 @@ void moloch_parser_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         NULL);
 
-    moloch_parsers_classifier_register_udp("krb5", (void *)(long)7, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
-    moloch_parsers_classifier_register_udp("krb5", (void *)(long)9, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    moloch_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    moloch_parsers_classifier_register_udp("krb5", 0, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    moloch_parsers_classifier_register_tcp("krb5", 0, 13, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
 }
 

@@ -67,7 +67,8 @@ void tds_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
 
     moloch_session_add_protocol(session, "tds");
 
-    TDSInfo_t            *tds          = MOLOCH_TYPE_ALLOC0(TDSInfo_t);
+    TDSInfo_t            *tds          = MOLOCH_TYPE_ALLOC(TDSInfo_t);
+    tds->pos[0] = tds->pos[1] = 0;
 
     moloch_parsers_register(session, tds_parser, tds, tds_free);
 }
