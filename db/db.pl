@@ -85,6 +85,7 @@ sub showHelp($)
     print "  rm <fn>                      - Remove a pcap file in the database (doesn't change disk)\n";
     print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
+    print "  add-missing <node> <dir>     - Add to db any MISSING file on THIS machine for named node and directory\n";
     print "  expire <type> <num> [<opts>] - Perform daily maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
@@ -1946,9 +1947,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|field|force-?put-?version)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2134,6 +2135,31 @@ sub printIndex {
     print "Deleting ", $results->{hits}->{total}, " stats\n";
     foreach my $hit (@{$results->{hits}->{hits}}) {
         esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
+    }
+    exit 0;
+} elsif ($ARGV[1] =~ /^add-?missing$/) {
+    my $dir = $ARGV[3];
+    chop $dir if (substr($dir, -1) eq "/");
+    opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
+    my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
+    closedir $dh;
+    print "Checking ", scalar @files, " files, this may take a while.\n";
+    foreach my $file (@files) {
+        $file =~ /(\d+)-(\d+).pcap/;
+        my $filenum = int($2);
+        my $ctime = (stat("$dir/$file"))[10];
+        my $info = esGet("/${PREFIX}files/file/$ARGV[2]-$filenum", 1);
+        if (!$info->{found}) {
+            print "Adding $dir/$file $filenum $ctime\n";
+            esPost("/${PREFIX}files/file/$ARGV[2]-$filenum", to_json({
+                         'locked' => 0,
+                         'first' => $ctime,
+                         'num' => $filenum,
+                         'name' => "$dir/$file",
+                         'node' => $ARGV[2]}), 1);
+        } elsif ($verbose > 0) {
+            print "Ok $dir/$file\n";
+        }
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
