@@ -357,6 +357,11 @@ gboolean reader_libpcapfile_read()
         return TRUE;
     }
 
+    // pause reading if too many packets are waiting to be processed
+    if (moloch_packet_outstanding() > (int32_t)(config.maxPacketsInQueue/2)) {
+        return TRUE;
+    }
+
     int r = pcap_dispatch(pcap, 10000, reader_libpcapfile_pcap_cb, NULL);
 
     // Some kind of failure, move to the next file or quit
