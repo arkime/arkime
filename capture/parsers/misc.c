@@ -19,11 +19,6 @@ extern MolochConfig_t        config;
 static int userField;
 
 /******************************************************************************/
-void bt_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    moloch_session_add_protocol(session, "bittorrent");
-}
-/******************************************************************************/
 void rdp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 
@@ -42,11 +37,6 @@ void imap_classify(MolochSession_t *session, const unsigned char *data, int len,
     if (moloch_memstr((const char *)data+5, len-5, "IMAP", 4)) {
         moloch_session_add_protocol(session, "imap");
     }
-}
-/******************************************************************************/
-void pop3_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    moloch_session_add_protocol(session, "pop3");
 }
 /******************************************************************************/
 void gh0st_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
@@ -78,20 +68,10 @@ void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, 
         moloch_session_add_protocol(session, "vnc");
 }
 /******************************************************************************/
-void redis_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    moloch_session_add_protocol(session, "redis");
-}
-/******************************************************************************/
 void mongo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (data[12] == 0xd4 && data[13] == 0x07 && g_strstr_len((gchar*)data+20, len-20, ".$cmd") != NULL)
         moloch_session_add_protocol(session, "mongo");
-}
-/******************************************************************************/
-void sip_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    moloch_session_add_protocol(session, "sip");
 }
 /******************************************************************************/
 void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
@@ -115,31 +95,31 @@ void user_classify(MolochSession_t *session, const unsigned char *data, int len,
     moloch_field_string_add(userField, session, (char*)data+5, i-5, TRUE);
 }
 /******************************************************************************/
-void thrift_classify(MolochSession_t *UNUSED(session), const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+void misc_add_protocol_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
-    moloch_session_add_protocol(session, "thrift");
+    moloch_session_add_protocol(session, uw);
 }
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_parsers_classifier_register_tcp("bt", NULL, 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, bt_classify);
+    moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("rdp", NULL, 0, (unsigned char*)"\x03\x00", 2, rdp_classify);
     moloch_parsers_classifier_register_tcp("imap", NULL, 0, (unsigned char*)"* OK ", 5, imap_classify);
-    moloch_parsers_classifier_register_tcp("pop3", NULL, 0, (unsigned char*)"+OK POP3 ", 9, pop3_classify);
+    moloch_parsers_classifier_register_tcp("pop3", "pop3", 0, (unsigned char*)"+OK POP3 ", 9, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("gh0st", NULL, 14, 0, 0, gh0st_classify);
     moloch_parsers_classifier_register_tcp("other220", NULL, 0, (unsigned char*)"220 ", 4, other220_classify);
     moloch_parsers_classifier_register_tcp("vnc", NULL, 0, (unsigned char*)"RFB 0", 5, vnc_classify);
 
-    moloch_parsers_classifier_register_tcp("redis", NULL, 0, (unsigned char*)"+PONG", 5, redis_classify);
-    moloch_parsers_classifier_register_tcp("redis", NULL, 0, (unsigned char*)"\x2a\x31\x0d\x0a\x24", 5, redis_classify);
-    moloch_parsers_classifier_register_tcp("redis", NULL, 0, (unsigned char*)"\x2a\x32\x0d\x0a\x24", 5, redis_classify);
-    moloch_parsers_classifier_register_tcp("redis", NULL, 0, (unsigned char*)"\x2a\x33\x0d\x0a\x24", 5, redis_classify);
-    moloch_parsers_classifier_register_tcp("redis", NULL, 0, (unsigned char*)"\x2a\x34\x0d\x0a\x24", 5, redis_classify);
-    moloch_parsers_classifier_register_tcp("redis", NULL, 0, (unsigned char*)"\x2a\x35\x0d\x0a\x24", 5, redis_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"+PONG", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x31\x0d\x0a\x24", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x32\x0d\x0a\x24", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x33\x0d\x0a\x24", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x34\x0d\x0a\x24", 5, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("redis", "redis", 0, (unsigned char*)"\x2a\x35\x0d\x0a\x24", 5, misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_udp("bt", NULL, 0, (unsigned char*)"d1:a", 4, bt_classify);
-    moloch_parsers_classifier_register_udp("bt", NULL, 0, (unsigned char*)"d1:r", 4, bt_classify);
-    moloch_parsers_classifier_register_udp("bt", NULL, 0, (unsigned char*)"d1:q", 4, bt_classify);
+    moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:a", 4, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:r", 4, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:q", 4, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x35\x00\x00\x00", 4, mongo_classify);
     moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x36\x00\x00\x00", 4, mongo_classify);
@@ -153,14 +133,17 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3e\x00\x00\x00", 4, mongo_classify);
     moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3f\x00\x00\x00", 4, mongo_classify);
 
-    moloch_parsers_classifier_register_tcp("sip", NULL, 0, (unsigned char*)"SIP/2.0", 7, sip_classify);
-    moloch_parsers_classifier_register_tcp("sip", NULL, 0, (unsigned char*)"REGISTER sip:", 13, sip_classify);
+    moloch_parsers_classifier_register_tcp("sip", "sip", 0, (unsigned char*)"SIP/2.0", 7, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("sip", "sip", 0, (unsigned char*)"REGISTER sip:", 13, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("jabber", NULL, 0, (unsigned char*)"<?xml", 5, jabber_classify);
 
     moloch_parsers_classifier_register_tcp("user", NULL, 0, (unsigned char*)"USER ", 5, user_classify);
 
-    moloch_parsers_classifier_register_tcp("thrift", NULL, 0, (unsigned char*)"\x80\x01\x00\x01\x00\x00\x00", 7, thrift_classify);
+    moloch_parsers_classifier_register_tcp("thrift", "thrift", 0, (unsigned char*)"\x80\x01\x00\x01\x00\x00\x00", 7, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_tcp("aerospike", "aerospike", 0, (unsigned char*)"\x02\x01\x00\x00\x00\x00\x00\x4e\x6e\x6f\x64\x65", 12, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("aerospike", "aerospike", 0, (unsigned char*)"\x02\x01\x00\x00\x00\x00\x00\x23\x6e\x6f\x64\x65", 12, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }
