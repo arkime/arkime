@@ -1,0 +1,75 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "prot-term-cnt" : 2,
+            "pa1" : 1,
+            "p1" : 58412,
+            "p2" : 88,
+            "psl" : [
+               313
+            ],
+            "by2" : 0,
+            "db" : 289,
+            "vlan" : [
+               300
+            ],
+            "by" : 297,
+            "vlan-cnt" : 1,
+            "fs" : [],
+            "lpd" : 1466252055201,
+            "pa2" : 0,
+            "mac2-term-cnt" : 1,
+            "by1" : 297,
+            "sl" : 0,
+            "db1" : 289,
+            "mac1-term-cnt" : 1,
+            "mac1-term" : [
+               "00:1b:17:00:02:30"
+            ],
+            "a2" : "10.150.10.150",
+            "mac2-term" : [
+               "00:00:5e:00:01:01"
+            ],
+            "db2" : 0,
+            "pa" : 1,
+            "pr" : 17,
+            "fb1" : "6a81f83081f5a103",
+            "lp" : 1466252055,
+            "no" : "test",
+            "fp" : 1466252055,
+            "krb5" : {
+               "sname-term" : [
+                  "krbtgt/xx.xxx.xxxxx.NET"
+               ],
+               "realm-term" : [
+                  "xx.xxx.xxxxx.NET"
+               ],
+               "sname-termcnt" : 1,
+               "cname-term" : [
+                  "xxxxxxxx$"
+               ],
+               "cname-termcnt" : 1,
+               "realm-termcnt" : 1
+            },
+            "fpd" : 1466252055201,
+            "ss" : 1,
+            "ps" : [
+               24
+            ],
+            "prot-term" : [
+               "udp",
+               "krb5"
+            ],
+            "a1" : "10.172.10.172"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160618",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

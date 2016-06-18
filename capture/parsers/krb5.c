@@ -249,7 +249,7 @@ int krb5_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *dat
         return 0;
 
     int len = (krb5->data[which][2] << 8) | krb5->data[which][3];
-    if (krb5->pos[which] < len)
+    if (krb5->pos[which] < len + 4)
         return 0;
     krb5_parse(session, krb5->data[which]+4, len);
     memmove(krb5->data[which], krb5->data[which]+len+4, krb5->pos[which] - len - 4);
