@@ -1988,9 +1988,9 @@ app.get('/spigraph.json', function(req, res) {
           r.map = mapMerge(result.responses[i].aggregations);
           eachCb(r, function () {
             results.items.push(r);
-            r.lpTotal = 0.0;
-            r.dbTotal = 0.0;
-            r.paTotal = 0.0;
+            r.lpHisto = 0.0;
+            r.dbHisto = 0.0;
+            r.paHisto = 0.0;
             var graph = r.graph;
             for (var i = 0; i < graph.lpHisto.length; i++) {
               r.lpHisto += graph.lpHisto[i][1];
@@ -2000,6 +2000,7 @@ app.get('/spigraph.json', function(req, res) {
             if (results.items.length === result.responses.length) {
               var s = req.query.sort || "lpHisto";
               results.items = results.items.sort(function(a,b) {return b[s]- a[s];});
+              //console.log("results", util.inspect(results, false, 50));
               return res.send(results);
             }
           });
