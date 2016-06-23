@@ -12,6 +12,7 @@
   - capture - throttle when reading offline pcap before overflowing packet queues
   - capture - aerospike protocol detection
   - capture - cassandra protocol detection
+  - viewer - spiview now sorts better when session vs packets is used
 
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)

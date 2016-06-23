@@ -1505,7 +1505,7 @@ function showTooltip(x, y, contents) {
   }).appendTo("body").fadeIn(200);
 }
 
-function setupGraph(graphId) {
+function setupGraph(graphId, skipChangeCb) {
   graphId = graphId || "#sessionGraph";
 
   // Pieces from Kibana
@@ -1544,12 +1544,14 @@ function setupGraph(graphId) {
     $("#date").val("-2").change();
   });
 
-  $('#sessionGraphSelect').change(function() {
-    $(".sessionGraph").each(function(index, item) {
-      drawGraph($('#sessionGraphSelect').val(), "#" + item.id);
+  if (skipChangeCb !== true) {
+    $('#sessionGraphSelect').change(function() {
+      $(".sessionGraph").each(function(index, item) {
+        drawGraph($('#sessionGraphSelect').val(), "#" + item.id);
+      });
+      return false;
     });
-    return false;
-  });
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////

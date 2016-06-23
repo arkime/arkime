@@ -1988,8 +1988,18 @@ app.get('/spigraph.json', function(req, res) {
           r.map = mapMerge(result.responses[i].aggregations);
           eachCb(r, function () {
             results.items.push(r);
+            r.lpTotal = 0.0;
+            r.dbTotal = 0.0;
+            r.paTotal = 0.0;
+            var graph = r.graph;
+            for (var i = 0; i < graph.lpHisto.length; i++) {
+              r.lpHisto += graph.lpHisto[i][1];
+              r.dbHisto += graph.dbHisto[i][1];
+              r.paHisto += graph.paHisto[i][1];
+            }
             if (results.items.length === result.responses.length) {
-              results.items = results.items.sort(function(a,b) {return b.count - a.count;});
+              var s = req.query.sort || "lpHisto";
+              results.items = results.items.sort(function(a,b) {return b[s]- a[s];});
               return res.send(results);
             }
           });

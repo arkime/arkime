@@ -88,12 +88,17 @@ block content
       }
     });
 
+    $('#sessionGraphSelect').change(function() {
+      loadData();
+    });
+
     function loadData() {
       $("#processing").show();
       startBlink();
       var params = buildParams();
       params.push({name:'size', value:+$("#size").val()});
       params.push({name:'field', value:$("#field").val()});
+      params.push({name:'sort', value:$("#sessionGraphSelect").val()});
       var state = $.param(params);
       var url = "spigraph.json?" + state;
 
@@ -154,7 +159,7 @@ block content
                                            "</div>" +
                                          "</div>");
 
-              setupGraph("#sessionGraph-" + i);
+              setupGraph("#sessionGraph-" + i, true);
               updateGraph(item.graph, "#sessionGraph-" + i);
               setupMap("#world-map-" + i);
               updateMap(item.map, "#world-map-" + i);
