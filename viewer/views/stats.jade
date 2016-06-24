@@ -519,8 +519,8 @@ block content
               $("#tot_" + key).html("" + (totals[key]/100.0));
               $("#avg_" + key).html("" + Math.floor(totals[key]/aiDisplay.length)/100);
             } else if (key === "freeSpaceP" || key === "memoryP") {
-              $("#tot_" + key).html(numberWithCommas(totals[key]));
-              $("#avg_" + key).html(numberWithCommas(totals[key]/aiDisplay.length));
+              $("#tot_" + key).html(numberWithCommas(totals[key].toFixed(2)));
+              $("#avg_" + key).html(numberWithCommas((totals[key]/aiDisplay.length).toFixed(2)));
             } else if (key === "memory") {
               $("#tot_" + key).html(numberWithCommas(Math.ceil(totals[key]/1000000)));
               $("#avg_" + key).html(numberWithCommas(Math.ceil((totals[key]/aiDisplay.length)/1000000)));
