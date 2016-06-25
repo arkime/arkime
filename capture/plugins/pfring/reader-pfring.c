@@ -103,25 +103,27 @@ void reader_pfring_start() {
     pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
 
 
-    pcap_t *pcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
-    if (config.dontSaveBPFs) {
-        int i;
-        if (bpf_programs) {
-            for (i = 0; i < config.dontSaveBPFsNum; i++) {
-                pcap_freecode(&bpf_programs[i]);
+    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    int t;
+    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
+        if (config.bpfsNum[t]) {
+            int i;
+            if (bpf_programs[t]) {
+                for (i = 0; i < config.bpfsNum[t]; i++) {
+                    pcap_freecode(&bpf_programs[t][i]);
+                }
+            } else {
+                bpf_programs[t] = malloc(config.bpfsNum[t]*sizeof(struct bpf_program));
             }
-        } else {
-            bpf_programs = malloc(config.dontSaveBPFsNum*sizeof(struct bpf_program));
-        }
-        for (i = 0; i < config.dontSaveBPFsNum; i++) {
-            if (pcap_compile(pcap, &bpf_programs[i], config.dontSaveBPFs[i], 0, PCAP_NETMASK_UNKNOWN) == -1) {
-                LOG("ERROR - Couldn't compile filter: '%s' with %s", config.dontSaveBPFs[i], pcap_geterr(pcap));
-                exit(1);
+            for (i = 0; i < config.bpfsNum[t]; i++) {
+                if (pcap_compile(dpcap, &bpf_programs[t][i], config.bpfs[t][i], 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                    LOG("ERROR - Couldn't compile filter: '%s' with %s", config.bpfs[t][i], pcap_geterr(dpcap));
+                    exit(1);
+                }
             }
+            moloch_reader_should_filter = reader_pfring_should_filter;
         }
-        moloch_reader_should_filter = reader_pfring_should_filter;
     }
-    pcap_close(pcap);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

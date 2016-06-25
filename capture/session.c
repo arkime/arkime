@@ -250,7 +250,7 @@ void moloch_session_free (MolochSession_t *session)
     g_array_free(session->fileLenArray, TRUE);
     g_array_free(session->fileNumArray, TRUE);
 
-    if (session->rootId)
+    if (session->rootId && session->rootId[0] != 'R')
         g_free(session->rootId);
 
     if (session->parserInfo) {

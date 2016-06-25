@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 15
+#define MOLOCH_API_VERSION 16
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -241,6 +241,7 @@ typedef struct {
  * Configuration Information
  */
 enum MolochRotate { MOLOCH_ROTATE_HOURLY, MOLOCH_ROTATE_DAILY, MOLOCH_ROTATE_WEEKLY, MOLOCH_ROTATE_MONTHLY };
+enum MolochFilterType { MOLOCH_FILTER_DONT_SAVE, MOLOCH_FILTER_MIN_SAVE, MOLOCH_FILTER_MAX};
 
 typedef struct moloch_config {
     gboolean  quitting;
@@ -293,9 +294,9 @@ typedef struct moloch_config {
     char     *dropGroup;
     char    **pluginsDir;
     char    **parsersDir;
-    char    **dontSaveBPFs;
-    int      *dontSaveBPFsStop;
-    int       dontSaveBPFsNum;
+    char    **bpfs[MOLOCH_FILTER_MAX];
+    int      *bpfsVal[MOLOCH_FILTER_MAX];
+    int       bpfsNum[MOLOCH_FILTER_MAX];
 
     char    **rootPlugins;
     char    **plugins;
@@ -470,9 +471,10 @@ typedef struct moloch_session {
     uint8_t                tcp_flags;
     uint8_t                parserLen;
     uint8_t                parserNum;
-
+    uint8_t                minSaving;
     uint8_t                maxFields;
     uint8_t                thread;
+
     uint16_t               haveTcpSession:1;
     uint16_t               needSave:1;
     uint16_t               stopSPI:1;
@@ -923,7 +925,7 @@ typedef struct {
 typedef void (*MolochReaderInit)(char *name);
 typedef int  (*MolochReaderStats)(MolochReaderStats_t *stats);
 typedef void (*MolochReaderStart)();
-typedef int  (*MolochReaderFilter)(const MolochPacket_t *packet);
+typedef int  (*MolochReaderFilter)(const MolochPacket_t *packet, enum MolochFilterType *type, int *index);
 typedef void (*MolochReaderStop)();
 
 extern MolochReaderStart moloch_reader_start;

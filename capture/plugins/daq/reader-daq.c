@@ -33,7 +33,7 @@ extern MolochPcapFileHdr_t   pcapFileHeader;
 LOCAL const DAQ_Module_t    *module;
 LOCAL void                  *handles[MAX_INTERFACES];
 
-LOCAL struct bpf_program    *bpf_programs = 0;
+LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 
 /******************************************************************************/
 int reader_daq_stats(MolochReaderStats_t *stats)
@@ -89,16 +89,19 @@ static void *reader_daq_thread(gpointer handle)
     return NULL;
 }
 /******************************************************************************/
-int reader_daq_should_filter(const MolochPacket_t *UNUSED(packet))
+int reader_daq_should_filter(const MolochPacket_t *packet, enum MolochFilterType *type, int *index)
 {
-    int i;
-    for (i = 0; i < config.dontSaveBPFsNum; i++) {
-        if (bpf_filter(bpf_programs[i].bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-            return i;
-            break;
+    int t, i;
+    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
+        for (i = 0; i < config.bpfsNum[t]; i++) {
+            if (bpf_filter(bpf_programs[t][i].bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+                *type = t;
+                *index = i;
+                return 1;
+            }
         }
     }
-    return -1;
+    return 0;
 }
 /******************************************************************************/
 void reader_daq_start() {
@@ -107,23 +110,26 @@ void reader_daq_start() {
     //ALW - Bug: assumes all linktypes are the same
     pcapFileHeader.linktype = daq_get_datalink_type(module, handles[0]);
     pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
-    pcap_t *pcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
-    if (config.dontSaveBPFs) {
-        int i;
-        if (bpf_programs) {
-            for (i = 0; i < config.dontSaveBPFsNum; i++) {
-                pcap_freecode(&bpf_programs[i]);
+    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    int t;
+    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
+        if (config.bpfsNum[t]) {
+            int i;
+            if (bpf_programs[t]) {
+                for (i = 0; i < config.bpfsNum[t]; i++) {
+                    pcap_freecode(&bpf_programs[t][i]);
+                }
+            } else {
+                bpf_programs[t] = malloc(config.bpfsNum[t]*sizeof(struct bpf_program));
             }
-        } else {
-            bpf_programs= malloc(config.dontSaveBPFsNum*sizeof(struct bpf_program));
-        }
-        for (i = 0; i < config.dontSaveBPFsNum; i++) {
-            if (pcap_compile(pcap, &bpf_programs[i], config.dontSaveBPFs[i], 0, PCAP_NETMASK_UNKNOWN) == -1) {
-                LOG("ERROR - Couldn't compile filter: '%s' with %s", config.dontSaveBPFs[i], pcap_geterr(pcap));
-                exit(1);
+            for (i = 0; i < config.bpfsNum[t]; i++) {
+                if (pcap_compile(dpcap, &bpf_programs[t][i], config.bpfs[t][i], 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                    LOG("ERROR - Couldn't compile filter: '%s' with %s", config.bpfs[t][i], pcap_geterr(dpcap));
+                    exit(1);
+                }
             }
+            moloch_reader_should_filter = reader_daq_should_filter;
         }
-        moloch_reader_should_filter = reader_daq_should_filter;
     }
 
     int i;

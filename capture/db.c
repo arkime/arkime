@@ -284,6 +284,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (!config.dryRun && !session->filePosArray->len)
         return;
 
+    if (session->packets[0] + session->packets[1] < session->minSaving) {
+        return;
+    }
 
     totalSessions++;
     session->segments++;

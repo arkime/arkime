@@ -53,6 +53,8 @@ LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL  MolochPacketHead_t    fragsQ;
 
+LOCAL  gboolean              callFilters;
+
 
 int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int len);
 
@@ -519,11 +521,16 @@ LOCAL void *moloch_packet_thread(void *threadp)
         }
 
         /* Check if the stop saving bpf filters match */
-        if (session->packets[packet->direction] == 0 && session->stopSaving == 0 && config.dontSaveBPFsNum) {
+        if (session->packets[packet->direction] == 0 && session->stopSaving == 0 && callFilters) {
             if (moloch_reader_should_filter) {
-                int i = moloch_reader_should_filter(packet);
-                if (i >= 0)
-                    session->stopSaving = config.dontSaveBPFsStop[i];
+                enum MolochFilterType type;
+                int index;
+                if (moloch_reader_should_filter(packet, &type, &index)) {
+                    if (type == MOLOCH_FILTER_DONT_SAVE)
+                        session->stopSaving = config.bpfsVal[type][index];
+                    else if (type == MOLOCH_FILTER_MIN_SAVE)
+                        session->minSaving = config.bpfsVal[type][index];
+                }
             }
         }
 
@@ -1169,6 +1176,8 @@ int moloch_packet_frag_cmp(const void *keyv, const void *elementv)
 /******************************************************************************/
 void moloch_packet_init()
 {
+    callFilters = config.bpfsNum[MOLOCH_FILTER_DONT_SAVE] || config.bpfsNum[MOLOCH_FILTER_MIN_SAVE];
+
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
     pcapFileHeader.version_minor = 4;

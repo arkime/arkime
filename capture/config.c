@@ -297,27 +297,31 @@ void moloch_config_load()
         g_strfreev(tags);
     }
 
-    config.dontSaveBPFs     = moloch_config_str_list(keyfile, "dontSaveBPFs", NULL);
-    if (config.dontSaveBPFs) {
-        for (i = 0; config.dontSaveBPFs[i]; i++);
-        config.dontSaveBPFsNum = i;
-        config.dontSaveBPFsStop = malloc(config.dontSaveBPFsNum*sizeof(int));
+    char *bpfsStrs[MOLOCH_FILTER_MAX] = {"dontSaveBPFs", "minPacketsSaveBPFs"};
+    int t;
+    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
+        config.bpfs[t]     = moloch_config_str_list(keyfile, bpfsStrs[t], NULL);
+        if (config.bpfs[t]) {
+            for (i = 0; config.bpfs[t][i]; i++);  //empty loop, counting
+            config.bpfsNum[t] = i;
+            config.bpfsVal[t] = malloc(config.bpfsNum[t]*sizeof(int));
 
-        GRegex     *regex = g_regex_new(":\\s*(\\d+)\\s*$", 0, 0, 0);
-        GMatchInfo *match_info;
-        for (i = 0; config.dontSaveBPFs[i]; i++) {
-            g_regex_match(regex, config.dontSaveBPFs[i], 0, &match_info);
-            if (g_match_info_matches(match_info)) {
-                config.dontSaveBPFsStop[i] = atoi(g_match_info_fetch(match_info, 1));
-                gint pos;
-                g_match_info_fetch_pos(match_info, 0, &pos, NULL);
-                config.dontSaveBPFs[i][pos] = 0;
-            } else {
-                config.dontSaveBPFsStop[i] = 1;
+            GRegex     *regex = g_regex_new(":\\s*(\\d+)\\s*$", 0, 0, 0);
+            GMatchInfo *match_info;
+            for (i = 0; config.bpfs[t][i]; i++) {
+                g_regex_match(regex, config.bpfs[t][i], 0, &match_info);
+                if (g_match_info_matches(match_info)) {
+                    config.bpfsVal[t][i] = atoi(g_match_info_fetch(match_info, 1));
+                    gint pos;
+                    g_match_info_fetch_pos(match_info, 0, &pos, NULL);
+                    config.bpfs[t][i][pos] = 0;
+                } else {
+                    config.bpfsVal[t][i] = 1;
+                }
+                g_match_info_free(match_info);
             }
-            g_match_info_free(match_info);
+            g_regex_unref(regex);
         }
-        g_regex_unref(regex);
     }
 
     config.plugins          = moloch_config_str_list(keyfile, "plugins", NULL);

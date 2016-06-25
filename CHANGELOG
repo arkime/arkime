@@ -13,6 +13,8 @@
   - capture - aerospike protocol detection
   - capture - cassandra protocol detection
   - viewer - spiview now sorts better when session vs packets is used
+  - capture - minPacketsSaveBPFs which skips saving SPI data for matching sessions, 
+              useful for known internal scanning hosts
 
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)
