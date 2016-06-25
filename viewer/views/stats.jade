@@ -374,6 +374,13 @@ block content
           },
           {
             data : "freeSpaceP",
+            render: function (data, type, row, meta) {
+              if (type === "display") {
+                return data.toFixed(2);
+              } else {
+                return data;
+              }
+            },
             className: "right",
             searchable: false
           },
@@ -392,7 +399,7 @@ block content
             data : "cpu",
             render: function (data, type, row, meta) {
               if (type === "display") {
-                return data/100.0;
+                return (data/100.0).toFixed(2);
               } else {
                 return data;
               }
@@ -516,8 +523,8 @@ block content
             }
 
             if (key === "cpu") {
-              $("#tot_" + key).html("" + (totals[key]/100.0));
-              $("#avg_" + key).html("" + Math.floor(totals[key]/aiDisplay.length)/100);
+              $("#tot_" + key).html("" + (totals[key]/100.0).toFixed(2));
+              $("#avg_" + key).html("" + ((totals[key]/aiDisplay.length)/100).toFixed(2));
             } else if (key === "freeSpaceP" || key === "memoryP") {
               $("#tot_" + key).html(numberWithCommas(totals[key].toFixed(2)));
               $("#avg_" + key).html(numberWithCommas((totals[key]/aiDisplay.length).toFixed(2)));
