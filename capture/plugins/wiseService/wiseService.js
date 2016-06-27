@@ -44,6 +44,7 @@ var internals = {
   getDomains: [],
   getMd5s: [],
   getEmails: [],
+  getURLs: [],
   printStats: [],
   sources: [],
   rstats: [0,0,0,0],
@@ -174,6 +175,9 @@ internals.sourceApi = {
     if (src.getEmail) {
       internals.getEmails.push(src);
     }
+    if (src.getURL) {
+      internals.getURLs.push(src);
+    }
     if (src.printStats) {
       internals.printStats.push(src);
     }
@@ -204,8 +208,8 @@ app.get("/rightClicks", function(req, res) {
   res.send(internals.rightClicks);
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail"];
-internals.type2Name = ["ip", "domain", "md5", "email"];
+internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail", "getURL"];
+internals.type2Name = ["ip", "domain", "md5", "email", "url"];
 app.post("/get", function(req, res) {
   var offset = 0;
 
@@ -273,7 +277,7 @@ app.post("/get", function(req, res) {
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.type2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail"};
+internals.type2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail", url:"getURL", 4:"getURL"};
 app.get("/:source/:type/:value", function(req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {

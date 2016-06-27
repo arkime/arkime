@@ -32,6 +32,7 @@ function ThreatStreamSource (api, section) {
   this.domains = new HashTable();
   this.emails  = new HashTable();
   this.md5s    = new HashTable();
+  this.urls    = new HashTable();
 }
 util.inherits(ThreatStreamSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +48,8 @@ ThreatStreamSource.prototype.parseFile = function()
   self.emails.reserve(2000000);
   self.md5s.clear();
   self.md5s.reserve(2000000);
+  self.urls.clear();
+  self.urls.reserve(200000);
 
   fs.createReadStream('/tmp/threatstream.zip')
     .pipe(unzip.Parse())
@@ -69,17 +72,19 @@ ThreatStreamSource.prototype.parseFile = function()
                                           self.confidenceField, "" + item.confidence,
                                           self.idField, "" + item.id,
                                           self.typeField, item.itype.toLowerCase(),
-                                          self.maltypeField, item.maltype.toLowerCase());
-              num = 5;
+                                          self.maltypeField, item.maltype.toLowerCase(),
+                                          self.sourceField, item.source);
+              num = 6;
             } else {
               encoded = wiseSource.encode(self.severityField, item.severity.toLowerCase(),
                                           self.confidenceField, "" + item.confidence,
                                           self.idField, "" + item.id,
-                                          self.typeField, item.itype.toLowerCase());
-              num = 4;
+                                          self.typeField, item.itype.toLowerCase(),
+                                          self.sourceField, item.source);
+              num = 5;
             }
           } catch (e) {
-            console.log("ERROR -", entry.path, e, item);
+            console.log("ERROR -", entry.path, e, item, e.stack);
             return;
           }
                                              
@@ -92,6 +97,8 @@ ThreatStreamSource.prototype.parseFile = function()
             self.emails.put(item.email, {num: num, buffer: encoded});
           } else if (item.itype.match(/_md5/)) {
             self.md5s.put(item.md5, {num: num, buffer: encoded});
+          } else if (item.itype.match(/_url/)) {
+            self.urls.put(item.url, {num: num, buffer: encoded});
           }
         });
         //console.log("Threatstream - Done", entry.path);
@@ -132,6 +139,7 @@ ThreatStreamSource.prototype.init = function() {
   this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;shortcut:2;count:true");
   this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
   this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
+  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;shortcut:5;count:true");
 
   this.api.addView("threatstream", 
     "if (session.threatstream)\n" +
@@ -141,7 +149,8 @@ ThreatStreamSource.prototype.init = function() {
     "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
     "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
     "    +arrayList(session.threatstream, 'type-term', 'Type', 'threatstream.type')\n" +
-    "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n"
+    "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n" +
+    "    +arrayList(session.threatstream, 'source-term', 'Source', 'threatstream.source')\n"
   );
 
   this.api.addRightClick("threatstreamip", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});

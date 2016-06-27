@@ -213,13 +213,18 @@ WISESource.encode = function ()
 {
   var a, len = 0;
   for (a = 1; a < arguments.length; a += 2) {
-    len += 3 + arguments[a].length;
+    var l = Buffer.byteLength(arguments[a]);
+    if (l > 250) {
+      arguments[a] = arguments[a].substring(0, 240);
+    }
+    len += 3 + Buffer.byteLength(arguments[a]);
   }
   var buf = new Buffer(len);
   var offset = 0;
   for (a = 1; a < arguments.length; a += 2) {
       buf.writeUInt8(arguments[a-1], offset);
-      buf.writeUInt8(arguments[a].length+1, offset+1);
+      len = Buffer.byteLength(arguments[a]);
+      buf.writeUInt8(len+1, offset+1);
       var l = buf.write(arguments[a], offset+2);
       buf.writeUInt8(0, offset+l+2);
       offset += 3 + l;
