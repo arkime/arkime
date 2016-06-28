@@ -1,0 +1,75 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "pa2" : 1,
+            "a2" : "64.15.116.182",
+            "fb2" : "0a79f24eb64a9c07",
+            "as2" : "AS36040 Google Inc.",
+            "prot-term-cnt" : 2,
+            "mac2-term" : [
+               "52:54:00:12:35:02"
+            ],
+            "by2" : 119,
+            "p1" : 40482,
+            "lp" : 1462966377,
+            "rir2" : "ARIN",
+            "fb1" : "0979f24eb64a9c07",
+            "mac1-term-cnt" : 1,
+            "sl" : 195,
+            "db" : 2879,
+            "mac2-term-cnt" : 1,
+            "db2" : 111,
+            "pa1" : 2,
+            "psl" : [
+               1408,
+               1408,
+               135
+            ],
+            "db1" : 2768,
+            "quic" : {
+               "version-termcnt" : 1,
+               "host-term" : [
+                  "www.google.com"
+               ],
+               "host-termcnt" : 1,
+               "version-term" : [
+                  "Q033"
+               ]
+            },
+            "by" : 2903,
+            "mac1-term" : [
+               "08:00:27:cc:18:37"
+            ],
+            "g2" : "USA",
+            "p2" : 443,
+            "no" : "test",
+            "fpd" : 1462966377795,
+            "ss" : 1,
+            "prot-term" : [
+               "udp",
+               "quic"
+            ],
+            "by1" : 2784,
+            "pa" : 3,
+            "lpd" : 1462966377990,
+            "fp" : 1462966377,
+            "fs" : [],
+            "a1" : "10.0.2.15",
+            "ps" : [
+               24,
+               1432,
+               2840
+            ],
+            "pr" : 17
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160511",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

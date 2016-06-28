@@ -1,0 +1,83 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "p1" : 50509,
+            "fpd" : 1429686316293,
+            "a2" : "216.58.208.195",
+            "fp" : 1429686316,
+            "as2" : "AS15169 Google Inc.",
+            "g2" : "USA",
+            "prot-term-cnt" : 2,
+            "mac2-term" : [
+               "00:12:ef:c0:d7:a3"
+            ],
+            "pa2" : 2,
+            "pa" : 5,
+            "lp" : 1429686316,
+            "rir2" : "ARIN",
+            "a1" : "10.44.100.22",
+            "pa1" : 3,
+            "pr" : 17,
+            "no" : "test",
+            "db2" : 2768,
+            "sl" : 33,
+            "ps" : [
+               24,
+               1432,
+               2840,
+               4248,
+               4346
+            ],
+            "prot-term" : [
+               "udp",
+               "quic"
+            ],
+            "mac1-term" : [
+               "a0:88:b4:1e:16:0c"
+            ],
+            "fb1" : "0d00db40daa3bbe2",
+            "mac2-term-cnt" : 1,
+            "psl" : [
+               1408,
+               1408,
+               1408,
+               98,
+               1408
+            ],
+            "db1" : 2842,
+            "fb2" : "0c00db40daa3bbe2",
+            "fs" : [],
+            "ss" : 1,
+            "db" : 5610,
+            "mac1-term-cnt" : 1,
+            "by2" : 2784,
+            "by1" : 2866,
+            "quic" : {
+               "version-term" : [
+                  "Q024"
+               ],
+               "host-termcnt" : 1,
+               "version-termcnt" : 1,
+               "ua-term" : [
+                  "canary Chrome/44.0.2375.0"
+               ],
+               "ua-termcnt" : 1,
+               "host-term" : [
+                  "www.google.fr"
+               ]
+            },
+            "p2" : 443,
+            "lpd" : 1429686316327,
+            "by" : 5650
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-150422"
+            }
+         }
+      }
+   ]
+}
+

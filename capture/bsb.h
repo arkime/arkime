@@ -255,8 +255,11 @@ do {                                              \
     }                                             \
 } while (0)
 
+#define BSB_LIMPORT_ptr BSB_IMPORT_ptr
 #define BSB_IMPORT_skip BSB_EXPORT_skip
+#define BSB_LIMPORT_skip BSB_EXPORT_skip
 #define BSB_IMPORT_rewind BSB_EXPORT_rewind
+#define BSB_LIMPORT_rewind BSB_EXPORT_rewind
 
 #define BSB_IMPORT_zbyte(b, x, size)              \
 do {                                              \
