@@ -3203,7 +3203,7 @@ function reqGetRawBody(req, cb) {
       if (err) {
         return cb(err);
       }
-      if (typeof(items) === "undefined" || items.length === 0) {
+      if (items === undefined || items.length === 0) {
         return cb("No match");
       }
       cb(err, items[0].data);
