@@ -114,7 +114,7 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
         BSB_LIMPORT_u16(dbsb, tagLen);
         BSB_LIMPORT_skip(dbsb, 2);
 
-        if (memcmp(tag, "CHLO", 4) == 0) {
+        if (tag && memcmp(tag, "CHLO", 4) == 0) {
             moloch_session_add_protocol(session, "quic");
         } else {
             return 0;
@@ -129,6 +129,9 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
 
             BSB_LIMPORT_ptr(dbsb, subTag, 4);
             BSB_LIMPORT_u32(dbsb, endOffset);
+
+            if (!subTag)
+                return 0;
 
             if (memcmp(subTag, "SNI\x00", 4) == 0) {
                 moloch_field_string_add(hostField, session, (char *)tagDataStart+start, endOffset-start, TRUE);
