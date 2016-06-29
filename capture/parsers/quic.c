@@ -54,10 +54,7 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
         return 0;
     }
 
-    // Diversification nonce Q033 and later
-    if ((data[0] & 0x04) && version >= 33) {
-        offset += 32;
-    }
+    // Diversification only is from server to client, so we can ignore
 
     // Packet number size
     if ((data[0] & 0x30) == 0) {
@@ -70,7 +67,8 @@ int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned c
     offset += 12;
 
     // Private Flags
-    offset++;
+    if (version < 34)
+        offset++;
 
     if (offset > len)
         return 0;
