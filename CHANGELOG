@@ -17,6 +17,8 @@
               useful for known internal scanning hosts
   - wise - threatstream includes source now (issue #491)
   - capture - simple quic parser
+  - capture - pcapDirTemplate for directory naming inside pcapDir
+              supports strftime sequences using local time (issue #496)
 
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)

@@ -282,6 +282,7 @@ typedef struct moloch_config {
     char    **interface;
     int       pcapDirPos;
     char    **pcapDir;
+    char     *pcapDirTemplate;
     char     *bpf;
     char     *yara;
     char     *emailYara;

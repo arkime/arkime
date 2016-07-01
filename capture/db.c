@@ -1512,6 +1512,39 @@ fetch_file_num:
     }
 }
 /******************************************************************************/
+// Modified From https://github.com/phaag/nfdump/blob/master/bin/flist.c
+// Copyright (c) 2014, Peter Haag
+void moloch_db_mkpath(char *path)
+{
+    struct stat sb;
+    char *slash = path;
+    int done = 0;
+
+    while (!done) {
+        slash += strspn(slash, "/");
+        slash += strcspn(slash, "/");
+
+        done = (*slash == '\0');
+        *slash = '\0';
+
+        if (stat(path, &sb)) {
+            if (config.debug) {
+                LOG("mkdir(%s)", path);
+            }
+            if (errno != ENOENT || (mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP) && errno != EEXIST)) {
+                LOG("mkdir() error for '%s': %s\n", path, strerror(errno));
+                exit(1);
+            }
+        } else if (!S_ISDIR(sb.st_mode)) {
+            LOG("Path '%s': %s ", path, strerror(ENOTDIR));
+            exit(1);
+        }
+
+        if (!done)
+            *slash = '/';
+    }
+}
+/******************************************************************************/
 char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id)
 {
     char               key[100];
@@ -1554,15 +1587,45 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
         json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d}", num, name, fp, config.nodeName, size, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
     } else {
+
+        uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
+        if (flen >= sizeof(filename)-1) {
+            LOG("pcapDir %s is too large", config.pcapDir[config.pcapDirPos]);
+            exit(1);
+        }
+
+        strcpy(filename, config.pcapDir[config.pcapDirPos]);
+
         tmp = localtime(&firstPacket);
 
-        strcpy(filename, config.pcapDir[config.pcapDirPos++]);
+        if (config.pcapDirTemplate) {
+            int tlen;
+
+            // pcapDirTemplate must start with /, checked in config.c
+            if (filename[flen-1] == '/')
+                flen--;
+
+            if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, tmp)) == 0) {
+                LOG("Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
+                exit(1);
+            }
+            flen += tlen;
+        }
+
+        config.pcapDirPos++;
         if (!config.pcapDir[config.pcapDirPos])
             config.pcapDirPos = 0;
 
-        if (filename[strlen(filename)-1] != '/')
-            strcat(filename, "/");
-        snprintf(filename+strlen(filename), sizeof(filename) - strlen(filename), "%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
+        if (filename[flen-1] == '/') {
+            flen--;
+        }
+
+        struct stat sb;
+        if (stat(filename, &sb)) {
+            moloch_db_mkpath(filename);
+        }
+
+        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
         json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d}", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);

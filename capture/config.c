@@ -374,6 +374,12 @@ void moloch_config_load()
     }
     g_free(offlineRegex);
 
+    config.pcapDirTemplate  = moloch_config_str(keyfile, "pcapDirTemplate", NULL);
+    if (config.pcapDirTemplate && config.pcapDirTemplate[0] != '/') {
+        printf("pcapDirTemplate MUST start with a / '%s'\n", config.pcapDirTemplate);
+        exit(1);
+    }
+
     config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 4, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
     config.maxFileTimeM          = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
@@ -625,6 +631,8 @@ void moloch_config_exit()
         g_free(config.emailYara);
     if (config.pcapDir)
         g_strfreev(config.pcapDir);
+    if (config.pcapDirTemplate)
+        g_free(config.pcapDirTemplate);
     if (config.pluginsDir)
         g_strfreev(config.pluginsDir);
     if (config.parsersDir)
