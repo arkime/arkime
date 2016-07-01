@@ -976,16 +976,6 @@ $(document).ready(function() {
           andnot: {name: "<b>and not</b> " + safeStr(url), exp: "!=", info: info}
         };
 
-        var urlParams = parseUrlParams();
-        var dateparams;
-	if (urlParams.startTime && urlParams.stopTime) {
-          dateparams = "startTime=" + urlParams.startTime +
-                "&stopTime=" + urlParams.stopTime
-	}
-	else {
-          dateparams = "date=" + urlParams.date;
-        }
-		  
         for (var key in molochRightClick) {
           var rc = molochRightClick[key];
           if ((!rc.category || info.category.indexOf(rc.category) === -1) &&
@@ -993,11 +983,7 @@ $(document).ready(function() {
             continue;
           }
 
-
           var result = molochRightClick[key].url
-                                            .replace("%EXPRESSION%", encodeURIComponent(urlParams.expression))
-                                            .replace("%DATE%", dateparams)
-                                            .replace("%FIELD%", info.field)
                                             .replace("%TEXT%", text)
                                             .replace("%HOST%", host)
                                             .replace("%URL%", encodeURIComponent("http:" + url));
@@ -1008,7 +994,6 @@ $(document).ready(function() {
           }
 
           var name = (molochRightClick[key].nameDisplay || nameDisplay)
-                                          .replace("%FIELD%", info.field)
                                           .replace("%TEXT%", text)
                                           .replace("%HOST%", host)
                                           .replace("%URL%", url);
@@ -1520,7 +1505,7 @@ function showTooltip(x, y, contents) {
   }).appendTo("body").fadeIn(200);
 }
 
-function setupGraph(graphId) {
+function setupGraph(graphId, skipChangeCb) {
   graphId = graphId || "#sessionGraph";
 
   // Pieces from Kibana
@@ -1559,12 +1544,14 @@ function setupGraph(graphId) {
     $("#date").val("-2").change();
   });
 
-  $('#sessionGraphSelect').change(function() {
-    $(".sessionGraph").each(function(index, item) {
-      drawGraph($('#sessionGraphSelect').val(), "#" + item.id);
+  if (skipChangeCb !== true) {
+    $('#sessionGraphSelect').change(function() {
+      $(".sessionGraph").each(function(index, item) {
+        drawGraph($('#sessionGraphSelect').val(), "#" + item.id);
+      });
+      return false;
     });
-    return false;
-  });
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
