@@ -17,12 +17,14 @@
 static char                 *qclasses[256];
 static char                 *qtypes[256];
 static char                 *statuses[16] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "11", "12", "13", "14", "15"};
+static char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
 
 static int                   ipField;
 static int                   hostField;
 static int                   queryTypeField;
 static int                   queryClassField;
 static int                   statusField;
+static int                   opCodeField;
 
 typedef struct {
     unsigned char      *data[2];
@@ -129,11 +131,13 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
     int qr      = (data[2] >> 7) & 0x1;
     int opcode  = (data[2] >> 3) & 0xf;
 
-    if (opcode != 0)
-        return;
+/*    if (opcode != 0)
+        return; */
 
     int qdcount = (data[4] << 8) | data[5];
     int ancount = (data[6] << 8) | data[7];
+    int prereqs = (data[8] << 8) | data[9];
+    int updates = (data[10] << 8) | data[11];
 
     if (qdcount > 10 || qdcount <= 0)
         return;
@@ -174,6 +178,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             g_free(lower);
         }
     }
+    moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     moloch_session_add_protocol(session, "dns");
 
     if (qr == 0)
@@ -182,7 +187,7 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
     int rcode      = data[3] & 0xf;
     moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
 
-    for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount; i++) {
+    for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount + prereqs + updates; i++) {
         unsigned char  namebuf[8000];
         int namelen = sizeof(namebuf);
         unsigned char *name = dns_name(data, len, &bsb, namebuf, &namelen);
@@ -216,6 +221,13 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
             in.s_addr = ptr[3] << 24 | ptr[2] << 16 | ptr[1] << 8 | ptr[0];
 
             moloch_field_int_add(ipField, session, in.s_addr);
+
+            if (opcode == 5) {
+                char *lower = g_ascii_strdown((char*)name, namelen);
+                if (lower && !moloch_field_string_add(hostField, session, lower, namelen, FALSE)) {
+                    g_free(lower);
+                }
+            }
             break;
         }
         case 5: {
@@ -353,6 +365,12 @@ void moloch_parser_init()
         "DNS lookup return code",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
+    
+    opCodeField = moloch_field_define("dns", "uptermfield",
+        "dns.opcode", "Op Code", "dns.opcode-term",
+        "DNS lookup op code",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
+        NULL);
 
     queryTypeField = moloch_field_define("dns", "uptermfield",
         "dns.query.type", "Query Type", "dns.qt-term",
@@ -443,13 +461,16 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x01\x00");
     DNS_CLASSIFY("\x01\x10");
     DNS_CLASSIFY("\x01\x82");
+    DNS_CLASSIFY("\x28\x00");
     DNS_CLASSIFY("\x81\x00");
     DNS_CLASSIFY("\x81\x80");
     DNS_CLASSIFY("\x81\x82");
     DNS_CLASSIFY("\x81\x90");
     DNS_CLASSIFY("\x81\xb0");
+    DNS_CLASSIFY("\x84\x00");
     DNS_CLASSIFY("\x84\x10");
     DNS_CLASSIFY("\x85\x00");
     DNS_CLASSIFY("\x85\x83");
+    DNS_CLASSIFY("\xa8\x00");
 }
 
