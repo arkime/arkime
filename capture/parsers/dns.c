@@ -125,7 +125,7 @@ unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsi
 void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
 {
 
-    if (len < 18)
+    if (len < 17)
         return;
 
     int qr      = (data[2] >> 7) & 0x1;
@@ -461,16 +461,24 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x01\x00");
     DNS_CLASSIFY("\x01\x10");
     DNS_CLASSIFY("\x01\x82");
-    DNS_CLASSIFY("\x28\x00");
+    DNS_CLASSIFY("\x28\x00"); // UPDATE request
+    DNS_CLASSIFY("\x80\x00");
+    DNS_CLASSIFY("\x80\x02"); // QUERY response, auth = 0, rd = 0, ra = 0, server failure
+    DNS_CLASSIFY("\x80\x05"); // QUERY response, auth = 0, rd = 0, ra = 0, query refused
     DNS_CLASSIFY("\x81\x00");
     DNS_CLASSIFY("\x81\x80");
     DNS_CLASSIFY("\x81\x82");
+    DNS_CLASSIFY("\x81\x83"); // QUERY response, auth = 1, rd = 1, ra = 1, no such name
     DNS_CLASSIFY("\x81\x90");
     DNS_CLASSIFY("\x81\xb0");
     DNS_CLASSIFY("\x84\x00");
     DNS_CLASSIFY("\x84\x10");
+    DNS_CLASSIFY("\x84\x03"); // QUERY response, auth = 1, rd = 0, ra =0, no such name
+    DNS_CLASSIFY("\x84\x83"); // QUERY response, auth = 1, rd = 0, ra =1, no such name
+    DNS_CLASSIFY("\x84\x80"); // QUERY response, auth = 1, rd = 0, ra =1, no error
     DNS_CLASSIFY("\x85\x00");
+    DNS_CLASSIFY("\x85\x80"); // QUERY response, auth = 1, rd = 1, ra =1, no error
     DNS_CLASSIFY("\x85\x83");
-    DNS_CLASSIFY("\xa8\x00");
+    DNS_CLASSIFY("\xa8\x00"); // UPDATE response
 }
 
