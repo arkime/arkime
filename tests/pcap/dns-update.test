@@ -1,0 +1,95 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "fb2" : "6919a80400010000",
+            "by" : 340,
+            "a1" : "10.172.161.18",
+            "a2" : "208.84.0.53",
+            "prot-term-cnt" : 2,
+            "fs" : [],
+            "dnsho" : [
+               "seann-desktop2.redmond.corp.microsoft.com"
+            ],
+            "vlan-cnt" : 1,
+            "mac2-term-cnt" : 1,
+            "mac2-term" : [
+               "00:1b:17:00:03:24"
+            ],
+            "db1" : 162,
+            "mac1-term-cnt" : 2,
+            "pa" : 2,
+            "gdnsip" : [
+               "---"
+            ],
+            "rir2" : "ARIN",
+            "sl" : 24,
+            "no" : "test",
+            "asdnsip" : [
+               "---"
+            ],
+            "dns" : {
+               "status-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "status-term" : [
+                  "NOTIMPL"
+               ],
+               "opcode-term" : [
+                  "UPDATE"
+               ]
+            },
+            "vlan" : [
+               100
+            ],
+            "dnsip" : [
+               "10.172.161.18"
+            ],
+            "p2" : 53,
+            "db2" : 162,
+            "lpd" : 1467464485007,
+            "dnsipcnt" : 1,
+            "ps" : [
+               24,
+               210
+            ],
+            "db" : 324,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "ss" : 1,
+            "g2" : "USA",
+            "psl" : [
+               186,
+               186
+            ],
+            "rirdnsip" : [
+               ""
+            ],
+            "p1" : 51031,
+            "fpd" : 1467464484984,
+            "lp" : 1467464485,
+            "pa2" : 1,
+            "dnshocnt" : 1,
+            "by1" : 170,
+            "fb1" : "6919280000010001",
+            "mac1-term" : [
+               "3c:8a:b0:6f:27:c5",
+               "3c:8a:b0:6e:77:c5"
+            ],
+            "by2" : 170,
+            "as2" : "AS8075 Microsoft Corporation",
+            "fp" : 1467464484,
+            "pr" : 17,
+            "pa1" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160702",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

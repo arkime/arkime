@@ -1,52 +1,36 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-030611",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "g1" : "USA",
-            "db2" : 0,
-            "lp" : 1055289992,
-            "mac2-term-cnt" : 1,
-            "fs" : [],
+            "by" : 1230,
+            "no" : "test",
             "a1" : "66.59.111.190",
+            "lpd" : 1055289992101,
+            "greip-cnt" : 2,
+            "greip-rir" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "ss" : 1,
             "mac2-term" : [
                "00:c0:ca:14:b0:52"
             ],
-            "db" : 0,
-            "ss" : 1,
-            "lpd" : 1055289992101,
-            "greip-cnt" : 2,
-            "ps" : [
-               24,
-               162,
-               300,
-               438,
-               576,
-               714,
-               852,
-               990,
-               6474,
-               6732
-            ],
-            "as1" : "AS11590 Cumberland Technologies International",
-            "by" : 1230,
+            "pa" : 10,
             "db1" : 0,
+            "mac2-term-cnt" : 1,
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "icmp",
                "gre"
             ],
-            "greip" : [
-               2887450946,
-               1111190921
-            ],
-            "greip-geo" : [
-               "---",
-               "USA"
-            ],
-            "p2" : 0,
-            "a2" : "172.28.2.3",
-            "rir2" : "ARIN",
-            "no" : "test",
-            "by2" : 742,
+            "rir1" : "ARIN",
+            "pa1" : 4,
             "psl" : [
                138,
                138,
@@ -59,208 +43,149 @@
                143,
                143
             ],
-            "pa2" : 6,
-            "sl" : 23309,
+            "p2" : 0,
+            "a2" : "172.28.2.3",
+            "g1" : "USA",
+            "p1" : 0,
+            "lp" : 1055289992,
             "mac1-term" : [
                "00:02:2d:56:4a:fd"
             ],
+            "fpd" : 1055289968793,
+            "as1" : "AS11590 Cumberland Technologies International",
+            "fp" : 1055289968,
+            "by2" : 742,
+            "greip-asn" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "db" : 0,
+            "rir2" : "ARIN",
+            "pa2" : 6,
+            "greip" : [
+               2887450946,
+               1111190921
+            ],
+            "by1" : 488,
             "prot-term-cnt" : 2,
-            "rir1" : "ARIN",
+            "sl" : 23309,
+            "db2" : 0,
+            "ps" : [
+               24,
+               162,
+               300,
+               438,
+               576,
+               714,
+               852,
+               990,
+               6474,
+               6732
+            ],
+            "pr" : 1,
+            "greip-geo" : [
+               "---",
+               "USA"
+            ],
+            "fs" : []
+         }
+      },
+      {
+         "body" : {
+            "ss" : 1,
+            "greip-cnt" : 2,
             "greip-rir" : [
                "ARIN",
                "ARIN"
             ],
-            "p1" : 0,
-            "pa" : 10,
-            "by1" : 488,
-            "fp" : 1055289968,
-            "pr" : 1,
-            "fpd" : 1055289968793,
+            "mac2-term" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "pa" : 2,
+            "a1" : "66.59.111.190",
+            "lpd" : 1055289973923,
+            "no" : "test",
+            "by" : 228,
+            "fb1" : "230b06ef00000000",
+            "psl" : [
+               130,
+               130
+            ],
+            "p2" : 123,
+            "rir1" : "ARIN",
+            "pa1" : 1,
+            "g1" : "USA",
+            "a2" : "18.26.4.105",
+            "as2" : "AS3 Massachusetts Institute of Technology",
+            "mac2-term-cnt" : 1,
             "mac1-term-cnt" : 1,
-            "pa1" : 4,
+            "db1" : 106,
+            "prot-term" : [
+               "udp",
+               "gre"
+            ],
+            "by2" : 114,
             "greip-asn" : [
                "---",
                "AS11590 Cumberland Technologies International"
+            ],
+            "fp" : 1055289973,
+            "pa2" : 1,
+            "db" : 212,
+            "rir2" : "ARIN",
+            "p1" : 123,
+            "lp" : 1055289973,
+            "as1" : "AS11590 Cumberland Technologies International",
+            "mac1-term" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "fpd" : 1055289973849,
+            "fs" : [],
+            "greip-geo" : [
+               "---",
+               "USA"
+            ],
+            "pr" : 17,
+            "sl" : 74,
+            "prot-term-cnt" : 2,
+            "g2" : "USA",
+            "by1" : 114,
+            "greip" : [
+               2887450946,
+               1111190921
+            ],
+            "fb2" : "240206ee000003bc",
+            "db2" : 106,
+            "ps" : [
+               1128,
+               1258
             ]
          },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-030611",
-               "_type" : "session"
-            }
-         }
-      },
-      {
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions-030611"
             }
-         },
-         "body" : {
-            "greip-asn" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "pa1" : 1,
-            "fb1" : "230b06ef00000000",
-            "mac1-term-cnt" : 1,
-            "fpd" : 1055289973849,
-            "pr" : 17,
-            "fp" : 1055289973,
-            "by1" : 114,
-            "pa" : 2,
-            "rir1" : "ARIN",
-            "greip-rir" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "p1" : 123,
-            "prot-term-cnt" : 2,
-            "mac1-term" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "sl" : 74,
-            "pa2" : 1,
-            "psl" : [
-               130,
-               130
-            ],
-            "by2" : 114,
-            "no" : "test",
-            "rir2" : "ARIN",
-            "a2" : "18.26.4.105",
-            "p2" : 123,
-            "greip-geo" : [
-               "---",
-               "USA"
-            ],
-            "greip" : [
-               2887450946,
-               1111190921
-            ],
-            "prot-term" : [
-               "udp",
-               "gre"
-            ],
-            "db1" : 106,
-            "as2" : "AS3 Massachusetts Institute of Technology",
-            "by" : 228,
-            "fb2" : "240206ee000003bc",
-            "as1" : "AS11590 Cumberland Technologies International",
-            "ps" : [
-               1128,
-               1258
-            ],
-            "greip-cnt" : 2,
-            "lpd" : 1055289973923,
-            "ss" : 1,
-            "mac2-term" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "db" : 212,
-            "a1" : "66.59.111.190",
-            "fs" : [],
-            "lp" : 1055289973,
-            "mac2-term-cnt" : 1,
-            "db2" : 106,
-            "g2" : "USA",
-            "g1" : "USA"
          }
       },
       {
          "body" : {
-            "greip-rir" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "p1" : 40264,
-            "rir1" : "ARIN",
-            "mac1-term" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "prot-term-cnt" : 3,
-            "sl" : 3157,
-            "psl" : [
-               114,
-               114,
-               106,
-               129,
-               106,
-               130,
-               106,
-               594,
-               594,
-               106,
-               106,
-               130,
-               106,
-               530,
-               106,
-               522,
-               106,
-               842,
-               106,
-               106,
-               106,
-               106
-            ],
-            "pa2" : 10,
-            "by2" : 2579,
-            "sshver" : [
-               "ssh-2.0-openssh_3.6.1p1",
-               "ssh-1.99-openssh_3.1p1"
-            ],
-            "no" : "test",
-            "rir2" : "ARIN",
-            "a2" : "172.28.2.3",
-            "greip-asn" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "pa1" : 12,
-            "fb1" : "5353482d322e302d",
-            "mac1-term-cnt" : 1,
-            "fpd" : 1055289978756,
-            "pr" : 6,
-            "fp" : 1055289978,
-            "by1" : 2040,
-            "pa" : 22,
-            "sshvercnt" : 2,
-            "lpd" : 1055289981914,
             "sshkeycnt" : 1,
-            "ss" : 1,
-            "db" : 2623,
-            "mac2-term" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "fs" : [],
-            "a1" : "66.59.111.190",
-            "mac2-term-cnt" : 1,
-            "lp" : 1055289981,
-            "db2" : 1671,
-            "g1" : "USA",
-            "p2" : 22,
             "greip-geo" : [
                "---",
                "USA"
             ],
+            "fs" : [],
+            "pr" : 6,
+            "prot-term-cnt" : 3,
+            "sl" : 3157,
             "greip" : [
                2887450946,
                1111190921
             ],
-            "prot-term" : [
-               "ssh",
-               "gre",
-               "tcp"
-            ],
-            "sshkey" : [
-               "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
-            ],
-            "db1" : 952,
-            "by" : 4619,
+            "by1" : 2040,
             "fb2" : "5353482d312e3939",
-            "as1" : "AS11590 Cumberland Technologies International",
+            "db2" : 1671,
             "ps" : [
                1388,
                1502,
@@ -285,85 +210,134 @@
                6147,
                6253
             ],
-            "greip-cnt" : 2
+            "greip-asn" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "by2" : 2579,
+            "fp" : 1055289978,
+            "pa2" : 10,
+            "sshvercnt" : 2,
+            "rir2" : "ARIN",
+            "db" : 2623,
+            "lp" : 1055289981,
+            "p1" : 40264,
+            "as1" : "AS11590 Cumberland Technologies International",
+            "mac1-term" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "fpd" : 1055289978756,
+            "psl" : [
+               114,
+               114,
+               106,
+               129,
+               106,
+               130,
+               106,
+               594,
+               594,
+               106,
+               106,
+               130,
+               106,
+               530,
+               106,
+               522,
+               106,
+               842,
+               106,
+               106,
+               106,
+               106
+            ],
+            "sshkey" : [
+               "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
+            ],
+            "p2" : 22,
+            "rir1" : "ARIN",
+            "pa1" : 12,
+            "g1" : "USA",
+            "a2" : "172.28.2.3",
+            "mac2-term-cnt" : 1,
+            "mac1-term-cnt" : 1,
+            "db1" : 952,
+            "prot-term" : [
+               "ssh",
+               "gre",
+               "tcp"
+            ],
+            "ss" : 1,
+            "greip-cnt" : 2,
+            "greip-rir" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "sshver" : [
+               "ssh-2.0-openssh_3.6.1p1",
+               "ssh-1.99-openssh_3.1p1"
+            ],
+            "pa" : 22,
+            "mac2-term" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "a1" : "66.59.111.190",
+            "lpd" : 1055289981914,
+            "no" : "test",
+            "by" : 4619,
+            "fb1" : "5353482d322e302d"
          },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-030611",
+               "_type" : "session"
+            }
+         }
+      },
+      {
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions-030611"
             }
-         }
-      },
-      {
+         },
          "body" : {
-            "a2" : "172.28.2.3",
-            "by2" : 0,
-            "no" : "test",
-            "rir2" : "ARIN",
-            "prot-term-cnt" : 3,
-            "mac1-term" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "sl" : 5001,
-            "psl" : [
-               115,
-               115
-            ],
-            "pa2" : 0,
-            "greip-rir" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "rir1" : "ARIN",
-            "p1" : 37675,
-            "by1" : 198,
-            "pa" : 2,
-            "fp" : 1055289987,
-            "dnshocnt" : 1,
-            "fb1" : "bdaa010000010000",
-            "mac1-term-cnt" : 1,
-            "fpd" : 1055289987055,
-            "dns" : {
-               "qc-term-cnt" : 1,
-               "qt-term" : [
-                  "ANY"
-               ],
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term-cnt" : 1
-            },
-            "pr" : 17,
-            "greip-asn" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "pa1" : 2,
-            "g1" : "USA",
-            "mac2-term-cnt" : 1,
-            "lp" : 1055289992,
-            "db2" : 0,
-            "mac2-term" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "db" : 182,
-            "fs" : [],
-            "a1" : "66.59.111.190",
-            "lpd" : 1055289992056,
-            "ss" : 1,
-            "greip-cnt" : 2,
-            "by" : 198,
-            "dnsho" : [
-               "www.gleeble.org"
-            ],
-            "as1" : "AS11590 Cumberland Technologies International",
             "ps" : [
                6359,
                6617
             ],
+            "db2" : 0,
+            "by1" : 198,
             "greip" : [
                2887450946,
                1111190921
+            ],
+            "sl" : 5001,
+            "prot-term-cnt" : 3,
+            "pr" : 17,
+            "fs" : [],
+            "greip-geo" : [
+               "---",
+               "USA"
+            ],
+            "fpd" : 1055289987055,
+            "mac1-term" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "as1" : "AS11590 Cumberland Technologies International",
+            "lp" : 1055289992,
+            "p1" : 37675,
+            "dnsho" : [
+               "www.gleeble.org"
+            ],
+            "db" : 182,
+            "rir2" : "ARIN",
+            "pa2" : 0,
+            "fp" : 1055289987,
+            "by2" : 0,
+            "greip-asn" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
             ],
             "prot-term" : [
                "udp",
@@ -371,7 +345,115 @@
                "gre"
             ],
             "db1" : 182,
+            "mac1-term-cnt" : 1,
+            "mac2-term-cnt" : 1,
+            "a2" : "172.28.2.3",
+            "g1" : "USA",
+            "pa1" : 2,
+            "rir1" : "ARIN",
             "p2" : 53,
+            "psl" : [
+               115,
+               115
+            ],
+            "fb1" : "bdaa010000010000",
+            "by" : 198,
+            "no" : "test",
+            "lpd" : 1055289992056,
+            "a1" : "66.59.111.190",
+            "dns" : {
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "qc-term" : [
+                  "IN"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term" : [
+                  "ANY"
+               ],
+               "opcode-term-cnt" : 1,
+               "qt-term-cnt" : 1
+            },
+            "pa" : 2,
+            "mac2-term" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "dnshocnt" : 1,
+            "greip-rir" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "greip-cnt" : 2,
+            "ss" : 1
+         }
+      },
+      {
+         "body" : {
+            "no" : "test",
+            "by" : 228,
+            "a1" : "66.59.111.190",
+            "lpd" : 1055289992905,
+            "fb1" : "230b06ef00000000",
+            "greip-rir" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "greip-cnt" : 2,
+            "ss" : 1,
+            "mac2-term" : [
+               "00:c0:ca:14:b0:52"
+            ],
+            "pa" : 2,
+            "db1" : 106,
+            "mac1-term-cnt" : 1,
+            "mac2-term-cnt" : 1,
+            "prot-term" : [
+               "udp",
+               "gre"
+            ],
+            "pa1" : 1,
+            "rir1" : "ARIN",
+            "p2" : 123,
+            "psl" : [
+               130,
+               130
+            ],
+            "as2" : "AS11590 Cumberland Technologies International",
+            "a2" : "66.59.111.182",
+            "g1" : "USA",
+            "p1" : 123,
+            "lp" : 1055289992,
+            "fpd" : 1055289992849,
+            "mac1-term" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "as1" : "AS11590 Cumberland Technologies International",
+            "fp" : 1055289992,
+            "by2" : 114,
+            "greip-asn" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "db" : 212,
+            "rir2" : "ARIN",
+            "pa2" : 1,
+            "by1" : 114,
+            "greip" : [
+               2887450946,
+               1111190921
+            ],
+            "g2" : "USA",
+            "prot-term-cnt" : 2,
+            "sl" : 56,
+            "ps" : [
+               6875,
+               7005
+            ],
+            "db2" : 106,
+            "fb2" : "240306ef000008cf",
+            "pr" : 17,
+            "fs" : [],
             "greip-geo" : [
                "---",
                "USA"
@@ -379,158 +461,80 @@
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-030611"
+               "_index" : "tests_sessions-030611",
+               "_type" : "session"
             }
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-030611"
-            }
-         },
          "body" : {
-            "by2" : 114,
-            "no" : "test",
-            "rir2" : "ARIN",
-            "a2" : "66.59.111.182",
-            "greip-rir" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "p1" : 123,
-            "rir1" : "ARIN",
-            "mac1-term" : [
-               "00:02:2d:56:4a:fd"
-            ],
+            "sl" : 72,
             "prot-term-cnt" : 2,
-            "sl" : 56,
-            "psl" : [
-               130,
-               130
-            ],
-            "pa2" : 1,
-            "fp" : 1055289992,
-            "by1" : 114,
-            "pa" : 2,
-            "greip-asn" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "pa1" : 1,
-            "mac1-term-cnt" : 1,
-            "fb1" : "230b06ef00000000",
-            "fpd" : 1055289992849,
-            "pr" : 17,
-            "mac2-term-cnt" : 1,
-            "lp" : 1055289992,
-            "db2" : 106,
             "g2" : "USA",
-            "g1" : "USA",
-            "lpd" : 1055289992905,
-            "ss" : 1,
-            "mac2-term" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "db" : 212,
-            "a1" : "66.59.111.190",
-            "fs" : [],
-            "by" : 228,
-            "fb2" : "240306ef000008cf",
-            "as1" : "AS11590 Cumberland Technologies International",
-            "ps" : [
-               6875,
-               7005
-            ],
-            "greip-cnt" : 2,
-            "p2" : 123,
-            "greip-geo" : [
-               "---",
-               "USA"
-            ],
             "greip" : [
                2887450946,
                1111190921
             ],
-            "prot-term" : [
-               "udp",
-               "gre"
-            ],
-            "db1" : 106,
-            "as2" : "AS11590 Cumberland Technologies International"
-         }
-      },
-      {
-         "body" : {
-            "a2" : "129.170.17.4",
-            "by2" : 114,
-            "no" : "test",
-            "rir2" : "ARIN",
-            "mac1-term" : [
-               "00:02:2d:56:4a:fd"
-            ],
-            "prot-term-cnt" : 2,
-            "sl" : 72,
-            "psl" : [
-               130,
-               130
-            ],
-            "pa2" : 1,
-            "rir1" : "ARIN",
-            "greip-rir" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "p1" : 123,
             "by1" : 114,
-            "pa" : 2,
-            "fp" : 1055289996,
-            "fb1" : "230b06ef00000000",
-            "mac1-term-cnt" : 1,
-            "fpd" : 1055289996849,
-            "pr" : 17,
-            "greip-asn" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "pa1" : 1,
-            "g2" : "USA",
-            "g1" : "USA",
-            "mac2-term-cnt" : 1,
-            "lp" : 1055289996,
-            "db2" : 106,
-            "mac2-term" : [
-               "00:c0:ca:14:b0:52"
-            ],
-            "db" : 212,
-            "fs" : [],
-            "a1" : "66.59.111.190",
-            "lpd" : 1055289996921,
-            "ss" : 1,
-            "greip-cnt" : 2,
-            "by" : 228,
             "fb2" : "240206f5000005b6",
-            "as1" : "AS11590 Cumberland Technologies International",
             "ps" : [
                7135,
                7265
             ],
-            "greip" : [
-               2887450946,
-               1111190921
+            "db2" : 106,
+            "greip-geo" : [
+               "---",
+               "USA"
             ],
+            "fs" : [],
+            "pr" : 17,
+            "p1" : 123,
+            "lp" : 1055289996,
+            "as1" : "AS11590 Cumberland Technologies International",
+            "mac1-term" : [
+               "00:02:2d:56:4a:fd"
+            ],
+            "fpd" : 1055289996849,
+            "by2" : 114,
+            "greip-asn" : [
+               "---",
+               "AS11590 Cumberland Technologies International"
+            ],
+            "fp" : 1055289996,
+            "pa2" : 1,
+            "rir2" : "ARIN",
+            "db" : 212,
+            "mac2-term-cnt" : 1,
+            "mac1-term-cnt" : 1,
+            "db1" : 106,
             "prot-term" : [
                "udp",
                "gre"
             ],
-            "db1" : 106,
-            "as2" : "AS10755 Dartmouth College",
+            "psl" : [
+               130,
+               130
+            ],
             "p2" : 123,
-            "greip-geo" : [
-               "---",
-               "USA"
+            "rir1" : "ARIN",
+            "pa1" : 1,
+            "g1" : "USA",
+            "a2" : "129.170.17.4",
+            "as2" : "AS10755 Dartmouth College",
+            "a1" : "66.59.111.190",
+            "lpd" : 1055289996921,
+            "no" : "test",
+            "by" : 228,
+            "fb1" : "230b06ef00000000",
+            "ss" : 1,
+            "greip-cnt" : 2,
+            "greip-rir" : [
+               "ARIN",
+               "ARIN"
+            ],
+            "pa" : 2,
+            "mac2-term" : [
+               "00:c0:ca:14:b0:52"
             ]
          },
          "header" : {

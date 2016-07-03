@@ -1,0 +1,89 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "by" : 238,
+            "db1" : 157,
+            "g1" : "FRA",
+            "fpd" : 1379970300840,
+            "p1" : 55612,
+            "sl" : 0,
+            "mac1-term-cnt" : 2,
+            "lp" : 1379970300,
+            "a1" : "217.70.190.232",
+            "rir2" : "ARIN",
+            "no" : "test",
+            "fb1" : "9668240000010001",
+            "fb2" : "9668a40000010000",
+            "mac2-term" : [
+               "52:54:00:d9:83:b3"
+            ],
+            "fp" : 1379970300,
+            "db" : 222,
+            "p2" : 53,
+            "ss" : 1,
+            "mac2-term-cnt" : 1,
+            "pr" : 17,
+            "pa" : 2,
+            "by1" : 165,
+            "a2" : "204.62.14.153",
+            "dnshocnt" : 1,
+            "psl" : [
+               181,
+               89
+            ],
+            "mac1-term" : [
+               "00:23:33:69:4d:00",
+               "00:00:5e:00:01:01"
+            ],
+            "ps" : [
+               24,
+               205
+            ],
+            "as1" : "AS29169 Domain name registrar - http://www.gandi.net",
+            "by2" : 73,
+            "lpd" : 1379970300840,
+            "fs" : [],
+            "dnsho" : [
+               "bortzmeyer.42"
+            ],
+            "prot-term-cnt" : 2,
+            "pa1" : 1,
+            "dns" : {
+               "opcode-term-cnt" : 1,
+               "opcode-term" : [
+                  "NOTIFY"
+               ],
+               "qt-term" : [
+                  "SOA"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ],
+               "status-term-cnt" : 1,
+               "qc-term-cnt" : 1,
+               "qc-term" : [
+                  "IN"
+               ],
+               "qt-term-cnt" : 1
+            },
+            "pa2" : 1,
+            "db2" : 65,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "g2" : "USA",
+            "as2" : "AS46636 NatCoWeb Corp.",
+            "rir1" : "RIPE"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-130923",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

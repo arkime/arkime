@@ -20,6 +20,7 @@ ldap-ssl.pcap  -  Reformat of https://wiki.wireshark.org/SampleCaptures?action=A
 ldap-and-search.pcap - https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=ldap-and-search.pcap
 quic24-wireshark.pcap - Reformat of https://bugs.wireshark.org/bugzilla/attachment.cgi?id=13844
 quic33-wireshark.pcap - https://bugs.wireshark.org/bugzilla/attachment.cgi?id=14565
+dns-notify.pcap - http://pcapr.net/view/bortzmeyer+pcapr/2013/8/1/13/dns-notify.pcap.html
 
 
 

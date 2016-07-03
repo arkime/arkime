@@ -3,55 +3,105 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-141015",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-141015"
             }
          },
          "body" : {
-            "db2" : 4005,
-            "p2" : 443,
-            "tacnt" : 1,
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
             "fb2" : "1603010f75020000",
-            "pa1" : 11,
-            "ss" : 1,
-            "by" : 5677,
-            "by1" : 1210,
-            "tlsver-term" : [
-               "TLSv1"
+            "tlsdstid-term" : [
+               "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
             ],
-            "rir2" : "ARIN",
-            "lp" : 1413338075,
+            "db2" : 4005,
+            "lpd" : 1413338075560,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_MD5"
+            ],
+            "psl" : [
+               90,
+               82,
+               70,
+               333,
+               1530,
+               70,
+               1530,
+               1112,
+               70,
+               70,
+               380,
+               76,
+               113,
+               70,
+               93,
+               70,
+               76,
+               76,
+               70
+            ],
+            "g1" : "RUS",
+            "fb1" : "1603010102010000",
+            "p1" : 40291,
+            "sl" : 606,
+            "db" : 4601,
+            "p2" : 443,
+            "prot-term-cnt" : 2,
+            "a1" : "10.0.0.1",
+            "tags-term" : [
+               "srcip"
+            ],
+            "mac2-term-cnt" : 2,
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "string" : [
+                  "16777226:40291,51711040:443"
+               ],
+               "number" : [
+                  51711040
+               ]
+            },
+            "as2" : "AS1668 Transit Data Network",
+            "fpd" : 1413338074954,
+            "pr" : 6,
             "pa2" : 8,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
             "tls" : [
                {
-                  "sn" : "4c0e8c39",
-                  "notAfter" : 1636685477,
+                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
+                  "diffDays" : 3653,
                   "sOn" : "Entrust, Inc.",
-                  "sCn" : [
-                     "entrust certification authority - l1c"
-                  ],
                   "iCn" : [
                      "entrust.net certification authority (2048)"
                   ],
-                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
-                  "diffDays" : 3653,
+                  "sCn" : [
+                     "entrust certification authority - l1c"
+                  ],
+                  "notBefore" : 1321026040,
                   "iOn" : "Entrust.net",
-                  "notBefore" : 1321026040
+                  "notAfter" : 1636685477,
+                  "sn" : "4c0e8c39"
                },
                {
-                  "notAfter" : 1497242632,
-                  "sn" : "4c235548",
-                  "sOn" : "AOL Inc.",
                   "sCn" : [
                      "www.aol.com"
                   ],
-                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
-                  "iCn" : [
-                     "entrust certification authority - l1c"
-                  ],
+                  "notBefore" : 1402510723,
+                  "iOn" : "Entrust, Inc.",
+                  "notAfter" : 1497242632,
+                  "sn" : "4c235548",
                   "alt" : [
                      "toshiba.aol.ca",
                      "main-w.welcomescreen.aol.com",
@@ -116,91 +166,32 @@
                      "m.article.aol.com",
                      "hp.aol.ca"
                   ],
-                  "notBefore" : 1402510723,
+                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
+                  "altcnt" : 62,
                   "diffDays" : 1096,
-                  "iOn" : "Entrust, Inc.",
-                  "altcnt" : 62
+                  "iCn" : [
+                     "entrust certification authority - l1c"
+                  ],
+                  "sOn" : "AOL Inc."
                }
             ],
-            "g2" : "USA",
-            "pr" : 6,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "by2" : 4467,
-            "mac2-term-cnt" : 2,
-            "sl" : 606,
-            "p1" : 40291,
-            "as1" : "AS0000 This is neat",
-            "db1" : 596,
-            "mac1-term-cnt" : 1,
-            "tlsdstid-term" : [
-               "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
+            "by" : 5677,
+            "tlsver-term" : [
+               "TLSv1"
             ],
-            "fp" : 1413338074,
-            "psl" : [
-               90,
-               82,
-               70,
-               333,
-               1530,
-               70,
-               1530,
-               1112,
-               70,
-               70,
-               380,
-               76,
-               113,
-               70,
-               93,
-               70,
-               76,
-               76,
-               70
-            ],
-            "fpd" : 1413338074954,
-            "as2" : "AS1668 AOL Transit Data Network",
-            "tlscipher-termcnt" : 1,
             "tlscnt" : 2,
-            "prot-term-cnt" : 2,
-            "no" : "test",
-            "fb1" : "1603010102010000",
-            "tags-term" : [
-               "srcip"
-            ],
-            "tlsver-termcnt" : 1,
-            "fs" : [],
+            "ss" : 1,
+            "fp" : 1413338074,
+            "rir2" : "ARIN",
             "a2" : "64.12.21.3",
-            "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "string" : [
-                  "16777226:40291,51711040:443"
-               ],
-               "number" : [
-                  51711040
-               ]
-            },
-            "db" : 4601,
-            "a1" : "10.0.0.1",
-            "lpd" : 1413338075560,
-            "pa" : 19,
-            "ta" : [
-               "srcip"
-            ],
-            "g1" : "RUS",
+            "tlsver-termcnt" : 1,
+            "tacnt" : 1,
+            "db1" : 596,
+            "by1" : 1210,
             "ps" : [
                24,
                114,
@@ -222,13 +213,22 @@
                5859,
                5935
             ],
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_MD5"
+            "as1" : "AS0000 This is neat",
+            "mac1-term-cnt" : 1,
+            "fs" : [],
+            "pa1" : 11,
+            "lp" : 1413338075,
+            "by2" : 4467,
+            "pa" : 19,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "prot-term" : [
-               "tls",
-               "tcp"
-            ]
+            "no" : "test",
+            "ta" : [
+               "srcip"
+            ],
+            "g2" : "USA",
+            "tlscipher-termcnt" : 1
          }
       }
    ]

@@ -1,111 +1,115 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-140312",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "ta" : [
-               "dstip",
-               "srcip"
+            "db1" : 64,
+            "prot-term" : [
+               "udp",
+               "dns"
             ],
-            "prot-term-cnt" : 2,
-            "g1" : "RUS",
-            "dns" : {
-               "status-term" : [
-                  "NXDOMAIN"
-               ],
-               "qt-term" : [
-                  "A"
-               ],
-               "qc-term-cnt" : 1,
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term-cnt" : 1,
-               "status-term-cnt" : 1
-            },
-            "by1" : 72,
-            "fb1" : "a9ba010000010000",
-            "pa2" : 1,
-            "mac2-term-cnt" : 2,
+            "db2" : 139,
             "dnsho" : [
                "no.such.host"
             ],
-            "g2" : "CAN",
-            "p1" : 56329,
-            "a1" : "10.0.0.1",
             "mac1-term" : [
                "00:13:72:c4:f1:e1"
             ],
-            "psl" : [
-               88,
-               163
-            ],
-            "as2" : "AS0001 Cool Beans!",
-            "fpd" : 1394587409097,
-            "pa1" : 1,
-            "ps" : [
-               24,
-               112
-            ],
-            "db2" : 139,
-            "by" : 219,
-            "no" : "test",
-            "lp" : 1394587409,
-            "a2" : "10.0.0.2",
-            "ss" : 1,
             "db" : 203,
-            "pr" : 17,
+            "by" : 219,
             "tags-term" : [
                "srcip",
                "dstip"
             ],
-            "db1" : 64,
-            "fb2" : "a9ba858300010000",
+            "fs" : [],
+            "no" : "test",
+            "pr" : 17,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "tacnt" : 2,
-            "fs" : [],
+            "ps" : [
+               24,
+               112
+            ],
+            "pa1" : 1,
+            "p1" : 56329,
             "dnshocnt" : 1,
-            "p2" : 53,
-            "sl" : 5,
-            "fp" : 1394587409,
+            "psl" : [
+               88,
+               163
+            ],
+            "tacnt" : 2,
             "test" : {
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:56329,33554442:53"
+               ],
                "ip-rir" : [
                   ""
+               ],
+               "ip" : [
+                  167772161
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
                "number" : [
                   33554442
-               ],
-               "string" : [
-                  "16777226:56329,33554442:53"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
                ]
             },
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "rir2" : "TEST",
-            "by2" : 147,
-            "as1" : "AS0000 This is neat",
-            "pa" : 2,
+            "fp" : 1394587409,
+            "lpd" : 1394587409103,
             "mac1-term-cnt" : 1,
-            "lpd" : 1394587409103
+            "sl" : 5,
+            "prot-term-cnt" : 2,
+            "by1" : 72,
+            "g2" : "CAN",
+            "lp" : 1394587409,
+            "a1" : "10.0.0.1",
+            "g1" : "RUS",
+            "as1" : "AS0000 This is neat",
+            "rir2" : "TEST",
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "as2" : "AS0001 Cool Beans!",
+            "fpd" : 1394587409097,
+            "p2" : 53,
+            "a2" : "10.0.0.2",
+            "pa2" : 1,
+            "pa" : 2,
+            "fb2" : "a9ba858300010000",
+            "ss" : 1,
+            "by2" : 147,
+            "dns" : {
+               "qc-term-cnt" : 1,
+               "status-term" : [
+                  "NXDOMAIN"
+               ],
+               "status-term-cnt" : 1,
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "opcode-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "qt-term-cnt" : 1,
+               "qc-term" : [
+                  "IN"
+               ]
+            },
+            "fb1" : "a9ba010000010000",
+            "mac2-term-cnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-140312"
+            }
          }
       }
    ]

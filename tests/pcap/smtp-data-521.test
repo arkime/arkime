@@ -3,65 +3,29 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131205"
+               "_index" : "tests_sessions-131205",
+               "_type" : "session"
             }
          },
          "body" : {
-            "pr" : 6,
             "mac1-term" : [
                "00:0b:45:b7:08:80"
             ],
-            "a2" : "205.188.186.167",
-            "ss" : 1,
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "as2" : "AS1668 AOL Transit Data Network",
-            "ehh" : [
-               "reply-to",
-               "content-type",
-               "mime-version",
-               "from",
-               "to",
-               "date",
-               "subject"
-            ],
-            "esubcnt" : 1,
-            "p1" : 56558,
-            "g2" : "USA",
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:ca:1f:c6"
-            ],
+            "db2" : 854,
+            "lp" : 1386251823,
+            "p2" : 587,
             "db" : 3976,
-            "fp" : 1386251815,
-            "pa2" : 22,
-            "ta" : [
-               "smtp:authplain",
-               "smtp:statuscode:521",
-               "srcip"
-            ],
-            "g1" : "RUS",
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "edst" : [
-               "xxxxx-xxxx@xxxx.xxx.xx.jp"
-            ],
-            "ehhcnt" : 7,
+            "lpd" : 1386251823511,
+            "by" : 6494,
+            "tacnt" : 3,
             "as1" : "AS0000 This is neat",
             "ect" : [
                "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
             ],
-            "lp" : 1386251823,
-            "db1" : 3122,
-            "usercnt" : 1,
-            "emvcnt" : 1,
-            "lpd" : 1386251823511,
-            "a1" : "10.0.0.1",
-            "rir2" : "ARIN",
-            "fpd" : 1386251815266,
+            "fp" : 1386251815,
+            "edst" : [
+               "xxxxx-xxxx@xxxx.xxx.xx.jp"
+            ],
             "psl" : [
                90,
                90,
@@ -102,14 +66,43 @@
                82,
                76
             ],
-            "db2" : 854,
-            "edstcnt" : 1,
-            "p2" : 587,
-            "tags-term" : [
-               "smtp:authplain",
-               "srcip",
-               "smtp:statuscode:521"
+            "user" : [
+               "123456789@aol.com"
             ],
+            "a1" : "10.0.0.1",
+            "prot-term-cnt" : 2,
+            "ectcnt" : 1,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "ta" : [
+               "smtp:authplain",
+               "smtp:statuscode:521",
+               "srcip"
+            ],
+            "no" : "test",
+            "emvcnt" : 1,
+            "fb2" : "3232302d6d74616f",
+            "pa2" : 22,
+            "pa1" : 16,
+            "db1" : 3122,
+            "usercnt" : 1,
+            "p1" : 56558,
+            "emv" : [
+               "1.0"
+            ],
+            "esrccnt" : 1,
+            "ehh" : [
+               "reply-to",
+               "content-type",
+               "mime-version",
+               "from",
+               "to",
+               "date",
+               "subject"
+            ],
+            "fs" : [],
             "ps" : [
                24,
                114,
@@ -150,52 +143,59 @@
                6968,
                7050
             ],
-            "no" : "test",
-            "ectcnt" : 1,
-            "by1" : 4186,
-            "sl" : 8244,
-            "pa1" : 16,
-            "user" : [
-               "123456789@aol.com"
-            ],
-            "esub" : [
-               "Urgent Trip."
-            ],
-            "esrccnt" : 1,
-            "tacnt" : 3,
-            "by" : 6494,
+            "edstcnt" : 1,
+            "rir2" : "ARIN",
             "by2" : 2308,
-            "fb1" : "45484c4f20787878",
-            "emv" : [
-               "1.0"
-            ],
             "test" : {
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
                "ip-geo" : [
                   "RUS"
-               ],
-               "number" : [
-                  2814033101
-               ],
-               "ip-rir" : [
-                  ""
                ],
                "ip" : [
                   167772161
                ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
                "string" : [
                   "16777226:56558,-1480934195:587"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  2814033101
                ]
             },
-            "mac2-term-cnt" : 2,
-            "prot-term-cnt" : 2,
-            "pa" : 38,
             "esrc" : [
                "1234567899@aol.com"
             ],
-            "fb2" : "3232302d6d74616f"
+            "mac1-term-cnt" : 1,
+            "sl" : 8244,
+            "as2" : "AS1668 Transit Data Network",
+            "esub" : [
+               "Urgent Trip."
+            ],
+            "mac2-term-cnt" : 2,
+            "pr" : 6,
+            "fb1" : "45484c4f20787878",
+            "ehhcnt" : 7,
+            "a2" : "205.188.186.167",
+            "g1" : "RUS",
+            "tags-term" : [
+               "smtp:authplain",
+               "srcip",
+               "smtp:statuscode:521"
+            ],
+            "esubcnt" : 1,
+            "g2" : "USA",
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:ca:1f:c6"
+            ],
+            "by1" : 4186,
+            "ss" : 1,
+            "fpd" : 1386251815266,
+            "pa" : 38
          }
       }
    ]

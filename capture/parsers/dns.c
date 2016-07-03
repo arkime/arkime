@@ -131,13 +131,13 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
     int qr      = (data[2] >> 7) & 0x1;
     int opcode  = (data[2] >> 3) & 0xf;
 
-/*    if (opcode != 0)
-        return; */
+    if (opcode > 5)
+        return;
 
     int qdcount = (data[4] << 8) | data[5];
     int ancount = (data[6] << 8) | data[7];
-    int prereqs = (data[8] << 8) | data[9];
-    int updates = (data[10] << 8) | data[11];
+    int prereqs = opcode == 5?(data[8] << 8) | data[9]:0;
+    int updates = opcode == 5?(data[10] << 8) | data[11]:0;
 
     if (qdcount > 10 || qdcount <= 0)
         return;
@@ -164,6 +164,9 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
         BSB_IMPORT_u16(bsb, qtype);
         BSB_IMPORT_u16(bsb, qclass);
 
+        if (opcode == 5)
+            continue;
+
         char *lower = g_ascii_strdown((char*)name, namelen);
 
         if (qclass <= 255 && qclasses[qclass]) {
@@ -181,11 +184,13 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
     moloch_session_add_protocol(session, "dns");
 
-    if (qr == 0)
+    if (qr == 0 && opcode != 5)
         return;
 
-    int rcode      = data[3] & 0xf;
-    moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
+    if (qr != 0) {
+        int rcode      = data[3] & 0xf;
+        moloch_field_string_add(statusField, session, statuses[rcode], -1, TRUE);
+    }
 
     for (i = 0; BSB_NOT_ERROR(bsb) && i < ancount + prereqs + updates; i++) {
         unsigned char  namebuf[8000];
@@ -365,7 +370,7 @@ void moloch_parser_init()
         "DNS lookup return code",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT,
         NULL);
-    
+
     opCodeField = moloch_field_define("dns", "uptermfield",
         "dns.opcode", "Op Code", "dns.opcode-term",
         "DNS lookup op code",
@@ -461,6 +466,7 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x01\x00");
     DNS_CLASSIFY("\x01\x10");
     DNS_CLASSIFY("\x01\x82");
+    DNS_CLASSIFY("\x24\x00"); // NOTIFY request
     DNS_CLASSIFY("\x28\x00"); // UPDATE request
     DNS_CLASSIFY("\x80\x00");
     DNS_CLASSIFY("\x80\x02"); // QUERY response, auth = 0, rd = 0, ra = 0, server failure
@@ -479,6 +485,7 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x85\x00");
     DNS_CLASSIFY("\x85\x80"); // QUERY response, auth = 1, rd = 1, ra =1, no error
     DNS_CLASSIFY("\x85\x83");
+    DNS_CLASSIFY("\xa4\x00"); // NOTIFY response
     DNS_CLASSIFY("\xa8\x00"); // UPDATE response
 }
 
