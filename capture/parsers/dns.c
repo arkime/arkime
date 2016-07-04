@@ -478,6 +478,7 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x81\x83"); // QUERY response, auth = 1, rd = 1, ra = 1, no such name
     DNS_CLASSIFY("\x81\x90");
     DNS_CLASSIFY("\x81\xb0");
+    DNS_CLASSIFY("\x83\x80");
     DNS_CLASSIFY("\x84\x00");
     DNS_CLASSIFY("\x84\x10");
     DNS_CLASSIFY("\x84\x03"); // QUERY response, auth = 1, rd = 0, ra =0, no such name
@@ -490,5 +491,6 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x85\x83");
     DNS_CLASSIFY("\xa4\x00"); // NOTIFY response
     DNS_CLASSIFY("\xa8\x00"); // UPDATE response
+    DNS_CLASSIFY("\xa8\x05"); // UPDATE response
 }
 
