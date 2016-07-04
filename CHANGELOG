@@ -21,6 +21,8 @@
               supports strftime sequences using local time (issue #496)
   - capture - more dns parsing
   - capture - basic ntp detection
+  - capture - basic snmp detection
+  - capture - basic syslog detection
 
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)

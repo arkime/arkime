@@ -106,9 +106,35 @@ void ntp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), i
     if (session->port2 != 123 ||  // ntp port
             len < 48 ||           // min length
             data[1] > 16          // max stratum
-       )
+       ) {
         return;
+    }
     moloch_session_add_protocol(session, "ntp");
+}
+/******************************************************************************/
+void snmp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+{
+
+    if (session->port2 != 161 ||  // snmp port
+            len < 16              // min length
+       ) {
+        return;
+    }
+    moloch_session_add_protocol(session, "snmp");
+}
+/******************************************************************************/
+void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+{
+    int i;
+    for (i = 2; i < len; i++) {
+        if (data[i] == '>') {
+            moloch_session_add_protocol(session, "syslog");
+            return;
+        }
+
+        if (!isdigit(data[i]))
+            return;
+    }
 }
 /******************************************************************************/
 void moloch_parser_init()
@@ -168,6 +194,20 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\xd9", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\xdb", 1, ntp_classify);
     moloch_parsers_classifier_register_udp("ntp", NULL, 0, (unsigned char*)"\xe3", 1, ntp_classify);
+
+    moloch_parsers_classifier_register_udp("snmp", NULL, 0, (unsigned char*)"\x30", 1, snmp_classify);
+
+    moloch_parsers_classifier_register_udp("bjnp", "bjnp", 0, (unsigned char*)"BJNP", 4, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<1", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<2", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<3", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<4", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<5", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<6", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<7", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
+    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
 
     userField = moloch_field_by_db("user");
 }
