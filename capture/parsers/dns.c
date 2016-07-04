@@ -328,7 +328,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
 /******************************************************************************/
 void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
 {
-    if (which == 0 && session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
+    if (/*which == 0 &&*/ session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
         moloch_session_add_protocol(session, "dns");
         DNSInfo_t  *info= MOLOCH_TYPE_ALLOC0(DNSInfo_t);
         moloch_parsers_register(session, dns_tcp_parser, info, dns_free);
@@ -467,6 +467,7 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x01\x10");
     DNS_CLASSIFY("\x01\x82");
     DNS_CLASSIFY("\x24\x00"); // NOTIFY request
+    DNS_CLASSIFY("\x25\x81"); // NOTIFY request
     DNS_CLASSIFY("\x28\x00"); // UPDATE request
     DNS_CLASSIFY("\x80\x00");
     DNS_CLASSIFY("\x80\x02"); // QUERY response, auth = 0, rd = 0, ra = 0, server failure
@@ -482,6 +483,8 @@ void moloch_parser_init()
     DNS_CLASSIFY("\x84\x03"); // QUERY response, auth = 1, rd = 0, ra =0, no such name
     DNS_CLASSIFY("\x84\x83"); // QUERY response, auth = 1, rd = 0, ra =1, no such name
     DNS_CLASSIFY("\x84\x80"); // QUERY response, auth = 1, rd = 0, ra =1, no error
+    DNS_CLASSIFY("\x84\x90");
+    DNS_CLASSIFY("\x84\x93");
     DNS_CLASSIFY("\x85\x00");
     DNS_CLASSIFY("\x85\x80"); // QUERY response, auth = 1, rd = 1, ra =1, no error
     DNS_CLASSIFY("\x85\x83");
