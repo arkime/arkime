@@ -80,7 +80,19 @@ WISESource.prototype.parseCSV = function (body, setCb, endCb) {
     }
 
     for (var i = 0; i < data.length; i++) {
-      setCb(data[i][self.column], WISESource.emptyResult);
+      var args = [];
+      for (var k in self.shortcuts) {
+        if (data[i][k] !== undefined) {
+          args.push(self.shortcuts[k]);
+          args.push(data[i][k]);
+        }
+      }
+
+      if (args.length === 0) {
+        setCb(data[i][self.column], WISESource.emptyResult);
+      } else {
+        setCb(data[i][self.column], {num: args.length/2, buffer: WISESource.encode.apply(null, args)});
+      }
     }
     endCb(err);
   });
