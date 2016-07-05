@@ -373,8 +373,13 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
     while (1) {
         MOLOCH_LOCK(packetQ[thread].lock);
-        if (DLL_COUNT(packet_, &packetQ[thread]) == 0 && moloch_session_thread_outstanding(thread) == 0) {
-            MOLOCH_COND_WAIT(packetQ[thread].lock);
+        if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
+            struct timeval tv;
+            struct timespec ts;
+            gettimeofday(&tv, NULL);
+            ts.tv_sec = tv.tv_sec + 1;
+            ts.tv_nsec = 0;
+            MOLOCH_COND_TIMEDWAIT(packetQ[thread].lock, ts);
         }
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
         MOLOCH_UNLOCK(packetQ[thread].lock);

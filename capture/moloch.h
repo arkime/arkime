@@ -220,7 +220,7 @@ typedef struct {
 #define MOLOCH_COND_EXTERN(var)         pthread_cond_t var##_cond
 #define MOLOCH_COND_INIT(var)           pthread_cond_init(&var##_cond, NULL)
 #define MOLOCH_COND_WAIT(var)           pthread_cond_wait(&var##_cond, &var##_mutex)
-#define MOLOCH_COND_TIMEDWAIT(var, abt) pthread_cond_timedwait(&var##_cond, &var##_mutex, &abs)
+#define MOLOCH_COND_TIMEDWAIT(var, _ts) pthread_cond_timedwait(&var##_cond, &var##_mutex, &_ts)
 #define MOLOCH_COND_BROADCAST(var)      pthread_cond_broadcast(&var##_cond)
 
 #define MOLOCH_MAX_PACKET_THREADS 24
