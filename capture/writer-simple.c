@@ -90,8 +90,8 @@ void writer_simple_process_buf(int thread, int closing)
     }
     MOLOCH_LOCK(simpleQ);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
+    MOLOCH_COND_SIGNAL(simpleQ);
     MOLOCH_UNLOCK(simpleQ);
-    MOLOCH_COND_BROADCAST(simpleQ);
 }
 /******************************************************************************/
 struct pcap_timeval {

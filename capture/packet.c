@@ -342,7 +342,9 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
 /******************************************************************************/
 void moloch_packet_thread_wake(int thread)
 {
-    MOLOCH_COND_BROADCAST(packetQ[thread].lock);
+    MOLOCH_LOCK(packetQ[thread].lock);
+    MOLOCH_COND_SIGNAL(packetQ[thread].lock);
+    MOLOCH_UNLOCK(packetQ[thread].lock);
 }
 /******************************************************************************/
 /* Only called on main thread, we busy block until all packet threads are empty.
@@ -858,8 +860,8 @@ void moloch_packet_frags4(MolochPacket_t * const packet)
 
     MOLOCH_LOCK(fragsQ.lock);
     DLL_PUSH_TAIL(packet_, &fragsQ, packet);
+    MOLOCH_COND_SIGNAL(fragsQ.lock);
     MOLOCH_UNLOCK(fragsQ.lock);
-    MOLOCH_COND_BROADCAST(fragsQ.lock);
 }
 /******************************************************************************/
 int moloch_packet_frags_size()
@@ -919,9 +921,9 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
         if ((overloadDrops[thread] % 1000) == 1) {
             LOG("WARNING - Packet Q %d is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue", thread, overloadDrops[thread]);
         }
-        MOLOCH_UNLOCK(packetQ[thread].lock);
         packet->pkt = 0;
-        MOLOCH_COND_BROADCAST(packetQ[thread].lock);
+        MOLOCH_COND_SIGNAL(packetQ[thread].lock);
+        MOLOCH_UNLOCK(packetQ[thread].lock);
         return 1;
     }
 
@@ -934,8 +936,8 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
 
     MOLOCH_LOCK(packetQ[thread].lock);
     DLL_PUSH_TAIL(packet_, &packetQ[thread], packet);
+    MOLOCH_COND_SIGNAL(packetQ[thread].lock);
     MOLOCH_UNLOCK(packetQ[thread].lock);
-    MOLOCH_COND_BROADCAST(packetQ[thread].lock);
     return 0;
 }
 /******************************************************************************/

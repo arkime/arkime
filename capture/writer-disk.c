@@ -283,8 +283,8 @@ void writer_disk_flush(gboolean all)
         MOLOCH_LOCK(outputQ);
         DLL_PUSH_TAIL(mo_, &outputQ, output);
         count = DLL_COUNT(mo_, &outputQ);
+        MOLOCH_COND_SIGNAL(outputQ);
         MOLOCH_UNLOCK(outputQ);
-        MOLOCH_COND_BROADCAST(outputQ);
     } else {
         DLL_PUSH_TAIL(mo_, &outputQ, output);
         count = DLL_COUNT(mo_, &outputQ);
