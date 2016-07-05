@@ -3217,7 +3217,7 @@ app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, f
   reqGetRawBody(req, function (err, data) {
     if (err) {
       console.trace(err);
-      return res.send("Error");
+      return res.end("Error");
     }
 
     if (req.params.bodyType === "file") {
