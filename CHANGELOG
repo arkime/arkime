@@ -24,6 +24,7 @@
   - capture - basic snmp detection
   - capture - basic syslog detection
   - capture - fixed thread waiting so not a busy wait (lower CPU)
+  - capture - basic stun detection
 
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)

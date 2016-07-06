@@ -137,6 +137,12 @@ void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data)
     }
 }
 /******************************************************************************/
+void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (20 + data[3] == len)
+        moloch_session_add_protocol(session, "stun");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, misc_add_protocol_classify);
@@ -208,6 +214,10 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<7", 2, syslog_classify);
     moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
     moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
+
+    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x00", 4, stun_classify);
+    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x08", 4, stun_classify);
+    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x01\x01\x00\x0c", 4, stun_classify);
 
     userField = moloch_field_by_db("user");
 }
