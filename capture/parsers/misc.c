@@ -143,6 +143,21 @@ void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), 
         moloch_session_add_protocol(session, "stun");
 }
 /******************************************************************************/
+void flap_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 6)
+        return;
+
+    int flen = 6 + ((data[4] << 8) | data[5]);
+
+    if (len < flen)
+        return;
+
+    // lenght matches or there is another flap frame in the packet
+    if (len == flen || (data[flen] == '*'))
+        moloch_session_add_protocol(session, "flap");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, misc_add_protocol_classify);
@@ -218,6 +233,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x00", 4, stun_classify);
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x08", 4, stun_classify);
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x01\x01\x00\x0c", 4, stun_classify);
+
+    moloch_parsers_classifier_register_tcp("flap", NULL, 0, (unsigned char*)"\x2a\x01", 2, flap_classify);
 
     userField = moloch_field_by_db("user");
 }

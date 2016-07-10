@@ -1,3 +1,10 @@
+0.15.0 2016/08/xx
+  - NOTICE: Requires ES 2.x
+  - NOTICE: See https://github.com/aol/moloch/wiki/FAQ/_edit#How_do_I_upgrade_to_ES_2x_from_ES_1x
+            to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
+            should be run BEFORE upgrading.
+  - capture - basic flap detection
+
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 2.x
   - NOTICE: See https://github.com/aol/moloch/wiki/FAQ/_edit#How_do_I_upgrade_to_ES_2x_from_ES_1x
