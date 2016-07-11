@@ -70,8 +70,8 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(1.[0-5]|0)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 1.6.x or later required.");
+    if (data.version.number.match(/^(2.0|1|0)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 2.1.x or later required.");
       process.exit();
       throw new Error("Exiting");
     }
