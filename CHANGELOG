@@ -4,6 +4,7 @@
             to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
             should be run BEFORE upgrading.
   - capture - basic flap detection
+  - db.pl - fixed hourly expiration (issue #501)
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0

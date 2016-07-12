@@ -1775,7 +1775,7 @@ my($type, $t) = @_;
 
     my @t = gmtime($t);
     if ($type eq "hourly") {
-        return sprintf("${PREFIX}sessions-%02d%02d%02dh%0d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+        return sprintf("${PREFIX}sessions-%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
     }
 
     if ($type eq "daily") {
