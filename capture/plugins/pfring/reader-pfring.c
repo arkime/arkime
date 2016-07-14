@@ -31,7 +31,7 @@ extern MolochPcapFileHdr_t   pcapFileHeader;
 
 #define MAX_INTERFACES 10
 LOCAL pfring                *rings[MAX_INTERFACES];
-LOCAL struct bpf_program    *bpf_programs = 0;
+LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 
 /******************************************************************************/
 int reader_pfring_stats(MolochReaderStats_t *stats)
@@ -84,16 +84,19 @@ static void *reader_pfring_thread(void *ringv)
     return NULL;
 }
 /******************************************************************************/
-int reader_pfring_should_filter(const MolochPacket_t *UNUSED(packet))
+int reader_pfring_should_filter(const MolochPacket_t *packet, enum MolochFilterType *type, int *index)
 {
-    int i;
-    for (i = 0; i < config.dontSaveBPFsNum; i++) {
-        if (bpf_filter(bpf_programs[i].bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-            return i;
-            break;
+    int t, i;
+    for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
+        for (i = 0; i < config.bpfsNum[t]; i++) {
+            if (bpf_filter(bpf_programs[t][i].bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+                *type = t;
+                *index = i;
+                return 1;
+            }
         }
     }
-    return -1;
+    return 0;
 }
 /******************************************************************************/
 void reader_pfring_start() {
