@@ -233,6 +233,12 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
         return 1;
 
     if (tcphdr->th_flags & TH_SYN) {
+        if (!session->haveTcpSession && (tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && config.antiSynDrop) {
+#ifdef DEBUG_PACKET
+            LOG("syn-ack first");
+#endif
+            session->tcpSeq[(packet->direction+1)%2] = ntohl(tcphdr->th_ack);
+        }
         session->haveTcpSession = 1;
         session->tcpSeq[packet->direction] = seq + 1;
         if (!session->tcp_next) {
@@ -390,6 +396,9 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
         if (!packet)
             continue;
+#ifdef DEBUG_PACKET
+        LOG("Processing %p %d", packet, packet->pktlen);
+#endif
 
         lastPacketSecs[thread] = packet->ts.tv_sec;
 
@@ -464,7 +473,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
             switch (session->protocol) {
             case IPPROTO_TCP:
                /* If antiSynDrop option is set to true, capture will assume that
-                *if the syn-ack ip4 was captured first then the syn probably got dropped.*/
+                * if the syn-ack ip4 was captured first then the syn probably got dropped.*/
                 if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && (config.antiSynDrop)) {
                     struct in6_addr tmp;
                     tmp = session->addr1;
@@ -739,6 +748,7 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
     uint16_t          ip_flags = ip_off & ~IP_OFFMASK;
     ip_off &= IP_OFFMASK;
 
+
     // we might be done once we receive the packets with no flags
     if (ip_flags == 0) {
         frags->haveNoFlags = 1;
@@ -948,16 +958,28 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
     struct udphdr       *udphdr = 0;
     char                 sessionId[MOLOCH_SESSIONID_LEN];
 
-    if (len < (int)sizeof(struct ip))
+    if (len < (int)sizeof(struct ip)) {
+#ifdef DEBUG_PACKET
+        LOG("too small for header %p %d", packet, len);
+#endif
         return 1;
+    }
 
     int ip_len = ntohs(ip4->ip_len);
-    if (len < ip_len)
+    if (len < ip_len) {
+#ifdef DEBUG_PACKET
+        LOG("incomplete %p %d", packet, len);
+#endif
         return 1;
+    }
 
     int ip_hdr_len = 4 * ip4->ip_hl;
-    if (len < ip_hdr_len)
+    if (len < ip_hdr_len) {
+#ifdef DEBUG_PACKET
+        LOG("too small for header and options %p %d", packet, len);
+#endif
         return 1;
+    }
 
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -967,6 +989,7 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
     uint16_t ip_flags = ip_off & ~IP_OFFMASK;
     ip_off &= IP_OFFMASK;
 
+
     if ((ip_flags & IP_MF) || ip_off > 0) {
         moloch_packet_frags4(packet);
         return 0;
@@ -975,6 +998,9 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
     switch (ip4->ip_p) {
     case IPPROTO_TCP:
         if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
+#ifdef DEBUG_PACKET
+            LOG("too small for tcp hdr %p %d", packet, len);
+#endif
             return 1;
         }
 
@@ -985,6 +1011,9 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
         break;
     case IPPROTO_UDP:
         if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
+#ifdef DEBUG_PACKET
+        LOG("too small for udp header %p %d", packet, len);
+#endif
             return 1;
         }
 
@@ -1127,6 +1156,10 @@ int moloch_packet_ether(MolochPacket_t * const packet, const uint8_t *data, int 
 void moloch_packet(MolochPacket_t * const packet)
 {
     int rc;
+
+#ifdef DEBUG_PACKET
+    LOG("enter %p %d %d", packet, pcapFileHeader.linktype, packet->pktlen);
+#endif
 
     switch(pcapFileHeader.linktype) {
     case 0: // NULL
