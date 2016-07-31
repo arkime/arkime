@@ -326,7 +326,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
     return 0;
 }
 /******************************************************************************/
-void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int which, void *UNUSED(uw))
+void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     if (/*which == 0 &&*/ session->port2 == 53 && !moloch_session_has_protocol(session, "dns")) {
         moloch_session_add_protocol(session, "dns");
