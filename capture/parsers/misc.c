@@ -158,6 +158,10 @@ void flap_classify(MolochSession_t *session, const unsigned char *data, int len,
         moloch_session_add_protocol(session, "flap");
 }
 /******************************************************************************/
+#define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
+    moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
+    moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
+
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, misc_add_protocol_classify);
@@ -191,8 +195,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3e\x00\x00\x00", 4, mongo_classify);
     moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3f\x00\x00\x00", 4, mongo_classify);
 
-    moloch_parsers_classifier_register_tcp("sip", "sip", 0, (unsigned char*)"SIP/2.0", 7, misc_add_protocol_classify);
-    moloch_parsers_classifier_register_tcp("sip", "sip", 0, (unsigned char*)"REGISTER sip:", 13, misc_add_protocol_classify);
+    PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "SIP/2.0", 7, misc_add_protocol_classify);
+    PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "REGISTER sip:", 13, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("jabber", NULL, 0, (unsigned char*)"<?xml", 5, jabber_classify);
 
@@ -220,21 +224,24 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_udp("bjnp", "bjnp", 0, (unsigned char*)"BJNP", 4, misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<1", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<2", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<3", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<4", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<5", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<6", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<7", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
-    moloch_parsers_classifier_register_udp("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<1", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<2", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<3", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<4", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<5", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<6", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<7", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
+    PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
 
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x00", 4, stun_classify);
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x08", 4, stun_classify);
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x01\x01\x00\x0c", 4, stun_classify);
 
     moloch_parsers_classifier_register_tcp("flap", NULL, 0, (unsigned char*)"\x2a\x01", 2, flap_classify);
+
+    moloch_parsers_classifier_register_tcp("nsclient", "nsclient", 0, (unsigned char*)"NSClient", 8, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("nsclient", "nsclient", 0, (unsigned char*)"None&", 5, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }
