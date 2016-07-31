@@ -197,6 +197,7 @@ void moloch_parser_init()
 
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "SIP/2.0", 7, misc_add_protocol_classify);
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "REGISTER sip:", 13, misc_add_protocol_classify);
+    PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "NOTIFY sip:", 11, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("jabber", NULL, 0, (unsigned char*)"<?xml", 5, jabber_classify);
 
@@ -242,6 +243,8 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_tcp("nsclient", "nsclient", 0, (unsigned char*)"NSClient", 8, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("nsclient", "nsclient", 0, (unsigned char*)"None&", 5, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_udp("ssdp", "ssdp", 0, (unsigned char*)"M-SEARCH ", 9, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }
