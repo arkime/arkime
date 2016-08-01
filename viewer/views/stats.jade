@@ -176,8 +176,7 @@ block content
     // initialize the cubism graph
     var context = cubism.context()
         .step(5e3) // 5 second intervals
-        // set graph size to the size of the users browser window
-        .size(document.body.clientWidth);
+        .size(1440);
 
     // watch for the user to leave or return to the page
     if(document.addEventListener) {
@@ -208,6 +207,7 @@ block content
           $.ajax( {
             "dataType": 'json',
             "type": "GET",
+            //https://moloch.itsec.aol.com
             "url": "#{basePath}dstats.json?nodeName=" + name +
                           "&start=" + startV/1000 +
                           "&stop=" + stopV/1000 +
