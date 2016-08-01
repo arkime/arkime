@@ -1,5 +1,5 @@
 (function(exports){
-var cubism = exports.cubism = {version: "1.4.0"};
+var cubism = exports.cubism = {version: "1.6.0"};
 var cubism_id = 0;
 function cubism_identity(d) { return d; }
 cubism.option = function(name, defaultValue) {
@@ -192,19 +192,7 @@ cubism_contextPrototype.librato = function(user, token) {
   var source      = {},
       context     = this;
       auth_string = "Basic " + btoa(user + ":" + token);
-      enable_log  = true,
       avail_rsts  = [ 1, 60, 900, 3600 ];
-
-  function log(msg) { if (enable_log) console.log(msg); }
-
-  function log_interval(start, stop, step) {
-    log("---------------------- Starting request");
-    log("START: " + new Date(start * 1000));
-    log("STOP : " + new Date(stop * 1000));
-    log("STEP : " + step);
-    var nes_num_mes = (stop - start)/step;
-    log("# of measurements necessary: " + nes_num_mes);
-  }
 
   /* Given a step, find the best librato resolution to use.
    *
@@ -279,18 +267,15 @@ cubism_contextPrototype.librato = function(user, token) {
   }
 
   /* All the logic to query the librato API is here */
-  var librato_request = function(metric, source) {
+  var librato_request = function(composite) {
     var url_prefix  = "https://metrics-api.librato.com/v1/metrics";
 
     function make_url(sdate, edate, step) {
-      var params    = "start_time="  + sdate +
-                      "&end_time="   + edate +
+      var params    = "compose="     + composite +
+                      "&start_time=" + sdate     +
+                      "&end_time="   + edate     +
                       "&resolution=" + find_librato_resolution(sdate, edate, step);
-          full_url  = url_prefix + "/" + metric + "?" + params;
-
-      log("full_url = " + full_url);
-      log_interval(sdate, edate, step);
-      return full_url;
+      return url_prefix + "?" + params;
     }
 
     /*
@@ -336,22 +321,18 @@ cubism_contextPrototype.librato = function(user, token) {
           .header("Librato-User-Agent", 'cubism/' + cubism.version)
           .get(function (error, data) { /* Callback; data available */
             if (!error) {
-              log("# of partial measurements: " + data.measurements[source].length);
-              data.measurements[source].forEach(function(o) { a_values.push(o); });
+              if (data.measurements.length === 0) {
+                return
+              }
+              data.measurements[0].series.forEach(function(o) { a_values.push(o); });
 
               var still_more_values = 'query' in data && 'next_time' in data.query;
               if (still_more_values) {
-                log("Requesting more values");
                 actual_request(make_url(data.query.next_time, iedate, step));
               } else {
-                log("total number of measurements from librato: " + a_values.length);
                 var a_adjusted = down_up_sampling(isdate, iedate, step, a_values);
-                log("number of measurements after adjusting time values: " + a_adjusted.length);
                 callback_done(a_adjusted);
               }
-            } else {
-              log("There was an error when performing the librato request:");
-              log(error);
             }
           });
       }
@@ -366,16 +347,16 @@ cubism_contextPrototype.librato = function(user, token) {
    * The user will use this method to create a cubism source (librato in this case)
    * and call .metric() as necessary to create metrics.
    */
-  source.metric = function(m_name, m_source) {
+  source.metric = function(m_composite) {
     return context.metric(function(start, stop, step, callback) {
       /* All the librato logic is here; .fire() retrieves the metrics' data */
-      librato_request(m_name, m_source)
+      librato_request(m_composite)
         .fire(cubism_libratoFormatDate(start),
               cubism_libratoFormatDate(stop),
               cubism_libratoFormatDate(step),
               function(a_values) { callback(null, a_values); });
 
-      }, m_name += "");
+      }, m_composite += "");
     };
 
   /* This is not used when the source is librato */
@@ -461,7 +442,7 @@ function cubism_graphiteParse(text) {
 cubism_contextPrototype.gangliaWeb = function(config) {
   var host = '',
       uriPathPrefix = '/ganglia2/';
- 
+
   if (arguments.length) {
     if (config.host) {
       host = config.host;
@@ -487,20 +468,20 @@ cubism_contextPrototype.gangliaWeb = function(config) {
   source.metric = function(metricInfo) {
 
     /* Store the members from metricInfo into local variables. */
-    var clusterName = metricInfo.clusterName, 
-        metricName = metricInfo.metricName, 
+    var clusterName = metricInfo.clusterName,
+        metricName = metricInfo.metricName,
         hostName = metricInfo.hostName,
         isReport = metricInfo.isReport || false,
         titleGenerator = metricInfo.titleGenerator ||
           /* Reasonable (not necessarily pretty) default for titleGenerator. */
           function(unusedMetricInfo) {
             /* unusedMetricInfo is, well, unused in this default case. */
-            return ('clusterName:' + clusterName + 
+            return ('clusterName:' + clusterName +
                     ' metricName:' + metricName +
                     (hostName ? ' hostName:' + hostName : ''));
           },
         onChangeCallback = metricInfo.onChangeCallback;
-    
+
     /* Default to plain, simple metrics. */
     var metricKeyName = isReport ? 'g' : 'm';
 
@@ -508,8 +489,8 @@ cubism_contextPrototype.gangliaWeb = function(config) {
 
       function constructGangliaWebRequestQueryParams() {
         return ('c=' + clusterName +
-                '&' + metricKeyName + '=' + metricName + 
-                (hostName ? '&h=' + hostName : '') + 
+                '&' + metricKeyName + '=' + metricName +
+                (hostName ? '&h=' + hostName : '') +
                 '&cs=' + start/1000 + '&ce=' + stop/1000 + '&step=' + step/1000 + '&graphlot=1');
       }
 
@@ -530,7 +511,7 @@ cubism_contextPrototype.gangliaWeb = function(config) {
 
     /* Allow users to run their custom code each time a gangliaWebMetric changes.
      *
-     * TODO Consider abstracting away the naked Cubism call, and instead exposing 
+     * TODO Consider abstracting away the naked Cubism call, and instead exposing
      * a callback that takes in the values array (maybe alongwith the original
      * start and stop 'naked' parameters), since it's handy to have the entire
      * dataset at your disposal (and users will likely implement onChangeCallback
@@ -810,8 +791,10 @@ cubism_contextPrototype.horizon = function() {
         var i0 = 0, max = Math.max(-extent[0], extent[1]);
         if (this === context) {
           if (max == max_) {
-            i0 = width - cubism_metricOverlap;
             var dx = (start1 - start) / step;
+            // [2016/09/01] fix for missing data when stopping then starting cubism context
+            // https://github.com/square/cubism/pull/75/commits/523d481c981e1e04a2814ae47146ace27912418a?diff=unified
+            i0 = width - dx - cubism_metricOverlap;
             if (dx < width) {
               var canvas0 = buffer.getContext("2d");
               canvas0.clearRect(0, 0, width, height);
@@ -1202,9 +1185,10 @@ cubism_contextPrototype.axis = function() {
       scale = context.scale,
       axis_ = d3.svg.axis().scale(scale);
 
-  var format = context.step() < 6e4 ? cubism_axisFormatSeconds
+  var formatDefault = context.step() < 6e4 ? cubism_axisFormatSeconds
       : context.step() < 864e5 ? cubism_axisFormatMinutes
       : cubism_axisFormatDays;
+  var format = formatDefault;
 
   function axis(selection) {
     var id = ++cubism_id,
@@ -1249,6 +1233,12 @@ cubism_contextPrototype.axis = function() {
       context.on("change.axis-" + d.id, null);
       context.on("focus.axis-" + d.id, null);
     }
+  };
+
+  axis.focusFormat = function(_) {
+    if (!arguments.length) return format == formatDefault ? null : _;
+    format = _ == null ? formatDefault : _;
+    return axis;
   };
 
   return d3.rebind(axis, axis_,
