@@ -246,6 +246,8 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_udp("ssdp", "ssdp", 0, (unsigned char*)"M-SEARCH ", 9, misc_add_protocol_classify);
 
+    moloch_parsers_classifier_register_tcp("zabbix", "zabbix", 0, (unsigned char*)"ZBXD\x01", 5, misc_add_protocol_classify);
+
     userField = moloch_field_by_db("user");
 }
 

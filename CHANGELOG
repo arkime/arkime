@@ -5,9 +5,10 @@
             should be run BEFORE upgrading.
   - capture - basic flap detection
   - db.pl - fixed hourly expiration (issue #501)
-  - capture - parsers tcp syslog, udp sip, tcp nsclient
+  - capture - detect tcp syslog, udp sip, tcp nsclient
   - capture - handle syn/ack before or with no syn
   - capture - support classifiers based on port
+  - capture - detect zabbix
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0
