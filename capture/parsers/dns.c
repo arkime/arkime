@@ -343,8 +343,7 @@ int dns_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned ch
 /******************************************************************************/
 void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (session->port1 == 53 || session->port2 == 53)
-        moloch_parsers_register(session, dns_udp_parser, 0, 0);
+    moloch_parsers_register(session, dns_udp_parser, 0, 0);
 }
 /******************************************************************************/
 void moloch_parser_init()
@@ -457,6 +456,10 @@ void moloch_parser_init()
     qtypes[254] = "MAILA";
     qtypes[255] = "ANY";
 
+    moloch_parsers_classifier_register_port("dns", NULL, 53, MOLOCH_PARSERS_PORT_TCP_DST, dns_tcp_classify);
+    moloch_parsers_classifier_register_port("dns", NULL, 53, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
+
+#ifdef OLD
 #define DNS_CLASSIFY(_str) \
     moloch_parsers_classifier_register_tcp("dns", NULL, 4, (unsigned char*)_str, 2, dns_tcp_classify); \
     moloch_parsers_classifier_register_udp("dns", NULL, 2, (unsigned char*)_str, 2, dns_udp_classify);
@@ -492,5 +495,6 @@ void moloch_parser_init()
     DNS_CLASSIFY("\xa4\x00"); // NOTIFY response
     DNS_CLASSIFY("\xa8\x00"); // UPDATE response
     DNS_CLASSIFY("\xa8\x05"); // UPDATE response
+#endif
 }
 

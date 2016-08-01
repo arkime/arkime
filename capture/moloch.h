@@ -669,6 +669,16 @@ void  moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw
 void  moloch_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion);
 #define moloch_parsers_classifier_register_udp(name, uw, offset, match, matchlen, func) moloch_parsers_classifier_register_udp_internal(name, uw, offset, match, matchlen, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
 
+#define  MOLOCH_PARSERS_PORT_UDP_SRC 0x01
+#define  MOLOCH_PARSERS_PORT_UDP_DST 0x02
+#define  MOLOCH_PARSERS_PORT_UDP     MOLOCH_PARSERS_PORT_UDP_SRC | MOLOCH_PARSERS_PORT_UDP_DST
+#define  MOLOCH_PARSERS_PORT_TCP_SRC 0x04
+#define  MOLOCH_PARSERS_PORT_TCP_DST 0x08
+#define  MOLOCH_PARSERS_PORT_TCP     MOLOCH_PARSERS_PORT_TCP_SRC | MOLOCH_PARSERS_PORT_TCP_DST
+
+void  moloch_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, MolochClassifyFunc func, size_t sessionsize, int apiversion);
+#define moloch_parsers_classifier_register_port(name, uw, port, type, func) moloch_parsers_classifier_register_port_internal(name, uw, port, type, func, sizeof(MolochSession_t), MOLOCH_API_VERSION)
+
 void  moloch_print_hex_string(const unsigned char* data, unsigned int length);
 char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length);
 

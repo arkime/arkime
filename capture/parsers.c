@@ -449,13 +449,17 @@ typedef struct
     short               cnt;
 } MolochClassifyHead_t;
 
-MolochClassifyHead_t classifersTcp0;
-MolochClassifyHead_t classifersTcp1[256];
-MolochClassifyHead_t classifersTcp2[256][256];
+LOCAL MolochClassifyHead_t classifersTcp0;
+LOCAL MolochClassifyHead_t classifersTcp1[256];
+LOCAL MolochClassifyHead_t classifersTcp2[256][256];
+LOCAL MolochClassifyHead_t classifersTcpPortSrc[0xffff];
+LOCAL MolochClassifyHead_t classifersTcpPortDst[0xffff];
 
-MolochClassifyHead_t classifersUdp0;
-MolochClassifyHead_t classifersUdp1[256];
-MolochClassifyHead_t classifersUdp2[256][256];
+LOCAL MolochClassifyHead_t classifersUdp0;
+LOCAL MolochClassifyHead_t classifersUdp1[256];
+LOCAL MolochClassifyHead_t classifersUdp2[256][256];
+LOCAL MolochClassifyHead_t classifersUdpPortSrc[0xffff];
+LOCAL MolochClassifyHead_t classifersUdpPortDst[0xffff];
 
 /******************************************************************************/
 void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c)
@@ -485,6 +489,37 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
 
     ch->arr[ch->cnt] = c;
     ch->cnt++;
+}
+/******************************************************************************/
+void moloch_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, MolochClassifyFunc func, size_t sessionsize, int apiversion)
+{
+    if (sizeof(MolochSession_t) != sessionsize) {
+        LOG("Plugin '%s' built with different version of moloch.h\n %lu != %lu", name, sizeof(MolochSession_t),  sessionsize);
+        exit(-1);
+    }
+
+    if (MOLOCH_API_VERSION != apiversion) {
+        LOG("Plugin '%s' built with different version of moloch.h\n %u %d", name, MOLOCH_API_VERSION, apiversion);
+        exit(-1);
+    }
+
+    MolochClassify_t *c = MOLOCH_TYPE_ALLOC(MolochClassify_t);
+    c->name     = name;
+    c->uw       = uw;
+    c->func     = func;
+
+    if (config.debug)
+        LOG("adding %s port:%u type:%02x", name, port, type);
+
+    if (type & MOLOCH_PARSERS_PORT_TCP_SRC)
+        moloch_parsers_classifier_add(&classifersTcpPortSrc[port], c);
+    if (type & MOLOCH_PARSERS_PORT_TCP_DST)
+        moloch_parsers_classifier_add(&classifersTcpPortDst[port], c);
+
+    if (type & MOLOCH_PARSERS_PORT_UDP_SRC)
+        moloch_parsers_classifier_add(&classifersUdpPortSrc[port], c);
+    if (type & MOLOCH_PARSERS_PORT_UDP_DST)
+        moloch_parsers_classifier_add(&classifersUdpPortDst[port], c);
 }
 /******************************************************************************/
 void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
@@ -567,6 +602,14 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
     LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, moloch_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
 #endif
 
+    for (i = 0; i < classifersUdpPortSrc[session->port1].cnt; i++) {
+        classifersUdpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersUdpPortSrc[session->port1].arr[i]);
+    }
+
+    for (i = 0; i < classifersUdpPortDst[session->port2].cnt; i++) {
+        classifersUdpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersUdpPortDst[session->port2].arr[i]);
+    }
+
     for (i = 0; i < classifersUdp0.cnt; i++) {
         MolochClassify_t *c = classifersUdp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
@@ -596,6 +639,14 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
 
     if (remaining < 2)
         return;
+
+    for (i = 0; i < classifersTcpPortSrc[session->port1].cnt; i++) {
+        classifersTcpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersTcpPortSrc[session->port1].arr[i]);
+    }
+
+    for (i = 0; i < classifersTcpPortDst[session->port2].cnt; i++) {
+        classifersTcpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersTcpPortDst[session->port2].arr[i]);
+    }
 
     for (i = 0; i < classifersTcp0.cnt; i++) {
         MolochClassify_t *c = classifersTcp0.arr[i];
