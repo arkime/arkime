@@ -22,17 +22,31 @@ var fs             = require('fs')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , HashTable      = require('hashtable')
+  , LRU            = require('lru-cache')
+  , request        = require('request')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatStreamSource (api, section) {
   ThreatStreamSource.super_.call(this, api, section);
   this.user    = api.getConfig("threatstream", "user");
   this.key     = api.getConfig("threatstream", "key");
-  this.ips     = new HashTable();
-  this.domains = new HashTable();
-  this.emails  = new HashTable();
-  this.md5s    = new HashTable();
-  this.urls    = new HashTable();
+  this.mode     = api.getConfig("threatstream", "mode", "zip");
+
+  if (this.mode !== "api") {
+    this.ips     = new HashTable();
+    this.domains = new HashTable();
+    this.emails  = new HashTable();
+    this.md5s    = new HashTable();
+  } else {
+    this.ips     = LRU({max: this.api.getConfig("threatstream", "cacheSize", 20000), 
+                        maxAge: 1000 * 60 * +this.api.getConfig("threatstream", "cacheAgeMin", "60")});
+    this.domains = LRU({max: this.api.getConfig("threatstream", "cacheSize", 20000), 
+                        maxAge: 1000 * 60 * +this.api.getConfig("threatstream", "cacheAgeMin", "60")});
+    this.emails  = LRU({max: this.api.getConfig("threatstream", "cacheSize", 20000), 
+                        maxAge: 1000 * 60 * +this.api.getConfig("threatstream", "cacheAgeMin", "60")});
+    this.md5s    = LRU({max: this.api.getConfig("threatstream", "cacheSize", 20000), 
+                        maxAge: 1000 * 60 * +this.api.getConfig("threatstream", "cacheAgeMin", "60")});
+  }
 }
 util.inherits(ThreatStreamSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +136,7 @@ ThreatStreamSource.prototype.loadFile = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.init = function() {
+  var self = this;
   if (this.user === undefined) {
     console.log("Threatstream - No user defined");
     return;
@@ -131,8 +146,6 @@ ThreatStreamSource.prototype.init = function() {
     console.log("Threatstream - No key defined");
     return;
   }
-
-  this.api.addSource("threatstream", this);
 
   this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;shortcut:0;count:true");
   this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;shortcut:1;count:true");
@@ -158,28 +171,66 @@ ThreatStreamSource.prototype.init = function() {
   this.api.addRightClick("threatstreamemail", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
   this.api.addRightClick("threatstreammd5", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
 
-  this.loadFile();
-  setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
+  if (this.mode !== "api") {
+    this.loadFile();
+    setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
+
+    ThreatStreamSource.prototype.getDomain = getDomainZip;
+    ThreatStreamSource.prototype.getIp = getIpZip;
+    ThreatStreamSource.prototype.getMd5 = getMd5Zip;
+    ThreatStreamSource.prototype.getEmail = getEmailZip;
+    ThreatStreamSource.prototype.dump = dumpZip;
+  } else {
+    ThreatStreamSource.prototype.getDomain = getDomainApi;
+    ThreatStreamSource.prototype.getIp = getIpApi;
+    ThreatStreamSource.prototype.getMd5 = getMd5Api;
+    ThreatStreamSource.prototype.getEmail = getEmailApi;
+    ThreatStreamSource.prototype.dump = dumpApi;
+
+    // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
+    this.types = {};
+    request({url: "https://api.threatstream.com/api/v1/impact/?username="+this.user+"&api_key="+this.key+"&limit=1000", forever: true}, function(err, response, body) {
+      if (err) {
+        console.log("ERROR - Threatstream failed to load types", err);
+        return;
+      }
+
+      body = JSON.parse(body);
+      body.objects.forEach(function(item) {
+        if (self.types[item.value_type] === undefined) {
+          self.types[item.value_type] = [item.name];
+        } else {
+          self.types[item.value_type].push(item.name);
+        }
+      });
+      for (var key in self.types) {
+        self.types[key] = self.types[key].join(",");
+      }
+
+      // Wait to register until request is done
+      self.api.addSource("threatstream", self);
+    });
+  }
 };
 //////////////////////////////////////////////////////////////////////////////////
-ThreatStreamSource.prototype.getDomain = function(domain, cb) {
+function getDomainZip(domain, cb) {
   var domains = this.domains;
   cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf(".")+1)));
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
-ThreatStreamSource.prototype.getIp = function(ip, cb) {
+function getIpZip(ip, cb) {
   cb(null, this.ips.get(ip));
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
-ThreatStreamSource.prototype.getMd5 = function(md5, cb) {
+function getMd5Zip(md5, cb) {
   cb(null, this.md5s.get(md5));
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
-ThreatStreamSource.prototype.getEmail = function(email, cb) {
+function getEmailZip(email, cb) {
   cb(null, this.emails.get(email));
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
-ThreatStreamSource.prototype.dump = function(res) {
+function dumpZip (res) {
   var self = this;
   ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
     res.write("" + ckey + ":\n");
@@ -187,6 +238,94 @@ ThreatStreamSource.prototype.dump = function(res) {
       var str = "{key: \"" + key + "\", ops:\n" + 
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
+    });
+  });
+  res.end();
+}
+//////////////////////////////////////////////////////////////////////////////////
+ThreatStreamSource.prototype.getApi = function(cache, type, value, cb) {
+  var self = this;
+  var info = cache.get(value);
+  if (info) {
+    if (info.result) {
+      return cb(null, info.result);
+    }
+    info.cbs.push(cb);
+    return;
+  }
+  info = {cbs:[cb]};
+  cache.set(value, info);
+
+  var options = {
+      url: "https://api.threatstream.com/api/v2/intelligence/?username=" + self.user + "&api_key=" + self.key + "&status=active&" + type + "=" + value + "&itype=" + self.types[type],
+      method: 'GET',
+      forever: true
+  };
+
+  request(options, function(err, response, body) {
+    if (err) {
+      console.log("threatstream problem fetching ", options, err || response);
+      var cb;
+      while ((cb = info.cbs.shift())) {
+        cb(null, wiseSource.emptyResult);
+      }
+      return;
+    }
+
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      console.log("Couldn't parse", body);
+    }
+
+    console.log("Got", type, value, body.objects.length);
+    var args = [];
+    body.objects.forEach(function (item) {
+      args.push(self.confidenceField, "" + item.confidence,
+                self.idField, "" + item.id,
+                self.typeField, item.itype.toLowerCase(),
+                self.sourceField, item.source);
+
+      if (item.maltype !== undefined && item.maltype !== "null") {
+        args.push(self.maltypeField, item.maltype.toLowerCase());
+      if (item.severity !== undefined)
+        args.push(self.severityField, item.severity.toLowerCase());
+      }
+    });
+    info.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+    var cb;
+    while ((cb = info.cbs.shift())) {
+      cb(null, info.result);
+    }
+  });
+};
+//////////////////////////////////////////////////////////////////////////////////
+function getDomainApi(domain, cb) {
+  return this.getApi(this.domains, "domain", domain, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getIpApi(ip, cb) {
+  return this.getApi(this.ips, "ip", ip, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getMd5Api(md5, cb) {
+  return this.getApi(this.md5s, "md5", md5, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getEmailApi(email, cb) {
+  return this.getApi(this.emails, "email", email, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function dumpApi(res) {
+  var self = this;
+  ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
+    res.write("" + ckey + ":\n");
+    self[ckey].forEach(function(value, key) {
+      if (value.result !== undefined) {
+        var str = "{key: \"" + key + "\", ops:\n" + 
+          wiseSource.result2Str(wiseSource.combineResults([value.result])) + "},\n";
+        res.write(str);
+      }
     });
   });
   res.end();
