@@ -173,7 +173,7 @@ internals.sourceApi = {
   },
   debug: internals.debug,
   addSource: function(section, src) {
-    src.inProgress = {ip: {}, domain: {}, email: {}, md5: {}, url: {}};
+    src.srcInProgress = {ip: {}, domain: {}, email: {}, md5: {}, url: {}};
     internals.sources[section] = src;
     if (src.getIp) {
       internals.ip.sources.push(src);
@@ -251,10 +251,6 @@ function processQuery(req, query, cb) {
     }
 
     async.map(query.sources || typeInfo.sources, function(src, cb) {
-      if (req.timedout) {
-        return cb("Timed out " + typeName + " " + query.value + " " + src.section);
-      }
-
       if (!typeInfo.source_allowed(src, query.value)) {
         // This source isn't allowed for query
         return setImmediate(cb, undefined);
@@ -272,22 +268,27 @@ function processQuery(req, query, cb) {
         delete cacheResult[src.section];
 
         // If already in progress then add to the list and return, cb called later;
-        if (query.value in src.inProgress[typeName]) {
-          src.inProgress[typeName][query.value].push(cb);
+        if (query.value in src.srcInProgress[typeName]) {
+          src.srcInProgress[typeName][query.value].push(cb);
           return;
         }
 
         // First query for this value
-        src.inProgress[typeName][query.value] = [cb];
+        src.srcInProgress[typeName][query.value] = [cb];
         src[funcName](query.value, function (err, result) {
-          if (!err && src.cacheTimeout !== -1) { // If err or cacheTimeout is -1 then don't cache
+          if (!err && src.cacheTimeout !== -1 && result !== undefined) { // If err or cacheTimeout is -1 then don't cache
             cacheResult[src.section] = {ts:now, result:result};
             cacheChanged = true;
           }
-          var inProgress = src.inProgress[typeName][query.value];
-          delete src.inProgress[typeName][query.value];
-          for (var i = 0, l = inProgress.length; i < l; i++) {
-            inProgress[i](err, result);
+          if (err === "dropped") {
+            src.cacheDroppedStat++;
+            err = null;
+            result = undefined;
+          }
+          var srcInProgress = src.srcInProgress[typeName][query.value];
+          delete src.srcInProgress[typeName][query.value];
+          for (var i = 0, l = srcInProgress.length; i < l; i++) {
+            srcInProgress[i](err, result);
           }
           return;
         });
@@ -299,13 +300,18 @@ function processQuery(req, query, cb) {
       }
     }, function (err, results) {
       // Combine all the results together
-      if (err || req.timedout) {
-        return cb(err || "Timed out " + typeName + " " + query.value);
+      if (err) {
+        return cb(err);
       }
       if (internals.debug > 2) {
         console.log("RESULT", funcName, query.value, wiseSource.result2Str(wiseSource.combineResults(results)));
       }
-      cb(null, wiseSource.combineResults(results));
+
+      if (req.timedout) {
+        cb("Timed out " + typeName + " " + query.value);
+      } else {
+        cb(null, wiseSource.combineResults(results));
+      }
 
       // Need to update the cache
       if (cacheChanged) {
@@ -490,8 +496,8 @@ function printStats()
       internals.cacheSrcRefreshStats[1], internals.cacheSrcRefreshStats[0], internals.cacheSrcRefreshStats[3], internals.cacheSrcRefreshStats[2], internals.cacheSrcRefreshStats[4]));
 
   for (var section in internals.sources) {
-    console.log(sprintf("SRC %-30s    cached: %7d lookup: %7d refresh: %7d",
-      section, internals.sources[section].cacheHitStat, internals.sources[section].cacheMissStat, internals.sources[section].cacheRefreshStat));
+    console.log(sprintf("SRC %-30s    cached: %7d lookup: %7d refresh: %7d dropped: %7d",
+      section, internals.sources[section].cacheHitStat, internals.sources[section].cacheMissStat, internals.sources[section].cacheRefreshStat, internals.sources[section].cacheDroppedStat));
   }
 }
 //////////////////////////////////////////////////////////////////////////////////

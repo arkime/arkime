@@ -2,13 +2,13 @@
 /*
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,6 +37,8 @@ function ThreatStreamSource (api, section) {
     this.domains = new HashTable();
     this.emails  = new HashTable();
     this.md5s    = new HashTable();
+  } else {
+    this.inProgress = 0;
   }
 }
 util.inherits(ThreatStreamSource, wiseSource);
@@ -92,7 +94,7 @@ ThreatStreamSource.prototype.parseFile = function()
             console.log("ERROR -", entry.path, e, item, e.stack);
             return;
           }
-                                             
+
 
           if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
             self.ips.put(item.ip, {num: num, buffer: encoded});
@@ -148,7 +150,7 @@ function dumpZip (res) {
   ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
     res.write("" + ckey + ":\n");
     self[ckey].forEach(function(key, value) {
-      var str = "{key: \"" + key + "\", ops:\n" + 
+      var str = "{key: \"" + key + "\", ops:\n" +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
     });
@@ -165,7 +167,13 @@ ThreatStreamSource.prototype.getApi = function(type, value, cb) {
       forever: true
   };
 
+  if (self.inProgress > 50) {
+    return cb ("dropped");
+  }
+
+  self.inProgress++;
   request(options, function(err, response, body) {
+    self.inProgress--;
     if (err) {
       console.log("threatstream problem fetching ", options, err || response);
       return cb(null, wiseSource.emptyResult);
@@ -175,9 +183,13 @@ ThreatStreamSource.prototype.getApi = function(type, value, cb) {
       body = JSON.parse(body);
     } catch (e) {
       console.log("Couldn't parse", body);
+      return cb(null, wiseSource.emptyResult);
     }
 
-    console.log("Got", type, value, body.objects.length);
+    if (body.objects.length === 0) {
+      return cb(null, wiseSource.emptyResult);
+    }
+
     var args = [];
     body.objects.forEach(function (item) {
       args.push(self.confidenceField, "" + item.confidence,
@@ -232,7 +244,7 @@ ThreatStreamSource.prototype.init = function() {
   this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
   this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;shortcut:5;count:true");
 
-  this.api.addView("threatstream", 
+  this.api.addView("threatstream",
     "if (session.threatstream)\n" +
     "  div.sessionDetailMeta.bold Threatstream\n" +
     "  dl.sessionDetailMeta\n" +

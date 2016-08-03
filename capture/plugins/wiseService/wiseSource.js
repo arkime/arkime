@@ -33,6 +33,7 @@ function WISESource (api, section) {
   self.cacheHitStat = 0;
   self.cacheMissStat = 0;
   self.cacheRefreshStat = 0;
+  self.cacheDroppedStat = 0;
 
   ["excludeDomains", "excludeEmails"].forEach(function(type) {
     var items = api.getConfig(section, type);
