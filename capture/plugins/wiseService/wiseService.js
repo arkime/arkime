@@ -222,7 +222,6 @@ internals.type2Func = ["getIp", "getDomain", "getMd5", "getEmail", "getURL"];
 internals.type2Name = ["ip", "domain", "md5", "email", "url"];
 internals.name2Type = {ip:0, 0:0, domain:1, 1:1, md5:2, 2:2, email:3, 3:3, url:4, 4:4};
 
-
 //////////////////////////////////////////////////////////////////////////////////
 function processQuery(req, query, cb) {
   var typeName = internals.type2Name[query.type];
@@ -237,6 +236,7 @@ function processQuery(req, query, cb) {
     console.log("ERROR", typeName, query, e);
   }
 
+  // Fetch the cache for this query
   internals.cache.get(query, function(err, cacheResult) {
     if (req.timedout) {
       return cb("Timed out " + typeName + " " + query.value);
@@ -255,10 +255,11 @@ function processQuery(req, query, cb) {
       }
 
       if (!typeInfo.source_allowed(src, query.value)) {
-        setImmediate(cb, undefined);
+        // This source isn't allowed for query
+        return setImmediate(cb, undefined);
       }
 
-      if (cacheResult[src.section] === undefined || cacheResult[src.section].ts > now + src.cacheTimeout) {
+      if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
         // Can't use the cache or there is no cache for this source
         delete cacheResult[src.section];
 
@@ -287,6 +288,7 @@ function processQuery(req, query, cb) {
         setImmediate(cb, null, cacheResult[src.section].result);
       }
     }, function (err, results) {
+      // Combine all the results together
       if (err || req.timedout) {
         return cb(err || "Timed out " + typeName + " " + query.value);
       }
