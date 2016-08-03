@@ -1,7 +1,7 @@
 /******************************************************************************/
 /*
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -21,7 +21,6 @@ var dns            = require('dns')
   , iptrie         = require('iptrie')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , LRU            = require('lru-cache')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function removeArray(arr, value) {
@@ -53,9 +52,6 @@ ReverseDNSSource.prototype.init = function() {
     return;
   }
 
-  self.cache = LRU({max: self.api.getConfig("reversedns", "cacheSize", 20000), 
-                    maxAge: 1000 * 60 * +self.api.getConfig("reversedns", "cacheAgeMin", "60")});
-
   self.api.addSource("reversedns", self);
   self.theField = self.api.addField("field:" + self.field);
   self.trie = new iptrie.IPTrie();
@@ -75,16 +71,10 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
     return cb(null, undefined);
   }
 
-  var info = self.cache.get(ip);
-  if (info) {
-      return cb(null, info);
-  }
-
   dns.reverse(ip, function (err, domains) {
     //console.log("answer", ip, err, domains);
     if (err || domains.length === 0) {
-      self.cache.set(ip, wiseSource.emptyResult);
-      return cb(null, undefined);
+      return cb(null, wiseSource.emptyResult);
     }
     var args = [];
     for (var i = 0; i < domains.length; i++) {
@@ -101,19 +91,9 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
         }
       }
     }
-    info = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
-    self.cache.set(ip, info);
-    cb(null, info);
+    var wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+    cb(null, wiseResult);
   });
-};
-//////////////////////////////////////////////////////////////////////////////////
-ReverseDNSSource.prototype.dump = function(res) {
-  this.cache.forEach(function(value, key, cache) {
-    var str = "{key: \"" + key + "\", ops:\n" + 
-      wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
-    res.write(str);
-  });
-  res.end();
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {

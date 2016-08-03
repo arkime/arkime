@@ -27,32 +27,14 @@ var request        = require('request')
 function WiseProxySource (api, section) {
   WiseProxySource.super_.call(this, api, section);
 
-  this.url    = api.getConfig(section, "url");
-  this.types  = api.getConfig(section, "types");
-  this.mapping = [];
-  this.buffer = new Buffer(10000);
-  this.offset = 0;
-  this.bufferInfo = [];
-
-  this.caches = [
-     LRU({max: this.api.getConfig(section, "cacheSize", 50000), maxAge: 1000 * 60 * +this.api.getConfig(section, "cacheAgeMin", "5")}),
-     LRU({max: this.api.getConfig(section, "cacheSize", 50000), maxAge: 1000 * 60 * +this.api.getConfig(section, "cacheAgeMin", "5")}),
-     LRU({max: this.api.getConfig(section, "cacheSize", 50000), maxAge: 1000 * 60 * +this.api.getConfig(section, "cacheAgeMin", "5")}),
-     LRU({max: this.api.getConfig(section, "cacheSize", 50000), maxAge: 1000 * 60 * +this.api.getConfig(section, "cacheAgeMin", "5")})
-       ];
+  this.url          = api.getConfig(section, "url");
+  this.types        = api.getConfig(section, "types");
+  this.mapping      = [];
+  this.buffer       = new Buffer(10000);
+  this.offset       = 0;
+  this.bufferInfo   = [];
 }
 util.inherits(WiseProxySource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-WiseProxySource.prototype.dump = function(res) {
-  var self = this;
-  for (var i = 0; i < 4; i++) {
-    self.caches[i].forEach(function(key, value) {
-      var str = "{key: \"" + key + "\", ops:\n" + wiseSource.result2Str(value) + "},\n";
-      res.write(str);
-    });
-  }
-  res.end();
-};
 //////////////////////////////////////////////////////////////////////////////////
 WiseProxySource.prototype.performQuery = function() {
   var self = this;
@@ -71,28 +53,29 @@ WiseProxySource.prototype.performQuery = function() {
   self.bufferInfo = [];
   self.offset = 0;
 
+  var i;
   request(options, function(err, response, body) {
-    if (err || response.statusCode != 200) {
+    if (err || response.statusCode !== 200) {
       console.log("Wise proxy error", self.section, err || response);
-      for (var i = 0; i < bufferInfo.length; i++) {
+      for (i = 0; i < bufferInfo.length; i++) {
         bufferInfo[i].cb("Error");
       }
 
       return;
     }
-    var body = new Buffer(body, "binary");
+
+    body = new Buffer(body, "binary");
     var offset = 0;
     var fieldsTS = body.readUInt32BE(offset); offset += 4;
-    if (fieldsTS != self.fieldsTS) {
+    if (fieldsTS !== self.fieldsTS) {
       self.updateInfo();
     }
     var ver = body.readUInt32BE(offset); offset += 4;
-    for (var i = 0; i < bufferInfo.length; i++) {
+    for (i = 0; i < bufferInfo.length; i++) {
       var num = body[offset]; offset += 1;
       var bi = bufferInfo[i];
 
       if (num === 0) {
-        self.caches[bi.type].set(bi.item, wiseSource.emptyResult);
         return bi.cb(null, wiseSource.emptyResult);
       }
 
@@ -104,20 +87,13 @@ WiseProxySource.prototype.performQuery = function() {
         args.push(self.mapping[field], str);
       }
       var result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
-      self.caches[bi.type].set(bi.item, result);
       return bi.cb(null, result);
     }
   });
-
 };
 //////////////////////////////////////////////////////////////////////////////////
 WiseProxySource.prototype.fetch = function(type, item, cb) {
   var self = this;
-
-  var c = self.caches[type].get(item);
-  if (c !== undefined) {
-    return cb(null, c);
-  }
 
   self.buffer[self.offset] = type; self.offset++;
   self.buffer.writeUInt16BE(item.length, self.offset); self.offset += 2;
@@ -188,6 +164,26 @@ WiseProxySource.prototype.updateInfo = function() {
 
 };
 //////////////////////////////////////////////////////////////////////////////////
+function getIp(item, cb) {
+  this.fetch(0, item, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getDomain(item, cb) {
+  this.fetch(1, item, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getMd5(item, cb) {
+  this.fetch(2, item, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getEmail(item, cb) {
+  this.fetch(3, item, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getUrl(item, cb) {
+  this.fetch(4, item, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
 WiseProxySource.prototype.init = function() {
   var self = this;
 
@@ -206,24 +202,19 @@ WiseProxySource.prototype.init = function() {
   for (var i = 0; i < types.length; i++) {
     switch(types[i]) {
     case "domain":
-      this.getDomain = function(item, cb) {
-        this.fetch(1, item, cb);
-      }
+      this.getDomain = getDomain;
       break;
     case "md5":
-      this.getMd5 = function(item, cb) {
-        this.fetch(2, item, cb);
-      }
+      this.getMd5 = getMd5;
       break;
     case "ip":
-      this.getIp = function(item, cb) {
-        this.fetch(0, item, cb);
-      }
+      this.getIp = getIp;
       break;
     case "email":
-      this.getEmail = function(item, cb) {
-        this.fetch(3, item, cb);
-      }
+      this.getEmail = getEmail;
+      break;
+    case "url":
+      this.getUrl = getUrl;
       break;
     }
   }

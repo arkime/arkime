@@ -2,7 +2,7 @@
 /* wiseService.js -- Server requests between moloch and various intel services
  *                   and files
  *
- * Copyright 2012-2015 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -29,6 +29,7 @@ var ini            = require('iniparser')
   , request        = require('request')
   , iptrie         = require('iptrie')
   , wiseSource     = require('./wiseSource.js')
+  , wiseCache      = require('./wiseCache.js')
   , cluster        = require("cluster")
   ;
 
@@ -40,17 +41,25 @@ var internals = {
   fieldsTS: 0,
   fields: [],
   fieldsSize: 0,
-  getIps: [],
-  getDomains: [],
-  getMd5s: [],
-  getEmails: [],
-  getURLs: [],
+  ip: {
+    sources: []
+  },
+  domain: {
+    sources: []
+  },
+  md5: {
+    sources: []
+  },
+  email: {
+    sources: []
+  },
+  url: {
+    sources: []
+  },
   printStats: [],
   sources: [],
-  rstats: [0,0,0,0],
-  fstats: [0,0,0,0],
-  global_allowed: {},
-  source_allowed: {},
+  rstats: [0,0,0,0,0],
+  fstats: [0,0,0,0,0],
   views: {},
   rightClicks: {},
   workers: 1
@@ -162,21 +171,22 @@ internals.sourceApi = {
   },
   debug: internals.debug,
   addSource: function(section, src) {
+    src.inProgress = {ip: {}, domain: {}, email: {}, md5: {}, url: {}};
     internals.sources[section] = src;
     if (src.getIp) {
-      internals.getIps.push(src);
+      internals.ip.sources.push(src);
     }
     if (src.getDomain) {
-      internals.getDomains.push(src);
+      internals.domain.sources.push(src);
     }
     if (src.getMd5) {
-      internals.getMd5s.push(src);
+      internals.md5.sources.push(src);
     }
     if (src.getEmail) {
-      internals.getEmails.push(src);
+      internals.email.sources.push(src);
     }
     if (src.getURL) {
-      internals.getURLs.push(src);
+      internals.url.sources.push(src);
     }
     if (src.printStats) {
       internals.printStats.push(src);
@@ -208,8 +218,91 @@ app.get("/rightClicks", function(req, res) {
   res.send(internals.rightClicks);
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.funcNames = ["getIp", "getDomain", "getMd5", "getEmail", "getURL"];
+internals.type2Func = ["getIp", "getDomain", "getMd5", "getEmail", "getURL"];
 internals.type2Name = ["ip", "domain", "md5", "email", "url"];
+internals.name2Type = {ip:0, 0:0, domain:1, 1:1, md5:2, 2:2, email:3, 3:3, url:4, 4:4};
+
+
+//////////////////////////////////////////////////////////////////////////////////
+function processQuery(req, query, cb) {
+  var typeName = internals.type2Name[query.type];
+  var funcName = internals.type2Func[query.type];
+  var typeInfo = internals[typeName];
+
+  try {
+    if (!typeInfo.global_allowed(query.value)) {
+      return cb(null, wiseSource.emptyCombinedResult);
+    }
+  } catch (e) {
+    console.log("ERROR", typeName, query, e);
+  }
+
+  internals.cache.get(query, function(err, cacheResult) {
+    if (req.timedout) {
+      return cb("Timed out " + typeName + " " + query.value);
+    }
+
+    var now = Math.floor(Date.now()/1000);
+
+    var cacheChanged = false;
+    if (cacheResult === undefined) {
+      cacheResult = {};
+    }
+
+    async.map(query.sources || typeInfo.sources, function(src, cb) {
+      if (req.timedout) {
+        return cb("Timed out " + typeName + " " + query.value + " " + src.section);
+      }
+
+      if (!typeInfo.source_allowed(src, query.value)) {
+        setImmediate(cb, undefined);
+      }
+
+      if (cacheResult[src.section] === undefined || cacheResult[src.section].ts > now + src.cacheTimeout) {
+        // Can't use the cache or there is no cache for this source
+        delete cacheResult[src.section];
+
+        // If already in progress then add to the list and return, cb called later;
+        if (query.value in src.inProgress[typeName]) {
+          src.inProgress[typeName][query.value].push(cb);
+          return;
+        }
+
+        // First query for this value
+        src.inProgress[typeName][query.value] = [cb];
+        src[funcName](query.value, function (err, result) {
+          if (!err && src.cacheTimeout !== -1) { // If err or cacheTimeout is -1 then don't cache
+            cacheResult[src.section] = {ts:now, result:result};
+            cacheChanged = true;
+          }
+          var inProgress = src.inProgress[typeName][query.value];
+          delete src.inProgress[typeName][query.value];
+          for (var i = 0, l = inProgress.length; i < l; i++) {
+            inProgress[i](err, result);
+          }
+          return;
+        });
+      } else {
+        // Woot, we can use the cache
+        setImmediate(cb, null, cacheResult[src.section].result);
+      }
+    }, function (err, results) {
+      if (err || req.timedout) {
+        return cb(err || "Timed out " + typeName + " " + query.value);
+      }
+      if (internals.debug > 2) {
+        console.log("RESULT", funcName, query.value, wiseSource.result2Str(wiseSource.combineResults(results)));
+      }
+      cb(null, wiseSource.combineResults(results));
+
+      // Need to update the cache
+      if (cacheChanged) {
+        internals.cache.set(query, cacheResult);
+      }
+    });
+  });
+}
+//////////////////////////////////////////////////////////////////////////////////
 app.post("/get", function(req, res) {
   var offset = 0;
 
@@ -223,7 +316,7 @@ app.post("/get", function(req, res) {
       var len  = buf.readUInt16BE(offset+1);
       var value = buf.toString('utf8', offset+3, offset+3+len);
       if (internals.debug > 1) {
-        console.log(internals.funcNames[type], value);
+        console.log(internals.type2Func[type], value);
       }
       offset += 3 + len;
       queries.push({type: type, value: value});
@@ -231,32 +324,7 @@ app.post("/get", function(req, res) {
     }
 
     async.map(queries, function (query, cb) {
-      var name = internals.type2Name[query.type];
-      try {
-        if (!internals.global_allowed[name](query.value)) {
-          return cb(null, wiseSource.combineResults([]));
-        }
-      } catch (e) {
-        console.log("ERROR", name, query, e);
-      }
-      async.map(internals[internals.funcNames[query.type] + "s"], function(src, cb) {
-        if (req.timedout) {
-          return cb("Timed out " + internals.type2Name[query.type] + " " + query.value + " " + src.section);
-        }
-        if (internals.source_allowed[name](src, query.value)) {
-          src[internals.funcNames[query.type]](query.value, cb);
-        } else {
-          setImmediate(cb, undefined);
-        }
-      }, function (err, results) {
-        if (err || req.timedout) {
-          return cb(err || "Timed out " + internals.type2Name[query.type] + " " + query.value);
-        }
-        if (internals.debug > 2) {
-          console.log("RESULT", internals.funcNames[query.type], query.value, wiseSource.result2Str(wiseSource.combineResults(results)));
-        }
-        cb(null, wiseSource.combineResults(results));
-      });
+      processQuery(req, query, cb);
     }, function (err, results) {
       if (err || req.timedout) {
         console.log("Error", err || "Timed out" );
@@ -277,27 +345,25 @@ app.post("/get", function(req, res) {
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
-internals.type2func = {ip:"getIp", 0:"getIp", domain:"getDomain", 1:"getDomain", md5:"getMd5", 2:"getMd5", email:"getEmail", 3:"getEmail", url:"getURL", 4:"getURL"};
 app.get("/:source/:type/:value", function(req, res) {
   var source = internals.sources[req.params.source];
   if (!source) {
     return res.end("Unknown source " + req.params.source);
   }
 
-  var fn = internals.type2func[req.params.type];
-  if (!fn) {
+  var query = {type: internals.name2Type[req.params.type],
+               value: req.params.value,
+               sources: [source]};
+
+  if (query.type === undefined) {
     return res.end("Unknown type " + req.params.type);
   }
 
-  if (!source[fn]) {
-    return res.end("The source doesn't support the query " + fn);
-  }
-
-  source[fn](req.params.value, function (err, result) {
-    if (!result) {
+  processQuery(req, query, function (err, result) {
+    if (err || !result) {
       return res.end("Not found");
     }
-    res.end(wiseSource.result2Str(wiseSource.combineResults([result])));
+    res.end(wiseSource.result2Str(result));
   });
 });
 //////////////////////////////////////////////////////////////////////////////////
@@ -314,11 +380,13 @@ app.get("/dump/:source", function(req, res) {
   source.dump(res);
 });
 //////////////////////////////////////////////////////////////////////////////////
+//ALW - Need to rewrite to use performQuery
+/*
 app.get("/bro/:type", function(req, res) {
   var hashes = req.query.items.split(",");
   var needsep = false;
 
-  var fn = internals.type2func[req.params.type];
+  var fn = internals.type2Func[req.params.type];
   var srcs = internals[fn + "s"];
   async.map(hashes, function(hash, doneCb) {
     async.map(srcs, function(src, cb) {
@@ -334,7 +402,7 @@ app.get("/bro/:type", function(req, res) {
   function (err, results) {
 
     for (var hashi = 0; hashi < hashes.length; hashi++) {
-      if (hashi != 0) {
+      if (hashi !== 0) {
         res.write("\tBRONEXT\t");
       }
       res.write(hashes[hashi]);
@@ -353,7 +421,7 @@ app.get("/bro/:type", function(req, res) {
         var offset = 0;
         var buffer = results[hashi][resulti].buffer;
         for (var n = 0; n < results[hashi][resulti].num; n++) {
-          if (n != 0) {
+          if (n !== 0) {
             res.write(" ");
           }
           var pos = buffer[offset++];
@@ -370,26 +438,21 @@ app.get("/bro/:type", function(req, res) {
     res.end();
   });
 });
+*/
 //////////////////////////////////////////////////////////////////////////////////
 app.get("/:type/:value", function(req, res) {
-  var fn = internals.type2func[req.params.type];
-  if (!fn) {
+  var type = internals.name2Type[req.params.type];
+  if (type === undefined) {
     return res.end("Unknown type " + req.params.type);
   }
 
-  if (!internals.global_allowed[req.params.type](req.params.value)) {
-    var result = wiseSource.combineResults([]);
-    return res.end(wiseSource.result2Str(result));
-  }
+  var query = {type: type,
+               value: req.params.value};
 
-  async.map(internals[fn + "s"], function(src, cb) {
-    if (internals.source_allowed[req.params.type](src, req.params.value)) {
-      src[fn](req.params.value, cb);
-    } else {
-      setImmediate(cb, undefined);
+  processQuery(req, query, function (err, result) {
+    if (err || !result) {
+      return res.end("Not found");
     }
-  }, function (err, results) {
-    var result = wiseSource.combineResults(results);
     res.end(wiseSource.result2Str(result));
   });
 });
@@ -412,7 +475,7 @@ function printStats()
   });
 }
 //////////////////////////////////////////////////////////////////////////////////
-internals.global_allowed.ip = function(value) {
+internals.ip.global_allowed = function(value) {
   if (internals.excludeIPs.find(value)) {
     if (internals.debug > 0) {
       console.log("Found in Global IP Exclude", value);
@@ -421,8 +484,8 @@ internals.global_allowed.ip = function(value) {
   }
   return true;
 };
-internals.global_allowed.md5 = function(value) {return true;};
-internals.global_allowed.email = function(value) {
+internals.md5.global_allowed = function(value) {return true;};
+internals.email.global_allowed = function(value) {
   for(var i = 0; i < internals.excludeEmails.length; i++) {
     if (value.match(internals.excludeEmails[i])) {
       if (internals.debug > 0) {
@@ -433,7 +496,7 @@ internals.global_allowed.email = function(value) {
   }
   return true;
 };
-internals.global_allowed.domain = function(value) {
+internals.domain.global_allowed = function(value) {
   for(var i = 0; i < internals.excludeDomains.length; i++) {
     if (value.match(internals.excludeDomains[i])) {
       if (internals.debug > 0) {
@@ -444,7 +507,7 @@ internals.global_allowed.domain = function(value) {
   }
   return true;
 };
-internals.source_allowed.ip = function(src, value) {
+internals.ip.source_allowed = function(src, value) {
   if (src.excludeIPs.find(value)) {
     if (internals.debug > 0) {
       console.log("Found in", src.section, "IP Exclude", value);
@@ -453,8 +516,8 @@ internals.source_allowed.ip = function(src, value) {
   }
   return true;
 };
-internals.source_allowed.md5 = function(src, value) {return true;};
-internals.source_allowed.email = function(src, value) {
+internals.md5.source_allowed = function(src, value) {return true;};
+internals.email.source_allowed = function(src, value) {
   for(var i = 0; i < src.excludeEmails.length; i++) {
     if (value.match(src.excludeEmails[i])) {
       if (internals.debug > 0) {
@@ -465,7 +528,7 @@ internals.source_allowed.email = function(src, value) {
   }
   return true;
 };
-internals.source_allowed.domain = function(src, value) {
+internals.domain.source_allowed = function(src, value) {
   for(var i = 0; i < src.excludeDomains.length; i++) {
     if (value.match(src.excludeDomains[i])) {
       if (internals.debug > 0) {
@@ -519,6 +582,7 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 //// Main
 //////////////////////////////////////////////////////////////////////////////////
 function main() {
+  internals.cache = wiseCache.createCache({getConfig: getConfig});
   loadExcludes();
   loadSources();
   setInterval(printStats, 60*1000);

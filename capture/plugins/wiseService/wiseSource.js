@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* Base class for data sources
  *
- * Copyright 2012-2015 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -29,6 +29,7 @@ function WISESource (api, section) {
   self.section = section;
   self.view = "";
   self.shortcuts = {};
+  this.cacheTimeout = 1000 * 60 * +this.api.getConfig(section, "cacheAgeMin", "60"); // Default an hour
 
   ["excludeDomains", "excludeEmails"].forEach(function(type) {
     var items = api.getConfig(section, type);
@@ -112,7 +113,7 @@ WISESource.prototype.parseFieldDef = function(line) {
   } else if (line.lastIndexOf('view:',0) === 0) {
       this.view += line.substring(5) + "\n";
   }
-}
+};
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseTagger = function(body, setCb, endCb) {
   var lines = body.toString().split("\n");
@@ -162,8 +163,9 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
   for(var i = 0; i < json.length; i++) {
     var key = json[i][self.keyColumn];
     var args = [];
-    if (key === undefined)
+    if (key === undefined) {
       continue;
+    }
     for (var k in self.shortcuts) {
       if (json[i][k] !== undefined) {
         args.push(self.shortcuts[k]);
@@ -223,21 +225,22 @@ WISESource.result2Str = function(result, indent) {
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.encode = function ()
 {
-  var a, len = 0;
+  var a, l, len = 0;
   for (a = 1; a < arguments.length; a += 2) {
-    var l = Buffer.byteLength(arguments[a]);
+    l = Buffer.byteLength(arguments[a]);
     if (l > 250) {
       arguments[a] = arguments[a].substring(0, 240);
     }
     len += 3 + Buffer.byteLength(arguments[a]);
   }
+
   var buf = new Buffer(len);
   var offset = 0;
   for (a = 1; a < arguments.length; a += 2) {
       buf.writeUInt8(arguments[a-1], offset);
       len = Buffer.byteLength(arguments[a]);
       buf.writeUInt8(len+1, offset+1);
-      var l = buf.write(arguments[a], offset+2);
+      l = buf.write(arguments[a], offset+2);
       buf.writeUInt8(0, offset+l+2);
       offset += 3 + l;
   }
@@ -274,3 +277,6 @@ WISESource.request = function (url, file, cb) {
   })
   ;
 };
+
+//////////////////////////////////////////////////////////////////////////////////
+WISESource.emptyCombinedResult = WISESource.combineResults([]);

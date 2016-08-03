@@ -1,7 +1,7 @@
 /******************************************************************************/
 /*
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -33,6 +33,8 @@ function FileSource (api, section) {
   this.keyColumn  = api.getConfig(section, "keyColumn", 0);
   this.type    = api.getConfig(section, "type");
   this.format  = api.getConfig(section, "format", "csv");
+  this.cacheTimeout = -1;
+
   if (this.type === "ip") {
     this.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
   } else {
