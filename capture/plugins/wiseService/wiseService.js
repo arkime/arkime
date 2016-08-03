@@ -56,10 +56,12 @@ var internals = {
   url: {
     sources: []
   },
-  printStats: [],
   sources: [],
-  rstats: [0,0,0,0,0],
-  fstats: [0,0,0,0,0],
+  requestStats: [0,0,0,0,0],
+  foundStats: [0,0,0,0,0],
+  cacheHitStats: [0,0,0,0,0],
+  cacheSrcHitStats: [0,0,0,0,0],
+  cacheSrcRefreshStats: [0,0,0,0,0],
   views: {},
   rightClicks: {},
   workers: 1
@@ -188,9 +190,6 @@ internals.sourceApi = {
     if (src.getURL) {
       internals.url.sources.push(src);
     }
-    if (src.printStats) {
-      internals.printStats.push(src);
-    }
   },
   app: app
 };
@@ -247,6 +246,8 @@ function processQuery(req, query, cb) {
     var cacheChanged = false;
     if (cacheResult === undefined) {
       cacheResult = {};
+    } else {
+      internals.cacheHitStats[query.type]++;
     }
 
     async.map(query.sources || typeInfo.sources, function(src, cb) {
@@ -260,6 +261,13 @@ function processQuery(req, query, cb) {
       }
 
       if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
+        if (cacheResult[src.section] === undefined) {
+          src.cacheMissStat++;
+        } else {
+          src.cacheRefreshStat++;
+          internals.cacheSrcRefreshStats[query.type]++;
+        }
+
         // Can't use the cache or there is no cache for this source
         delete cacheResult[src.section];
 
@@ -284,6 +292,8 @@ function processQuery(req, query, cb) {
           return;
         });
       } else {
+        src.cacheHitStat++;
+        internals.cacheSrcHitStats[query.type]++;
         // Woot, we can use the cache
         setImmediate(cb, null, cacheResult[src.section].result);
       }
@@ -322,7 +332,7 @@ app.post("/get", function(req, res) {
       }
       offset += 3 + len;
       queries.push({type: type, value: value});
-      internals.rstats[type]++;
+      internals.requestStats[type]++;
     }
 
     async.map(queries, function (query, cb) {
@@ -338,7 +348,7 @@ app.post("/get", function(req, res) {
       res.write(buf);
       for (var r = 0; r < results.length; r++) {
         if (results[r][0] > 0) {
-          internals.fstats[queries[r].type]++;
+          internals.foundStats[queries[r].type]++;
         }
         res.write(results[r]);
       }
@@ -468,13 +478,21 @@ if (getConfig("wiseService", "regressionTests")) {
 //////////////////////////////////////////////////////////////////////////////////
 function printStats()
 {
-  console.log(sprintf("REQUESTS: domain: %7d ip: %7d email: %7d md5: %7d",
-      internals.rstats[1], internals.rstats[0], internals.rstats[3], internals.rstats[2]));
-  console.log(sprintf("FOUND:    domain: %7d ip: %7d email: %7d md5: %7d",
-      internals.fstats[1], internals.fstats[0], internals.fstats[3], internals.fstats[2]));
-  internals.printStats.forEach(function(fn) {
-    fn.printStats();
-  });
+  console.log(sprintf("REQUESTS:          domain: %7d ip: %7d email: %7d md5: %7d url: %7d",
+      internals.requestStats[1], internals.requestStats[0], internals.requestStats[3], internals.requestStats[2], internals.requestStats[4]));
+  console.log(sprintf("FOUND:             domain: %7d ip: %7d email: %7d md5: %7d url: %7d",
+      internals.foundStats[1], internals.foundStats[0], internals.foundStats[3], internals.foundStats[2], internals.foundStats[4]));
+  console.log(sprintf("CACHE HIT:         domain: %7d ip: %7d email: %7d md5: %7d url: %7d",
+      internals.cacheHitStats[1], internals.cacheHitStats[0], internals.cacheHitStats[3], internals.cacheHitStats[2], internals.cacheHitStats[4]));
+  console.log(sprintf("CACHE SRC HIT:     domain: %7d ip: %7d email: %7d md5: %7d url: %7d",
+      internals.cacheSrcHitStats[1], internals.cacheSrcHitStats[0], internals.cacheSrcHitStats[3], internals.cacheSrcHitStats[2], internals.cacheSrcHitStats[4]));
+  console.log(sprintf("CACHE SRC REFRESH: domain: %7d ip: %7d email: %7d md5: %7d url: %7d",
+      internals.cacheSrcRefreshStats[1], internals.cacheSrcRefreshStats[0], internals.cacheSrcRefreshStats[3], internals.cacheSrcRefreshStats[2], internals.cacheSrcRefreshStats[4]));
+
+  for (var section in internals.sources) {
+    console.log(sprintf("SRC %-30s    cached: %7d lookup: %7d refresh: %7d",
+      section, internals.sources[section].cacheHitStat, internals.sources[section].cacheMissStat, internals.sources[section].cacheRefreshStat));
+  }
 }
 //////////////////////////////////////////////////////////////////////////////////
 internals.ip.global_allowed = function(value) {

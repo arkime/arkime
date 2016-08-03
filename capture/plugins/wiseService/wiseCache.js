@@ -102,7 +102,7 @@ exports.createCache = function(options) {
 
   switch (type) {
   case "memory":
-    return new WISEMemoryCache();
+    return new WISEMemoryCache(options);
   case "redis":
     options.url = options.getConfig("cache", "url");
     return new WISERedisCache(options);

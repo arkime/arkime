@@ -29,7 +29,10 @@ function WISESource (api, section) {
   self.section = section;
   self.view = "";
   self.shortcuts = {};
-  this.cacheTimeout = 60 * +this.api.getConfig(section, "cacheAgeMin", "60"); // Default an hour
+  self.cacheTimeout = 60 * +this.api.getConfig(section, "cacheAgeMin", "60"); // Default an hour
+  self.cacheHitStat = 0;
+  self.cacheMissStat = 0;
+  self.cacheRefreshStat = 0;
 
   ["excludeDomains", "excludeEmails"].forEach(function(type) {
     var items = api.getConfig(section, type);
