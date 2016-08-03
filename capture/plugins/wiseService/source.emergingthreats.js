@@ -29,6 +29,7 @@ function EmergingThreatsSource (api, section) {
   this.key          = api.getConfig("emergingthreats", "key");
   this.ips          = {};
   this.domains      = {};
+  this.categories   = {};
   this.cacheTimeout = -1;
 }
 util.inherits(EmergingThreatsSource, wiseSource);
