@@ -25,6 +25,9 @@ var fs             = require('fs')
   , LRU            = require('lru-cache')
   , request        = require('request')
   ;
+
+var sqlite3;
+var db;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatStreamSource (api, section) {
   ThreatStreamSource.super_.call(this, api, section);
@@ -32,13 +35,26 @@ function ThreatStreamSource (api, section) {
   this.key     = api.getConfig("threatstream", "key");
   this.mode     = api.getConfig("threatstream", "mode", "zip");
 
-  if (this.mode !== "api") {
-    this.ips     = new HashTable();
-    this.domains = new HashTable();
-    this.emails  = new HashTable();
-    this.md5s    = new HashTable();
-  } else {
+  switch (this.mode) {
+  case "api":
     this.inProgress = 0;
+    break;
+  case "zip":
+    this.ips          = new HashTable();
+    this.domains      = new HashTable();
+    this.emails       = new HashTable();
+    this.md5s         = new HashTable();
+    this.cacheTimeout = -1;
+    break;
+  case "sqlite3":
+    sqlite3           = require('sqlite3');
+    console.log(sqlite3, api.getConfig("threatstream", "dbFile", "ts.db"));
+    db                = new sqlite3.Database(api.getConfig("threatstream", "dbFile", "ts.db"), sqlite3.OPEN_READONLY);
+    this.cacheTimeout = -1;
+    break;
+  default:
+    console.log("Unknown threatstream mode", this.mode);
+    process.exit(0);
   }
 }
 util.inherits(ThreatStreamSource, wiseSource);
@@ -225,6 +241,77 @@ function getEmailApi(email, cb) {
   return this.getApi("email", email, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////
+ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
+  var self = this;
+
+  db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
+    if (err) {
+      console.log("ERROR", err, data);
+    }
+    if (data.length === 0) {
+      return cb(null, wiseSource.emptyResult);
+    }
+
+    var args = [];
+    data.forEach(function (item) {
+      args.push(self.confidenceField, "" + item.confidence,
+                self.idField, "" + item.id,
+                self.typeField, item.itype.toLowerCase(),
+                self.sourceField, item.source);
+
+      if (item.maltype !== undefined && item.maltype !== null) {
+        args.push(self.maltypeField, item.maltype.toLowerCase());
+      }
+      if (item.severity !== undefined) {
+        args.push(self.severityField, item.severity.toLowerCase());
+      }
+    });
+    var result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+    return cb(null, result);
+  });
+};
+//////////////////////////////////////////////////////////////////////////////////
+function getDomainSqlite3(domain, cb) {
+  return this.getSqlite3("domain", "domain", domain, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getIpSqlite3(ip, cb) {
+  return this.getSqlite3("ip", "srcip", ip, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getEmailSqlite3(email, cb) {
+  return this.getSqlite3("email", "email", email, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+ThreatStreamSource.prototype.loadTypes = function() {
+  // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
+  var self = this;
+  self.types = {};
+  self.typesWithQuotes = {};
+  request({url: "https://api.threatstream.com/api/v1/impact/?username="+self.user+"&api_key="+self.key+"&limit=1000", forever: true}, function(err, response, body) {
+    if (err) {
+      console.log("ERROR - Threatstream failed to load types", err);
+      return;
+    }
+
+    body = JSON.parse(body);
+    body.objects.forEach(function(item) {
+      if (self.types[item.value_type] === undefined) {
+        self.types[item.value_type] = [item.name];
+      } else {
+        self.types[item.value_type].push(item.name);
+      }
+    });
+    for (var key in self.types) {
+      self.typesWithQuotes[key] = self.types[key].map(function(v) {return "'" + v + "'";}).join(",");
+      self.types[key] = self.types[key].join(",");
+    }
+
+    // Wait to register until request is done
+    self.api.addSource("threatstream", self);
+  });
+};
+//////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.init = function() {
   var self = this;
   if (this.user === undefined) {
@@ -261,7 +348,8 @@ ThreatStreamSource.prototype.init = function() {
   this.api.addRightClick("threatstreamemail", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
   this.api.addRightClick("threatstreammd5", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
 
-  if (this.mode !== "api") {
+  switch (this.mode) {
+  case "zip":
     this.loadFile();
     setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
 
@@ -270,35 +358,20 @@ ThreatStreamSource.prototype.init = function() {
     ThreatStreamSource.prototype.getMd5 = getMd5Zip;
     ThreatStreamSource.prototype.getEmail = getEmailZip;
     ThreatStreamSource.prototype.dump = dumpZip;
-  } else {
+    break;
+  case "api":
     ThreatStreamSource.prototype.getDomain = getDomainApi;
     ThreatStreamSource.prototype.getIp = getIpApi;
     ThreatStreamSource.prototype.getMd5 = getMd5Api;
     ThreatStreamSource.prototype.getEmail = getEmailApi;
-
-    // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
-    this.types = {};
-    request({url: "https://api.threatstream.com/api/v1/impact/?username="+this.user+"&api_key="+this.key+"&limit=1000", forever: true}, function(err, response, body) {
-      if (err) {
-        console.log("ERROR - Threatstream failed to load types", err);
-        return;
-      }
-
-      body = JSON.parse(body);
-      body.objects.forEach(function(item) {
-        if (self.types[item.value_type] === undefined) {
-          self.types[item.value_type] = [item.name];
-        } else {
-          self.types[item.value_type].push(item.name);
-        }
-      });
-      for (var key in self.types) {
-        self.types[key] = self.types[key].join(",");
-      }
-
-      // Wait to register until request is done
-      self.api.addSource("threatstream", self);
-    });
+    this.loadTypes();
+    break;
+  case "sqlite3":
+    ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
+    ThreatStreamSource.prototype.getIp = getIpSqlite3;
+    ThreatStreamSource.prototype.getEmail = getEmailSqlite3;
+    this.loadTypes();
+    break;
   }
 };
 //////////////////////////////////////////////////////////////////////////////////
