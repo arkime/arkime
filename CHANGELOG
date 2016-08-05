@@ -11,6 +11,7 @@
   - capture - detect zabbix
   - viewer - fixed missing stats data (issue #502)
   - wise - optionally use external cache (issue #495)
+  - wise - threatstream can now use the opticlink db directly!
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0
