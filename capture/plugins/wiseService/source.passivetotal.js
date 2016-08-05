@@ -20,16 +20,13 @@
 var request        = require('request')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , LRU            = require('lru-cache')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
 function PassiveTotalSource (api, section) {
   PassiveTotalSource.super_.call(this, api, section);
-  this.waiting    = [];
-  this.outgoing   = 0;
-  this.inprogress = 0;
-  this.cached     = 0;
+  this.waiting      = [];
+  this.processing   = {};
 }
 util.inherits(PassiveTotalSource, wiseSource);
 
@@ -44,8 +41,6 @@ PassiveTotalSource.prototype.performQuery = function () {
   if (self.api.debug > 0) {
     console.log("PassiveTotal - Fetching %d", self.waiting.length);
   }
-
-  self.outgoing++;
 
   var options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
@@ -67,12 +62,15 @@ PassiveTotalSource.prototype.performQuery = function () {
 
     for (var resultname in results.results) {
       var result = results.results[resultname];
-      var info = self.cache.get(resultname);
-      if (!info) {
+      var cbs = self.processing[resultname];
+      if (!cbs) {
         return;
       }
+      delete self.processing[resultname];
+
+      var wiseResult;
       if (result.tags === undefined || result.tags.length === 0) {
-        info.result = wiseSource.emptyResult;
+        wiseResult = wiseSource.emptyResult;
       } else {
         var args = [];
         for (var i = 0; i < result.tags.length; i++) {
@@ -81,12 +79,12 @@ PassiveTotalSource.prototype.performQuery = function () {
           }
         }
         
-        info.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+        wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
       }
 
       var cb;
-      while ((cb = info.cbs.shift())) {
-        cb(null, info.result);
+      while ((cb = cbs.shift())) {
+        cb(null, wiseResult);
       }
     }
   }).on('error', function (err) {
@@ -108,9 +106,6 @@ PassiveTotalSource.prototype.init = function() {
     return;
   }
 
-  this.cache = LRU({max: this.api.getConfig("passivetotal", "cacheSize", 200000), 
-                      maxAge: 1000 * 60 * +this.api.getConfig("passivetotal", "cacheAgeMin", "60")});
-
   this.api.addSource("passivetotal", this);
   setInterval(this.performQuery.bind(this), 500);
 
@@ -118,7 +113,7 @@ PassiveTotalSource.prototype.init = function() {
     "if (session.passivetotal)\n" +
     "  div.sessionDetailMeta.bold PassiveTotal\n" +
     "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.passivetotal, 'tags-term', 'Tags', 'passivetotal.tags')\n"
+    "    +arrayList(session.passivetotal, 'tags-term', 'Tags', 'passivetotal.tags')\n";
 
   this.tagsField = this.api.addField("field:passivetotal.tags;db:passivetotal.tags-term;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true");
 
@@ -127,18 +122,12 @@ PassiveTotalSource.prototype.init = function() {
 
 //////////////////////////////////////////////////////////////////////////////////
 PassiveTotalSource.prototype.getDomain = function(domain, cb) {
-  var info = this.cache.get(domain);
-  if (info) {
-    if (info.result !== undefined) {
-      this.cached++;
-      return cb(null, info.result);
-    }
-    this.inprogress++;
-    info.cbs.push(cb);
+  if (domain in this.processing) {
+    this.processing[domain].push(cb);
     return;
   }
-  info = {cbs:[cb]};
-  this.cache.set(domain, info);
+
+  this.processing[domain] = [cb];
   this.waiting.push(domain);
   if (this.waiting.length >= 25) {
     this.performQuery();
@@ -146,21 +135,6 @@ PassiveTotalSource.prototype.getDomain = function(domain, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 PassiveTotalSource.prototype.getIp = PassiveTotalSource.prototype.getDomain;
-//////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.dump = function(res) {
-  this.cache.forEach(function(value, key, cache) {
-    if (value.result) {
-      var str = "{key: \"" + key + "\", ops:\n" + 
-        wiseSource.result2Str(wiseSource.combineResults([value.result])) + "},\n";
-      res.write(str);
-    }
-  });
-  res.end();
-};
-//////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.printStats = function() {
-  console.log("PassiveTotal: outgoing:", this.outgoing, "cached:", this.cached, "inprogress:", this.inprogress, "size:", this.cache.itemCount);
-};
 //////////////////////////////////////////////////////////////////////////////////
 var source;
 exports.initSource = function(api) {

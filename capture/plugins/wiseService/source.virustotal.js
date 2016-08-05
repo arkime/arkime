@@ -20,16 +20,15 @@
 var request        = require('request')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , LRU            = require('lru-cache')
   ;
+
+var source;
 
 //////////////////////////////////////////////////////////////////////////////////
 function VirusTotalSource (api, section) {
   VirusTotalSource.super_.call(this, api, section);
   this.waiting    = [];
-  this.outgoing   = 0;
-  this.inprogress = 0;
-  this.cached     = 0;
+  this.processing = {};
 }
 util.inherits(VirusTotalSource, wiseSource);
 
@@ -44,8 +43,6 @@ VirusTotalSource.prototype.performQuery = function () {
   if (self.api.debug > 0) {
     console.log("VirusTotal - Fetching %d", self.waiting.length);
   }
-
-  self.outgoing++;
 
   var options = {
       url: 'https://www.virustotal.com/vtapi/v2/file/report?',
@@ -68,12 +65,15 @@ VirusTotalSource.prototype.performQuery = function () {
     }
 
     results.forEach(function(result) {
-      var info = self.cache.get(result.resource);
-      if (!info) {
+      var cbs = self.processing[result];
+      if (!cbs) {
         return;
       }
+      delete self.processing[result];
+
+      var wiseResult;
       if (result.response_code === 0) {
-        info.result = wiseSource.emptyResult;
+        wiseResult = wiseSource.emptyResult;
       }  else {
         var args = [self.hitsField, ""+result.positives, self.linksField, result.permalink];
 
@@ -86,12 +86,12 @@ VirusTotalSource.prototype.performQuery = function () {
           }
         }
 
-        info.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+        wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
       }
 
       var cb;
-      while ((cb = info.cbs.shift())) {
-        cb(null, info.result);
+      while ((cb = cbs.shift())) {
+        cb(null, wiseResult);
       }
     });
   }).on('error', function (err) {
@@ -109,9 +109,6 @@ VirusTotalSource.prototype.init = function() {
   this.dataSources = ["McAfee", "Symantec", "Microsoft", "Kaspersky"];
   this.dataSourcesLC = this.dataSources.map(function(x) {return x.toLowerCase();});
   this.dataFields = [];
-
-  this.cache = LRU({max: this.api.getConfig("virustotal", "cacheSize", 200000), 
-                      maxAge: 1000 * 60 * +this.api.getConfig("virustotal", "cacheAgeMin", "60")});
 
   this.api.addSource("virustotal", this);
   setInterval(this.performQuery.bind(this), 500);
@@ -132,8 +129,8 @@ VirusTotalSource.prototype.init = function() {
   this.linksField = this.api.addField("field:virustotal.links;db:virustotal.links-term;kind:termfield;friendly:Link;help:VirusTotal Link;count:true");
 
 
-  str += "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n"
-  str += "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n"
+  str += "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n";
+  str += "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
 
   this.api.addView("virustotal", str);
 };
@@ -141,17 +138,13 @@ VirusTotalSource.prototype.init = function() {
 VirusTotalSource.prototype.getMd5 = function(md5, cb) {
   var info = this.cache.get(md5);
   console.log("Looking for", md5);
-  if (info) {
-    if (info.result !== undefined) {
-      this.cached++;
-      return cb(null, info.result);
-    }
-    this.inprogress++;
-    info.cbs.push(cb);
+
+  if (md5 in this.processing) {
+    this.processing[md5].push(cb);
     return;
   }
-  info = {cbs:[cb]};
-  this.cache.set(md5, info);
+
+  this.processing[md5] = [cb];
   this.waiting.push(md5);
   if (this.waiting.length >= 25) {
     this.performQuery();
@@ -192,22 +185,6 @@ var reportApi = function(req, res) {
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
-VirusTotalSource.prototype.dump = function(res) {
-  this.cache.forEach(function(value, key, cache) {
-    if (value.result) {
-      var str = "{key: \"" + key + "\", ops:\n" + 
-        wiseSource.result2Str(wiseSource.combineResults([value.result])) + "},\n";
-      res.write(str);
-    }
-  });
-  res.end();
-};
-//////////////////////////////////////////////////////////////////////////////////
-VirusTotalSource.prototype.printStats = function() {
-  console.log("VirusTotal: outgoing:", this.outgoing, "cached:", this.cached, "inprogress:", this.inprogress, "size:", this.cache.itemCount);
-};
-//////////////////////////////////////////////////////////////////////////////////
-var source;
 exports.initSource = function(api) {
   api.app.get("/vtapi/v2/file/report", reportApi);
   source = new VirusTotalSource(api, "virustotal");

@@ -1,7 +1,7 @@
 /******************************************************************************/
 /*
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,17 +20,14 @@
 var https          = require('https')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
-  , LRU            = require('lru-cache')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
 function OpenDNSSource (api, section) {
   OpenDNSSource.super_.call(this, api, section);
-  this.waiting    = [];
-  this.statuses   = {"-1": "malicious", "0":"unknown", "1":"benign"};
-  this.outgoing   = 0;
-  this.inprogress = 0;
-  this.cached     = 0;
+  this.waiting      = [];
+  this.processing   = {};
+  this.statuses     = {"-1": "malicious", "0":"unknown", "1":"benign"};
 }
 util.inherits(OpenDNSSource, wiseSource);
 
@@ -74,7 +71,6 @@ OpenDNSSource.prototype.performQuery = function () {
     console.log("OpenDNS - Fetching %d", self.waiting.length);
   }
 
-  self.outgoing++;
 
   // http://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js/6158966
   // console.log("doing query:", waiting.length, "current cache", Object.keys(cache).length);
@@ -107,11 +103,12 @@ OpenDNSSource.prototype.performQuery = function () {
         results = {};
       }
       for (var result in results) {
-        var info = self.cache.get(result);
-        if (!info) {
-          info = {};
-          self.cache.set(result, info);
+        var cbs = self.processing[result];
+        if (!cbs) {
+          return;
         }
+        delete self.processing[result];
+
         var args = [self.statusField, self.statuses[results[result].status]];
 
         if (results[result].security_categories) {
@@ -134,11 +131,11 @@ OpenDNSSource.prototype.performQuery = function () {
           });
         }
 
-        info.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+        result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
 
         var cb;
-        while ((cb = info.cbs.shift())) {
-          cb(null, info.result);
+        while ((cb = cbs.shift())) {
+          cb(null, result);
         }
       }
     });
@@ -158,9 +155,6 @@ OpenDNSSource.prototype.init = function() {
     console.log("OpenDNS - No key defined");
     return;
   }
-
-  this.cache = LRU({max: this.api.getConfig("opendns", "cacheSize", 200000), 
-                      maxAge: 1000 * 60 * +this.api.getConfig("opendns", "cacheAgeMin", "60")});
 
   this.api.addSource("opendns", this);
   this.getCategories();
@@ -187,37 +181,16 @@ OpenDNSSource.prototype.init = function() {
 };
 //////////////////////////////////////////////////////////////////////////////////
 OpenDNSSource.prototype.getDomain = function(domain, cb) {
-  var info = this.cache.get(domain);
-  if (info) {
-    if (info.result) {
-      this.cached++;
-      return cb(null, info.result);
-    }
-    this.inprogress++;
-    info.cbs.push(cb);
+  if (domain in this.processing) {
+    this.processing[domain].push(cb);
     return;
   }
-  info = {cbs:[cb]};
-  this.cache.set(domain, info);
+
+  this.processing[domain] = [cb];
   this.waiting.push(domain);
   if (this.waiting.length > 1000) {
     this.performQuery();
   }
-};
-//////////////////////////////////////////////////////////////////////////////////
-OpenDNSSource.prototype.dump = function(res) {
-  this.cache.forEach(function(value, key, cache) {
-    if (value.result) {
-      var str = "{key: \"" + key + "\", ops:\n" + 
-        wiseSource.result2Str(wiseSource.combineResults([value.result])) + "},\n";
-      res.write(str);
-    }
-  });
-  res.end();
-};
-//////////////////////////////////////////////////////////////////////////////////
-OpenDNSSource.prototype.printStats = function() {
-  console.log("OpenDNS: outgoing:", this.outgoing, "cached:", this.cached, "inprogress:", this.inprogress, "size:", this.cache.itemCount);
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {

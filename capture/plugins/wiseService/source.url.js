@@ -1,7 +1,7 @@
 /******************************************************************************/
 /*
  *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -29,14 +29,16 @@ function URLSource (api, section) {
   URLSource.super_.call(this, api, section);
   var self = this;
 
-  self.url     = api.getConfig(section, "url");
-  self.reload  = +api.getConfig(section, "reload", -1)
-  self.column  = +api.getConfig(section, "column", 0);
-  this.keyColumn  = api.getConfig(section, "keyColumn", 0);
-  self.type    = api.getConfig(section, "type");
-  self.format  = api.getConfig(section, "format", "csv");
-  self.headers = {};
-  var headers = api.getConfig(section, "headers");
+  self.url          = api.getConfig(section, "url");
+  self.reload       = +api.getConfig(section, "reload", -1);
+  self.column       = +api.getConfig(section, "column", 0);
+  this.keyColumn    = api.getConfig(section, "keyColumn", 0);
+  self.type         = api.getConfig(section, "type");
+  self.format       = api.getConfig(section, "format", "csv");
+  self.headers      = {};
+  var headers       = api.getConfig(section, "headers");
+  this.cacheTimeout = -1;
+
   if (headers) {
     headers.split(";").forEach(function(header) {
       var parts = header.split(":");

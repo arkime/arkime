@@ -1,7 +1,6 @@
 /******************************************************************************/
 /*
- *
- * Copyright 2012-2014 AOL Inc. All rights reserved.
+ * Copyright 2012-2016 AOL Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -25,8 +24,9 @@ var fs             = require('fs')
 //////////////////////////////////////////////////////////////////////////////////
 function AlienVaultSource (api, section) {
   AlienVaultSource.super_.call(this, api, section);
-  this.key     = api.getConfig("alienvault", "key");
-  this.ips     = {};
+  this.key          = api.getConfig("alienvault", "key");
+  this.ips          = {};
+  this.cacheTimeout = -1;
 }
 util.inherits(AlienVaultSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ AlienVaultSource.prototype.loadFile = function() {
 
   wiseSource.request('http://reputation.alienvault.com/' + self.key + '/reputation.rev',  '/tmp/alienvault.rev', function (statusCode) {
     var line = fs.readFileSync("/tmp/alienvault.rev").toString();
-    if (+line != revision) {
+    if (+line !== revision) {
       if (fs.existsSync("/tmp/alienvault.data")) {
         fs.unlinkSync("//tmp/alienvault.data");
       }
