@@ -51,6 +51,11 @@ function ThreatStreamSource (api, section) {
     console.log(sqlite3, api.getConfig("threatstream", "dbFile", "ts.db"));
     db                = new sqlite3.Database(api.getConfig("threatstream", "dbFile", "ts.db"), sqlite3.OPEN_READONLY);
     this.cacheTimeout = -1;
+    db.run("CREATE INDEX md5_index ON ts (md5)", function (err) {
+      if (err) {
+        console.log("Create index result", err);
+      }
+    });
     break;
   default:
     console.log("Unknown threatstream mode", this.mode);
@@ -247,6 +252,7 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
   db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
     if (err) {
       console.log("ERROR", err, data);
+      return cb("dropped");
     }
     if (data.length === 0) {
       return cb(null, wiseSource.emptyResult);
@@ -277,6 +283,10 @@ function getDomainSqlite3(domain, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 function getIpSqlite3(ip, cb) {
   return this.getSqlite3("ip", "srcip", ip, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getMd5Sqlite3(md5, cb) {
+  return this.getSqlite3("md5", "md5", md5, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////
 function getEmailSqlite3(email, cb) {
@@ -369,6 +379,7 @@ ThreatStreamSource.prototype.init = function() {
   case "sqlite3":
     ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
     ThreatStreamSource.prototype.getIp = getIpSqlite3;
+    ThreatStreamSource.prototype.getMd5 = getMd5Sqlite3;
     ThreatStreamSource.prototype.getEmail = getEmailSqlite3;
     this.loadTypes();
     break;
