@@ -24,10 +24,10 @@ var fs             = require('fs')
   , HashTable      = require('hashtable')
   , LRU            = require('lru-cache')
   , request        = require('request')
+  , exec           = require('child_process').exec
   ;
 
 var sqlite3;
-var db;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatStreamSource (api, section) {
   ThreatStreamSource.super_.call(this, api, section);
@@ -48,14 +48,9 @@ function ThreatStreamSource (api, section) {
     break;
   case "sqlite3":
     sqlite3           = require('sqlite3');
-    console.log(sqlite3, api.getConfig("threatstream", "dbFile", "ts.db"));
-    db                = new sqlite3.Database(api.getConfig("threatstream", "dbFile", "ts.db"), sqlite3.OPEN_READONLY);
     this.cacheTimeout = -1;
-    db.run("CREATE INDEX md5_index ON ts (md5)", function (err) {
-      if (err) {
-        console.log("Create index result", err);
-      }
-    });
+    this.openDb();
+    setInterval(this.openDb.bind(this), 60*1000);
     break;
   default:
     console.log("Unknown threatstream mode", this.mode);
@@ -249,7 +244,11 @@ function getEmailApi(email, cb) {
 ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
   var self = this;
 
-  db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
+  if (!this.db) {
+    return cb("dropped");
+  }
+
+  this.db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
     if (err) {
       console.log("ERROR", err, data);
       return cb("dropped");
@@ -320,6 +319,72 @@ ThreatStreamSource.prototype.loadTypes = function() {
     // Wait to register until request is done
     self.api.addSource("threatstream", self);
   });
+};
+//////////////////////////////////////////////////////////////////////////////////
+ThreatStreamSource.prototype.openDb = function() {
+  var self = this;
+  var dbFile = self.api.getConfig("threatstream", "dbFile", "ts.db");
+
+  var dbStat;
+  try {dbStat = fs.statSync(dbFile);} catch (e) {};
+
+  var realDb;
+  if (!dbStat || !dbStat.isFile()) {
+    console.log("ERROR - file doesn't exist", dbFile);
+    process.exit();
+  }
+
+  // * Lock the real DB
+  // * Copy the real db to .temp so that anything currently running still works
+  // * Unlock the real DB and close
+  // * create md5 index on .temp version
+  // * Close .moloch db
+  // * mv .temp to .moloch
+  // * Open .moloch
+  function beginImmediate(err) {
+    console.log("Threatstream - Copying DB", dbStat.mtime);
+
+    // Repeat until we lock the DB
+    if (err && err.code === "SQLITE_BUSY") {
+      console.log("Failed to lock sqlite DB", dbFile);
+      return realDb.run("BEGIN IMMEDIATE", beginImmediate);
+    }
+
+    exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  function(err, stdout, stderr) {
+      console.log(stdout, stderr);
+      realDb.run("END", function (err) {
+        realDb.close();
+        realDb = null;
+
+        var tempDb = new sqlite3.Database(dbFile + ".temp");
+        tempDb.run("CREATE INDEX md5_index ON ts (md5)", function (err) {
+          tempDb.close();
+          if (self.db) {
+            self.db.close();
+          }
+          self.db = null;
+          exec ("/bin/rm -f " + dbFile + ".moloch ",  function(err, stdout, stderr) {
+            exec ("/bin/mv -f " + dbFile + ".temp " + dbFile + ".moloch",  function(err, stdout, stderr) {
+              self.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
+              console.log("Threatstream - Loaded DB");
+            });
+          });
+        });
+      });
+    });
+  }
+
+
+  // If the last copy time doesn't match start the copy process.
+  // This will also run on startup.
+  if (self.mtime !== dbStat.mtime.getTime()) {
+    self.mtime = dbStat.mtime.getTime();
+    realDb = new sqlite3.Database(dbFile);
+    realDb.run("BEGIN IMMEDIATE", beginImmediate);
+  } else if (!self.db) {
+    // Open the DB if not already opened.
+    self.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
+  }
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.init = function() {
