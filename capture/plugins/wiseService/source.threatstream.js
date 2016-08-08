@@ -50,7 +50,7 @@ function ThreatStreamSource (api, section) {
     sqlite3           = require('sqlite3');
     this.cacheTimeout = -1;
     this.openDb();
-    setInterval(this.openDb.bind(this), 60*1000);
+    setInterval(this.openDb.bind(this), 5*60*1000);
     break;
   default:
     console.log("Unknown threatstream mode", this.mode);
@@ -342,14 +342,13 @@ ThreatStreamSource.prototype.openDb = function() {
   // * mv .temp to .moloch
   // * Open .moloch
   function beginImmediate(err) {
-    console.log("Threatstream - Copying DB", dbStat.mtime);
-
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
       console.log("Failed to lock sqlite DB", dbFile);
       return realDb.run("BEGIN IMMEDIATE", beginImmediate);
     }
 
+    console.log("Threatstream - Copying DB", dbStat.mtime);
     exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  function(err, stdout, stderr) {
       console.log(stdout, stderr);
       realDb.run("END", function (err) {
