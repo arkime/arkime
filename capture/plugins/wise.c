@@ -283,6 +283,13 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
                 BSB_IMPORT_u08(bsb, rfield);
                 op->fieldPos = fieldsMap[rfield];
 
+                if (op->fieldPos == -1) {
+                    LOG("Couldn't find pos %d", rfield);
+                    wi->numOps--;
+                    i--;
+                    continue;
+                }
+
                 int len = 0;
                 BSB_IMPORT_u08(bsb, len);
                 char *str = (char*)BSB_WORK_PTR(bsb);
