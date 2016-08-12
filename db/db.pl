@@ -1641,7 +1641,7 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     my $template = '
 {
-  template: "' . $PREFIX . 'session*",
+  template: "' . $PREFIX . 'sessions-*",
   settings: {
     index: {
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
@@ -2233,7 +2233,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/${PREFIX}dstats", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}dstats_v1", 1);
-    esDelete("/${PREFIX}sessions*", 1);
+    esDelete("/${PREFIX}sessions-*", 1);
     esDelete("/${PREFIX}template_1", 1);
     if ($ARGV[1] =~ "init") {
         esDelete("/${PREFIX}users_v1", 1);
