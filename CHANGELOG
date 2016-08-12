@@ -12,6 +12,8 @@
   - viewer - fixed missing stats data (issue #502)
   - wise - optionally use external cache (issue #495)
   - wise - threatstream can now use the opticlink db directly!
+  - capture - also record stats every 10 minutes
+  - viewer - stats can now show 5, 60, 10 minute stats
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0

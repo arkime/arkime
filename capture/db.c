@@ -1126,10 +1126,11 @@ long long zero_atoll(char *v) {
 }
 
 /******************************************************************************/
-static uint64_t dbTotalPackets[3];
-static uint64_t dbTotalK[3];
-static uint64_t dbTotalSessions[3];
-static uint64_t dbTotalDropped[3];
+#define NUMBER_OF_STATS 4
+static uint64_t dbTotalPackets[NUMBER_OF_STATS];
+static uint64_t dbTotalK[NUMBER_OF_STATS];
+static uint64_t dbTotalSessions[NUMBER_OF_STATS];
+static uint64_t dbTotalDropped[NUMBER_OF_STATS];
 
 static char     stats_key[200];
 static int      stats_key_len = 0;
@@ -1147,10 +1148,18 @@ void moloch_db_load_stats()
 
     source = moloch_js0n_get(data, data_len, "_source", &source_len);
     if (source) {
-        dbTotalPackets[0] = dbTotalPackets[1] = dbTotalPackets[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalPackets", &len));
-        dbTotalK[0] = dbTotalK[1] = dbTotalK[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalK", &len));
-        dbTotalSessions[0] = dbTotalSessions[1] = dbTotalSessions[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalSessions", &len));
-        dbTotalDropped[0] = dbTotalDropped[1] = dbTotalDropped[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalDropped", &len));
+        dbTotalPackets[0]  = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalPackets", &len));
+        dbTotalK[0]        = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalK", &len));
+        dbTotalSessions[0] = dbTotalSessions[2] = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalSessions", &len));
+        dbTotalDropped[0]  = zero_atoll((char*)moloch_js0n_get(source, source_len, "totalDropped", &len));
+
+        int i;
+        for (i = 1; i < NUMBER_OF_STATS; i++) {
+            dbTotalPackets[i]  = dbTotalPackets[0];
+            dbTotalK[i]        = dbTotalK[0];
+            dbTotalSessions[i] = dbTotalSessions[0];
+            dbTotalDropped[i]  = dbTotalDropped[0];
+        }
     }
 }
 /******************************************************************************/
@@ -1199,15 +1208,15 @@ uint64_t moloch_db_memory_max()
 /******************************************************************************/
 void moloch_db_update_stats(int n)
 {
-    static uint64_t       lastPackets[3] = {0, 0, 0};
-    static uint64_t       lastBytes[3] = {0, 0, 0};
-    static uint64_t       lastSessions[3] = {0, 0, 0};
-    static uint64_t       lastDropped[3] = {0, 0, 0};
-    static uint64_t       lastFragsDropped[3] = {0, 0, 0};
-    static uint64_t       lastOverloadDropped[3] = {0, 0, 0};
-    static struct rusage  lastUsage[3];
-    static struct timeval lastTime[3];
-    static int            intervals[3] = {1, 5, 60};
+    static uint64_t       lastPackets[NUMBER_OF_STATS];
+    static uint64_t       lastBytes[NUMBER_OF_STATS];
+    static uint64_t       lastSessions[NUMBER_OF_STATS];
+    static uint64_t       lastDropped[NUMBER_OF_STATS];
+    static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
+    static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
+    static struct rusage  lastUsage[NUMBER_OF_STATS];
+    static struct timeval lastTime[NUMBER_OF_STATS];
+    static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
     int                   i;
@@ -2158,7 +2167,7 @@ int moloch_db_can_quit()
     return 0;
 }
 /******************************************************************************/
-guint timers[5];
+static guint timers[10];
 void moloch_db_init()
 {
     if (config.tests) {
@@ -2221,10 +2230,11 @@ void moloch_db_init()
     moloch_db_load_rir();
 
     if (!config.dryRun) {
-        timers[0] = g_timeout_add_seconds( 2, moloch_db_update_stats_gfunc, 0);
-        timers[1] = g_timeout_add_seconds( 5, moloch_db_update_stats_gfunc, (gpointer)1);
-        timers[2] = g_timeout_add_seconds(60, moloch_db_update_stats_gfunc, (gpointer)2);
-        timers[3] = g_timeout_add_seconds( 1, moloch_db_flush_gfunc, 0);
+        timers[0] = g_timeout_add_seconds(  2, moloch_db_update_stats_gfunc, 0);
+        timers[1] = g_timeout_add_seconds(  5, moloch_db_update_stats_gfunc, (gpointer)1);
+        timers[2] = g_timeout_add_seconds( 60, moloch_db_update_stats_gfunc, (gpointer)2);
+        timers[3] = g_timeout_add_seconds(600, moloch_db_update_stats_gfunc, (gpointer)3);
+        timers[4] = g_timeout_add_seconds(  1, moloch_db_flush_gfunc, 0);
     }
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
@@ -2237,7 +2247,7 @@ void moloch_db_exit()
     int i;
 
     if (!config.dryRun) {
-        for (i = 0; i < 4; i++) {
+        for (i = 0; timers[i]; i++) {
             g_source_remove(timers[i]);
         }
 
