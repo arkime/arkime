@@ -178,9 +178,7 @@ block content
     var esstatsTable;
 
     // initialize the cubism graph
-    var context = cubism.context()
-        .step(5e3) // 5 second intervals
-        .size(1440);
+    var context;
 
     // watch for the user to leave or return to the page
     if(document.addEventListener) {
@@ -196,6 +194,7 @@ block content
     // for more info, view the "reasons for delays longer than specified" section of:
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout#Inactive_tabs
     function visibilityChanged() {
+      if (!context) return;
       if (document.hidden) context.stop();
       else context.start();
     }
@@ -211,7 +210,6 @@ block content
           $.ajax( {
             "dataType": 'json',
             "type": "GET",
-            //https://moloch.itsec.aol.com
             "url": "#{basePath}dstats.json?nodeName=" + name +
                           "&start=" + startV/1000 +
                           "&stop=" + stopV/1000 +
@@ -232,6 +230,16 @@ block content
           });
         }, name);
       }
+
+      if (context) context.stop(); // Stop old context
+
+      context = cubism.context()
+          .step(interval * 1000)
+          .size(1440);
+
+      context.on("focus", function(i) {
+            d3.selectAll(".value").style("right", i === null ? null : context.size() - i + "px");
+          });
 
       $("#statsGraph").empty();
       d3.select("#statsGraph").call(function(div) {
@@ -258,11 +266,8 @@ block content
       });
     }
 
-    makeStatsGraph("deltaPackets", 5);
+    makeStatsGraph("deltaPacketsPerSec", 5);
 
-    context.on("focus", function(i) {
-        d3.selectAll(".value").style("right", i === null ? null : context.size() - i + "px");
-    });
 
     function numberRender(data, type, row, meta) {
       if (type === "display") {
@@ -772,9 +777,8 @@ block content
       }
 
       $('#statsGraphSelect,#statsTimeSelect').change(function() {
-        var interval = + $('#statsTimeSelect').val();
-        context.step(interval * 1000);
-        makeStatsGraph($('#statsGraphSelect').val(), + $('#statsTimeSelect').val());
+        var interval = parseInt($('#statsTimeSelect').val(), 10);
+        makeStatsGraph($('#statsGraphSelect').val(), interval);
         return false;
       });
 
