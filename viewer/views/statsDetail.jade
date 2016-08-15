@@ -19,11 +19,6 @@ script(type='text/javascript').
                       "&interval=60" +
                       "&name=" + mname,
         "success": function(data) {
-          if (mname === "cpu") {
-            for (i = 0; i < data.length; i++) {
-              data[i] = data[i]/100.0;
-            }
-          }
           callback(null, data);
         }
       });

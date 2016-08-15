@@ -656,7 +656,9 @@ function combineResults(obj, result) {
   obj.hits.total += result.hits.total;
   obj.hits.missing += result.hits.missing;
   obj.hits.other += result.hits.other;
-  obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
+  if (result.hits.hits) {
+    obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
+  }
   if (obj.facets) {
     facetConvert2Obj(result.facets);
     facetAdd(obj.facets, result.facets);
