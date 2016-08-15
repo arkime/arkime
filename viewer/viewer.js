@@ -1585,6 +1585,7 @@ app.get('/dstats.json', function(req, res) {
     deltaFragsDroppedPerSec: {fields: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped[0] * 1000.0/item.deltaMS[0]);}},
     deltaOverloadDroppedPerSec: {fields: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped[0] * 1000.0/item.deltaMS[0]);}},
     deltaTotalDroppedPerSec: {fields: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped[0] + item.deltaOverloadDropped[0]) * 1000.0/item.deltaMS[0]);}},
+    cpu: {fields: ["cpu"], func: function (item) {return item.cpu[0] * .01;}}
   };
 
   query.fields = mapping[req.query.name]?mapping[req.query.name].fields:[req.query.name];
