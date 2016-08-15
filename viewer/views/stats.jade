@@ -218,13 +218,6 @@ block content
                           "&name=" + metricName,
             "success": function(data) {
               if (!data) callback(new Error('Unable to load data'));
-
-              if (metricName === "cpu") {
-                for (i = 0; i < data.length; i++) {
-                  data[i] = data[i]/100.0;
-                }
-              }
-
               callback(null, data);
             }
           });

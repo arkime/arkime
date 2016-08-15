@@ -442,6 +442,15 @@ function splitRemain(str, separator, limit) {
     return ret;
 }
 
+function arrayZeroFill(n) {
+  var a = [];
+  while (n > 0) {
+    a.push(0);
+    n--;
+  }
+  return a;
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //// Requests
 //////////////////////////////////////////////////////////////////////////////////
@@ -1537,8 +1546,7 @@ app.get('/stats.json', function(req, res) {
 app.get('/dstats.json', function(req, res) {
   noCache(req, res);
 
-  var query = {size: req.query.size || 1440,
-               sort: { currentTime: { order: 'desc' } },
+  var query = {
                query: {
                  filtered: {
                    query: {
@@ -1546,9 +1554,6 @@ app.get('/dstats.json', function(req, res) {
                    },
                    filter: {
                      and: [
-                       {
-                         term: { nodeName: req.query.nodeName}
-                       },
                        {
                          range: { currentTime: { from: req.query.start, to: req.query.stop } }
                        },
@@ -1561,42 +1566,64 @@ app.get('/dstats.json', function(req, res) {
                }
               };
 
-  Db.search('dstats', 'dstat', query, function(err, result) {
-    var i, ilen;
-    var data = [];
-    var num = (req.query.stop - req.query.start)/req.query.step;
+  if (req.query.nodeName !== undefined) {
+    query.sort = {currentTime: {order: 'desc' }};
+    query.size = req.query.size || 1440;
+    query.query.filtered.filter.and.push({term: { nodeName: req.query.nodeName}});
+  } else {
+    query.size = 100000;
+  }
 
-    for (i = 0; i < num; i++) {
-      data[i] = 0;
-    }
+  var mapping = {
+    deltaBits: {fields: ["deltaBytes"], func: function (item) {return Math.floor(item.deltaBytes[0] * 8.0);}},
+    deltaTotalDropped: {fields: ["deltaDropped", "deltaOverloadDropped"], func: function (item) {return Math.floor(item.deltaDropped[0] + item.deltaOverloadDropped[0]);}},
+    deltaBytesPerSec: {fields: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes[0] * 1000.0/item.deltaMS[0]);}},
+    deltaBitsPerSec: {fields: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes[0] * 1000.0/item.deltaMS[0] * 8);}},
+    deltaPacketsPerSec: {fields: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets[0] * 1000.0/item.deltaMS[0]);}},
+    deltaSessionsPerSec: {fields: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions[0] * 1000.0/item.deltaMS[0]);}},
+    deltaDroppedPerSec: {fields: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped[0] * 1000.0/item.deltaMS[0]);}},
+    deltaFragsDroppedPerSec: {fields: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped[0] * 1000.0/item.deltaMS[0]);}},
+    deltaOverloadDroppedPerSec: {fields: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped[0] * 1000.0/item.deltaMS[0]);}},
+    deltaTotalDroppedPerSec: {fields: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped[0] + item.deltaOverloadDropped[0]) * 1000.0/item.deltaMS[0]);}},
+    cpu: {fields: ["cpu"], func: function (item) {return item.cpu[0] * .01;}}
+  };
+
+  query.fields = mapping[req.query.name]?mapping[req.query.name].fields:[req.query.name];
+  query.fields.push("nodeName", "currentTime");
+
+  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name][0]};
+
+  Db.searchScroll('dstats', 'dstat', query, {filter_path: "_scroll_id,hits.total,hits.hits.fields"}, function(err, result) {
+    var i, ilen;
+    var data = {};
+    var num = (req.query.stop - req.query.start)/req.query.step;
 
     var mult = 1;
     if (req.query.name === "freeSpaceM") {
       mult = 1000000;
     }
 
+    //console.log("dstats.json result", util.inspect(result, false, 50));
+
     if (result && result.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-        var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-        if (result.hits.hits[i]._source) {
-          mergeUnarray(fields, result.hits.hits[i].fields);
-        }
+        var fields = result.hits.hits[i].fields;
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
-        fields.deltaBits                  = Math.floor(fields.deltaBytes * 8.0);
-        fields.deltaTotalDropped          = Math.floor(fields.deltaDropped + fields.deltaOverloadDropped);
 
-        fields.deltaBytesPerSec           = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS);
-        fields.deltaBitsPerSec            = Math.floor(fields.deltaBytes * 1000.0/fields.deltaMS * 8);
-        fields.deltaPacketsPerSec         = Math.floor(fields.deltaPackets * 1000.0/fields.deltaMS);
-        fields.deltaSessionsPerSec        = Math.floor(fields.deltaSessions * 1000.0/fields.deltaMS);
-        fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
-        fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
-        fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
-        fields.deltaTotalDroppedPerSec    = Math.floor(fields.deltaTotalDropped * 1000.0/fields.deltaMS);
-        data[pos] = mult * (fields[req.query.name] || 0);
+        if (data[fields.nodeName] === undefined) {
+          data[fields.nodeName] = arrayZeroFill(num);
+        }
+        data[fields.nodeName][pos] = mult * func(fields);
       }
     }
-    res.send(data);
+    if (req.query.nodeName === undefined) {
+      res.send(data);
+    } else {
+      if (data[fields.nodeName] === undefined) {
+        data[fields.nodeName] = arrayZeroFill(num);
+      }
+      res.send(data[req.query.nodeName]);
+    }
   });
 });
 

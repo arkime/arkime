@@ -157,17 +157,22 @@ exports.search = function (index, type, query, options, cb) {
   internals.elasticSearchClient.search(params, cb);
 };
 
-exports.searchPrimary = function (index, type, query, cb) {
+exports.searchScroll = function (index, type, query, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = {};
+  }
+
   if ((query.size || 0) + (parseInt(query.from,10) || 0) >= 10000) {
     var totalResults;
-    exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true", scroll: '1m'},
+    var params = {scroll: '1m'};
+    exports.merge(params, options);
+    exports.search(index, type, query, params,
       function getMoreUntilDone(error, response) {
         if (totalResults === undefined) {
           totalResults = response;
         } else {
-          response.hits.hits.forEach(function (hit) {
-            totalResults.hits.hits.push(hit);
-          });
+          Array.prototype.push.apply(totalResults.hits.hits, response.hits.hits);
         }
 
         if (!error && totalResults.hits.hits.length < Math.min(response.hits.total, query.size)) {
@@ -180,8 +185,19 @@ exports.searchPrimary = function (index, type, query, cb) {
         }
       });
   } else {
-    return exports.search(index, type, query, {preference: "_primary_first", ignoreIndices: "missing", ignore_unavailable: "true"}, cb);
+    return exports.search(index, type, query, options, cb);
   }
+};
+
+exports.searchPrimary = function (index, type, query, options, cb) {
+  if (!cb) {
+    cb = options;
+    options = undefined;
+  }
+
+  var params = {preference: "_primary_first", ignore_unavailable: "true"};
+  exports.merge(params, options);
+  return exports.searchScroll(index, type, query, params, cb);
 };
 
 exports.msearch = function (index, type, queries, cb) {
