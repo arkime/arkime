@@ -1605,7 +1605,7 @@ app.get('/dstats.json', function(req, res) {
 
     //console.log("dstats.json result", util.inspect(result, false, 50));
 
-    if (result && result.hits) {
+    if (result && result.hits && result.hits.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
         var fields = result.hits.hits[i].fields;
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
@@ -1619,8 +1619,8 @@ app.get('/dstats.json', function(req, res) {
     if (req.query.nodeName === undefined) {
       res.send(data);
     } else {
-      if (data[fields.nodeName] === undefined) {
-        data[fields.nodeName] = arrayZeroFill(num);
+      if (data[req.query.nodeName] === undefined) {
+        data[req.query.nodeName] = arrayZeroFill(num);
       }
       res.send(data[req.query.nodeName]);
     }

@@ -29,7 +29,7 @@ my $json;
     is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
 
     $json = viewerGet2("/dstats.json");
-    is (scalar @{$json}, 0, "Empty dstats");
+    is (scalar %{$json}, 0, "Empty dstats");
 
     $json = viewerGet2("/files.json");
     is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
