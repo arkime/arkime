@@ -290,7 +290,7 @@ single machine is fine.
 
    * ``1/4 * Average_Total_Gigabit_Sec * Number_of_Days_of_History`` is
      a **ROUGH** guideline for number of ``elasticsearch`` instances (nodes)
-     required. (Example: 1/4 * 8 interfaces * 7 days = 14 nodes)
+     required. (Example: 1/4 * 8 Average Gb/s * 7 days = 14 nodes)
    * Each ``elasticsearch`` node should have ~30G-40G memory (20G-30G [no
      more!] for the java process, at least 10G for the OS disk cache)
    * You can have multiple nodes per machine (Example 64G machine can have 2 ES
