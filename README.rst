@@ -167,7 +167,7 @@ Building Capture
 
      + `yara <https://github.com/VirusTotal/yara>`_ version 1.6 or higher::
 
-            wget https://github.com/VirusTotal/yara/archive/v3.5.0.tar.gz -O yara-3.5.0.tar.gz [//]: # Fix file versioning 
+            wget https://github.com/VirusTotal/yara/archive/v3.5.0.tar.gz -O yara-3.5.0.tar.gz <!---Fix file versioning -->
             ./configure --enable-static
 
      + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be
