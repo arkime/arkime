@@ -7,15 +7,15 @@
 What is Moloch?
 ===============
 
-Moloch is an open source, large scale packet capturing (PCAP), indexing
+Moloch is an open source, large scale packet capturing, indexing
 and database system. A simple web interface is provided for PCAP browsing,
 searching, and exporting. APIs are exposed that allow PCAP data and
 JSON-formatted session data to be downloaded directly. Simple security is
 implemented by using HTTPS and HTTP digest password support or by using apache
-in front. Moloch is not meant to replace IDS engines but instead work along side 
+in front. Moloch is not meant to replace an IDS but instead work along side 
 them to store and index all the network traffic in standard PCAP format, providing 
 fast access.  Moloch is built to be deployed across many systems and can scale to 
-handle multiple gigabits/sec of traffic. 
+handle tens of gigabits/sec of traffic. 
 
 
 Sessions Tab
@@ -49,9 +49,8 @@ Components
 
 The Moloch system is comprised of 3 components
 
-1. ``capture`` - A single-threaded C application that runs per network
-   interface. It is possible to run multiple capture processes per machine if
-   there are multiple interfaces to monitor.
+1. ``capture`` - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, 
+   parses the packets and sends meta data (SPI data) to elasticsearch.
 
 2. ``viewer`` - A `node.js <http://nodejs.org/>`_ application that runs per
    capture machine and handles the web interface and transfer of PCAP files.
@@ -64,7 +63,7 @@ Building and Installing
 =======================
 
 Moloch is a complex system to build and install. The following are rough
-guidelines. (Improvements to these instructions are always welcome!)
+guidelines.
 
 .. _install-elasticsearch:
 
@@ -192,19 +191,13 @@ Building Capture
 
 Building Viewer
 ---------------
-
-1. You'll need `Python <http://python.org>`_ 2.6 or higher. If you're using
-   CentOS 5.x (which provides Python 2.4), install a parallel version of Python
-   from the `EPEL <http://fedoraproject.org/wiki/EPEL>`_ repository. Make sure
-   ``python2.6`` is in your path before proceeding!
-
-2. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.42 or higher), currently 0.12.x is not supported.
+1. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.42 or higher), currently 0.12.x is not supported.
 
    - **Binary install:** Please see the `platform-specific instructions
      <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
    - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.38/node-v0.10.38.tar.gz>`_, build, and install.
 
-3. In the ``viewer`` directory run ``npm update``.
+2. In the ``viewer`` directory run ``npm update``.
 
 .. _configuration:
 
@@ -285,20 +278,21 @@ single machine is fine.
      inode64 option set in fstab), RAID 5, at least 5 spindles)
    * Disable swap by removing it from fstab
    * If networks are highly utilized and running IDS then CPU affinity is required
+   * See `FAQ Entry <https://github.com/aol/moloch/wiki/FAQ#What_kind_of_capture_machines_should_we_buy>`_
 
 2. Moloch ``elasticsearch`` systems (some black magic here!)
 
    * ``1/4 * Average_Total_Gigabit_Sec * Number_of_Days_of_History`` is
      a **ROUGH** guideline for number of ``elasticsearch`` instances (nodes)
-     required. (Example: 1/4 * 8 interfaces * 7 days = 14 nodes)
-   * Each ``elasticsearch`` node should have ~30G-40G memory (20G-30G [no
+     required. (Example: 1/4 * 8 Average Gb/s * 7 days = 14 nodes)
+   * Each ``elasticsearch`` node should have ~30G-64G memory (20G-32G [no
      more!] for the java process, at least 10G for the OS disk cache)
-   * You can have multiple nodes per machine (Example 64G machine can have 2 ES
-     nodes, 22G for the java process 10G saved for the disk cache)
+   * You can have multiple nodes per machine (Example 128G machine can have 2 ES
+     nodes, 32G for each of the java processes and 64G saved for the disk cache)
    * Disable swap by removing it from fstab
    * Obviously the more nodes, the faster responses will be
-   * You can always add more nodes, but it's hard to remove nodes (more on this
-     later)
+   * You can always add more nodes, but it's hard to remove nodes
+   * See `FAQ Entry <https://github.com/aol/moloch/wiki/FAQ#How_many_elasticsearch_nodes_or_machines_do_I_need>`_
 
 Example Configuration
 ~~~~~~~~~~~~~~~~~~~~~
@@ -315,8 +309,8 @@ Here is an example system setup for monitoring 8x GigE highly-utilized networks,
 * ``elasticsearch`` machines
 
   - 10x HP DL380-G7
-  - 64GB of memory
-  - 2TB of disk
+  - 128GB of memory
+  - 6TB of disk
   - Each system running 2 nodes
 
 .. _security:

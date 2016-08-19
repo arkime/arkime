@@ -69,6 +69,7 @@ var app = express();
 //////////////////////////////////////////////////////////////////////////////////
 var internals = {
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
+  userNameHeader: Config.get("userNameHeader"),
   httpAgent:   new KAA({maxSockets: 40}),
   httpsAgent:  new KAA.Secure({maxSockets: 40}),
   previousNodeStats: [],
@@ -209,8 +210,8 @@ if (Config.get("passwordSecret")) {
     }
 
     // Header auth
-    if (req.headers[Config.get("userNameHeader")] !== undefined) {
-      var userName = req.headers[Config.get("userNameHeader")];
+    if (internals.userNameHeader !== undefined && req.headers[internals.userNameHeader] !== undefined) {
+      var userName = req.headers[internals.userNameHeader];
       Db.getUserCache(userName, function(err, suser) {
         if (err) {return res.send("ERROR - " +  err);}
         if (!suser || !suser.found) {return res.send(userName + " doesn't exist");}
@@ -1651,7 +1652,7 @@ app.get('/dstats.json', function(req, res) {
 
     //console.log("dstats.json result", util.inspect(result, false, 50));
 
-    if (result && result.hits) {
+    if (result && result.hits && result.hits.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
         var fields = result.hits.hits[i].fields;
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
@@ -1665,8 +1666,8 @@ app.get('/dstats.json', function(req, res) {
     if (req.query.nodeName === undefined) {
       res.send(data);
     } else {
-      if (data[fields.nodeName] === undefined) {
-        data[fields.nodeName] = arrayZeroFill(num);
+      if (data[req.query.nodeName] === undefined) {
+        data[req.query.nodeName] = arrayZeroFill(num);
       }
       res.send(data[req.query.nodeName]);
     }
@@ -5167,6 +5168,11 @@ function main () {
     server = http.createServer(app);
   }
 
+  var viewHost = Config.get("viewHost", undefined);
+  if (internals.userNameHeader !== undefined && viewHost !== "localhost" && viewHost !== "127.0.0.1") {
+    console.log("SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables");
+  }
+
   server
     .on('error', function (e) {
       console.log("ERROR - couldn't listen on port", Config.get("viewPort", "8005"), "is viewer already running?");
@@ -5176,7 +5182,7 @@ function main () {
     .on('listening', function (e) {
       console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
     })
-    .listen(Config.get("viewPort", "8005"), Config.get("viewHost", undefined));
+    .listen(Config.get("viewPort", "8005"), viewHost);
 }
 //////////////////////////////////////////////////////////////////////////////////
 //// DB

@@ -205,7 +205,7 @@ sub esAlias
     my ($cmd, $index, $alias) = @_;
 
     print "Alias cmd $cmd from $index to alias $alias\n" if ($verbose > 0);
-    esPost("/_aliases", '{ actions: [ { ' . $cmd . ': { index: "' . $PREFIX . $index . '", alias : "'. $PREFIX . $alias .'" } } ] }', 1);
+    esPost("/_aliases", '{ "actions": [ { "' . $cmd . '": { "index": "' . $PREFIX . $index . '", "alias" : "'. $PREFIX . $alias .'" } } ] }', 1);
 }
 
 ################################################################################
@@ -213,10 +213,10 @@ sub tagsCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 1,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-all"
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-all"
   }
 }';
 
@@ -231,11 +231,11 @@ sub tagsUpdate
 {
     my $mapping = '
 {
-  tag: {
-    dynamic: "strict",
-    properties: {
-      n: {
-        type: "integer"
+  "tag": {
+    "dynamic": "strict",
+    "properties": {
+      "n": {
+        "type": "integer"
       }
     }
   }
@@ -249,10 +249,10 @@ sub sequenceCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 1,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-all"
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-all"
   }
 }';
 
@@ -266,10 +266,10 @@ sub sequenceUpdate
 {
     my $mapping = '
 {
-  sequence: {
-    _source : { enabled : 0 },
-    _all    : { enabled : 0 },
-    enabled : 0
+  "sequence": {
+    "_source" : { "enabled": 0 },
+    "_all"    : { "enabled": 0 },
+    "enabled" : 0
   }
 }';
 
@@ -281,10 +281,10 @@ sub filesCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 2,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-2"
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-2"
   }
 }';
 
@@ -298,37 +298,37 @@ sub filesUpdate
 {
     my $mapping = '
 {
-  file: {
-    _all : {enabled : 0},
-    _source : {enabled : 1},
-    dynamic: "strict",
-    properties: {
-      num: {
-        type: "long",
-        index: "not_analyzed"
+  "file": {
+    "_all": {"enabled": 0},
+    "_source": {"enabled": 1},
+    "dynamic": "strict",
+    "properties": {
+      "num": {
+        "type": "long",
+        "index": "not_analyzed"
       },
-      node: {
-        type: "string",
-        index: "not_analyzed"
+      "node": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      first: {
-        type: "long",
-        index: "not_analyzed"
+      "first": {
+        "type": "long",
+        "index": "not_analyzed"
       },
-      name: {
-        type: "string",
-        index: "not_analyzed"
+      "name": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      filesize: {
-        type: "long"
+      "filesize": {
+        "type": "long"
       },
-      locked: {
-        type: "short",
-        index: "not_analyzed"
+      "locked": {
+        "type": "short",
+        "index": "not_analyzed"
       },
-      last: {
-        type: "long",
-        index: "not_analyzed"
+      "last": {
+        "type": "long",
+        "index": "not_analyzed"
       }
     }
   }
@@ -342,15 +342,15 @@ sub statsCreate
 {
     my $settings = '
 {
-  index: {
-    store: {
-      type: "memory"
+  "index": {
+    "store": {
+      "type": "memory"
     }
   },
-  settings: {
-      number_of_shards: 1,
-      number_of_replicas: 0,
-      auto_expand_replicas: "0-all"
+  "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "auto_expand_replicas": "0-all"
   }
 }';
 
@@ -364,73 +364,73 @@ sub statsUpdate
 {
 my $mapping = '
 {
-  stat: {
-    _all : {enabled : false},
-    _source : {enabled : true},
-    dynamic: "true",
-    properties: {
-      hostname: {
-        type: "string",
-        index: "not_analyzed"
+  "stat": {
+    "_all": {enabled : false},
+    "_source": {enabled : true},
+    "dynamic": "true",
+    "properties": {
+      "hostname": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      currentTime: {
-        type: "long"
+      "currentTime": {
+        "type": "long"
       },
-      freeSpaceM: {
-        type: "long",
-        index: "no"
+      "freeSpaceM": {
+        "type": "long",
+        "index": "no"
       },
-      totalK: {
-        type: "long",
-        index: "no"
+      "totalK": {
+        "type": "long",
+        "index": "no"
       },
-      totalPackets: {
-        type: "long",
-        index: "no"
+      "totalPackets": {
+        "type": "long",
+        "index": "no"
       },
-      monitoring: {
-        type: "long",
-        index: "no"
+      "monitoring": {
+        "type": "long",
+        "index": "no"
       },
-      totalSessions: {
-        type: "long",
-        index: "no"
+      "totalSessions": {
+        "type": "long",
+        "index": "no"
       },
-      totalDropped: {
-        type: "long",
-        index: "no"
+      "totalDropped": {
+        "type": "long",
+        "index": "no"
       },
-      deltaMS: {
-        type: "long",
-        index: "no"
+      "deltaMS": {
+        "type": "long",
+        "index": "no"
       },
-      deltaBytes: {
-        type: "long",
-        index: "no"
+      "deltaBytes": {
+        "type": "long",
+        "index": "no"
       },
-      deltaPackets: {
-        type: "long",
-        index: "no"
+      "deltaPackets": {
+        "type": "long",
+        "index": "no"
       },
-      deltaSessions: {
-        type: "long",
-        index: "no"
+      "deltaSessions": {
+        "type": "long",
+        "index": "no"
       },
-      deltaDropped: {
-        type: "long",
-        index: "no"
+      "deltaDropped": {
+        "type": "long",
+        "index": "no"
       },
-      memory: {
-        type: "long",
-        index: "no"
+      "memory": {
+        "type": "long",
+        "index": "no"
       },
-      cpu: {
-        type: "integer",
-        index: "no"
+      "cpu": {
+        "type": "integer",
+        "index": "no"
       },
-      diskQueue: {
-        type: "long",
-        index: "no"
+      "diskQueue": {
+        "type": "long",
+        "index": "no"
       }
     }
   }
@@ -444,10 +444,10 @@ sub dstatsCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 2,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-2"
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-2"
   }
 }';
 
@@ -462,60 +462,60 @@ sub dstatsUpdate
 {
 my $mapping = '
 {
-  dstat: {
-    _all : {enabled : false},
-    _source : {enabled : true},
-    dynamic: "true",
-    properties: {
-      nodeName: {
-        type: "string",
-        index: "not_analyzed"
+  "dstat": {
+    "_all": {"enabled": false},
+    "_source": {"enabled": true},
+    "dynamic": "true",
+    "properties": {
+      "nodeName": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      interval: {
-        type: "short"
+      "interval": {
+        "type": "short"
       },
-      currentTime: {
-        type: "long"
+      "currentTime": {
+        "type": "long"
       },
-      freeSpaceM: {
-        type: "long",
-        index: "no"
+      "freeSpaceM": {
+        "type": "long",
+        "index": "no"
       },
-      deltaMS: {
-        type: "long",
-        index: "no"
+      "deltaMS": {
+        "type": "long",
+        "index": "no"
       },
-      deltaBytes: {
-        type: "long",
-        index: "no"
+      "deltaBytes": {
+        "type": "long",
+        "index": "no"
       },
-      deltaPackets: {
-        type: "long",
-        index: "no"
+      "deltaPackets": {
+        "type": "long",
+        "index": "no"
       },
-      deltaSessions: {
-        type: "long",
-        index: "no"
+      "deltaSessions": {
+        "type": "long",
+        "index": "no"
       },
-      deltaDropped: {
-        type: "long",
-        index: "no"
+      "deltaDropped": {
+        "type": "long",
+        "index": "no"
       },
-      monitoring: {
-        type: "long",
-        index: "no"
+      "monitoring": {
+        "type": "long",
+        "index": "no"
       },
-      memory: {
-        type: "long",
-        index: "no"
+      "memory": {
+        "type": "long",
+        "index": "no"
       },
-      cpu: {
-        type: "integer",
-        index: "no"
+      "cpu": {
+        "type": "integer",
+        "index": "no"
       },
-      diskQueue: {
-        type: "long",
-        index: "no"
+      "diskQueue": {
+        "type": "long",
+        "index": "no"
       }
     }
   }
@@ -529,10 +529,10 @@ sub fieldsCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 1,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-2"
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-2"
   }
 }';
 
@@ -545,15 +545,15 @@ sub fieldsUpdate
 {
     my $mapping = '
 {
-  field: {
-    _all : {enabled : 0},
-    _source : {enabled : 1},
-    dynamic_templates: [
+  "field": {
+    "_all": {"enabled": 0},
+    "_source": {"enabled": 1},
+    "dynamic_templates": [
       {
-        template_1: {
-          match_mapping_type: "string",
-          mapping: {
-            index: "not_analyzed"
+        "template_1": {
+          "match_mapping_type": "string",
+          "mapping": {
+            "index": "not_analyzed"
           }
         }
       }
@@ -878,9 +878,9 @@ sub fieldsUpdate
       "dbField": "lp"
     }');
 
-    esPost("/${PREFIX}fields/field/dns.status/_update", '{doc: {type: "uptermfield"}}', 1);
-    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{doc: {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
-    esPost("/${PREFIX}fields/field/email.subject/_update", '{doc: {type: "textfield"}}', 1);
+    esPost("/${PREFIX}fields/field/dns.status/_update", '{"doc": {"type": "uptermfield"}}', 1);
+    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{"doc": {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
+    esPost("/${PREFIX}fields/field/email.subject/_update", '{"doc": {"type": "textfield"}}', 1);
 }
 
 ################################################################################
@@ -888,10 +888,10 @@ sub queriesCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 1,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-2"
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-2"
   }
 }';
 
@@ -904,42 +904,42 @@ sub queriesUpdate
 {
     my $mapping = '
 {
-  query: {
-    _all : {enabled : 0},
-    _source : {enabled : 1},
-    dynamic: "strict",
-    properties: {
-      name: {
-        type: "string",
-        index: "not_analyzed"
+  "query": {
+    "_all": {"enabled": 0},
+    "_source": {"enabled": 1},
+    "dynamic": "strict",
+    "properties": {
+      "name": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      enabled: {
-        type: "boolean"
+      "enabled": {
+        "type": "boolean"
       },
-      lpValue: {
-        type: "long"
+      "lpValue": {
+        "type": "long"
       },
-      lastRun: {
-        type: "date"
+      "lastRun": {
+        "type": "date"
       },
-      count: {
-        type: "long"
+      "count": {
+        "type": "long"
       },
-      query: {
-        type: "string",
-        index: "not_analyzed"
+      "query": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      action: {
-        type: "string",
-        index: "not_analyzed"
+      "action": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      creator: {
-        type: "string",
-        index: "not_analyzed"
+      "creator": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      tags: {
-        type: "string",
-        index: "not_analyzed"
+      "tags": {
+        "type": "string",
+        "index": "not_analyzed"
       }
     }
   }
@@ -954,41 +954,41 @@ sub sessionsUpdate
 {
     my $mapping = '
 {
-  session: {
-    _all : {enabled : false},
-    dynamic: "true",
-    dynamic_templates: [
+  "session": {
+    "_all": {"enabled": false},
+    "dynamic": "true",
+    "dynamic_templates": [
       {
-        template_1: {
-          path_match: "hdrs.*",
-          match_mapping_type: "string",
-          mapping: {
-            type: "multi_field",
-            path: "full",
-            fields: {
+        "template_1": {
+          "path_match": "hdrs.*",
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "multi_field",
+            "path": "full",
+            "fields": {
               "snow" : {"type": "string", "analyzer" : "snowball"},
               "raw" : {"type": "string", "index" : "not_analyzed"}
             }
           }
         }
       }, {
-        template_georir: {
-          match_pattern: "regex",
-          path_match: ".*-(geo|rir|term)$",
-          match_mapping_type: "string",
-          mapping: {
-            omit_norms: true,
-            type: "string",
-            index: "not_analyzed"
+        "template_georir": {
+          "match_pattern": "regex",
+          "path_match": ".*-(geo|rir|term)$",
+          "match_mapping_type": "string",
+          "mapping": {
+            "omit_norms": true,
+            "type": "string",
+            "index": "not_analyzed"
           }
         }
       }, {
-        template_string: {
-          match_mapping_type: "string",
-          mapping: {
-            type: "multi_field",
-            path: "full",
-            fields: {
+        "template_string": {
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "multi_field",
+            "path": "full",
+            "fields": {
               "snow" : {"type": "string", "analyzer" : "snowball"},
               "raw" : {"type": "string", "index" : "not_analyzed"}
             }
@@ -996,640 +996,640 @@ sub sessionsUpdate
         }
       }
     ],
-    properties: {
-      us: {
-        type: "string",
-        analyzer: "url_analyzer",
-        copy_to: "rawus",
-        omit_norms: true
-      },
-      rawus: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      uscnt: {
-        type: "integer"
-      },
-      ua: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawua",
-        omit_norms: true
-      },
-      rawua: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      uacnt: {
-        type: "integer"
-      },
-      ps: {
-        type: "long",
-        index: "no"
-      },
-      psl: {
-        type: "integer",
-        index: "no"
-      },
-      fs: {
-        type: "long"
-      },
-      lp: {
-        type: "long",
-        doc_values: true
-      },
-      lpd: {
-        type: "date",
-        doc_values: true
-      },
-      fp: {
-        type: "long",
-        doc_values: true
-      },
-      fpd: {
-        type: "date",
-        doc_values: true
-      },
-      a1: {
-        type: "long",
-        doc_values: true
-      },
-      g1: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      as1: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawas1",
-        omit_norms: true
-      },
-      rawas1: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      rir1: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      p1: {
-        type: "integer",
-        doc_values: true
-      },
-      fb1: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      a2: {
-        type: "long",
-        doc_values: true
-      },
-      g2: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      as2: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawas2",
-        omit_norms: true
-      },
-      rawas2: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      rir2: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+    "properties": {
+      "us": {
+        "type": "string",
+        "analyzer": "url_analyzer",
+        "copy_to": "rawus",
+        "omit_norms": true
+      },
+      "rawus": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "uscnt": {
+        "type": "integer"
+      },
+      "ua": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawua",
+        "omit_norms": true
+      },
+      "rawua": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "uacnt": {
+        "type": "integer"
+      },
+      "ps": {
+        "type": "long",
+        "index": "no"
+      },
+      "psl": {
+        "type": "integer",
+        "index": "no"
+      },
+      "fs": {
+        "type": "long"
+      },
+      "lp": {
+        "type": "long",
+        "doc_values": true
+      },
+      "lpd": {
+        "type": "date",
+        "doc_values": true
+      },
+      "fp": {
+        "type": "long",
+        "doc_values": true
+      },
+      "fpd": {
+        "type": "date",
+        "doc_values": true
+      },
+      "a1": {
+        "type": "long",
+        "doc_values": true
+      },
+      "g1": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "as1": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawas1",
+        "omit_norms": true
+      },
+      "rawas1": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "rir1": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "p1": {
+        "type": "integer",
+        "doc_values": true
+      },
+      "fb1": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "a2": {
+        "type": "long",
+        "doc_values": true
+      },
+      "g2": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "as2": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawas2",
+        "omit_norms": true
+      },
+      "rawas2": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "rir2": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      p2: {
-        type: "integer",
-        doc_values: true
+      "p2": {
+        "type": "integer",
+        "doc_values": true
       },
-      fb2: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "fb2": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      xff: {
-        type: "long"
+      "xff": {
+        "type": "long"
       },
-      xffcnt: {
-        type: "integer"
+      "xffcnt": {
+        "type": "integer"
       },
-      xffscnt: {
-        type: "integer"
+      "xffscnt": {
+        "type": "integer"
       },
-      gxff: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "gxff": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      asxff: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawasxff",
-        omit_norms: true
+      "asxff": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawasxff",
+        "omit_norms": true
       },
-      rawasxff: {
-        type: "string",
-        index: "not_analyzed"
+      "rawasxff": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      rirxff: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "rirxff": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hmd5cnt: {
-        type: "short"
+      "hmd5cnt": {
+        "type": "short"
       },
-      hmd5 : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "hmd5": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      dnshocnt: {
-        type: "integer"
+      "dnshocnt": {
+        "type": "integer"
       },
-      dnsho: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "dnsho": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      dnsip: {
-        type: "long"
+      "dnsip": {
+        "type": "long"
       },
-      dnsipcnt: {
-        type: "integer"
+      "dnsipcnt": {
+        "type": "integer"
       },
-      gdnsip: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "gdnsip": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      asdnsip: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawasdnsip",
-        omit_norms: true
+      "asdnsip": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawasdnsip",
+        "omit_norms": true
       },
-      rawasdnsip: {
-        type: "string",
-        index: "not_analyzed"
+      "rawasdnsip": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      rirdnsip: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "rirdnsip": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      pr: {
-        type: "short"
+      "pr": {
+        "type": "short"
       },
-      pa: {
-        type: "integer"
+      "pa": {
+        "type": "integer"
       },
-      pa1: {
-        type: "integer"
+      "pa1": {
+        "type": "integer"
       },
-      pa2: {
-        type: "integer"
+      "pa2": {
+        "type": "integer"
       },
-      by: {
-        type: "long"
+      "by": {
+        "type": "long"
       },
-      by1: {
-        type: "long"
+      "by1": {
+        "type": "long"
       },
-      by2: {
-        type: "long"
+      "by2": {
+        "type": "long"
       },
-      db: {
-        type: "long"
+      "db": {
+        "type": "long"
       },
-      db1: {
-        type: "long"
+      "db1": {
+        "type": "long"
       },
-      db2: {
-        type: "long"
+      "db2": {
+        "type": "long"
       },
-      ro: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "ro": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      no: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "no": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      ho: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "ho": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hocnt: {
-        type: "integer"
+      "hocnt": {
+        "type": "integer"
       },
-      ta: {
-        type: "integer"
+      "ta": {
+        "type": "integer"
       },
-      tacnt: {
-        type: "integer"
+      "tacnt": {
+        "type": "integer"
       },
-      hh: {
-        type: "integer"
+      "hh": {
+        "type": "integer"
       },
-      hh1: {
-        type: "integer"
+      "hh1": {
+        "type": "integer"
       },
-      hh2: {
-        type: "integer"
+      "hh2": {
+        "type": "integer"
       },
-      hh1cnt: {
-        type: "integer"
+      "hh1cnt": {
+        "type": "integer"
       },
-      hh2cnt: {
-        type: "integer"
+      "hh2cnt": {
+        "type": "integer"
       },
-      hsver: {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "hsver": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hsvercnt: {
-        type: "integer"
+      "hsvercnt": {
+        "type": "integer"
       },
-      hdver: {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "hdver": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hdvercnt: {
-        type: "integer"
+      "hdvercnt": {
+        "type": "integer"
       },
-      hpath: {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "hpath": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hpathcnt: {
-        type: "integer"
+      "hpathcnt": {
+        "type": "integer"
       },
-      hkey: {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "hkey": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hkeycnt: {
-        type: "integer"
+      "hkeycnt": {
+        "type": "integer"
       },
-      hval: {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "hval": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      hvalcnt: {
-        type: "integer"
+      "hvalcnt": {
+        "type": "integer"
       },
-      user: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "user": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      usercnt: {
-        type: "integer"
+      "usercnt": {
+        "type": "integer"
       },
-      tls : {
-        type : "object",
-        dynamic: "strict",
-        properties : {
-          iCn : {
-            omit_norms: true,
-            type : "string",
-            index : "not_analyzed"
+      "tls": {
+        "type": "object",
+        "dynamic": "strict",
+        "properties": {
+          "iCn": {
+            "omit_norms": true,
+            "type": "string",
+            "index": "not_analyzed"
           },
-          iOn : {
-            type: "multi_field",
-            fields: {
-              "iOn": {type: "string", analyzer: "snowball", omit_norms: true},
-              "rawiOn": {type: "string", index: "not_analyzed"}
+          "iOn": {
+            "type": "multi_field",
+            "fields": {
+              "iOn": {"type": "string", "analyzer": "snowball", "omit_norms": true},
+              "rawiOn": {"type": "string", "index": "not_analyzed"}
             }
           },
-          sCn : {
-            omit_norms: true,
-            type : "string",
-            index : "not_analyzed"
+          "sCn": {
+            "omit_norms": true,
+            "type": "string",
+            "index": "not_analyzed"
           },
-          sOn : {
-            type: "multi_field",
-            fields: {
-              "sOn": {type: "string", analyzer: "snowball", omit_norms: true},
-              "rawsOn": {type: "string", index: "not_analyzed"}
+          "sOn": {
+            "type": "multi_field",
+            "fields": {
+              "sOn": {"type": "string", "analyzer": "snowball", "omit_norms": true},
+              "rawsOn": {"type": "string", "index": "not_analyzed"}
             }
           },
-          sn : {
-            omit_norms: true,
-            type : "string",
-            index : "not_analyzed"
+          "sn": {
+            "omit_norms": true,
+            "type": "string",
+            "index": "not_analyzed"
           },
-          alt : {
-            omit_norms: true,
-            type : "string",
-            index : "not_analyzed"
+          "alt": {
+            "omit_norms": true,
+            "type": "string",
+            "index": "not_analyzed"
           },
-          altcnt: {
-            type: "integer"
+          "altcnt": {
+            "type": "integer"
           },
-          notBefore: {
-            type: "long",
-            index: "not_analyzed"
+          "notBefore": {
+            "type": "long",
+            "index": "not_analyzed"
           },
-          notAfter: {
-            type: "long",
-            index: "not_analyzed"
+          "notAfter": {
+            "type": "long",
+            "index": "not_analyzed"
           },
-          diffDays: {
-            type: "integer",
-            index: "not_analyzed"
+          "diffDays": {
+            "type": "integer",
+            "index": "not_analyzed"
           },
-          hash : {
-            omit_norms: true,
-            type : "string",
-            index : "not_analyzed"
+          "hash": {
+            "omit_norms": true,
+            "type": "string",
+            "index": "not_analyzed"
           }
         }
       },
-      tlscnt: {
-        type: "integer"
-      },
-      sshkey : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      sshkeycnt: {
-        type: "short"
-      },
-      sshver : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
+      "tlscnt": {
+        "type": "integer"
+      },
+      "sshkey": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "sshkeycnt": {
+        "type": "short"
+      },
+      "sshver": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      sshvercnt: {
-        type: "short"
-      },
-      euacnt: {
-        type: "short"
-      },
-      eua: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "raweua",
-        omit_norms: true
-      },
-      raweua: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      esubcnt: {
-        type: "short"
-      },
-      esub: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawesub",
-        omit_norms: true
-      },
-      rawesub: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      eidcnt: {
-        type: "short"
-      },
-      eid : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      ectcnt: {
-        type: "short"
-      },
-      ect : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      emvcnt: {
-        type: "short"
-      },
-      emv : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      efncnt: {
-        type: "short"
-      },
-      efn : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      emd5cnt: {
-        type: "short"
-      },
-      emd5 : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      esrccnt: {
-        type: "short"
-      },
-      esrc : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      edstcnt: {
-        type: "short"
-      },
-      edst : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      eho: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      ehocnt: {
-        type: "integer"
+      "sshvercnt": {
+        "type": "short"
+      },
+      "euacnt": {
+        "type": "short"
+      },
+      "eua": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "raweua",
+        "omit_norms": true
+      },
+      "raweua": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "esubcnt": {
+        "type": "short"
+      },
+      "esub": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawesub",
+        "omit_norms": true
+      },
+      "rawesub": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "eidcnt": {
+        "type": "short"
+      },
+      "eid": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "ectcnt": {
+        "type": "short"
+      },
+      "ect": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "emvcnt": {
+        "type": "short"
+      },
+      "emv": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "efncnt": {
+        "type": "short"
+      },
+      "efn": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "emd5cnt": {
+        "type": "short"
+      },
+      "emd5": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "esrccnt": {
+        "type": "short"
+      },
+      "esrc": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "edstcnt": {
+        "type": "short"
+      },
+      "edst": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "eho": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "ehocnt": {
+        "type": "integer"
       },
-      eip: {
-        type: "long"
+      "eip": {
+        "type": "long"
       },
-      eipcnt: {
-        type: "integer"
-      },
-      ehh: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "eipcnt": {
+        "type": "integer"
+      },
+      "ehh": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      ehhcnt: {
-        type: "integer"
-      },
-      geip: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "ehhcnt": {
+        "type": "integer"
+      },
+      "geip": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       },
-      aseip: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawaseip",
-        omit_norms: true
-      },
-      rawaseip: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      rireip: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      ircnck: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      ircnckcnt: {
-        type: "integer"
-      },
-      ircch: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      ircchcnt: {
-        type: "integer"
-      },
-      hdrs: {
-        type: "object",
-        dynamic: "true"
-      },
-      plugin: {
-        type: "object",
-        dynamic: "true"
-      },
-      scrubat: {
-        type: "date"
-      },
-      scrubby: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      smbdmcnt: {
-        type: "short"
-      },
-      smbdm : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      smbfncnt: {
-        type: "short"
-      },
-      smbfn : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      smbhocnt: {
-        type: "short"
-      },
-      smbho : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      smboscnt: {
-        type: "short"
-      },
-      smbos : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      smbshcnt: {
-        type: "short"
-      },
-      smbsh : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      smbusercnt: {
-        type: "short"
-      },
-      smbuser : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      smbvercnt: {
-        type: "short"
-      },
-      smbver: {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      socksip: {
-        type: "long"
-      },
-      gsocksip: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      assocksip: {
-        type: "string",
-        analyzer: "snowball",
-        copy_to: "rawassocksip",
-        omit_norms: true
-      },
-      rawassocksip: {
-        type: "string",
-        index: "not_analyzed"
-      },
-      rirsocksip: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
-      },
-      sockspo: {
-        type: "integer"
-      },
-      socksuser : {
-        omit_norms: true,
-        type : "string",
-        index : "not_analyzed"
-      },
-      socksho: {
-        omit_norms: true,
-        type: "string",
-        index: "not_analyzed"
+      "aseip": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawaseip",
+        "omit_norms": true
+      },
+      "rawaseip": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "rireip": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "ircnck": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "ircnckcnt": {
+        "type": "integer"
+      },
+      "ircch": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "ircchcnt": {
+        "type": "integer"
+      },
+      "hdrs": {
+        "type": "object",
+        "dynamic": "true"
+      },
+      "plugin": {
+        "type": "object",
+        "dynamic": "true"
+      },
+      "scrubat": {
+        "type": "date"
+      },
+      "scrubby": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smbdmcnt": {
+        "type": "short"
+      },
+      "smbdm": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smbfncnt": {
+        "type": "short"
+      },
+      "smbfn": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smbhocnt": {
+        "type": "short"
+      },
+      "smbho": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smboscnt": {
+        "type": "short"
+      },
+      "smbos": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smbshcnt": {
+        "type": "short"
+      },
+      "smbsh": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smbusercnt": {
+        "type": "short"
+      },
+      "smbuser": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "smbvercnt": {
+        "type": "short"
+      },
+      "smbver": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "socksip": {
+        "type": "long"
+      },
+      "gsocksip": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "assocksip": {
+        "type": "string",
+        "analyzer": "snowball",
+        "copy_to": "rawassocksip",
+        "omit_norms": true
+      },
+      "rawassocksip": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "rirsocksip": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "sockspo": {
+        "type": "integer"
+      },
+      "socksuser": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
+      },
+      "socksho": {
+        "omit_norms": true,
+        "type": "string",
+        "index": "not_analyzed"
       }
     }
   }
@@ -1641,25 +1641,25 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     my $template = '
 {
-  template: "' . $PREFIX . 'sessions-*",
-  settings: {
-    index: {
+  "template": "' . $PREFIX . 'session*",
+  "settings": {
+    "index": {
       "routing.allocation.total_shards_per_node": ' . $shardsPerNode . ',
-      refresh_interval: "60s",
-      number_of_shards: ' . $SHARDS . ',
-      number_of_replicas: ' . $REPLICAS . ',
-      analysis: {
-        analyzer : {
-          url_analyzer : {
-            type : "custom",
-            tokenizer: "pattern",
-            filter: ["lowercase"]
+      "refresh_interval": "60s",
+      "number_of_shards": ' . $SHARDS . ',
+      "number_of_replicas": ' . $REPLICAS . ',
+      "analysis": {
+        "analyzer": {
+          "url_analyzer": {
+            "type": "custom",
+            "tokenizer": "pattern",
+            "filter": ["lowercase"]
           }
         }
       }
     }
   },
-  mappings:' . $mapping . '
+  "mappings":' . $mapping . '
 }';
 
     print "Creating sessions template\n" if ($verbose > 0);
@@ -1692,10 +1692,10 @@ sub usersCreate
 {
     my $settings = '
 {
-  settings: {
-    number_of_shards: 1,
-    number_of_replicas: 0,
-    auto_expand_replicas: "0-2"
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-2"
   }
 }';
 
@@ -1709,56 +1709,56 @@ sub usersUpdate
 {
     my $mapping = '
 {
-  user: {
-    _all : {enabled : false},
-    _source : {enabled : true},
-    dynamic: "strict",
-    properties: {
-      userId: {
-        type: "string",
-        index: "not_analyzed"
+  "user": {
+    "_all": {"enabled": false},
+    "_source": {"enabled": true},
+    "dynamic": "strict",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      userName: {
-        type: "string",
-        index: "not_analyzed"
+      "userName": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      enabled: {
-        type: "boolean"
+      "enabled": {
+        "type": "boolean"
       },
-      createEnabled: {
-        type: "boolean"
+      "createEnabled": {
+        "type": "boolean"
       },
-      webEnabled: {
-        type: "boolean"
+      "webEnabled": {
+        "type": "boolean"
       },
-      headerAuthEnabled: {
-        type: "boolean"
+      "headerAuthEnabled": {
+        "type": "boolean"
       },
-      emailSearch: {
-        type: "boolean"
+      "emailSearch": {
+        "type": "boolean"
       },
-      removeEnabled: {
-        type: "boolean"
+      "removeEnabled": {
+        "type": "boolean"
       },
-      passStore: {
-        type: "string",
-        index: "not_analyzed"
+      "passStore": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      expression: {
-        type: "string",
-        index: "not_analyzed"
+      "expression": {
+        "type": "string",
+        "index": "not_analyzed"
       },
-      settings : {
-        type : "object",
-        dynamic: "true"
+      "settings": {
+        "type": "object",
+        "dynamic": "true"
       },
-      views : {
-        type : "object",
-        dynamic: "true"
+      "views": {
+        "type": "object",
+        "dynamic": "true"
       },
-      tableStates : {
-        type : "object",
-        dynamic: "true"
+      "tableStates": {
+        "type": "object",
+        "dynamic": "true"
       }
     }
   }
@@ -2233,7 +2233,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/${PREFIX}dstats", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}dstats_v1", 1);
-    esDelete("/${PREFIX}sessions-*", 1);
+    esDelete("/${PREFIX}sessions*", 1);
     esDelete("/${PREFIX}template_1", 1);
     if ($ARGV[1] =~ "init") {
         esDelete("/${PREFIX}users_v1", 1);
