@@ -25,6 +25,7 @@ try {
 var Config         = require('./config.js'),
     express        = require('express'),
     stylus         = require('stylus'),
+    sass           = require('node-sass'),
     util           = require('util'),
     fs             = require('fs-ext'),
     async          = require('async'),
@@ -153,6 +154,18 @@ if (_accesslogfile) {
 app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms',{stream: _stream}));
 app.use(compression());
 app.use(methodOverride());
+
+
+// angular app dependencies
+app.use('/angular/', express.static(__dirname + '/node_modules/angular', { maxAge: 600 * 1000}));
+app.use('/angular-resource/', express.static(__dirname + '/node_modules/angular-resource', { maxAge: 600 * 1000}));
+app.use('/angular-route/', express.static(__dirname + '/node_modules/angular-route', { maxAge: 600 * 1000}));
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist', { maxAge: 600 * 1000}));
+// angular app resources
+app.use('/modules/', express.static(__dirname + '/app/modules', { maxAge: 600 * 1000}));
+app.use('/components/', express.static(__dirname + '/components', { maxAge: 600 * 1000}));
+
+
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
 if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = false;
@@ -834,6 +847,39 @@ app.get('/style.css', function(req, res) {
     });
   });
 });
+
+
+// angular app styles
+app.get('/app.css', function(req, res) {
+  sass.render({
+    file        : __dirname + '/app/app.scss',
+    outputStyle : 'compressed'
+  }, function(error, result) {
+    if (error) {
+      console.log(error.status);
+      console.log(error.message);
+    }
+
+    var date = new Date().toUTCString();
+    res.setHeader('Content-Type', 'text/css');
+    res.setHeader('Date', date);
+    res.setHeader('Cache-Control', 'public, max-age=600');
+    res.setHeader('Last-Modified', date);
+    res.send(result.css.toString());
+  });
+});
+
+
+// angular app definition
+app.get('/app.js', function(req, res) {
+  res.sendFile(__dirname + '/app/app.js');
+});
+
+// angular app route
+app.get('/app', checkWebEnabled, function(req, res) {
+  res.render('app');
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING

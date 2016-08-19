@@ -1,0 +1,21 @@
+html(ng-app="moloch")
+
+  head
+    title Moloch
+    meta(charset='utf8')
+    link(rel='stylesheet', href='/bootstrap/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/app.css')
+
+  body
+    navbar
+    div(ng-view)
+    footer.footer
+
+    // order matters
+    script(src='/angular/angular.js')
+    script(src='/angular-resource/angular-resource.js')
+    script(src='/angular-route/angular-route.js')
+    script(src='/app.js')
+    script(src='/modules/session/session.component.js')
+    script(src='/components/navbar/navbar.component.js')
+    script(src='/components/footer/footer.component.js')
