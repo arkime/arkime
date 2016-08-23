@@ -1,10 +1,223 @@
+/* variables --------------------------------- */
+// pixels
+$px-none:   0;          // 0px
+$px-xs:     0.125rem;   // 2px
+$px-sm:     .25rem;     // 4px
+$px-md:     .5rem;      // 8px
+$px-lg:     .75rem;     // 12px
+$px-xlg:    1rem;       // 16px
+$px-xxlg:   1.5rem;     // 24px
+$px-xxxlg:  2rem;       // 32px
+$px-xxxxlg: 3rem;       // 48px
+$px-xxxxxlg:3.5rem;     // 56px
+
+// colors
+$color-gray       : #ccc;
+$color-gray-dark  : #777;
+$color-gray-light : #eee;
+
+
+
+/* imports ----------------------------------- */
+@import '../components/navbar/navbar';
 @import '../components/footer/footer';
 
 
-navbar {
-  .moloch-logo {
-    position: absolute;
-    height  : 48px;
-    top     : 6px;
+
+/* appwide styles ---------------------------- */
+// margins
+.margined               { margin: $px-md; }
+.margined-sm            { margin: $px-sm; }
+.margined-lg            { margin: $px-lg; }
+.margined-xlg           { margin: $px-xlg; }
+.margined-xxlg          { margin: $px-xxlg; }
+.margined-xxxlg         { margin: $px-xxxlg; }
+.margined-xxxxlg        { margin: $px-xxxxlg; }
+.margined-none          { margin: $px-none; }
+
+.margined-top           { margin-top: $px-md; }
+.margined-top-sm        { margin-top: $px-sm; }
+.margined-top-lg        { margin-top: $px-lg; }
+.margined-top-xlg       { margin-top: $px-xlg; }
+.margined-top-xxlg      { margin-top: $px-xxlg; }
+.margined-top-xxxlg     { margin-top: $px-xxxlg; }
+.margined-top-xxxxlg    { margin-top: $px-xxxxlg; }
+.margined-top-none      { margin-top: $px-none; }
+
+.margined-bottom        { margin-bottom: $px-md; }
+.margined-bottom-sm     { margin-bottom: $px-sm; }
+.margined-bottom-lg     { margin-bottom: $px-lg; }
+.margined-bottom-xlg    { margin-bottom: $px-xlg; }
+.margined-bottom-xxlg   { margin-bottom: $px-xxlg; }
+.margined-bottom-xxxlg  { margin-bottom: $px-xxxlg; }
+.margined-bottom-xxxxlg { margin-bottom: $px-xxxxlg; }
+.margined-bottom-none   { margin-bottom: $px-none; }
+
+.margined-left          { margin-left: $px-md; }
+.margined-left-sm       { margin-left: $px-sm; }
+.margined-left-lg       { margin-left: $px-lg; }
+.margined-left-xlg      { margin-left: $px-xlg; }
+.margined-left-xxlg     { margin-left: $px-xxlg; }
+.margined-left-xxxlg    { margin-left: $px-xxxlg; }
+.margined-left-xxxxlg   { margin-left: $px-xxxxlg; }
+.margined-left-none     { margin-left: $px-none; }
+
+.margined-right         { margin-right: $px-md; }
+.margined-right-sm      { margin-right: $px-sm; }
+.margined-right-lg      { margin-right: $px-lg; }
+.margined-right-xlg     { margin-right: $px-xlg; }
+.margined-right-xxlg    { margin-right: $px-xxlg; }
+.margined-right-xxxlg   { margin-right: $px-xxxlg; }
+.margined-right-xxxxlg  { margin-right: $px-xxxxlg; }
+.margined-right-none    { margin-right: $px-none; }
+
+
+// padding
+.padded             { padding: $px-md; }
+.padded-sm          { padding: $px-sm; }
+.padded-lg          { padding: $px-lg; }
+.padded-xlg         { padding: $px-xlg; }
+.padded-none        { padding: $px-none; }
+
+.padded-top         { padding-top: $px-md; }
+.padded-top-sm      { padding-top: $px-sm; }
+.padded-top-lg      { padding-top: $px-lg; }
+.padded-top-xlg     { padding-top: $px-xlg; }
+.padded-top-none    { padding-top: $px-none; }
+
+.padded-bottom      { padding-bottom: $px-md; }
+.padded-bottom-sm   { padding-bottom: $px-sm; }
+.padded-bottom-lg   { padding-bottom: $px-lg; }
+.padded-bottom-xlg  { padding-bottom: $px-xlg; }
+.padded-bottom-none { padding-bottom: $px-none; }
+
+.padded-left        { padding-left: $px-md; }
+.padded-left-sm     { padding-left: $px-sm; }
+.padded-left-lg     { padding-left: $px-lg; }
+.padded-left-xlg    { padding-left: $px-xlg; }
+.padded-left-none   { padding-left: $px-none; }
+
+.padded-right       { padding-right: $px-md; }
+.padded-right-sm    { padding-right: $px-sm; }
+.padded-right-lg    { padding-right: $px-lg; }
+.padded-right-xlg   { padding-right: $px-xlg; }
+.padded-right-none  { padding-right: $px-none; }
+
+
+// cursors
+.cursor-pointer {
+  cursor: pointer;
+}
+.pointer-cursor {
+  cursor: pointer;
+}
+
+.cursor-help {
+  cursor: help;
+}
+.help-cursor {
+  cursor: help;
+}
+
+.cursor-crosshair {
+  cursor: crosshair;
+}
+.crosshair-cursor {
+  cursor: crosshair;
+}
+
+
+// small horizontal rule
+.hr-small {
+  margin-top:   $px-sm;
+  margin-bottom:$px-xs;
+}
+
+
+// lighter than muted text
+.text-muted-more {
+  color: lighten($color-gray, 5%);
+}
+
+
+// flex block to display text centered
+// (horizontally and vertically) on the page
+// note: takes up half of the page
+.vertical-horizontal-center {
+  min-height      : 50%;
+  min-height      : 50vh;
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+}
+
+
+// displays large text for important information
+// note: must contain an inner div with the text
+// example:
+// <div class="info-area">
+//   <div>Some important text!</div>
+// </div>
+.info-area {
+  font-size : 2rem;
+  color     : $color-gray-dark;
+
+  div {
+    padding         : 2rem;
+    border-radius   : 4px;
+    background-color: $color-gray-light;
+  }
+
+  span.fa {
+    display         : flex;
+    justify-content : center;
+  }
+}
+
+
+/* pagination */
+.pagination {
+  &.pagination-sm {
+    margin: 20px 0 -10px 0;
+  }
+}
+
+.pagination-info {
+  display   : flex;
+  font-size : 1.2rem;
+  color     : $color-gray-dark;
+}
+
+// put page number select with pagination control
+select {
+  &.page-select {
+    width: 120px;
+    display: inline-flex;
+    height: 30px;
+    margin-bottom: 2px;
+    margin-right: -4px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    -webkit-appearance: none;
+    border-color: #ddd;
+  }
+}
+
+
+/* datatables colreorder */
+table { // floating table, dragged with the mouse
+  &.DTCR_clonedTable {
+  	background-color : rgba(255, 255, 255, 0.7);
+  	z-index          : 202;
+  }
+}
+
+div { // insert line
+  &.DTCR_pointer {
+  	width            : 1px;
+  	z-index          : 201;
+  	background-color : #337ab7;
   }
 }

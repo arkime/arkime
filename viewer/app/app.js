@@ -1,21 +1,35 @@
-'use strict';
+(function() {
 
+  'use strict';
 
-angular.module('moloch', [
-  'ngResource', 'ngRoute',
-  'directives.navbar', 'directives.footer'
-])
+  /**
+   * Moloch Angular Application Definiton
+   */
+  angular.module('moloch', [
+    // angular dependencies
+    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
 
-.config(['$routeProvider', '$locationProvider',
-    function($routeProvider, $locationProvider) {
+    // datatables dependencies
+    'datatables', 'datatables.bootstrap', 'datatables.colreorder',
 
-      $routeProvider
-        .when('/session', {
-          template: '<session></session>'
-        })
-        // default route is session page
-        .otherwise({ redirectTo: '/session' });
+    // custom directives
+    'directives.navbar', 'directives.footer',
+    'directives.loading', 'directives.error',
+    'directives.util'
+  ])
 
-    }
-  ]
-);
+  .config(['$routeProvider', '$locationProvider',
+      function($routeProvider, $locationProvider) {
+
+        $routeProvider
+          .when('/session', {
+            template: '<session></session>'
+          })
+          // default route is the sessions page
+          .otherwise({ redirectTo: '/session' });
+
+      }
+    ]
+  );
+
+})();

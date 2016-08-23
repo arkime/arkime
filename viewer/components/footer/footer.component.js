@@ -1,7 +1,16 @@
-'use strict';
+(function() {
 
+  'use strict';
 
-angular.module('directives.footer', [])
-  .component('footer', {
-    templateUrl : '/components/footer/footer.html'
-  });
+  /**
+   * Footer Directive
+   * Displays a footer
+   * @example
+   * '<footer class="footer"></footer>'
+   */
+  angular.module('directives.footer', [])
+    .component('footer', {
+      templateUrl : '/components/footer/footer.html'
+    });
+
+})();

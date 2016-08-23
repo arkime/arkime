@@ -1,0 +1,10 @@
+<div id="{{::$ctrl.colId}}" ng-click="$ctrl.sort()" class="cursor-pointer"
+  style="white-space:nowrap;overflow:visible;">
+  {{::$ctrl.colName}}
+  <span ng-show="$ctrl.element !== $ctrl.colId"
+    class="fa fa-sort text-muted-more"></span>
+  <span ng-show="$ctrl.element === $ctrl.colId && $ctrl.order === 'asc'"
+    class="fa fa-sort-asc"></span>
+  <span ng-show="$ctrl.element === $ctrl.colId && $ctrl.order === 'desc'"
+    class="fa fa-sort-desc"></span>
+</div>

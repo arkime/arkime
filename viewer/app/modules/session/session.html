@@ -1,1 +1,159 @@
-<div class="container">SESSION INFO HERE</div>
+<div class="container">
+
+  <div> <!-- pagination controls -->
+
+    <!-- page size -->
+    <select convert-to-number ng-model="$ctrl.query.length"
+      ng-change="$ctrl.getData()" class="form-control page-select">
+      <option value="10">10 per page</option>
+      <option value="25">25 per page</option>
+      <option value="50">50 per page</option>
+      <option value="100">100 per page</option>
+    </select> <!-- /page size -->
+
+    <!-- pagination -->
+    <ul uib-pagination boundary-links="true"
+      ng-change="$ctrl.getData()"
+      total-items="$ctrl.sessions.recordsFiltered"
+      items-per-page="$ctrl.query.length" max-size="5"
+      ng-model="$ctrl.currentPage" class="pagination pagination-sm"
+      rotate="true" boundary-link-numbers="true"
+      previous-text="&lsaquo;" next-text="&rsaquo;"
+      first-text="&laquo;" last-text="&raquo;">
+    </ul>
+    <!-- /pagination -->
+
+    <span class="pagination-info"> <!-- page info -->
+      Showing {{$ctrl.query.start + 1}} - {{$ctrl.query.start + $ctrl.query.length}}
+      of {{$ctrl.sessions.recordsFiltered | number:0}} entries
+      (filtered from {{$ctrl.sessions.recordsTotal | number:0}} total entries)
+    </span>
+
+  </div> <!-- /pagination controls -->
+
+  <!-- session results -->
+  <div>
+    <div class="table-responsive">
+    <!-- session data table -->
+    <table datatable="ng" dt-options="$ctrl.dtOptions" class="table table-hover"
+      dt-column-defs="$ctrl.dtColumns" class="table table-hover"
+      dt-instance="$ctrl.dtInstanceCallback">
+      <thead>
+        <tr>
+          <th></th>
+          <th>
+            <col-header col-name="'Start'" col-id="'fp'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Stop'" col-id="'lp'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Src IP'" col-id="'a1'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Src Port'" col-id="'p1'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Dst IP'" col-id="'a2'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Dst Port'" col-id="'p2'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Packets'" col-id="'pa'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Bytes'" col-id="'by'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+          <th>
+            <col-header col-name="'Node'" col-id="'no'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></col-header>
+          </th>
+        </tr>
+      </thead>
+      <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
+        $ctrl.sessions.data.length && !$ctrl.loading && !$ctrl.error">
+        <tr ng-repeat="session in $ctrl.sessions.data">
+          <td>
+            <a class="btn btn-sm btn-info">
+              <span class="fa fa-plus"></span>
+            </a>
+          </td>
+          <td>{{::session.fp}}</td>
+          <td>{{::session.lp}}</td>
+          <td>{{::session.a1}}</td>
+          <td>{{::session.p1}}</td>
+          <td>{{::session.a2}}</td>
+          <td>{{::session.p2}}</td>
+          <td>{{::session.pa}}</td>
+          <td>{{::session.by}}</td>
+          <td>{{::session.no}}</td>
+        </tr>
+      </tbody>
+    </table> <!-- /session data table -->
+    </div>
+    
+    <loading ng-if="$ctrl.loading"></loading>
+
+    <error ng-if="$ctrl.error" message="$ctrl.error"></error>
+
+    <!-- no results -->
+    <div ng-if="$ctrl.sessions && $ctrl.sessions.data && !$ctrl.sessions.data.length"
+      class="info-area vertical-horizontal-center">
+      <div>
+        <span class="fa fa-3x text-center text-muted-more fa-folder-open"></span><br>
+        No results or none that match your search.
+      </div>
+    </div> <!-- /no results -->
+
+    <div> <!-- pagination controls -->
+
+      <!-- page size -->
+      <select convert-to-number ng-model="$ctrl.query.length"
+        ng-change="$ctrl.getData()" class="form-control page-select">
+        <option value="10">10 per page</option>
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select> <!-- /page size -->
+
+      <!-- pagination -->
+      <ul uib-pagination boundary-links="true"
+        ng-change="$ctrl.getData()"
+        total-items="$ctrl.sessions.recordsFiltered"
+        items-per-page="$ctrl.query.length" max-size="5"
+        ng-model="$ctrl.currentPage" class="pagination pagination-sm"
+        rotate="true" boundary-link-numbers="true"
+        previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;" last-text="&raquo;">
+      </ul>
+      <!-- /pagination -->
+
+      <span class="pagination-info"> <!-- page info -->
+        Showing {{$ctrl.query.start + 1}} - {{$ctrl.query.start + $ctrl.query.length}}
+        of {{$ctrl.sessions.recordsFiltered | number:0}} entries
+        (filtered from {{$ctrl.sessions.recordsTotal | number:0}} total entries)
+      </span>
+
+    </div> <!-- /pagination controls -->
+
+  </div> <!-- /session results -->
+
+</div>
