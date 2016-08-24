@@ -9,5 +9,7 @@
   "nonew": true,
   "undef": true,
   "strict": true,
-  "trailing": true
+  "trailing": true,
+  "esversion": 6,
+  "predef": [ "angular" ]
 }

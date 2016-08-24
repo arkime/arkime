@@ -23,7 +23,7 @@
     $onInit() {
       this.menu = {
         session: { title: 'Sessions', link: '/app#/session' }
-      }
+      };
     }
 
     /* exposed functions --------------------------------------------------- */

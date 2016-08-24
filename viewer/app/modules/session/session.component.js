@@ -34,26 +34,24 @@
       this.currentPage  = 1;
 
       this.query = {
-        length      : 100,  // default page size
+        length      : 50,   // default page size
         start       : 0,    // start at first item
         sortElement : 'fp', // default sort element
         sortOrder   : 'asc',// default sort order
         date        : 1,    // default date range
         facets      : 1,    // default facets
         draw        : 1     // default draw
-      }
+      };
 
       // configure table
       this.dtOptions = this.DTOptionsBuilder.newOptions()
         .withDOM('t')
         .withBootstrap()
         .withColReorder()
+        .withColReorderOption('iFixedColumnsLeft', 1)
         .withDisplayLength(this.query.length)
         .withPaginationType('full_numbers')
         .withOption('responsive', true);
-        // .withFixedColumns({
-        //   leftColumns: 1
-        // });
 
       // get table data
       this.getData();
@@ -68,7 +66,8 @@
         this.DTColumnDefBuilder.newColumnDef(6).notSortable(),
         this.DTColumnDefBuilder.newColumnDef(7).notSortable(),
         this.DTColumnDefBuilder.newColumnDef(8).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(8).notSortable()
+        this.DTColumnDefBuilder.newColumnDef(9).notSortable(),
+        this.DTColumnDefBuilder.newColumnDef(10).notSortable()
       ];
 
       this.$scope.$on('change:sort', (event, args) => {
@@ -77,7 +76,7 @@
 
         this.getData();
       });
-    }; /* /$onInit */
+    } /* /$onInit */
 
 
     /* exposed functions --------------------------------------------------- */
@@ -101,7 +100,7 @@
           this.loading  = false;
           this.error    = error;
         });
-    };
+    }
 
   }
 

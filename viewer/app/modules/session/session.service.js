@@ -19,7 +19,7 @@
     constructor($q, $http) {
       this.$q     = $q;
       this.$http  = $http;
-    };
+    }
 
     /* service methods ----------------------------------------------------- */
     /**
@@ -33,22 +33,24 @@
 
         var params = {};
 
-        if (query.length) params.length = query.length;
-        if (query.start)  params.start  = query.start;
-        if (query.date)   params.date   = query.date;
-        if (query.facets) params.facets = query.facets;
-        if (query.draw)   params.draw   = query.draw;
+        if (query.length) { params.length = query.length; }
+        if (query.start)  { params.start  = query.start; }
+        if (query.date)   { params.date   = query.date; }
+        if (query.facets) { params.facets = query.facets; }
+        if (query.draw)   { params.draw   = query.draw; }
 
         // server takes one param (order)
         if (query.sortElement && query.sortOrder) {
           params.order = query.sortElement + ':' + query.sortOrder;
-        } else if (query.order) params.order = query.order;
+        } else if (query.order) {
+          params.order = query.order;
+        }
 
         var options = {
           url   : 'sessions.json',
           method: 'GET',
           params: params
-        }
+        };
 
         this.$http(options)
           .then((response) => {
@@ -58,7 +60,7 @@
           });
 
       });
-    };
+    }
 
   }
 

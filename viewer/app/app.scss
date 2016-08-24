@@ -16,11 +16,25 @@ $color-gray       : #ccc;
 $color-gray-dark  : #777;
 $color-gray-light : #eee;
 
+$color-yellow       : #ECB30A;
+$color-yellow-light : #FACA3D;
+$color-yellow-dark  : #B98B02;
+$color-green        : #079B72;
+$color-green-light  : #28A482;
+$color-green-dark   : #027958;
+$color-blue         : #1F1FA5;
+$color-blue-light   : #3E3EAF;
+$color-blue-dark    : #151582;
+$color-purple       : #830B9C;
+$color-purple-light : #902BA5;
+$color-purple-dark  : #66057A;
+
 
 
 /* imports ----------------------------------- */
 @import '../components/navbar/navbar';
 @import '../components/footer/footer';
+@import '../components/loading/loading';
 
 
 
@@ -159,12 +173,12 @@ $color-gray-light : #eee;
 //   <div>Some important text!</div>
 // </div>
 .info-area {
-  font-size : 2rem;
-  color     : $color-gray-dark;
+  font-size   : $px-xxxlg;
+  color       : $color-gray-dark;
 
   div {
-    padding         : 2rem;
-    border-radius   : 4px;
+    padding         : $px-xxxlg;
+    border-radius   : $px-sm;
     background-color: $color-gray-light;
   }
 
@@ -178,35 +192,73 @@ $color-gray-light : #eee;
 /* pagination */
 .pagination {
   &.pagination-sm {
-    margin: 20px 0 -10px 0;
+    margin: 0 0 -10px 0;
   }
 }
 
 .pagination-info {
-  display   : flex;
-  font-size : 1.2rem;
-  color     : $color-gray-dark;
+  border        : 1px solid #ddd;
+  padding       : 8px 10px 6px;
+  margin-left   : -6px;
+  border-radius : 0 $px-sm $px-sm 0;
+  font-size     : 1.2rem;
+  color         : $color-gray-dark;
 }
 
 // put page number select with pagination control
 select {
   &.page-select {
-    width: 120px;
-    display: inline-flex;
-    height: 30px;
-    margin-bottom: 2px;
-    margin-right: -4px;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    border-right: none;
-    border-radius: 4px 0 0 4px;
+    width         : 120px;
+    display       : inline-flex;
+    height        : 30px;
+    margin-bottom : $px-xs;
+    margin-right  : -$px-md;
+    padding-top   : $px-xs;
+    padding-bottom: $px-xs;
+    border-right  : none;
+    border-radius : $px-sm $px-none $px-none $px-sm;
+    border-color  : #ddd;
     -webkit-appearance: none;
-    border-color: #ddd;
   }
 }
 
 
-/* datatables colreorder */
+/* table styles */
+colheader {
+  white-space :nowrap;
+  overflow    :visible;
+
+  th.active & {
+    color     : $color-purple-dark;
+  }
+
+  .fa-sort {
+    visibility: hidden;
+  }
+
+  &:hover {
+    .fa-sort {
+      visibility: visible;
+    }
+  }
+}
+
+.table-hover {
+  tbody {
+    tr {
+      &:hover {
+        background-color: lighten($color-green-light, 55%);
+        td {
+          &.active {
+            background-color: lighten($color-green-light, 50%);
+          }
+        }
+      }
+    }
+  }
+}
+
+//datatables colreorder
 table { // floating table, dragged with the mouse
   &.DTCR_clonedTable {
   	background-color : rgba(255, 255, 255, 0.7);
@@ -218,6 +270,6 @@ div { // insert line
   &.DTCR_pointer {
   	width            : 1px;
   	z-index          : 201;
-  	background-color : #337ab7;
+  	background-color : $color-blue;
   }
 }

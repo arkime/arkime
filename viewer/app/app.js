@@ -15,7 +15,7 @@
     // custom directives
     'directives.navbar', 'directives.footer',
     'directives.loading', 'directives.error',
-    'directives.util'
+    'moloch.util'
   ])
 
   .config(['$routeProvider', '$locationProvider',

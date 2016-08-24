@@ -24,6 +24,10 @@
      * Sorts the sessions by the clicked column
      */
     sort() {
+      if (!this.element) { // unsortable column
+        return;
+      }
+
       if (this.element === this.colId) {
         // the table is already sorted by this element
         // so, toggle the sort order
@@ -49,7 +53,9 @@
     static toggleSortOrder(order) {
       if (order === 'asc') {
         return 'desc';
-      } else return 'asc';
+      } else {
+        return 'asc';
+      }
     }
 
   }
@@ -63,7 +69,7 @@
    * '<col-header></col-header>'
    */
   angular.module('moloch')
-    .component('colHeader', {
+    .component('colheader', {
       templateUrl : '/modules/session/colheader.html',
       controller  : ColheaderController,
       transclude  : true,
