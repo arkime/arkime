@@ -5,6 +5,7 @@
   /**
    * Error Directive
    * Displays an error message
+   *
    * @example
    * '<error ng-if="$ctrl.error" message="$ctrl.error"></error>'
    */

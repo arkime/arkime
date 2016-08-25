@@ -1,4 +1,4 @@
-/* variables --------------------------------- */
+/* variables ================================= */
 // pixels
 $px-none:   0;          // 0px
 $px-xs:     0.125rem;   // 2px
@@ -12,9 +12,11 @@ $px-xxxxlg: 3rem;       // 48px
 $px-xxxxxlg:3.5rem;     // 56px
 
 // colors
-$color-gray       : #ccc;
+$color-white      : #FFF;
+$color-gray       : #CCC;
 $color-gray-dark  : #777;
-$color-gray-light : #eee;
+$color-gray-light : #EEE;
+$color-black      : #000;
 
 $color-yellow       : #ECB30A;
 $color-yellow-light : #FACA3D;
@@ -31,14 +33,19 @@ $color-purple-dark  : #66057A;
 
 
 
-/* imports ----------------------------------- */
+/* imports =================================== */
 @import '../components/navbar/navbar';
 @import '../components/footer/footer';
 @import '../components/loading/loading';
+@import '../components/pagination/pagination';
 
 
 
-/* appwide styles ---------------------------- */
+/* appwide styles ============================ */
+body {
+  font-size: 16px;
+}
+
 // margins
 .margined               { margin: $px-md; }
 .margined-sm            { margin: $px-sm; }
@@ -119,25 +126,65 @@ $color-purple-dark  : #66057A;
 
 
 // cursors
-.cursor-pointer {
-  cursor: pointer;
-}
-.pointer-cursor {
-  cursor: pointer;
-}
+.cursor-help      { cursor: help; }
+.help-cursor      { cursor: help; }
 
-.cursor-help {
-  cursor: help;
-}
-.help-cursor {
-  cursor: help;
-}
+.cursor-pointer   { cursor: pointer; }
+.pointer-cursor   { cursor: pointer; }
 
-.cursor-crosshair {
-  cursor: crosshair;
-}
-.crosshair-cursor {
-  cursor: crosshair;
+.cursor-crosshair { cursor: crosshair; }
+.crosshair-cursor { cursor: crosshair; }
+
+
+// text
+.text-blue    { color: $color-blue; }
+.text-green   { color: $color-green; }
+.text-purple  { color: $color-purple; }
+.text-yellow  { color: $color-yellow-dark; }
+
+
+// buttons
+.btn {
+  &.btn-purple {
+    color           : $color-white;
+    background-color: $color-purple;
+    border-color    : darken($color-purple, 8%);
+
+    &:hover {
+      background-color: darken($color-purple, 5%);
+      border-color    : darken($color-purple, 12%);
+    }
+  }
+  &.btn-blue {
+    color           : $color-white;
+    background-color: $color-blue-light;
+    border-color    : darken($color-blue-light, 8%);
+
+    &:hover {
+      background-color: darken($color-blue-light, 5%);
+      border-color    : darken($color-blue-light, 12%);
+    }
+  }
+  &.btn-green {
+    color           : $color-white;
+    background-color: $color-green;
+    border-color    : darken($color-green, 8%);
+
+    &:hover {
+      background-color: darken($color-green, 5%);
+      border-color    : darken($color-green, 12%);
+    }
+  }
+  &.btn-yellow {
+    color           : $color-white;
+    background-color: $color-yellow;
+    border-color    : darken($color-yellow, 8%);
+
+    &:hover {
+      background-color: darken($color-yellow, 5%);
+      border-color    : darken($color-yellow, 12%);
+    }
+  }
 }
 
 
@@ -189,41 +236,8 @@ $color-purple-dark  : #66057A;
 }
 
 
-/* pagination */
-.pagination {
-  &.pagination-sm {
-    margin: 0 0 -10px 0;
-  }
-}
 
-.pagination-info {
-  border        : 1px solid #ddd;
-  padding       : 8px 10px 6px;
-  margin-left   : -6px;
-  border-radius : 0 $px-sm $px-sm 0;
-  font-size     : 1.2rem;
-  color         : $color-gray-dark;
-}
-
-// put page number select with pagination control
-select {
-  &.page-select {
-    width         : 120px;
-    display       : inline-flex;
-    height        : 30px;
-    margin-bottom : $px-xs;
-    margin-right  : -$px-md;
-    padding-top   : $px-xs;
-    padding-bottom: $px-xs;
-    border-right  : none;
-    border-radius : $px-sm $px-none $px-none $px-sm;
-    border-color  : #ddd;
-    -webkit-appearance: none;
-  }
-}
-
-
-/* table styles */
+/* tables ------------------------------------ */
 colheader {
   white-space :nowrap;
   overflow    :visible;
@@ -243,6 +257,7 @@ colheader {
   }
 }
 
+// change table hover color
 .table-hover {
   tbody {
     tr {
@@ -258,7 +273,7 @@ colheader {
   }
 }
 
-//datatables colreorder
+// datatables colreorder
 table { // floating table, dragged with the mouse
   &.DTCR_clonedTable {
   	background-color : rgba(255, 255, 255, 0.7);
@@ -272,4 +287,32 @@ div { // insert line
   	z-index          : 201;
   	background-color : $color-blue;
   }
+}
+
+
+
+/* responsive styles ========================= */
+// responsive floats
+@media (min-width: 1500px) {
+  .pull-right-xlg {
+    float: right;
+  }
+}
+@media (min-width: 1200px) {
+  .pull-right-lg {
+    float: right;
+  }
+}
+@media (min-width: 992px) {
+  .pull-right-md {
+    float: right;
+  }
+}
+@media (min-width: 768px) {
+  .pull-right-sm {
+    float: right;
+  }
+}
+.pull-right-xs {
+  float: right;
 }

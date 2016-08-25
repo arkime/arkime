@@ -19,7 +19,8 @@
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, SessionService, DTOptionsBuilder, DTColumnDefBuilder) {
+    constructor($scope, $routeParams, SessionService,
+      DTOptionsBuilder, DTColumnDefBuilder) {
       this.$scope             = $scope;
       this.$routeParams       = $routeParams;
       this.SessionService     = SessionService;
@@ -31,19 +32,19 @@
     $onInit() {
       // initialize scope variables
       this.loading      = true;
-      this.currentPage  = 1;
+      this.currentPage  = 1; // start on the first page
 
-      this.query = {
-        length      : 50,   // default page size
-        start       : 0,    // start at first item
-        sortElement : 'fp', // default sort element
-        sortOrder   : 'asc',// default sort order
-        date        : 1,    // default date range
-        facets      : 1,    // default facets
-        draw        : 1     // default draw
+      this.query = {        // query defaults:
+        length      : 50,   // page length
+        start       : 0,    // first item index
+        sortElement : 'fp', // sort element (key of session parameters)
+        sortOrder   : 'asc',// sort order ('asc' or 'desc')
+        date        : 1,    // date range
+        facets      : 1,    // facets
+        draw        : 1     // draw
       };
 
-      // configure table
+      // configure datatable
       this.dtOptions = this.DTOptionsBuilder.newOptions()
         .withDOM('t')
         .withBootstrap()
@@ -53,9 +54,7 @@
         .withPaginationType('full_numbers')
         .withOption('responsive', true);
 
-      // get table data
-      this.getData();
-
+      // configure datatable columns
       this.dtColumns = [
         this.DTColumnDefBuilder.newColumnDef(0).notSortable(),
         this.DTColumnDefBuilder.newColumnDef(1).notSortable(),
@@ -70,9 +69,28 @@
         this.DTColumnDefBuilder.newColumnDef(10).notSortable()
       ];
 
+
+      // call backend for data!
+      this.getData();       // get table data
+      this.getColumnInfo(); // get column infomation
+
+
+      /* Listen! */
+      // watch for the sorting changes (from colheader.component)
       this.$scope.$on('change:sort', (event, args) => {
+        // sorting affects sortElement and sortOrder
         this.query.sortElement  = args.sortElement;
         this.query.sortOrder    = args.sortOrder;
+
+        this.getData();
+      });
+
+      // watch for pagination changes (from pagination.component)
+      this.$scope.$on('change:pagination', (event, args) => {
+        // pagination affects length, currentPage, and start
+        this.query.length = args.length;
+        this.currentPage  = args.currentPage;
+        this.query.start  = args.start;
 
         this.getData();
       });
@@ -88,8 +106,6 @@
       this.loading  = true;
       this.error    = false;
 
-      this.query.start  = (this.currentPage - 1) * this.query.length;
-
       this.SessionService.get(this.query)
         .then((response) => {
           this.loading  = false;
@@ -99,6 +115,18 @@
         .catch((error) => {
           this.loading  = false;
           this.error    = error;
+        });
+    }
+
+    getColumnInfo() {
+      this.SessionService.getColumnInfo()
+        .then((response) => {
+          console.log(response.data);
+          this.columnInfo = response.data;
+        })
+        .catch((error) => {
+        // TODO: display column information error
+          this.columnInfoError = error;
         });
     }
 

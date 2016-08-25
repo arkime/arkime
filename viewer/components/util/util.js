@@ -12,6 +12,7 @@
      * Convert To Number Directive
      * Parses strings to integers
      * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}
+     *
      * @example
      * '<select ng-model="$ctrl.stringThing" convert-to-number>...</select>'
      */
@@ -32,11 +33,12 @@
     /**
      * Protocol filter
      * Displays the protocol string
+     *
      * @example
-     * {{session.pr|protocol}}
+     * '{{session.pr | protocol}}'
      */
-    .filter('protocol', function() {
-      return function(input) {
+    .filter('protocol', () => {
+      return (input) => {
         var result;
 
         switch (input) {
@@ -62,6 +64,43 @@
 
         return result;
       };
+    })
+
+    /**
+     * Extract IP String filter
+     * Displays the ip or ip6 string, given the session
+     *
+     * @example
+     * '{{session | extractIPString}}'
+     */
+    .filter('extractIPString', () => {
+      return (session) => {
+        if (session['tipv62-term'] || session['tipv61-term']) {
+          var ip6 = session['tipv62-term'] || session['tipv61-term'];
+
+          var ip = ip6.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
+          [/(^|:)0:0:0:0:0:0:0:0($|:)/,
+           /(^|:)0:0:0:0:0:0:0($|:)/,
+           /(^|:)0:0:0:0:0:0($|:)/,
+           /(^|:)0:0:0:0:0($|:)/,
+           /(^|:)0:0:0:0($|:)/,
+           /(^|:)0:0:0($|:)/,
+           /(^|:)0:0($|:)/].every(function(re) {
+             if (ip6.match(re)) {
+               ip = ip6.replace(re, "::");
+               return false;
+             }
+             return true;
+           });
+
+          return ip;
+        } else {
+          var ip = session.a1 || session.a2;
+
+          return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
+                  '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
+        }
+      }
     });
 
 })();

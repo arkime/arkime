@@ -15,6 +15,9 @@
     // custom directives
     'directives.navbar', 'directives.footer',
     'directives.loading', 'directives.error',
+    'directives.pagination',
+
+    // utilities
     'moloch.util'
   ])
 

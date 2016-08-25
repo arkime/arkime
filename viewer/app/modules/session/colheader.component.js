@@ -5,6 +5,13 @@
   /**
    * @class ColheaderController
    * @classdesc Interacts with column headers
+   *
+   * Emits a 'change:sort' event, exposing the new sortOrder and sortElement
+   *
+   * @example
+   * '<colheader col-name="'Start'" col-id="'fp'"
+   *    element="$ctrl.query.sortElement"
+   *    order="$ctrl.query.sortOrder"></colheader>'
    */
   class ColheaderController {
 
@@ -65,19 +72,16 @@
   /**
    * Colheader Directive
    * Displays a column table header with sorting
-   * @example
-   * '<col-header></col-header>'
    */
   angular.module('moloch')
     .component('colheader', {
       templateUrl : '/modules/session/colheader.html',
       controller  : ColheaderController,
-      transclude  : true,
       bindings    : {
-        colName   : '<',
-        colId     : '<',
-        element   : '=',
-        order     : '='
+        colName   : '<',  // the human readable name of the column
+        colId     : '<',  // the unique id of the data the column displays
+        element   : '=',  // the sort element to be used in queries
+        order     : '='   // the sort order to be used in queries
       }
     });
 

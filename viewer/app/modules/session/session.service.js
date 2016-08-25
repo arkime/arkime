@@ -62,6 +62,29 @@
       });
     }
 
+    /**
+     * Gets info about the session table columns and sorting order
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getColumnInfo() {
+      return this.$q((resolve, reject) => {
+
+        var options = {
+          url   : 'tableState/sessions',
+          method: 'GET'
+        };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
   }
 
   SessionService.$inject = ['$q', '$http'];

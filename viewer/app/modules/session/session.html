@@ -1,36 +1,11 @@
 <div class="container-fluid margined-left margined-right">
 
-  <div> <!-- top pagination controls -->
-
-    <!-- page size -->
-    <select convert-to-number ng-model="$ctrl.query.length"
-      ng-change="$ctrl.getData()" class="form-control page-select">
-      <option value="10">10 per page</option>
-      <option value="25">25 per page</option>
-      <option value="50">50 per page</option>
-      <option value="100">100 per page</option>
-    </select> <!-- /page size -->
-
-    <!-- pagination -->
-    <ul uib-pagination boundary-links="true"
-      ng-change="$ctrl.getData()"
-      total-items="$ctrl.sessions.recordsFiltered"
-      items-per-page="$ctrl.query.length" max-size="5"
-      ng-model="$ctrl.currentPage" class="pagination pagination-sm"
-      rotate="true" boundary-link-numbers="true"
-      previous-text="&lsaquo;" next-text="&rsaquo;"
-      first-text="&laquo;" last-text="&raquo;">
-    </ul> <!-- /pagination -->
-
-    <!-- page info -->
-    <span class="pagination-info cursor-help" tooltip-placement="bottom"
-      ng-if="$ctrl.sessions && $ctrl.sessions.data && $ctrl.sessions.data.length"
-      uib-tooltip="filtered from {{$ctrl.sessions.recordsTotal | number:0}} total entries">
-      Showing {{$ctrl.query.start + 1}} - {{$ctrl.query.start + $ctrl.query.length}}
-      of {{$ctrl.sessions.recordsFiltered | number:0}} entries
-    </span> <!-- /page info -->
-
-  </div> <!-- /top pagination controls -->
+  <!-- top pagination controls -->
+  <moloch-pagination length="$ctrl.query.length"
+    records-total="$ctrl.sessions.recordsTotal"
+    records-filtered="$ctrl.sessions.recordsFiltered"
+    current-page="$ctrl.currentPage"
+    start="$ctrl.query.start"></moloch-pagination>
 
   <div class="table-responsive">
     <!-- session data table -->
@@ -40,7 +15,17 @@
       class="table table-hover table-condensed table-striped">
       <thead>
         <tr>
-          <th></th>
+          <th>
+            <div class="btn-group" uib-dropdown is-open="$ctrl.isopen">
+              <button id="single-button" type="button" class="btn btn-purple"
+                uib-dropdown-toggle disabled>
+                <span class="fa fa-th"></span>
+              </button>
+              <ul class="dropdown-menu" uib-dropdown-menu role="menu"
+                aria-labelledby="single-button">
+              </ul>
+            </div>
+          </th>
           <th ng-class="{'active':$ctrl.query.sortElement === 'fp'}">
             <colheader col-name="'Start'" col-id="'fp'"
               element="$ctrl.query.sortElement"
@@ -94,26 +79,28 @@
       <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
         $ctrl.sessions.data.length && !$ctrl.error">
         <tr ng-repeat="session in $ctrl.sessions.data">
-          <td style="width:5%">
-            <a class="btn btn-sm btn-info disabled">
+          <td style="width:6%">
+            <a class="btn btn-sm btn-green" disabled>
               <span class="fa fa-plus"></span>
             </a>&nbsp;
-            <small>{{::session.pr|protocol}}</small>
+            <small>{{::session.pr | protocol}}</small>
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'fp'}">
-            {{::session.fp}}
+            {{::session.fp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
           </td>
-          <td ng-class="{'active':$ctrl.query.sortElement === 'lp'}">
-            {{::session.lp}}
+          <td ng-class="{'active':$ctrl.quesry.sortElement === 'lp'}">
+            {{::session.lp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'a1'}">
-            {{::session.a1}}&nbsp;{{::session.g1}}
+            {{::session | extractIPString}}&nbsp;
+            <span class="pull-right-xlg margined-right">{{::session.g1}}</span>
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'p1'}">
             {{::session.p1}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'a2'}">
-            {{::session.a2}}&nbsp;{{::session.g2}}
+            {{::session | extractIPString}}&nbsp;
+            <span class="pull-right-xlg margined-right">{{::session.g2}}</span>
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'p2'}">
             {{::session.p2}}
@@ -139,7 +126,7 @@
 
   <!-- no results -->
   <div class="info-area vertical-horizontal-center"
-   ng-if="!$ctrl.sessions.data.length">
+   ng-if="!$ctrl.error && !$ctrl.sessions.data.length">
     <div ng-if="!$ctrl.loading">
       <span class="fa fa-3x text-center text-muted-more fa-folder-open"></span><br>
       No results or none that match your search.
@@ -147,36 +134,10 @@
   </div> <!-- /no results -->
 
   <!-- bottom pagination controls -->
-  <div ng-if="$ctrl.sessions.data.length">
-
-    <!-- page size -->
-    <select convert-to-number ng-model="$ctrl.query.length"
-      ng-change="$ctrl.getData()" class="form-control page-select">
-      <option value="10">10 per page</option>
-      <option value="25">25 per page</option>
-      <option value="50">50 per page</option>
-      <option value="100">100 per page</option>
-    </select> <!-- /page size -->
-
-    <!-- pagination -->
-    <ul uib-pagination boundary-links="true"
-      ng-change="$ctrl.getData()"
-      total-items="$ctrl.sessions.recordsFiltered"
-      items-per-page="$ctrl.query.length" max-size="5"
-      ng-model="$ctrl.currentPage" class="pagination pagination-sm"
-      rotate="true" boundary-link-numbers="true"
-      previous-text="&lsaquo;" next-text="&rsaquo;"
-      first-text="&laquo;" last-text="&raquo;">
-    </ul> <!-- /pagination -->
-
-    <!-- page info -->
-    <span class="pagination-info cursor-help" tooltip-placement="bottom"
-      ng-if="$ctrl.sessions && $ctrl.sessions.data && $ctrl.sessions.data.length"
-      uib-tooltip="filtered from {{$ctrl.sessions.recordsTotal | number:0}} total entries">
-      Showing {{$ctrl.query.start + 1}} - {{$ctrl.query.start + $ctrl.query.length}}
-      of {{$ctrl.sessions.recordsFiltered | number:0}} entries
-    </span> <!-- /page info -->
-
-  </div> <!-- /bottom pagination controls -->
+  <moloch-pagination length="$ctrl.query.length"
+    records-total="$ctrl.sessions.recordsTotal"
+    records-filtered="$ctrl.sessions.recordsFiltered"
+    current-page="$ctrl.currentPage"
+    start="$ctrl.query.start"></moloch-pagination>
 
 </div>

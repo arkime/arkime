@@ -5,6 +5,8 @@
   /**
    * @class NavbarController
    * @classdesc Interacts with the navbar
+   * @example
+   * '<navbar></navbar>'
    */
   class NavbarController {
 
@@ -22,9 +24,10 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       this.menu = {
-        session: { title: 'Sessions', link: '/app#/session' }
+        session : { title: 'Sessions', link: '/app#/session' }
       };
     }
+
 
     /* exposed functions --------------------------------------------------- */
     /**
@@ -41,9 +44,7 @@
 
   /**
    * Navbar Directive
-   * Displays a navbar
-   * @example
-   * '<navbar></navbar>'
+   * Displays the navbar
    */
   angular.module('directives.navbar', [])
     .component('navbar', {

@@ -5,6 +5,7 @@
   /**
    * Loading Directive
    * Displays an loading message
+   *
    * @example
    * '<loading ng-if="$ctrl.loading"></loading>'
    */

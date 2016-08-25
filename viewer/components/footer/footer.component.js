@@ -5,6 +5,7 @@
   /**
    * Footer Directive
    * Displays a footer
+   *
    * @example
    * '<footer class="footer"></footer>'
    */
