@@ -48,7 +48,7 @@
    */
   angular.module('directives.navbar', [])
     .component('navbar', {
-      templateUrl : '/components/navbar/navbar.html',
+      templateUrl : 'components/navbar/navbar.html',
       controller  : NavbarController
     });
 

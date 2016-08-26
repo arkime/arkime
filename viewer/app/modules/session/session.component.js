@@ -37,7 +37,7 @@
       this.query = {        // query defaults:
         length      : 50,   // page length
         start       : 0,    // first item index
-        sortElement : 'fp', // sort element (key of session parameters)
+        sortElement : 'fp', // sort element (key of session field)
         sortOrder   : 'asc',// sort order ('asc' or 'desc')
         date        : 1,    // date range
         facets      : 1,    // facets
@@ -121,11 +121,10 @@
     getColumnInfo() {
       this.SessionService.getColumnInfo()
         .then((response) => {
-          console.log(response.data);
           this.columnInfo = response.data;
         })
         .catch((error) => {
-        // TODO: display column information error
+          // TODO: display column information error
           this.columnInfoError = error;
         });
     }
@@ -138,7 +137,7 @@
 
   angular.module('moloch')
     .component('session', {
-      templateUrl : '/modules/session/session.html',
+      templateUrl : 'modules/session/session.html',
       controller  : SessionController
     });
 

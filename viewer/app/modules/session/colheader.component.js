@@ -75,7 +75,7 @@
    */
   angular.module('moloch')
     .component('colheader', {
-      templateUrl : '/modules/session/colheader.html',
+      templateUrl : 'modules/session/colheader.html',
       controller  : ColheaderController,
       bindings    : {
         colName   : '<',  // the human readable name of the column

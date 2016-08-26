@@ -73,7 +73,7 @@
    */
   angular.module('directives.pagination', [])
     .component('molochPagination', {
-      templateUrl : '/components/pagination/pagination.html',
+      templateUrl : 'components/pagination/pagination.html',
       controller  : PaginationController,
       bindings    : {
         start           : '<',  // the item to start at

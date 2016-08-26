@@ -19,4 +19,5 @@ moloch-capture
 stamp-h1
 npm-debug.log
 config.ssh.ini
+.DS_Store
 

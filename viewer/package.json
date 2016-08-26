@@ -12,6 +12,7 @@
     "angular": "^1.5.8",
     "angular-animate": "^1.5.8",
     "angular-datatables": "^0.5.4",
+    "angular-mocks": "^1.5.8",
     "angular-resource": "^1.5.8",
     "angular-route": "^1.5.8",
     "angular-ui-bootstrap": "^2.1.2",
@@ -43,5 +44,13 @@
   "scripts": {
     "start-test": "node viewer.js -c ../tests/config.test.ini -n test",
     "start-dev": "node viewer.js -c config.ssh.ini"
+  },
+  "devDependencies": {
+    "jasmine-core": "^2.4.1",
+    "karma": "^1.2.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-jasmine": "^1.0.2",
+    "karma-ng-html2js-preprocessor": "^1.0.0",
+    "karma-spec-reporter": "0.0.26"
   }
 }
