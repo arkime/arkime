@@ -14,7 +14,7 @@
      * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}
      *
      * @example
-     * '<select ng-model="$ctrl.stringThing" convert-to-number>...</select>'
+     * '<select ng-model="$ctrl.value" convert-to-number>...</select>'
      */
     .directive('convertToNumber', function() {
       return {
@@ -75,10 +75,11 @@
      */
     .filter('extractIPString', () => {
       return (session) => {
+        var ip;
         if (session['tipv62-term'] || session['tipv61-term']) {
           var ip6 = session['tipv62-term'] || session['tipv61-term'];
 
-          var ip = ip6.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
+          ip = ip6.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
           [/(^|:)0:0:0:0:0:0:0:0($|:)/,
            /(^|:)0:0:0:0:0:0:0($|:)/,
            /(^|:)0:0:0:0:0:0($|:)/,
@@ -95,12 +96,12 @@
 
           return ip;
         } else {
-          var ip = session.a1 || session.a2;
+          ip = session.a1 || session.a2;
 
           return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
                   '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
         }
-      }
+      };
     });
 
 })();

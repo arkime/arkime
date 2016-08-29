@@ -2,6 +2,48 @@
 
   'use strict';
 
+  /* mock data ------------------------------- */
+  // default session query
+  var query = {
+    length      : 50,   // page length
+    start       : 0,    // first item index
+    sortElement : 'fp', // sort element (key of session field)
+    sortOrder   : 'asc',// sort order ('asc' or 'desc')
+    date        : 1,    // date range
+    facets      : 1,    // facets
+    draw        : 1     // draw
+  };
+
+  // sample session json
+  var sessionsJSON = {
+    draw            : '1',
+    recordsFiltered : 1,
+    recordsTotal    : 100,
+    data: [
+      {
+        pa2   :0,
+        p1    :10000,
+        no    :'demo',
+        pa1   :1,
+        p2    :2948,
+        pr    :17,
+        lp    :0,
+        fp    :0,
+        a1    :16843009,
+        a2    :33686018,
+        pa    :1,
+        db1   :437,
+        db2   :0,
+        by    :445,
+        by2   :0,
+        by1   :445,
+        db    :437,
+        index :'sessions-',
+        id    :'--RzB4CrWwqlMZIHRa0CzjUYn'
+      }
+    ]
+  };
+
   describe('Session Component ->', function() {
 
     // load the module
@@ -128,50 +170,8 @@
         expect(sessionComponent.getData).toHaveBeenCalled();
         expect(sessionComponent.getData).toHaveBeenCalledWith();
       });
-    })
+    });
 
   });
-
-  /* mock data ------------------------------- */
-  // default session query
-  var query = {
-    length      : 50,   // page length
-    start       : 0,    // first item index
-    sortElement : 'fp', // sort element (key of session field)
-    sortOrder   : 'asc',// sort order ('asc' or 'desc')
-    date        : 1,    // date range
-    facets      : 1,    // facets
-    draw        : 1     // draw
-  }
-
-  // sample session json
-  var sessionsJSON = {
-    draw            : '1',
-    recordsFiltered : 1,
-    recordsTotal    : 100,
-    data: [
-      {
-        pa2   :0,
-        p1    :10000,
-        no    :'demo',
-        pa1   :1,
-        p2    :2948,
-        pr    :17,
-        lp    :0,
-        fp    :0,
-        a1    :16843009,
-        a2    :33686018,
-        pa    :1,
-        db1   :437,
-        db2   :0,
-        by    :445,
-        by2   :0,
-        by1   :445,
-        db    :437,
-        index :'sessions-',
-        id    :'--RzB4CrWwqlMZIHRa0CzjUYn'
-      }
-    ]
-  }
 
 })();

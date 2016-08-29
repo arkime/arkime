@@ -16,18 +16,19 @@
     beforeEach(inject(function($rootScope, $compile) {
         scope = $rootScope.$new();
 
-        var element = angular.element('<error></error>');
-        var template = $compile(element)(scope);
+        scope.message = 'Error message!';
 
-        scope.message = 'message';
+        var element = angular.element('<error message="message"></error>');
+        var template = $compile(element)(scope);
 
         scope.$digest();
 
         templateAsHtml = template.html();
     }));
 
-    it('should bind the error message', function() {
-      expect(scope.message).toEqual('message');
+    it('should render html with error message', function() {
+      expect(scope.message).toEqual('Error message!');
+      expect(templateAsHtml).toBeDefined();
       expect(templateAsHtml).toContain(scope.message);
     });
 

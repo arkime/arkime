@@ -80,8 +80,10 @@
       bindings    : {
         colName   : '<',  // the human readable name of the column
         colId     : '<',  // the unique id of the data the column displays
-        element   : '=',  // the sort element to be used in queries
-        order     : '='   // the sort order to be used in queries
+        order     : '=',   // the sort order to be used in queries
+        // the sort element to be used in queries
+        // (if the column is not sortable, this should be null)
+        element   : '='
       }
     });
 

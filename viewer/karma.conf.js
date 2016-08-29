@@ -31,7 +31,8 @@ module.exports = function(config) {
       // app files
       'app/app.js',
       '{app,components}/**/*.js',
-      '{app,components}/**/*.html'
+      '{app,components}/**/*.html',
+      { pattern:'public/*.png', watched: false, included: false, served: true }
     ],
 
 
@@ -55,11 +56,11 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['spec'],
 
 
     // web server port
-    port: 9876,
+    port: 8008,
 
 
     // enable / disable colors in the output (reporters and logs)
@@ -87,6 +88,22 @@ module.exports = function(config) {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity
+    concurrency: Infinity,
+
+
+    // Configure Spec Reporter
+    // https://github.com/mlex/karma-spec-reporter
+    specReporter: {
+      suppressErrorSummary: true,
+      suppressFailed: false,
+      suppressPassed: false,
+      suppressSkipped: true,
+      showSpecTiming: true
+    },
+
+
+    proxies :  {
+      '/header_logo.png': 'public/header_logo.png'
+    }
   })
 }

@@ -11,5 +11,8 @@
   "strict": true,
   "trailing": true,
   "esversion": 6,
-  "predef": [ "angular" ]
+  "predef": [
+    "angular",
+    "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn"
+  ]
 }
