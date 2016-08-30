@@ -103,7 +103,8 @@ module.exports = function(config) {
 
 
     proxies :  {
-      '/header_logo.png': 'public/header_logo.png'
+      '/header_logo.png': '/base/public/header_logo.png'
     }
+
   })
 }
