@@ -76,8 +76,9 @@
     .filter('extractIPString', () => {
       return (session) => {
         var ip;
+
         if (session['tipv62-term'] || session['tipv61-term']) {
-          var ip6 = session['tipv62-term'] || session['tipv61-term'];
+          var ip6 = (session['tipv62-term'] || session['tipv61-term']).toString();
 
           ip = ip6.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
           [/(^|:)0:0:0:0:0:0:0:0($|:)/,

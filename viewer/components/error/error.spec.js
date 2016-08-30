@@ -18,8 +18,8 @@
 
         scope.message = 'Error message!';
 
-        var element = angular.element('<error message="message"></error>');
-        var template = $compile(element)(scope);
+        var element   = angular.element('<error message="message"></error>');
+        var template  = $compile(element)(scope);
 
         scope.$digest();
 

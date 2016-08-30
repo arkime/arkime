@@ -16,10 +16,7 @@
     beforeEach(inject(function($componentController, $rootScope, $compile) {
       scope = $rootScope.$new();
 
-      scope.query = {
-        length: 10,
-        start : 1
-      };
+      scope.query = { length: 10, start : 1 };
       scope.sessions = {
         recordsTotal    : 9999,
         recordsFiltered : 1000
@@ -32,8 +29,8 @@
         'current-page="currentPage" ' +
         'start="query.start"></moloch-pagination>';
 
-      var element = angular.element(htmlString);
-      var template = $compile(element)(scope);
+      var element   = angular.element(htmlString);
+      var template  = $compile(element)(scope);
 
       scope.$digest();
 

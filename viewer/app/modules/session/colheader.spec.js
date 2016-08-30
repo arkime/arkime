@@ -25,8 +25,8 @@
         'element="query.sortElement" ' +
         'order="query.sortOrder"></colheader>';
 
-      var element = angular.element(htmlString);
-      var template = $compile(element)(scope);
+      var element   = angular.element(htmlString);
+      var template  = $compile(element)(scope);
 
       scope.$digest();
 

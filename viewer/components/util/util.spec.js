@@ -10,7 +10,7 @@
     var $filter, scope, templateAsHtml;
 
     beforeEach(inject(function($rootScope, _$filter_) {
-        scope = $rootScope.$new();
+        scope   = $rootScope.$new();
         $filter = _$filter_;
     }));
 
@@ -56,39 +56,49 @@
     });
 
     describe('Protocol Filter ->', function() {
+
       it('should return the appropriate protocol strings', function () {
         var protocolInt = 1;
-        var result = $filter('protocol')(protocolInt, 'protocol');
+        var result = $filter('protocol')(protocolInt);
         expect(result).toEqual('icmp');
 
         protocolInt = 6;
-        result = $filter('protocol')(protocolInt, 'protocol');
+        result = $filter('protocol')(protocolInt);
         expect(result).toEqual('tcp');
 
         protocolInt = 17;
-        result = $filter('protocol')(protocolInt, 'protocol');
+        result = $filter('protocol')(protocolInt);
         expect(result).toEqual('udp');
 
         protocolInt = 47;
-        result = $filter('protocol')(protocolInt, 'protocol');
+        result = $filter('protocol')(protocolInt);
         expect(result).toEqual('gre');
 
         protocolInt = 58;
-        result = $filter('protocol')(protocolInt, 'protocol');
+        result = $filter('protocol')(protocolInt);
         expect(result).toEqual('icmp6');
 
         protocolInt = 'default';
-        result = $filter('protocol')(protocolInt, 'protocol');
+        result = $filter('protocol')(protocolInt);
         expect(result).toEqual('default');
       });
+
     });
 
     describe('Extract IP String Filter ->', function() {
+
       it('should return the appropriate ip string', function() {
         var session = { a1:3232235777 };
-        var result = $filter('extractIPString')(session, 'extractIPString');
+        var result  = $filter('extractIPString')(session);
         expect(result).toEqual('192.168.1.1');
       });
+
+      it('should return the appropriate ipv6 string', function() {
+        var session = { 'tipv61-term':'ff0200000000000000000001ff8295b5' };
+        var result  = $filter('extractIPString')(session);
+        expect(result).toEqual('ff02:0:0:0:0:1:ff82:95b5');
+      });
+
     });
 
   });

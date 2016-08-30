@@ -50,9 +50,9 @@
     beforeEach(module('moloch'));
 
     var scope, sessionComponent, $httpBackend;
-    var sessionsEndpoint = 'sessions.json';
-    var defaultParameters = '?date=1&draw=1&facets=1&length=50&order=fp:asc';
-    var tableStateEndpoint = 'tableState/sessions';
+    var sessionsEndpoint    = 'sessions.json';
+    var defaultParameters   = '?date=1&draw=1&facets=1&length=50&order=fp:asc';
+    var tableStateEndpoint  = 'tableState/sessions';
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -93,8 +93,8 @@
     }));
 
     afterEach(function() {
-        $httpBackend.verifyNoOutstandingExpectation();
-        $httpBackend.verifyNoOutstandingRequest();
+      $httpBackend.verifyNoOutstandingExpectation();
+      $httpBackend.verifyNoOutstandingRequest();
     });
 
     it('should exist and have dependencies', function() {

@@ -10,14 +10,14 @@
     // load templates
     beforeEach(module('templates'));
 
-    var scope, navbar, $httpBackend, templateAsHtml;
+    var scope, navbar, templateAsHtml;
 
     // Initialize and a mock scope
     beforeEach(inject(function($componentController, $location, $rootScope, $compile) {
       scope = $rootScope.$new();
 
-      var element = angular.element('<navbar></navbar>');
-      var template = $compile(element)(scope);
+      var element   = angular.element('<navbar></navbar>');
+      var template  = $compile(element)(scope);
 
       navbar = $componentController('navbar', {
         $location : $location
