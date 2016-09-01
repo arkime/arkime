@@ -5,7 +5,7 @@
   describe('Utilities ->', function() {
 
     // load the module
-    beforeEach(module('moloch.util'));
+    beforeEach(angular.mock.module('moloch.util'));
 
     var $filter, scope, templateAsHtml;
 

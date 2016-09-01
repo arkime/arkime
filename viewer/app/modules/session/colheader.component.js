@@ -75,15 +75,15 @@
    */
   angular.module('moloch')
     .component('colheader', {
-      templateUrl : 'modules/session/colheader.html',
-      controller  : ColheaderController,
-      bindings    : {
-        colName   : '<',  // the human readable name of the column
-        colId     : '<',  // the unique id of the data the column displays
-        order     : '=',   // the sort order to be used in queries
+      template  : require('html!./colheader.html'),
+      controller: ColheaderController,
+      bindings  : {
+        colName : '<',  // the human readable name of the column
+        colId   : '<',  // the unique id of the data the column displays
+        order   : '=',   // the sort order to be used in queries
         // the sort element to be used in queries
         // (if the column is not sortable, this should be null)
-        element   : '='
+        element : '='
       }
     });
 

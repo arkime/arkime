@@ -5,10 +5,7 @@
   describe('Pagination Directive ->', function() {
 
     // load the module
-    beforeEach(module('directives.pagination'));
-
-    // load templates
-    beforeEach(module('templates'));
+    beforeEach(angular.mock.module('directives.pagination'));
 
     var scope, pagination, templateAsHtml;
 

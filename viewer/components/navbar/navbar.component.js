@@ -48,8 +48,8 @@
    */
   angular.module('directives.navbar', [])
     .component('navbar', {
-      templateUrl : 'components/navbar/navbar.html',
-      controller  : NavbarController
+      template  : require('html!./navbar.html'),
+      controller: NavbarController
     });
 
 })();

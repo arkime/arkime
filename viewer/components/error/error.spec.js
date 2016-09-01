@@ -5,10 +5,10 @@
   describe('Error Directive ->', function() {
 
     // load the module
-    beforeEach(module('directives.error'));
+    beforeEach(angular.mock.module('directives.error'));
 
     // load templates
-    beforeEach(module('templates'));
+    // beforeEach(angular.mock.module('templates'));
 
     var scope, templateAsHtml;
 

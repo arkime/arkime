@@ -4,39 +4,11 @@ html(ng-app="moloch")
     title Moloch
     meta(charset='utf8')
     link(rel='stylesheet', href='/font-awesome/css/font-awesome.min.css')
-    link(rel='stylesheet', href='/angular-datatables/css/angular-datatables.min.css')
-    link(rel='stylesheet', href='/bootstrap/css/bootstrap.min.css')
-    link(rel='stylesheet', href='/ui-bootstrap/ui-bootstrap-csp.css')
-    link(rel='stylesheet', href='/app.css')
 
   body
     navbar
     div(ng-view)
     footer.footer
 
-    // order matters
-    // dependencies
-    script(src='/jquery/jquery.min.js')
-    script(src='/datatables/js/jquery.dataTables.min.js')
-    script(src='/angular/angular.js')
-    script(src='/angular-resource/angular-resource.js')
-    script(src='/angular-route/angular-route.js')
-    script(src='/ui-bootstrap/ui-bootstrap.js')
-    script(src='/ui-bootstrap/ui-bootstrap-tpls.js')
-    script(src='/angular-animate/angular-animate.js')
-    script(src='/angular-datatables/angular-datatables.js')
-    script(src='/angular-datatables/plugins/bootstrap/angular-datatables.bootstrap.js')
-    script(src='/datatables-colreorder/js/dataTables.colReorder.js')
-    script(src='/angular-datatables/plugins/colreorder/angular-datatables.colreorder.js')
-
-    // app files
-    script(src='/app.js')
-    script(src='/modules/session/session.service.js')
-    script(src='/modules/session/session.component.js')
-    script(src='/modules/session/colheader.component.js')
-    script(src='/components/util/util.js')
-    script(src='/components/navbar/navbar.component.js')
-    script(src='/components/footer/footer.component.js')
-    script(src='/components/loading/loading.component.js')
-    script(src='/components/error/error.component.js')
-    script(src='/components/pagination/pagination.component.js')
+    script(src='/vendor.bundle.js')
+    script(src='/app.bundle.js')

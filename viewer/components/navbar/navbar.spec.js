@@ -5,10 +5,7 @@
   describe('Navbar Directive ->', function() {
 
     // load the module
-    beforeEach(module('directives.navbar'));
-
-    // load templates
-    beforeEach(module('templates'));
+    beforeEach(angular.mock.module('directives.navbar'));
 
     var scope, navbar, templateAsHtml;
 

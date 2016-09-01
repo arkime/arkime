@@ -25,7 +25,6 @@ try {
 var Config         = require('./config.js'),
     express        = require('express'),
     stylus         = require('stylus'),
-    sass           = require('node-sass'),
     util           = require('util'),
     fs             = require('fs-ext'),
     async          = require('async'),
@@ -157,21 +156,7 @@ app.use(compression());
 app.use(methodOverride());
 
 
-// angular app dependencies
-app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist', { maxAge: 600 * 1000}));
-app.use('/angular/', express.static(__dirname + '/node_modules/angular', { maxAge: 600 * 1000}));
-app.use('/angular-resource/', express.static(__dirname + '/node_modules/angular-resource', { maxAge: 600 * 1000}));
-app.use('/angular-route/', express.static(__dirname + '/node_modules/angular-route', { maxAge: 600 * 1000}));
-app.use('/ui-bootstrap/', express.static(__dirname + '/node_modules/angular-ui-bootstrap/dist', { maxAge: 600 * 1000}));
-app.use('/angular-animate/', express.static(__dirname + '/node_modules/angular-animate', { maxAge: 600 * 1000}));
-app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist', { maxAge: 600 * 1000}));
 app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
-app.use('/angular-datatables/', express.static(__dirname + '/node_modules/angular-datatables/dist', { maxAge: 600 * 1000}));
-app.use('/datatables/', express.static(__dirname + '/node_modules/datatables/media', { maxAge: 600 * 1000}));
-app.use('/datatables-colreorder/', express.static(__dirname + '/node_modules/datatables.net-colreorder', { maxAge: 600 * 1000}));
-// angular app resources
-app.use('/modules/', express.static(__dirname + '/app/modules', { maxAge: 600 * 1000}));
-app.use('/components/', express.static(__dirname + '/components', { maxAge: 600 * 1000}));
 
 
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
@@ -857,39 +842,25 @@ app.get('/style.css', function(req, res) {
 });
 
 
-// angular app styles
-app.get('/app.css', function(req, res) {
-  sass.render({
-    file        : __dirname + '/app/app.scss',
-    outputStyle : 'compressed'
-  }, function(error, result) {
-    if (error) {
-      console.log(error.status);
-      console.log(error.message);
-      return;
-    }
-
-    if (!result) {
-      return console.log('ERROR - File not found or unreadable');
-    }
-
-    var date = new Date().toUTCString();
-    res.setHeader('Content-Type', 'text/css');
-    res.setHeader('Date', date);
-    res.setHeader('Cache-Control', 'public, max-age=600');
-    res.setHeader('Last-Modified', date);
-    res.send(result.css.toString());
-  });
-});
-
-// angular app definition
-app.get('/app.js', function(req, res) {
-  res.sendFile(__dirname + '/app/app.js');
-});
-
 // angular app route
 app.get('/app', checkWebEnabled, function(req, res) {
   res.render('app');
+});
+
+// angular app bundles
+app.get('/app.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js');
+});
+app.get('/vendor.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js');
+});
+
+// source maps
+app.get('/app.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js.map');
+});
+app.get('/vendor.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
 });
 
 

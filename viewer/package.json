@@ -21,6 +21,7 @@
     "bootstrap": "^3.3.7",
     "compression": "~1.6.0",
     "datatables": "^1.10.12",
+    "datatables.net-colreorder": "^1.3.2",
     "elasticsearch": "~10.1.2",
     "express": "~4.13.3",
     "font-awesome": "^4.6.3",
@@ -32,7 +33,6 @@
     "moment": "~2.9.0",
     "morgan": "~1.6.1",
     "multer": "~1.1.0",
-    "node-sass": "^3.8.0",
     "passport": "~0.2.0",
     "passport-http": "~0.2.2",
     "peek-stream": "~1.1.1",
@@ -42,15 +42,41 @@
     "through2": "~0.6.5"
   },
   "scripts": {
-    "start-test": "node viewer.js -c ../tests/config.test.ini -n test",
-    "start-dev": "node viewer.js -c config.ssh.ini"
+    "start": "node viewer.js -c ../config.ini",
+    "start:test": "node viewer.js -c ../tests/config.test.ini -n test",
+    "start:dev": "node viewer.js -c config.ssh.ini & webpack -d --inline --watch --display-error-details",
+    "prestart": "npm run bundle:min",
+    "prestart:test": "npm run bundle",
+    "prestart:dev": "npm run lint",
+    "build": "npm run test && npm run bundle:min",
+    "lint": "jshint app components",
+    "bundle": "webpack --progress --display-error-details",
+    "bundle:min": "webpack -p --progress",
+    "test": "karma start --single-run",
+    "test:watch": "karma start --auto-watch",
+    "pretest": "npm run lint",
+    "pretest:watch": "npm run lint"
   },
   "devDependencies": {
+    "babel-core": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "css-loader": "^0.24.0",
+    "expose-loader": "^0.7.1",
+    "file-loader": "^0.9.0",
+    "html-loader": "^0.4.3",
+    "imports-loader": "^0.6.5",
     "jasmine-core": "^2.4.1",
     "karma": "^1.2.0",
-    "karma-chrome-launcher": "^2.0.0",
     "karma-jasmine": "^1.0.2",
-    "karma-ng-html2js-preprocessor": "^1.0.0",
-    "karma-spec-reporter": "0.0.26"
+    "karma-phantomjs-launcher": "^1.0.2",
+    "karma-spec-reporter": "0.0.26",
+    "karma-webpack": "^1.8.0",
+    "node-sass": "^3.8.0",
+    "sass-loader": "^4.0.0",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.13.2"
   }
 }

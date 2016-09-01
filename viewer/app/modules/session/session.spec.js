@@ -47,7 +47,7 @@
   describe('Session Component ->', function() {
 
     // load the module
-    beforeEach(module('moloch'));
+    beforeEach(angular.mock.module('moloch'));
 
     var scope, sessionComponent, $httpBackend;
     var sessionsEndpoint    = 'sessions.json';

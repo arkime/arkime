@@ -5,10 +5,7 @@
   describe('Colheader Directive ->', function() {
 
     // load the module
-    beforeEach(module('moloch'));
-
-    // load templates
-    beforeEach(module('templates'));
+    beforeEach(angular.mock.module('moloch'));
 
     var scope, colheader, templateAsHtml;
 

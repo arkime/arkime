@@ -137,8 +137,8 @@
 
   angular.module('moloch')
     .component('session', {
-      templateUrl : 'modules/session/session.html',
-      controller  : SessionController
+      template  : require('html!./session.html'),
+      controller: SessionController
     });
 
 })();

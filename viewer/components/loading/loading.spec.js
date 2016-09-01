@@ -5,10 +5,7 @@
   describe('Loading Directive ->', function() {
 
     // load the module
-    beforeEach(module('directives.loading'));
-
-    // load templates
-    beforeEach(module('templates'));
+    beforeEach(angular.mock.module('directives.loading'));
 
     var scope, templateAsHtml;
 

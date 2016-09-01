@@ -5,10 +5,7 @@
   describe('Footer Directive ->', function() {
 
     // load the module
-    beforeEach(module('directives.footer'));
-
-    // load templates
-    beforeEach(module('templates'));
+    beforeEach(angular.mock.module('directives.footer'));
 
     var scope, templateAsHtml;
 

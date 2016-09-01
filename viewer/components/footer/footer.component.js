@@ -11,7 +11,7 @@
    */
   angular.module('directives.footer', [])
     .component('footer', {
-      templateUrl : 'components/footer/footer.html'
+      template : require('html!./footer.html')
     });
 
 })();

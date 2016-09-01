@@ -73,9 +73,9 @@
    */
   angular.module('directives.pagination', [])
     .component('molochPagination', {
-      templateUrl : 'components/pagination/pagination.html',
-      controller  : PaginationController,
-      bindings    : {
+      template  : require('html!./pagination.html'),
+      controller: PaginationController,
+      bindings  : {
         start           : '<',  // the item to start at
         length          : '<',  // the page length of the results
         currentPage     : '<',  // the current page of results

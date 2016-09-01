@@ -14,14 +14,12 @@ module.exports = function(config) {
     files: [
       // jquery
       'node_modules/jquery/dist/jquery.js',
+
       // angular dependencies
       'node_modules/angular/angular.js',
-      'node_modules/angular-resource/angular-resource.js',
-      'node_modules/angular-route/angular-route.js',
       'node_modules/angular-mocks/angular-mocks.js',
-      'node_modules/angular-ui-bootstrap/dist/ui-bootstrap.js',
-      'node_modules/angular-animate/angular-animate.js',
-      // datatables dependencies
+
+      // // datatables dependencies
       'node_modules/datatables/media/js/jquery.dataTables.js',
       'node_modules/datatables.net-colreorder/js/dataTables.colReorder.js',
       'node_modules/angular-datatables/dist/angular-datatables.js',
@@ -30,8 +28,9 @@ module.exports = function(config) {
 
       // app files
       'app/app.js',
-      '{app,components}/**/*.js',
-      '{app,components}/**/*.html',
+      'components/index.spec.js',
+      'app/modules/index.spec.js',
+
       { pattern:'public/*.png', watched: false, included: false, served: true }
     ],
 
@@ -43,13 +42,9 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      '{app,components}/**/*.html': ['ng-html2js']
-    },
-
-
-    ngHtml2JsPreprocessor: {
-      stripPrefix: 'app/',
-      moduleName: 'templates'
+      'app/app.js': ['webpack'],
+      'components/index.spec.js': ['webpack'],
+      'app/modules/index.spec.js': ['webpack']
     },
 
 
@@ -74,12 +69,12 @@ module.exports = function(config) {
 
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: true,
+    autoWatch: false,
 
 
     // start these browsers
     // available launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['PhantomJS'],
 
 
     // Continuous Integration mode
@@ -104,7 +99,10 @@ module.exports = function(config) {
 
     proxies :  {
       '/header_logo.png': '/base/public/header_logo.png'
-    }
+    },
 
-  })
+    // karma-webpack only needs loaders
+    webpack: require('./webpack.loaders.js')
+
+  });
 }

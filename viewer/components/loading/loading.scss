@@ -93,13 +93,13 @@ loading {
       top       : 42%;
       left      : 50%;
       z-index   : 1000;
-      background: rgba(34,34,34,0.1);
 
       &.circle {
         width             : 260px;
         height            : 260px;
         margin            : -130px 0 0 -130px;
         border-radius     : 50%;
+        background        : rgba(34,34,34,0.3);
         -webkit-box-shadow: 0px 0px 16px 2px rgba(0,0,0,0.2);
         -moz-box-shadow   : 0px 0px 16px 2px rgba(0,0,0,0.2);
         box-shadow        : 0px 0px 16px 2px rgba(0,0,0,0.2);
@@ -110,6 +110,7 @@ loading {
         height        : 150px;
         margin        : -75px 0 0 -75px;
         border-radius : 32px;
+        background    : rgba(34,34,34,0.1);
       }
     }
   }

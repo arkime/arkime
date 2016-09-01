@@ -5,7 +5,7 @@
   describe('Session Service ->', function() {
 
     // load the module
-    beforeEach(module('moloch'));
+    beforeEach(angular.mock.module('moloch'));
 
     var SessionService;
 
@@ -68,6 +68,6 @@
 
     });
 
-  })
+  });
 
 })();
