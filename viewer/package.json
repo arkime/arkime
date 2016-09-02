@@ -43,10 +43,10 @@
   },
   "scripts": {
     "start": "node viewer.js -c ../config.ini",
-    "start:test": "node viewer.js -c ../tests/config.test.ini -n test",
+    "start:test": "node viewer.js -c ../tests/config.test.ini -n test & webpack -d --inline --watch --display-error-details",
     "start:dev": "node viewer.js -c config.ssh.ini & webpack -d --inline --watch --display-error-details",
     "prestart": "npm run bundle:min",
-    "prestart:test": "npm run bundle",
+    "prestart:test": "npm run lint",
     "prestart:dev": "npm run lint",
     "build": "npm run test && npm run bundle:min",
     "lint": "jshint app components",

@@ -30,7 +30,7 @@
     // custom directives
     'directives.navbar', 'directives.footer',
     'directives.loading', 'directives.error',
-    'directives.pagination',
+    'directives.pagination', 'directives.search',
 
     // utilities
     'moloch.util'

@@ -1,9 +1,9 @@
 navbar {
   .navbar-inverse {
     background-color  : darken($color-purple-dark, 8%);
-    -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray-dark;
-    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray-dark;
-    box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray-dark;
+    -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
+    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
+    box-shadow        : $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
 
     .navbar-brand {
       color: $color-gray-light;

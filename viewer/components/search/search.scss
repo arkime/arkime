@@ -1,0 +1,47 @@
+moloch-search {
+  form {
+    border            : none;
+    margin            : -20px -20px 15px -20px;
+    padding           : $px-xlg $px-lg $px-md $px-lg;
+    border-radius     : $px-none;
+    background-color  : lighten($color-yellow-light, 36%);
+    -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
+    box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
+
+    .search-control {
+      width: 780px !important;
+    }
+
+    /* responsive styles ========================= */
+    // responsive search control input widths
+    @media (max-width:1500px) {
+      .search-control {
+        max-width: 480px;
+      }
+    }
+    @media (max-width:1200px) {
+      .search-control {
+        max-width: 260px;
+      }
+    }
+    @media (max-width:992px) {
+      .search-control {
+        max-width: 160px;
+      }
+      .date-control {
+        max-width: 115px;
+      }
+    }
+    @media (max-width:767px) {
+      .search-control {
+        width    : 100% !important;
+        max-width: 100% !important;
+      }
+      .date-control {
+        width    : 100% !important;
+        max-width: 100% !important;
+      }
+    }
+  }
+}
