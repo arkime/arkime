@@ -31,6 +31,25 @@
     })
 
     /**
+     * Epoch Date Directive
+     * Parses date strings to integers (ms from 1970)
+     *
+     * @example
+     * '<input epoch-date ng-model="$ctrl.time" type="text"
+     *   uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" />'
+     */
+    .directive('epochDate', function() {
+      return {
+    		require: 'ngModel',
+    		link: function(scope, element, attrs, ngModel) {
+      		ngModel.$parsers.push(function(viewValue) {
+           	return +viewValue;
+    			});
+    		}
+    	};
+    })
+
+    /**
      * Protocol filter
      * Displays the protocol string
      *

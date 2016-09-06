@@ -1,7 +1,7 @@
 <form class="form-inline">
   <div class="form-group">
     <select class="form-control" ng-model="$ctrl.timeRange"
-      convert-to-number>
+      convert-to-number ng-change="$ctrl.changeTimeRange()">
       <option value="1">Last hour</option>
       <option value="6">Last 6 hours</option>
       <option value="24">Last 24 hours</option>
@@ -17,9 +17,10 @@
   <div class="form-group">
     <div class="input-group">
       <input type="text" class="form-control date-control"
-        uib-datepicker-popup="{{$ctrl.dateTimeFormat}}"
+        uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date
         ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
-        close-text="Close" />
+        close-text="Close" ng-change="$ctrl.changeDate()"
+        ng-model-options='{ debounce: 500 }' />
       <div class="input-group-btn">
         <button type="button" class="btn btn-default"
           ng-click="$ctrl.startTimePopup.opened = !$ctrl.startTimePopup.opened">
@@ -31,9 +32,10 @@
   <div class="form-group">
     <div class="input-group">
       <input type="text" class="form-control date-control"
-        uib-datepicker-popup="{{$ctrl.dateTimeFormat}}"
+        uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date
         ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
-        close-text="Close" />
+        close-text="Close" ng-change="$ctrl.changeDate()"
+        ng-model-options='{ debounce: 500 }' />
       <div class="input-group-btn">
         <button type="button" class="btn btn-default"
           ng-click="$ctrl.stopTimePopup.opened = !$ctrl.stopTimePopup.opened">

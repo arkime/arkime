@@ -88,21 +88,23 @@
             <small>{{::session.pr | protocol}}</small>
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'fp'}">
-            {{::session.fp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
+            {{::session.fp * 1000 | date:'yyyy/MM/dd'}}<br>
+            {{::session.fp * 1000 | date:'HH:mm:ss'}}
           </td>
           <td ng-class="{'active':$ctrl.quesry.sortElement === 'lp'}">
-            {{::session.lp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
+            {{::session.lp * 1000 | date:'yyyy/MM/dd'}}<br>
+            {{::session.lp * 1000 | date:'HH:mm:ss'}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'a1'}">
-            {{::session | extractIPString}}&nbsp;
-            <span class="pull-right-xlg margined-right">{{::session.g1}}</span>
+            {{::session | extractIPString}}<br>
+            {{::session.g1}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'p1'}">
             {{::session.p1}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'a2'}">
-            {{::session | extractIPString}}&nbsp;
-            <span class="pull-right-xlg margined-right">{{::session.g2}}</span>
+            {{::session | extractIPString}}<br>
+            {{::session.g2}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'p2'}">
             {{::session.p2}}
@@ -111,7 +113,8 @@
             {{::session.pa}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'by'}">
-            {{::session.db | number:0}} / {{::session.by | number:0}}
+            {{::session.db | number:0}} /<br>
+            {{::session.by | number:0}}
           </td>
           <td ng-class="{'active':$ctrl.query.sortElement === 'no'}">
             {{::session.no}}

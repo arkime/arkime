@@ -39,9 +39,7 @@
         start       : 0,    // first item index
         sortElement : 'fp', // sort element (key of session field)
         sortOrder   : 'asc',// sort order ('asc' or 'desc')
-        date        : 1,    // date range
         facets      : 1,    // facets
-        draw        : 1     // draw
       };
 
       // configure datatable
@@ -71,7 +69,7 @@
 
 
       // call backend for data!
-      this.getData();       // get table data
+      // this.getData();       // get table data
       this.getColumnInfo(); // get column infomation
 
 
@@ -91,6 +89,16 @@
         this.query.length = args.length;
         this.currentPage  = args.currentPage;
         this.query.start  = args.start;
+
+        this.getData();
+      });
+
+      // watch for search expression and date range changes
+      // IMPORTANT: this kicks off the inital search query
+      this.$scope.$on('change:search', (event, args) => {
+        this.query.startTime  = args.startTime;
+        this.query.stopTime   = args.stopTime;
+        this.query.expression = args.expression;
 
         this.getData();
       });

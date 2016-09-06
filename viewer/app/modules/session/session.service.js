@@ -36,9 +36,14 @@
         if (query) {
           if (query.length) { params.length = query.length; }
           if (query.start)  { params.start  = query.start; }
-          if (query.date)   { params.date   = query.date; }
           if (query.facets) { params.facets = query.facets; }
-          if (query.draw)   { params.draw   = query.draw; }
+
+          if (query.startTime) {
+            params.startTime = Math.ceil(query.startTime/1000);
+          }
+          if (query.stopTime) {
+            params.stopTime = Math.ceil(query.stopTime/1000);
+          }
 
           // server takes one param (order)
           if (query.sortElement && query.sortOrder) {

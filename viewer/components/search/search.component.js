@@ -2,41 +2,79 @@
 
   'use strict';
 
+  var hourMS      = 3600000;
+  var currentTime = new Date().getTime();
+
   /**
    * @class SearchController
    * @classdesc Interacts with the search controls
    */
   class SearchController {
+    // hourMS      = 3600000;
+    // currentTime = new Date().getTime();
 
     /**
      * Initialize global variables for this controller
-     * @param $scope Angular application model object
+     * @param $scope        Angular application model object
+     * @param $routeParams  Retrieve the current set of route parameters
+     * @param $location     Exposes browser address bar URL (based on the window.location)
      *
      * @ngInject
      */
-    constructor($scope) {
-      this.$scope = $scope;
+    constructor($scope, $routeParams, $location) {
+      this.$scope       = $scope;
+      this.$routeParams = $routeParams;
+      this.$location    = $location;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.timeRange      = 1;
+      if (!this.$routeParams.startTime || !this.$routeParams.stopTime) {
+        this.timeRange = '1'; // default to 1 hour
+        this.stopTime  = currentTime;
+        this.startTime = currentTime - (hourMS * this.timeRange);
+        this.$location.search('stopTime', this.stopTime);
+        this.$location.search('startTime', this.startTime);
+      } else {
+        this.timeRange  = '0'; // custom time range
+        this.stopTime   = parseInt(this.$routeParams.stopTime, 10);
+        this.startTime  = parseInt(this.$routeParams.startTime, 10);
+      }
+
       this.startTimePopup = { opened: false };
       this.stopTimePopup  = { opened: false };
       this.dateTimeFormat = 'yyyy/MM/dd HH:mm:ss';
 
-      if (!this.startTime && !this.stopTime) {
-        // default to one hour
-        var ms = new Date().getTime();
-        this.stopTime   = ms - 1000;
-        this.startTime  = ms - 1000 - 3600000;
-
-        this.change();
-      }
+      this.change();
     }
 
 
     /* exposed functions --------------------------------------------------- */
+    /**
+     * Fired when the time range value changes
+     */
+    changeTimeRange() {
+      this.stopTime   = currentTime;
+      this.startTime  = currentTime - (hourMS * this.timeRange);
+
+      this.$location.search('stopTime', this.stopTime);
+      this.$location.search('startTime', this.startTime);
+
+      this.change();
+    }
+
+    /**
+     * Fired when a date value is changed
+     */
+     changeDate() {
+       this.timeRange = '0';
+
+       this.$location.search('stopTime', this.stopTime);
+       this.$location.search('startTime', this.startTime);
+
+       this.change();
+     }
+
     /**
      * Fired when a search control value is changed
      */
@@ -50,7 +88,7 @@
 
   }
 
-  SearchController.$inject = ['$scope'];
+  SearchController.$inject = ['$scope','$routeParams','$location'];
 
   /**
    * Search Directive

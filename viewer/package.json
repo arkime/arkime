@@ -28,6 +28,7 @@
     "fs-ext": "~0.5.0",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "jade": "~1.11.0",
+    "jquery": "^3.1.0",
     "keep-alive-agent": "~0.0.1",
     "method-override": "~2.3.5",
     "moment": "~2.9.0",
@@ -44,7 +45,7 @@
   "scripts": {
     "start": "node viewer.js -c ../config.ini",
     "start:test": "node viewer.js -c ../tests/config.test.ini -n test & webpack -d --inline --watch --display-error-details",
-    "start:dev": "node viewer.js -c config.ssh.ini & webpack -d --inline --watch --display-error-details",
+    "start:dev": "node viewer.js -c config.dev.ini & webpack -d --inline --watch --display-error-details",
     "prestart": "npm run bundle:min",
     "prestart:test": "npm run lint",
     "prestart:dev": "npm run lint",

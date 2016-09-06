@@ -8,6 +8,17 @@ loading {
     height  : 100%;
     z-index : 1001;
 
+    img {
+      display: flex;
+      z-index: 1499;
+      position: relative;
+      top: 50%;
+      left: 50%;
+      height: 50px;
+      margin: -25px;
+      opacity: .7;
+    }
+
     .loader {
       display       : flex;
       z-index       : 1500;
@@ -19,7 +30,7 @@ loading {
       &.planets {
         width             : 20px;
         height            : 20px;
-        margin            : -20px;
+        margin            : -45px 0 0 -20px;
         background-color  : $color-purple-light;
         animation         : rot 2s infinite linear;
         -webkit-animation : rot 2s infinite linear;
@@ -44,9 +55,9 @@ loading {
       }
 
       &.circles {
-        width             : 100px;
-        height            : 100px;
-        margin            : -50px 0 0 -50px;
+        width             : 150px;
+        height            : 150px;
+        margin            : -100px 0 0 -75px;
         border            : $px-md solid transparent;
         border-top-color  : $color-purple-light;
         animation         : spin 2s linear infinite;
@@ -106,9 +117,9 @@ loading {
       }
 
       &.square {
-        width         : 150px;
-        height        : 150px;
-        margin        : -75px 0 0 -75px;
+        width         : 180px;
+        height        : 180px;
+        margin        : -90px 0 0 -90px;
         border-radius : 32px;
         background    : rgba(34,34,34,0.1);
       }
