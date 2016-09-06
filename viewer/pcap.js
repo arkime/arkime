@@ -370,19 +370,30 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     addr1:  buffer.slice(8,24).toString("hex"),
     addr2:  buffer.slice(24,40).toString("hex")
   };
-  switch(obj.ip.p) {
-  case 1:
-  case 58:
-    this.icmp(buffer.slice(40, 40+obj.ip.len), obj, pos + 40);
-    break;
-  case 6:
-    this.tcp(buffer.slice(40, 40+obj.ip.len), obj, pos + 40);
-    break;
-  case 17:
-    this.udp(buffer.slice(40, 40+obj.ip.len), obj, pos + 40);
-    break;
-  default:
-    console.log("Unknown ip.p", obj);
+
+  var offset = 40;
+  while (offset < buffer.length) {
+    switch(obj.ip.p) {
+    case 0: //IPPROTO_HOPOPTS:
+    case 60: //IPPROTO_DSTOPTS:
+    case 43: //IPPROTO_ROUTING:
+      obj.ip.p = buffer[offset];
+      offset += ((buffer[offset+1] + 1) << 3);
+      break;
+    case 1:
+    case 58:
+      this.icmp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
+    case 6:
+      this.tcp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
+    case 17:
+      this.udp(buffer.slice(offset, offset+obj.ip.len), obj, pos + offset);
+      return;
+    default:
+      console.log("Unknown ip.p", obj);
+      return;
+    }
   }
 };
 
