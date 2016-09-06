@@ -99,7 +99,7 @@ fi
 
 # yara
 if [ ! -f "yara-$YARA.tar.gz" ]; then
-  wget http://yara-project.googlecode.com/files/yara-$YARA.tar.gz
+  wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/yara-project/yara-$YARA.tar.gz
 fi
 
 if [ ! -f "yara-$YARA/libyara/.libs/libyara.a" ]; then

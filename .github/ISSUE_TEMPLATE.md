@@ -1,6 +1,6 @@
 <!--
-For support questions the IRC channel "#moloch-fpc" on freenode or 
-the google group https://groups.google.com/forum/#!forum/moloch-fpc may be faster/easier.
+For support questions use https://moloch-fpc.slack.com (sign up at http://slackinvite.molo.ch/)
+or the google group https://groups.google.com/forum/#!forum/moloch-fpc
 -->
 
 <!-- For bugs or support questions please provide -->
