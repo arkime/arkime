@@ -1,6 +1,6 @@
 {
   "name": "moloch",
-  "version": "0.13.0",
+  "version": "0.15.0",
   "description": "",
   "main": "viewer.js",
   "dependencies": {
@@ -13,7 +13,7 @@
     "multer" : "~1.1.0",
     "method-override" : "~2.3.5",
     "compression" : "~1.6.0",
-    "fs-ext": "~0.3.2",
+    "fs-ext": "~0.5.0",
     "jade": "~1.11.0",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "keep-alive-agent": "~0.0.1",
