@@ -980,12 +980,19 @@ $(document).ready(function() {
         // in a substitution
         var urlParams = parseUrlParams();
         var dateparams;
+        var isostart;
+        var isostop;
         if (urlParams.startTime && urlParams.stopTime) {
           dateparams = "startTime=" + urlParams.startTime +
-                "&stopTime=" + urlParams.stopTime
+                "&stopTime=" + urlParams.stopTime;
+          isostart = new Date(parseInt(urlParams.startTime) * 1000);
+          isostop  = new Date(parseInt(urlParams.stopTime) * 1000);
         }
         else {
           dateparams = "date=" + urlParams.date;
+          isostart = new Date();
+          isostart.setHours(isostart.getHours() - parseInt(urlParams.date));
+          isostop  = new Date();
         }
 
         for (var key in molochRightClick) {
@@ -998,8 +1005,11 @@ $(document).ready(function() {
           var result = molochRightClick[key].url
                                             .replace("%EXPRESSION%", encodeURIComponent(urlParams.expression))
                                             .replace("%DATE%", dateparams)
+                                            .replace("%ISOSTART%", isostart.toISOString())
+                                            .replace("%ISOSTOP%", isostop.toISOString())
                                             .replace("%FIELD%", info.field)
                                             .replace("%TEXT%", text)
+                                            .replace("%UCTEXT%", text.toUpperCase())
                                             .replace("%HOST%", host)
                                             .replace("%URL%", encodeURIComponent("http:" + url));
 
