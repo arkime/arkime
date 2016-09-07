@@ -34,15 +34,16 @@
         var params = {};
 
         if (query) {
-          if (query.length) { params.length = query.length; }
-          if (query.start)  { params.start  = query.start; }
-          if (query.facets) { params.facets = query.facets; }
+          if (query.length)     { params.length = query.length; }
+          if (query.start)      { params.start  = query.start; }
+          if (query.facets)     { params.facets = query.facets; }
+          if (query.expression) { params.expression = query.expression; }
 
           if (query.startTime) {
-            params.startTime = Math.ceil(query.startTime/1000);
+            params.startTime = (query.startTime / 1000) | 0;
           }
           if (query.stopTime) {
-            params.stopTime = Math.ceil(query.stopTime/1000);
+            params.stopTime = (query.stopTime / 1000) | 0;
           }
 
           // server takes one param (order)
@@ -61,6 +62,7 @@
 
         this.$http(options)
           .then((response) => {
+            if (response.data.bsqErr) { reject(response.data.bsqErr); }
             resolve(response);
           }, (error) => {
             reject(error);

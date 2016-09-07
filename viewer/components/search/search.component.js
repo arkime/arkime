@@ -10,8 +10,6 @@
    * @classdesc Interacts with the search controls
    */
   class SearchController {
-    // hourMS      = 3600000;
-    // currentTime = new Date().getTime();
 
     /**
      * Initialize global variables for this controller
@@ -29,21 +27,30 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      if (!this.$routeParams.startTime || !this.$routeParams.stopTime) {
-        this.timeRange = '1'; // default to 1 hour
-        this.stopTime  = currentTime;
-        this.startTime = currentTime - (hourMS * this.timeRange);
-        this.$location.search('stopTime', this.stopTime);
-        this.$location.search('startTime', this.startTime);
-      } else {
+      if (this.$routeParams.date) { // time range is available
+        this.timeRange = this.$routeParams.date;
+      } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
+        // start and stop times available
         this.timeRange  = '0'; // custom time range
         this.stopTime   = parseInt(this.$routeParams.stopTime, 10);
         this.startTime  = parseInt(this.$routeParams.startTime, 10);
+      } else if (!this.$routeParams.date && !this.$routeParams.startTime && !this.$routeParams.stopTime) {
+        // there are no time query parameters, so set defaults
+        this.timeRange = '1'; // default to 1 hour
+        this.$location.search('date', this.timeRange);
       }
+
+      if (this.$routeParams.expression) {
+        this.expression = this.$routeParams.expression;
+      }
+
+      this.strictly = false;
+      if (this.$routeParams.strictly) { this.strictly = true; }
 
       this.startTimePopup = { opened: false };
       this.stopTimePopup  = { opened: false };
       this.dateTimeFormat = 'yyyy/MM/dd HH:mm:ss';
+      this.altInputFormats = ['yyyy/M!/d! H:mm:ss'];
 
       this.change();
     }
@@ -54,11 +61,9 @@
      * Fired when the time range value changes
      */
     changeTimeRange() {
-      this.stopTime   = currentTime;
-      this.startTime  = currentTime - (hourMS * this.timeRange);
-
-      this.$location.search('stopTime', this.stopTime);
-      this.$location.search('startTime', this.startTime);
+      this.$location.search('date', this.timeRange);
+      this.$location.search('stopTime', null);
+      this.$location.search('startTime', null);
 
       this.change();
     }
@@ -67,10 +72,36 @@
      * Fired when a date value is changed
      */
      changeDate() {
-       this.timeRange = '0';
+       this.timeRange = '0'; // custom time range
 
+       this.$location.search('date', null);
        this.$location.search('stopTime', this.stopTime);
        this.$location.search('startTime', this.startTime);
+
+       this.change();
+     }
+
+     changeExpression() {
+       if (this.expression === '') { this.expression = null; }
+
+       this.$location.search('expression', this.expression);
+
+       this.change();
+     }
+
+     clearExpression() {
+       this.expression = null;
+       this.changeExpression();
+     }
+
+     changeBounded() {
+       this.strictly = !this.strictly;
+
+       if (this.strictly) {
+         this.$location.search('strictly', 'true');
+       } else {
+         this.$location.search('strictly', null);
+       }
 
        this.change();
      }
@@ -79,11 +110,24 @@
      * Fired when a search control value is changed
      */
     change() {
-      this.$scope.$emit('change:search', {
-        expression: this.expression,
-        startTime : this.startTime,
-        stopTime  : this.stopTime
-      });
+      if (this.timeRange !== '0') {
+        // if it's not a custom time range
+        currentTime = new Date().getTime();
+
+        this.stopTime   = currentTime;
+        this.startTime  = currentTime - (hourMS * this.timeRange);
+      }
+
+      this.deltaTime  = this.stopTime - this.startTime;
+
+      if (this.startTime && this.stopTime) {
+        this.$scope.$emit('change:search', {
+          expression: this.expression,
+          startTime : this.startTime,
+          stopTime  : this.stopTime,
+          strictly  : this.strictly
+        });
+      }
     }
 
   }
@@ -97,12 +141,7 @@
   angular.module('directives.search', [])
     .component('molochSearch', {
       template  : require('html!./search.html'),
-      controller: SearchController,
-      bindings  : {
-        startTime : '<',  // the start of the time range
-        stopTime  : '<',  // the end of the time range
-        expression: '<'   // the search expression
-      }
+      controller: SearchController
     });
 
 })();

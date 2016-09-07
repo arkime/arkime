@@ -1,60 +1,7 @@
-<form class="form-inline">
-  <div class="form-group">
-    <select class="form-control" ng-model="$ctrl.timeRange"
-      convert-to-number ng-change="$ctrl.changeTimeRange()">
-      <option value="1">Last hour</option>
-      <option value="6">Last 6 hours</option>
-      <option value="24">Last 24 hours</option>
-      <option value="48">Last 48 hours</option>
-      <option value="72">Last 72 hours</option>
-      <option value="168">Last week</option>
-      <option value="720">Last month</option>
-      <option value="4380">Last 6 months</option>
-      <option value="-1">All (careful)</option>
-      <option value="0">Custom</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <div class="input-group">
-      <input type="text" class="form-control date-control"
-        uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date
-        ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
-        close-text="Close" ng-change="$ctrl.changeDate()"
-        ng-model-options='{ debounce: 500 }' />
-      <div class="input-group-btn">
-        <button type="button" class="btn btn-default"
-          ng-click="$ctrl.startTimePopup.opened = !$ctrl.startTimePopup.opened">
-          <span class="fa fa-calendar-o"></span>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="input-group">
-      <input type="text" class="form-control date-control"
-        uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date
-        ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
-        close-text="Close" ng-change="$ctrl.changeDate()"
-        ng-model-options='{ debounce: 500 }' />
-      <div class="input-group-btn">
-        <button type="button" class="btn btn-default"
-          ng-click="$ctrl.stopTimePopup.opened = !$ctrl.stopTimePopup.opened">
-          <span class="fa fa-calendar-o"></span>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="input-group">
-      <span class="input-group-addon">
-        <span class="fa fa-search"></span>
-      </span>
-      <input type="text" placeholder="Search" ng-model="$ctrl.expression"
-        class="form-control search-control">
-    </div>
-  </div>
-  <a class="btn btn-green">Search</a>
-  <div class="btn-group pull-right" uib-dropdown is-open="$ctrl.isopen">
+<form>
+
+  <div class="btn-group pull-right margined-left"
+    uib-dropdown is-open="$ctrl.isopen">
     <button id="single-button" type="button" class="btn btn-yellow"
       uib-dropdown-toggle>
       <span class="fa fa-bars fa-lg"></span>
@@ -78,4 +25,114 @@
       </li>
     </ul>
   </div>
+
+  <a class="btn btn-green pull-right margined-left"
+    ng-click="$ctrl.change()">Search</a>
+
+  <div class="form-group margined-bottom">
+    <div class="input-group">
+      <span class="input-group-addon cursor-help"
+        tooltip-placement="bottom-left"
+        uib-tooltip="Search Expression">
+        <span class="fa fa-search"></span>
+      </span>
+      <input type="text" placeholder="Search"
+        ng-model="$ctrl.expression"
+        class="form-control search-control"
+        ng-change="$ctrl.changeExpression()"
+        ng-model-options="{ debounce: 500 }">
+        <span ng-click="$ctrl.clearExpression()" ng-if="$ctrl.expression"
+          class="fa fa-close text-muted clear-input cursor-pointer"></span>
+    </div>
+
+  </div>
+
+  <div class="form-inline">
+
+    <div class="form-group margined-bottom">
+      <div class="input-group">
+        <span class="input-group-addon cursor-help"
+          tooltip-placement="top-left"
+          uib-tooltip="Time Range">
+          <span class="fa fa-clock-o"></span>
+        </span>
+        <select class="form-control time-range-control" convert-to-number
+          ng-model="$ctrl.timeRange"
+          ng-change="$ctrl.changeTimeRange()">
+          <option value="1">Last hour</option>
+          <option value="6">Last 6 hours</option>
+          <option value="24">Last 24 hours</option>
+          <option value="48">Last 48 hours</option>
+          <option value="72">Last 72 hours</option>
+          <option value="168">Last week</option>
+          <option value="720">Last month</option>
+          <option value="4380">Last 6 months</option>
+          <option value="-1">All (careful)</option>
+          <option value="0">Custom</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group margined-bottom"
+      ng-class="{'has-error':!$ctrl.startTime}">
+      <div class="input-group">
+        <span class="input-group-addon cursor-help"
+          tooltip-placement="top"
+          uib-tooltip="Beginning Time">
+          Start
+        </span>
+        <input type="text" class="form-control date-control"
+          uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date
+          ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
+          close-text="Close" ng-change="$ctrl.changeDate()"
+          ng-model-options="{ debounce: 500 }"
+          alt-input-formats="$ctrl.altInputFormats" />
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default"
+            ng-click="$ctrl.startTimePopup.opened = !$ctrl.startTimePopup.opened">
+            <span class="fa fa-calendar-o"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group margined-bottom"
+      ng-class="{'has-error':!$ctrl.startTime}">
+      <div class="input-group">
+        <span class="input-group-addon cursor-help"
+          tooltip-placement="top"
+          uib-tooltip="Ending Time">
+          End
+        </span>
+        <input type="text" class="form-control date-control"
+          uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date
+          ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
+          close-text="Close" ng-change="$ctrl.changeDate()"
+          ng-model-options="{ debounce: 500 }"
+          alt-input-formats="$ctrl.altInputFormats" />
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default"
+            ng-click="$ctrl.stopTimePopup.opened = !$ctrl.stopTimePopup.opened">
+            <span class="fa fa-calendar-o"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-wrap" style="display:inline;">
+      <span class="fa fa-lg fa-fw fa-square-o cursor-pointer"
+        ng-if="!$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
+      <span class="fa fa-lg fa-fw fa-check-square-o cursor-pointer"
+        ng-if="$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
+      <small>Results bounded</small>
+    </div>
+
+    <div class="pull-right-md margined-top" style="display:inline;">
+      <strong class="small text-purple no-wrap">
+        Time Range: {{$ctrl.deltaTime | readableTime}}
+      </strong>
+    </div>
+
+  </div>
+
 </form>

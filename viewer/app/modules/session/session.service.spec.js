@@ -27,7 +27,7 @@
         $httpBackend.when('GET', 'sessions.json')
           .respond(200, {});
 
-        $httpBackend.when('GET', 'sessions.json?date=1&draw=1&facets=1&length=50&order=fp:asc')
+        $httpBackend.when('GET', 'sessions.json?facets=1&length=50&order=fp:asc')
           .respond(200, {});
 
         $httpBackend.when('GET', 'tableState/sessions')
@@ -51,12 +51,10 @@
           start       : 0,    // first item index
           sortElement : 'fp', // sort element (key of session field)
           sortOrder   : 'asc',// sort order ('asc' or 'desc')
-          date        : 1,    // date range
-          facets      : 1,    // facets
-          draw        : 1     // draw
+          facets      : 1    // facets
         };
         var result = SessionService.get(query);
-        $httpBackend.expectGET('sessions.json?date=1&draw=1&facets=1&length=50&order=fp:asc');
+        $httpBackend.expectGET('sessions.json?facets=1&length=50&order=fp:asc');
         $httpBackend.flush();
       });
 

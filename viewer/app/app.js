@@ -3,19 +3,17 @@
   'use strict';
 
 
+  require('./app.scss');
   require('datatables');
   require('angular-resource');
   require('angular-route');
-  require('angular-ui-bootstrap');
   require('angular-animate');
+  require('angular-ui-bootstrap');
   require('angular-datatables/dist/angular-datatables');
   require('angular-datatables/dist/plugins/bootstrap/angular-datatables.bootstrap');
   require('angular-datatables/dist/plugins/colreorder/angular-datatables.colreorder');
   require('datatables.net-colreorder/js/dataTables.colReorder');
-
-  require('angular-datatables/dist/css/angular-datatables.css');
-  require('bootstrap/dist/css/bootstrap.css');
-  require('./app.scss');
+  
 
   /**
    * Moloch Angular Application Definiton
@@ -42,6 +40,7 @@
         $routeProvider
           .when('/session', {
             template: '<session></session>',
+            // don't automatically reload when route parameters change
             reloadOnSearch: false
           })
           // default route is the sessions page

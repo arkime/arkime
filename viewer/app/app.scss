@@ -144,6 +144,12 @@ body {
 .text-yellow  { color: $color-yellow-dark; }
 
 
+// wrapping
+.no-wrap {
+  white-space: nowrap;
+}
+
+
 // buttons
 .btn {
   &.btn-purple {
@@ -256,6 +262,10 @@ colheader {
       visibility: visible;
     }
   }
+}
+
+table {
+  border-top: $color-gray-light solid 1px;
 }
 
 // change table hover color

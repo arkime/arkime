@@ -5,12 +5,14 @@
   describe('Search Directive ->', function() {
 
     // load the module
+    beforeEach(angular.mock.module('moloch'));
     beforeEach(angular.mock.module('directives.search'));
+    beforeEach(angular.mock.module('moloch.util'));
 
     var scope, search, templateAsHtml;
 
     // Initialize and a mock scope
-    beforeEach(inject(function($componentController, $rootScope, $compile) {
+    beforeEach(inject(function($componentController, $rootScope, $compile, $location) {
       scope = $rootScope.$new();
       var htmlString = '<moloch-search></moloch-search>';
 
@@ -22,7 +24,9 @@
       templateAsHtml = template.html();
 
       search = $componentController('molochSearch', {
-        $scope: scope
+        $scope      : scope,
+        $routeParams: {},
+        $location   : $location
       });
 
       // spy on emit event
@@ -35,6 +39,8 @@
     it('should exist and have dependencies', function() {
       expect(search).toBeDefined();
       expect(search.$scope).toBeDefined();
+      expect(search.$routeParams).toBeDefined();
+      expect(search.$location).toBeDefined();
     });
 
     it('should render html', function() {

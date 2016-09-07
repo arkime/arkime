@@ -9,39 +9,19 @@ moloch-search {
     -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
     box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
 
-    .search-control {
-      width: 780px !important;
+    .time-range-control {
+      -webkit-appearance: none;
     }
 
-    /* responsive styles ========================= */
-    // responsive search control input widths
-    @media (max-width:1500px) {
-      .search-control {
-        max-width: 480px;
-      }
+    .search-control {
+      border-radius: 0 4px 4px 0 !important;
     }
-    @media (max-width:1200px) {
-      .search-control {
-        max-width: 260px;
-      }
-    }
-    @media (max-width:992px) {
-      .search-control {
-        max-width: 160px;
-      }
-      .date-control {
-        max-width: 115px;
-      }
-    }
-    @media (max-width:767px) {
-      .search-control {
-        width    : 100% !important;
-        max-width: 100% !important;
-      }
-      .date-control {
-        width    : 100% !important;
-        max-width: 100% !important;
-      }
+
+    .clear-input {
+      z-index : 3;
+      position: absolute;
+      right   : 10px;
+      top     : 8px;
     }
   }
 }

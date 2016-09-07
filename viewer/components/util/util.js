@@ -122,6 +122,36 @@
                   '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
         }
       };
+    })
+
+
+    .filter('readableTime', () => {
+      return (ms) => {
+        if (isNaN(ms)) { return '?'; }
+
+        var seconds = parseInt((ms/1000)%60);
+        var minutes = parseInt((ms/(1000*60))%60);
+        var hours   = parseInt((ms/(1000*60*60))%24);
+        var days    = parseInt((ms/(1000*60*60*24)));
+
+        var result = '';
+
+        if (days) {
+          result += days + ' day';
+          if (days > 1) { result += 's '; }
+          else { result += ' '; }
+        }
+
+        if (hours || minutes || seconds) {
+          result += (hours < 10) ? '0' + hours : hours;
+          result += ':';
+          result += (minutes < 10) ? '0' + minutes : minutes;
+          result += ':';
+          result += (seconds < 10) ? '0' + seconds : seconds;
+        }
+
+        return result;
+      };
     });
 
 })();

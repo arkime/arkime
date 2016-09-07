@@ -9,14 +9,11 @@
     start       : 0,    // first item index
     sortElement : 'fp', // sort element (key of session field)
     sortOrder   : 'asc',// sort order ('asc' or 'desc')
-    date        : 1,    // date range
-    facets      : 1,    // facets
-    draw        : 1     // draw
+    facets      : 1     // facets
   };
 
   // sample session json
   var sessionsJSON = {
-    draw            : '1',
     recordsFiltered : 1,
     recordsTotal    : 100,
     data: [
@@ -51,7 +48,7 @@
 
     var scope, sessionComponent, $httpBackend;
     var sessionsEndpoint    = 'sessions.json';
-    var defaultParameters   = '?date=1&draw=1&facets=1&length=50&order=fp:asc';
+    var defaultParameters   = '?date=1&facets=1&length=50&order=fp:asc';
     var tableStateEndpoint  = 'tableState/sessions';
 
     // Initialize and a mock scope
@@ -65,13 +62,13 @@
       $rootScope) {
         $httpBackend = _$httpBackend_;
 
-        // itital query for sessions
-        $httpBackend.expectGET(sessionsEndpoint + defaultParameters)
-          .respond(sessionsJSON);
-
         // initial query for table state
         $httpBackend.expectGET(tableStateEndpoint)
           .respond({});
+
+        // // itital query for sessions
+        // $httpBackend.expectGET(sessionsEndpoint + defaultParameters)
+        //   .respond(sessionsJSON);
 
         scope = $rootScope.$new();
 
@@ -139,7 +136,7 @@
         });
 
         // expect GET request with new parameters
-        var newParameters = '?date=1&draw=1&facets=1&length=50&order=lp:desc';
+        var newParameters = '?date=1&facets=1&length=50&order=lp:desc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
@@ -149,7 +146,7 @@
         );
 
         // expect GET request with new parameters
-        newParameters = '?date=1&draw=1&facets=1&length=10&order=lp:desc&start=10';
+        newParameters = '?date=1&facets=1&length=10&order=lp:desc&start=10';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
