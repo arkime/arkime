@@ -1,4 +1,4 @@
-0.15.0 2016/08/xx
+0.15.0 2016/09/xx
   - NOTICE: Requires ES 2.1 or later (recommend 2.3)
   - NOTICE: See https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_2x_from_ES_1x
             to learn how to upgrade to ES 2 - db.pl upgrade is only required if going to ES 2 and
@@ -16,6 +16,7 @@
   - viewer - stats can now show 5, 60, 10 minute stats
   - viewer - make sure userNameHeader is set before trying to use, and warn if viewHost is not localhost
   - viewer - better ipv6 header decoding
+  - capture - fixed multithread compressES=true crash (issue #524)
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0

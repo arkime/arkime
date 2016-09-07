@@ -967,6 +967,9 @@ function expireCheckAll () {
       }
       // Create a mapping from device id to stat information and all directories on that device
       pcapDirs.split(";").forEach(function (pcapDir) {
+        if (!pcapDir) {
+          return; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
+        }
         pcapDir = pcapDir.trim();
         var fileStat = fs.statSync(pcapDir);
         var vfsStat = fs.statVFS(pcapDir);

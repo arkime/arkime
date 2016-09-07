@@ -108,6 +108,7 @@ struct molochhttpserver_t {
 };
 
 static z_stream z_strm;
+static MOLOCH_LOCK_DEFINE(z_strm);
 
 /******************************************************************************/
 int moloch_http_conn_cmp(const void *keyv, const void *elementv)
@@ -532,6 +533,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
         char            *buf = moloch_http_get_buffer(data_len);
         int              ret;
 
+        MOLOCH_LOCK(z_strm);
         z_strm.avail_in   = data_len;
         z_strm.next_in    = (unsigned char *)data;
         z_strm.avail_out  = data_len;
@@ -547,6 +549,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
         }
 
         deflateReset(&z_strm);
+        MOLOCH_UNLOCK(z_strm);
     }
 
     request->server     = server;
