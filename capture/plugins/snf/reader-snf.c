@@ -54,8 +54,8 @@ int reader_snf_stats(MolochReaderStats_t *stats)
 
             if (err) 
                 continue;
-            stats->dropped += ss.ring_pkt_recv;
-            stats->total += ss.ring_pkt_overflow;
+            stats->dropped += ss.ring_pkt_overflow;
+            stats->total += ss.ring_pkt_recv;
         }
     }
     return 0;
