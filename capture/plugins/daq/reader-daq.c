@@ -29,7 +29,6 @@
 extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
 
-#define MAX_INTERFACES 10
 LOCAL const DAQ_Module_t    *module;
 LOCAL void                  *handles[MAX_INTERFACES];
 

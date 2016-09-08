@@ -107,8 +107,10 @@ void moloch_plugins_load(char **plugins) {
             break;
         }
 
-        if (!plugin)
+        if (!plugin) {
+            LOG("WARNING - plugin '%s' not found", name);
             continue;
+        }
 
         MolochPluginInitFunc plugin_init;
 

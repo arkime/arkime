@@ -226,6 +226,8 @@ typedef struct {
 
 #define MOLOCH_MAX_PACKET_THREADS 24
 
+#define MAX_INTERFACES 32
+
 #ifndef LOCAL
 #define LOCAL static
 #endif

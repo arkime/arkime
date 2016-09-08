@@ -17,6 +17,7 @@
   - viewer - make sure userNameHeader is set before trying to use, and warn if viewHost is not localhost
   - viewer - better ipv6 header decoding
   - capture - fixed multithread compressES=true crash (issue #524)
+  - capture - Myricom snf reader plugin support
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0

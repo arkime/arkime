@@ -29,7 +29,6 @@
 extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
 
-#define MAX_INTERFACES 10
 LOCAL pfring                *rings[MAX_INTERFACES];
 LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 
