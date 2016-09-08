@@ -338,6 +338,7 @@ typedef struct moloch_config {
     char      compressES;
     char      antiSynDrop;
     char      readTruncatedPackets;
+    char     *pcapDirAlgorithm;
 } MolochConfig_t;
 
 typedef struct {
