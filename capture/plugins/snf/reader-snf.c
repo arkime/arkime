@@ -1,8 +1,4 @@
-/* reader-daq.c  -- daq instead of libpcap
- *
- *  Simple plugin that queries the wise service for
- *  ips, domains, email, and md5s which can use various
- *  services to return data.  It caches all the results.
+/* reader-snf.c  -- snf instead of libpcap
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
