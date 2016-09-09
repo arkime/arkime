@@ -1568,6 +1568,9 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
     int                json_len;
     const uint64_t     fp = firstPacket;
+    double             maxFreeSpacePercent = 0;
+    uint64_t           maxFreeSpaceBytes   = 0;
+    int                i;
 
 
     MOLOCH_LOCK(nextFileNum);
@@ -1625,9 +1628,38 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
             flen += tlen;
         }
 
-        config.pcapDirPos++;
-        if (!config.pcapDir[config.pcapDirPos])
-            config.pcapDirPos = 0;
+        if (strcmp(config.pcapDirAlgorithm, "max-free-percent") == 0) {
+            // Select the pcapDir with the highest percentage of free space
+            for (i = 0; config.pcapDir[i]; i++) {
+                struct statvfs vfs;
+                statvfs(config.pcapDir[i], &vfs);
+                LOG("%s has %0.2f%% free", config.pcapDir[i], 100 * ((double)vfs.f_bavail / (double)vfs.f_blocks));
+                if ((double)vfs.f_bavail / (double)vfs.f_blocks >= maxFreeSpacePercent)
+                {
+                    maxFreeSpacePercent = (double)vfs.f_bavail / (double)vfs.f_blocks;
+                    config.pcapDirPos = i;
+                }
+            }
+            LOG("%s has the highest percentage of available disk space", config.pcapDir[config.pcapDirPos]);
+        } else if (strcmp(config.pcapDirAlgorithm, "max-free-bytes") == 0) {
+            // Select the pcapDir with the most bytes free
+            for (i = 0; config.pcapDir[i]; i++) {
+                struct statvfs vfs;
+                statvfs(config.pcapDir[i], &vfs);
+                LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / 1024 / 1024);
+                if ((uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize >= maxFreeSpaceBytes)
+                {
+                    maxFreeSpaceBytes = (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
+                    config.pcapDirPos = i;
+                }
+            }
+            LOG("%s has the most available space", config.pcapDir[config.pcapDirPos]);
+        } else {
+            // Select pcapDir by round robin
+            config.pcapDirPos++;
+            if (!config.pcapDir[config.pcapDirPos])
+                config.pcapDirPos = 0;
+        }
 
         if (filename[flen-1] == '/') {
             flen--;

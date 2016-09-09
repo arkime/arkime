@@ -380,6 +380,14 @@ void moloch_config_load()
         exit(1);
     }
 
+    config.pcapDirAlgorithm = moloch_config_str(keyfile, "pcapDirAlgorithm", "round-robin");
+    if (strcmp(config.pcapDirAlgorithm, "round-robin") != 0
+            && strcmp(config.pcapDirAlgorithm, "max-free-percent") != 0
+            && strcmp(config.pcapDirAlgorithm, "max-free-bytes") != 0) {
+        printf("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
+        exit(1);
+    }
+
     config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 4, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG*1024LL*1024LL*1024LL;
     config.maxFileTimeM          = moloch_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);

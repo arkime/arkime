@@ -226,6 +226,8 @@ typedef struct {
 
 #define MOLOCH_MAX_PACKET_THREADS 24
 
+#define MAX_INTERFACES 32
+
 #ifndef LOCAL
 #define LOCAL static
 #endif
@@ -336,6 +338,7 @@ typedef struct moloch_config {
     char      compressES;
     char      antiSynDrop;
     char      readTruncatedPackets;
+    char     *pcapDirAlgorithm;
 } MolochConfig_t;
 
 typedef struct {

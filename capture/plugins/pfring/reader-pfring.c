@@ -1,9 +1,5 @@
 /* reader-pfring.c  -- pfring instead of libpcap
  *
- *  Simple plugin that queries the wise service for
- *  ips, domains, email, and md5s which can use various
- *  services to return data.  It caches all the results.
- *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +25,6 @@
 extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
 
-#define MAX_INTERFACES 10
 LOCAL pfring                *rings[MAX_INTERFACES];
 LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 

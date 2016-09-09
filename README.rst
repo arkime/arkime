@@ -70,7 +70,7 @@ guidelines.
 Installing Elasticsearch
 ------------------------
 
-Recommend version **2.3.3**, requires at least 1.7.x
+Recommended version **2.4.0**, Moloch versions since 0.15.0 requires at least 2.1.x
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors add
    allowing memory locking. 
@@ -85,7 +85,7 @@ Recommend version **2.3.3**, requires at least 1.7.x
 
 3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   2.3.3 <https://www.elastic.co/downloads/past-releases/elasticsearch-2-3-3>`_.
+   2.4.0 <https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-0>`_.
 
 4. Uncompress the archive you downloaded.
 
