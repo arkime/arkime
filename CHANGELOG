@@ -18,6 +18,7 @@
   - viewer - better ipv6 header decoding
   - capture - fixed multithread compressES=true crash (issue #524)
   - capture - Myricom snf reader plugin support
+  - easybutton - ES 2.4.0
 
 0.14.2 2016/07/06
   - NOTICE: 0.14.x will be the last version to support ES 1.x and ES 2.0
