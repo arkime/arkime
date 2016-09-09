@@ -23,5 +23,11 @@ moloch-search {
       right   : 10px;
       top     : 8px;
     }
+
+    .typeahead-results {
+      top     : initial;
+      left    : initial;
+      display : block;
+    }
   }
 }

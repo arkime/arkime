@@ -29,23 +29,7 @@
   <a class="btn btn-green pull-right margined-left"
     ng-click="$ctrl.change()">Search</a>
 
-  <div class="form-group margined-bottom">
-    <div class="input-group">
-      <span class="input-group-addon cursor-help"
-        tooltip-placement="bottom-left"
-        uib-tooltip="Search Expression">
-        <span class="fa fa-search"></span>
-      </span>
-      <input type="text" placeholder="Search"
-        ng-model="$ctrl.expression"
-        class="form-control search-control"
-        ng-change="$ctrl.changeExpression()"
-        ng-model-options="{ debounce: 500 }">
-        <span ng-click="$ctrl.clearExpression()" ng-if="$ctrl.expression"
-          class="fa fa-close text-muted clear-input cursor-pointer"></span>
-    </div>
-
-  </div>
+  <expression-typeahead></expression-typeahead>
 
   <div class="form-inline">
 
@@ -119,7 +103,7 @@
       </div>
     </div>
 
-    <div class="no-wrap" style="display:inline;">
+    <div class="no-wrap display-inline">
       <span class="fa fa-lg fa-fw fa-square-o cursor-pointer"
         ng-if="!$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
       <span class="fa fa-lg fa-fw fa-check-square-o cursor-pointer"
@@ -127,7 +111,7 @@
       <small>Results bounded</small>
     </div>
 
-    <div class="pull-right-md margined-top" style="display:inline;">
+    <div class="pull-right-md margined-top display-inline">
       <strong class="small text-purple no-wrap">
         Time Range: {{$ctrl.deltaTime | readableTime}}
       </strong>

@@ -19,14 +19,23 @@
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, $location) {
+    constructor($scope, $routeParams, $location, FieldService) {
       this.$scope       = $scope;
       this.$routeParams = $routeParams;
       this.$location    = $location;
+      this.FieldService = FieldService;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.FieldService.get()
+        .then((result) => {
+          this.fields = result;
+        })
+        .catch((err) => {
+          // TODO: show field retrieval error
+        });
+
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
       } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
@@ -81,19 +90,6 @@
        this.change();
      }
 
-     changeExpression() {
-       if (this.expression === '') { this.expression = null; }
-
-       this.$location.search('expression', this.expression);
-
-       this.change();
-     }
-
-     clearExpression() {
-       this.expression = null;
-       this.changeExpression();
-     }
-
      changeBounded() {
        this.strictly = !this.strictly;
 
@@ -132,7 +128,7 @@
 
   }
 
-  SearchController.$inject = ['$scope','$routeParams','$location'];
+  SearchController.$inject = ['$scope','$routeParams','$location','FieldService'];
 
   /**
    * Search Directive

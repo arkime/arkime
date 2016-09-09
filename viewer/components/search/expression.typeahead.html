@@ -1,0 +1,43 @@
+<div ng-controller="ExpressionController as $ctrl"
+  class="form-group margined-bottom" uib-drowpdown>
+
+  <div class="input-group">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="bottom-left"
+      uib-tooltip="Search Expression">
+      <span class="fa fa-search"></span>
+    </span>
+    <input type="text" placeholder="Search" caret-pos="$ctrl.caretPos"
+      ng-model="$ctrl.query" ng-trim="false"
+      class="form-control search-control"
+      ng-change="$ctrl.changeExpression()"
+      ng-model-options="{debounce:300}" />
+      <span ng-click="$ctrl.clear()" ng-if="$ctrl.query"
+        class="fa fa-close text-muted clear-input cursor-pointer"></span>
+  </div>
+
+  <!-- fields dropdown -->
+  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+    ng-show="$ctrl.query && $ctrl.fieldResults && $ctrl.fieldResults.length">
+    <li class="cursor-pointer" ng-repeat="field in $ctrl.fieldResults | limitTo:50"
+      ng-click="$ctrl.addToQuery(field)">
+      <a>
+        <strong ng-if="field.exp">{{::field.exp}}</strong>
+        <strong ng-if="!field.exp">{{::field}}</strong>
+        <span ng-if="value.friendlyName">- {{::field.friendlyName}}</span>
+      </a>
+    </li>
+  </ul>
+
+  <!-- operators dropdown -->
+  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+    ng-show="$ctrl.query && $ctrl.operationResults && $ctrl.operationResults.length">
+    <li class="cursor-pointer" ng-repeat="op in $ctrl.operationResults"
+      ng-click="$ctrl.addToQuery(op)">
+      <a>
+        <strong>{{::op}}</strong>
+      </a>
+    </li>
+  </ul>
+
+</div>

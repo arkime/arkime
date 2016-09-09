@@ -13,7 +13,7 @@
   require('angular-datatables/dist/plugins/bootstrap/angular-datatables.bootstrap');
   require('angular-datatables/dist/plugins/colreorder/angular-datatables.colreorder');
   require('datatables.net-colreorder/js/dataTables.colReorder');
-  
+
 
   /**
    * Moloch Angular Application Definiton

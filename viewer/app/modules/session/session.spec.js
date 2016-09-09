@@ -48,7 +48,7 @@
 
     var scope, sessionComponent, $httpBackend;
     var sessionsEndpoint    = 'sessions.json';
-    var defaultParameters   = '?date=1&facets=1&length=50&order=fp:asc';
+    var defaultParameters   = '?facets=1&length=50&order=fp:asc';
     var tableStateEndpoint  = 'tableState/sessions';
 
     // Initialize and a mock scope
@@ -109,13 +109,6 @@
       expect(sessionComponent.currentPage).toEqual(1);
     });
 
-    it('should fetch sessions', function() {
-      expect(sessionComponent.getData).toHaveBeenCalled();
-      expect(sessionComponent.getData).toHaveBeenCalledWith();
-      expect(sessionComponent.loading).toEqual(false);
-      expect(sessionComponent.error).toEqual(false);
-    });
-
     it('should fetch the table state', function() {
       expect(sessionComponent.getColumnInfo).toHaveBeenCalled();
       expect(sessionComponent.getColumnInfo).toHaveBeenCalledWith();
@@ -136,7 +129,7 @@
         });
 
         // expect GET request with new parameters
-        var newParameters = '?date=1&facets=1&length=50&order=lp:desc';
+        var newParameters = '?facets=1&length=50&order=lp:desc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
@@ -146,11 +139,18 @@
         );
 
         // expect GET request with new parameters
-        newParameters = '?date=1&facets=1&length=10&order=lp:desc&start=10';
+        newParameters = '?facets=1&length=10&order=lp:desc&start=10';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
         $httpBackend.flush();
+      });
+
+      it('should listen for "change:search" event', function() {
+        expect(sessionComponent.getData).toHaveBeenCalled();
+        expect(sessionComponent.getData).toHaveBeenCalledWith();
+        expect(sessionComponent.loading).toEqual(false);
+        expect(sessionComponent.error).toEqual(false);
       });
 
       it('should listen for "change:sort" event', function() {

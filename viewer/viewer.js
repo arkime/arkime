@@ -843,6 +843,15 @@ app.get('/style.css', function(req, res) {
 });
 
 
+app.get('/fields', function(req, res) {
+  if (!app.locals.fieldsMap) {
+    res.status(404);
+    res.send('Cannot locate fields');
+  }
+  res.send(app.locals.fieldsMap);
+});
+
+
 // angular app route
 app.get('/app', checkWebEnabled, function(req, res) {
   res.render('app');

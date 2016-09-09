@@ -125,6 +125,13 @@
     })
 
 
+    /**
+     * Turns milliseconds into a human readable time range
+     * Output example: 1 day 10:42:01
+     *
+     * @example
+     * '{{ms | readableTime}}'
+     */
     .filter('readableTime', () => {
       return (ms) => {
         if (isNaN(ms)) { return '?'; }
@@ -151,6 +158,38 @@
         }
 
         return result;
+      };
+    })
+
+
+    /**
+     * Determines the cursor position in an input
+     *
+     * @example
+     * <input type="text" caret-pos="$ctrl.caretPos"
+     *  ng-model="$ctrl.fullQuery" class="form-control" />
+     */
+    .directive('caretPos', function() {
+      return {
+        restrict: 'A',
+        scope   : { caretPos: '=', },
+        link    : function(scope, element, attrs) {
+          if (!scope.caretPos) { scope.caretPos = 0; }
+          element.on('keydown keyup click', function(event) {
+            scope.$apply(function() {
+              if ('selectionStart' in element[0]) {
+                scope.caretPos = element[0].selectionStart;
+              } else if (document.selection) {
+                // the user has highlighted text in the input
+                element[0].focus();
+                var selection = document.selection.createRange();
+                var selectionLen = document.selection.createRange().text.length;
+                selection.moveStart('character', -element[0].value.length);
+                scope.caretPos = selection.text.length - selectionLen;
+              }
+            });
+          });
+        }
       };
     });
 
