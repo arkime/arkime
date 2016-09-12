@@ -117,7 +117,18 @@
 
        // value
        if (/^(country)/.test(token)) {
-         // TODO display countries
+         this.loadingValues = true;
+         this.FieldService.getCountryCodes()
+           .then((result) => {
+             this.loadingValues = false;
+             this.fieldResults  =
+               ExpressionController.findMatch(lastToken, result);
+           })
+           .catch((error) => {
+             this.loadingValues = false;
+             this.loadingError  = error;
+           });
+
          return;
        }
 
@@ -153,7 +164,7 @@
            params.stopTime  = this.$routeParams.stopTime;
          }
 
-         // TODO view parameter?
+         // TODO view parameter
          if (field.type === 'ip') {
            params.expression = token + '==' + lastToken;
          } else {
@@ -184,8 +195,8 @@
        var str = val;
        if (val.exp) { str = val.exp; }
 
-       this.query.value =
-         ExpressionController.rebuildQuery(this.query.value, str);
+       var newValue = ExpressionController.rebuildQuery(this.query.value, str);
+       this.query.value = newValue;
 
        this.fieldResults      = null;
        this.operationResults  = null;
@@ -212,9 +223,10 @@
        for (var key in values) {
          if (values.hasOwnProperty(key)) {
            var field = values[key], str;
+           strToMatch = strToMatch.toLowerCase();
 
-           if (field.exp) { str = field.exp; }
-           else { str = field; }
+           if (field.exp) { str = field.exp.toLowerCase(); }
+           else { str = field.toLowerCase(); }
 
            if (str === strToMatch) { exact = field; }
            else {
@@ -237,22 +249,31 @@
       * @param {string} str The string to add to the query
       */
      static rebuildQuery(q, str) {
-       var lastToken = tokens[tokens.length - 1];
+       var lastToken = tokens[tokens.length - 1], result = '';
+       var allTokens = ExpressionController.splitExpression(q);
 
        if (lastToken === ' ') { q += str + ' '; }
        else { // replace the last token and rebuild query
+         var t;
          tokens[tokens.length - 1] = str;
 
-         q = '';
-
          for (var i = 0; i < tokens.length; ++i) {
-           var t = tokens[i];
+           t = tokens[i];
            if (t === ' ') { break; }
-           q += t + ' ';
+           result += t + ' ';
+         }
+
+         if (allTokens.length > tokens.length) {
+           // add the rest of the tokens
+           for(i; i < allTokens.length; ++i) {
+             t = allTokens[i];
+             if (t === ' ') { break; }
+             result += t + ' ';
+           }
          }
        }
 
-       return q;
+       return result;
      }
 
      /**

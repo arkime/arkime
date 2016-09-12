@@ -201,8 +201,8 @@
      * <input type="text" focus-input="$ctrl.focus"
      *  ng-model="$ctrl.query" class="form-control" />
      *
-     * Note: To re-focus, make sure to set $ctrl.focus to false
-     * before setting it to true again
+     * Note: To re-focus, make sure to set $ctrl.focus in parent
+     * controller to false before setting it to true again
      */
     .directive('focusInput', function() {
       return {

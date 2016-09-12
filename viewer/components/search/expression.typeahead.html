@@ -19,7 +19,7 @@
   <!-- fields dropdown -->
   <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
     ng-show="$ctrl.query.value && $ctrl.fieldResults && $ctrl.fieldResults.length">
-    <li ng-repeat="field in $ctrl.fieldResults | limitTo:50"
+    <li ng-repeat="field in $ctrl.fieldResults"
       ng-click="$ctrl.addToQuery(field)" class="cursor-pointer">
       <a>
         <strong ng-if="field.exp">{{::field.exp}}</strong>

@@ -34,7 +34,7 @@ module.exports = {
       { // load jquery before angular
         // https://github.com/webpack/webpack/issues/582
         test: /jquery(\.min)?\.js$/,
-        loader: 'expose?jQuery'
+        loader: 'expose?jQuery!expose?$'
       }
     ]
   }
