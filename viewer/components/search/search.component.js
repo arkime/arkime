@@ -19,23 +19,14 @@
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, $location, FieldService) {
+    constructor($scope, $routeParams, $location) {
       this.$scope       = $scope;
       this.$routeParams = $routeParams;
       this.$location    = $location;
-      this.FieldService = FieldService;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.FieldService.get()
-        .then((result) => {
-          this.fields = result;
-        })
-        .catch((err) => {
-          // TODO: show field retrieval error
-        });
-
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
       } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
@@ -43,15 +34,16 @@
         this.timeRange  = '0'; // custom time range
         this.stopTime   = parseInt(this.$routeParams.stopTime, 10);
         this.startTime  = parseInt(this.$routeParams.startTime, 10);
-      } else if (!this.$routeParams.date && !this.$routeParams.startTime && !this.$routeParams.stopTime) {
+      } else if (!this.$routeParams.date &&
+          !this.$routeParams.startTime && !this.$routeParams.stopTime) {
         // there are no time query parameters, so set defaults
         this.timeRange = '1'; // default to 1 hour
         this.$location.search('date', this.timeRange);
       }
 
       if (this.$routeParams.expression) {
-        this.expression = this.$routeParams.expression;
-      }
+        this.expression = { value: this.$routeParams.expression };
+      } else { this.expression = { value: null }; }
 
       this.strictly = false;
       if (this.$routeParams.strictly) { this.strictly = true; }
@@ -90,6 +82,9 @@
        this.change();
      }
 
+     /**
+      * Fired when change bounded checkbox is (un)checked
+      */
      changeBounded() {
        this.strictly = !this.strictly;
 
@@ -106,8 +101,15 @@
      * Fired when a search control value is changed
      */
     change() {
+      // update the expression
+      if (this.expression.value && this.expression.value !== '') {
+        this.$location.search('expression', this.expression.value);
+      } else {
+        this.$location.search('expression', null);
+      }
+
       if (this.timeRange !== '0') {
-        // if it's not a custom time range
+        // if it's not a custom time range, update the time
         currentTime = new Date().getTime();
 
         this.stopTime   = currentTime;
@@ -118,7 +120,7 @@
 
       if (this.startTime && this.stopTime) {
         this.$scope.$emit('change:search', {
-          expression: this.expression,
+          expression: this.expression.value,
           startTime : this.startTime,
           stopTime  : this.stopTime,
           strictly  : this.strictly
@@ -128,7 +130,7 @@
 
   }
 
-  SearchController.$inject = ['$scope','$routeParams','$location','FieldService'];
+  SearchController.$inject = ['$scope','$routeParams','$location'];
 
   /**
    * Search Directive

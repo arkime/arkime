@@ -25,9 +25,11 @@ moloch-search {
     }
 
     .typeahead-results {
-      top     : initial;
-      left    : initial;
-      display : block;
+      top       : initial;
+      left      : initial;
+      display   : block;
+      max-height: 70%;
+      overflow  : scroll;
     }
   }
 }

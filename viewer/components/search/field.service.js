@@ -49,25 +49,12 @@
       });
     }
 
-    getHasheader(params) {
-      return this.$q((resolve, reject) => {
-
-        var config = {
-          method: 'GET',
-          url   : 'uniqueValue.json',
-          params: params
-        };
-
-        this.$http(config)
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error);
-          });
-
-      });
-    }
-
+    /**
+     * Gets field values from the server
+     * @param {Object} params     The parameters to send with the query
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
     getValue(params) {
       return this.$q((resolve, reject) => {
 
@@ -88,8 +75,32 @@
     }
 
     /**
+     * Gets hasheader field values from the server
+     * @param {Object} params     The parameters to send with the query
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getHasheader(params) {
+      return this.$q((resolve, reject) => {
+
+        var config = {
+          method: 'GET',
+          url   : 'uniqueValue.json',
+          params: params
+        };
+
+        this.$http(config)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
      * Saves an expression to a list of recently used expressions
-     *
      * @param {Object} expression The expression to be saved
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.

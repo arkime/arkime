@@ -29,7 +29,8 @@
   <a class="btn btn-green pull-right margined-left"
     ng-click="$ctrl.change()">Search</a>
 
-  <expression-typeahead></expression-typeahead>
+  <expression-typeahead query="$ctrl.expression" ng-enter="$ctrl.change()">
+  </expression-typeahead>
 
   <div class="form-inline">
 

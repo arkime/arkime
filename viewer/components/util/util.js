@@ -167,7 +167,7 @@
      *
      * @example
      * <input type="text" caret-pos="$ctrl.caretPos"
-     *  ng-model="$ctrl.fullQuery" class="form-control" />
+     *  ng-model="$ctrl.query" class="form-control" />
      */
     .directive('caretPos', function() {
       return {
@@ -190,6 +190,55 @@
             });
           });
         }
+      };
+    })
+
+
+    /**
+     * Sets focus on an input element
+     *
+     * @example
+     * <input type="text" focus-input="$ctrl.focus"
+     *  ng-model="$ctrl.query" class="form-control" />
+     *
+     * Note: To re-focus, make sure to set $ctrl.focus to false
+     * before setting it to true again
+     */
+    .directive('focusInput', function() {
+      return {
+        restrict: 'A',
+        link    : function(scope, element, attrs) {
+          var dom = element[0];
+
+          if (attrs.focusInput) { dom.focus(); }
+
+          scope.$watch(attrs.focusInput, function(value) {
+            if (value) { dom.focus(); }
+          });
+        }
+      };
+    })
+
+
+    /**
+     * Evaluates a given function when enter key is pressed
+     *
+     * @example
+     * <input type="text" ng-enter="$ctrl.change()"
+     *  ng-model="$ctrl.query" class="form-control" />
+     *
+     * Note: can be applied to any element, not just inputs
+     */
+    .directive('ngEnter', function() {
+      return function(scope, element, attrs) {
+        element.bind('keydown keypress', function(event) {
+          if (event.which === 13) {
+            event.preventDefault();
+            scope.$apply(function() {
+              scope.$eval(attrs.ngEnter);
+            });
+          }
+        });
       };
     });
 

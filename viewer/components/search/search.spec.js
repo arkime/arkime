@@ -9,10 +9,15 @@
     beforeEach(angular.mock.module('directives.search'));
     beforeEach(angular.mock.module('moloch.util'));
 
-    var scope, search, templateAsHtml;
+    var scope, search, templateAsHtml, $httpBackend;
 
     // Initialize and a mock scope
-    beforeEach(inject(function($componentController, $rootScope, $compile, $location) {
+    beforeEach(inject(function(_$httpBackend_, $componentController, $rootScope, $compile, $location) {
+      $httpBackend = _$httpBackend_;
+
+      $httpBackend.expectGET('/fields')
+        .respond({});
+
       scope = $rootScope.$new();
       var htmlString = '<moloch-search></moloch-search>';
 
@@ -34,7 +39,13 @@
 
       // initialize search component controller
       search.$onInit();
+      $httpBackend.flush();
     }));
+
+    afterEach(function() {
+      $httpBackend.verifyNoOutstandingExpectation();
+      $httpBackend.verifyNoOutstandingRequest();
+    });
 
     it('should exist and have dependencies', function() {
       expect(search).toBeDefined();

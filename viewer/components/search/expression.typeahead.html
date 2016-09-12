@@ -1,5 +1,4 @@
-<div ng-controller="ExpressionController as $ctrl"
-  class="form-group margined-bottom" uib-drowpdown>
+<div class="form-group margined-bottom" uib-drowpdown>
 
   <div class="input-group">
     <span class="input-group-addon cursor-help"
@@ -7,37 +6,54 @@
       uib-tooltip="Search Expression">
       <span class="fa fa-search"></span>
     </span>
-    <input type="text" placeholder="Search" caret-pos="$ctrl.caretPos"
-      ng-model="$ctrl.query" ng-trim="false"
-      class="form-control search-control"
+    <input caret-pos="$ctrl.caretPos" focus-input="$ctrl.focusInput"
+      ng-model="$ctrl.query.value" ng-trim="false"
       ng-change="$ctrl.changeExpression()"
-      ng-model-options="{debounce:300}" />
-      <span ng-click="$ctrl.clear()" ng-if="$ctrl.query"
+      ng-model-options="{debounce:300}"
+      type="text" placeholder="Search"
+      class="form-control search-control" />
+      <span ng-click="$ctrl.clear()" ng-if="$ctrl.query.value"
         class="fa fa-close text-muted clear-input cursor-pointer"></span>
   </div>
 
   <!-- fields dropdown -->
   <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
-    ng-show="$ctrl.query && $ctrl.fieldResults && $ctrl.fieldResults.length">
-    <li class="cursor-pointer" ng-repeat="field in $ctrl.fieldResults | limitTo:50"
-      ng-click="$ctrl.addToQuery(field)">
+    ng-show="$ctrl.query.value && $ctrl.fieldResults && $ctrl.fieldResults.length">
+    <li ng-repeat="field in $ctrl.fieldResults | limitTo:50"
+      ng-click="$ctrl.addToQuery(field)" class="cursor-pointer">
       <a>
         <strong ng-if="field.exp">{{::field.exp}}</strong>
         <strong ng-if="!field.exp">{{::field}}</strong>
-        <span ng-if="value.friendlyName">- {{::field.friendlyName}}</span>
+        <span ng-if="field.friendlyName">- {{::field.friendlyName}}</span>
       </a>
     </li>
   </ul>
 
   <!-- operators dropdown -->
   <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
-    ng-show="$ctrl.query && $ctrl.operationResults && $ctrl.operationResults.length">
-    <li class="cursor-pointer" ng-repeat="op in $ctrl.operationResults"
-      ng-click="$ctrl.addToQuery(op)">
-      <a>
-        <strong>{{::op}}</strong>
-      </a>
+    ng-show="$ctrl.query.value && $ctrl.operationResults && $ctrl.operationResults.length">
+    <li ng-repeat="op in $ctrl.operationResults"
+      ng-click="$ctrl.addToQuery(op)" class="cursor-pointer">
+      <a><strong>{{::op}}</strong></a>
     </li>
+  </ul>
+
+  <!-- error -->
+  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+    ng-show="$ctrl.query.value && $ctrl.loadingError">
+    <li><a><span class="text-danger">
+      <span class="fa fa-warning"></span>&nbsp;
+      Error: {{$ctrl.loadingError}}
+    </span></a></li>
+  </ul>
+
+  <!-- loading -->
+  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+    ng-show="$ctrl.query.value && $ctrl.loadingValues">
+    <li><a>
+      <span class="fa fa-spinner fa-spin"></span>&nbsp;
+      Loading...
+    </a></li>
   </ul>
 
 </div>
