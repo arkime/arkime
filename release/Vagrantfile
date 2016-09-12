@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1500"]
+  end
+
+  config.vm.define "ubuntu-14.04" do |ubuntu1404|
+    ubuntu1404.vm.box = "bento/ubuntu-14.04"
+  end
+
+  config.vm.define "ubuntu-16.04" do |ubuntu1604|
+    ubuntu1604.vm.box = "bento/ubuntu-16.04"
+  end
+
+  config.vm.define "centos-6" do |centos6|
+    centos6.vm.box = "bento/centos-6.8"
+  end
+
+  config.vm.define "centos-7" do |centos7|
+    centos7.vm.box = "bento/centos-7.2"
+  end
+
+  
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "build.yml"
+  end
+end

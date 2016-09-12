@@ -1,0 +1,239 @@
+---
+# Requires running: ansible-galaxy install rvm_io.rvm1-ruby
+# To just rebuild: ansible-playbook --private-key=~/.vagrant.d/insecure_private_key -u vagrant -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory build.yml -t rebuild
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    - yara_version: 1.7
+    - geoip_version: 1.6.0
+    - pcap_version: 1.7.4
+    - curl_version: 7.50.2
+    - glib2_dir: 2.48
+    - glib2_version: 2.48.2
+    - node_version: 0.10.46
+    - rvm1_rubies:
+      - ruby-1.9.3
+    - iteration: 7
+
+# Tasks before roles install software
+  pre_tasks:
+    - block:
+        - yum: name={{item}} state=installed
+          with_items:
+            - git
+            - wget
+            - curl
+            - pcre
+            - pcre-devel
+            - pkgconfig
+            - flex
+            - bison
+            - gcc-c++
+            - zlib-devel
+            - e2fsprogs-devel
+            - openssl-devel
+            - file-devel
+            - make
+            - gettext
+            - libuuid-devel
+            - perl-JSON
+            - bzip2-libs
+            - bzip2-devel
+            - perl-libwww-perl
+            - libpng-devel
+            - xz
+            - libffi-devel
+            - libselinux-python
+            - rpm-build
+
+      when: ansible_distribution=='CentOS'
+
+
+    - block:
+        - apt: update_cache=yes name={{item}} state=installed
+          with_items:
+            - git
+            - wget
+            - curl
+            - libpcre3-dev
+            - uuid-dev
+            - libmagic-dev
+            - pkg-config
+            - g++
+            - flex
+            - bison
+            - zlib1g-dev
+            - libffi-dev
+            - gettext
+            - make
+            - libjson-perl
+            - libbz2-dev
+            - libwww-perl
+            - libpng-dev
+            - xz-utils
+            - libffi-dev
+            - libssl-dev
+
+      when: ansible_distribution == 'Ubuntu'
+
+# Wackiness is happening where it doesn't always resolve and stuff
+    - name: keys.gnupg.net hosts entry hack
+      lineinfile: dest=/etc/hosts line="178.32.66.144 keys.gnupg.net"
+
+# Install ruby
+  roles:
+    - {role: rvm_io.rvm1-ruby}
+
+# Tasks after roles
+  tasks:
+    - name: install fpm
+      gem: name=fpm user_install=no state=latest executable=/usr/local/bin/gem
+
+    - name: Download Packages
+      get_url: url={{item}} dest=. validate_certs=no
+      with_items:
+        - https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/yara-project/yara-{{yara_version}}.tar.gz
+        - http://www.maxmind.com/download/geoip/api/c/GeoIP-{{geoip_version}}.tar.gz
+        - http://www.tcpdump.org/release/libpcap-{{pcap_version}}.tar.gz
+        - http://curl.haxx.se/download/curl-{{curl_version}}.tar.gz
+        - http://ftp.gnome.org/pub/gnome/sources/glib/{{glib2_dir}}/glib-{{glib2_version}}.tar.xz
+        - https://nodejs.org/download/release/v{{node_version}}/node-v{{node_version}}-linux-x64.tar.xz
+
+    - name: Unarchive Packages
+      unarchive: src={{item}} dest=. copy=no
+      with_items:
+        - yara-{{yara_version}}.tar.gz
+        - GeoIP-{{geoip_version}}.tar.gz
+        - libpcap-{{pcap_version}}.tar.gz
+        - curl-{{curl_version}}.tar.gz
+        - glib-{{glib2_version}}.tar.xz
+
+    - name: Check yara
+      stat: path=yara-{{yara_version}}/libyara/.libs/libyara.a
+      register: st
+
+    - name: Build yara
+      shell: cd yara-{{yara_version}}; ./configure --enable-static; make
+      when: st.stat.exists == False
+
+    - name: Check GeoIP
+      stat: path=GeoIP-{{geoip_version}}/libGeoIP/.libs/libGeoIP.a
+      register: st
+
+    - name: Build GeoIP
+      shell: cd GeoIP-{{geoip_version}}; ./configure --enable-static; make
+      when: st.stat.exists == False
+
+    - name: Check libpcap
+      stat: path=libpcap-{{pcap_version}}/libpcap.a
+      register: st
+
+    - name: Build libpcap
+      shell: cd libpcap-{{pcap_version}}; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth; make
+      when: st.stat.exists == False
+
+    - name: Check curl
+      stat: path=curl-{{curl_version}}/lib/.libs/libcurl.a
+      register: st
+
+    - name: Build curl
+      shell: cd curl-{{curl_version}}; ./configure --disable-ldap --disable-ldaps --without-libidn --without-librtmp; make
+      when: st.stat.exists == False
+
+    - name: Check glib2
+      stat: path=glib-{{glib2_version}}/glib/.libs/libglib-2.0.a
+      register: st
+
+    - name: Build glib2
+      shell: cd glib-{{glib2_version}}; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --with-pcre=internal; make
+      when: st.stat.exists == False
+
+
+    - name: Remove old dest directory
+      file: dest=/data/moloch state=absent
+
+    - name: Create dest directory
+      file: dest=/data/moloch/{{item}} state=directory owner=nobody
+      with_items:
+        - etc
+        - bin
+        - logs
+
+    - name: Create raw directory
+      file: dest=/data/moloch/raw state=directory owner=nobody mode=0700
+
+    - name: Unarchive node
+      unarchive: src=~vagrant/node-v{{node_version}}-linux-x64.tar.xz dest=/data/moloch copy=no
+
+    - name: node link
+      file: state=link src=/data/moloch/node-v{{node_version}}-linux-x64/bin/{{item}} dest=/data/moloch/bin/{{item}}
+      with_items:
+        - node
+        - npm
+
+# Actually build
+    - name: git clone
+      git: repo=https://github.com/aol/moloch dest=moloch update=yes force=yes
+      tags: 
+        - git
+
+    - name: configure
+      shell: cd moloch; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}}
+      tags: 
+        - rebuild
+
+    - name: make
+      shell: cd moloch; make; make install
+      environment:
+        PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
+      tags: 
+        - rebuild
+
+    - name: copy sample config
+      copy: src=../config.ini dest=/data/moloch/etc/config.ini.sample
+
+    - name: copy upstart files
+      copy: src="{{item}}" dest=/data/moloch/etc/
+      with_items:
+        - molochcapture.upstart.conf
+        - molochviewer.upstart.conf
+        - molochwise.upstart.conf
+
+# CentOS package
+    - block:
+      - name: get moloch version
+        shell: sed 's/.*\"\(.*\)\".*$/\1/' moloch/viewer/version.js | tr "-" "_"
+        register: moloch_version_cmd_centos
+
+      - set_fact:
+          moloch_version: "{{moloch_version_cmd_centos.stdout}}"
+
+      - name: fpm centos
+        shell: bash -lc "{{item}}"
+        with_items:
+          - fpm -s dir -t rpm -n moloch -v {{moloch_version}} --iteration {{iteration}} /data/moloch
+
+      - name: copy centos back
+        fetch: src=moloch-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=.
+      when: ansible_distribution=='CentOS'
+      tags: package
+
+# Ubuntu package
+    - block:
+      - name: get moloch version
+        shell: sed 's/.*\"\(.*\)\".*$/\1/' moloch/viewer/version.js
+        register: moloch_version_cmd_ubuntu
+
+      - set_fact:
+          moloch_version: "{{moloch_version_cmd_ubuntu.stdout}}"
+
+      - name: fpm ubuntu
+        shell: bash -lc "{{item}}"
+        with_items:
+          - fpm -s dir -t deb -n moloch -v {{moloch_version}} --iteration {{iteration}} /data/moloch
+
+      - name: copy ubuntu back
+        fetch: src=moloch_{{moloch_version}}-{{iteration}}_amd64.deb dest=.
+      when: ansible_distribution=='Ubuntu'
+      tags: package
