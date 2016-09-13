@@ -28,8 +28,8 @@ module.exports = function(config) {
 
       // app files
       'app/app.js',
-      'components/index.spec.js',
-      'app/modules/index.spec.js',
+      'components/index.test.js',
+      'app/modules/index.test.js',
 
       { pattern:'public/*.png', watched: false, included: false, served: true }
     ],
@@ -43,8 +43,8 @@ module.exports = function(config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'app/app.js': ['webpack'],
-      'components/index.spec.js': ['webpack'],
-      'app/modules/index.spec.js': ['webpack']
+      'components/index.test.js': ['webpack'],
+      'app/modules/index.test.js': ['webpack']
     },
 
 
