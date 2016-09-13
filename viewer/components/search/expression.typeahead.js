@@ -29,6 +29,9 @@
     $onInit() {
       this.focusInput = true; // set focus on search input
 
+      // console.log(this.query.value);
+      if (!this.query) { this.query = { value: '' }; }
+
       // get the available fields for autocompleting
       this.FieldService.get()
         .then((result) => {
@@ -259,7 +262,7 @@
        var lastToken = tokens[tokens.length - 1], result = '';
        var allTokens = ExpressionController.splitExpression(q);
 
-       if (lastToken === ' ') { q += str + ' '; }
+       if (lastToken === ' ') { result = q += str + ' '; }
        else { // replace the last token and rebuild query
          var t;
          tokens[tokens.length - 1] = str;

@@ -107,7 +107,7 @@
       }));
 
       it('should render html with ng-model', function() {
-        expect(scope.model).toEqual(2);
+        expect(element.val()).toEqual('2');
         expect(templateAsHtml).toBeDefined();
         expect(element.find('option:checked')[0].text).toEqual('Two');
       });
@@ -116,7 +116,7 @@
         scope.model = 5;
         scope.$digest();
 
-        expect(scope.model).toEqual(5);
+        expect(element.val()).toEqual('5');
         expect(templateAsHtml).toBeDefined();
         expect(element.find('option:checked')[0].text).toEqual('Five');
       });
