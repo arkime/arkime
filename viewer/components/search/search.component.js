@@ -45,13 +45,16 @@
         this.expression = { value: this.$routeParams.expression };
       } else { this.expression = { value: null }; }
 
-      this.strictly = false;
+      this.strictly = false; // default to unbounded results
       if (this.$routeParams.strictly) { this.strictly = true; }
 
-      this.startTimePopup = { opened: false };
-      this.stopTimePopup  = { opened: false };
-      this.dateTimeFormat = 'yyyy/MM/dd HH:mm:ss';
-      this.altInputFormats = ['yyyy/M!/d! H:mm:ss'];
+      // date picker popups hidden to start
+      this.startTimePopup   = { opened: false };
+      this.stopTimePopup    = { opened: false };
+      // date picker display format
+      this.dateTimeFormat   = 'yyyy/MM/dd HH:mm:ss';
+      // other acceptable formats
+      this.altInputFormats  = ['yyyy/M!/d! H:mm:ss'];
 
       this.change();
     }
@@ -99,9 +102,10 @@
 
     /**
      * Fired when a search control value is changed
+     * (startTime, stopTime, timeRange, expression, strictly)
      */
     change() {
-      // update the expression
+      // update the parameters with the expression
       if (this.expression.value && this.expression.value !== '') {
         this.$location.search('expression', this.expression.value);
       } else {
@@ -116,8 +120,12 @@
         this.startTime  = currentTime - (hourMS * this.timeRange);
       }
 
+      // update the displayed time range
       this.deltaTime  = this.stopTime - this.startTime;
 
+      // always use startTime and stopTime instead of date range
+      // querying with date range causes unexpected paging behavior
+      // because there are always new sessions
       if (this.startTime && this.stopTime) {
         this.$scope.$emit('change:search', {
           expression: this.expression.value,
@@ -133,7 +141,7 @@
   SearchController.$inject = ['$scope','$routeParams','$location'];
 
   /**
-   * Search Directive
+   * Search Component
    * Displays searching controls
    */
   angular.module('directives.search', [])

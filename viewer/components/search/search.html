@@ -1,5 +1,6 @@
 <form>
 
+  <!-- actions dropdown -->
   <div class="btn-group pull-right margined-left"
     uib-dropdown is-open="$ctrl.isopen">
     <button id="single-button" type="button" class="btn btn-yellow"
@@ -8,32 +9,35 @@
     </button>
     <ul class="dropdown-menu" uib-dropdown-menu role="menu"
       aria-labelledby="single-button">
-      <li role="menuitem">
-        <a href>Export PCAP</a>
+      <li role="menuitem" class="disabled cursor-pointer">
+        <a>Export PCAP</a>
       </li>
-      <li role="menuitem">
-        <a href>Export CSV</a>
+      <li role="menuitem" class="disabled cursor-pointer">
+        <a>Export CSV</a>
       </li>
-      <li role="menuitem">
-        <a href>Add Tags</a>
+      <li role="menuitem" class="disabled cursor-pointer">
+        <a>Add Tags</a>
       </li>
-      <li role="menuitem">
-        <a href>Send Session to Forensics Cluster</a>
+      <li role="menuitem" class="disabled cursor-pointer">
+        <a>Send Session to Forensics Cluster</a>
       </li>
-      <li role="menuitem">
-        <a href>Send Session to FAAN Cluster</a>
+      <li role="menuitem" class="disabled cursor-pointer">
+        <a>Send Session to FAAN Cluster</a>
       </li>
     </ul>
-  </div>
+  </div> <!-- /actions dropdown -->
 
+  <!-- search button -->
   <a class="btn btn-green pull-right margined-left"
     ng-click="$ctrl.change()">Search</a>
 
+  <!-- search box typeahead -->
   <expression-typeahead query="$ctrl.expression" ng-enter="$ctrl.change()">
   </expression-typeahead>
 
   <div class="form-inline">
 
+    <!-- time range select -->
     <div class="form-group margined-bottom">
       <div class="input-group">
         <span class="input-group-addon cursor-help"
@@ -56,8 +60,9 @@
           <option value="0">Custom</option>
         </select>
       </div>
-    </div>
+    </div> <!-- /time range select -->
 
+    <!-- start time -->
     <div class="form-group margined-bottom"
       ng-class="{'has-error':!$ctrl.startTime}">
       <div class="input-group">
@@ -79,8 +84,9 @@
           </button>
         </div>
       </div>
-    </div>
+    </div> <!-- /start time -->
 
+    <!-- stop time -->
     <div class="form-group margined-bottom"
       ng-class="{'has-error':!$ctrl.startTime}">
       <div class="input-group">
@@ -102,16 +108,18 @@
           </button>
         </div>
       </div>
-    </div>
+    </div> <!-- /stop time -->
 
+    <!-- strictly (results bounded) checkbox -->
     <div class="no-wrap display-inline">
       <span class="fa fa-lg fa-fw fa-square-o cursor-pointer"
         ng-if="!$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
       <span class="fa fa-lg fa-fw fa-check-square-o cursor-pointer"
         ng-if="$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
       <small>Results bounded</small>
-    </div>
+    </div> <!-- /strictly (results bounded) checkbox -->
 
+    <!-- human readable time range -->
     <div class="pull-right-md margined-top display-inline">
       <strong class="small text-purple no-wrap">
         Time Range: {{$ctrl.deltaTime | readableTime}}

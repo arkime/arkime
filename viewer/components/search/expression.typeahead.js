@@ -27,9 +27,9 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.caretPos   = 0;
-      this.focusInput = true;
+      this.focusInput = true; // set focus on search input
 
+      // get the available fields for autocompleting
       this.FieldService.get()
         .then((result) => {
           this.fields       = result;
@@ -53,7 +53,7 @@
        this.loadingValues     = false;
        this.loadingError      = false;
 
-       // if the cursor pointer is at a space
+       // if the cursor is at a space
        var spaceCP = (this.caretPos > 0 &&
          this.caretPos === this.query.value.length &&
          this.query.value[this.caretPos - 1] === ' ');
@@ -70,9 +70,10 @@
        tokens = ExpressionController.splitExpression(currentInput);
        var lastToken = tokens[tokens.length - 1];
 
+       // add the space to the tokens
        if (spaceCP) { tokens.push(' '); }
 
-       // field
+       // display fields
        if (tokens.length <= 1) {
          this.fieldResults =
            ExpressionController.findMatch(lastToken, this.fields);
@@ -80,17 +81,18 @@
          return;
        }
 
-       // operator
+       // display operators (depending on field type)
        var token = tokens[tokens.length - 2];
        var field = this.fields[token];
        if (field) {
          if (field.type === 'integer') {
-          if(tokens[tokens.length - 1] === ' ') {
-            this.operationResults = operations;
-          } else {
-            this.operationResults =
-              ExpressionController.findMatch(lastToken, operations);
-          }
+           // if at a space, show all operators
+           if(tokens[tokens.length - 1] === ' ') {
+             this.operationResults = operations;
+           } else {
+             this.operationResults =
+               ExpressionController.findMatch(lastToken, operations);
+           }
          } else { this.operationResults = ['!=', '==']; }
 
          return;
@@ -101,12 +103,13 @@
 
        if (!field) {
          if (/^[!<=>]/.test(token)) {
-          if(tokens[tokens.length - 1] === ' ') {
-            this.operationResults = ['&&', '||'];
-          } else {
-            this.operationResults =
-              ExpressionController.findMatch(lastToken, ['&&', '||']);
-          }
+           // if at a space, show all operators
+           if(tokens[tokens.length - 1] === ' ') {
+             this.operationResults = ['&&', '||'];
+           } else {
+             this.operationResults =
+               ExpressionController.findMatch(lastToken, ['&&', '||']);
+           }
          } else {
            this.fieldResults =
              ExpressionController.findMatch(lastToken, this.fields);
@@ -115,7 +118,8 @@
          return;
        }
 
-       // value
+       // display values
+       // autocomplete country values
        if (/^(country)/.test(token)) {
          this.loadingValues = true;
          this.FieldService.getCountryCodes()
@@ -132,6 +136,7 @@
          return;
        }
 
+       // autocomplete http.hasheader values after 1 char
        if (lastToken.length >= 1) {
          if (/^(tags|http.hasheader)/.test(token)) {
            this.loadingValues = true;
@@ -150,9 +155,9 @@
          }
        }
 
-       // only autocomplete value after 2 chars
+       // autocomplete other values after 2 chars
        if (lastToken.length > 2) {
-         var params = {
+         var params = { // build parameters for getting value(s)
            autocomplete : true,
            field        : field.dbField
          };
@@ -218,6 +223,8 @@
       * @param {Object} values      Map or Array of values to compare against
       */
      static findMatch(strToMatch, values) {
+       if (!strToMatch || strToMatch === '') { return []; }
+
        var results = [], exact = false;
 
        for (var key in values) {
@@ -236,7 +243,7 @@
          }
        }
 
-       // put the exact match at the top
+       // put the exact match at the top (the rest are in the order received)
        if (exact) { results.unshift(exact); }
 
        return results;
