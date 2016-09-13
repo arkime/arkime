@@ -55,7 +55,7 @@
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getValue(params) {
+    getValues(params) {
       return this.$q((resolve, reject) => {
 
         var config = {
@@ -80,7 +80,7 @@
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getHasheader(params) {
+    getHasheaderValues(params) {
       return this.$q((resolve, reject) => {
 
         var config = {

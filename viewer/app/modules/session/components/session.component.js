@@ -145,7 +145,7 @@
 
   angular.module('moloch')
     .component('session', {
-      template  : require('html!./session.html'),
+      template  : require('html!../templates/session.html'),
       controller: SessionController
     });
 

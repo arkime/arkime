@@ -20,7 +20,8 @@
      *
      * @ngInject
      */
-    constructor($routeParams, FieldService) {
+    constructor($scope, $routeParams, FieldService) {
+      this.$scope       = $scope;
       this.$routeParams = $routeParams;
       this.FieldService = FieldService;
     }
@@ -41,6 +42,14 @@
         .catch((error) => {
           this.loadingError = error;
         });
+
+      /* Listen! */
+      // watch for search (from search.component)
+      this.$scope.$on('issue:search', (event, args) => {
+        // remove typeahead results once query has been issued
+        this.fieldResults      = null;
+        this.operationResults  = null;
+      });
     }
 
 
@@ -143,7 +152,7 @@
        if (lastToken.length >= 1) {
          if (/^(tags|http.hasheader)/.test(token)) {
            this.loadingValues = true;
-           this.FieldService.getHasheader({type:token,filter:lastToken})
+           this.FieldService.getHasheaderValues({type:token,filter:lastToken})
              .then((result) => {
                this.loadingValues = false;
                this.fieldResults  = result;
@@ -180,7 +189,7 @@
          }
 
          this.loadingValues = true;
-         this.FieldService.getValue(params)
+         this.FieldService.getValues(params)
            .then((result) => {
              this.loadingValues = false;
              this.fieldResults  = result;
@@ -325,7 +334,7 @@
      }
   }
 
-  ExpressionController.$inject = ['$routeParams','FieldService'];
+  ExpressionController.$inject = ['$scope','$routeParams','FieldService'];
 
   /**
    * Expression Typeahead Directive
@@ -333,7 +342,7 @@
    */
   angular.module('directives.search')
     .component('expressionTypeahead', {
-      template  : require('html!./expression.typeahead.html'),
+      template  : require('html!../templates/expression.typeahead.html'),
       controller: ExpressionController,
       bindings  : { query: '=' }
     });

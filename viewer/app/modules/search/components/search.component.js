@@ -133,6 +133,8 @@
           stopTime  : this.stopTime,
           strictly  : this.strictly
         });
+
+        this.$scope.$broadcast('issue:search');
       }
     }
 
@@ -146,7 +148,7 @@
    */
   angular.module('directives.search', [])
     .component('molochSearch', {
-      template  : require('html!./search.html'),
+      template  : require('html!../templates/search.html'),
       controller: SearchController
     });
 

@@ -75,7 +75,7 @@
    */
   angular.module('moloch')
     .component('colheader', {
-      template  : require('html!./colheader.html'),
+      template  : require('html!../templates/colheader.html'),
       controller: ColheaderController,
       bindings  : {
         colName : '<',  // the human readable name of the column
