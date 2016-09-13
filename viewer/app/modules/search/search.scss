@@ -1,0 +1,35 @@
+moloch-search {
+  form {
+    border            : none;
+    margin            : -20px -20px 15px -20px;
+    padding           : $px-xlg $px-lg $px-md $px-lg;
+    border-radius     : $px-none;
+    background-color  : lighten($color-yellow-light, 36%);
+    -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
+    box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
+
+    .time-range-control {
+      -webkit-appearance: none;
+    }
+
+    .search-control {
+      border-radius: 0 4px 4px 0 !important;
+    }
+
+    .clear-input {
+      z-index : 3;
+      position: absolute;
+      right   : 10px;
+      top     : 8px;
+    }
+
+    .typeahead-results {
+      top       : initial;
+      left      : initial;
+      display   : block;
+      max-height: 70%;
+      overflow  : scroll;
+    }
+  }
+}

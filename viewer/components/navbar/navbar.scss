@@ -1,0 +1,32 @@
+navbar {
+  .navbar-inverse {
+    background-color  : darken($color-purple-dark, 8%);
+    -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
+    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
+    box-shadow        : $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
+
+    .navbar-brand {
+      color: $color-gray-light;
+    }
+
+    li {
+      a {
+        color: $color-gray-light !important;
+      }
+
+      &.active {
+        a {
+          background-color: darken($color-purple-dark, 16%) !important;
+          color           : $color-white !important;
+          font-weight     : 500;
+        }
+      }
+    }
+  }
+
+  .moloch-logo {
+    position: absolute;
+    height  : 48px;
+    top     : 6px;
+  }
+}

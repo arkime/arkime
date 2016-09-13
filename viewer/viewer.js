@@ -154,6 +154,12 @@ if (_accesslogfile) {
 app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms',{stream: _stream}));
 app.use(compression());
 app.use(methodOverride());
+
+
+app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
+
+
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
 if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = false;
@@ -835,6 +841,38 @@ app.get('/style.css', function(req, res) {
     });
   });
 });
+
+
+app.get('/fields', function(req, res) {
+  if (!app.locals.fieldsMap) {
+    res.status(404);
+    res.send('Cannot locate fields');
+  }
+  res.send(app.locals.fieldsMap);
+});
+
+
+// angular app route
+app.get('/app', checkWebEnabled, function(req, res) {
+  res.render('app');
+});
+
+// angular app bundles
+app.get('/app.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js');
+});
+app.get('/vendor.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js');
+});
+
+// source maps
+app.get('/app.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js.map');
+});
+app.get('/vendor.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING

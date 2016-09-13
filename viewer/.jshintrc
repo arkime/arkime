@@ -9,5 +9,10 @@
   "nonew": true,
   "undef": true,
   "strict": true,
-  "trailing": true
+  "trailing": true,
+  "esversion": 6,
+  "predef": [
+    "angular", "document", "jasmine", "jQuery",
+    "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn"
+  ]
 }

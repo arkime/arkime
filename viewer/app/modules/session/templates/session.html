@@ -1,0 +1,150 @@
+<div class="container-fluid margined-left margined-right">
+
+  <moloch-search></moloch-search>
+
+  <moloch-map style="height:0;width:0;display:none;"></moloch-map>
+
+  <!-- top pagination controls -->
+  <moloch-pagination length="$ctrl.query.length"
+    records-total="$ctrl.sessions.recordsTotal"
+    records-filtered="$ctrl.sessions.recordsFiltered"
+    current-page="$ctrl.currentPage"
+    start="$ctrl.query.start"></moloch-pagination>
+
+  <div class="table-responsive margined-top">
+    <!-- session data table -->
+    <table datatable="ng"
+      dt-options="$ctrl.dtOptions"
+      dt-column-defs="$ctrl.dtColumns"
+      class="table table-hover table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>
+            <div class="btn-group" uib-dropdown is-open="$ctrl.isopen">
+              <button id="single-button" type="button" class="btn btn-purple"
+                uib-dropdown-toggle disabled>
+                <span class="fa fa-th"></span>
+              </button>
+              <ul class="dropdown-menu" uib-dropdown-menu role="menu"
+                aria-labelledby="single-button">
+              </ul>
+            </div>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'fp'}">
+            <colheader col-name="'Start'" col-id="'fp'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'lp'}">
+            <colheader col-name="'Stop'" col-id="'lp'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'a1'}">
+            <colheader col-name="'Src IP'" col-id="'a1'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'p1'}">
+            <colheader col-name="'Src Port'" col-id="'p1'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'a2'}">
+            <colheader col-name="'Dst IP'" col-id="'a2'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'p2'}">
+            <colheader col-name="'Dst Port'" col-id="'p2'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'pa'}">
+            <colheader col-name="'Packets'" col-id="'pa'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'by'}">
+            <colheader col-name="'Bytes'" col-id="'by'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th ng-class="{'active':$ctrl.query.sortElement === 'no'}">
+            <colheader col-name="'Node'" col-id="'no'"
+              element="$ctrl.query.sortElement"
+              order="$ctrl.query.sortOrder"></colheader>
+          </th>
+          <th>
+            <colheader col-name="'Info'" col-id="'info'"></colheader>
+          </th>
+        </tr>
+      </thead>
+      <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
+        $ctrl.sessions.data.length && !$ctrl.error" class="small">
+        <tr ng-repeat="session in $ctrl.sessions.data">
+          <td style="width:6%">
+            <a class="btn btn-sm btn-green" disabled>
+              <span class="fa fa-plus"></span>
+            </a>&nbsp;
+            <small>{{::session.pr | protocol}}</small>
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'fp'}">
+            {{::session.fp * 1000 | date:'yyyy/MM/dd'}}<br>
+            {{::session.fp * 1000 | date:'HH:mm:ss'}}
+          </td>
+          <td ng-class="{'active':$ctrl.quesry.sortElement === 'lp'}">
+            {{::session.lp * 1000 | date:'yyyy/MM/dd'}}<br>
+            {{::session.lp * 1000 | date:'HH:mm:ss'}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'a1'}">
+            {{::session | extractIPString}}<br>
+            {{::session.g1}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'p1'}">
+            {{::session.p1}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'a2'}">
+            {{::session | extractIPString}}<br>
+            {{::session.g2}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'p2'}">
+            {{::session.p2}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'pa'}">
+            {{::session.pa}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'by'}">
+            {{::session.db | number:0}} /<br>
+            {{::session.by | number:0}}
+          </td>
+          <td ng-class="{'active':$ctrl.query.sortElement === 'no'}">
+            {{::session.no}}
+          </td>
+          <td>{{::session.info}}</td>
+        </tr>
+      </tbody>
+    </table> <!-- /session data table -->
+  </div>
+
+  <loading ng-if="$ctrl.loading"></loading>
+
+  <error ng-if="$ctrl.error" message="$ctrl.error"></error>
+
+  <!-- no results -->
+  <div class="info-area vertical-horizontal-center"
+   ng-if="!$ctrl.error && !$ctrl.sessions.data.length">
+    <div ng-if="!$ctrl.loading">
+      <span class="fa fa-3x text-center text-muted-more fa-folder-open"></span><br>
+      No results or none that match your search.
+    </div>
+  </div> <!-- /no results -->
+
+  <!-- bottom pagination controls -->
+  <moloch-pagination length="$ctrl.query.length"
+    records-total="$ctrl.sessions.recordsTotal"
+    records-filtered="$ctrl.sessions.recordsFiltered"
+    current-page="$ctrl.currentPage"
+    start="$ctrl.query.start"></moloch-pagination>
+
+</div>
