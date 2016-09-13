@@ -18,6 +18,6 @@ autom4te.cache
 moloch-capture
 stamp-h1
 npm-debug.log*
-config.ssh.ini
+config.dev.ini
 .DS_Store
 bundle/
