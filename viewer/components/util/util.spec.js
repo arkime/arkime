@@ -7,55 +7,13 @@
     // load the module
     beforeEach(angular.mock.module('moloch.util'));
 
-    var $filter, $timeout, scope, templateAsHtml;
+    var $filter, $timeout, scope;
 
     beforeEach(inject(function($rootScope, _$filter_, _$timeout_) {
         scope     = $rootScope.$new();
         $filter   = _$filter_;
         $timeout  = _$timeout_;
     }));
-
-
-    describe('Convert To Number Directive ->', function() {
-
-      var element, template;
-
-      // Initialize and a mock scope
-      beforeEach(inject(function($compile) {
-        scope.model = 2;
-
-        var htmlString = '<select ng-model="model" convert-to-number>'+
-          '<option value="1">One</option>' +
-          '<option value="2">Two</option>' +
-          '<option value="3">Three</option>' +
-          '<option value="4">Four</option>' +
-          '<option value="5">Five</option>' +
-          '</select>';
-
-        element = angular.element(htmlString);
-        template = $compile(element)(scope);
-
-        scope.$digest();
-
-        templateAsHtml = template.html();
-      }));
-
-      it('should render html with ng-model', function() {
-        expect(scope.model).toEqual(2);
-        expect(templateAsHtml).toBeDefined();
-        expect(element.find('option:checked')[0].text).toEqual('Two');
-      });
-
-      it('should apply changes to ng-model', function() {
-        scope.model = 5;
-        scope.$digest();
-
-        expect(scope.model).toEqual(5);
-        expect(templateAsHtml).toBeDefined();
-        expect(element.find('option:checked')[0].text).toEqual('Five');
-      });
-
-    });
 
 
     describe('Protocol Filter ->', function() {
@@ -106,42 +64,6 @@
     });
 
 
-    describe('Epoch Date Directive ->', function() {
-
-      var element, template;
-
-      // Initialize and a mock scope
-      beforeEach(inject(function($compile) {
-        scope.model = '2016/09/12 15:36:48';
-
-        var htmlString = '<input ng-model="model" epoch-date />';
-
-        element = angular.element(htmlString);
-        template = $compile(element)(scope);
-
-        scope.$digest();
-
-        templateAsHtml = template.html();
-      }));
-
-      it('should render html with ng-model', function() {
-        expect(scope.model).toEqual('2016/09/12 15:36:48');
-        expect(templateAsHtml).toBeDefined();
-        // TODO: check parsed value: 1473709008
-      });
-
-      it('should apply changes to ng-model', function() {
-        scope.model = '2016/08/12 15:36:48';
-        scope.$digest();
-
-        expect(scope.model).toEqual('2016/08/12 15:36:48');
-        expect(templateAsHtml).toBeDefined();
-        // TODO: check parsed value: 1471030608
-      });
-
-    });
-
-
     describe('Readble Time Filter ->', function() {
 
       it('should return the appropriate readable time string', function() {
@@ -161,19 +83,90 @@
     });
 
 
+    describe('Convert To Number Directive ->', function() {
+
+      var element, template, templateAsHtml;
+
+      beforeEach(inject(function($compile) {
+        scope.model = 2;
+
+        var htmlString = '<select ng-model="model" convert-to-number>'+
+          '<option value="1">One</option>' +
+          '<option value="2">Two</option>' +
+          '<option value="3">Three</option>' +
+          '<option value="4">Four</option>' +
+          '<option value="5">Five</option>' +
+          '</select>';
+
+        element   = angular.element(htmlString);
+        template  = $compile(element)(scope);
+
+        scope.$digest();
+
+        templateAsHtml = template.html();
+      }));
+
+      it('should render html with ng-model', function() {
+        expect(scope.model).toEqual(2);
+        expect(templateAsHtml).toBeDefined();
+        expect(element.find('option:checked')[0].text).toEqual('Two');
+      });
+
+      it('should apply changes to ng-model', function() {
+        scope.model = 5;
+        scope.$digest();
+
+        expect(scope.model).toEqual(5);
+        expect(templateAsHtml).toBeDefined();
+        expect(element.find('option:checked')[0].text).toEqual('Five');
+      });
+
+    });
+
+
+    describe('Epoch Date Directive ->', function() {
+
+      var element, template, templateAsHtml;
+
+      beforeEach(inject(function($compile) {
+        scope.model = '2016/09/12 15:36:48';
+
+        var htmlString = '<input ng-model="model" epoch-date />';
+
+        element   = angular.element(htmlString);
+        template  = $compile(element)(scope);
+
+        scope.$digest();
+
+        templateAsHtml = template.html();
+      }));
+
+      it('should render html with ng-model', function() {
+        expect(element.val()).toEqual('2016/09/12 15:36:48');
+        expect(templateAsHtml).toBeDefined();
+      });
+
+      it('should apply changes to ng-model', function() {
+        scope.model = '2015/03/14 03:14:15';
+        scope.$digest();
+        expect(element.val()).toEqual('2015/03/14 03:14:15');
+      });
+
+    });
+
+
     describe('Caret Position Directive ->', function() {
 
-      var element, template;
+      var element, template, templateAsHtml;
 
-      // Initialize and a mock scope
       beforeEach(inject(function($compile) {
         scope.model     = '';
         scope.position  = 0;
 
         var htmlString  = '<input ng-model="model" caret-pos="position" />';
 
-        element = angular.element(htmlString);
-        template = $compile(element)(scope);
+        element   = angular.element(htmlString);
+        template  = $compile(element)(scope);
 
         scope.$digest();
 
@@ -183,7 +176,25 @@
       it('should render html with caret-pos', function() {
         expect(scope.position).toEqual(0);
         expect(templateAsHtml).toBeDefined();
-        // TODO: update model and check for cursor position
+
+        element.val('some text');
+
+        element.click();
+        scope.$digest();
+
+        expect(scope.position).toEqual(9);
+      });
+
+      it('should not exceed text length', function() {
+        var text = 'text';
+
+        element.val(text);
+
+        element.click();
+        scope.$digest();
+
+        expect(scope.position).not.toBeGreaterThan(text.length);
+        expect(scope.position).toEqual(text.length);
       });
 
     });
@@ -191,16 +202,15 @@
 
     describe('Focus Input Directive ->', function() {
 
-      var element, template;
+      var element, template, templateAsHtml;
 
-      // Initialize and a mock scope
       beforeEach(inject(function($compile) {
         scope.focusMe  = true;
 
         var htmlString  = '<input focus-input="focusMe" />';
 
-        element = angular.element(htmlString);
-        template = $compile(element)(scope);
+        element   = angular.element(htmlString);
+        template  = $compile(element)(scope);
 
         spyOn(element[0], 'focus');
 
@@ -229,16 +239,15 @@
 
     describe('ng Enter Directive ->', function() {
 
-      var element, template;
+      var element, template, templateAsHtml;
 
-      // Initialize and a mock scope
       beforeEach(inject(function($compile) {
         scope.func = function() {};
 
         var htmlString  = '<input ng-enter="func()" />';
 
-        element = angular.element(htmlString);
-        template = $compile(element)(scope);
+        element   = angular.element(htmlString);
+        template  = $compile(element)(scope);
 
         spyOn(scope, 'func');
 
@@ -247,7 +256,7 @@
         templateAsHtml = template.html();
       }));
 
-      it('should render html and call function when enter is pressed', function() {
+      it('should render html', function() {
         expect(templateAsHtml).toBeDefined();
       });
 
@@ -255,8 +264,9 @@
         var e     = jQuery.Event('keypress');
         e.which   = 13;
         e.keyCode = 13;
+
         element.trigger(e);
-        
+
         expect(scope.func).toHaveBeenCalled();
       });
 

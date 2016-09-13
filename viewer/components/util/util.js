@@ -9,47 +9,6 @@
   angular.module('moloch.util', [])
 
     /**
-     * Convert To Number Directive
-     * Parses strings to integers
-     * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}
-     *
-     * @example
-     * '<select ng-model="$ctrl.value" convert-to-number>...</select>'
-     */
-    .directive('convertToNumber', function() {
-      return {
-        require: 'ngModel',
-        link: function(scope, element, attrs, ngModel) {
-          ngModel.$parsers.push(function(val) {
-            return val ? parseInt(val, 10) : null;
-          });
-          ngModel.$formatters.push(function(val) {
-            return val ? '' + val : null;
-          });
-        }
-      };
-    })
-
-    /**
-     * Epoch Date Directive
-     * Parses date strings to integers (ms from 1970)
-     *
-     * @example
-     * '<input epoch-date ng-model="$ctrl.time" type="text"
-     *   uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" />'
-     */
-    .directive('epochDate', function() {
-      return {
-    		require: 'ngModel',
-    		link: function(scope, element, attrs, ngModel) {
-      		ngModel.$parsers.push(function(viewValue) {
-           	return +viewValue;
-    			});
-    		}
-    	};
-    })
-
-    /**
      * Protocol filter
      * Displays the protocol string
      *
@@ -161,6 +120,46 @@
       };
     })
 
+    /**
+     * Convert To Number Directive
+     * Parses strings to integers
+     * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}
+     *
+     * @example
+     * '<select ng-model="$ctrl.value" convert-to-number>...</select>'
+     */
+    .directive('convertToNumber', function() {
+      return {
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModel) {
+          ngModel.$parsers.push(function(val) {
+            return val ? parseInt(val, 10) : null;
+          });
+          ngModel.$formatters.push(function(val) {
+            return val ? '' + val : null;
+          });
+        }
+      };
+    })
+
+    /**
+     * Epoch Date Directive
+     * Parses date strings to integers (ms from 1970)
+     *
+     * @example
+     * '<input epoch-date ng-model="$ctrl.time" type="text"
+     *   uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" />'
+     */
+    .directive('epochDate', function() {
+      return {
+    		require: 'ngModel',
+    		link: function(scope, element, attrs, ngModel) {
+      		ngModel.$parsers.push(function(viewValue) {
+           	return +viewValue;
+    			});
+    		}
+    	};
+    })
 
     /**
      * Determines the cursor position in an input
