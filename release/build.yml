@@ -200,6 +200,9 @@
         - molochviewer.upstart.conf
         - molochwise.upstart.conf
 
+    -  copy: src="README.txt" dest=/data/moloch/
+    -  copy: src="moloch_update_geo.sh" dest=/data/moloch/bin
+
 # CentOS package
     - block:
       - name: get moloch version
