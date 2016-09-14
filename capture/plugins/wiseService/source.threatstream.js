@@ -44,6 +44,7 @@ function ThreatStreamSource (api, section) {
     this.domains      = new HashTable();
     this.emails       = new HashTable();
     this.md5s         = new HashTable();
+    this.urls         = new HashTable();
     this.cacheTimeout = -1;
     break;
   case "sqlite3":
