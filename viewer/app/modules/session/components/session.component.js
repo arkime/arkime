@@ -35,11 +35,11 @@
       this.currentPage  = 1; // start on the first page
 
       this.query = {        // query defaults:
-        length      : 50,   // page length
-        start       : 0,    // first item index
-        // array of sort elements with order
-        sorts       : [],   // [ { element: 'lp', order: 'asc' } ]
-        facets      : 1,    // facets
+        length: 50,   // page length
+        start : 0,    // first item index
+        // array of sort objects
+        sorts : [],   // [ { element: 'lp', order: 'asc' } ]
+        facets: 1,    // facets
       };
 
       // configure datatable

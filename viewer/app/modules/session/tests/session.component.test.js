@@ -5,11 +5,10 @@
   /* mock data ------------------------------- */
   // default session query
   var query = {
-    length      : 50,   // page length
-    start       : 0,    // first item index
-    sortElement : 'fp', // sort element (key of session field)
-    sortOrder   : 'asc',// sort order ('asc' or 'desc')
-    facets      : 1     // facets
+    length: 50, // page length
+    start : 0,  // first item index
+    sorts : [], // array of sort objects
+    facets: 1   // facets
   };
 
   // sample session json
@@ -66,10 +65,6 @@
         $httpBackend.expectGET(tableStateEndpoint)
           .respond({});
 
-        // // itital query for sessions
-        // $httpBackend.expectGET(sessionsEndpoint + defaultParameters)
-        //   .respond(sessionsJSON);
-
         scope = $rootScope.$new();
 
         sessionComponent = $componentController('session', {
@@ -116,8 +111,9 @@
     });
 
     describe('listeners ->', function() {
-      var sortElement = 'lp', sortOrder = 'desc';
-      var length      = 10,   currentPage = 2;
+      var sorts = [{element:'lp', order:'desc'}];
+      var length      = 10;
+      var currentPage = 2;
       var start       = (currentPage - 1) * length;
 
       beforeEach(function() {
@@ -125,7 +121,7 @@
 
         // emit change:sort event
         sub_scope.$emit('change:sort', {
-          sortElement:sortElement, sortOrder:sortOrder
+          sorts:sorts
         });
 
         // expect GET request with new parameters
@@ -154,8 +150,7 @@
       });
 
       it('should listen for "change:sort" event', function() {
-        expect(sessionComponent.query.sortElement).toEqual(sortElement);
-        expect(sessionComponent.query.sortOrder).toEqual(sortOrder);
+        expect(sessionComponent.query.sorts).toEqual(sorts);
         expect(sessionComponent.getData).toHaveBeenCalled();
         expect(sessionComponent.getData).toHaveBeenCalledWith();
       });

@@ -47,12 +47,12 @@
 
       it('should send a GET request (with parameters) for sessions', function() {
         var query = {
-          length      : 50,   // page length
-          start       : 0,    // first item index
-          sortElement : 'fp', // sort element (key of session field)
-          sortOrder   : 'asc',// sort order ('asc' or 'desc')
-          facets      : 1    // facets
+          length: 50, // page length
+          start : 0,  // first item index
+          sorts : [{element:'fp',order:'asc'}], // array of sort objects
+          facets: 1   // facets
         };
+
         var result = SessionService.get(query);
         $httpBackend.expectGET('sessions.json?facets=1&length=50&order=fp:asc');
         $httpBackend.flush();
