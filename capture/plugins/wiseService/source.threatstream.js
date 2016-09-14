@@ -71,8 +71,8 @@ ThreatStreamSource.prototype.parseFile = function()
   self.emails.reserve(2000000);
   self.md5s.clear();
   self.md5s.reserve(2000000);
-  self.urls.clear();
-  self.urls.reserve(200000);
+  //self.urls.clear();
+  //self.urls.reserve(200000);
 
   fs.createReadStream('/tmp/threatstream.zip')
     .pipe(unzip.Parse())
@@ -120,8 +120,8 @@ ThreatStreamSource.prototype.parseFile = function()
             self.emails.put(item.email, {num: num, buffer: encoded});
           } else if (item.itype.match(/_md5/)) {
             self.md5s.put(item.md5, {num: num, buffer: encoded});
-          } else if (item.itype.match(/_url/)) {
-            self.urls.put(item.url, {num: num, buffer: encoded});
+          //} else if (item.itype.match(/_url/)) {
+          //  self.urls.put(item.url, {num: num, buffer: encoded});
           }
         });
         //console.log("Threatstream - Done", entry.path);
