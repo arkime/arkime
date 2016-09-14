@@ -215,7 +215,7 @@
           - fpm -s dir -t rpm -n moloch -v {{moloch_version}} --iteration {{iteration}} /data/moloch
 
       - name: copy centos back
-        fetch: src=moloch-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=.
+        fetch: src=moloch-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=./builds
       when: ansible_distribution=='CentOS'
       tags: package
 
@@ -234,6 +234,6 @@
           - fpm -s dir -t deb -n moloch -v {{moloch_version}} --iteration {{iteration}} /data/moloch
 
       - name: copy ubuntu back
-        fetch: src=moloch_{{moloch_version}}-{{iteration}}_amd64.deb dest=.
+        fetch: src=moloch_{{moloch_version}}-{{iteration}}_amd64.deb dest=./builds
       when: ansible_distribution=='Ubuntu'
       tags: package
