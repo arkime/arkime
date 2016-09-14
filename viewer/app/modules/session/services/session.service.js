@@ -47,10 +47,14 @@
           }
 
           // server takes one param (order)
-          if (query.sortElement && query.sortOrder) {
-            params.order = query.sortElement + ':' + query.sortOrder;
-          } else if (query.order) {
-            params.order = query.order;
+          if (query.sorts && query.sorts.length) {
+            params.order = '';
+            var len = query.sorts.length;
+            for (var i = 0; i < len; ++i) {
+              var item = query.sorts[i];
+              params.order += item.element + ':' + item.order;
+              if (i < len - 1) { params.order += ','; }
+            }
           }
         }
 

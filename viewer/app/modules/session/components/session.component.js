@@ -37,8 +37,8 @@
       this.query = {        // query defaults:
         length      : 50,   // page length
         start       : 0,    // first item index
-        sortElement : 'fp', // sort element (key of session field)
-        sortOrder   : 'asc',// sort order ('asc' or 'desc')
+        // array of sort elements with order
+        sorts       : [],   // [ { element: 'lp', order: 'asc' } ]
         facets      : 1,    // facets
       };
 
@@ -67,18 +67,12 @@
         this.DTColumnDefBuilder.newColumnDef(10).notSortable()
       ];
 
-
-      // call backend for data!
-      // this.getData();       // get table data
       this.getColumnInfo(); // get column infomation
-
 
       /* Listen! */
       // watch for the sorting changes (from colheader.component)
       this.$scope.$on('change:sort', (event, args) => {
-        // sorting affects sortElement and sortOrder
-        this.query.sortElement  = args.sortElement;
-        this.query.sortOrder    = args.sortOrder;
+        this.query.sorts = args.sorts;
 
         this.getData();
       });
@@ -132,7 +126,6 @@
           this.columnInfo = response.data;
         })
         .catch((error) => {
-          // TODO: display column information error
           this.columnInfoError = error;
         });
     }

@@ -16,30 +16,11 @@
      * '{{session.pr | protocol}}'
      */
     .filter('protocol', () => {
+      var lookup = { 1:'icmp', 6:'tcp', 17:'udp', 47:'gre', 58:'icmp6' };
+
       return (input) => {
-        var result;
-
-        switch (input) {
-          case 1:
-            result = 'icmp';
-            break;
-          case 6:
-            result = 'tcp';
-            break;
-          case 17:
-            result = 'udp';
-            break;
-          case 47:
-            result = 'gre';
-            break;
-          case 58:
-            result = 'icmp6';
-            break;
-          default:
-            result = input.toString();
-            break;
-        }
-
+        var result = lookup[input];
+        if (!result) { result = input; }
         return result;
       };
     })
