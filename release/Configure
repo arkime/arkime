@@ -74,5 +74,19 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
 fi
 
 ################################################################################
+if [ -d "/etc/logrotate.d" -a ! -f "/etc/logrotate.d/moloch" ]; then
+    echo "Moloch - Installing /etc/logrotate.d/moloch to rotate files after 7 days"
+    cat << EOF > /etc/logrotate.d/moloch
+/nids/moloch/logs/capture.log
+/nids/moloch/logs/viewer.log {
+    daily
+    rotate 7
+    notifempty
+    copytruncate
+}
+EOF
+fi
+
+################################################################################
 echo "Moloch - Downloading GEO files"
 /data/moloch/bin/moloch_update_geo.sh > /dev/null
