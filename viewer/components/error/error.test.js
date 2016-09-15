@@ -27,7 +27,6 @@
     }));
 
     it('should render html with error message', function() {
-      expect(scope.message).toEqual('Error message!');
       expect(templateAsHtml).toBeDefined();
       expect(templateAsHtml).toContain(scope.message);
     });

@@ -36,10 +36,9 @@
 
       templateAsHtml = template.html();
 
-      typeahead = $componentController('expressionTypeahead', {
-        $routeParams: {},
-        FieldService: FieldService
-      });
+      typeahead = $componentController('expressionTypeahead',
+        { $routeParams: {}, FieldService: FieldService },
+        { query: scope.expression });
 
       // spy on emit event
       spyOn(scope, '$emit').and.callThrough();
