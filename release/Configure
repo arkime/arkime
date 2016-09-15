@@ -1,0 +1,78 @@
+#!/bin/bash
+# Simple capital C Configure script for rpm/deb, like the old days
+
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
+################################################################################
+### Ask config questions
+if [ -z $MOLOCH_INTERFACE ]; then
+    echo -n "Interface to monitor [eth1] "
+    read MOLOCH_INTERFACE
+fi
+if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth0"; fi
+
+until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" -o "$MOLOCH_LOCALELASTICSEARCH" == "no" ]; do
+    echo -n "Install Elasticsearch server locally for demo, NOT recommended for production use (yes or no) [no] "
+    read MOLOCH_LOCALELASTICSEARCH
+done
+
+if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
+    MOLOCH_ELASTICSEARCH="http://localhost:9200"
+else
+    if [ -z $MOLOCH_ELASTICSEARCH ]; then
+        echo -n "Elasticsearch server URL [http://localhost:9200] "
+        read MOLOCH_ELASTICSEARCH
+    fi
+    if [ -z $MOLOCH_ELASTICSEARCH ]; then MOLOCH_ELASTICSEARCH="http://localhost:9200"; fi
+fi
+
+while [ -z $MOLOCH_PASSWORD ]; do
+    echo -n "Password to encrypt S2S and other things [no-default] "
+    read MOLOCH_PASSWORD
+done
+if [ -z "$MOLOCH_PASSWORD" ]; then echo "Must provide a password"; exit; fi
+
+
+################################################################################
+echo "Moloch - Creating configuration files"
+if [ ! -f "/data/moloch/etc/config.ini" ]; then
+    echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" \< /data/moloch/etc/config.ini.sample \> /data/moloch/etc/config.ini
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/config.ini.sample > /data/moloch/etc/config.ini
+else
+    echo "Not overwriting /data/moloch/etc/config.ini, delete and run again if update required (usually not)"
+    sleep 2
+fi
+
+sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
+sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+
+################################################################################
+chown nobody /data/moloch/logs /data/moloch/raw
+chmod 0700 /data/moloch/raw
+
+################################################################################
+if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
+    echo "Moloch - Downloading and installing demo Elasticsearch"
+    ES_VERSION=2.4.0
+    if [ ! -f "/data/moloch/elasticsearch-${ES_VERSION}.tar.gz" ]; then
+        wget http://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz -O /data/moloch/elasticsearch-${ES_VERSION}.tar.gz
+        (cd /data/moloch ; tar xf elasticsearch-${ES_VERSION}.tar.gz)
+        (cd /data/moloch/elasticsearch-${ES_VERSION}; ./bin/plugin install mobz/elasticsearch-head)
+        ln -sf /data/moloch/elasticsearch-${ES_VERSION} /data/moloch/elasticsearch
+        mkdir /data/moloch/data /data/moloch/etc/scripts
+        chown nobody /data/moloch/data /data/moloch/etc/scripts
+    fi
+
+    HOSTNAME=`hostname -s`
+    sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" < /data/moloch/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
+    cp -f /data/moloch/etc/logging.demo.yml /data/moloch/etc/logging.yml
+    cp -f /data/moloch/etc/elasticsearch.demo.yml /data/moloch/etc/elasticsearch.yml
+    /sbin/start elasticsearch
+fi
+
+################################################################################
+echo "Moloch - Downloading GEO files"
+/data/moloch/bin/moloch_update_geo.sh > /dev/null

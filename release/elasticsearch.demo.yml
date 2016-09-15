@@ -1,0 +1,16 @@
+cluster.name: Moloch
+node.name: "${ES_NODE_NAME}"
+node.max_local_storage_nodes: 1
+path.data: "/data/moloch/data"
+path.logs: /data/moloch/logs
+gateway.recover_after_nodes: 1
+gateway.recover_after_time: 5m
+gateway.expected_nodes: 1
+discovery.zen.minimum_master_nodes: 1
+discovery.zen.ping.multicast.enabled: false
+bootstrap.mlockall: true
+http.port: "${ES_HTTP_PORT}"
+transport.tcp.port: "${ES_TRANSPORT_PORT}"
+transport.ping_schedule: 30s
+index.number_of_replicas: 0
+cluster.routing.allocation.node_initial_primaries_recoveries: 1
