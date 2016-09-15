@@ -14,7 +14,7 @@
     - node_version: 0.10.46
     - rvm1_rubies:
       - ruby-1.9.3
-    - iteration: 9
+    - iteration: 1
 
 # Tasks before roles install software
   pre_tasks:
@@ -47,6 +47,7 @@
             - libselinux-python
             - rpm-build
 
+      # Block end
       when: ansible_distribution=='CentOS'
 
 
@@ -75,6 +76,7 @@
             - libffi-dev
             - libssl-dev
 
+      # Block end
       when: ansible_distribution == 'Ubuntu'
 
 # Wackiness is happening where it doesn't always resolve and stuff
@@ -175,19 +177,19 @@
 # Actually build
     - name: git clone
       git: repo=https://github.com/aol/moloch dest=moloch update=yes force=yes
-      tags: 
+      tags:
         - git
 
     - name: configure
       shell: cd moloch; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}}
-      tags: 
+      tags:
         - rebuild
 
     - name: make
       shell: cd moloch; make clean; make; make install
       environment:
         PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
-      tags: 
+      tags:
         - rebuild
 
     - name: copy sample config
@@ -199,10 +201,21 @@
         - molochcapture.upstart.conf
         - molochviewer.upstart.conf
         - molochwise.upstart.conf
+        - elasticsearch.upstart.conf
+        - logging.demo.yml
+        - elasticsearch.demo.yml
 
-    -  copy: src="README.txt" dest=/data/moloch/
-    -  copy: src="moloch_update_geo.sh" dest=/data/moloch/bin mode=0755
-    -  copy: src="Configure" dest=/data/moloch/bin mode=0755
+    - copy: src="README.txt" dest=/data/moloch/
+
+    - name: helper scripts
+      copy: src={{item}} dest=/data/moloch/bin mode=0755
+      with_items:
+        - moloch_update_geo.sh
+        - moloch_add_user.sh
+        - Configure
+
+    - set_fact:
+        moloch_version: "stoperrors"
 
 # CentOS package
     - block:
@@ -220,6 +233,7 @@
 
       - name: copy centos back
         fetch: src=moloch-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=./builds
+      # Block end
       when: ansible_distribution=='CentOS'
       tags: package
 
@@ -239,5 +253,6 @@
 
       - name: copy ubuntu back
         fetch: src=moloch_{{moloch_version}}-{{iteration}}_amd64.deb dest=./builds
+      # Block end
       when: ansible_distribution=='Ubuntu'
       tags: package
