@@ -2,7 +2,7 @@ doctype html
 html(ng-app="moloch")
 
   head
-    title Moloch
+    title(ng-bind="'Moloch - ' + title")
     meta(charset='utf8')
     link(rel='stylesheet', href='/font-awesome/css/font-awesome.min.css')
     link(rel='stylesheet', href='/bootstrap/dist/css/bootstrap.css')

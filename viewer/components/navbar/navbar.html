@@ -1,23 +1,34 @@
 <div class="navbar navbar-inverse navbar-static-top">
   <div class="container-fluid">
+
     <a href="/about">
       <img src="/header_logo.png" class="moloch-logo">
     </a>
+
+    <p class="navbar-text pull-right margined-right-none">
+      <small>v{{::$ctrl.molochVersion}}</small>
+      <es-health></es-health>
+    </p>
+
     <div class="navbar-header">
-      <button class="navbar-toggle" type="button" ng-click="$ctrl.isCollapsed = !$ctrl.isCollapsed">
+      <button class="navbar-toggle" type="button"
+        ng-click="$ctrl.isCollapsed = !$ctrl.isCollapsed">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a href="/app" class="navbar-brand" style="margin-left:2em;">Moloch</a>
+      <a href="/app" class="navbar-brand">Moloch</a>
     </div>
-    <div uib-collapse="$ctrl.isCollapsed" class="navbar-collapse collapse" id="navbar-main">
+
+    <div uib-collapse="$ctrl.isCollapsed" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li ng-repeat="item in $ctrl.menu" ng-class="{active: $ctrl.isActive(item.link)}">
+        <li ng-repeat="item in $ctrl.menu"
+          ng-class="{active: $ctrl.isActive(item.link)}">
             <a ng-href="{{item.link}}">{{item.title}}</a>
         </li>
       </ul>
     </div>
+
   </div>
 </div>

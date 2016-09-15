@@ -14,11 +14,13 @@
      * Initialize global variables for this controller
      * @param $location Exposes browser address bar URL
      *                  (based on the window.location)
+     * @param molochVersion The installed version of moloch
      *
      * @ngInject
      */
-    constructor($location) {
-      this.$location = $location;
+    constructor($location, molochVersion) {
+      this.$location      = $location;
+      this.molochVersion  = molochVersion.version;
     }
 
     /* Callback when component is mounted and ready */
@@ -40,7 +42,7 @@
 
   }
 
-  NavbarController.$inject = ['$location'];
+  NavbarController.$inject = ['$location','molochVersion'];
 
   /**
    * Navbar Directive

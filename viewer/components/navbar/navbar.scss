@@ -6,7 +6,8 @@ navbar {
     box-shadow        : $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
 
     .navbar-brand {
-      color: $color-gray-light;
+      color       : $color-gray-light;
+      margin-left :42px !important;
     }
 
     li {
