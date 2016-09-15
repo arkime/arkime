@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
+if [ -z $MOLOCH_INTERFACE ]; then
+    echo -n "Interface to monitor [eth1] "
+    read MOLOCH_INTERFACE
+fi
+if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth0"; fi
+
+
+if [ -z $MOLOCH_ELASTICSEARCH ]; then
+    echo -n "Elasticsearch server URL [http://localhost:9200] "
+    read MOLOCH_ELASTICSEARCH
+fi
+if [ -z $MOLOCH_ELASTICSEARCH ]; then MOLOCH_ELASTICSEARCH="http://localhost:9200"; fi
+
+if [ -z $MOLOCH_PASSWORD ]; then
+    echo -n "Password to encrypt S2S and other things [no-default] "
+    read MOLOCH_PASSWORD
+fi
+if [ -z "$MOLOCH_PASSWORD" ]; then echo "Must provide a password"; exit; fi
+
+
+
+if [ ! -f "/data/moloch/etc/config.ini" ]; then
+    echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" \< /data/moloch/etc/config.ini.sample \> /data/moloch/etc/config.ini
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/config.ini.sample > /data/moloch/etc/config.ini
+else
+    echo "Not overwriting /data/moloch/etc/config.ini, delete and run again"
+fi
+
+sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
+sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+
+/data/moloch/bin/moloch_update_geo.sh

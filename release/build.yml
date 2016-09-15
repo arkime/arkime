@@ -14,7 +14,7 @@
     - node_version: 0.10.46
     - rvm1_rubies:
       - ruby-1.9.3
-    - iteration: 7
+    - iteration: 9
 
 # Tasks before roles install software
   pre_tasks:
@@ -184,7 +184,7 @@
         - rebuild
 
     - name: make
-      shell: cd moloch; make; make install
+      shell: cd moloch; make clean; make; make install
       environment:
         PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
       tags: 
@@ -201,7 +201,8 @@
         - molochwise.upstart.conf
 
     -  copy: src="README.txt" dest=/data/moloch/
-    -  copy: src="moloch_update_geo.sh" dest=/data/moloch/bin
+    -  copy: src="moloch_update_geo.sh" dest=/data/moloch/bin mode=0755
+    -  copy: src="Configure" dest=/data/moloch/bin mode=0755
 
 # CentOS package
     - block:
