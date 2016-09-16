@@ -78,6 +78,10 @@
         ms = ms + 3600000;
         result = $filter('readableTime')(ms);
         expect(result).toEqual('1 day 01:00:00');
+
+        ms = 0;
+        result = $filter('readableTime')(ms);
+        expect(result).toEqual('0');
       });
 
     });

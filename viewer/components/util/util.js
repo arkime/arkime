@@ -97,7 +97,7 @@
           result += (seconds < 10) ? '0' + seconds : seconds;
         }
 
-        return result;
+        return result || '0';
       };
     })
 

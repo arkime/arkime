@@ -43,7 +43,7 @@
 
         $routeProvider
           .when('/session', {
-            title   : 'Sessions',
+            title   : ' - Sessions', // base is "Moloch"
             template: '<session></session>',
             // don't automatically reload when route parameters change
             reloadOnSearch: false
@@ -57,7 +57,9 @@
 
   .run(['$rootScope', function($rootScope) {
     $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
-        $rootScope.title = current.$$route.title || 'Moloch';
+        if (current && current.$$route && current.$$route.title) {
+          $rootScope.title = current.$$route.title;
+        }
     });
   }]);
 
