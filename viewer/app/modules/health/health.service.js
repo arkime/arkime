@@ -2,6 +2,10 @@
 
   'use strict';
 
+
+  var timeToLive = 5000; // 5 seconds
+  var lastCalledTime;
+
   /**
    * @class HealthService
    * @classdesc Transacts es health with the server
@@ -16,9 +20,10 @@
      *
      * @ngInject
      */
-    constructor($q, $http) {
+    constructor($q, $http, $cacheFactory) {
       this.$q     = $q;
       this.$http  = $http;
+      this.$cacheFactory = $cacheFactory;
     }
 
     /* service methods ----------------------------------------------------- */
@@ -30,7 +35,20 @@
     esHealth() {
       return this.$q((resolve, reject) => {
 
-        this.$http.get('eshealth.json')
+        var currentTime = new Date().getTime();
+        var makeCall    = true;
+
+        if (!lastCalledTime || (currentTime - lastCalledTime < timeToLive)) {
+          makeCall = false; // don't make the call, use the cached value
+        }
+
+        if (makeCall) { // make a new call by removing the cached value
+          this.$cacheFactory.get('$http').remove('eshealth.json');
+        }
+
+        lastCalledTime = currentTime;
+
+        this.$http({ method:'GET', url:'eshealth.json', cache:true })
           .then((response) => {
             resolve(response.data);
           }, (error) => {
@@ -42,7 +60,7 @@
 
   }
 
-  HealthService.$inject = ['$q', '$http'];
+  HealthService.$inject = ['$q', '$http', '$cacheFactory'];
 
 
   angular.module('moloch')

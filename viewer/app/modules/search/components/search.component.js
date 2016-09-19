@@ -19,8 +19,9 @@
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, $location) {
+    constructor($scope, $rootScope, $routeParams, $location) {
       this.$scope       = $scope;
+      this.$rootScope   = $rootScope;
       this.$routeParams = $routeParams;
       this.$location    = $location;
     }
@@ -134,13 +135,16 @@
           strictly  : this.strictly
         });
 
-        this.$scope.$broadcast('issue:search');
+        // this.$scope.$broadcast('issue:search');
+        this.$rootScope.$broadcast('issue:search', {
+          expression: this.expression.value
+        });
       }
     }
 
   }
 
-  SearchController.$inject = ['$scope','$routeParams','$location'];
+  SearchController.$inject = ['$scope','$rootScope','$routeParams','$location'];
 
   /**
    * Search Component

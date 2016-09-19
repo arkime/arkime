@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var _fields_cache, _country_codes_cache;
+  var _country_codes_cache;
   var _recent_expressions = [];
 
   /**
@@ -33,14 +33,8 @@
     get() {
       return this.$q((resolve, reject) => {
 
-        if (_fields_cache && Object.keys(_fields_cache).length > 0) {
-          resolve(_fields_cache);
-          return;
-        }
-
-        this.$http.get('fields')
+        this.$http({method:'GET',url:'fields',cache:true})
           .then((response) => {
-            _fields_cache = response.data;
             resolve(response.data);
           }, (error) => {
             reject(error);

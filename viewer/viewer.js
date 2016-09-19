@@ -842,17 +842,7 @@ app.get('/style.css', function(req, res) {
   });
 });
 
-
-app.get('/fields', function(req, res) {
-  if (!app.locals.fieldsMap) {
-    res.status(404);
-    res.send('Cannot locate fields');
-  }
-  res.send(app.locals.fieldsMap);
-});
-
-
-// angular app route
+// angular app pages
 app.get('/app', checkWebEnabled, function(req, res) {
   res.render('app');
 });
@@ -872,7 +862,6 @@ app.get('/app.bundle.js.map', function(req, res) {
 app.get('/vendor.bundle.js.map', function(req, res) {
   res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
 });
-
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING
@@ -1437,6 +1426,24 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+app.get('/fields', function(req, res) {
+  if (!app.locals.fieldsMap) {
+    res.status(404);
+    res.send('Cannot locate fields');
+  }
+  res.send(app.locals.fieldsMap);
+});
+
+app.get('/titleconfig', checkWebEnabled, function(req, res) {
+  var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
+
+  titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
+    .replace(/_userId_/g, req.user?req.user.userId:"-")
+    .replace(/_userName_/g, req.user?req.user.userName:"-");
+
+  res.send(titleConfig);
+});
+
 app.get('/eshealth.json', function(req, res) {
   Db.healthCache(function(err, health) {
     res.send(health);

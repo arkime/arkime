@@ -33,7 +33,7 @@
     'directives.pagination', 'directives.search',
 
     // utilities
-    'moloch.util'
+    'moloch.util', 'moloch.config'
   ])
 
   .constant('molochVersion', require('../version'))
@@ -43,7 +43,7 @@
 
         $routeProvider
           .when('/session', {
-            title   : ' - Sessions', // base is "Moloch"
+            title   : 'Sessions',
             template: '<session></session>',
             // don't automatically reload when route parameters change
             reloadOnSearch: false
@@ -55,12 +55,23 @@
     ]
   )
 
-  .run(['$rootScope', function($rootScope) {
-    $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
-        if (current && current.$$route && current.$$route.title) {
-          $rootScope.title = current.$$route.title;
-        }
+  .run(['$rootScope', 'ConfigService', 'HealthService',
+    function($rootScope, ConfigService, HealthService) {
+
+    $rootScope.$on('issue:search', (event, args) => {
+      // update title with expression
+      ConfigService.setTitle(null, args.expression);
     });
+
+    $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+      if (current && current.$$route && current.$$route.title) {
+        // update title with page
+        ConfigService.setTitle(current.$$route.title, null);
+      } else { // fallback to 'Moloch'
+        $rootScope.title = 'Moloch';
+      }
+    });
+
   }]);
 
 

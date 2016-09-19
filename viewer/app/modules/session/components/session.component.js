@@ -88,6 +88,7 @@
       });
 
       // watch for search expression and date range changes
+      // (from search.component)
       // IMPORTANT: this kicks off the inital search query
       this.$scope.$on('change:search', (event, args) => {
         this.query.startTime  = args.startTime;
