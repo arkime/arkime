@@ -5,7 +5,6 @@
   describe('Field Service ->', function() {
 
     // load the module
-    // beforeEach(angular.mock.module('moloch'));
     beforeEach(angular.mock.module('directives.search'));
 
     var FieldService;

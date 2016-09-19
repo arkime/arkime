@@ -21,6 +21,8 @@
 
       $httpBackend = _$httpBackend_;
 
+      $httpBackend.expectGET('titleconfig').respond('');
+
       $httpBackend.expectGET('fields').respond({});
 
       scope = $rootScope.$new();

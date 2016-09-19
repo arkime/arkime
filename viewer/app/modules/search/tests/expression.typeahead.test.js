@@ -45,8 +45,6 @@
 
       typeahead.$onInit();
 
-      $httpBackend.expectGET('fields').respond({});
-
       $httpBackend.flush();
     }));
 

@@ -12,17 +12,17 @@
 
     /**
      * Initialize global variables for the ConfigService
-     * @param $q    Service to run functions asynchronously
-     * @param $http Angular service that facilitates communication
-     *              with the remote HTTP servers
+     * @param $rootScope  Parent of all Angular scopes
+     * @param $q          Service to run functions asynchronously
+     * @param $http       Angular service that facilitates communication
+     *                    with the remote HTTP servers
      *
      * @ngInject
      */
-    constructor($rootScope, $q, $http, HealthService) {
+    constructor($rootScope, $q, $http) {
       this.$rootScope     = $rootScope;
       this.$q             = $q;
       this.$http          = $http;
-      this.HealthService  = HealthService;
     }
 
     /* service methods ----------------------------------------------------- */
@@ -45,7 +45,10 @@
     }
 
     /**
-     * Sets the browser page title
+     * Sets the browser page title (using $rootScope.title bound in app.jade)
+     * @param {string} page The title of the current app page
+     * @param {string} expression The search expression
+     * @param {string} view The view being applied
      */
     setTitle(page, expression, view) {
 
@@ -72,7 +75,7 @@
 
   }
 
-  ConfigService.$inject = ['$rootScope', '$q', '$http', 'HealthService'];
+  ConfigService.$inject = ['$rootScope', '$q', '$http'];
 
 
   angular.module('moloch.config', [])

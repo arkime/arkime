@@ -11,3 +11,5 @@ require('./search/tests/expression.typeahead.test');
 
 require('./health/tests/eshealth.component.test');
 require('./health/tests/health.service.test');
+
+require('./config/config.service.test');
