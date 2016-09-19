@@ -79,6 +79,19 @@
       # Block end
       when: ansible_distribution == 'Ubuntu'
 
+# On Centos 6 need to upgrade kernel so we get TPACKET_V3.  User doesn't have to have new kernel
+    - block:
+      - name: remove old kernel headers
+        yum: state=absent name=kernel-headers
+
+      - name: install new kernel headers
+        yum: state=present name=http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm
+
+      # Block end
+      when: ansible_distribution=='CentOS' and ansible_distribution_major_version == "6"
+      tags: kernel
+
+
 # Wackiness is happening where it doesn't always resolve and stuff
     - name: keys.gnupg.net hosts entry hack
       lineinfile: dest=/etc/hosts line="178.32.66.144 keys.gnupg.net"
