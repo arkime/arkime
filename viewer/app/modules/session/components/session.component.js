@@ -95,6 +95,10 @@
         this.query.stopTime   = args.stopTime;
         this.query.expression = args.expression;
 
+        // reset the user to the first page, because we are issuing a new query
+        // and there may only be 1 page of results
+        this.query.start      = 0;
+
         this.getData();
       });
     } /* /$onInit */

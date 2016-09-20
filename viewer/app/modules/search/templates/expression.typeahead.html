@@ -9,6 +9,7 @@
     <input caret-pos="$ctrl.caretPos" focus-input="$ctrl.focusInput"
       ng-model="$ctrl.query.value" ng-trim="false"
       ng-change="$ctrl.changeExpression()"
+      ng-keydown="$ctrl.keydown($event);$event.stopPropagation();"
       ng-model-options="{debounce:300}"
       type="text" placeholder="Search"
       class="form-control search-control" />
@@ -16,25 +17,20 @@
         class="fa fa-close text-muted clear-input cursor-pointer"></span>
   </div>
 
-  <!-- fields dropdown -->
-  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
-    ng-show="$ctrl.query.value && $ctrl.fieldResults && $ctrl.fieldResults.length">
-    <li ng-repeat="field in $ctrl.fieldResults"
-      ng-click="$ctrl.addToQuery(field)" class="cursor-pointer">
+  <!-- results dropdown -->
+  <ul id="typeahead-results" uib-drowpdown-menu
+    class="dropdown-menu typeahead-results"
+    ng-show="$ctrl.query.value && $ctrl.results && $ctrl.results.length">
+    <li ng-repeat="(key, value) in $ctrl.results"
+      ng-class="{'active':key === $ctrl.activeIdx}"
+      ng-click="$ctrl.addToQuery(value)" class="cursor-pointer"
+      uib-tooltip="{{::value.help}}" tooltip-placement="right"
+      tooltip-append-to-body="true">
       <a>
-        <strong ng-if="field.exp">{{::field.exp}}</strong>
-        <strong ng-if="!field.exp">{{::field}}</strong>
-        <span ng-if="field.friendlyName">- {{::field.friendlyName}}</span>
+        <strong ng-if="value.exp">{{::value.exp}}</strong>
+        <strong ng-if="!value.exp">{{::value}}</strong>
+        <span ng-if="value.friendlyName">- {{::value.friendlyName}}</span>
       </a>
-    </li>
-  </ul>
-
-  <!-- operators dropdown -->
-  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
-    ng-show="$ctrl.query.value && $ctrl.operationResults && $ctrl.operationResults.length">
-    <li ng-repeat="op in $ctrl.operationResults"
-      ng-click="$ctrl.addToQuery(op)" class="cursor-pointer">
-      <a><strong>{{::op}}</strong></a>
     </li>
   </ul>
 

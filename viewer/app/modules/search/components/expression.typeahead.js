@@ -28,9 +28,12 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.activeIdx  = 0;    // active index of typeahead results
       this.focusInput = true; // set focus on search input
+      this.results    = null; // typeahead results
+      // the typeahead results menu
+      this.resultsElement = angular.element(document.getElementById('typeahead-results'));
 
-      // console.log(this.query.value);
       if (!this.query) { this.query = { value: '' }; }
 
       // get the available fields for autocompleting
@@ -47,8 +50,8 @@
       // watch for search (from search.component)
       this.$scope.$on('issue:search', (event, args) => {
         // remove typeahead results once query has been issued
-        this.fieldResults      = null;
-        this.operationResults  = null;
+        this.results    = null;
+        this.activeIdx  = 0;
       });
     }
 
@@ -59,11 +62,11 @@
      * Displays appropriate autocomplete suggestions
      */
      changeExpression() {
-       this.focusInput        = false;
-       this.fieldResults      = null;
-       this.operationResults  = null;
-       this.loadingValues     = false;
-       this.loadingError      = false;
+       this.activeIdx     = 0;
+       this.results       = null;
+       this.focusInput    = false;
+       this.loadingValues = false;
+       this.loadingError  = false;
 
        // if the cursor is at a space
        var spaceCP = (this.caretPos > 0 &&
@@ -87,9 +90,7 @@
 
        // display fields
        if (tokens.length <= 1) {
-         this.fieldResults =
-           ExpressionController.findMatch(lastToken, this.fields);
-
+         this.results = ExpressionController.findMatch(lastToken, this.fields);
          return;
        }
 
@@ -100,12 +101,11 @@
          if (field.type === 'integer') {
            // if at a space, show all operators
            if(tokens[tokens.length - 1] === ' ') {
-             this.operationResults = operations;
+             this.results = operations;
            } else {
-             this.operationResults =
-               ExpressionController.findMatch(lastToken, operations);
+             this.results = ExpressionController.findMatch(lastToken, operations);
            }
-         } else { this.operationResults = ['!=', '==']; }
+         } else { this.results = ['!=', '==']; }
 
          return;
        }
@@ -117,14 +117,12 @@
          if (/^[!<=>]/.test(token)) {
            // if at a space, show all operators
            if(tokens[tokens.length - 1] === ' ') {
-             this.operationResults = ['&&', '||'];
+             this.results = ['&&', '||'];
            } else {
-             this.operationResults =
-               ExpressionController.findMatch(lastToken, ['&&', '||']);
+             this.results = ExpressionController.findMatch(lastToken, ['&&', '||']);
            }
          } else {
-           this.fieldResults =
-             ExpressionController.findMatch(lastToken, this.fields);
+           this.results = ExpressionController.findMatch(lastToken, this.fields);
          }
 
          return;
@@ -137,8 +135,7 @@
          this.FieldService.getCountryCodes()
            .then((result) => {
              this.loadingValues = false;
-             this.fieldResults  =
-               ExpressionController.findMatch(lastToken, result);
+             this.results = ExpressionController.findMatch(lastToken, result);
            })
            .catch((error) => {
              this.loadingValues = false;
@@ -155,7 +152,7 @@
            this.FieldService.getHasheaderValues({type:token,filter:lastToken})
              .then((result) => {
                this.loadingValues = false;
-               this.fieldResults  = result;
+               this.results       = result;
                return;
              })
              .catch((error) => {
@@ -192,7 +189,7 @@
          this.FieldService.getValues(params)
            .then((result) => {
              this.loadingValues = false;
-             this.fieldResults  = result;
+             this.results       = result;
              return;
            })
            .catch((error) => {
@@ -215,9 +212,9 @@
        var newValue = ExpressionController.rebuildQuery(this.query.value, str);
        this.query.value = newValue;
 
-       this.fieldResults      = null;
-       this.operationResults  = null;
-       this.focusInput        = true; // re-focus on input
+       this.results     = null;
+       this.focusInput  = true; // re-focus on input
+       this.activeIdx   = 0;
      }
 
      /**
@@ -225,6 +222,47 @@
       */
      clear() {
        this.query.value = null;
+     }
+
+     /**
+      * Watches for keydown events and determines if a user is
+      * pressing the up and down arrows to navigate the drop down.
+      * When the user presses enter, their selection is added to the query.
+      * When the user presses escape, the typeahead results are removed.
+      * @param {Object} event The keydown event fired by the input
+      */
+     keydown(event) {
+       var target;
+
+       // there's nothing to do if there are no results in the dropdown menu
+       if (!this.results || this.results.length === 0) { return; }
+
+       if (!this.activeIdx || this.activeIdx < 0) { this.activeIdx = 0; }
+
+       switch (event.keyCode) {
+         case 40: // down arrow
+           event.preventDefault();
+           this.activeIdx = (this.activeIdx + 1) % this.results.length;
+           target = this.resultsElement[0].querySelectorAll('li')[this.activeIdx];
+           target.parentNode.scrollTop = target.offsetTop;
+           break;
+         case 38: // up arrow
+           event.preventDefault();
+           this.activeIdx = (this.activeIdx > 0 ?
+             this.activeIdx : this.results.length) - 1;
+           target = this.resultsElement[0].querySelectorAll('li')[this.activeIdx];
+           target.parentNode.scrollTop = target.offsetTop;
+           break;
+         case 13: // enter
+           event.preventDefault();
+           var result = this.results[this.activeIdx];
+           this.addToQuery(result);
+           break;
+         case 27: // escape
+           this.results   = null;
+           this.activeIdx = 0;
+           break;
+       }
      }
 
 
@@ -344,7 +382,7 @@
     .component('expressionTypeahead', {
       template  : require('html!../templates/expression.typeahead.html'),
       controller: ExpressionController,
-      bindings  : { query: '=' }
+      bindings  : { query: '<' }
     });
 
 })();
