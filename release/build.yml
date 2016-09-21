@@ -12,6 +12,7 @@
     - glib2_dir: 2.48
     - glib2_version: 2.48.2
     - node_version: 0.10.46
+    - daq_version: 2.0.6
     - rvm1_rubies:
       - ruby-1.9.3
     - iteration: 1
@@ -19,6 +20,24 @@
 # Tasks before roles install software
   pre_tasks:
     - block:
+        - name: ntop repo
+          get_url: url=http://packages.ntop.org/centos-stable/ntop.repo dest=/etc/yum.repos.d/ntop.repo
+
+        - name: epel repo
+          yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ansible_distribution_major_version}}.noarch.rpm state=installed
+
+        # On Centos 6 need to upgrade kernel so we get TPACKET_V3.  User doesn't have to have new kernel
+        - block:
+          - name: remove old kernel headers
+            yum: state=absent name=kernel-headers
+
+          - name: install new kernel headers
+            yum: state=present name=http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm
+
+          # TPACKET_V3 block end
+          when: ansible_distribution_major_version == "6"
+          tags: kernel
+
         - yum: name={{item}} state=installed
           with_items:
             - git
@@ -29,6 +48,7 @@
             - pkgconfig
             - flex
             - bison
+            - gcc
             - gcc-c++
             - zlib-devel
             - e2fsprogs-devel
@@ -46,12 +66,17 @@
             - libffi-devel
             - libselinux-python
             - rpm-build
+            - pfring
 
       # Block end
       when: ansible_distribution=='CentOS'
 
 
     - block:
+        #- apt: deb=http://packages.ntop.org/apt-stable/{{ansible_distribution_version}}/all/apt-ntop-stable.deb
+        - name: ntop deb
+          apt: deb=http://apt-stable.ntop.org/{{ansible_distribution_version}}/all/apt-ntop-stable.deb
+
         - apt: update_cache=yes name={{item}} state=installed
           with_items:
             - git
@@ -61,6 +86,7 @@
             - uuid-dev
             - libmagic-dev
             - pkg-config
+            - gcc
             - g++
             - flex
             - bison
@@ -75,22 +101,10 @@
             - xz-utils
             - libffi-dev
             - libssl-dev
+            - pfring
 
       # Block end
       when: ansible_distribution == 'Ubuntu'
-
-# On Centos 6 need to upgrade kernel so we get TPACKET_V3.  User doesn't have to have new kernel
-    - block:
-      - name: remove old kernel headers
-        yum: state=absent name=kernel-headers
-
-      - name: install new kernel headers
-        yum: state=present name=http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm
-
-      # Block end
-      when: ansible_distribution=='CentOS' and ansible_distribution_major_version == "6"
-      tags: kernel
-
 
 # Wackiness is happening where it doesn't always resolve and stuff
     - name: keys.gnupg.net hosts entry hack
@@ -105,6 +119,8 @@
     - name: install fpm
       gem: name=fpm user_install=no state=latest executable=/usr/local/bin/gem
 
+
+# Prepare prereqs
     - name: Download Packages
       get_url: url={{item}} dest=. validate_certs=no
       with_items:
@@ -114,6 +130,7 @@
         - http://curl.haxx.se/download/curl-{{curl_version}}.tar.gz
         - http://ftp.gnome.org/pub/gnome/sources/glib/{{glib2_dir}}/glib-{{glib2_version}}.tar.xz
         - https://nodejs.org/download/release/v{{node_version}}/node-v{{node_version}}-linux-x64.tar.xz
+        - https://www.snort.org/downloads/snort/daq-{{daq_version}}.tar.gz
 
     - name: Unarchive Packages
       unarchive: src={{item}} dest=. copy=no
@@ -123,6 +140,7 @@
         - libpcap-{{pcap_version}}.tar.gz
         - curl-{{curl_version}}.tar.gz
         - glib-{{glib2_version}}.tar.xz
+        - daq-{{daq_version}}.tar.gz
 
     - name: Check yara
       stat: path=yara-{{yara_version}}/libyara/.libs/libyara.a
@@ -164,7 +182,16 @@
       shell: cd glib-{{glib2_version}}; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --with-pcre=internal; make
       when: st.stat.exists == False
 
+    - name: Check daq
+      stat: path=/usr/local/include/daq.h
+      register: st
 
+    - name: Build daq
+      shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-1.7.4/ --with-libpcap-libraries=/home/vagrant/libpcap-1.7.4; make; make install
+      when: st.stat.exists == False
+
+
+# Prepare build
     - name: Remove old dest directory
       file: dest=/data/moloch state=absent
 
@@ -198,8 +225,28 @@
       tags:
         - rebuild
 
-    - name: make
-      shell: cd moloch; make clean; make; make install
+    - name: clean build area
+      shell: cd moloch; make clean
+      tags:
+        - rebuild
+
+    - name: build
+      shell: cd moloch; make
+      tags:
+        - rebuild
+
+    - name: build pfring plugin
+      shell: cd moloch/capture/plugins/pfring; make
+      tags:
+        - rebuild
+
+    - name: build daq plugin
+      shell: cd moloch/capture/plugins/daq; make
+      tags:
+        - rebuild
+
+    - name: install
+      shell: cd moloch; make install
       environment:
         PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
       tags:
