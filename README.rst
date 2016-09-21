@@ -33,12 +33,22 @@ SPI View Tab
     :align: center
     :alt: Sample spiview screen shot
 
+.. _downloads:
+RPM & DEB Downloads
+===================
+
+Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  
+These are still experimental, so please open a github issue with any feedback or bugs found.
+
+http://molo.ch/#downloads
+
 .. _quick-start:
 
 Quick Start
 ===========
 
-IMPATIENT? Run ``./easybutton-singlehost.sh`` in the Moloch source distribution
+If the prebuilt packages don't work, easybutton makes it possible to build a demo host quickly.
+Run ``./easybutton-singlehost.sh`` in the Moloch source distribution
 to build a complete single-machine Moloch system. This is good for a demo and
 can also be used as a starting point for a real production deployment.
 
