@@ -190,6 +190,25 @@
       shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-1.7.4/ --with-libpcap-libraries=/home/vagrant/libpcap-1.7.4; make; make install
       when: st.stat.exists == False
 
+# Only install snf if it exists locally.
+    - name: Check for remote snf
+      stat: path=/opt/snf
+      register: remotesnf
+
+    - name: Check for local snf
+      become: false
+      local_action: stat path=snf.tgz
+      register: localsnf
+      tags:
+        - rebuild
+
+    - name: unarchive snf
+      unarchive: src=snf.tgz dest=/opt
+      when: localsnf.stat.exists == True and remotesnf.stat.exists == False
+
+    - name: rename snf
+      command: mv /opt/myri_snf-3.0.9.50782_d4d3de8ea-3342.x86_64 /opt/snf
+      when: localsnf.stat.exists == True and remotesnf.stat.exists == False
 
 # Prepare build
     - name: Remove old dest directory
@@ -214,41 +233,36 @@
         - node
         - npm
 
-# Actually build
-    - name: git clone
-      git: repo=https://github.com/aol/moloch dest=moloch update=yes force=yes
-      tags:
-        - git
+# Actually build 
+    - block: 
+      - name: git clone
+        git: repo=https://github.com/aol/moloch dest=moloch update=yes force=yes
 
-    - name: configure
-      shell: cd moloch; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}}
-      tags:
-        - rebuild
+      - name: configure
+        shell: cd moloch; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}}
 
-    - name: clean build area
-      shell: cd moloch; make clean
-      tags:
-        - rebuild
+      - name: clean build area
+        shell: cd moloch; make clean
 
-    - name: build
-      shell: cd moloch; make
-      tags:
-        - rebuild
+      - name: build
+        shell: cd moloch; make
 
-    - name: build pfring plugin
-      shell: cd moloch/capture/plugins/pfring; make
-      tags:
-        - rebuild
+      - name: build pfring plugin
+        shell: cd moloch/capture/plugins/pfring; make
 
-    - name: build daq plugin
-      shell: cd moloch/capture/plugins/daq; make
-      tags:
-        - rebuild
+      - name: build daq plugin
+        shell: cd moloch/capture/plugins/daq; make
 
-    - name: install
-      shell: cd moloch; make install
-      environment:
-        PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
+      - name: build snf plugin
+        shell: cd moloch/capture/plugins/snf; make
+        when: localsnf.stat.exists == True
+
+      - name: install
+        shell: cd moloch; make install
+        environment:
+          PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
+
+      # Block End
       tags:
         - rebuild
 
