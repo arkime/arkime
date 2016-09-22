@@ -1,3 +1,7 @@
+0.15.1 2016/09/XX
+  - release: build pfring, daq, snf plugins
+  - wise - threatstream zip method broke in 0.15 (issue #534)
+
 0.15.0 2016/09/14
   - NOTICE: Requires ES 2.1 or later (recommend 2.4)
   - NOTICE: See https://github.com/aol/moloch/wiki/FAQ#How_do_I_upgrade_to_ES_2x_from_ES_1x
