@@ -432,6 +432,7 @@ ThreatStreamSource.prototype.init = function() {
     ThreatStreamSource.prototype.getMd5 = getMd5Zip;
     ThreatStreamSource.prototype.getEmail = getEmailZip;
     ThreatStreamSource.prototype.dump = dumpZip;
+    self.api.addSource("threatstream", self);
     break;
   case "api":
     ThreatStreamSource.prototype.getDomain = getDomainApi;
