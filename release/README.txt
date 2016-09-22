@@ -1,6 +1,6 @@
-Instructions for using the prebuilt Moloch packages.  These packages are still 
-in testing phase, so there may be some issues.  Please report and bugs
-or feature requests by opening an issue at https://github.com/aol/moloch/issues
+Instructions for using the prebuilt Moloch packages.
+These packages are still in the testing phase so there may be some issues.  
+Please report and bugs or feature requests by opening an issue at https://github.com/aol/moloch/issues
 
 Basic Moloch Installation steps:
  1) Download a Moloch build for 64bit Ubuntu 14.04, Ubuntu 16.04, Centos 6, or Centos 7 from http://molo.ch/index.html#downloads
@@ -25,7 +25,6 @@ Basic Moloch Installation steps:
  9) Visit http://molochhost:8005 with your favorite browser.
 
 
-Additional information can be found
+Additional information can be found at:
   * https://github.com/aol/moloch/wiki/FAQ
   * https://github.com/aol/moloch/wiki/Settings
-
