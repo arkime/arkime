@@ -37,12 +37,12 @@ function WiseProxySource (api, section) {
   var self = this;
 
   if (this.url === undefined) {
-    console.log(this.section, "- ERROR not loading", this.section, "since no url specified in config file");
+    console.log(this.section, "- ERROR not loading since no url specified in config file");
     return;
   }
 
   if (!this.types) {
-    console.log(this.section, "- ERROR not loading", this.section, "since no types specified in config file");
+    console.log(this.section, "- ERROR not loading since no types specified in config file");
     return;
   }
 
@@ -96,7 +96,7 @@ WiseProxySource.prototype.performQuery = function() {
   var i;
   request(options, function(err, response, body) {
     if (err || response.statusCode !== 200) {
-      console.log(this.section, "error", self.section, err || response);
+      console.log(self.section, "error", self.section, err || response);
       for (i = 0; i < bufferInfo.length; i++) {
         bufferInfo[i].cb("Error");
       }
@@ -154,7 +154,7 @@ WiseProxySource.prototype.updateInfo = function() {
 
   request(options, function(err, response, body) {
     if (err) {
-      console.log(this.section, "problem fetching /fields", self.section, err || response);
+      console.log(self.section, "problem fetching /fields", self.section, err || response);
       return;
     }
     var buf = new Buffer(body, "binary");
@@ -179,7 +179,7 @@ WiseProxySource.prototype.updateInfo = function() {
   };
   request(options, function(err, response, body) {
     if (err) {
-      console.log(this.section, "problem fetching /views", self.section, err || response);
+      console.log(self.section, "problem fetching /views", self.section, err || response);
       return;
     }
      for (var name in body) {
@@ -194,7 +194,7 @@ WiseProxySource.prototype.updateInfo = function() {
   };
   request(options, function(err, response, body) {
     if (err) {
-      console.log(this.section, "problem fetching /rightClicks", self.section, err || response);
+      console.log(self.section, "problem fetching /rightClicks", self.section, err || response);
       return;
     }
      for (var name in body) {

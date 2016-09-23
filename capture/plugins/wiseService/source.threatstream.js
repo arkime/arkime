@@ -159,7 +159,7 @@ ThreatStreamSource.prototype.parseFile = function()
               num = 5;
             }
           } catch (e) {
-            console.log(this.section, "ERROR -", entry.path, e, item, e.stack);
+            console.log(self.section, "ERROR -", entry.path, e, item, e.stack);
             return;
           }
 
@@ -176,18 +176,18 @@ ThreatStreamSource.prototype.parseFile = function()
           //  self.urls.put(item.url, {num: num, buffer: encoded});
           }
         });
-        //console.log(this.section, "- Done", entry.path);
+        //console.log(self.section, "- Done", entry.path);
       });
     })
     .on('close', function () {
-      console.log(this.section, "- Done Loading");
+      console.log(self.section, "- Done Loading");
     });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.loadFile = function() {
   var self = this;
 
-  console.log(this.section, "- Downloading files");
+  console.log(self.section, "- Downloading files");
   wiseSource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + self.user + '&api_key=' + self.key,  '/tmp/threatstream.zip', function (statusCode) {
     if (statusCode === 200 || !self.loaded) {
       self.loaded = true;
@@ -243,14 +243,14 @@ ThreatStreamSource.prototype.getApi = function(type, value, cb) {
   request(options, function(err, response, body) {
     self.inProgress--;
     if (err) {
-      console.log(this.section, "problem fetching ", options, err || response);
+      console.log(self.section, "problem fetching ", options, err || response);
       return cb(null, wiseSource.emptyResult);
     }
 
     try {
       body = JSON.parse(body);
     } catch (e) {
-      console.log(this.section, "Couldn't parse", body);
+      console.log(self.section, "Couldn't parse", body);
       return cb(null, wiseSource.emptyResult);
     }
 
@@ -302,7 +302,7 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
 
   this.db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
     if (err) {
-      console.log(this.section, "ERROR", err, data);
+      console.log(self.section, "ERROR", err, data);
       return cb("dropped");
     }
     if (data.length === 0) {
@@ -351,7 +351,7 @@ ThreatStreamSource.prototype.loadTypes = function() {
   self.typesWithQuotes = {};
   request({url: "https://api.threatstream.com/api/v1/impact/?username="+self.user+"&api_key="+self.key+"&limit=1000", forever: true}, function(err, response, body) {
     if (err) {
-      console.log(this.section, "ERROR - failed to load types", err);
+      console.log(self.section, "ERROR - failed to load types", err);
       return;
     }
 
@@ -382,7 +382,7 @@ ThreatStreamSource.prototype.openDb = function() {
 
   var realDb;
   if (!dbStat || !dbStat.isFile()) {
-    console.log(this.section, "ERROR - file doesn't exist", dbFile);
+    console.log(self.section, "ERROR - file doesn't exist", dbFile);
     process.exit();
   }
 
@@ -396,11 +396,11 @@ ThreatStreamSource.prototype.openDb = function() {
   function beginImmediate(err) {
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
-      console.log(this.section, "Failed to lock sqlite DB", dbFile);
+      console.log(self.section, "Failed to lock sqlite DB", dbFile);
       return realDb.run("BEGIN IMMEDIATE", beginImmediate);
     }
 
-    console.log(this.section, "- Copying DB", dbStat.mtime);
+    console.log(self.section, "- Copying DB", dbStat.mtime);
     exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  function(err, stdout, stderr) {
       console.log(stdout, stderr);
       realDb.run("END", function (err) {
@@ -417,7 +417,7 @@ ThreatStreamSource.prototype.openDb = function() {
           exec ("/bin/rm -f " + dbFile + ".moloch ",  function(err, stdout, stderr) {
             exec ("/bin/mv -f " + dbFile + ".temp " + dbFile + ".moloch",  function(err, stdout, stderr) {
               self.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
-              console.log(this.section, "- Loaded DB");
+              console.log(self.section, "- Loaded DB");
             });
           });
         });

@@ -82,7 +82,7 @@ OpenDNSSource.prototype.getCategories = function () {
     });
   });
   request.on('error', function (err) {
-    console.log(this.section, err);
+    console.log(self.section, err);
   });
 
   request.end();
@@ -127,7 +127,7 @@ OpenDNSSource.prototype.performQuery = function () {
       try {
         results = JSON.parse(response);
       } catch (e) {
-        console.log(this.section, "Error parsing for request:\n", postData, "\nresponse:\n", response);
+        console.log(self.section, "Error parsing for request:\n", postData, "\nresponse:\n", response);
         results = {};
       }
       for (var result in results) {
@@ -144,7 +144,7 @@ OpenDNSSource.prototype.performQuery = function () {
             if (self.categories[value]) {
               args.push(self.scField, self.categories[value]);
             } else {
-              console.log(this.section, "Bad OpenDNS SC", value);
+              console.log(self.section, "Bad OpenDNS SC", value);
             }
           });
         }
@@ -154,7 +154,7 @@ OpenDNSSource.prototype.performQuery = function () {
             if (self.categories[value]) {
               args.push(self.ccField, self.categories[value]);
             } else {
-              console.log(this.section, "Bad OpenDNS CC", value, results);
+              console.log(self.section, "Bad OpenDNS CC", value, results);
             }
           });
         }
@@ -169,7 +169,7 @@ OpenDNSSource.prototype.performQuery = function () {
     });
   });
   request.on('error', function (err) {
-    console.log(this.section, err);
+    console.log(self.section, err);
   });
 
   // post the data

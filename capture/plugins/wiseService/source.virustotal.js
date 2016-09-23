@@ -75,7 +75,7 @@ VirusTotalSource.prototype.performQuery = function () {
   }
 
   if (self.api.debug > 0) {
-    console.log(this.section, "- Fetching %d", self.waiting.length);
+    console.log(self.section, "- Fetching %d", self.waiting.length);
   }
 
   var options = {
@@ -91,7 +91,7 @@ VirusTotalSource.prototype.performQuery = function () {
 
   var req = request(options, function(err, im, results) {
     if (err) {
-      console.log(this.section, "Error parsing for request:\n", options, "\nresults:\n", results);
+      console.log(self.section, "Error parsing for request:\n", options, "\nresults:\n", results);
       results = [];
     } 
     if (!Array.isArray(results)) {
@@ -129,7 +129,7 @@ VirusTotalSource.prototype.performQuery = function () {
       }
     });
   }).on('error', function (err) {
-    console.log(this.section, err);
+    console.log(self.section, err);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

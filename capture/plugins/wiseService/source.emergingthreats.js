@@ -62,7 +62,7 @@ EmergingThreatsSource.prototype.parseCategories = function(fn)
   var self = this;
   var parser = csv.parse({skip_empty_lines:true}, function(err, data) {
     if (err) {
-      console.log(this.section, "- Couldn't parse", fn, "csv", err);
+      console.log(self.section, "- Couldn't parse", fn, "csv", err);
       return;
     }
 
@@ -80,7 +80,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
 
   var parser = csv.parse({skip_empty_lines:true}, function(err, data) {
     if (err) {
-      console.log(this.section, "- Couldn't parse", fn, "csv", err);
+      console.log(self.section, "- Couldn't parse", fn, "csv", err);
       return;
     }
 
@@ -99,7 +99,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
         hash.put(data[i][0], {num: 2, buffer: encoded});
       }
     }
-    console.log(this.section, "- Done Loading", fn);
+    console.log(self.section, "- Done Loading", fn);
   });
   fs.createReadStream(fn).pipe(parser);
 };
@@ -107,7 +107,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash)
 EmergingThreatsSource.prototype.loadFiles = function ()
 {
   var self = this;
-  console.log(this.section, "- Downloading Files");
+  console.log(self.section, "- Downloading Files");
   wiseSource.request('https://rules.emergingthreatspro.com/' + self.key + '/reputation/categories.txt', '/tmp/categories.txt', function (statusCode) {
 
     self.parseCategories("/tmp/categories.txt");

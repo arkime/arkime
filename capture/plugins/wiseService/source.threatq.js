@@ -122,13 +122,13 @@ ThreatQSource.prototype.parseFile = function()
       });
     })
     .on('close', function () {
-      console.log(this.section, "- Done Loading", count, "elements");
+      console.log(self.section, "- Done Loading", count, "elements");
     });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.loadFile = function() {
   var self = this;
-  console.log(this.section, "- Downloading files");
+  console.log(self.section, "- Downloading files");
   wiseSource.request('https://' + self.host + '/export/moloch/?export_key=' + self.key,  '/tmp/threatquotient.zip', function (statusCode) {
     if (statusCode === 200 || !self.loaded) {
       self.loaded = true;
@@ -147,7 +147,7 @@ ThreatQSource.prototype.getIp = function(ip, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.getMd5 = function(md5, cb) {
-  cb(null, this.md5sx.get(md5));
+  cb(null, this.md5s.get(md5));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.getEmail = function(email, cb) {

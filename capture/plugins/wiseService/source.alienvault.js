@@ -61,7 +61,7 @@ AlienVaultSource.prototype.parseFile = function()
   var self = this;
   var parser = csv.parse({delimiter: "#", skip_empty_lines:true}, function(err, data) {
     if (err) {
-      console.log(this.section, "- Couldn't parse csv", err);
+      console.log(self.section, "- Couldn't parse csv", err);
       return;
     }
     var count = 0;
@@ -78,14 +78,14 @@ AlienVaultSource.prototype.parseFile = function()
       self.ips.put(data[i][0], {num: 4, buffer: encoded});
       count++;
     }
-    console.log(this.section, "- Done Loading", count, "elements");
+    console.log(self.section, "- Done Loading", count, "elements");
   });
   fs.createReadStream('/tmp/alienvault.data').pipe(parser);
 };
 //////////////////////////////////////////////////////////////////////////////////
 AlienVaultSource.prototype.loadFile = function() {
   var self = this;
-  console.log(this.section, "- Downloading files");
+  console.log(self.section, "- Downloading files");
 
   var revision = 0;
 

@@ -34,9 +34,9 @@ function SimpleSource (api, section) {
   self.typeSetting();
 
   if (self.type === "ip") {
-    self.cache = {items: [], trie: new iptrie.IPTrie()};
+    self.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
   } else {
-    self.cache = {};
+    self.cache = new HashTable();
   }
 }
 util.inherits(SimpleSource, wiseSource);

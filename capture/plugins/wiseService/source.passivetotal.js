@@ -82,7 +82,7 @@ PassiveTotalSource.prototype.performQuery = function () {
 
   var req = request(options, function(err, im, results) {
     if (err) {
-      console.log(this.section, "- Error parsing for request:\n", options, "\nresults:\n", results);
+      console.log(self.section, "- Error parsing for request:\n", options, "\nresults:\n", results);
       results = {results:{}};
     } 
 
@@ -114,7 +114,7 @@ PassiveTotalSource.prototype.performQuery = function () {
       }
     }
   }).on('error', function (err) {
-    console.log(this.section, err);
+    console.log(self.section, err);
   });
 
   self.waiting.length = 0;
