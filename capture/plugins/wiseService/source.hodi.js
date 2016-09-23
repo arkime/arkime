@@ -27,13 +27,9 @@ function HODISource (api, section) {
   HODISource.super_.call(this, api, section);
   this.esHost  = api.getConfig("hodi", "esHost");
   this.bulk = [];
-}
-util.inherits(HODISource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-HODISource.prototype.init = function() {
-  var self = this;
+
   if (this.esHost === undefined) {
-    console.log("HODI - No esHost defined");
+    console.log(this.section, "- No esHost defined");
     return;
   }
 
@@ -53,6 +49,7 @@ HODISource.prototype.init = function() {
                       maxSockets: 51
                     });
 
+  var self = this;
   ["hodi-domain", "hodi-ip", "hodi-md5", "hodi-email"].forEach(function(index) {
     self.client.indices.exists({index: index}, function (err, exists) {
       if (exists) {
@@ -81,7 +78,9 @@ HODISource.prototype.init = function() {
 
   this.api.addSource("hodi", this);
   setInterval(this.sendBulk.bind(this), 1000);
-};
+}
+util.inherits(HODISource, wiseSource);
+
 //////////////////////////////////////////////////////////////////////////////////
 HODISource.prototype.sendBulk = function () {
   var self = this;
@@ -133,5 +132,4 @@ HODISource.prototype.getEmail = function(email, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var source = new HODISource(api, "hodi");
-  source.init();
 };

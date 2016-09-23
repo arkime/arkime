@@ -21,27 +21,66 @@ var fs             = require('fs')
   , unzip          = require('unzip')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
+  , HashTable      = require('hashtable')
   ;
 //////////////////////////////////////////////////////////////////////////////////
 function ThreatQSource (api, section) {
   ThreatQSource.super_.call(this, api, section);
   this.key          = api.getConfig("threatq", "key");
   this.host         = api.getConfig("threatq", "host");
-  this.ips          = {};
-  this.domains      = {};
-  this.emails       = {};
-  this.md5s         = {};
+
+  if (this.key === undefined) {
+    console.log(this.section, "- No export key defined");
+    return;
+  }
+
+  if (this.host === undefined) {
+    console.log(this.section, "- No server host defined");
+    return;
+  }
+
+
+  this.ips          = new HashTable();
+  this.domains      = new HashTable();
+  this.emails       = new HashTable();
+  this.md5s         = new HashTable();
   this.cacheTimeout = -1;
+
+
+  this.idField = this.api.addField("field:threatq.id;db:threatq.id;kind:integer;friendly:Id;help:ThreatQ Reference ID;shortcut:0;count:true");
+  this.typeField = this.api.addField("field:threatq.type;db:threatq.type-term;kind:lotermfield;friendly:Type;help:Indicator Type;shortcut:1;count:true");
+  this.sourceField = this.api.addField("field:threatq.source;db:threatq.source-term;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true");
+  this.campaignField = this.api.addField("field:threatq.campaign;db:threatq.campaign-term;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true");
+
+  this.api.addView("threatq", 
+    "if (session.threatq)\n" +
+    "  div.sessionDetailMeta.bold ThreatQ\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.threatq, 'id', 'Id', 'threatq.id')\n" +
+    "    +arrayList(session.threatq, 'type-term', 'Type', 'threatq.type')\n" +
+    "    +arrayList(session.threatq, 'source-term', 'Source', 'threatq.source')\n" +
+    "    +arrayList(session.threatq, 'campaign-term', 'Campaign', 'threatq.campaign')\n"
+  );
+
+  this.api.addRightClick("threatqip", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%TEXT%", category:"ip"});
+  this.api.addRightClick("threatqhost", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%HOST%", category:"host"});
+  this.api.addRightClick("threatqmd5", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%TEXT%", category:"md5"});
+  this.api.addRightClick("threatqid", {name:"ThreatQ", url:"https://" + this.host + "/network/%TEXT%", fields:"threatq.id"});
+
+  setImmediate(this.loadFile.bind(this));
+  setInterval(this.loadFile.bind(this), 24*60*60*1000); // Reload file every 24 hours
+
+  this.api.addSource("threatq", this);
 }
 util.inherits(ThreatQSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.parseFile = function()
 {
   var self = this;
-  self.ips = {};
-  self.domains = {};
-  self.emails = {};
-  self.md5s = {};
+  self.ips.clear();
+  self.domains.clear();
+  self.emails.clear();
+  self.md5s.clear();
 
   var count = 0;
   fs.createReadStream('/tmp/threatquotient.zip')
@@ -71,25 +110,25 @@ ThreatQSource.prototype.parseFile = function()
 
           count++;
           if (item.type === "IP Address") {
-            self.ips[item.indicator] = {num: args.length/2, buffer: encoded};
+            self.ips.put(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "FQDN") {
-            self.domains[item.indicator] = {num: args.length/2, buffer: encoded};
+            self.domains.put(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "Email Address") {
-            self.emails[item.indicator] = {num: args.length/2, buffer: encoded};
+            self.emails.put(item.indicator, {num: args.length/2, buffer: encoded});
           } else if (item.type === "MD5") {
-            self.md5s[item.indicator] = {num: args.length/2, buffer: encoded};
+            self.md5s.put(item.indicator, {num: args.length/2, buffer: encoded});
           }
         });
       });
     })
     .on('close', function () {
-      console.log("ThreatQ - Done Loading", count, "elements");
+      console.log(this.section, "- Done Loading", count, "elements");
     });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.loadFile = function() {
   var self = this;
-  console.log("ThreatQ - Downloading files");
+  console.log(this.section, "- Downloading files");
   wiseSource.request('https://' + self.host + '/export/moloch/?export_key=' + self.key,  '/tmp/threatquotient.zip', function (statusCode) {
     if (statusCode === 200 || !self.loaded) {
       self.loaded = true;
@@ -98,75 +137,36 @@ ThreatQSource.prototype.loadFile = function() {
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
-ThreatQSource.prototype.init = function() {
-  if (this.key === undefined) {
-    console.log("ThreatQ - No export key defined");
-    return;
-  }
-
-  if (this.host === undefined) {
-    console.log("ThreatQ - No server host defined");
-    return;
-  }
-
-  this.api.addSource("threatq", this);
-
-  this.idField = this.api.addField("field:threatq.id;db:threatq.id;kind:integer;friendly:Id;help:ThreatQ Reference ID;shortcut:0;count:true");
-  this.typeField = this.api.addField("field:threatq.type;db:threatq.type-term;kind:lotermfield;friendly:Type;help:Indicator Type;shortcut:1;count:true");
-  this.sourceField = this.api.addField("field:threatq.source;db:threatq.source-term;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true");
-  this.campaignField = this.api.addField("field:threatq.campaign;db:threatq.campaign-term;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true");
-
-  this.api.addView("threatq", 
-    "if (session.threatq)\n" +
-    "  div.sessionDetailMeta.bold ThreatQ\n" +
-    "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.threatq, 'id', 'Id', 'threatq.id')\n" +
-    "    +arrayList(session.threatq, 'type-term', 'Type', 'threatq.type')\n" +
-    "    +arrayList(session.threatq, 'source-term', 'Source', 'threatq.source')\n" +
-    "    +arrayList(session.threatq, 'campaign-term', 'Campaign', 'threatq.campaign')\n"
-  );
-
-  this.api.addRightClick("threatqip", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%TEXT%", category:"ip"});
-  this.api.addRightClick("threatqhost", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%HOST%", category:"host"});
-  this.api.addRightClick("threatqmd5", {name:"ThreatQ", url:"https://" + this.host + "/search.php?search=%TEXT%", category:"md5"});
-  this.api.addRightClick("threatqid", {name:"ThreatQ", url:"https://" + this.host + "/network/%TEXT%", fields:"threatq.id"});
-
-  this.loadFile();
-  setInterval(this.loadFile.bind(this), 24*60*60*1000); // Reload file every 24 hours
-};
-//////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.getDomain = function(domain, cb) {
   var domains = this.domains;
-  cb(null, domains[domain] || domains[domain.substring(domain.indexOf(".")+1)]);
+  cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf(".")+1)));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.getIp = function(ip, cb) {
-  cb(null, this.ips[ip]);
+  cb(null, this.ips.get(ip));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.getMd5 = function(md5, cb) {
-  cb(null, this.md5s[md5]);
+  cb(null, this.md5sx.get(md5));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.getEmail = function(email, cb) {
-  cb(null, this.emails[email]);
+  cb(null, this.emails.get(email));
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatQSource.prototype.dump = function(res) {
   var self = this;
   ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
     res.write("" + ckey + ":\n");
-    var cache = self[ckey];
-    for (var key in cache) {
+    self[ckey].forEach(function (key, value) {
       var str = "{key: \"" + key + "\", ops:\n" +
-        wiseSource.result2Str(wiseSource.combineResults([cache[key]])) + "},\n";
+        wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
-    }
+    });
   });
   res.end();
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var source = new ThreatQSource(api, "threatq");
-  source.init();
 };

@@ -33,6 +33,46 @@ function WiseProxySource (api, section) {
   this.buffer       = new Buffer(10000);
   this.offset       = 0;
   this.bufferInfo   = [];
+
+  var self = this;
+
+  if (this.url === undefined) {
+    console.log(this.section, "- ERROR not loading", this.section, "since no url specified in config file");
+    return;
+  }
+
+  if (!this.types) {
+    console.log(this.section, "- ERROR not loading", this.section, "since no types specified in config file");
+    return;
+  }
+
+  var types = this.types.split(",");
+
+  for (var i = 0; i < types.length; i++) {
+    switch(types[i]) {
+    case "domain":
+      this.getDomain = getDomain;
+      break;
+    case "md5":
+      this.getMd5 = getMd5;
+      break;
+    case "ip":
+      this.getIp = getIp;
+      break;
+    case "email":
+      this.getEmail = getEmail;
+      break;
+    case "url":
+      this.getUrl = getUrl;
+      break;
+    }
+  }
+
+  self.updateInfo();
+  setTimeout(this.updateInfo.bind(this), 5*60*1000);
+
+  this.api.addSource(this.section, this);
+  setInterval(this.performQuery.bind(this), 500);
 }
 util.inherits(WiseProxySource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +96,7 @@ WiseProxySource.prototype.performQuery = function() {
   var i;
   request(options, function(err, response, body) {
     if (err || response.statusCode !== 200) {
-      console.log("Wise proxy error", self.section, err || response);
+      console.log(this.section, "error", self.section, err || response);
       for (i = 0; i < bufferInfo.length; i++) {
         bufferInfo[i].cb("Error");
       }
@@ -114,7 +154,7 @@ WiseProxySource.prototype.updateInfo = function() {
 
   request(options, function(err, response, body) {
     if (err) {
-      console.log("Wise proxy problem fetching /fields", self.section, err || response);
+      console.log(this.section, "problem fetching /fields", self.section, err || response);
       return;
     }
     var buf = new Buffer(body, "binary");
@@ -139,7 +179,7 @@ WiseProxySource.prototype.updateInfo = function() {
   };
   request(options, function(err, response, body) {
     if (err) {
-      console.log("Wise proxy problem fetching /views", self.section, err || response);
+      console.log(this.section, "problem fetching /views", self.section, err || response);
       return;
     }
      for (var name in body) {
@@ -154,7 +194,7 @@ WiseProxySource.prototype.updateInfo = function() {
   };
   request(options, function(err, response, body) {
     if (err) {
-      console.log("Wise proxy problem fetching /rightClicks", self.section, err || response);
+      console.log(this.section, "problem fetching /rightClicks", self.section, err || response);
       return;
     }
      for (var name in body) {
@@ -184,53 +224,10 @@ function getUrl(item, cb) {
   this.fetch(4, item, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////
-WiseProxySource.prototype.init = function() {
-  var self = this;
-
-  if (this.url === undefined) {
-    console.log("WiseProxy - ERROR not loading", this.section, "since no url specified in config file");
-    return;
-  }
-
-  if (!this.types) {
-    console.log("WiseProxy - ERROR not loading", this.section, "since no types specified in config file");
-    return;
-  }
-
-  var types = this.types.split(",");
-
-  for (var i = 0; i < types.length; i++) {
-    switch(types[i]) {
-    case "domain":
-      this.getDomain = getDomain;
-      break;
-    case "md5":
-      this.getMd5 = getMd5;
-      break;
-    case "ip":
-      this.getIp = getIp;
-      break;
-    case "email":
-      this.getEmail = getEmail;
-      break;
-    case "url":
-      this.getUrl = getUrl;
-      break;
-    }
-  }
-
-  self.updateInfo();
-  setTimeout(this.updateInfo.bind(this), 5*60*1000);
-
-  this.api.addSource(this.section, this);
-  setInterval(this.performQuery.bind(this), 500);
-};
-//////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter(function(e) {return e.match(/^wiseproxy:/);});
   sections.forEach(function(section) {
     var source = new WiseProxySource(api, section);
-    source.init();
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

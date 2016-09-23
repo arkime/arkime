@@ -35,9 +35,24 @@ function ThreatStreamSource (api, section) {
   this.key     = api.getConfig("threatstream", "key");
   this.mode     = api.getConfig("threatstream", "mode", "zip");
 
+  if (this.user === undefined) {
+    console.log(this.section, "- No user defined");
+    return;
+  }
+
+  if (this.key === undefined) {
+    console.log(this.section, "- No key defined");
+    return;
+  }
+
   switch (this.mode) {
   case "api":
     this.inProgress = 0;
+    ThreatStreamSource.prototype.getDomain = getDomainApi;
+    ThreatStreamSource.prototype.getIp     = getIpApi;
+    ThreatStreamSource.prototype.getMd5    = getMd5Api;
+    ThreatStreamSource.prototype.getEmail  = getEmailApi;
+    this.loadTypes();
     break;
   case "zip":
     this.ips          = new HashTable();
@@ -45,17 +60,54 @@ function ThreatStreamSource (api, section) {
     this.emails       = new HashTable();
     this.md5s         = new HashTable();
     this.cacheTimeout = -1;
+    setImmediate(this.loadFile.bind(this));
+    setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
+    ThreatStreamSource.prototype.getDomain = getDomainZip;
+    ThreatStreamSource.prototype.getIp     = getIpZip;
+    ThreatStreamSource.prototype.getMd5    = getMd5Zip;
+    ThreatStreamSource.prototype.getEmail  = getEmailZip;
+    ThreatStreamSource.prototype.dump      = dumpZip;
+    api.addSource("threatstream", this);
     break;
   case "sqlite3":
     sqlite3           = require('sqlite3');
     this.cacheTimeout = -1;
     this.openDb();
     setInterval(this.openDb.bind(this), 5*60*1000);
+    ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
+    ThreatStreamSource.prototype.getIp     = getIpSqlite3;
+    ThreatStreamSource.prototype.getMd5    = getMd5Sqlite3;
+    ThreatStreamSource.prototype.getEmail  = getEmailSqlite3;
+    this.loadTypes();
     break;
   default:
-    console.log("Unknown threatstream mode", this.mode);
+    console.log(this.section, "Unknown mode", this.mode);
     process.exit(0);
   }
+
+  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;shortcut:0;count:true");
+  this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;shortcut:1;count:true");
+  this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;shortcut:2;count:true");
+  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
+  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
+  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;shortcut:5;count:true");
+
+  this.api.addView("threatstream",
+    "if (session.threatstream)\n" +
+    "  div.sessionDetailMeta.bold Threatstream\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.threatstream, 'severity-term', 'Severity', 'threatstream.severity')\n" +
+    "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
+    "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
+    "    +arrayList(session.threatstream, 'type-term', 'Type', 'threatstream.type')\n" +
+    "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n" +
+    "    +arrayList(session.threatstream, 'source-term', 'Source', 'threatstream.source')\n"
+  );
+
+  this.api.addRightClick("threatstreamip", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});
+  this.api.addRightClick("threatstreamhost", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/domain/%HOST%", category:"host"});
+  this.api.addRightClick("threatstreamemail", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
+  this.api.addRightClick("threatstreammd5", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
 }
 util.inherits(ThreatStreamSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +159,7 @@ ThreatStreamSource.prototype.parseFile = function()
               num = 5;
             }
           } catch (e) {
-            console.log("ERROR -", entry.path, e, item, e.stack);
+            console.log(this.section, "ERROR -", entry.path, e, item, e.stack);
             return;
           }
 
@@ -124,18 +176,18 @@ ThreatStreamSource.prototype.parseFile = function()
           //  self.urls.put(item.url, {num: num, buffer: encoded});
           }
         });
-        //console.log("Threatstream - Done", entry.path);
+        //console.log(this.section, "- Done", entry.path);
       });
     })
     .on('close', function () {
-      console.log("Threatstream - Done Loading");
+      console.log(this.section, "- Done Loading");
     });
 };
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.loadFile = function() {
   var self = this;
 
-  console.log("Threatstream - Downloading files");
+  console.log(this.section, "- Downloading files");
   wiseSource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + self.user + '&api_key=' + self.key,  '/tmp/threatstream.zip', function (statusCode) {
     if (statusCode === 200 || !self.loaded) {
       self.loaded = true;
@@ -191,14 +243,14 @@ ThreatStreamSource.prototype.getApi = function(type, value, cb) {
   request(options, function(err, response, body) {
     self.inProgress--;
     if (err) {
-      console.log("threatstream problem fetching ", options, err || response);
+      console.log(this.section, "problem fetching ", options, err || response);
       return cb(null, wiseSource.emptyResult);
     }
 
     try {
       body = JSON.parse(body);
     } catch (e) {
-      console.log("Couldn't parse", body);
+      console.log(this.section, "Couldn't parse", body);
       return cb(null, wiseSource.emptyResult);
     }
 
@@ -250,7 +302,7 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
 
   this.db.all("SELECT * FROM ts WHERE " + field + " = ? AND itype IN (" + self.typesWithQuotes[type] + ")", value, function (err, data) {
     if (err) {
-      console.log("ERROR", err, data);
+      console.log(this.section, "ERROR", err, data);
       return cb("dropped");
     }
     if (data.length === 0) {
@@ -299,7 +351,7 @@ ThreatStreamSource.prototype.loadTypes = function() {
   self.typesWithQuotes = {};
   request({url: "https://api.threatstream.com/api/v1/impact/?username="+self.user+"&api_key="+self.key+"&limit=1000", forever: true}, function(err, response, body) {
     if (err) {
-      console.log("ERROR - Threatstream failed to load types", err);
+      console.log(this.section, "ERROR - failed to load types", err);
       return;
     }
 
@@ -330,7 +382,7 @@ ThreatStreamSource.prototype.openDb = function() {
 
   var realDb;
   if (!dbStat || !dbStat.isFile()) {
-    console.log("ERROR - file doesn't exist", dbFile);
+    console.log(this.section, "ERROR - file doesn't exist", dbFile);
     process.exit();
   }
 
@@ -344,11 +396,11 @@ ThreatStreamSource.prototype.openDb = function() {
   function beginImmediate(err) {
     // Repeat until we lock the DB
     if (err && err.code === "SQLITE_BUSY") {
-      console.log("Failed to lock sqlite DB", dbFile);
+      console.log(this.section, "Failed to lock sqlite DB", dbFile);
       return realDb.run("BEGIN IMMEDIATE", beginImmediate);
     }
 
-    console.log("Threatstream - Copying DB", dbStat.mtime);
+    console.log(this.section, "- Copying DB", dbStat.mtime);
     exec ("/bin/cp -f " + dbFile + " " + dbFile +".temp",  function(err, stdout, stderr) {
       console.log(stdout, stderr);
       realDb.run("END", function (err) {
@@ -365,7 +417,7 @@ ThreatStreamSource.prototype.openDb = function() {
           exec ("/bin/rm -f " + dbFile + ".moloch ",  function(err, stdout, stderr) {
             exec ("/bin/mv -f " + dbFile + ".temp " + dbFile + ".moloch",  function(err, stdout, stderr) {
               self.db = new sqlite3.Database(dbFile + ".moloch", sqlite3.OPEN_READONLY);
-              console.log("Threatstream - Loaded DB");
+              console.log(this.section, "- Loaded DB");
             });
           });
         });
@@ -386,73 +438,7 @@ ThreatStreamSource.prototype.openDb = function() {
   }
 };
 //////////////////////////////////////////////////////////////////////////////////
-ThreatStreamSource.prototype.init = function() {
-  var self = this;
-  if (this.user === undefined) {
-    console.log("Threatstream - No user defined");
-    return;
-  }
-
-  if (this.key === undefined) {
-    console.log("Threatstream - No key defined");
-    return;
-  }
-
-  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;shortcut:0;count:true");
-  this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;shortcut:1;count:true");
-  this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;shortcut:2;count:true");
-  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
-  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
-  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;shortcut:5;count:true");
-
-  this.api.addView("threatstream",
-    "if (session.threatstream)\n" +
-    "  div.sessionDetailMeta.bold Threatstream\n" +
-    "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.threatstream, 'severity-term', 'Severity', 'threatstream.severity')\n" +
-    "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
-    "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
-    "    +arrayList(session.threatstream, 'type-term', 'Type', 'threatstream.type')\n" +
-    "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n" +
-    "    +arrayList(session.threatstream, 'source-term', 'Source', 'threatstream.source')\n"
-  );
-
-  this.api.addRightClick("threatstreamip", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});
-  this.api.addRightClick("threatstreamhost", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/domain/%HOST%", category:"host"});
-  this.api.addRightClick("threatstreamemail", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
-  this.api.addRightClick("threatstreammd5", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
-
-  switch (this.mode) {
-  case "zip":
-    this.loadFile();
-    setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
-
-    ThreatStreamSource.prototype.getDomain = getDomainZip;
-    ThreatStreamSource.prototype.getIp = getIpZip;
-    ThreatStreamSource.prototype.getMd5 = getMd5Zip;
-    ThreatStreamSource.prototype.getEmail = getEmailZip;
-    ThreatStreamSource.prototype.dump = dumpZip;
-    self.api.addSource("threatstream", self);
-    break;
-  case "api":
-    ThreatStreamSource.prototype.getDomain = getDomainApi;
-    ThreatStreamSource.prototype.getIp = getIpApi;
-    ThreatStreamSource.prototype.getMd5 = getMd5Api;
-    ThreatStreamSource.prototype.getEmail = getEmailApi;
-    this.loadTypes();
-    break;
-  case "sqlite3":
-    ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
-    ThreatStreamSource.prototype.getIp = getIpSqlite3;
-    ThreatStreamSource.prototype.getMd5 = getMd5Sqlite3;
-    ThreatStreamSource.prototype.getEmail = getEmailSqlite3;
-    this.loadTypes();
-    break;
-  }
-};
-//////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var source = new ThreatStreamSource(api, "threatstream");
-  source.init();
 };
 //////////////////////////////////////////////////////////////////////////////////
