@@ -25,9 +25,37 @@ var https          = require('https')
 //////////////////////////////////////////////////////////////////////////////////
 function OpenDNSSource (api, section) {
   OpenDNSSource.super_.call(this, api, section);
+  this.key = this.api.getConfig("opendns", "key");
+  if (this.key === undefined) {
+    console.log(this.section, "- No key defined");
+    return;
+  }
+
   this.waiting      = [];
   this.processing   = {};
   this.statuses     = {"-1": "malicious", "0":"unknown", "1":"benign"};
+
+  this.api.addSource("opendns", this);
+  this.getCategories();
+  setInterval(this.getCategories.bind(this), 10*60*1000);
+  setInterval(this.performQuery.bind(this), 500);
+
+  this.statusField = this.api.addField("field:opendns.domain.status;db:opendns.dmstatus-term;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
+  this.scField = this.api.addField("field:opendns.domain.security;db:opendns.dmscat-term;kind:termfield;friendly:Security;help:OpenDNS domain security category;count:true");
+  this.ccField = this.api.addField("field:opendns.domain.content;db:opendns.dmccat-term;kind:termfield;friendly:Security;help:OpenDNS domain content category;count:true");
+
+  this.api.addView("opendns", 
+    "if (session.opendns)\n" +
+    "  div.sessionDetailMeta.bold OpenDNS\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.opendns, 'dmstatus-term', 'Status', 'opendns.domain.status')\n" +
+    "    +arrayList(session.opendns, 'dmscat-term', 'Security Cat', 'opendns.domain.security')\n" +
+    "    +arrayList(session.opendns, 'dmccat-term', 'Content Cat', 'opendns.domain.content')\n"
+  );
+
+  this.api.addRightClick("opendnsip", {name:"OpenDNS", url:"https://sgraph.opendns.com/ip-view/%TEXT%", category:"ip"});
+  this.api.addRightClick("opendnsasn", {name:"OpenDNS", url:"https://sgraph.opendns.com/as-view/%REGEX%", category:"asn", regex:"^[Aa][Ss](\\d+)"});
+  this.api.addRightClick("opendnshost", {name:"OpenDNS", url:"https://sgraph.opendns.com/domain-view/name/%HOST%/view", category:"host"});
 }
 util.inherits(OpenDNSSource, wiseSource);
 
@@ -54,7 +82,7 @@ OpenDNSSource.prototype.getCategories = function () {
     });
   });
   request.on('error', function (err) {
-    console.log(err);
+    console.log(self.section, err);
   });
 
   request.end();
@@ -68,7 +96,7 @@ OpenDNSSource.prototype.performQuery = function () {
   }
 
   if (self.api.debug > 0) {
-    console.log("OpenDNS - Fetching %d", self.waiting.length);
+    console.log(this.section, "- Fetching %d", self.waiting.length);
   }
 
 
@@ -99,7 +127,7 @@ OpenDNSSource.prototype.performQuery = function () {
       try {
         results = JSON.parse(response);
       } catch (e) {
-        console.log("Error parsing for request:\n", postData, "\nresponse:\n", response);
+        console.log(self.section, "Error parsing for request:\n", postData, "\nresponse:\n", response);
         results = {};
       }
       for (var result in results) {
@@ -116,7 +144,7 @@ OpenDNSSource.prototype.performQuery = function () {
             if (self.categories[value]) {
               args.push(self.scField, self.categories[value]);
             } else {
-              console.log("Bad OpenDNS SC", value);
+              console.log(self.section, "Bad OpenDNS SC", value);
             }
           });
         }
@@ -126,7 +154,7 @@ OpenDNSSource.prototype.performQuery = function () {
             if (self.categories[value]) {
               args.push(self.ccField, self.categories[value]);
             } else {
-              console.log("Bad OpenDNS CC", value, results);
+              console.log(self.section, "Bad OpenDNS CC", value, results);
             }
           });
         }
@@ -141,43 +169,12 @@ OpenDNSSource.prototype.performQuery = function () {
     });
   });
   request.on('error', function (err) {
-    console.log(err);
+    console.log(self.section, err);
   });
 
   // post the data
   request.write(postData);
   request.end();
-};
-//////////////////////////////////////////////////////////////////////////////////
-OpenDNSSource.prototype.init = function() {
-  this.key = this.api.getConfig("opendns", "key");
-  if (this.key === undefined) {
-    console.log("OpenDNS - No key defined");
-    return;
-  }
-
-  this.api.addSource("opendns", this);
-  this.getCategories();
-  setInterval(this.getCategories.bind(this), 10*60*1000);
-  setInterval(this.performQuery.bind(this), 500);
-
-  this.statusField = this.api.addField("field:opendns.domain.status;db:opendns.dmstatus-term;kind:lotermfield;friendly:Status;help:OpenDNS domain security status;count:true");
-  this.scField = this.api.addField("field:opendns.domain.security;db:opendns.dmscat-term;kind:termfield;friendly:Security;help:OpenDNS domain security category;count:true");
-  this.ccField = this.api.addField("field:opendns.domain.content;db:opendns.dmccat-term;kind:termfield;friendly:Security;help:OpenDNS domain content category;count:true");
-
-  this.api.addView("opendns", 
-    "if (session.opendns)\n" +
-    "  div.sessionDetailMeta.bold OpenDNS\n" +
-    "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.opendns, 'dmstatus-term', 'Status', 'opendns.domain.status')\n" +
-    "    +arrayList(session.opendns, 'dmscat-term', 'Security Cat', 'opendns.domain.security')\n" +
-    "    +arrayList(session.opendns, 'dmccat-term', 'Content Cat', 'opendns.domain.content')\n"
-  );
-
-  this.api.addRightClick("opendnsip", {name:"OpenDNS", url:"https://sgraph.opendns.com/ip-view/%TEXT%", category:"ip"});
-  this.api.addRightClick("opendnsasn", {name:"OpenDNS", url:"https://sgraph.opendns.com/as-view/%REGEX%", category:"asn", regex:"^[Aa][Ss](\\d+)"});
-  this.api.addRightClick("opendnshost", {name:"OpenDNS", url:"https://sgraph.opendns.com/domain-view/name/%HOST%/view", category:"host"});
-
 };
 //////////////////////////////////////////////////////////////////////////////////
 OpenDNSSource.prototype.getDomain = function(domain, cb) {
@@ -195,6 +192,5 @@ OpenDNSSource.prototype.getDomain = function(domain, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var source = new OpenDNSSource(api, "opendns");
-  source.init();
 };
 //////////////////////////////////////////////////////////////////////////////////

@@ -18,63 +18,61 @@
 'use strict';
 
 var util           = require('util')
-  , simpleSource   = require('./simpleSource.js')
-  , request        = require('request')
+  , wiseSource     = require('./wiseSource.js')
+  , redis          = require('redis')
   ;
 
 //////////////////////////////////////////////////////////////////////////////////
-function URLSource (api, section) {
-  URLSource.super_.call(this, api, section);
+function RedisSource (api, section) {
+  RedisSource.super_.call(this, api, section);
   var self = this;
 
-  self.url          = api.getConfig(section, "url");
-  self.reload       = +api.getConfig(section, "reload", -1);
-  self.headers      = {};
-  var headers       = api.getConfig(section, "headers");
-  this.cacheTimeout = -1;
-
+  self.url      = api.getConfig(section, "url");
   if (this.url === undefined) {
     console.log(this.section, "- ERROR not loading since no url specified in config file");
     return;
   }
 
-  if (headers) {
-    headers.split(";").forEach(function(header) {
-      var parts = header.split(":");
-      if (parts.length === 2) {
-        self.headers[parts[0].trim()] = parts[1].trim();
-      }
-    });
-  }
+  self.column   = +api.getConfig(section, "column", 0);
+  self.format   = api.getConfig(section, "format", "csv");
+  self.template = api.getConfig(section, "template", undefined);
 
-  if (!this.initSimple())
+
+  this.tagsSetting();
+  this.typeSetting();
+  if (!this.formatSetting())
     return;
-
-  setImmediate(this.load.bind(this));
-
-  // Reload url every so often
-  if (this.reload > 0) {
-    setInterval(this.load.bind(this), this.reload*1000*60);
-  }
+  
+  this.client = redis.createClient({url: this.url});
+  this[this.typeFunc] = RedisSource.prototype.fetch;
+  this.api.addSource(this.section, this);
 }
-util.inherits(URLSource, simpleSource);
+util.inherits(RedisSource, wiseSource);
+
 //////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
+RedisSource.prototype.fetch = function (key, cb) {
   var self = this;
 
-  request(self.url, {headers: self.headers}, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      self.parse(body, setFunc, cb);
-    } else {
-      cb(error);
+  if (self.template !== undefined) {
+    key = self.template.replace("%key%", key).replace("%type%", self.type);
+  }
+
+  self.client.get(key, function(err, reply) {
+    if (reply === null) {
+      return cb(null, undefined);
     }
+
+    self.parse(reply, function(ignorekey, result) {
+      var newresult = {num: result.num + self.tagsResult.num, buffer: Buffer.concat([result.buffer, self.tagsResult.buffer])};
+      return cb(null, newresult);
+    }, function () {});
   });
-};
+}
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter(function(e) {return e.match(/^url:/);});
+  var sections = api.getConfigSections().filter(function(e) {return e.match(/^redis:/);});
   sections.forEach(function(section) {
-    var source = new URLSource(api, section);
+    var source = new RedisSource(api, section);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

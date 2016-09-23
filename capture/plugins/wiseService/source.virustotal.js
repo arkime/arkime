@@ -29,6 +29,40 @@ function VirusTotalSource (api, section) {
   VirusTotalSource.super_.call(this, api, section);
   this.waiting    = [];
   this.processing = {};
+
+  this.key = this.api.getConfig("virustotal", "key");
+  if (this.key === undefined) {
+    console.log(this.section, "- No key defined");
+    return;
+  }
+
+  this.dataSources = ["McAfee", "Symantec", "Microsoft", "Kaspersky"];
+  this.dataSourcesLC = this.dataSources.map(function(x) {return x.toLowerCase();});
+  this.dataFields = [];
+
+  this.api.addSource("virustotal", this);
+  setInterval(this.performQuery.bind(this), 500);
+
+  var str = 
+    "if (session.virustotal)\n" +
+    "  div.sessionDetailMeta.bold VirusTotal\n" +
+    "  dl.sessionDetailMeta\n";
+
+  for(var i = 0; i < this.dataSources.length; i++) {
+    var uc = this.dataSources[i];
+    var lc = this.dataSourcesLC[i];
+    this.dataFields[i] = this.api.addField("field:virustotal." + lc + ";db:virustotal." + lc + "-term;kind:lotermfield;friendly:" + uc + ";help:VirusTotal " + uc + " Status;count:true");
+    str += "    +arrayList(session.virustotal, '" + lc + "-term', '" + uc + "', 'virustotal." + lc + "')\n";
+  }
+
+  this.hitsField = this.api.addField("field:virustotal.hits;db:virustotal.hits;kind:integer;friendly:Hits;help:VirusTotal Hits;count:true");
+  this.linksField = this.api.addField("field:virustotal.links;db:virustotal.links-term;kind:termfield;friendly:Link;help:VirusTotal Link;count:true");
+
+
+  str += "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n";
+  str += "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
+
+  this.api.addView("virustotal", str);
 }
 util.inherits(VirusTotalSource, wiseSource);
 
@@ -41,7 +75,7 @@ VirusTotalSource.prototype.performQuery = function () {
   }
 
   if (self.api.debug > 0) {
-    console.log("VirusTotal - Fetching %d", self.waiting.length);
+    console.log(self.section, "- Fetching %d", self.waiting.length);
   }
 
   var options = {
@@ -57,7 +91,7 @@ VirusTotalSource.prototype.performQuery = function () {
 
   var req = request(options, function(err, im, results) {
     if (err) {
-      console.log("Error parsing for request:\n", options, "\nresults:\n", results);
+      console.log(self.section, "Error parsing for request:\n", options, "\nresults:\n", results);
       results = [];
     } 
     if (!Array.isArray(results)) {
@@ -95,49 +129,13 @@ VirusTotalSource.prototype.performQuery = function () {
       }
     });
   }).on('error', function (err) {
-    console.log(err);
+    console.log(self.section, err);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
-VirusTotalSource.prototype.init = function() {
-  this.key = this.api.getConfig("virustotal", "key");
-  if (this.key === undefined) {
-    console.log("VirusTotal - No key defined");
-    return;
-  }
-
-  this.dataSources = ["McAfee", "Symantec", "Microsoft", "Kaspersky"];
-  this.dataSourcesLC = this.dataSources.map(function(x) {return x.toLowerCase();});
-  this.dataFields = [];
-
-  this.api.addSource("virustotal", this);
-  setInterval(this.performQuery.bind(this), 500);
-
-  var str = 
-    "if (session.virustotal)\n" +
-    "  div.sessionDetailMeta.bold VirusTotal\n" +
-    "  dl.sessionDetailMeta\n";
-
-  for(var i = 0; i < this.dataSources.length; i++) {
-    var uc = this.dataSources[i];
-    var lc = this.dataSourcesLC[i];
-    this.dataFields[i] = this.api.addField("field:virustotal." + lc + ";db:virustotal." + lc + "-term;kind:lotermfield;friendly:" + uc + ";help:VirusTotal " + uc + " Status;count:true");
-    str += "    +arrayList(session.virustotal, '" + lc + "-term', '" + uc + "', 'virustotal." + lc + "')\n";
-  }
-
-  this.hitsField = this.api.addField("field:virustotal.hits;db:virustotal.hits;kind:integer;friendly:Hits;help:VirusTotal Hits;count:true");
-  this.linksField = this.api.addField("field:virustotal.links;db:virustotal.links-term;kind:termfield;friendly:Link;help:VirusTotal Link;count:true");
-
-
-  str += "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n";
-  str += "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
-
-  this.api.addView("virustotal", str);
-};
-
 VirusTotalSource.prototype.getMd5 = function(md5, cb) {
   var info = this.cache.get(md5);
-  console.log("Looking for", md5);
+  console.log(this.section, "Looking for", md5);
 
   if (md5 in this.processing) {
     this.processing[md5].push(cb);
@@ -187,7 +185,6 @@ var reportApi = function(req, res) {
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   api.app.get("/vtapi/v2/file/report", reportApi);
-  source = new VirusTotalSource(api, "virustotal");
-  source.init();
+  var source = new VirusTotalSource(api, "virustotal");
 };
 //////////////////////////////////////////////////////////////////////////////////

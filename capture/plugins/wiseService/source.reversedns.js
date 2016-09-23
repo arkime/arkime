@@ -36,23 +36,19 @@ function ReverseDNSSource (api, section) {
   this.field        = api.getConfig("reversedns", "field");
   this.ips          = api.getConfig("reversedns", "ips");
   this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";"), "");
-}
-util.inherits(ReverseDNSSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-ReverseDNSSource.prototype.init = function() {
+
   var self = this;
 
   if (self.field === undefined) {
-    console.log("ReverseDNS - No field defined");
+    console.log(this.section, "- No field defined");
     return;
   }
 
   if (self.ips === undefined) {
-    console.log("ReverseDNS - No ips defined");
+    console.log(this.section, "- No ips defined");
     return;
   }
 
-  self.api.addSource("reversedns", self);
   self.theField = self.api.addField("field:" + self.field);
   self.trie = new iptrie.IPTrie();
   self.ips.split(";").forEach(function(item) {
@@ -62,7 +58,10 @@ ReverseDNSSource.prototype.init = function() {
     var parts = item.split("/");
     self.trie.add(parts[0], +parts[1] || 32, true);
   });
-};
+
+  self.api.addSource("reversedns", self);
+}
+util.inherits(ReverseDNSSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
 ReverseDNSSource.prototype.getIp = function(ip, cb) {
   var self = this;
@@ -98,6 +97,5 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var source = new ReverseDNSSource(api, "reversedns");
-  source.init();
 };
 //////////////////////////////////////////////////////////////////////////////////
