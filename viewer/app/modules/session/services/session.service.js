@@ -98,6 +98,31 @@
       });
     }
 
+    /**
+     * Gets details about the session
+     * @param {string} id         The unique id of the session
+     * @param {string} node       The node that the session belongs to
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getDetail(id, node) {
+      return this.$q((resolve, reject) => {
+
+        var options = {
+          url   : node + '/' + id + '/' + 'sessionDetail',
+          method: 'GET'
+        };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
   }
 
   SessionService.$inject = ['$q', '$http'];

@@ -27,7 +27,7 @@
         $httpBackend.when('GET', 'sessions.json')
           .respond(200, {});
 
-        $httpBackend.when('GET', 'sessions.json?facets=1&length=50&order=fp:asc')
+        $httpBackend.when('GET', 'sessions.json?facets=1&length=100&order=fp:asc')
           .respond(200, {});
 
         $httpBackend.when('GET', 'tableState/sessions')
@@ -47,14 +47,14 @@
 
       it('should send a GET request (with parameters) for sessions', function() {
         var query = {
-          length: 50, // page length
+          length: 100,// page length
           start : 0,  // first item index
           sorts : [{element:'fp',order:'asc'}], // array of sort objects
           facets: 1   // facets
         };
 
         var result = SessionService.get(query);
-        $httpBackend.expectGET('sessions.json?facets=1&length=50&order=fp:asc');
+        $httpBackend.expectGET('sessions.json?facets=1&length=100&order=fp:asc');
         $httpBackend.flush();
       });
 

@@ -13,14 +13,16 @@
      * Initialize global variables for this controller
      * @param $scope              Angular application model object
      * @param $routeParams        Retrieve the current set of route parameters
+     * @param $sce                Angular strict contextual escaping service
      * @param SessionService      Transacts sessions with the server
      * @param DTOptionsBuilder    DataTables options builder
      * @param DTColumnDefBuilder  DataTables column builder
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, SessionService,
+    constructor($scope, $routeParams, $sce, SessionService,
       DTOptionsBuilder, DTColumnDefBuilder) {
+      this.$sce               = $sce;
       this.$scope             = $scope;
       this.$routeParams       = $routeParams;
       this.SessionService     = SessionService;
@@ -35,37 +37,37 @@
       this.currentPage  = 1; // start on the first page
 
       this.query = {        // query defaults:
-        length: 50,   // page length
+        length: 100,  // page length
         start : 0,    // first item index
         // array of sort objects
-        sorts : [],   // [ { element: 'lp', order: 'asc' } ]
+        sorts : [{element:'fp', order:'asc'}],
         facets: 1,    // facets
       };
 
       // configure datatable
-      this.dtOptions = this.DTOptionsBuilder.newOptions()
-        .withDOM('t')
-        .withBootstrap()
-        .withColReorder()
-        .withColReorderOption('iFixedColumnsLeft', 1)
-        .withDisplayLength(this.query.length)
-        .withPaginationType('full_numbers')
-        .withOption('responsive', true);
+      // this.dtOptions = this.DTOptionsBuilder.newOptions()
+      //   .withDOM('t')
+      //   .withBootstrap()
+      //   .withColReorder()
+      //   .withColReorderOption('iFixedColumnsLeft', 1)
+      //   .withDisplayLength(this.query.length)
+      //   .withPaginationType('full_numbers')
+      //   .withOption('responsive', true);
 
       // configure datatable columns
-      this.dtColumns = [
-        this.DTColumnDefBuilder.newColumnDef(0).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(1).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(2).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(3).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(4).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(5).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(6).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(7).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(8).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(9).notSortable(),
-        this.DTColumnDefBuilder.newColumnDef(10).notSortable()
-      ];
+      // this.dtColumns = [
+      //   this.DTColumnDefBuilder.newColumnDef(0).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(1).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(2).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(3).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(4).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(5).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(6).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(7).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(8).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(9).notSortable(),
+      //   this.DTColumnDefBuilder.newColumnDef(10).notSortable()
+      // ];
 
       this.getColumnInfo(); // get column infomation
 
@@ -101,6 +103,18 @@
 
         this.getData();
       });
+
+      // watch for additions to search parameters from session detail
+      this.$scope.$on('add:to:search', (event, args) => {
+        // notify children (namely expression typeahead)
+        this.$scope.$broadcast('add:to:typeahead', args);
+      });
+
+      // watch for changes to time parameters from session detail
+      this.$scope.$on('change:time', (event, args) => {
+        // notify children (namely search component)
+        this.$scope.$broadcast('update:time', args);
+      });
     } /* /$onInit */
 
 
@@ -135,10 +149,22 @@
         });
     }
 
+    sessionDetail(session) {
+      session.expanded = !session.expanded;
+    }
+
+   isSorted(id) {
+     for (var i = 0; i < this.query.sorts.length; ++i) {
+       if (this.query.sorts[i].element === id) { return true; }
+     }
+
+     return false;
+   }
+
   }
 
-  SessionController.$inject = ['$scope', '$routeParams', 'SessionService',
-    'DTOptionsBuilder', 'DTColumnDefBuilder'];
+  SessionController.$inject = ['$scope', '$routeParams', '$sce',
+    'SessionService', 'DTOptionsBuilder', 'DTColumnDefBuilder'];
 
 
   angular.module('moloch')

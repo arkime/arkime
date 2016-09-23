@@ -40,9 +40,6 @@
         { $routeParams: {}, FieldService: FieldService },
         { query: scope.expression });
 
-      // spy on emit event
-      spyOn(scope, '$emit').and.callThrough();
-
       typeahead.$onInit();
 
       $httpBackend.flush();

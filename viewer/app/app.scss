@@ -145,6 +145,15 @@ body {
 .text-yellow  { color: $color-yellow-dark; }
 
 
+// font sizes
+.large {
+  font-size: 1.8rem;
+}
+.xlarge {
+  font-size: 2rem;
+}
+
+
 // wrapping
 .no-wrap {
   white-space: nowrap;
@@ -161,12 +170,12 @@ body {
 .btn {
   &.btn-purple {
     color           : $color-white;
-    background-color: $color-purple;
-    border-color    : darken($color-purple, 8%);
+    background-color: $color-purple-light;
+    border-color    : darken($color-purple-light, 8%);
 
     &:hover {
-      background-color: darken($color-purple, 5%);
-      border-color    : darken($color-purple, 12%);
+      background-color: darken($color-purple-light, 5%);
+      border-color    : darken($color-purple-light, 12%);
     }
   }
   &.btn-blue {
@@ -181,12 +190,12 @@ body {
   }
   &.btn-green {
     color           : $color-white;
-    background-color: $color-green;
-    border-color    : darken($color-green, 8%);
+    background-color: $color-green-light;
+    border-color    : darken($color-green-light, 8%);
 
     &:hover {
-      background-color: darken($color-green, 5%);
-      border-color    : darken($color-green, 12%);
+      background-color: darken($color-green-light, 5%);
+      border-color    : darken($color-green-light, 12%);
     }
   }
   &.btn-yellow {
@@ -276,17 +285,31 @@ table {
 }
 
 // change table hover color
-.table-hover {
+.table {
   tbody {
     tr {
-      &:hover {
-        background-color: lighten($color-green-light, 55%);
+
+      // color every fourth row
+      &:nth-of-type(4n-1) {
+        background-color: lighten($color-gray-light, 5%);
         td {
           &.active {
-            background-color: lighten($color-green-light, 50%);
+            background-color: $color-gray-light;
           }
         }
       }
+
+      &:not(.detail-row) {
+        &:hover {
+          background-color: lighten($color-green-light, 55%);
+          td {
+            &.active {
+              background-color: lighten($color-green-light, 50%);
+            }
+          }
+        }
+      }
+
     }
   }
 }
@@ -305,6 +328,31 @@ div { // insert line
   	z-index          : 201;
   	background-color : $color-blue;
   }
+}
+
+
+/* moloch menu items ------------------------- */
+.hover-menu { // show button to open menu on hover
+  .btn-hover, ul.dropdown-menu {
+    opacity   : 0;
+    visibility: hidden;
+    transition: visibility 0s linear 400ms, opacity 400ms;
+  }
+  &:hover {
+    .btn-hover, ul.dropdown-menu {;
+      opacity   : 1;
+      visibility: visible;
+      transition: visibility 0s linear 0s, opacity 400ms;
+    }
+  }
+}
+
+// display the menu underneath the button
+.moloch-menu {
+  display :inherit;
+  top     :inherit;
+  left    :inherit;
+  margin  : 0;
 }
 
 

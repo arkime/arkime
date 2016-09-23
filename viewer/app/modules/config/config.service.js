@@ -72,6 +72,23 @@
         });
     }
 
+    /**
+     * Gets the available clickable fields
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getMolochRightClick() {
+      return this.$q((resolve, reject) => {
+
+        this.$http({ url:'molochRightClick', method:'GET', cache:true })
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
 
   }
 

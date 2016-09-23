@@ -58,6 +58,19 @@
       this.altInputFormats  = ['yyyy/M!/d! H:mm:ss'];
 
       this.change();
+
+      // watch for changes in time parameters
+      this.$scope.$on('update:time', (event, args) => {
+        this.$scope.$apply(() => {
+          if (args.start) {       // start time changed
+            this.startTime  = parseInt(args.start * 1000, 10);
+          } else if (args.stop) { // stop time changed
+            this.stopTime   = parseInt(args.stop * 1000, 10);
+          }
+
+          this.timeRange = '0';   // custom time range
+        });
+      });
     }
 
 

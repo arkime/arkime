@@ -1,7 +1,7 @@
 div.sessionDetailToolbar
   if (session.ro)
     li
-      a(href='#', molochexpr='rootId', molochvalue=session.ro) All Sessions
+      a.clickable(href='#', molochfield='rootId', molochvalue=session.ro) All Sessions
     li
       a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
     li
@@ -21,24 +21,33 @@ div.sessionDetailToolbar
 dl.sessionDetailMeta
   dt Id
   dd
-    a.moloch-right-click(href='#', molochexpr='id') #{session.id}
+    a.cursor-pointer.clickable(moloch-field='id', molochvalue="#{session.id}") #{session.id}
     if (session.ro)
       | &nbsp;
-      | Root Id: 
-      a.moloch-right-click(href='#', molochexpr='rootId') #{session.ro}
+      span.hover-menu
+        strong Root Id:
+        span.small.cursor-pointer.clickable(molochfield='rootId', molochvalue="#{session.ro}") #{session.ro} 
+        a.btn.btn-link.btn-xs.btn-hover(molochmenu, molochfield='rootId', molochvalue="#{session.ro}")
+          span.fa.fa-bars
   +arrayList(session, "prot-term", "Protocols", "protocols")
   dt Start
   dd
-    a.formatSeconds(href='#', onclick='return setSessionStartTime(#{session.fp});') #{session.fp}
+    span.small.cursor-pointer.clickable.formatSeconds(molochstart="#{session.fp}") #{session.fp}
+    | &nbsp;&nbsp;&nbsp;
+    strong Stop: 
+    span.small.cursor-pointer.clickable.formatSeconds(molochstop='#{session.lp}') #{session.lp}
+    | &nbsp;&nbsp;&nbsp;
+    span.hover-menu
+      strong Node: 
+      span.small.cursor-pointer.clickable(molochfield='node', molochvalue="#{session.no}") #{session.no} 
+      a.btn.btn-link.btn-xs.btn-hover(molochmenu, molochfield='node', molochvalue="#{session.no}")
+        span.fa.fa-bars
     | &nbsp;
-    | Stop: 
-    a.formatSeconds(href='#', onclick='return setSessionStopTime(#{session.lp});') #{session.lp}
-    | &nbsp;
-    | Node: 
-    a.moloch-right-click(href='#', molochexpr='node') #{session.no}
-    | &nbsp;
-    | IP Protocol: 
-    a.moloch-right-click(href='#', molochexpr='ip.protocol') #{session.pr}
+    span.hover-menu
+      strong IP Protocol: 
+      span.small.cursor-pointer.clickable(molochfield='ip.protocol', molochvalue="#{session.pr}") #{session.pr} 
+      a.btn.btn-link.btn-xs.btn-hover(molochmenu, molochfield='ip.protocol', molochvalue="#{session.pr}")
+        span.fa.fa-bars
 
   +arrayList(session, "user", "Users", "user")
   +arrayList(session, "asset-term", "Assets", "asset")
@@ -122,3 +131,4 @@ dl.sessionDetailMeta
     dt Socks User
     dd
       a.moloch-right-click(href='#', molochexpr='socks.user') #{session.socksuser}
+      

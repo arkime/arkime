@@ -1444,6 +1444,14 @@ app.get('/titleconfig', checkWebEnabled, function(req, res) {
   res.send(titleConfig);
 });
 
+app.get('/molochRightClick', checkWebEnabled, function(req, res) {
+  if(!app.locals.molochRightClick) {
+    res.status(404);
+    res.send('Cannot locate right clicks');
+  }
+  res.send(app.locals.molochRightClick);
+})
+
 app.get('/eshealth.json', function(req, res) {
   Db.healthCache(function(err, health) {
     res.send(health);

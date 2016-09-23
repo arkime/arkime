@@ -15,6 +15,7 @@
   require('datatables.net-colreorder/js/dataTables.colReorder');
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
+  // require('../public/common');
 
 
   /**

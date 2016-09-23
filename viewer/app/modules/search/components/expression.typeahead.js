@@ -53,6 +53,27 @@
         this.results    = null;
         this.activeIdx  = 0;
       });
+
+      // watch for additions to search parameters
+      this.$scope.$on('add:to:typeahead', (event, args) => {
+        var newExpr = '';
+
+        if (!this.query.value) { this.query.value = ''; }
+
+        if (this.query.value && this.query.value !== '') {
+          if (this.query.value[this.query.value.length - 1] !== ' ') {
+            // if last char is not a space, add it
+            newExpr += ' ';
+          }
+          newExpr += '&& ';
+        }
+
+        newExpr += args.expression;
+
+        this.$scope.$apply(() => {
+          this.query.value += newExpr;
+        });
+      });
     }
 
 

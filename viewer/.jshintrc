@@ -12,7 +12,7 @@
   "trailing": true,
   "esversion": 6,
   "predef": [
-    "angular", "document", "jasmine", "jQuery",
+    "angular", "document", "jasmine", "jQuery", "$", "window",
     "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn"
   ]
 }

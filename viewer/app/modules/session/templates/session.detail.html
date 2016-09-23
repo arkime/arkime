@@ -1,0 +1,13 @@
+<div ng-if="loading"
+  class="margined-top margined-bottom large">
+  <span class="fa fa-spinner fa-spin"></span>&nbsp;
+  Loading session details...
+</div>
+
+<div ng-if="error"
+  class="text-danger margined-top margined-bottom large">
+  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+  {{session.error}}
+</div>
+
+<div ng-if="!error && !loading" ng-bind-html="detailHtml"></div>

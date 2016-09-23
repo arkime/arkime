@@ -5,7 +5,7 @@
   /* mock data ------------------------------- */
   // default session query
   var query = {
-    length: 50, // page length
+    length: 100,// page length
     start : 0,  // first item index
     sorts : [], // array of sort objects
     facets: 1   // facets
@@ -47,7 +47,7 @@
 
     var scope, sessionComponent, $httpBackend;
     var sessionsEndpoint    = 'sessions.json';
-    var defaultParameters   = '?facets=1&length=50&order=fp:asc';
+    var defaultParameters   = '?facets=1&length=100&order=fp:asc';
     var tableStateEndpoint  = 'tableState/sessions';
 
     // Initialize and a mock scope
@@ -125,7 +125,7 @@
         });
 
         // expect GET request with new parameters
-        var newParameters = '?facets=1&length=50&order=lp:desc';
+        var newParameters = '?facets=1&length=100&order=lp:desc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
