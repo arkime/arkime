@@ -40,6 +40,7 @@ LOCAL int                   emailSrcField;
 LOCAL int                   emailDstField;
 LOCAL int                   dnsHostField;
 LOCAL int                   tagsField;
+LOCAL int                   httpPathField;
 
 LOCAL uint32_t              fieldsTS;
 LOCAL int                   fieldsMap[256];
@@ -58,16 +59,19 @@ LOCAL const int validDNS[256] = {
 #define INTEL_TYPE_DOMAIN  1
 #define INTEL_TYPE_MD5     2
 #define INTEL_TYPE_EMAIL   3
+#define INTEL_TYPE_URL     4
+#define INTEL_TYPE_SIZE    5
 
-LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email"};
+LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url"};
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
 #define INTEL_STAT_REQUEST    2
 #define INTEL_STAT_INPROGRESS 3
 #define INTEL_STAT_FAIL       4
+#define INTEL_STAT_SIZE       5
 
-LOCAL uint32_t stats[4][5];
+LOCAL uint32_t stats[INTEL_TYPE_SIZE][INTEL_STAT_SIZE];
 /******************************************************************************/
 typedef struct wise_op {
     char                 *str;
@@ -108,8 +112,8 @@ typedef struct wiserequest {
 
 typedef HASH_VAR(h_, WiseItemHash_t, WiseItemHead_t, 199337);
 
-WiseItemHash_t itemHash[4];
-WiseItemHead_t itemList[4];
+WiseItemHash_t itemHash[INTEL_TYPE_SIZE];
+WiseItemHead_t itemList[INTEL_TYPE_SIZE];
 
 LOCAL MOLOCH_LOCK_DEFINE(item);
 
@@ -125,7 +129,7 @@ int wise_item_cmp(const void *keyv, const void *elementv)
 void wise_print_stats()
 {
     int i;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < INTEL_TYPE_SIZE; i++) {
         LOG("%8s lookups:%7d cache:%7d requests:%7d inprogress:%7d fail:%7d hash:%7d list:%7d",
             wiseStrings[i],
             stats[i][0],
@@ -584,6 +588,22 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         );
     }
 
+    //URLs
+    if (session->fields[httpPathField]) {
+        MolochStringHashStd_t *shash = session->fields[httpPathField]->shash;
+        HASH_FORALL(s_, *shash, hstring,
+            if (hstring->str[0] == 'h') {
+                if (memcmp(hstring->str, "http://", 7) == 0)
+                    wise_lookup(session, iRequest, hstring->str+7, INTEL_TYPE_URL);
+                else if (memcmp(hstring->str, "https://", 8) == 0)
+                    wise_lookup(session, iRequest, hstring->str+8, INTEL_TYPE_URL);
+                else
+                    wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_URL);
+            } else
+                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_URL);
+        );
+    }
+
     if (iRequest->numItems > 128) {
         wise_flush_locked();
     }
@@ -595,7 +615,7 @@ void wise_plugin_exit()
     MOLOCH_LOCK(item);
     int h;
     WiseItem_t *wi;
-    for (h = 0; h < 4; h++) {
+    for (h = 0; h < INTEL_TYPE_SIZE; h++) {
         while (DLL_POP_TAIL(wil_, &itemList[h], wi)) {
             wise_free_item_unlocked(wi);
         }
@@ -639,6 +659,7 @@ void moloch_plugin_init()
     emailDstField  = moloch_field_by_db("edst");
     dnsHostField   = moloch_field_by_db("dnsho");
     tagsField      = moloch_field_by_db("ta");
+    httpPathField  = moloch_field_by_db("hpath");
 
     wiseService = moloch_http_create_server(host, port, maxConns, maxRequests, 0);
     g_free(host);
@@ -659,10 +680,10 @@ void moloch_plugin_init()
     moloch_plugins_set_outstanding_cb("wise", wise_plugin_outstanding);
 
     int h;
-    for (h = 0; h < 4; h++) {
+    for (h = 0; h < INTEL_TYPE_SIZE; h++) {
         HASH_INIT(wih_, itemHash[h], moloch_string_hash, wise_item_cmp);
         DLL_INIT(wil_, &itemList[h]);
     }
-    g_timeout_add_seconds( 1, wise_flush, 0);
+    g_timeout_add_seconds(1, wise_flush, 0);
     wise_load_fields();
 }
