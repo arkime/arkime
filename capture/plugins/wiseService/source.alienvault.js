@@ -17,7 +17,7 @@
 'use strict';
 
 var fs             = require('fs')
-   ,csv            = require('csv')
+  , csv            = require('csv')
   , wiseSource     = require('./wiseSource.js')
   , util           = require('util')
   , HashTable      = require('hashtable')

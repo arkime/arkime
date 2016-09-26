@@ -63,7 +63,7 @@ function WiseProxySource (api, section) {
       this.getEmail = getEmail;
       break;
     case "url":
-      this.getUrl = getUrl;
+      this.getURL = getURL;
       break;
     }
   }
@@ -220,7 +220,7 @@ function getEmail(item, cb) {
   this.fetch(3, item, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////
-function getUrl(item, cb) {
+function getURL(item, cb) {
   this.fetch(4, item, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////

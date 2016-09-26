@@ -82,7 +82,8 @@ SimpleSource.prototype.initSimple = function() {
     return false;
 
 
-  if (this.type === "domain") {
+  switch (this.type) {
+  case "domain":
     this.getDomain = function(domain, cb) {
       if (this.cache.get(domain)) {
         return this.sendResult(domain, cb);
@@ -90,13 +91,20 @@ SimpleSource.prototype.initSimple = function() {
       domain = domain.substring(domain.indexOf(".")+1);
       return this.sendResult(domain, cb);
     };
-  } else if (this.type === "ip") {
+    break;
+  case "ip":
     this.getIp = this.sendResult;
-  } else if (this.type === "md5") {
+    break;
+  case "md5":
     this.getMd5 = this.sendResult;
-  } else if (this.type === "email") {
+    break;
+  case "email":
     this.getEmail = this.sendResult;
-  } else {
+    break;
+  case "url":
+    this.getURL = this.sendResult;
+    break;
+  default:
     console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
     return false;
   }
@@ -124,10 +132,20 @@ SimpleSource.prototype.load = function() {
     };
   } else {
     newCache = new HashTable();
-    setFunc = function(key, value) {
-      newCache.put(key, value);
-      count++;
-    };
+    if (this.type === "url") {
+      setFunc = function(key, value) {
+        if (key.lastIndexOf("http://", 0) === 0) {
+          key = key.substring(7);
+        }
+        newCache.put(key, value);
+        count++;
+      };
+    } else {
+      setFunc = function(key, value) {
+        newCache.put(key, value);
+        count++;
+      };
+    }
   }
   this.simpleSourceLoad(setFunc, function (err) {
     if (err) {

@@ -59,6 +59,7 @@ function ThreatStreamSource (api, section) {
     this.domains      = new HashTable();
     this.emails       = new HashTable();
     this.md5s         = new HashTable();
+    this.urls         = new HashTable();
     this.cacheTimeout = -1;
     setImmediate(this.loadFile.bind(this));
     setInterval(this.loadFile.bind(this), 8*60*60*1000); // Reload file every 8 hours
@@ -66,6 +67,7 @@ function ThreatStreamSource (api, section) {
     ThreatStreamSource.prototype.getIp     = getIpZip;
     ThreatStreamSource.prototype.getMd5    = getMd5Zip;
     ThreatStreamSource.prototype.getEmail  = getEmailZip;
+    ThreatStreamSource.prototype.getURL    = getURLZip;
     ThreatStreamSource.prototype.dump      = dumpZip;
     api.addSource("threatstream", this);
     break;
@@ -78,6 +80,7 @@ function ThreatStreamSource (api, section) {
     ThreatStreamSource.prototype.getIp     = getIpSqlite3;
     ThreatStreamSource.prototype.getMd5    = getMd5Sqlite3;
     ThreatStreamSource.prototype.getEmail  = getEmailSqlite3;
+    ThreatStreamSource.prototype.getURL    = getURLSqlite3;
     this.loadTypes();
     break;
   default:
@@ -118,13 +121,13 @@ ThreatStreamSource.prototype.parseFile = function()
   self.ips.clear();
   self.ips.reserve(2000000);
   self.domains.clear();
-  self.domains.reserve(2000000);
+  self.domains.reserve(200000);
   self.emails.clear();
-  self.emails.reserve(2000000);
+  self.emails.reserve(200000);
   self.md5s.clear();
-  self.md5s.reserve(2000000);
-  //self.urls.clear();
-  //self.urls.reserve(200000);
+  self.md5s.reserve(200000);
+  self.urls.clear();
+  self.urls.reserve(200000);
 
   fs.createReadStream('/tmp/threatstream.zip')
     .pipe(unzip.Parse())
@@ -165,15 +168,18 @@ ThreatStreamSource.prototype.parseFile = function()
 
 
           if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-            self.ips.put(item.ip, {num: num, buffer: encoded});
+            self.ips.put(item.srcip, {num: num, buffer: encoded});
           } else if (item.itype.match(/_domain|_dns/)) {
             self.domains.put(item.domain, {num: num, buffer: encoded});
           } else if (item.itype.match(/_email/)) {
             self.emails.put(item.email, {num: num, buffer: encoded});
           } else if (item.itype.match(/_md5/)) {
             self.md5s.put(item.md5, {num: num, buffer: encoded});
-          //} else if (item.itype.match(/_url/)) {
-          //  self.urls.put(item.url, {num: num, buffer: encoded});
+          } else if (item.itype.match(/_url/)) {
+            if (item.url.lastIndexOf("http://", 0) === 0) {
+              item.url = item.url.substring(7);
+            }
+            self.urls.put(item.url, {num: num, buffer: encoded});
           }
         });
         //console.log(self.section, "- Done", entry.path);
@@ -213,16 +219,23 @@ function getEmailZip(email, cb) {
   cb(null, this.emails.get(email));
 }
 //////////////////////////////////////////////////////////////////////////////////
+function getURLZip(url, cb) {
+  cb(null, this.urls.get(url));
+}
+//////////////////////////////////////////////////////////////////////////////////
 function dumpZip (res) {
   var self = this;
-  ["ips", "domains", "emails", "md5s"].forEach(function (ckey) {
-    res.write("" + ckey + ":\n");
+  res.write("{");
+  ["ips", "domains", "emails", "md5s", "urls"].forEach(function (ckey) {
+    res.write("" + ckey + ": [\n");
     self[ckey].forEach(function(key, value) {
       var str = "{key: \"" + key + "\", ops:\n" +
         wiseSource.result2Str(wiseSource.combineResults([value])) + "},\n";
       res.write(str);
     });
+    res.write("],\n");
   });
+  res.write("}");
   res.end();
 }
 //////////////////////////////////////////////////////////////////////////////////
@@ -342,6 +355,10 @@ function getMd5Sqlite3(md5, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 function getEmailSqlite3(email, cb) {
   return this.getSqlite3("email", "email", email, cb);
+}
+//////////////////////////////////////////////////////////////////////////////////
+function getURLSqlite3(url, cb) {
+  return this.getSqlite3("url", "url", url, cb);
 }
 //////////////////////////////////////////////////////////////////////////////////
 ThreatStreamSource.prototype.loadTypes = function() {
