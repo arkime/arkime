@@ -70,7 +70,7 @@ Installing Elasticsearch
 
 Recommended version **2.4.0**, Moloch versions since 0.15.0 requires at least 2.1.x
 
-1. Prep the ``elasticsearch`` machines by increasing max file descriptors add allowing memory locking. 
+1. Prep the ``elasticsearch`` machines by increasing max file descriptors and allowing memory locking. 
    On CentOS and others this is done by adding the following to bottom of: 
    ``/etc/security/limits.conf``::
 
