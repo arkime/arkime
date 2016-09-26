@@ -610,6 +610,8 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 
             if (str[0] == '/') {
                 wise_lookup_url(session, iRequest, str+2);
+            } else if (str[0] == 'h' && memcmp("http://", str, 7) == 0) {
+                wise_lookup_url(session, iRequest, str+7);
             } else
                 wise_lookup_url(session, iRequest, str);
         }
