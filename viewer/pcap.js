@@ -20,7 +20,7 @@
 */
 'use strict';
 
-var fs             = require('fs-ext');
+var fs             = require('fs');
 
 var Pcap = module.exports = exports = function Pcap (key) {
   this.key     = key;
