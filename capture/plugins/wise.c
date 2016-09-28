@@ -40,7 +40,7 @@ LOCAL int                   emailSrcField;
 LOCAL int                   emailDstField;
 LOCAL int                   dnsHostField;
 LOCAL int                   tagsField;
-LOCAL int                   httpPathField;
+LOCAL int                   httpUrlField;
 
 LOCAL uint32_t              fieldsTS;
 LOCAL int                   fieldsMap[256];
@@ -483,6 +483,18 @@ void wise_lookup_ip(MolochSession_t *session, WiseRequest_t *request, uint32_t i
     wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
 }
 /******************************************************************************/
+void wise_lookup_url(MolochSession_t *session, WiseRequest_t *request, char *url)
+{
+    char *question = strchr(url, '?');
+    if (question) {
+        *question = 0;
+        wise_lookup(session, request, url, INTEL_TYPE_URL);
+        *question = '?';
+    } else {
+        wise_lookup(session, request, url, INTEL_TYPE_URL);
+    }
+}
+/******************************************************************************/
 LOCAL WiseRequest_t *iRequest = 0;
 LOCAL MOLOCH_LOCK_DEFINE(iRequest);
 LOCAL char          *iBuf = 0;
@@ -514,6 +526,7 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
 {
     MolochString_t *hstring;
+    uint32_t        i;
 
     MOLOCH_LOCK(iRequest);
     if (!iRequest) {
@@ -589,19 +602,19 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     }
 
     //URLs
-    if (session->fields[httpPathField]) {
-        MolochStringHashStd_t *shash = session->fields[httpPathField]->shash;
-        HASH_FORALL(s_, *shash, hstring,
-            if (hstring->str[0] == 'h') {
-                if (memcmp(hstring->str, "http://", 7) == 0)
-                    wise_lookup(session, iRequest, hstring->str+7, INTEL_TYPE_URL);
-                else if (memcmp(hstring->str, "https://", 8) == 0)
-                    wise_lookup(session, iRequest, hstring->str+8, INTEL_TYPE_URL);
-                else
-                    wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_URL);
+    if (session->fields[httpUrlField]) {
+        GPtrArray *sarray =  session->fields[httpUrlField]->sarray;
+
+        for(i = 0; i < sarray->len; i++) {
+            char *str = g_ptr_array_index(sarray, i);
+
+            if (str[0] == '/') {
+                wise_lookup_url(session, iRequest, str+2);
+            } else if (str[0] == 'h' && memcmp("http://", str, 7) == 0) {
+                wise_lookup_url(session, iRequest, str+7);
             } else
-                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_URL);
-        );
+                wise_lookup_url(session, iRequest, str);
+        }
     }
 
     if (iRequest->numItems > 128) {
@@ -659,7 +672,7 @@ void moloch_plugin_init()
     emailDstField  = moloch_field_by_db("edst");
     dnsHostField   = moloch_field_by_db("dnsho");
     tagsField      = moloch_field_by_db("ta");
-    httpPathField  = moloch_field_by_db("hpath");
+    httpUrlField   = moloch_field_by_db("us");
 
     wiseService = moloch_http_create_server(host, port, maxConns, maxRequests, 0);
     g_free(host);

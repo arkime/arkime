@@ -799,7 +799,7 @@ if(require.main === module) {
   };
 
   var base = "ITEM-NATURAL";
-  var data;
+  var filename;
   var ending = ["ITEM-SORTER", "ITEM-PRINTER"];
   for (var aa = 2; aa < process.argv.length; aa++) {
     if (process.argv[aa] === "--hex") {
@@ -831,14 +831,51 @@ if(require.main === module) {
       options["ITEM-RAWBODY"] = {bodyNumber: +process.argv[aa]};
       base = "ITEM-RAWBODY";
     } else {
-      data   = require("./" + process.argv[aa]);
+      filename = process.argv[aa];
     }
   }
+
 
   options.order.push("ITEM-HTTP");
   options.order.push("ITEM-SMTP");
 
   options.order = options.order.concat("ITEM-BYTES", base, ending);
   console.log(options);
-  exports.createPipeline(options, options.order, new Pcap2ItemStream(options, data));
+
+  if (!filename) {
+    console.log("ERROR, must provide a file");
+  } else if (filename.match(/\.pcap$/)) {
+    var Pcap = require('./pcap.js');
+    var fs = require('fs');
+    var pcap = new Pcap(filename);
+    pcap.open(filename);
+    var stat = fs.statSync(filename);
+    var pos = 24;
+    var packets = [];
+
+    async.whilst(
+        function () { return pos < stat.size;},
+        function (callback) {
+          pcap.readPacket(pos, function(packet) {
+            var obj = {};
+            pcap.decode(packet, obj);
+            packets.push(obj);
+            pos += packet.length;
+            callback();
+          });
+        },
+        function (err, n) {
+          Pcap.reassemble_tcp(packets, packets[0].ip.addr1 + ':' + packets[0].tcp.sport, function(err, results) {
+            exports.createPipeline(options, options.order, new Pcap2ItemStream(options, results));
+          });
+        }
+    );
+
+    console.log("process", filename);
+  } else {
+    var data   = require("./" + filename);
+    exports.createPipeline(options, options.order, new Pcap2ItemStream(options, data));
+  }
+
+
 }
