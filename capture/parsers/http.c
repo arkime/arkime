@@ -253,7 +253,8 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
                 moloch_session_add_tag(session, "http:bad-xff");
-                LOG("ERROR - Didn't understand ip: %s %s %d", http->valueString[http->which]->str, ip, ia);
+                if (config.debug)
+                    LOG("INFO - Didn't understand ip: %s %s %d", http->valueString[http->which]->str, ip, ia);
                 continue;
             }
 
