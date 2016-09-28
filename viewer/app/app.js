@@ -15,7 +15,6 @@
   require('datatables.net-colreorder/js/dataTables.colReorder');
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
-  // require('../public/common');
 
 
   /**
@@ -45,9 +44,7 @@
         $routeProvider
           .when('/session', {
             title   : 'Sessions',
-            template: '<session></session>',
-            // don't automatically reload when route parameters change
-            reloadOnSearch: false
+            template: '<session></session>'
           })
           // default route is the sessions page
           .otherwise({ redirectTo: '/session' });

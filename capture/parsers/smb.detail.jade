@@ -1,6 +1,6 @@
 if (session.smbfn || session.smbsh)
-  div.sessionDetailMeta.bold SMB
-  dl.sessionDetailMeta(suffix="smb")
+  h4 SMB
+  dl(suffix="smb")
     +arrayList(session, "smbuser", "Users", "smb.user")
     +arrayList(session, "smbho", "Hosts", "smb.host")
     +arrayList(session, "smbdm", "Domains", "smb.domain")

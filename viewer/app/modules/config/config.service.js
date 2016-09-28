@@ -77,7 +77,7 @@
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getMolochRightClick() {
+    getMolochClickables() {
       return this.$q((resolve, reject) => {
 
         this.$http({ url:'molochRightClick', method:'GET', cache:true })

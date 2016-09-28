@@ -40,6 +40,7 @@ $color-purple-dark  : #66057A;
 @import '../components/pagination/pagination';
 @import './modules/search/search';
 @import './modules/health/health';
+@import './modules/session/session';
 
 
 
@@ -94,6 +95,9 @@ body {
 .margined-right-xxxxlg  { margin-right: $px-xxxxlg; }
 .margined-right-none    { margin-right: $px-none; }
 
+.margin-for-main-navbar   { margin-top: 50px; }
+.margin-for-search-navbar { margin-top: 100px; }
+
 
 // padding
 .padded             { padding: $px-md; }
@@ -144,8 +148,16 @@ body {
 .text-purple  { color: $color-purple; }
 .text-yellow  { color: $color-yellow-dark; }
 
+// lighter than muted text
+.text-muted-more {
+  color: lighten($color-gray, 5%);
+}
+
 
 // font sizes
+.medium {
+  font-size: 95%;
+}
 .large {
   font-size: 1.8rem;
 }
@@ -211,16 +223,17 @@ body {
 }
 
 
+// labels
+.label {
+  // https://github.com/twbs/bootstrap/issues/13219
+  display     : inline-block;
+}
+
+
 // small horizontal rule
 .hr-small {
   margin-top:   $px-sm;
   margin-bottom:$px-xs;
-}
-
-
-// lighter than muted text
-.text-muted-more {
-  color: lighten($color-gray, 5%);
 }
 
 
@@ -256,103 +269,6 @@ body {
     display         : flex;
     justify-content : center;
   }
-}
-
-
-
-/* tables ------------------------------------ */
-colheader {
-  white-space :nowrap;
-  overflow    :visible;
-
-  th.active & {
-    color     : $color-purple-dark;
-  }
-
-  .fa-sort {
-    visibility: hidden;
-  }
-
-  &:hover {
-    .fa-sort {
-      visibility: visible;
-    }
-  }
-}
-
-table {
-  border-top: $color-gray-light solid 1px;
-}
-
-// change table hover color
-.table {
-  tbody {
-    tr {
-
-      // color every fourth row
-      &:nth-of-type(4n-1) {
-        background-color: lighten($color-gray-light, 5%);
-        td {
-          &.active {
-            background-color: $color-gray-light;
-          }
-        }
-      }
-
-      &:not(.detail-row) {
-        &:hover {
-          background-color: lighten($color-green-light, 55%);
-          td {
-            &.active {
-              background-color: lighten($color-green-light, 50%);
-            }
-          }
-        }
-      }
-
-    }
-  }
-}
-
-// datatables colreorder
-table { // floating table, dragged with the mouse
-  &.DTCR_clonedTable {
-  	background-color : rgba(255, 255, 255, 0.7);
-  	z-index          : 202;
-  }
-}
-
-div { // insert line
-  &.DTCR_pointer {
-  	width            : 1px;
-  	z-index          : 201;
-  	background-color : $color-blue;
-  }
-}
-
-
-/* moloch menu items ------------------------- */
-.hover-menu { // show button to open menu on hover
-  .btn-hover, ul.dropdown-menu {
-    opacity   : 0;
-    visibility: hidden;
-    transition: visibility 0s linear 400ms, opacity 400ms;
-  }
-  &:hover {
-    .btn-hover, ul.dropdown-menu {;
-      opacity   : 1;
-      visibility: visible;
-      transition: visibility 0s linear 0s, opacity 400ms;
-    }
-  }
-}
-
-// display the menu underneath the button
-.moloch-menu {
-  display :inherit;
-  top     :inherit;
-  left    :inherit;
-  margin  : 0;
 }
 
 

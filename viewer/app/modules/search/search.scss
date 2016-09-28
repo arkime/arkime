@@ -1,10 +1,14 @@
 moloch-search {
+  position: fixed;
+  top     : 50px;
+  right   : 0;
+  left    : 0;
+  z-index : 1029; // under primary navbar
+
   form {
     border            : none;
-    margin            : -20px -20px 15px -20px;
     padding           : $px-xlg $px-lg $px-md $px-lg;
-    border-radius     : $px-none;
-    background-color  : lighten($color-yellow-light, 36%);
+    background-color  : lighten($color-blue-light, 50%);
     -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
     -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
     box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
@@ -28,8 +32,12 @@ moloch-search {
       top       : initial;
       left      : initial;
       display   : block;
-      max-height: 70%;
       overflow  : scroll;
+      max-height: 500px;
+
+      @media screen and (max-height: 600px) {
+        max-height: 250px;
+      }
     }
   }
 }

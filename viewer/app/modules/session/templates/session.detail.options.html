@@ -1,0 +1,78 @@
+<form class="form-inline">
+  <div class="btn-group btn-group-sm">
+    <label class="btn btn-default" ng-model="params.base"
+      ng-click="$ctrl.getDetailData()" uib-btn-radio="'natural'">
+      natural
+    </label>
+    <label class="btn btn-default" ng-model="params.base"
+      ng-click="$ctrl.getDetailData()" uib-btn-radio="'ascii'">
+      ascii
+    </label>
+    <label class="btn btn-default" ng-model="params.base"
+      ng-click="$ctrl.getDetailData()" uib-btn-radio="'utf8'">
+      utf8
+    </label>
+    <label class="btn btn-default" ng-model="params.base"
+      ng-click="$ctrl.getDetailData()" uib-btn-radio="'hex'">
+      hex
+    </label>
+  </div>
+  <button type="button" class="btn btn-default btn-sm"
+    ng-model="params.line" uib-btn-checkbox ng-click="$ctrl.getDetailData()"
+    btn-checkbox-true="true" btn-checkbox-false="false"
+    ng-disabled="params.base !== 'hex'">
+    <span class="fa fa-list-ol"></span>&nbsp;
+    Line Numbers
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+    ng-model="params.gzip" uib-btn-checkbox ng-click="$ctrl.getDetailData()"
+    btn-checkbox-true="true" btn-checkbox-false="false">
+    <span class="fa fa-file-archive-o"></span>&nbsp;
+    Uncompress
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+    ng-model="params.image" uib-btn-checkbox ng-click="$ctrl.getDetailData()"
+    btn-checkbox-true="true" btn-checkbox-false="false">
+    <span class="fa fa-file-image-o"></span>&nbsp;
+    Show Image &amp; Files
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+    ng-model="params.ts" uib-btn-checkbox ng-click="$ctrl.getDetailData()"
+    btn-checkbox-true="true" btn-checkbox-false="false">
+    <span class="fa fa-clock-o"></span>&nbsp;
+    Show Timestamps
+  </button>
+  <button type="button" class="btn btn-default btn-sm" disabled
+    title="Under construction...">
+    Other Decodings &nbsp;
+    <span class="fa fa-bars"></span>
+  </button>
+</form>
+
+<!-- - options = ['natural', 'ascii', 'utf8', 'hex'];
+
+div.grouped-radios.display-inline
+  each item in options
+    label.cursor-pointer.format-base
+      input.cursor-pointer(type="radio", name='format-base-#{session.id}',value=item,checked=query.base==item)
+      | &nbsp;#{item}&nbsp;&nbsp;
+
+div.checkbox.margined-left-xxlg
+  label.format-line
+    input(type='checkbox', checked=query.line=='true')
+    strong &nbsp;Line Numbers
+
+div.checkbox.margined-left-xxlg
+  label.format-gzip
+    input(type='checkbox', checked=query.gzip=='true')
+    strong &nbsp;Uncompress
+
+div.checkbox.margined-left-xxlg
+  label.format-image
+    input(type='checkbox', checked=query.image=='true')
+    strong &nbsp;Show Images &amp; Files
+
+div.checkbox.margined-left-xxlg
+  label.format-ts
+    input(type='checkbox', checked=query.ts=='true')
+    strong &nbsp;Show Timestamps -->

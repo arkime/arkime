@@ -1,3 +1,11 @@
+//- Display a clickable value
+mixin clickableValue(expr, value)
+  span.hover-menu
+    label.label.cursor-pointer
+      div.moloch-clickable(molochfield=expr, molochvalue=value) #{value}
+      a.btn.btn-link.btn-xs(molochmenu, molochfield=expr, molochvalue=value)
+        span.fa.fa-bars
+
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)
   select(id=name,name=name,class=classname)
@@ -25,36 +33,31 @@ mixin fieldsSelect(name,classname,simple,extra)
 mixin arrayPrint(container, field, expr)
   if ((container && container[field]))
     each value,i in container[field]
-      if (i > 0)
-        |, 
       if (value.length == 0)
-        a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
+        span(molochfield=expr, molochvalue=value) &lt;empty&gt;
       else
-        a.moloch-right-click(href='#', molochexpr=expr) #{value}
+        +clickableValue(expr, value)
 
-//- Standard method to print an array of values with commas
+//- Standard method to print an array of values
 mixin arrayList(container, field, title, expr, extra, max)
   if (!max)
     - max = 25
   if ((container && container[field]) || extra)
-    dt #{title}
+    dt 
+      strong #{title}
     dd
       if (container && container[field])
         each value,i in container[field]
-          if (i > 0)
-            |, 
           if (i == max)
             |<span style="display:none">
           if (value.length == 0)
-            a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
+            span(molochfield=expr, molochvalue=value) &lt;empty&gt;
           else
-            a.moloch-right-click(href='#', molochexpr=expr) #{value}
+            +clickableValue(expr, value)
         if (container[field].length > max)
           |</span>
-          a.showMoreItems(href='#') &hellip;
+          a.cursor-pointer.showMoreItems &hellip;
       if (extra)
-        if (container && container[field] && container[field].length > 0)
-          |, 
         |!{extra}
 
 //- Standard method to print an array of values with commas
@@ -65,9 +68,9 @@ mixin stringList(container, field, title, expr, extra)
       if (container && container[field])
         - value = container[field]
         if (value.length == 0)
-          a(href='#', molochexpr=expr, molochvalue=value) &lt;empty&gt;
+          span(molochfield=expr, molochvalue=value) &lt;empty&gt;
         else
-          a.moloch-right-click(href='#', molochexpr=expr) #{value}
+          +clickableValue(expr, value)
       if (extra)
         if (container && container[field] && container[field].length > 0)
           |, 
@@ -77,39 +80,38 @@ mixin stringList(container, field, title, expr, extra)
 mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
   span
     if (full)
-      a.moloch-right-click(href='#', molochexpr=expr) #{ipstr}
+      +clickableValue(expr, ipstr)
     else if (v6)
-      a.moloch-right-click(href='#', molochexpr='tipv6.#{expr}') #{ipstr}
+      +clickableValue('tipv6.' + expr, ipstr)
     else
-      a.moloch-right-click(href='#', molochexpr='ip.#{expr}') #{ipstr}
+      +clickableValue('ip.' + expr, ipstr)
     - if (port)
-      | :
+      strong :
       if (full)
-        a(href='#', molochexpr='#{expr}.port') #{port}
+        +clickableValue(expr + '.port', port)
       else
-        a(href='#', molochexpr='port.#{expr}') #{port}
-
+        +clickableValue('port.' + expr, port)
     - if (geo)
-      |  (
+      | (
       if (full)
-        a.moloch-right-click(href='#', molochexpr='#{expr}.country') #{geo}
+        +clickableValue(expr + '.country', geo)
       else
-        a.moloch-right-click(href='#', molochexpr='country.#{expr}') #{geo}
-      |)
+        +clickableValue('country.' + expr, geo)
+      |) &nbsp;
     - if (as)
-      |  [
+      | [
       if (full)
-        a.moloch-right-click(href='#', molochexpr='#{expr}.asn') #{as}
+        +clickableValue(expr + '.asn', as)
       else
-        a.moloch-right-click(href='#', molochexpr='asn.#{expr}') #{as}
-      |]
+        +clickableValue('asn.' + expr, as) 
+      |] &nbsp;
     - if (rir)
-      |  {
+      | {
       if (full)
-        a.moloch-right-click(href='#', molochexpr='#{expr}.rir') #{rir}
+        +clickableValue(expr + '.rir', rir)
       else
-        a.moloch-right-click(href='#', molochexpr='rir.#{expr}') #{rir}
-      |}
+        +clickableValue('rir.' + expr, rir)
+      |} 
 
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
   - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
@@ -127,14 +129,12 @@ mixin ipArrayListPre(session, field, title, expr, max)
     dt #{title}
     dd
       each ip,i in session[field]
-        if (i > 0)
-          |, 
         if (i == max)
           |<span style="display:none">
         +ipPrint(session[field][i], undefined, (session["g" + field]?session["g" + field][i]:null), (session["as" + field]?session["as" + field][i]:null), (session["rir" + field]?session["rir" + field][i]:null), expr)
       if (session[field].length > max)
         |</span>
-        a.showMoreItems(href='#') &hellip;
+        a.cursor-pointer.showMoreItems &hellip;
 
 //- Standard method to print ip info with commas
 mixin ipArrayList(container, field, title, expr, max)
@@ -144,11 +144,9 @@ mixin ipArrayList(container, field, title, expr, max)
     dt #{title}
     dd
       each ip,i in container[field]
-        if (i > 0)
-          |, 
         if (i == max)
           |<span style="display:none">
         +ipPrint(container[field][i], undefined, (container[field + "-geo"]?container[field + "-geo"][i]:null), (container[field + "-asn"]?container[field + "-asn"][i]:null), (container[field + "-rir"]?container[field + "-rir"][i]:null), expr, true)
       if (container[field].length > max)
         |</span>
-        a.showMoreItems(href='#') &hellip;
+        a.cursor-pointer.showMoreItems &hellip;

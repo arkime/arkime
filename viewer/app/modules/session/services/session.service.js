@@ -105,12 +105,13 @@
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getDetail(id, node) {
+    getDetail(id, node, params) {
       return this.$q((resolve, reject) => {
 
         var options = {
           url   : node + '/' + id + '/' + 'sessionDetail',
-          method: 'GET'
+          method: 'GET',
+          params: params
         };
 
         this.$http(options)

@@ -1,6 +1,6 @@
 if (session.dnsip || session.dnsho)
-  div.sessionDetailMeta.bold DNS
-  dl.sessionDetailMeta(suffix="dns")
+  h4 DNS
+  dl(suffix="dns")
     +ipArrayListPre(session, "dnsip", "IPs", "dns")
     +arrayList(session, 'dnsho', "Hosts", "host.dns")
     +arrayList(session.dns, 'opcode-term', "Op Code", "dns.opcode")

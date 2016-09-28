@@ -62,13 +62,14 @@
       // watch for changes in time parameters
       this.$scope.$on('update:time', (event, args) => {
         this.$scope.$apply(() => {
+          // can only change one at a time (start or stop)
           if (args.start) {       // start time changed
             this.startTime  = parseInt(args.start * 1000, 10);
           } else if (args.stop) { // stop time changed
             this.stopTime   = parseInt(args.stop * 1000, 10);
           }
 
-          this.timeRange = '0';   // custom time range
+          this.changeDate();
         });
       });
     }
@@ -148,7 +149,6 @@
           strictly  : this.strictly
         });
 
-        // this.$scope.$broadcast('issue:search');
         this.$rootScope.$broadcast('issue:search', {
           expression: this.expression.value
         });

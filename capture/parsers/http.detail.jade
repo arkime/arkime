@@ -1,6 +1,6 @@
 if (session.ho || session.ua || session.hh1 || session.hh2 || session.xff)
-  div.sessionDetailMeta.bold HTTP
-  dl.sessionDetailMeta(suffix="http")
+  h4 HTTP
+  dl(suffix="http")
     +arrayList(session.http, "method-term", "Method", "http.method")
     +arrayList(session.http, "statuscode", "Status code", "http.statuscode")
     +arrayList(session, "ho", "Hosts", "host.http")

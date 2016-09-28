@@ -2,6 +2,8 @@
 
   'use strict';
 
+  var options = require('html!../templates/session.detail.options.html');
+
   /**
    * @class SessionDetailController
    * @classdesc Interacts with session details
@@ -17,9 +19,9 @@
      * @ngInject
      */
     constructor($scope, $sce, $location, SessionService, ConfigService, FieldService) {
-      this.$scope = $scope;
-      this.$sce   = $sce;
-      this.$scope.$location = $location;
+      this.$scope         = $scope;
+      this.$sce           = $sce;
+      this.$location      = $location;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -27,23 +29,40 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.$scope.loading   = true;
-      this.$scope.error     = false;
+      this.$scope.loading = true;
+      this.$scope.error   = false;
+      this.$scope.params  = {
+        base  : 'hex',
+        line  : false,
+        image : false,
+        gzip  : false,
+        ts    : false,
+        decode: {}
+      };
 
-      this.SessionService.getDetail(this.$scope.sessionId, this.$scope.sessionNode)
-        .then((response) => {
-          this.$scope.loading     = false;
-          this.$scope.detailHtml  = this.$sce.trustAsHtml(response.data);
-          this.$scope.watchClickableValues();
-        })
-        .catch((error) => {
-          this.$scope.loading = false;
-          this.$scope.error   = error;
-        });
+      if (localStorage) { // display browser saved options
+        if (localStorage['moloch-ts']) {
+          this.$scope.params.ts = (localStorage['moloch-ts'] === 'true');
+        }
+        if (localStorage['moloch-base']) {
+          this.$scope.params.base = localStorage['moloch-base'];
+        }
+        if (localStorage['moloch-line']) {
+          this.$scope.params.line = (localStorage['moloch-line'] === 'true');
+        }
+        if (localStorage['moloch-gzip']) {
+          this.$scope.params.gzip = (localStorage['moloch-gzip'] === 'true');
+        }
+        if (localStorage['moloch-image']) {
+          this.$scope.params.image = (localStorage['moloch-image'] === 'true');
+        }
+      }
 
-      this.ConfigService.getMolochRightClick()
+      this.getDetailData(this.$scope.params);
+
+      this.ConfigService.getMolochClickables()
         .then((response) => {
-          this.$scope.molochRightClick = response;
+          this.$scope.molochClickables = response;
         })
         .catch((error) => {
           // TODO: moloch right click error
@@ -60,7 +79,30 @@
 
 
     /* exposed functions --------------------------------------------------- */
+    /**
+     *
+     */
+    getDetailData() {
+      if (localStorage) { // update browser saved options
+        localStorage['moloch-ts']     = this.$scope.params.ts;
+        localStorage['moloch-base']   = this.$scope.params.base;
+        localStorage['moloch-line']   = this.$scope.params.line;
+        localStorage['moloch-gzip']   = this.$scope.params.gzip;
+        localStorage['moloch-image']  = this.$scope.params.image;
+      }
 
+      this.SessionService.getDetail(this.$scope.sessionId,
+        this.$scope.sessionNode, this.$scope.params)
+        .then((response) => {
+          this.$scope.loading     = false;
+          this.$scope.detailHtml  = this.$sce.trustAsHtml(response.data);
+          this.$scope.watchClickableValues();
+        })
+        .catch((error) => {
+          this.$scope.loading = false;
+          this.$scope.error   = error;
+        });
+    }
 
   }
 
@@ -69,12 +111,14 @@
 
 
   angular.module('moloch')
-    .directive('sessionDetail', ['$timeout', function($timeout) {
+    .directive('sessionDetail', ['$timeout', '$filter', '$compile',
+    function($timeout, $filter, $compile) {
       return {
-        template  : require('html!../templates/session.detail.html'),
-        controller: SessionDetailController,
-        scope     : { sessionId: '@', sessionNode: '@' },
-        link      : function SessionDetailLink(scope, element, attrs, ctrl) {
+        template    : require('html!../templates/session.detail.html'),
+        controller  : SessionDetailController,
+        controllerAs: '$ctrl',
+        scope       : { sessionId: '@', sessionNode: '@' },
+        link        : function SessionDetailLink(scope, element, attrs, ctrl) {
 
           function molochExprClick(event) {
             event.preventDefault();
@@ -85,14 +129,12 @@
             var target = event.target;
 
             var field  = target.getAttribute('molochfield');
-            console.log(target);
 
             // if click target doesn't have a molochfield attribute,
             while (!field) { // it may be in the parent or parent's parent
               target = target.parentNode;
               field = target.getAttribute('molochfield');
             }
-            console.log(target);
 
             var val = target.getAttribute('molochvalue');
 
@@ -106,7 +148,7 @@
             // close open dropdown menu
             var menu = $(target.parentNode.querySelector('.dropdown-menu'));
             if (menu.length === 0) {
-              menu = $(target.parentNode.parentNode.querySelector('.dropdown-menu'))
+              menu = $(target.parentNode.parentNode.querySelector('.dropdown-menu'));
             }
             if (menu.length > 0 && menu.hasClass('moloch-menu')) {
               // hide it
@@ -139,7 +181,7 @@
               html += `<li class="cursor-pointer"
                 molochfield="${item.info.field}"
                 molochexpr="${item.exp}"
-                molochvalue="${value}">
+                molochvalue='${value}'>
                 <a class="menu-item">${item.name}</a>
                 </li>`;
             }
@@ -154,6 +196,17 @@
             }
           }
 
+          function showMoreItems(event) {
+            $(event.target).hide();
+            $(event.target).prev().show();
+          }
+
+          // function radioClick(event) {
+          //   // get the value of the selected radio btn
+          //   var val = event.target.getAttribute('value');
+          //   if (val) { ctrl.getDetailData({ base:val }); }
+          // }
+
 
 
           // TODO: CLEAN THIS UP!
@@ -167,7 +220,7 @@
               .replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
           }
 
-          function rightClickInfo(target) {
+          function getClickInfo(target) {
             var molochfield = target.getAttribute('molochfield');
             if (!molochfield) {
               console.log('No molochfield', target);
@@ -187,7 +240,7 @@
             }
           }
 
-          function rightClickValue(target) {
+          function getClickValue(target) {
             var value = target.getAttribute('molochvalue');
             if (!value) {
               console.log('No value', target);
@@ -214,8 +267,8 @@
               return;
             }
 
-            var info = rightClickInfo(target);
-            var text = rightClickValue(target);
+            var info = getClickInfo(target);
+            var text = getClickValue(target);
             var url = text.indexOf('?') === -1 ? text :
               text.substring(0, text.indexOf('?'));
             var host = url;
@@ -233,7 +286,7 @@
 
             // Extract the date/startTime/stopTime url params so we can use them
             // in a substitution
-            var urlParams = scope.$location.search();
+            var urlParams = ctrl.$location.search();
             var dateparams, isostart, isostop;
             if (urlParams.startTime && urlParams.stopTime) {
               dateparams = `startTime=${urlParams.startTime}&stopTime=${urlParams.stopTime}`;
@@ -247,14 +300,14 @@
               isostart.setHours(isostart.getHours() - parseInt(urlParams.date));
             }
 
-            for (var key in scope.molochRightClick) {
-              var rc = scope.molochRightClick[key];
+            for (var key in scope.molochClickables) {
+              var rc = scope.molochClickables[key];
               if ((!rc.category || info.category.indexOf(rc.category) === -1) &&
                   (!rc.fields || rc.fields.indexOf(info.field) === -1)) {
                 continue;
               }
 
-              var result = scope.molochRightClick[key].url
+              var result = scope.molochClickables[key].url
                 .replace('%EXPRESSION%', encodeURIComponent(urlParams.expression))
                 .replace('%DATE%', dateparams)
                 .replace('%ISOSTART%', isostart.toISOString())
@@ -265,12 +318,12 @@
                 .replace('%HOST%', host)
                 .replace('%URL%', encodeURIComponent('http:' + url));
 
-              var nameDisplay = '<b>' + (scope.molochRightClick[key].name || key) + '</b> %URL%';
+              var nameDisplay = '<b>' + (scope.molochClickables[key].name || key) + '</b> %URL%';
               if (rc.category === 'host') {
-                nameDisplay = '<b>' + (scope.molochRightClick[key].name || key) + '</b> %HOST%';
+                nameDisplay = '<b>' + (scope.molochClickables[key].name || key) + '</b> %HOST%';
               }
 
-              var name = (scope.molochRightClick[key].nameDisplay || nameDisplay)
+              var name = (scope.molochClickables[key].nameDisplay || nameDisplay)
                 .replace('%FIELD%', info.field)
                 .replace('%TEXT%', text)
                 .replace('%HOST%', host)
@@ -291,7 +344,6 @@
               items[key] = {name: name, url: result};
             }
 
-            console.log(items);
             buildMenu(items, text, target);
           }
 
@@ -299,51 +351,88 @@
            * Determine clickable values in html from server
            * Add click events to add values to the search query
            */
-          var clickableValues, clickableStart, clickableStop, molochMenus;
+          var clickableValues, clickableTimes, molochMenus, showMore, radios;
+
           scope.watchClickableValues = function() {
             $timeout(function() { // wait until session detail is rendered
-              var i, len;
+              // display packet options
+              var optionsEl = element.find('.packet-options');
+              var content = $compile(options)(scope);
+              optionsEl.replaceWith(content);
 
-              clickableValues = element[0].querySelectorAll('.clickable[molochfield]');
+              var i, len, time;
+
+              clickableValues = element[0].querySelectorAll('.moloch-clickable[molochfield]');
               for (i = 0, len = clickableValues.length; i < len; ++i) {
                 clickableValues[i].addEventListener('click', molochExprClick);
               }
 
-              clickableStart = element[0].querySelector('[molochstart]');
-              clickableStart.addEventListener('click', timeClick);
+              clickableTimes = element[0].querySelectorAll('.format-seconds');
+              for (i = 0, len = clickableTimes.length; i < len; ++i) {
+                var timeEl = clickableTimes[i];
+                time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
+                timeEl.innerHTML = time;
 
-              clickableStop = element[0].querySelector('[molochstop]');
-              clickableStop.addEventListener('click', timeClick);
+                if (timeEl.getAttribute('molochvalue')) {
+                  timeEl.setAttribute('molochvalue', "\"" + time + "\"");
+                }
+
+                if (timeEl.getAttribute('molochstart') ||
+                    timeEl.getAttribute('molochstop')) {
+                  timeEl.addEventListener('click', timeClick);
+                }
+              }
 
               molochMenus = element[0].querySelectorAll('[molochmenu]');
               for (i = 0, len = molochMenus.length; i < len; ++i) {
                 molochMenus[i].addEventListener('click', contextMenuClick);
               }
+
+              showMore = element[0].querySelectorAll('.showMoreItems');
+              for (i = 0, len = showMore.length; i < len; ++i) {
+                showMore[i].addEventListener('click', showMoreItems);
+              }
+
+              // radios = element[0].querySelectorAll('input[type=radio]');
+              // for (i = 0, len = radios.length; i < len; ++i) {
+              //   radios[i].addEventListener('click', radioClick);
+              // }
             });
           };
 
           scope.$on('$destroy', function() {
             // remove event listeners to prevent memory leaks
-            clickableStop.removeEventListener('click', timeClick);
-            clickableStart.removeEventListener('click', timeClick);
+            var i, len;
+
+            if (clickableTimes) {
+              for (i = 0, len = clickableTimes.length; i < len; ++i) {
+                clickableTimes[i].removeEventListener('click', timeClick);
+              }
+            }
 
             if (clickableValues) {
-              for (var i = 0, len = clickableValues.length; i < len; ++i) {
+              for (i = 0, len = clickableValues.length; i < len; ++i) {
                 clickableValues[i].removeEventListener('click', molochExprClick);
               }
             }
 
             if (molochMenus) {
-              for (var i = 0, len = molochMenus.length; i < len; ++i) {
+              for (i = 0, len = molochMenus.length; i < len; ++i) {
                 molochMenus[i].removeEventListener('click', contextMenuClick);
               }
             }
 
             if (menuItems) {
-              for (var i = 0, len = menuItems.length; i < len; ++i) {
+              for (i = 0, len = menuItems.length; i < len; ++i) {
                 menuItems[i].removeEventListener('click', molochExprClick);
               }
             }
+
+            // if (radios) {
+            //   for (i = 0, len = radios.length; i < len; ++i) {
+            //     radios[i].removeEventListener('click', radioClick);
+            //   }
+            // }
           });
 
         },
