@@ -427,11 +427,14 @@ MolochSession_t *moloch_session_find(int ses, char *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-MolochSession_t *moloch_session_find_or_create(int ses, char *sessionId, int *isNew)
+MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew)
 {
     MolochSession_t *session;
 
-    uint32_t hash = moloch_session_hash(sessionId);
+    if (hash == 0) {
+        hash = moloch_session_hash(sessionId);
+    }
+
     int      thread = hash % config.packetThreads;
 
     HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);

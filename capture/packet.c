@@ -448,7 +448,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
         }
 
         int isNew;
-        session = moloch_session_find_or_create(packet->ses,sessionId, &isNew); // Returns locked session
+        session = moloch_session_find_or_create(packet->ses, packet->hash, sessionId, &isNew); // Returns locked session
 
         if (isNew) {
             session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
@@ -923,7 +923,8 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
           );
     }
 
-    uint32_t thread = moloch_session_hash(sessionId) % config.packetThreads;
+    packet->hash = moloch_session_hash(sessionId) % config.packetThreads;
+    uint32_t thread = packet->hash % config.packetThreads;
 
     if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
         MOLOCH_LOCK(packetQ[thread].lock);
