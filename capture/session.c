@@ -117,17 +117,23 @@ char *moloch_session_id_string (char *sessionId, char *buf)
     return moloch_sprint_hex_string(buf, (uint8_t *)sessionId, sessionId[0]);
 }
 /******************************************************************************/
-/* Must match moloch_session_cmp and moloch_session_id
- * a1 0-3
- * p1 4-5
- * a2 6-9
- * p2 10-11
+/* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
+ * MurmurHash based
  */
 uint32_t moloch_session_hash(const void *key)
 {
-    unsigned char *p = (unsigned char *)key;
-    //return ((p[2] << 16 | p[3] << 8 | p[4]) * 59) ^ (p[8] << 16 | p[9] << 8 |  p[10]);
-    return (((p[1]<<24) ^ (p[2]<<18) ^ (p[3]<<12) ^ (p[4]<<6) ^ p[5]) * 13) ^ (p[8]<<24|p[9]<<16 | p[10]<<8 | p[11]);
+    const uint32_t m = 0xc6a4a793;
+    uint32_t *p = (uint32_t *)key;
+    uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
+    uint32_t h = m;
+
+    while (p < end) {
+        h = (h + *p) * m;
+        h ^= h >> 16;
+        p += 1;
+    }
+
+    return h;
 }
 
 /******************************************************************************/
@@ -420,11 +426,14 @@ MolochSession_t *moloch_session_find(int ses, char *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-MolochSession_t *moloch_session_find_or_create(int ses, char *sessionId, int *isNew)
+MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew)
 {
     MolochSession_t *session;
 
-    uint32_t hash = moloch_session_hash(sessionId);
+    if (hash == 0) {
+        hash = moloch_session_hash(sessionId);
+    }
+
     int      thread = hash % config.packetThreads;
 
     HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);

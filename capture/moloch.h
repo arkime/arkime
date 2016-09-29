@@ -380,6 +380,7 @@ typedef struct molochpacket_t
     uint64_t       readerFilePos;  // where in input file
     char          *readerName;     // file name reader used
     uint32_t       writerFileNum;  // file number in db
+    uint32_t       hash;           // Saved hash
     uint16_t       pktlen;         // length of packet
     uint16_t       payloadLen;     // length of ip payload
     uint16_t       payloadOffset;  // offset to ip payload from start
@@ -728,7 +729,7 @@ uint32_t moloch_session_hash(const void *key);
 int      moloch_session_cmp(const void *keyv, const void *elementv);
 
 MolochSession_t *moloch_session_find(int ses, char *sessionId);
-MolochSession_t *moloch_session_find_or_create(int ses, char *sessionId, int *isNew);
+MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew);
 
 void     moloch_session_init();
 void     moloch_session_exit();
