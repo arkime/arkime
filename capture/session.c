@@ -122,16 +122,15 @@ char *moloch_session_id_string (char *sessionId, char *buf)
  */
 uint32_t moloch_session_hash(const void *key)
 {
-    const unsigned int m = 0xc6a4a793;
-    unsigned char *p = (unsigned char *)key + 1;
-    unsigned char *end = (unsigned char *)key + ((unsigned char *)key)[0];
+    const uint32_t m = 0xc6a4a793;
+    uint32_t *p = (uint32_t *)key;
+    uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
     uint32_t h = m;
 
     while (p < end) {
-        h += (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3]; // key is not aligned
-        h *= m;
+        h = (h + *p) * m;
         h ^= h >> 16;
-        p += 4;
+        p += 1;
     }
 
     return h;
