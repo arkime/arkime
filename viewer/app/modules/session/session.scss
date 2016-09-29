@@ -1,54 +1,5 @@
-.session-detail-row {
-  background-color: lighten($color-yellow-light, 36%);
-}
-
-// term lists
-dt {
-  font-size: 16px;
-  float: left;
-  clear: left;
-  width: 160px;
-  text-align: right;
-  margin-right: 6px;
-}
-dd {
-  strong { font-size: 16px; }
-}
-
-.btn-tag {
-  margin: 4px;
-}
-
-.nav-pills {
-  border-bottom: 1px solid $color-gray-light;
-  padding-bottom: 4px;
-
-  li {
-    a:hover {
-      background-color: lighten($color-yellow-light, 28%);
-    }
-  }
-}
-
-.grouped-radios {
-  border: 1px solid rgba(0, 0, 0, 0);
-  padding: 4px 8px;
-  border-radius: 4px;
-
-  &:hover {
-    border: 1px solid lighten($color-yellow-light, 10%);
-  }
-}
-
-.packet-options {
-  padding       : 8px 0 4px 0;
-  border-top    : 1px solid $color-gray-light;
-  border-bottom : 1px solid $color-gray-light;
-}
-
-
-/* tables ------------------------------------ */
 colheader {
+
   white-space :nowrap;
   overflow    :visible;
 
@@ -65,108 +16,191 @@ colheader {
       visibility: visible;
     }
   }
+
 }
 
-table {
-  border-top: $color-gray-light solid 1px;
-}
+session {
 
-// change table hover color
-.table {
-  tbody {
-    tr {
+  .session-detail-row {
+    background-color: lighten($color-yellow-light, 36%);
+  }
 
-      // color every fourth row
-      &:nth-of-type(4n-1) {
-        background-color: lighten($color-gray-light, 5%);
-        td {
-          &.active {
-            background-color: $color-gray-light;
-          }
-        }
+  dt {
+    font-size   : 16px;
+    float       : left;
+    clear       : left;
+    width       : 160px;
+    text-align  : right;
+    margin-right: 6px;
+  }
+
+  dd {
+    margin: 0 0 0 165px;
+
+    strong { font-size: 16px; }
+  }
+
+  .show-more-items {
+    margin-left : 20px;
+    font-size   : 16px;
+  }
+
+  .btn-tag {
+    margin: 4px;
+  }
+
+  .nav-pills {
+    border-bottom: 1px solid $color-gray-light;
+    padding-bottom: 4px;
+
+    li {
+      a:hover {
+        background-color: lighten($color-yellow-light, 28%);
       }
+    }
+  }
 
-      &:not(.session-detail-row) {
-        &:hover {
-          background-color: lighten($color-green-light, 55%);
+  .grouped-radios {
+    border        : 1px solid rgba(0, 0, 0, 0);
+    padding       : 4px 8px;
+    border-radius : 4px;
+
+    &:hover {
+      border: 1px solid lighten($color-yellow-light, 10%);
+    }
+  }
+
+  .packet-options {
+    padding   : 8px 0;
+    border-top: 1px solid $color-gray-light;
+  }
+
+
+  /* tables ------------------------------------ */
+  table {
+    border-top  : $color-gray-light solid 1px;
+    table-layout: fixed;
+  }
+
+  .table {
+    tbody {
+      tr {
+
+        // color every fourth row
+        &:nth-of-type(4n-1) {
+          background-color: lighten($color-gray-light, 5%);
           td {
             &.active {
-              background-color: lighten($color-green-light, 50%);
+              background-color: $color-gray-light;
             }
           }
         }
+
+        &:not(.session-detail-row) {
+          &:hover {
+            background-color: lighten($color-green-light, 55%);
+            td {
+              &.active {
+                background-color: lighten($color-green-light, 50%);
+              }
+            }
+          }
+        }
+
+      }
+    }
+  }
+
+  // datatables colreorder
+  // table { // floating table, dragged with the mouse
+  //   &.DTCR_clonedTable {
+  //   	background-color : rgba(255, 255, 255, 0.7);
+  //   	z-index          : 202;
+  //   }
+  // }
+  //
+  // div { // insert line
+  //   &.DTCR_pointer {
+  //   	width            : 1px;
+  //   	z-index          : 201;
+  //   	background-color : $color-blue;
+  //   }
+  // }
+
+
+
+  /* moloch menu items ------------------------- */
+  .hover-menu {
+
+    word-break    : break-all;
+    overflow-wrap : break-word;
+
+    .moloch-clickable { // clickable value
+      margin  : 4px;
+      display : inline;
+    }
+
+    // display the menu underneath the value
+    .moloch-menu {
+      display : inherit;
+      margin  : 0;
+    }
+
+    // hide button and dropdown when not hovered
+    .btn, ul.dropdown-menu {
+      opacity   : 0;
+      visibility: hidden;
+      transition: visibility 0s linear 400ms, opacity 400ms;
+    }
+
+    .btn {
+      margin-top: -3px;
+      padding   : 0 4px;
+    }
+
+    ul.dropdown-menu {
+      min-width: 200px;
+      max-width: 100%;
+
+      > li {
+        > a { // truncate long values
+          overflow      : hidden;
+          text-overflow : ellipsis;
+        }
+      }
+    }
+
+    .label { // clickable value container
+      z-index       : 3;
+      font-size     : 14px;
+      font-weight   : normal;
+      white-space   : normal;
+      text-align    : left;
+      padding       : 3px;
+      margin        : 0 -20px 0 0;
+      position      : relative;
+      border        : 1px solid rgba(0, 0, 0, 0);
+      color         : lighten($color-blue-light, 16%);
+      -webkit-transition: background 400ms linear, border-color 400ms;
+         -moz-transition: background 400ms linear, border-color 400ms;
+              transition: background 400ms linear, border-color 400ms;
+    }
+
+    &:hover {
+      // show button and menu (if opened) on hover
+      .btn, ul.dropdown-menu {;
+        opacity   : 1;
+        visibility: visible;
+        transition: visibility 0s linear 0s, opacity 400ms;
       }
 
-    }
-  }
-}
-
-// datatables colreorder
-table { // floating table, dragged with the mouse
-  &.DTCR_clonedTable {
-  	background-color : rgba(255, 255, 255, 0.7);
-  	z-index          : 202;
-  }
-}
-
-div { // insert line
-  &.DTCR_pointer {
-  	width            : 1px;
-  	z-index          : 201;
-  	background-color : $color-blue;
-  }
-}
-
-
-
-/* moloch menu items ------------------------- */
-.hover-menu {
-
-  .moloch-clickable { // the clickable value
-    margin  : 4px;
-    display : inline-flex;
-  }
-
-  // display the menu next to the button
-  .moloch-menu {
-    display : inherit;
-    top     : inherit;
-    left    : inherit;
-    margin  : -2px 2px;
-  }
-
-  .btn, ul.dropdown-menu {
-    opacity   : 0;
-    visibility: hidden;
-    transition: visibility 0s linear 400ms, opacity 400ms;
-  }
-
-  .label {
-    z-index       : 3;
-    font-size     : 14px;
-    font-weight   : normal;
-    padding       : 0;
-    margin        : 0 -20px 0 0;
-    position      : relative;
-    border        : 1px solid rgba(0, 0, 0, 0);
-    color         : lighten($color-blue-light, 16%);
-    -webkit-transition: background 400ms linear, border-color 400ms;
-       -moz-transition: background 400ms linear, border-color 400ms;
-            transition: background 400ms linear, border-color 400ms;
-  }
-
-  &:hover { // show button to open menu on hover
-    .btn, ul.dropdown-menu {;
-      opacity   : 1;
-      visibility: visible;
-      transition: visibility 0s linear 0s, opacity 400ms;
+      .label {
+        background-color: $color-white;
+        border          : 1px solid darken($color-gray, 13%);
+        z-index         : 4;
+      }
     }
 
-    .label {
-      background-color: $color-white;
-      border          : 1px solid darken($color-gray, 13%);
-      z-index         : 4;
-    }
   }
 
 }

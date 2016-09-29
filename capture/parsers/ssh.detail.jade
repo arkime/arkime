@@ -1,5 +1,5 @@
 if (session.sshkey || session.sshver)
   h4 SSH
   dl
-    +arrayList(session, "sshkey", "Host Keys", "ssh.key")
-    +arrayList(session, "sshver", "Versions", "ssh.ver")
+    +arrayList(session, "sshkey", "Host Keys", "ssh.key", null, null, true)
+    +arrayList(session, "sshver", "Versions", "ssh.ver", null, null, true)

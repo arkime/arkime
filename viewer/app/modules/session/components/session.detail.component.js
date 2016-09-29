@@ -18,10 +18,9 @@
      *
      * @ngInject
      */
-    constructor($scope, $sce, $location, SessionService, ConfigService, FieldService) {
+    constructor($scope, $sce, SessionService, ConfigService, FieldService) {
       this.$scope         = $scope;
       this.$sce           = $sce;
-      this.$location      = $location;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -29,9 +28,12 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.$scope.loading = true;
-      this.$scope.error   = false;
-      this.$scope.params  = {
+      this.loading = true;
+      this.error   = false;
+
+      // default session detail parameters
+      // add to $scope so session.detail.options can use it
+      this.$scope.params = {
         base  : 'hex',
         line  : false,
         image : false,
@@ -94,25 +96,25 @@
       this.SessionService.getDetail(this.$scope.sessionId,
         this.$scope.sessionNode, this.$scope.params)
         .then((response) => {
-          this.$scope.loading     = false;
-          this.$scope.detailHtml  = this.$sce.trustAsHtml(response.data);
+          this.loading = false;
+          this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
           this.$scope.watchClickableValues();
         })
         .catch((error) => {
-          this.$scope.loading = false;
-          this.$scope.error   = error;
+          this.loading = false;
+          this.error   = error;
         });
     }
 
   }
 
-  SessionDetailController.$inject = ['$scope','$sce','$location',
+  SessionDetailController.$inject = ['$scope','$sce',
     'SessionService','ConfigService','FieldService'];
 
 
   angular.module('moloch')
-    .directive('sessionDetail', ['$timeout', '$filter', '$compile',
-    function($timeout, $filter, $compile) {
+    .directive('sessionDetail', ['$timeout', '$filter', '$compile', '$location',
+    function($timeout, $filter, $compile, $location) {
       return {
         template    : require('html!../templates/session.detail.html'),
         controller  : SessionDetailController,
@@ -201,12 +203,6 @@
             $(event.target).prev().show();
           }
 
-          // function radioClick(event) {
-          //   // get the value of the selected radio btn
-          //   var val = event.target.getAttribute('value');
-          //   if (val) { ctrl.getDetailData({ base:val }); }
-          // }
-
 
 
           // TODO: CLEAN THIS UP!
@@ -286,7 +282,7 @@
 
             // Extract the date/startTime/stopTime url params so we can use them
             // in a substitution
-            var urlParams = ctrl.$location.search();
+            var urlParams = $location.search();
             var dateparams, isostart, isostop;
             if (urlParams.startTime && urlParams.stopTime) {
               dateparams = `startTime=${urlParams.startTime}&stopTime=${urlParams.stopTime}`;
@@ -355,12 +351,12 @@
 
           scope.watchClickableValues = function() {
             $timeout(function() { // wait until session detail is rendered
+              var i, len, time, text;
+
               // display packet options
               var optionsEl = element.find('.packet-options');
               var content = $compile(options)(scope);
               optionsEl.replaceWith(content);
-
-              var i, len, time;
 
               clickableValues = element[0].querySelectorAll('.moloch-clickable[molochfield]');
               for (i = 0, len = clickableValues.length; i < len; ++i) {
@@ -370,8 +366,11 @@
               clickableTimes = element[0].querySelectorAll('.format-seconds');
               for (i = 0, len = clickableTimes.length; i < len; ++i) {
                 var timeEl = clickableTimes[i];
-                time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
-                timeEl.innerHTML = time;
+                text = timeEl.innerText;
+                if (!isNaN(text)) {
+                  time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
+                  timeEl.innerHTML = time;
+                }
 
                 if (timeEl.getAttribute('molochvalue')) {
                   timeEl.setAttribute('molochvalue', "\"" + time + "\"");
@@ -388,15 +387,10 @@
                 molochMenus[i].addEventListener('click', contextMenuClick);
               }
 
-              showMore = element[0].querySelectorAll('.showMoreItems');
+              showMore = element[0].querySelectorAll('.show-more-items');
               for (i = 0, len = showMore.length; i < len; ++i) {
                 showMore[i].addEventListener('click', showMoreItems);
               }
-
-              // radios = element[0].querySelectorAll('input[type=radio]');
-              // for (i = 0, len = radios.length; i < len; ++i) {
-              //   radios[i].addEventListener('click', radioClick);
-              // }
             });
           };
 
@@ -427,12 +421,6 @@
                 menuItems[i].removeEventListener('click', molochExprClick);
               }
             }
-
-            // if (radios) {
-            //   for (i = 0, len = radios.length; i < len; ++i) {
-            //     radios[i].removeEventListener('click', radioClick);
-            //   }
-            // }
           });
 
         },

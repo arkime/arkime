@@ -23,10 +23,10 @@ ul.nav.nav-pills.nav-justified.margined-bottom-xlg
 dl
   dt Id:
   dd
-    +clickableValue('id', session.id)
+    +clickableValue('id', session.id, true)
     if (session.ro)
       strong.margined-left-xxxxlg Root Id:
-      +clickableValue('rootId', session.ro)
+      +clickableValue('rootId', session.ro, true)
     else
       | &nbsp;
   
@@ -44,7 +44,7 @@ dl
         div.moloch-clickable.format-seconds(molochstop='#{session.lp}') #{session.lp}
         
     strong.margined-left-xxxxlg Node:
-    +clickableValue('node', session.no)
+    +clickableValue('node', session.no, true)
           
     strong.margined-left-lg IP Protocol:
     +clickableValue('ip.protocol', session.pr)
@@ -78,10 +78,10 @@ dl
     dt Ethernet:
     dd
       strong.medium.margined-left Src Mac 
-      +arrayPrint(session, "mac1-term", "mac.src")
+      +arrayPrint(session, "mac1-term", "mac.src", true)
       
       strong.medium.margined-left Dst Mac 
-      +arrayPrint(session, "mac2-term", "mac.dst")
+      +arrayPrint(session, "mac2-term", "mac.dst", true)
       
       if (session.vlan)
         strong.medium VLan 
@@ -108,15 +108,19 @@ dl
         strong.medium.margined-left Src 
         - var fb1a = new Buffer(session.fb1, "hex");
         +clickableValue('payload8.src.hex', session.fb1)
-        +clickableValue('payload8.src.hex', "\"" + fb1a + "\"")
+        | (
+        +clickableValue('payload8.src.hex', fb1a, true)
+        |)
                 
       if (session.fb2)
         strong.medium.margined-left Dst 
         - var fb2a = new Buffer(session.fb2, "hex");
         +clickableValue('payload8.src.hex', session.fb2)
-        +clickableValue('payload8.src.hex', "\"" + fb2a + "\"")
+        | (
+        +clickableValue('payload8.src.hex', fb2a, true)
+        |)
               
-  +arrayList(session, "ta", "Tags", "tags", "<div class=\"btn btn-xs btn-green btn-tag\" disabled title=\"Under construction..\"><span class=\"fa fa-plus-circle\"></span></div>")
+  +arrayList(session, "ta", "Tags", "tags", "<div class=\"btn btn-xs btn-blue btn-tag\" disabled title=\"Under construction..\"><span class=\"fa fa-plus-circle\"></span></div>")
   
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files:", "file")
@@ -144,5 +148,3 @@ dl
     dt Socks User:
     dd
       +clickableValue('socks.user', session.socksuser)
-      
-div.packet-options

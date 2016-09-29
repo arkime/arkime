@@ -1,40 +1,9 @@
-//- div.form-inline.packet-options
-//-   - options = ['natural', 'ascii', 'utf8', 'hex'];
-//-   
-//-   div.grouped-radios.display-inline
-//-     each item in options
-//-       label.cursor-pointer.format-base
-//-         input.cursor-pointer(type="radio", name='format-base-#{session.id}',value=item,checked=query.base==item)
-//-         | &nbsp;#{item}&nbsp;&nbsp;
-//-         
-//-   div.checkbox.margined-left-xxlg
-//-     label.format-line
-//-       input(type='checkbox', checked=query.line=='true')
-//-       strong &nbsp;Line Numbers
-//-       
-//-   div.checkbox.margined-left-xxlg
-//-     label.format-gzip
-//-       input(type='checkbox', checked=query.gzip=='true')
-//-       strong &nbsp;Uncompress
-//-       
-//-   div.checkbox.margined-left-xxlg
-//-     label.format-image
-//-       input(type='checkbox', checked=query.image=='true')
-//-       strong &nbsp;Show Images &amp; Files
-//-       
-//-   div.checkbox.margined-left-xxlg
-//-     label.format-ts
-//-       input(type='checkbox', checked=query.ts=='true')
-//-       strong &nbsp;Show Timestamps
-      
-//- div.display-inline.margined-left-xxlg
-//-   div.btn.btn-default.btn-xs.format-other
-//-     | Other Decodings &nbsp;
-//-     span.fa.fa-bars
-      
-br
+div.packet-options
+
 if (session._err)
-  b #{session._err}
+  div.alert.alert-danger 
+    span.fa.fa-exclamation-triangle
+    strong &nbsp; #{session._err}
 else 
   if (session.pa > 200)
     b Only showing first 200 packets

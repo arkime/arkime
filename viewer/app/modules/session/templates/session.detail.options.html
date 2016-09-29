@@ -1,4 +1,4 @@
-<form class="form-inline">
+<form class="form-inline packet-options margined-bottom-lg">
   <div class="btn-group btn-group-sm">
     <label class="btn btn-default" ng-model="params.base"
       ng-click="$ctrl.getDetailData()" uib-btn-radio="'natural'">
@@ -48,31 +48,3 @@
     <span class="fa fa-bars"></span>
   </button>
 </form>
-
-<!-- - options = ['natural', 'ascii', 'utf8', 'hex'];
-
-div.grouped-radios.display-inline
-  each item in options
-    label.cursor-pointer.format-base
-      input.cursor-pointer(type="radio", name='format-base-#{session.id}',value=item,checked=query.base==item)
-      | &nbsp;#{item}&nbsp;&nbsp;
-
-div.checkbox.margined-left-xxlg
-  label.format-line
-    input(type='checkbox', checked=query.line=='true')
-    strong &nbsp;Line Numbers
-
-div.checkbox.margined-left-xxlg
-  label.format-gzip
-    input(type='checkbox', checked=query.gzip=='true')
-    strong &nbsp;Uncompress
-
-div.checkbox.margined-left-xxlg
-  label.format-image
-    input(type='checkbox', checked=query.image=='true')
-    strong &nbsp;Show Images &amp; Files
-
-div.checkbox.margined-left-xxlg
-  label.format-ts
-    input(type='checkbox', checked=query.ts=='true')
-    strong &nbsp;Show Timestamps -->
