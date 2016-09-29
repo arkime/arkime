@@ -923,7 +923,7 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
           );
     }
 
-    packet->hash = moloch_session_hash(sessionId) % config.packetThreads;
+    packet->hash = moloch_session_hash(sessionId);
     uint32_t thread = packet->hash % config.packetThreads;
 
     if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
