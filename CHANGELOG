@@ -2,6 +2,7 @@
   - release: build pfring, daq, snf plugins
   - wise - threatstream zip method broke in 0.15 (issue #534)
   - wise - support url type
+  - viewer - read cert/key before dropping permissions (issue #504)
 
 0.15.0 2016/09/14
   - NOTICE: Requires ES 2.1 or later (recommend 2.4)

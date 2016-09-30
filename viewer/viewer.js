@@ -5119,8 +5119,7 @@ function main () {
 
   var server;
   if (Config.isHTTPS()) {
-    server = https.createServer({key: fs.readFileSync(Config.get("keyFile")),
-                                cert: fs.readFileSync(Config.get("certFile"))}, app);
+    server = https.createServer({key: Config.keyFileData, cert: Config.certFileData}, app);
   } else {
     server = http.createServer(app);
   }

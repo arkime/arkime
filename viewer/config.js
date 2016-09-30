@@ -277,6 +277,10 @@ exports.configMap = function(section, name, d) {
   return map;
 };
 
+if (exports.isHTTPS()) {
+    exports.keyFileData = fs.readFileSync(exports.get("keyFile"));
+    exports.certFileData = fs.readFileSync(exports.get("certFile"));
+}
 dropPrivileges();
 
 //////////////////////////////////////////////////////////////////////////////////
