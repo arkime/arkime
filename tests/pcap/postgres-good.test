@@ -2,33 +2,15 @@
    "packets" : [
       {
          "body" : {
-            "prot-term" : [
-               "tcp",
-               "postgresql"
-            ],
-            "db1" : 129,
-            "a2" : "10.0.13.120",
-            "g1" : "RUS",
-            "mac2-term" : [
-               "00:0c:29:18:7f:fe"
-            ],
-            "fb1" : "0000000804d2162f",
-            "pa1" : 6,
-            "lpd" : 1399300685032,
-            "tags-term" : [
-               "srcip"
-            ],
-            "sl" : 8,
-            "by" : 1198,
-            "as1" : "AS0000 This is neat",
-            "pa" : 11,
-            "postgresql" : {
-               "db-term" : "dbdbdbdb",
-               "user-term" : "cooluser",
-               "app-term" : "pgAdmin III - Browser"
+            "tcpflags" : {
+               "fin" : 0,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "syn" : 1,
+               "ack" : 3,
+               "rst" : 0,
+               "psh" : 6
             },
-            "p1" : 36060,
-            "fb2" : "4e520000000c0000",
             "psl" : [
                90,
                90,
@@ -42,38 +24,58 @@
                123,
                395
             ],
-            "p2" : 5432,
-            "by1" : 533,
-            "mac2-term-cnt" : 1,
-            "by2" : 665,
-            "db2" : 327,
-            "no" : "test",
-            "lp" : 1399300685,
-            "fpd" : 1399300685023,
-            "db" : 456,
             "fp" : 1399300685,
-            "mac1-term-cnt" : 2,
             "test" : {
+               "ip" : [
+                  167772161
+               ],
                "ip-geo" : [
                   "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
                ],
                "string" : [
                   "16777226:36060,2014117898:5432"
                ],
                "number" : [
                   2014117898
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
                ]
             },
             "fs" : [],
+            "a2" : "10.0.13.120",
+            "fpd" : 1399300685023,
+            "mac2-term" : [
+               "00:0c:29:18:7f:fe"
+            ],
+            "g1" : "RUS",
+            "as1" : "AS0000 This is neat",
+            "pr" : 6,
+            "pa" : 11,
+            "mac1-term-cnt" : 2,
+            "pa2" : 5,
+            "prot-term-cnt" : 2,
+            "no" : "test",
+            "by1" : 533,
+            "mac2-term-cnt" : 1,
+            "tacnt" : 1,
+            "mac1-term" : [
+               "90:e2:ba:52:f6:2a",
+               "00:00:5e:00:01:71"
+            ],
+            "lpd" : 1399300685032,
+            "p1" : 36060,
+            "ss" : 1,
+            "a1" : "10.0.0.1",
+            "db" : 456,
+            "fb2" : "4e520000000c0000",
+            "p2" : 5432,
+            "sl" : 8,
+            "by" : 1198,
+            "db1" : 129,
             "ps" : [
                24,
                114,
@@ -87,19 +89,26 @@
                880,
                1003
             ],
-            "a1" : "10.0.0.1",
-            "pa2" : 5,
-            "mac1-term" : [
-               "90:e2:ba:52:f6:2a",
-               "00:00:5e:00:01:71"
-            ],
-            "tacnt" : 1,
             "ta" : [
                "srcip"
             ],
-            "prot-term-cnt" : 2,
-            "pr" : 6,
-            "ss" : 1
+            "prot-term" : [
+               "tcp",
+               "postgresql"
+            ],
+            "pa1" : 6,
+            "lp" : 1399300685,
+            "fb1" : "0000000804d2162f",
+            "by2" : 665,
+            "db2" : 327,
+            "tags-term" : [
+               "srcip"
+            ],
+            "postgresql" : {
+               "user-term" : "cooluser",
+               "app-term" : "pgAdmin III - Browser",
+               "db-term" : "dbdbdbdb"
+            }
          },
          "header" : {
             "index" : {

@@ -1,14 +1,82 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131211",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "gsocksip" : "USA",
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "g2" : "CAN",
+            "fp" : 1386790367,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "by" : 27311,
+            "hocnt" : 1,
+            "lpd" : 1386790404657,
+            "as2" : "AS0001 Cool Beans!",
+            "p2" : 8855,
+            "hval" : [
+               "firefox",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "en",
+               "sheepskin boots",
+               "10",
+               "0",
+               "us"
+            ],
+            "hckey-term" : [
+               "NID",
+               "PREF"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "sockspo" : 80,
+            "hkey" : [
+               "uule",
+               "hl",
+               "client",
+               "start",
+               "rls",
+               "q",
+               "num",
+               "gl"
+            ],
+            "hmd5cnt" : 2,
+            "g1" : "RUS",
+            "hvalcnt" : 7,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "pa1" : 31,
+            "mac2-term-cnt" : 2,
+            "db" : 24346,
+            "hh2cnt" : 15,
+            "socksip" : "74.125.131.103",
+            "http" : {
+               "bodymagic-term" : [
+                  "application/x-gzip",
+                  "text/html"
+               ],
+               "statuscode" : [
+                  302,
+                  200
+               ],
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode-cnt" : 2,
+               "bodymagic-term-cnt" : 2
+            },
+            "tacnt" : 2,
             "psl" : [
                82,
                82,
@@ -63,69 +131,19 @@
                76,
                76
             ],
-            "hcval-term" : [
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "pa1" : 31,
-            "p2" : 8855,
-            "pr" : 6,
-            "db2" : 954,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "mac1-term-cnt" : 1,
-            "lpd" : 1386790404657,
-            "hckey-term" : [
-               "NID",
-               "PREF"
-            ],
             "prot-term" : [
                "http",
                "socks",
                "tcp"
             ],
-            "hmd5cnt" : 2,
-            "hh2cnt" : 15,
-            "mac2-term-cnt" : 2,
-            "by" : 27311,
-            "hkey" : [
-               "uule",
-               "hl",
-               "client",
-               "start",
-               "rls",
-               "q",
-               "num",
-               "gl"
-            ],
-            "hpath" : [
-               "/search"
-            ],
-            "fb1" : "4e5a8d08874e0500",
-            "hdvercnt" : 1,
-            "by1" : 25112,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "lp" : 1386790404,
-            "by2" : 2199,
-            "uacnt" : 1,
-            "hmd5" : [
-               "2069181ae704855f29caf964ca52ec49",
-               "b0cecae354b9eab1f04f70e46a612cb1"
-            ],
-            "p1" : 54263,
+            "a2" : "10.0.0.2",
+            "rir2" : "TEST",
             "test" : {
                "ip-geo" : [
                   "RUS"
                ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip" : [
-                  167772161
+               "number" : [
+                  33554442
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
@@ -133,94 +151,85 @@
                "string" : [
                   "16777226:54263,33554442:8855"
                ],
-               "number" : [
-                  33554442
+               "ip" : [
+                  167772161
+               ],
+               "ip-rir" : [
+                  ""
                ]
             },
-            "hh1cnt" : 6,
-            "sl" : 37537,
-            "db" : 24346,
-            "http" : {
-               "bodymagic-term-cnt" : 2,
-               "statuscode" : [
-                  302,
-                  200
-               ],
-               "bodymagic-term" : [
-                  "application/x-gzip",
-                  "text/html"
-               ],
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1,
-               "statuscode-cnt" : 2
-            },
-            "hvalcnt" : 7,
-            "prot-term-cnt" : 3,
+            "hsver" : [
+               "1.1"
+            ],
+            "uacnt" : 1,
+            "lp" : 1386790404,
+            "fs" : [],
             "hdver" : [
                "1.1"
             ],
-            "as1" : "AS0000 This is neat",
-            "pa2" : 21,
-            "assocksip" : "AS15169 Google Inc.",
-            "hkeycnt" : 8,
-            "uscnt" : 2,
-            "hckey-term-cnt" : 2,
-            "tacnt" : 2,
-            "hval" : [
-               "firefox",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "en",
-               "sheepskin boots",
-               "10",
-               "0",
-               "us"
+            "hpath" : [
+               "/search"
             ],
-            "rir2" : "TEST",
-            "as2" : "AS0001 Cool Beans!",
+            "hpathcnt" : 1,
+            "mac1-term-cnt" : 1,
+            "fpd" : 1386790367120,
+            "fb2" : "050100050100014a",
+            "rirsocksip" : "ARIN",
+            "ss" : 1,
+            "p1" : 54263,
+            "hcval-term" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "prot-term-cnt" : 3,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:83:9f:c6"
+            ],
+            "as1" : "AS0000 This is neat",
+            "by2" : 2199,
+            "hkeycnt" : 8,
+            "db1" : 23392,
+            "assocksip" : "AS15169 Google Inc.",
+            "by1" : 25112,
+            "tcpflags" : {
+               "ack" : 20,
+               "syn" : 1,
+               "fin" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "psh" : 29,
+               "syn-ack" : 1
+            },
+            "hdvercnt" : 1,
+            "hckey-term-cnt" : 2,
+            "hmd5" : [
+               "2069181ae704855f29caf964ca52ec49",
+               "b0cecae354b9eab1f04f70e46a612cb1"
+            ],
+            "us" : [
+               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "a1" : "10.0.0.1",
             "hdrs" : {
-               "hreq-referer" : [
-                  "",
-                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
-               ],
+               "hreq-referercnt" : 2,
                "hres-location" : [
                   "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                ],
-               "hreq-referercnt" : 2
+               "hreq-referer" : [
+                  "",
+                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
+               ]
             },
-            "fp" : 1386790367,
-            "no" : "test",
-            "fs" : [],
-            "hh2" : [
-               "http:header:alternate-protocol",
-               "http:header:cache-control",
-               "http:header:content-encoding",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:expires",
-               "http:header:location",
-               "http:header:p3p",
-               "http:header:pragma",
-               "http:header:server",
-               "http:header:set-cookie",
-               "http:header:transfer-encoding",
-               "http:header:x-frame-options",
-               "http:header:x-xss-protection"
-            ],
-            "fpd" : 1386790367120,
+            "pa" : 52,
+            "hh1cnt" : 6,
+            "uscnt" : 2,
             "ua" : [
                "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
             ],
-            "fb2" : "050100050100014a",
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
+            "ho" : [
+               "www.google.com"
             ],
             "ps" : [
                24,
@@ -276,38 +285,38 @@
                28015,
                28091
             ],
-            "hsver" : [
-               "1.1"
+            "pr" : 6,
+            "hh2" : [
+               "http:header:alternate-protocol",
+               "http:header:cache-control",
+               "http:header:content-encoding",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:expires",
+               "http:header:location",
+               "http:header:p3p",
+               "http:header:pragma",
+               "http:header:server",
+               "http:header:set-cookie",
+               "http:header:transfer-encoding",
+               "http:header:x-frame-options",
+               "http:header:x-xss-protection"
             ],
-            "pa" : 52,
-            "a2" : "10.0.0.2",
-            "sockspo" : 80,
-            "g2" : "CAN",
-            "socksip" : "74.125.131.103",
+            "no" : "test",
+            "db2" : 954,
             "hsvercnt" : 1,
-            "hocnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:83:9f:c6"
-            ],
-            "g1" : "RUS",
+            "pa2" : 21,
+            "gsocksip" : "USA",
+            "sl" : 37537,
             "hcval-term-cnt" : 2,
-            "db1" : 23392,
-            "rirsocksip" : "ARIN",
-            "us" : [
-               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "a1" : "10.0.0.1",
-            "ho" : [
-               "www.google.com"
-            ],
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "ss" : 1,
-            "hpathcnt" : 1
+            "fb1" : "4e5a8d08874e0500"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131211"
+            }
          }
       }
    ]

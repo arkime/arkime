@@ -1,16 +1,27 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131126"
+            }
+         },
          "body" : {
-            "p2" : 53,
-            "dnsho" : [
-               "google.com"
+            "fs" : [],
+            "rirdnsip" : [
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN"
             ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "by2" : 614,
-            "a2" : "10.2.95.39",
             "asdnsip" : [
                "AS15169 Google Inc.",
                "AS15169 Google Inc.",
@@ -24,10 +35,25 @@
                "AS15169 Google Inc.",
                "AS15169 Google Inc."
             ],
-            "dnsipcnt" : 11,
-            "mac2-term-cnt" : 2,
-            "fb2" : "01545e6381800001",
-            "sl" : 7,
+            "db1" : 30,
+            "by2" : 614,
+            "psl" : [
+               94,
+               90,
+               82,
+               112,
+               82,
+               424,
+               82,
+               82,
+               82,
+               82
+            ],
+            "lp" : 1385482078,
+            "fb1" : "001c5e6301000001",
+            "ss" : 1,
+            "p1" : 49342,
+            "db" : 372,
             "gdnsip" : [
                "USA",
                "USA",
@@ -41,38 +67,38 @@
                "USA",
                "USA"
             ],
-            "lpd" : 1385482078899,
-            "pa" : 10,
+            "tcpflags" : {
+               "fin" : 2,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "rst" : 0,
+               "psh" : 2,
+               "ack" : 4
+            },
+            "no" : "test",
             "by" : 1052,
             "by1" : 438,
-            "dnshocnt" : 1,
-            "ss" : 1,
-            "p1" : 49342,
+            "mac2-term-cnt" : 2,
+            "sl" : 7,
+            "a1" : "10.180.156.141",
+            "prot-term-cnt" : 2,
             "pa2" : 4,
-            "no" : "test",
-            "mac1-term-cnt" : 1,
-            "dnsip" : [
-               "74.125.228.40",
-               "74.125.228.46",
-               "74.125.228.33",
-               "74.125.228.35",
-               "74.125.228.37",
-               "74.125.228.39",
-               "74.125.228.41",
-               "74.125.228.32",
-               "74.125.228.34",
-               "74.125.228.36",
-               "74.125.228.38"
+            "lpd" : 1385482078899,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
-            "lp" : 1385482078,
-            "fs" : [],
+            "prot-term" : [
+               "dns",
+               "tcp"
+            ],
             "db2" : 342,
+            "fpd" : 1385482078892,
+            "pr" : 6,
+            "fp" : 1385482078,
+            "pa1" : 6,
+            "p2" : 53,
             "dns" : {
-               "qc-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "opcode-term-cnt" : 1,
                "qc-term" : [
                   "IN"
                ],
@@ -80,16 +106,27 @@
                   "NOERROR"
                ],
                "qt-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
                "qt-term" : [
                   "A"
                ],
-               "status-term-cnt" : 1
+               "qc-term-cnt" : 1,
+               "opcode-term" : [
+                  "QUERY"
+               ]
             },
-            "a1" : "10.180.156.141",
-            "prot-term" : [
-               "dns",
-               "tcp"
+            "pa" : 10,
+            "dnsho" : [
+               "google.com"
             ],
+            "fb2" : "01545e6381800001",
+            "dnsipcnt" : 11,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "a2" : "10.2.95.39",
             "ps" : [
                24,
                118,
@@ -102,55 +139,38 @@
                1072,
                1154
             ],
-            "pa1" : 6,
-            "prot-term-cnt" : 2,
-            "fb1" : "001c5e6301000001",
-            "fpd" : 1385482078892,
-            "rirdnsip" : [
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN"
-            ],
+            "dnshocnt" : 1,
+            "mac1-term-cnt" : 1,
             "g1" : "USA",
-            "db" : 372,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "fp" : 1385482078,
-            "pr" : 6,
-            "db1" : 30,
-            "psl" : [
-               94,
-               90,
-               82,
-               112,
-               82,
-               424,
-               82,
-               82,
-               82,
-               82
+            "dnsip" : [
+               "74.125.228.40",
+               "74.125.228.46",
+               "74.125.228.33",
+               "74.125.228.35",
+               "74.125.228.37",
+               "74.125.228.39",
+               "74.125.228.41",
+               "74.125.228.32",
+               "74.125.228.34",
+               "74.125.228.36",
+               "74.125.228.38"
             ]
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131126",
-               "_type" : "session"
-            }
          }
       },
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131126"
+            }
+         },
          "body" : {
-            "lpd" : 1385482080086,
+            "by" : 965,
+            "mac2-term-cnt" : 2,
+            "by1" : 435,
+            "sl" : 2,
+            "a1" : "10.180.156.141",
+            "db" : 285,
             "gdnsip" : [
                "USA",
                "USA",
@@ -158,95 +178,16 @@
                "USA",
                "USA"
             ],
-            "pa" : 10,
-            "sl" : 2,
-            "dnshocnt" : 1,
-            "ss" : 1,
-            "p1" : 49343,
-            "by1" : 435,
-            "by" : 965,
-            "by2" : 530,
-            "dnsho" : [
-               "aol.com"
-            ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "p2" : 53,
-            "fb2" : "0100e2ec81800001",
-            "dnsipcnt" : 5,
-            "mac2-term-cnt" : 2,
-            "asdnsip" : [
-               "AS1668 Transit Data Network",
-               "AS1668 Transit Data Network",
-               "AS1668 Transit Data Network",
-               "AS1668 Transit Data Network",
-               "AS1668 Transit Data Network"
-            ],
-            "a2" : "10.2.95.39",
-            "fs" : [],
-            "db2" : 258,
-            "no" : "test",
-            "pa2" : 4,
-            "dnsip" : [
-               "64.12.89.186",
-               "207.200.74.38",
-               "205.188.100.58",
-               "64.12.79.57",
-               "205.188.101.58"
-            ],
-            "lp" : 1385482080,
-            "mac1-term-cnt" : 1,
-            "ps" : [
-               1236,
-               1330,
-               1420,
-               1502,
-               1611,
-               1693,
-               2033,
-               2115,
-               2197,
-               2279
-            ],
-            "pa1" : 6,
-            "a1" : "10.180.156.141",
-            "dns" : {
-               "status-term-cnt" : 1,
-               "qt-term" : [
-                  "A"
-               ],
-               "status-term" : [
-                  "NOERROR"
-               ],
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "qc-term-cnt" : 1,
-               "opcode-term-cnt" : 1
+            "tcpflags" : {
+               "urg" : 0,
+               "fin" : 2,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "psh" : 2,
+               "ack" : 4
             },
-            "prot-term" : [
-               "dns",
-               "tcp"
-            ],
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "db" : 285,
-            "rirdnsip" : [
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN",
-               "ARIN"
-            ],
-            "g1" : "USA",
-            "fpd" : 1385482080084,
+            "no" : "test",
             "psl" : [
                94,
                90,
@@ -259,17 +200,94 @@
                82,
                82
             ],
-            "db1" : 27,
-            "pr" : 6,
-            "fp" : 1385482080,
+            "lp" : 1385482080,
             "fb1" : "0019e2ec01000001",
-            "prot-term-cnt" : 2
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131126",
-               "_type" : "session"
-            }
+            "ss" : 1,
+            "p1" : 49343,
+            "fs" : [],
+            "rirdnsip" : [
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN",
+               "ARIN"
+            ],
+            "asdnsip" : [
+               "AS1668 Transit Data Network",
+               "AS1668 Transit Data Network",
+               "AS1668 Transit Data Network",
+               "AS1668 Transit Data Network",
+               "AS1668 Transit Data Network"
+            ],
+            "db1" : 27,
+            "by2" : 530,
+            "a2" : "10.2.95.39",
+            "ps" : [
+               1236,
+               1330,
+               1420,
+               1502,
+               1611,
+               1693,
+               2033,
+               2115,
+               2197,
+               2279
+            ],
+            "mac1-term-cnt" : 1,
+            "dnshocnt" : 1,
+            "g1" : "USA",
+            "dnsip" : [
+               "64.12.89.186",
+               "207.200.74.38",
+               "205.188.100.58",
+               "64.12.79.57",
+               "205.188.101.58"
+            ],
+            "dns" : {
+               "status-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "qc-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "qt-term" : [
+                  "A"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ],
+               "qc-term" : [
+                  "IN"
+               ]
+            },
+            "pa" : 10,
+            "dnsho" : [
+               "aol.com"
+            ],
+            "fb2" : "0100e2ec81800001",
+            "dnsipcnt" : 5,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "prot-term" : [
+               "dns",
+               "tcp"
+            ],
+            "db2" : 258,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "fp" : 1385482080,
+            "fpd" : 1385482080084,
+            "pr" : 6,
+            "pa1" : 6,
+            "p2" : 53,
+            "prot-term-cnt" : 2,
+            "pa2" : 4,
+            "lpd" : 1385482080086
          }
       }
    ]

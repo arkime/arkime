@@ -122,3 +122,21 @@ dl.sessionDetailMeta
     dt Socks User
     dd
       a.moloch-right-click(href='#', molochexpr='socks.user') #{session.socksuser}
+  if (session.tcpflags)
+    dt TCP Flags
+    dd
+      span.sessionDetailSmall
+        | SYN: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.syn') #{session.tcpflags.syn}
+        | &nbsp;SYN-ACK: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.syn-ack') #{session.tcpflags["syn-ack"]}
+        | &nbsp;ACK: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.ack') #{session.tcpflags.ack}
+        | &nbsp;PSH: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.psh') #{session.tcpflags.psh}
+        | &nbsp;RST: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.rst') #{session.tcpflags.rst}
+        | &nbsp;FIN: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.fin') #{session.tcpflags.fin}
+        | &nbsp;URG: 
+        a.moloch-right-click(href='#', molochexpr='tcpflags.urg') #{session.tcpflags.urg}

@@ -2,80 +2,80 @@
    "packets" : [
       {
          "body" : {
-            "by" : 238,
-            "db1" : 157,
-            "g1" : "FRA",
-            "fpd" : 1379970300840,
-            "p1" : 55612,
-            "sl" : 0,
-            "mac1-term-cnt" : 2,
             "lp" : 1379970300,
-            "a1" : "217.70.190.232",
-            "rir2" : "ARIN",
-            "no" : "test",
-            "fb1" : "9668240000010001",
-            "fb2" : "9668a40000010000",
-            "mac2-term" : [
-               "52:54:00:d9:83:b3"
-            ],
+            "pa1" : 1,
             "fp" : 1379970300,
-            "db" : 222,
-            "p2" : 53,
-            "ss" : 1,
-            "mac2-term-cnt" : 1,
-            "pr" : 17,
-            "pa" : 2,
-            "by1" : 165,
-            "a2" : "204.62.14.153",
-            "dnshocnt" : 1,
-            "psl" : [
-               181,
-               89
-            ],
+            "mac1-term-cnt" : 2,
+            "no" : "test",
             "mac1-term" : [
                "00:23:33:69:4d:00",
                "00:00:5e:00:01:01"
             ],
+            "ss" : 1,
+            "rir2" : "ARIN",
+            "p2" : 53,
+            "a1" : "217.70.190.232",
             "ps" : [
                24,
                205
             ],
-            "as1" : "AS29169 Domain name registrar - http://www.gandi.net",
-            "by2" : 73,
-            "lpd" : 1379970300840,
-            "fs" : [],
-            "dnsho" : [
-               "bortzmeyer.42"
+            "sl" : 0,
+            "psl" : [
+               181,
+               89
             ],
-            "prot-term-cnt" : 2,
-            "pa1" : 1,
-            "dns" : {
-               "opcode-term-cnt" : 1,
-               "opcode-term" : [
-                  "NOTIFY"
-               ],
-               "qt-term" : [
-                  "SOA"
-               ],
-               "status-term" : [
-                  "NOERROR"
-               ],
-               "status-term-cnt" : 1,
-               "qc-term-cnt" : 1,
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term-cnt" : 1
-            },
-            "pa2" : 1,
-            "db2" : 65,
+            "db" : 222,
+            "rir1" : "RIPE",
+            "db1" : 157,
+            "mac2-term-cnt" : 1,
             "prot-term" : [
                "udp",
                "dns"
             ],
-            "g2" : "USA",
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qt-term-cnt" : 1,
+               "status-term" : [
+                  "NOERROR"
+               ],
+               "opcode-term" : [
+                  "NOTIFY"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term" : [
+                  "SOA"
+               ],
+               "opcode-term-cnt" : 1,
+               "status-term-cnt" : 1
+            },
+            "fpd" : 1379970300840,
+            "by" : 238,
+            "by1" : 165,
+            "lpd" : 1379970300840,
             "as2" : "AS46636 NatCoWeb Corp.",
-            "rir1" : "RIPE"
+            "fb1" : "9668240000010001",
+            "mac2-term" : [
+               "52:54:00:d9:83:b3"
+            ],
+            "g1" : "FRA",
+            "as1" : "AS29169 Domain name registrar - http://www.gandi.net",
+            "db2" : 65,
+            "dnsho" : [
+               "bortzmeyer.42"
+            ],
+            "a2" : "204.62.14.153",
+            "g2" : "USA",
+            "by2" : 73,
+            "prot-term-cnt" : 2,
+            "fs" : [],
+            "pr" : 17,
+            "p1" : 55612,
+            "dnshocnt" : 1,
+            "pa" : 2,
+            "fb2" : "9668a40000010000",
+            "pa2" : 1
          },
          "header" : {
             "index" : {

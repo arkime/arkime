@@ -3,41 +3,82 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160221"
+               "_index" : "tests_sessions-160221",
+               "_type" : "session"
             }
          },
          "body" : {
-            "hsvercnt" : 1,
-            "us" : [
-               "//xxxxxxx.xxx.xxx/"
-            ],
-            "mac1-term" : [
-               "00:0c:29:c1:2d:24"
-            ],
-            "no" : "test",
+            "fb1" : "474554202f204854",
+            "db1" : 113,
+            "prot-term-cnt" : 2,
+            "fb2" : "485454502f312e31",
+            "pa1" : 3,
             "http" : {
-               "method-term" : [
-                  "GET"
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  200
                ],
                "bodymagic-term" : [
                   "text/html"
                ],
-               "statuscode-cnt" : 1,
                "bodymagic-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "method-term-cnt" : 1
+               "method-term" : [
+                  "GET"
+               ]
             },
-            "as1" : "AS0000 This is neat",
-            "vlan-cnt" : 2,
-            "hh2cnt" : 19,
-            "vlan" : [
-               200,
-               201
+            "hsvercnt" : 1,
+            "tcpflags" : {
+               "fin" : 0,
+               "urg" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 3,
+               "syn-ack" : 1
+            },
+            "sl" : 120,
+            "test" : {
+               "string" : [
+                  "16777226:54422,33554442:80"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ]
+            },
+            "a2" : "10.0.0.2",
+            "no" : "test",
+            "fp" : 1456042921,
+            "pr" : 6,
+            "mac1-term" : [
+               "00:0c:29:c1:2d:24"
             ],
             "ss" : 1,
+            "p2" : 80,
+            "vlan-cnt" : 2,
+            "us" : [
+               "//xxxxxxx.xxx.xxx/"
+            ],
+            "hpath" : [
+               "/"
+            ],
+            "fpd" : 1456042921641,
+            "ua" : [
+               "Wget/1.15 (linux-gnu)"
+            ],
+            "uacnt" : 1,
             "psl" : [
                98,
                98,
@@ -46,56 +87,20 @@
                90,
                4434
             ],
-            "sl" : 120,
-            "hh1cnt" : 4,
-            "fb1" : "474554202f204854",
-            "db1" : 113,
-            "p2" : 80,
-            "ps" : [
-               24,
-               122,
-               220,
-               310,
-               513,
-               603
+            "hh1" : [
+               "http:header:accept",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:user-agent"
             ],
-            "by" : 4917,
-            "fs" : [],
-            "uscnt" : 1,
-            "a2" : "10.0.0.2",
-            "lp" : 1456042921,
-            "mac1-term-cnt" : 1,
-            "g1" : "RUS",
-            "ho" : [
-               "xxxxxxx.xxx.xxx"
-            ],
-            "hpathcnt" : 1,
-            "hsver" : [
-               "1.1"
-            ],
-            "pa" : 6,
-            "db2" : 4344,
+            "tacnt" : 2,
+            "hdvercnt" : 1,
             "tags-term" : [
                "srcip",
                "dstip"
             ],
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "hdver" : [
-               "1.1"
-            ],
-            "pr" : 6,
-            "as2" : "AS0001 Cool Beans!",
-            "g2" : "CAN",
-            "hocnt" : 1,
-            "uacnt" : 1,
-            "ua" : [
-               "Wget/1.15 (linux-gnu)"
-            ],
-            "rir2" : "TEST",
-            "db" : 4457,
+            "by2" : 4574,
+            "p1" : 54422,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:access-control-allow-origin",
@@ -117,56 +122,60 @@
                "http:header:x-timer",
                "http:header:x-xss-protection"
             ],
-            "prot-term-cnt" : 2,
+            "mac2-term" : [
+               "00:09:0f:db:f4:3e"
+            ],
+            "as1" : "AS0000 This is neat",
+            "hh2cnt" : 19,
+            "db" : 4457,
+            "uscnt" : 1,
+            "g1" : "RUS",
+            "fs" : [],
+            "pa2" : 3,
+            "lpd" : 1456042921761,
+            "by" : 4917,
+            "vlan" : [
+               200,
+               201
+            ],
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "hpath" : [
-               "/"
+            "as2" : "AS0001 Cool Beans!",
+            "hh1cnt" : 4,
+            "rir2" : "TEST",
+            "prot-term" : [
+               "http",
+               "tcp"
             ],
-            "fb2" : "485454502f312e31",
-            "by1" : 343,
-            "p1" : 54422,
-            "lpd" : 1456042921761,
+            "ho" : [
+               "xxxxxxx.xxx.xxx"
+            ],
+            "hdver" : [
+               "1.1"
+            ],
+            "g2" : "CAN",
+            "ps" : [
+               24,
+               122,
+               220,
+               310,
+               513,
+               603
+            ],
+            "db2" : 4344,
+            "pa" : 6,
+            "hsver" : [
+               "1.1"
+            ],
             "a1" : "10.0.0.1",
-            "fpd" : 1456042921641,
-            "hdvercnt" : 1,
-            "pa1" : 3,
-            "tacnt" : 2,
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "string" : [
-                  "16777226:54422,33554442:80"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "mac2-term" : [
-               "00:09:0f:db:f4:3e"
-            ],
-            "pa2" : 3,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
+            "by1" : 343,
+            "hpathcnt" : 1,
+            "mac1-term-cnt" : 1,
+            "lp" : 1456042921,
             "mac2-term-cnt" : 1,
-            "by2" : 4574,
-            "fp" : 1456042921
+            "hocnt" : 1
          }
       }
    ]

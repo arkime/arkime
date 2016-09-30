@@ -2,47 +2,12 @@
    "packets" : [
       {
          "body" : {
-            "uacnt" : 1,
-            "prot-term-cnt" : 2,
-            "g1" : "USA",
-            "db" : 5389,
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "hmd5" : [
-               "230e3b4387b64caf54a7487b4f726adb"
-            ],
-            "pa2" : 8,
-            "g2" : "USA",
-            "db2" : 5237,
-            "p2" : 80,
-            "hdvercnt" : 1,
-            "no" : "test",
-            "db1" : 152,
-            "mac1-term-cnt" : 1,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "fs" : [],
-            "hsvercnt" : 1,
-            "ps" : [
-               24,
-               118,
-               208,
-               290,
-               524,
-               606,
-               2136,
-               3666,
-               3748,
-               5278,
-               5360,
-               6335,
-               6417,
-               6499,
-               6581,
-               6663
-            ],
+            "fb1" : "474554202f204854",
+            "pa1" : 8,
+            "sl" : 5,
+            "lpd" : 1385391358387,
+            "by1" : 692,
+            "fb2" : "485454502f312e31",
             "psl" : [
                94,
                90,
@@ -61,65 +26,45 @@
                82,
                82
             ],
-            "by" : 6465,
             "hh1" : [
                "http:header:accept",
                "http:header:host",
                "http:header:user-agent"
             ],
-            "hpath" : [
-               "/"
+            "hdvercnt" : 1,
+            "pa" : 16,
+            "mac2-term-cnt" : 1,
+            "hh1cnt" : 3,
+            "lp" : 1385391358,
+            "db2" : 5237,
+            "fs" : [],
+            "p2" : 80,
+            "uscnt" : 1,
+            "mac1-term-cnt" : 1,
+            "hocnt" : 1,
+            "db1" : 152,
+            "hsver" : [
+               "1.1"
             ],
             "ua" : [
                "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
             ],
-            "pa" : 16,
-            "sl" : 5,
-            "hocnt" : 1,
-            "hh2cnt" : 6,
-            "p1" : 61450,
+            "fp" : 1385391358,
+            "hmd5" : [
+               "230e3b4387b64caf54a7487b4f726adb"
+            ],
+            "uacnt" : 1,
+            "pr" : 6,
+            "by" : 6465,
+            "a1" : "10.180.156.141",
             "ho" : [
                "xxxxxxxxxxxxx.xxx.com"
             ],
-            "lp" : 1385391358,
-            "lpd" : 1385391358387,
-            "fb2" : "485454502f312e31",
-            "hpathcnt" : 1,
-            "pr" : 6,
-            "mac2-term-cnt" : 1,
-            "uscnt" : 1,
-            "http" : {
-               "method-term" : [
-                  "GET"
-               ],
-               "statuscode" : [
-                  403
-               ],
-               "method-term-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "statuscode-cnt" : 1
-            },
-            "us" : [
-               "//xxxxxxxxxxxxx.xxx.com/"
-            ],
-            "hh1cnt" : 3,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "fb1" : "474554202f204854",
-            "fp" : 1385391358,
+            "ss" : 1,
+            "fpd" : 1385391358382,
             "by2" : 5773,
-            "pa1" : 8,
-            "hmd5cnt" : 1,
-            "hsver" : [
-               "1.1"
-            ],
-            "a1" : "10.180.156.141",
-            "by1" : 692,
+            "hsvercnt" : 1,
+            "hh2cnt" : 6,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:connection",
@@ -128,12 +73,76 @@
                "http:header:date",
                "http:header:server"
             ],
-            "ss" : 1,
-            "fpd" : 1385391358382,
+            "pa2" : 8,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "hpath" : [
+               "/"
+            ],
+            "no" : "test",
+            "g1" : "USA",
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "us" : [
+               "//xxxxxxxxxxxxx.xxx.com/"
+            ],
+            "p1" : 61450,
+            "http" : {
+               "method-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "statuscode" : [
+                  403
+               ],
+               "method-term" : [
+                  "GET"
+               ]
+            },
             "a2" : "10.180.156.249",
+            "tcpflags" : {
+               "psh" : 2,
+               "fin" : 2,
+               "ack" : 10,
+               "urg" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "rst" : 0
+            },
+            "prot-term-cnt" : 2,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hmd5cnt" : 1,
+            "hpathcnt" : 1,
+            "db" : 5389,
             "hdver" : [
                "1.1"
-            ]
+            ],
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               524,
+               606,
+               2136,
+               3666,
+               3748,
+               5278,
+               5360,
+               6335,
+               6417,
+               6499,
+               6581,
+               6663
+            ],
+            "g2" : "USA"
          },
          "header" : {
             "index" : {

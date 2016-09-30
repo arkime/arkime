@@ -2,11 +2,71 @@
    "packets" : [
       {
          "body" : {
-            "fpd" : 1132019262677,
+            "a1" : "127.0.0.1",
+            "mac2-term-cnt" : 1,
+            "sl" : 0,
             "mac1-term" : [
                "00:00:00:00:00:00"
             ],
+            "fp" : 1132019262,
+            "fb2" : "300c02010161070a",
+            "p1" : 40848,
+            "no" : "test",
+            "prot-term-cnt" : 2,
+            "lpd" : 1132019262678,
+            "ss" : 1,
+            "by1" : 610,
+            "mac1-term-cnt" : 1,
+            "lp" : 1132019262,
+            "db" : 102,
+            "pa1" : 8,
+            "ldap" : {
+               "bindname-term" : [
+                  "<ROOT>"
+               ],
+               "authtype-term" : [
+                  "none"
+               ],
+               "authtype-term-cnt" : 1,
+               "bindname-term-cnt" : 1
+            },
+            "pa2" : 5,
+            "prot-term" : [
+               "ldap",
+               "tcp"
+            ],
+            "tcpflags" : {
+               "rst" : 0,
+               "syn-ack" : 1,
+               "ack" : 4,
+               "psh" : 5,
+               "syn" : 1,
+               "urg" : 0,
+               "fin" : 2
+            },
+            "pa" : 13,
+            "fb1" : "300c020101600702",
+            "a2" : "127.0.0.1",
             "by" : 976,
+            "psl" : [
+               90,
+               90,
+               82,
+               96,
+               82,
+               96,
+               82,
+               135,
+               96,
+               89,
+               82,
+               82,
+               82
+            ],
+            "pr" : 6,
+            "mac2-term" : [
+               "00:00:00:00:00:00"
+            ],
             "by2" : 366,
             "ps" : [
                24,
@@ -23,67 +83,16 @@
                1044,
                1126
             ],
-            "a2" : "127.0.0.1",
-            "pa" : 13,
-            "no" : "test",
-            "fp" : 1132019262,
-            "p2" : 389,
-            "mac1-term-cnt" : 1,
-            "ss" : 1,
-            "pa1" : 8,
-            "sl" : 0,
-            "fs" : [],
-            "ldap" : {
-               "bindname-term" : [
-                  "<ROOT>"
-               ],
-               "bindname-term-cnt" : 1,
-               "authtype-term-cnt" : 1,
-               "authtype-term" : [
-                  "none"
-               ]
-            },
-            "fb1" : "300c020101600702",
-            "lpd" : 1132019262678,
-            "a1" : "127.0.0.1",
             "db1" : 74,
-            "prot-term-cnt" : 2,
-            "by1" : 610,
-            "fb2" : "300c02010161070a",
-            "pa2" : 5,
             "db2" : 28,
-            "p1" : 40848,
-            "db" : 102,
-            "pr" : 6,
-            "psl" : [
-               90,
-               90,
-               82,
-               96,
-               82,
-               96,
-               82,
-               135,
-               96,
-               89,
-               82,
-               82,
-               82
-            ],
-            "mac2-term-cnt" : 1,
-            "lp" : 1132019262,
-            "prot-term" : [
-               "ldap",
-               "tcp"
-            ],
-            "mac2-term" : [
-               "00:00:00:00:00:00"
-            ]
+            "fpd" : 1132019262677,
+            "fs" : [],
+            "p2" : 389
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-051115"
+               "_index" : "tests_sessions-051115",
+               "_type" : "session"
             }
          }
       }

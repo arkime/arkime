@@ -2,6 +2,54 @@
    "packets" : [
       {
          "body" : {
+            "dnsip" : [
+               "10.0.0.1"
+            ],
+            "fb2" : "6919a80400010000",
+            "p2" : 53,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "ps" : [
+               24,
+               210
+            ],
+            "fs" : [],
+            "g1" : "RUS",
+            "as1" : "AS0000 This is neat",
+            "prot-term-cnt" : 2,
+            "no" : "test",
+            "a2" : "10.0.0.2",
+            "lp" : 1467464485,
+            "sl" : 24,
+            "mac2-term-cnt" : 1,
+            "by2" : 170,
+            "fb1" : "6919280000010001",
+            "vlan" : [
+               100
+            ],
+            "as2" : "AS0001 Cool Beans!",
+            "lpd" : 1467464485007,
+            "dnsho" : [
+               "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
+            ],
+            "by" : 340,
+            "p1" : 51031,
+            "pa" : 2,
+            "mac1-term-cnt" : 2,
+            "gdnsip" : [
+               "RUS"
+            ],
+            "pr" : 17,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
             "dns" : {
                "status-term" : [
                   "NOTIMPL"
@@ -12,112 +60,64 @@
                ],
                "opcode-term-cnt" : 1
             },
-            "mac1-term-cnt" : 2,
-            "as2" : "AS0001 Cool Beans!",
+            "asdnsip" : [
+               "AS0000 This is neat"
+            ],
+            "by1" : 170,
             "psl" : [
                186,
                186
             ],
             "db1" : 162,
-            "dnsip" : [
-               "10.0.0.1"
-            ],
-            "sl" : 24,
-            "db2" : 162,
-            "lp" : 1467464485,
-            "fpd" : 1467464484984,
-            "p2" : 53,
-            "mac2-term-cnt" : 1,
-            "rir2" : "TEST",
-            "p1" : 51031,
-            "pr" : 17,
+            "vlan-cnt" : 1,
+            "pa1" : 1,
             "dnsipcnt" : 1,
-            "dnshocnt" : 1,
+            "db" : 324,
+            "rir2" : "TEST",
+            "tacnt" : 2,
             "rirdnsip" : [
                ""
             ],
-            "db" : 324,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "pa1" : 1,
-            "a1" : "10.0.0.1",
+            "fpd" : 1467464484984,
+            "dnshocnt" : 1,
             "fp" : 1467464484,
-            "vlan-cnt" : 1,
-            "ss" : 1,
-            "ps" : [
-               24,
-               210
-            ],
-            "asdnsip" : [
-               "AS0000 This is neat"
-            ],
-            "by1" : 170,
-            "tacnt" : 2,
-            "gdnsip" : [
-               "RUS"
-            ],
-            "dnsho" : [
-               "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
-            ],
-            "by2" : 170,
-            "vlan" : [
-               100
-            ],
-            "mac1-term" : [
-               "3c:8a:b0:6f:27:c5",
-               "3c:8a:b0:6e:77:c5"
-            ],
-            "fb1" : "6919280000010001",
-            "a2" : "10.0.0.2",
             "mac2-term" : [
                "00:1b:17:00:03:24"
             ],
             "g2" : "CAN",
-            "by" : 340,
-            "g1" : "RUS",
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "mac1-term" : [
+               "3c:8a:b0:6f:27:c5",
+               "3c:8a:b0:6e:77:c5"
             ],
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "as1" : "AS0000 This is neat",
             "test" : {
                "ip-rir" : [
                   ""
                ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
                "ip-geo" : [
                   "RUS"
                ],
-               "string" : [
-                  "16777226:51031,33554442:53"
+               "ip-asn" : [
+                  "AS0000 This is neat"
                ],
                "number" : [
                   33554442
                ],
                "ip" : [
                   167772161
+               ],
+               "string" : [
+                  "16777226:51031,33554442:53"
                ]
             },
+            "a1" : "10.0.0.1",
             "pa2" : 1,
-            "fb2" : "6919a80400010000",
-            "prot-term-cnt" : 2,
-            "lpd" : 1467464485007,
-            "pa" : 2,
-            "no" : "test",
-            "fs" : []
+            "ss" : 1,
+            "db2" : 162
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160702"
+               "_index" : "tests_sessions-160702",
+               "_type" : "session"
             }
          }
       }

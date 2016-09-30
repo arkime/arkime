@@ -3,14 +3,63 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131202"
+               "_index" : "tests_sessions-131202",
+               "_type" : "session"
             }
          },
          "body" : {
-            "pa1" : 8,
-            "pa2" : 6,
-            "hpathcnt" : 1,
+            "uscnt" : 1,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "hh2cnt" : 11,
+            "p2" : 1080,
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:cache-control",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:etag",
+               "http:header:expires",
+               "http:header:last-modified",
+               "http:header:server",
+               "http:header:x-cache",
+               "http:header:x-ec-custom-error"
+            ],
+            "db2" : 1599,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "g1" : "USA",
+            "no" : "test",
+            "db1" : 155,
+            "hdvercnt" : 1,
+            "lpd" : 1386004309478,
+            "hdver" : [
+               "1.1"
+            ],
+            "p1" : 53533,
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
+            ],
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "method-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "bodymagic-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ]
+            },
+            "prot-term-cnt" : 3,
             "ps" : [
                24,
                118,
@@ -27,6 +76,62 @@
                2782,
                2864
             ],
+            "hh1cnt" : 3,
+            "hsvercnt" : 1,
+            "hmd5cnt" : 1,
+            "fpd" : 1386004309468,
+            "rirsocksip" : "RIPE",
+            "gsocksip" : "USA",
+            "us" : [
+               "//www.example.com/"
+            ],
+            "by2" : 2003,
+            "mac1-term-cnt" : 1,
+            "hocnt" : 1,
+            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "pa2" : 6,
+            "hsver" : [
+               "1.1"
+            ],
+            "pa1" : 8,
+            "hpathcnt" : 1,
+            "fp" : 1386004309,
+            "sockspo" : 80,
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "sl" : 10,
+            "a1" : "10.180.156.185",
+            "ho" : [
+               "www.example.com"
+            ],
+            "fs" : [],
+            "hpath" : [
+               "/"
+            ],
+            "by" : 2698,
+            "fb2" : "005adfb20ab49cf9",
+            "mac2-term-cnt" : 1,
+            "ss" : 1,
+            "db" : 1754,
+            "a2" : "10.180.156.249",
+            "uacnt" : 1,
+            "by1" : 695,
+            "pr" : 6,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "urg" : 0,
+               "rst" : 0,
+               "ack" : 6,
+               "fin" : 2,
+               "psh" : 4,
+               "syn" : 1
+            },
             "psl" : [
                94,
                90,
@@ -43,110 +148,14 @@
                82,
                82
             ],
-            "uscnt" : 1,
-            "ss" : 1,
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "a1" : "10.180.156.185",
-            "mac1-term-cnt" : 1,
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
-            ],
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:cache-control",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:etag",
-               "http:header:expires",
-               "http:header:last-modified",
-               "http:header:server",
-               "http:header:x-cache",
-               "http:header:x-ec-custom-error"
-            ],
-            "hpath" : [
-               "/"
-            ],
-            "fb2" : "005adfb20ab49cf9",
-            "db" : 1754,
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-            ],
-            "mac2-term-cnt" : 1,
-            "hh2cnt" : 11,
-            "lpd" : 1386004309478,
-            "db2" : 1599,
-            "hsver" : [
-               "1.1"
-            ],
-            "fs" : [],
-            "http" : {
-               "method-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1
-            },
-            "socksip" : "93.184.216.119",
-            "a2" : "10.180.156.249",
-            "sl" : 10,
-            "uacnt" : 1,
-            "fb1" : "040100505db8d877",
             "mac2-term" : [
                "00:13:72:c4:f1:e1"
             ],
-            "no" : "test",
-            "by" : 2698,
-            "p1" : 53533,
-            "pr" : 6,
-            "ho" : [
-               "www.example.com"
-            ],
             "lp" : 1386004309,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
             "pa" : 14,
-            "hh1cnt" : 3,
-            "fpd" : 1386004309468,
-            "hsvercnt" : 1,
-            "gsocksip" : "USA",
-            "sockspo" : 80,
-            "fp" : 1386004309,
-            "db1" : 155,
-            "hocnt" : 1,
-            "by2" : 2003,
-            "prot-term-cnt" : 3,
-            "p2" : 1080,
-            "hmd5cnt" : 1,
-            "g1" : "USA",
-            "hdvercnt" : 1,
-            "us" : [
-               "//www.example.com/"
-            ],
-            "rirsocksip" : "RIPE",
-            "hdver" : [
-               "1.1"
-            ],
-            "by1" : 695,
-            "g2" : "USA"
+            "g2" : "USA",
+            "fb1" : "040100505db8d877",
+            "socksip" : "93.184.216.119"
          }
       },
       {
@@ -157,87 +166,13 @@
             }
          },
          "body" : {
-            "us" : [
-               "//www.example.com/"
-            ],
-            "socksho" : "www.example.com",
-            "g2" : "USA",
-            "hdver" : [
-               "1.1"
-            ],
-            "by1" : 711,
-            "hocnt" : 1,
-            "by2" : 2069,
-            "fp" : 1386004312,
-            "sockspo" : 80,
-            "db1" : 171,
-            "hmd5cnt" : 1,
-            "g1" : "USA",
-            "p2" : 1080,
-            "hdvercnt" : 1,
-            "prot-term-cnt" : 3,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
+            "pr" : 6,
             "hh1" : [
                "http:header:accept",
                "http:header:host",
                "http:header:user-agent"
             ],
-            "pa" : 15,
-            "p1" : 53534,
-            "by" : 2780,
-            "lp" : 1386004312,
-            "ho" : [
-               "www.example.com"
-            ],
-            "pr" : 6,
-            "hh1cnt" : 3,
-            "fpd" : 1386004312331,
-            "hsvercnt" : 1,
-            "a2" : "10.180.156.249",
-            "sl" : 53,
-            "fs" : [],
-            "hsver" : [
-               "1.1"
-            ],
-            "db2" : 1599,
-            "http" : {
-               "statuscode-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "method-term" : [
-                  "GET"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "method-term-cnt" : 1
-            },
-            "no" : "test",
-            "uacnt" : 1,
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "fb1" : "0401005000000001",
-            "db" : 1770,
-            "fb2" : "005adfb30ab49cf9",
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-            ],
-            "hh2cnt" : 11,
-            "lpd" : 1386004312384,
-            "mac2-term-cnt" : 1,
-            "hpath" : [
-               "/"
-            ],
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
+            "by1" : 711,
             "psl" : [
                94,
                90,
@@ -255,27 +190,49 @@
                82,
                82
             ],
-            "uscnt" : 1,
+            "tcpflags" : {
+               "rst" : 0,
+               "ack" : 7,
+               "syn" : 1,
+               "fin" : 2,
+               "psh" : 4,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "db" : 1770,
+            "a2" : "10.180.156.249",
             "ss" : 1,
-            "mac1-term-cnt" : 1,
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
+            "mac2-term-cnt" : 1,
+            "uacnt" : 1,
+            "lp" : 1386004312,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:cache-control",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:etag",
-               "http:header:expires",
-               "http:header:last-modified",
-               "http:header:server",
-               "http:header:x-cache",
-               "http:header:x-ec-custom-error"
+            "pa" : 15,
+            "g2" : "USA",
+            "fb1" : "0401005000000001",
+            "fp" : 1386004312,
+            "sl" : 53,
+            "sockspo" : 80,
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "hsver" : [
+               "1.1"
+            ],
+            "pa1" : 8,
+            "hpathcnt" : 1,
+            "hpath" : [
+               "/"
+            ],
+            "by" : 2780,
+            "fb2" : "005adfb30ab49cf9",
+            "fs" : [],
+            "ho" : [
+               "www.example.com"
             ],
             "a1" : "10.180.156.185",
-            "pa1" : 8,
+            "p1" : 53534,
             "ps" : [
                2946,
                3040,
@@ -293,101 +250,52 @@
                5802,
                5884
             ],
-            "pa2" : 7,
-            "hpathcnt" : 1
-         }
-      },
-      {
-         "body" : {
-            "no" : "test",
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "fb1" : "0502000105010001",
-            "uacnt" : 1,
-            "sl" : 9,
-            "a2" : "10.180.156.249",
-            "socksip" : "93.184.216.119",
+            "prot-term-cnt" : 3,
             "http" : {
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
                "statuscode" : [
                   200
                ],
-               "method-term-cnt" : 1
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "bodymagic-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ]
             },
-            "hsver" : [
-               "1.1"
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
             ],
-            "fs" : [],
-            "db2" : 1603,
-            "hsvercnt" : 1,
-            "fpd" : 1386004317979,
-            "hh1cnt" : 3,
-            "pa" : 17,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "ho" : [
-               "www.example.com"
-            ],
-            "pr" : 6,
-            "lp" : 1386004317,
-            "by" : 2905,
-            "p1" : 53535,
             "hdvercnt" : 1,
-            "g1" : "USA",
-            "hmd5cnt" : 1,
-            "p2" : 1080,
-            "prot-term-cnt" : 3,
-            "by2" : 2073,
-            "hocnt" : 1,
-            "db1" : 160,
-            "gsocksip" : "USA",
-            "sockspo" : 80,
-            "fp" : 1386004317,
-            "g2" : "USA",
-            "by1" : 832,
-            "rirsocksip" : "RIPE",
             "hdver" : [
                "1.1"
             ],
+            "lpd" : 1386004312384,
+            "mac1-term-cnt" : 1,
+            "by2" : 2069,
             "us" : [
                "//www.example.com/"
             ],
-            "ps" : [
-               5966,
-               6060,
-               6150,
-               6232,
-               6318,
-               6400,
-               6484,
-               6566,
-               6658,
-               6750,
-               6832,
-               7060,
-               8590,
-               8815,
-               8897,
-               8979,
-               9061
-            ],
-            "hpathcnt" : 1,
             "pa2" : 7,
-            "pa1" : 10,
+            "hocnt" : 1,
+            "hsvercnt" : 1,
+            "hh1cnt" : 3,
+            "fpd" : 1386004312331,
+            "hmd5cnt" : 1,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "uscnt" : 1,
+            "p2" : 1080,
+            "hh2cnt" : 11,
+            "socksho" : "www.example.com",
+            "no" : "test",
+            "db1" : 171,
+            "db2" : 1599,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:cache-control",
@@ -401,18 +309,42 @@
                "http:header:x-cache",
                "http:header:x-ec-custom-error"
             ],
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
+            "g1" : "USA",
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ]
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131202",
+               "_type" : "session"
+            }
+         },
+         "body" : {
+            "socksip" : "93.184.216.119",
+            "fb1" : "0502000105010001",
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "mac1-term-cnt" : 1,
-            "a1" : "10.180.156.185",
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "uscnt" : 1,
+            "g2" : "USA",
+            "pa" : 17,
+            "lp" : 1386004317,
+            "uacnt" : 1,
+            "mac2-term-cnt" : 1,
+            "db" : 1763,
+            "a2" : "10.180.156.249",
+            "ss" : 1,
+            "tcpflags" : {
+               "rst" : 0,
+               "ack" : 7,
+               "syn" : 1,
+               "psh" : 6,
+               "fin" : 2,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
             "psl" : [
                94,
                90,
@@ -432,24 +364,119 @@
                82,
                82
             ],
-            "ss" : 1,
+            "by1" : 832,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "pr" : 6,
+            "ho" : [
+               "www.example.com"
+            ],
+            "a1" : "10.180.156.185",
+            "fs" : [],
+            "by" : 2905,
+            "fb2" : "0500050000010ab4",
             "hpath" : [
                "/"
             ],
-            "lpd" : 1386004317989,
-            "hh2cnt" : 11,
-            "mac2-term-cnt" : 1,
+            "hpathcnt" : 1,
+            "pa1" : 10,
+            "hsver" : [
+               "1.1"
+            ],
+            "sockspo" : 80,
+            "sl" : 9,
             "ua" : [
                "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
             ],
-            "fb2" : "0500050000010ab4",
-            "db" : 1763
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131202",
-               "_type" : "session"
-            }
+            "fp" : 1386004317,
+            "hmd5cnt" : 1,
+            "fpd" : 1386004317979,
+            "hh1cnt" : 3,
+            "hsvercnt" : 1,
+            "hocnt" : 1,
+            "pa2" : 7,
+            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
+            "us" : [
+               "//www.example.com/"
+            ],
+            "rirsocksip" : "RIPE",
+            "gsocksip" : "USA",
+            "mac1-term-cnt" : 1,
+            "by2" : 2073,
+            "lpd" : 1386004317989,
+            "hdver" : [
+               "1.1"
+            ],
+            "hdvercnt" : 1,
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
+            ],
+            "prot-term-cnt" : 3,
+            "http" : {
+               "bodymagic-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "method-term" : [
+                  "GET"
+               ]
+            },
+            "ps" : [
+               5966,
+               6060,
+               6150,
+               6232,
+               6318,
+               6400,
+               6484,
+               6566,
+               6658,
+               6750,
+               6832,
+               7060,
+               8590,
+               8815,
+               8897,
+               8979,
+               9061
+            ],
+            "p1" : 53535,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "g1" : "USA",
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:cache-control",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:etag",
+               "http:header:expires",
+               "http:header:last-modified",
+               "http:header:server",
+               "http:header:x-cache",
+               "http:header:x-ec-custom-error"
+            ],
+            "db2" : 1603,
+            "db1" : 160,
+            "no" : "test",
+            "hh2cnt" : 11,
+            "p2" : 1080,
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "uscnt" : 1
          }
       }
    ]

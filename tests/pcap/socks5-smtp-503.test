@@ -1,13 +1,46 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131126",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "g2" : "RUS",
-            "prot-term-cnt" : 3,
-            "by" : 1492,
-            "db" : 327,
-            "sockspo" : 25,
             "no" : "test",
+            "db1" : 47,
+            "p2" : 1080,
+            "prot-term-cnt" : 3,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "mac1-term-cnt" : 1,
+            "a1" : "10.0.0.2",
+            "mac2-term-cnt" : 2,
+            "a2" : "10.0.0.1",
+            "prot-term" : [
+               "socks",
+               "smtp",
+               "tcp"
+            ],
+            "as1" : "AS0001 Cool Beans!",
+            "pa2" : 10,
+            "p1" : 53709,
+            "pa1" : 10,
+            "by1" : 638,
+            "socksho" : "010.000.00.003",
+            "db2" : 280,
+            "g2" : "RUS",
+            "sockspo" : 25,
+            "tacnt" : 3,
+            "ta" : [
+               "dstip",
+               "smtp:authlogin",
+               "srcip"
+            ],
+            "ss" : 1,
+            "pa" : 20,
             "ps" : [
                24,
                106,
@@ -30,29 +63,38 @@
                1647,
                1760
             ],
-            "prot-term" : [
-               "socks",
-               "smtp",
-               "tcp"
-            ],
-            "p1" : 53709,
-            "pa1" : 10,
-            "a2" : "10.0.0.1",
-            "rir1" : "TEST",
+            "tcpflags" : {
+               "fin" : 0,
+               "urg" : 0,
+               "psh" : 10,
+               "syn-ack" : 1,
+               "rst" : 1,
+               "ack" : 6,
+               "syn" : 2
+            },
+            "by2" : 854,
+            "lpd" : 1385474639455,
+            "pr" : 6,
+            "g1" : "CAN",
+            "fpd" : 1385474626674,
+            "fb2" : "0500050000010a00",
+            "fb1" : "050100050100030e",
             "mac2-term" : [
                "00:00:5e:00:01:01",
                "80:71:1f:82:cf:c6"
             ],
-            "fb1" : "050100050100030e",
-            "g1" : "CAN",
-            "fp" : 1385474626,
-            "lpd" : 1385474639455,
-            "db1" : 47,
-            "a1" : "10.0.0.2",
-            "lp" : 1385474639,
+            "by" : 1492,
+            "db" : 327,
+            "fs" : [],
+            "as2" : "AS0000 This is neat",
             "sl" : 12781,
-            "tacnt" : 3,
-            "db2" : 280,
+            "fp" : 1385474626,
+            "lp" : 1385474639,
+            "tags-term" : [
+               "smtp:authlogin",
+               "srcip",
+               "dstip"
+            ],
             "psl" : [
                82,
                82,
@@ -75,40 +117,7 @@
                113,
                76
             ],
-            "socksho" : "010.000.00.003",
-            "as1" : "AS0001 Cool Beans!",
-            "p2" : 1080,
-            "by2" : 854,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "ss" : 1,
-            "fs" : [],
-            "fpd" : 1385474626674,
-            "ta" : [
-               "dstip",
-               "smtp:authlogin",
-               "srcip"
-            ],
-            "mac2-term-cnt" : 2,
-            "tags-term" : [
-               "smtp:authlogin",
-               "srcip",
-               "dstip"
-            ],
-            "as2" : "AS0000 This is neat",
-            "fb2" : "0500050000010a00",
-            "mac1-term-cnt" : 1,
-            "by1" : 638,
-            "pa2" : 10,
-            "pa" : 20,
-            "pr" : 6
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131126",
-               "_type" : "session"
-            }
+            "rir1" : "TEST"
          }
       }
    ]
