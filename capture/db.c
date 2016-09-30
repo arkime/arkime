@@ -1963,10 +1963,22 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
 
     if (config.dryRun) {
         static int tagNum = 1;
+        MOLOCH_LOCK(tagRequests);
+
+        HASH_FIND(tag_, tags, tagname, tag);
+
+        if (tag) {
+            MOLOCH_UNLOCK(tagRequests);
+            if (func)
+                func(uw, tagtype, tagname, tag->tagValue, FALSE);
+            return;
+        }
+
         MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
         tag->tagName = g_strdup(tagname);
         tag->tagValue = tagNum++;
         HASH_ADD(tag_, tags, tag->tagName, tag);
+        MOLOCH_UNLOCK(tagRequests);
 
         if (func)
             func(uw, tagtype, tagname, tag->tagValue, FALSE);
