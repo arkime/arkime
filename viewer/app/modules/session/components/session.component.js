@@ -13,21 +13,21 @@
      * Initialize global variables for this controller
      * @param $scope              Angular application model object
      * @param $routeParams        Retrieve the current set of route parameters
-     * @param $sce                Angular strict contextual escaping service
+     * @param $location           Exposes browser address bar URL (based on the window.location)
+     * @param $anchorScroll       Scrolls to the element related to given hash
      * @param SessionService      Transacts sessions with the server
-     * @param DTOptionsBuilder    DataTables options builder
-     * @param DTColumnDefBuilder  DataTables column builder
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, $sce, SessionService,
-      DTOptionsBuilder, DTColumnDefBuilder) {
-      this.$sce               = $sce;
+    constructor($scope, $routeParams, $location, $anchorScroll, SessionService) {
       this.$scope             = $scope;
       this.$routeParams       = $routeParams;
+      this.$location          = $location;
+      this.$anchorScroll      = $anchorScroll;
       this.SessionService     = SessionService;
-      this.DTOptionsBuilder   = DTOptionsBuilder;
-      this.DTColumnDefBuilder = DTColumnDefBuilder;
+
+      // offset anchor scroll position to account for navbars
+      this.$anchorScroll.yOffset = 140;
     }
 
     /* Callback when component is mounted and ready */
@@ -36,38 +36,14 @@
       this.loading      = true;
       this.currentPage  = 1; // start on the first page
 
-      this.query = {        // query defaults:
+      this.query = {  // query defaults:
         length: 100,  // page length
         start : 0,    // first item index
-        // array of sort objects
-        sorts : [{element:'fp', order:'asc'}],
+        sorts : [{element:'fp', order:'asc'}], // array of sort objects
         facets: 1,    // facets
       };
 
-      // configure datatable
-      // this.dtOptions = this.DTOptionsBuilder.newOptions()
-      //   .withDOM('t')
-      //   .withBootstrap()
-      //   .withColReorder()
-      //   .withColReorderOption('iFixedColumnsLeft', 1)
-      //   .withDisplayLength(this.query.length)
-      //   .withPaginationType('full_numbers')
-      //   .withOption('responsive', true);
-
-      // configure datatable columns
-      // this.dtColumns = [
-      //   this.DTColumnDefBuilder.newColumnDef(0).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(1).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(2).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(3).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(4).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(5).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(6).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(7).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(8).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(9).notSortable(),
-      //   this.DTColumnDefBuilder.newColumnDef(10).notSortable()
-      // ];
+      this.stickySessions = []; // array of open sessions
 
       this.getColumnInfo(); // get column infomation
 
@@ -127,6 +103,8 @@
       this.loading  = true;
       this.error    = false;
 
+      this.stickySessions = []; // clear sticky sessions
+
       this.SessionService.get(this.query)
         .then((response) => {
           this.loading  = false;
@@ -149,22 +127,53 @@
         });
     }
 
-    sessionDetail(session) {
+    /**
+     * Toggles the display of the session detail for each session
+     * @param {Object} session The session to expand, collapse details
+     */
+    toggleSessionDetail(session) {
       session.expanded = !session.expanded;
+
+      if (session.expanded) {
+        this.stickySessions.push(session);
+      } else {
+        var index = this.stickySessions.indexOf(session);
+        if (index >= 0) { this.stickySessions.splice(index, 1); }
+      }
     }
 
-   isSorted(id) {
-     for (var i = 0; i < this.query.sorts.length; ++i) {
-       if (this.query.sorts[i].element === id) { return true; }
-     }
+    /**
+     * Scrolls to specified session
+     * @param {Object} event  The click event that initiated scrollTo
+     * @param {string} id     The id of the sessino to scroll to
+     */
+    scrollTo(event, id) {
+      event.preventDefault();
 
-     return false;
-   }
+      var old = this.$location.hash();
+      this.$location.hash('session' + id);
+      this.$anchorScroll();
+
+      // reset to old to keep any additional routing logic from kicking in
+      this.$location.hash(old);
+    }
+
+    /**
+     * Determines if the table is being sorted by specified column
+     * @param {string} id The id of the column
+     */
+    isSorted(id) {
+      for (var i = 0; i < this.query.sorts.length; ++i) {
+        if (this.query.sorts[i].element === id) { return true; }
+      }
+
+      return false;
+    }
 
   }
 
-  SessionController.$inject = ['$scope', '$routeParams', '$sce',
-    'SessionService', 'DTOptionsBuilder', 'DTColumnDefBuilder'];
+  SessionController.$inject = ['$scope','$routeParams','$location',
+    '$anchorScroll','SessionService'];
 
 
   angular.module('moloch')

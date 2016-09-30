@@ -93,8 +93,8 @@
         localStorage['moloch-image']  = this.$scope.params.image;
       }
 
-      this.SessionService.getDetail(this.$scope.sessionId,
-        this.$scope.sessionNode, this.$scope.params)
+      this.SessionService.getDetail(this.$scope.session.id,
+        this.$scope.session.no, this.$scope.params)
         .then((response) => {
           this.loading = false;
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
@@ -119,7 +119,7 @@
         template    : require('html!../templates/session.detail.html'),
         controller  : SessionDetailController,
         controllerAs: '$ctrl',
-        scope       : { sessionId: '@', sessionNode: '@' },
+        scope       : { session: '=' },
         link        : function SessionDetailLink(scope, element, attrs, ctrl) {
 
           function molochExprClick(event) {

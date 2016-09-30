@@ -5,6 +5,7 @@
   <moloch-map style="height:0;width:0;display:none;"></moloch-map>
 
   <div class="margin-for-search-navbar">
+
     <!-- top pagination controls -->
     <moloch-pagination length="$ctrl.query.length"
       records-total="$ctrl.sessions.recordsTotal"
@@ -12,7 +13,36 @@
       current-page="$ctrl.currentPage"
       start="$ctrl.query.start"></moloch-pagination>
 
-    <div class="table-responsive margined-top">
+    <!-- open session details -->
+    <div class="sticky-session-detail-container"
+      ng-show="$ctrl.stickySessions && !$ctrl.error && !$ctrl.loading">
+      <div class="sticky-session-detail animate-opacity cursor-pointer"
+        ng-repeat="session in $ctrl.stickySessions"
+        ng-click="$ctrl.scrollTo($event, session.id)">
+
+        <a href class="btn btn-sm btn-link"
+          ng-click="$ctrl.toggleSessionDetail(session)">
+          <span class="fa fa-close fa-lg"></span>
+        </a>
+
+        <div>
+          <small><strong>
+            {{::session.fp * 1000 | date:'yyyy/MM/dd'}}
+            {{::session.fp * 1000 | date:'HH:mm:ss'}}&nbsp;-&nbsp;
+            {{::session.lp * 1000 | date:'yyyy/MM/dd'}}
+            {{::session.lp * 1000 | date:'HH:mm:ss'}}
+            <br>
+            {{::session | extractIPString:'src'}}:{{::session.p1}}
+            {{::session.g1}}&nbsp;-&nbsp;
+            {{::session | extractIPString:'dst'}}:{{::session.p2}}
+            {{::session.g2}}
+          </strong></small>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="table-responsive margined-top-lg">
       <!-- session data table -->
       <table class="table table-condensed">
         <thead>
@@ -71,12 +101,13 @@
         </thead>
         <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
           $ctrl.sessions.data.length && !$ctrl.error" class="small">
-          <tr ng-repeat-start="session in $ctrl.sessions.data">
+          <tr ng-repeat-start="session in $ctrl.sessions.data"
+            id="session{{::session.id}}">
             <td style="width:6%">
-              <a class="btn btn-sm btn-green"
-                ng-click="$ctrl.sessionDetail(session)">
-                <span ng-if="!session.expanded" class="fa fa-plus"></span>
-                <span ng-if="session.expanded" class="fa fa-minus"></span>
+              <a class="btn btn-sm btn-green btn-toggle"
+                ng-class="{'collapsed':!session.expanded}"
+                ng-click="$ctrl.toggleSessionDetail(session)">
+                <span class="fa fa-close"></span>
               </a>&nbsp;
               <small>{{::session.pr | protocol}}</small>
             </td>
@@ -89,14 +120,14 @@
               {{::session.lp * 1000 | date:'HH:mm:ss'}}
             </td>
             <td ng-class="{'active':$ctrl.isSorted('a1')}">
-              {{::session | extractIPString}}<br>
+              {{::session | extractIPString:'src'}}<br>
               {{::session.g1}}
             </td>
             <td ng-class="{'active':$ctrl.isSorted('p1')}">
               {{::session.p1}}
             </td>
             <td ng-class="{'active':$ctrl.isSorted('a2')}">
-              {{::session | extractIPString}}<br>
+              {{::session | extractIPString:'dst'}}<br>
               {{::session.g2}}
             </td>
             <td ng-class="{'active':$ctrl.isSorted('p2')}">
@@ -117,8 +148,7 @@
           <tr ng-show="session.expanded" class="session-detail-row" ng-repeat-end>
             <td colspan="11">
               <span ng-if="session.expanded">
-                <session-detail session-id="{{::session.id}}"
-                  session-node="{{::session.no}}">
+                <session-detail session="session">
                 </session-detail>
               </span>
             </td>

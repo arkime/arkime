@@ -33,11 +33,19 @@
      * '{{session | extractIPString}}'
      */
     .filter('extractIPString', () => {
-      return (session) => {
+      return (session, srcORdst) => {
         var ip;
 
-        if (session['tipv62-term'] || session['tipv61-term']) {
-          var ip6 = (session['tipv62-term'] || session['tipv61-term']).toString();
+        if (!srcORdst) { srcORdst = 'src'; }
+
+        if (session['tipv61-term'] || session['tipv62-term']) {
+          var ip6;
+
+          if (srcORdst === 'src') {
+            ip6 = session['tipv61-term'].toString();
+          } else {
+            ip6 = session['tipv62-term'].toString();
+          }
 
           ip = ip6.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
           [/(^|:)0:0:0:0:0:0:0:0($|:)/,
@@ -56,7 +64,8 @@
 
           return ip;
         } else {
-          ip = session.a1 || session.a2;
+          if (srcORdst === 'src') { ip = session.a1; }
+          else                    { ip = session.a2; }
 
           return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
                   '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
@@ -204,18 +213,18 @@
      * Evaluates a given function when enter key is pressed
      *
      * @example
-     * <input type="text" ng-enter="$ctrl.change()"
+     * <input type="text" enter-click="$ctrl.change()"
      *  ng-model="$ctrl.query" class="form-control" />
      *
      * Note: can be applied to any element, not just inputs
      */
-    .directive('ngEnter', function() {
+    .directive('enterClick', function() {
       return function(scope, element, attrs) {
         element.bind('keydown keypress', function(event) {
           if (event.which === 13) {
             event.preventDefault();
             scope.$apply(function() {
-              scope.$eval(attrs.ngEnter);
+              scope.$eval(attrs.enterClick);
             });
           }
         });

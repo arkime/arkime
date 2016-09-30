@@ -7,7 +7,7 @@
 <div ng-if="$ctrl.error"
   class="text-danger margined-top margined-bottom large">
   <span class="fa fa-exclamation-triangle"></span>&nbsp;
-  {{session.error}}
+  {{$ctrl.error}}
 </div>
 
 <div ng-if="!$ctrl.error && !$ctrl.loading" ng-bind-html="detailHtml"></div>

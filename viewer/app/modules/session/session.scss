@@ -25,6 +25,8 @@ session {
     background-color: lighten($color-yellow-light, 36%);
   }
 
+  .btn-tag { margin: 4px; }
+
   dt {
     font-size   : 16px;
     float       : left;
@@ -45,12 +47,8 @@ session {
     font-size   : 16px;
   }
 
-  .btn-tag {
-    margin: 4px;
-  }
-
   .nav-pills {
-    border-bottom: 1px solid $color-gray-light;
+    border-bottom : 1px solid $color-gray-light;
     padding-bottom: 4px;
 
     li {
@@ -60,23 +58,60 @@ session {
     }
   }
 
-  .grouped-radios {
-    border        : 1px solid rgba(0, 0, 0, 0);
-    padding       : 4px 8px;
-    border-radius : 4px;
-
-    &:hover {
-      border: 1px solid lighten($color-yellow-light, 10%);
-    }
-  }
-
   .packet-options {
     padding   : 8px 0;
     border-top: 1px solid $color-gray-light;
   }
 
 
-  /* tables ------------------------------------ */
+  /* session detail shortcuts ---------------- */
+  .sticky-session-detail-container {
+    position      : fixed;
+    top           : 145px;
+    right         : 0;
+    opacity       : .8;
+    width         : 400px;
+    overflow      : hidden;
+    white-space   : nowrap;
+    padding-bottom: 100px;
+
+    &:hover {
+      opacity: 1;
+
+      .sticky-session-detail {
+        margin-left: 20px;
+      }
+    }
+
+    .sticky-session-detail {
+      position      : relative;
+      z-index       : 9999;
+      width         : 380px;
+      margin-left   : 360px;
+      margin-bottom : 4px;
+      overflow      : hidden;
+      text-align    : right;
+      padding       : 2px 15px 2px 0;
+      border-radius : 8px 0 0 8px;
+      background-color: lighten($color-yellow-light, 26%);
+
+      -webkit-transition: margin-left 300ms linear, opacity 400ms linear;
+         -moz-transition: margin-left 300ms linear, opacity 400ms linear;
+              transition: margin-left 300ms linear, opacity 400ms linear;
+
+      .btn-link {
+        top     : -20px;
+        position: relative;
+      }
+
+      div {
+        display: inline-block;
+      }
+    }
+  }
+
+
+  /* session table --------------------------- */
   table {
     border-top  : $color-gray-light solid 1px;
     table-layout: fixed;
@@ -111,23 +146,6 @@ session {
     }
   }
 
-  // datatables colreorder
-  // table { // floating table, dragged with the mouse
-  //   &.DTCR_clonedTable {
-  //   	background-color : rgba(255, 255, 255, 0.7);
-  //   	z-index          : 202;
-  //   }
-  // }
-  //
-  // div { // insert line
-  //   &.DTCR_pointer {
-  //   	width            : 1px;
-  //   	z-index          : 201;
-  //   	background-color : $color-blue;
-  //   }
-  // }
-
-
 
   /* moloch menu items ------------------------- */
   .hover-menu {
@@ -148,9 +166,12 @@ session {
 
     // hide button and dropdown when not hovered
     .btn, ul.dropdown-menu {
-      opacity   : 0;
-      visibility: hidden;
-      transition: visibility 0s linear 400ms, opacity 400ms;
+      opacity           : 0;
+      visibility        : hidden;
+
+      -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
+         -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+              transition: visibility 0s linear 400ms, opacity 400ms;
     }
 
     .btn {
@@ -171,16 +192,17 @@ session {
     }
 
     .label { // clickable value container
-      z-index       : 3;
-      font-size     : 14px;
-      font-weight   : normal;
-      white-space   : normal;
-      text-align    : left;
-      padding       : 3px;
-      margin        : 0 -20px 0 0;
-      position      : relative;
-      border        : 1px solid rgba(0, 0, 0, 0);
-      color         : lighten($color-blue-light, 16%);
+      z-index     : 3;
+      font-size   : 14px;
+      font-weight : normal;
+      white-space : normal;
+      text-align  : left;
+      padding     : 3px;
+      margin      : 0 -20px 0 0;
+      position    : relative;
+      border      : 1px solid rgba(0, 0, 0, 0);
+      color       : lighten($color-blue-light, 16%);
+
       -webkit-transition: background 400ms linear, border-color 400ms;
          -moz-transition: background 400ms linear, border-color 400ms;
               transition: background 400ms linear, border-color 400ms;
@@ -189,9 +211,12 @@ session {
     &:hover {
       // show button and menu (if opened) on hover
       .btn, ul.dropdown-menu {;
-        opacity   : 1;
-        visibility: visible;
-        transition: visibility 0s linear 0s, opacity 400ms;
+        opacity           : 1;
+        visibility        : visible;
+
+        -webkit-transition: visibility 0s linear 0s, opacity 400ms;
+           -moz-transition: visibility 0s linear 0s, opacity 400ms;
+                transition: visibility 0s linear 0s, opacity 400ms;
       }
 
       .label {

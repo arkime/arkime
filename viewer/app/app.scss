@@ -272,6 +272,56 @@ body {
 }
 
 
+// transition for font awesome icon
+// only works for rotating icons 45 degrees
+.btn-toggle > {
+  .fa {
+    -webkit-transform-origin: 50% 50%;
+    -ms-transform-origin    : 50% 50%;
+    transform-origin        : 50% 50%;
+    -webkit-transition      : all 750ms;
+    transition              : all 750ms;
+  }
+}
+
+.btn-toggle.collapsed {
+  .fa {
+    -webkit-transform : rotate(-45deg);
+    -ms-transform     : rotate(-45deg);
+    transform         : rotate(-45deg);
+  }
+}
+
+
+
+/* animations ================================ */
+.animate-opacity {
+  opacity           : 1;
+
+  &.ng-enter {
+    -webkit-transition: opacity 400ms linear;
+    transition        : opacity 400ms linear;
+
+    opacity           : 0;
+  }
+
+  &.ng-enter-active {
+    opacity           : 1;
+  }
+
+  &.ng-leave {
+    -webkit-transition: opacity 400ms linear;
+    transition        : opacity 400ms linear;
+
+    opacity           : 1;
+  }
+
+  &.ng-leave-active {
+    opacity           : 0;
+  }
+}
+
+
 
 /* responsive styles ========================= */
 // responsive floats

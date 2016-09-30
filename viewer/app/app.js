@@ -4,15 +4,10 @@
 
 
   require('./app.scss');
-  require('datatables');
-  require('angular-resource');
   require('angular-route');
   require('angular-animate');
+  require('angular-resource');
   require('angular-ui-bootstrap');
-  require('angular-datatables/dist/angular-datatables');
-  require('angular-datatables/dist/plugins/bootstrap/angular-datatables.bootstrap');
-  require('angular-datatables/dist/plugins/colreorder/angular-datatables.colreorder');
-  require('datatables.net-colreorder/js/dataTables.colReorder');
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
 
@@ -23,9 +18,6 @@
   angular.module('moloch', [
     // angular dependencies
     'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
-
-    // datatables dependencies
-    'datatables', 'datatables.bootstrap', 'datatables.colreorder',
 
     // custom directives
     'directives.navbar', 'directives.footer',
