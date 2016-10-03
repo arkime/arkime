@@ -1,185 +1,203 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-140529"
+            }
+         },
          "body" : {
-            "a1" : "10.0.0.1",
+            "p1" : 54869,
             "psl" : [
                90,
                82,
                70,
                75
             ],
-            "fpd" : 1401385380102,
+            "by1" : 187,
+            "db1" : 5,
+            "g1" : "RUS",
+            "mac1-term-cnt" : 1,
+            "lpd" : 1401386288595,
+            "pa1" : 3,
+            "tacnt" : 2,
+            "mac2-term-cnt" : 2,
+            "lp" : 1401386288,
+            "db2" : 0,
+            "rir2" : "TEST",
+            "as1" : "AS0000 This is neat",
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "test" : {
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:54869,33554442:80"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ]
+            },
             "fb1" : "4745540d0a",
+            "ro" : "SET",
+            "ss" : 1,
+            "p2" : 80,
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "as2" : "AS0001 Cool Beans!",
+            "fpd" : 1401385380102,
+            "no" : "test",
+            "by2" : 66,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "pa" : 4,
+            "tcpflags" : {
+               "fin" : 0,
+               "syn-ack" : 1,
+               "ack" : 1,
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "psh" : 1
+            },
+            "pr" : 6,
+            "prot-term-cnt" : 2,
+            "g2" : "CAN",
             "ps" : [
                24,
                114,
                196,
                266
             ],
-            "p1" : 54869,
+            "a1" : "10.0.0.1",
+            "fp" : 1401385380,
             "a2" : "10.0.0.2",
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "db" : 5,
             "tags-term" : [
                "srcip",
                "dstip"
             ],
-            "pr" : 6,
-            "ro" : "SET",
-            "lp" : 1401386288,
-            "as1" : "AS0000 This is neat",
-            "db1" : 5,
-            "p2" : 80,
-            "mac2-term-cnt" : 2,
-            "by2" : 66,
-            "pa" : 4,
-            "db" : 5,
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "ss" : 1,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "pa2" : 1,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "tacnt" : 2,
-            "db2" : 0,
-            "prot-term-cnt" : 2,
-            "test" : {
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "string" : [
-                  "16777226:54869,33554442:80"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ]
-            },
             "sl" : 908493,
-            "rir2" : "TEST",
-            "as2" : "AS0001 Cool Beans!",
-            "g2" : "CAN",
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "pa1" : 3,
-            "g1" : "RUS",
-            "by" : 253,
-            "lpd" : 1401386288595,
-            "by1" : 187,
-            "no" : "test",
-            "fp" : 1401385380
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140529"
-            }
+            "fs" : [],
+            "pa2" : 1,
+            "by" : 253
          }
       },
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140529"
+               "_index" : "tests_sessions-140529",
+               "_type" : "session"
             }
          },
          "body" : {
-            "no" : "test",
             "fp" : 1401385380,
-            "lpd" : 1401386288597,
-            "by1" : 0,
-            "pa1" : 0,
-            "by" : 60,
-            "g1" : "RUS",
-            "sl" : 908494,
-            "test" : {
-               "string" : [
-                  "16777226:54869,33554442:80"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "rir2" : "TEST",
-            "as2" : "AS0001 Cool Beans!",
-            "g2" : "CAN",
-            "prot-term" : [
-               "http",
-               "tcp"
+            "ps" : [
+               341
             ],
-            "tacnt" : 2,
-            "db2" : 0,
-            "prot-term-cnt" : 2,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "ss" : 2,
-            "pa2" : 1,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "mac1-term-cnt" : 1,
-            "fs" : [],
-            "mac2-term-cnt" : 2,
-            "pa" : 1,
-            "by2" : 60,
-            "p2" : 80,
+            "a1" : "10.0.0.1",
+            "a2" : "10.0.0.2",
             "db" : 0,
-            "db1" : 0,
-            "as1" : "AS0000 This is neat",
-            "pr" : 6,
+            "by" : 60,
+            "pa2" : 1,
+            "fs" : [],
+            "sl" : 908494,
             "tags-term" : [
                "srcip",
                "dstip"
             ],
+            "by2" : 60,
+            "pa" : 1,
+            "tcpflags" : {
+               "ack" : 0,
+               "fin" : 0,
+               "syn-ack" : 0,
+               "syn" : 0,
+               "rst" : 1,
+               "urg" : 0,
+               "psh" : 0
+            },
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "prot-term-cnt" : 2,
+            "pr" : 6,
+            "g2" : "CAN",
+            "tacnt" : 2,
+            "as1" : "AS0000 This is neat",
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "rir2" : "TEST",
+            "mac2-term-cnt" : 2,
             "lp" : 1401386288,
+            "db2" : 0,
             "ro" : "SET",
-            "a2" : "10.0.0.2",
+            "fb1" : "4745540d0a",
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:54869,33554442:80"
+               ]
+            },
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "no" : "test",
+            "fpd" : 1401385380102,
             "mac1-term" : [
                "00:13:72:c4:f1:e1"
             ],
-            "fb1" : "4745540d0a",
-            "ps" : [
-               341
-            ],
-            "p1" : 54869,
-            "a1" : "10.0.0.1",
-            "fpd" : 1401385380102,
+            "as2" : "AS0001 Cool Beans!",
+            "ss" : 2,
+            "p2" : 80,
             "psl" : [
                76
-            ]
+            ],
+            "p1" : 54869,
+            "by1" : 0,
+            "lpd" : 1401386288597,
+            "mac1-term-cnt" : 1,
+            "g1" : "RUS",
+            "db1" : 0,
+            "pa1" : 0
          }
       }
    ]

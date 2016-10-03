@@ -1,174 +1,174 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131217",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "mac1-term" : [
-               "78:fe:3d:11:21:f2"
-            ],
-            "pa" : 1,
-            "db" : 137,
+            "g1" : "CAN",
+            "no" : "test",
             "ps" : [
                24
             ],
-            "prot-term-cnt" : 2,
-            "tacnt" : 2,
-            "lpd" : 1387253713030,
-            "mac1-term-cnt" : 1,
+            "pr" : 17,
+            "pa" : 1,
+            "a2" : "10.0.0.1",
+            "mac2-term" : [
+               "00:10:db:ff:26:00"
+            ],
+            "pa1" : 1,
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "pa1" : 1,
-            "by2" : 0,
-            "no" : "test",
-            "db2" : 0,
-            "a1" : "10.0.0.2",
-            "pa2" : 0,
-            "rir1" : "TEST",
-            "prot-term" : [
-               "udp",
-               "bittorrent"
+            "prot-term-cnt" : 2,
+            "mac1-term" : [
+               "78:fe:3d:11:21:f2"
             ],
-            "lp" : 1387253713,
+            "p2" : 3207,
             "as2" : "AS0000 This is neat",
-            "db1" : 137,
-            "g1" : "CAN",
+            "lpd" : 1387253713030,
+            "g2" : "RUS",
+            "p1" : 50759,
+            "fs" : [],
             "by1" : 145,
+            "db2" : 0,
+            "mac1-term-cnt" : 1,
+            "by" : 145,
+            "psl" : [
+               161
+            ],
             "tags-term" : [
                "srcip",
                "dstip"
             ],
-            "sl" : 0,
-            "fb1" : "64313a6164323a69",
-            "mac2-term-cnt" : 1,
-            "mac2-term" : [
-               "00:10:db:ff:26:00"
-            ],
-            "pr" : 17,
-            "p1" : 50759,
-            "p2" : 3207,
-            "g2" : "RUS",
-            "fp" : 1387253713,
-            "a2" : "10.0.0.1",
-            "fpd" : 1387253713030,
-            "psl" : [
-               161
-            ],
-            "as1" : "AS0001 Cool Beans!",
-            "by" : 145,
-            "ss" : 1,
-            "fs" : []
-         }
-      },
-      {
-         "body" : {
-            "fp" : 1387253793,
-            "a2" : "10.0.0.3",
-            "fpd" : 1387253793904,
-            "p1" : 44102,
-            "p2" : 12074,
-            "fs" : [],
-            "psl" : [
-               345
-            ],
-            "ss" : 1,
-            "by" : 329,
-            "by1" : 329,
-            "as2" : "AS0002 Hmm!@#$%^&*()",
-            "db1" : 321,
-            "pr" : 17,
-            "sl" : 0,
-            "fb1" : "64313a7264323a69",
-            "mac2-term-cnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:03"
-            ],
-            "db2" : 0,
-            "a1" : "10.0.0.4",
-            "pa2" : 0,
             "by2" : 0,
-            "no" : "test",
+            "pa2" : 0,
+            "rir1" : "TEST",
+            "fp" : 1387253713,
             "prot-term" : [
                "udp",
                "bittorrent"
             ],
-            "lp" : 1387253793,
-            "prot-term-cnt" : 2,
+            "db" : 137,
+            "mac2-term-cnt" : 1,
+            "fpd" : 1387253713030,
+            "a1" : "10.0.0.2",
+            "lp" : 1387253713,
+            "ss" : 1,
+            "sl" : 0,
+            "db1" : 137,
+            "fb1" : "64313a6164323a69",
+            "as1" : "AS0001 Cool Beans!",
+            "tacnt" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131217",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "lpd" : 1387253793904,
+            "as2" : "AS0002 Hmm!@#$%^&*()",
+            "p2" : 12074,
             "mac1-term" : [
                "00:10:db:ff:26:00"
             ],
+            "prot-term-cnt" : 2,
+            "pa1" : 1,
+            "a2" : "10.0.0.3",
             "pa" : 1,
-            "db" : 321,
+            "mac2-term" : [
+               "00:00:5e:00:01:03"
+            ],
+            "pr" : 17,
             "ps" : [
                185
             ],
-            "pa1" : 1,
-            "mac1-term-cnt" : 1,
-            "lpd" : 1387253793904
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131217",
-               "_type" : "session"
-            }
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131217",
-               "_type" : "session"
-            }
-         },
-         "body" : {
+            "no" : "test",
+            "fb1" : "64313a7264323a69",
+            "db1" : 321,
+            "sl" : 0,
+            "a1" : "10.0.0.4",
+            "fpd" : 1387253793904,
+            "ss" : 1,
+            "lp" : 1387253793,
+            "fp" : 1387253793,
+            "mac2-term-cnt" : 1,
             "prot-term" : [
                "udp",
                "bittorrent"
             ],
-            "psl" : [
-               352
-            ],
-            "by" : 336,
-            "ss" : 1,
-            "lp" : 1387257610,
-            "fs" : [],
-            "p1" : 47061,
+            "db" : 321,
             "by2" : 0,
-            "p2" : 20551,
-            "no" : "test",
-            "fp" : 1387257610,
-            "a2" : "10.0.0.5",
-            "db2" : 0,
-            "a1" : "10.0.0.6",
-            "fpd" : 1387257610963,
             "pa2" : 0,
-            "sl" : 0,
-            "fb1" : "64313a71393a6669",
-            "mac2-term-cnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:03"
+            "psl" : [
+               345
             ],
+            "by" : 329,
             "mac1-term-cnt" : 1,
-            "lpd" : 1387257610963,
-            "pa1" : 1,
+            "db2" : 0,
+            "by1" : 329,
+            "fs" : [],
+            "p1" : 44102
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131217"
+            }
+         }
+      },
+      {
+         "body" : {
+            "db2" : 0,
             "pr" : 17,
-            "mac1-term" : [
-               "00:10:db:ff:26:00"
-            ],
-            "pa" : 1,
-            "db" : 328,
-            "db1" : 328,
+            "no" : "test",
+            "fs" : [],
+            "by1" : 336,
+            "p1" : 47061,
             "ps" : [
                530
             ],
+            "mac2-term" : [
+               "00:00:5e:00:01:03"
+            ],
+            "pa2" : 0,
+            "by2" : 0,
+            "pa" : 1,
+            "a2" : "10.0.0.5",
+            "mac1-term-cnt" : 1,
+            "by" : 336,
+            "psl" : [
+               352
+            ],
             "prot-term-cnt" : 2,
-            "by1" : 336
+            "lp" : 1387257610,
+            "ss" : 1,
+            "a1" : "10.0.0.6",
+            "fpd" : 1387257610963,
+            "db" : 328,
+            "prot-term" : [
+               "udp",
+               "bittorrent"
+            ],
+            "mac2-term-cnt" : 1,
+            "pa1" : 1,
+            "fp" : 1387257610,
+            "lpd" : 1387257610963,
+            "fb1" : "64313a71393a6669",
+            "db1" : 328,
+            "mac1-term" : [
+               "00:10:db:ff:26:00"
+            ],
+            "sl" : 0,
+            "p2" : 20551
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131217",
+               "_type" : "session"
+            }
          }
       }
    ]

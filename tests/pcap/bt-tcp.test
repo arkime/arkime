@@ -2,29 +2,35 @@
    "packets" : [
       {
          "body" : {
-            "pa1" : 3,
-            "fs" : [],
-            "g1" : "RUS",
-            "lpd" : 1387744084305,
-            "lp" : 1387744084,
-            "by2" : 66,
-            "mac2-term-cnt" : 2,
-            "as1" : "AS0000 This is neat",
-            "tacnt" : 2,
-            "no" : "test",
-            "db1" : 68,
-            "psl" : [
-               82,
-               82,
-               76,
-               138
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
+            "prot-term" : [
+               "tcp",
+               "bittorrent"
+            ],
+            "as2" : "AS0001 Cool Beans!",
+            "ss" : 1,
+            "mac1-term" : [
+               "00:0f:f7:76:82:80"
+            ],
+            "pa2" : 1,
+            "tacnt" : 2,
+            "a2" : "10.0.0.2",
+            "lpd" : 1387744084305,
+            "p1" : 1203,
+            "fpd" : 1387744084182,
+            "prot-term-cnt" : 2,
             "test" : {
                "ip-geo" : [
                   "RUS"
                ],
-               "number" : [
-                  33554442
+               "ip" : [
+                  167772161
+               ],
+               "ip-rir" : [
+                  ""
                ],
                "string" : [
                   "16777226:1203,33554442:26001"
@@ -32,64 +38,67 @@
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
+               "number" : [
+                  33554442
                ]
             },
-            "ss" : 1,
-            "db" : 68,
-            "prot-term" : [
-               "tcp",
-               "bittorrent"
+            "fp" : 1387744084,
+            "mac2-term" : [
+               "00:00:5e:00:01:02",
+               "00:1d:b5:ce:ef:c0"
             ],
+            "mac1-term-cnt" : 1,
+            "mac2-term-cnt" : 2,
+            "g1" : "RUS",
+            "by" : 314,
+            "pa" : 4,
+            "as1" : "AS0000 This is neat",
+            "db1" : 68,
+            "by1" : 248,
+            "tcpflags" : {
+               "syn" : 1,
+               "psh" : 1,
+               "syn-ack" : 1,
+               "fin" : 0,
+               "urg" : 0,
+               "rst" : 0,
+               "ack" : 1
+            },
             "ps" : [
                24,
                106,
                188,
                264
             ],
-            "prot-term-cnt" : 2,
-            "pa2" : 1,
-            "mac1-term-cnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "p2" : 26001,
+            "no" : "test",
+            "db2" : 0,
+            "a1" : "10.0.0.1",
+            "g2" : "CAN",
+            "db" : 68,
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "mac2-term" : [
-               "00:00:5e:00:01:02",
-               "00:1d:b5:ce:ef:c0"
-            ],
-            "pr" : 6,
-            "fp" : 1387744084,
-            "sl" : 123,
-            "by1" : 248,
-            "db2" : 0,
-            "a2" : "10.0.0.2",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
             "rir2" : "TEST",
+            "pr" : 6,
+            "lp" : 1387744084,
+            "pa1" : 3,
             "fb1" : "13426974546f7272",
-            "mac1-term" : [
-               "00:0f:f7:76:82:80"
+            "sl" : 123,
+            "by2" : 66,
+            "psl" : [
+               82,
+               82,
+               76,
+               138
             ],
-            "fpd" : 1387744084182,
-            "p1" : 1203,
-            "pa" : 4,
-            "by" : 314,
-            "a1" : "10.0.0.1",
-            "g2" : "CAN"
+            "p2" : 26001,
+            "fs" : []
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-131222",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-131222"
             }
          }
       }

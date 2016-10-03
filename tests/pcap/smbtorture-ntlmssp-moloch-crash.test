@@ -2,20 +2,19 @@
    "packets" : [
       {
          "body" : {
-            "fpd" : 1132371118535,
-            "mac2-term" : [
-               "00:0c:29:30:60:27"
+            "mac1-term" : [
+               "00:50:56:c0:00:01"
             ],
-            "ss" : 1,
-            "smbdm" : [
-               "VNET3"
+            "fp" : 1132371118,
+            "prot-term-cnt" : 2,
+            "rir2" : "ARIN",
+            "smbvercnt" : 1,
+            "by1" : 1438,
+            "a1" : "192.168.114.1",
+            "smbsh" : [
+               "\\\\192.168.114.129\\TEST"
             ],
-            "mac1-term-cnt" : 1,
-            "p2" : 445,
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
+            "pa2" : 6,
             "ps" : [
                24,
                114,
@@ -32,19 +31,19 @@
                2760,
                2881
             ],
-            "tacnt" : 1,
-            "db" : 1824,
-            "smbdmcnt" : 1,
-            "mac2-term-cnt" : 1,
-            "db1" : 902,
-            "a2" : "192.168.114.129",
-            "no" : "test",
-            "p1" : 52703,
-            "fs" : [],
-            "prot-term-cnt" : 2,
-            "smbos" : [
-               "Unix"
+            "pa" : 14,
+            "smbver" : [
+               "Samba 3.9.0-SVN-build-11572"
             ],
+            "ta" : [
+               "smb:bad-security-blob"
+            ],
+            "tags-term" : [
+               "smb:bad-security-blob"
+            ],
+            "fpd" : 1132371118535,
+            "a2" : "192.168.114.129",
+            "lp" : 1132371118,
             "psl" : [
                90,
                90,
@@ -61,46 +60,56 @@
                121,
                131
             ],
-            "fp" : 1132371118,
             "pr" : 6,
-            "rir1" : "ARIN",
-            "mac1-term" : [
-               "00:50:56:c0:00:01"
-            ],
-            "pa" : 14,
-            "smbver" : [
-               "Samba 3.9.0-SVN-build-11572"
-            ],
-            "lp" : 1132371118,
-            "sl" : 56,
             "smbshcnt" : 1,
-            "tags-term" : [
-               "smb:bad-security-blob"
-            ],
-            "rir2" : "ARIN",
-            "db2" : 922,
-            "smbsh" : [
-               "\\\\192.168.114.129\\TEST"
-            ],
-            "fb2" : "00000095ff534d42",
-            "pa2" : 6,
-            "a1" : "192.168.114.1",
-            "pa1" : 8,
-            "lpd" : 1132371118592,
-            "ta" : [
-               "smb:bad-security-blob"
-            ],
-            "by1" : 1438,
-            "smboscnt" : 1,
-            "smbvercnt" : 1,
-            "by2" : 1326,
+            "mac1-term-cnt" : 1,
             "by" : 2764,
-            "fb1" : "000000dbff534d42"
+            "tcpflags" : {
+               "syn" : 1,
+               "psh" : 10,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "ack" : 2,
+               "urg" : 0
+            },
+            "pa1" : 8,
+            "smbos" : [
+               "Unix"
+            ],
+            "p2" : 445,
+            "fb1" : "000000dbff534d42",
+            "smbdm" : [
+               "VNET3"
+            ],
+            "ss" : 1,
+            "by2" : 1326,
+            "prot-term" : [
+               "smb",
+               "tcp"
+            ],
+            "fs" : [],
+            "db1" : 902,
+            "db2" : 922,
+            "fb2" : "00000095ff534d42",
+            "smboscnt" : 1,
+            "no" : "test",
+            "mac2-term" : [
+               "00:0c:29:30:60:27"
+            ],
+            "p1" : 52703,
+            "rir1" : "ARIN",
+            "smbdmcnt" : 1,
+            "db" : 1824,
+            "tacnt" : 1,
+            "lpd" : 1132371118592,
+            "sl" : 56,
+            "mac2-term-cnt" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-051119",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-051119"
             }
          }
       }

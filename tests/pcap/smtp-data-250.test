@@ -1,133 +1,39 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131206"
-            }
-         },
          "body" : {
-            "by1" : 1867,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "esubcnt" : 1,
-            "rir2" : "ARIN",
-            "pr" : 6,
+            "ss" : 1,
+            "db" : 1898,
+            "ectcnt" : 1,
+            "lp" : 1386338052,
+            "lpd" : 1386338052390,
+            "g1" : "RUS",
+            "edstcnt" : 1,
             "user" : [
                "12345678@aol.com"
             ],
-            "g1" : "RUS",
-            "g2" : "USA",
-            "psl" : [
-               82,
-               82,
-               76,
-               492,
-               76,
-               86,
-               76,
-               279,
-               115,
-               76,
-               107,
-               101,
-               76,
-               84,
-               104,
-               76,
-               84,
-               76,
-               107,
-               76,
-               384,
-               76,
-               687,
-               76,
-               108,
-               76,
-               134,
-               76,
-               76,
-               76
-            ],
-            "emvcnt" : 1,
-            "by" : 3620,
-            "eid" : [
-               "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
-            ],
-            "fpd" : 1386338020379,
-            "emv" : [
-               "1.0"
-            ],
-            "esrc" : [
-               "12345678@aol.com"
-            ],
-            "db" : 1898,
-            "fs" : [],
-            "fb1" : "45484c4f206c6f63",
-            "ss" : 1,
-            "ta" : [
-               "smtp:authplain",
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "a1" : "10.0.0.1",
-            "pa2" : 16,
-            "tacnt" : 3,
-            "by2" : 1753,
-            "eidcnt" : 1,
-            "esub" : [
-               "Re: xxx xxx xxxxx xxxxxx..."
-            ],
-            "fp" : 1386338020,
-            "lpd" : 1386338052390,
-            "pa" : 30,
-            "db2" : 835,
-            "as2" : "AS1668 Transit Data Network",
-            "sl" : 32010,
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "fb2" : "3232302d6d74616f",
-            "a2" : "64.12.168.40",
-            "pa1" : 14,
-            "mac2-term" : [
-               "00:00:5e:00:01:02",
-               "80:71:1f:82:cf:c6"
-            ],
-            "lp" : 1386338052,
-            "db1" : 1063,
-            "ehhcnt" : 8,
-            "usercnt" : 1,
             "edst" : [
                "xxxx.xxxxxx@xxxxx.com"
             ],
-            "edstcnt" : 1,
-            "ect" : [
-               "text/plain; charset=utf-8"
-            ],
-            "p1" : 3293,
+            "db2" : 835,
             "test" : {
-               "ip-rir" : [
-                  ""
+               "number" : [
+                  682101824
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "ip" : [
-                  167772161
+               "string" : [
+                  "16777226:3293,682101824:587"
                ],
                "ip-geo" : [
                   "RUS"
                ],
-               "string" : [
-                  "16777226:3293,682101824:587"
+               "ip" : [
+                  167772161
                ],
-               "number" : [
-                  682101824
+               "ip-rir" : [
+                  ""
                ]
             },
             "ehh" : [
@@ -140,8 +46,29 @@
                "date",
                "subject"
             ],
-            "prot-term-cnt" : 2,
-            "ectcnt" : 1,
+            "esub" : [
+               "Re: xxx xxx xxxxx xxxxxx..."
+            ],
+            "pa1" : 14,
+            "eid" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx"
+            ],
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "as2" : "AS1668 Transit Data Network",
+            "eidcnt" : 1,
+            "mac1-term-cnt" : 1,
+            "ta" : [
+               "smtp:authplain",
+               "smtp:statuscode:250",
+               "srcip"
+            ],
+            "ehhcnt" : 8,
+            "ect" : [
+               "text/plain; charset=utf-8"
+            ],
             "ps" : [
                24,
                106,
@@ -174,17 +101,99 @@
                3972,
                4048
             ],
-            "no" : "test",
-            "mac1-term-cnt" : 1,
-            "mac2-term-cnt" : 2,
+            "sl" : 32010,
+            "db1" : 1063,
+            "fb1" : "45484c4f206c6f63",
+            "pr" : 6,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "g2" : "USA",
+            "mac2-term" : [
+               "00:00:5e:00:01:02",
+               "80:71:1f:82:cf:c6"
+            ],
+            "tacnt" : 3,
+            "by" : 3620,
             "esrccnt" : 1,
+            "fb2" : "3232302d6d74616f",
+            "usercnt" : 1,
+            "p1" : 3293,
+            "prot-term-cnt" : 2,
+            "esubcnt" : 1,
+            "by1" : 1867,
+            "rir2" : "ARIN",
+            "emvcnt" : 1,
+            "pa" : 30,
+            "as1" : "AS0000 This is neat",
+            "emv" : [
+               "1.0"
+            ],
+            "pa2" : 16,
+            "no" : "test",
+            "fp" : 1386338020,
+            "fpd" : 1386338020379,
+            "mac2-term-cnt" : 2,
+            "fs" : [],
+            "p2" : 587,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "urg" : 0,
+               "ack" : 12,
+               "syn" : 1,
+               "psh" : 15,
+               "fin" : 1,
+               "rst" : 0
+            },
+            "by2" : 1753,
             "tags-term" : [
                "smtp:statuscode:250",
                "smtp:authplain",
                "srcip"
             ],
-            "as1" : "AS0000 This is neat",
-            "p2" : 587
+            "esrc" : [
+               "12345678@aol.com"
+            ],
+            "psl" : [
+               82,
+               82,
+               76,
+               492,
+               76,
+               86,
+               76,
+               279,
+               115,
+               76,
+               107,
+               101,
+               76,
+               84,
+               104,
+               76,
+               84,
+               76,
+               107,
+               76,
+               384,
+               76,
+               687,
+               76,
+               108,
+               76,
+               134,
+               76,
+               76,
+               76
+            ],
+            "a1" : "10.0.0.1",
+            "a2" : "64.12.168.40"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131206"
+            }
          }
       }
    ]

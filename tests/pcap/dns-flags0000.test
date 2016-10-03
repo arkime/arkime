@@ -2,93 +2,93 @@
    "packets" : [
       {
          "body" : {
-            "fb2" : "b2b5800500010000",
-            "db1" : 74,
-            "mac2-term-cnt" : 1,
+            "fb1" : "b2b5000000010000",
+            "by2" : 82,
             "dns" : {
-               "status-term" : [
-                  "REFUSED"
-               ],
                "opcode-term" : [
                   "QUERY"
                ],
-               "status-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
                "qc-term" : [
                   "IN"
                ],
                "qt-term-cnt" : 1,
-               "qc-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "status-term" : [
+                  "REFUSED"
+               ],
                "qt-term" : [
                   "A"
-               ]
+               ],
+               "status-term-cnt" : 1,
+               "qc-term-cnt" : 1
             },
-            "lpd" : 1393422583932,
-            "mac1-term-cnt" : 2,
-            "fb1" : "b2b5000000010000",
-            "fs" : [],
-            "by1" : 82,
-            "dnsho" : [
-               "flashservice.adobe.com"
-            ],
-            "prot-term-cnt" : 2,
-            "g1" : "CAN",
-            "a1" : "10.0.0.2",
-            "g2" : "RUS",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "p1" : 61912,
-            "fpd" : 1393422583830,
-            "as1" : "AS0001 Cool Beans!",
-            "rir1" : "TEST",
-            "lp" : 1393422583,
-            "tacnt" : 2,
-            "dnshocnt" : 1,
-            "fp" : 1393422583,
-            "db2" : 74,
-            "ss" : 1,
-            "pa" : 2,
             "mac1-term" : [
                "00:00:5e:00:01:03",
                "88:e0:f3:f1:91:f2"
             ],
-            "db" : 148,
-            "p2" : 53,
-            "a2" : "10.0.0.1",
-            "by" : 164,
             "ps" : [
                24,
                122
             ],
-            "as2" : "AS0000 This is neat",
-            "pr" : 17,
-            "by2" : 82,
             "prot-term" : [
                "udp",
                "dns"
             ],
-            "pa2" : 1,
-            "no" : "test",
-            "psl" : [
-               98,
-               98
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
             "sl" : 102,
+            "rir1" : "TEST",
+            "dnshocnt" : 1,
+            "db2" : 74,
             "pa1" : 1,
+            "as2" : "AS0000 This is neat",
             "ta" : [
                "dstip",
                "srcip"
             ],
+            "fpd" : 1393422583830,
+            "db1" : 74,
+            "fb2" : "b2b5800500010000",
+            "mac2-term-cnt" : 1,
+            "lpd" : 1393422583932,
+            "by1" : 82,
+            "a1" : "10.0.0.2",
+            "mac1-term-cnt" : 2,
+            "g1" : "CAN",
+            "dnsho" : [
+               "flashservice.adobe.com"
+            ],
+            "pa2" : 1,
             "mac2-term" : [
                "00:10:db:ff:26:00"
-            ]
+            ],
+            "fs" : [],
+            "pa" : 2,
+            "tacnt" : 2,
+            "lp" : 1393422583,
+            "db" : 148,
+            "a2" : "10.0.0.1",
+            "pr" : 17,
+            "fp" : 1393422583,
+            "p1" : 61912,
+            "p2" : 53,
+            "by" : 164,
+            "ss" : 1,
+            "prot-term-cnt" : 2,
+            "g2" : "RUS",
+            "psl" : [
+               98,
+               98
+            ],
+            "no" : "test",
+            "as1" : "AS0001 Cool Beans!"
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-140226",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-140226"
             }
          }
       }

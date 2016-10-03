@@ -232,22 +232,33 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
     if (len < 0)
         return 1;
 
+    if (tcphdr->th_flags & TH_URG) {
+        session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]++;
+    }
+
     if (tcphdr->th_flags & TH_SYN) {
-        if (!session->haveTcpSession && (tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK) && config.antiSynDrop) {
+        if (tcphdr->th_flags & TH_ACK) {
+            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK]++;
+
+            if (!session->haveTcpSession && config.antiSynDrop) {
 #ifdef DEBUG_PACKET
-            LOG("syn-ack first");
+                LOG("syn-ack first");
 #endif
-            session->tcpSeq[(packet->direction+1)%2] = ntohl(tcphdr->th_ack);
+                session->tcpSeq[(packet->direction+1)%2] = ntohl(tcphdr->th_ack);
+            }
+            session->haveTcpSession = 1;
+            session->tcpSeq[packet->direction] = seq + 1;
+            if (!session->tcp_next) {
+                DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
+            }
+            return 1;
+        } else {
+            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]++;
         }
-        session->haveTcpSession = 1;
-        session->tcpSeq[packet->direction] = seq + 1;
-        if (!session->tcp_next) {
-            DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
-        }
-        return 1;
     }
 
     if (tcphdr->th_flags & TH_RST) {
+        session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]++;
         if (moloch_packet_sequence_diff(seq, session->tcpSeq[packet->direction]) <= 0) {
             return 1;
         }
@@ -256,7 +267,16 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
     }
 
     if (tcphdr->th_flags & TH_FIN) {
+        session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN]++;
         session->tcpState[packet->direction] = MOLOCH_TCP_STATE_FIN;
+    }
+
+    if ((tcphdr->th_flags & (TH_FIN | TH_RST | TH_PUSH | TH_SYN | TH_ACK)) == TH_ACK) {
+        session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK]++;
+    }
+
+    if (tcphdr->th_flags & TH_PUSH) {
+        session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]++;
     }
 
     MolochTcpDataHead_t * const tcpData = &session->tcpData;
@@ -1271,6 +1291,48 @@ void moloch_packet_init()
         0,  MOLOCH_FIELD_FLAG_FAKE,
         "portField", "p2",
         "transform", "ipv6ToHex",
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.syn", "TCP Flag SYN", "tcpflags.syn",
+        "Count of packets with SYN and no ACK flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.syn-ack", "TCP Flag SYN-ACK", "tcpflags.syn-ack",
+        "Count of packets with SYN and ACK flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.ack", "TCP Flag ACK", "tcpflags.ack",
+        "Count of packets with only the ACK flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.psh", "TCP Flag PSH", "tcpflags.psh",
+        "Count of packets with PSH flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.fin", "TCP Flag FIN", "tcpflags.fin",
+        "Count of packets with FIN flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.rst", "TCP Flag RST", "tcpflags.rst",
+        "Count of packets with RST flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
+        NULL);
+
+    moloch_field_define("general", "integer",
+        "tcpflags.urg", "TCP Flag URG", "tcpflags.urg",
+        "Count of packets with URG flag set",
+        0,  MOLOCH_FIELD_FLAG_FAKE,
         NULL);
 
     int t;

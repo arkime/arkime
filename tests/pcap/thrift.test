@@ -2,86 +2,45 @@
    "packets" : [
       {
          "body" : {
-            "as1" : "AS0000 This is neat",
-            "ss" : 1,
-            "lpd" : 1463682642100,
-            "lp" : 1463682642,
-            "mac2-term-cnt" : 1,
-            "vlan-cnt" : 1,
-            "pa1" : 3,
-            "ps" : [
-               24,
-               122,
-               216,
-               302,
-               428,
-               514
-            ],
-            "fpd" : 1463682642097,
-            "p1" : 59602,
-            "fs" : [],
-            "by2" : 322,
-            "vlan" : [
-               50
-            ],
-            "no" : "test",
-            "tacnt" : 2,
-            "a1" : "10.0.0.1",
-            "mac2-term" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "by1" : 262,
-            "rir2" : "TEST",
-            "prot-term" : [
-               "tcp",
-               "thrift"
-            ],
-            "g2" : "CAN",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
             "mac1-term-cnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "pa" : 6,
             "test" : {
-               "ip-asn" : [
-                  "AS0000 This is neat"
+               "ip" : [
+                  167772161
                ],
                "string" : [
                   "16777226:59602,33554442:9000"
                ],
-               "ip" : [
-                  167772161
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
                ],
                "ip-rir" : [
                   ""
                ],
                "number" : [
                   33554442
-               ],
-               "ip-geo" : [
-                  "RUS"
                ]
             },
             "db1" : 40,
-            "by" : 584,
-            "db2" : 104,
-            "fb2" : "800100030000001b",
-            "a2" : "10.0.0.2",
-            "fp" : 1463682642,
-            "p2" : 9000,
+            "ss" : 1,
             "sl" : 2,
-            "mac1-term" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
+            "by2" : 322,
+            "by1" : 262,
+            "tacnt" : 2,
+            "as1" : "AS0000 This is neat",
             "prot-term-cnt" : 2,
             "pa2" : 3,
-            "fb1" : "800100010000001b",
+            "p1" : 59602,
+            "lpd" : 1463682642100,
+            "mac2-term" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "db2" : 104,
+            "fp" : 1463682642,
+            "vlan-cnt" : 1,
+            "lp" : 1463682642,
             "psl" : [
                98,
                94,
@@ -90,14 +49,64 @@
                86,
                190
             ],
+            "by" : 584,
+            "a2" : "10.0.0.2",
+            "rir2" : "TEST",
+            "fb2" : "800100030000001b",
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "fs" : [],
+            "mac2-term-cnt" : 1,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "no" : "test",
+            "db" : 144,
+            "prot-term" : [
+               "tcp",
+               "thrift"
+            ],
             "pr" : 6,
+            "g2" : "CAN",
+            "as2" : "AS0001 Cool Beans!",
+            "vlan" : [
+               50
+            ],
+            "pa1" : 3,
+            "p2" : 9000,
+            "fb1" : "800100010000001b",
+            "tcpflags" : {
+               "syn" : 1,
+               "psh" : 2,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "fin" : 0,
+               "ack" : 2
+            },
             "g1" : "RUS",
-            "db" : 144
+            "pa" : 6,
+            "fpd" : 1463682642097,
+            "ps" : [
+               24,
+               122,
+               216,
+               302,
+               428,
+               514
+            ],
+            "a1" : "10.0.0.1",
+            "mac1-term" : [
+               "00:22:83:3f:17:cc"
+            ]
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160519"
+               "_index" : "tests_sessions-160519",
+               "_type" : "session"
             }
          }
       }

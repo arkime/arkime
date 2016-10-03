@@ -1,22 +1,19 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-141102"
-            }
-         },
          "body" : {
-            "hh1cnt" : 6,
-            "ps" : [
-               24,
-               102,
-               180,
-               256
+            "hpathcnt" : 1,
+            "hat-term" : [
+               "digest"
             ],
-            "pa1" : 3,
-            "no" : "test",
+            "sl" : 194,
+            "db1" : 581,
+            "hsvercnt" : 1,
+            "db" : 581,
+            "uacnt" : 1,
+            "db2" : 0,
+            "prot-term-cnt" : 2,
+            "g1" : "RUS",
             "hh1" : [
                "http:header:authorization",
                "http:header:cache-control",
@@ -25,115 +22,127 @@
                "http:header:user-agent",
                "http:header:xxxxxxxxxxxxxxxxxx"
             ],
-            "as1" : "AS0000 This is neat",
-            "p2" : 80,
-            "mac1-term" : [
-               "00:0f:f7:76:82:80"
+            "huser-term" : [
+               "user12345678@domain.xxxx"
             ],
-            "tacnt" : 2,
-            "fpd" : 1414887555048,
-            "ho" : [
-               "xxxxxxx.xxxxxxxxxxx.xxx"
-            ],
-            "fb1" : "474554202f787878",
-            "sl" : 194,
-            "by" : 819,
-            "fp" : 1414887555,
-            "hat-term" : [
-               "digest"
-            ],
-            "hsvercnt" : 1,
+            "tcpflags" : {
+               "ack" : 1,
+               "urg" : 0,
+               "fin" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "psh" : 1,
+               "rst" : 0
+            },
             "hat-termcnt" : 1,
+            "mac1-term-cnt" : 1,
+            "uscnt" : 1,
             "prot-term" : [
                "http",
                "tcp"
             ],
-            "test" : {
-               "ip-rir" : [
-                  ""
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "string" : [
-                  "16777226:4411,33554442:80"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "mac2-term-cnt" : 2,
-            "by2" : 62,
-            "hpath" : [
-               "/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "ua" : [
-               "xxxxxxxxxxxxxxxxxx"
-            ],
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "00:1d:b5:ce:ef:c0"
-            ],
-            "prot-term-cnt" : 2,
-            "by1" : 757,
-            "g1" : "RUS",
-            "g2" : "CAN",
-            "db" : 581,
-            "a2" : "10.0.0.2",
-            "ss" : 1,
-            "huser-termcnt" : 1,
-            "hocnt" : 1,
-            "hpathcnt" : 1,
             "pa" : 4,
-            "hsver" : [
-               "1.1"
-            ],
             "lpd" : 1414887555242,
-            "lp" : 1414887555,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "uacnt" : 1,
-            "mac1-term-cnt" : 1,
-            "p1" : 4411,
-            "huser-term" : [
-               "user12345678@domain.xxxx"
-            ],
-            "db1" : 581,
-            "a1" : "10.0.0.1",
+            "ss" : 1,
             "psl" : [
                78,
                78,
                76,
                651
             ],
-            "pr" : 6,
+            "g2" : "CAN",
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "p1" : 4411,
+            "by2" : 62,
+            "p2" : 80,
+            "as2" : "AS0001 Cool Beans!",
+            "ps" : [
+               24,
+               102,
+               180,
+               256
+            ],
             "http" : {
                "method-term" : [
                   "GET"
                ],
                "method-term-cnt" : 1
             },
+            "hsver" : [
+               "1.1"
+            ],
+            "pr" : 6,
+            "ua" : [
+               "xxxxxxxxxxxxxxxxxx"
+            ],
+            "a2" : "10.0.0.2",
+            "huser-termcnt" : 1,
+            "as1" : "AS0000 This is neat",
+            "a1" : "10.0.0.1",
+            "test" : {
+               "ip" : [
+                  167772161
+               ],
+               "string" : [
+                  "16777226:4411,33554442:80"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "fpd" : 1414887555048,
+            "hpath" : [
+               "/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "lp" : 1414887555,
+            "fs" : [],
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:1d:b5:ce:ef:c0"
+            ],
+            "rir2" : "TEST",
+            "ho" : [
+               "xxxxxxx.xxxxxxxxxxx.xxx"
+            ],
+            "pa2" : 1,
+            "pa1" : 3,
+            "fp" : 1414887555,
+            "tacnt" : 2,
+            "no" : "test",
+            "by" : 819,
+            "mac1-term" : [
+               "00:0f:f7:76:82:80"
+            ],
+            "mac2-term-cnt" : 2,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "by1" : 757,
+            "hh1cnt" : 6,
+            "hocnt" : 1,
+            "fb1" : "474554202f787878",
             "us" : [
                "//xxxxxxx.xxxxxxxxxxx.xxx/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "db2" : 0,
-            "pa2" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "fs" : [],
-            "uscnt" : 1,
-            "rir2" : "TEST"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-141102",
+               "_type" : "session"
+            }
          }
       }
    ]

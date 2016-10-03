@@ -1,118 +1,118 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-160515",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "ss" : 1,
-            "prot-term" : [
-               "udp",
-               "radius"
+            "mac1-term-cnt" : 1,
+            "prot-term-cnt" : 2,
+            "ps" : [
+               24,
+               429
             ],
+            "a1" : "10.0.0.1",
+            "a2" : "10.0.0.2",
+            "fp" : 1463339353,
             "mac2-term" : [
                "00:22:83:3f:17:c5"
             ],
-            "mac2-term-cnt" : 1,
-            "no" : "test",
-            "g2" : "CAN",
-            "lpd" : 1463339353461,
-            "fb1" : "04e3015700000000",
-            "pa" : 2,
-            "fs" : [],
-            "vlan" : [
-               50
-            ],
-            "pa2" : 1,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "p2" : 1813,
-            "vlan-cnt" : 1,
-            "prot-term-cnt" : 2,
+            "fpd" : 1463339353458,
             "ta" : [
                "dstip",
                "srcip"
             ],
+            "lpd" : 1463339353461,
+            "g2" : "CAN",
+            "pa2" : 1,
             "sl" : 3,
-            "fp" : 1463339353,
-            "g1" : "RUS",
-            "a1" : "10.0.0.1",
+            "db2" : 58,
+            "as2" : "AS0001 Cool Beans!",
+            "mac2-term-cnt" : 1,
+            "pa1" : 1,
+            "by1" : 389,
+            "fb2" : "05e3001400000000",
             "mac1-term" : [
                "00:22:83:3f:17:cc"
             ],
-            "db1" : 381,
-            "tacnt" : 2,
             "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
+               "ip-geo" : [
+                  "RUS"
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "ip-geo" : [
-                  "RUS"
+               "ip" : [
+                  167772161
                ],
                "string" : [
                   "16777226:45210,33554442:1813"
                ],
                "number" : [
                   33554442
+               ],
+               "ip-rir" : [
+                  ""
                ]
             },
-            "ps" : [
-               24,
-               429
+            "vlan" : [
+               50
             ],
-            "as2" : "AS0001 Cool Beans!",
-            "pa1" : 1,
-            "by" : 455,
-            "lp" : 1463339353,
+            "g1" : "RUS",
+            "p2" : 1813,
+            "db" : 439,
+            "tacnt" : 2,
+            "p1" : 45210,
             "radius" : {
-               "fip-asn" : [
-                  "AS0002 Hmm!@#$%^&*()"
-               ],
-               "fip-geo" : [
-                  "---"
-               ],
+               "mac-term-cnt" : 1,
                "fip-rir" : [
                   ""
                ],
                "fip-cnt" : 1,
+               "fip-asn" : [
+                  "AS0002 Hmm!@#$%^&*()"
+               ],
+               "mac-term" : [
+                  "98:5a:eb:89:80:00"
+               ],
+               "fip-geo" : [
+                  "---"
+               ],
                "user-term" : [
                   "xxxxxxxxx"
                ],
                "fip" : [
                   "10.0.0.3"
-               ],
-               "mac-term-cnt" : 1,
-               "mac-term" : [
-                  "98:5a:eb:89:80:00"
                ]
             },
-            "mac1-term-cnt" : 1,
-            "fb2" : "05e3001400000000",
-            "a2" : "10.0.0.2",
+            "fs" : [],
+            "lp" : 1463339353,
+            "pa" : 2,
+            "vlan-cnt" : 1,
+            "db1" : 381,
+            "fb1" : "04e3015700000000",
             "rir2" : "TEST",
-            "db" : 439,
-            "as1" : "AS0000 This is neat",
-            "db2" : 58,
-            "by1" : 389,
             "psl" : [
                405,
                82
             ],
-            "p1" : 45210,
-            "pr" : 17,
             "by2" : 66,
-            "fpd" : 1463339353458
+            "no" : "test",
+            "ss" : 1,
+            "prot-term" : [
+               "udp",
+               "radius"
+            ],
+            "by" : 455,
+            "pr" : 17,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "as1" : "AS0000 This is neat"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-160515"
+            }
          }
       }
    ]

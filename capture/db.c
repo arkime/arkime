@@ -383,6 +383,27 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       session->port2,
                       session->protocol);
 
+    if (session->protocol == IPPROTO_TCP) {
+        BSB_EXPORT_sprintf(jbsb,
+                           "\"tcpflags\":{"
+                           "\"syn\": %d,"
+                           "\"syn-ack\": %d,"
+                           "\"ack\": %d,"
+                           "\"psh\": %d,"
+                           "\"fin\": %d,"
+                           "\"rst\": %d,"
+                           "\"urg\": %d"
+                           "},",
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_ACK],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_FIN],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_RST],
+                           session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]);
+    }
+
+
     if (session->firstBytesLen[0] > 0) {
         int i;
         BSB_EXPORT_cstr(jbsb, "\"fb1\":\"");
@@ -1942,10 +1963,22 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
 
     if (config.dryRun) {
         static int tagNum = 1;
+        MOLOCH_LOCK(tagRequests);
+
+        HASH_FIND(tag_, tags, tagname, tag);
+
+        if (tag) {
+            MOLOCH_UNLOCK(tagRequests);
+            if (func)
+                func(uw, tagtype, tagname, tag->tagValue, FALSE);
+            return;
+        }
+
         MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
         tag->tagName = g_strdup(tagname);
         tag->tagValue = tagNum++;
         HASH_ADD(tag_, tags, tag->tagName, tag);
+        MOLOCH_UNLOCK(tagRequests);
 
         if (func)
             func(uw, tagtype, tagname, tag->tagValue, FALSE);
