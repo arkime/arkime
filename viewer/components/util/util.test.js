@@ -241,14 +241,14 @@
     });
 
 
-    describe('ng Enter Directive ->', function() {
+    describe('Enter Click Directive ->', function() {
 
       var element, template, templateAsHtml;
 
       beforeEach(inject(function($compile) {
         scope.func = function() {};
 
-        var htmlString  = '<input ng-enter="func()" />';
+        var htmlString  = '<input enter-click="func()" />';
 
         element   = angular.element(htmlString);
         template  = $compile(element)(scope);

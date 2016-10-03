@@ -1,7 +1,7 @@
 ul.nav.nav-pills.margined-bottom-xlg
   if (session.ro)
     li.cursor-pointer
-      a.moloch-clickable(molochfield='rootId', molochvalue=session.ro) All Sessions
+      a.moloch-clickable(molochfield='rootId', molochvalue='\"' + session.ro + '\"') All Sessions
     li.cursor-pointer
       a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
     li.cursor-pointer

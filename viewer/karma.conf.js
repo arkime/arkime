@@ -19,13 +19,6 @@ module.exports = function(config) {
       'node_modules/angular/angular.js',
       'node_modules/angular-mocks/angular-mocks.js',
 
-      // // datatables dependencies
-      'node_modules/datatables/media/js/jquery.dataTables.js',
-      'node_modules/datatables.net-colreorder/js/dataTables.colReorder.js',
-      'node_modules/angular-datatables/dist/angular-datatables.js',
-      'node_modules/angular-datatables/dist/plugins/bootstrap/angular-datatables.bootstrap.js',
-      'node_modules/angular-datatables/dist/plugins/colreorder/angular-datatables.colreorder.js',
-
       // app files
       'app/app.js',
       'components/index.test.js',

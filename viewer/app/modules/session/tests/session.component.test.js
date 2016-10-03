@@ -5,10 +5,10 @@
   /* mock data ------------------------------- */
   // default session query
   var query = {
-    length: 100,// page length
-    start : 0,  // first item index
-    sorts : [], // array of sort objects
-    facets: 1   // facets
+    length: 100,  // page length
+    start : 0,    // first item index
+    sorts : [{element:'fp', order:'asc'}], // array of sort objects
+    facets: 1     // facets
   };
 
   // sample session json
@@ -55,8 +55,6 @@
       _$httpBackend_,
       $routeParams,
       SessionService,
-      DTOptionsBuilder,
-      DTColumnDefBuilder,
       $componentController,
       $rootScope) {
         $httpBackend = _$httpBackend_;
@@ -70,9 +68,7 @@
         sessionComponent = $componentController('session', {
           $scope            : scope,
           $routeParams      : $routeParams,
-          SessionService    : SessionService,
-          DTOptionsBuilder  : DTOptionsBuilder,
-          DTColumnDefBuilder: DTColumnDefBuilder
+          SessionService    : SessionService
         });
 
         // spy on functions called in controller
@@ -94,8 +90,6 @@
       expect(sessionComponent.$scope).toBeDefined();
       expect(sessionComponent.$routeParams).toBeDefined();
       expect(sessionComponent.SessionService).toBeDefined();
-      expect(sessionComponent.DTOptionsBuilder).toBeDefined();
-      expect(sessionComponent.DTColumnDefBuilder).toBeDefined();
     });
 
     it('should have smart query defaults', function() {
@@ -111,7 +105,7 @@
     });
 
     describe('listeners ->', function() {
-      var sorts = [{element:'lp', order:'desc'}];
+      var sorts       = [{element:'fp', order:'asc'}];
       var length      = 10;
       var currentPage = 2;
       var start       = (currentPage - 1) * length;
@@ -125,7 +119,7 @@
         });
 
         // expect GET request with new parameters
-        var newParameters = '?facets=1&length=100&order=lp:desc';
+        var newParameters = '?facets=1&length=100&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
@@ -135,7 +129,7 @@
         );
 
         // expect GET request with new parameters
-        newParameters = '?facets=1&length=10&order=lp:desc&start=10';
+        newParameters = '?facets=1&length=10&order=fp:asc&start=10';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 

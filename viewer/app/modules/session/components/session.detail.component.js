@@ -65,17 +65,11 @@
       this.ConfigService.getMolochClickables()
         .then((response) => {
           this.$scope.molochClickables = response;
-        })
-        .catch((error) => {
-          // TODO: moloch right click error
         });
 
       this.FieldService.get()
         .then((response) => {
           this.$scope.molochFields = response;
-        })
-        .catch((error) => {
-          // TODO: moloch right click error
         });
     }
 
@@ -122,25 +116,63 @@
         scope       : { session: '=' },
         link        : function SessionDetailLink(scope, element, attrs, ctrl) {
 
-          function molochExprClick(event) {
-            event.preventDefault();
+          /* link utilities ------------------------------------------------ */
+          function safeStr(str) {
+            if (str === undefined) { return ''; }
+
+            if (Array.isArray(str)) { return str.map(safeStr); }
+
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+              .replace(/>/g,'&gt;').replace(/\"/g,'&quot;')
+              .replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
+          }
+
+          function getClickInfo(target) {
+            var molochfield = target.getAttribute('molochfield');
+            if (!molochfield) { return { category:[] }; }
+
+            var field = scope.molochFields[molochfield];
+            if (!field) { return { category:[] }; }
+
+            if (Array.isArray(field.category)) {
+              return {field: molochfield, category:field.category, info: field};
+            } else {
+              return {field: molochfield, category:[field.category], info: field};
+            }
+          }
+
+          function getClickValue(target) {
+            var value = target.getAttribute('molochvalue');
+            if (!value) { return ''; }
+
+            return value;
+          }
+
+
+          /* click events -------------------------------------------------- */
+          /**
+           * Triggered when a moloch value is clicked
+           * Must have attributes molochfield an molochvalue
+           * @param {Object} e The click event
+           */
+          function molochExprClick(e) {
+            e.preventDefault();
 
             // if user is selecting text, don't add expression to query
             if (window.getSelection().toString() !== '') { return; }
 
-            var target = event.target;
+            var target = e.target;
 
             var field  = target.getAttribute('molochfield');
 
             // if click target doesn't have a molochfield attribute,
             while (!field) { // it may be in the parent or parent's parent
-              target = target.parentNode;
-              field = target.getAttribute('molochfield');
+              target  = target.parentNode;
+              field   = target.getAttribute('molochfield');
             }
 
-            var val = target.getAttribute('molochvalue');
-
-            var expr = target.getAttribute('molochexpr');
+            var val   = target.getAttribute('molochvalue');
+            var expr  = target.getAttribute('molochexpr');
             if (!expr) { expr = '=='; }
 
             var fullExpression = `${field} ${expr} ${val}`;
@@ -156,21 +188,6 @@
               // hide it
               menu.removeClass('moloch-menu');
               return;
-            }
-          }
-
-          function timeClick(event) {
-            event.preventDefault();
-
-            var start = event.target.getAttribute('molochstart');
-            var stop  = event.target.getAttribute('molochstop');
-
-            var result = {};
-            if (start) { result.start = start; }
-            if (stop)  { result.stop  = stop; }
-
-            if (result.start || result.stop) {
-              scope.$emit('change:time', result);
             }
           }
 
@@ -198,54 +215,40 @@
             }
           }
 
-          function showMoreItems(event) {
-            $(event.target).hide();
-            $(event.target).prev().show();
-          }
+          /**
+           * Triggered when a time range value is clicked
+           * Must have attribute molochstart or molochstop
+           * @param {Object} e The click event
+           */
+          function timeClick(e) {
+            e.preventDefault();
 
+            var start = e.target.getAttribute('molochstart');
+            var stop  = e.target.getAttribute('molochstop');
 
+            var result = {};
+            if (start) { result.start = start; }
+            if (stop)  { result.stop  = stop; }
 
-          // TODO: CLEAN THIS UP!
-          function safeStr(str) {
-            if (str === undefined) { return ''; }
-
-            if (Array.isArray(str)) { return str.map(safeStr); }
-
-            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
-              .replace(/>/g,'&gt;').replace(/\"/g,'&quot;')
-              .replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
-          }
-
-          function getClickInfo(target) {
-            var molochfield = target.getAttribute('molochfield');
-            if (!molochfield) {
-              console.log('No molochfield', target);
-              return { category:[] };
-            }
-
-            var field = scope.molochFields[molochfield];
-            if (!field) {
-              console.log('Unknown field', molochfield);
-              return { category:[] };
-            }
-
-            if (Array.isArray(field.category)) {
-              return {field: molochfield, category:field.category, info: field};
-            } else {
-              return {field: molochfield, category:[field.category], info: field};
+            if (result.start || result.stop) {
+              scope.$emit('change:time', result);
             }
           }
 
-          function getClickValue(target) {
-            var value = target.getAttribute('molochvalue');
-            if (!value) {
-              console.log('No value', target);
-              return '';
-            }
 
-            return value;
+          /**
+           * Triggered when ellipsis to show more items is clicked
+           * @param {Object} e The click event
+           */
+          function showMoreItems(e) {
+            $(e.target).hide();
+            $(e.target).prev().show();
           }
 
+          /**
+           * Triggered when a menu (next to a value) is clicked
+           * @param {Object} e The click event
+           */
           function contextMenuClick(e) {
             var target = e.target;
             if (!e.target.getAttribute('molochfield')) {
@@ -343,6 +346,7 @@
             buildMenu(items, text, target);
           }
 
+
           /**
            * Determine clickable values in html from server
            * Add click events to add values to the search query
@@ -358,6 +362,7 @@
               var content = $compile(options)(scope);
               optionsEl.replaceWith(content);
 
+              // add click listener to add expression to search input
               clickableValues = element[0].querySelectorAll('.moloch-clickable[molochfield]');
               for (i = 0, len = clickableValues.length; i < len; ++i) {
                 clickableValues[i].addEventListener('click', molochExprClick);
@@ -367,32 +372,39 @@
               for (i = 0, len = clickableTimes.length; i < len; ++i) {
                 var timeEl = clickableTimes[i];
                 text = timeEl.innerText;
-                if (!isNaN(text)) {
+                if (!isNaN(text)) { // only parse text if it's a number (s from 1970)
                   time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
                   timeEl.innerHTML = time;
                 }
 
+                // if it has a value, set it to parsed time
                 if (timeEl.getAttribute('molochvalue')) {
                   timeEl.setAttribute('molochvalue', "\"" + time + "\"");
                 }
 
+                // add click listener for time values
+                // if it has molochstart or molochstop, add these to the
+                // time range, not the search input
                 if (timeEl.getAttribute('molochstart') ||
                     timeEl.getAttribute('molochstop')) {
                   timeEl.addEventListener('click', timeClick);
                 }
               }
 
+              // add click listener for all menus (next to each value)
               molochMenus = element[0].querySelectorAll('[molochmenu]');
               for (i = 0, len = molochMenus.length; i < len; ++i) {
                 molochMenus[i].addEventListener('click', contextMenuClick);
               }
 
+              // add click listener to show more values in list
               showMore = element[0].querySelectorAll('.show-more-items');
               for (i = 0, len = showMore.length; i < len; ++i) {
                 showMore[i].addEventListener('click', showMoreItems);
               }
             });
           };
+
 
           scope.$on('$destroy', function() {
             // remove event listeners to prevent memory leaks
@@ -423,7 +435,7 @@
             }
           });
 
-        },
+        }
       };
     }]);
 
