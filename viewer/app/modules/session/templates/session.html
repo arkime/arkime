@@ -20,7 +20,7 @@
         ng-repeat="session in $ctrl.stickySessions"
         ng-click="$ctrl.scrollTo($event, session.id)">
 
-        <a href class="btn btn-sm btn-link"
+        <a href class="btn btn-sm btn-link pull-left"
           ng-click="$ctrl.toggleSessionDetail(session)">
           <span class="fa fa-close fa-lg"></span>
         </a>
@@ -40,7 +40,7 @@
         </div>
 
       </div>
-    </div>
+    </div> <!-- /open session details -->
 
     <div class="table-responsive margined-top-lg">
       <!-- session data table -->

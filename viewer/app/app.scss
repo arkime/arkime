@@ -96,7 +96,17 @@ body {
 .margined-right-none    { margin-right: $px-none; }
 
 .margin-for-main-navbar   { margin-top: 50px; }
-.margin-for-search-navbar { margin-top: 100px; }
+.margin-for-search-navbar {
+  margin-top: 100px;
+
+  @media (max-width: 992px) {
+    margin-top: 120px;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 35px;
+  }
+}
 
 
 // padding

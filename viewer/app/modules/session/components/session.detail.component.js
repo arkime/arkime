@@ -43,20 +43,20 @@
       };
 
       if (localStorage) { // display browser saved options
-        if (localStorage['moloch-ts']) {
-          this.$scope.params.ts = (localStorage['moloch-ts'] === 'true');
-        }
         if (localStorage['moloch-base']) {
           this.$scope.params.base = localStorage['moloch-base'];
         }
+        if (localStorage['moloch-ts']) {
+          this.$scope.params.ts = JSON.parse(localStorage['moloch-ts']);
+        }
         if (localStorage['moloch-line']) {
-          this.$scope.params.line = (localStorage['moloch-line'] === 'true');
+          this.$scope.params.line = JSON.parse(localStorage['moloch-line']);
         }
         if (localStorage['moloch-gzip']) {
-          this.$scope.params.gzip = (localStorage['moloch-gzip'] === 'true');
+          this.$scope.params.gzip = JSON.parse(localStorage['moloch-gzip']);
         }
         if (localStorage['moloch-image']) {
-          this.$scope.params.image = (localStorage['moloch-image'] === 'true');
+          this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
         }
       }
 
@@ -76,11 +76,10 @@
 
     /* exposed functions --------------------------------------------------- */
     /**
-     *
+     * Gets the session detail from the server
      */
     getDetailData() {
       if (localStorage) { // update browser saved options
-        localStorage['moloch-ts']     = this.$scope.params.ts;
         localStorage['moloch-base']   = this.$scope.params.base;
         localStorage['moloch-line']   = this.$scope.params.line;
         localStorage['moloch-gzip']   = this.$scope.params.gzip;
@@ -98,6 +97,15 @@
           this.loading = false;
           this.error   = error;
         });
+    }
+
+    /**
+     * Toggles the view of timestamps
+     */
+    toggleTimeStamps() {
+      if (localStorage) { // update browser saved ts
+        localStorage['moloch-ts'] = this.$scope.params.ts;
+      }
     }
 
   }
@@ -351,7 +359,7 @@
            * Determine clickable values in html from server
            * Add click events to add values to the search query
            */
-          var clickableValues, clickableTimes, molochMenus, showMore, radios;
+          var clickableValues, clickableTimes, molochMenus, showMore;
 
           scope.watchClickableValues = function() {
             $timeout(function() { // wait until session detail is rendered
@@ -401,6 +409,18 @@
               showMore = element[0].querySelectorAll('.show-more-items');
               for (i = 0, len = showMore.length; i < len; ++i) {
                 showMore[i].addEventListener('click', showMoreItems);
+              }
+
+              // modify the packet timestamp values
+              var tss = element[0].querySelectorAll('.session-detail-ts');
+              for (i = 0, len = tss.length; i < len; ++i) {
+                var timeEl = tss[i];
+                text = timeEl.getAttribute('ts');
+                timeEl = timeEl.querySelectorAll('.ts-value');
+                if (!isNaN(text)) { // only parse text if it's a number (ms from 1970)
+                  time = $filter('date')(text, 'yyyy/MM/dd HH:mm:ss.sss');
+                  timeEl[0].innerHTML = time;
+                }
               }
             });
           };

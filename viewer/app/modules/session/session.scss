@@ -3,23 +3,26 @@ colheader {
   white-space :nowrap;
   overflow    :visible;
 
-  th.active & {
-    color     : $color-purple-dark;
-  }
+  th.active & { color: $color-purple-dark; }
 
-  .fa-sort {
-    visibility: hidden;
-  }
+  .fa-sort { visibility: hidden; }
 
   &:hover {
-    .fa-sort {
-      visibility: visible;
-    }
+    .fa-sort { visibility: visible; }
   }
 
 }
 
 session {
+  .session-detail-ts { display: none; }
+
+  .show-ts {
+    .session-detail-ts { display: block; }
+  }
+
+  .normal-ws {
+    pre { white-space: normal; }
+  }
 
   .session-detail-row {
     background-color: lighten($color-yellow-light, 36%);
@@ -67,6 +70,7 @@ session {
   /* session detail shortcuts ---------------- */
   .sticky-session-detail-container {
     position      : fixed;
+    z-index       : 998;
     top           : 145px;
     right         : 0;
     opacity       : .5;
@@ -83,9 +87,11 @@ session {
       }
     }
 
+    div { display: inline-block; }
+
     .sticky-session-detail {
       position      : relative;
-      z-index       : 9999;
+      z-index       : 999;
       width         : 380px;
       margin-left   : 360px;
       margin-bottom : 4px;
@@ -98,24 +104,12 @@ session {
       -webkit-transition: margin-left 300ms linear, opacity 400ms linear;
          -moz-transition: margin-left 300ms linear, opacity 400ms linear;
               transition: margin-left 300ms linear, opacity 400ms linear;
-
-      .btn-link {
-        top     : -20px;
-        position: relative;
-      }
-
-      div {
-        display: inline-block;
-      }
     }
   }
 
 
   /* session table --------------------------- */
-  table {
-    border-top  : $color-gray-light solid 1px;
-    table-layout: fixed;
-  }
+  table { border-top  : $color-gray-light solid 1px; }
 
   .table {
     tbody {

@@ -63,25 +63,25 @@ script(type='text/javascript').
     //-   }
     //- });
     
-    function showTimestamps() {
-      if (localStorage) {
-        localStorage['moloch-ts'] = sessionDetail.find('.format-ts input').is(':checked');
-      }
-      if ( sessionDetail.find('.format-ts input').is(':checked')) {
-        sessionDetail.find('.sessionDetailTS').each(function(index, item) {
-          if ($(item).attr("ts")) {
-            var val = +$(item).attr("ts");
-            var str = dateString(val/1000, " ") + "." + fourDigitString(val%1000);
-            str += " <span style='float:right;'>" + $(item).attr("bytes") + " bytes</span>";
-            $(item).html(str + "<hr>");
-          }
-          return item;
-        }).show();
-      } else {
-        sessionDetail.find('.sessionDetailTS').hide();
-      }
-    }
-    
-    sessionDetail.find('.format-ts input').on('change', showTimestamps);
-    showTimestamps();
+    //- function showTimestamps() {
+    //-   if (localStorage) {
+    //-     localStorage['moloch-ts'] = sessionDetail.find('.format-ts input').is(':checked');
+    //-   }
+    //-   if ( sessionDetail.find('.format-ts input').is(':checked')) {
+    //-     sessionDetail.find('.sessionDetailTS').each(function(index, item) {
+    //-       if ($(item).attr("ts")) {
+    //-         var val = +$(item).attr("ts");
+    //-         var str = dateString(val/1000, " ") + "." + fourDigitString(val%1000);
+    //-         str += " <span style='float:right;'>" + $(item).attr("bytes") + " bytes</span>";
+    //-         $(item).html(str + "<hr>");
+    //-       }
+    //-       return item;
+    //-     }).show();
+    //-   } else {
+    //-     sessionDetail.find('.sessionDetailTS').hide();
+    //-   }
+    //- }
+    //- 
+    //- sessionDetail.find('.format-ts input').on('change', showTimestamps);
+    //- showTimestamps();
   });

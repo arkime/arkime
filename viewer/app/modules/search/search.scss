@@ -40,4 +40,10 @@ moloch-search {
       }
     }
   }
+
+  @media (max-width: 768px) {
+    position    : relative;
+    margin-left : -15px;
+    margin-right: -15px;
+  }
 }
