@@ -1,31 +1,12 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-150423",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "fb2" : "000000cdff534d42",
-            "smbsh" : [
-               "\\\\10.10.0.2\\IPC$",
-               "\\\\10.10.0.2\\ADMIN$"
+            "smbfn" : [
+               "XXXXXXXX.exe"
             ],
-            "smbdm" : [
-               "LAB"
-            ],
-            "fs" : [],
-            "smbver" : [
-               "Windows 2000 5.0"
-            ],
-            "mac2-term" : [
-               "00:50:56:a8:45:c0"
-            ],
-            "prot-term-cnt" : 2,
             "fp" : 1429783872,
-            "db2" : 879,
+            "a1" : "10.10.0.3",
             "psl" : [
                82,
                82,
@@ -50,8 +31,53 @@
                157,
                143
             ],
+            "prot-term" : [
+               "smb",
+               "tcp"
+            ],
+            "mac1-term" : [
+               "00:50:56:a8:1f:7c"
+            ],
+            "by2" : 1359,
+            "pa" : 22,
+            "smbshcnt" : 2,
+            "fb2" : "000000cdff534d42",
+            "tcpflags" : {
+               "rst" : 0,
+               "ack" : 6,
+               "urg" : 0,
+               "psh" : 12,
+               "syn-ack" : 2,
+               "syn" : 2,
+               "fin" : 0
+            },
+            "smbho" : [
+               "THEHOSTNAMEHEREX"
+            ],
+            "db" : 1844,
+            "mac2-term-cnt" : 1,
+            "p1" : 2204,
+            "pr" : 6,
+            "smbdm" : [
+               "LAB"
+            ],
             "pa1" : 14,
+            "ss" : 1,
+            "smbvercnt" : 1,
+            "sl" : 4258,
+            "fb1" : "00000054ff534d42",
             "p2" : 445,
+            "smbdmcnt" : 1,
+            "db1" : 965,
+            "mac2-term" : [
+               "00:50:56:a8:45:c0"
+            ],
+            "lpd" : 1429783877023,
+            "smbhocnt" : 1,
+            "smbos" : [
+               "Windows 2000 2195"
+            ],
+            "smbusercnt" : 1,
             "ps" : [
                24,
                106,
@@ -76,56 +102,39 @@
                3264,
                3421
             ],
-            "sl" : 4258,
-            "smbuser" : [
-               "Administrator"
-            ],
-            "ss" : 1,
-            "db" : 1844,
+            "prot-term-cnt" : 2,
+            "mac1-term-cnt" : 1,
+            "vlan-cnt" : 1,
             "lp" : 1429783877,
-            "smbusercnt" : 1,
-            "pa2" : 8,
-            "fpd" : 1429783872765,
             "by" : 3188,
-            "lpd" : 1429783877023,
+            "db2" : 879,
+            "fs" : [],
+            "by1" : 1829,
             "smboscnt" : 1,
             "smbfncnt" : 1,
+            "smbsh" : [
+               "\\\\10.10.0.2\\IPC$",
+               "\\\\10.10.0.2\\ADMIN$"
+            ],
+            "fpd" : 1429783872765,
             "vlan" : [
                1113
             ],
-            "by2" : 1359,
-            "mac1-term-cnt" : 1,
-            "smbos" : [
-               "Windows 2000 2195"
+            "smbver" : [
+               "Windows 2000 5.0"
             ],
-            "prot-term" : [
-               "smb",
-               "tcp"
+            "pa2" : 8,
+            "smbuser" : [
+               "Administrator"
             ],
-            "by1" : 1829,
             "a2" : "10.10.0.2",
-            "mac2-term-cnt" : 1,
-            "smbfn" : [
-               "XXXXXXXX.exe"
-            ],
-            "fb1" : "00000054ff534d42",
-            "smbshcnt" : 2,
-            "a1" : "10.10.0.3",
-            "p1" : 2204,
-            "smbho" : [
-               "THEHOSTNAMEHEREX"
-            ],
-            "smbdmcnt" : 1,
-            "pa" : 22,
-            "db1" : 965,
-            "no" : "test",
-            "vlan-cnt" : 1,
-            "smbvercnt" : 1,
-            "smbhocnt" : 1,
-            "mac1-term" : [
-               "00:50:56:a8:1f:7c"
-            ],
-            "pr" : 6
+            "no" : "test"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-150423"
+            }
          }
       }
    ]

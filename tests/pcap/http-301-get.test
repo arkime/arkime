@@ -1,17 +1,61 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131125",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "db2" : 107,
-            "pa2" : 3,
-            "db" : 252,
-            "prot-term" : [
-               "http",
-               "tcp"
+            "g1" : "USA",
+            "us" : [
+               "//www.github.com/"
+            ],
+            "hsvercnt" : 1,
+            "db1" : 145,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "ho" : [
+               "www.github.com"
+            ],
+            "hpathcnt" : 1,
+            "a1" : "10.180.156.141",
+            "no" : "test",
+            "uacnt" : 1,
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
             ],
             "pa1" : 5,
-            "no" : "test",
+            "uscnt" : 1,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "hdver" : [
+               "1.1"
+            ],
+            "fp" : 1385394928,
             "lpd" : 1385394928608,
+            "pa" : 8,
+            "tcpflags" : {
+               "fin" : 2,
+               "ack" : 3,
+               "urg" : 0,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "psh" : 1
+            },
+            "prot-term-cnt" : 2,
+            "by1" : 487,
+            "as2" : "AS36459 GitHub, Inc.",
+            "db2" : 107,
+            "hh1cnt" : 3,
+            "fs" : [],
             "psl" : [
                94,
                90,
@@ -22,79 +66,34 @@
                82,
                82
             ],
-            "fs" : [],
-            "fp" : 1385394928,
-            "ho" : [
-               "www.github.com"
-            ],
-            "p1" : 62341,
-            "by2" : 313,
-            "a1" : "10.180.156.141",
-            "us" : [
-               "//www.github.com/"
-            ],
-            "by1" : 487,
-            "fb1" : "474554202f204854",
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "mac1-term-cnt" : 1,
-            "pa" : 8,
-            "hocnt" : 1,
-            "uacnt" : 1,
-            "mac2-term-cnt" : 2,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "rir2" : "ARIN",
-            "fb2" : "485454502f312e31",
-            "hdver" : [
-               "1.1"
-            ],
-            "sl" : 125,
             "p2" : 80,
-            "hsver" : [
-               "1.1"
-            ],
+            "sl" : 125,
+            "fb2" : "485454502f312e31",
             "http" : {
-               "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
                "statuscode" : [
                   301
                ],
-               "method-term-cnt" : 1
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode-cnt" : 1
             },
-            "pr" : 6,
-            "hpath" : [
-               "/"
-            ],
-            "ss" : 1,
-            "lp" : 1385394928,
-            "hh2cnt" : 3,
-            "as2" : "AS36459 GitHub, Inc.",
-            "prot-term-cnt" : 2,
             "fpd" : 1385394928482,
-            "g1" : "USA",
-            "hsvercnt" : 1,
-            "hpathcnt" : 1,
+            "lp" : 1385394928,
+            "g2" : "USA",
+            "fb1" : "474554202f204854",
+            "db" : 252,
             "hdrs" : {
                "hres-location" : [
                   "https://www.github.com/"
                ]
             },
+            "pa2" : 3,
+            "by2" : 313,
             "hdvercnt" : 1,
-            "by" : 800,
-            "g2" : "USA",
-            "db1" : 145,
-            "a2" : "192.30.252.130",
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
+            "rir2" : "ARIN",
+            "mac2-term-cnt" : 2,
             "ps" : [
                24,
                118,
@@ -105,22 +104,32 @@
                788,
                870
             ],
-            "uscnt" : 1,
+            "pr" : 6,
+            "hpath" : [
+               "/"
+            ],
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "p1" : 62341,
+            "hsver" : [
+               "1.1"
+            ],
+            "hh2cnt" : 3,
             "hh2" : [
                "http:header:connection",
                "http:header:content-length",
                "http:header:location"
             ],
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            "a2" : "192.30.252.130",
+            "ss" : 1,
+            "mac1-term-cnt" : 1,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
             ],
-            "hh1cnt" : 3
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131125",
-               "_type" : "session"
-            }
+            "by" : 800,
+            "hocnt" : 1
          }
       }
    ]

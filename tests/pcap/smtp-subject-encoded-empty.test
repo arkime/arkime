@@ -1,78 +1,19 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-140425"
+            }
+         },
          "body" : {
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "lp" : 1398431453,
-            "mac2-term-cnt" : 2,
-            "fs" : [],
-            "esubcnt" : 1,
-            "db2" : 756,
-            "edst" : [
-               "user2@xxx.net"
-            ],
-            "by2" : 1688,
-            "pa2" : 14,
-            "pa1" : 19,
-            "g2" : "CAN",
-            "as2" : "AS0001 Cool Beans!",
-            "pa" : 33,
-            "as1" : "AS0000 This is neat",
-            "ehh" : [
-               "from",
-               "to",
-               "subject"
-            ],
-            "g1" : "RUS",
-            "db1" : 350,
-            "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:62855,33554442:25"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "ta" : [
-               "dstip",
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "p1" : 62855,
-            "sl" : 30678,
-            "ehhcnt" : 3,
-            "fb2" : "3232302d78787878",
-            "no" : "test",
-            "mac1-term-cnt" : 1,
+            "tacnt" : 3,
             "tags-term" : [
                "smtp:statuscode:250",
                "srcip",
                "dstip"
             ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "ss" : 1,
-            "esub" : [
-               "Can this 10 Second Trick Help Prevent YOUR Heart Attack?"
-            ],
-            "pr" : 6,
-            "by1" : 1616,
             "ps" : [
                24,
                118,
@@ -108,11 +49,15 @@
                3692,
                3774
             ],
-            "a1" : "10.0.0.1",
-            "fb1" : "45484c4f20787878",
             "esrc" : [
                "user1@xxx.net"
             ],
+            "lp" : 1398431453,
+            "fpd" : 1398431422481,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "no" : "test",
             "psl" : [
                94,
                90,
@@ -148,28 +93,92 @@
                82,
                82
             ],
-            "fpd" : 1398431422481,
-            "a2" : "10.0.0.2",
+            "g2" : "CAN",
+            "prot-term-cnt" : 2,
+            "fp" : 1398431422,
+            "pa" : 33,
+            "a1" : "10.0.0.1",
+            "esubcnt" : 1,
             "by" : 3304,
+            "fb1" : "45484c4f20787878",
+            "as1" : "AS0000 This is neat",
+            "fb2" : "3232302d78787878",
+            "db" : 1106,
+            "pa1" : 19,
+            "test" : {
+               "string" : [
+                  "16777226:62855,33554442:25"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ]
+            },
+            "p2" : 25,
+            "fs" : [],
+            "g1" : "RUS",
+            "sl" : 30678,
+            "edstcnt" : 1,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "p1" : 62855,
+            "ta" : [
+               "dstip",
+               "smtp:statuscode:250",
+               "srcip"
+            ],
+            "db2" : 756,
+            "pr" : 6,
+            "ss" : 1,
+            "edst" : [
+               "user2@xxx.net"
+            ],
+            "esub" : [
+               "Can this 10 Second Trick Help Prevent YOUR Heart Attack?"
+            ],
+            "ehh" : [
+               "from",
+               "to",
+               "subject"
+            ],
+            "mac1-term-cnt" : 1,
+            "mac2-term-cnt" : 2,
+            "by2" : 1688,
+            "db1" : 350,
+            "tcpflags" : {
+               "syn" : 1,
+               "psh" : 15,
+               "rst" : 0,
+               "fin" : 2,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "ack" : 14
+            },
+            "by1" : 1616,
+            "lpd" : 1398431453159,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
+            "pa2" : 14,
+            "a2" : "10.0.0.2",
+            "ehhcnt" : 3,
             "esrccnt" : 1,
-            "tacnt" : 3,
-            "p2" : 25,
-            "prot-term-cnt" : 2,
             "rir2" : "TEST",
-            "lpd" : 1398431453159,
-            "fp" : 1398431422,
-            "edstcnt" : 1,
-            "db" : 1106
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140425"
-            }
+            "as2" : "AS0001 Cool Beans!"
          }
       }
    ]

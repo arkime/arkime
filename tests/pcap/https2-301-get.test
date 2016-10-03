@@ -1,15 +1,15 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131125",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "lpd" : 1385410274128,
-            "a1" : "10.180.156.141",
+            "fp" : 1385410273,
+            "as2" : "AS36459 GitHub, Inc.",
+            "fb1" : "8080010301005700",
+            "no" : "test",
+            "db2" : 4204,
+            "tlsdstid-term" : [
+               "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
+            ],
             "psl" : [
                94,
                90,
@@ -35,17 +35,92 @@
                70,
                70
             ],
-            "sl" : 536,
-            "as2" : "AS36459 GitHub, Inc.",
-            "by" : 6319,
-            "pr" : 6,
             "fpd" : 1385410273592,
+            "by" : 6319,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
+            "tcpflags" : {
+               "psh" : 8,
+               "rst" : 3,
+               "urg" : 0,
+               "syn" : 1,
+               "ack" : 8,
+               "fin" : 2,
+               "syn-ack" : 1
+            },
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "rir2" : "ARIN",
+            "db" : 4817,
+            "lpd" : 1385410274128,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "a2" : "192.30.252.131",
+            "mac2-term-cnt" : 2,
+            "mac1-term-cnt" : 1,
+            "a1" : "10.180.156.141",
+            "g2" : "USA",
+            "p2" : 443,
+            "by1" : 1513,
+            "prot-term-cnt" : 2,
+            "tlsver-termcnt" : 1,
+            "tlscnt" : 2,
+            "ss" : 1,
             "tlsver-term" : [
                "TLSv1"
             ],
-            "by2" : 4806,
-            "db1" : 613,
+            "p1" : 50754,
+            "sl" : 536,
             "fs" : [],
+            "lp" : 1385410274,
+            "fb2" : "1603010051020000",
+            "tls" : [
+               {
+                  "iCn" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "notBefore" : 1370822400,
+                  "altcnt" : 2,
+                  "iOn" : "DigiCert Inc",
+                  "sCn" : [
+                     "github.com"
+                  ],
+                  "notAfter" : 1441195200,
+                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "sOn" : "GitHub, Inc.",
+                  "diffDays" : 814,
+                  "alt" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33"
+               },
+               {
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "notBefore" : 1194609600,
+                  "notAfter" : 1636502400,
+                  "iOn" : "DigiCert Inc",
+                  "sCn" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "diffDays" : 5114,
+                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
+                  "sn" : "0337b928347c60a6aec5adb1217f3860"
+               }
+            ],
+            "pr" : 6,
+            "db1" : 613,
+            "pa1" : 14,
+            "pa" : 23,
+            "pa2" : 9,
+            "tlscipher-termcnt" : 1,
             "ps" : [
                24,
                118,
@@ -71,84 +146,18 @@
                6571,
                6641
             ],
-            "tlsdstid-term" : [
-               "4fc128aa12f6c10f1b6f72c0d4447366fe600b41efff60c865e496ed7f838ba6"
-            ],
-            "ss" : 1,
-            "mac1-term-cnt" : 1,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "a2" : "192.30.252.131",
-            "tlscipher-termcnt" : 1,
             "prot-term" : [
                "tls",
                "tcp"
             ],
-            "pa2" : 9,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
-            ],
-            "rir2" : "ARIN",
-            "lp" : 1385410274,
-            "no" : "test",
-            "db" : 4817,
-            "pa1" : 14,
             "g1" : "USA",
-            "p2" : 443,
-            "mac2-term-cnt" : 2,
-            "g2" : "USA",
-            "prot-term-cnt" : 2,
-            "fb2" : "1603010051020000",
-            "tls" : [
-               {
-                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
-                  "notBefore" : 1370822400,
-                  "alt" : [
-                     "github.com",
-                     "www.github.com"
-                  ],
-                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
-                  "sCn" : [
-                     "github.com"
-                  ],
-                  "notAfter" : 1441195200,
-                  "diffDays" : 814,
-                  "sOn" : "GitHub, Inc.",
-                  "altcnt" : 2,
-                  "iCn" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "iOn" : "DigiCert Inc"
-               },
-               {
-                  "iOn" : "DigiCert Inc",
-                  "iCn" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "sOn" : "DigiCert Inc",
-                  "diffDays" : 5114,
-                  "notAfter" : 1636502400,
-                  "sCn" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
-                  "notBefore" : 1194609600,
-                  "sn" : "0337b928347c60a6aec5adb1217f3860"
-               }
-            ],
-            "p1" : 50754,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "fp" : 1385410273,
-            "tlscnt" : 2,
-            "by1" : 1513,
-            "fb1" : "8080010301005700",
-            "db2" : 4204,
-            "tlsver-termcnt" : 1,
-            "pa" : 23
+            "by2" : 4806
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131125",
+               "_type" : "session"
+            }
          }
       }
    ]

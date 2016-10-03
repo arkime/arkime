@@ -1,19 +1,18 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131205"
+            }
+         },
          "body" : {
-            "db1" : 74,
-            "fp" : 1386252622,
-            "edst" : [
-               "123456@example"
+            "g1" : "RUS",
+            "mac2-term" : [
+               "00:26:88:d8:bf:c1",
+               "00:00:5e:00:01:02"
             ],
-            "pa1" : 9,
-            "a2" : "64.12.168.40",
-            "by" : 1861,
-            "sl" : 643,
-            "db" : 789,
-            "p2" : 587,
-            "edstcnt" : 1,
             "ps" : [
                24,
                114,
@@ -32,19 +31,45 @@
                1977,
                2059
             ],
-            "mac1-term" : [
-               "00:0a:f3:31:84:00"
-            ],
-            "pa2" : 7,
+            "by2" : 1185,
+            "db" : 789,
+            "pr" : 6,
+            "p1" : 48012,
             "ss" : 1,
-            "prot-term-cnt" : 2,
+            "fb1" : "45484c4f206c6f63",
+            "a2" : "64.12.168.40",
+            "tacnt" : 1,
+            "by" : 1861,
             "ta" : [
                "srcip"
             ],
-            "as1" : "AS0000 This is neat",
-            "rir2" : "ARIN",
-            "pa" : 16,
-            "by2" : 1185,
+            "edst" : [
+               "123456@example"
+            ],
+            "test" : {
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  682101824
+               ],
+               "string" : [
+                  "16777226:48012,682101824:587"
+               ],
+               "ip" : [
+                  167772161
+               ]
+            },
+            "fpd" : 1386252622425,
+            "edstcnt" : 1,
+            "no" : "test",
+            "prot-term-cnt" : 2,
             "psl" : [
                90,
                90,
@@ -63,65 +88,49 @@
                82,
                82
             ],
-            "lpd" : 1386252623067,
-            "test" : {
-               "number" : [
-                  682101824
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "string" : [
-                  "16777226:48012,682101824:587"
-               ]
+            "db2" : 715,
+            "tcpflags" : {
+               "ack" : 5,
+               "psh" : 7,
+               "rst" : 0,
+               "syn" : 1,
+               "urg" : 0,
+               "fin" : 2,
+               "syn-ack" : 1
             },
-            "pr" : 6,
-            "a1" : "10.0.0.1",
+            "pa1" : 9,
             "mac2-term-cnt" : 2,
-            "fb2" : "3232302d6d74616f",
-            "p1" : 48012,
+            "esrc" : [
+               "12345678@aol.com"
+            ],
+            "lpd" : 1386252623067,
+            "by1" : 676,
+            "mac1-term" : [
+               "00:0a:f3:31:84:00"
+            ],
+            "mac1-term-cnt" : 1,
+            "p2" : 587,
             "tags-term" : [
                "srcip"
             ],
+            "pa2" : 7,
+            "fb2" : "3232302d6d74616f",
+            "a1" : "10.0.0.1",
+            "lp" : 1386252623,
+            "g2" : "USA",
+            "db1" : 74,
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "fpd" : 1386252622425,
-            "lp" : 1386252623,
-            "mac2-term" : [
-               "00:26:88:d8:bf:c1",
-               "00:00:5e:00:01:02"
-            ],
-            "db2" : 715,
-            "fb1" : "45484c4f206c6f63",
-            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
             "esrccnt" : 1,
-            "by1" : 676,
             "fs" : [],
-            "tacnt" : 1,
-            "esrc" : [
-               "12345678@aol.com"
-            ],
-            "g2" : "USA",
+            "as1" : "AS0000 This is neat",
+            "pa" : 16,
             "as2" : "AS1668 Transit Data Network",
-            "g1" : "RUS",
-            "no" : "test"
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131205",
-               "_type" : "session"
-            }
+            "fp" : 1386252622,
+            "sl" : 643
          }
       }
    ]

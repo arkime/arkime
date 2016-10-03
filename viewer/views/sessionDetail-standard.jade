@@ -148,3 +148,20 @@ dl
     dt Socks User:
     dd
       +clickableValue('socks.user', session.socksuser)
+  if (session.tcpflags)
+    dt TCP Flags
+    dd
+      strong.medium.margined-left SYN 
+      +clickableValue('tcpflags.syn', session.tcpflags.syn)
+      strong.medium.margined-left SYN-ACK 
+      +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
+      strong.medium.margined-left ACK 
+      +clickableValue('tcpflags.ack', session.tcpflags.ack)
+      strong.medium.margined-left PSH
+      +clickableValue('tcpflags.psh', session.tcpflags.psh)
+      strong.medium.margined-left RST 
+      +clickableValue('tcpflags.rst', session.tcpflags.rst)
+      strong.medium.margined-left FIN 
+      +clickableValue('tcpflags.fin', session.tcpflags.fin)
+      strong.medium.margined-left URG 
+      +clickableValue('tcpflags.urg', session.tcpflags.urg)

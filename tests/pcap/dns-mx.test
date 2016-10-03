@@ -3,82 +3,82 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131203"
+               "_index" : "tests_sessions-131203",
+               "_type" : "session"
             }
          },
          "body" : {
-            "g1" : "USA",
-            "pa1" : 1,
-            "by1" : 66,
-            "db" : 266,
-            "dnshocnt" : 3,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "pa" : 2,
-            "p2" : 53,
-            "sl" : 83,
-            "fpd" : 1386104996973,
-            "fb1" : "4c17010000010000",
-            "db2" : 208,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "pr" : 17,
-            "mac1-term-cnt" : 1,
-            "psl" : [
-               82,
-               232
-            ],
-            "fb2" : "4c17818000010002",
-            "lp" : 1386104997,
-            "mac2-term-cnt" : 2,
-            "lpd" : 1386104997055,
             "fs" : [],
-            "pa2" : 1,
-            "dns" : {
-               "status-term" : [
-                  "NOERROR"
-               ],
-               "status-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "qt-term" : [
-                  "MX"
-               ],
-               "qt-term-cnt" : 1,
-               "qc-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
-               "qc-term" : [
-                  "IN"
-               ]
-            },
+            "lpd" : 1386104997055,
+            "pr" : 17,
+            "mac2-term-cnt" : 2,
+            "pa" : 2,
+            "mac1-term-cnt" : 1,
             "dnsho" : [
                "cluster5.us.messagelabs.com",
                "mx.com",
                "cluster5a.us.messagelabs.com"
             ],
-            "fp" : 1386104996,
-            "ss" : 1,
+            "no" : "test",
             "db1" : 58,
             "a2" : "10.2.95.39",
+            "by2" : 216,
+            "db" : 266,
+            "ss" : 1,
             "mac1-term" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "by" : 282,
-            "p1" : 51427,
+            "fpd" : 1386104996973,
+            "prot-term-cnt" : 2,
+            "g1" : "USA",
+            "dnshocnt" : 3,
+            "pa1" : 1,
+            "pa2" : 1,
+            "fb2" : "4c17818000010002",
+            "dns" : {
+               "status-term-cnt" : 1,
+               "qc-term" : [
+                  "IN"
+               ],
+               "qt-term-cnt" : 1,
+               "status-term" : [
+                  "NOERROR"
+               ],
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "qc-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "qt-term" : [
+                  "MX"
+               ]
+            },
+            "fb1" : "4c17010000010000",
             "a1" : "10.180.156.185",
-            "no" : "test",
+            "psl" : [
+               82,
+               232
+            ],
             "ps" : [
                24,
                106
             ],
-            "prot-term-cnt" : 2,
-            "by2" : 216
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "fp" : 1386104996,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "by1" : 66,
+            "lp" : 1386104997,
+            "db2" : 208,
+            "p1" : 51427,
+            "by" : 282,
+            "p2" : 53,
+            "sl" : 83
          }
       }
    ]

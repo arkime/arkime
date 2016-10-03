@@ -1,4 +1,4 @@
-use Test::More tests => 521;
+use Test::More tests => 537;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -325,3 +325,13 @@ if (0) {
     countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.cnt==2"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.cnt==1"));
     countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.rir==ARIN"));
+
+#tcpflags
+    countTest(9, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.urg > 0"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.syn > 0"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.syn-ack < 2"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.ack < 7"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.psh==8"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.fin==2"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.rst==0"));

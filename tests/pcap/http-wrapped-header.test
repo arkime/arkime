@@ -2,73 +2,150 @@
    "packets" : [
       {
          "body" : {
-            "pa2" : 5,
-            "lpd" : 1404135330336,
-            "by1" : 3811,
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "string" : [
+                  "16777226:61462,33554442:80"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "hckey-term" : [
+               "xxxx",
+               "autocomplete",
+               "xxxxxxxxxxxxxxxxxxx",
+               "lp",
+               "xxxxx",
+               "xxxxxx",
+               "rememberUn",
+               "xxxxxxxxxxxxxxxxxxxxxx",
+               "xxx.xxxxxxxxxx.xxxxxxxxxx"
+            ],
+            "mac2-term-cnt" : 1,
+            "ho" : [
+               "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
+            ],
+            "db" : 4119,
+            "uacnt" : 1,
+            "db2" : 706,
+            "sl" : 9877,
+            "p2" : 80,
+            "tacnt" : 2,
+            "hpathcnt" : 1,
+            "a2" : "10.0.0.2",
+            "fpd" : 1404135320459,
+            "as2" : "AS0001 Cool Beans!",
+            "pa1" : 7,
+            "hckey-term-cnt" : 9,
+            "fs" : [],
+            "db1" : 3413,
+            "by" : 4813,
+            "hmd5cnt" : 1,
+            "prot-term-cnt" : 2,
+            "pa" : 12,
+            "mac1-term-cnt" : 1,
+            "hmd5" : [
+               "ad480fd0732d0f6f1a8b06359e3a42bb"
+            ],
+            "a1" : "10.0.0.1",
+            "hpath" : [
+               "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
+            ],
+            "fp" : 1404135320,
+            "uscnt" : 1,
+            "hdvercnt" : 1,
+            "hh2cnt" : 17,
+            "as1" : "AS0000 This is neat",
+            "fb1" : "474554202f782f78",
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "lp" : 1404135330,
+            "no" : "test",
+            "g2" : "CAN",
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+            ],
+            "hcval-term-cnt" : 10,
+            "hh1cnt" : 8,
+            "ps" : [
+               24,
+               102,
+               180,
+               256,
+               1496,
+               2444,
+               2520,
+               3760,
+               4025,
+               4101,
+               4877,
+               4953
+            ],
+            "ss" : 1,
+            "pr" : 6,
             "hocnt" : 1,
+            "g1" : "RUS",
+            "hkey" : [
+               "v17",
+               "events",
+               "pageName",
+               "xxx",
+               "v1",
+               "ns",
+               "v2",
+               "x",
+               "products",
+               "AQE",
+               "vmf",
+               "c49",
+               "r",
+               "ce",
+               "g"
+            ],
+            "lpd" : 1404135330336,
+            "hkeycnt" : 15,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "mac2-term" : [
+               "88:43:e1:94:fc:2d"
+            ],
+            "fb2" : "485454502f312e31",
+            "hdver" : [
+               "1.1"
+            ],
+            "mac1-term" : [
+               "a4:93:4c:43:13:9b"
+            ],
             "http" : {
                "method-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
                "method-term" : [
                   "GET"
                ],
                "bodymagic-term" : [
                   "image/gif"
-               ]
+               ],
+               "statuscode-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "bodymagic-term-cnt" : 1
             },
-            "hpath" : [
-               "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
-            ],
-            "fpd" : 1404135320459,
-            "pr" : 6,
-            "a1" : "10.0.0.1",
-            "hh2cnt" : 17,
-            "psl" : [
-               78,
-               78,
-               76,
-               1240,
-               948,
-               76,
-               1240,
-               265,
-               76,
-               776,
-               76,
-               76
-            ],
-            "hsvercnt" : 1,
-            "ss" : 1,
-            "fb1" : "474554202f782f78",
-            "fb2" : "485454502f312e31",
-            "p1" : 61462,
-            "mac1-term-cnt" : 1,
-            "hcval-term" : [
-               "xxxx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "ie",
-               "false",
-               "xxxxxx",
-               "true",
-               "xx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "1"
-            ],
-            "hckey-term-cnt" : 9,
-            "db1" : 3413,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "hdver" : [
-               "1.1"
-            ],
-            "db" : 4119,
             "hh2" : [
                "http:header:access-control-allow-origin",
                "http:header:cache-control",
@@ -88,72 +165,30 @@
                "http:header:x-c",
                "http:header:xserver"
             ],
-            "prot-term-cnt" : 2,
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
-            ],
-            "by" : 4813,
-            "fs" : [],
-            "mac1-term" : [
-               "a4:93:4c:43:13:9b"
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "fp" : 1404135320,
-            "p2" : 80,
-            "by2" : 1002,
-            "hmd5cnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "hsver" : [
-               "1.1"
-            ],
-            "hdvercnt" : 1,
-            "hmd5" : [
-               "ad480fd0732d0f6f1a8b06359e3a42bb"
-            ],
-            "hvalcnt" : 14,
-            "hpathcnt" : 1,
-            "tacnt" : 2,
-            "lp" : 1404135330,
-            "g2" : "CAN",
-            "mac2-term" : [
-               "88:43:e1:94:fc:2d"
-            ],
-            "hcval-term-cnt" : 10,
-            "hdrs" : {
-               "hreq-referer" : [
-                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
-               ],
-               "hreq-referercnt" : 1
+            "tcpflags" : {
+               "psh" : 3,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "ack" : 6,
+               "urg" : 0,
+               "rst" : 1,
+               "fin" : 0
             },
-            "ta" : [
-               "dstip",
-               "srcip"
+            "psl" : [
+               78,
+               78,
+               76,
+               1240,
+               948,
+               76,
+               1240,
+               265,
+               76,
+               776,
+               76,
+               76
             ],
-            "g1" : "RUS",
-            "hckey-term" : [
-               "xxxx",
-               "autocomplete",
-               "xxxxxxxxxxxxxxxxxxx",
-               "lp",
-               "xxxxx",
-               "xxxxxx",
-               "rememberUn",
-               "xxxxxxxxxxxxxxxxxxxxxx",
-               "xxx.xxxxxxxxxx.xxxxxxxxxx"
-            ],
-            "as1" : "AS0000 This is neat",
-            "pa" : 12,
-            "a2" : "10.0.0.2",
-            "hkeycnt" : 15,
+            "by1" : 3811,
             "hval" : [
                "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "xxxxxxxxxxxxxxx",
@@ -170,81 +205,55 @@
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp"
             ],
-            "sl" : 9877,
-            "mac2-term-cnt" : 1,
+            "by2" : 1002,
+            "hsvercnt" : 1,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
             "us" : [
                "//xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
             ],
-            "ho" : [
-               "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
+            "hvalcnt" : 14,
+            "p1" : 61462,
+            "hsver" : [
+               "1.1"
             ],
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "db2" : 706,
-            "test" : {
-               "string" : [
-                  "16777226:61462,33554442:80"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "no" : "test",
-            "hh1cnt" : 8,
-            "ps" : [
-               24,
-               102,
-               180,
-               256,
-               1496,
-               2444,
-               2520,
-               3760,
-               4025,
-               4101,
-               4877,
-               4953
-            ],
-            "pa1" : 7,
             "rir2" : "TEST",
-            "uacnt" : 1,
-            "hkey" : [
-               "v17",
-               "events",
-               "pageName",
-               "xxx",
-               "v1",
-               "ns",
-               "v2",
-               "x",
-               "products",
-               "AQE",
-               "vmf",
-               "c49",
-               "r",
-               "ce",
-               "g"
+            "pa2" : 5,
+            "hcval-term" : [
+               "xxxx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "ie",
+               "false",
+               "xxxxxx",
+               "true",
+               "xx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "1"
             ],
-            "uscnt" : 1
+            "hdrs" : {
+               "hreq-referercnt" : 1,
+               "hreq-referer" : [
+                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140630"
+               "_index" : "tests_sessions-140630",
+               "_type" : "session"
             }
          }
       }
