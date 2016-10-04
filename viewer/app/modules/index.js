@@ -6,6 +6,7 @@ require('./session/components/session.component');
 require('./session/services/session.service');
 require('./session/components/session.map');
 require('./session/components/session.detail.component');
+require('./session/components/session.detail.tag.component');
 
 require('./search/components/search.component');
 require('./search/components/expression.typeahead');

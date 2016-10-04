@@ -119,8 +119,9 @@ dl
         | (
         +clickableValue('payload8.src.hex', fb2a, true)
         |)
-              
-  +arrayList(session, "ta", "Tags", "tags", "<div class=\"btn btn-xs btn-blue btn-tag\" disabled title=\"Under construction..\"><span class=\"fa fa-plus-circle\"></span></div>")
+  
+  div.tag-list  
+    +arrayList(session, "ta", "Tags:", "tags", '<div class="add-tag-container"></div>')
   
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files:", "file")

@@ -2,7 +2,8 @@
 
   'use strict';
 
-  var options = require('html!../templates/session.detail.options.html');
+  var optionsHTML = require('html!../templates/session.detail.options.html');
+  var tagHTML     = require('html!../templates/session.detail.tag.html');
 
   /**
    * @class SessionDetailController
@@ -71,6 +72,13 @@
         .then((response) => {
           this.$scope.molochFields = response;
         });
+
+      // update session detail when tags are added
+      this.$scope.$on('added:tags', (event, args) => {
+        if (this.$scope.session.id === args.id) {
+          this.getDetailData();
+        }
+      });
     }
 
 
@@ -359,16 +367,22 @@
            * Determine clickable values in html from server
            * Add click events to add values to the search query
            */
-          var clickableValues, clickableTimes, molochMenus, showMore, srccol, dstcol, imgs;
+          var clickableValues, clickableTimes, molochMenus, showMore;
+          var srccol, dstcol, imgs;
 
           scope.watchClickableValues = function() {
             $timeout(function() { // wait until session detail is rendered
               var i, len, time, value, timeEl;
 
-              // display packet options
-              var optionsEl = element.find('.packet-options');
-              var content = $compile(options)(scope);
-              optionsEl.replaceWith(content);
+              // display packet option buttons
+              var optionsEl   = element.find('.packet-options');
+              var optContent  = $compile(optionsHTML)(scope);
+              optionsEl.replaceWith(optContent);
+
+              // display tag adding form
+              var tagEl       = element.find('.add-tag-container');
+              var tagContent  = $compile('<add-tag sessionid="session.id"></add-tag>')(scope);
+              tagEl.replaceWith(tagContent);
 
               // add click listener to add expression to search input
               clickableValues = element[0].querySelectorAll('.moloch-clickable[molochfield]');
@@ -461,6 +475,12 @@
             if (clickableValues) {
               for (i = 0, len = clickableValues.length; i < len; ++i) {
                 clickableValues[i].removeEventListener('click', molochExprClick);
+              }
+            }
+
+            if (showMore) {
+              for (i = 0, len = showMore.length; i < len; ++i) {
+                showMore[i].removeEventListener('click', showMoreItems);
               }
             }
 

@@ -124,6 +124,29 @@
       });
     }
 
+
+    addTags(id, tags, segments) {
+      return this.$q((resolve, reject) => {
+        var data = { ids:id, tags:tags };
+
+        if (segments !== 'no') { data.segments = segments; }
+
+        var options = {
+          url   : 'addTags',
+          method: 'POST',
+          data  : data
+        };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
   }
 
   SessionService.$inject = ['$q', '$http'];

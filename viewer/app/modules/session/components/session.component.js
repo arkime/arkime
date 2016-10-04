@@ -8,7 +8,7 @@
     start : 0,    // first item index
     facets: 1,    // facets
     sorts : [{element:'fp', order:'asc'}] // array of sort objects
-  }
+  };
 
   /**
    * @class SessionController
@@ -39,16 +39,15 @@
     }
 
     /* Callback when component is mounted and ready */
-    $onInit() {
-      // initialize scope variables
+    $onInit() { // initialize scope variables
       this.loading      = true;
-      this.currentPage  = 1;  // always start on the first page
+      this.currentPage  = 1;    // always start on the first page
 
-      this.query = _query;    // load saved query
+      this.query = _query;      // load saved query
 
       this.stickySessions = []; // array of open sessions
 
-      this.getColumnInfo(); // get column infomation
+      this.getColumnInfo();     // get column infomation
 
       /* Listen! */
       // watch for the sorting changes (from colheader.component)
@@ -93,7 +92,7 @@
       // watch for changes to time parameters from session detail
       this.$scope.$on('change:time', (event, args) => {
         // notify children (namely search component)
-        this.$scope.$broadcast('update:time', args);
+        this.$scope.$emit('update:time', args);
       });
     } /* /$onInit */
 

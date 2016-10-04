@@ -29,8 +29,6 @@ session {
     }
   }
 
-  // .session-detail-ts + pre
-
   .show-ts {
     .session-detail-ts { display: block; }
   }
@@ -38,8 +36,6 @@ session {
   .session-detail-row {
     background-color: lighten($color-yellow-light, 36%);
   }
-
-  .btn-tag { margin: 4px; }
 
   dt {
     font-size   : 16px;
