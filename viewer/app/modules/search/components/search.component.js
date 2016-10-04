@@ -30,6 +30,10 @@
     $onInit() {
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
+        if (this.timeRange == -1) { // all time
+          this.startTime  = hourMS * 5;
+          this.stopTime   = currentTime;
+        }
       } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
         // start and stop times available
         this.timeRange  = '0'; // custom time range
@@ -39,7 +43,7 @@
           !this.$routeParams.startTime && !this.$routeParams.stopTime) {
         // there are no time query parameters, so set defaults
         this.timeRange = '1'; // default to 1 hour
-        this.$location.search('date', this.timeRange);
+        this.$location.search('date', this.timeRange); // update url params
       }
 
       if (this.$routeParams.expression) {
@@ -127,18 +131,23 @@
         this.$location.search('expression', null);
       }
 
-      if (this.timeRange !== '0') {
-        // if it's not a custom time range, update the time
+      if (this.timeRange > 0) {
+        // if it's not a custom time range or all, update the time
         currentTime = new Date().getTime();
 
         this.stopTime   = currentTime;
         this.startTime  = currentTime - (hourMS * this.timeRange);
       }
 
-      // update the displayed time range
-      this.deltaTime  = this.stopTime - this.startTime;
+      if (this.timeRange === -1) { // all time
+        this.startTime  = hourMS * 5;
+        this.stopTime   = currentTime;
+      }
 
-      // always use startTime and stopTime instead of date range
+      // update the displayed time range
+      this.deltaTime = this.stopTime - this.startTime;
+
+      // always use startTime and stopTime instead of date range (except for all)
       // querying with date range causes unexpected paging behavior
       // because there are always new sessions
       if (this.startTime && this.stopTime) {
