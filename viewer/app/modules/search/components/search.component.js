@@ -30,7 +30,7 @@
     $onInit() {
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
-        if (this.timeRange == -1) { // all time
+        if (this.timeRange === '-1') { // all time
           this.startTime  = hourMS * 5;
           this.stopTime   = currentTime;
         }
