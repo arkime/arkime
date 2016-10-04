@@ -359,11 +359,11 @@
            * Determine clickable values in html from server
            * Add click events to add values to the search query
            */
-          var clickableValues, clickableTimes, molochMenus, showMore;
+          var clickableValues, clickableTimes, molochMenus, showMore, srccol, dstcol, imgs;
 
           scope.watchClickableValues = function() {
             $timeout(function() { // wait until session detail is rendered
-              var i, len, time, text;
+              var i, len, time, value, timeEl;
 
               // display packet options
               var optionsEl = element.find('.packet-options');
@@ -376,11 +376,23 @@
                 clickableValues[i].addEventListener('click', molochExprClick);
               }
 
+              // add click listener for all menus (next to each value)
+              molochMenus = element[0].querySelectorAll('[molochmenu]');
+              for (i = 0, len = molochMenus.length; i < len; ++i) {
+                molochMenus[i].addEventListener('click', contextMenuClick);
+              }
+
+              // add click listener to show more values in list
+              showMore = element[0].querySelectorAll('.show-more-items');
+              for (i = 0, len = showMore.length; i < len; ++i) {
+                showMore[i].addEventListener('click', showMoreItems);
+              }
+
               clickableTimes = element[0].querySelectorAll('.format-seconds');
               for (i = 0, len = clickableTimes.length; i < len; ++i) {
-                var timeEl = clickableTimes[i];
-                text = timeEl.innerText;
-                if (!isNaN(text)) { // only parse text if it's a number (s from 1970)
+                timeEl  = clickableTimes[i];
+                value   = timeEl.innerText;
+                if (!isNaN(value)) { // only parse value if it's a number (s from 1970)
                   time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
                   timeEl.innerHTML = time;
                 }
@@ -399,28 +411,38 @@
                 }
               }
 
-              // add click listener for all menus (next to each value)
-              molochMenus = element[0].querySelectorAll('[molochmenu]');
-              for (i = 0, len = molochMenus.length; i < len; ++i) {
-                molochMenus[i].addEventListener('click', contextMenuClick);
-              }
-
-              // add click listener to show more values in list
-              showMore = element[0].querySelectorAll('.show-more-items');
-              for (i = 0, len = showMore.length; i < len; ++i) {
-                showMore[i].addEventListener('click', showMoreItems);
-              }
-
               // modify the packet timestamp values
               var tss = element[0].querySelectorAll('.session-detail-ts');
               for (i = 0, len = tss.length; i < len; ++i) {
-                var timeEl = tss[i];
-                text = timeEl.getAttribute('ts');
-                timeEl = timeEl.querySelectorAll('.ts-value');
-                if (!isNaN(text)) { // only parse text if it's a number (ms from 1970)
-                  time = $filter('date')(text, 'yyyy/MM/dd HH:mm:ss.sss');
+                timeEl  = tss[i];
+                value   = timeEl.getAttribute('ts');
+                timeEl  = timeEl.querySelectorAll('.ts-value');
+                if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
+                  time = $filter('date')(value, 'yyyy/MM/dd HH:mm:ss.sss');
                   timeEl[0].innerHTML = time;
                 }
+              }
+
+              srccol = element[0].querySelector('.srccol');
+              if (srccol) {
+                $(srccol).tooltip({ placement:'right', html:true });
+              }
+
+              dstcol = element[0].querySelector('.dstcol');
+              if (dstcol) {
+                $(dstcol).tooltip({ placement:'right', html:true });
+              }
+
+              imgs = element[0].querySelectorAll('.imagetag');
+              for (i = 0, len = imgs.length; i < len; ++i) {
+                var img = imgs[i];
+                var href = img.getAttribute('href');
+                href = href.replace('body', 'bodypng');
+                $(img).tooltip({
+                  placement :'top',
+                  html      :true,
+                  title     : `File Bytes:<br><img src="${href}">`
+                });
               }
             });
           };
@@ -451,6 +473,16 @@
             if (menuItems) {
               for (i = 0, len = menuItems.length; i < len; ++i) {
                 menuItems[i].removeEventListener('click', molochExprClick);
+              }
+            }
+
+            if (srccol) { $(srccol).tooltip('destroy'); }
+
+            if (dstcol) { $(dstcol).tooltip('destroy'); }
+
+            if (imgs) {
+              for (i = 0, len = imgs.length; i < len; ++i) {
+                $(imgs[i]).tooltip('destroy');
               }
             }
           });

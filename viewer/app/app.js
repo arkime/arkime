@@ -8,6 +8,7 @@
   require('angular-animate');
   require('angular-resource');
   require('angular-ui-bootstrap');
+  require('bootstrap/js/tooltip');
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
 

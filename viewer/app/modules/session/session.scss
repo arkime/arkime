@@ -14,14 +14,10 @@ colheader {
 }
 
 session {
+  // packet timestamps
   .session-detail-ts { display: none; }
-
   .show-ts {
     .session-detail-ts { display: block; }
-  }
-
-  .normal-ws {
-    pre { white-space: normal; }
   }
 
   .session-detail-row {
@@ -90,6 +86,7 @@ session {
     div { display: inline-block; }
 
     .sticky-session-detail {
+      display       : block;
       position      : relative;
       z-index       : 999;
       width         : 380px;
@@ -109,7 +106,10 @@ session {
 
 
   /* session table --------------------------- */
-  table { border-top  : $color-gray-light solid 1px; }
+  table {
+    table-layout: fixed;
+    border-top  : $color-gray-light solid 1px;
+  }
 
   .table {
     tbody {

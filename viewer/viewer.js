@@ -403,7 +403,6 @@ function createSessionDetail() {
       internals.sessionDetail += found[k];
     });
     internals.sessionDetail +=   "  include views/sessionDetail-body\n";
-    internals.sessionDetail +=   "include views/sessionDetail-footer\n";
   });
 }
 
