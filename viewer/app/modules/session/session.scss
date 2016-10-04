@@ -15,7 +15,22 @@ colheader {
 
 session {
   // packet timestamps
-  .session-detail-ts { display: none; }
+  .session-detail-ts {
+    display     : none;
+    color       : $color-purple-light;
+    font-weight : bold;
+    padding     : 0 4px;
+    margin-left : 2px;
+    margin-right: 2px;
+    border-bottom: 1px solid $color-gray;
+
+    + pre {
+      margin-top: -1px;
+    }
+  }
+
+  // .session-detail-ts + pre
+
   .show-ts {
     .session-detail-ts { display: block; }
   }
@@ -114,6 +129,7 @@ session {
   .table {
     tbody {
       tr {
+        td { word-break: break-word; }
 
         // color every fourth row
         &:nth-of-type(4n-1) {

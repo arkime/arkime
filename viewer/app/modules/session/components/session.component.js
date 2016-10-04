@@ -2,6 +2,14 @@
 
   'use strict';
 
+  // local variable to save query state
+  var _query = {  // set query defaults:
+    length: 100,  // page length
+    start : 0,    // first item index
+    facets: 1,    // facets
+    sorts : [{element:'fp', order:'asc'}] // array of sort objects
+  }
+
   /**
    * @class SessionController
    * @classdesc Interacts with session list
@@ -11,20 +19,20 @@
     /* setup --------------------------------------------------------------- */
     /**
      * Initialize global variables for this controller
-     * @param $scope              Angular application model object
-     * @param $routeParams        Retrieve the current set of route parameters
-     * @param $location           Exposes browser address bar URL (based on the window.location)
-     * @param $anchorScroll       Scrolls to the element related to given hash
-     * @param SessionService      Transacts sessions with the server
+     * @param $scope          Angular application model object
+     * @param $location       Exposes browser address bar URL (based on the window.location)
+     * @param $routeParams    Retrieve the current set of route parameters
+     * @param $anchorScroll   Scrolls to the element related to given hash
+     * @param SessionService  Transacts sessions with the server
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, $location, $anchorScroll, SessionService) {
-      this.$scope             = $scope;
-      this.$routeParams       = $routeParams;
-      this.$location          = $location;
-      this.$anchorScroll      = $anchorScroll;
-      this.SessionService     = SessionService;
+    constructor($scope, $location, $routeParams, $anchorScroll, SessionService) {
+      this.$scope         = $scope;
+      this.$location      = $location;
+      this.$routeParams   = $routeParams;
+      this.$anchorScroll  = $anchorScroll;
+      this.SessionService = SessionService;
 
       // offset anchor scroll position to account for navbars
       this.$anchorScroll.yOffset = 140;
@@ -34,14 +42,9 @@
     $onInit() {
       // initialize scope variables
       this.loading      = true;
-      this.currentPage  = 1; // start on the first page
+      this.currentPage  = 1;  // always start on the first page
 
-      this.query = {  // query defaults:
-        length: 100,  // page length
-        start : 0,    // first item index
-        sorts : [{element:'fp', order:'asc'}], // array of sort objects
-        facets: 1,    // facets
-      };
+      this.query = _query;    // load saved query
 
       this.stickySessions = []; // array of open sessions
 
@@ -50,7 +53,7 @@
       /* Listen! */
       // watch for the sorting changes (from colheader.component)
       this.$scope.$on('change:sort', (event, args) => {
-        this.query.sorts = args.sorts;
+        _query.sorts = this.query.sorts = args.sorts;
 
         this.getData();
       });
@@ -58,9 +61,10 @@
       // watch for pagination changes (from pagination.component)
       this.$scope.$on('change:pagination', (event, args) => {
         // pagination affects length, currentPage, and start
-        this.query.length = args.length;
-        this.currentPage  = args.currentPage;
-        this.query.start  = args.start;
+        _query.length = this.query.length = args.length;
+        _query.start  = this.query.start  = args.start;
+
+        this.currentPage = args.currentPage;
 
         this.getData();
       });
@@ -69,13 +73,13 @@
       // (from search.component)
       // IMPORTANT: this kicks off the inital search query
       this.$scope.$on('change:search', (event, args) => {
-        this.query.startTime  = args.startTime;
-        this.query.stopTime   = args.stopTime;
-        this.query.expression = args.expression;
+        _query.startTime  = this.query.startTime  = args.startTime;
+        _query.stopTime   = this.query.stopTime   = args.stopTime;
+        _query.expression = this.query.expression = args.expression;
 
         // reset the user to the first page, because we are issuing a new query
         // and there may only be 1 page of results
-        this.query.start      = 0;
+        _query.start = this.query.start = 0;
 
         this.getData();
       });
@@ -172,8 +176,8 @@
 
   }
 
-  SessionController.$inject = ['$scope','$routeParams','$location',
-    '$anchorScroll','SessionService'];
+  SessionController.$inject = ['$scope', '$location', '$routeParams',
+    '$anchorScroll', 'SessionService'];
 
 
   angular.module('moloch')
