@@ -154,7 +154,7 @@ function addField(field) {
     internals.fieldsBuf.writeUInt8(0, offset+2+len);
     offset += 3 + len;
   }
-  internals.fieldsBuf.length = offset;
+  internals.fieldsBuf = internals.fieldsBuf.slice(0, offset);
 
   wiseSource.pos2Field[pos] = name;
   wiseSource.field2Pos[name] = pos;
