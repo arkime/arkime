@@ -1,6 +1,13 @@
+0.16.0 2016/10/xx
+  - NOTICE: Requires node v4.x (development done with v4.6).  If upgrading, remove the
+    node_modules and run "npm install" in viewer and wiseService directory
+  - viewer - upgrade many packages
+  - wise - upgrade many packages
+  - easybutton - download prebuilt node 4.6.0
+
 0.15.1 2016/10/05
   - NOTICE: Last version to support node 0.10
-  - release: build pfring, daq, snf plugins
+  - release - build pfring, daq, snf plugins
   - wise - threatstream zip method broke in 0.15 (issue #534)
   - wise - support url type
   - viewer - read cert/key before dropping permissions (issue #504)
