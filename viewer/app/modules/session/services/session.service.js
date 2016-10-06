@@ -124,7 +124,14 @@
       });
     }
 
-
+    /**
+     * Add tags to sessions
+     * @param {string} id         The unique id of the session to add tags to
+     * @param {string} tags       The comma separated string of tags to add
+     * @param {string} segments   'no', 'all', or 'time'
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
     addTags(id, tags, segments) {
       return this.$q((resolve, reject) => {
         var data = { ids:id, tags:tags };
@@ -133,6 +140,36 @@
 
         var options = {
           url   : 'addTags',
+          method: 'POST',
+          data  : data
+        };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
+     * Remove tags from sessions
+     * @param {string} id         The unique id of the session to remove tags from
+     * @param {string} tags       The comma separated string of tags to remove
+     * @param {string} segments   'no', 'all', or 'time'
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    removeTags(id, tags, segments) {
+      return this.$q((resolve, reject) => {
+        var data = { ids:id, tags:tags };
+
+        if (segments !== 'no') { data.segments = segments; }
+
+        var options = {
+          url   : 'removeTags',
           method: 'POST',
           data  : data
         };

@@ -2,6 +2,7 @@
 
 
 require('./user/user.service');
+require('./user/has.permission');
 
 require('./session/components/colheader.component');
 require('./session/components/session.component');

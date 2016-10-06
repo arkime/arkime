@@ -109,47 +109,52 @@
       var length      = 10;
       var currentPage = 2;
       var start       = (currentPage - 1) * length;
+      var sub_scope;
 
       beforeEach(function() {
-        var sub_scope = scope.$new();
+        sub_scope = scope.$new();
+      });
 
-        // emit change:sort event
-        sub_scope.$emit('change:sort', {
-          sorts:sorts
-        });
-
-        // expect GET request with new parameters
+      it('should listen for "change:search" event', function() {
         var newParameters = '?facets=1&length=100&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
-        // emit change:pagination event
-        sub_scope.$emit('change:pagination',
-          { length:length, currentPage:currentPage, start:start }
-        );
-
-        // expect GET request with new parameters
-        newParameters = '?facets=1&length=10&order=fp:asc&start=10';
-        $httpBackend.expectGET(sessionsEndpoint + newParameters)
-          .respond(sessionsJSON);
+        sub_scope.$emit('change:search', {
+          startTime: 0, stopTime: 0, expression: ''
+        });
 
         $httpBackend.flush();
-      });
 
-      it('should listen for "change:search" event', function() {
         expect(sessionComponent.getData).toHaveBeenCalled();
         expect(sessionComponent.getData).toHaveBeenCalledWith();
-        expect(sessionComponent.loading).toEqual(false);
-        expect(sessionComponent.error).toEqual(false);
       });
 
       it('should listen for "change:sort" event', function() {
+        var newParameters = '?facets=1&length=100&order=fp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+          .respond(sessionsJSON);
+
+        sub_scope.$emit('change:sort', { sorts:sorts });
+
+        $httpBackend.flush();
+
         expect(sessionComponent.query.sorts).toEqual(sorts);
         expect(sessionComponent.getData).toHaveBeenCalled();
         expect(sessionComponent.getData).toHaveBeenCalledWith();
       });
 
       it('should listen for "change:pagination" event', function() {
+        var newParameters = '?facets=1&length=10&order=fp:asc&start=10';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+          .respond(sessionsJSON);
+
+        sub_scope.$emit('change:pagination',
+          { length:length, currentPage:currentPage, start:start }
+        );
+
+        $httpBackend.flush();
+
         expect(sessionComponent.query.length).toEqual(length);
         expect(sessionComponent.query.start).toEqual(start);
         expect(sessionComponent.currentPage).toEqual(currentPage);

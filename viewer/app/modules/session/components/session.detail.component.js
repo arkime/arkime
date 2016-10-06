@@ -116,6 +116,18 @@
       }
     }
 
+    removeItem(value, field) {
+      if (field === 'tags') {
+        this.SessionService.removeTags(this.$scope.session.id, value)
+          .then((response) => {
+            this.getDetailData(); // refresh content
+          })
+          .catch((error) => {
+            this.error = error;
+          });
+      }
+    }
+
   }
 
   SessionDetailController.$inject = ['$scope','$sce',
@@ -182,7 +194,7 @@
             var field  = target.getAttribute('molochfield');
 
             // if click target doesn't have a molochfield attribute,
-            while (!field) { // it may be in the parent or parent's parent
+            while (target && !field) { // it may be in the parent or parent's parent
               target  = target.parentNode;
               field   = target.getAttribute('molochfield');
             }
@@ -211,19 +223,38 @@
           function buildMenu(items, value, target) {
             var html = `<ul class="dropdown-menu moloch-menu">`;
 
+            var field;
+
             for (var k in items) {
               var item = items[k];
+              // all items should be of the same field
+              if (!field) { field = item.info.field; }
+
               html += `<li class="cursor-pointer"
-                molochfield="${item.info.field}"
+                molochfield="${field}"
                 molochexpr="${item.exp}"
                 molochvalue='${value}'>
                 <a class="menu-item">${item.name}</a>
                 </li>`;
             }
 
+            if (field === 'tags') {
+              // allows a user (with permission) to remove the value from the session
+              html += `<li has-permission="removeEnabled" class="divider"></li>
+                <li has-permission="removeEnabled">
+                  <a ng-click="$ctrl.removeItem('${value}', '${field}')">
+                    <span class="fa fa-trash-o"></span>&nbsp; remove ${value}
+                  </a>
+                </li>`;
+            }
+
             html += '</ul>';
 
-            target.insertAdjacentHTML('afterend', html);
+            // have to compile it so has-permission directive
+            // and removeItem function work
+            var content = $compile(html)(scope);
+
+            $(target).after(content[0]);
 
             menuItems = target.parentNode.querySelectorAll('.menu-item');
             for (var i = 0, len = menuItems.length; i < len; ++i) {
