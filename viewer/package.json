@@ -20,7 +20,7 @@
     "passport": "^0.3.2",
     "passport-http": "^0.3.0",
     "peek-stream": "^1.1.1",
-    "png": "",
+    "png": "http://github.com/awick/node-png/tarball/master",
     "serve-favicon": "^2.3.0",
     "stylus": "^0.54.5",
     "through2": "^2.0.1"
