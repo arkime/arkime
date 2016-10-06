@@ -25,20 +25,15 @@ if [ "$#" -gt 0 ]; then
     echo "Installing to ${TDIR}"
 fi
 
+https://nodejs.org/dist/v4.6.0/node-v4.6.0-linux-x64.tar.xz
 
 ES=2.4.0
-NODEJS=0.10.45
+NODEJS=4.6.0
 INSTALL_DIR=$PWD
 
 if [ "$(id -u)" != "0" ]; then
    echo "ERROR - This script must be run as root" 1>&2
    exit 1
-fi
-
-pver=`python -c 'import sys; print("%i" % (sys.hexversion>=0x02060000))'`
-if [ $pver -eq 0 ]; then
-    echo "ERROR - node.js requires python 2.6 or higher to build"
-    exit 1
 fi
 
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
@@ -176,20 +171,15 @@ fi
 
 # NodeJS
 echo "MOLOCH: Downloading and installing node"
-cd ${INSTALL_DIR}/thirdparty
+cd ${TDIR}
 if [ ! -f "node-v${NODEJS}.tar.gz" ]; then
-  wget http://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}.tar.gz
+  wget https://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}-linux-x64.tar.xz
 fi
 
-tar xfz node-v${NODEJS}.tar.gz
-cd node-v${NODEJS}
-./configure 
-$MAKE
-$MAKE install
-./configure --prefix=${TDIR}
-$MAKE install
+tar xfz node-v${NODEJS}-linux-x64.tar.xz
 
 # William likes the links so easier to find in ps
+ln -s $TDIR/node-v${NODEJS}-linux-x64/bin/* $TDIR/bin/
 ln -s $TDIR/bin/node $TDIR/bin/node-viewer
 ln -s $TDIR/bin/node $TDIR/bin/node-wise
 

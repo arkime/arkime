@@ -511,11 +511,16 @@ ItemHTTPStream.onMessageComplete = function() {
   delete this.curitem;
 };
 
-ItemHTTPStream.onHeadersComplete = function(info) {
+ItemHTTPStream.onHeadersComplete = function(info, ignore, headers) {
   //console.log("onHeadersComplete", this.bufferStream?"bufferStream":"no bufferStream");
+  if (headers === undefined) {
+    headers = info.headers;
+  }
+  info = {};
+
   info.headersMap = {};
-  for (var i = 0; i < info.headers.length; i += 2) {
-    info.headersMap[info.headers[i].toLowerCase()] = info.headers[i+1];
+  for (var i = 0; i < headers.length; i += 2) {
+    info.headersMap[headers[i].toLowerCase()] = headers[i+1];
   }
   this.headerInfo = info;
 };
@@ -533,9 +538,15 @@ ItemHTTPStream.prototype._process = function (item, callback) {
       this.parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
     }
     this.parsers[0].httpstream = this.parsers[1].httpstream = this;
-    this.parsers[0].onBody = this.parsers[1].onBody = ItemHTTPStream.onBody;
-    this.parsers[0].onMessageComplete = this.parsers[1].onMessageComplete = ItemHTTPStream.onMessageComplete;
-    this.parsers[0].onHeadersComplete = this.parsers[1].onHeadersComplete = ItemHTTPStream.onHeadersComplete;
+    if (HTTPParser.kOnBody === undefined) {
+      this.parsers[0].onBody = this.parsers[1].onBody = ItemHTTPStream.onBody;
+      this.parsers[0].onMessageComplete = this.parsers[1].onMessageComplete = ItemHTTPStream.onMessageComplete;
+      this.parsers[0].onHeadersComplete = this.parsers[1].onHeadersComplete = ItemHTTPStream.onHeadersComplete;
+    } else {
+      this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
+      this.parsers[0][HTTPParser.kOnMessageComplete] = this.parsers[1][HTTPParser.kOnMessageComplete] = ItemHTTPStream.onMessageComplete;
+      this.parsers[0][HTTPParser.kOnHeadersComplete] = this.parsers[1][HTTPParser.kOnHeadersComplete] = ItemHTTPStream.onHeadersComplete;
+    }
   }
 
   if (item.data.length === 0) {
