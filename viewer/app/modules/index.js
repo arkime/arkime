@@ -1,6 +1,8 @@
 'use strict';
 
 
+require('./user/user.service');
+
 require('./session/components/colheader.component');
 require('./session/components/session.component');
 require('./session/services/session.service');

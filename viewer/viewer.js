@@ -669,7 +669,7 @@ app.get("/", checkWebEnabled, function(req, res) {
       decodeItems[key+":enabled"] = obj;
     }
   }
-
+  console.log(req.user);
   res.render('index', {
     user: req.user,
     title: makeTitle(req, 'Sessions'),
@@ -742,6 +742,24 @@ app.get('/users', checkWebEnabled, function(req, res) {
     title: makeTitle(req, 'Users'),
     titleLink: 'usersLink',
     token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
+  });
+});
+
+app.get('/currentuser', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Unknown user", err, user);
+      return res.send("{}");
+    }
+
+    user = user._source;
+
+    if (user.passStore)   { delete user.passStore; }
+    if (user.expression)  { delete user.expression; }
+
+    if (!user) { return res.send("{}"); }
+
+    return res.send(user);
   });
 });
 
