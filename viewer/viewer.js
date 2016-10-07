@@ -154,6 +154,12 @@ if (_accesslogfile) {
 app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms',{stream: _stream}));
 app.use(compression());
 app.use(methodOverride());
+
+
+app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
+
+
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
 if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = false;
@@ -397,7 +403,6 @@ function createSessionDetail() {
       internals.sessionDetail += found[k];
     });
     internals.sessionDetail +=   "  include views/sessionDetail-body\n";
-    internals.sessionDetail +=   "include views/sessionDetail-footer\n";
   });
 }
 
@@ -643,35 +648,13 @@ function makeTitle(req, page) {
   return title;
 }
 
-app.get("/", checkWebEnabled, function(req, res) {
-  var settings = decode.settings();
-  var decodeItems = {};
-  for (var key in settings) {
-    var setting = settings[key];
-    var obj = {name: setting.name || key};
-    if (setting.title || setting.fields) {
-      obj.items = {};
-      if (setting.title) {
-        obj.items.title = {name: setting.title, disabled: true};
-      }
-      obj.items[key + ":enabled"] = {name: "Enable", type: "checkbox"};
-      setting.fields.forEach(function(field) {
-        obj.items[key + ":" + field.key] = {name: field.name || field.key, type: field.type};
-      });
-      decodeItems[key] = obj;
-    } else {
-      obj.type = "checkbox";
-      decodeItems[key+":enabled"] = obj;
-    }
+app.get("/", function(req, res) {
+  var question = req.url.indexOf("?");
+  if (question === -1) {
+    res.redirect("/app#/session");
+  } else {
+    res.redirect("/app#/session" + req.url.substring(question));
   }
-
-  res.render('index', {
-    user: req.user,
-    title: makeTitle(req, 'Sessions'),
-    titleLink: 'sessionsLink',
-    isIndex: true,
-    decodeItems: JSON.stringify(decodeItems)
-  });
 });
 
 app.get("/spiview", checkWebEnabled, function(req, res) {
@@ -737,6 +720,24 @@ app.get('/users', checkWebEnabled, function(req, res) {
     title: makeTitle(req, 'Users'),
     titleLink: 'usersLink',
     token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
+  });
+});
+
+app.get('/currentuser', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Unknown user", err, user);
+      return res.send("{}");
+    }
+
+    user = user._source;
+
+    if (user.passStore)   { delete user.passStore; }
+    if (user.expression)  { delete user.expression; }
+
+    if (!user) { return res.send("{}"); }
+
+    return res.send(user);
   });
 });
 
@@ -834,6 +835,27 @@ app.get('/style.css', function(req, res) {
       res.send(css);
     });
   });
+});
+
+// angular app pages
+app.get('/app', checkWebEnabled, function(req, res) {
+  res.render('app');
+});
+
+// angular app bundles
+app.get('/app.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js');
+});
+app.get('/vendor.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js');
+});
+
+// source maps
+app.get('/app.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js.map');
+});
+app.get('/vendor.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
 });
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1399,6 +1421,32 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+app.get('/fields', function(req, res) {
+  if (!app.locals.fieldsMap) {
+    res.status(404);
+    res.send('Cannot locate fields');
+  }
+  res.send(app.locals.fieldsMap);
+});
+
+app.get('/titleconfig', checkWebEnabled, function(req, res) {
+  var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
+
+  titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
+    .replace(/_userId_/g, req.user?req.user.userId:"-")
+    .replace(/_userName_/g, req.user?req.user.userName:"-");
+
+  res.send(titleConfig);
+});
+
+app.get('/molochRightClick', checkWebEnabled, function(req, res) {
+  if(!app.locals.molochRightClick) {
+    res.status(404);
+    res.send('Cannot locate right clicks');
+  }
+  res.send(app.locals.molochRightClick);
+})
+
 app.get('/eshealth.json', function(req, res) {
   Db.healthCache(function(err, health) {
     res.send(health);

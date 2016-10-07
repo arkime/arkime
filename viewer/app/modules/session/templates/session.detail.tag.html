@@ -1,0 +1,59 @@
+<span class="add-tag">
+
+  <div ng-if="!$ctrl.addingTag"
+    ng-click="$ctrl.addingTag = true;"
+    uib-tooltip="Add a new tag to this session"
+    class="btn btn-xs btn-blue margined-left-lg margined-bottom margined-top">
+    <span class="fa fa-plus-circle"></span>
+  </div>
+
+  <div ng-if="$ctrl.addingTag"
+    ng-click="$ctrl.addingTag = false;"
+    uib-tooltip="Close without adding tags"
+    class="btn btn-xs btn-danger margined-left-lg margined-bottom margined-top">
+    <span class="fa fa-minus-circle"></span>
+  </div>
+
+  <form ng-if="$ctrl.addingTag" class="margined-top margined-bottom">
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon">
+            Include
+          </span>
+          <select ng-model="$ctrl.include"
+            class="form-control" style="-webkit-appearance: none;">
+            <option value="no">no</option>
+            <option value="all">all</option>
+            <option value="time">same time period</option>
+          </select>
+          <span class="input-group-addon">
+            linked segments (slow)
+          </span>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon">
+            Tags
+          </span>
+          <input ng-model="$ctrl.tags"
+            type="text" class="form-control"
+            placeholder="Enter a comma separated list of tags">
+          <span class="input-group-btn">
+            <button class="btn btn-green" ng-click="$ctrl.addTags()">
+              Add Tags
+            </button>
+          </span>
+        </div>
+        <p ng-if="$ctrl.error" class="text-danger">
+          <span class="fa fa-exclamation-triangle"></span>&nbsp;
+          {{$ctrl.error}}
+        </p>
+      </div>
+    </div>
+
+  </form>
+
+</div>

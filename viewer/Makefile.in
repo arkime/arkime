@@ -11,8 +11,11 @@ install:
 	test -z "$(VIEWERDIR)" || $(mkdir_p) "$(VIEWERDIR)"
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
-	$(CP) -pr views public $(VIEWERDIR)
+	npm update
+	npm run bundle:min
+	$(CP) -pr views public bundle $(VIEWERDIR)
 	(cd $(VIEWERDIR) ; npm update)
 
 distclean realclean clean:
 	rm -rf node_modules
+	rm -rf bundle

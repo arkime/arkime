@@ -1,0 +1,55 @@
+<div class="form-group margined-bottom" uib-drowpdown>
+
+  <div class="input-group">
+    <span class="input-group-addon cursor-help"
+      tooltip-placement="bottom-left"
+      uib-tooltip="Search Expression">
+      <span class="fa fa-search"></span>
+    </span>
+    <input caret-pos="$ctrl.caretPos" focus-input="$ctrl.focusInput"
+      ng-model="$ctrl.query.value" ng-trim="false"
+      ng-change="$ctrl.changeExpression()"
+      ng-keydown="$ctrl.keydown($event);$event.stopPropagation();"
+      ng-model-options="{debounce:300}"
+      type="text" placeholder="Search"
+      class="form-control search-control" />
+      <span ng-click="$ctrl.clear()" ng-if="$ctrl.query.value"
+        class="fa fa-close text-muted clear-input cursor-pointer"></span>
+  </div>
+
+  <!-- results dropdown -->
+  <ul id="typeahead-results" uib-drowpdown-menu
+    class="dropdown-menu typeahead-results"
+    ng-show="$ctrl.query.value && $ctrl.results && $ctrl.results.length">
+    <li ng-repeat="(key, value) in $ctrl.results"
+      ng-class="{'active':key === $ctrl.activeIdx}"
+      ng-click="$ctrl.addToQuery(value)" class="cursor-pointer"
+      uib-tooltip="{{::value.help}}" tooltip-placement="right"
+      tooltip-append-to-body="true">
+      <a>
+        <strong ng-if="value.exp">{{::value.exp}}</strong>
+        <strong ng-if="!value.exp">{{::value}}</strong>
+        <span ng-if="value.friendlyName">- {{::value.friendlyName}}</span>
+      </a>
+    </li>
+  </ul>
+
+  <!-- error -->
+  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+    ng-show="$ctrl.query.value && $ctrl.loadingError">
+    <li><a><span class="text-danger">
+      <span class="fa fa-warning"></span>&nbsp;
+      Error: {{$ctrl.loadingError}}
+    </span></a></li>
+  </ul>
+
+  <!-- loading -->
+  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+    ng-show="$ctrl.query.value && $ctrl.loadingValues">
+    <li><a>
+      <span class="fa fa-spinner fa-spin"></span>&nbsp;
+      Loading...
+    </a></li>
+  </ul>
+
+</div>
