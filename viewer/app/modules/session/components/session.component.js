@@ -72,8 +72,17 @@
       // (from search.component)
       // IMPORTANT: this kicks off the inital search query
       this.$scope.$on('change:search', (event, args) => {
-        _query.startTime  = this.query.startTime  = args.startTime;
-        _query.stopTime   = this.query.stopTime   = args.stopTime;
+        // either startTime && stopTime || date
+        if (args.startTime && args.stopTime) {
+          _query.startTime  = this.query.startTime  = args.startTime;
+          _query.stopTime   = this.query.stopTime   = args.stopTime;
+          _query.date       = this.query.date       = null;
+        } else if (args.date) {
+          _query.date       = this.query.date       = args.date;
+          _query.startTime  = this.query.startTime  = null;
+          _query.stopTime   = this.query.stopTime   = null;
+        }
+
         _query.expression = this.query.expression = args.expression;
 
         // reset the user to the first page, because we are issuing a new query
@@ -92,7 +101,7 @@
       // watch for changes to time parameters from session detail
       this.$scope.$on('change:time', (event, args) => {
         // notify children (namely search component)
-        this.$scope.$emit('update:time', args);
+        this.$scope.$broadcast('update:time', args);
       });
     } /* /$onInit */
 

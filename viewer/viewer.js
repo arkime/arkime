@@ -233,6 +233,7 @@ if (Config.get("passwordSecret")) {
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   app.locals.alwaysShowESStatus = true;
+  app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
     req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
     Db.getUserCache("anonymous", function(err, suser) {
@@ -726,8 +727,12 @@ app.get('/users', checkWebEnabled, function(req, res) {
 app.get('/currentuser', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user.found) {
-      console.log("Unknown user", err, user);
-      return res.send("{}");
+      if (app.locals.noPasswordSecret) {
+        return res.send(req.user);
+      } else {
+        console.log("Unknown user", err, user);
+        return res.send("{}");
+      }
     }
 
     user = user._source;

@@ -18,15 +18,23 @@
      *
      * @ngInject
      */
-    constructor($location, molochVersion) {
+    constructor($location, $window, molochVersion) {
       this.$location      = $location;
+      this.$window        = $window;
       this.molochVersion  = molochVersion.version;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
       this.menu = {
-        session : { title: 'Sessions', link: '/app#/session' }
+        session     : { title: 'Sessions',    link: '/app#/session' },
+        spiview     : { title: 'SPI View',    link: '/spiview' },
+        spigraph    : { title: 'SPI Graph',   link: '/spigraph' },
+        connections : { title: 'Connections', link: '/connections' },
+        files       : { title: 'Files',       link: '/files' },
+        stats       : { title: 'Stats',       link: '/stats' },
+        settings    : { title: 'Settings',    link: '/settings' },
+        users       : { title: 'Users',       link: '/users', permission: 'createEnabled' }
       };
     }
 
@@ -40,9 +48,21 @@
       return route === '/app#' + this.$location.path();
     }
 
+    /**
+     * Redirects to the desired link preserving query parameters
+     * @param {string} link The link to redirect to
+     */
+    navTabClick(link) {
+      var path = this.$location.path();
+      var fullURL = this.$location.url();
+      var urlWithQuery = fullURL.replace(path, link);
+
+      this.$window.location.href = urlWithQuery;
+    }
+
   }
 
-  NavbarController.$inject = ['$location','molochVersion'];
+  NavbarController.$inject = ['$location','$window','molochVersion'];
 
   /**
    * Navbar Directive

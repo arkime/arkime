@@ -23,9 +23,12 @@
 
     <div uib-collapse="$ctrl.isCollapsed" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li ng-repeat="item in $ctrl.menu"
+        <li ng-repeat="item in $ctrl.menu" class="cursor-pointer"
           ng-class="{active: $ctrl.isActive(item.link)}">
-            <a ng-href="{{item.link}}">{{item.title}}</a>
+            <a ng-if="!item.permission"
+              ng-click="$ctrl.navTabClick(item.link)">{{item.title}}</a>
+            <a ng-if="item.permission" has-permission="{{item.permission}}"
+              ng-click="$ctrl.navTabClick(item.link)">{{item.title}}</a>
         </li>
       </ul>
     </div>

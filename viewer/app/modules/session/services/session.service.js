@@ -45,6 +45,9 @@
           if (query.stopTime) {
             params.stopTime = (query.stopTime / 1000) | 0;
           }
+          if (query.date) {
+            params.date = query.date;
+          }
 
           // server takes one param (order)
           if (query.sorts && query.sorts.length) {

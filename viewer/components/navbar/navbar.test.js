@@ -22,6 +22,7 @@
       $httpBackend = _$httpBackend_;
 
       $httpBackend.expectGET('eshealth.json').respond({});
+      $httpBackend.expectGET('currentuser').respond({});
 
       scope = $rootScope.$new();
 

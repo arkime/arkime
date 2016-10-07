@@ -17,33 +17,39 @@
    *    start="$ctrl.query.start"></moloch-pagination>'
    *
    * Note: you can leave out start, length, and current-page
-   * as they default to 0, 50, and 1 respectively
+   * as they default to 0, 100, and 1 respectively
    */
   class PaginationController {
 
     /**
      * Initialize global variables for this controller
-     * @param $scope Angular application model object
+     * @param $scope    Angular application model object
+     * @param $location Exposes browser address bar URL (based on the window.location)
      *
      * @ngInject
      */
-    constructor($scope) {
-      this.$scope = $scope;
+    constructor($scope, $location) {
+      this.$scope     = $scope;
+      this.$location  = $location;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
       if (!this.start) {
-        this.start = 0;   // default to first item
-      }
-
-      if (!this.length) {
-        this.length = 50; // default with page size of 50
+        this.start = 0;       // default to first item
       }
 
       if (!this.currentPage) {
         this.currentPage = 1; // default to the first page
       }
+
+      if (!this.length) {
+        this.length = 100;    // default with page size of 100
+      }
+
+      // update page length if length parameter exists
+      var lenParam = this.$location.search().length;
+      if (lenParam) { this.length = parseInt(lenParam); }
     }
 
 
@@ -55,6 +61,8 @@
       // calculate new starting item
       this.start = (this.currentPage - 1) * this.length;
 
+      this.$location.search('length', this.length);
+
       // let parent know about pagination change
       this.$scope.$emit('change:pagination', {
         start       : this.start,
@@ -65,7 +73,7 @@
 
   }
 
-  PaginationController.$inject = ['$scope'];
+  PaginationController.$inject = ['$scope', '$location'];
 
   /**
    * Pagination Directive

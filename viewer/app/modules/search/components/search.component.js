@@ -124,6 +124,8 @@
      * (startTime, stopTime, timeRange, expression, strictly)
      */
     change() {
+      var useDateRange = false;
+
       // update the parameters with the expression
       if (this.expression.value && this.expression.value !== '') {
         this.$location.search('expression', this.expression.value);
@@ -139,9 +141,10 @@
         this.startTime  = currentTime - (hourMS * this.timeRange);
       }
 
-      if (this.timeRange === -1) { // all time
+      if (parseInt(this.timeRange) === -1) { // all time
         this.startTime  = hourMS * 5;
         this.stopTime   = currentTime;
+        useDateRange    = true;
       }
 
       // update the displayed time range
@@ -151,12 +154,18 @@
       // querying with date range causes unexpected paging behavior
       // because there are always new sessions
       if (this.startTime && this.stopTime) {
-        this.$scope.$emit('change:search', {
+        var args = {
           expression: this.expression.value,
-          startTime : this.startTime,
-          stopTime  : this.stopTime,
           strictly  : this.strictly
-        });
+        };
+
+        if (useDateRange) { args.date = -1; }
+        else {
+          args.startTime  = this.startTime;
+          args.stopTime   = this.stopTime;
+        }
+
+        this.$scope.$emit('change:search', args);
 
         this.$rootScope.$broadcast('issue:search', {
           expression: this.expression.value
