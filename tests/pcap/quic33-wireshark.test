@@ -3,71 +3,71 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160511"
+               "_index" : "tests_sessions-160511",
+               "_type" : "session"
             }
          },
          "body" : {
-            "p1" : 40482,
+            "sl" : 195,
             "mac1-term-cnt" : 1,
-            "db1" : 2768,
+            "no" : "test",
+            "by1" : 2784,
+            "rir2" : "ARIN",
+            "lpd" : 1462966377990,
+            "mac2-term-cnt" : 1,
+            "a1" : "10.0.2.15",
+            "pa" : 3,
+            "as2" : "AS43515 YOUTUBE YOUTUBE",
             "ps" : [
                24,
                1432,
                2840
             ],
-            "rir2" : "ARIN",
-            "no" : "test",
-            "lpd" : 1462966377990,
+            "db1" : 2768,
+            "by2" : 119,
+            "fb2" : "0a79f24eb64a9c07",
+            "db" : 2879,
+            "pa1" : 2,
             "psl" : [
                1408,
                1408,
                135
             ],
-            "db2" : 111,
-            "a1" : "10.0.2.15",
             "pa2" : 1,
-            "pa" : 3,
-            "mac1-term" : [
-               "08:00:27:cc:18:37"
-            ],
-            "by" : 2903,
-            "fpd" : 1462966377795,
+            "ss" : 1,
+            "db2" : 111,
+            "fs" : [],
+            "a2" : "64.15.116.182",
+            "p1" : 40482,
             "prot-term" : [
                "udp",
                "quic"
             ],
-            "fs" : [],
-            "by2" : 119,
-            "lp" : 1462966377,
-            "sl" : 195,
+            "fb1" : "0979f24eb64a9c07",
             "p2" : 443,
+            "prot-term-cnt" : 2,
+            "by" : 2903,
             "mac2-term" : [
                "52:54:00:12:35:02"
             ],
-            "prot-term-cnt" : 2,
-            "db" : 2879,
-            "mac2-term-cnt" : 1,
-            "pa1" : 2,
-            "fb1" : "0979f24eb64a9c07",
-            "fb2" : "0a79f24eb64a9c07",
+            "g2" : "USA",
+            "mac1-term" : [
+               "08:00:27:cc:18:37"
+            ],
+            "lp" : 1462966377,
             "fp" : 1462966377,
             "quic" : {
-               "version-term" : [
-                  "Q033"
-               ],
-               "host-termcnt" : 1,
+               "version-termcnt" : 1,
                "host-term" : [
                   "www.google.com"
                ],
-               "version-termcnt" : 1
+               "host-termcnt" : 1,
+               "version-term" : [
+                  "Q033"
+               ]
             },
-            "g2" : "USA",
-            "pr" : 17,
-            "ss" : 1,
-            "as2" : "AS36040 Google Inc.",
-            "a2" : "64.15.116.182",
-            "by1" : 2784
+            "fpd" : 1462966377795,
+            "pr" : 17
          }
       }
    ]

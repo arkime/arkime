@@ -1,31 +1,13 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131206"
+            }
+         },
          "body" : {
-            "lp" : 1386358271,
-            "rir2" : "ARIN",
-            "pa1" : 11,
-            "prot-term-cnt" : 2,
-            "mac1-term-cnt" : 2,
-            "ta" : [
-               "smtp:statuscode:250"
-            ],
-            "esubcnt" : 1,
-            "emv" : [
-               "1.0"
-            ],
-            "emvcnt" : 1,
-            "eidcnt" : 1,
-            "esrc" : [
-               "xxxxxxxxx@xxxxxxx.com"
-            ],
-            "pa" : 23,
-            "by1" : 2296,
-            "eho" : [
-               "xxxxxxxxxxxxxxxxx2.xxxxx.net",
-               "xxxxxxxxxxxxxxxxx1.xxxxx.net"
-            ],
-            "fs" : [],
             "eua" : [
                "Microsoft-MacOutlook/14.3.9.131030"
             ],
@@ -33,94 +15,18 @@
             "ect" : [
                "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
             ],
-            "tcpflags" : {
-               "psh" : 12,
-               "ack" : 7,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "fin" : 2,
-               "rst" : 0
-            },
-            "eip" : [
-               "10.0.0.4",
-               "10.180.121.108",
-               "169.254.4.195"
+            "rireip" : [
+               "",
+               "",
+               "ARIN"
             ],
-            "g2" : "USA",
-            "aseip" : [
-               "---",
-               "---",
-               "---"
-            ],
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "psl" : [
-               82,
-               82,
-               76,
-               141,
-               105,
-               76,
-               244,
-               145,
-               109,
-               76,
-               109,
-               76,
-               116,
-               1530,
-               154,
-               76,
-               101,
-               76,
-               155,
-               76,
-               76,
-               76,
-               76
-            ],
-            "fpd" : 1386358271061,
-            "tags-term" : [
-               "smtp:statuscode:250"
-            ],
-            "a1" : "10.180.121.109",
-            "ehhcnt" : 16,
-            "db1" : 1666,
-            "pa2" : 12,
-            "as2" : "AS1668 Transit Data Network",
-            "fb2" : "3232302078787878",
-            "ss" : 1,
-            "db2" : 485,
+            "rir2" : "ARIN",
+            "a2" : "64.236.55.18",
             "lpd" : 1386358271580,
-            "euacnt" : 1,
-            "no" : "test",
-            "ehh" : [
-               "content-type",
-               "message-id",
-               "mime-version",
-               "from",
-               "to",
-               "user-agent",
-               "x-ms-tnef-correlator",
-               "received",
-               "thread-index",
-               "date",
-               "subject",
-               "content-language",
-               "x-originating-ip",
-               "x-ms-has-attach",
-               "accept-language",
-               "thread-topic"
-            ],
-            "ectcnt" : 1,
+            "db2" : 485,
             "fb1" : "45484c4f20787878",
-            "tacnt" : 1,
-            "eid" : [
-               "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
-            ],
+            "db" : 2151,
+            "pa" : 23,
             "ps" : [
                24,
                106,
@@ -146,49 +52,143 @@
                3705,
                3781
             ],
-            "p2" : 25,
-            "db" : 2151,
-            "edstcnt" : 1,
-            "g1" : "USA",
-            "a2" : "64.236.55.18",
-            "mac2-term-cnt" : 1,
-            "esrccnt" : 1,
-            "fp" : 1386358271,
-            "mac1-term" : [
-               "00:00:0c:07:ac:02",
-               "00:0b:5f:6b:5c:00"
+            "a1" : "10.180.121.109",
+            "ehocnt" : 2,
+            "tacnt" : 1,
+            "ta" : [
+               "smtp:statuscode:250"
             ],
-            "by" : 3465,
+            "tags-term" : [
+               "smtp:statuscode:250"
+            ],
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "user-agent",
+               "x-ms-tnef-correlator",
+               "received",
+               "thread-index",
+               "date",
+               "subject",
+               "content-language",
+               "x-originating-ip",
+               "x-ms-has-attach",
+               "accept-language",
+               "thread-topic"
+            ],
+            "fs" : [],
+            "prot-term-cnt" : 2,
+            "eid" : [
+               "CEC7902D.1A0ED%xxxxxxxxx@xxxxxxx.com"
+            ],
+            "esrccnt" : 1,
+            "p2" : 25,
+            "aseip" : [
+               "---",
+               "---",
+               "---"
+            ],
+            "ehhcnt" : 16,
+            "eho" : [
+               "xxxxxxxxxxxxxxxxx2.xxxxx.net",
+               "xxxxxxxxxxxxxxxxx1.xxxxx.net"
+            ],
+            "esrc" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "edstcnt" : 1,
+            "ectcnt" : 1,
+            "by1" : 2296,
+            "fp" : 1386358271,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
             "geip" : [
                "---",
                "USA",
                "---"
             ],
-            "eipcnt" : 3,
-            "by2" : 1169,
-            "pr" : 6,
-            "rireip" : [
-               "",
-               "",
-               "ARIN"
+            "mac1-term" : [
+               "00:00:0c:07:ac:02",
+               "00:0b:5f:6b:5c:00"
             ],
-            "ehocnt" : 2,
+            "fb2" : "3232302078787878",
             "esub" : [
                "test å é î ø ü"
             ],
-            "edst" : [
-               "xxxxxxxx@gmail.com"
+            "sl" : 518,
+            "pa1" : 11,
+            "db1" : 1666,
+            "eipcnt" : 3,
+            "g1" : "USA",
+            "by2" : 1169,
+            "emv" : [
+               "1.0"
             ],
+            "pa2" : 12,
+            "esubcnt" : 1,
+            "euacnt" : 1,
+            "mac1-term-cnt" : 2,
+            "no" : "test",
+            "as2" : "AS1668 AOL Transit Data Network",
+            "ss" : 1,
+            "by" : 3465,
+            "tcpflags" : {
+               "fin" : 2,
+               "urg" : 0,
+               "rst" : 0,
+               "ack" : 7,
+               "psh" : 12,
+               "syn-ack" : 1,
+               "syn" : 1
+            },
+            "g2" : "USA",
+            "eidcnt" : 1,
             "mac2-term" : [
                "00:25:90:a2:c2:52"
             ],
-            "sl" : 518
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131206",
-               "_type" : "session"
-            }
+            "emvcnt" : 1,
+            "fpd" : 1386358271061,
+            "psl" : [
+               82,
+               82,
+               76,
+               141,
+               105,
+               76,
+               244,
+               145,
+               109,
+               76,
+               109,
+               76,
+               116,
+               1530,
+               154,
+               76,
+               101,
+               76,
+               155,
+               76,
+               76,
+               76,
+               76
+            ],
+            "pr" : 6,
+            "edst" : [
+               "xxxxxxxx@gmail.com"
+            ],
+            "mac2-term-cnt" : 1,
+            "lp" : 1386358271,
+            "eip" : [
+               "10.0.0.4",
+               "10.180.121.108",
+               "169.254.4.195"
+            ]
          }
       }
    ]

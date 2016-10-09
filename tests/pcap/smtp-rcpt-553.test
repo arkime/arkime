@@ -3,16 +3,81 @@
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131205"
+               "_index" : "tests_sessions-131205",
+               "_type" : "session"
             }
          },
          "body" : {
-            "g1" : "RUS",
+            "no" : "test",
             "mac2-term" : [
                "00:26:88:d8:bf:c1",
                "00:00:5e:00:01:02"
             ],
+            "edstcnt" : 1,
+            "lp" : 1386252623,
+            "a2" : "64.12.168.40",
+            "pr" : 6,
+            "g2" : "USA",
+            "fb1" : "45484c4f206c6f63",
+            "p1" : 48012,
+            "g1" : "RUS",
+            "db2" : 715,
+            "db" : 789,
+            "rir2" : "ARIN",
+            "as1" : "AS0000 This is neat",
+            "p2" : 587,
+            "fb2" : "3232302d6d74616f",
+            "a1" : "10.0.0.1",
+            "test" : {
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  682101824
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "string" : [
+                  "16777226:48012,682101824:587"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ]
+            },
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "ta" : [
+               "srcip"
+            ],
+            "tags-term" : [
+               "srcip"
+            ],
+            "sl" : 643,
+            "pa1" : 9,
+            "esrccnt" : 1,
+            "mac1-term" : [
+               "00:0a:f3:31:84:00"
+            ],
+            "pa2" : 7,
+            "by2" : 1185,
+            "prot-term-cnt" : 2,
+            "edst" : [
+               "123456@example"
+            ],
+            "mac2-term-cnt" : 2,
+            "mac1-term-cnt" : 1,
+            "fs" : [],
+            "by1" : 676,
+            "pa" : 16,
+            "fp" : 1386252622,
+            "tacnt" : 1,
+            "fpd" : 1386252622425,
             "ps" : [
                24,
                114,
@@ -31,45 +96,21 @@
                1977,
                2059
             ],
-            "by2" : 1185,
-            "db" : 789,
-            "pr" : 6,
-            "p1" : 48012,
             "ss" : 1,
-            "fb1" : "45484c4f206c6f63",
-            "a2" : "64.12.168.40",
-            "tacnt" : 1,
-            "by" : 1861,
-            "ta" : [
-               "srcip"
+            "esrc" : [
+               "12345678@aol.com"
             ],
-            "edst" : [
-               "123456@example"
-            ],
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  682101824
-               ],
-               "string" : [
-                  "16777226:48012,682101824:587"
-               ],
-               "ip" : [
-                  167772161
-               ]
+            "as2" : "AS1668 AOL Transit Data Network",
+            "tcpflags" : {
+               "ack" : 5,
+               "urg" : 0,
+               "syn" : 1,
+               "rst" : 0,
+               "fin" : 2,
+               "psh" : 7,
+               "syn-ack" : 1
             },
-            "fpd" : 1386252622425,
-            "edstcnt" : 1,
-            "no" : "test",
-            "prot-term-cnt" : 2,
+            "by" : 1861,
             "psl" : [
                90,
                90,
@@ -88,49 +129,8 @@
                82,
                82
             ],
-            "db2" : 715,
-            "tcpflags" : {
-               "ack" : 5,
-               "psh" : 7,
-               "rst" : 0,
-               "syn" : 1,
-               "urg" : 0,
-               "fin" : 2,
-               "syn-ack" : 1
-            },
-            "pa1" : 9,
-            "mac2-term-cnt" : 2,
-            "esrc" : [
-               "12345678@aol.com"
-            ],
-            "lpd" : 1386252623067,
-            "by1" : 676,
-            "mac1-term" : [
-               "00:0a:f3:31:84:00"
-            ],
-            "mac1-term-cnt" : 1,
-            "p2" : 587,
-            "tags-term" : [
-               "srcip"
-            ],
-            "pa2" : 7,
-            "fb2" : "3232302d6d74616f",
-            "a1" : "10.0.0.1",
-            "lp" : 1386252623,
-            "g2" : "USA",
             "db1" : 74,
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "rir2" : "ARIN",
-            "esrccnt" : 1,
-            "fs" : [],
-            "as1" : "AS0000 This is neat",
-            "pa" : 16,
-            "as2" : "AS1668 Transit Data Network",
-            "fp" : 1386252622,
-            "sl" : 643
+            "lpd" : 1386252623067
          }
       }
    ]

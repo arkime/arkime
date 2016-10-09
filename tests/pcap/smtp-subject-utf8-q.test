@@ -1,18 +1,34 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131118",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "eipcnt" : 2,
-            "rireip" : [
-               "",
-               ""
+            "prot-term" : [
+               "smtp",
+               "tcp"
             ],
+            "emvcnt" : 1,
+            "eipcnt" : 2,
+            "sl" : 3788,
+            "aseip" : [
+               "---",
+               "---"
+            ],
+            "ss" : 1,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "email" : {
+               "bodymagic-term" : [
+                  "application/octet-stream"
+               ],
+               "bodymagic-term-cnt" : 1
+            },
+            "no" : "test",
+            "mac1-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0b:5f:6b:5d:40"
+            ],
+            "tacnt" : 2,
+            "db2" : 495,
+            "by2" : 1163,
             "psl" : [
                90,
                90,
@@ -34,24 +50,110 @@
                82,
                82
             ],
-            "by" : 3599,
-            "fb1" : "45484c4f20736d74",
-            "fs" : [],
+            "rireip" : [
+               "",
+               ""
+            ],
             "esub" : [
                "xxxxxx xxxxxx xx xxxxxxxxx xx-xxxxxxx（ANA）GGL_xxxxxxxxxxxxx_xxxxxx.zip"
             ],
-            "pa1" : 9,
-            "rir2" : "ARIN",
-            "emd5" : [
-               "5b153a606bea42005e1eedb5ddeabcf0"
+            "eho" : [
+               "xxxx.xxxx.xxxxxxxxx.com",
+               "smtp-02.xxxxxxxxx.com",
+               "smtp-01.xxxxxxxxx.com"
             ],
+            "ectcnt" : 1,
+            "mac2-term-cnt" : 1,
+            "prot-term-cnt" : 2,
+            "tags-term" : [
+               "smtp:statuscode:250",
+               "srcip"
+            ],
+            "fp" : 1384762012,
+            "pa" : 19,
+            "pr" : 6,
+            "tcpflags" : {
+               "psh" : 9,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "syn" : 1,
+               "fin" : 2,
+               "rst" : 0,
+               "ack" : 7
+            },
+            "fb2" : "32323020616f6c6d",
+            "lp" : 1384762016,
+            "ehh" : [
+               "content-type",
+               "mime-version",
+               "from",
+               "to",
+               "received",
+               "subject"
+            ],
+            "eip" : [
+               "10.168.0.1",
+               "10.168.0.2"
+            ],
+            "p2" : 25,
+            "mac1-term-cnt" : 2,
+            "edstcnt" : 1,
+            "fb1" : "45484c4f20736d74",
+            "a1" : "10.0.0.1",
             "geip" : [
                "---",
                "---"
             ],
-            "pr" : 6,
+            "ect" : [
+               "multipart/mixed; boundary=\"===============1250870193309395048==\""
+            ],
+            "ehocnt" : 3,
+            "emv" : [
+               "1.0"
+            ],
+            "edst" : [
+               "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
+            ],
+            "test" : {
+               "string" : [
+                  "16777226:20720,-499061696:25"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  3795905600
+               ],
+               "ip" : [
+                  167772161
+               ]
+            },
             "esubcnt" : 1,
-            "emvcnt" : 1,
+            "ta" : [
+               "smtp:statuscode:250",
+               "srcip"
+            ],
+            "esrccnt" : 1,
+            "by" : 3599,
+            "by1" : 2436,
+            "db" : 2329,
+            "lpd" : 1384762016457,
+            "p1" : 20720,
+            "emd5cnt" : 1,
+            "g1" : "RUS",
+            "a2" : "64.236.64.226",
+            "fpd" : 1384762012670,
+            "emd5" : [
+               "5b153a606bea42005e1eedb5ddeabcf0"
+            ],
+            "g2" : "USA",
+            "fs" : [],
             "ps" : [
                24,
                114,
@@ -73,126 +175,24 @@
                3763,
                3845
             ],
-            "no" : "test",
-            "g2" : "USA",
-            "ss" : 1,
-            "by2" : 1163,
-            "as2" : "AS1668 Transit Data Network",
-            "eho" : [
-               "xxxx.xxxx.xxxxxxxxx.com",
-               "smtp-02.xxxxxxxxx.com",
-               "smtp-01.xxxxxxxxx.com"
-            ],
-            "ehocnt" : 3,
-            "tacnt" : 2,
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:20720,-499061696:25"
-               ],
-               "number" : [
-                  3795905600
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
+            "db1" : 1834,
+            "rir2" : "ARIN",
             "as1" : "AS0000 This is neat",
-            "tags-term" : [
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "sl" : 3788,
-            "p2" : 25,
-            "emd5cnt" : 1,
-            "edst" : [
-               "xxxxxx.xxxxxxxxx@xx.xxxxxxxxxxx.com"
-            ],
-            "p1" : 20720,
-            "a1" : "10.0.0.1",
-            "lpd" : 1384762016457,
-            "mac2-term-cnt" : 1,
+            "pa2" : 10,
+            "ehhcnt" : 6,
             "esrc" : [
                "xxxxxxxxx@xxxxxxxxx.com"
             ],
-            "g1" : "RUS",
-            "lp" : 1384762016,
-            "tcpflags" : {
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 0,
-               "psh" : 9,
-               "syn-ack" : 1,
-               "ack" : 7,
-               "fin" : 2
-            },
-            "ta" : [
-               "smtp:statuscode:250",
-               "srcip"
-            ],
-            "fb2" : "32323020616f6c6d",
-            "ectcnt" : 1,
-            "fp" : 1384762012,
-            "fpd" : 1384762012670,
-            "db2" : 495,
-            "esrccnt" : 1,
-            "emv" : [
-               "1.0"
-            ],
-            "db" : 2329,
-            "pa" : 19,
-            "mac1-term-cnt" : 2,
-            "ehh" : [
-               "content-type",
-               "mime-version",
-               "from",
-               "to",
-               "received",
-               "subject"
-            ],
-            "mac1-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0b:5f:6b:5d:40"
-            ],
-            "db1" : 1834,
+            "pa1" : 9,
             "mac2-term" : [
                "00:25:90:ac:d0:6a"
-            ],
-            "pa2" : 10,
-            "aseip" : [
-               "---",
-               "---"
-            ],
-            "ect" : [
-               "multipart/mixed; boundary=\"===============1250870193309395048==\""
-            ],
-            "prot-term-cnt" : 2,
-            "eip" : [
-               "10.168.0.1",
-               "10.168.0.2"
-            ],
-            "by1" : 2436,
-            "a2" : "64.236.64.226",
-            "email" : {
-               "bodymagic-term" : [
-                  "application/octet-stream"
-               ],
-               "bodymagic-term-cnt" : 1
-            },
-            "ehhcnt" : 6,
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "edstcnt" : 1
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131118",
+               "_type" : "session"
+            }
          }
       }
    ]
