@@ -33,8 +33,7 @@ var Config         = require('./config.js'),
     URL            = require('url'),
     ESC            = require('elasticsearch'),
     http           = require('http'),
-    https          = require('https'),
-    KAA            = require('keep-alive-agent');
+    https          = require('https');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -42,8 +41,8 @@ var Config         = require('./config.js'),
 
 var clients = {};
 var nodes = [];
-var httpAgent = new KAA({maxSockets: 100});
-var httpsAgent = new KAA.Secure({maxSockets: 100});
+var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
+var httpsAgent =  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
 
 function hasBody(req) {
   var encoding = 'transfer-encoding' in req.headers;
