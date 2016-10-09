@@ -174,10 +174,7 @@ Building Capture
 
 Building Viewer
 ---------------
-1. Install `Node.js <http://nodejs.org/>`_ version 0.10.x (0.10.42 or higher), currently 0.12.x is not supported.
-
-   - **Binary install:** Please see the `platform-specific instructions <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
-   - **Source install:** `Download the Node.js source <http://nodejs.org/dist/v0.10.38/node-v0.10.38.tar.gz>`_, build, and install.
+1. Install `Node.js <http://nodejs.org/>`_ version 4.6.0, currently 6.x is not supported.  (Moloch versions before 0.16 required 0.10.x)
 
 2. In the ``viewer`` directory run ``npm update``.
 

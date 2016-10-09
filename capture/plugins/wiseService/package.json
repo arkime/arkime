@@ -14,7 +14,6 @@
     "hashtable": "^2.0.2",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "iptrie": "http://github.com/postwait/node-iptrie/tarball/master",
-    "keep-alive-agent": "0.0.1",
     "lru-cache": "^4.0.1",
     "morgan": "^1.7.0",
     "native-dns": "^0.7.0",
