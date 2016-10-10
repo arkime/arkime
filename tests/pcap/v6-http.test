@@ -1,17 +1,21 @@
 {
    "packets" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-070805",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "tipv62-term" : "ff0200000000000000000001ff8295b5",
-            "no" : "test",
-            "pa" : 33,
-            "lp" : 1186341381,
-            "fpd" : 1186341079159,
-            "a1" : "254.130.149.181",
-            "db1" : 0,
-            "mac2-term" : [
-               "33:33:ff:82:95:b5"
+            "db2" : 0,
+            "p2" : 0,
+            "mac1-term" : [
+               "00:11:25:82:95:b5"
             ],
+            "lp" : 1186341381,
+            "a2" : "255.130.149.181",
+            "pa" : 33,
             "ps" : [
                24,
                126,
@@ -47,28 +51,16 @@
                5528,
                5630
             ],
-            "ss" : 1,
-            "by" : 2838,
-            "sl" : 302005,
-            "pa1" : 33,
-            "mac1-term" : [
-               "00:11:25:82:95:b5"
-            ],
-            "db2" : 0,
-            "db" : 0,
             "lpd" : 1186341381164,
-            "pa2" : 0,
-            "tipv61-term" : "fe80000000000000021125fffe8295b5",
-            "by2" : 0,
-            "by1" : 2838,
             "fp" : 1186341079,
+            "by" : 2838,
             "mac2-term-cnt" : 1,
-            "p2" : 0,
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "a2" : "255.130.149.181",
-            "p1" : 0,
             "pr" : 58,
+            "sl" : 302005,
+            "mac1-term-cnt" : 1,
+            "pa1" : 33,
+            "db1" : 0,
+            "pa2" : 0,
             "psl" : [
                102,
                102,
@@ -103,7 +95,65 @@
                102,
                102,
                102
-            ]
+            ],
+            "no" : "test",
+            "by1" : 2838,
+            "mac2-term" : [
+               "33:33:ff:82:95:b5"
+            ],
+            "tipv62-term" : "ff0200000000000000000001ff8295b5",
+            "by2" : 0,
+            "ss" : 1,
+            "fpd" : 1186341079159,
+            "fs" : [],
+            "p1" : 0,
+            "db" : 0,
+            "a1" : "254.130.149.181",
+            "tipv61-term" : "fe80000000000000021125fffe8295b5"
+         }
+      },
+      {
+         "body" : {
+            "no" : "test",
+            "psl" : [
+               106,
+               106
+            ],
+            "mac1-term-cnt" : 1,
+            "db1" : 0,
+            "pa2" : 0,
+            "pa1" : 2,
+            "sl" : 5859,
+            "db" : 0,
+            "tipv61-term" : "fe8000000000000002d009fffee3e8de",
+            "a1" : "254.227.232.222",
+            "p1" : 0,
+            "fs" : [],
+            "fpd" : 1186341098054,
+            "ss" : 1,
+            "by2" : 0,
+            "mac2-term" : [
+               "33:33:00:00:00:16"
+            ],
+            "tipv62-term" : "ff020000000000000000000000000016",
+            "by1" : 180,
+            "lpd" : 1186341103914,
+            "ps" : [
+               330,
+               2440
+            ],
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "a2" : "0.0.0.22",
+            "pa" : 2,
+            "lp" : 1186341103,
+            "p2" : 0,
+            "db2" : 0,
+            "pr" : 58,
+            "mac2-term-cnt" : 1,
+            "by" : 180,
+            "fp" : 1186341098
          },
          "header" : {
             "index" : {
@@ -114,132 +164,60 @@
       },
       {
          "body" : {
-            "db2" : 0,
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "pa1" : 2,
-            "sl" : 5859,
-            "ss" : 1,
-            "by" : 180,
-            "ps" : [
-               330,
-               2440
-            ],
-            "mac2-term" : [
-               "33:33:00:00:00:16"
-            ],
-            "db1" : 0,
-            "a1" : "254.227.232.222",
-            "fpd" : 1186341098054,
-            "lp" : 1186341103,
-            "pa" : 2,
-            "no" : "test",
-            "tipv62-term" : "ff020000000000000000000000000016",
-            "psl" : [
-               106,
-               106
-            ],
-            "pr" : 58,
-            "p1" : 0,
-            "a2" : "0.0.0.22",
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "p2" : 0,
-            "mac2-term-cnt" : 1,
-            "fp" : 1186341098,
-            "by2" : 0,
-            "by1" : 180,
-            "tipv61-term" : "fe8000000000000002d009fffee3e8de",
-            "pa2" : 0,
-            "lpd" : 1186341103914,
-            "db" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-070805",
-               "_type" : "session"
-            }
-         }
-      },
-      {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-070805",
-               "_type" : "session"
-            }
-         },
-         "body" : {
-            "psl" : [
-               94
-            ],
-            "p1" : 0,
-            "pr" : 58,
-            "mac1-term-cnt" : 1,
-            "fs" : [],
-            "a2" : "255.152.6.225",
-            "p2" : 0,
-            "fp" : 1186341098,
-            "mac2-term-cnt" : 1,
-            "by1" : 78,
-            "by2" : 0,
-            "lpd" : 1186341098474,
             "tipv61-term" : "00000000000000000000000000000000",
-            "pa2" : 0,
             "db" : 0,
-            "db2" : 0,
-            "pa1" : 1,
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
-            ],
+            "a1" : "0.0.0.0",
+            "p1" : 0,
+            "fs" : [],
+            "fpd" : 1186341098474,
             "ss" : 1,
-            "by" : 78,
-            "sl" : 0,
-            "ps" : [
-               436
-            ],
+            "by2" : 0,
+            "tipv62-term" : "ff0200000000000000000001ff9806e1",
             "mac2-term" : [
                "33:33:ff:98:06:e1"
             ],
-            "lp" : 1186341098,
-            "fpd" : 1186341098474,
-            "a1" : "0.0.0.0",
-            "db1" : 0,
+            "by1" : 78,
             "no" : "test",
+            "psl" : [
+               94
+            ],
+            "pa1" : 1,
+            "mac1-term-cnt" : 1,
+            "db1" : 0,
+            "pa2" : 0,
+            "sl" : 0,
+            "pr" : 58,
+            "mac2-term-cnt" : 1,
+            "by" : 78,
+            "fp" : 1186341098,
+            "lpd" : 1186341098474,
+            "ps" : [
+               436
+            ],
             "pa" : 1,
-            "tipv62-term" : "ff0200000000000000000001ff9806e1"
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "lp" : 1186341098,
+            "a2" : "255.152.6.225",
+            "p2" : 0,
+            "db2" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-070805",
+               "_type" : "session"
+            }
          }
       },
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-070805"
+            }
+         },
          "body" : {
-            "lpd" : 1186341103455,
-            "pa2" : 0,
-            "tipv61-term" : "200106f8102d000010330c4c7e57b19e",
-            "g1" : "GBR",
-            "mac2-term-cnt" : 1,
-            "as1" : "AS4589",
-            "by2" : 0,
-            "by1" : 1782,
-            "a2" : "0.0.0.251",
-            "p2" : 5353,
-            "psl" : [
-               227,
-               208,
-               227,
-               227,
-               208,
-               215,
-               299,
-               299
-            ],
-            "no" : "test",
-            "mac2-term" : [
-               "33:33:00:00:00:fb"
-            ],
-            "prot-term-cnt" : 1,
-            "a1" : "126.87.177.158",
-            "ss" : 1,
-            "sl" : 3851,
             "ps" : [
                530,
                757,
@@ -250,75 +228,97 @@
                1842,
                2141
             ],
+            "lp" : 1186341103,
+            "db2" : 0,
+            "pr" : 17,
+            "mac2-term-cnt" : 1,
+            "by" : 1782,
+            "fp" : 1186341099,
+            "prot-term-cnt" : 1,
+            "pa2" : 0,
+            "mac1-term-cnt" : 1,
+            "db1" : 1718,
+            "pa1" : 8,
+            "as1" : "AS4589 EASYNET Easynet Global Services",
+            "db" : 1718,
+            "p1" : 5353,
+            "by2" : 0,
+            "ss" : 1,
+            "lpd" : 1186341103455,
+            "a2" : "0.0.0.251",
+            "pa" : 8,
             "mac1-term" : [
                "00:d0:09:e3:e8:de"
             ],
-            "db" : 1718,
-            "fp" : 1186341099,
+            "p2" : 5353,
+            "no" : "test",
+            "fb1" : "0000000000020000",
+            "psl" : [
+               227,
+               208,
+               227,
+               227,
+               208,
+               215,
+               299,
+               299
+            ],
+            "sl" : 3851,
+            "tipv61-term" : "200106f8102d000010330c4c7e57b19e",
+            "a1" : "126.87.177.158",
             "fs" : [],
-            "mac1-term-cnt" : 1,
-            "pr" : 17,
-            "p1" : 5353,
+            "g1" : "GBR",
+            "fpd" : 1186341099605,
             "prot-term" : [
                "udp"
             ],
-            "pa" : 8,
             "tipv62-term" : "ff0200000000000000000000000000fb",
-            "lp" : 1186341103,
-            "fpd" : 1186341099605,
-            "db1" : 1718,
-            "fb1" : "0000000000020000",
-            "by" : 1782,
-            "db2" : 0,
-            "pa1" : 8
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-070805"
-            }
+            "mac2-term" : [
+               "33:33:00:00:00:fb"
+            ],
+            "by1" : 1782
          }
       },
       {
          "body" : {
-            "db2" : 0,
-            "pa1" : 1,
-            "mac1-term" : [
-               "00:11:25:82:95:b5"
-            ],
-            "by" : 110,
+            "by2" : 0,
             "ss" : 1,
-            "sl" : 0,
-            "ps" : [
-               4382
-            ],
+            "fpd" : 1186341269082,
+            "by1" : 110,
             "mac2-term" : [
                "33:33:00:00:00:01"
             ],
-            "fpd" : 1186341269082,
-            "lp" : 1186341269,
-            "db1" : 0,
-            "a1" : "254.130.149.181",
-            "no" : "test",
-            "pa" : 1,
             "tipv62-term" : "ff020000000000000000000000000001",
+            "p1" : 0,
+            "tipv61-term" : "fe80000000000000021125fffe8295b5",
+            "db" : 0,
+            "a1" : "254.130.149.181",
+            "fs" : [],
+            "sl" : 0,
+            "db1" : 0,
+            "mac1-term-cnt" : 1,
+            "pa1" : 1,
+            "pa2" : 0,
+            "no" : "test",
             "psl" : [
                126
             ],
-            "pr" : 58,
-            "p1" : 0,
-            "fs" : [],
-            "mac1-term-cnt" : 1,
-            "a2" : "0.0.0.1",
-            "p2" : 0,
+            "by" : 110,
             "fp" : 1186341269,
             "mac2-term-cnt" : 1,
-            "by2" : 0,
-            "by1" : 110,
+            "pr" : 58,
+            "p2" : 0,
+            "db2" : 0,
+            "ps" : [
+               4382
+            ],
             "lpd" : 1186341269082,
-            "tipv61-term" : "fe80000000000000021125fffe8295b5",
-            "pa2" : 0,
-            "db" : 0
+            "a2" : "0.0.0.1",
+            "mac1-term" : [
+               "00:11:25:82:95:b5"
+            ],
+            "lp" : 1186341269,
+            "pa" : 1
          },
          "header" : {
             "index" : {
@@ -329,69 +329,10 @@
       },
       {
          "body" : {
-            "by1" : 704,
-            "by2" : 2563,
-            "hocnt" : 1,
-            "mac2-term-cnt" : 1,
-            "as1" : "AS4589",
-            "g1" : "GBR",
-            "tcpflags" : {
-               "fin" : 2,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "rst" : 0,
-               "psh" : 2,
-               "ack" : 4,
-               "urg" : 0
-            },
-            "hdver" : [
-               "1.1"
+            "us" : [
+               "//cl-1985.ham-01.de.sixxs.net/"
             ],
-            "pa2" : 4,
-            "tipv61-term" : "200106f8102d000002d009fffee3e8de",
-            "lpd" : 1186341404219,
-            "psl" : [
-               110,
-               98,
-               90,
-               330,
-               1522,
-               917,
-               90,
-               90,
-               90,
-               90
-            ],
-            "fb2" : "485454502f312e31",
-            "p2" : 80,
-            "hmd5cnt" : 1,
-            "as2" : "AS4589",
-            "a2" : "0.0.0.2",
-            "a1" : "254.227.232.222",
-            "uscnt" : 1,
-            "prot-term-cnt" : 2,
-            "mac2-term" : [
-               "00:11:25:82:95:b5"
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "hpath" : [
-               "/"
-            ],
-            "no" : "test",
-            "hsver" : [
-               "1.0"
-            ],
-            "mac1-term" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "hh2cnt" : 5,
-            "hdvercnt" : 1,
+            "lp" : 1186341404,
             "ps" : [
                5732,
                5842,
@@ -404,35 +345,42 @@
                8979,
                9069
             ],
+            "db2" : 2259,
             "hh1cnt" : 5,
-            "sl" : 29,
-            "ss" : 1,
-            "fp" : 1186341404,
-            "db" : 2499,
-            "uacnt" : 1,
+            "fb2" : "485454502f312e31",
             "pr" : 6,
-            "p1" : 59201,
+            "mac2-term-cnt" : 1,
             "ho" : [
                "cl-1985.ham-01.de.sixxs.net"
             ],
+            "fp" : 1186341404,
             "hmd5" : [
                "27cb95a0c4fff954073bc23328021b96"
             ],
+            "by" : 3267,
+            "as1" : "AS4589 EASYNET Easynet Global Services",
             "http" : {
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1,
+               "statuscode-cnt" : 1,
                "statuscode" : [
                   200
                ],
-               "statuscode-cnt" : 1
+               "method-term-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "bodymagic-term-cnt" : 1
             },
-            "hsvercnt" : 1,
+            "mac1-term-cnt" : 1,
+            "prot-term-cnt" : 2,
+            "db1" : 240,
+            "pa2" : 4,
+            "pa1" : 6,
+            "hdver" : [
+               "1.1"
+            ],
             "hh2" : [
                "http:header:connection",
                "http:header:content-length",
@@ -440,34 +388,86 @@
                "http:header:date",
                "http:header:server"
             ],
-            "fs" : [],
-            "hpathcnt" : 1,
-            "mac1-term-cnt" : 1,
-            "db1" : 240,
-            "fpd" : 1186341404189,
-            "lp" : 1186341404,
-            "us" : [
-               "//cl-1985.ham-01.de.sixxs.net/"
+            "hocnt" : 1,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:host",
+               "http:header:user-agent"
             ],
-            "g2" : "GBR",
+            "hdvercnt" : 1,
+            "db" : 2499,
+            "p1" : 59201,
+            "hmd5cnt" : 1,
+            "uacnt" : 1,
+            "by2" : 2563,
+            "ss" : 1,
+            "pa" : 10,
+            "mac1-term" : [
+               "00:d0:09:e3:e8:de"
+            ],
+            "a2" : "0.0.0.2",
+            "lpd" : 1186341404219,
+            "hh2cnt" : 5,
+            "hsvercnt" : 1,
+            "p2" : 80,
+            "hpath" : [
+               "/"
+            ],
+            "tcpflags" : {
+               "rst" : 0,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "psh" : 2,
+               "fin" : 2,
+               "syn" : 1,
+               "ack" : 4
+            },
+            "uscnt" : 1,
+            "psl" : [
+               110,
+               98,
+               90,
+               330,
+               1522,
+               917,
+               90,
+               90,
+               90,
+               90
+            ],
+            "no" : "test",
+            "fb1" : "474554202f204854",
+            "sl" : 29,
+            "g1" : "GBR",
             "ua" : [
                "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
             ],
+            "fs" : [],
+            "a1" : "254.227.232.222",
+            "tipv61-term" : "200106f8102d000002d009fffee3e8de",
+            "mac2-term" : [
+               "00:11:25:82:95:b5"
+            ],
+            "hsver" : [
+               "1.0"
+            ],
             "tipv62-term" : "200106f8090007c00000000000000002",
-            "pa" : 10,
+            "by1" : 704,
+            "as2" : "AS4589 EASYNET Easynet Global Services",
+            "g2" : "GBR",
+            "fpd" : 1186341404189,
             "prot-term" : [
                "http",
                "tcp"
             ],
-            "pa1" : 6,
-            "db2" : 2259,
-            "by" : 3267,
-            "fb1" : "474554202f204854"
+            "hpathcnt" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-070805",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-070805"
             }
          }
       }

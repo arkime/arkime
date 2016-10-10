@@ -1,17 +1,10 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131203",
-               "_type" : "session"
-            }
-         },
          "body" : {
             "by2" : 340,
-            "pa2" : 5,
-            "fb2" : "05ff",
-            "a2" : "10.180.156.249",
+            "pa" : 11,
+            "fpd" : 1386090517357,
             "ps" : [
                24,
                118,
@@ -25,45 +18,32 @@
                788,
                870
             ],
+            "fb1" : "05020001",
             "prot-term" : [
                "tcp"
             ],
+            "db1" : 4,
             "db2" : 2,
-            "p1" : 54068,
-            "pa" : 11,
-            "fb1" : "05020001",
-            "mac2-term-cnt" : 1,
-            "by" : 752,
-            "lp" : 1386090517,
-            "lpd" : 1386090517358,
-            "pa1" : 6,
-            "g2" : "USA",
-            "fs" : [],
-            "by1" : 412,
             "prot-term-cnt" : 1,
-            "fpd" : 1386090517357,
-            "pr" : 6,
-            "g1" : "USA",
-            "db" : 6,
+            "lpd" : 1386090517358,
+            "mac2-term-cnt" : 1,
             "fp" : 1386090517,
-            "a1" : "10.180.156.185",
-            "mac1-term-cnt" : 1,
-            "tcpflags" : {
-               "psh" : 2,
-               "syn" : 1,
-               "urg" : 0,
-               "ack" : 5,
-               "fin" : 2,
-               "rst" : 0,
-               "syn-ack" : 1
-            },
-            "no" : "test",
+            "g1" : "USA",
+            "pa2" : 5,
+            "sl" : 1,
             "mac1-term" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "db1" : 4,
-            "sl" : 1,
-            "ss" : 1,
+            "g2" : "USA",
+            "pa1" : 6,
+            "p2" : 1080,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "by1" : 412,
+            "db" : 6,
+            "fs" : [],
+            "p1" : 54068,
             "psl" : [
                94,
                90,
@@ -77,49 +57,74 @@
                82,
                82
             ],
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "p2" : 1080
-         }
-      },
-      {
+            "a2" : "10.180.156.249",
+            "fb2" : "05ff",
+            "a1" : "10.180.156.185",
+            "by" : 752,
+            "pr" : 6,
+            "lp" : 1386090517,
+            "ss" : 1,
+            "no" : "test",
+            "tcpflags" : {
+               "rst" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "ack" : 5,
+               "psh" : 2,
+               "urg" : 0
+            },
+            "mac1-term-cnt" : 1
+         },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions-131203"
             }
+         }
+      },
+      {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131203",
+               "_type" : "session"
+            }
          },
          "body" : {
-            "fs" : [],
-            "prot-term-cnt" : 2,
-            "by1" : 564,
-            "pr" : 6,
-            "fpd" : 1386090528538,
-            "db" : 28,
-            "g1" : "USA",
-            "fp" : 1386090528,
-            "tacnt" : 1,
+            "fb2" : "050201ff",
             "a1" : "10.180.156.185",
-            "mac1-term-cnt" : 1,
-            "tcpflags" : {
-               "urg" : 0,
-               "psh" : 4,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "ack" : 6,
-               "fin" : 2
-            },
-            "no" : "test",
+            "by" : 972,
+            "pr" : 6,
             "ta" : [
                "socks:password"
             ],
-            "sl" : 8,
+            "ss" : 1,
+            "lp" : 1386090528,
+            "no" : "test",
+            "tcpflags" : {
+               "fin" : 2,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "ack" : 6,
+               "psh" : 4
+            },
+            "mac1-term-cnt" : 1,
             "mac1-term" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "db1" : 24,
+            "tacnt" : 1,
+            "pa1" : 8,
+            "g2" : "USA",
+            "tags-term" : [
+               "socks:password"
+            ],
+            "p2" : 1080,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "by1" : 564,
             "psl" : [
                94,
                90,
@@ -136,19 +141,19 @@
                82,
                82
             ],
-            "ss" : 1,
-            "p2" : 1080,
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "by2" : 408,
-            "fb2" : "050201ff",
-            "pa2" : 6,
-            "prot-term" : [
-               "socks",
-               "tcp"
-            ],
+            "db" : 28,
+            "p1" : 54069,
+            "fs" : [],
             "a2" : "10.180.156.249",
+            "mac2-term-cnt" : 1,
+            "fp" : 1386090528,
+            "g1" : "USA",
+            "pa2" : 6,
+            "sl" : 8,
+            "by2" : 408,
+            "socksuser" : "testuser",
+            "fpd" : 1386090528538,
+            "pa" : 14,
             "ps" : [
                952,
                1046,
@@ -165,98 +170,49 @@
                1984,
                2066
             ],
-            "db2" : 4,
-            "p1" : 54069,
-            "pa" : 14,
             "fb1" : "0503000102010874",
-            "socksuser" : "testuser",
-            "by" : 972,
-            "mac2-term-cnt" : 1,
-            "tags-term" : [
-               "socks:password"
+            "prot-term" : [
+               "socks",
+               "tcp"
             ],
-            "lp" : 1386090528,
-            "pa1" : 8,
-            "lpd" : 1386090528547,
-            "g2" : "USA"
+            "db1" : 24,
+            "db2" : 4,
+            "prot-term-cnt" : 2,
+            "lpd" : 1386090528547
          }
       },
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131203"
+            }
+         },
          "body" : {
-            "by1" : 984,
-            "prot-term-cnt" : 3,
-            "fs" : [],
-            "http" : {
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "statuscode" : [
-                  200
-               ],
-               "method-term-cnt" : 1
-            },
-            "hh2" : [
-               "http:header:accept-ranges",
-               "http:header:cache-control",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:etag",
-               "http:header:expires",
-               "http:header:last-modified",
-               "http:header:server",
-               "http:header:x-cache",
-               "http:header:x-ec-custom-error"
+            "hmd5" : [
+               "09b9c392dc1f6e914cea287cb6be34b0"
             ],
-            "pr" : 6,
-            "fpd" : 1386090534425,
-            "tacnt" : 1,
-            "fp" : 1386090534,
-            "g1" : "USA",
-            "db" : 1785,
-            "a1" : "10.180.156.185",
-            "ho" : [
-               "www.example.com"
+            "tags-term" : [
+               "socks:password"
             ],
-            "uscnt" : 1,
-            "tcpflags" : {
-               "fin" : 2,
-               "ack" : 8,
-               "rst" : 0,
-               "syn-ack" : 1,
-               "syn" : 1,
-               "psh" : 8,
-               "urg" : 0
-            },
-            "mac1-term-cnt" : 1,
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "hocnt" : 1,
-            "db1" : 180,
-            "us" : [
-               "//www.example.com/"
-            ],
+            "p2" : 1080,
+            "uacnt" : 1,
+            "g2" : "USA",
+            "pa1" : 12,
             "mac1-term" : [
                "00:1f:5b:ff:51:cb"
             ],
-            "sl" : 153,
-            "hdvercnt" : 1,
-            "hmd5cnt" : 1,
-            "ta" : [
-               "socks:password"
-            ],
-            "ua" : [
-               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-            ],
-            "no" : "test",
-            "p2" : 1080,
+            "tacnt" : 1,
+            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+            "a2" : "10.180.156.249",
+            "hocnt" : 1,
+            "by1" : 984,
             "mac2-term" : [
                "00:13:72:c4:f1:e1"
             ],
+            "p1" : 54072,
+            "db" : 1785,
+            "fs" : [],
             "psl" : [
                94,
                90,
@@ -279,8 +235,43 @@
                82,
                82
             ],
+            "ho" : [
+               "www.example.com"
+            ],
+            "rirsocksip" : "RIPE",
+            "socksip" : "93.184.216.119",
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "by" : 3125,
+            "hpath" : [
+               "/"
+            ],
+            "uscnt" : 1,
+            "hsver" : [
+               "1.1"
+            ],
+            "fb2" : "0502010005000001",
+            "a1" : "10.180.156.185",
+            "ta" : [
+               "socks:password"
+            ],
+            "lp" : 1386090534,
             "ss" : 1,
-            "a2" : "10.180.156.249",
+            "mac1-term-cnt" : 1,
+            "tcpflags" : {
+               "ack" : 8,
+               "psh" : 8,
+               "urg" : 0,
+               "syn" : 1,
+               "rst" : 0,
+               "fin" : 2,
+               "syn-ack" : 1
+            },
+            "no" : "test",
+            "pr" : 6,
             "ps" : [
                2148,
                2242,
@@ -303,60 +294,69 @@
                5429,
                5511
             ],
-            "uacnt" : 1,
+            "us" : [
+               "//www.example.com/"
+            ],
             "prot-term" : [
                "http",
                "socks",
                "tcp"
             ],
-            "hsver" : [
-               "1.1"
-            ],
+            "fb1" : "0503000102010874",
             "by2" : 2141,
-            "pa2" : 8,
-            "fb2" : "0502010005000001",
-            "db2" : 1605,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
-            "pa" : 20,
-            "p1" : 54072,
-            "hpathcnt" : 1,
             "hsvercnt" : 1,
             "socksuser" : "testuser",
-            "by" : 3125,
+            "hh2" : [
+               "http:header:accept-ranges",
+               "http:header:cache-control",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:etag",
+               "http:header:expires",
+               "http:header:last-modified",
+               "http:header:server",
+               "http:header:x-cache",
+               "http:header:x-ec-custom-error"
+            ],
+            "pa" : 20,
+            "ua" : [
+               "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+            ],
+            "fpd" : 1386090534425,
+            "db2" : 1605,
+            "hh1cnt" : 3,
+            "lpd" : 1386090534579,
+            "prot-term-cnt" : 3,
+            "gsocksip" : "USA",
+            "db1" : 180,
+            "hmd5cnt" : 1,
+            "sockspo" : 80,
+            "g1" : "USA",
             "mac2-term-cnt" : 1,
-            "hmd5" : [
-               "09b9c392dc1f6e914cea287cb6be34b0"
-            ],
-            "fb1" : "0503000102010874",
-            "tags-term" : [
-               "socks:password"
-            ],
-            "socksip" : "93.184.216.119",
+            "hdvercnt" : 1,
             "hdver" : [
                "1.1"
             ],
-            "sockspo" : 80,
+            "fp" : 1386090534,
+            "sl" : 153,
             "hh2cnt" : 11,
-            "lp" : 1386090534,
-            "rirsocksip" : "RIPE",
-            "gsocksip" : "USA",
-            "lpd" : 1386090534579,
-            "pa1" : 12,
-            "hh1cnt" : 3,
-            "hpath" : [
-               "/"
-            ],
-            "g2" : "USA"
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131203"
-            }
+            "http" : {
+               "statuscode" : [
+                  200
+               ],
+               "bodymagic-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/html"
+               ],
+               "method-term" : [
+                  "GET"
+               ]
+            },
+            "pa2" : 8,
+            "hpathcnt" : 1
          }
       }
    ]

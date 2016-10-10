@@ -246,15 +246,16 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
 #endif
                 session->tcpSeq[(packet->direction+1)%2] = ntohl(tcphdr->th_ack);
             }
-            session->haveTcpSession = 1;
-            session->tcpSeq[packet->direction] = seq + 1;
-            if (!session->tcp_next) {
-                DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
-            }
-            return 1;
         } else {
             session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN]++;
         }
+
+        session->haveTcpSession = 1;
+        session->tcpSeq[packet->direction] = seq + 1;
+        if (!session->tcp_next) {
+            DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
+        }
+        return 1;
     }
 
     if (tcphdr->th_flags & TH_RST) {

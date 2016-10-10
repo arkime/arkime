@@ -44,8 +44,7 @@ var Config         = require('./config.js'),
     jade           = require('jade'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
-    decode         = require('./decode.js'),
-    KAA            = require('keep-alive-agent');
+    decode         = require('./decode.js');
 } catch (e) {
   console.log ("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -69,8 +68,8 @@ var app = express();
 var internals = {
   elasticBase: Config.get("elasticsearch", "http://localhost:9200").split(","),
   userNameHeader: Config.get("userNameHeader"),
-  httpAgent:   new KAA({maxSockets: 40}),
-  httpsAgent:  new KAA.Secure({maxSockets: 40}),
+  httpAgent:   new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
+  httpsAgent:  new https.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 40}),
   previousNodeStats: [],
   caTrustCerts: {},
   cronRunning: false,

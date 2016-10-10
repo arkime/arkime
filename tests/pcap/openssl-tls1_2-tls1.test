@@ -1,78 +1,46 @@
 {
    "packets" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-141015"
-            }
-         },
          "body" : {
-            "lp" : 1413338075,
-            "fb1" : "1603010102010000",
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "string" : [
-                  "16777226:40291,51711040:443"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "number" : [
-                  51711040
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "p1" : 40291,
-            "ta" : [
-               "srcip"
-            ],
+            "a2" : "64.12.21.3",
+            "fs" : [],
+            "pa2" : 8,
+            "fpd" : 1413338074954,
+            "fp" : 1413338074,
+            "fb2" : "1603010f75020000",
+            "db1" : 596,
             "a1" : "10.0.0.1",
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "as1" : "AS0000 This is neat",
             "pr" : 6,
-            "as2" : "AS1668 Transit Data Network",
-            "tacnt" : 1,
-            "g2" : "USA",
-            "by" : 5677,
-            "sl" : 606,
-            "pa" : 19,
-            "tlscipher-termcnt" : 1,
-            "db2" : 4005,
-            "no" : "test",
-            "tags-term" : [
-               "srcip"
-            ],
-            "prot-term" : [
-               "tls",
-               "tcp"
-            ],
             "tls" : [
                {
                   "sOn" : "Entrust, Inc.",
+                  "diffDays" : 3653,
+                  "iOn" : "Entrust.net",
+                  "sn" : "4c0e8c39",
+                  "notBefore" : 1321026040,
+                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
+                  "notAfter" : 1636685477,
                   "iCn" : [
                      "entrust.net certification authority (2048)"
                   ],
-                  "sn" : "4c0e8c39",
-                  "notAfter" : 1636685477,
                   "sCn" : [
                      "entrust certification authority - l1c"
-                  ],
-                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
-                  "diffDays" : 3653,
-                  "notBefore" : 1321026040,
-                  "iOn" : "Entrust.net"
+                  ]
                },
                {
+                  "sCn" : [
+                     "www.aol.com"
+                  ],
+                  "iCn" : [
+                     "entrust certification authority - l1c"
+                  ],
+                  "altcnt" : 62,
+                  "notAfter" : 1497242632,
+                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
+                  "notBefore" : 1402510723,
+                  "sn" : "4c235548",
+                  "diffDays" : 1096,
+                  "iOn" : "Entrust, Inc.",
                   "alt" : [
                      "toshiba.aol.ca",
                      "main-w.welcomescreen.aol.com",
@@ -137,58 +105,52 @@
                      "m.article.aol.com",
                      "hp.aol.ca"
                   ],
-                  "iOn" : "Entrust, Inc.",
-                  "diffDays" : 1096,
-                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
-                  "notBefore" : 1402510723,
-                  "sCn" : [
-                     "www.aol.com"
-                  ],
-                  "altcnt" : 62,
-                  "iCn" : [
-                     "entrust certification authority - l1c"
-                  ],
-                  "sOn" : "AOL Inc.",
-                  "notAfter" : 1497242632,
-                  "sn" : "4c235548"
+                  "sOn" : "AOL Inc."
                }
             ],
-            "ss" : 1,
             "lpd" : 1413338075560,
-            "fb2" : "1603010f75020000",
-            "by2" : 4467,
-            "pa1" : 11,
-            "db" : 4601,
+            "p2" : 443,
+            "db2" : 4005,
             "rir2" : "ARIN",
+            "as1" : "AS0000 This is neat",
+            "p1" : 40291,
+            "tacnt" : 1,
+            "test" : {
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  51711040
+               ],
+               "string" : [
+                  "16777226:40291,51711040:443"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ]
+            },
+            "ta" : [
+               "srcip"
+            ],
+            "as2" : "AS1668 AOL Transit Data Network",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_MD5"
+            ],
+            "sl" : 606,
+            "tlscipher-termcnt" : 1,
             "mac2-term-cnt" : 2,
-            "mac1-term-cnt" : 1,
-            "fs" : [],
+            "g2" : "USA",
             "tlscnt" : 2,
-            "g1" : "RUS",
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "ps" : [
-               24,
-               114,
-               196,
-               266,
-               599,
-               2129,
-               2199,
-               3729,
-               4841,
-               4911,
-               4981,
-               5361,
-               5437,
-               5550,
-               5620,
-               5713,
-               5783,
-               5859,
-               5935
-            ],
+            "pa" : 19,
+            "ss" : 1,
+            "by1" : 1210,
+            "prot-term-cnt" : 2,
             "psl" : [
                90,
                82,
@@ -210,34 +172,72 @@
                76,
                70
             ],
-            "pa2" : 8,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_MD5"
+            "tlsver-termcnt" : 1,
+            "g1" : "RUS",
+            "fb1" : "1603010102010000",
+            "lp" : 1413338075,
+            "tlsver-term" : [
+               "TLSv1"
             ],
-            "tlsdstid-term" : [
-               "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
+            "prot-term" : [
+               "tls",
+               "tcp"
             ],
-            "p2" : 443,
+            "by" : 5677,
+            "pa1" : 11,
+            "db" : 4601,
             "tcpflags" : {
-               "urg" : 0,
                "psh" : 7,
-               "fin" : 2,
-               "ack" : 8,
                "syn" : 1,
+               "ack" : 8,
+               "fin" : 2,
+               "urg" : 0,
                "syn-ack" : 1,
                "rst" : 0
             },
+            "ps" : [
+               24,
+               114,
+               196,
+               266,
+               599,
+               2129,
+               2199,
+               3729,
+               4841,
+               4911,
+               4981,
+               5361,
+               5437,
+               5550,
+               5620,
+               5713,
+               5783,
+               5859,
+               5935
+            ],
+            "mac1-term-cnt" : 1,
+            "tlsdstid-term" : [
+               "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
+            ],
+            "no" : "test",
+            "tags-term" : [
+               "srcip"
+            ],
+            "by2" : 4467,
             "mac2-term" : [
                "00:00:0c:07:ac:01",
                "00:0e:d6:0b:98:80"
             ],
-            "db1" : 596,
-            "fpd" : 1413338074954,
-            "tlsver-termcnt" : 1,
-            "prot-term-cnt" : 2,
-            "fp" : 1413338074,
-            "a2" : "64.12.21.3",
-            "by1" : 1210
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-141015"
+            }
          }
       }
    ]

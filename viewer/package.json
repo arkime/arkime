@@ -25,7 +25,6 @@
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
     "jade": "^1.11.0",
     "jquery": "^3.1.0",
-    "keep-alive-agent": "0.0.1",
     "method-override": "^2.3.6",
     "moment": "^2.15.1",
     "morgan": "^1.7.0",

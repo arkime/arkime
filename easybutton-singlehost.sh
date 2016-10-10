@@ -25,8 +25,6 @@ if [ "$#" -gt 0 ]; then
     echo "Installing to ${TDIR}"
 fi
 
-https://nodejs.org/dist/v4.6.0/node-v4.6.0-linux-x64.tar.xz
-
 ES=2.4.0
 NODEJS=4.6.0
 INSTALL_DIR=$PWD
@@ -79,7 +77,7 @@ if [ $JAVA_VAL -ne 0 ]; then
             echo "ERROR - 'yum install java-1.7.0-openjdk' failed"
             exit
         fi
-    elif [ $(uname) == "FreeBSD" ]; then
+    elif [ $(uname) = "FreeBSD" ]; then
         pkg_add -Fr openjdk7
     else
         echo "ERROR - Not sure how to install java for this OS, please install and run again"
@@ -165,23 +163,23 @@ fi
 
 #make
 MAKE=make
-if [ $(uname) == "FreeBSD" ]; then
+if [ $(uname) = "FreeBSD" ]; then
     MAKE=gmake
 fi
 
 # NodeJS
 echo "MOLOCH: Downloading and installing node"
 cd ${TDIR}
-if [ ! -f "node-v${NODEJS}.tar.gz" ]; then
+if [ ! -f "node-v${NODEJS}-linux-x64.tar.xz" ]; then
   wget https://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}-linux-x64.tar.xz
 fi
 
-tar xfz node-v${NODEJS}-linux-x64.tar.xz
+xzcat node-v${NODEJS}-linux-x64.tar.xz | tar xf -
 
 # William likes the links so easier to find in ps
-ln -s $TDIR/node-v${NODEJS}-linux-x64/bin/* $TDIR/bin/
-ln -s $TDIR/bin/node $TDIR/bin/node-viewer
-ln -s $TDIR/bin/node $TDIR/bin/node-wise
+ln -sf $TDIR/node-v${NODEJS}-linux-x64/bin/* $TDIR/bin/
+ln -sf $TDIR/bin/node $TDIR/bin/node-viewer
+ln -sf $TDIR/bin/node $TDIR/bin/node-wise
 
 if [ "x$http_proxy" != "x" ]; then
     ${TDIR}/bin/npm config set proxy $http_proxy

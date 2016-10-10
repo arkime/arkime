@@ -570,6 +570,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, server);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETFUNCTION, moloch_http_curl_close_callback);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, server);
+    curl_easy_setopt(request->easy, CURLOPT_ACCEPT_ENCODING, ""); // https://curl.haxx.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
 
     if (request->headerList) {
         curl_easy_setopt(request->easy, CURLOPT_HTTPHEADER, request->headerList);

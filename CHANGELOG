@@ -4,6 +4,7 @@
   - viewer - upgrade many packages
   - wise - upgrade many packages
   - easybutton - download prebuilt node 4.6.0
+  - capture - set accept-encoding for all requests (issue #542)
 
 0.15.1 2016/10/05
   - NOTICE: Last version to support node 0.10
