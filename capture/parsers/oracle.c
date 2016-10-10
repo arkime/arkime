@@ -43,7 +43,7 @@ void oracle_get_item(const char *data, char *needle, int needle_len, char *buf, 
 /******************************************************************************/
 void oracle_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
-    if (which != 0 && len != data[1] && data[25] + data[27] != len)
+    if (which != 0 || len <= 27 || len != data[1] || (data[25] + data[27] != len))
         return;
 
     char buf[257];  // can't be more then 1 byte big
