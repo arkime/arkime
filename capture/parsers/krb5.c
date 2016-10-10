@@ -291,6 +291,7 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
     moloch_parsers_classifier_register_udp("krb5", 0, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    moloch_parsers_classifier_register_tcp("krb5", 0, 11, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
     moloch_parsers_classifier_register_tcp("krb5", 0, 13, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
 }
 
