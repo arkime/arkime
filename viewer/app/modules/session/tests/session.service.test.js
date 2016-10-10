@@ -32,6 +32,15 @@
 
         $httpBackend.when('GET', 'tableState/sessions')
           .respond(200, {});
+
+        $httpBackend.when('GET', 'sessionid/node/sessionDetail')
+          .respond(200, '');
+
+        $httpBackend.when('POST', 'addTags')
+          .respond(200, {});
+
+        $httpBackend.when('POST', 'removeTags')
+          .respond(200, {});
       }));
 
       afterEach(function() {
@@ -53,14 +62,32 @@
           facets: 1   // facets
         };
 
-        var result = SessionService.get(query);
+        SessionService.get(query);
         $httpBackend.expectGET('sessions.json?facets=1&length=100&order=fp:asc');
         $httpBackend.flush();
       });
 
       it('should send a GET request for tablestate', function() {
-        var result = SessionService.getColumnInfo();
+        SessionService.getColumnInfo();
         $httpBackend.expectGET('tableState/sessions');
+        $httpBackend.flush();
+      });
+
+      it('should send a GET request for session detail', function() {
+        SessionService.getDetail('node', 'sessionid', {});
+        $httpBackend.expectGET('sessionid/node/sessionDetail');
+        $httpBackend.flush();
+      });
+
+      it('should send a POST request to add tags', function() {
+        SessionService.addTags('sessionid', 'tag', 'no');
+        $httpBackend.expectPOST('addTags');
+        $httpBackend.flush();
+      });
+
+      it('should send a POST request to remove tags', function() {
+        SessionService.removeTags('sessionid', 'tag', 'no');
+        $httpBackend.expectPOST('removeTags');
         $httpBackend.flush();
       });
 

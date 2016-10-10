@@ -10,15 +10,18 @@
 
     /**
      * Initialize global variables for this SessionService
-     * @param $q    Service to run functions asynchronously
-     * @param $http Angular service that facilitates communication
-     *              with the remote HTTP servers
+     * @param $q        Service to run functions asynchronously
+     * @param $http     Angular service that facilitates communication
+     *                  with the remote HTTP servers
+     * @param $location Exposes browser address bar URL
+     *                  (based on the window.location)
      *
      * @ngInject
      */
-    constructor($q, $http) {
-      this.$q     = $q;
-      this.$http  = $http;
+    constructor($q, $http, $location) {
+      this.$q         = $q;
+      this.$http      = $http;
+      this.$location  = $location;
     }
 
     /* service methods ----------------------------------------------------- */
@@ -105,6 +108,7 @@
      * Gets details about the session
      * @param {string} id         The unique id of the session
      * @param {string} node       The node that the session belongs to
+     * @param {Object} params     The params to send with the request
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
@@ -141,11 +145,9 @@
 
         if (segments !== 'no') { data.segments = segments; }
 
-        var options = {
-          url   : 'addTags',
-          method: 'POST',
-          data  : data
-        };
+        var url = SessionService.urlWithDateParams('addTags', this.$location.search());
+
+        var options = { url:url, method:'POST', data:data };
 
         this.$http(options)
           .then((response) => {
@@ -171,11 +173,9 @@
 
         if (segments !== 'no') { data.segments = segments; }
 
-        var options = {
-          url   : 'removeTags',
-          method: 'POST',
-          data  : data
-        };
+        var url = SessionService.urlWithDateParams('removeTags', this.$location.search());
+
+        var options = { url:url, method:'POST', data:data };
 
         this.$http(options)
           .then((response) => {
@@ -187,9 +187,27 @@
       });
     }
 
+    /* internal functions -------------------------------------------------- */
+    /**
+     * Adds date parameters to a given base url
+     * @param {string} baseUrl The url to append the params to
+     * @param {Object} params  The params object where date params may exist
+     */
+    static urlWithDateParams(baseUrl, params) {
+      if (params.date) {
+        baseUrl += '?date=' + params.date;
+      } else if (params.startTime &&
+        params.stopTime) {
+        baseUrl += '?startTime='  + params.startTime;
+        baseUrl += '?stopTime='   + params.stopTime;
+      }
+
+      return baseUrl;
+    }
+
   }
 
-  SessionService.$inject = ['$q', '$http'];
+  SessionService.$inject = ['$q', '$http', '$location'];
 
 
   angular.module('moloch')

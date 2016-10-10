@@ -14,3 +14,6 @@ require('./health/tests/eshealth.component.test');
 require('./health/tests/health.service.test');
 
 require('./config/config.service.test');
+
+require('./user/tests/user.service.test');
+require('./user/tests/has.permission.test');
