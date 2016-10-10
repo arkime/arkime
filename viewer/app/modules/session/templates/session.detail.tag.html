@@ -1,20 +1,20 @@
-<span class="add-tag">
+<span class="session-tag">
 
-  <div ng-if="!$ctrl.addingTag"
-    ng-click="$ctrl.addingTag = true;"
+  <div ng-if="!$ctrl.tagging && $ctrl.add"
+    ng-click="$ctrl.tagging = true;"
     uib-tooltip="Add a new tag to this session"
     class="btn btn-xs btn-blue margined-left-lg margined-bottom margined-top">
     <span class="fa fa-plus-circle"></span>
   </div>
 
-  <div ng-if="$ctrl.addingTag"
-    ng-click="$ctrl.addingTag = false;"
+  <div ng-if="$ctrl.tagging && $ctrl.add"
+    ng-click="$ctrl.tagging = false;"
     uib-tooltip="Close without adding tags"
     class="btn btn-xs btn-danger margined-left-lg margined-bottom margined-top">
     <span class="fa fa-minus-circle"></span>
   </div>
 
-  <form ng-if="$ctrl.addingTag" class="margined-top margined-bottom">
+  <form ng-if="$ctrl.tagging || !$ctrl.add" class="margined-top margined-bottom">
 
     <div class="row">
       <div class="col-md-4">
@@ -33,7 +33,7 @@
           </span>
         </div>
       </div>
-      <div class="col-md-8">
+      <div class="col-md-7">
         <div class="input-group input-group-sm">
           <span class="input-group-addon">
             Tags
@@ -42,8 +42,13 @@
             type="text" class="form-control"
             placeholder="Enter a comma separated list of tags">
           <span class="input-group-btn">
-            <button class="btn btn-green" ng-click="$ctrl.addTags()">
+            <button class="btn btn-green" ng-if="$ctrl.add" ng-click="$ctrl.addTags()">
+              <span class="fa fa-plus-circle"></span>&nbsp;
               Add Tags
+            </button>
+            <button class="btn btn-warning" ng-if="!$ctrl.add" ng-click="$ctrl.removeTags()">
+              <span class="fa fa-minus-circle"></span>&nbsp;
+              Remove Tags
             </button>
           </span>
         </div>
@@ -51,6 +56,12 @@
           <span class="fa fa-exclamation-triangle"></span>&nbsp;
           {{$ctrl.error}}
         </p>
+      </div>
+      <div class="col-md-1">
+        <div class="btn btn-sm btn-danger pull-right" ng-click="$ctrl.cancel()">
+          <span class="fa fa-ban"></span>&nbsp;
+          cancel
+        </div>
       </div>
     </div>
 

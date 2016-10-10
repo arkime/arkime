@@ -745,6 +745,21 @@ app.get('/currentuser', function(req, res) {
   });
 });
 
+app.get('/molochclusters', function(req, res) {
+  if(!app.locals.molochClusters) {
+    var molochClusters = Config.configMap("moloch-clusters");
+
+    if (!molochClusters) {
+      res.status(404);
+      return res.send('Cannot locate right clicks');
+    }
+
+    return res.send(molochClusters);
+  }
+
+  return res.send(app.locals.molochClusters);
+});
+
 app.get('/settings', checkWebEnabled, function(req, res) {
   var actions = [{name: "Tag", value: "tag"}];
 

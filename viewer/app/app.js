@@ -9,6 +9,7 @@
   require('angular-resource');
   require('angular-ui-bootstrap');
   require('bootstrap/js/tooltip');
+  require('bootstrap/js/dropdown');
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
 

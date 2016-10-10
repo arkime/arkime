@@ -15,10 +15,12 @@ ul.nav.nav-pills.margined-bottom-xlg
     a(href='#{session.no}/raw/#{session.id}?type=dst',target="_blank") Destination Raw
   li.cursor-pointer
     a(href='#/session?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}') Permalink
-  li.cursor-pointer.disabled(title="Under construction")
-    a Actions &nbsp;
+  li.cursor-pointer.dropdown
+    a(data-toggle="dropdown", role="button") Actions &nbsp;
       span.fa.fa-bars
-      //- img#actionsButtonArrow(src="down-arrow.png")
+    ul.dropdown-menu.session-actions-menu
+
+div.remove-tag-container
 
 dl
   dt Id:
@@ -121,7 +123,7 @@ dl
         |)
   
   div.tag-list  
-    +arrayList(session, "ta", "Tags:", "tags", '<div class="add-tag-container"></div>')
+    +arrayList(session, "ta", "Tags:", "tags", '<div class="session-tag-container"></div>')
   
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files:", "file")

@@ -155,22 +155,6 @@
     }
 
     /**
-     * Scrolls to specified session
-     * @param {Object} event  The click event that initiated scrollTo
-     * @param {string} id     The id of the sessino to scroll to
-     */
-    scrollTo(event, id) {
-      event.preventDefault();
-
-      var old = this.$location.hash();
-      this.$location.hash('session' + id);
-      this.$anchorScroll();
-
-      // reset to old to keep any additional routing logic from kicking in
-      this.$location.hash(old);
-    }
-
-    /**
      * Determines if the table is being sorted by specified column
      * @param {string} id The id of the column
      */

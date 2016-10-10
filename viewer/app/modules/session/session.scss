@@ -84,9 +84,8 @@ session {
     width         : 400px;
     overflow      : hidden;
     white-space   : nowrap;
-    padding-bottom: 100px;
-
-    &:hover {
+    
+    &.open {
       opacity: 1;
 
       .sticky-session-detail {
@@ -232,6 +231,29 @@ session {
       }
     }
 
+  }
+
+  // compact dropdown menu for session actions
+  .dropdown-menu {
+    session-actions {
+      li {
+        a {
+          text-decoration : none;
+          display         : block;
+          padding         : 2px 12px;
+          clear           : both;
+          font-weight     : normal;
+          color           : #333;
+          white-space     : nowrap;
+        }
+        &.disabled {
+          a {
+            color : #777;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
   }
 
 }

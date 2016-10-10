@@ -7,7 +7,7 @@
    * @classdesc Interacts with add tag area
    *
    * @example
-   * '<add-tag sessionid="session.id"></add-tag>'
+   * '<session-tag sessionid="session.id"></session-tag>'
    */
   class SessionDetailTagController {
 
@@ -24,9 +24,9 @@
     }
 
     $onInit() {
-      this.addingTag  = false;
-      this.include    = 'no';
-      this.tags       = '';
+      this.tagging  = false;
+      this.include  = 'no';
+      this.tags     = '';
     }
 
     /* exposed functions --------------------------------------------------- */
@@ -38,14 +38,39 @@
 
       this.SessionService.addTags(this.sessionid, this.tags, this.include)
         .then((response) => {
-          this.addingTag  = false;
-          this.tags       = '';
+          this.tagging  = false;
+          this.tags     = '';
           // notify parent that tags were added (namely session.detail.component)
-          this.$scope.$emit('added:tags', { id:this.sessionid });
+          this.$scope.$emit('update:tags', { id:this.sessionid });
         })
         .catch((error) => {
           this.error = error;
         });
+    }
+
+    removeTags() {
+      if (this.tags === '') {
+        this.error = 'No tag(s) specified.';
+        return;
+      }
+
+      this.SessionService.removeTags(this.sessionid, this.tags, this.include)
+        .then((response) => {
+          this.tagging  = false;
+          this.tags     = '';
+          // notify parent that tags were added (namely session.detail.component)
+          this.$scope.$emit('update:tags', { id:this.sessionid });
+        })
+        .catch((error) => {
+          this.error = error;
+        });
+    }
+
+    cancel() {
+      this.tagging = false;
+      if (!this.add) {
+        this.$scope.$emit('removing:tags', { removing: false });
+      }
     }
 
   }
@@ -57,10 +82,10 @@
    * Displays add tag area
    */
   angular.module('moloch')
-    .component('addTag', {
+    .component('sessionTag', {
       template  : require('html!../templates/session.detail.tag.html'),
       controller: SessionDetailTagController,
-      bindings  : { sessionid : '<' }
+      bindings  : { sessionid : '<', add: '<' }
     });
 
 })();

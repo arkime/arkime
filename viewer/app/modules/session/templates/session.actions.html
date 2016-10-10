@@ -1,0 +1,18 @@
+<li role="menuitem" class="disabled">
+  <a>Export PCAP</a>
+</li>
+<li role="menuitem" has-permission="removeEnabled"
+  ng-click="$ctrl.removeTags()">
+  <a>Remove Tags</a>
+</li>
+<li role="menuitem" class="disabled" has-permission="removeEnabled">
+  <a>Scrub PCAP Storage</a>
+</li>
+<li role="menuitem" class="disabled" has-permission="removeEnabled">
+  <a>Delete SPI &amp; PCAP</a>
+</li>
+<li class="disabled" ng-repeat="(key, value) in $ctrl.molochclusters">
+  <a cluster="{{::key}}">
+    Send Session to {{::value.name}}
+  </a>
+</li>

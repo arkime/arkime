@@ -12,35 +12,10 @@
       records-filtered="$ctrl.sessions.recordsFiltered"
       current-page="$ctrl.currentPage"
       start="$ctrl.query.start"></moloch-pagination>
-
+      
     <!-- open session details -->
-    <div class="sticky-session-detail-container"
-      ng-show="$ctrl.stickySessions && !$ctrl.error && !$ctrl.loading">
-      <div class="sticky-session-detail animate-opacity cursor-pointer"
-        ng-repeat="session in $ctrl.stickySessions"
-        ng-click="$ctrl.scrollTo($event, session.id)">
-
-        <a href class="btn btn-sm btn-link pull-left"
-          ng-click="$ctrl.toggleSessionDetail(session)">
-          <span class="fa fa-close fa-lg"></span>
-        </a>
-
-        <div>
-          <small><strong>
-            {{::session.fp * 1000 | date:'yyyy/MM/dd'}}
-            {{::session.fp * 1000 | date:'HH:mm:ss'}}&nbsp;-&nbsp;
-            {{::session.lp * 1000 | date:'yyyy/MM/dd'}}
-            {{::session.lp * 1000 | date:'HH:mm:ss'}}
-            <br>
-            {{::session | extractIPString:'src'}}:{{::session.p1}}
-            {{::session.g1}}&nbsp;-&nbsp;
-            {{::session | extractIPString:'dst'}}:{{::session.p2}}
-            {{::session.g2}}
-          </strong></small>
-        </div>
-
-      </div>
-    </div> <!-- /open session details -->
+    <sticky-sessions ng-if="!$ctrl.error && !$ctrl.loading"
+      sessions="$ctrl.stickySessions"></sticky-sessions>
 
     <div class="table-responsive margined-top-lg">
       <!-- session data table -->

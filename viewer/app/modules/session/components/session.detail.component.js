@@ -3,7 +3,6 @@
   'use strict';
 
   var optionsHTML = require('html!../templates/session.detail.options.html');
-  var tagHTML     = require('html!../templates/session.detail.tag.html');
 
   /**
    * @class SessionDetailController
@@ -74,10 +73,15 @@
         });
 
       // update session detail when tags are added
-      this.$scope.$on('added:tags', (event, args) => {
+      this.$scope.$on('update:tags', (event, args) => {
         if (this.$scope.session.id === args.id) {
           this.getDetailData();
         }
+      });
+
+      this.$scope.$on('removing:tags', (event, args) => {
+        if (args.removing) { this.$scope.displayRemoveTags(); }
+        else { this.$scope.hideRemoveTags(); }
       });
     }
 
@@ -143,6 +147,20 @@
         controllerAs: '$ctrl',
         scope       : { session: '=' },
         link        : function SessionDetailLink(scope, element, attrs, ctrl) {
+
+          /* exposed functions --------------------------------------------- */
+          scope.displayRemoveTags = function() {
+            var tagEl = element.find('.remove-tag-container');
+            var html  = `<session-tag class="remove-tag-container"
+              sessionid="session.id" add="false"></session-tag>`;
+            var tagContent = $compile(html)(scope);
+            tagEl.replaceWith(tagContent);
+          };
+
+          scope.hideRemoveTags = function() {
+            var tagEl = element.find('.remove-tag-container').hide();
+          };
+
 
           /* link utilities ------------------------------------------------ */
           function safeStr(str) {
@@ -405,14 +423,23 @@
             $timeout(function() { // wait until session detail is rendered
               var i, len, time, value, timeEl;
 
+              // display session actions dropdown
+              var actionsEl       = element.find('.session-actions-menu');
+              // var exists = actionsEl.find('')
+              if (actionsEl.find('session-actions').length === 0) {
+                var actionsContent  = $compile('<session-actions></session-actions>')(scope);
+                actionsEl.append(actionsContent);
+                actionsEl.dropdown();
+              }
+
               // display packet option buttons
               var optionsEl   = element.find('.packet-options');
               var optContent  = $compile(optionsHTML)(scope);
               optionsEl.replaceWith(optContent);
 
               // display tag adding form
-              var tagEl       = element.find('.add-tag-container');
-              var tagContent  = $compile('<add-tag sessionid="session.id"></add-tag>')(scope);
+              var tagEl       = element.find('.session-tag-container');
+              var tagContent  = $compile('<session-tag sessionid="session.id" add="true"></session-tag>')(scope);
               tagEl.replaceWith(tagContent);
 
               // add click listener to add expression to search input

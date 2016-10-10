@@ -90,6 +90,24 @@
       });
     }
 
+    /**
+     * Gets the available moloch clusters
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getMolochClusters() {
+      return this.$q((resolve, reject) => {
+
+        this.$http({ url:'molochclusters', method:'GET', cache:true })
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
   }
 
   ConfigService.$inject = ['$rootScope', '$q', '$http'];

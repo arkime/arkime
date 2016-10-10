@@ -1,0 +1,27 @@
+<div class="sticky-session-detail-container"
+  ng-show="sessions">
+  <div class="sticky-session-detail animate-opacity cursor-pointer"
+    ng-repeat="session in sessions"
+    ng-click="scrollTo($event, session.id)">
+
+    <a href class="btn btn-sm btn-link pull-left"
+      ng-click="closeSessionDetail(session)">
+      <span class="fa fa-close fa-lg"></span>
+    </a>
+
+    <div>
+      <small><strong>
+        {{::session.fp * 1000 | date:'yyyy/MM/dd'}}
+        {{::session.fp * 1000 | date:'HH:mm:ss'}}&nbsp;-&nbsp;
+        {{::session.lp * 1000 | date:'yyyy/MM/dd'}}
+        {{::session.lp * 1000 | date:'HH:mm:ss'}}
+        <br>
+        {{::session | extractIPString:'src'}}:{{::session.p1}}
+        {{::session.g1}}&nbsp;-&nbsp;
+        {{::session | extractIPString:'dst'}}:{{::session.p2}}
+        {{::session.g2}}
+      </strong></small>
+    </div>
+
+  </div>
+</div>
