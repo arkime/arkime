@@ -3,18 +3,18 @@
   <div ng-if="!$ctrl.tagging && $ctrl.add"
     ng-click="$ctrl.tagging = true;"
     uib-tooltip="Add a new tag to this session"
-    class="btn btn-xs btn-blue margined-left-lg margined-bottom margined-top">
+    class="btn btn-xs btn-blue margined-left-xlg margined-bottom margined-top">
     <span class="fa fa-plus-circle"></span>
   </div>
 
   <div ng-if="$ctrl.tagging && $ctrl.add"
     ng-click="$ctrl.tagging = false;"
     uib-tooltip="Close without adding tags"
-    class="btn btn-xs btn-danger margined-left-lg margined-bottom margined-top">
+    class="btn btn-xs btn-danger margined-left-xlg margined-bottom margined-top">
     <span class="fa fa-minus-circle"></span>
   </div>
 
-  <form ng-if="$ctrl.tagging || !$ctrl.add" class="margined-top margined-bottom">
+  <form ng-if="$ctrl.tagging || !$ctrl.add" class="margined-top margined-bottom-xlg">
 
     <div class="row">
       <div class="col-md-4">
@@ -67,4 +67,4 @@
 
   </form>
 
-</div>
+</span>

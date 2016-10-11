@@ -34,7 +34,13 @@
 
     /* exposed functions --------------------------------------------------- */
     removeTags() {
-      this.$scope.$emit('removing:tags', { removing: true });
+      // open the form container for removing tags (in session.detail.component)
+      this.$scope.$emit('removing:tags');
+    }
+
+    exportPCAP() {
+      // open the form container for exporting pcaps (in session.detail.component)
+      this.$scope.$emit('export:pcap');
     }
 
   }

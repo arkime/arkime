@@ -68,8 +68,8 @@
 
     cancel() {
       this.tagging = false;
-      if (!this.add) {
-        this.$scope.$emit('removing:tags', { removing: false });
+      if (!this.add) { // close the form container (in session.detail.component)
+        this.$scope.$emit('close:form:container');
       }
     }
 

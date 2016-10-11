@@ -79,9 +79,16 @@
         }
       });
 
-      this.$scope.$on('removing:tags', (event, args) => {
-        if (args.removing) { this.$scope.displayRemoveTags(); }
-        else { this.$scope.hideRemoveTags(); }
+      this.$scope.$on('removing:tags', (event) => {
+        this.$scope.displayRemoveTags();
+      });
+
+      this.$scope.$on('export:pcap', (event) => {
+        this.$scope.displayExportPCAP();
+      });
+
+      this.$scope.$on('close:form:container', (event) => {
+        this.$scope.hideFormContainer();
       });
     }
 
@@ -150,15 +157,23 @@
 
           /* exposed functions --------------------------------------------- */
           scope.displayRemoveTags = function() {
-            var tagEl = element.find('.remove-tag-container');
-            var html  = `<session-tag class="remove-tag-container"
+            var tagEl = element.find('.form-container');
+            var html  = `<session-tag class="form-container"
               sessionid="session.id" add="false"></session-tag>`;
             var tagContent = $compile(html)(scope);
             tagEl.replaceWith(tagContent);
           };
 
-          scope.hideRemoveTags = function() {
-            var tagEl = element.find('.remove-tag-container').hide();
+          scope.displayExportPCAP = function() {
+            var tagEl = element.find('.form-container');
+            var html  = `<export-pcap class="form-container"
+              sessionid="session.id"></export-pcap>`;
+            var tagContent = $compile(html)(scope);
+            tagEl.replaceWith(tagContent);
+          };
+
+          scope.hideFormContainer = function() {
+            var tagEl = element.find('.form-container').hide();
           };
 
 
