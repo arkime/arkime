@@ -13,14 +13,16 @@
      * @param $q        Service to run functions asynchronously
      * @param $http     Angular service that facilitates communication
      *                  with the remote HTTP servers
+     * @param $window   Angular reference to the browser's window object
      * @param $location Exposes browser address bar URL
      *                  (based on the window.location)
      *
      * @ngInject
      */
-    constructor($q, $http, $location) {
+    constructor($q, $http, $window, $location) {
       this.$q         = $q;
       this.$http      = $http;
+      this.$window    = $window;
       this.$location  = $location;
     }
 
@@ -187,10 +189,28 @@
       });
     }
 
+    /**
+     * Exports a pcap for the user by setting window.location
+     * @param {string} id         The unique id of the session to remove tags from
+     * @param {string} tags       The comma separated string of tags to remove
+     * @param {string} segments   'no', 'all', or 'time'
+     */
+    exportPCAP(id, filename, segments) {
+      var baseUrl = `sessions.pcap/${filename}`;
+
+      var url = SessionService.urlWithDateParams(baseUrl, this.$location.search());
+
+      url += `&ids=${id}`;
+
+      if (segments !== 'no') { url += `&segments=${segments}`; }
+
+      this.$window.location = url;
+    }
+
     /* internal functions -------------------------------------------------- */
     /**
-     * Adds date parameters to a given base url
-     * @param {string} baseUrl The url to append the params to
+     * Adds date parameters to a given base url without parameters
+     * @param {string} baseUrl The url (without params) to append the params to
      * @param {Object} params  The params object where date params may exist
      */
     static urlWithDateParams(baseUrl, params) {
@@ -207,7 +227,7 @@
 
   }
 
-  SessionService.$inject = ['$q', '$http', '$location'];
+  SessionService.$inject = ['$q', '$http', '$window', '$location'];
 
 
   angular.module('moloch')

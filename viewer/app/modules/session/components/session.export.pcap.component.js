@@ -13,14 +13,14 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $scope  Angular application model object
-     * @param $window
+     * @param $scope          Angular application model object
+     * @param SessionService  Transacts sessions with the server
      *
      * @ngInject
      */
-    constructor($scope, $window) {
-      this.$scope   = $scope;
-      this.$window  = $window;
+    constructor($scope, SessionService) {
+      this.$scope         = $scope;
+      this.SessionService = SessionService;
     }
 
     $onInit() {
@@ -35,7 +35,8 @@
         return;
       }
 
-      this.$window.location = `sessions.pcap/${this.filename}?ids=${this.sessionid}`;
+      this.SessionService.exportPCAP(this.sessionid, this.filename, this.include);
+      this.$scope.$emit('close:form:container');
     }
 
     cancel() { // close the form container (in session.detail.component)
@@ -44,7 +45,7 @@
 
   }
 
-  SessionExportPCAPController.$inject = ['$scope', '$window'];
+  SessionExportPCAPController.$inject = ['$scope', 'SessionService'];
 
   /**
    * Add Tag Directive

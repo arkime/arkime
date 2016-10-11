@@ -12,8 +12,9 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $location Exposes browser address bar URL
-     *                  (based on the window.location)
+     * @param $location     Exposes browser address bar URL
+     *                      (based on the window.location)
+     * @param $window       Angular reference to the browser's window object
      * @param molochVersion The installed version of moloch
      *
      * @ngInject
