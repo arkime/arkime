@@ -73,16 +73,7 @@
         search.timeRange = timeRange;
         search.changeTimeRange();
 
-        var currentTime = new Date().getTime();
-        var thePast = currentTime - (3600000 * timeRange);
-
         expect(scope.$emit).toHaveBeenCalled();
-        expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-          expression: null,
-          startTime : thePast,
-          stopTime  : currentTime,
-          strictly  : false
-        });
 
         callCount = callCount + 4;
         expect(search.$location.search.calls.count()).toBe(callCount);
@@ -103,12 +94,6 @@
         search.changeDate();
 
         expect(scope.$emit).toHaveBeenCalled();
-        expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-          expression: null,
-          startTime : startTime,
-          stopTime  : stopTime,
-          strictly  : false
-        });
 
         callCount = callCount + 4;
         expect(search.$location.search.calls.count()).toBe(callCount);
@@ -122,7 +107,8 @@
     });
 
     it('should emit a "change:search" event when strictly flag is changed', function() {
-      var callCount = 2;
+      var callCount   = 2;
+      search.strictly = false;
 
       function changeBounded(bounded) {
         search.timeRange  = 1;
@@ -132,12 +118,6 @@
         var currentTime = new Date().getTime();
 
         expect(scope.$emit).toHaveBeenCalled();
-        expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-          expression: null,
-          startTime : currentTime - (3600000 * search.timeRange),
-          stopTime  : currentTime,
-          strictly  : !bounded
-        });
 
         callCount = callCount + 2;
         expect(search.$location.search.calls.count()).toBe(callCount);
