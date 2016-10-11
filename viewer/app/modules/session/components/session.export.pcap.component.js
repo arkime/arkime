@@ -35,20 +35,7 @@
         return;
       }
 
-      // qs.push({name: "ids", value: $("#sessionActionsMenu").attr("sessionid")});
-      //
-      // this.$window.location.href = 'sessions.pcap/' + filename + "?" + $.param(qs);
-      this.$window.location.href = `sessions.pcap/${this.filename}?name=ids&value=${this.sessionid}`;
-
-      // this.SessionService.exportPCAP(this.sessionid, this.filename, this.include)
-      //   .then((response) => {
-      //     this.filename = 'sessions.pcap';
-      //     // close the form container (in session.detail.component)
-      //     this.$scope.$emit('close:form:container');
-      //   })
-      //   .catch((error) => {
-      //     this.error = error;
-      //   });
+      this.$window.location = `sessions.pcap/${this.filename}?ids=${this.sessionid}`;
     }
 
     cancel() { // close the form container (in session.detail.component)
