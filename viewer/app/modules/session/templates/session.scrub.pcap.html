@@ -1,6 +1,12 @@
 <form class="margined-top margined-bottom-xlg">
 
   <div class="row">
+    <div class="col-md-5">
+      <em><strong class="text-danger">
+        This will perform a three pass overwrite of all packet payloads for
+        matching packets. Packet headers and SPI data will remain.
+      </strong></em>
+    </div>
     <div class="col-md-4">
       <div class="input-group input-group-sm">
         <span class="input-group-addon">
@@ -16,26 +22,16 @@
           linked segments (slow)
         </span>
       </div>
-    </div>
-    <div class="col-md-7">
-      <div class="input-group input-group-sm">
-        <span class="input-group-addon">
-          Filename
-        </span>
-        <input ng-model="$ctrl.filename"
-          type="text" class="form-control"
-          placeholder="Enter a filename">
-        <span class="input-group-btn">
-          <button class="btn btn-green" ng-click="$ctrl.exportPCAP()">
-            <span class="fa fa-upload"></span>&nbsp;
-            Export PCAP
-          </button>
-        </span>
-      </div>
       <p ng-if="$ctrl.error" class="text-danger">
         <span class="fa fa-exclamation-triangle"></span>&nbsp;
         {{$ctrl.error}}
       </p>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-danger btn-sm pull-right" ng-click="$ctrl.scrubPCAP()">
+        <span class="fa fa-trash-o"></span>&nbsp;
+        Destructively Scrub Data
+      </button>
     </div>
     <div class="col-md-1">
       <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">

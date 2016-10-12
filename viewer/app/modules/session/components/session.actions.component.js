@@ -34,13 +34,18 @@
 
     /* exposed functions --------------------------------------------------- */
     removeTags() {
-      // open the form container for removing tags (in session.detail.component)
+      // open the form container to remove tags (in session.detail.component)
       this.$scope.$emit('removing:tags');
     }
 
     exportPCAP() {
-      // open the form container for exporting pcaps (in session.detail.component)
+      // open the form container to export pcaps (in session.detail.component)
       this.$scope.$emit('export:pcap');
+    }
+
+    scrubPCAP() {
+      // open the form container to scrub pcap (in session.detail.component)
+      this.$scope.$emit('scrub:pcap');
     }
 
   }

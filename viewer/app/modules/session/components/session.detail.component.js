@@ -79,6 +79,7 @@
         }
       });
 
+      /* LISTEN! */
       this.$scope.$on('removing:tags', (event) => {
         this.$scope.displayRemoveTags();
       });
@@ -87,8 +88,16 @@
         this.$scope.displayExportPCAP();
       });
 
-      this.$scope.$on('close:form:container', (event) => {
+      this.$scope.$on('scrub:pcap', (event) => {
+        this.$scope.displayScrubPCAP();
+      });
+
+      this.$scope.$on('close:form:container', (event, args) => {
         this.$scope.hideFormContainer();
+        
+        if (args && args.reloadData) {
+          this.getDetailData(this.$scope.params);
+        }
       });
     }
 
@@ -168,6 +177,14 @@
             var tagEl = element.find('.form-container');
             var html  = `<export-pcap class="form-container"
               sessionid="session.id"></export-pcap>`;
+            var tagContent = $compile(html)(scope);
+            tagEl.replaceWith(tagContent);
+          };
+
+          scope.displayScrubPCAP = function() {
+            var tagEl = element.find('.form-container');
+            var html  = `<scrub-pcap class="form-container"
+              sessionid="session.id"></scrub-pcap>`;
             var tagContent = $compile(html)(scope);
             tagEl.replaceWith(tagContent);
           };

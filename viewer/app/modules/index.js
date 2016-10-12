@@ -13,6 +13,7 @@ require('./session/components/session.detail.tag.component');
 require('./session/components/session.actions.component');
 require('./session/components/session.sticky.component');
 require('./session/components/session.export.pcap.component');
+require('./session/components/session.scrub.pcap.component');
 
 require('./search/components/search.component');
 require('./search/components/expression.typeahead');

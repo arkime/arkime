@@ -10,7 +10,7 @@
   <div ng-if="$ctrl.tagging && $ctrl.add"
     ng-click="$ctrl.tagging = false;"
     uib-tooltip="Close without adding tags"
-    class="btn btn-xs btn-danger margined-left-xlg margined-bottom margined-top">
+    class="btn btn-xs btn-warning margined-left-xlg margined-bottom margined-top">
     <span class="fa fa-minus-circle"></span>
   </div>
 
@@ -46,8 +46,8 @@
               <span class="fa fa-plus-circle"></span>&nbsp;
               Add Tags
             </button>
-            <button class="btn btn-warning" ng-if="!$ctrl.add" ng-click="$ctrl.removeTags()">
-              <span class="fa fa-minus-circle"></span>&nbsp;
+            <button class="btn btn-danger" ng-if="!$ctrl.add" ng-click="$ctrl.removeTags()">
+              <span class="fa fa-trash-o"></span>&nbsp;
               Remove Tags
             </button>
           </span>
@@ -58,7 +58,7 @@
         </p>
       </div>
       <div class="col-md-1">
-        <div class="btn btn-sm btn-danger pull-right" ng-click="$ctrl.cancel()">
+        <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
           <span class="fa fa-ban"></span>&nbsp;
           cancel
         </div>

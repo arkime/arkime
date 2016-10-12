@@ -190,7 +190,7 @@
     }
 
     /**
-     * Exports a pcap for the user by setting window.location
+     * Exports a pcap by setting window.location
      * @param {string} id         The unique id of the session to remove tags from
      * @param {string} tags       The comma separated string of tags to remove
      * @param {string} segments   'no', 'all', or 'time'
@@ -205,6 +205,33 @@
       if (segments !== 'no') { url += `&segments=${segments}`; }
 
       this.$window.location = url;
+    }
+
+    /**
+     * Deletes a pcap
+     * @param {string} id         The unique id of the session
+     * @param {string} segments   'no', 'all', or 'time'
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    scrubPCAP(id, segments) {
+      return this.$q((resolve, reject) => {
+        var data = { ids:id };
+
+        if (segments !== 'no') { data.segments = segments; }
+
+        var url = SessionService.urlWithDateParams('scrub', this.$location.search());
+
+        var options = { url:url, method:'POST', data:data };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
     }
 
     /* internal functions -------------------------------------------------- */
