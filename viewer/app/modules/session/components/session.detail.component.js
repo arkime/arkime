@@ -184,7 +184,7 @@
             // display a message to the user (overrides form)
             if (args.message) {
               html = `<div class="alert alert-success form-container">
-                      ${args.message}</div>`
+                      ${args.message}</div>`;
             }
 
             if (html) {
