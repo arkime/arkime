@@ -14,7 +14,7 @@ install:
 	npm update
 	npm run bundle:min
 	$(CP) -pr views public bundle $(VIEWERDIR)
-	(cd $(VIEWERDIR) ; npm update --production)
+	(cd $(VIEWERDIR) ; yarn install || npm update)
 
 distclean realclean clean:
 	rm -rf node_modules
