@@ -9,12 +9,13 @@ require('./session/components/session.component');
 require('./session/services/session.service');
 require('./session/components/session.map');
 require('./session/components/session.detail.component');
-require('./session/components/session.detail.tag.component');
+require('./session/components/session.tag.component');
 require('./session/components/session.actions.component');
 require('./session/components/session.sticky.component');
 require('./session/components/session.export.pcap.component');
 require('./session/components/session.scrub.pcap.component');
 require('./session/components/session.delete.component');
+require('./session/components/session.send.component');
 
 require('./search/components/search.component');
 require('./search/components/expression.typeahead');

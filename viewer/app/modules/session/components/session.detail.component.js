@@ -81,16 +81,7 @@
 
       /* LISTEN! */
       this.$scope.$on('open:form:container', (event, args) => {
-        // if (args.form === 'remove:tags') {
-        //   this.$scope.displayRemoveTags();
-        // } else if (args.form === 'export:pcap') {
-        //   this.$scope.displayExportPCAP();
-        // } else if (args.form === 'scrub:pcap') {
-        //   this.$scope.displayScrubPCAP();
-        // } else if (args.form === 'delete:session') {
-        //   this.$scope.displayDeleteSession();
-        // }
-        this.$scope.displayFormContainer(args.form);
+        this.$scope.displayFormContainer(args);
       });
 
       this.$scope.$on('close:form:container', (event, args) => {
@@ -98,6 +89,10 @@
 
         if (args && args.reloadData) {
           this.getDetailData(this.$scope.params);
+        }
+
+        if (args && args.message) {
+          this.$scope.displayFormContainer(args);
         }
       });
     }
@@ -174,12 +169,24 @@
             'scrub:pcap'    : `<scrub-pcap class="form-container"
                               sessionid="session.id"></scrub-pcap>`,
             'delete:session': `<session-delete class="form-container"
-                              sessionid="session.id"></session-delete>`
-          }
+                              sessionid="session.id"></session-delete>`,
+            'send:session'  : `<session-send class="form-container"
+                              sessionid="session.id" cluster="cluster"></session-send>`
+          };
 
-          scope.displayFormContainer = function(form) {
+          scope.displayFormContainer = function(args) {
             var formContainer = element.find('.form-container');
-            var html = formHTMLs[form];
+            var html = formHTMLs[args.form];
+
+            // pass in the cluster for sending session
+            if (args.cluster) { scope.cluster = args.cluster; }
+
+            // display a message to the user (overrides form)
+            if (args.message) {
+              html = `<div class="alert alert-success form-container">
+                      ${args.message}</div>`
+            }
+
             if (html) {
               var content = $compile(html)(scope);
               formContainer.replaceWith(content);

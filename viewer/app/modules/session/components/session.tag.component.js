@@ -19,7 +19,7 @@
      * @ngInject
      */
     constructor($scope, SessionService) {
-      this.$scope = $scope;
+      this.$scope         = $scope;
       this.SessionService = SessionService;
     }
 
@@ -83,7 +83,7 @@
    */
   angular.module('moloch')
     .component('sessionTag', {
-      template  : require('html!../templates/session.detail.tag.html'),
+      template  : require('html!../templates/session.tag.html'),
       controller: SessionDetailTagController,
       bindings  : { sessionid : '<', add: '<' }
     });

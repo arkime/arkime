@@ -1,0 +1,53 @@
+<form class="margined-top margined-bottom-xlg">
+  <p class="text-info">
+    <em><strong>
+      <span class="fa fa-info-circle"></span>&nbsp;
+      This will send the SPI and PCAP data to remote Moloch instance.
+    </strong></em>
+  <p>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="input-group input-group-sm">
+        <span class="input-group-addon">
+          Include
+        </span>
+        <select ng-model="$ctrl.include"
+          class="form-control" style="-webkit-appearance: none;">
+          <option value="no">no</option>
+          <option value="all">all</option>
+          <option value="time">same time period</option>
+        </select>
+        <span class="input-group-addon">
+          linked segments (slow)
+        </span>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="input-group input-group-sm">
+        <span class="input-group-addon">
+          Tags
+        </span>
+        <input ng-model="$ctrl.tags"
+          type="text" class="form-control"
+          placeholder="Enter a comma separated list of tags">
+        <span class="input-group-btn">
+          <button class="btn btn-green" ng-click="$ctrl.send()">
+            <span class="fa fa-paper-plane-o"></span>&nbsp;
+            Send Session
+          </button>
+        </span>
+      </div>
+      <p ng-if="$ctrl.error" class="text-danger">
+        <span class="fa fa-exclamation-triangle"></span>&nbsp;
+        {{$ctrl.error}}
+      </p>
+    </div>
+    <div class="col-md-1">
+      <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
+        <span class="fa fa-ban"></span>&nbsp;
+        cancel
+      </div>
+    </div>
+  </div>
+
+</form>

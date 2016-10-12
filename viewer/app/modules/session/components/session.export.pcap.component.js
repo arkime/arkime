@@ -48,8 +48,8 @@
   SessionExportPCAPController.$inject = ['$scope', 'SessionService'];
 
   /**
-   * Add Tag Directive
-   * Displays add tag area
+   * Export PCAP Directive
+   * Displays export PCAP
    */
   angular.module('moloch')
     .component('exportPcap', {

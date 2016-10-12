@@ -261,6 +261,35 @@
       });
     }
 
+    /**
+     * Sends a session to a cluster
+     * @param {string} id         The unique id of the session
+     * @param {string} tags       The comma separated string of tags to remove
+     * @param {string} segments   'no', 'all', or 'time'
+     * @param {string} cluster    The cluster to send the session to
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    send(id, tags, segments, cluster) {
+      return this.$q((resolve, reject) => {
+        var data = { ids:id, cluster:cluster, tags:tags };
+
+        if (segments !== 'no') { data.segments = segments; }
+
+        var url = SessionService.urlWithDateParams('sendSessions', this.$location.search());
+
+        var options = { url:url, method:'POST', data:data };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
     /* internal functions -------------------------------------------------- */
     /**
      * Adds date parameters to a given base url without parameters

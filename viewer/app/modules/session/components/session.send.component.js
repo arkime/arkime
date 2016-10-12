@@ -3,13 +3,13 @@
   'use strict';
 
   /**
-   * @class SessionScrubPCAPController
-   * @classdesc Interacts with scrub pcap form
+   * @class SessionSendController
+   * @classdesc Interacts with send session area
    *
    * @example
-   * '<scrub-pcap sessionid="session.id"></scrub-pcap>'
+   * '<session-send sessionid="session.id"></session-send>'
    */
-  class SessionScrubPCAPController {
+  class SessionSendController {
 
     /**
      * Initialize global variables for this controller
@@ -24,19 +24,18 @@
     }
 
     $onInit() {
-      this.include = 'no';
+      this.include  = 'no';
+      this.tags     = '';
     }
 
     /* exposed functions --------------------------------------------------- */
-    scrubPCAP() {
-      if (this.filename === '') {
-        this.error = 'No filename specified.';
-        return;
-      }
-
-      this.SessionService.scrubPCAP(this.sessionid, this.include)
+    send() {
+      this.SessionService.send(this.sessionid, this.tags, this.include, this.cluster)
         .then((response) => {
-          this.$scope.$emit('close:form:container', { reloadData: true });
+          this.tags = '';
+          this.$scope.$emit('close:form:container', {
+            message: response.data.text
+          });
         })
         .catch((error) => {
           this.error = error;
@@ -49,17 +48,17 @@
 
   }
 
-  SessionScrubPCAPController.$inject = ['$scope', 'SessionService'];
+  SessionSendController.$inject = ['$scope', 'SessionService'];
 
   /**
-   * Scrub PCAP Directive
-   * Displays scrub PCAP
+   * Send Session Directive
+   * Displays send session area
    */
   angular.module('moloch')
-    .component('scrubPcap', {
-      template  : require('html!../templates/session.scrub.pcap.html'),
-      controller: SessionScrubPCAPController,
-      bindings  : { sessionid : '<' }
+    .component('sessionSend', {
+      template  : require('html!../templates/session.send.html'),
+      controller: SessionSendController,
+      bindings  : { sessionid : '<', cluster : '<' }
     });
 
 })();

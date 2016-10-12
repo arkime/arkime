@@ -13,8 +13,7 @@
   ng-click="$ctrl.deleteSession()">
   <a>Delete SPI &amp; PCAP</a>
 </li>
-<li class="disabled" ng-repeat="(key, value) in $ctrl.molochclusters">
-  <a cluster="{{::key}}">
-    Send Session to {{::value.name}}
-  </a>
+<li ng-repeat="(key, value) in $ctrl.molochclusters"
+  ng-click="$ctrl.sendSession(key)">
+  <a>Send Session to {{::value.name}}</a>
 </li>

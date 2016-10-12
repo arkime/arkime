@@ -53,6 +53,13 @@
       this.$scope.$emit('open:form:container', { form:'delete:session' });
     }
 
+    sendSession(cluster) {
+      // open the form container to delete session (in session.detail.component)
+      this.$scope.$emit('open:form:container', {
+        form:'send:session', cluster:cluster
+      });
+    }
+
   }
 
   SessionActionsController.$inject = ['$scope', 'ConfigService'];
