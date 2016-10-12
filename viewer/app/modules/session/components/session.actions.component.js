@@ -48,6 +48,11 @@
       this.$scope.$emit('scrub:pcap');
     }
 
+    deleteSession() {
+      // open the form container to delete session (in session.detail.component)
+      this.$scope.$emit('delete:session');
+    }
+
   }
 
   SessionActionsController.$inject = ['$scope', 'ConfigService'];

@@ -92,9 +92,13 @@
         this.$scope.displayScrubPCAP();
       });
 
+      this.$scope.$on('delete:session', (event) => {
+        this.$scope.displayDeleteSession();
+      });
+
       this.$scope.$on('close:form:container', (event, args) => {
         this.$scope.hideFormContainer();
-        
+
         if (args && args.reloadData) {
           this.getDetailData(this.$scope.params);
         }
@@ -185,6 +189,14 @@
             var tagEl = element.find('.form-container');
             var html  = `<scrub-pcap class="form-container"
               sessionid="session.id"></scrub-pcap>`;
+            var tagContent = $compile(html)(scope);
+            tagEl.replaceWith(tagContent);
+          };
+
+          scope.displayDeleteSession = function() {
+            var tagEl = element.find('.form-container');
+            var html  = `<session-delete class="form-container"
+              sessionid="session.id"></session-delete>`;
             var tagContent = $compile(html)(scope);
             tagEl.replaceWith(tagContent);
           };

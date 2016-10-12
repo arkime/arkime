@@ -208,7 +208,7 @@
     }
 
     /**
-     * Deletes a pcap
+     * Scrubs pcap data in session
      * @param {string} id         The unique id of the session
      * @param {string} segments   'no', 'all', or 'time'
      * @returns {Promise} Promise A promise object that signals the completion
@@ -221,6 +221,33 @@
         if (segments !== 'no') { data.segments = segments; }
 
         var url = SessionService.urlWithDateParams('scrub', this.$location.search());
+
+        var options = { url:url, method:'POST', data:data };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
+     * Deletes a session
+     * @param {string} id         The unique id of the session
+     * @param {string} segments   'no', 'all', or 'time'
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    delete(id, segments) {
+      return this.$q((resolve, reject) => {
+        var data = { ids:id };
+
+        if (segments !== 'no') { data.segments = segments; }
+
+        var url = SessionService.urlWithDateParams('delete', this.$location.search());
 
         var options = { url:url, method:'POST', data:data };
 

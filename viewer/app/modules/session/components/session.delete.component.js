@@ -3,13 +3,13 @@
   'use strict';
 
   /**
-   * @class SessionScrubPCAPController
-   * @classdesc Interacts with scrub pcap form
+   * @class SessionDeleteController
+   * @classdesc Interacts with session delete form
    *
    * @example
-   * '<scrub-pcap sessionid="session.id"></scrub-pcap>'
+   * '<session-delete sessionid="session.id"></session-delete>'
    */
-  class SessionScrubPCAPController {
+  class SessionDeleteController {
 
     /**
      * Initialize global variables for this controller
@@ -28,13 +28,13 @@
     }
 
     /* exposed functions --------------------------------------------------- */
-    scrubPCAP() {
+    delete() {
       if (this.filename === '') {
         this.error = 'No filename specified.';
         return;
       }
 
-      this.SessionService.scrubPCAP(this.sessionid, this.include)
+      this.SessionService.delete(this.sessionid, this.include)
         .then((response) => {
           this.$scope.$emit('close:form:container', { reloadData: true });
         })
@@ -49,16 +49,16 @@
 
   }
 
-  SessionScrubPCAPController.$inject = ['$scope', 'SessionService'];
+  SessionDeleteController.$inject = ['$scope', 'SessionService'];
 
   /**
    * Add Tag Directive
    * Displays add tag area
    */
   angular.module('moloch')
-    .component('scrubPcap', {
-      template  : require('html!../templates/session.scrub.pcap.html'),
-      controller: SessionScrubPCAPController,
+    .component('sessionDelete', {
+      template  : require('html!../templates/session.delete.html'),
+      controller: SessionDeleteController,
       bindings  : { sessionid : '<' }
     });
 
