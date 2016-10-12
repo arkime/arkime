@@ -80,20 +80,17 @@
       });
 
       /* LISTEN! */
-      this.$scope.$on('removing:tags', (event) => {
-        this.$scope.displayRemoveTags();
-      });
-
-      this.$scope.$on('export:pcap', (event) => {
-        this.$scope.displayExportPCAP();
-      });
-
-      this.$scope.$on('scrub:pcap', (event) => {
-        this.$scope.displayScrubPCAP();
-      });
-
-      this.$scope.$on('delete:session', (event) => {
-        this.$scope.displayDeleteSession();
+      this.$scope.$on('open:form:container', (event, args) => {
+        // if (args.form === 'remove:tags') {
+        //   this.$scope.displayRemoveTags();
+        // } else if (args.form === 'export:pcap') {
+        //   this.$scope.displayExportPCAP();
+        // } else if (args.form === 'scrub:pcap') {
+        //   this.$scope.displayScrubPCAP();
+        // } else if (args.form === 'delete:session') {
+        //   this.$scope.displayDeleteSession();
+        // }
+        this.$scope.displayFormContainer(args.form);
       });
 
       this.$scope.$on('close:form:container', (event, args) => {
@@ -169,40 +166,28 @@
         link        : function SessionDetailLink(scope, element, attrs, ctrl) {
 
           /* exposed functions --------------------------------------------- */
-          scope.displayRemoveTags = function() {
-            var tagEl = element.find('.form-container');
-            var html  = `<session-tag class="form-container"
-              sessionid="session.id" add="false"></session-tag>`;
-            var tagContent = $compile(html)(scope);
-            tagEl.replaceWith(tagContent);
-          };
+          var formHTMLs = {
+            'remove:tags'   : `<session-tag class="form-container"
+                              sessionid="session.id" add="false"></session-tag>`,
+            'export:pcap'   : `<export-pcap class="form-container"
+                              sessionid="session.id"></export-pcap>`,
+            'scrub:pcap'    : `<scrub-pcap class="form-container"
+                              sessionid="session.id"></scrub-pcap>`,
+            'delete:session': `<session-delete class="form-container"
+                              sessionid="session.id"></session-delete>`
+          }
 
-          scope.displayExportPCAP = function() {
-            var tagEl = element.find('.form-container');
-            var html  = `<export-pcap class="form-container"
-              sessionid="session.id"></export-pcap>`;
-            var tagContent = $compile(html)(scope);
-            tagEl.replaceWith(tagContent);
-          };
-
-          scope.displayScrubPCAP = function() {
-            var tagEl = element.find('.form-container');
-            var html  = `<scrub-pcap class="form-container"
-              sessionid="session.id"></scrub-pcap>`;
-            var tagContent = $compile(html)(scope);
-            tagEl.replaceWith(tagContent);
-          };
-
-          scope.displayDeleteSession = function() {
-            var tagEl = element.find('.form-container');
-            var html  = `<session-delete class="form-container"
-              sessionid="session.id"></session-delete>`;
-            var tagContent = $compile(html)(scope);
-            tagEl.replaceWith(tagContent);
+          scope.displayFormContainer = function(form) {
+            var formContainer = element.find('.form-container');
+            var html = formHTMLs[form];
+            if (html) {
+              var content = $compile(html)(scope);
+              formContainer.replaceWith(content);
+            }
           };
 
           scope.hideFormContainer = function() {
-            var tagEl = element.find('.form-container').hide();
+            element.find('.form-container').hide();
           };
 
 

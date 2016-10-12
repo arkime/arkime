@@ -35,22 +35,22 @@
     /* exposed functions --------------------------------------------------- */
     removeTags() {
       // open the form container to remove tags (in session.detail.component)
-      this.$scope.$emit('removing:tags');
+      this.$scope.$emit('open:form:container', { form:'remove:tags' });
     }
 
     exportPCAP() {
       // open the form container to export pcaps (in session.detail.component)
-      this.$scope.$emit('export:pcap');
+      this.$scope.$emit('open:form:container', { form:'export:pcap' });
     }
 
     scrubPCAP() {
       // open the form container to scrub pcap (in session.detail.component)
-      this.$scope.$emit('scrub:pcap');
+      this.$scope.$emit('open:form:container', { form:'scrub:pcap' });
     }
 
     deleteSession() {
       // open the form container to delete session (in session.detail.component)
-      this.$scope.$emit('delete:session');
+      this.$scope.$emit('open:form:container', { form:'delete:session' });
     }
 
   }
