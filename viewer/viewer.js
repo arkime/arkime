@@ -4959,6 +4959,9 @@ app.use(function(req,res) {
  * where there is an available index.
  */
 function processCronQuery(cq, options, query, endTime, cb) {
+  if (Config.debug > 2) {
+    console.log("CRON", cq.name, cq.creator, "- processCronQuery(", cq, options, query, endTime, ")");
+  }
 
   var singleEndTime;
   var count = 0;
@@ -4966,6 +4969,10 @@ function processCronQuery(cq, options, query, endTime, cb) {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
     query.query.filtered.query.range = {lp: {gt: cq.lpValue, lte: singleEndTime}};
+
+    if (Config.debug > 2) {
+      console.log("CRON", cq.name, cq.creator, "- start:", cq.lpValue, "stop:", singleEndTime, "end:", endTime, "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
+    }
 
     Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
 
@@ -4975,7 +4982,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
         return setImmediate(whilstCb, null);
       }
 
-      // We have foudn some indices, now scroll thru ES
+      // We have found some indices, now scroll thru ES
       Db.search(indices, 'session', query, {scroll: '600s'}, function getMoreUntilDone(err, result) {
         function doNext() {
           count += result.hits.hits.length;
@@ -5012,6 +5019,11 @@ function processCronQuery(cq, options, query, endTime, cb) {
           for (i = 0, ilen = hits.length; i < ilen; i++) {
             ids.push(hits[i]._id);
           }
+
+          if (Config.debug > 1) {
+            console.log("CRON", cq.name, cq.creator, "- Updating tags:", ids.length);
+          }
+
           var tags = options.tags.split(",");
           mapTags(tags, "", function(err, tagIds) {
             sessionsListFromIds(null, ids, ["ta", "tags-term", "no"], function(err, list) {
@@ -5025,6 +5037,9 @@ function processCronQuery(cq, options, query, endTime, cb) {
       });
     });
   }, function () {
+    if (Config.debug > 1) {
+      console.log("CRON", cq.name, cq.creator, "- Continue process", singleEndTime, endTime);
+    }
     return singleEndTime !== endTime;
   }, function (err) {
     cb(count, singleEndTime);
@@ -5037,6 +5052,9 @@ function processCronQueries() {
     return;
   }
   internals.cronRunning = true;
+  if (Config.debug) {
+    console.log("CRON - cronRunning set to true");
+  }
 
   var repeat;
   async.doWhilst(function(whilstCb) {
@@ -5064,6 +5082,10 @@ function processCronQueries() {
         var cluster = null;
         var req, res;
 
+        if (Config.debug > 1) {
+          console.log("CRON - Running", qid, cq);
+        }
+
         if (!cq.enabled || endTime < cq.lpValue) {
           return forQueriesCb();
         }
@@ -5090,7 +5112,7 @@ function processCronQueries() {
                                       fieldsMap: Config.getFieldsMap()};
 
           var query = {from: 0,
-                       size: 500,
+                       size: 1000,
                        query: {filtered: {query: {}}},
                        _source: ["_id", "no"]
                       };
@@ -5140,12 +5162,21 @@ function processCronQueries() {
           });
         });
       }, function(err) {
+        if (Config.debug > 1) {
+          console.log("CRON - Finished one pass of all crons");
+        }
         return setImmediate(whilstCb, err);
       });
     });
   }, function () {
+    if (Config.debug > 1) {
+       console.log("CRON - Process again: ", repeat);
+    }
     return repeat;
   }, function (err) {
+    if (Config.debug) {
+      console.log("CRON - Should be up to date");
+    }
     internals.cronRunning = false;
   });
 }
