@@ -24,7 +24,7 @@ install:
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
 	test -z "$(WISEDIR)" || $(mkdir_p) "$(WISEDIR)"
 	$(INSTALL) wiseService/*.js wiseService/wiseService.ini.sample wiseService/package.json $(WISEDIR)
-	(cd $(WISEDIR) ; yarn install || npm update)
+	(cd $(WISEDIR) ; npm update)
 
 distclean realclean clean:
 	rm -f *.o *.so
