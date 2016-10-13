@@ -2,9 +2,13 @@
 
   <moloch-search></moloch-search>
 
+  <div ng-if="$ctrl.graphData" class="margin-for-search-navbar">
+    <session-graph graph-data="$ctrl.graphData"></session-graph>
+  </div>
+
   <moloch-map style="height:0;width:0;display:none;"></moloch-map>
 
-  <div class="margin-for-search-navbar">
+  <div class="margined-top-lg">
 
     <!-- top pagination controls -->
     <moloch-pagination length="$ctrl.query.length"

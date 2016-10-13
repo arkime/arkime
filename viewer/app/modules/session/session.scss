@@ -84,7 +84,7 @@ session {
     width         : 400px;
     overflow      : hidden;
     white-space   : nowrap;
-    
+
     &.open {
       opacity: 1;
 
@@ -253,6 +253,32 @@ session {
           }
         }
       }
+    }
+  }
+
+  // displays a tooltip above the bar in the session graph
+  .graph-tooltip {
+    position: absolute;
+    white-space: nowrap;
+    color: #eee;
+    padding: 3px;
+    font-size: 8pt;
+    background-color: #000;
+    border-radius: 4px;
+    border: 1px solid #000;
+
+    &:after {
+      content   : '';
+      display   : block;
+      width     : 0;
+      height    : 0;
+      position  : absolute;
+      left      : 2px;
+      top       : 20px;
+
+      border-style: solid;
+      border-width: 8px 8px 0 8px;
+      border-color: black transparent transparent transparent;
     }
   }
 

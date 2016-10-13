@@ -66,10 +66,10 @@
       // watch for changes in time parameters
       this.$scope.$on('update:time', (event, args) => {
         this.$scope.$apply(() => {
-          // can only change one at a time (start or stop)
           if (args.start) {       // start time changed
             this.startTime  = parseInt(args.start * 1000, 10);
-          } else if (args.stop) { // stop time changed
+          }
+          if (args.stop) { // stop time changed
             this.stopTime   = parseInt(args.stop * 1000, 10);
           }
 

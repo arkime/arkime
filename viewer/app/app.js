@@ -8,8 +8,13 @@
   require('angular-animate');
   require('angular-resource');
   require('angular-ui-bootstrap');
+  require('angular-flot');
   require('bootstrap/js/tooltip');
   require('bootstrap/js/dropdown');
+  require('../public/flot-0.7/jquery.flot.js');
+  require('../public/flot-0.7/jquery.flot.selection.js');
+  require('../public/flot-0.7/jquery.flot.navigate.js');
+  require('../public/flot-0.7/jquery.flot.resize.js');
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
 
@@ -20,6 +25,8 @@
   angular.module('moloch', [
     // angular dependencies
     'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
+
+    'angular-flot', // flot for charts
 
     // custom directives
     'directives.navbar', 'directives.footer',

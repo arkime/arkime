@@ -1,0 +1,25 @@
+<div class="margined-right-xxxxlg">
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="btn-group btn-group-xs pull-right">
+        <label class="btn btn-default" ng-model="type"
+          uib-btn-radio="'lpHisto'" ng-click="changeHistoType()">
+          Session
+        </label>
+        <label class="btn btn-default" ng-model="type"
+          uib-btn-radio="'paHisto'" ng-click="changeHistoType()">
+          Packets
+        </label>
+        <label class="btn btn-default" ng-model="type"
+          uib-btn-radio="'dbHisto'" ng-click="changeHistoType()">
+          Databyes
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <flot width="100%" height="150px"
+    dataset="graph" options="graphOptions"></flot>
+
+</div>
