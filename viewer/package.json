@@ -49,6 +49,7 @@
   "devDependencies": {
     "angular": "^1.5.8",
     "angular-animate": "^1.5.8",
+    "angular-flot": "0.0.16",
     "angular-mocks": "^1.5.8",
     "angular-resource": "^1.5.8",
     "angular-route": "^1.5.8",
