@@ -77,6 +77,9 @@ var internals = {
   pluginEmitter: new EventEmitter(),
   writers: {},
 
+  cronTimeout: Math.max(+Config.get("tcpTimeout", 8*60), +Config.get("udpTimeout", 60), +Config.get("icmpTimeout", 10)) +
+               +Config.get("dbFlushTimeout", 5) + 60 + 5,
+
 //http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==", 'base64'),
   PNG_LINE_WIDTH: 256,
@@ -4903,7 +4906,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
     query.query.filtered.query.range = {lp: {gt: cq.lpValue, lte: singleEndTime}};
 
     if (Config.debug > 2) {
-      console.log("CRON", cq.name, cq.creator, "- start:", cq.lpValue, "stop:", singleEndTime, "end:", endTime, "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
+      console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
     }
 
     Db.getIndices(cq.lpValue, singleEndTime, Config.get("rotateIndex", "daily"), function(indices) {
@@ -5002,8 +5005,8 @@ function processCronQueries() {
         queries[item._id] = item._source;
       });
 
-      // elasticsearch refresh is 60, so only retrieve older items
-      var endTime = Math.floor(Date.now()/1000) - 70;
+      // Delayed by the max Timeout
+      var endTime = Math.floor(Date.now()/1000) - internals.cronTimeout;
 
       // Save incase reload happens while running
       var molochClusters = Config.configMap("moloch-clusters");
@@ -5074,6 +5077,9 @@ function processCronQueries() {
 
           lookupQueryItems(query.query.filtered, function (lerr) {
             processCronQuery(cq, options, query, endTime, function (count, lpValue) {
+	      if (Config.debug > 1) {
+		console.log("CRON - setting lpValue", new Date(lpValue*1000));
+	      }
               // Do the ES update
               var document = {
                 doc: {
@@ -5142,7 +5148,7 @@ function main () {
   setInterval(createRightClicks, 5*60*1000);
 
   if (Config.get("cronQueries", false)) {
-    console.log("This node will process Cron Queries");
+    console.log("This node will process Cron Queries, delayed by", internals.cronTimeout, "seconds");
     setInterval(processCronQueries, 60*1000);
     setTimeout(processCronQueries, 1000);
   }
