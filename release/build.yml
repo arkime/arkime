@@ -13,6 +13,7 @@
     - glib2_version: 2.48.2
     - node_version: 4.6.0
     - daq_version: 2.0.6
+    - lua_version: 5.3.3
     - rvm1_rubies:
       - ruby-1.9.3
     - iteration: 1
@@ -32,7 +33,13 @@
             yum: state=absent name=kernel-headers
 
           - name: install new kernel headers
-            yum: state=present name=http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm
+            yum: state=present name={{item}}
+            with_items:
+              - "http://files.molo.ch/kernel-ml-headers-4.4.0-1.el6.elrepo.x86_64.rpm"
+              - centos-release-scl
+
+          - name: install devtoolset centos 6
+            yum: state=present name=devtoolset-3-toolchain
 
           # TPACKET_V3 block end
           when: ansible_distribution_major_version == "6"
@@ -131,6 +138,7 @@
         - http://ftp.gnome.org/pub/gnome/sources/glib/{{glib2_dir}}/glib-{{glib2_version}}.tar.xz
         - https://nodejs.org/download/release/v{{node_version}}/node-v{{node_version}}-linux-x64.tar.xz
         - https://www.snort.org/downloads/snort/daq-{{daq_version}}.tar.gz
+        - https://www.lua.org/ftp/lua-{{lua_version}}.tar.gz
 
     - name: Unarchive Packages
       unarchive: src={{item}} dest=. copy=no
@@ -141,6 +149,7 @@
         - curl-{{curl_version}}.tar.gz
         - glib-{{glib2_version}}.tar.xz
         - daq-{{daq_version}}.tar.gz
+        - lua-{{lua_version}}.tar.gz
 
     - name: Check yara
       stat: path=yara-{{yara_version}}/libyara/.libs/libyara.a
@@ -188,6 +197,14 @@
 
     - name: Build daq
       shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-1.7.4/ --with-libpcap-libraries=/home/vagrant/libpcap-1.7.4; make; make install
+      when: st.stat.exists == False
+
+    - name: Check lua
+      stat: path=lua-{{lua_version}}/src/liblua.a
+      register: st
+
+    - name: Build lua
+      shell: cd lua-{{lua_version}}; make MYCFLAGS=-fPIC linux
       when: st.stat.exists == False
 
 # Only install snf if it exists locally.
@@ -239,7 +256,7 @@
         git: repo=https://github.com/aol/moloch dest=moloch update=yes force=yes
 
       - name: configure
-        shell: cd moloch; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}}
+        shell: cd moloch; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}} --with-lua=../lua-{{lua_version}}
 
       - name: clean build area
         shell: cd moloch; make clean
@@ -253,14 +270,24 @@
       - name: build daq plugin
         shell: cd moloch/capture/plugins/daq; make
 
+      - name: build lua plugin
+        shell: cd moloch/capture/plugins/lua; make
+
       - name: build snf plugin
         shell: cd moloch/capture/plugins/snf; make
         when: localsnf.stat.exists == True
 
-      - name: install
+      - name: install centos 6
+        shell: cd moloch; scl enable devtoolset-3 "make install"
+        environment:
+          PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
+        when: ansible_distribution_major_version == "6"
+
+      - name: install not centos 6
         shell: cd moloch; make install
         environment:
           PATH: "/data/moloch/bin:{{ansible_env.PATH}}"
+        when: ansible_distribution_major_version != "6"
 
       # Block End
       tags:
