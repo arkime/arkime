@@ -1,8 +1,9 @@
 <div class="margined-right-xxxxlg">
 
-  <div class="row">
+  <div class="row margined-bottom-lg">
     <div class="col-md-12">
-      <div class="btn-group btn-group-xs pull-right">
+
+      <div class="btn-group btn-group-xs">
         <label class="btn btn-default" ng-model="type"
           uib-btn-radio="'lpHisto'" ng-click="changeHistoType()">
           Session
@@ -16,10 +17,32 @@
           Databyes
         </label>
       </div>
+
+      <div class="pull-right">
+
+        <div class="btn-group btn-group-xs margined-left">
+          <label class="btn btn-default" ng-click="panLeft()"
+            uib-tooltip="Pan&nbsp;left" tooltip-placement="bottom-right"
+            tooltip-append-to-body="true">
+            <span class="fa fa-chevron-left"></span>
+          </label>
+          <label class="btn btn-default" ng-click="panRight()"
+            uib-tooltip="Pan&nbsp;right" tooltip-placement="bottom-right"
+            tooltip-append-to-body="true">
+            <span class="fa fa-chevron-right"></span>
+          </label>
+        </div>
+
+        <div class="btn btn-xs btn-default margined-left" ng-click="zoomOut()"
+          uib-tooltip="Zoom&nbsp;out" tooltip-placement="bottom-right">
+          <span class="fa fa-search-minus"></span>
+        </div>
+
+      </div>
+
     </div>
   </div>
 
-  <flot width="100%" height="150px"
-    dataset="graph" options="graphOptions"></flot>
+  <div class="plot-area"></div>
 
 </div>

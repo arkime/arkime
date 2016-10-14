@@ -11,27 +11,53 @@
      * @example
      * <session-graph graph-data="$ctrl.graphData"></session-graph>
      */
-    .directive('sessionGraph', ['$filter', function($filter) {
+    .directive('sessionGraph', ['$filter', '$timeout',
+      function($filter, $timeout) {
       return {
         template: require('html!../templates/session.graph.html'),
         scope   : { graphData: '=' },
         link    : function(scope, element, attrs) {
 
-          scope.type = 'lpHisto';
+          /* internal functions -------------------------------------------- */
+          function commaString(val) {
+            if (isNaN(val)) { return '0'; }
+            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          }
 
-          scope.changeHistoType = function() {
-            scope.graph = [{ data:scope.graphData[scope.type] }];
-          };
+          var timeout;
+          function debounce(func, funcParam, ms) {
+            if (timeout) { $timeout.cancel(timeout); }
 
-          var interval = scope.graphData.interval * 1000;
+            timeout = $timeout(() => {
+              func(funcParam);
+            }, ms);
+          }
 
-          scope.graph = [{ data:scope.graphData.lpHisto }];
-          scope.graphOptions = { // flot graph options
+          function updateResults(graph) {
+            var xAxis = graph.getXAxes();
+
+            var result = {
+              start : xAxis[0].min / 1000,
+              stop  : xAxis[0].max / 1000
+            };
+
+            $timeout(() => {
+              if (result.start && result.stop) {
+                scope.$emit('change:time', result);
+              }
+            });
+          }
+
+
+          /* setup --------------------------------------------------------- */
+          scope.type          = 'lpHisto'; // default data type
+          scope.graph         = [{ data:scope.graphData.lpHisto }];
+          scope.graphOptions  = { // flot graph options
             series  : {
               bars  : {
                 show: true,
                 fill: 1,
-                barWidth: (scope.graphData.interval * 1000)/1.7
+                barWidth: (scope.graphData.interval * 1000) / 1.7
               },
               color : '#28A482'
             },
@@ -52,9 +78,9 @@
             yaxis   : {
               min   : 0,
               color : '#777',
+              zoomRange: false,
               tickFormatter: function(v, axis) {
-                if (v === undefined) { return '0'; }
-                return scope.commaString(v);
+                return commaString(v);
               }
             },
             grid          : {
@@ -75,8 +101,14 @@
             }
           };
 
+          // create flot graph
+          var plotArea  = element.find('.plot-area');
+          var plot      = $.plot(plotArea, scope.graph, scope.graphOptions);
 
-          element.bind('plotselected', function (event, ranges) {
+
+          /* LISTEN! */
+          // triggered when an area of the graph is selected
+          plotArea.on('plotselected', function (event, ranges) {
             var result = {
               start : ranges.xaxis.from / 1000,
               stop  : ranges.xaxis.to / 1000
@@ -87,17 +119,18 @@
             }
       		});
 
-
           var previousPoint;
-          element.bind('plothover', function(event, pos, item) {
+          // triggered when hovering over the graph
+          plotArea.on('plothover', function(event, pos, item) {
             if (item) {
               if (previousPoint !== item.dataIndex) {
                 previousPoint = item.dataIndex;
 
                 element.find('#tooltip').remove();
 
-                var y = scope.commaString(Math.round(item.datapoint[1]*100)/100);
-                var d = $filter('date')(item.datapoint[0].toFixed(0), 'yyyy/MM/dd HH:mm:ss');
+                var y = commaString(Math.round(item.datapoint[1]*100)/100);
+                var d = $filter('date')(item.datapoint[0].toFixed(0),
+                                        'yyyy/MM/dd HH:mm:ss');
 
                 var tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                     ${y} at ${d}</div>`;
@@ -112,9 +145,37 @@
             }
           });
 
-          scope.commaString = function(val) {
-            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+          /* exposed functions --------------------------------------------- */
+          scope.changeHistoType = function() {
+            scope.graph = [{ data:scope.graphData[scope.type] }];
+
+            plot.setData(scope.graph);
+            plot.setupGrid();
+            plot.draw();
           };
+
+          scope.zoomOut = function() {
+            plot.zoomOut();
+            debounce(updateResults, plot, 400);
+          };
+
+          scope.panLeft = function() {
+            plot.pan({left: -100});
+            debounce(updateResults, plot, 400);
+          };
+
+          scope.panRight = function() {
+            plot.pan({left: 100});
+            debounce(updateResults, plot, 400);
+          };
+
+
+          /* cleanup ------------------------------------------------------- */
+          element.on('$destroy', function onDestroy () {
+            plotArea.off('plothover');
+            plotArea.off('plotselected');
+          });
 
         }
       };
