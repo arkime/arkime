@@ -1,7 +1,7 @@
 <form>
 
   <!-- actions dropdown -->
-  <div class="btn-group pull-right margined-left"
+  <div class="btn-group btn-group-sm pull-right margined-left"
     uib-dropdown is-open="$ctrl.isopen">
     <button id="single-button" type="button" class="btn btn-yellow"
       uib-dropdown-toggle>
@@ -28,7 +28,7 @@
   </div> <!-- /actions dropdown -->
 
   <!-- search button -->
-  <a class="btn btn-green pull-right margined-left"
+  <a class="btn btn-sm btn-green pull-right margined-left"
     ng-click="$ctrl.change()">Search</a>
 
   <!-- search box typeahead -->
@@ -39,7 +39,7 @@
 
     <!-- time range select -->
     <div class="form-group margined-bottom">
-      <div class="input-group">
+      <div class="input-group input-group-sm">
         <span class="input-group-addon cursor-help"
           tooltip-placement="top-left"
           uib-tooltip="Time Range">
@@ -65,7 +65,7 @@
     <!-- start time -->
     <div class="form-group margined-bottom"
       ng-class="{'has-error':!$ctrl.startTime}">
-      <div class="input-group">
+      <div class="input-group input-group-sm">
         <span class="input-group-addon cursor-help"
           tooltip-placement="top"
           uib-tooltip="Beginning Time">
@@ -89,7 +89,7 @@
     <!-- stop time -->
     <div class="form-group margined-bottom"
       ng-class="{'has-error':!$ctrl.startTime}">
-      <div class="input-group">
+      <div class="input-group input-group-sm">
         <span class="input-group-addon cursor-help"
           tooltip-placement="top"
           uib-tooltip="Ending Time">

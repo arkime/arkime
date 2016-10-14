@@ -257,7 +257,7 @@ session {
   }
 
   .plot-area {
-    width:100%;height:150px
+    width:100%;height:130px
   }
 
   // displays a tooltip above the bar in the session graph
@@ -285,6 +285,12 @@ session {
       border-width  : 8px 8px 0 8px;
       border-color  : black transparent transparent transparent;
     }
+  }
+
+  .tickLabel {
+    font-size: 9pt;
+    margin-right: 10px;
+    margin-left: 10px;
   }
 
 }

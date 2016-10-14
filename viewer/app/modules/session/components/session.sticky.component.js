@@ -14,24 +14,26 @@
       template: require('html!../templates/session.sticky.html'),
       link    : function(scope, element, attr) {
         var x, y, containerHeight, pxFromRight;
-        var elementLocation = element[0].getBoundingClientRect();
-        var elementBottom   = elementLocation.bottom + $window.scrollY;
-        var elementLeft     = elementLocation.left;
+        var elementLocation, elementLeft, elementBottom;
+
         var docWidth        = $document.width();
         var container       = element.find('.sticky-session-detail-container');
 
         // if the user gets close to the sticky session detail container
         // exapand the list of sticky session details
         $document.on('mousemove', (e) => {
-          x = e.pageX;
-          y = e.pageY - $window.scrollY;
+          elementLocation = element[0].getBoundingClientRect();
+          elementLeft     = elementLocation.left;
+          elementBottom   = elementLocation.bottom + $window.scrollY;
+          
+          x = e.pageX, y = e.pageY - $window.scrollY;
 
           containerHeight = container.height();
           pxFromRight     = docWidth - x;
 
           // if approaching the top right corner where the sticky sessions are
           if (pxFromRight < (elementLeft + 400) &&
-             (y - elementBottom) < containerHeight) {
+             (y - elementBottom + 150) < containerHeight) {
             container.addClass('open');
           } else {
             container.removeClass('open');

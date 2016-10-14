@@ -1,9 +1,27 @@
 <div class="margined-right-xxxxlg">
 
-  <div class="row margined-bottom-lg">
+  <div class="row margined-bottom">
     <div class="col-md-12">
 
-      <div class="btn-group btn-group-xs">
+      <div class="btn btn-xs btn-default margined-left" ng-click="zoomOut()"
+        uib-tooltip="Zoom&nbsp;out" tooltip-placement="bottom-left">
+        <span class="fa fa-search-minus"></span>
+      </div>
+
+      <div class="btn-group btn-group-xs margined-left">
+        <label class="btn btn-default" ng-click="panLeft()"
+          uib-tooltip="Pan&nbsp;left" tooltip-placement="bottom-left"
+          tooltip-append-to-body="true">
+          <span class="fa fa-chevron-left"></span>
+        </label>
+        <label class="btn btn-default" ng-click="panRight()"
+          uib-tooltip="Pan&nbsp;right" tooltip-placement="bottom-left"
+          tooltip-append-to-body="true">
+          <span class="fa fa-chevron-right"></span>
+        </label>
+      </div>
+
+      <div class="btn-group btn-group-xs margined-left">
         <label class="btn btn-default" ng-model="type"
           uib-btn-radio="'lpHisto'" ng-click="changeHistoType()">
           Session
@@ -16,28 +34,6 @@
           uib-btn-radio="'dbHisto'" ng-click="changeHistoType()">
           Databyes
         </label>
-      </div>
-
-      <div class="pull-right">
-
-        <div class="btn-group btn-group-xs margined-left">
-          <label class="btn btn-default" ng-click="panLeft()"
-            uib-tooltip="Pan&nbsp;left" tooltip-placement="bottom-right"
-            tooltip-append-to-body="true">
-            <span class="fa fa-chevron-left"></span>
-          </label>
-          <label class="btn btn-default" ng-click="panRight()"
-            uib-tooltip="Pan&nbsp;right" tooltip-placement="bottom-right"
-            tooltip-append-to-body="true">
-            <span class="fa fa-chevron-right"></span>
-          </label>
-        </div>
-
-        <div class="btn btn-xs btn-default margined-left" ng-click="zoomOut()"
-          uib-tooltip="Zoom&nbsp;out" tooltip-placement="bottom-right">
-          <span class="fa fa-search-minus"></span>
-        </div>
-
       </div>
 
     </div>

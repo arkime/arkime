@@ -1,6 +1,5 @@
 moloch-search {
   position: fixed;
-  top     : 50px;
   right   : 0;
   left    : 0;
   z-index : 1029; // under primary navbar
@@ -13,13 +12,9 @@ moloch-search {
     -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
     box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
 
-    .time-range-control {
-      -webkit-appearance: none;
-    }
+    .time-range-control { -webkit-appearance: none; }
 
-    .search-control {
-      border-radius: 0 4px 4px 0 !important;
-    }
+    .search-control { border-radius: 0 4px 4px 0 !important; }
 
     .clear-input {
       z-index : 3;
