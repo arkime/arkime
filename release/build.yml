@@ -11,7 +11,7 @@
     - curl_version: 7.50.2
     - glib2_dir: 2.48
     - glib2_version: 2.48.2
-    - node_version: 0.10.46
+    - node_version: 4.6.0
     - daq_version: 2.0.6
     - rvm1_rubies:
       - ruby-1.9.3
@@ -269,13 +269,17 @@
     - name: copy sample config
       copy: src=../config.ini dest=/data/moloch/etc/config.ini.sample
 
-    - name: copy upstart files
+    - name: copy upstart/systemd files
       copy: src="{{item}}" dest=/data/moloch/etc/
       with_items:
         - molochcapture.upstart.conf
         - molochviewer.upstart.conf
         - molochwise.upstart.conf
         - elasticsearch.upstart.conf
+        - molochcapture.systemd.service
+        - molochviewer.systemd.service
+        - molochwise.systemd.service
+        - elasticsearch.systemd.service
         - logging.demo.yml
         - elasticsearch.demo.yml
 
@@ -303,7 +307,7 @@
       - name: fpm centos
         shell: bash -lc "{{item}}"
         with_items:
-          - fpm -s dir -t rpm -n moloch -v {{moloch_version}} --iteration {{iteration}} /data/moloch
+          - fpm -s dir -t rpm -n moloch -v {{moloch_version}} --iteration {{iteration}} --after-install "moloch/release/afterinstall.sh" /data/moloch
 
       - name: copy centos back
         fetch: src=moloch-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=./builds
@@ -323,7 +327,7 @@
       - name: fpm ubuntu
         shell: bash -lc "{{item}}"
         with_items:
-          - fpm -s dir -t deb -n moloch -v {{moloch_version}} --iteration {{iteration}} /data/moloch
+          - fpm -s dir -t deb -n moloch -v {{moloch_version}} --iteration {{iteration}} --after-install "moloch/release/afterinstall.sh" /data/moloch
 
       - name: copy ubuntu back
         fetch: src=moloch_{{moloch_version}}-{{iteration}}_amd64.deb dest=./builds

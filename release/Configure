@@ -9,18 +9,26 @@ fi
 ################################################################################
 ### Ask config questions
 if [ -z $MOLOCH_INTERFACE ]; then
+    echo -n "Found interfaces: "
+    /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | paste -s -d","
     echo -n "Interface to monitor [eth1] "
     read MOLOCH_INTERFACE
 fi
 if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth0"; fi
 
 until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" -o "$MOLOCH_LOCALELASTICSEARCH" == "no" ]; do
-    echo -n "Install Elasticsearch server locally for demo, NOT recommended for production use (yes or no) [no] "
+    echo -n "Install Elasticsearch server locally for demo, must have at least 3G of memory, NOT recommended for production use (yes or no) [no] "
     read MOLOCH_LOCALELASTICSEARCH
 done
 
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     MOLOCH_ELASTICSEARCH="http://localhost:9200"
+    which java
+    JAVA_VAL=$?
+
+    if [ $JAVA_VAL -ne 0 ]; then
+        echo "java command not found, make sure java is installed and in the path and run again"
+    fi
 else
     if [ -z $MOLOCH_ELASTICSEARCH ]; then
         echo -n "Elasticsearch server URL [http://localhost:9200] "
@@ -46,8 +54,15 @@ else
     sleep 2
 fi
 
-sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
-sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+if [ -d "/etc/init" ]; then
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+fi
+
+if [ -d "/etc/systemd" ]; then
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" < /data/moloch/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
+fi
 
 ################################################################################
 chown nobody /data/moloch/logs /data/moloch/raw
@@ -67,10 +82,15 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     fi
 
     HOSTNAME=`hostname -s`
-    sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" < /data/moloch/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
+    if [ -d "/etc/init" ]; then
+        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" < /data/moloch/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
+    fi
+
+    if [ -d "/etc/systemd" ]; then
+        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" < /data/moloch/etc/elasticsearch.systemd.service > /etc/systemd/system/elasticsearch.service
+    fi
     cp -f /data/moloch/etc/logging.demo.yml /data/moloch/etc/logging.yml
     cp -f /data/moloch/etc/elasticsearch.demo.yml /data/moloch/etc/elasticsearch.yml
-    /sbin/start elasticsearch
 fi
 
 ################################################################################
@@ -101,3 +121,8 @@ fi
 ################################################################################
 echo "Moloch - Downloading GEO files"
 /data/moloch/bin/moloch_update_geo.sh > /dev/null
+
+################################################################################
+echo ""
+echo "Moloch - Configured - Now continue with step 4 in /data/moloch/README.txt"
+
