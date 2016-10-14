@@ -1,13 +1,18 @@
-0.16.0 2016/10/xx
-  - NOTICE: Requires node v4.x (development done with v4.6).  If upgrading, remove the
-    node_modules and run "npm install" in viewer and wiseService directory
+0.16.0 2016/10/14
+  - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the
+            node_modules and run "npm install" in viewer and wiseService directory
   - viewer - upgrade many packages
   - wise - upgrade many packages
   - easybutton - download prebuilt node 4.6.0
   - capture - set accept-encoding for all requests (issue #542)
   - capture - simple oracle parser
-  - viewer - cron jobs should work much better, delay for items to be processed is longer
+  - viewer - cron jobs should work much better, unfortunately the delay (~11min)
+             before items are processed is longer (issue #546)
   - capture - http passer now tags passwd= and pass= as http:password
+  - capture - running on ipv6 improvements (issue #545)
+  - capture - 0.15.1 broke antiSynDrop=false, now works again
+  - viewer - supports multiple --debug on command line to up level
+  - release - supports systemd and lua plugin, slightly more user friendly
 
 0.15.1 2016/10/05
   - NOTICE: Last version to support node 0.10
