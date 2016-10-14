@@ -17,8 +17,14 @@ Basic Moloch Installation steps:
  6) Add an admin user
       /data/moloch/bin/moloch_add_user.sh admin admin THEPASSWORDGOESHERE --admin
  7) Start everything
-      start molochcapture
-      start molochviewer
+   a) If using Centos 6 or Ubuntu:
+      /sbin/start molochcapture
+      /sbin/start molochviewer
+      /sbin/start elasticsearch # If using demo
+   b) If using Centos 7
+      systemctl start molochcapture.service
+      systemctl start molochviewer.service
+      systemctl start elasticsearch.service # If using demo
  8) Look at log files for errors
       /data/moloch/logs/viewer.log
       /data/moloch/logs/capture.log
