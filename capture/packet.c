@@ -304,7 +304,7 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
     }
 
     if (tcphdr->th_flags & TH_ACK) {
-        if ((session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&
+        if (session->haveTcpSession && (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&
             (moloch_packet_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) {
                 static char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
                 moloch_session_add_tag(session, tags[packet->direction]);
@@ -376,7 +376,7 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
             DLL_PUSH_HEAD(td_, tcpData, td);
         }
 
-        if ((session->outOfOrder & (1 << packet->direction)) == 0) {
+        if (session->haveTcpSession && (session->outOfOrder & (1 << packet->direction)) == 0) {
             static char *tags[2] = {"out-of-order-src", "out-of-order-dst"};
             moloch_session_add_tag(session, tags[packet->direction]);
             session->outOfOrder |= (1 << packet->direction);
