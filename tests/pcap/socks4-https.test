@@ -8,11 +8,12 @@
             }
          },
          "body" : {
-            "db1" : 38,
-            "tlscipher-termcnt" : 1,
-            "tlscipher-term" : [
-               "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
-            ],
+            "rir2" : "TEST",
+            "by2" : 7348,
+            "as2" : "AS0001 Cool Beans!",
+            "mac2-term-cnt" : 2,
+            "no" : "test",
+            "fp" : 1415053640,
             "psl" : [
                82,
                82,
@@ -31,137 +32,7 @@
                76,
                1366
             ],
-            "as2" : "AS0001 Cool Beans!",
-            "p1" : 50606,
-            "fpd" : 1415053640836,
-            "prot-term-cnt" : 3,
-            "tlsver-termcnt" : 1,
-            "tlsdstid-term" : [
-               "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
-            ],
-            "lpd" : 1415053642702,
-            "a2" : "10.0.0.2",
-            "mac2-term-cnt" : 2,
-            "fp" : 1415053640,
-            "mac1-term-cnt" : 1,
-            "as1" : "AS0000 This is neat",
-            "lp" : 1415053642,
-            "pa2" : 10,
-            "tls" : [
-               {
-                  "altcnt" : 10,
-                  "sn" : "0dc04875701d090d9f3645da26f51fe7",
-                  "iOn" : "VeriSign, Inc.",
-                  "notAfter" : 1448927999,
-                  "iCn" : [
-                     "verisign class 3 extended validation ssl sgc ca"
-                  ],
-                  "diffDays" : 409,
-                  "notBefore" : 1413504000,
-                  "alt" : [
-                     "login.live.com",
-                     "loginnet.passport.com",
-                     "msnia.login.live.com",
-                     "pst.microsoftpassportsupport.net",
-                     "api.login.live.com",
-                     "tools.login.live.com",
-                     "xml.login.live.com",
-                     "nexus.passport.com",
-                     "login.passport.com",
-                     "msnialogin.passport.com"
-                  ],
-                  "sOn" : "Microsoft Corporation",
-                  "hash" : "d4:18:6b:6e:6d:82:6a:53:c9:a6:2e:f2:c0:cd:1b:45:c0:e7:e6:c4",
-                  "sCn" : [
-                     "login.live.com"
-                  ]
-               },
-               {
-                  "diffDays" : 5478,
-                  "notAfter" : 1636329599,
-                  "iOn" : "VeriSign, Inc.",
-                  "sn" : "35973187f3873a07327ece580c9b7eda",
-                  "sCn" : [
-                     "verisign class 3 public primary certification authority - g5"
-                  ],
-                  "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
-                  "sOn" : "VeriSign, Inc.",
-                  "notBefore" : 1162944000
-               },
-               {
-                  "iCn" : [
-                     "verisign class 3 public primary certification authority - g5"
-                  ],
-                  "diffDays" : 3652,
-                  "notAfter" : 1478563199,
-                  "iOn" : "VeriSign, Inc.",
-                  "sn" : "112a006d37e5106fd6ca7cc3efbacc18",
-                  "sCn" : [
-                     "verisign class 3 extended validation ssl sgc ca"
-                  ],
-                  "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
-                  "notBefore" : 1162944000,
-                  "sOn" : "VeriSign, Inc."
-               }
-            ],
-            "ss" : 1,
-            "pr" : 6,
-            "fs" : [],
-            "a1" : "10.0.0.1",
             "by" : 7752,
-            "tlsver-term" : [
-               "TLSv1.2"
-            ],
-            "mac1-term" : [
-               "00:0a:f3:31:84:00"
-            ],
-            "socksuser" : "fd7bcf7b5c9e1d",
-            "tlscnt" : 3,
-            "db" : 6822,
-            "socksho" : "login.live.com",
-            "test" : {
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:50606,33554442:9901"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ]
-            },
-            "sl" : 1867,
-            "fb1" : "040101bb00000001",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "pa1" : 6,
-            "prot-term" : [
-               "tls",
-               "socks",
-               "tcp"
-            ],
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:d8:bf:c1"
-            ],
-            "no" : "test",
-            "db2" : 6784,
-            "fb2" : "005a01bb83fd3d50",
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
             "ps" : [
                24,
                106,
@@ -180,24 +51,157 @@
                6590,
                6666
             ],
-            "tacnt" : 2,
+            "mac1-term" : [
+               "00:0a:f3:31:84:00"
+            ],
+            "as1" : "AS0000 This is neat",
+            "g2" : "CAN",
             "p2" : 9901,
-            "sockspo" : 443,
-            "rir2" : "TEST",
             "tcpflags" : {
-               "urg" : 0,
-               "fin" : 0,
-               "ack" : 10,
                "rst" : 0,
+               "ack" : 10,
                "psh" : 4,
+               "urg" : 0,
                "syn-ack" : 1,
+               "fin" : 0,
                "syn" : 1
             },
-            "by1" : 404,
             "pa" : 16,
-            "g2" : "CAN",
+            "tlscipher-termcnt" : 1,
+            "tlscnt" : 3,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:d8:bf:c1"
+            ],
+            "db2" : 6784,
+            "tacnt" : 4,
+            "a2" : "10.0.0.2",
+            "socksuser" : "fd7bcf7b5c9e1d",
+            "fpd" : 1415053640836,
+            "tlsver-termcnt" : 1,
+            "fb2" : "005a01bb83fd3d50",
+            "fb1" : "040101bb00000001",
+            "lpd" : 1415053642702,
+            "fs" : [],
+            "pa2" : 10,
+            "pa1" : 6,
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ],
+            "prot-term-cnt" : 3,
+            "pr" : 6,
+            "db" : 6822,
+            "db1" : 38,
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "string" : [
+                  "16777226:50606,33554442:9901"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ]
+            },
+            "tlsdstid-term" : [
+               "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
+            ],
+            "sockspo" : 443,
+            "sl" : 1867,
+            "ss" : 1,
+            "ta" : [
+               "acked-unseen-segment-dst",
+               "dstip",
+               "out-of-order-dst",
+               "srcip"
+            ],
+            "tags-term" : [
+               "srcip",
+               "dstip",
+               "out-of-order-dst",
+               "acked-unseen-segment-dst"
+            ],
             "g1" : "RUS",
-            "by2" : 7348
+            "by1" : 404,
+            "tlscipher-term" : [
+               "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
+            ],
+            "p1" : 50606,
+            "lp" : 1415053642,
+            "tls" : [
+               {
+                  "sOn" : "Microsoft Corporation",
+                  "sCn" : [
+                     "login.live.com"
+                  ],
+                  "iCn" : [
+                     "verisign class 3 extended validation ssl sgc ca"
+                  ],
+                  "sn" : "0dc04875701d090d9f3645da26f51fe7",
+                  "notAfter" : 1448927999,
+                  "alt" : [
+                     "login.live.com",
+                     "loginnet.passport.com",
+                     "msnia.login.live.com",
+                     "pst.microsoftpassportsupport.net",
+                     "api.login.live.com",
+                     "tools.login.live.com",
+                     "xml.login.live.com",
+                     "nexus.passport.com",
+                     "login.passport.com",
+                     "msnialogin.passport.com"
+                  ],
+                  "hash" : "d4:18:6b:6e:6d:82:6a:53:c9:a6:2e:f2:c0:cd:1b:45:c0:e7:e6:c4",
+                  "notBefore" : 1413504000,
+                  "altcnt" : 10,
+                  "diffDays" : 409,
+                  "iOn" : "VeriSign, Inc."
+               },
+               {
+                  "sn" : "35973187f3873a07327ece580c9b7eda",
+                  "sOn" : "VeriSign, Inc.",
+                  "sCn" : [
+                     "verisign class 3 public primary certification authority - g5"
+                  ],
+                  "notBefore" : 1162944000,
+                  "diffDays" : 5478,
+                  "iOn" : "VeriSign, Inc.",
+                  "notAfter" : 1636329599,
+                  "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0"
+               },
+               {
+                  "diffDays" : 3652,
+                  "iOn" : "VeriSign, Inc.",
+                  "notBefore" : 1162944000,
+                  "notAfter" : 1478563199,
+                  "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
+                  "iCn" : [
+                     "verisign class 3 public primary certification authority - g5"
+                  ],
+                  "sn" : "112a006d37e5106fd6ca7cc3efbacc18",
+                  "sOn" : "VeriSign, Inc.",
+                  "sCn" : [
+                     "verisign class 3 extended validation ssl sgc ca"
+                  ]
+               }
+            ],
+            "a1" : "10.0.0.1",
+            "mac1-term-cnt" : 1,
+            "socksho" : "login.live.com",
+            "tlsver-term" : [
+               "TLSv1.2"
+            ]
          }
       }
    ]
