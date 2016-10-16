@@ -500,6 +500,8 @@ typedef struct moloch_session {
     uint16_t               stopTCP:1;
     uint16_t               ses:3;
     uint16_t               midSave:1;
+    uint16_t               outOfOrder:2;
+    uint16_t               ackedUnseenSegment:2;
 } MolochSession_t;
 
 typedef struct moloch_session_head {
