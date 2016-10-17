@@ -1,0 +1,43 @@
+sticky-sessions {
+
+  /* session detail shortcuts ---------------- */
+  .sticky-session-detail-container {
+    position      : fixed;
+    z-index       : 998;
+    top           : 145px;
+    right         : 0;
+    opacity       : .5;
+    width         : 400px;
+    overflow      : hidden;
+    white-space   : nowrap;
+
+    &.open {
+      opacity: 1;
+
+      .sticky-session-detail {
+        margin-left: 20px;
+      }
+    }
+
+    div { display: inline-block; }
+
+    .sticky-session-detail {
+      display       : block;
+      position      : relative;
+      z-index       : 999;
+      width         : 380px;
+      margin-left   : 360px;
+      margin-bottom : 4px;
+      overflow      : hidden;
+      text-align    : right;
+      padding       : 2px 15px 2px 0;
+      border-radius : 8px 0 0 8px;
+      background-color: lighten($color-yellow-light, 26%);
+
+      -webkit-transition: margin-left 300ms linear, opacity 400ms linear;
+         -moz-transition: margin-left 300ms linear, opacity 400ms linear;
+              transition: margin-left 300ms linear, opacity 400ms linear;
+    }
+  }
+
+}

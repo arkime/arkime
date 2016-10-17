@@ -1,0 +1,41 @@
+session {
+
+  /* sessions table -------------------------- */
+  .table {
+    table-layout: fixed;
+    border-top  : $color-gray-light solid 1px;
+
+    tbody {
+      tr {
+        td { word-break: break-word; }
+
+        // color every fourth row
+        &:nth-of-type(4n-1) {
+          background-color: lighten($color-gray-light, 5%);
+          td {
+            &.active {
+              background-color: $color-gray-light;
+            }
+          }
+        }
+
+        &:not(.session-detail-row) {
+          &:hover {
+            background-color: lighten($color-green-light, 55%);
+            td {
+              &.active {
+                background-color: lighten($color-green-light, 50%);
+              }
+            }
+          }
+        }
+
+        &.session-detail-row {
+          background-color: lighten($color-yellow-light, 36%);
+        }
+
+      }
+    }
+  }
+
+}

@@ -40,7 +40,12 @@ $color-purple-dark  : #66057A;
 @import '../components/pagination/pagination';
 @import './modules/search/search';
 @import './modules/health/health';
-@import './modules/session/session';
+@import './modules/session/styles/session';
+@import './modules/session/styles/colheader';
+@import './modules/session/styles/session.sticky';
+@import './modules/session/styles/session.graph';
+@import './modules/session/styles/session.actions';
+@import './modules/session/styles/session.detail';
 
 
 

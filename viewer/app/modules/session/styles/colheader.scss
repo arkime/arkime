@@ -1,0 +1,14 @@
+colheader {
+
+  white-space :nowrap;
+  overflow    :visible;
+
+  th.active & { color: $color-purple-dark; }
+
+  .fa-sort { visibility: hidden; }
+
+  &:hover {
+    .fa-sort { visibility: visible; }
+  }
+
+}
