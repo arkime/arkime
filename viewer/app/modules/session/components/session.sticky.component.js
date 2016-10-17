@@ -25,8 +25,9 @@
           elementLocation = element[0].getBoundingClientRect();
           elementLeft     = elementLocation.left;
           elementBottom   = elementLocation.bottom + $window.scrollY;
-          
-          x = e.pageX, y = e.pageY - $window.scrollY;
+
+          x = e.pageX;
+          y = e.pageY - $window.scrollY;
 
           containerHeight = container.height();
           pxFromRight     = docWidth - x;
