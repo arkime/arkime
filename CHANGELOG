@@ -1,5 +1,6 @@
 0.16.1 2016/10/XX
   - capture - out-of-order and acked-unseen-segment tags
+  - capture - initial pppoe support (issue #536)
 
 0.16.0 2016/10/14
   - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the

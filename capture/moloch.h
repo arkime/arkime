@@ -371,6 +371,8 @@ typedef struct {
 
 
 /******************************************************************************/
+#define MOLOCH_PACKET_VPNTYPE_GRE    1
+#define MOLOCH_PACKET_VPNTYPE_PPPOE  2
 typedef struct molochpacket_t
 {
     struct molochpacket_t   *packet_next, *packet_prev;
@@ -392,6 +394,7 @@ typedef struct molochpacket_t
     uint8_t        v6:1;           // v6 or not
     uint8_t        copied:1;       // don't need to copy
     uint8_t        wasfrag:1;      // was a fragment
+    uint8_t        vpnType:2;      // vpnType
 } MolochPacket_t;
 
 typedef struct
