@@ -1,8 +1,8 @@
 cluster.name: Moloch
 node.name: "${ES_NODE_NAME}"
 node.max_local_storage_nodes: 1
-path.data: "/data/moloch/data"
-path.logs: /data/moloch/logs
+path.data: "${ES_DIR}/data"
+path.logs: "${ES_DIR}/logs"
 gateway.recover_after_nodes: 1
 gateway.recover_after_time: 5m
 gateway.expected_nodes: 1

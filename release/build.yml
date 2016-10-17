@@ -322,6 +322,13 @@
         - moloch_add_user.sh
         - Configure
 
+    - name: helper scripts chmod
+      shell: chmod 0755 /data/{{moloch_name}}/bin/{{item}}
+      with_items:
+        - moloch_update_geo.sh
+        - moloch_add_user.sh
+        - Configure
+
     - set_fact:
         moloch_version: "stoperrors"
 
