@@ -12,11 +12,11 @@ MOLOCH_NAME=BUILD_MOLOCH_NAME
 ### Ask config questions
 if [ -z $MOLOCH_INTERFACE ]; then
     echo -n "Found interfaces: "
-    /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | paste -s -d","
+    /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d","
     echo -n "Interface to monitor [eth1] "
     read MOLOCH_INTERFACE
 fi
-if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth0"; fi
+if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth1"; fi
 
 until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" -o "$MOLOCH_LOCALELASTICSEARCH" == "no" ]; do
     echo -n "Install Elasticsearch server locally for demo, must have at least 3G of memory, NOT recommended for production use (yes or no) [no] "
