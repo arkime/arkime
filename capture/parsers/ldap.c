@@ -41,7 +41,7 @@ void ldap_process(MolochSession_t *session, LDAPInfo_t *ldap, int which)
         BSB_INIT(ibsb, ovalue, olen);
 
         // messageID
-        ivalue = moloch_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen);
+        moloch_parsers_asn_get_tlv(&ibsb, &ipc, &itag, &ilen);
         if (ipc != 0 || itag != 2)
             return;
 
@@ -158,12 +158,12 @@ void ldap_classify(MolochSession_t *session, const unsigned char *data, int len,
 
         // messageID
         value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
-        if (apc != 0 || atag != 2)
+        if (!value || apc != 0 || atag != 2)
             return;
 
         // protocolOp
         value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
-        if (apc != 1 || atag > 25)
+        if (!value || apc != 1 || atag > 25)
             return;
 
         moloch_session_add_protocol(session, "ldap");

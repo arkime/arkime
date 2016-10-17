@@ -303,6 +303,15 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
         }
     }
 
+    if (tcphdr->th_flags & TH_ACK) {
+        if (session->haveTcpSession && (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&
+            (moloch_packet_sequence_diff(session->tcpSeq[(packet->direction+1)%2], ntohl(tcphdr->th_ack)) > 1)) {
+                static char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
+                moloch_session_add_tag(session, tags[packet->direction]);
+                session->ackedUnseenSegment |= (1 << packet->direction);
+        }
+    }
+
     // Empty packet, drop from tcp processing
     if (len <= 0 || tcphdr->th_flags & TH_RST)
         return 1;
@@ -320,6 +329,10 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
     td->seq = seq;
     td->len = len;
     td->dataOffset = packet->payloadOffset + 4*tcphdr->th_off;
+
+#ifdef DEBUG_PACKET
+    LOG("dir: %d seq: %u ack: %u len: %d diff0: %d", packet->direction, seq, ack, len, diff);
+#endif
 
     if (DLL_COUNT(td_, tcpData) == 0) {
         DLL_PUSH_TAIL(td_, tcpData, td);
@@ -358,8 +371,15 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
                 break;
             }
         }
+
         if ((void*)ftd == (void*)tcpData) {
             DLL_PUSH_HEAD(td_, tcpData, td);
+        }
+
+        if (session->haveTcpSession && (session->outOfOrder & (1 << packet->direction)) == 0) {
+            static char *tags[2] = {"out-of-order-src", "out-of-order-dst"};
+            moloch_session_add_tag(session, tags[packet->direction]);
+            session->outOfOrder |= (1 << packet->direction);
         }
     }
 
@@ -635,12 +655,18 @@ LOCAL void *moloch_packet_thread(void *threadp)
                 n += 4;
             }
 
-            if (packet->vpnIpOffset) {
+            switch(packet->vpnType) {
+            case MOLOCH_PACKET_VPNTYPE_GRE:
                 ip4 = (struct ip*)(packet->pkt + packet->vpnIpOffset);
                 moloch_field_int_add(greIpField, session, ip4->ip_src.s_addr);
                 moloch_field_int_add(greIpField, session, ip4->ip_dst.s_addr);
                 moloch_session_add_protocol(session, "gre");
+                break;
+            case MOLOCH_PACKET_VPNTYPE_PPPOE:
+                moloch_session_add_protocol(session, "pppoe");
+                break;
             }
+
         }
 
 
@@ -716,7 +742,7 @@ int moloch_packet_gre4(MolochPacket_t * const packet, const uint8_t *data, int l
         }
     }
 
-    if (BSB_IS_ERROR(bsb)) 
+    if (BSB_IS_ERROR(bsb))
         return 1;
 
     return moloch_packet_ip4(packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
@@ -1051,6 +1077,7 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
         packet->ses = SESSION_ICMP;
         break;
     case IPPROTO_GRE:
+        packet->vpnType = MOLOCH_PACKET_VPNTYPE_GRE;
         packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
         return moloch_packet_gre4(packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
@@ -1063,7 +1090,7 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
     return moloch_packet_ip(packet, sessionId);
 }
 /******************************************************************************/
-int moloch_packet_ip6(MolochPacket_t * const UNUSED(packet), const uint8_t *data, int len)
+int moloch_packet_ip6(MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
     struct tcphdr       *tcphdr = 0;
@@ -1151,6 +1178,28 @@ int moloch_packet_ip6(MolochPacket_t * const UNUSED(packet), const uint8_t *data
     return moloch_packet_ip(packet, sessionId);
 }
 /******************************************************************************/
+int moloch_packet_pppoe(MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 8 || data[0] != 0x11 || data[1] != 0) {
+        return 1;
+    }
+
+    uint16_t plen = data[4] << 8 | data[5];
+    uint16_t type = data[6] << 8 | data[7];
+    if (plen != len-6)
+        return 1;
+
+    packet->vpnType = MOLOCH_PACKET_VPNTYPE_PPPOE;
+    switch (type) {
+    case 0x21:
+        return moloch_packet_ip4(packet, data + 8, plen-2);
+    case 0x57:
+        return moloch_packet_ip6(packet, data + 8, plen-2);
+    default:
+        return 1;
+    }
+}
+/******************************************************************************/
 int moloch_packet_ether(MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14) {
@@ -1165,6 +1214,8 @@ int moloch_packet_ether(MolochPacket_t * const packet, const uint8_t *data, int 
             return moloch_packet_ip4(packet, data+n, len - n);
         case 0x86dd:
             return moloch_packet_ip6(packet, data+n, len - n);
+        case 0x8864:
+            return moloch_packet_pppoe(packet, data+n, len - n);
         case 0x8100:
             n += 2;
             break;

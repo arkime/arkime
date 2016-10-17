@@ -1,0 +1,151 @@
+{
+   "packets" : [
+      {
+         "body" : {
+            "rir2" : "ARIN",
+            "mac1-term" : [
+               "00:11:f5:13:d7:a3"
+            ],
+            "as2" : "AS1668 AOL Transit Data Network",
+            "fb2" : "160300004a020000",
+            "g1" : "GBR",
+            "by1" : 600,
+            "prot-term-cnt" : 3,
+            "rir1" : "ARIN",
+            "by2" : 3596,
+            "tcpflags" : {
+               "syn" : 1,
+               "rst" : 0,
+               "fin" : 0,
+               "urg" : 0,
+               "ack" : 4,
+               "psh" : 4,
+               "syn-ack" : 1
+            },
+            "fpd" : 1193676055856,
+            "db" : 3564,
+            "db2" : 3282,
+            "tlsver-termcnt" : 1,
+            "mac2-term-cnt" : 1,
+            "by" : 4196,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_MD5"
+            ],
+            "tlscnt" : 3,
+            "a2" : "64.12.189.217",
+            "db1" : 282,
+            "fp" : 1193676055,
+            "lp" : 1193676056,
+            "tlsdstid-term" : [
+               "dd709157b76b42f05802dfaa6501a55ec5a2a62c2c2ec856f1fcbc1cc8dc5717"
+            ],
+            "pa" : 10,
+            "tlsver-term" : [
+               "SSLv3"
+            ],
+            "fs" : [],
+            "tls" : [
+               {
+                  "diffDays" : 730,
+                  "sCn" : [
+                     "kdc.uas.aol.com"
+                  ],
+                  "iOn" : "America Online Inc.",
+                  "sOn" : "AOL LLC",
+                  "sn" : "0119",
+                  "notAfter" : 1231995540,
+                  "iCn" : [
+                     "aol member ca"
+                  ],
+                  "hash" : "cc:04:2e:48:2f:29:6a:3a:dc:a4:8b:fb:79:a6:cd:5f:67:8a:c1:e2",
+                  "notBefore" : 1168837200
+               },
+               {
+                  "sn" : "01",
+                  "sOn" : "America Online Inc.",
+                  "iOn" : "America Online Inc.",
+                  "diffDays" : 12959,
+                  "sCn" : [
+                     "america online root certification authority 1"
+                  ],
+                  "notBefore" : 1022565600,
+                  "hash" : "39:21:c1:15:c1:5d:0e:ca:5c:cb:5b:c4:f0:7d:21:d8:05:0b:56:6a",
+                  "iCn" : [
+                     "america online root certification authority 1"
+                  ],
+                  "notAfter" : 2142276180
+               },
+               {
+                  "iOn" : "America Online Inc.",
+                  "diffDays" : 9131,
+                  "sCn" : [
+                     "aol member ca"
+                  ],
+                  "sn" : "07",
+                  "sOn" : "America Online Inc.",
+                  "iCn" : [
+                     "america online root certification authority 1"
+                  ],
+                  "hash" : "a1:44:6b:ce:0c:87:4d:f0:f2:c3:f6:1d:a5:c9:a2:bc:f9:da:b2:04",
+                  "notAfter" : 1875288399,
+                  "notBefore" : 1086369999
+               }
+            ],
+            "mac2-term" : [
+               "00:90:1a:a0:3d:a4"
+            ],
+            "prot-term" : [
+               "pppoe",
+               "tls",
+               "tcp"
+            ],
+            "pa1" : 5,
+            "pr" : 6,
+            "lpd" : 1193676056235,
+            "sl" : 380,
+            "ss" : 1,
+            "as1" : "AS1668 AOL Transit Data Network",
+            "p2" : 443,
+            "ps" : [
+               24,
+               110,
+               192,
+               270,
+               426,
+               1864,
+               3302,
+               3380,
+               3953,
+               4235
+            ],
+            "a1" : "172.202.246.57",
+            "fb1" : "804c010300003300",
+            "tlscipher-termcnt" : 1,
+            "p1" : 1063,
+            "g2" : "USA",
+            "no" : "test",
+            "psl" : [
+               86,
+               82,
+               78,
+               156,
+               1438,
+               1438,
+               78,
+               573,
+               282,
+               145
+            ],
+            "mac1-term-cnt" : 1,
+            "pa2" : 5
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-071029"
+            }
+         }
+      }
+   ]
+}
+

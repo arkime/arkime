@@ -397,6 +397,25 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.pppoe = function (buffer, obj, pos) {
+  obj.pppoe = {
+    len:    buffer.readUInt16BE(4)-2,
+    type:   buffer.readUInt16BE(6),
+  };
+
+  switch(obj.pppoe.type) {
+  case 0x21:
+    this.ip4(buffer.slice(8, 8+obj.pppoe.len), obj, pos + 8);
+    return;
+  case 0x57:
+    this.ip6(buffer.slice(8, 8+obj.pppoe.len), obj, pos + 8);
+    return;
+  default:
+    console.log("Unknown pppoe.type", obj);
+    return;
+  }
+};
+
 Pcap.prototype.ethertype = function(buffer, obj, pos) {
   obj.ether.type = buffer.readUInt16BE(0);
 
@@ -406,6 +425,9 @@ Pcap.prototype.ethertype = function(buffer, obj, pos) {
     break;
   case 0x86dd:
     this.ip6(buffer.slice(2), obj, pos+2);
+    break;
+  case 0x8864:
+    this.pppoe(buffer.slice(2), obj, pos+2);
     break;
   case 0x8100: // VLAN
     this.ethertype(buffer.slice(4), obj, pos+4);

@@ -1,4 +1,4 @@
-AC_INIT([moloch], [0.16.0])
+AC_INIT([moloch], [0.16.1-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -35,7 +35,7 @@ AC_CANONICAL_HOST
 case $host_os in
 darwin*)
   SHARED_FLAGS="--shared -undefined suppress -flat_namespace"
-  UNDEFINED_FLAGS="-u _g_checksum_update -u _g_hmac_update"
+  UNDEFINED_FLAGS="-u _g_checksum_update -u _g_hmac_update -ljansson"
   ;;
 *)
   SHARED_FLAGS="--shared"
