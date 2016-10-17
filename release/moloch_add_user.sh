@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/data/moloch/bin/node /data/moloch/viewer/addUser.js -c /data/moloch/etc/config.ini $*
+/data/BUILD_MOLOCH_NAME/bin/node /data/BUILD_MOLOCH_NAME/viewer/addUser.js -c /data/BUILD_MOLOCH_NAME/etc/config.ini $*
