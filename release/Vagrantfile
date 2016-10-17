@@ -25,5 +25,6 @@ Vagrant.configure("2") do |config|
   
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "build.yml"
+    ansible.raw_arguments = ENV['ANSIBLE_ARGS'] if ENV['ANSIBLE_ARGS']
   end
 end
