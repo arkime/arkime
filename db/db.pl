@@ -34,6 +34,7 @@
 # 25 - cert hash
 # 26 - dynamic stats, ES 2.0
 # 27 - table states
+# 28 - timestamp, firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -997,6 +998,27 @@ sub sessionsUpdate
       }
     ],
     "properties": {
+      "timestamp": {
+        "type": "date"
+      },
+      "firstPacket": {
+        "type": "date"
+      },
+      "lastPacket": {
+        "type": "date"
+      },
+      "ipSrc": {
+        "type": "ip"
+      },
+      "portSrc": {
+        "type": "integer"
+      },
+      "ipDst": {
+        "type": "ip"
+      },
+      "portDst": {
+        "type": "integer"
+      },
       "us": {
         "type": "string",
         "analyzer": "url_analyzer",
@@ -2357,7 +2379,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
-    } elsif ($main::versionNumber <= 27) {
+    } elsif ($main::versionNumber <= 28) {
         sessionsUpdate();
     } else {
         print "db.pl is hosed\n";

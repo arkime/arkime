@@ -1,38 +1,14 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "mac1-term" : [
-               "00:0f:f7:76:7d:40"
+            "mac2-term" : [
+               "00:00:5e:00:01:02",
+               "00:1d:b5:ce:ef:c1"
             ],
-            "ss" : 1,
-            "sl" : 973,
-            "db2" : 16,
-            "db" : 16,
-            "a2" : "10.0.0.2",
-            "ta" : [
-               "dstip",
-               "srcip",
-               "yara:Pop3Yara",
-               "yara:tag1",
-               "yara:tag2"
-            ],
-            "ps" : [
-               24,
-               102,
-               180,
-               256
-            ],
-            "fpd" : 1387659689446,
-            "pa2" : 2,
-            "fs" : [],
-            "a1" : "10.0.0.1",
-            "by" : 254,
-            "p2" : 110,
-            "g1" : "RUS",
-            "pa1" : 2,
-            "as1" : "AS0000 This is neat",
-            "mac2-term-cnt" : 2,
+            "p1" : 2464,
+            "ipDst" : "10.0.0.2",
+            "g2" : "CAN",
             "tags-term" : [
                "yara:tag1",
                "yara:tag2",
@@ -40,19 +16,62 @@
                "srcip",
                "dstip"
             ],
-            "by2" : 132,
-            "rir2" : "TEST",
-            "lpd" : 1387659690419,
-            "fp" : 1387659689,
-            "as2" : "AS0001 Cool Beans!",
-            "pa" : 4,
-            "tacnt" : 5,
-            "mac1-term-cnt" : 1,
+            "ps" : [
+               24,
+               102,
+               180,
+               256
+            ],
             "prot-term-cnt" : 2,
-            "fb2" : "2b4f4b20504f5033",
+            "db2" : 16,
+            "lpd" : 1387659690419,
+            "no" : "test",
+            "psl" : [
+               78,
+               78,
+               76,
+               86
+            ],
+            "a2" : "10.0.0.2",
+            "lastPacket" : 1387659690419,
+            "p2" : 110,
+            "lp" : 1387659690,
+            "by1" : 122,
+            "pa1" : 2,
+            "fs" : [],
+            "db1" : 0,
+            "mac1-term" : [
+               "00:0f:f7:76:7d:40"
+            ],
+            "pa2" : 2,
+            "mac2-term-cnt" : 2,
+            "by2" : 132,
+            "mac1-term-cnt" : 1,
+            "prot-term" : [
+               "pop3",
+               "tcp"
+            ],
+            "by" : 254,
+            "pr" : 6,
+            "db" : 16,
+            "fp" : 1387659689,
+            "tcpflags" : {
+               "ack" : 1,
+               "fin" : 0,
+               "psh" : 1,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "rst" : 0
+            },
+            "ss" : 1,
+            "a1" : "10.0.0.1",
+            "pa" : 4,
+            "rir2" : "TEST",
+            "ipSrc" : "10.0.0.1",
             "test" : {
-               "string" : [
-                  "16777226:2464,33554442:110"
+               "ip-geo" : [
+                  "RUS"
                ],
                "ip" : [
                   167772161
@@ -63,48 +82,36 @@
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "ip-geo" : [
-                  "RUS"
+               "string" : [
+                  "16777226:2464,33554442:110"
                ],
                "number" : [
                   33554442
                ]
             },
-            "prot-term" : [
-               "pop3",
-               "tcp"
+            "g1" : "RUS",
+            "as2" : "AS0001 Cool Beans!",
+            "as1" : "AS0000 This is neat",
+            "timestamp" : "SET",
+            "portSrc" : 2464,
+            "ta" : [
+               "dstip",
+               "srcip",
+               "yara:Pop3Yara",
+               "yara:tag1",
+               "yara:tag2"
             ],
-            "db1" : 0,
-            "no" : "test",
-            "lp" : 1387659690,
-            "mac2-term" : [
-               "00:00:5e:00:01:02",
-               "00:1d:b5:ce:ef:c1"
-            ],
-            "psl" : [
-               78,
-               78,
-               76,
-               86
-            ],
-            "p1" : 2464,
-            "by1" : 122,
-            "g2" : "CAN",
-            "pr" : 6,
-            "tcpflags" : {
-               "fin" : 0,
-               "psh" : 1,
-               "ack" : 1,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "syn" : 1
-            }
+            "sl" : 973,
+            "tacnt" : 5,
+            "portDst" : 110,
+            "fb2" : "2b4f4b20504f5033",
+            "firstPacket" : 1387659689446,
+            "fpd" : 1387659689446
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131221"
+               "_index" : "tests_sessions-131221",
+               "_type" : "session"
             }
          }
       }

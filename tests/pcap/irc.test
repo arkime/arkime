@@ -1,23 +1,49 @@
 {
-   "packets" : [
+   "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131220"
+            }
+         },
          "body" : {
-            "fp" : 1387554241,
+            "fb2" : "3a636172642e6672",
+            "p1" : 45921,
+            "lpd" : 1387554256201,
+            "as2" : "AS23028 Team Cymru Inc.",
+            "fb1" : "5553455220787878",
+            "a1" : "10.180.156.249",
+            "ss" : 1,
+            "ircnck" : [
+               "molochtest"
+            ],
+            "db1" : 114,
+            "ircch" : [
+               "#moloch-fpc"
+            ],
+            "lastPacket" : 1387554256201,
+            "by" : 8945,
+            "no" : "test",
+            "mac2-term-cnt" : 2,
+            "fs" : [],
+            "ipDst" : "38.229.70.20",
+            "portDst" : 8000,
+            "sl" : 14568,
             "prot-term" : [
                "irc",
                "tcp"
             ],
+            "a2" : "38.229.70.20",
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "firstPacket" : 1387554241634,
+            "g1" : "USA",
             "pa1" : 14,
-            "no" : "test",
-            "pa" : 29,
-            "fpd" : 1387554241634,
-            "ss" : 1,
-            "by1" : 1046,
-            "by" : 8945,
-            "lpd" : 1387554256201,
-            "pa2" : 15,
-            "mac1-term-cnt" : 1,
-            "rir2" : "ARIN",
+            "lp" : 1387554256,
+            "g2" : "USA",
             "psl" : [
                90,
                90,
@@ -49,43 +75,34 @@
                82,
                638
             ],
+            "pa2" : 15,
             "p2" : 8000,
-            "fb1" : "5553455220787878",
-            "g2" : "USA",
-            "ircnck" : [
-               "molochtest"
-            ],
+            "prot-term-cnt" : 2,
             "db" : 7015,
             "ircnckcnt" : 1,
-            "p1" : 45921,
             "pr" : 6,
-            "ircch" : [
-               "#moloch-fpc"
-            ],
-            "as2" : "AS23028 Team Cymru Inc.",
-            "tcpflags" : {
-               "rst" : 0,
-               "ack" : 16,
-               "syn" : 1,
-               "psh" : 11,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "fin" : 0
-            },
-            "db1" : 114,
-            "prot-term-cnt" : 2,
-            "g1" : "USA",
+            "mac1-term-cnt" : 1,
             "mac1-term" : [
                "00:13:72:c4:f1:e1"
             ],
+            "timestamp" : "SET",
             "db2" : 6901,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "lp" : 1387554256,
-            "a1" : "10.180.156.249",
-            "fs" : [],
+            "pa" : 29,
+            "fp" : 1387554241,
+            "by2" : 7899,
+            "portSrc" : 45921,
+            "by1" : 1046,
+            "tcpflags" : {
+               "psh" : 11,
+               "fin" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "rst" : 0,
+               "ack" : 16,
+               "syn-ack" : 1
+            },
+            "ircchcnt" : 1,
+            "rir2" : "ARIN",
             "ps" : [
                24,
                114,
@@ -117,18 +134,8 @@
                8713,
                8795
             ],
-            "a2" : "38.229.70.20",
-            "fb2" : "3a636172642e6672",
-            "mac2-term-cnt" : 2,
-            "sl" : 14568,
-            "ircchcnt" : 1,
-            "by2" : 7899
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131220"
-            }
+            "fpd" : 1387554241634,
+            "ipSrc" : "10.180.156.249"
          }
       }
    ]

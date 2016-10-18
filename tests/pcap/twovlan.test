@@ -1,84 +1,62 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-160221",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "fb1" : "474554202f204854",
-            "db1" : 113,
-            "prot-term-cnt" : 2,
-            "fb2" : "485454502f312e31",
-            "pa1" : 3,
-            "http" : {
-               "statuscode-cnt" : 1,
-               "method-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term" : [
-                  "text/html"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ]
-            },
-            "hsvercnt" : 1,
-            "tcpflags" : {
-               "fin" : 0,
-               "urg" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "syn" : 1,
-               "ack" : 3,
-               "syn-ack" : 1
-            },
-            "sl" : 120,
-            "test" : {
-               "string" : [
-                  "16777226:54422,33554442:80"
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip" : [
-                  167772161
-               ]
-            },
-            "a2" : "10.0.0.2",
-            "no" : "test",
-            "fp" : 1456042921,
-            "pr" : 6,
-            "mac1-term" : [
-               "00:0c:29:c1:2d:24"
+            "hdver" : [
+               "1.1"
             ],
-            "ss" : 1,
-            "p2" : 80,
-            "vlan-cnt" : 2,
-            "us" : [
-               "//xxxxxxx.xxx.xxx/"
-            ],
-            "hpath" : [
-               "/"
-            ],
-            "fpd" : 1456042921641,
             "ua" : [
                "Wget/1.15 (linux-gnu)"
             ],
-            "uacnt" : 1,
+            "ho" : [
+               "xxxxxxx.xxx.xxx"
+            ],
+            "no" : "test",
+            "hpath" : [
+               "/"
+            ],
+            "mac1-term" : [
+               "00:0c:29:c1:2d:24"
+            ],
+            "pa1" : 3,
+            "as1" : "AS0000 This is neat",
+            "fpd" : 1456042921641,
+            "ps" : [
+               24,
+               122,
+               220,
+               310,
+               513,
+               603
+            ],
+            "db2" : 4344,
+            "uscnt" : 1,
+            "by" : 4917,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "hdvercnt" : 1,
+            "vlan-cnt" : 2,
+            "tacnt" : 2,
+            "hsver" : [
+               "1.1"
+            ],
+            "pr" : 6,
+            "mac2-term-cnt" : 1,
+            "as2" : "AS0001 Cool Beans!",
+            "us" : [
+               "//xxxxxxx.xxx.xxx/"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "pa" : 6,
+            "g2" : "CAN",
+            "prot-term-cnt" : 2,
             "psl" : [
                98,
                98,
@@ -87,20 +65,84 @@
                90,
                4434
             ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:user-agent"
+            "ipDst" : "10.0.0.2",
+            "mac2-term" : [
+               "00:09:0f:db:f4:3e"
             ],
-            "tacnt" : 2,
-            "hdvercnt" : 1,
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "tcpflags" : {
+               "syn" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "psh" : 1,
+               "fin" : 0,
+               "ack" : 3,
+               "syn-ack" : 1
+            },
+            "lastPacket" : 1456042921761,
+            "timestamp" : "SET",
+            "portDst" : 80,
+            "vlan" : [
+               200,
+               201
             ],
-            "by2" : 4574,
+            "lpd" : 1456042921761,
+            "hh2cnt" : 19,
+            "ss" : 1,
+            "fp" : 1456042921,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "fb1" : "474554202f204854",
+            "hsvercnt" : 1,
+            "g1" : "RUS",
+            "mac1-term-cnt" : 1,
+            "p2" : 80,
+            "hh1cnt" : 4,
+            "rir2" : "TEST",
+            "fs" : [],
+            "fb2" : "485454502f312e31",
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "string" : [
+                  "16777226:54422,33554442:80"
+               ]
+            },
+            "db" : 4457,
+            "http" : {
+               "bodymagic-term-cnt" : 1,
+               "statuscode-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "bodymagic-term" : [
+                  "text/html"
+               ]
+            },
+            "by1" : 343,
             "p1" : 54422,
+            "sl" : 120,
+            "uacnt" : 1,
+            "db1" : 113,
+            "lp" : 1456042921,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:access-control-allow-origin",
@@ -122,60 +164,25 @@
                "http:header:x-timer",
                "http:header:x-xss-protection"
             ],
-            "mac2-term" : [
-               "00:09:0f:db:f4:3e"
+            "hocnt" : 1,
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
-            "as1" : "AS0000 This is neat",
-            "hh2cnt" : 19,
-            "db" : 4457,
-            "uscnt" : 1,
-            "g1" : "RUS",
-            "fs" : [],
-            "pa2" : 3,
-            "lpd" : 1456042921761,
-            "by" : 4917,
-            "vlan" : [
-               200,
-               201
-            ],
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "as2" : "AS0001 Cool Beans!",
-            "hh1cnt" : 4,
-            "rir2" : "TEST",
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "ho" : [
-               "xxxxxxx.xxx.xxx"
-            ],
-            "hdver" : [
-               "1.1"
-            ],
-            "g2" : "CAN",
-            "ps" : [
-               24,
-               122,
-               220,
-               310,
-               513,
-               603
-            ],
-            "db2" : 4344,
-            "pa" : 6,
-            "hsver" : [
-               "1.1"
-            ],
+            "portSrc" : 54422,
             "a1" : "10.0.0.1",
-            "by1" : 343,
-            "hpathcnt" : 1,
-            "mac1-term-cnt" : 1,
-            "lp" : 1456042921,
-            "mac2-term-cnt" : 1,
-            "hocnt" : 1
+            "pa2" : 3,
+            "ipSrc" : "10.0.0.1",
+            "by2" : 4574,
+            "firstPacket" : 1456042921641,
+            "a2" : "10.0.0.2",
+            "hpathcnt" : 1
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-160221"
+            }
          }
       }
    ]

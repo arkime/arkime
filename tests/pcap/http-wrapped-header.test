@@ -1,86 +1,31 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "test" : {
-               "number" : [
-                  33554442
-               ],
-               "string" : [
-                  "16777226:61462,33554442:80"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
-            "hckey-term" : [
-               "xxxx",
-               "autocomplete",
-               "xxxxxxxxxxxxxxxxxxx",
-               "lp",
-               "xxxxx",
-               "xxxxxx",
-               "rememberUn",
-               "xxxxxxxxxxxxxxxxxxxxxx",
-               "xxx.xxxxxxxxxx.xxxxxxxxxx"
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
-            "mac2-term-cnt" : 1,
-            "ho" : [
-               "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
-            ],
-            "db" : 4119,
-            "uacnt" : 1,
-            "db2" : 706,
-            "sl" : 9877,
-            "p2" : 80,
-            "tacnt" : 2,
-            "hpathcnt" : 1,
-            "a2" : "10.0.0.2",
-            "fpd" : 1404135320459,
+            "fb1" : "474554202f782f78",
+            "p1" : 61462,
             "as2" : "AS0001 Cool Beans!",
-            "pa1" : 7,
-            "hckey-term-cnt" : 9,
-            "fs" : [],
-            "db1" : 3413,
-            "by" : 4813,
-            "hmd5cnt" : 1,
-            "prot-term-cnt" : 2,
-            "pa" : 12,
+            "mac2-term-cnt" : 1,
+            "g2" : "CAN",
+            "a2" : "10.0.0.2",
             "mac1-term-cnt" : 1,
-            "hmd5" : [
-               "ad480fd0732d0f6f1a8b06359e3a42bb"
+            "p2" : 80,
+            "hdrs" : {
+               "hreq-referer" : [
+                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
+               ],
+               "hreq-referercnt" : 1
+            },
+            "mac2-term" : [
+               "88:43:e1:94:fc:2d"
             ],
             "a1" : "10.0.0.1",
-            "hpath" : [
-               "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
-            ],
-            "fp" : 1404135320,
-            "uscnt" : 1,
-            "hdvercnt" : 1,
-            "hh2cnt" : 17,
-            "as1" : "AS0000 This is neat",
-            "fb1" : "474554202f782f78",
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "lp" : 1404135330,
-            "no" : "test",
-            "g2" : "CAN",
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
-            ],
             "hcval-term-cnt" : 10,
-            "hh1cnt" : 8,
+            "hckey-term-cnt" : 9,
             "ps" : [
                24,
                102,
@@ -95,57 +40,29 @@
                4877,
                4953
             ],
-            "ss" : 1,
-            "pr" : 6,
-            "hocnt" : 1,
-            "g1" : "RUS",
-            "hkey" : [
-               "v17",
-               "events",
-               "pageName",
-               "xxx",
-               "v1",
-               "ns",
-               "v2",
-               "x",
-               "products",
-               "AQE",
-               "vmf",
-               "c49",
-               "r",
-               "ce",
-               "g"
-            ],
-            "lpd" : 1404135330336,
-            "hkeycnt" : 15,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "mac2-term" : [
-               "88:43:e1:94:fc:2d"
-            ],
-            "fb2" : "485454502f312e31",
-            "hdver" : [
-               "1.1"
-            ],
             "mac1-term" : [
                "a4:93:4c:43:13:9b"
             ],
-            "http" : {
-               "method-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term" : [
-                  "image/gif"
-               ],
-               "statuscode-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term-cnt" : 1
-            },
+            "uscnt" : 1,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hmd5" : [
+               "ad480fd0732d0f6f1a8b06359e3a42bb"
+            ],
+            "rir2" : "TEST",
+            "hckey-term" : [
+               "xxxx",
+               "autocomplete",
+               "xxxxxxxxxxxxxxxxxxx",
+               "lp",
+               "xxxxx",
+               "xxxxxx",
+               "rememberUn",
+               "xxxxxxxxxxxxxxxxxxxxxx",
+               "xxx.xxxxxxxxxx.xxxxxxxxxx"
+            ],
             "hh2" : [
                "http:header:access-control-allow-origin",
                "http:header:cache-control",
@@ -165,30 +82,51 @@
                "http:header:x-c",
                "http:header:xserver"
             ],
-            "tcpflags" : {
-               "psh" : 3,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "ack" : 6,
-               "urg" : 0,
-               "rst" : 1,
-               "fin" : 0
+            "portSrc" : 61462,
+            "as1" : "AS0000 This is neat",
+            "ho" : [
+               "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
+            ],
+            "no" : "test",
+            "fb2" : "485454502f312e31",
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "string" : [
+                  "16777226:61462,33554442:80"
+               ]
             },
-            "psl" : [
-               78,
-               78,
-               76,
-               1240,
-               948,
-               76,
-               1240,
-               265,
-               76,
-               776,
-               76,
-               76
+            "firstPacket" : 1404135320459,
+            "db2" : 706,
+            "tacnt" : 2,
+            "hsvercnt" : 1,
+            "hocnt" : 1,
+            "g1" : "RUS",
+            "hdvercnt" : 1,
+            "us" : [
+               "//xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
             ],
             "by1" : 3811,
+            "by2" : 1002,
+            "timestamp" : "SET",
+            "hh1cnt" : 8,
+            "sl" : 9877,
+            "ipDst" : "10.0.0.2",
+            "ss" : 1,
+            "hpathcnt" : 1,
             "hval" : [
                "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "xxxxxxxxxxxxxxx",
@@ -205,32 +143,46 @@
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp"
             ],
-            "by2" : 1002,
-            "hsvercnt" : 1,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "us" : [
-               "//xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
+            "hh2cnt" : 17,
+            "fs" : [],
+            "lp" : 1404135330,
+            "pa1" : 7,
+            "tcpflags" : {
+               "psh" : 3,
+               "urg" : 0,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "ack" : 6,
+               "syn" : 1,
+               "rst" : 1
+            },
+            "prot-term-cnt" : 2,
+            "psl" : [
+               78,
+               78,
+               76,
+               1240,
+               948,
+               76,
+               1240,
+               265,
+               76,
+               776,
+               76,
+               76
             ],
             "hvalcnt" : 14,
-            "p1" : 61462,
+            "fp" : 1404135320,
+            "lpd" : 1404135330336,
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+            ],
+            "hmd5cnt" : 1,
+            "lastPacket" : 1404135330336,
+            "pa2" : 5,
             "hsver" : [
                "1.1"
             ],
-            "rir2" : "TEST",
-            "pa2" : 5,
             "hcval-term" : [
                "xxxx",
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -243,11 +195,66 @@
                "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "1"
             ],
-            "hdrs" : {
-               "hreq-referercnt" : 1,
-               "hreq-referer" : [
-                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
-               ]
+            "db" : 4119,
+            "fpd" : 1404135320459,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "db1" : 3413,
+            "hkey" : [
+               "v17",
+               "events",
+               "pageName",
+               "xxx",
+               "v1",
+               "ns",
+               "v2",
+               "x",
+               "products",
+               "AQE",
+               "vmf",
+               "c49",
+               "r",
+               "ce",
+               "g"
+            ],
+            "ipSrc" : "10.0.0.1",
+            "by" : 4813,
+            "portDst" : 80,
+            "hkeycnt" : 15,
+            "pa" : 12,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "uacnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "pr" : 6,
+            "hpath" : [
+               "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
+            ],
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "bodymagic-term" : [
+                  "image/gif"
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term-cnt" : 1
             }
          },
          "header" : {

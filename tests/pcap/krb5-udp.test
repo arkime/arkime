@@ -1,72 +1,79 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "vlan" : [
-               300
-            ],
-            "mac1-term-cnt" : 1,
-            "pa" : 1,
-            "no" : "test",
+            "a2" : "10.150.10.150",
+            "fp" : 1466252055,
+            "p2" : 88,
+            "by" : 297,
             "ps" : [
                24
             ],
-            "fb1" : "6a81f83081f5a103",
-            "fp" : 1466252055,
-            "mac2-term" : [
-               "00:00:5e:00:01:01"
-            ],
-            "a1" : "10.172.10.172",
-            "a2" : "10.150.10.150",
             "vlan-cnt" : 1,
-            "mac2-term-cnt" : 1,
+            "lpd" : 1466252055201,
+            "firstPacket" : 1466252055201,
+            "a1" : "10.172.10.172",
+            "fpd" : 1466252055201,
+            "ss" : 1,
+            "p1" : 58412,
+            "pr" : 17,
+            "prot-term-cnt" : 2,
             "prot-term" : [
                "udp",
                "krb5"
             ],
-            "by2" : 0,
-            "by1" : 297,
-            "db" : 289,
-            "psl" : [
-               313
+            "fb1" : "6a81f83081f5a103",
+            "mac2-term" : [
+               "00:00:5e:00:01:01"
             ],
-            "sl" : 0,
-            "lp" : 1466252055,
-            "db1" : 289,
-            "p1" : 58412,
-            "ss" : 1,
-            "p2" : 88,
-            "db2" : 0,
-            "pa1" : 1,
             "mac1-term" : [
                "00:1b:17:00:02:30"
             ],
-            "prot-term-cnt" : 2,
-            "fpd" : 1466252055201,
+            "by1" : 297,
             "krb5" : {
-               "cname-term" : [
-                  "xxxxxxxx$"
-               ],
-               "realm-termcnt" : 1,
-               "cname-termcnt" : 1,
                "sname-term" : [
                   "krbtgt/xx.xxx.xxxxx.NET"
+               ],
+               "cname-termcnt" : 1,
+               "realm-termcnt" : 1,
+               "cname-term" : [
+                  "xxxxxxxx$"
                ],
                "sname-termcnt" : 1,
                "realm-term" : [
                   "xx.xxx.xxxxx.NET"
                ]
             },
-            "fs" : [],
-            "pr" : 17,
+            "psl" : [
+               313
+            ],
+            "mac1-term-cnt" : 1,
+            "lastPacket" : 1466252055201,
+            "by2" : 0,
+            "portDst" : 88,
+            "mac2-term-cnt" : 1,
+            "pa" : 1,
+            "timestamp" : "SET",
+            "pa1" : 1,
+            "sl" : 0,
+            "db1" : 289,
             "pa2" : 0,
-            "by" : 297,
-            "lpd" : 1466252055201
+            "ipDst" : "10.150.10.150",
+            "portSrc" : 58412,
+            "vlan" : [
+               300
+            ],
+            "no" : "test",
+            "db2" : 0,
+            "fs" : [],
+            "lp" : 1466252055,
+            "db" : 289,
+            "ipSrc" : "10.172.10.172"
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160618"
+               "_index" : "tests_sessions-160618",
+               "_type" : "session"
             }
          }
       }

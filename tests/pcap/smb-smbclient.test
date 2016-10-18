@@ -1,16 +1,44 @@
 {
-   "packets" : [
+   "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131219",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "lp" : 1387494791,
-            "mac1-term" : [
+            "timestamp" : "SET",
+            "fp" : 1387494788,
+            "lastPacket" : 1387494791811,
+            "prot-term" : [
+               "smb",
+               "tcp"
+            ],
+            "smbshcnt" : 1,
+            "portSrc" : 41823,
+            "mac2-term-cnt" : 1,
+            "smbuser" : [
+               "user"
+            ],
+            "a2" : "127.0.0.1",
+            "smbvercnt" : 1,
+            "smbdmcnt" : 1,
+            "pa2" : 13,
+            "pa" : 34,
+            "smbsh" : [
+               "\\\\LOCALHOST\\MP3"
+            ],
+            "mac2-term" : [
                "00:00:00:00:00:00"
             ],
+            "lpd" : 1387494791811,
             "fb1" : "000000beff534d42",
-            "mac2-term-cnt" : 1,
-            "a2" : "127.0.0.1",
-            "by2" : 1667,
-            "by1" : 2262,
+            "prot-term-cnt" : 2,
+            "smbdm" : [
+               "WORKGROUP"
+            ],
+            "fb2" : "00000061ff534d42",
             "ps" : [
                24,
                114,
@@ -47,37 +75,45 @@
                4333,
                4415
             ],
-            "mac2-term" : [
+            "sl" : 3669,
+            "pr" : 6,
+            "ss" : 1,
+            "portDst" : 445,
+            "lp" : 1387494791,
+            "mac1-term" : [
                "00:00:00:00:00:00"
             ],
-            "fp" : 1387494788,
-            "sl" : 3669,
-            "p1" : 41823,
-            "smbfncnt" : 1,
-            "smbdmcnt" : 1,
-            "prot-term-cnt" : 2,
-            "smbdm" : [
-               "WORKGROUP"
-            ],
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
-            "no" : "test",
-            "pa" : 34,
-            "p2" : 445,
-            "ss" : 1,
-            "smboscnt" : 1,
             "smbos" : [
                "Unix"
             ],
-            "pr" : 6,
+            "tcpflags" : {
+               "psh" : 20,
+               "fin" : 2,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 10,
+               "urg" : 0
+            },
+            "smbfncnt" : 1,
+            "a1" : "127.0.0.1",
+            "no" : "test",
+            "db1" : 868,
+            "ipSrc" : "127.0.0.1",
+            "fs" : [],
+            "p1" : 41823,
+            "by2" : 1667,
+            "smbver" : [
+               "Samba 3.6.3"
+            ],
+            "by" : 3929,
+            "ipDst" : "127.0.0.1",
             "smbfn" : [
                "\\tmp\\foo"
             ],
-            "smbsh" : [
-               "\\\\LOCALHOST\\MP3"
-            ],
+            "by1" : 2262,
+            "firstPacket" : 1387494788141,
+            "db" : 1669,
             "psl" : [
                90,
                90,
@@ -114,42 +150,13 @@
                82,
                82
             ],
-            "smbshcnt" : 1,
-            "smbusercnt" : 1,
-            "tcpflags" : {
-               "ack" : 10,
-               "fin" : 2,
-               "urg" : 0,
-               "syn" : 1,
-               "rst" : 0,
-               "psh" : 20,
-               "syn-ack" : 1
-            },
-            "db" : 1669,
-            "lpd" : 1387494791811,
-            "by" : 3929,
-            "a1" : "127.0.0.1",
-            "pa1" : 21,
-            "fb2" : "00000061ff534d42",
-            "smbvercnt" : 1,
-            "db1" : 868,
-            "db2" : 801,
+            "smboscnt" : 1,
             "mac1-term-cnt" : 1,
-            "pa2" : 13,
+            "p2" : 445,
+            "db2" : 801,
+            "pa1" : 21,
             "fpd" : 1387494788141,
-            "smbuser" : [
-               "user"
-            ],
-            "smbver" : [
-               "Samba 3.6.3"
-            ],
-            "fs" : []
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131219"
-            }
+            "smbusercnt" : 1
          }
       }
    ]

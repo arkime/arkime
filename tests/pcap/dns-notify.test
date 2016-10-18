@@ -1,86 +1,93 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "lp" : 1379970300,
-            "pa1" : 1,
-            "fp" : 1379970300,
-            "mac1-term-cnt" : 2,
-            "no" : "test",
+            "mac2-term" : [
+               "52:54:00:d9:83:b3"
+            ],
             "mac1-term" : [
                "00:23:33:69:4d:00",
                "00:00:5e:00:01:01"
             ],
-            "ss" : 1,
-            "rir2" : "ARIN",
-            "p2" : 53,
-            "a1" : "217.70.190.232",
+            "db" : 222,
+            "lastPacket" : 1379970300840,
             "ps" : [
                24,
                205
             ],
-            "sl" : 0,
-            "psl" : [
-               181,
-               89
-            ],
-            "db" : 222,
-            "rir1" : "RIPE",
-            "db1" : 157,
-            "mac2-term-cnt" : 1,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
+            "mac1-term-cnt" : 2,
+            "fb1" : "9668240000010001",
+            "portDst" : 53,
+            "pr" : 17,
+            "rir2" : "ARIN",
+            "a2" : "204.62.14.153",
+            "fpd" : 1379970300840,
+            "p2" : 53,
+            "no" : "test",
+            "by2" : 73,
             "dns" : {
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term-cnt" : 1,
                "status-term" : [
                   "NOERROR"
                ],
+               "qc-term" : [
+                  "IN"
+               ],
+               "opcode-term-cnt" : 1,
+               "qt-term-cnt" : 1,
                "opcode-term" : [
                   "NOTIFY"
                ],
                "qc-term-cnt" : 1,
+               "status-term-cnt" : 1,
                "qt-term" : [
                   "SOA"
-               ],
-               "opcode-term-cnt" : 1,
-               "status-term-cnt" : 1
+               ]
             },
-            "fpd" : 1379970300840,
-            "by" : 238,
-            "by1" : 165,
-            "lpd" : 1379970300840,
-            "as2" : "AS46636 NatCoWeb Corp.",
-            "fb1" : "9668240000010001",
-            "mac2-term" : [
-               "52:54:00:d9:83:b3"
+            "pa" : 2,
+            "fp" : 1379970300,
+            "prot-term" : [
+               "udp",
+               "dns"
             ],
-            "g1" : "FRA",
-            "as1" : "AS29169 Domain name registrar - http://www.gandi.net",
+            "pa2" : 1,
+            "portSrc" : 55612,
+            "fb2" : "9668a40000010000",
+            "mac2-term-cnt" : 1,
             "db2" : 65,
+            "rir1" : "RIPE",
+            "prot-term-cnt" : 2,
+            "lp" : 1379970300,
+            "by1" : 165,
             "dnsho" : [
                "bortzmeyer.42"
             ],
-            "a2" : "204.62.14.153",
-            "g2" : "USA",
-            "by2" : 73,
-            "prot-term-cnt" : 2,
+            "lpd" : 1379970300840,
+            "ipDst" : "204.62.14.153",
+            "ipSrc" : "217.70.190.232",
             "fs" : [],
-            "pr" : 17,
-            "p1" : 55612,
+            "psl" : [
+               181,
+               89
+            ],
+            "g1" : "FRA",
+            "as1" : "AS29169 Domain name registrar - http://www.gandi.net",
             "dnshocnt" : 1,
-            "pa" : 2,
-            "fb2" : "9668a40000010000",
-            "pa2" : 1
+            "g2" : "USA",
+            "db1" : 157,
+            "ss" : 1,
+            "a1" : "217.70.190.232",
+            "firstPacket" : 1379970300840,
+            "sl" : 0,
+            "as2" : "AS46636 NatCoWeb Corp.",
+            "p1" : 55612,
+            "timestamp" : "SET",
+            "by" : 238,
+            "pa1" : 1
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-130923",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-130923"
             }
          }
       }

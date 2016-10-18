@@ -1,99 +1,106 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "prot-term" : [
-               "tcp",
-               "bittorrent"
-            ],
-            "as2" : "AS0001 Cool Beans!",
-            "ss" : 1,
-            "mac1-term" : [
-               "00:0f:f7:76:82:80"
-            ],
-            "pa2" : 1,
-            "tacnt" : 2,
-            "a2" : "10.0.0.2",
-            "lpd" : 1387744084305,
-            "p1" : 1203,
-            "fpd" : 1387744084182,
-            "prot-term-cnt" : 2,
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "string" : [
-                  "16777226:1203,33554442:26001"
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "fp" : 1387744084,
-            "mac2-term" : [
-               "00:00:5e:00:01:02",
-               "00:1d:b5:ce:ef:c0"
-            ],
-            "mac1-term-cnt" : 1,
-            "mac2-term-cnt" : 2,
-            "g1" : "RUS",
-            "by" : 314,
-            "pa" : 4,
-            "as1" : "AS0000 This is neat",
-            "db1" : 68,
-            "by1" : 248,
-            "tcpflags" : {
-               "syn" : 1,
-               "psh" : 1,
-               "syn-ack" : 1,
-               "fin" : 0,
-               "urg" : 0,
-               "rst" : 0,
-               "ack" : 1
-            },
-            "ps" : [
-               24,
-               106,
-               188,
-               264
-            ],
-            "no" : "test",
-            "db2" : 0,
-            "a1" : "10.0.0.1",
             "g2" : "CAN",
-            "db" : 68,
+            "pa" : 4,
+            "rir2" : "TEST",
+            "lp" : 1387744084,
+            "a1" : "10.0.0.1",
+            "a2" : "10.0.0.2",
+            "by" : 314,
+            "as1" : "AS0000 This is neat",
+            "by2" : 66,
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "rir2" : "TEST",
-            "pr" : 6,
-            "lp" : 1387744084,
-            "pa1" : 3,
+            "g1" : "RUS",
+            "ipSrc" : "10.0.0.1",
+            "fs" : [],
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "lpd" : 1387744084305,
+            "firstPacket" : 1387744084182,
+            "fp" : 1387744084,
+            "prot-term" : [
+               "tcp",
+               "bittorrent"
+            ],
+            "portDst" : 26001,
             "fb1" : "13426974546f7272",
-            "sl" : 123,
-            "by2" : 66,
+            "mac2-term-cnt" : 2,
+            "prot-term-cnt" : 2,
+            "tacnt" : 2,
+            "pa2" : 1,
+            "mac1-term-cnt" : 1,
             "psl" : [
                82,
                82,
                76,
                138
             ],
+            "by1" : 248,
+            "db1" : 68,
+            "no" : "test",
+            "mac2-term" : [
+               "00:00:5e:00:01:02",
+               "00:1d:b5:ce:ef:c0"
+            ],
+            "ipDst" : "10.0.0.2",
+            "db2" : 0,
+            "test" : {
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:1203,33554442:26001"
+               ],
+               "ip-rir" : [
+                  ""
+               ]
+            },
+            "sl" : 123,
+            "mac1-term" : [
+               "00:0f:f7:76:82:80"
+            ],
+            "fpd" : 1387744084182,
+            "ps" : [
+               24,
+               106,
+               188,
+               264
+            ],
+            "db" : 68,
+            "p1" : 1203,
+            "pr" : 6,
+            "portSrc" : 1203,
+            "lastPacket" : 1387744084305,
+            "ss" : 1,
+            "timestamp" : "SET",
+            "pa1" : 3,
+            "as2" : "AS0001 Cool Beans!",
             "p2" : 26001,
-            "fs" : []
+            "tcpflags" : {
+               "ack" : 1,
+               "fin" : 0,
+               "rst" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "psh" : 1
+            }
          },
          "header" : {
             "index" : {

@@ -1,87 +1,61 @@
 {
-   "packets" : [
+   "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131212"
+            }
+         },
          "body" : {
-            "euacnt" : 1,
-            "fb1" : "45484c4f20787878",
-            "tacnt" : 1,
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               439,
-               521,
-               631,
-               713,
-               975,
-               1093,
-               1206,
-               1327,
-               1451,
-               1533,
-               1661,
-               1743,
-               2814,
-               2896,
-               2981,
-               3063,
-               3177,
-               3259,
-               3347,
-               3429,
-               3602,
-               3684,
-               3766,
-               3848
-            ],
-            "eidcnt" : 1,
-            "fs" : [],
-            "by2" : 1425,
-            "by" : 3458,
-            "mac1-term-cnt" : 1,
-            "eipcnt" : 1,
-            "esubcnt" : 1,
-            "eua" : [
-               "Mutt/1.5.20 (2009-12-10)"
-            ],
-            "eho" : [
-               "localhost",
-               "xxxxxxxxxxxxx.xxx.com"
-            ],
-            "fp" : 1386817958,
-            "a2" : "64.236.55.17",
-            "db" : 1594,
             "p2" : 25,
-            "tags-term" : [
-               "smtp:statuscode:250"
-            ],
-            "db2" : 493,
-            "ect" : [
-               "text/plain; charset=us-ascii"
-            ],
-            "ectcnt" : 1,
-            "rireip" : [
-               ""
-            ],
-            "eip" : [
-               "127.0.0.1"
-            ],
-            "p1" : 35803,
-            "rir2" : "ARIN",
-            "pa" : 28,
-            "by1" : 2033,
-            "pa1" : 14,
-            "a1" : "10.180.156.249",
-            "ss" : 1,
-            "aseip" : [
+            "geip" : [
                "---"
             ],
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
+            "emv" : [
+               "1.0"
             ],
-            "g1" : "USA",
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "mac1-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "pr" : 6,
+            "fp" : 1386817958,
+            "esub" : [
+               "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
+            ],
+            "ipDst" : "64.236.55.17",
+            "esrccnt" : 1,
+            "fb1" : "45484c4f20787878",
+            "by" : 3458,
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "user-agent",
+               "received",
+               "content-disposition",
+               "date",
+               "subject"
+            ],
+            "fs" : [],
+            "db" : 1594,
+            "tcpflags" : {
+               "ack" : 11,
+               "psh" : 13,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "rst" : 0,
+               "fin" : 2
+            },
+            "eid" : [
+               "20131212031238.GA1705@xxx.net"
+            ],
             "psl" : [
                90,
                90,
@@ -112,79 +86,112 @@
                82,
                82
             ],
-            "ehocnt" : 2,
-            "no" : "test",
-            "edst" : [
-               "xxxxxxxxx@xxxxxxx.com"
-            ],
-            "mac1-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
             "mac2-term-cnt" : 2,
-            "as2" : "AS1668 AOL Transit Data Network",
-            "ta" : [
-               "smtp:statuscode:250"
+            "rireip" : [
+               ""
             ],
-            "pr" : 6,
-            "prot-term-cnt" : 2,
-            "edstcnt" : 1,
-            "esrccnt" : 1,
-            "fb2" : "3232302078787878",
-            "emv" : [
-               "1.0"
-            ],
-            "lp" : 1386817959,
-            "eid" : [
-               "20131212031238.GA1705@xxx.net"
-            ],
-            "ehh" : [
-               "content-type",
-               "message-id",
-               "mime-version",
-               "from",
-               "to",
-               "user-agent",
-               "received",
-               "content-disposition",
-               "date",
-               "subject"
-            ],
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "syn" : 1,
-               "fin" : 2,
-               "psh" : 13,
-               "ack" : 11
-            },
-            "fpd" : 1386817958900,
-            "g2" : "USA",
-            "emvcnt" : 1,
-            "geip" : [
-               "---"
-            ],
-            "db1" : 1101,
-            "esub" : [
-               "这是用空格测试                                                                                                                  å é î ø ü                                                                              test"
-            ],
-            "lpd" : 1386817959201,
+            "sl" : 302,
+            "rir2" : "ARIN",
+            "eidcnt" : 1,
+            "pa2" : 14,
+            "esubcnt" : 1,
+            "g1" : "USA",
+            "db2" : 493,
+            "mac1-term-cnt" : 1,
+            "p1" : 35803,
+            "ehhcnt" : 10,
+            "firstPacket" : 1386817958900,
+            "pa" : 28,
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "sl" : 302,
-            "esrc" : [
-               "xxxxx@xxx.net"
+            "db1" : 1101,
+            "aseip" : [
+               "---"
             ],
-            "ehhcnt" : 10,
-            "pa2" : 14
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131212"
-            }
+            "lastPacket" : 1386817959201,
+            "a2" : "64.236.55.17",
+            "portSrc" : 35803,
+            "pa1" : 14,
+            "fpd" : 1386817958900,
+            "emvcnt" : 1,
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               439,
+               521,
+               631,
+               713,
+               975,
+               1093,
+               1206,
+               1327,
+               1451,
+               1533,
+               1661,
+               1743,
+               2814,
+               2896,
+               2981,
+               3063,
+               3177,
+               3259,
+               3347,
+               3429,
+               3602,
+               3684,
+               3766,
+               3848
+            ],
+            "ect" : [
+               "text/plain; charset=us-ascii"
+            ],
+            "eho" : [
+               "localhost",
+               "xxxxxxxxxxxxx.xxx.com"
+            ],
+            "portDst" : 25,
+            "eua" : [
+               "Mutt/1.5.20 (2009-12-10)"
+            ],
+            "tacnt" : 1,
+            "ta" : [
+               "smtp:statuscode:250"
+            ],
+            "no" : "test",
+            "lpd" : 1386817959201,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "edst" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "g2" : "USA",
+            "ectcnt" : 1,
+            "ehocnt" : 2,
+            "timestamp" : "SET",
+            "a1" : "10.180.156.249",
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "fb2" : "3232302078787878",
+            "eip" : [
+               "127.0.0.1"
+            ],
+            "by1" : 2033,
+            "prot-term-cnt" : 2,
+            "lp" : 1386817959,
+            "ipSrc" : "10.180.156.249",
+            "edstcnt" : 1,
+            "tags-term" : [
+               "smtp:statuscode:250"
+            ],
+            "eipcnt" : 1,
+            "ss" : 1,
+            "by2" : 1425,
+            "euacnt" : 1
          }
       }
    ]

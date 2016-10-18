@@ -1,100 +1,25 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131126",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "no" : "test",
-            "db1" : 47,
-            "p2" : 1080,
-            "prot-term-cnt" : 3,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
             "mac1-term-cnt" : 1,
-            "a1" : "10.0.0.2",
-            "mac2-term-cnt" : 2,
-            "a2" : "10.0.0.1",
-            "prot-term" : [
-               "socks",
-               "smtp",
-               "tcp"
-            ],
-            "as1" : "AS0001 Cool Beans!",
-            "pa2" : 10,
-            "p1" : 53709,
-            "pa1" : 10,
-            "by1" : 638,
-            "socksho" : "010.000.00.003",
+            "by" : 1492,
+            "lpd" : 1385474639455,
+            "ipSrc" : "10.0.0.2",
+            "no" : "test",
             "db2" : 280,
-            "g2" : "RUS",
-            "sockspo" : 25,
-            "tacnt" : 3,
+            "pa2" : 10,
             "ta" : [
                "dstip",
                "smtp:authlogin",
                "srcip"
             ],
-            "ss" : 1,
-            "pa" : 20,
-            "ps" : [
-               24,
-               106,
-               188,
-               264,
-               340,
-               416,
-               492,
-               568,
-               644,
-               735,
-               811,
-               891,
-               967,
-               1113,
-               1194,
-               1270,
-               1489,
-               1571,
-               1647,
-               1760
-            ],
-            "tcpflags" : {
-               "fin" : 0,
-               "urg" : 0,
-               "psh" : 10,
-               "syn-ack" : 1,
-               "rst" : 1,
-               "ack" : 6,
-               "syn" : 2
-            },
-            "by2" : 854,
-            "lpd" : 1385474639455,
+            "portDst" : 1080,
+            "mac2-term-cnt" : 2,
+            "ipDst" : "10.0.0.1",
             "pr" : 6,
-            "g1" : "CAN",
-            "fpd" : 1385474626674,
-            "fb2" : "0500050000010a00",
-            "fb1" : "050100050100030e",
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:82:cf:c6"
-            ],
-            "by" : 1492,
-            "db" : 327,
-            "fs" : [],
-            "as2" : "AS0000 This is neat",
-            "sl" : 12781,
-            "fp" : 1385474626,
-            "lp" : 1385474639,
-            "tags-term" : [
-               "smtp:authlogin",
-               "srcip",
-               "dstip"
-            ],
+            "rir1" : "TEST",
+            "by1" : 638,
             "psl" : [
                82,
                82,
@@ -117,7 +42,89 @@
                113,
                76
             ],
-            "rir1" : "TEST"
+            "a1" : "10.0.0.2",
+            "sl" : 12781,
+            "as2" : "AS0000 This is neat",
+            "fs" : [],
+            "p1" : 53709,
+            "a2" : "10.0.0.1",
+            "prot-term" : [
+               "socks",
+               "smtp",
+               "tcp"
+            ],
+            "db1" : 47,
+            "socksho" : "010.000.00.003",
+            "g2" : "RUS",
+            "firstPacket" : 1385474626674,
+            "tcpflags" : {
+               "psh" : 10,
+               "urg" : 0,
+               "fin" : 0,
+               "ack" : 6,
+               "syn-ack" : 1,
+               "rst" : 1,
+               "syn" : 2
+            },
+            "fb2" : "0500050000010a00",
+            "ps" : [
+               24,
+               106,
+               188,
+               264,
+               340,
+               416,
+               492,
+               568,
+               644,
+               735,
+               811,
+               891,
+               967,
+               1113,
+               1194,
+               1270,
+               1489,
+               1571,
+               1647,
+               1760
+            ],
+            "pa1" : 10,
+            "fb1" : "050100050100030e",
+            "p2" : 1080,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:82:cf:c6"
+            ],
+            "tags-term" : [
+               "smtp:authlogin",
+               "srcip",
+               "dstip"
+            ],
+            "portSrc" : 53709,
+            "g1" : "CAN",
+            "ss" : 1,
+            "timestamp" : "SET",
+            "fp" : 1385474626,
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "sockspo" : 25,
+            "fpd" : 1385474626674,
+            "tacnt" : 3,
+            "by2" : 854,
+            "pa" : 20,
+            "prot-term-cnt" : 3,
+            "db" : 327,
+            "as1" : "AS0001 Cool Beans!",
+            "lastPacket" : 1385474639455,
+            "lp" : 1385474639
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131126",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -1,16 +1,24 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "tcpflags" : {
-               "fin" : 0,
-               "syn-ack" : 1,
-               "urg" : 0,
-               "syn" : 1,
-               "ack" : 3,
-               "rst" : 0,
-               "psh" : 6
-            },
+            "ss" : 1,
+            "db1" : 129,
+            "portDst" : 5432,
+            "pa" : 11,
+            "db2" : 327,
+            "portSrc" : 36060,
+            "tacnt" : 1,
+            "by1" : 533,
+            "mac2-term-cnt" : 1,
+            "as1" : "AS0000 This is neat",
+            "g1" : "RUS",
+            "a1" : "10.0.0.1",
+            "lastPacket" : 1399300685032,
+            "fs" : [],
+            "pr" : 6,
+            "a2" : "10.0.13.120",
+            "by2" : 665,
             "psl" : [
                90,
                90,
@@ -24,58 +32,21 @@
                123,
                395
             ],
-            "fp" : 1399300685,
-            "test" : {
-               "ip" : [
-                  167772161
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:36060,2014117898:5432"
-               ],
-               "number" : [
-                  2014117898
-               ]
-            },
-            "fs" : [],
-            "a2" : "10.0.13.120",
-            "fpd" : 1399300685023,
-            "mac2-term" : [
-               "00:0c:29:18:7f:fe"
-            ],
-            "g1" : "RUS",
-            "as1" : "AS0000 This is neat",
-            "pr" : 6,
-            "pa" : 11,
-            "mac1-term-cnt" : 2,
-            "pa2" : 5,
-            "prot-term-cnt" : 2,
+            "sl" : 8,
+            "db" : 456,
             "no" : "test",
-            "by1" : 533,
-            "mac2-term-cnt" : 1,
-            "tacnt" : 1,
+            "pa1" : 6,
+            "fb2" : "4e520000000c0000",
+            "by" : 1198,
+            "fpd" : 1399300685023,
             "mac1-term" : [
                "90:e2:ba:52:f6:2a",
                "00:00:5e:00:01:71"
             ],
-            "lpd" : 1399300685032,
-            "p1" : 36060,
-            "ss" : 1,
-            "a1" : "10.0.0.1",
-            "db" : 456,
-            "fb2" : "4e520000000c0000",
-            "p2" : 5432,
-            "sl" : 8,
-            "by" : 1198,
-            "db1" : 129,
+            "ipDst" : "10.0.13.120",
+            "ta" : [
+               "srcip"
+            ],
             "ps" : [
                24,
                114,
@@ -89,26 +60,62 @@
                880,
                1003
             ],
-            "ta" : [
+            "fb1" : "0000000804d2162f",
+            "tags-term" : [
                "srcip"
             ],
+            "mac1-term-cnt" : 2,
+            "timestamp" : "SET",
+            "lpd" : 1399300685032,
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "number" : [
+                  2014117898
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:36060,2014117898:5432"
+               ]
+            },
             "prot-term" : [
                "tcp",
                "postgresql"
             ],
-            "pa1" : 6,
             "lp" : 1399300685,
-            "fb1" : "0000000804d2162f",
-            "by2" : 665,
-            "db2" : 327,
-            "tags-term" : [
-               "srcip"
-            ],
+            "pa2" : 5,
+            "prot-term-cnt" : 2,
             "postgresql" : {
                "user-term" : "cooluser",
                "app-term" : "pgAdmin III - Browser",
                "db-term" : "dbdbdbdb"
-            }
+            },
+            "mac2-term" : [
+               "00:0c:29:18:7f:fe"
+            ],
+            "ipSrc" : "10.0.0.1",
+            "fp" : 1399300685,
+            "p2" : 5432,
+            "p1" : 36060,
+            "tcpflags" : {
+               "fin" : 0,
+               "psh" : 6,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 3
+            },
+            "firstPacket" : 1399300685023
          },
          "header" : {
             "index" : {

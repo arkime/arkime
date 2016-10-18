@@ -1,90 +1,39 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-160701",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "uacnt" : 1,
-            "fpd" : 1467366160266,
-            "mac1-term" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "fb1" : "474554202f312048",
-            "mac1-term-cnt" : 1,
-            "by2" : 12880,
-            "hocnt" : 1,
             "hdvercnt" : 1,
-            "p1" : 10882,
-            "db2" : 12252,
-            "no" : "test",
-            "pa1" : 2,
+            "ipDst" : "10.0.0.33",
             "hsvercnt" : 1,
-            "hdrs" : {
-               "hreq-referercnt" : 1,
-               "hreq-referer" : [
-                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ]
-            },
-            "lpd" : 1467366160339,
-            "uscnt" : 1,
-            "hpathcnt" : 1,
-            "ss" : 1,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "tcpflags" : {
-               "psh" : 3,
-               "syn" : 0,
-               "urg" : 0,
-               "syn-ack" : 1,
-               "rst" : 0,
-               "fin" : 0,
-               "ack" : 9
-            },
-            "by" : 13424,
-            "us" : [
-               "//js.navigator.io/1"
-            ],
-            "hpath" : [
-               "/1"
-            ],
-            "fb2" : "485454502f312e31",
-            "by1" : 544,
-            "hsver" : [
-               "1.1"
-            ],
-            "hdver" : [
-               "1.1"
-            ],
-            "pa" : 13,
-            "a1" : "10.0.0.32",
-            "pa2" : 11,
-            "mac2-term" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "fp" : 1467366160,
-            "sl" : 73,
-            "prot-term-cnt" : 2,
+            "mac1-term-cnt" : 1,
             "db1" : 427,
-            "p2" : 80,
-            "hmd5" : [
-               "38bf34783fc26180631a614a88301cab"
-            ],
-            "pr" : 6,
-            "hmd5cnt" : 1,
+            "fb1" : "474554202f312048",
+            "firstPacket" : 1467366160266,
+            "hh2cnt" : 11,
             "ho" : [
                "js.navigator.io"
             ],
+            "a2" : "10.0.0.33",
+            "hmd5cnt" : 1,
+            "us" : [
+               "//js.navigator.io/1"
+            ],
+            "ss" : 1,
+            "hh1cnt" : 7,
+            "hh2" : [
+               "http:header:access-control-allow-origin",
+               "http:header:cache-control",
+               "http:header:connection",
+               "http:header:content-encoding",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:expires",
+               "http:header:pragma",
+               "http:header:server",
+               "http:header:transfer-encoding",
+               "http:header:vary"
+            ],
+            "lpd" : 1467366160339,
             "ps" : [
                24,
                108,
@@ -100,12 +49,79 @@
                11032,
                12564
             ],
-            "a2" : "10.0.0.33",
-            "hh2cnt" : 11,
-            "fs" : [],
-            "hh1cnt" : 7,
+            "by" : 13424,
+            "db2" : 12252,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hpath" : [
+               "/1"
+            ],
+            "pr" : 6,
+            "uacnt" : 1,
+            "lastPacket" : 1467366160339,
+            "prot-term-cnt" : 2,
+            "mac1-term" : [
+               "aa:aa:aa:aa:aa:aa"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "hmd5" : [
+               "38bf34783fc26180631a614a88301cab"
+            ],
+            "no" : "test",
+            "pa1" : 2,
+            "fpd" : 1467366160266,
+            "mac2-term" : [
+               "aa:aa:aa:aa:aa:aa"
+            ],
+            "by1" : 544,
+            "tcpflags" : {
+               "rst" : 0,
+               "psh" : 3,
+               "urg" : 0,
+               "fin" : 0,
+               "ack" : 9,
+               "syn" : 0,
+               "syn-ack" : 1
+            },
+            "pa2" : 11,
+            "hdrs" : {
+               "hreq-referer" : [
+                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "hreq-referercnt" : 1
+            },
+            "hsver" : [
+               "1.1"
+            ],
+            "by2" : 12880,
+            "sl" : 73,
+            "a1" : "10.0.0.32",
+            "fp" : 1467366160,
+            "timestamp" : "SET",
+            "p1" : 10882,
+            "p2" : 80,
+            "hdver" : [
+               "1.1"
+            ],
+            "hocnt" : 1,
+            "hpathcnt" : 1,
+            "db" : 12679,
+            "lp" : 1467366160,
+            "portSrc" : 10882,
             "http" : {
-               "bodymagic-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "application/x-gzip"
+               ],
                "statuscode" : [
                   200
                ],
@@ -114,10 +130,10 @@
                   "GET"
                ],
                "method-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "application/x-gzip"
-               ]
+               "bodymagic-term-cnt" : 1
             },
+            "uscnt" : 1,
+            "portDst" : 80,
             "psl" : [
                84,
                76,
@@ -133,29 +149,20 @@
                1532,
                1092
             ],
+            "fs" : [],
+            "pa" : 13,
             "mac2-term-cnt" : 1,
             "ua" : [
                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
             ],
-            "lp" : 1467366160,
-            "db" : 12679,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "hh2" : [
-               "http:header:access-control-allow-origin",
-               "http:header:cache-control",
-               "http:header:connection",
-               "http:header:content-encoding",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:expires",
-               "http:header:pragma",
-               "http:header:server",
-               "http:header:transfer-encoding",
-               "http:header:vary"
-            ]
+            "fb2" : "485454502f312e31",
+            "ipSrc" : "10.0.0.32"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160701",
+               "_type" : "session"
+            }
          }
       }
    ]
