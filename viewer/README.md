@@ -43,7 +43,7 @@ You must have an elasticsearch cluster running, have already built and
 configured Moloch, and your `tests/config.test.ini` must be valid.
 
 This command starts the node server and bundles all app files into
-`viewer/bundles/app.bundle.js` and `viewer/bundles/vender.bundle.js`.
+`viewer/bundles/app.bundle.js` and `viewer/bundles/vendor.bundle.js`.
 
 Webpack watches for changes to relevant files, and re-bundles the app after each save.
 
@@ -61,7 +61,7 @@ As above, you must have an elasticsearch cluster running, have already built and
 configured Moloch, and your `config.ini` must be valid.
 
 This command starts the node server and bundles and minifies all app files into
-`viewer/bundles/app.bundle.js` and `viewer/bundles/vender.bundle.js`.
+`viewer/bundles/app.bundle.js` and `viewer/bundles/vendor.bundle.js`.
 
 Now browse to the app at `http://localhost:8123`.
 
