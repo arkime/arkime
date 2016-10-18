@@ -41,8 +41,9 @@
 
         $routeProvider
           .when('/session', {
-            title   : 'Sessions',
-            template: '<session></session>'
+            title         : 'Sessions',
+            template      : '<session></session>',
+            reloadOnSearch: false
           })
           // default route is the sessions page
           .otherwise({ redirectTo: '/session' });
