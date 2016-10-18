@@ -43,7 +43,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 27;
+my $VERSION = 28;
 my $verbose = 0;
 my $PREFIX = "";
 my $SHARDS = -1;
@@ -2071,20 +2071,20 @@ if ($ARGV[1] =~ /^users-?import$/) {
     dbVersion(0);
     my $esversion = dbESVersion();
     my $nodes = esGet("/_nodes");
-    my $status = esGet("/_status", 1);
+    my $status = esGet("/_stats", 1);
     my $sessions = 0;
     my $sessionsBytes = 0;
-    my @sessions = grep /^${PREFIX}session/, keys %{$status->{indices}};
+    my @sessions = grep /^${PREFIX}sessions-/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
         next if ($index !~ /^${PREFIX}sessions-/);
-        $sessions += $status->{indices}->{$index}->{docs}->{num_docs};
-        $sessionsBytes += $status->{indices}->{$index}->{index}->{primary_size_in_bytes};
+        $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
+        $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }
 
 sub printIndex {
     my ($index, $name) = @_;
     return if (!$index);
-    printf "%-20s %s (%s bytes)\n", $name . ":", commify($index->{docs}->{num_docs}), commify($index->{index}->{primary_size_in_bytes});
+    printf "%-20s %s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
 }
 
     printf "ES Version:          %s\n", $esversion->{version}->{number};
