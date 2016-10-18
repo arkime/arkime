@@ -1,52 +1,53 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "tlsver-termcnt" : 1,
-            "as2" : "AS10913 Internap Network Services Corporation",
+            "ho" : [
+               "bl.a.im"
+            ],
+            "portDst" : 443,
             "pa" : 16,
+            "portSrc" : 62938,
+            "by2" : 983,
+            "pa2" : 9,
+            "ipSrc" : "10.23.46.37",
+            "fpd" : 1420490708340,
+            "by" : 2005,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "fin" : 2,
+               "ack" : 6,
+               "rst" : 0,
+               "urg" : 0,
+               "psh" : 6,
+               "syn" : 1
+            },
+            "tlssrcid-term" : [
+               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
+            ],
+            "prot-term-cnt" : 2,
             "sl" : 91,
-            "prot-term" : [
-               "tls",
-               "tcp"
+            "a1" : "10.23.46.37",
+            "mac1-term-cnt" : 1,
+            "tlsver-term" : [
+               "TLSv1"
             ],
             "no" : "test",
-            "lp" : 1420490708,
+            "a2" : "74.217.87.13",
+            "lastPacket" : 1420490708431,
+            "p2" : 443,
+            "db" : 1077,
+            "fp" : 1420490708,
+            "db1" : 618,
+            "by1" : 1022,
+            "hocnt" : 1,
             "mac1-term" : [
                "b8:ca:3a:8d:c1:87"
             ],
-            "tlscipher-term" : [
-               "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
+            "mac2-term" : [
+               "60:73:5c:b4:90:00"
             ],
-            "tlsdstid-term" : [
-               "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
-            ],
-            "fs" : [],
-            "fb2" : "1603010051020000",
-            "fpd" : 1420490708340,
-            "p2" : 443,
-            "p1" : 62938,
-            "pr" : 6,
-            "ps" : [
-               24,
-               102,
-               180,
-               256,
-               523,
-               599,
-               814,
-               943,
-               1019,
-               1451,
-               1527,
-               1874,
-               1981,
-               2057,
-               2133,
-               2209
-            ],
-            "db1" : 618,
-            "by1" : 1022,
+            "g2" : "USA",
             "psl" : [
                78,
                78,
@@ -65,46 +66,52 @@
                76,
                76
             ],
-            "by" : 2005,
-            "db" : 1077,
-            "ss" : 1,
             "rir2" : "ARIN",
-            "a1" : "10.23.46.37",
-            "g2" : "USA",
-            "tlscipher-termcnt" : 1,
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "prot-term-cnt" : 2,
-            "lpd" : 1420490708431,
-            "tlssrcid-term" : [
+            "tlsdstid-term" : [
                "c2f633f57b51fa93e307a5a1d6af46128abcc33151063d82b6be8c05c52717c3"
             ],
-            "hocnt" : 1,
-            "fp" : 1420490708,
-            "mac2-term-cnt" : 1,
-            "pa2" : 9,
-            "pa1" : 7,
-            "a2" : "74.217.87.13",
-            "ho" : [
-               "bl.a.im"
-            ],
-            "mac1-term-cnt" : 1,
-            "tcpflags" : {
-               "ack" : 6,
-               "psh" : 6,
-               "urg" : 0,
-               "rst" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "fin" : 2
-            },
-            "by2" : 983,
-            "mac2-term" : [
-               "60:73:5c:b4:90:00"
-            ],
+            "ipDst" : "74.217.87.13",
+            "p1" : 62938,
+            "fs" : [],
             "db2" : 459,
-            "fb1" : "16030100c0010000"
+            "pr" : 6,
+            "timestamp" : "SET",
+            "lp" : 1420490708,
+            "ps" : [
+               24,
+               102,
+               180,
+               256,
+               523,
+               599,
+               814,
+               943,
+               1019,
+               1451,
+               1527,
+               1874,
+               1981,
+               2057,
+               2133,
+               2209
+            ],
+            "pa1" : 7,
+            "lpd" : 1420490708431,
+            "fb2" : "1603010051020000",
+            "tlscipher-term" : [
+               "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
+            ],
+            "ss" : 1,
+            "firstPacket" : 1420490708340,
+            "tlsver-termcnt" : 1,
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "fb1" : "16030100c0010000",
+            "mac2-term-cnt" : 1,
+            "as2" : "AS10913 Internap Network Services Corporation",
+            "tlscipher-termcnt" : 1
          },
          "header" : {
             "index" : {

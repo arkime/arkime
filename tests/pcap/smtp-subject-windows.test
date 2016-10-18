@@ -1,59 +1,30 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-140306",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "no" : "test",
+            "ss" : 1,
             "mac1-term" : [
                "00:13:72:c4:f1:e1"
             ],
-            "fb2" : "3232302d78787878",
-            "esubcnt" : 1,
-            "tacnt" : 2,
-            "esrc" : [
-               "xxxxx@xxx.net"
-            ],
-            "as1" : "AS0000 This is neat",
-            "p1" : 40531,
             "tcpflags" : {
-               "ack" : 11,
-               "urg" : 0,
-               "fin" : 2,
                "syn" : 1,
-               "psh" : 8,
+               "syn-ack" : 1,
+               "ack" : 11,
                "rst" : 0,
-               "syn-ack" : 1
+               "fin" : 2,
+               "psh" : 8,
+               "urg" : 0
             },
-            "lpd" : 1394118475137,
+            "mac1-term-cnt" : 1,
+            "g1" : "RUS",
+            "as1" : "AS0000 This is neat",
+            "lp" : 1394118475,
+            "ipDst" : "10.0.0.2",
             "a1" : "10.0.0.1",
             "db2" : 749,
-            "ss" : 1,
-            "esrccnt" : 1,
-            "ehhcnt" : 3,
-            "mac2-term-cnt" : 2,
-            "mac1-term-cnt" : 1,
-            "lp" : 1394118475,
-            "by" : 2498,
+            "db" : 960,
             "a2" : "10.0.0.2",
-            "fp" : 1394118475,
-            "db1" : 211,
-            "g1" : "RUS",
-            "pr" : 6,
-            "p2" : 25,
-            "sl" : 128,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
+            "esubcnt" : 1,
             "ps" : [
                24,
                114,
@@ -79,7 +50,88 @@
                2726,
                2808
             ],
-            "fb1" : "45484c4f20787878",
+            "esub" : [
+               "Awesome windows: See What’s Next in charset decoding!"
+            ],
+            "lpd" : 1394118475137,
+            "p1" : 40531,
+            "p2" : 25,
+            "edstcnt" : 1,
+            "prot-term-cnt" : 2,
+            "as2" : "AS0001 Cool Beans!",
+            "by2" : 1487,
+            "pa1" : 12,
+            "test" : {
+               "string" : [
+                  "16777226:40531,33554442:25"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ]
+            },
+            "db1" : 211,
+            "esrccnt" : 1,
+            "esrc" : [
+               "xxxxx@xxx.net"
+            ],
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "by1" : 1011,
+            "fb2" : "3232302d78787878",
+            "g2" : "CAN",
+            "pa" : 23,
+            "tacnt" : 2,
+            "no" : "test",
+            "lastPacket" : 1394118475137,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "pa2" : 11,
+            "pr" : 6,
+            "ehh" : [
+               "from",
+               "to",
+               "subject"
+            ],
+            "firstPacket" : 1394118475009,
+            "fs" : [],
+            "fpd" : 1394118475009,
+            "sl" : 128,
+            "ipSrc" : "10.0.0.1",
+            "timestamp" : "SET",
+            "by" : 2498,
+            "mac2-term-cnt" : 2,
+            "portSrc" : 40531,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "portDst" : 25,
+            "ehhcnt" : 3,
+            "fp" : 1394118475,
+            "edst" : [
+               "xxxxx@xxx.net"
+            ],
+            "rir2" : "TEST",
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
             "psl" : [
                90,
                94,
@@ -105,58 +157,13 @@
                82,
                82
             ],
-            "edstcnt" : 1,
-            "prot-term-cnt" : 2,
-            "pa1" : 12,
-            "as2" : "AS0001 Cool Beans!",
-            "db" : 960,
-            "fs" : [],
-            "ehh" : [
-               "from",
-               "to",
-               "subject"
-            ],
-            "fpd" : 1394118475009,
-            "esub" : [
-               "Awesome windows: See What’s Next in charset decoding!"
-            ],
-            "by2" : 1487,
-            "pa2" : 11,
-            "rir2" : "TEST",
-            "edst" : [
-               "xxxxx@xxx.net"
-            ],
-            "by1" : 1011,
-            "g2" : "CAN",
-            "test" : {
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "string" : [
-                  "16777226:40531,33554442:25"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "pa" : 23,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ]
+            "fb1" : "45484c4f20787878"
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-140306",
+               "_type" : "session"
+            }
          }
       }
    ]

@@ -1,89 +1,96 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "fb1" : "b2b5000000010000",
-            "by2" : 82,
-            "dns" : {
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "qc-term" : [
-                  "IN"
-               ],
-               "qt-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
-               "status-term" : [
-                  "REFUSED"
-               ],
-               "qt-term" : [
-                  "A"
-               ],
-               "status-term-cnt" : 1,
-               "qc-term-cnt" : 1
-            },
-            "mac1-term" : [
-               "00:00:5e:00:01:03",
-               "88:e0:f3:f1:91:f2"
-            ],
-            "ps" : [
-               24,
-               122
-            ],
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "sl" : 102,
-            "rir1" : "TEST",
-            "dnshocnt" : 1,
-            "db2" : 74,
-            "pa1" : 1,
-            "as2" : "AS0000 This is neat",
+            "a1" : "10.0.0.2",
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "fpd" : 1393422583830,
             "db1" : 74,
-            "fb2" : "b2b5800500010000",
-            "mac2-term-cnt" : 1,
-            "lpd" : 1393422583932,
             "by1" : 82,
-            "a1" : "10.0.0.2",
-            "mac1-term-cnt" : 2,
-            "g1" : "CAN",
-            "dnsho" : [
-               "flashservice.adobe.com"
-            ],
-            "pa2" : 1,
-            "mac2-term" : [
-               "00:10:db:ff:26:00"
-            ],
-            "fs" : [],
-            "pa" : 2,
-            "tacnt" : 2,
-            "lp" : 1393422583,
-            "db" : 148,
-            "a2" : "10.0.0.1",
-            "pr" : 17,
-            "fp" : 1393422583,
-            "p1" : 61912,
-            "p2" : 53,
-            "by" : 164,
-            "ss" : 1,
-            "prot-term-cnt" : 2,
-            "g2" : "RUS",
+            "fb1" : "b2b5000000010000",
+            "db2" : 74,
+            "rir1" : "TEST",
             "psl" : [
                98,
                98
             ],
+            "pa" : 2,
+            "fpd" : 1393422583830,
+            "fb2" : "b2b5800500010000",
+            "mac2-term-cnt" : 1,
+            "sl" : 102,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "portSrc" : 61912,
+            "dnsho" : [
+               "flashservice.adobe.com"
+            ],
+            "fp" : 1393422583,
+            "prot-term-cnt" : 2,
+            "timestamp" : "SET",
             "no" : "test",
-            "as1" : "AS0001 Cool Beans!"
+            "mac2-term" : [
+               "00:10:db:ff:26:00"
+            ],
+            "as2" : "AS0000 This is neat",
+            "lastPacket" : 1393422583932,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "pa2" : 1,
+            "ps" : [
+               24,
+               122
+            ],
+            "dns" : {
+               "qt-term" : [
+                  "A"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term-cnt" : 1,
+               "status-term" : [
+                  "REFUSED"
+               ],
+               "qc-term" : [
+                  "IN"
+               ],
+               "status-term-cnt" : 1,
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "opcode-term-cnt" : 1
+            },
+            "g2" : "RUS",
+            "portDst" : 53,
+            "as1" : "AS0001 Cool Beans!",
+            "fs" : [],
+            "a2" : "10.0.0.1",
+            "pr" : 17,
+            "p2" : 53,
+            "g1" : "CAN",
+            "by" : 164,
+            "db" : 148,
+            "pa1" : 1,
+            "mac1-term-cnt" : 2,
+            "dnshocnt" : 1,
+            "lp" : 1393422583,
+            "ipSrc" : "10.0.0.2",
+            "mac1-term" : [
+               "00:00:5e:00:01:03",
+               "88:e0:f3:f1:91:f2"
+            ],
+            "ipDst" : "10.0.0.1",
+            "ss" : 1,
+            "tacnt" : 2,
+            "lpd" : 1393422583932,
+            "p1" : 61912,
+            "firstPacket" : 1393422583830,
+            "by2" : 82
          },
          "header" : {
             "index" : {

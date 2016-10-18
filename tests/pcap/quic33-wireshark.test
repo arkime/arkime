@@ -1,73 +1,80 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-160511",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-160511"
             }
          },
          "body" : {
-            "sl" : 195,
-            "mac1-term-cnt" : 1,
-            "no" : "test",
-            "by1" : 2784,
-            "rir2" : "ARIN",
-            "lpd" : 1462966377990,
             "mac2-term-cnt" : 1,
-            "a1" : "10.0.2.15",
-            "pa" : 3,
-            "as2" : "AS43515 YOUTUBE YOUTUBE",
-            "ps" : [
-               24,
-               1432,
-               2840
-            ],
-            "db1" : 2768,
             "by2" : 119,
-            "fb2" : "0a79f24eb64a9c07",
+            "db1" : 2768,
+            "timestamp" : "SET",
+            "sl" : 195,
+            "pr" : 17,
+            "a2" : "64.15.116.182",
+            "as2" : "AS43515 YOUTUBE YOUTUBE",
+            "prot-term" : [
+               "udp",
+               "quic"
+            ],
             "db" : 2879,
+            "quic" : {
+               "host-term" : [
+                  "www.google.com"
+               ],
+               "host-termcnt" : 1,
+               "version-termcnt" : 1,
+               "version-term" : [
+                  "Q033"
+               ]
+            },
+            "ss" : 1,
+            "portSrc" : 40482,
+            "fp" : 1462966377,
+            "fpd" : 1462966377795,
+            "ipDst" : "64.15.116.182",
+            "pa2" : 1,
+            "g2" : "USA",
+            "mac1-term-cnt" : 1,
+            "rir2" : "ARIN",
+            "mac2-term" : [
+               "52:54:00:12:35:02"
+            ],
+            "fs" : [],
             "pa1" : 2,
+            "p2" : 443,
+            "pa" : 3,
+            "a1" : "10.0.2.15",
+            "lastPacket" : 1462966377990,
+            "ipSrc" : "10.0.2.15",
             "psl" : [
                1408,
                1408,
                135
             ],
-            "pa2" : 1,
-            "ss" : 1,
-            "db2" : 111,
-            "fs" : [],
-            "a2" : "64.15.116.182",
-            "p1" : 40482,
-            "prot-term" : [
-               "udp",
-               "quic"
+            "ps" : [
+               24,
+               1432,
+               2840
             ],
+            "by1" : 2784,
             "fb1" : "0979f24eb64a9c07",
-            "p2" : 443,
-            "prot-term-cnt" : 2,
+            "portDst" : 443,
+            "lp" : 1462966377,
+            "no" : "test",
+            "fb2" : "0a79f24eb64a9c07",
+            "firstPacket" : 1462966377795,
+            "db2" : 111,
             "by" : 2903,
-            "mac2-term" : [
-               "52:54:00:12:35:02"
-            ],
-            "g2" : "USA",
+            "p1" : 40482,
+            "prot-term-cnt" : 2,
+            "lpd" : 1462966377990,
             "mac1-term" : [
                "08:00:27:cc:18:37"
-            ],
-            "lp" : 1462966377,
-            "fp" : 1462966377,
-            "quic" : {
-               "version-termcnt" : 1,
-               "host-term" : [
-                  "www.google.com"
-               ],
-               "host-termcnt" : 1,
-               "version-term" : [
-                  "Q033"
-               ]
-            },
-            "fpd" : 1462966377795,
-            "pr" : 17
+            ]
          }
       }
    ]

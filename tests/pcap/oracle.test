@@ -1,27 +1,7 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "pa1" : 5,
-            "prot-term" : [
-               "tcp",
-               "oracle"
-            ],
-            "p2" : 1522,
-            "lpd" : 1476102172528,
-            "fb1" : "00e0000001000000",
-            "prot-term-cnt" : 2,
-            "fpd" : 1476102172344,
-            "fs" : [],
-            "mac1-term-cnt" : 2,
-            "sl" : 183,
-            "ss" : 1,
-            "pr" : 6,
-            "pa2" : 1,
-            "mac1-term" : [
-               "00:1b:17:00:14:30",
-               "80:71:1f:84:ef:cc"
-            ],
             "psl" : [
                98,
                98,
@@ -30,41 +10,11 @@
                86,
                310
             ],
-            "vlan-cnt" : 2,
-            "p1" : 64084,
-            "by" : 676,
-            "db" : 224,
-            "fp" : 1476102172,
-            "no" : "test",
-            "by2" : 78,
-            "db2" : 0,
-            "vlan" : [
-               50,
-               300
-            ],
-            "a2" : "10.0.0.17",
-            "db1" : 224,
-            "mac2-term-cnt" : 2,
-            "pa" : 6,
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:84:ef:c5"
-            ],
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "ack" : 2,
-               "syn" : 2,
-               "psh" : 1,
-               "rst" : 0,
-               "urg" : 0,
-               "fin" : 0
-            },
-            "oracle" : {
-               "user-term" : "user",
-               "service-term" : "xxxxx.xxx",
-               "host-term" : "10.000.000.11"
-            },
+            "ipDst" : "10.0.0.17",
+            "sl" : 183,
             "lp" : 1476102172,
+            "mac1-term-cnt" : 2,
+            "a1" : "10.0.0.16",
             "ps" : [
                24,
                122,
@@ -73,8 +23,65 @@
                400,
                486
             ],
-            "a1" : "10.0.0.16",
-            "by1" : 598
+            "a2" : "10.0.0.17",
+            "vlan" : [
+               50,
+               300
+            ],
+            "fpd" : 1476102172344,
+            "by" : 676,
+            "fs" : [],
+            "fb1" : "00e0000001000000",
+            "ipSrc" : "10.0.0.16",
+            "pa" : 6,
+            "timestamp" : "SET",
+            "db2" : 0,
+            "lpd" : 1476102172528,
+            "mac1-term" : [
+               "00:1b:17:00:14:30",
+               "80:71:1f:84:ef:cc"
+            ],
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:84:ef:c5"
+            ],
+            "ss" : 1,
+            "pa2" : 1,
+            "pa1" : 5,
+            "fp" : 1476102172,
+            "portDst" : 1522,
+            "p2" : 1522,
+            "db1" : 224,
+            "firstPacket" : 1476102172344,
+            "portSrc" : 64084,
+            "no" : "test",
+            "db" : 224,
+            "by2" : 78,
+            "pr" : 6,
+            "lastPacket" : 1476102172528,
+            "oracle" : {
+               "service-term" : "xxxxx.xxx",
+               "host-term" : "10.000.000.11",
+               "user-term" : "user"
+            },
+            "tcpflags" : {
+               "rst" : 0,
+               "syn" : 2,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "ack" : 2,
+               "psh" : 1,
+               "fin" : 0
+            },
+            "mac2-term-cnt" : 2,
+            "p1" : 64084,
+            "prot-term-cnt" : 2,
+            "vlan-cnt" : 2,
+            "by1" : 598,
+            "prot-term" : [
+               "tcp",
+               "oracle"
+            ]
          },
          "header" : {
             "index" : {

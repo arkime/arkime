@@ -1,6 +1,10 @@
 0.16.1 2016/10/XX
+  - NOTICE: db.pl upgrade is required
   - capture - out-of-order and acked-unseen-segment tags
   - capture - initial pppoe support (issue #536)
+  - capture - new timestamp field when record written
+  - db - new duplicate firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc to
+         make Kibana work better with moloch data.
 
 0.16.0 2016/10/14
   - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the

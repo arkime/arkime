@@ -1,5 +1,5 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
@@ -8,69 +8,76 @@
             }
          },
          "body" : {
-            "vlan" : [
-               300
-            ],
+            "no" : "test",
             "ps" : [
                24
             ],
-            "db2" : 0,
-            "db" : 1388,
-            "p1" : 54800,
-            "pa" : 1,
             "by2" : 0,
-            "ss" : 1,
-            "a1" : "10.0.0.4",
-            "no" : "test",
-            "fp" : 1467241187,
             "fb1" : "0d9300a653775210",
+            "rir2" : "ARIN",
+            "portSrc" : 54800,
+            "as2" : "AS15169 Google Inc.",
             "fs" : [],
-            "prot-term-cnt" : 2,
-            "mac1-term" : [
-               "00:1b:17:00:02:30"
-            ],
-            "lpd" : 1467241187446,
+            "by" : 1396,
+            "db" : 1388,
+            "ipDst" : "216.58.194.195",
+            "pa" : 1,
             "mac2-term" : [
                "00:00:5e:00:01:01"
             ],
-            "as2" : "AS15169 Google Inc.",
-            "a2" : "216.58.194.195",
-            "g2" : "USA",
-            "rir2" : "ARIN",
-            "by1" : 1396,
-            "mac1-term-cnt" : 1,
             "sl" : 0,
-            "by" : 1396,
-            "mac2-term-cnt" : 1,
+            "g2" : "USA",
+            "p2" : 443,
+            "db2" : 0,
+            "firstPacket" : 1467241187446,
+            "prot-term" : [
+               "udp",
+               "quic"
+            ],
+            "ss" : 1,
+            "psl" : [
+               1412
+            ],
+            "fp" : 1467241187,
+            "lpd" : 1467241187446,
             "vlan-cnt" : 1,
+            "pr" : 17,
+            "mac2-term-cnt" : 1,
+            "vlan" : [
+               300
+            ],
+            "p1" : 54800,
+            "by1" : 1396,
+            "a2" : "216.58.194.195",
+            "lastPacket" : 1467241187446,
+            "pa1" : 1,
+            "lp" : 1467241187,
+            "fpd" : 1467241187446,
+            "timestamp" : "SET",
+            "ipSrc" : "10.0.0.4",
+            "prot-term-cnt" : 2,
+            "a1" : "10.0.0.4",
+            "pa2" : 0,
             "db1" : 1388,
+            "portDst" : 443,
+            "mac1-term" : [
+               "00:1b:17:00:02:30"
+            ],
             "quic" : {
-               "host-termcnt" : 1,
-               "version-termcnt" : 1,
                "version-term" : [
                   "Q034"
+               ],
+               "host-termcnt" : 1,
+               "version-termcnt" : 1,
+               "host-term" : [
+                  "ssl.gstatic.com"
                ],
                "ua-termcnt" : 1,
                "ua-term" : [
                   "canary Chrome/53.0.2782.0 Windows NT 6.1; Win64; x64"
-               ],
-               "host-term" : [
-                  "ssl.gstatic.com"
                ]
             },
-            "psl" : [
-               1412
-            ],
-            "p2" : 443,
-            "fpd" : 1467241187446,
-            "pr" : 17,
-            "pa2" : 0,
-            "lp" : 1467241187,
-            "pa1" : 1,
-            "prot-term" : [
-               "udp",
-               "quic"
-            ]
+            "mac1-term-cnt" : 1
          }
       }
    ]
