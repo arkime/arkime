@@ -97,8 +97,8 @@
 
         callCount = callCount + 4;
         expect(search.$location.search.calls.count()).toBe(callCount);
-        expect(search.$location.search).toHaveBeenCalledWith('startTime', startTime);
-        expect(search.$location.search).toHaveBeenCalledWith('stopTime', stopTime);
+        expect(search.$location.search).toHaveBeenCalledWith('startTime', (startTime/1000).toFixed());
+        expect(search.$location.search).toHaveBeenCalledWith('stopTime', (stopTime/1000).toFixed());
       }
 
       changeDate(1473775168701, 1473773809000);

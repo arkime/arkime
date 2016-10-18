@@ -45,10 +45,10 @@
           if (query.expression) { params.expression = query.expression; }
 
           if (query.startTime) {
-            params.startTime = (query.startTime / 1000) | 0;
+            params.startTime = (query.startTime) | 0;
           }
           if (query.stopTime) {
-            params.stopTime = (query.stopTime / 1000) | 0;
+            params.stopTime = (query.stopTime) | 0;
           }
           if (query.date) {
             params.date = query.date;

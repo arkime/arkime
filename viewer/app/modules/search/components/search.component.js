@@ -37,8 +37,8 @@
       } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
         // start and stop times available
         this.timeRange  = '0'; // custom time range
-        this.stopTime   = parseInt(this.$routeParams.stopTime, 10);
-        this.startTime  = parseInt(this.$routeParams.startTime, 10);
+        this.stopTime   = parseInt(this.$routeParams.stopTime * 1000, 10);
+        this.startTime  = parseInt(this.$routeParams.startTime * 1000, 10);
       } else if (!this.$routeParams.date &&
           !this.$routeParams.startTime && !this.$routeParams.stopTime) {
         // there are no time query parameters, so set defaults
@@ -98,8 +98,8 @@
        this.timeRange = '0'; // custom time range
 
        this.$location.search('date', null);
-       this.$location.search('stopTime', this.stopTime);
-       this.$location.search('startTime', this.startTime);
+       this.$location.search('stopTime', (this.stopTime / 1000).toFixed());
+       this.$location.search('startTime', (this.startTime / 1000).toFixed());
 
        this.change();
      }
@@ -161,8 +161,8 @@
 
         if (useDateRange) { args.date = -1; }
         else {
-          args.startTime  = this.startTime;
-          args.stopTime   = this.stopTime;
+          args.startTime  = (this.startTime / 1000).toFixed();
+          args.stopTime   = (this.stopTime / 1000).toFixed();
         }
 
         this.$scope.$emit('change:search', args);

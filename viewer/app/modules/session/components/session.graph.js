@@ -39,8 +39,8 @@
             var xAxis = graph.getXAxes();
 
             var result = {
-              start : xAxis[0].min / 1000,
-              stop  : xAxis[0].max / 1000
+              start : (xAxis[0].min / 1000).toFixed(),
+              stop  : (xAxis[0].max / 1000).toFixed()
             };
 
             if (result.start && result.stop) {
@@ -127,10 +127,9 @@
 
           // triggered when an area of the graph is selected
           plotArea.on('plotselected', function (event, ranges) {
-            // TODO redraw
             var result = {
-              start : ranges.xaxis.from / 1000,
-              stop  : ranges.xaxis.to / 1000
+              start : (ranges.xaxis.from / 1000).toFixed(),
+              stop  : (ranges.xaxis.to / 1000).toFixed()
             };
 
             if (result.start && result.stop) {
