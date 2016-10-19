@@ -62,8 +62,14 @@ if [ -d "/etc/init" ]; then
 fi
 
 if [ -d "/etc/systemd" ]; then
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture@.systemd.service > /etc/systemd/system/molochcapture@.service
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
+
+    systemctl daemon-reload
+    systemctl enable molochviewer.service
+    systemctl enable molochcapture@${MOLOCH_INTERFACE}.service
+    systemctl add-wants multi-user.target molochviewer.service
+    systemctl add-wants multi-user.target molochcapture@${MOLOCH_INTERFACE}.service
 fi
 
 ################################################################################

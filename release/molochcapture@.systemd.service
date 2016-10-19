@@ -1,0 +1,24 @@
+[Unit]
+Description=Moloch Capture on %i
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+StandardOutput=tty
+ExecStartPre=-/usr/sbin/ethtool -G %i rx 4096 tx 4096
+ExecStartPre=-/usr/sbin/ethtool -K %i rx off tx off
+ExecStartPre=-/usr/sbin/ethtool -K %i sg off
+ExecStartPre=-/usr/sbin/ethtool -K %i tso off
+ExecStartPre=-/usr/sbin/ethtool -K %i ufo off
+ExecStartPre=-/usr/sbin/ethtool -K %i gso off
+ExecStartPre=-/usr/sbin/ethtool -K %i gro off
+ExecStartPre=-/usr/sbin/ethtool -K %i lro off
+ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/moloch-capture -c /data/MOLOCH_NAME/etc/config.ini -n moloch-%i
+WorkingDirectory=/data/MOLOCH_NAME
+LimitCORE=infinity
+
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
