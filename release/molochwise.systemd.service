@@ -5,8 +5,7 @@ After=network.target
 [Service]
 Type=simple
 Restart=on-failure
-StandardOutput=tty
-ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/node wiseService.js -c /data/MOLOCH_NAME/etc/wise.ini >> /data/MOLOCH_NAME/logs/wise.log 2>&1'
+ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/node wiseService.js -c /data/MOLOCH_NAME/etc/wise.ini 
 WorkingDirectory=/data/MOLOCH_NAME/wiseService
 
 [Install]

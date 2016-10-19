@@ -5,8 +5,7 @@ After=network.target
 [Service]
 Type=simple
 Restart=on-failure
-StandardOutput=tty
-ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/node viewer.js -c /data/MOLOCH_NAME/etc/config.ini >> /data/MOLOCH_NAME/logs/viewer.log 2>&1'
+ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/node viewer.js -c /data/MOLOCH_NAME/etc/config.ini 
 WorkingDirectory=/data/MOLOCH_NAME/viewer
 
 [Install]
