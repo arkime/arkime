@@ -36,7 +36,7 @@ You should find that you have a new folder:
 The simplest way to start the web app for development and testing is:
 
 ```
-npm start:test
+npm run start:test
 ```
 
 You must have an elasticsearch cluster running, have already built and
@@ -71,7 +71,7 @@ Lastly, you can start the app without test data by creating `viewer/config.dev.i
 then executing:
 
 ```
-npm start:dev
+npm run start:dev
 ```
 
 As above, you must have an elasticsearch cluster running, have already built and

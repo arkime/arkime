@@ -1,0 +1,49 @@
+moloch-map {
+
+  .jvectormap-container {
+    border-radius : 4px;
+    box-shadow    : 0px 2px 4px 0px rgba(0,0,0,0.75);
+  }
+
+  .jvectormap-zoomin, .jvectormap-zoomout, .jvectormap-src, .jvectormap-dst {
+    position    : absolute;
+    left        : 10px;
+    background  : $color-blue-dark;
+    color       : $color-gray;
+    width       : 20px;
+    height      : 20px;
+    cursor      : pointer;
+    line-height : 16px;
+    text-align  : center;
+
+    border-radius         : 3px;
+    -webkit-border-radius : 3px;
+    -moz-border-radius    : 3px;
+
+    &:hover {
+      background: $color-blue;
+      color     : $color-white;
+    }
+  }
+
+  .jvectormap-zoomin  { top: 10px; }
+
+  .jvectormap-zoomout { top: 32px; }
+
+}
+
+
+.jvectormap-label {
+  z-index   : 9999;
+  position  : absolute;
+  display   : none;
+  border    : solid 1px $color-gray-light;
+  background: lighten($color-black, 10%);
+  color     : $color-white;
+  font-size : $px-xlg + $px-sm;
+  padding   : 0 $px-sm;
+
+  -webkit-border-radius : 3px;
+  -moz-border-radius    : 3px;
+  border-radius         : 3px;
+}

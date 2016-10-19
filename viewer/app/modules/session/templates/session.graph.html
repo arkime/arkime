@@ -1,27 +1,36 @@
-<div class="margined-right-xxxxlg">
+<div class="margined-right margined-top-lg">
 
-  <div class="row margined-bottom">
-    <div class="col-md-12">
 
-      <div class="btn btn-xs btn-default margined-left" ng-click="zoomOut()"
-        uib-tooltip="Zoom&nbsp;out" tooltip-placement="bottom-left">
-        <span class="fa fa-search-minus"></span>
+  <div class="session-graph-btn-container">
+    <div>
+
+      <div class="btn-group btn-group-xs">
+        <label class="btn btn-default" ng-click="zoomOut()"
+          uib-tooltip="Zoom&nbsp;out" tooltip-placement="bottom"
+          tooltip-append-to-body="true">
+          <span class="fa fa-search-minus"></span>
+        </label>
+        <label class="btn btn-default" ng-click="zoomIn()"
+          uib-tooltip="Zoom&nbsp;in" tooltip-placement="bottom"
+          tooltip-append-to-body="true">
+          <span class="fa fa-search-plus"></span>
+        </label>
       </div>
 
-      <div class="btn-group btn-group-xs margined-left">
+      <div class="btn-group btn-group-xs margined-left-lg">
         <label class="btn btn-default" ng-click="panLeft()"
-          uib-tooltip="Pan&nbsp;left" tooltip-placement="bottom-left"
+          uib-tooltip="Pan&nbsp;left" tooltip-placement="bottom"
           tooltip-append-to-body="true">
           <span class="fa fa-chevron-left"></span>
         </label>
         <label class="btn btn-default" ng-click="panRight()"
-          uib-tooltip="Pan&nbsp;right" tooltip-placement="bottom-left"
+          uib-tooltip="Pan&nbsp;right" tooltip-placement="bottom"
           tooltip-append-to-body="true">
           <span class="fa fa-chevron-right"></span>
         </label>
       </div>
 
-      <div class="btn-group btn-group-xs margined-left">
+      <div class="btn-group btn-group-xs margined-left-lg">
         <label class="btn btn-default" ng-model="type"
           uib-btn-radio="'lpHisto'" ng-click="changeHistoType()">
           Session
@@ -39,6 +48,6 @@
     </div>
   </div>
 
-  <div class="plot-area" style="width:100%;height:130px;"></div>
+  <div class="plot-area" style="width:100%;height:150px;"></div>
 
 </div>

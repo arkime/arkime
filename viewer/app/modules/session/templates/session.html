@@ -2,11 +2,16 @@
 
   <moloch-search></moloch-search>
 
-  <div ng-if="$ctrl.graphData" class="margin-for-search-navbar">
-    <session-graph graph-data="$ctrl.graphData"></session-graph>
+  <div class="row margin-for-search-navbar">
+    <div class="col-md-4 margined-top" style="height:150px">
+      <moloch-map></moloch-map>
+    </div>
+    <div class="col-md-8">
+      <div ng-if="$ctrl.graphData">
+        <session-graph graph-data="$ctrl.graphData"></session-graph>
+      </div>
+    </div>
   </div>
-
-  <moloch-map style="height:0;width:0;display:none;"></moloch-map>
 
   <div class="margined-top-lg">
 

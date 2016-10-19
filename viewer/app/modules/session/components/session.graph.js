@@ -13,8 +13,8 @@
      * @example
      * <session-graph graph-data="$ctrl.graphData"></session-graph>
      */
-    .directive('sessionGraph', ['$filter', '$timeout',
-      function($filter, $timeout) {
+    .directive('sessionGraph', ['$filter', '$timeout', '$document',
+      function($filter, $timeout, $document) {
       return {
         template: require('html!../templates/session.graph.html'),
         scope   : { graphData: '=' },
@@ -58,7 +58,7 @@
                   fill: 1,
                   barWidth: (data.interval * 1000) / 1.7
                 },
-                color : '#28A482'
+                color : '#8F2BA5'
               },
               selection : {
                 mode    : 'x',
@@ -68,17 +68,18 @@
                 mode  : 'time',
                 label : 'Datetime',
                 color : '#777',
+                min   : data.xmin || null,
+                max   : data.xmax || null,
                 tickFormatter: function(v, axis) {
                   return $filter('date')(v, 'yyyy/MM/dd HH:mm:ss');
-                },
-                min   : data.xmin || null,
-                max   : data.xmax || null
+                }
               },
               yaxis   : {
                 min   : 0,
                 color : '#777',
-                zoomRange: false,
-                tickFormatter: function(v, axis) {
+                zoomRange       : false,
+                autoscaleMargin : 0.2,
+                tickFormatter   : function(v, axis) {
                   return commaString(v);
                 }
               },
@@ -137,14 +138,14 @@
             }
       		});
 
-          var previousPoint;
+          var previousPoint, body = $document[0].body;
           // triggered when hovering over the graph
           plotArea.on('plothover', function(event, pos, item) {
             if (item) {
               if (previousPoint !== item.dataIndex) {
                 previousPoint = item.dataIndex;
 
-                element.find('#tooltip').remove();
+                $(body).find('#tooltip').remove();
 
                 var y = commaString(Math.round(item.datapoint[1]*100)/100);
                 var d = $filter('date')(item.datapoint[0].toFixed(0),
@@ -152,13 +153,14 @@
 
                 var tooltipHTML = `<div id="tooltip" class="graph-tooltip">
                                     ${y} at ${d}</div>`;
+
                 $(tooltipHTML).css({
                   top : item.pageY - 30,
                   left: item.pageX - 8
-                }).appendTo(element);
+                }).appendTo(body);
               }
             } else {
-              element.find('#tooltip').remove();
+              $(body).find('#tooltip').remove();
               previousPoint = null;
             }
           });
@@ -175,6 +177,11 @@
 
           scope.zoomOut = function() {
             plot.zoomOut();
+            debounce(updateResults, plot, 400);
+          };
+
+          scope.zoomIn = function() {
+            plot.zoom();
             debounce(updateResults, plot, 400);
           };
 

@@ -14,12 +14,29 @@
     .directive('molochMap', ['FieldService', function(FieldService) {
       return {
         link: function(scope, element, attrs) {
-          element.vectorMap({ map: 'world_en' });
-
-          var map = element.children('.jvectormap-container').data('mapObject');
-          var countryCodes = map.regions;
+          var map, countryCodes;
 
           FieldService.saveCountryCodes(countryCodes);
+
+          element.vectorMap({
+            map             : 'world_en',
+            backgroundColor : '#5E5EBF',
+            hoverColor      : 'black',
+            hoverOpacity    : 0.7,
+            series: {
+              regions: [{
+                scale: ['#bae4b3', '#006d2c'],
+                normalizeFunction: 'polynomial'
+              }]
+            },
+            onRegionLabelShow: function(e, el, code){
+              el.html(el.html() + ' - ' + code);
+            }
+          });
+
+          map = element.children('.jvectormap-container').data('mapObject');
+          countryCodes = map.regions;
+
         }
       };
     }]);
