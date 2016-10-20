@@ -339,7 +339,7 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
       if (item.severity !== undefined) {
         args.push(self.severityField, item.severity.toLowerCase());
       }
-      if (item.import_session_id !== undefined && item.import_session_id !== 0) {
+      if (item.import_session_id !== undefined && +item.import_session_id !== 0) {
         args.push(self.importIdField, "" + item.import_session_id);
       }
     });
