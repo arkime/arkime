@@ -88,12 +88,13 @@ function ThreatStreamSource (api, section) {
     process.exit(0);
   }
 
-  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;shortcut:0;count:true");
-  this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;shortcut:1;count:true");
-  this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;shortcut:2;count:true");
-  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;shortcut:3;count:true");
-  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;shortcut:4;count:true");
-  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;shortcut:5;count:true");
+  this.severityField = this.api.addField("field:threatstream.severity;db:threatstream.severity-term;kind:lotermfield;friendly:Severity;help:Threatstream Severity;count:true");
+  this.confidenceField = this.api.addField("field:threatstream.confidence;db:threatstream.confidence;kind:integer;friendly:Confidence;help:Threatstream Confidence;count:true");
+  this.idField = this.api.addField("field:threatstream.id;db:threatstream.id;kind:integer;friendly:Id;help:Threatstream Id;count:true");
+  this.typeField = this.api.addField("field:threatstream.type;db:threatstream.type-term;kind:lotermfield;friendly:Type;help:Threatstream Type;count:true");
+  this.maltypeField = this.api.addField("field:threatstream.maltype;db:threatstream.maltype-term;kind:lotermfield;friendly:Malware Type;help:Threatstream Malware Type;count:true");
+  this.sourceField = this.api.addField("field:threatstream.source;db:threatstream.source-term;kind:termfield;friendly:Source;help:Threatstream Source;count:true");
+  this.importIdField = this.api.addField("field:threatstream.importId;db:threatstream.importId;kind:integer;friendly:Import Id;help:Threatstream Import Id;count:true");
 
   this.api.addView("threatstream",
     "if (session.threatstream)\n" +
@@ -102,15 +103,17 @@ function ThreatStreamSource (api, section) {
     "    +arrayList(session.threatstream, 'severity-term', 'Severity', 'threatstream.severity')\n" +
     "    +arrayList(session.threatstream, 'confidence', 'Confidence', 'threatstream.confidence')\n" +
     "    +arrayList(session.threatstream, 'id', 'Id', 'threatstream.id')\n" +
+    "    +arrayList(session.threatstream, 'importId', 'Import Id', 'threatstream.importId')\n" +
     "    +arrayList(session.threatstream, 'type-term', 'Type', 'threatstream.type')\n" +
     "    +arrayList(session.threatstream, 'maltype-term', 'Malware Type', 'threatstream.maltype')\n" +
     "    +arrayList(session.threatstream, 'source-term', 'Source', 'threatstream.source')\n"
   );
 
-  this.api.addRightClick("threatstreamip", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});
-  this.api.addRightClick("threatstreamhost", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/domain/%HOST%", category:"host"});
-  this.api.addRightClick("threatstreamemail", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
-  this.api.addRightClick("threatstreammd5", {name:"Threat Stream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
+  this.api.addRightClick("threatstreamip", {name:"Threatstream", url:"https://ui.threatstream.com/detail/ip/%TEXT%", category:"ip"});
+  this.api.addRightClick("threatstreamhost", {name:"Threatstream", url:"https://ui.threatstream.com/detail/domain/%HOST%", category:"host"});
+  this.api.addRightClick("threatstreamemail", {name:"Threatstream", url:"https://ui.threatstream.com/detail/email/%TEXT%", category:"user"});
+  this.api.addRightClick("threatstreammd5", {name:"Threatstream", url:"https://ui.threatstream.com/detail/md5/%TEXT%", category:"md5"});
+  this.api.addRightClick("threatstreamimportid", {name:"Threatstream Import Lookup", url:"https://ui.threatstream.com/import/review/%TEXT%", fields:"threatstream.importId"});
 }
 util.inherits(ThreatStreamSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -336,6 +339,9 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
       if (item.severity !== undefined) {
         args.push(self.severityField, item.severity.toLowerCase());
       }
+      if (item.import_session_id !== undefined && item.import_session_id !== 0) {
+        args.push(self.importIdField, "" + item.import_session_id);
+      }
     });
     var result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
     return cb(null, result);
@@ -343,7 +349,13 @@ ThreatStreamSource.prototype.getSqlite3 = function(type, field, value, cb) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 function getDomainSqlite3(domain, cb) {
-  return this.getSqlite3("domain", "domain", domain, cb);
+  var self = this;
+  self.getSqlite3("domain", "domain", domain, function (err, result) {
+    if (err || result !== wiseSource.emptyResult) {
+      return cb(err, result);
+    }
+    self.getSqlite3("domain", "domain", domain.substring(domain.indexOf(".")+1), cb);
+  });
 }
 //////////////////////////////////////////////////////////////////////////////////
 function getIpSqlite3(ip, cb) {
