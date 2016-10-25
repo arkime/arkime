@@ -66,11 +66,12 @@ extern MolochPcapFileHdr_t   pcapFileHeader;
 LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
 LOCAL struct bpf_program     bpf;
 
+LOCAL MolochReaderStats_t gStats;
+LOCAL MOLOCH_LOCK_DEFINE(gStats);
 /******************************************************************************/
 int reader_tpacketv3_stats(MolochReaderStats_t *stats)
 {
-    stats->dropped = 0;
-    stats->total = 0;
+    MOLOCH_LOCK(gStats);
 
     int i;
 
@@ -79,9 +80,11 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
         socklen_t len = sizeof(tpstats);
         getsockopt(infos[i].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
 
-        stats->dropped += tpstats.tp_drops;
-        stats->total += tpstats.tp_packets;
+        gStats.dropped += tpstats.tp_drops;
+        gStats.total += tpstats.tp_packets;
     }
+    *stats = gStats;
+    MOLOCH_UNLOCK(gStats);
     return 0;
 }
 /******************************************************************************/
