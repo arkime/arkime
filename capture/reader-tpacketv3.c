@@ -60,7 +60,7 @@ typedef struct {
 
 LOCAL MolochTPacketV3_t infos[MAX_INTERFACES];
 
-LOCAL int numThreads = 2;
+LOCAL int numThreads;
 
 extern MolochPcapFileHdr_t   pcapFileHeader;
 LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
@@ -228,10 +228,15 @@ void reader_tpacketv3_stop()
 void reader_tpacketv3_init(char *UNUSED(name))
 {
     int i;
-    int blocksize = 1 <<22; // 4MB
+    int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<23, 1<<16, 1<<31);
+    numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 6);
 
     if (blocksize % getpagesize() != 0) {
         LOGEXIT("block size %d not divisible by pagesize %d", blocksize, getpagesize());
+    }
+
+    if (blocksize % 16384 != 0) {
+        LOGEXIT("block size %d not divisible by 16384", blocksize);
     }
 
 
