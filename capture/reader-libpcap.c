@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* reader-libpcap-file.c  -- Reader using libpcap to a file
+/* reader-libpcap.c  -- Reader using libpcap
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *

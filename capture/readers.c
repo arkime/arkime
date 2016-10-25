@@ -24,6 +24,7 @@ static MolochStringHashStd_t readersHash;
 
 void reader_libpcapfile_init(char*);
 void reader_libpcap_init(char*);
+void reader_tpacketv3_init(char*);
 
 MolochReaderStart  moloch_reader_start;
 MolochReaderStats  moloch_reader_stats;
@@ -56,6 +57,7 @@ void moloch_readers_init()
     HASH_INIT(s_, readersHash, moloch_string_hash, moloch_string_cmp);
     moloch_readers_add("libpcap-file", reader_libpcapfile_init);
     moloch_readers_add("libpcap", reader_libpcap_init);
+    moloch_readers_add("tpacketv3", reader_tpacketv3_init);
 }
 /******************************************************************************/
 void moloch_readers_exit()
