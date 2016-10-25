@@ -227,6 +227,8 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
 
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        int ifindex = if_nametoindex(config.interface[i]);
+
         infos[i].fd = socket(AF_PACKET, SOCK_RAW, 0);
         memset(&infos[i].req, 0, sizeof(infos[i].req));
         infos[i].req.tp_block_size = blocksize;
@@ -238,10 +240,17 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
         int version = TPACKET_V3;
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
-            LOGEXIT("Error setting TPACKET_V3: %s", strerror(errno));
+            LOGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
 
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_RX_RING, &infos[i].req, sizeof(infos[i].req)) < 0)
             LOGEXIT("Error setting PACKET_RX_RING: %s", strerror(errno));
+
+        struct packet_mreq      mreq;
+        memset(&mreq, 0, sizeof(mreq));
+        mreq.mr_ifindex = ifindex;
+        mreq.mr_type    = PACKET_MR_PROMISC;
+        if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
+            LOGEXIT("Error setting PROMISC: %s", strerror(errno));
 
         infos[i].map = mmap(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
                              PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
@@ -257,7 +266,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         memset(&ll, 0, sizeof(ll));
         ll.sll_family = PF_PACKET;
         ll.sll_protocol = htons(ETH_P_ALL);
-        ll.sll_ifindex = if_nametoindex(config.interface[i]);
+        ll.sll_ifindex = ifindex;
 
         if (bind(infos[i].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
             LOGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
