@@ -58,12 +58,17 @@ ItemTransform.prototype._transform = function (item, encoding, callback) {
     if (self._shouldProcess(item)) {
       self._itemTransform.state = 1;
       async.each(self._itemTransform.items, function (item, cb) {
-        self._process(item, function(err, data) {
-          if (data) {
-            self.push(data);
-          }
-          return cb();
-        });
+        try {
+          self._process(item, function(err, data) {
+            if (data) {
+              self.push(data);
+            }
+            return cb();
+          });
+        } catch (err) {
+          cb(err);
+          console.log("Couldn't decode", err);
+        };
       }, function (err) {
         self._itemTransform.items = [];
         return callback();
@@ -478,7 +483,7 @@ function ItemHTTPStream(options) {
 }
 util.inherits(ItemHTTPStream, ItemTransform);
 ItemHTTPStream.onBody = function(buf, start, len) {
-  //console.log("onBody", start, len);
+  //console.log("onBody", start, len, item);
   var item = this.curitem;
   delete this.curitem;
   if (!this.bufferStream) {
