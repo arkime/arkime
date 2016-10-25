@@ -120,25 +120,29 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
             poll(&pfd, 1, -1);
             continue;
         }
-        LOG("Num packets tinfo: %lx pkts: %d pos: %d", tinfo, tbd->hdr.bh1.num_pkts, pos);
+        //LOG("Num packets tinfo: %lx pkts: %d pos: %d", tinfo, tbd->hdr.bh1.num_pkts, pos);
 
         struct tpacket3_hdr *th;
 
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
         uint16_t p;
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
-            MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
-
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
                     "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'", 
                     th->tp_snaplen, th->tp_len);
             }
 
-            packet->pkt           = (u_char *)th + th->tp_mac;
-            packet->pktlen        = th->tp_len;
 
-            if (!config.bpf || !bpf_filter(bpf.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+            struct bpf_aux_data aux_data;
+
+            aux_data.vlan_tag = th->hv1.tp_vlan_tci & 0x0fff;
+            aux_data.vlan_tag_present = (th->hv1.tp_vlan_tci || (th->tp_status & TP_STATUS_VLAN_VALID));
+
+            if (!config.bpf || bpf_filter_with_aux_data(bpf.bf_insns, (u_char *)th + th->tp_mac, th->tp_len, th->tp_len, &aux_data)) {
+		MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+		packet->pkt           = (u_char *)th + th->tp_mac;
+		packet->pktlen        = th->tp_len;
                 packet->ts.tv_sec     = th->tp_sec;
                 packet->ts.tv_usec    = th->tp_nsec/1000;
 
@@ -247,7 +251,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         infos[i].req.tp_frame_size = 16384;
         infos[i].req.tp_frame_nr = (blocksize * infos[i].req.tp_block_nr) / infos[i].req.tp_frame_size;
         infos[i].req.tp_retire_blk_tov = 60;
-        infos[i].req.tp_feature_req_word = TP_FT_REQ_FILL_RXHASH;
+        infos[i].req.tp_feature_req_word = 0;
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_RX_RING, &infos[i].req, sizeof(infos[i].req)) < 0)
             LOGEXIT("Error setting PACKET_RX_RING: %s", strerror(errno));
 
