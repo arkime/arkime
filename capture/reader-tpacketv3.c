@@ -19,6 +19,7 @@
  * https://github.com/google/stenographer/tree/master/stenotype
  * https://www.kernel.org/doc/Documentation/networking/packet_mmap.txt
  * https://github.com/rusticata/suricata/blob/rust/src/runmode-af-packet.c
+ * libpcap src/pcap-linux.c
  *
  */
 
@@ -62,8 +63,8 @@ LOCAL MolochTPacketV3_t infos[MAX_INTERFACES];
 LOCAL int numThreads = 2;
 
 extern MolochPcapFileHdr_t   pcapFileHeader;
-
-static struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
+LOCAL struct bpf_program    *bpf_programs[MOLOCH_FILTER_MAX];
+LOCAL struct bpf_program     bpf;
 
 /******************************************************************************/
 int reader_tpacketv3_stats(MolochReaderStats_t *stats)
@@ -83,25 +84,6 @@ int reader_tpacketv3_stats(MolochReaderStats_t *stats)
     }
     return 0;
 }
-/******************************************************************************/
-#ifdef NO
-void reader_tpacketv3_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
-{
-    if (unlikely(h->caplen != h->len)) {
-        LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-            "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'", 
-            h->caplen, h->len);
-    }
-
-    MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
-
-    packet->pkt           = (u_char *)bytes;
-    packet->ts            = h->ts;
-    packet->pktlen        = h->len;
-
-    moloch_packet(packet);
-}
-#endif
 /******************************************************************************/
 int reader_tpacketv3_should_filter(const MolochPacket_t *packet, enum MolochFilterType *type, int *index)
 {
@@ -154,11 +136,14 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
             }
 
             packet->pkt           = (u_char *)th + th->tp_mac;
-            packet->ts.tv_sec     = th->tp_sec;
-            packet->ts.tv_usec    = th->tp_nsec/1000;
             packet->pktlen        = th->tp_len;
 
-            moloch_packet(packet);
+            if (!config.bpf || !bpf_filter(bpf.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+                packet->ts.tv_sec     = th->tp_sec;
+                packet->ts.tv_usec    = th->tp_nsec/1000;
+
+                moloch_packet(packet);
+            }
 
             th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
         }
@@ -196,10 +181,30 @@ void reader_tpacketv3_start() {
         }
     }
 
+    if (config.bpf) {
+        if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
+        }
+    }
+        
+
     int i;
     long tinfo;
     char name[100];
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        if (config.bpf) {
+            struct bpf_program   bpf;
+
+            if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
+            }
+
+            /*if (pcap_setfilter(pcaps[i], &bpf) == -1) {
+                LOG("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
+                exit(1);
+            }*/
+        }
+
         for (t = 0; t < numThreads; t++) {
             snprintf(name, sizeof(name), "moloch-pcap%d-%d", i, t);
             tinfo = (i << 8) | t;
@@ -230,6 +235,12 @@ void reader_tpacketv3_init(char *UNUSED(name))
         int ifindex = if_nametoindex(config.interface[i]);
 
         infos[i].fd = socket(AF_PACKET, SOCK_RAW, 0);
+
+        int version = TPACKET_V3;
+        if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
+            LOGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
+
+
         memset(&infos[i].req, 0, sizeof(infos[i].req));
         infos[i].req.tp_block_size = blocksize;
         infos[i].req.tp_block_nr = 2*3*4*5; // Supports 1-6 threads
@@ -237,11 +248,6 @@ void reader_tpacketv3_init(char *UNUSED(name))
         infos[i].req.tp_frame_nr = (blocksize * infos[i].req.tp_block_nr) / infos[i].req.tp_frame_size;
         infos[i].req.tp_retire_blk_tov = 60;
         infos[i].req.tp_feature_req_word = TP_FT_REQ_FILL_RXHASH;
-
-        int version = TPACKET_V3;
-        if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
-            LOGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
-
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_RX_RING, &infos[i].req, sizeof(infos[i].req)) < 0)
             LOGEXIT("Error setting PACKET_RX_RING: %s", strerror(errno));
 
