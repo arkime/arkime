@@ -588,6 +588,8 @@ extern MOLOCH_LOCK_EXTERN(LOG);
     } \
 } while(0) /* no trailing ; */
 
+#define LOGEXIT(...) do { LOG(__VA_ARGS__); exit(1); } while(0) /* no trailing ; */
+
 
 /******************************************************************************/
 /*
