@@ -273,6 +273,8 @@ void moloch_parsers_init()
         if (error) {
             LOG("Error with %s: %s", config.parsersDir[d], error->message);
             g_error_free(error);
+            if (dir)
+                g_dir_close(dir);
             continue;
         }
 

@@ -231,7 +231,7 @@ void reader_tpacketv3_stop()
 void reader_tpacketv3_init(char *UNUSED(name))
 {
     int i;
-    int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<23, 1<<16, 1<<31);
+    int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1<<31);
     numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 6);
 
     if (blocksize % getpagesize() != 0) {
