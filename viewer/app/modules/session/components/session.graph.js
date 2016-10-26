@@ -58,7 +58,7 @@
                   fill: 1,
                   barWidth: (data.interval * 1000) / 1.7
                 },
-                color : '#8F2BA5'
+                color : '#66057A'
               },
               selection : {
                 mode    : 'x',

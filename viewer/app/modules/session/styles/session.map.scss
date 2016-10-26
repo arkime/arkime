@@ -8,8 +8,8 @@ moloch-map {
   .jvectormap-zoomin, .jvectormap-zoomout, .jvectormap-src, .jvectormap-dst {
     position    : absolute;
     left        : 10px;
-    background  : $color-blue-dark;
-    color       : $color-gray;
+    background  : darken($color-gray, 10%);
+    color       : $color-white;
     width       : 20px;
     height      : 20px;
     cursor      : pointer;
@@ -21,7 +21,7 @@ moloch-map {
     -moz-border-radius    : 3px;
 
     &:hover {
-      background: $color-blue;
+      background: darken($color-gray, 15%);
       color     : $color-white;
     }
   }

@@ -13,31 +13,19 @@
       scope   : { sessions: '=' },
       template: require('html!../templates/session.sticky.html'),
       link    : function(scope, element, attr) {
-        var x, y, containerHeight, pxFromRight;
-        var elementLocation, elementLeft, elementBottom;
-
-        var docWidth        = $document.width();
+        var x, y, docWidth  = $document.width();
         var container       = element.find('.sticky-session-detail-container');
 
         // if the user gets close to the sticky session detail container
         // exapand the list of sticky session details
         $document.on('mousemove', (e) => {
-          elementLocation = element[0].getBoundingClientRect();
-          elementLeft     = elementLocation.left;
-          elementBottom   = elementLocation.bottom + $window.scrollY;
-
           x = e.pageX;
           y = e.pageY - $window.scrollY;
 
-          containerHeight = container.height();
-          pxFromRight     = docWidth - x;
-
-          // if approaching the top right corner where the sticky sessions are
-          if (pxFromRight < (elementLeft + 400) &&
-             (y - elementBottom + 150) < containerHeight) {
-            container.addClass('open');
+          if (x + 100 > docWidth && y > 100 && y < 200) {
+            container.addClass('cursor-close');
           } else {
-            container.removeClass('open');
+            container.removeClass('cursor-close');
           }
         });
 
@@ -67,6 +55,27 @@
           var index = scope.sessions.indexOf(session);
           if (index >= 0) { scope.sessions.splice(index, 1); }
         };
+
+        scope.state = { open:false };
+        scope.toggleStickySessions = function() {
+          scope.state.open = !scope.state.open;
+        }
+
+
+        /* LISTEN! */
+        // watch for graph data to change to update the graph
+        var oldLength = 0;
+        scope.$watchCollection('sessions', (data) => {
+          console.log(data);
+          var newLength = data.length;
+          if (newLength > oldLength) {
+            container.removeClass('cursor-close');
+            container.addClass('cursor-close');
+          }
+
+          oldLength = newLength;
+        });
+
 
         // cleanup
         scope.$on('$destroy', () => {

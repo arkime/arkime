@@ -20,7 +20,7 @@
 
           element.vectorMap({
             map             : 'world_en',
-            backgroundColor : '#5E5EBF',
+            backgroundColor : '#CCC',
             hoverColor      : 'black',
             hoverOpacity    : 0.7,
             series: {
@@ -36,7 +36,6 @@
 
           map = element.children('.jvectormap-container').data('mapObject');
           countryCodes = map.regions;
-
         }
       };
     }]);

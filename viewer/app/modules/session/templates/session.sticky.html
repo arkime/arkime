@@ -1,27 +1,44 @@
-<div class="sticky-session-detail-container"
-  ng-show="sessions">
-  <div class="sticky-session-detail animate-opacity cursor-pointer"
-    ng-repeat="session in sessions"
-    ng-click="scrollTo($event, session.id)">
+<div class="sticky-session-detail-container" ng-show="sessions"
+  ng-class="{'open':state.open}">
 
-    <a href class="btn btn-sm btn-link pull-left"
-      ng-click="closeSessionDetail(session)">
-      <span class="fa fa-close fa-lg"></span>
-    </a>
+  <div class="sticky-session-btn"
+    ng-click="toggleStickySessions()">
+    <span class="fa fa-angle-double-left"></span>&nbsp;
+    <small>{{sessions.length}}</small>
+  </div>
 
-    <div>
-      <small><strong>
-        {{::session.fp * 1000 | date:'yyyy/MM/dd'}}
-        {{::session.fp * 1000 | date:'HH:mm:ss'}}&nbsp;-&nbsp;
-        {{::session.lp * 1000 | date:'yyyy/MM/dd'}}
-        {{::session.lp * 1000 | date:'HH:mm:ss'}}
-        <br>
-        {{::session | extractIPString:'src'}}:{{::session.p1}}
-        {{::session.g1}}&nbsp;-&nbsp;
-        {{::session | extractIPString:'dst'}}:{{::session.p2}}
-        {{::session.g2}}
-      </strong></small>
-    </div>
+  <div ng-show="state.open" class="sticky-session-detail">
+
+    <ul class="list-group">
+      <li class="list-group-item">
+        <a class="btn btn-default btn-sm pull-right"
+          ng-click="toggleStickySessions()">
+          <span class="fa fa-angle-double-right"></span>
+        </a>
+        <h4>Open Sessions</h4>
+      </li>
+      <a class="list-group-item cursor-pointer"
+        ng-click="scrollTo($event, session.id)"
+        ng-repeat="session in sessions">
+        <p class="list-group-item-text">
+          <button class="btn btn-xs btn-link pull-right"
+            ng-click="closeSessionDetail(session)">
+            <span class="fa fa-close fa-lg"></span>
+          </button>
+          <small>
+            <span class="fa fa-clock-o fa-fw"></span>
+            <em>
+              {{::session.fp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}} -
+              {{::session.lp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
+            </em>
+            <br>
+            <strong>{{::session | extractIPString:'src'}}</strong>:{{::session.p1}} <strong>{{::session.g1}}</strong> -
+            <strong>{{::session | extractIPString:'dst'}}</strong>:{{::session.p2}} <strong>{{::session.g2}}</strong>
+          </small>
+        </p>
+      </a>
+    </ul>
 
   </div>
+
 </div>
