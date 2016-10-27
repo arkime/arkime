@@ -21,7 +21,6 @@ AC_CONFIG_FILES([
 
 AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))
 AC_CHECK_LIB(uuid, main,,AC_MSG_ERROR(please install uuid library))
-AC_CHECK_LIB(magic, main,,AC_MSG_ERROR(please install magic library))
 AC_CHECK_LIB(rt, main,,)
 AC_CHECK_LIB(net, main,,)
 
@@ -427,5 +426,36 @@ esac ], [
 AC_MSG_RESULT(yes) ])
 AC_SUBST(LUA_CFLAGS)
 AC_SUBST(LUA_LIBS)
+
+dnl Checks for libfile/magic
+AC_MSG_CHECKING(for magic)
+AC_ARG_WITH(magic,
+[  --with-magic=DIR use magic build directory],
+[ case "$withval" in
+  yes)
+    AC_CHECK_LIB(magic, main,MAGIC_LIBS=-lmagic,AC_MSG_ERROR(please install magic library))
+     ;;
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+  AC_MSG_RESULT($withval)
+    if test -f $withval/src/magic.h -a -f $withval/src/.libs/libmagic.a; then
+      owd=`pwd`
+      if cd $withval; then
+        withval=`pwd`;
+        cd $owd;
+      fi
+      MAGIC_CFLAGS="-I$withval/src"
+      MAGIC_LIBS="$withval/src/.libs/libmagic.a"
+    else
+      AC_ERROR(magic.h or libmagic.a not found in $withval)
+    fi
+    ;;
+esac ], [
+  AC_CHECK_LIB(magic, main,MAGIC_LIBS=-lmagic,AC_MSG_ERROR(please install magic library))
+AC_MSG_RESULT(yes) ])
+AC_SUBST(MAGIC_CFLAGS)
+AC_SUBST(MAGIC_LIBS)
 
 AC_OUTPUT
