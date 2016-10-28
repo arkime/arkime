@@ -68,6 +68,10 @@ LOCAL struct bpf_program     bpf;
 
 LOCAL MolochReaderStats_t gStats;
 LOCAL MOLOCH_LOCK_DEFINE(gStats);
+
+LOCAL int nextPos;
+LOCAL MOLOCH_LOCK_DEFINE(nextPos);
+
 /******************************************************************************/
 int reader_tpacketv3_stats(MolochReaderStats_t *stats)
 {
@@ -107,15 +111,39 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
 {
     long tinfo = (long)tinfov;
     int info = tinfo >> 8;
-    int pos = tinfo & 0xff;
-
     struct pollfd pfd;
+    int pos = -1;
+
     memset(&pfd, 0, sizeof(pfd));
     pfd.fd = infos[info].fd;
     pfd.events = POLLIN | POLLERR;
     pfd.revents = 0;
 
+
     while (!config.quitting) {
+        if (pos == -1) {
+            MOLOCH_LOCK(nextPos);
+            pos = nextPos;
+            nextPos = (nextPos + 1) % infos[info].req.tp_block_nr;
+            MOLOCH_UNLOCK(nextPos);
+        }
+
+        if (config.debug > 1) {
+            int i;
+            int cnt = 0;
+            int waiting = 0;
+
+            for (i = 0; i < (int)infos[info].req.tp_block_nr; i++) {
+                struct tpacket_block_desc *tbd = infos[info].rd[i].iov_base;
+                if (tbd->hdr.bh1.block_status & TP_STATUS_USER) {
+                    cnt++;
+                    waiting += tbd->hdr.bh1.num_pkts;
+                }
+            }
+
+            LOG("Stats pos:%d %lx %d %d", pos, tinfo, cnt, waiting);
+        }
+
         struct tpacket_block_desc *tbd = infos[info].rd[pos].iov_base;
 
         // Wait until the block is owned by moloch
@@ -123,7 +151,6 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
             poll(&pfd, 1, -1);
             continue;
         }
-        //LOG("Num packets tinfo: %lx pkts: %d pos: %d", tinfo, tbd->hdr.bh1.num_pkts, pos);
 
         struct tpacket3_hdr *th;
 
@@ -132,41 +159,30 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-                    "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'", 
+                    "turning offloading off may fix, something like 'ethtool -K INTERFACE tx off sg off gro off gso off lro off tso off'",
                     th->tp_snaplen, th->tp_len);
             }
 
+            MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+            packet->pkt           = (u_char *)th + th->tp_mac;
+            packet->pktlen        = th->tp_len;
+            packet->ts.tv_sec     = th->tp_sec;
+            packet->ts.tv_usec    = th->tp_nsec/1000;
 
-            struct bpf_aux_data aux_data;
-
-            aux_data.vlan_tag = th->hv1.tp_vlan_tci & 0x0fff;
-            aux_data.vlan_tag_present = (th->hv1.tp_vlan_tci || (th->tp_status & TP_STATUS_VLAN_VALID));
-
-            if (!config.bpf || bpf_filter_with_aux_data(bpf.bf_insns, (u_char *)th + th->tp_mac, th->tp_len, th->tp_len, &aux_data)) {
-		MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
-		packet->pkt           = (u_char *)th + th->tp_mac;
-		packet->pktlen        = th->tp_len;
-                packet->ts.tv_sec     = th->tp_sec;
-                packet->ts.tv_usec    = th->tp_nsec/1000;
-
-                moloch_packet(packet);
-            }
+            moloch_packet(packet);
 
             th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
         }
 
-
         tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
-        pos = (pos + numThreads) % infos[info].req.tp_block_nr;
+        pos = -1;
     }
     return NULL;
 }
 /******************************************************************************/
 void reader_tpacketv3_start() {
-    pcapFileHeader.linktype = 1;
-    pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
-
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+
     int t;
     for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
         if (config.bpfsNum[t]) {
@@ -188,30 +204,10 @@ void reader_tpacketv3_start() {
         }
     }
 
-    if (config.bpf) {
-        if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
-        }
-    }
-        
-
     int i;
     long tinfo;
     char name[100];
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        if (config.bpf) {
-            struct bpf_program   bpf;
-
-            if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
-            }
-
-            /*if (pcap_setfilter(pcaps[i], &bpf) == -1) {
-                LOG("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
-                exit(1);
-            }*/
-        }
-
         for (t = 0; t < numThreads; t++) {
             snprintf(name, sizeof(name), "moloch-pcap%d-%d", i, t);
             tinfo = (i << 8) | t;
@@ -220,7 +216,7 @@ void reader_tpacketv3_start() {
     }
 }
 /******************************************************************************/
-void reader_tpacketv3_stop() 
+void reader_tpacketv3_stop()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -242,6 +238,16 @@ void reader_tpacketv3_init(char *UNUSED(name))
         LOGEXIT("block size %d not divisible by 16384", blocksize);
     }
 
+    pcapFileHeader.linktype = 1;
+    pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
+    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+
+    if (config.bpf) {
+        if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
+        }
+    }
+
 
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         int ifindex = if_nametoindex(config.interface[i]);
@@ -255,7 +261,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
         memset(&infos[i].req, 0, sizeof(infos[i].req));
         infos[i].req.tp_block_size = blocksize;
-        infos[i].req.tp_block_nr = 2*3*4*5; // Supports 1-6 threads
+        infos[i].req.tp_block_nr = numThreads*64;
         infos[i].req.tp_frame_size = 16384;
         infos[i].req.tp_frame_nr = (blocksize * infos[i].req.tp_block_nr) / infos[i].req.tp_frame_size;
         infos[i].req.tp_retire_blk_tov = 60;
@@ -270,7 +276,13 @@ void reader_tpacketv3_init(char *UNUSED(name))
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
             LOGEXIT("Error setting PROMISC: %s", strerror(errno));
 
-        infos[i].map = mmap(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
+        struct sock_fprog       fcode;
+        fcode.len = bpf.bf_len;
+        fcode.filter = (struct sock_filter *)bpf.bf_insns;
+        if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
+            LOGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+
+        infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
                              PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
         infos[i].rd = malloc(infos[i].req.tp_block_nr * sizeof(*infos[i].rd));
 
