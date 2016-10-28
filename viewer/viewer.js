@@ -726,9 +726,9 @@ app.get('/users', checkWebEnabled, function(req, res) {
   });
 });
 
-app.get('/currentuser', function(req, res) {
+app.get('/currentUser', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user.found) {
+    if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
         return res.send(req.user);
       } else {
@@ -737,14 +737,19 @@ app.get('/currentuser', function(req, res) {
       }
     }
 
-    user = user._source;
+    var clone = {};
 
-    if (user.passStore)   { delete user.passStore; }
-    if (user.expression)  { delete user.expression; }
+    var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+                    'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
 
-    if (!user) { return res.send("{}"); }
+    for (var i = 0, len = userProps.length; i < len; ++i) {
+      var prop = userProps[i];
+      if (user.hasOwnProperty(prop)) {
+        clone[prop] = user[prop];
+      }
+    }
 
-    return res.send(user);
+    return res.send(clone);
   });
 });
 

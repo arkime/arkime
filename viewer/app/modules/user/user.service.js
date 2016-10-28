@@ -30,7 +30,7 @@
     getCurrent() {
       return this.$q((resolve, reject) => {
 
-        this.$http({ url:'currentuser', method:'GET', cache:true })
+        this.$http({ url:'currentUser', method:'GET', cache:true })
           .then((response) => {
             resolve(response.data);
           }, (error) => {

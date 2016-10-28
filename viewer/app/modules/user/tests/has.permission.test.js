@@ -27,7 +27,7 @@
       $httpBackend = _$httpBackend_;
       $compile = _$compile_;
 
-      $httpBackend.expectGET('currentuser')
+      $httpBackend.expectGET('currentUser')
         .respond(200, user);
 
       scope = _$rootScope_.$new();

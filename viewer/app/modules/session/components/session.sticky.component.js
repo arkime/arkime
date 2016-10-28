@@ -54,7 +54,7 @@
 
           scope.sessions    = [];
           scope.state.open  = false;
-        }
+        };
 
         /* Opens/closes the opened sessions panel */
         scope.state = { open:false };

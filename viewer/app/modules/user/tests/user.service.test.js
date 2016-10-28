@@ -33,7 +33,7 @@
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
 
-        $httpBackend.when('GET', 'currentuser')
+        $httpBackend.when('GET', 'currentUser')
           .respond(200, user);
       }));
 
@@ -44,7 +44,7 @@
 
       it('should send a GET request for the current user', function() {
         UserService.getCurrent();
-        $httpBackend.expectGET('currentuser');
+        $httpBackend.expectGET('currentUser');
         $httpBackend.flush();
       });
 
