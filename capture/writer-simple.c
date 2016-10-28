@@ -33,20 +33,27 @@ extern MolochPcapFileHdr_t   pcapFileHeader;
 
 typedef struct molochsimple {
     struct molochsimple *simple_next, *simple_prev;
-    int                  simple_count;
     char                *buf;
     uint64_t             pos;
     uint32_t             id;
     int                  fd;
     uint32_t             bufpos;
-    int                  closing;
+    uint8_t              closing;
+    uint8_t              thread;
 } MolochSimple_t;
 
-static MolochSimple_t    simpleQ;
+typedef struct {
+    struct molochsimple *simple_next, *simple_prev;
+    int                  simple_count;
+    MOLOCH_LOCK_EXTERN(lock);
+} MolochSimpleHead_t;
+
+static MolochSimpleHead_t simpleQ;
 static MOLOCH_LOCK_DEFINE(simpleQ);
 static MOLOCH_COND_DEFINE(simpleQ);
 
 LOCAL MolochSimple_t        *currentInfo[MOLOCH_MAX_PACKET_THREADS];
+LOCAL MolochSimpleHead_t     freeList[MOLOCH_MAX_PACKET_THREADS];
 LOCAL int                    pageSize;
 
 /******************************************************************************/
@@ -55,24 +62,47 @@ uint32_t writer_simple_queue_length()
     return DLL_COUNT(simple_, &simpleQ);
 }
 /******************************************************************************/
-MolochSimple_t *writer_simple_alloc(MolochSimple_t *previous)
+MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
 {
     MolochSimple_t *info;
 
-    info = MOLOCH_TYPE_ALLOC0(MolochSimple_t);
-    info->buf = mmap (0, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    MOLOCH_LOCK(freeList[thread].lock);
+    DLL_POP_HEAD(simple_, &freeList[thread], info);
+    MOLOCH_UNLOCK(freeList[thread].lock);
+
+    if (!info) {
+        info = MOLOCH_TYPE_ALLOC0(MolochSimple_t);
+        info->buf = mmap (0, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+        info->thread = thread;
+    } else {
+        info->bufpos = 0;
+        info->closing = 0;
+    }
+
     if (previous) {
         info->fd = previous->fd;
         info->pos = previous->pos;
         info->id = previous->id;
+    } else {
+        info->fd = 0;
+        info->pos = 0;
+        info->id = 0;
     }
     return info;
 }
 /******************************************************************************/
 void writer_simple_free(MolochSimple_t *info)
 {
-    munmap(info->buf, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
-    MOLOCH_TYPE_FREE(MolochSimple_t, info);
+    int thread = info->thread;
+
+    MOLOCH_LOCK(freeList[thread].lock);
+    if (DLL_COUNT(simple_, &freeList[thread]) < 16) {
+        DLL_PUSH_TAIL(simple_, &freeList[thread], info);
+    } else {
+        munmap(info->buf, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
+        MOLOCH_TYPE_FREE(MolochSimple_t, info);
+    }
+    MOLOCH_UNLOCK(freeList[thread].lock);
 }
 
 /******************************************************************************/
@@ -82,7 +112,7 @@ void writer_simple_process_buf(int thread, int closing)
 
     info->closing = closing;
     if (!closing) {
-        currentInfo[thread] = writer_simple_alloc(info);
+        currentInfo[thread] = writer_simple_alloc(thread, info);
         memcpy(currentInfo[thread]->buf, info->buf + config.pcapWriteSize, info->bufpos - config.pcapWriteSize);
         currentInfo[thread]->bufpos = info->bufpos - config.pcapWriteSize;
     } else {
@@ -108,7 +138,7 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
     int thread = session->thread;
 
     if (!currentInfo[thread]) {
-        currentInfo[thread] = writer_simple_alloc(NULL);
+        currentInfo[thread] = writer_simple_alloc(thread, NULL);
         char *name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &currentInfo[thread]->id);
         int options = O_NOATIME | O_WRONLY | O_CREAT | O_TRUNC;
 #ifdef O_DIRECT
@@ -223,5 +253,12 @@ void writer_simple_init(char *UNUSED(name))
     }
 
     DLL_INIT(simple_, &simpleQ);
+
+    int thread;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        DLL_INIT(simple_, &freeList[thread]);
+        MOLOCH_LOCK_INIT(freeList[thread].lock);
+    }
+
     g_thread_new("moloch-simple", &writer_simple_thread, NULL);
 }

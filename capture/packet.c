@@ -976,7 +976,7 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
     if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
         MOLOCH_LOCK(packetQ[thread].lock);
         overloadDrops[thread]++;
-        if ((overloadDrops[thread] % 1000) == 1) {
+        if ((overloadDrops[thread] % 10000) == 1) {
             LOG("WARNING - Packet Q %d is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue", thread, overloadDrops[thread]);
         }
         packet->pkt = 0;
