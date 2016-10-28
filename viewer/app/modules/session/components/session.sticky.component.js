@@ -7,28 +7,14 @@
    * Displays open sessions on the right of the sesions table page
    */
   angular.module('moloch')
-  .directive('stickySessions', ['$window', '$document', '$location', '$anchorScroll',
-  function($window, $document, $location, $anchorScroll) {
+  .directive('stickySessions', ['$window', '$document', '$location', '$anchorScroll', '$timeout',
+  function($window, $document, $location, $anchorScroll, $timeout) {
     return {
       scope   : { sessions: '=' },
       template: require('html!../templates/session.sticky.html'),
       link    : function(scope, element, attr) {
-        var x, y, docWidth  = $document.width();
-        var container       = element.find('.sticky-session-detail-container');
 
-        // if the user gets close to the sticky session detail container
-        // exapand the list of sticky session details
-        $document.on('mousemove', (e) => {
-          x = e.pageX;
-          y = e.pageY - $window.scrollY;
-
-          if (x + 100 > docWidth && y > 100 && y < 200) {
-            container.addClass('cursor-close');
-          } else {
-            container.removeClass('cursor-close');
-          }
-        });
-
+        /* exposed functions ----------------------------------------------- */
         /**
          * Scrolls to specified session
          * @param {Object} event  The click event that initiated scrollTo
@@ -54,32 +40,51 @@
 
           var index = scope.sessions.indexOf(session);
           if (index >= 0) { scope.sessions.splice(index, 1); }
+
+          if (!scope.sessions || scope.sessions.length <= 0) {
+            scope.state.open = false;
+          }
         };
 
+        /* Closes all the open sessions and the panel */
+        scope.closeAll = function() {
+          for (var i = 0, len = scope.sessions.length; i < len; ++i) {
+            scope.sessions[i].expanded = false;
+          }
+
+          scope.sessions    = [];
+          scope.state.open  = false;
+        }
+
+        /* Opens/closes the opened sessions panel */
         scope.state = { open:false };
         scope.toggleStickySessions = function() {
           scope.state.open = !scope.state.open;
-        }
+        };
 
 
         /* LISTEN! */
-        // watch for graph data to change to update the graph
+        // watch for session array to change -> bounces button
         var oldLength = 0;
         scope.$watchCollection('sessions', (data) => {
-          console.log(data);
           var newLength = data.length;
           if (newLength > oldLength) {
-            container.removeClass('cursor-close');
-            container.addClass('cursor-close');
+            element.removeClass('bounce');
+
+            $timeout(() => {
+              element.addClass('bounce');
+            });
+
+            $timeout(() => {
+              element.removeClass('bounce');
+            }, 1000);
+          } else {
+            if (!scope.sessions || scope.sessions.length <= 0) {
+              scope.state.open = false;
+            }
           }
 
           oldLength = newLength;
-        });
-
-
-        // cleanup
-        scope.$on('$destroy', () => {
-          $document.off('mousemove');
         });
 
       }

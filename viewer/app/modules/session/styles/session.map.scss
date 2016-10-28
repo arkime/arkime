@@ -1,14 +1,50 @@
 moloch-map {
 
+  .map-btn {
+    width           : 40px;
+    display         : block;
+    position        : fixed;
+    top             : 130px;
+    right           : 0;
+    z-index         : 997;
+    margin-top      : 6px;
+    overflow        : hidden;
+    padding         : 2px 10px 4px 12px;
+    border-radius   : 4px 0 0 4px;
+    cursor          : pointer;
+    background-color: $color-water-dark;
+    color           : $color-white;
+  }
+
+  .moloch-map-container {
+    position  : fixed;
+    top       : 170px;
+    bottom    : 100px;
+    left      : 100px;
+    right     : 0;
+    z-index   : 999;
+
+    -webkit-transition: left 400ms linear;
+       -moz-transition: left 400ms linear;
+            transition: left 400ms linear;
+
+    &.ng-hide { left: 100%; }
+
+    #moloch-map {
+      height: 100%;
+      width : 100%;
+    }
+  }
+
   .jvectormap-container {
-    border-radius : 4px;
+    border-radius : 4px 0 0 4px;
     box-shadow    : 0px 2px 4px 0px rgba(0,0,0,0.75);
   }
 
   .jvectormap-zoomin, .jvectormap-zoomout, .jvectormap-src, .jvectormap-dst {
     position    : absolute;
     left        : 10px;
-    background  : darken($color-gray, 10%);
+    background  : darken($color-water, 10%);
     color       : $color-white;
     width       : 20px;
     height      : 20px;
@@ -16,12 +52,12 @@ moloch-map {
     line-height : 16px;
     text-align  : center;
 
-    border-radius         : 3px;
-    -webkit-border-radius : 3px;
-    -moz-border-radius    : 3px;
+    -webkit-border-radius: 3px;
+       -moz-border-radius: 3px;
+            border-radius: 3px;
 
     &:hover {
-      background: darken($color-gray, 15%);
+      background: darken($color-water, 15%);
       color     : $color-white;
     }
   }
@@ -33,6 +69,7 @@ moloch-map {
 }
 
 
+/* labels added to body by jvectormap */
 .jvectormap-label {
   z-index   : 9999;
   position  : absolute;
@@ -43,7 +80,7 @@ moloch-map {
   font-size : $px-xlg + $px-sm;
   padding   : 0 $px-sm;
 
-  -webkit-border-radius : 3px;
-  -moz-border-radius    : 3px;
-  border-radius         : 3px;
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          border-radius: 3px;
 }

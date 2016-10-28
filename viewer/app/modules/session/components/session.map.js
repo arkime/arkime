@@ -13,14 +13,16 @@
      */
     .directive('molochMap', ['FieldService', function(FieldService) {
       return {
-        link: function(scope, element, attrs) {
+        template: require('html!../templates/session.map.html'),
+        link    : function(scope, element, attrs) {
+          /* setup --------------------------------------------------------- */
           var map, countryCodes;
+          var mapEl = element.find('.moloch-map-container > #moloch-map');
 
-          FieldService.saveCountryCodes(countryCodes);
-
-          element.vectorMap({
+          // setup map
+          mapEl.vectorMap({
             map             : 'world_en',
-            backgroundColor : '#CCC',
+            backgroundColor : '#6FB5B5',
             hoverColor      : 'black',
             hoverOpacity    : 0.7,
             series: {
@@ -34,8 +36,21 @@
             }
           });
 
-          map = element.children('.jvectormap-container').data('mapObject');
+          // save reference to the map
+          map = mapEl.children('.jvectormap-container').data('mapObject');
           countryCodes = map.regions;
+
+          // save the maps country codes to be used throughout the app
+          FieldService.saveCountryCodes(countryCodes);
+
+
+          /* exposed functions --------------------------------------------- */
+          /* Opens/closes the opened sessions panel */
+          scope.state = { open:false };
+          scope.toggleMap = function() {
+            scope.state.open = !scope.state.open;
+          };
+
         }
       };
     }]);

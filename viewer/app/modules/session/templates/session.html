@@ -3,10 +3,8 @@
   <moloch-search></moloch-search>
 
   <div class="row margin-for-search-navbar">
-    <div class="col-md-4 margined-top" style="height:150px">
-      <moloch-map></moloch-map>
-    </div>
-    <div class="col-md-8">
+    <moloch-map></moloch-map>
+    <div class="col-md-12">
       <div ng-if="$ctrl.graphData">
         <session-graph graph-data="$ctrl.graphData"></session-graph>
       </div>
@@ -23,7 +21,7 @@
       start="$ctrl.query.start"></moloch-pagination>
 
     <!-- open session details -->
-    <sticky-sessions ng-if="$ctrl.stickySessions && $ctrl.stickySessions.length > 0 && !$ctrl.error && !$ctrl.loading"
+    <sticky-sessions ng-if="!$ctrl.error && !$ctrl.loading"
       sessions="$ctrl.stickySessions"></sticky-sessions>
 
     <div class="table-responsive margined-top-lg">

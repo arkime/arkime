@@ -1,0 +1,10 @@
+<div>
+  <div class="map-btn" ng-click="toggleMap()"
+    uib-tooltip="View map" tooltip-placement="left">
+    <span ng-if="!state.open" class="fa fa-fw fa-globe"></span>
+    <span ng-if="state.open" class="fa fa-fw fa-angle-double-right"></span>
+  </div>
+  <div ng-show="state.open" class="moloch-map-container">
+    <div id="moloch-map"></div>
+  </div>
+</div>
