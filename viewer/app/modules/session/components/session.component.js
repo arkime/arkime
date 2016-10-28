@@ -92,7 +92,7 @@
         this.getData();
       });
 
-      // watch for additions to search parameters from session detail
+      // watch for additions to search parameters from session detail or map
       this.$scope.$on('add:to:search', (event, args) => {
         // notify children (namely expression typeahead)
         this.$scope.$broadcast('add:to:typeahead', args);
@@ -123,7 +123,8 @@
           this.error    = false;
           this.sessions = response.data;
 
-          this.graphData = response.data.graph;
+          this.graphData  = response.data.graph;
+          this.mapData    = response.data.map;
         })
         .catch((error) => {
           this.loading  = false;

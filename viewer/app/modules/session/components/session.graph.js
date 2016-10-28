@@ -21,11 +21,6 @@
         link    : function(scope, element, attrs) {
 
           /* internal functions -------------------------------------------- */
-          function commaString(val) {
-            if (isNaN(val)) { return '0'; }
-            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-          }
-
           var timeout;
           function debounce(func, funcParam, ms) {
             if (timeout) { $timeout.cancel(timeout); }
@@ -80,7 +75,7 @@
                 zoomRange       : false,
                 autoscaleMargin : 0.2,
                 tickFormatter   : function(v, axis) {
-                  return commaString(v);
+                  return $filter('commaString')(v);
                 }
               },
               grid          : {
@@ -147,7 +142,7 @@
 
                 $(body).find('#tooltip').remove();
 
-                var y = commaString(Math.round(item.datapoint[1]*100)/100);
+                var y = $filter('commaString')(Math.round(item.datapoint[1]*100)/100);
                 var d = $filter('date')(item.datapoint[0].toFixed(0),
                                         'yyyy/MM/dd HH:mm:ss');
 

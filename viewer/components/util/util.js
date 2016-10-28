@@ -8,6 +8,14 @@
    */
   angular.module('moloch.util', [])
 
+
+   .filter('commaString', () => {
+     return (input) => {
+       if (isNaN(input)) { return '0'; }
+       return input.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+     };
+   })
+
     /**
      * Protocol filter
      * Displays the protocol string

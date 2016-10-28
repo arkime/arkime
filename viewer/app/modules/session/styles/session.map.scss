@@ -34,6 +34,12 @@ moloch-map {
       height: 100%;
       width : 100%;
     }
+
+    .btns-in-map {
+      position: absolute;
+      bottom  : 10px;
+      left    : 10px;
+    }
   }
 
   .jvectormap-container {

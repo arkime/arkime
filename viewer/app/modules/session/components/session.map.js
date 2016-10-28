@@ -11,11 +11,15 @@
      * @example
      * <moloch-map></moloch-map>
      */
-    .directive('molochMap', ['FieldService', function(FieldService) {
+    .directive('molochMap', ['FieldService', '$filter',
+    function(FieldService, $filter) {
       return {
+        scope   : { 'mapData': '=' },
         template: require('html!../templates/session.map.html'),
         link    : function(scope, element, attrs) {
           /* setup --------------------------------------------------------- */
+          scope.state = { open:false, src:true, dst:true };
+
           var map, countryCodes;
           var mapEl = element.find('.moloch-map-container > #moloch-map');
 
@@ -27,12 +31,16 @@
             hoverOpacity    : 0.7,
             series: {
               regions: [{
-                scale: ['#bae4b3', '#006d2c'],
+                scale: ['#CFAED6', '#630078'],
                 normalizeFunction: 'polynomial'
               }]
             },
             onRegionLabelShow: function(e, el, code){
-              el.html(el.html() + ' - ' + code);
+              el.html(el.html() + ' (' + code + ') - ' +
+                $filter('commaString')(map.series.regions[0].values[code] || 0));
+            },
+            onRegionClick: function(e, code){
+              scope.$emit('add:to:search', { expression: 'country == ' + code });
             }
           });
 
@@ -44,12 +52,53 @@
           FieldService.saveCountryCodes(countryCodes);
 
 
+          function setup(data) {
+            map.series.regions[0].clear();
+            delete map.series.regions[0].params.min;
+            delete map.series.regions[0].params.max;
+
+            if (scope.state.src && scope.state.dst) {
+              if (!data.tot) {
+                data.tot = {};
+                for (var k in data.src) {
+                  data.tot[k] = data.src[k];
+                }
+
+                for (var k in data.dst) {
+                  if (data.tot[k]) {
+                    data.tot[k] += data.dst[k];
+                  } else {
+                    data.tot[k] = data.dst[k];
+                  }
+                }
+              }
+              map.series.regions[0].setValues(data.tot);
+            } else if (scope.state.src) {
+              map.series.regions[0].setValues(data.src);
+            } else if (scope.state.dst) {
+              map.series.regions[0].setValues(data.dst);
+            }
+          }
+
+
+          /* LISTEN! */
+          // watch for map data to change to update the map
+          scope.$watch('mapData', (data) => {
+            setup(data);
+          });
+
+
           /* exposed functions --------------------------------------------- */
           /* Opens/closes the opened sessions panel */
-          scope.state = { open:false };
           scope.toggleMap = function() {
             scope.state.open = !scope.state.open;
           };
+
+          /* toggles source and destination buttons and updates map */
+          scope.toggleSrcDst = function(type) {
+            scope.state[type] = !scope.state[type];
+            setup(scope.mapData);
+          }
 
         }
       };
