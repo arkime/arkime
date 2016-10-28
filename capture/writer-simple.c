@@ -256,6 +256,7 @@ void writer_simple_init(char *UNUSED(name))
 
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
+        DLL_INIT(simple_, &freeList[thread]);
         MOLOCH_LOCK_INIT(freeList[thread].lock);
     }
 
