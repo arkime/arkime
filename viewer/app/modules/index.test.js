@@ -6,6 +6,7 @@ require('./session/tests/colheader.component.test');
 require('./session/tests/session.service.test');
 require('./session/tests/session.detail.component.test');
 require('./session/tests/session.graph.component.test');
+require('./session/tests/session.map.component.test');
 
 require('./search/tests/search.component.test');
 require('./search/tests/field.service.test');

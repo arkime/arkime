@@ -16,6 +16,37 @@
     }));
 
 
+    describe('Comma String Filter ->', function() {
+
+      it('should add commas to an integer and return a string', function () {
+        var int = 1;
+        var result = $filter('commaString')(int);
+        expect(result).toEqual('1');
+
+        int = 100;
+        result = $filter('commaString')(int);
+        expect(result).toEqual('100');
+
+        int = 1000;
+        result = $filter('commaString')(int);
+        expect(result).toEqual('1,000');
+
+        int = 10000;
+        result = $filter('commaString')(int);
+        expect(result).toEqual('10,000');
+
+        int = 100000;
+        result = $filter('commaString')(int);
+        expect(result).toEqual('100,000');
+
+        int = 1000000;
+        result = $filter('commaString')(int);
+        expect(result).toEqual('1,000,000');
+      });
+
+    });
+
+
     describe('Protocol Filter ->', function() {
 
       it('should return the appropriate protocol strings', function () {
