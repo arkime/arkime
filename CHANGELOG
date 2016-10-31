@@ -9,6 +9,7 @@
   - viewer - don't crash if we can't decode, still might not decode well though (issue #522)
   - wise - threatstream sql capture importId and handle stripping hostname for lookups
   - capture - new pcapReadMethod of tpacketv3 on linux
+  - capture - new option magicSkipTextCheck to turn off libmagic text checking for performance boost
 
 0.16.0 2016/10/14
   - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the
