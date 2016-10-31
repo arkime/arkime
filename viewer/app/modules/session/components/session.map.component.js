@@ -11,8 +11,8 @@
      * @example
      * <moloch-map ng-if="$ctrl.mapData" map-data="$ctrl.mapData"></moloch-map>
      */
-    .directive('molochMap', ['FieldService', '$filter', '$document', '$timeout',
-    function(FieldService, $filter, $document, $timeout) {
+    .directive('molochMap', ['FieldService', '$filter', '$document', '$timeout', '$window',
+    function(FieldService, $filter, $document, $timeout, $window) {
       return {
         scope   : { 'mapData': '=' },
         template: require('html!../templates/session.map.html'),
@@ -108,6 +108,9 @@
 
             // when the map is open, watch for user to click outside map
             if (scope.state.open) {
+              $timeout(() => { // resize the map after animation
+                $($window).trigger('resize');
+              }, 400);
               $document.on('mouseup', isOutsideClick);
             } else {
               $document.off('mouseup', isOutsideClick);
