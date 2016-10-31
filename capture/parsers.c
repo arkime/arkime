@@ -333,6 +333,11 @@ void moloch_parsers_init()
         NULL);
 
     int flags = MAGIC_MIME;
+
+    if (moloch_config_boolean(NULL, "magicSkipTextCheck", FALSE)) {
+        flags |= MAGIC_NO_CHECK_TEXT;
+    }
+
 #ifdef MAGIC_NO_CHECK_COMPRESS
     flags |= MAGIC_NO_CHECK_COMPRESS |
              MAGIC_NO_CHECK_TAR      |
