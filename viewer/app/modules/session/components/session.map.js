@@ -9,10 +9,10 @@
      * uses JQuery Vector Map
      *
      * @example
-     * <moloch-map></moloch-map>
+     * <moloch-map ng-if="$ctrl.mapData" map-data="$ctrl.mapData"></moloch-map>
      */
-    .directive('molochMap', ['FieldService', '$filter',
-    function(FieldService, $filter) {
+    .directive('molochMap', ['FieldService', '$filter', '$document', '$timeout',
+    function(FieldService, $filter, $document, $timeout) {
       return {
         scope   : { 'mapData': '=' },
         template: require('html!../templates/session.map.html'),
@@ -23,8 +23,7 @@
           var map, countryCodes;
           var mapEl = element.find('.moloch-map-container > #moloch-map');
 
-          // setup map
-          mapEl.vectorMap({
+          mapEl.vectorMap({ // setup map
             map             : 'world_en',
             backgroundColor : '#6FB5B5',
             hoverColor      : 'black',
@@ -60,11 +59,12 @@
             if (scope.state.src && scope.state.dst) {
               if (!data.tot) {
                 data.tot = {};
-                for (var k in data.src) {
+                var k;
+                for (k in data.src) {
                   data.tot[k] = data.src[k];
                 }
 
-                for (var k in data.dst) {
+                for (k in data.dst) {
                   if (data.tot[k]) {
                     data.tot[k] += data.dst[k];
                   } else {
@@ -80,6 +80,19 @@
             }
           }
 
+          /**
+           * Determines whether a click was outside of the map element
+           * and then closes the map if click was outside map
+           * @param {Object} e The click event
+           */
+          function isOutsideClick(e) {
+            if (!element.is(e.target) && element.has(e.target).length === 0) {
+              $timeout(() => {
+                scope.state.open = false;
+              });
+            }
+          }
+
 
           /* LISTEN! */
           // watch for map data to change to update the map
@@ -92,13 +105,20 @@
           /* Opens/closes the opened sessions panel */
           scope.toggleMap = function() {
             scope.state.open = !scope.state.open;
+
+            // when the map is open, watch for user to click outside map
+            if (scope.state.open) {
+              $document.on('mouseup', isOutsideClick);
+            } else {
+              $document.off('mouseup', isOutsideClick);
+            }
           };
 
           /* toggles source and destination buttons and updates map */
           scope.toggleSrcDst = function(type) {
             scope.state[type] = !scope.state[type];
             setup(scope.mapData);
-          }
+          };
 
         }
       };
