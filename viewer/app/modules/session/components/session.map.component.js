@@ -111,7 +111,7 @@
               $timeout(() => {
                 // resize the map in case window has changed while map was closed
                 $($window).trigger('resize');
-              });
+              }, 50);
               $document.on('mouseup', isOutsideClick);
             } else {
               $document.off('mouseup', isOutsideClick);
