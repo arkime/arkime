@@ -507,7 +507,7 @@ void moloch_session_process_commands(int thread)
     }
 
     // Closing Q
-    for (count = 0; count < 50; count++) {
+    for (count = 0; count < 10; count++) {
         MolochSession_t *session = DLL_PEEK_HEAD(q_, &closingQ[thread]);
 
         if (session && session->saveTime < (uint64_t)lastPacketSecs[thread]) {
@@ -520,7 +520,7 @@ void moloch_session_process_commands(int thread)
     // Sessions Idle Long Time
     int ses;
     for (ses = 0; ses < SESSION_MAX; ses++) {
-        for (count = 0; count < 50; count++) {
+        for (count = 0; count < 10; count++) {
             MolochSession_t *session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
 
             if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams ||
