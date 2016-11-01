@@ -33,117 +33,116 @@ extern unsigned char         moloch_char_to_hexstr[256][3];
 
 int    userField;
 
+enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_MOLOCHMAGIC, MOLOCH_MAGICMODE_NONE};
+
+LOCAL enum MolochMagicMode magicMode;
+/*############################## molochmagic ##############################*/
+
+typedef struct {
+    uint8_t *match;
+    int      matchlen;
+    char    *mime;
+    int      mimelen;
+} MolochMagic_t;
+
+LOCAL MolochMagic_t magicSearch[1024];
+LOCAL int           magicSearchLen;
+
+typedef struct {
+    MolochMagic_t **magic;
+    int             num;
+    int             size;
+} MolochMagicList;
+LOCAL MolochMagicList magicMatch[20][256][256];
+
+/******************************************************************************/
+void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, char *mime)
+{
+    MolochMagic_t *magic = MOLOCH_TYPE_ALLOC(MolochMagic_t);
+
+    magic->match = match;
+    magic->matchlen = matchlen;
+    magic->mime = mime;
+    magic->mimelen = strlen(mime);
+
+    MolochMagicList *list = &magicMatch[offset][match[0]][match[1]];
+
+    if (list->size == 0) {
+        list->size = 3;
+        list->magic = malloc(list->size * sizeof(MolochMagic_t *));
+    } else if (list->size == list->num) {
+        list->size *= 1.5;
+        list->magic = realloc(list->magic, list->size * sizeof(MolochMagic_t *));
+    }
+
+    list->magic[list->num] = magic;
+    list->num++;
+}
+
+/******************************************************************************/
+void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *mime)
+{
+    if (magicSearchLen >= 1024) {
+        LOG("Too many searches");
+        return;
+    }
+    magicSearch[magicSearchLen].match = match;
+    magicSearch[magicSearchLen].matchlen = matchlen;
+    magicSearch[magicSearchLen].mime = mime;
+    magicSearch[magicSearchLen].mimelen = strlen(mime);
+
+    magicSearchLen++;
+}
+
 /******************************************************************************/
 void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
 {
-    if (len < 5)
+    if (len < 5 || magicMode == MOLOCH_MAGICMODE_NONE)
         return;
 
-    // Skip libmagic for more common items for performance reasons
-    // Should autogenerate this if I was amazing
-    switch (data[0]) {
-    case '\037':
-        if (data[1] == '\213') {
-            moloch_field_string_add(field, session, "application/x-gzip", 18, TRUE);
-            return;
-        }
-        if (data[1] == '\235') {
-            moloch_field_string_add(field, session, "application/x-compress", 22, TRUE);
-            return;
-        }
-        break;
-    case '<':
-        switch(data[1]) {
-        case '!':
-            if (len > 14 && strncasecmp(data, "<!doctype html", 14) == 0) {
-                moloch_field_string_add(field, session, "text/html", 9, TRUE);
-                return;
+    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC) {
+        const char *m = magic_buffer(cookie[session->thread], data, MIN(len,50));
+        if (m) {
+            int len;
+            char *semi = strchr(m, ';');
+            if (semi) {
+                len = semi - m;
+            } else {
+                len = strlen(m);
             }
-            break;
-        case '?':
-            if (strncasecmp(data, "<?xml", 5) == 0) {
-                moloch_field_string_add(field, session, "text/xml", 8, TRUE);
-                return;
-            }
-            break;
-        case 'H':
-        case 'h':
-            if (strncasecmp(data, "<head", 5) == 0) {
-                moloch_field_string_add(field, session, "text/html", 9, TRUE);
-                return;
-            }
-            if (strncasecmp(data, "<html", 5) == 0) {
-                moloch_field_string_add(field, session, "text/html", 9, TRUE);
-                return;
-            }
-            break;
+            moloch_field_string_add(field, session, m, len, TRUE);
         }
-        break;
-    case 'B':
-        if (memcmp(data, "BZh", 3) == 0) {
-            moloch_field_string_add(field, session, "application/x-bzip2", 19, TRUE);
-            return;
-        }
-        break;
-    case 'G':
-        if (memcmp(data, "GIF8", 4) == 0) {
-            moloch_field_string_add(field, session, "image/gif", 9, TRUE);
-            return;
-        }
-        break;
-    case 'I':
-        if (memcmp(data, "ID3", 3) == 0) {
-            moloch_field_string_add(field, session, "audio/mpeg", 10, TRUE);
-            return;
-        }
-        break;
-    case 'P':
-        if (memcmp(data, "PK\003\004", 4) == 0) {
-            moloch_field_string_add(field, session, "application/zip", 15, TRUE);
-            return;
-        }
-        if (memcmp(data, "PK\005\005", 4) == 0) {
-            moloch_field_string_add(field, session, "application/zip", 15, TRUE);
-            return;
-        }
-        break;
-    case 'R':
-        if (memcmp(data, "RIFF", 4) == 0) {
-            moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
-            return;
-        }
-        break;
-    case 'W':
-        if (memcmp(data, "WAVE", 4) == 0) {
-            moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
-            return;
-        }
-        break;
-    case '\x89':
-        if (memcmp(data, "\x89PNG", 4) == 0) {
-            moloch_field_string_add(field, session, "image/png", 9, TRUE);
-            return;
-        }
-        break;
-    case '\377':
-        if (len > 10 && memcmp(data, "\377\330\377", 3) == 0 && memcmp(data+6, "JFIF", 4) == 0) {
-            moloch_field_string_add(field, session, "image/jpeg", 10, TRUE);
-            return;
-        }
-        break;
     }
 
-    const char *m = magic_buffer(cookie[session->thread], data, MIN(len,50));
-    if (m) {
-        int len;
-        char *semi = strchr(m, ';');
-        if (semi) {
-            len = semi - m;
-        } else {
-            len = strlen(m);
+
+    int i, offset;
+    uint8_t *udata = (uint8_t *)data;
+    for (offset = 0; offset < 20; offset++) {
+        if (offset + 1 >= len)
+            return;
+
+        //LOG("offset: %d len: %d udata: %.*s %02x %02x", offset, len, len-offset, udata+offset, udata[offset], udata[offset+1]);
+
+        MolochMagicList *list = &magicMatch[offset][(int)(udata[offset])][(int)(udata[offset+1])];
+
+        for (i = 0; i < list->num; i++) {
+            //LOG("offset: %d i: %d len: %d matchlen: %d", offset, i, len, list->magic[i]->matchlen);
+            if (len > list->magic[i]->matchlen + offset && memcmp(udata+offset, list->magic[i]->match, list->magic[i]->matchlen) == 0) {
+                moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
+                return;
+            }
         }
-        moloch_field_string_add(field, session, m, len, TRUE);
     }
+
+    LOG("magicSearchLen %d", magicSearchLen);
+    for (i = 0; i < magicSearchLen; i++) {
+        //LOG("%.*s for %.*s", len, data, magicSearch[i].matchlen, magicSearch[i].match);
+        if (moloch_memcasestr(data, len, (const char*)magicSearch[i].match, magicSearch[i].matchlen)) {
+            moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
+            return;
+        }
+    }
+
 }
 /******************************************************************************/
 void moloch_parsers_initial_tag(MolochSession_t *session)
@@ -334,8 +333,21 @@ void moloch_parsers_init()
 
     int flags = MAGIC_MIME;
 
-    if (moloch_config_boolean(NULL, "magicSkipTextCheck", FALSE)) {
+    char *strMagicMode = moloch_config_str(NULL, "magicMode", "libmagic");
+
+    if (strcmp(strMagicMode, "libmagic") == 0) {
+        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
+    } else if (strcmp(strMagicMode, "libmagicnotext") == 0) {
+        magicMode = MOLOCH_MAGICMODE_LIBMAGIC;
         flags |= MAGIC_NO_CHECK_TEXT;
+    } else if (strcmp(strMagicMode, "molochmagic") == 0) {
+        magicMode = MOLOCH_MAGICMODE_MOLOCHMAGIC;
+        void molochmagic_load();
+        molochmagic_load();
+    } else if (strcmp(strMagicMode, "none") == 0) {
+        magicMode = MOLOCH_MAGICMODE_NONE;
+    } else {
+        LOGEXIT("Unknown magicMode '%s'", strMagicMode);
     }
 
 #ifdef MAGIC_NO_CHECK_COMPRESS
@@ -349,13 +361,15 @@ void moloch_parsers_init()
     flags |= MAGIC_NO_CHECK_CDF;
 #endif
 
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
-        cookie[t] = magic_open(flags);
-        if (!cookie[t]) {
-            LOG("Error with libmagic %s", magic_error(cookie[t]));
-        } else {
-            magic_load(cookie[t], NULL);
+    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC) {
+        int t;
+        for (t = 0; t < config.packetThreads; t++) {
+            cookie[t] = magic_open(flags);
+            if (!cookie[t]) {
+                LOG("Error with libmagic %s", magic_error(cookie[t]));
+            } else {
+                magic_load(cookie[t], NULL);
+            }
         }
     }
 
