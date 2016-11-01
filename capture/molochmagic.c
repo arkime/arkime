@@ -8,7 +8,7 @@
 
 void molochmagic_load() {
 // FILE: molochmagic.pl
-  moloch_parsers_molochmagic_add(0, (uint8_t *)"PK\003\004", sizeof "PK\003\004" - 1, "application/zip", FALSE);
+    moloch_parsers_molochmagic_add(0, (uint8_t *)"PK\003\004", sizeof "PK\003\004" - 1, "application/zip", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/adventure
     // MISSING COMPLEX: application/x-zmachine
     // MISSING COMPLEX: application/x-glulx
@@ -20,10 +20,10 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/x-adrift
 // FILE: /Users/awick/file-5.29/magic/Magdir/algol68
     moloch_parsers_molochmagic_add_search((uint8_t *)"(input,", sizeof "(input," - 1, "text/x-Algol68", FALSE);
-    // MISSING COMMAND: regex text/x-Algol68
-    // MISSING COMMAND: regex text/x-Algol68
-    // MISSING COMMAND: regex text/x-Algol68
-    // MISSING COMMAND: regex text/x-Algol68
+    // MISSING COMMAND: regex \^PROC text/x-Algol68
+    // MISSING COMMAND: regex MODE[\t ] text/x-Algol68
+    // MISSING COMMAND: regex REF[\t ] text/x-Algol68
+    // MISSING COMMAND: regex FLEX[\t ]\*\\[ text/x-Algol68
 // FILE: /Users/awick/file-5.29/magic/Magdir/animation
     moloch_parsers_molochmagic_add(0, (uint8_t *)"MOVI", sizeof "MOVI" - 1, "video/x-sgi-movie", FALSE);
     moloch_parsers_molochmagic_add(4, (uint8_t *)"moov", sizeof "moov" - 1, "video/quicktime", FALSE);
@@ -97,14 +97,14 @@ void molochmagic_load() {
     // MISSING COMPLEX: audio/mpeg
     // MISSING COMPLEX: audio/mpeg
     // MISSING COMPLEX: audio/mpeg
-    // MISSING COMMAND: beshort&0xFFFE audio/mpeg
-    // MISSING COMMAND: beshort&0xFFFE audio/mpeg
-    // MISSING COMMAND: beshort&0xFFFE audio/mpeg
-    // MISSING COMMAND: beshort&0xFFFE audio/mpeg
-    // MISSING COMMAND: beshort&0xFFFE audio/mpeg
+    // MISSING COMMAND: beshort&0xFFFE 0xFFFC audio/mpeg
+    // MISSING COMMAND: beshort&0xFFFE 0xFFF2 audio/mpeg
+    // MISSING COMMAND: beshort&0xFFFE 0xFFF4 audio/mpeg
+    // MISSING COMMAND: beshort&0xFFFE 0xFFF6 audio/mpeg
+    // MISSING COMMAND: beshort&0xFFFE 0xFFE2 audio/mpeg
     moloch_parsers_molochmagic_add(0, (uint8_t *)"ADIF", sizeof "ADIF" - 1, "audio/x-hx-aac-adif", FALSE);
-    // MISSING COMMAND: beshort&0xFFF6 audio/x-hx-aac-adts
-    // MISSING COMMAND: beshort&0xFFE0 audio/x-mp4a-latm
+    // MISSING COMMAND: beshort&0xFFF6 0xFFF0 audio/x-hx-aac-adts
+    // MISSING COMMAND: beshort&0xFFE0 0x56E0 audio/x-mp4a-latm
     // MISSING COMPLEX: video/x-fli
     // MISSING COMPLEX: video/x-flc
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x30\x26\xb2\x75", 4, "video/x-ms-asf", FALSE);
@@ -118,6 +118,8 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/x-appleworks3
     // MISSING COMPLEX: application/x-apple-diskimage
 // FILE: /Users/awick/file-5.29/magic/Magdir/archive
+    moloch_parsers_molochmagic_add(257, (uint8_t *)"ustar\0", sizeof "ustar\0" - 1, "application/x-tar", FALSE);
+    moloch_parsers_molochmagic_add(257, (uint8_t *)"ustar\040\040\0", sizeof "ustar\040\040\0" - 1, "application/x-tar", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\xc7\x71", 2, "application/x-cpio", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x71\xc7", 2, "application/x-cpio", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"<ar>", sizeof "<ar>" - 1, "application/x-archive", FALSE);
@@ -125,15 +127,15 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/vnd.debian.binary-package
     moloch_parsers_molochmagic_add(0, (uint8_t *)"!<arch>\n__________E", sizeof "!<arch>\n__________E" - 1, "application/x-archive", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"!<arch>", sizeof "!<arch>" - 1, "application/x-archive", FALSE);
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
-    // MISSING COMMAND: lelong&0x8080ffff application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000081a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000091a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000021a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000031a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000041a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000061a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x00000a1a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000141a application/x-arc
+    // MISSING COMMAND: lelong&0x8080ffff 0x0000481a application/x-arc
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x60\xea", 2, "application/x-arj", FALSE);
     // MISSING COMPLEX: application/x-lzh-compressed
     moloch_parsers_molochmagic_add(0, (uint8_t *)"Rar!\032\7\0", sizeof "Rar!\032\7\0" - 1, "application/x-rar", FALSE);
@@ -174,13 +176,13 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"xar!", sizeof "xar!" - 1, "application/x-xar", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"Cr24", sizeof "Cr24" - 1, "application/x-chrome-extension", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/assembler
-    // MISSING COMMAND: regex text/x-asm
-    // MISSING COMMAND: regex text/x-asm
-    // MISSING COMMAND: regex text/x-asm
-    // MISSING COMMAND: regex text/x-asm
-    // MISSING COMMAND: regex text/x-asm
-    // MISSING COMMAND: regex text/x-asm
-    // MISSING COMMAND: regex text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.asciiz text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.byte text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.even text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.globl text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.text text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.file text/x-asm
+    // MISSING COMMAND: regex \^[\040\t]{0,50}\\.type text/x-asm
 // FILE: /Users/awick/file-5.29/magic/Magdir/audio
     // MISSING COMPLEX: audio/basic
     // MISSING COMPLEX: audio/basic
@@ -206,6 +208,19 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)".RMF\0\0\0", sizeof ".RMF\0\0\0" - 1, "application/vnd.rn-realmedia", FALSE);
     // MISSING COMPLEX: audio/x-mod
     moloch_parsers_molochmagic_add(0, (uint8_t *)"Extended Module:", sizeof "Extended Module:" - 1, "audio/x-mod", FALSE);
+    moloch_parsers_molochmagic_add(21, (uint8_t *)"!SCREAM!", sizeof "!SCREAM!" - 1, "audio/x-mod", TRUE);
+    moloch_parsers_molochmagic_add(21, (uint8_t *)"BMOD2STM", sizeof "BMOD2STM" - 1, "audio/x-mod", FALSE);
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
+    // LARGE OFFSET: 1080 string audio/x-mod
     moloch_parsers_molochmagic_add(0, (uint8_t *)"IMPM", sizeof "IMPM" - 1, "audio/x-mod", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"fLaC", sizeof "fLaC" - 1, "audio/x-flac", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"MAC\040", sizeof "MAC\040" - 1, "audio/x-ape", FALSE);
@@ -217,20 +232,20 @@ void molochmagic_load() {
 // FILE: /Users/awick/file-5.29/magic/Magdir/c-lang
     moloch_parsers_molochmagic_add_search((uint8_t *)"\"libhdr\"", sizeof "\"libhdr\"" - 1, "text/x-bcpl", FALSE);
     moloch_parsers_molochmagic_add_search((uint8_t *)"\"LIBHDR\"", sizeof "\"LIBHDR\"" - 1, "text/x-bcpl", FALSE);
-    // MISSING COMMAND: regex text/x-c
-    // MISSING COMMAND: regex text/x-c
-    // MISSING COMMAND: regex text/x-c
-    // MISSING COMMAND: regex text/x-c
-    // MISSING COMMAND: regex text/x-c
-    // MISSING COMMAND: regex text/x-c
-    // MISSING COMMAND: regex text/x-c
+    // MISSING COMMAND: regex \^#include text/x-c
+    // MISSING COMMAND: regex \^char[ \t\n]+ text/x-c
+    // MISSING COMMAND: regex \^double[ \t\n]+ text/x-c
+    // MISSING COMMAND: regex \^extern[ \t\n]+ text/x-c
+    // MISSING COMMAND: regex \^float[ \t\n]+ text/x-c
+    // MISSING COMMAND: regex \^struct[ \t\n]+ text/x-c
+    // MISSING COMMAND: regex \^union[ \t\n]+ text/x-c
     moloch_parsers_molochmagic_add_search((uint8_t *)"main(", sizeof "main(" - 1, "text/x-c", FALSE);
-    // MISSING COMMAND: regex text/x-c++
-    // MISSING COMMAND: regex text/x-c++
-    // MISSING COMMAND: regex text/x-c++
-    // MISSING COMMAND: regex text/x-c++
-    // MISSING COMMAND: regex text/x-c++
-    // MISSING COMMAND: regex text/x-objective-c
+    // MISSING COMMAND: regex \^template[ \t]+<.*>[ \t\n]+ text/x-c++
+    // MISSING COMMAND: regex \^virtual[ \t\n]+ text/x-c++
+    // MISSING COMMAND: regex \^class[ \t\n]+ text/x-c++
+    // MISSING COMMAND: regex \^public: text/x-c++
+    // MISSING COMMAND: regex \^private: text/x-c++
+    // MISSING COMMAND: regex \^#import text/x-objective-c
 // FILE: /Users/awick/file-5.29/magic/Magdir/cad
     moloch_parsers_molochmagic_add(0, (uint8_t *)"MC0.0", sizeof "MC0.0" - 1, "image/vnd.dwg", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"AC1.2", sizeof "AC1.2" - 1, "image/vnd.dwg", FALSE);
@@ -394,6 +409,7 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/x-ima
     // MISSING COMPLEX: application/x-iso9660-image
     // MISSING COMPLEX: application/x-iso9660-image
+    // LARGE OFFSET: 37633 string application/x-iso9660-image
 // FILE: /Users/awick/file-5.29/magic/Magdir/flash
     // MISSING COMPLEX: application/x-shockwave-flash
     // MISSING COMPLEX: application/x-shockwave-flash
@@ -425,7 +441,13 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/x-gnupg-keyring
     // MISSING COMPLEX: text/x-po
 // FILE: /Users/awick/file-5.29/magic/Magdir/gnumeric
+    moloch_parsers_molochmagic_add(39, (uint8_t *)"<gmr:Workbook", sizeof "<gmr:Workbook" - 1, "application/x-gnumeric", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/icc
+    moloch_parsers_molochmagic_add(36, (uint8_t *)"acspAPPL", sizeof "acspAPPL" - 1, "application/vnd.iccprofile", FALSE);
+    moloch_parsers_molochmagic_add(36, (uint8_t *)"acspMSFT", sizeof "acspMSFT" - 1, "application/vnd.iccprofile", FALSE);
+    moloch_parsers_molochmagic_add(36, (uint8_t *)"acspSGI ", sizeof "acspSGI " - 1, "application/vnd.iccprofile", FALSE);
+    moloch_parsers_molochmagic_add(36, (uint8_t *)"acspSUNW", sizeof "acspSUNW" - 1, "application/vnd.iccprofile", FALSE);
+    moloch_parsers_molochmagic_add(36, (uint8_t *)"acsp", sizeof "acsp" - 1, "application/vnd.iccprofile", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/iff
     // MISSING COMPLEX: audio/x-aiff
     // MISSING COMPLEX: audio/x-aiff
@@ -462,6 +484,7 @@ void molochmagic_load() {
     // MISSING COMPLEX: image/x-ms-bmp
     // MISSING COMPLEX: image/x-ms-bmp
     moloch_parsers_molochmagic_add(0, (uint8_t *)"/* XPM */", sizeof "/* XPM */" - 1, "image/x-xpmi", FALSE);
+    moloch_parsers_molochmagic_add(128, (uint8_t *)"DICM", sizeof "DICM" - 1, "application/dicom", FALSE);
     // MISSING COMPLEX: image/x-xwindowdump
     // MISSING COMPLEX: image/x-pcx
     moloch_parsers_molochmagic_add(0, (uint8_t *)"8BPS", sizeof "8BPS" - 1, "image/vnd.adobe.photoshop", FALSE);
@@ -474,6 +497,10 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"SDPX", sizeof "SDPX" - 1, "image/x-dpx", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x0e\x03\x13\x01", 4, "application/x-hdf", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\211HDF\r\n\032\n", sizeof "\211HDF\r\n\032\n" - 1, "application/x-hdf", FALSE);
+    // LARGE OFFSET: 512 string application/x-hdf
+    // LARGE OFFSET: 1024 string application/x-hdf
+    // LARGE OFFSET: 2048 string application/x-hdf
+    // LARGE OFFSET: 4096 string application/x-hdf
     moloch_parsers_molochmagic_add(0, (uint8_t *)"CPC\262", sizeof "CPC\262" - 1, "image/x-cpi", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"[BitmapInfo2]", sizeof "[BitmapInfo2]" - 1, "image/x-polar-monitor-bitmap", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"MMOR", sizeof "MMOR" - 1, "image/x-olympus-orf", FALSE);
@@ -488,7 +515,7 @@ void molochmagic_load() {
 // FILE: /Users/awick/file-5.29/magic/Magdir/java
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\xfe\xed\xfe\xed", 4, "application/x-java-keystore", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\xce\xce\xce\xce", 4, "application/x-java-jce-keystore", FALSE);
-    // MISSING COMMAND: regex text/x-java
+    // MISSING COMMAND: regex \^import.*;$ text/x-java
 // FILE: /Users/awick/file-5.29/magic/Magdir/javascript
     moloch_parsers_molochmagic_add(0, (uint8_t *)"#!/bin/node", sizeof "#!/bin/node" - 1, "application/javascript", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"#!/usr/bin/node", sizeof "#!/usr/bin/node" - 1, "application/javascript", FALSE);
@@ -531,10 +558,10 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"#!/usr/bin/env lua", sizeof "#!/usr/bin/env lua" - 1, "text/x-lua", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"#! /usr/bin/env lua", sizeof "#! /usr/bin/env lua" - 1, "text/x-lua", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/m4
-    // MISSING COMMAND: regex text/x-m4
+    // MISSING COMMAND: regex \^dnl  text/x-m4
 // FILE: /Users/awick/file-5.29/magic/Magdir/mach
-    // MISSING COMMAND: lelong&0xfffffffe application/x-mach-binary
-    // MISSING COMMAND: belong&0xfffffffe application/x-mach-binary
+    // MISSING COMMAND: lelong&0xfffffffe 0xfeedface application/x-mach-binary
+    // MISSING COMMAND: belong&0xfffffffe 0xfeedface application/x-mach-binary
 // FILE: /Users/awick/file-5.29/magic/Magdir/macintosh
     moloch_parsers_molochmagic_add(11, (uint8_t *)"must be converted with BinHex", sizeof "must be converted with BinHex" - 1, "application/mac-binhex40", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"SIT!", sizeof "SIT!" - 1, "application/x-stuffit", FALSE);
@@ -555,19 +582,19 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"Received:", sizeof "Received:" - 1, "message/rfc822", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x78\x9f\x3e\x22", 4, "application/vnd.ms-tnef", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/make
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
-    // MISSING COMMAND: regex/100l text/x-makefile
+    // MISSING COMMAND: regex/100l \^CFLAGS text/x-makefile
+    // MISSING COMMAND: regex/100l \^VPATH text/x-makefile
+    // MISSING COMMAND: regex/100l \^LDFLAGS text/x-makefile
+    // MISSING COMMAND: regex/100l \^all: text/x-makefile
+    // MISSING COMMAND: regex/100l \^\.PRECIOUS text/x-makefile
+    // MISSING COMMAND: regex/100l \^\.BEGIN text/x-makefile
+    // MISSING COMMAND: regex/100l \^\.include text/x-makefile
+    // MISSING COMMAND: regex/100l \^SUBDIRS text/x-makefile
 // FILE: /Users/awick/file-5.29/magic/Magdir/marc21
     // MISSING COMPLEX: application/marc
     // MISSING COMPLEX: application/marc
     // MISSING COMPLEX: application/marc
-    // MISSING COMMAND: regex/1l application/marc
+    // MISSING COMMAND: regex/1l (^[0-9]{5})[acdn][w] application/marc
     // MISSING COMPLEX: application/marc
     // MISSING COMPLEX: application/marc
 // FILE: /Users/awick/file-5.29/magic/Magdir/matroska
@@ -617,12 +644,20 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/x-dosexec
     // MISSING COMPLEX: application/x-c32-comboot-syslinux-exec
     // MISSING COMPLEX: application/x-dosexec
+    // LARGE OFFSET: 2080 string application/msword
+    // LARGE OFFSET: 2080 string application/msword
+    // LARGE OFFSET: 2112 string application/msword
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x31\xbe\x00\x00", 4, "application/msword", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"PO^Q`", sizeof "PO^Q`" - 1, "application/msword", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\376\067\0\043", sizeof "\376\067\0\043" - 1, "application/msword", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\333\245-\0\0\0", sizeof "\333\245-\0\0\0" - 1, "application/msword", FALSE);
+    // LARGE OFFSET: 512 string/b application/msword
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\333\245\055\000", sizeof "\333\245\055\000" - 1, "application/msword", FALSE);
+    // LARGE OFFSET: 2080 string application/vnd.ms-excel
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\333\245\055\000", sizeof "\333\245\055\000" - 1, "application/msword", FALSE);
+    // LARGE OFFSET: 2080 string application/vnd.ms-excel
+    // LARGE OFFSET: 2114 string application/vnd.ms-excel
+    // LARGE OFFSET: 2121 string application/vnd.ms-excel
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\011\004\006\000\000\000\020\000", sizeof "\011\004\006\000\000\000\020\000" - 1, "application/vnd.ms-excel", FALSE);
     // MISSING COMPLEX: application/vnd.lotus-1-2-3
     // MISSING COMPLEX: application/vnd.lotus-1-2-3
@@ -630,11 +665,13 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"WordPro\r\373", sizeof "WordPro\r\373" - 1, "application/vnd.lotus-wordpro", FALSE);
     // MISSING COMPLEX: image/x-icon
     // MISSING COMPLEX: image/x-win-bitmap
+    // LARGE OFFSET: 0x171 string application/x-dosexec
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\x78\x9f", 2, "application/vnd.ms-tnef", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"MSCF\0\0\0\0", sizeof "MSCF\0\0\0\0" - 1, "application/vnd.ms-cab-compressed", FALSE);
     // MISSING COMPLEX: application/msword
     // MISSING COMPLEX: application/msword
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\224\246\056", sizeof "\224\246\056" - 1, "application/msword", FALSE);
+    // LARGE OFFSET: 512 string application/msword
     // MISSING COMPLEX: application/x-ms-reader
 // FILE: /Users/awick/file-5.29/magic/Magdir/msooxml
     // MISSING COMPLEX: application/vnd.openxmlformats-officedocument.wordprocessingml.document
@@ -683,7 +720,7 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"#! /usr/local/bin/python", sizeof "#! /usr/local/bin/python" - 1, "text/x-python", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"#!/usr/bin/env python", sizeof "#!/usr/bin/env python" - 1, "text/x-python", FALSE);
     moloch_parsers_molochmagic_add_search((uint8_t *)"#! /usr/bin/env python", sizeof "#! /usr/bin/env python" - 1, "text/x-python", FALSE);
-    // MISSING COMMAND: regex text/x-python
+    // MISSING COMMAND: regex \^from\\s+(\\w|\\.)+\\s+import.*$ text/x-python
     // MISSING COMPLEX: text/x-python
     // MISSING COMPLEX: text/x-python
     // MISSING COMPLEX: text/x-python
@@ -709,6 +746,7 @@ void molochmagic_load() {
     // MISSING COMPLEX: text/x-ruby
     // MISSING COMPLEX: text/x-ruby
 // FILE: /Users/awick/file-5.29/magic/Magdir/sc
+    moloch_parsers_molochmagic_add(38, (uint8_t *)"Spreadsheet", sizeof "Spreadsheet" - 1, "application/x-sc", FALSE);
 // FILE: /Users/awick/file-5.29/magic/Magdir/scientific
     // MISSING COMPLEX: chemical/x-pdb
 // FILE: /Users/awick/file-5.29/magic/Magdir/sereal
@@ -780,8 +818,8 @@ void molochmagic_load() {
     moloch_parsers_molochmagic_add(0, (uint8_t *)"'.\\\"", sizeof "'.\\\"" - 1, "text/troff", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"\\\"", sizeof "\\\"" - 1, "text/troff", FALSE);
     moloch_parsers_molochmagic_add(0, (uint8_t *)"'''", sizeof "'''" - 1, "text/troff", FALSE);
-    // MISSING COMMAND: regex/20l text/troff
-    // MISSING COMMAND: regex/20l text/troff
+    // MISSING COMMAND: regex/20l \^\\.[A-Za-z0-9][A-Za-z0-9][ \t] text/troff
+    // MISSING COMMAND: regex/20l \^\\.[A-Za-z0-9][A-Za-z0-9]$ text/troff
 // FILE: /Users/awick/file-5.29/magic/Magdir/vorbis
     // MISSING COMPLEX: audio/ogg
     // MISSING COMPLEX: video/ogg
@@ -819,6 +857,7 @@ void molochmagic_load() {
     // MISSING COMPLEX: application/x-setupscript
     // MISSING COMPLEX: application/x-pnf
 // FILE: /Users/awick/file-5.29/magic/Magdir/wordprocessors
+    // LARGE OFFSET: 512 string application/x-hwp
     moloch_parsers_molochmagic_add(2, (uint8_t *)"MMXPR3", sizeof "MMXPR3" - 1, "application/x-quark-xpress-3", FALSE);
     // MISSING COMPLEX: application/x-ichitaro4
     // MISSING COMPLEX: application/x-ichitaro5

@@ -40,7 +40,10 @@ sub process {
                 return;
             }
 
-            return if (tonum($offset) > 20);
+            if (tonum($offset) > 257) {
+                    print "    // LARGE OFFSET: $offset $command $mime\n";
+                    return;
+            }
 
             if ($command eq "ustring" || substr($command, 0, 6) eq "string" || $command eq "search/1" || substr($command, 0, 9) eq "search/1/") {
                 $match =~ s/\\x(..)/sprintf("\\%03o", hex($1))/eg;
@@ -62,7 +65,7 @@ sub process {
                 my $val = tonum($match);
                 printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\\x%02x\\x%02x\", 4, \"$mime\", FALSE);\n", ($val & 0xff), (($val >> 8) & 0xff), (($val >> 16) & 0xff), (($val >> 24) & 0xff));
             } else {
-                    print "    // MISSING COMMAND: $command $mime\n";
+                    print "    // MISSING COMMAND: $command $match $mime\n";
             }
         } else {
             print "    // MISSING COMPLEX: $mime\n";
@@ -85,7 +88,7 @@ print <<EOF;
 
 void molochmagic_load() {
 // FILE: molochmagic.pl
-  moloch_parsers_molochmagic_add(0, (uint8_t *)"PK\\003\\004", sizeof "PK\\003\\004" - 1, "application/zip", FALSE);
+    moloch_parsers_molochmagic_add(0, (uint8_t *)"PK\\003\\004", sizeof "PK\\003\\004" - 1, "application/zip", FALSE);
 EOF
 
 

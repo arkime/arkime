@@ -46,15 +46,21 @@ typedef struct {
     uint8_t  ignoreCase;
 } MolochMagic_t;
 
-LOCAL MolochMagic_t magicSearch[1024];
+#define MOLOCH_MAGIC_MAX_SEARCH 100
+#define MOLOCH_MAGIC_MAX_OFFSET 15
+
+LOCAL MolochMagic_t magicSearch[MOLOCH_MAGIC_MAX_SEARCH];
 LOCAL int           magicSearchLen;
 
 typedef struct {
     MolochMagic_t **magic;
-    int             num;
-    int             size;
+    uint8_t         num;
+    uint8_t         size;
 } MolochMagicList_t;
-LOCAL MolochMagicList_t magicMatch[20][256][256];
+LOCAL MolochMagicList_t magicMatch[MOLOCH_MAGIC_MAX_OFFSET][256][256];
+
+int magicOffset[MOLOCH_MAGIC_MAX_OFFSET];
+int magicOffsetNum;
 
 /******************************************************************************/
 void moloch_parsers_molochmagic_add_list(MolochMagicList_t *list, MolochMagic_t *magic)
@@ -73,6 +79,24 @@ void moloch_parsers_molochmagic_add_list(MolochMagicList_t *list, MolochMagic_t 
 /******************************************************************************/
 void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, char *mime, int ignoreCase)
 {
+    int offsetPos;
+    for (offsetPos = 0; offsetPos < magicOffsetNum; offsetPos++) {
+        if (magicOffset[offsetPos] == offset) {
+            break;
+        }
+    }
+
+    if (offsetPos == MOLOCH_MAGIC_MAX_OFFSET) {
+        LOG("Too many offsets, can't add %d %s", offset, mime);
+        return;
+    }
+
+    if (offsetPos == magicOffsetNum) {
+        magicOffset[magicOffsetNum] = offset;
+        magicOffsetNum++;
+    }
+
+
     MolochMagic_t *magic = MOLOCH_TYPE_ALLOC(MolochMagic_t);
 
     magic->match = match;
@@ -82,20 +106,20 @@ void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, ch
     magicSearch[magicSearchLen].ignoreCase = ignoreCase;
 
     if (ignoreCase) {
-        moloch_parsers_molochmagic_add_list(&magicMatch[offset][tolower(match[0])][tolower(match[1])], magic);
-        moloch_parsers_molochmagic_add_list(&magicMatch[offset][tolower(match[0])][toupper(match[1])], magic);
-        moloch_parsers_molochmagic_add_list(&magicMatch[offset][toupper(match[0])][tolower(match[1])], magic);
-        moloch_parsers_molochmagic_add_list(&magicMatch[offset][toupper(match[0])][toupper(match[1])], magic);
+        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][tolower(match[0])][tolower(match[1])], magic);
+        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][tolower(match[0])][toupper(match[1])], magic);
+        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][toupper(match[0])][tolower(match[1])], magic);
+        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][toupper(match[0])][toupper(match[1])], magic);
     } else {
-        moloch_parsers_molochmagic_add_list(&magicMatch[offset][match[0]][match[1]], magic);
+        moloch_parsers_molochmagic_add_list(&magicMatch[offsetPos][match[0]][match[1]], magic);
     }
 }
 
 /******************************************************************************/
 void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *mime, int ignoreCase)
 {
-    if (magicSearchLen >= 1024) {
-        LOG("Too many searches");
+    if (magicSearchLen >= MOLOCH_MAGIC_MAX_SEARCH) {
+        LOG("Too many searches, can't add %s", mime);
         return;
     }
     magicSearch[magicSearchLen].match = match;
@@ -128,15 +152,17 @@ void moloch_parsers_magic(MolochSession_t *session, int field, const char *data,
     }
 
 
-    int i, offset;
+    int i, offset, offsetPos;
     uint8_t *udata = (uint8_t *)data;
-    for (offset = 0; offset < 20; offset++) {
+    for (offsetPos = 0; offsetPos < magicOffsetNum; offsetPos++) {
+        offset = magicOffset[offsetPos];
+
         if (offset + 1 >= len)
-            return;
+            continue;
 
         //LOG("offset: %d len: %d udata: %.*s %02x %02x", offset, len, len-offset, udata+offset, udata[offset], udata[offset+1]);
 
-        MolochMagicList_t *list = &magicMatch[offset][(int)(udata[offset])][(int)(udata[offset+1])];
+        MolochMagicList_t *list = &magicMatch[offsetPos][(int)(udata[offset])][(int)(udata[offset+1])];
 
         for (i = 0; i < list->num; i++) {
             //LOG("offset: %d i: %d len: %d matchlen: %d", offset, i, len, list->magic[i]->matchlen);
