@@ -680,8 +680,8 @@ void moloch_parsers_exit();
 
 void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len);
 
-void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, char *mime);
-void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *mime);
+void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, char *mime, int ignoreCase);
+void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *mime, int ignoreCase);
 
 typedef void (* MolochClassifyFunc) (MolochSession_t *session, const unsigned char *data, int remaining, int which, void *uw);
 

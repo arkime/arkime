@@ -44,21 +44,23 @@ sub process {
 
             if ($command eq "ustring" || substr($command, 0, 6) eq "string" || $command eq "search/1" || substr($command, 0, 9) eq "search/1/") {
                 $match =~ s/\\x(..)/sprintf("\\%03o", hex($1))/eg;
-                print "    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"$match\", sizeof \"$match\" - 1, \"$mime\");\n";
+                my $case = index($command, "c", 7) > -1 || index($command, "C", 7) > -1?"TRUE":"FALSE";
+                print "    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"$match\", sizeof \"$match\" - 1, \"$mime\", $case);\n";
             } elsif (substr($command, 0, 6) eq "search") {
-                print "    moloch_parsers_molochmagic_add_search((uint8_t *)\"$match\", sizeof \"$match\" - 1, \"$mime\");\n";
+                my $case = index($command, "c", 7) > -1 || index($command, "C", 7) > -1?"TRUE":"FALSE";
+                print "    moloch_parsers_molochmagic_add_search((uint8_t *)\"$match\", sizeof \"$match\" - 1, \"$mime\", $case);\n";
             } elsif ($command eq "beshort") {
                 my $val = tonum($match);
-                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\", 2, \"$mime\");\n", ($val >> 8) & 0xff, ($val & 0xff));
+                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\", 2, \"$mime\", FALSE);\n", ($val >> 8) & 0xff, ($val & 0xff));
             } elsif ($command eq "leshort" || $command eq "short") {
                 my $val = tonum($match);
-                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\", 2, \"$mime\");\n", ($val & 0xff), ($val >> 8) & 0xff);
+                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\", 2, \"$mime\", FALSE);\n", ($val & 0xff), ($val >> 8) & 0xff);
             } elsif ($command eq "ubelong" || $command eq "belong") {
                 my $val = tonum($match);
-                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\\x%02x\\x%02x\", 4, \"$mime\");\n", (($val >> 24) & 0xff), (($val >> 16) & 0xff), (($val >> 8) & 0xff), ($val & 0xff));
+                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\\x%02x\\x%02x\", 4, \"$mime\", FALSE);\n", (($val >> 24) & 0xff), (($val >> 16) & 0xff), (($val >> 8) & 0xff), ($val & 0xff));
             } elsif ($command eq "ulelong" || $command eq "lelong" || $command eq "long") {
                 my $val = tonum($match);
-                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\\x%02x\\x%02x\", 4, \"$mime\");\n", ($val & 0xff), (($val >> 8) & 0xff), (($val >> 16) & 0xff), (($val >> 24) & 0xff));
+                printf("    moloch_parsers_molochmagic_add($offset, (uint8_t *)\"\\x%02x\\x%02x\\x%02x\\x%02x\", 4, \"$mime\", FALSE);\n", ($val & 0xff), (($val >> 8) & 0xff), (($val >> 16) & 0xff), (($val >> 24) & 0xff));
             } else {
                     print "    // MISSING COMMAND: $command $mime\n";
             }
@@ -83,7 +85,7 @@ print <<EOF;
 
 void molochmagic_load() {
 // FILE: molochmagic.pl
-  moloch_parsers_molochmagic_add(0, (uint8_t *)"PK\\003\\004", sizeof "PK\\003\\004" - 1, "application/zip");
+  moloch_parsers_molochmagic_add(0, (uint8_t *)"PK\\003\\004", sizeof "PK\\003\\004" - 1, "application/zip", FALSE);
 EOF
 
 
