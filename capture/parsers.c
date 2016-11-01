@@ -134,7 +134,6 @@ void moloch_parsers_magic(MolochSession_t *session, int field, const char *data,
         }
     }
 
-    LOG("magicSearchLen %d", magicSearchLen);
     for (i = 0; i < magicSearchLen; i++) {
         //LOG("%.*s for %.*s", len, data, magicSearch[i].matchlen, magicSearch[i].match);
         if (moloch_memcasestr(data, len, (const char*)magicSearch[i].match, magicSearch[i].matchlen)) {
