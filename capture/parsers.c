@@ -532,9 +532,11 @@ void moloch_parsers_init()
 }
 /******************************************************************************/
 void moloch_parsers_exit() {
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
-        magic_close(cookie[t]);
+    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC) {
+        int t;
+        for (t = 0; t < config.packetThreads; t++) {
+            magic_close(cookie[t]);
+        }
     }
 }
 /******************************************************************************/
