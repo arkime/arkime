@@ -108,9 +108,10 @@
 
             // when the map is open, watch for user to click outside map
             if (scope.state.open) {
-              $timeout(() => { // resize the map after animation
+              $timeout(() => {
+                // resize the map in case window has changed while map was closed
                 $($window).trigger('resize');
-              }, 400);
+              });
               $document.on('mouseup', isOutsideClick);
             } else {
               $document.off('mouseup', isOutsideClick);
