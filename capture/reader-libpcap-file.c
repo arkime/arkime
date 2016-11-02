@@ -37,7 +37,8 @@ LOCAL  char                 *offlinePcapName;
 
 void reader_libpcapfile_opened();
 
-static struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
+LOCAL struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
+LOCAL MolochPacketBatch_t   batch;
 
 /******************************************************************************/
 void reader_libpcapfile_monitor_dir(char *dirname);
@@ -342,7 +343,7 @@ void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *
     packet->ts            = h->ts;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerName    = offlinePcapName;
-    moloch_packet(packet);
+    moloch_packet_batch(&batch, packet);
 }
 /******************************************************************************/
 gboolean reader_libpcapfile_read()
@@ -362,7 +363,9 @@ gboolean reader_libpcapfile_read()
         return TRUE;
     }
 
+    moloch_packet_batch_init(&batch);
     int r = pcap_dispatch(pcap, 10000, reader_libpcapfile_pcap_cb, NULL);
+    moloch_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
     if (r <= 0) {
