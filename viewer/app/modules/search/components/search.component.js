@@ -34,11 +34,23 @@
           this.startTime  = hourMS * 5;
           this.stopTime   = currentTime;
         }
+        this.$location.search('stopTime', null);
+        this.$location.search('startTime', null);
       } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
         // start and stop times available
-        this.timeRange  = '0'; // custom time range
-        this.stopTime   = parseInt(this.$routeParams.stopTime * 1000, 10);
-        this.startTime  = parseInt(this.$routeParams.startTime * 1000, 10);
+        var stop  = parseInt(this.$routeParams.stopTime * 1000, 10);
+        var start = parseInt(this.$routeParams.startTime * 1000, 10);
+        if (stop && start && !isNaN(stop) && !isNaN(start)) {
+          // if we can parse start and stop time, set them
+          this.timeRange  = '0'; // custom time range
+          this.stopTime   = stop;
+          this.startTime  = start;
+        } else { // if we can't parse stop or start time, set default
+          this.timeRange = '1'; // default to 1 hour
+          this.$location.search('date', this.timeRange);
+          this.$location.search('stopTime', null);
+          this.$location.search('startTime', null);
+        }
       } else if (!this.$routeParams.date &&
           !this.$routeParams.startTime && !this.$routeParams.stopTime) {
         // there are no time query parameters, so set defaults
@@ -96,6 +108,14 @@
      */
      changeDate() {
        this.timeRange = '0'; // custom time range
+
+       var stopSec  = (this.stopTime / 1000).toFixed();
+       var startSec = (this.startTime / 1000).toFixed();
+
+       // only continue if start and stop are valid numbers
+       if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
+         return;
+       }
 
        this.$location.search('date', null);
        this.$location.search('stopTime', (this.stopTime / 1000).toFixed());
