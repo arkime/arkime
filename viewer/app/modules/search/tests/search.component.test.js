@@ -133,6 +133,21 @@
       changeBounded(true);
     });
 
+    it('should not emit a "change:search" event when start or stop time is invalid', function() {
+      var callCount = 2;
+
+      function changeDate(stopTime, startTime) {
+        search.stopTime   = stopTime;
+        search.startTime  = startTime;
+        search.changeDate();
+
+        expect(search.$location.search.calls.count()).toBe(callCount);
+      }
+
+      changeDate(1473775168701, 'asdf');
+      changeDate('asdf', 1473071809000);
+    });
+
   });
 
 })();
