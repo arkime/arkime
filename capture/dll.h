@@ -28,6 +28,15 @@
      (head)->name##count++ \
     )
 
+#define DLL_PUSH_TAIL_DLL(name,head1,head2) \
+    ((head1)->name##prev->name##next = (head2)->name##next, \
+     (head2)->name##next->name##prev = (head1)->name##prev, \
+     (head1)->name##prev             = (head2)->name##prev, \
+     (head2)->name##prev->name##next = (void *)(head1), \
+     (head1)->name##count+=(head2)->name##count, \
+     DLL_INIT(name,head2) \
+    )
+
 #define DLL_PUSH_HEAD(name,head,element) \
     ((element)->name##next          = (head)->name##next, \
      (element)->name##prev          = (void *)(head), \

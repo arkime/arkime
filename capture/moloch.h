@@ -404,6 +404,11 @@ typedef struct
     MOLOCH_LOCK_EXTERN(lock);
     MOLOCH_COND_EXTERN(lock);
 } MolochPacketHead_t;
+
+typedef struct
+{
+    MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
+} MolochPacketBatch_t;
 /******************************************************************************/
 typedef struct moloch_tcp_data {
     struct moloch_tcp_data *td_next, *td_prev;
@@ -807,6 +812,11 @@ void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
 void     moloch_packet(MolochPacket_t * const packet);
 void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);
+
+void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
+void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
+void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
+
 
 /******************************************************************************/
 /*

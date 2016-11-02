@@ -10,6 +10,8 @@
   - wise - threatstream sql capture importId and handle stripping hostname for lookups
   - capture - new pcapReadMethod of tpacketv3 on linux
   - capture - new option magicMode: libmagic, libmagicnotext, molochmagi, none
+  - capture - The tpacketv3, libpcap* pcapReadMethod now batch packets before adding
+              to packet queues to reduce mutex lock contention
 
 0.16.0 2016/10/14
   - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the
