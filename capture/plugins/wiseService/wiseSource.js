@@ -141,7 +141,7 @@ WISESource.prototype.parseFieldDef = function(line) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseTagger = function(body, setCb, endCb) {
-  var lines = body.toString().split("\n");
+  var lines = body.toString().split(/\r?\n/);
   for (var l = 0, llen = lines.length; l < llen; l++) {
     if (lines[l][0] === "#") {
       this.parseFieldDef(lines[l]);
