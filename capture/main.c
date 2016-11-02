@@ -240,12 +240,11 @@ char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key)
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize)
 {
     const char *p;
-    const char *end = haystack + haysize - needlesize;
-
-    for (p = haystack; p <= end; p++)
-    {
-        if (p[0] == needle[0] && memcmp(p+1, needle+1, needlesize-1) == 0)
+    while (haysize >= needlesize && (p = memchr(haystack, *needle, haysize - needlesize + 1))) {
+        if (memcmp(p, needle, needlesize) == 0)
             return p;
+        haysize -= (p - haystack + 1);
+        haystack = p+1;
     }
     return NULL;
 }
