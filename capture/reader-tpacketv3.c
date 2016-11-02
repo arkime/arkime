@@ -119,6 +119,7 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
     pfd.events = POLLIN | POLLERR;
     pfd.revents = 0;
 
+    MolochPacketBatch_t batch;
 
     while (!config.quitting) {
         if (pos == -1) {
@@ -154,6 +155,7 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
 
         struct tpacket3_hdr *th;
 
+        moloch_packet_batch_init(&batch);
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
         uint16_t p;
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
@@ -169,10 +171,11 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
             packet->ts.tv_sec     = th->tp_sec;
             packet->ts.tv_usec    = th->tp_nsec/1000;
 
-            moloch_packet(packet);
+            moloch_packet_batch(&batch, packet);
 
             th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
         }
+        moloch_packet_batch_flush(&batch);
 
         tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
         pos = -1;
