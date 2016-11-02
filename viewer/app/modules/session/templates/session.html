@@ -29,7 +29,7 @@
       <table class="table table-condensed">
         <thead>
           <tr>
-            <th>
+            <th width="6%">
               <div class="btn-group" uib-dropdown is-open="$ctrl.isopen">
                 <button id="single-button" type="button" class="btn btn-purple"
                   uib-dropdown-toggle>
@@ -76,7 +76,7 @@
               <colheader col-name="'Node'" col-id="'no'"
                 sorts="$ctrl.query.sorts"></colheader>
             </th>
-            <th>
+            <th width="20%">
               <colheader col-name="'Info'" col-id="'info'"></colheader>
             </th>
           </tr>
@@ -85,7 +85,7 @@
           $ctrl.sessions.data.length && !$ctrl.error" class="small">
           <tr ng-repeat-start="session in $ctrl.sessions.data"
             id="session{{::session.id}}">
-            <td style="width:6%">
+            <td>
               <a class="btn btn-sm btn-green btn-toggle"
                 ng-class="{'collapsed':!session.expanded}"
                 ng-click="$ctrl.toggleSessionDetail(session)">
@@ -125,7 +125,9 @@
             <td ng-class="{'active':$ctrl.isSorted('no')}">
               {{::session.no}}
             </td>
-            <td>{{::session.info}}</td>
+            <td>
+              <session-info session="session"></session-info>
+            </td>
           </tr>
           <tr ng-show="session.expanded" class="session-detail-row" ng-repeat-end>
             <td colspan="11">

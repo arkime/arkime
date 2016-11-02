@@ -17,6 +17,7 @@ require('./session/components/session.export.pcap.component');
 require('./session/components/session.scrub.pcap.component');
 require('./session/components/session.delete.component');
 require('./session/components/session.send.component');
+require('./session/components/session.info.component');
 
 require('./search/components/search.component');
 require('./search/components/expression.typeahead');

@@ -1,0 +1,75 @@
+<div class="small">
+
+  <div ng-if="$ctrl.session.us">
+    <span ng-repeat="value in $ctrl.session.us | limitTo:$ctrl.limit track by $index">
+      {{::value | safeStr}}
+    </span>
+    <a ng-if="$ctrl.session.us.length > $ctrl.initialLimit"
+      class="btn btn-xs btn-default pull-right" ng-click="$ctrl.toggleShowAll()">
+      <span ng-if="!$ctrl.showAll" class="fa fa-chevron-down"></span>
+      <span ng-if="$ctrl.showAll" class="fa fa-chevron-up"></span>
+    </a>
+  </div>
+
+  <div ng-if="$ctrl.session.esrc">
+    <strong>From:</strong>
+    <span ng-repeat="value in $ctrl.session.esrc">
+      {{::value | safeStr}}<span ng-if="!$last">,</span>
+    </span>
+    <br>
+    <div ng-if="$ctrl.session.edst">
+      <strong>To:</strong>
+      <span ng-repeat="value in $ctrl.session.edst">
+        {{::value | safeStr}}<span ng-if="!$last">,</span>
+      </span>
+      <br>
+    </div>
+    <div ng-if="$ctrl.session.esub">
+      <strong>Subject:</strong>
+      <span ng-repeat="value in $ctrl.session.esub">
+        {{::value | safeStr}}<span ng-if="!$last">,</span>
+      </span>
+      <br>
+    </div>
+    <div ng-if="$ctrl.session.efn">
+      <strong>Files:</strong>
+      <span ng-repeat="value in $ctrl.session.efn">
+        {{::value | safeStr}}<span ng-if="!$last">,</span>
+      </span>
+      <br>
+    </div>
+  </div>
+
+  <div ng-if="$ctrl.session.dnsho">
+    <span ng-repeat="value in $ctrl.session.dnsho | limitTo:$ctrl.limit track by $index">
+      {{::value | safeStr}}
+    </span>
+    <a ng-if="$ctrl.session.dnsho.length > $ctrl.initialLimit"
+      class="btn btn-xs btn-default pull-right" ng-click="$ctrl.toggleShowAll()">
+      <span ng-if="!$ctrl.showAll" class="fa fa-chevron-down"></span>
+      <span ng-if="$ctrl.showAll" class="fa fa-chevron-up"></span>
+    </a>
+  </div>
+
+  <div ng-if="$ctrl.session.tls"
+    ng-repeat="tls in $ctrl.session.tls">
+    <span ng-repeat="sCn in ::tls.sCn">
+      {{::sCn | safeStr}}<span ng-if="!$last">,</span>
+    </span>
+    <span ng-if="tls.alt">
+      [
+      <span ng-repeat="value in tls.alt">
+        {{::value | safeStr}}<span ng-if="!$last">,</span>
+      </span>
+      ]<br>
+    </span>
+  </div>
+
+  <div ng-if="$ctrl.session.ircch">
+    <strong>Channel:</strong>
+    <span ng-repeat="value in $ctrl.session.ircch">
+      {{::value | safeStr}}<span ng-if="!$last">,</span>
+    </span>
+  </div>
+
+</div>

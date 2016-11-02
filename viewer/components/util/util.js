@@ -119,6 +119,30 @@
     })
 
     /**
+     *
+     */
+     .filter('safeStr', () => {
+       function strReplace(str) {
+         return str.replace(/&/g,'&amp;')
+                    .replace(/</g,'&lt;')
+                    .replace(/>/g,'&gt;')
+                    .replace(/\"/g,'&quot;')
+                    .replace(/\'/g, '&#39;')
+                    .replace(/\//g, '&#47;');
+       }
+
+       return (str) => {
+         if (str === undefined) { return ''; }
+
+         if (Array.isArray(str)) {
+           return str.map(strReplace);
+         }
+
+         return strReplace(str);
+       };
+     })
+
+    /**
      * Convert To Number Directive
      * Parses strings to integers
      * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}
