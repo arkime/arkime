@@ -51,7 +51,7 @@ extern MolochSessionHead_t   tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 
-LOCAL  MolochPacketHead_t    fragsQ;
+MOLOCH_LOCK_DEFINE(frags);
 
 LOCAL  gboolean              callFilters;
 
@@ -759,7 +759,7 @@ void moloch_packet_frags_free(MolochFrags_t * const frags)
     MOLOCH_TYPE_FREE(MolochFrags_t, frags);
 }
 /******************************************************************************/
-void moloch_packet_frags_process(MolochPacket_t * const packet)
+void moloch_packet_frags_process(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
 {
     MolochPacket_t * fpacket;
     MolochFrags_t   *frags;
@@ -871,53 +871,28 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
     DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed
     moloch_packet_frags_free(frags);
 
-    moloch_packet(packet);
+    moloch_packet_batch(batch, packet);
 }
 /******************************************************************************/
-LOCAL void *moloch_packet_frags_thread(void *UNUSED(unused))
+void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
 {
-    MolochPacket_t  *packet;
-    MolochFrags_t   *frags;
+    MolochFrags_t *frags;
 
-
-    while (1) {
-        MOLOCH_LOCK(fragsQ.lock);
-        while (DLL_COUNT(packet_, &fragsQ) == 0) {
-            MOLOCH_COND_WAIT(fragsQ.lock);
-        }
-        DLL_POP_HEAD(packet_, &fragsQ, packet);
-        MOLOCH_UNLOCK(fragsQ.lock);
-
-
-        // Remove expired entries
-        while ((frags = DLL_PEEK_HEAD(fragl_, &fragsList)) && (frags->secs + config.fragsTimeout < packet->ts.tv_sec)) {
-            droppedFrags++;
-            moloch_packet_frags_free(frags);
-        }
-
-        moloch_packet_frags_process(packet);
-    }
-    return NULL;
-}
-/******************************************************************************/
-void moloch_packet_frags4(MolochPacket_t * const packet)
-{
+    // ALW - Should change frags_process to make the copy when needed
     uint8_t *pkt = malloc(packet->pktlen);
     memcpy(pkt, packet->pkt, packet->pktlen);
     packet->pkt = pkt;
     packet->copied = 1;
 
-    // When running tests we do on the same thread so results are more determinstic
-    if (config.tests) {
-        moloch_packet_frags_process(packet);
-        return;
+    MOLOCH_LOCK(frags);
+    // Remove expired entries
+    while ((frags = DLL_PEEK_HEAD(fragl_, &fragsList)) && (frags->secs + config.fragsTimeout < packet->ts.tv_sec)) {
+        droppedFrags++;
+        moloch_packet_frags_free(frags);
     }
 
-
-    MOLOCH_LOCK(fragsQ.lock);
-    DLL_PUSH_TAIL(packet_, &fragsQ, packet);
-    MOLOCH_COND_SIGNAL(fragsQ.lock);
-    MOLOCH_UNLOCK(fragsQ.lock);
+    moloch_packet_frags_process(batch, packet);
+    MOLOCH_UNLOCK(frags);
 }
 /******************************************************************************/
 int moloch_packet_frags_size()
@@ -927,7 +902,7 @@ int moloch_packet_frags_size()
 /******************************************************************************/
 int moloch_packet_frags_outstanding()
 {
-    return DLL_COUNT(packet_, &fragsQ);
+    return 0;
 }
 /******************************************************************************/
 int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)
@@ -1042,7 +1017,7 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
 
 
     if ((ip_flags & IP_MF) || ip_off > 0) {
-        moloch_packet_frags4(packet);
+        moloch_packet_frags4(batch, packet);
         return 0;
     }
 
@@ -1428,14 +1403,8 @@ void moloch_packet_init()
         g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t);
     }
 
-    DLL_INIT(packet_, &fragsQ);
-    MOLOCH_LOCK_INIT(fragsQ.lock);
-    MOLOCH_COND_INIT(fragsQ.lock);
-
     HASH_INIT(fragh_, fragsHash, moloch_packet_frag_hash, moloch_packet_frag_cmp);
     DLL_INIT(fragl_, &fragsList);
-
-    g_thread_new("moloch-frags4", &moloch_packet_frags_thread, NULL);
 
     moloch_add_can_quit(moloch_packet_outstanding, "packet outstanding");
     moloch_add_can_quit(moloch_packet_frags_outstanding, "packet frags outstanding");
