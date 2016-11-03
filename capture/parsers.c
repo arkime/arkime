@@ -145,6 +145,12 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             return;
         }
         break;
+    case '#':
+        if (data[1] == '!') {
+            moloch_field_string_add(field, session, "text/x-shellscript", 18, TRUE);
+            return;
+        }
+        break;
     case '<':
         switch(data[1]) {
         case '!':
@@ -238,7 +244,7 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
         }
         break;
     case '\377':
-        if (len > 10 && memcmp(data, "\377\330\377", 3) == 0 && memcmp(data+6, "JFIF", 4) == 0) {
+        if (len > 10 && memcmp(data, "\377\330\377", 3) == 0 && (memcmp(data+6, "JFIF", 4) == 0 || memcmp(data+6, "Exif", 4) == 0)) {
             moloch_field_string_add(field, session, "image/jpeg", 10, TRUE);
             return;
         }
