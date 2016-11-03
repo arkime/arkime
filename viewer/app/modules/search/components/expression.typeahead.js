@@ -4,6 +4,7 @@
 
   var tokens;
   var operations = ['==', '!=', '<', '<=', '>', '>='];
+  var timeout;
 
   /**
    * @class ExpressionController
@@ -20,15 +21,16 @@
      *
      * @ngInject
      */
-    constructor($scope, $routeParams, FieldService) {
+    constructor($scope, $timeout, $routeParams, FieldService) {
       this.$scope       = $scope;
+      this.$timeout     = $timeout;
       this.$routeParams = $routeParams;
       this.FieldService = FieldService;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      this.activeIdx  = 0;    // active index of typeahead results
+      this.activeIdx  = -1;   // active index of typeahead results
       this.focusInput = true; // set focus on search input
       this.results    = null; // typeahead results
       // the typeahead results menu
@@ -50,8 +52,9 @@
       // watch for search (from search.component)
       this.$scope.$on('issue:search', (event, args) => {
         // remove typeahead results once query has been issued
+        if (timeout) { this.$timeout.cancel(timeout); }
         this.results    = null;
-        this.activeIdx  = 0;
+        this.activeIdx  = -1;
       });
 
       // watch for additions to search parameters
@@ -78,12 +81,26 @@
 
 
     /* exposed functions --------------------------------------------------- */
-    /**
-     * Fired when the search input is changed (with a 300 ms delay)
-     * Displays appropriate autocomplete suggestions
-     */
-     changeExpression() {
-       this.activeIdx     = 0;
+    /* Removes typeahead results */
+    onOffFocus() {
+      this.$timeout(() => {
+        if (timeout) { this.$timeout.cancel(timeout); }
+        this.results    = null;
+        this.activeIdx  = -1;
+      }, 300)
+    }
+
+    /* Fired when the search input is changed */
+    debounceExprChange() {
+      if (timeout) { this.$timeout.cancel(timeout); }
+      timeout = this.$timeout(() => {
+        this.changeExpression();
+      }, 300)
+    }
+
+    /* Displays appropriate autocomplete suggestions */
+    changeExpression() {
+       this.activeIdx     = -1;
        this.results       = null;
        this.focusInput    = false;
        this.loadingValues = false;
@@ -235,7 +252,7 @@
 
        this.results     = null;
        this.focusInput  = true; // re-focus on input
-       this.activeIdx   = 0;
+       this.activeIdx   = -1;
      }
 
      /**
@@ -258,7 +275,7 @@
        // there's nothing to do if there are no results in the dropdown menu
        if (!this.results || this.results.length === 0) { return; }
 
-       if (!this.activeIdx || this.activeIdx < 0) { this.activeIdx = 0; }
+       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
        switch (event.keyCode) {
          case 40: // down arrow
@@ -275,13 +292,15 @@
            target.parentNode.scrollTop = target.offsetTop;
            break;
          case 13: // enter
-           event.preventDefault();
-           var result = this.results[this.activeIdx];
-           this.addToQuery(result);
+           if (this.activeIdx >= 0) {
+             event.preventDefault();
+             var result = this.results[this.activeIdx];
+             if (result) { this.addToQuery(result); }
+           }
            break;
          case 27: // escape
            this.results   = null;
-           this.activeIdx = 0;
+           this.activeIdx = -1;
            break;
        }
      }
@@ -393,7 +412,7 @@
      }
   }
 
-  ExpressionController.$inject = ['$scope','$routeParams','FieldService'];
+  ExpressionController.$inject = ['$scope','$timeout','$routeParams','FieldService'];
 
   /**
    * Expression Typeahead Directive
