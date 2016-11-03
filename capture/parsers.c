@@ -145,7 +145,7 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             return;
         }
         break;
-    case '#":
+    case '#':
         if (data[1] == '!') {
             moloch_field_string_add(field, session, "text/x-shellscript", 18, TRUE);
             return;
