@@ -42,6 +42,8 @@
             <br>
             <strong>{{::session | extractIPString:'src'}}</strong>:{{::session.p1}} <strong>{{::session.g1}}</strong> -
             <strong>{{::session | extractIPString:'dst'}}</strong>:{{::session.p2}} <strong>{{::session.g2}}</strong>
+            <br>
+            <strong>{{::session.pr | protocol}}</strong> - {{::session.no}}
           </small>
         </p>
       </a>
