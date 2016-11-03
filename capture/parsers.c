@@ -33,7 +33,7 @@ extern unsigned char         moloch_char_to_hexstr[256][3];
 
 int    userField;
 
-enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_MOLOCHMAGIC, MOLOCH_MAGICMODE_NONE};
+enum MolochMagicMode { MOLOCH_MAGICMODE_LIBMAGIC, MOLOCH_MAGICMODE_MOLOCHMAGIC, MOLOCH_MAGICMODE_BASIC, MOLOCH_MAGICMODE_NONE};
 
 LOCAL enum MolochMagicMode magicMode;
 /*############################## molochmagic ##############################*/
@@ -132,26 +132,116 @@ void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *m
 }
 
 /******************************************************************************/
-void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
+void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
-    if (len < 5 || magicMode == MOLOCH_MAGICMODE_NONE)
-        return;
-
-    if (magicMode == MOLOCH_MAGICMODE_LIBMAGIC) {
-        const char *m = magic_buffer(cookie[session->thread], data, MIN(len,50));
-        if (m) {
-            int len;
-            char *semi = strchr(m, ';');
-            if (semi) {
-                len = semi - m;
-            } else {
-                len = strlen(m);
-            }
-            moloch_field_string_add(field, session, m, len, TRUE);
+    switch (data[0]) {
+    case '\037':
+        if (data[1] == '\213') {
+            moloch_field_string_add(field, session, "application/x-gzip", 18, TRUE);
+            return;
         }
+        if (data[1] == '\235') {
+            moloch_field_string_add(field, session, "application/x-compress", 22, TRUE);
+            return;
+        }
+        break;
+    case '<':
+        switch(data[1]) {
+        case '!':
+            if (len > 14 && strncasecmp(data, "<!doctype html", 14) == 0) {
+                moloch_field_string_add(field, session, "text/html", 9, TRUE);
+                return;
+            }
+            break;
+        case '?':
+            if (strncasecmp(data, "<?xml", 5) == 0) {
+                moloch_field_string_add(field, session, "text/xml", 8, TRUE);
+                return;
+            }
+            break;
+        case 'H':
+        case 'h':
+            if (strncasecmp(data, "<head", 5) == 0) {
+                moloch_field_string_add(field, session, "text/html", 9, TRUE);
+                return;
+            }
+            if (strncasecmp(data, "<html", 5) == 0) {
+                moloch_field_string_add(field, session, "text/html", 9, TRUE);
+                return;
+            }
+            break;
+        case 's':
+        case 'S':
+            if (strncasecmp(data, "<svg", 4) == 0) {
+                moloch_field_string_add(field, session, "image/svg", 9, TRUE);
+                return;
+            }
+            break;
+        }
+        break;
+    case 'B':
+        if (memcmp(data, "BZh", 3) == 0) {
+            moloch_field_string_add(field, session, "application/x-bzip2", 19, TRUE);
+            return;
+        }
+        break;
+    case 'G':
+        if (memcmp(data, "GIF8", 4) == 0) {
+            moloch_field_string_add(field, session, "image/gif", 9, TRUE);
+            return;
+        }
+        break;
+    case 'I':
+        if (memcmp(data, "ID3", 3) == 0) {
+            moloch_field_string_add(field, session, "audio/mpeg", 10, TRUE);
+            return;
+        }
+        break;
+    case 'M':
+        if (data[1] == 'Z') {
+            moloch_field_string_add(field, session, "application/x-dosexec", 21, TRUE);
+            return;
+        }
+        break;
+    case 'P':
+        if (memcmp(data, "PK\003\004", 4) == 0) {
+            moloch_field_string_add(field, session, "application/zip", 15, TRUE);
+            return;
+        }
+        if (memcmp(data, "PK\005\005", 4) == 0) {
+            moloch_field_string_add(field, session, "application/zip", 15, TRUE);
+            return;
+        }
+        break;
+    case 'R':
+        if (memcmp(data, "RIFF", 4) == 0) {
+            moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
+            return;
+        }
+        break;
+    case 'W':
+        if (memcmp(data, "WAVE", 4) == 0) {
+            moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
+            return;
+        }
+        break;
+    case '\x89':
+        if (memcmp(data, "\x89PNG", 4) == 0) {
+            moloch_field_string_add(field, session, "image/png", 9, TRUE);
+            return;
+        }
+        break;
+    case '\377':
+        if (len > 10 && memcmp(data, "\377\330\377", 3) == 0 && memcmp(data+6, "JFIF", 4) == 0) {
+            moloch_field_string_add(field, session, "image/jpeg", 10, TRUE);
+            return;
+        }
+        break;
     }
-
-
+}
+/******************************************************************************/
+void moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const char *data, int len)
+{
     int i, offset, offsetPos;
     uint8_t *udata = (uint8_t *)data;
     for (offsetPos = 0; offsetPos < magicOffsetNum; offsetPos++) {
@@ -195,7 +285,37 @@ void moloch_parsers_magic(MolochSession_t *session, int field, const char *data,
             }
         }
     }
+}
+/******************************************************************************/
+void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
+{
+    const char *m;
+    if (len < 5 || magicMode == MOLOCH_MAGICMODE_NONE)
+        return;
 
+    switch (magicMode) {
+    case MOLOCH_MAGICMODE_LIBMAGIC:
+        m = magic_buffer(cookie[session->thread], data, MIN(len,50));
+        if (m) {
+            int len;
+            char *semi = strchr(m, ';');
+            if (semi) {
+                len = semi - m;
+            } else {
+                len = strlen(m);
+            }
+            moloch_field_string_add(field, session, m, len, TRUE);
+        }
+        return;
+    case MOLOCH_MAGICMODE_BASIC:
+        moloch_parsers_magic_basic(session, field, data, len);
+        return;
+    case MOLOCH_MAGICMODE_MOLOCHMAGIC:
+        moloch_parsers_magic_molochmagic(session, field, data, len);
+        return;
+    default:
+        return;
+    }
 }
 /******************************************************************************/
 void moloch_parsers_initial_tag(MolochSession_t *session)
@@ -397,6 +517,8 @@ void moloch_parsers_init()
         magicMode = MOLOCH_MAGICMODE_MOLOCHMAGIC;
         void molochmagic_load();
         molochmagic_load();
+    } else if (strcmp(strMagicMode, "basic") == 0) {
+        magicMode = MOLOCH_MAGICMODE_BASIC;
     } else if (strcmp(strMagicMode, "none") == 0) {
         magicMode = MOLOCH_MAGICMODE_NONE;
     } else {
