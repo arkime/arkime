@@ -179,6 +179,12 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             break;
         }
         break;
+    case '{':
+        if (data[1] == '"' && isalpha(data[2])) {
+            moloch_field_string_add(field, session, "application/json", 16, TRUE);
+            return;
+        }
+        break;
     case 'B':
         if (memcmp(data, "BZh", 3) == 0) {
             moloch_field_string_add(field, session, "application/x-bzip2", 19, TRUE);
