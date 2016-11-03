@@ -708,9 +708,8 @@ gboolean tagger_fetch_files (gpointer sync)
     if (sync) {
         size_t         data_len;
         unsigned char *data = moloch_http_send_sync(esServer, "GET", key, key_len, NULL, 0, NULL, &data_len);;
-        unsigned char *datacopy = (unsigned char*)g_strndup((char*)data, data_len);
-        tagger_fetch_files_cb(200, datacopy, data_len, NULL);
-        g_free(datacopy);
+        tagger_fetch_files_cb(200, data, data_len, NULL);
+        free(data);
     } else {
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_fetch_files_cb, NULL);
     }

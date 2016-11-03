@@ -29,6 +29,9 @@ ES=2.4.0
 NODEJS=4.6.0
 INSTALL_DIR=$PWD
 
+echo "WARNING - easybutton will be removed in 0.17, please try the deb/rpm builds at http://molo.ch/?date=1#downloads and provide feedback"
+sleep 3
+
 if [ "$(id -u)" != "0" ]; then
    echo "ERROR - This script must be run as root" 1>&2
    exit 1

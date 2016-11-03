@@ -172,6 +172,7 @@ void wise_load_fields()
             LOG("%d %d %s", i, fieldsMap[i], BSB_WORK_PTR(bsb));
         BSB_IMPORT_skip(bsb, len);
     }
+    free(data);
 }
 /******************************************************************************/
 void wise_process_ops(MolochSession_t *session, WiseItem_t *wi)
