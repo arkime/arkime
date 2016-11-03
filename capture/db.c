@@ -1138,6 +1138,7 @@ void moloch_db_load_stats()
             dbTotalDropped[i]  = dbTotalDropped[0];
         }
     }
+    free(data);
 }
 /******************************************************************************/
 #if defined(__APPLE__) && defined(__MACH__)
@@ -1419,9 +1420,12 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
 
     if (!version_len || !version) {
         LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
+        free(data);
         return moloch_db_get_sequence_number_sync(name);
     } else {
-        return atoi((char *)version);
+        uint32_t v = atoi((char *)version);
+        free(data);
+        return v;
     }
 }
 /******************************************************************************/
@@ -1453,6 +1457,7 @@ void moloch_db_load_file_num()
     if (found && memcmp("true", found, 4) == 0) {
         goto fetch_file_num;
     }
+    free(data);
 
 
     /* Don't have new style numbers, go create them */
@@ -1485,12 +1490,16 @@ void moloch_db_load_file_num()
         LOG("ERROR - No num field in %.*s", source_len, source);
         exit (0);
     }
+    free(data);
 
     /* Now create the new style */
     key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/fn-%s?version_type=external&version=%d", config.prefix, config.nodeName, fileNum + 100);
-    moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL);
+    data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL);
 
 fetch_file_num:
+    if (data)
+        free(data);
+
     if (!config.pcapReadOffline) {
         /* If doing a live file create a file number now */
         snprintf(key, sizeof(key), "fn-%s", config.nodeName);
@@ -1688,6 +1697,7 @@ void moloch_db_check()
         LOG("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
         exit(1);
     }
+    free(data);
 
     if (config.compressES) {
         key_len = snprintf(key, sizeof(key), "/_nodes/_local?settings&process&flat_settings");
@@ -1696,6 +1706,7 @@ void moloch_db_check()
             LOG("ERROR - need to add \"http.compression: true\" to elasticsearch yml file since \"compressES = true\" is set in moloch config");
             exit(1);
         }
+        free(data);
     }
 }
 
@@ -1717,6 +1728,7 @@ void moloch_db_load_tags()
     unsigned char     *hits = 0;
     hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
     if (!hits) {
+        free(data);
         return;
     }
 
@@ -1724,8 +1736,10 @@ void moloch_db_load_tags()
     unsigned char     *ahits = 0;
     ahits = moloch_js0n_get(hits, hits_len, "hits", &ahits_len);
 
-    if (!ahits)
+    if (!ahits) {
+        free(data);
         return;
+    }
 
     uint32_t out[2*8000];
     memset(out, 0, sizeof(out));
@@ -1760,7 +1774,9 @@ void moloch_db_load_tags()
             LOG ("ERROR - Could not load %.*s", out[i+1], ahits+out[i]);
         }
     }
+    free(data);
 }
+
 typedef struct moloch_tag_request {
     struct moloch_tag_request *t_next, *t_prev;
     int                        t_count;
@@ -2025,6 +2041,7 @@ void moloch_db_load_fields()
     unsigned char     *hits = 0;
     hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
     if (!hits) {
+        free(data);
         return;
     }
 
@@ -2032,8 +2049,10 @@ void moloch_db_load_fields()
     unsigned char     *ahits = 0;
     ahits = moloch_js0n_get(hits, hits_len, "hits", &ahits_len);
 
-    if (!ahits)
+    if (!ahits) {
+        free(data);
         return;
+    }
 
     uint32_t out[2*8000];
     memset(out, 0, sizeof(out));
@@ -2053,6 +2072,7 @@ void moloch_db_load_fields()
 
         moloch_field_define_json(id, id_len, fields, fields_len);
     }
+    free(data);
 }
 /******************************************************************************/
 void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap)
@@ -2133,25 +2153,30 @@ gboolean moloch_db_file_exists(char *filename)
 
     key_len = snprintf(key, sizeof(key), "/%sfiles/file/_search?size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
 
-    LOG("query: %s", key);
     unsigned char *data = moloch_http_get(esServer, key, key_len, &data_len);
-    LOG("data: %.*s", (int)data_len, data);
 
     uint32_t           hits_len;
     unsigned char     *hits = moloch_js0n_get(data, data_len, "hits", &hits_len);
 
-    if (!hits_len || !hits)
+    if (!hits_len || !hits) {
+        free(data);
         return FALSE;
+    }
 
     uint32_t           total_len;
     unsigned char     *total = moloch_js0n_get(hits, hits_len, "total", &total_len);
 
-    if (!total_len || !total)
+    if (!total_len || !total) {
+        free(data);
         return FALSE;
+    }
 
-    if (*total != '0')
+    if (*total != '0') {
+        free(data);
         return TRUE;
+    }
 
+    free(data);
     return FALSE;
 }
 /******************************************************************************/
