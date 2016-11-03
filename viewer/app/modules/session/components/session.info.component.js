@@ -10,23 +10,16 @@
    */
   class SessionInfoController {
 
-    /**
-     * Initialize global variables for this controller
-     * @param $scope Angular application model object
-     *
-     * @ngInject
-     */
-    constructor($scope) {
-      this.$scope = $scope;
-    }
-
+    /* Callback when component is mounted and ready */
     $onInit() {
-      this.limit = 3;
+      this.limit        = 3;
       this.initialLimit = this.limit;
-      this.showAll = false;
+
+      this.showAll      = false;
     }
 
     /* exposed functions --------------------------------------------------- */
+    /* Show/hides more information */
     toggleShowAll() {
       this.showAll = !this.showAll;
 
@@ -34,8 +27,6 @@
       else { this.limit = 3; }
     }
   }
-
-  SessionInfoController.$inject = ['$scope'];
 
   /**
    * Colheader Directive
