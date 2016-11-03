@@ -87,7 +87,7 @@
         if (timeout) { this.$timeout.cancel(timeout); }
         this.results    = null;
         this.activeIdx  = -1;
-      }, 300)
+      }, 300);
     }
 
     /* Fired when the search input is changed */
@@ -95,7 +95,7 @@
       if (timeout) { this.$timeout.cancel(timeout); }
       timeout = this.$timeout(() => {
         this.changeExpression();
-      }, 300)
+      }, 300);
     }
 
     /* Displays appropriate autocomplete suggestions */
