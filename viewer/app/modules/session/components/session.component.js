@@ -7,7 +7,7 @@
     length: 100,  // page length
     start : 0,    // first item index
     facets: 1,    // facets
-    sorts : [{element:'fp', order:'asc'}] // array of sort objects
+    sorts : [['fp', 'asc']] // array of sort arrays
   };
 
   /**
@@ -46,8 +46,6 @@
       this.query = _query;      // load saved query
 
       this.stickySessions = []; // array of open sessions
-
-      this.getColumnInfo();     // get column infomation
 
       /* Listen! */
       // watch for the sorting changes (from colheader.component)
@@ -132,16 +130,6 @@
         });
     }
 
-    getColumnInfo() {
-      this.SessionService.getColumnInfo()
-        .then((response) => {
-          this.columnInfo = response.data;
-        })
-        .catch((error) => {
-          this.columnInfoError = error;
-        });
-    }
-
     /**
      * Toggles the display of the session detail for each session
      * @param {Object} session The session to expand, collapse details
@@ -163,7 +151,7 @@
      */
     isSorted(id) {
       for (var i = 0; i < this.query.sorts.length; ++i) {
-        if (this.query.sorts[i].element === id) { return true; }
+        if (this.query.sorts[i][0] === id) { return true; }
       }
 
       return false;

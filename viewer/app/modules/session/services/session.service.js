@@ -57,10 +57,9 @@
           // server takes one param (order)
           if (query.sorts && query.sorts.length) {
             params.order = '';
-            var len = query.sorts.length;
-            for (var i = 0; i < len; ++i) {
+            for (var i = 0, len = query.sorts.length; i < len; ++i) {
               var item = query.sorts[i];
-              params.order += item.element + ':' + item.order;
+              params.order += item[0] + ':' + item[1];
               if (i < len - 1) { params.order += ','; }
             }
           }
@@ -88,12 +87,36 @@
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getColumnInfo() {
+    getTableState() {
       return this.$q((resolve, reject) => {
 
         var options = {
           url   : 'tableState/sessions',
           method: 'GET'
+        };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
+     * Saves info about the session table columns and sorting order
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    saveTableState(tableState) {
+      return this.$q((resolve, reject) => {
+
+        var options = {
+          url   : 'tableState/sessions',
+          method: 'POST',
+          data  : tableState
         };
 
         this.$http(options)

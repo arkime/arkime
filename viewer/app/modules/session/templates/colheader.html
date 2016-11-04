@@ -1,10 +1,10 @@
-<div id="{{::$ctrl.colId}}" ng-click="$ctrl.sortBy($event)"
-  ng-class="{'cursor-pointer':$ctrl.sorts}">
-  {{::$ctrl.colName}}&nbsp;
-  <span ng-if="$ctrl.sorts && $ctrl.isSorted() < 0"
+<div ng-click="sortBy($event)"
+  ng-class="{'cursor-pointer':order, 'active':isSorted() >= 0}">
+  {{::colName}}&nbsp;
+  <span ng-if="order && isSorted() < 0"
     class="fa fa-sort text-muted-more"></span>
-  <span ng-if="$ctrl.sorts && $ctrl.isSorted() >= 0 && $ctrl.getSortOrder() === 'asc'"
+  <span ng-if="order && isSorted() >= 0 && getSortOrder() === 'asc'"
     class="fa fa-sort-asc"></span>
-  <span ng-if="$ctrl.sorts && $ctrl.isSorted() >= 0 && $ctrl.getSortOrder() === 'desc'"
+  <span ng-if="order && isSorted() >= 0 && getSortOrder() === 'desc'"
     class="fa fa-sort-desc"></span>
 </div>

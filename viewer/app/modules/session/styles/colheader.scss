@@ -1,9 +1,17 @@
-colheader {
-
+.moloch-col-header {
+  padding     : 0 !important; // padding applied to child div instead
   white-space :nowrap;
   overflow    :visible;
 
-  th.active & { color: $color-purple-dark; }
+
+  div {
+    padding: 5px;
+
+    &.active {
+      color: $color-purple-dark;
+      background-color: $color-gray-light;
+    }
+  }
 
   .fa-sort { visibility: hidden; }
 
@@ -11,4 +19,9 @@ colheader {
     .fa-sort { visibility: visible; }
   }
 
+}
+
+.col-vis-menu {
+  max-height: 300px;
+  overflow  : auto;
 }

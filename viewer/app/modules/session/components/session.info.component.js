@@ -29,8 +29,8 @@
   }
 
   /**
-   * Colheader Directive
-   * Displays a column table header with sorting
+   * SessionInfo Directive
+   * Displays the session info cell
    */
   angular.module('moloch')
     .component('sessionInfo', {

@@ -1,0 +1,14 @@
+<div class="btn-group" uib-dropdown is-open="$ctrl.isopen">
+  <button id="single-button" type="button" class="btn btn-purple"
+    uib-dropdown-toggle>
+    <span class="fa fa-th"></span>
+  </button>
+  <ul class="dropdown-menu col-vis-menu" uib-dropdown-menu role="menu"
+    aria-labelledby="single-button">
+    <li ng-repeat="(key,val) in $ctrl.fields"
+      ng-click="$ctrl.toggleVisibility(val.dbField)"
+      ng-class="{'active':$ctrl.isVisible(val.dbField) >= 0}">
+      <a href>{{::val.friendlyName}}</a>
+    </li>
+  </ul>
+</div>

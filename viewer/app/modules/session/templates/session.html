@@ -27,60 +27,7 @@
     <div class="table-responsive margined-top-lg">
       <!-- session data table -->
       <table class="table table-condensed">
-        <thead>
-          <tr>
-            <th width="6%">
-              <div class="btn-group" uib-dropdown is-open="$ctrl.isopen">
-                <button id="single-button" type="button" class="btn btn-purple"
-                  uib-dropdown-toggle>
-                  <span class="fa fa-th"></span>
-                </button>
-                <ul class="dropdown-menu" uib-dropdown-menu role="menu"
-                  aria-labelledby="single-button">
-                </ul>
-              </div>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('fp')}">
-              <colheader col-name="'Start'" col-id="'fp'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('lp')}">
-              <colheader col-name="'Stop'" col-id="'lp'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('a1')}">
-              <colheader col-name="'Src IP'" col-id="'a1'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('p1')}">
-              <colheader col-name="'Src Port'" col-id="'p1'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('a2')}">
-              <colheader col-name="'Dst IP'" col-id="'a2'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('p2')}">
-              <colheader col-name="'Dst Port'" col-id="'p2'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('pa')}">
-              <colheader col-name="'Packets'" col-id="'pa'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('by')}">
-              <colheader col-name="'Bytes'" col-id="'by'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th ng-class="{'active':$ctrl.isSorted('no')}">
-              <colheader col-name="'Node'" col-id="'no'"
-                sorts="$ctrl.query.sorts"></colheader>
-            </th>
-            <th width="20%">
-              <colheader col-name="'Info'" col-id="'info'"></colheader>
-            </th>
-          </tr>
-        </thead>
+        <thead table-header></thead>
         <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
           $ctrl.sessions.data.length && !$ctrl.error" class="small">
           <tr ng-repeat-start="session in $ctrl.sessions.data"
