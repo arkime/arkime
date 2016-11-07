@@ -737,15 +737,17 @@ app.get('/currentUser', function(req, res) {
       }
     }
 
-    var clone = {};
 
     var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
                     'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+                    
+    var clone     = {};
+    var source    = user._source;
 
     for (var i = 0, len = userProps.length; i < len; ++i) {
       var prop = userProps[i];
-      if (user.hasOwnProperty(prop)) {
-        clone[prop] = user[prop];
+      if (source.hasOwnProperty(prop)) {
+        clone[prop] = source[prop];
       }
     }
 
