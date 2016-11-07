@@ -13,11 +13,18 @@
     function() {
       return {
         restrict: 'A',
-        scope   : { order: '=', colName: '=', colId: '=' },
+        scope   : { order: '=', colName: '@', colId: '@' },
         template: require('html!../templates/colheader.html'),
         link    : function(scope, element, attrs) {
 
           /* setup --------------------------------------------------------- */
+          
+          // scope.$emit('change:sort', {
+          //   sorts   : scope.order,
+          //   refresh : false,
+          //   persist : false
+          // });
+
           /**
            * Sorts the sessions by the clicked column
            * @param {Object} event The click event that triggered the sort
@@ -55,7 +62,11 @@
             }
 
             // notify parent of changed sort order or element
-            scope.$emit('change:sort', { sorts: scope.order });
+            scope.$emit('change:sort', {
+              sorts   : scope.order,
+              refresh : true,
+              persist : true
+            });
           };
 
           /**

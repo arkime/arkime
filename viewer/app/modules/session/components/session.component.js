@@ -6,8 +6,7 @@
   var _query = {  // set query defaults:
     length: 100,  // page length
     start : 0,    // first item index
-    facets: 1,    // facets
-    sorts : [['fp', 'asc']] // array of sort arrays
+    facets: 1     // facets
   };
 
   /**
@@ -52,7 +51,7 @@
       this.$scope.$on('change:sort', (event, args) => {
         _query.sorts = this.query.sorts = args.sorts;
 
-        this.getData();
+        if (args.refresh) { this.getData(); }
       });
 
       // watch for pagination changes (from pagination.component)

@@ -737,10 +737,9 @@ app.get('/currentUser', function(req, res) {
       }
     }
 
-
     var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
                     'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
-                    
+
     var clone     = {};
     var source    = user._source;
 

@@ -23,6 +23,7 @@
         template: require('html!../templates/table.header.html'),
         link    : function(scope, element, attrs) {
 
+          // TODO: display error saving table state
           /* setup --------------------------------------------------------- */
           SessionService.getTableState()
             .then((response) => {
@@ -30,6 +31,12 @@
               if (Object.keys(scope.tableState).length === 0) {
                 scope.tableState = defaultTableState;
               }
+              // notify session component of sort order (updates query)
+              scope.$emit('change:sort', {
+                sorts   : scope.tableState.order,
+                refresh : false,
+                persist : false
+              });
             })
             .catch((error) => {
               scope.tableStateError = error;
@@ -38,8 +45,12 @@
           /* LISTEN! */
           scope.$on('change:sort', function(event, args) {
             scope.tableState.order = args.sorts;
-            // SessionService.saveTableState(scope.tableState);
-            // TODO: save table state and catch error saving table state
+            if (args.persist) {
+              SessionService.saveTableState(scope.tableState)
+                .catch((error) => {
+                  scope.tableStateError = error;
+                });
+            }
           });
 
         }
