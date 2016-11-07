@@ -100,6 +100,11 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
       });
+
+      // watch for changes to the visible headers (columns)
+      this.$scope.$on('visible:headers', (event, args) => {
+        this.visibleCols = args.visibleHeaders;
+      });
     } /* /$onInit */
 
 

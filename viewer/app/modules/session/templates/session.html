@@ -40,7 +40,13 @@
               </a>&nbsp;
               <small>{{::session.pr | protocol}}</small>
             </td>
-            <td ng-class="{'active':$ctrl.isSorted('fp')}">
+
+            <td ng-repeat="col in $ctrl.visibleCols"
+              ng-class="{'active':$ctrl.isSorted(col.dbField)}">
+              {{::session[col.dbField]}}
+            </td>
+
+            <!-- <td ng-class="{'active':$ctrl.isSorted('fp')}">
               {{::session.fp * 1000 | date:'yyyy/MM/dd'}}<br>
               {{::session.fp * 1000 | date:'HH:mm:ss'}}
             </td>
@@ -71,7 +77,7 @@
             </td>
             <td ng-class="{'active':$ctrl.isSorted('no')}">
               {{::session.no}}
-            </td>
+            </td> -->
             <td>
               <session-info session="session"></session-info>
             </td>

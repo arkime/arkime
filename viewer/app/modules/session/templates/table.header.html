@@ -2,6 +2,13 @@
   <th width="6%">
     <colvis visible-headers="tableState.visibleHeaders"></colvis>
   </th>
+  <th ng-repeat="header in headers" colheader class="moloch-col-header"
+    col-name="{{::header.friendlyName}}" col-id="{{::header.dbField}}"
+    order="tableState.order"></th>
+  <th width="20%">Info</th>
+  <!-- <th width="6%">
+    <colvis visible-headers="tableState.visibleHeaders"></colvis>
+  </th>
   <th colheader class="moloch-col-header"
     col-name="Start" col-id="fp" order="tableState.order">
   </th>
@@ -29,5 +36,5 @@
   <th colheader class="moloch-col-header"
     col-name="Node" col-id="no" order="tableState.order">
   </th>
-  <th width="20%">Info</th>
+  <th width="20%">Info</th> -->
 </tr>

@@ -15,8 +15,8 @@
      * @example
      * '<thead table-header></thead>'
      */
-    .directive('tableHeader', ['SessionService',
-    function(SessionService) {
+    .directive('tableHeader', ['SessionService', 'FieldService',
+    function(SessionService, FieldService) {
       return {
         scope   : {},
         restrict: 'A',
@@ -31,12 +31,35 @@
               if (Object.keys(scope.tableState).length === 0) {
                 scope.tableState = defaultTableState;
               }
+
               // notify session component of sort order (updates query)
               scope.$emit('change:sort', {
                 sorts   : scope.tableState.order,
                 refresh : false,
                 persist : false
               });
+
+              FieldService.get()
+                .then((result) => {
+                  var fields = result;
+                  scope.headers = [];
+                  for (var i = 0, len = scope.tableState.visibleHeaders.length; i < len; ++i) {
+                    var headerId = scope.tableState.visibleHeaders[i];
+
+                    for (var key in fields) {
+                      if (fields.hasOwnProperty(key)) {
+                        var item = fields[key];
+                        if (item.dbField === headerId) {
+                          scope.headers.push(item);
+                        }
+                      }
+                    }
+                  }
+                  scope.$emit('visible:headers', { visibleHeaders:scope.headers });
+                })
+                .catch((error) => {
+                  scope.tableStateError = error;
+                });
             })
             .catch((error) => {
               scope.tableStateError = error;

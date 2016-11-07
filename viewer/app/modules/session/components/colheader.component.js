@@ -17,14 +17,7 @@
         template: require('html!../templates/colheader.html'),
         link    : function(scope, element, attrs) {
 
-          /* setup --------------------------------------------------------- */
-          
-          // scope.$emit('change:sort', {
-          //   sorts   : scope.order,
-          //   refresh : false,
-          //   persist : false
-          // });
-
+          /* exposed functions --------------------------------------------- */
           /**
            * Sorts the sessions by the clicked column
            * @param {Object} event The click event that triggered the sort
