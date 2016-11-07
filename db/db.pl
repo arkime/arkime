@@ -35,6 +35,7 @@
 # 26 - dynamic stats, ES 2.0
 # 27 - table states
 # 28 - timestamp, firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc
+# 29 - stats/dstats uses dynamic_templates
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -43,7 +44,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 28;
+my $VERSION = 29;
 my $verbose = 0;
 my $PREFIX = "";
 my $SHARDS = -1;
@@ -217,7 +218,7 @@ sub tagsCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-all"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -253,7 +254,7 @@ sub sequenceCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-all"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -285,7 +286,7 @@ sub filesCreate
   "settings": {
     "number_of_shards": 2,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -343,15 +344,10 @@ sub statsCreate
 {
     my $settings = '
 {
-  "index": {
-    "store": {
-      "type": "memory"
-    }
-  },
   "settings": {
-      "number_of_shards": 1,
-      "number_of_replicas": 0,
-      "auto_expand_replicas": "0-all"
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -369,6 +365,25 @@ my $mapping = '
     "_all": {enabled : false},
     "_source": {enabled : true},
     "dynamic": "true",
+    "dynamic_templates": [
+      {
+        "numeric": {
+          "match_mapping_type": "long",
+          "mapping": {
+            "type": "long",
+            "index": "no"
+          }
+        }
+      },
+      {
+        "noindex": {
+          "match": "*",
+          "mapping": {
+            "index": "no"
+          }
+        }
+      }
+    ],
     "properties": {
       "hostname": {
         "type": "string",
@@ -376,62 +391,6 @@ my $mapping = '
       },
       "currentTime": {
         "type": "long"
-      },
-      "freeSpaceM": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalK": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalPackets": {
-        "type": "long",
-        "index": "no"
-      },
-      "monitoring": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalSessions": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalDropped": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaMS": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaBytes": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaPackets": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaSessions": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaDropped": {
-        "type": "long",
-        "index": "no"
-      },
-      "memory": {
-        "type": "long",
-        "index": "no"
-      },
-      "cpu": {
-        "type": "integer",
-        "index": "no"
-      },
-      "diskQueue": {
-        "type": "long",
-        "index": "no"
       }
     }
   }
@@ -448,7 +407,7 @@ sub dstatsCreate
   "settings": {
     "number_of_shards": 2,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -467,6 +426,25 @@ my $mapping = '
     "_all": {"enabled": false},
     "_source": {"enabled": true},
     "dynamic": "true",
+    "dynamic_templates": [
+      {
+        "numeric": {
+          "match_mapping_type": "long",
+          "mapping": {
+            "type": "long",
+            "index": "no"
+          }
+        }
+      },
+      {
+        "noindex": {
+          "match": "*",
+          "mapping": {
+            "index": "no"
+          }
+        }
+      }
+    ],
     "properties": {
       "nodeName": {
         "type": "string",
@@ -477,46 +455,6 @@ my $mapping = '
       },
       "currentTime": {
         "type": "long"
-      },
-      "freeSpaceM": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaMS": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaBytes": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaPackets": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaSessions": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaDropped": {
-        "type": "long",
-        "index": "no"
-      },
-      "monitoring": {
-        "type": "long",
-        "index": "no"
-      },
-      "memory": {
-        "type": "long",
-        "index": "no"
-      },
-      "cpu": {
-        "type": "integer",
-        "index": "no"
-      },
-      "diskQueue": {
-        "type": "long",
-        "index": "no"
       }
     }
   }
@@ -533,7 +471,7 @@ sub fieldsCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -892,7 +830,7 @@ sub queriesCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -1717,7 +1655,7 @@ sub usersCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -2379,7 +2317,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
-    } elsif ($main::versionNumber <= 28) {
+    } elsif ($main::versionNumber <= 29) {
         sessionsUpdate();
     } else {
         print "db.pl is hosed\n";

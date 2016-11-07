@@ -88,6 +88,7 @@ uint64_t connectionsSet[2048];
 #define BIT_CLR(bit, bits) bits[bit/64] &= ~(1 << (bit % 64))
 
 struct molochhttpserver_t {
+    uint64_t              dropped;
     char                **names;
     int                   namesCnt;
     int                   namesPos;
@@ -560,6 +561,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     // Are we overloaded
     if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
         LOG("ERROR - Dropping request %.*s of size %d queue %d is too big", key_len, key, data_len, server->outstanding);
+        server->dropped++;
 
         if (data) {
             MOLOCH_SIZE_FREE(buffer, data);
@@ -686,6 +688,12 @@ int moloch_http_queue_length(void *serverV)
 {
     MolochHttpServer_t        *server = serverV;
     return server?server->outstanding:0;
+}
+/******************************************************************************/
+uint64_t moloch_http_dropped_count(void *serverV)
+{
+    MolochHttpServer_t        *server = serverV;
+    return server?server->dropped:0;
 }
 /******************************************************************************/
 void moloch_http_set_header_cb(void *serverV, MolochHttpHeader_cb cb)

@@ -735,6 +735,7 @@ unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mle
 #define moloch_http_free_buffer(b) MOLOCH_SIZE_FREE(buffer, b)
 void moloch_http_exit();
 int moloch_http_queue_length(void *server);
+uint64_t moloch_http_dropped_count(void *server);
 
 void *moloch_http_create_server(const char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress);
 void moloch_http_set_header_cb(void *server, MolochHttpHeader_cb cb);

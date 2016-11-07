@@ -1517,7 +1517,7 @@ app.get('/stats.json', function(req, res) {
              "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
              "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
              "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
-             "deltaFragsDropped", "deltaOverloadDropped"
+             "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
             ].forEach(function(key) {
               fields[key] = fields[key] || 0;
             });
@@ -1529,6 +1529,7 @@ app.get('/stats.json', function(req, res) {
             fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
             fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
             fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
+            fields.deltaESDroppedPerSec       = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
             fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
             results.results.push(fields);
           }
@@ -1590,6 +1591,7 @@ app.get('/dstats.json', function(req, res) {
     deltaDroppedPerSec: {fields: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped[0] * 1000.0/item.deltaMS[0]);}},
     deltaFragsDroppedPerSec: {fields: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped[0] * 1000.0/item.deltaMS[0]);}},
     deltaOverloadDroppedPerSec: {fields: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped[0] * 1000.0/item.deltaMS[0]);}},
+    deltaESDroppedPerSec: {fields: ["deltaESDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaESDropped[0] * 1000.0/item.deltaMS[0]);}},
     deltaTotalDroppedPerSec: {fields: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped[0] + item.deltaOverloadDropped[0]) * 1000.0/item.deltaMS[0]);}},
     cpu: {fields: ["cpu"], func: function (item) {return item.cpu[0] * .01;}}
   };

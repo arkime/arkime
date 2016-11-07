@@ -26,7 +26,7 @@
 #include "patricia.h"
 #include "GeoIP.h"
 
-#define MOLOCH_MIN_DB_VERSION 28
+#define MOLOCH_MIN_DB_VERSION 29
 
 extern uint64_t         totalPackets;
 extern uint64_t         totalBytes;
@@ -1192,6 +1192,7 @@ void moloch_db_update_stats(int n)
     static uint64_t       lastDropped[NUMBER_OF_STATS];
     static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
     static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
+    static uint64_t       lastESDropped[NUMBER_OF_STATS];
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
     static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
@@ -1211,8 +1212,9 @@ void moloch_db_update_stats(int n)
     }
 
     uint64_t overloadDropped = moloch_packet_dropped_overload();
-    uint64_t totalDropped = moloch_packet_dropped_packets();
-    uint64_t fragsDropped = moloch_packet_dropped_frags();
+    uint64_t totalDropped    = moloch_packet_dropped_packets();
+    uint64_t fragsDropped    = moloch_packet_dropped_frags();
+    uint64_t esDropped       = moloch_http_dropped_count(esServer);
 
     for (i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
@@ -1276,6 +1278,7 @@ void moloch_db_update_stats(int n)
         "\"deltaDropped\": %" PRIu64 ", "
         "\"deltaFragsDropped\": %" PRIu64 ", "
         "\"deltaOverloadDropped\": %" PRIu64 ", "
+        "\"deltaESDropped\": %" PRIu64 ", "
         "\"deltaMS\": %" PRIu64
         "}",
         VERSION,
@@ -1309,6 +1312,7 @@ void moloch_db_update_stats(int n)
         (totalDropped - lastDropped[n]),
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
+        (esDropped - lastESDropped[n]),
         diffms);
 
     lastTime[n]            = currentTime;
@@ -1318,6 +1322,7 @@ void moloch_db_update_stats(int n)
     lastDropped[n]         = totalDropped;
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
+    lastESDropped[n]       = esDropped;
     lastUsage[n]           = usage;
 
     if (n == 0) {
