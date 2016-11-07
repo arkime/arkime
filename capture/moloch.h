@@ -636,6 +636,7 @@ void moloch_quit();
  */
 void moloch_config_init();
 void moloch_config_load_local_ips();
+void moloch_config_load_packet_ips();
 void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos);
 void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
 void moloch_config_exit();
@@ -735,6 +736,7 @@ unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mle
 #define moloch_http_free_buffer(b) MOLOCH_SIZE_FREE(buffer, b)
 void moloch_http_exit();
 int moloch_http_queue_length(void *server);
+uint64_t moloch_http_dropped_count(void *server);
 
 void *moloch_http_create_server(const char *hostnames, int defaultPort, int maxConns, int maxOutstandingRequests, int compress);
 void moloch_http_set_header_cb(void *server, MolochHttpHeader_cb cb);
@@ -812,6 +814,7 @@ void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
 void     moloch_packet(MolochPacket_t * const packet);
 void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);
+void     moloch_packet_add_packet_ip(char *ip, int mode);
 
 void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
 void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);

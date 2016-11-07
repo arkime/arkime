@@ -16,6 +16,7 @@
  */
 
 #include "moloch.h"
+#include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
 
@@ -44,6 +45,8 @@ LOCAL int                    greIpField;
 LOCAL uint64_t               droppedFrags;
 
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
+
+LOCAL patricia_tree_t       *ipTree = 0;
 
 /******************************************************************************/
 extern MolochSessionHead_t   tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
@@ -1006,6 +1009,21 @@ int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet
 #endif
         return 1;
     }
+    if (ipTree) {
+        prefix_t prefix;
+        patricia_node_t *node;
+
+        prefix.family = AF_INET;
+        prefix.bitlen = 32;
+
+        prefix.add.sin= ip4->ip_src;
+        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+            return 1;
+
+        prefix.add.sin= ip4->ip_dst;
+        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+            return 1;
+    }
 
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -1436,6 +1454,20 @@ uint64_t moloch_packet_dropped_overload()
     return count;
 }
 /******************************************************************************/
+void moloch_packet_add_packet_ip(char *ipstr, int mode)
+{
+    patricia_node_t *node;
+    if (!ipTree) {
+        ipTree = New_Patricia(128);
+    }
+    node = make_and_lookup(ipTree, ipstr);
+    node->data = (void *)(long)mode;
+}
+/******************************************************************************/
 void moloch_packet_exit()
 {
+    if (ipTree) {
+        Destroy_Patricia(ipTree, NULL);
+        ipTree = 0;
+    }
 }

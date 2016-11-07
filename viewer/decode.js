@@ -525,7 +525,7 @@ ItemHTTPStream.onHeadersComplete = function(major, minor, headers, method, url) 
   }
   this.headerInfo = info;
   if (url)
-    this.httpstream.bodyName = url.split("/").pop();
+    this.httpstream.bodyName = url.split(/[\/?=]/).pop();
 };
 
 ItemHTTPStream.prototype._shouldProcess = function (item) {
