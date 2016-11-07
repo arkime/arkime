@@ -597,6 +597,7 @@ int main(int argc, char **argv)
     moloch_db_init();
     moloch_packet_init();
     moloch_config_load_local_ips();
+    moloch_config_load_packet_ips();
     moloch_yara_init();
     moloch_parsers_init();
     moloch_session_init();

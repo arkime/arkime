@@ -636,6 +636,7 @@ void moloch_quit();
  */
 void moloch_config_init();
 void moloch_config_load_local_ips();
+void moloch_config_load_packet_ips();
 void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos);
 void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
 void moloch_config_exit();
@@ -813,6 +814,7 @@ void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
 void     moloch_packet(MolochPacket_t * const packet);
 void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);
+void     moloch_packet_add_packet_ip(char *ip, int mode);
 
 void     moloch_packet_batch_init(MolochPacketBatch_t *batch);
 void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
