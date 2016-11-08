@@ -38,4 +38,18 @@ session {
     }
   }
 
+  /* table column headers -------------------- */
+  .moloch-col-header {
+    font-size   : 1.4rem;
+    font-weight : 500;
+
+    &.active { color: $color-purple-dark; }
+  }
+
+  /* column visibility menu ------------------ */
+  .col-vis-menu {
+    max-height: 300px;
+    overflow  : auto;
+  }
+
 }

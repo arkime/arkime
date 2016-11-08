@@ -1,9 +1,8 @@
 'use strict';
 
 
-require('./session/tests/session.component.test');
-require('./session/tests/colheader.component.test');
 require('./session/tests/session.service.test');
+require('./session/tests/session.list.component.test');
 require('./session/tests/session.detail.component.test');
 require('./session/tests/session.graph.component.test');
 require('./session/tests/session.map.component.test');
