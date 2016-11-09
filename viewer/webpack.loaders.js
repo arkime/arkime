@@ -22,6 +22,10 @@ module.exports = {
         test: '\.html$/',
         loader: 'html'
       },
+      { // json loader
+        test: '\.json$/',
+        loader: 'json'
+      },
       { // font loader for bootstrap
         // http://stackoverflow.com/questions/34840653/cannot-make-bootstrap-work-with-webpack
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9]+)?$/,

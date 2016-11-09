@@ -54,13 +54,24 @@
             params.date = query.date;
           }
 
+          var i, len, item;
           // server takes one param (order)
           if (query.sorts && query.sorts.length) {
             params.order = '';
-            for (var i = 0, len = query.sorts.length; i < len; ++i) {
-              var item = query.sorts[i];
+            for (i = 0, len = query.sorts.length; i < len; ++i) {
+              item = query.sorts[i];
               params.order += item[0] + ':' + item[1];
               if (i < len - 1) { params.order += ','; }
+            }
+          }
+
+          // server takes one param (fields)
+          if (query.fields && query.fields.length) {
+            params.fields = '';
+            for (i = 0, len = query.fields.length; i < len; ++i) {
+              item = query.fields[i];
+              params.fields += item;
+              if (i < len - 1) { params.fields += ','; }
             }
           }
         }

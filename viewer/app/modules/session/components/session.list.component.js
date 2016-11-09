@@ -14,6 +14,8 @@
     visibleHeaders: ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info']
   };
 
+  var customCols = require('json!./custom.columns.json');
+
   /**
    * @class SessionListController
    * @classdesc Interacts with session list
@@ -69,10 +71,22 @@
           this.FieldService.get()
             .then((result) => {
               this.fields = result;
-              // info column is special (see session.info)
-              // add info to the fields so user can show/hide info column
-              this.fields['info'] = { dbField:'info', friendlyName:'Info' };
+
+              // add custom columns to the visible columns list and table
+              for (var key in customCols) {
+                this.fields[key] = customCols[key];
+                var children = this.fields[key].children;
+                // expand all the children
+                for (var f in children) {
+                  // (replace fieldId with field object)
+                  children[f] = this.getField(children[f]);
+                }
+              }
+
               this.mapHeadersToFields();
+
+              // IMPORTANT: kicks off the inital search query
+              this.getData();
             })
             .catch((error) => {
               this.error = error;
@@ -97,7 +111,7 @@
 
       // watch for search expression and date range changes
       // (from search.component)
-      // IMPORTANT: this kicks off the inital search query
+      var initalized;
       this.$scope.$on('change:search', (event, args) => {
         // either startTime && stopTime || date
         if (args.startTime && args.stopTime) {
@@ -115,6 +129,8 @@
         // reset the user to the first page, because we are issuing a new query
         // and there may only be 1 page of results
         _query.start = this.query.start = 0;
+
+        if (!initalized) { initalized = true; return; }
 
         this.getData();
       });
@@ -143,6 +159,20 @@
       this.error    = false;
 
       this.stickySessions = []; // clear sticky sessions
+      this.query.fields   = []; // clear fields to query for
+      // set the fields to retrieve from the server for each session
+      if (this.headers) {
+        for (var i = 0; i < this.headers.length; ++i) {
+          var field = this.headers[i];
+          if (field.children) {
+            for (var j = 0; j < field.children.length; ++j) {
+              this.query.fields.push(field.children[j].dbField);
+            }
+          } else {
+            this.query.fields.push(field.dbField);
+          }
+        }
+      }
 
       this.SessionService.get(this.query)
         .then((response) => {
@@ -182,15 +212,27 @@
       this.headers = [];
       for (var i = 0, len = this.tableState.visibleHeaders.length; i < len; ++i) {
         var headerId = this.tableState.visibleHeaders[i];
-        for (var key in this.fields) {
-          if (this.fields.hasOwnProperty(key)) {
-            var item = this.fields[key];
-            if (item.dbField === headerId) {
-              this.headers.push(item);
-            }
+        var field = this.getField(headerId);
+        if (field) { this.headers.push(field); }
+      }
+    }
+
+    /**
+     * Finds a field object given its id
+     * @param {string} fieldId  The unique id of the field
+     * @return {Object} field   The field object
+     */
+    getField(fieldId) {
+      for (var key in this.fields) {
+        if (this.fields.hasOwnProperty(key)) {
+          var item = this.fields[key];
+          if (item.dbField === fieldId) {
+            return item;
           }
         }
       }
+
+      return undefined;
     }
 
 
@@ -201,8 +243,6 @@
      * @param {string} id     The id of the column to sort by
      */
     sortBy(event, id) {
-      // if (!this.tableState.order) { return; } // it's an unsortable column
-
       if (this.isSorted(id) >= 0) {
         // the table is already sorted by this element
         if (!event.shiftKey) {
@@ -240,7 +280,7 @@
         });
 
       this.getData();
-    };
+    }
 
     /**
      * Determines if the table is being sorted by specified column
@@ -307,12 +347,14 @@
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
         this.tableState.visibleHeaders.splice(index,1);
+        this.mapHeadersToFields();
       } else { // it's hidden
         // add it to the visible headers list
         this.tableState.visibleHeaders.push(id);
+        this.mapHeadersToFields();
+        this.getData();
       }
 
-      this.mapHeadersToFields();
       this.SessionService.saveTableState(this.tableState)
         .then(() => { this.loading = false; })
         .catch((error) => {

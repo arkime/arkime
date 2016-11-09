@@ -1,0 +1,25 @@
+{
+  "info": {
+    "dbField": "info",
+    "friendlyName": "Info",
+    "children": ["us", "esrc", "edst", "esub", "efn", "dnsho", "tls.alt", "ircch"]
+  },
+  "src": {
+    "dbField": "src",
+    "friendlyName": "Src IP - Country",
+    "sortBy": "a1",
+    "children": ["a1", "g1"]
+  },
+  "dst": {
+    "dbField": "dst",
+    "friendlyName": "Dst IP - Country",
+    "sortBy": "a2",
+    "children": ["a2", "g2"]
+  },
+  "dbby": {
+    "dbField": "dbby",
+    "friendlyName": "Data Bytes / Bytes",
+    "sortBy": "by",
+    "children": ["db", "by"]
+  }
+}

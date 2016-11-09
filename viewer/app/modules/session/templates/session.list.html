@@ -47,11 +47,19 @@
               </div>
             </th>
             <th ng-repeat="header in $ctrl.headers" class="moloch-col-header"
-              ng-class="{'active':$ctrl.isSorted(header.dbField) >= 0}">
-              <div ng-if="!header.exp">{{::header.friendlyName}}</div>
-              <div class="cursor-pointer" ng-if="header.exp"
-                ng-click="$ctrl.sortBy($event, header.dbField)">
-                {{::header.friendlyName}}&nbsp;<span ng-if="$ctrl.isSorted(header.dbField) < 0" class="fa fa-sort text-muted-more"></span><span ng-if="$ctrl.isSorted(header.dbField) >= 0 && $ctrl.getSortOrder(header.dbField) === 'asc'" class="fa fa-sort-asc"></span><span ng-if="$ctrl.isSorted(header.dbField) >= 0 && $ctrl.getSortOrder(header.dbField) === 'desc'" class="fa fa-sort-desc"></span>
+              ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
+              <!-- unsortable column -->
+              <div ng-if="!header.exp && !header.sortBy">{{::header.friendlyName}}</div>
+              <!-- sortable column -->
+              <div class="cursor-pointer" ng-if="header.exp || header.sortBy"
+                ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)">
+                {{::header.friendlyName}}&nbsp;
+                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
+                  class="fa fa-sort text-muted-more"></span>
+                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                  class="fa fa-sort-asc"></span>
+                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                  class="fa fa-sort-desc"></span>
               </div>
             </th>
           </tr>
@@ -70,27 +78,8 @@
               <small>{{::session.pr | protocol}}</small>
             </td>
             <td ng-repeat="col in $ctrl.headers"
-              ng-class="{'active':$ctrl.isSorted(col.dbField) >= 0}">
-              <span ng-if="col.exp">
-                <div ng-switch on="col.type">
-                  <div ng-switch-when="seconds">
-                    {{::session[col.dbField] * 1000 | date:'yyyy/MM/dd'}}<br>
-                    {{::session[col.dbField] * 1000 | date:'HH:mm:ss'}}
-                  </div>
-                  <div ng-switch-when="ip">
-                    {{::session | extractIPString:'src'}}
-                  </div>
-                  <div ng-switch-when="integer">
-                    {{::session[col.dbField] | number:0}}
-                  </div>
-                  <div ng-switch-default>
-                    {{::session[col.dbField]}}
-                  </div>
-                </div>
-              </span>
-              <span ng-if="!col.exp">
-                <session-info session="session"></session-info>
-              </span>
+              ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
+              <session-field column="col" session="session"></session-field>
             </td>
           </tr>
           <tr ng-show="session.expanded" class="session-detail-row" ng-repeat-end>

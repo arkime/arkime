@@ -1,0 +1,42 @@
+<div>
+
+  <span ng-if="$ctrl.column.exp">
+    <div ng-switch on="$ctrl.column.type">
+      <div ng-switch-when="seconds">
+        {{::$ctrl.session[$ctrl.column.dbField] * 1000 | date:'yyyy/MM/dd'}}<br>
+        {{::$ctrl.session[$ctrl.column.dbField] * 1000 | date:'HH:mm:ss'}}
+      </div>
+      <div ng-switch-when="ip">
+        {{::$ctrl.session[$ctrl.column.dbField] | extractIPString}}
+      </div>
+      <div ng-switch-when="lotermfield">
+        <div ng-if="$ctrl.column.dbField === 'tipv61-term' || $ctrl.column.dbField === 'tipv62-term'">
+          {{::$ctrl.session[$ctrl.column.dbField] | extractIPv6String}}
+        </div>
+        <div ng-if="$ctrl.column.dbField !== 'tipv61-term' && $ctrl.column.dbField !== 'tipv62-term'">
+          {{::$ctrl.session[$ctrl.column.dbField]}}
+        </div>
+      </div>
+      <div ng-switch-when="integer">
+        {{::$ctrl.session[$ctrl.column.dbField] | number:0}}
+      </div>
+      <div ng-switch-default>
+        {{::$ctrl.session[$ctrl.column.dbField]}}
+      </div>
+    </div>
+  </span>
+
+  <!-- info column is super special -->
+  <span ng-if="!$ctrl.column.exp && $ctrl.column.dbField === 'info'">
+    <session-info session="$ctrl.session"></session-info>
+  </span>
+
+  <!-- column with multiple field values -->
+  <span ng-if="!$ctrl.column.exp && $ctrl.column.children">
+    <!-- recurse on child fields -->
+    <div ng-repeat="child in $ctrl.column.children">
+      <session-field column="child" session="$ctrl.session"></session-field>
+    </div>
+  </span>
+
+</div>

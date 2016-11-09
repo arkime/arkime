@@ -61,6 +61,7 @@
     "html-loader": "^0.4.3",
     "jasmine-core": "^2.4.1",
     "jquery": "^3.1.0",
+    "json-loader": "^0.5.4",
     "karma": "^1.2.0",
     "karma-jasmine": "^1.0.2",
     "karma-phantomjs-launcher": "^1.0.2",

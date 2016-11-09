@@ -35,49 +35,49 @@
 
     /**
      * Extract IP String filter
-     * Displays the ip or ip6 string, given the session
+     * Parses the ip
      *
      * @example
-     * '{{session | extractIPString}}'
+     * '{{session.a1 | extractIPString}}'
      */
     .filter('extractIPString', () => {
-      return (session, srcORdst) => {
-        var ip;
+      return (ip) => {
+        if (!ip) { return ''; }
 
-        if (!srcORdst) { srcORdst = 'src'; }
+        return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
+                '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
+      };
+    })
 
-        if (session['tipv61-term'] || session['tipv62-term']) {
-          var ip6;
+    /**
+     * Extract IPv6 String filter
+     * Parses the ipv6
+     *
+     * @example
+     * '{{session['tipv61-term'] | extractIPv6String}}'
+     */
+    .filter('extractIPv6String', () => {
+      return (ipv6) => {
+        if (!ipv6) { return ''; }
 
-          if (srcORdst === 'src') {
-            ip6 = session['tipv61-term'].toString();
-          } else {
-            ip6 = session['tipv62-term'].toString();
-          }
+        ipv6 = ipv6.toString();
 
-          ip = ip6.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");
-          [/(^|:)0:0:0:0:0:0:0:0($|:)/,
-           /(^|:)0:0:0:0:0:0:0($|:)/,
-           /(^|:)0:0:0:0:0:0($|:)/,
-           /(^|:)0:0:0:0:0($|:)/,
-           /(^|:)0:0:0:0($|:)/,
-           /(^|:)0:0:0($|:)/,
-           /(^|:)0:0($|:)/].every(function(re) {
-             if (ip6.match(re)) {
-               ip = ip6.replace(re, "::");
-               return false;
-             }
-             return true;
-           });
+        var ip = ipv6.match(/.{1,4}/g).join(':').replace(/:0{1,3}/g, ':').replace(/^0000:/, '0:');
+        [/(^|:)0:0:0:0:0:0:0:0($|:)/,
+         /(^|:)0:0:0:0:0:0:0($|:)/,
+         /(^|:)0:0:0:0:0:0($|:)/,
+         /(^|:)0:0:0:0:0($|:)/,
+         /(^|:)0:0:0:0($|:)/,
+         /(^|:)0:0:0($|:)/,
+         /(^|:)0:0($|:)/].every(function(re) {
+           if (ipv6.match(re)) {
+             ip = ipv6.replace(re, '::');
+             return false;
+           }
+           return true;
+         });
 
-          return ip;
-        } else {
-          if (srcORdst === 'src') { ip = session.a1; }
-          else                    { ip = session.a2; }
-
-          return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
-                  '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
-        }
+        return ip;
       };
     })
 
