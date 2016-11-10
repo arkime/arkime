@@ -31,8 +31,8 @@
     <session-info session="$ctrl.session"></session-info>
   </span>
 
-  <!-- column with multiple field values -->
-  <span ng-if="!$ctrl.column.exp && $ctrl.column.children">
+  <!-- special column (with multiple field values) -->
+  <span ng-if="!$ctrl.column.exp && $ctrl.column.children && $ctrl.column.dbField !== 'info'">
     <!-- recurse on child fields -->
     <div ng-repeat="child in $ctrl.column.children">
       <session-field column="child" session="$ctrl.session"></session-field>

@@ -55,17 +55,26 @@
     </a>
   </div>
 
-  <div ng-if="$ctrl.session.tls"
+  <div ng-if="$ctrl.session.tls" style="word-break:break-all;"
     ng-repeat="tls in $ctrl.session.tls">
     <span ng-repeat="value in ::tls.sCn">
       {{::value}}<span ng-if="!$last">,</span>
     </span>
     <span ng-if="tls.alt">
-      [
-      <span ng-repeat="value in tls.alt">
+      <div ng-repeat="value in tls.alt | limitTo:$ctrl.limit track by $index">
+        <span ng-if="$first">[</span>
         {{::value}}<span ng-if="!$last">,</span>
-      </span>
-      ]<br>
+        <span ng-if="$last">
+          <a class="cursor-pointer"
+            style="text-decoration:none;word-break:break-word;"
+            ng-if="tls.alt.length > $ctrl.initialLimit"
+            ng-click="$ctrl.toggleShowAll()">
+            <span ng-if="!$ctrl.showAll">more...</span>
+            <span ng-if="$ctrl.showAll">...less</span>
+          </a>
+          ]
+        </span>
+      </div>
     </span>
   </div>
 

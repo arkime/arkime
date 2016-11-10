@@ -159,7 +159,8 @@
       this.error    = false;
 
       this.stickySessions = []; // clear sticky sessions
-      this.query.fields   = []; // clear fields to query for
+      // clear fields to query for but always include protocols field
+      this.query.fields   = ['pr'];
       // set the fields to retrieve from the server for each session
       if (this.headers) {
         for (var i = 0; i < this.headers.length; ++i) {
@@ -173,6 +174,7 @@
           }
         }
       }
+      this.query.fields.push('pr');
 
       this.SessionService.get(this.query)
         .then((response) => {
@@ -214,6 +216,7 @@
         var headerId = this.tableState.visibleHeaders[i];
         var field = this.getField(headerId);
         if (field) { this.headers.push(field); }
+        else { this.tableState.visibleHeaders.splice(i, 1); }
       }
     }
 

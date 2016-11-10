@@ -31,17 +31,27 @@
         <thead>
           <tr>
             <th width="6%">
-              <div class="btn-group" uib-dropdown is-open="$ctrl.isopen">
-                <button id="single-button" type="button" class="btn btn-purple"
-                  uib-dropdown-toggle>
+              <div class="btn-group" uib-dropdown is-open="$ctrl.isopen"
+                dropdown-append-to-body="true" auto-close="outsideClick">
+                <button id="visibility-button" type="button" class="btn btn-purple"
+                  uib-dropdown-toggle tooltip-placement="top-left"
+                  uib-tooltip="Column Visibility" tooltip-append-to-body="true">
                   <span class="fa fa-th"></span>
                 </button>
                 <ul class="dropdown-menu col-vis-menu" uib-dropdown-menu role="menu"
-                  aria-labelledby="single-button">
-                  <li ng-repeat="(key,val) in $ctrl.fields"
+                  aria-labelledby="visibility-button">
+                  <input type="text" ng-if="$ctrl.isopen"
+                    focus-input="true" class="form-control input-sm dropdown-typehead"
+                    ng-model="$ctrl.colQuery" placeholder="Search for columns">
+                  <li ng-repeat="(key,val) in $ctrl.filteredFields = ($ctrl.fields | fieldFilter:$ctrl.colQuery)"
                     ng-click="$ctrl.toggleVisibility(val.dbField)"
-                    ng-class="{'active':$ctrl.isVisible(val.dbField) >= 0}">
-                    <a href>{{::val.friendlyName}}</a>
+                    ng-class="{'active':$ctrl.isVisible(val.dbField) >= 0}"
+                    uib-tooltip="{{::val.help}}" tooltip-placement="right"
+                    tooltip-append-to-body="true">
+                    <a href>{{::val.friendlyName}} <small>({{::val.group}})</small></a>
+                  </li>
+                  <li ng-hide="$ctrl.filteredFields.length">
+                    <a>No results</a>
                   </li>
                 </ul>
               </div>
@@ -83,7 +93,7 @@
             </td>
           </tr>
           <tr ng-show="session.expanded" class="session-detail-row" ng-repeat-end>
-            <td colspan="11">
+            <td colspan="{{$ctrl.headers.length + 1}}">
               <span ng-if="session.expanded">
                 <session-detail session="session">
                 </session-detail>

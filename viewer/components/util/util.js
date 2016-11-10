@@ -118,6 +118,29 @@
       };
     })
 
+
+    /**
+     * Field filter
+     * Displays fields with a friendlyName that matches the search input
+     *
+     * @example
+     * '(key,val) in $ctrl.fields | fieldFilter:searchInput'
+     */
+    .filter('fieldFilter', function () {
+      return function (items, search) {
+        var results = [];
+
+        angular.forEach(items, function (value, key) {
+          if (search) { search = search.toLowerCase(); }
+          var str     = value.friendlyName.toLowerCase();
+          var match   = str.match(search);
+          if (match) { results.push(value); }
+        });
+
+        return results;
+      };
+    })
+
     /**
      * Convert To Number Directive
      * Parses strings to integers

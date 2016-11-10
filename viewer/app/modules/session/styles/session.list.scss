@@ -46,10 +46,14 @@ session {
     &.active { color: $color-purple-dark; }
   }
 
-  /* column visibility menu ------------------ */
-  .col-vis-menu {
-    max-height: 300px;
-    overflow  : auto;
-  }
+}
 
+/* column visibility menu ------------------ */
+.col-vis-menu {
+  max-height: 300px;
+  overflow  : auto;
+
+  .dropdown-typehead {
+    margin-top: -5px;
+  }
 }
