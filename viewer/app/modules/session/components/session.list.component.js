@@ -77,13 +77,27 @@
                 this.fields[key] = customCols[key];
                 var children = this.fields[key].children;
                 // expand all the children
-                for (var f in children) {
+                for (var c in children) {
                   // (replace fieldId with field object)
-                  children[f] = this.getField(children[f]);
+                  children[c] = this.getField(children[c]);
                 }
               }
 
               this.mapHeadersToFields();
+
+              // convert fieldsmap to array (for ng-repeat with filter and group)
+              // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
+              var map = {}; // lookup table to save fields added to fieldsArray
+              this.fieldsArray = [];
+              for (var f in this.fields) {
+                if (this.fields.hasOwnProperty(f)) {
+                  var field = this.fields[f];
+                  if (!map.hasOwnProperty(field.exp)) {
+                    map[field.exp] = field;
+                    this.fieldsArray.push(field);
+                  }
+                }
+              }
 
               // IMPORTANT: kicks off the inital search query
               this.getData();
@@ -161,6 +175,7 @@
       this.stickySessions = []; // clear sticky sessions
       // clear fields to query for but always include protocols field
       this.query.fields   = ['pr'];
+      
       // set the fields to retrieve from the server for each session
       if (this.headers) {
         for (var i = 0; i < this.headers.length; ++i) {
@@ -174,7 +189,6 @@
           }
         }
       }
-      this.query.fields.push('pr');
 
       this.SessionService.get(this.query)
         .then((response) => {

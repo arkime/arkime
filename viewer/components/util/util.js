@@ -124,20 +124,33 @@
      * Displays fields with a friendlyName that matches the search input
      *
      * @example
-     * '(key,val) in $ctrl.fields | fieldFilter:searchInput'
+     * '(key,val) in $ctrl.fieldsArray | fieldFilter:searchInput'
      */
     .filter('fieldFilter', function () {
       return function (items, search) {
         var results = [];
 
-        angular.forEach(items, function (value, key) {
-          if (search) { search = search.toLowerCase(); }
-          var str     = value.friendlyName.toLowerCase();
+        for (var i = 0, len = items.length; i < len; ++i) {
+          var str     = items[i].friendlyName.toLowerCase();
           var match   = str.match(search);
-          if (match) { results.push(value); }
-        });
+          if (match) { results.push(items[i]); }
+        }
 
         return results;
+      };
+    })
+
+    /**
+     * Capitalize filter
+     * Capitalizes the first letter in a string
+     *
+     * @example
+     * '{{someString | capitalize}}'
+     */
+    .filter('capitalize', function() {
+      return function(input) {
+        return (!!input) ? input.charAt(0).toUpperCase() +
+                input.substr(1).toLowerCase() : '';
       };
     })
 

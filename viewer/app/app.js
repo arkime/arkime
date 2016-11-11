@@ -5,6 +5,7 @@
 
   require('./app.scss');
   require('angular-route');
+  require('angular-filter');
   require('angular-animate');
   require('angular-resource');
   require('angular-ui-bootstrap');
@@ -23,7 +24,7 @@
    */
   angular.module('moloch', [
     // angular dependencies
-    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
+    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate', 'angular.filter',
 
     // custom directives
     'directives.navbar', 'directives.footer',

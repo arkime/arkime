@@ -54,6 +54,42 @@ session {
   overflow  : auto;
 
   .dropdown-typehead {
-    margin-top: -5px;
+    margin: 0 6px;
+    width : 200px;
+  }
+
+  // display nested (grouped) dropdown list like normal dropdown list
+  div {
+    // dropdown list group header
+    .group-header {
+      padding       : 8px 0 2px 0;
+      margin-left   : 6px;
+      margin-right  : 6px;
+      font-weight   : 500;
+      color         : $color-gray-dark;
+      border-bottom : $color-gray-light 1px solid;
+    }
+
+    li {
+      &:hover { background-color: $color-gray-light; }
+
+      &.active {
+        background-color: #337ab7;
+
+        a { color: $color-white !important; }
+      }
+
+      a {
+        display     : block;
+        padding     : 2px 10px;
+        clear       : both;
+        font-weight : normal;
+        line-height : 1.42857143;
+        color       : darken($color-gray-dark, 10%);
+        white-space : nowrap;
+        cursor      : pointer;
+        text-decoration: none;
+      }
+    }
   }
 }

@@ -42,14 +42,17 @@
                   aria-labelledby="visibility-button">
                   <input type="text" ng-if="$ctrl.isopen"
                     focus-input="true" class="form-control input-sm dropdown-typehead"
-                    ng-model="$ctrl.colQuery" placeholder="Search for columns">
-                  <li ng-repeat="(key,val) in $ctrl.filteredFields = ($ctrl.fields | fieldFilter:$ctrl.colQuery)"
-                    ng-click="$ctrl.toggleVisibility(val.dbField)"
-                    ng-class="{'active':$ctrl.isVisible(val.dbField) >= 0}"
-                    uib-tooltip="{{::val.help}}" tooltip-placement="right"
-                    tooltip-append-to-body="true">
-                    <a href>{{::val.friendlyName}} <small>({{::val.group}})</small></a>
-                  </li>
+                    ng-model="$ctrl.colQuery" placeholder="Search for columns...">
+                  <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group'">
+                    <div class="group-header">{{::key | capitalize}}</div>
+                    <li ng-repeat="field in value"
+                      ng-click="$ctrl.toggleVisibility(field.dbField)"
+                      ng-class="{'active':$ctrl.isVisible(field.dbField) >= 0}"
+                      uib-tooltip="{{::field.help}}" tooltip-placement="right"
+                      tooltip-append-to-body="true">
+                      <a>{{::field.friendlyName}}</a>
+                    </li>
+                  </div>
                   <li ng-hide="$ctrl.filteredFields.length">
                     <a>No results</a>
                   </li>
