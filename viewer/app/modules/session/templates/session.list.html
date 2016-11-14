@@ -60,20 +60,23 @@
               </div>
             </th>
             <th ng-repeat="header in $ctrl.headers" class="moloch-col-header"
+              ng-drop="true" ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
               ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
-              <!-- unsortable column -->
-              <div ng-if="!header.exp && !header.sortBy">{{::header.friendlyName}}</div>
-              <!-- sortable column -->
-              <div class="cursor-pointer" ng-if="header.exp || header.sortBy"
-                ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)">
-                {{::header.friendlyName}}&nbsp;
-                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
-                  class="fa fa-sort text-muted-more"></span>
-                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                  class="fa fa-sort-asc"></span>
-                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                  class="fa fa-sort-desc"></span>
-              </div>
+              <span ng-drag="true" ng-drag-data="header" draggable="false"
+                class="fa fa-arrows drag-icon"></span>
+                <!-- unsortable column -->
+                <div ng-if="!header.exp && !header.sortBy">{{::header.friendlyName}}</div>
+                <!-- sortable column -->
+                <div class="cursor-pointer" ng-if="header.exp || header.sortBy"
+                  ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)">
+                  {{::header.friendlyName}}&nbsp;
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
+                    class="fa fa-sort text-muted-more"></span>
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                    class="fa fa-sort-asc"></span>
+                  <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                    class="fa fa-sort-desc"></span>
+                </div>
             </th>
           </tr>
         </thead>

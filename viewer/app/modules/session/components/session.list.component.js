@@ -345,8 +345,8 @@
     /* COLUMN VISIBILITY */
     /**
      * Determines a column's visibility given its id
-     * @param {string} id   The id of the column
-     * @return {bool} bool  True if the column is visible, false if not
+     * @param {string} id       The id of the column
+     * @return {number} number  The index of the visible header
      */
     isVisible(id) {
       return this.tableState.visibleHeaders.indexOf(id);
@@ -378,6 +378,30 @@
           this.error = error;
         });
     }
+
+
+
+
+
+    onDropComplete(index, obj, event) {
+      var target        = this.tableState.visibleHeaders[index];
+      var draggedIndex  = this.tableState.visibleHeaders.indexOf(obj.dbField);
+
+      this.tableState.visibleHeaders[index] = obj.dbField;
+      this.tableState.visibleHeaders[draggedIndex] = target;
+
+      this.mapHeadersToFields();
+      this.SessionService.saveTableState(this.tableState)
+         .then(() => { this.loading = false; })
+         .catch((error) => {
+           this.error = error;
+         });
+    }
+
+
+
+
+
 
   }
 

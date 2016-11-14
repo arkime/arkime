@@ -68,6 +68,7 @@
     "karma-phantomjs-launcher": "^1.0.2",
     "karma-spec-reporter": "0.0.26",
     "karma-webpack": "^1.8.0",
+    "ngdraggable": "^0.1.10",
     "node-sass": "^3.8.0",
     "sass-loader": "^4.0.0",
     "style-loader": "^0.13.1",

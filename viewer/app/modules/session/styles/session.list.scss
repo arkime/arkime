@@ -44,6 +44,17 @@ session {
     font-weight : 500;
 
     &.active { color: $color-purple-dark; }
+
+    &:hover {
+      .drag-icon {
+        visibility: visible;
+        position: absolute;
+
+      }
+    }
+    .drag-icon {
+      visibility: hidden;
+    }
   }
 
 }

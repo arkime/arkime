@@ -9,6 +9,7 @@
   require('angular-animate');
   require('angular-resource');
   require('angular-ui-bootstrap');
+  require('ngDraggable');
   require('bootstrap/js/tooltip');
   require('bootstrap/js/dropdown');
   require('../public/flot-0.7/jquery.flot.js');
@@ -25,6 +26,8 @@
   angular.module('moloch', [
     // angular dependencies
     'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate', 'angular.filter',
+
+    'ngDraggable',
 
     // custom directives
     'directives.navbar', 'directives.footer',
