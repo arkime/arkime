@@ -1,6 +1,7 @@
 {
   "info": {
     "dbField": "info",
+    "exp": "info",
     "group": "general",
     "friendlyName": "Info",
     "help": "Information",
@@ -8,6 +9,7 @@
   },
   "src": {
     "dbField": "src",
+    "exp": "src",
     "group": "general",
     "friendlyName": "Src IP - Country",
     "help": "Src IP & Country",
@@ -16,6 +18,7 @@
   },
   "dst": {
     "dbField": "dst",
+    "exp": "dst",
     "group": "general",
     "friendlyName": "Dst IP - Country",
     "help": "Dst IP & Country",
@@ -24,6 +27,7 @@
   },
   "dbby": {
     "dbField": "dbby",
+    "exp": "dbby",
     "group": "general",
     "friendlyName": "Data Bytes / Bytes",
     "help": "Data Bytes & Bytes",

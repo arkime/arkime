@@ -1,6 +1,8 @@
 session {
 
   /* sessions table -------------------------- */
+  .table-responsive { overflow: visible; }
+
   .table {
     table-layout: fixed;
     border-top  : $color-gray-light solid 1px;
@@ -42,18 +44,30 @@ session {
   .moloch-col-header {
     font-size   : 1.4rem;
     font-weight : 500;
+    position    : relative !important;
+    cursor      : pointer;
 
     &.active { color: $color-purple-dark; }
+  }
 
-    &:hover {
-      .drag-icon {
-        visibility: visible;
-        position: absolute;
+  /* draggable table column headers ---------- */
+  [ng-drag] {
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
 
-      }
+    &.dragging { opacity: 0.7; }
+
+    &.drag-over {
+      border-left : $color-gray-light solid 1px !important;
+      border-right: $color-gray-light solid 1px !important;
     }
-    .drag-icon {
-      visibility: hidden;
+  }
+
+  [ng-drop] {
+    &.drag-enter {
+      border-right: solid 1px $color-blue-light;
     }
   }
 

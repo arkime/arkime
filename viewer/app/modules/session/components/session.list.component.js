@@ -16,6 +16,8 @@
 
   var customCols = require('json!./custom.columns.json');
 
+  var holdingClick = false, timeout;
+
   /**
    * @class SessionListController
    * @classdesc Interacts with session list
@@ -26,6 +28,7 @@
     /**
      * Initialize global variables for this controller
      * @param $scope          Angular application model object
+     * @param $timeout        Angular's wrapper for window.setTimeout
      * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param $routeParams    Retrieve the current set of route parameters
      * @param $anchorScroll   Scrolls to the element related to given hash
@@ -34,10 +37,11 @@
      *
      * @ngInject
      */
-    constructor($scope, $location, $routeParams, $anchorScroll,
+    constructor($scope, $timeout, $location, $routeParams, $anchorScroll,
       SessionService, FieldService) {
 
       this.$scope         = $scope;
+      this.$timeout       = $timeout;
       this.$location      = $location;
       this.$routeParams   = $routeParams;
       this.$anchorScroll  = $anchorScroll;
@@ -260,6 +264,9 @@
      * @param {string} id     The id of the column to sort by
      */
     sortBy(event, id) {
+      // if the column click was a click and hold/drag, don't issue new query
+      if (holdingClick) { return; }
+
       if (this.isSorted(id) >= 0) {
         // the table is already sorted by this element
         if (!event.shiftKey) {
@@ -341,6 +348,55 @@
       }
     }
 
+    /**
+     * Sets holdingClick to true if the user holds the click for
+     * 300ms or longer. If the user clicks and holds/drags, the
+     * sortBy function returns immediately and does not issue query
+     */
+    mouseDown() {
+      holdingClick = false;
+      timeout = this.$timeout(() => {
+        holdingClick = true;
+      }, 300);
+    }
+
+    /**
+     * Sets holdingClick to false 500ms after mouse up
+     */
+    mouseUp() {
+      this.$timeout.cancel(timeout);
+      this.$timeout(() => {
+        holdingClick = false;
+      }, 500);
+    }
+
+
+    /* COLUMN REORDERING */
+    onDropComplete(newIndex, obj, event) {
+      // move it to the first position
+      if (newIndex < 0) { newIndex = 0; }
+
+      var draggedIndex = this.tableState.visibleHeaders.indexOf(obj.dbField);
+
+      // reorder the visible headers
+      if (newIndex >= this.tableState.visibleHeaders.length) {
+        var k = newIndex - this.tableState.visibleHeaders.length;
+        while ((k--) + 1) {
+          this.tableState.visibleHeaders.push(undefined);
+        }
+      }
+
+      this.tableState.visibleHeaders.splice(newIndex, 0,
+         this.tableState.visibleHeaders.splice(draggedIndex, 1)[0]);
+
+      this.mapHeadersToFields();
+      this.SessionService.saveTableState(this.tableState)
+         .then(() => { this.loading = false; })
+         .catch((error) => {
+           this.error = error;
+         });
+    }
+
 
     /* COLUMN VISIBILITY */
     /**
@@ -353,7 +409,7 @@
     }
 
     /**
-     * Toggles the visiblity of a column given its id
+     * Toggles the visibility of a column given its id
      * @param {string} id The id of the column to show/hide (toggle)
      */
     toggleVisibility(id) {
@@ -379,34 +435,10 @@
         });
     }
 
-
-
-
-
-    onDropComplete(index, obj, event) {
-      var target        = this.tableState.visibleHeaders[index];
-      var draggedIndex  = this.tableState.visibleHeaders.indexOf(obj.dbField);
-
-      this.tableState.visibleHeaders[index] = obj.dbField;
-      this.tableState.visibleHeaders[draggedIndex] = target;
-
-      this.mapHeadersToFields();
-      this.SessionService.saveTableState(this.tableState)
-         .then(() => { this.loading = false; })
-         .catch((error) => {
-           this.error = error;
-         });
-    }
-
-
-
-
-
-
   }
 
-  SessionListController.$inject = ['$scope', '$location', '$routeParams',
-    '$anchorScroll', 'SessionService', 'FieldService'];
+  SessionListController.$inject = ['$scope', '$timeout', '$location',
+    '$routeParams', '$anchorScroll', 'SessionService', 'FieldService'];
 
 
   angular.module('moloch')
