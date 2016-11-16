@@ -1,5 +1,6 @@
 {
   "info": {
+    "width": 250,
     "dbField": "info",
     "exp": "info",
     "group": "general",
@@ -8,6 +9,7 @@
     "children": ["us", "esrc", "edst", "esub", "efn", "dnsho", "tls.alt", "ircch"]
   },
   "src": {
+    "width": 100,
     "dbField": "src",
     "exp": "src",
     "group": "general",
@@ -17,6 +19,7 @@
     "children": ["a1", "g1"]
   },
   "dst": {
+    "width": 100,
     "dbField": "dst",
     "exp": "dst",
     "group": "general",
@@ -26,6 +29,7 @@
     "children": ["a2", "g2"]
   },
   "dbby": {
+    "width": 100,
     "dbField": "dbby",
     "exp": "dbby",
     "group": "general",

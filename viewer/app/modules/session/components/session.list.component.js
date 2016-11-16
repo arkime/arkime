@@ -454,9 +454,6 @@
       this.saveTableState(true);
     }
 
-
-    /* internal functions -------------------------------------------------- */
-
   }
 
   SessionListController.$inject = ['$scope', '$timeout', '$location',

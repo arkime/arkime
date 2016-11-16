@@ -67,7 +67,7 @@ session {
 
   [ng-drop] {
     &.drag-enter {
-      border-right: solid 1px $color-blue-light;
+      background-color: lighten($color-yellow-light, 34%) !important;
     }
   }
 

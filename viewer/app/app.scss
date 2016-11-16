@@ -262,7 +262,6 @@ body {
 // (horizontally and vertically) on the page
 // note: takes up half of the page
 .vertical-horizontal-center {
-  min-height      : 50%;
   min-height      : 50vh;
   display         : flex;
   align-items     : center;

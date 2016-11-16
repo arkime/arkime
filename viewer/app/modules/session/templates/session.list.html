@@ -70,7 +70,7 @@
               </div> <!-- /column visibility button -->
             </th>
             <!-- table headers -->
-            <th ng-repeat="header in $ctrl.headers"
+            <th ng-repeat="header in $ctrl.headers" width="{{::header.width}}"
               class="moloch-col-header" ng-drop="true"
               ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
               ng-drag="true" ng-drag-data="header" draggable="false"

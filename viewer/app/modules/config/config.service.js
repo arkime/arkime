@@ -46,9 +46,9 @@
 
     /**
      * Sets the browser page title (using $rootScope.title bound in app.jade)
-     * @param {string} page The title of the current app page
+     * @param {string} page       The title of the current app page
      * @param {string} expression The search expression
-     * @param {string} view The view being applied
+     * @param {string} view       The view being applied
      */
     setTitle(page, expression, view) {
 

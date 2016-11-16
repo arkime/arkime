@@ -18,7 +18,12 @@
         </div>
       </div>
       <div ng-switch-when="integer">
-        {{::$ctrl.session[$ctrl.column.dbField] | number:0}}
+        <span ng-if="$ctrl.column.category !== 'port'">
+          {{::$ctrl.session[$ctrl.column.dbField] | number:0}}
+        </span>
+        <span ng-if="$ctrl.column.category === 'port'">
+          {{::$ctrl.session[$ctrl.column.dbField]}}
+        </span>
       </div>
       <div ng-switch-default>
         {{::$ctrl.session[$ctrl.column.dbField]}}

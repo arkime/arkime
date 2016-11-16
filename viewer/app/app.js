@@ -25,9 +25,8 @@
    */
   angular.module('moloch', [
     // angular dependencies
-    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate', 'angular.filter',
-
-    'ngDraggable',
+    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
+    'angular.filter', 'ngDraggable',
 
     // custom directives
     'directives.navbar', 'directives.footer',
@@ -40,8 +39,8 @@
 
   .constant('molochVersion', require('../version'))
 
-  .config(['$routeProvider', '$locationProvider',
-      function($routeProvider, $locationProvider) {
+  .config(['$routeProvider',
+      function($routeProvider) {
 
         $routeProvider
           .when('/session', {
@@ -56,18 +55,18 @@
     ]
   )
 
-  .run(['$rootScope', 'ConfigService', 'HealthService',
-    function($rootScope, ConfigService, HealthService) {
+  .run(['$rootScope', 'ConfigService',
+    function($rootScope, ConfigService) {
 
     $rootScope.$on('issue:search', (event, args) => {
       // update title with expression
-      ConfigService.setTitle(null, args.expression);
+      ConfigService.setTitle('', args.expression, '');
     });
 
-    $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+    $rootScope.$on('$routeChangeSuccess', function (event, current) {
       if (current && current.$$route && current.$$route.title) {
         // update title with page
-        ConfigService.setTitle(current.$$route.title, null);
+        ConfigService.setTitle(current.$$route.title, '', '');
       } else { // fallback to 'Moloch'
         $rootScope.title = 'Moloch';
       }
