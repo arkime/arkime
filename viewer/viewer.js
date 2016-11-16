@@ -1904,6 +1904,76 @@ function graphMerge(req, query, aggregations) {
   return graph;
 }
 
+function fixTagsField(container, field, doneCb, offset) {
+  if (container[field] === undefined) {
+    return doneCb(null);
+  }
+  async.map(container[field], function (item, cb) {
+    Db.tagIdToName(item, function (name) {
+      cb(null, name.substring(offset));
+    });
+  },
+  function(err, results) {
+    container[field] = results;
+    doneCb(err);
+  });
+}
+
+function fixTagBucketsField(container, field, doneCb, offset) {
+  if (container[field] === undefined) {
+    return doneCb(null);
+  }
+  async.map(container[field].buckets, function (item, cb) {
+    Db.tagIdToName(item.key, function (name) {
+      item.key = name.substring(offset);
+      cb(null, item);
+    });
+  },
+  function(err, results) {
+    container[field].buckets = results;
+    doneCb(err);
+  });
+}
+
+function fixFields(fields, fixCb) {
+  async.parallel([
+    function(parallelCb) {
+      fixTagsField(fields, "ta", parallelCb, 0);
+    },
+    function(parallelCb) {
+      fixTagsField(fields, "hh", parallelCb, 12);
+    },
+    function(parallelCb) {
+      fixTagsField(fields, "hh1", parallelCb, 12);
+    },
+    function(parallelCb) {
+      fixTagsField(fields, "hh2", parallelCb, 12);
+    },
+    function(parallelCb) {
+      var files = [];
+      if (!fields.fs) {
+        fields.fs = [];
+        return parallelCb(null);
+      }
+      async.forEachSeries(fields.fs, function (item, cb) {
+        Db.fileIdToFile(fields.no, item, function (file) {
+          if (file && file.locked === 1) {
+            files.push(file.name);
+          }
+          cb(null);
+        });
+      },
+      function(err) {
+        fields.fs = files;
+        parallelCb(err);
+      });
+    }],
+    function(err, results) {
+      fixCb(err, fields);
+    }
+  );
+}
+
 app.get('/sessions.json', function(req, res) {
   var i;
 
@@ -1922,9 +1992,16 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
+    var addMissing = false;
     if (req.query.fields) {
       query._source = req.query.fields.split(",");
+      ["no", "a1", "p1", "a2", "p2"].forEach(function(item) {
+        if (query._source.indexOf(item) === -1) {
+          query._source.push(item);
+        }
+      });
     } else {
+      addMissing = true;
       query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
     }
 
@@ -1950,25 +2027,31 @@ app.get('/sessions.json', function(req, res) {
           map = mapMerge(result.aggregations);
 
           var results = {total: result.hits.total, results: []};
-          var hits = result.hits.hits;
-          for (var i = 0, ilen = hits.length; i < ilen; i++) {
-            if (!hits[i]) {
-              continue;
+          async.each(result.hits.hits, function (hit, hitCb) {
+            var fields = hit._source || hit.fields;
+            if (fields === undefined) {
+              return hitCb(null);
             }
-            var fields = hits[i]._source || hits[i].fields;
-            if (!fields) {
-              continue;
+            fields.index = hit._index;
+            fields.id = hit._id;
+
+            if (addMissing) {
+              ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
+                if (fields[item] === undefined) {
+                  fields[item] = -1;
+                }
+              });
+              results.results.push(fields);
+              return hitCb();
+            } else {
+              fixFields(fields, function() {
+                results.results.push(fields);
+                return hitCb();
+              });
             }
-            fields.index = hits[i]._index;
-            fields.id = hits[i]._id;
-            ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
-              if (fields[item] === undefined) {
-                fields[item] = -1;
-              }
-            });
-            results.results.push(fields);
-          }
-          sessionsCb(null, results);
+          }, function () {
+            sessionsCb(null, results);
+          });
         });
       },
       total: function (totalCb) {
@@ -2230,22 +2313,6 @@ app.get('/spiview.json', function(req, res) {
       health: Db.healthCache
     },
     function(err, results) {
-      function tags(container, field, doneCb, offset) {
-        if (!container[field]) {
-          return doneCb(null);
-        }
-        async.map(container[field].buckets, function (item, cb) {
-          Db.tagIdToName(item.key, function (name) {
-            item.key = name.substring(offset);
-            cb(null, item);
-          });
-        },
-        function(err, tagsResults) {
-          container[field].buckets = tagsResults;
-          doneCb(err);
-        });
-      }
-
       async.parallel([
         function(parallelCb) {
           if (!results.spi.fileand) {
@@ -2277,16 +2344,16 @@ app.get('/spiview.json', function(req, res) {
           });
         },
         function(parallelCb) {
-          tags(results.spi, "ta", parallelCb, 0);
+          fixTagBucketsField(results.spi, "ta", parallelCb, 0);
         },
         function(parallelCb) {
-          tags(results.spi, "hh", parallelCb, 12);
+          fixTagBucketsField(results.spi, "hh", parallelCb, 12);
         },
         function(parallelCb) {
-          tags(results.spi, "hh1", parallelCb, 12);
+          fixTagBucketsField(results.spi, "hh1", parallelCb, 12);
         },
         function(parallelCb) {
-          tags(results.spi, "hh2", parallelCb, 12);
+          fixTagBucketsField(results.spi, "hh2", parallelCb, 12);
         }],
         function() {
           r = {health: results.health,
@@ -2904,61 +2971,11 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
           return endCb(err, fields);
         }
 
-        function tags(container, field, doneCb, offset) {
-          if (!container[field]) {
-            return doneCb(null);
-          }
-          async.map(container[field], function (item, cb) {
-            Db.tagIdToName(item, function (name) {
-              cb(null, name.substring(offset));
-            });
-          },
-          function(err, results) {
-            container[field] = results;
-            doneCb(err);
-          });
+        if (!fields.ta) {
+          fields.ta = [];
         }
 
-        async.parallel([
-          function(parallelCb) {
-            if (!fields.ta) {
-              fields.ta = [];
-              return parallelCb(null);
-            }
-            tags(fields, "ta", parallelCb, 0);
-          },
-          function(parallelCb) {
-            tags(fields, "hh", parallelCb, 12);
-          },
-          function(parallelCb) {
-            tags(fields, "hh1", parallelCb, 12);
-          },
-          function(parallelCb) {
-            tags(fields, "hh2", parallelCb, 12);
-          },
-          function(parallelCb) {
-            var files = [];
-            if (!fields.fs) {
-              fields.fs = [];
-              return parallelCb(null);
-            }
-            async.forEachSeries(fields.fs, function (item, cb) {
-              Db.fileIdToFile(fields.no, item, function (file) {
-                if (file && file.locked === 1) {
-                  files.push(file.name);
-                }
-                cb(null);
-              });
-            },
-            function(err) {
-              fields.fs = files;
-              parallelCb(err);
-            });
-          }],
-          function(err, results) {
-            endCb(err, fields);
-          }
-        );
+        fixFields(fields, endCb);
       }, limit);
     }
   });
