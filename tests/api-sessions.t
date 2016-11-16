@@ -1,4 +1,4 @@
-use Test::More tests => 52;
+use Test::More tests => 53;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -113,3 +113,7 @@ tcp, 1386004317, 1386004317, 10.180.156.185, 53535, USA, 10.180.156.249, 1080, U
 'Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node
 tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, USA, 14, 2698, 1754, test
 ', "CSV Ids");
+
+# bigendian pcap fs tests
+    my $json = viewerGet("/sessions.json?date=-1&fields=fs&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fs}->[0] =~ /bigendian.pcap/, "correct fs");
