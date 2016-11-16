@@ -9,7 +9,7 @@
   require('angular-animate');
   require('angular-resource');
   require('angular-ui-bootstrap');
-  require('ngDraggable');
+  require('ngdraggable');
   require('bootstrap/js/tooltip');
   require('bootstrap/js/dropdown');
   require('../public/flot-0.7/jquery.flot.js');
