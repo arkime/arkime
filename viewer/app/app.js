@@ -21,7 +21,7 @@
 
 
   /**
-   * Moloch Angular Application Definiton
+   * Moloch Angular Application Definition
    */
   angular.module('moloch', [
     // angular dependencies

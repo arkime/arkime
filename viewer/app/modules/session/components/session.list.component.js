@@ -3,20 +3,20 @@
   'use strict';
 
   // local variable to save query state
-  var _query = {  // set query defaults:
+  let _query = {  // set query defaults:
     length: 100,  // page length
     start : 0,    // first item index
     facets: 1     // facets
   };
 
-  var defaultTableState = {
+  const defaultTableState = {
     order         : [['fp', 'asc']],
     visibleHeaders: ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info']
   };
 
-  var customCols = require('json!./custom.columns.json');
+  let customCols = require('json!./custom.columns.json');
 
-  var holdingClick = false, timeout;
+  let holdingClick = false, timeout;
 
   /**
    * @class SessionListController
@@ -54,65 +54,12 @@
 
     /* Callback when component is mounted and ready */
     $onInit() { // initialize scope variables
-      this.loading      = true;
-      this.currentPage  = 1;    // always start on the first page
+      this.loading        = true;   // the page starts out in loading state
+      this.currentPage    = 1;      // always start on the first page
+      this.query          = _query; // load saved query
+      this.stickySessions = [];     // array of open sessions
 
-      this.query = _query;      // load saved query
-
-      this.stickySessions = []; // array of open sessions
-
-      // get the state of the table (sort order and column visibility)
-      this.SessionService.getTableState()
-        .then((response) => {
-          this.tableState = response.data;
-          if (Object.keys(this.tableState).length === 0) {
-            this.tableState = defaultTableState;
-          }
-
-          // update the sort order for the session table query
-          this.query.sorts = this.tableState.order;
-
-          this.FieldService.get()
-            .then((result) => {
-              this.fields = result;
-
-              // add custom columns to the visible columns list and table
-              for (var key in customCols) {
-                this.fields[key] = customCols[key];
-                var children = this.fields[key].children;
-                // expand all the children
-                for (var c in children) {
-                  // (replace fieldId with field object)
-                  children[c] = this.getField(children[c]);
-                }
-              }
-
-              this.mapHeadersToFields();
-
-              // convert fieldsmap to array (for ng-repeat with filter and group)
-              // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
-              var map = {}; // lookup table to save fields added to fieldsArray
-              this.fieldsArray = [];
-              for (var f in this.fields) {
-                if (this.fields.hasOwnProperty(f)) {
-                  var field = this.fields[f];
-                  if (!map.hasOwnProperty(field.exp)) {
-                    map[field.exp] = field;
-                    this.fieldsArray.push(field);
-                  }
-                }
-              }
-
-              // IMPORTANT: kicks off the inital search query
-              this.getData();
-            })
-            .catch((error) => {
-              this.error = error;
-            });
-        })
-        .catch((error) => {
-          this.error = error;
-        });
+      this.getTableState(); // IMPORTANT: kicks off the initial search query!
 
 
       /* Listen! */
@@ -129,7 +76,7 @@
 
       // watch for search expression and date range changes
       // (from search.component)
-      var initalized;
+      let initialized;
       this.$scope.$on('change:search', (event, args) => {
         // either startTime && stopTime || date
         if (args.startTime && args.stopTime) {
@@ -148,7 +95,7 @@
         // and there may only be 1 page of results
         _query.start = this.query.start = 0;
 
-        if (!initalized) { initalized = true; return; }
+        if (!initialized) { initialized = true; return; }
 
         this.getData();
       });
@@ -167,7 +114,7 @@
     } /* /$onInit */
 
 
-    /* exposed functions --------------------------------------------------- */
+    /* data retrieve/setup/update ------------------------------------------ */
     /**
      * Makes a request to the Session Service to get the list of sessions
      * that match the query parameters
@@ -182,10 +129,10 @@
       
       // set the fields to retrieve from the server for each session
       if (this.headers) {
-        for (var i = 0; i < this.headers.length; ++i) {
-          var field = this.headers[i];
+        for (let i = 0; i < this.headers.length; ++i) {
+          let field = this.headers[i];
           if (field.children) {
-            for (var j = 0; j < field.children.length; ++j) {
+            for (let j = 0; j < field.children.length; ++j) {
               this.query.fields.push(field.children[j].dbField);
             }
           } else {
@@ -196,19 +143,127 @@
 
       this.SessionService.get(this.query)
         .then((response) => {
-          this.loading  = false;
-          this.error    = false;
-          this.sessions = response.data;
-
-          this.graphData  = response.data.graph;
+          this.error      = false;
+          this.loading    = false;
+          this.sessions   = response.data;
           this.mapData    = response.data.map;
+          this.graphData  = response.data.graph;
         })
         .catch((error) => {
-          this.loading  = false;
           this.error    = error;
+          this.loading  = false;
         });
     }
 
+    /**
+     * Gets the state of the table (sort order and column order/visibility)
+     */
+    getTableState() {
+      this.SessionService.getTableState()
+         .then((response) => {
+           this.tableState = response.data;
+           if (Object.keys(this.tableState).length === 0) {
+             this.tableState = defaultTableState;
+           }
+
+           // update the sort order for the session table query
+           this.query.sorts = this.tableState.order;
+
+           this.FieldService.get()
+              .then((result) => {
+                this.fields = result;
+
+                this.setupFields();
+
+                // IMPORTANT: kicks off the initial search query
+                this.getData();
+              }).catch((error) => { this.error = error; });
+         }).catch((error) => { this.error = error; });
+    }
+
+    /**
+     * Saves the table state
+     * @param {bool} stopLoading Whether to stop the loading state when promise returns
+     */
+    saveTableState(stopLoading) {
+      this.SessionService.saveTableState(this.tableState)
+         .then(() => {
+           if (stopLoading) { this.loading = false; }
+         })
+         .catch((error) =>  { this.error = error; });
+    }
+
+    /**
+     * Finds a field object given its id
+     * @param {string} fieldId  The unique id of the field
+     * @return {Object} field   The field object
+     */
+    getField(fieldId) {
+      for (let key in this.fields) {
+        if (this.fields.hasOwnProperty(key)) {
+          let item = this.fields[key];
+          if (item.dbField === fieldId) {
+            return item;
+          }
+        }
+      }
+
+      return undefined;
+    }
+
+    /**
+     * Maps visible column headers to their corresponding fields
+     */
+    mapHeadersToFields() {
+      this.headers = [];
+      for (let i = 0, len = this.tableState.visibleHeaders.length; i < len; ++i) {
+        let headerId  = this.tableState.visibleHeaders[i];
+        let field     = this.getField(headerId);
+
+        if (field) { this.headers.push(field); }
+        else { this.tableState.visibleHeaders.splice(i, 1); }
+      }
+    }
+
+    /**
+     * Sets up the fields for the column visibility typeahead and column headers
+     */
+    setupFields() {
+      // add custom columns to the visible columns list and table
+      for (let key in customCols) {
+        if (customCols.hasOwnProperty(key)) {
+          this.fields[key] = customCols[key];
+          let children = this.fields[key].children;
+          // expand all the children
+          for (let c in children) {
+            // (replace fieldId with field object)
+            if (children.hasOwnProperty(c)) {
+              children[c] = this.getField(children[c]);
+            }
+          }
+        }
+      }
+
+      this.mapHeadersToFields();
+
+      // convert fields map to array (for ng-repeat with filter and group)
+      // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
+      let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
+      this.fieldsArray = [];
+      for (let f in this.fields) {
+        if (this.fields.hasOwnProperty(f)) {
+          let field = this.fields[f];
+          if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
+            existingFieldsLookup[field.exp] = field;
+            this.fieldsArray.push(field);
+          }
+        }
+      }
+    }
+
+
+    /* exposed functions --------------------------------------------------- */
+    /* SESSION DETAIL */
     /**
      * Toggles the display of the session detail for each session
      * @param {Object} session The session to expand, collapse details
@@ -219,47 +274,28 @@
       if (session.expanded) {
         this.stickySessions.push(session);
       } else {
-        var index = this.stickySessions.indexOf(session);
+        let index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
     }
 
 
-    /**
-     * Maps visible column headers to their corresponding fields
-     */
-    mapHeadersToFields() {
-      this.headers = [];
-      for (var i = 0, len = this.tableState.visibleHeaders.length; i < len; ++i) {
-        var headerId = this.tableState.visibleHeaders[i];
-        var field = this.getField(headerId);
-        if (field) { this.headers.push(field); }
-        else { this.tableState.visibleHeaders.splice(i, 1); }
-      }
-    }
-
-    /**
-     * Finds a field object given its id
-     * @param {string} fieldId  The unique id of the field
-     * @return {Object} field   The field object
-     */
-    getField(fieldId) {
-      for (var key in this.fields) {
-        if (this.fields.hasOwnProperty(key)) {
-          var item = this.fields[key];
-          if (item.dbField === fieldId) {
-            return item;
-          }
-        }
-      }
-
-      return undefined;
-    }
-
-
     /* TABLE SORTING */
     /**
+     * Determines if the table is being sorted by specified column
+     * @param {string} id The id of the column
+     */
+    isSorted(id) {
+      for (let i = 0; i < this.tableState.order.length; ++i) {
+        if (this.tableState.order[i][0] === id) { return i; }
+      }
+
+      return -1;
+    }
+
+    /**
      * Sorts the sessions by the clicked column
+     * (if the user issues a click less than 300ms long)
      * @param {Object} event  The click event that triggered the sort
      * @param {string} id     The id of the column to sort by
      */
@@ -270,13 +306,13 @@
       if (this.isSorted(id) >= 0) {
         // the table is already sorted by this element
         if (!event.shiftKey) {
-          var item = this.toggleSortOrder(id);
+          let item = this.toggleSortOrder(id);
           this.tableState.order = [item];
         } else {
           // if it's a shift click - toggle the order between 3 states:
           // 'asc' -> 'desc' -> removed from sorts
           if (this.getSortOrder(id) === 'desc') {
-            for (var i = 0, len = this.tableState.order.length; i < len; ++i) {
+            for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
               if (this.tableState.order[i][0] === id) {
                 this.tableState.order.splice(i, 1);
                 break;
@@ -298,24 +334,9 @@
 
       this.query.sorts = this.tableState.order;
 
-      this.SessionService.saveTableState(this.tableState)
-        .catch((error) => {
-          this.error = error;
-        });
+      this.saveTableState();
 
       this.getData();
-    }
-
-    /**
-     * Determines if the table is being sorted by specified column
-     * @param {string} id The id of the column
-     */
-    isSorted(id) {
-      for (var i = 0; i < this.tableState.order.length; ++i) {
-        if (this.tableState.order[i][0] === id) { return i; }
-      }
-
-      return -1;
     }
 
     /**
@@ -324,7 +345,7 @@
      * @return {string} order The sort order of the column
      */
     getSortOrder(id) {
-      for (var i = 0, len = this.tableState.order.length; i < len; ++i) {
+      for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
         if (this.tableState.order[i][0] === id) {
           return this.tableState.order[i][1];
         }
@@ -338,8 +359,8 @@
      * @return {Array} item The sort item with updated order
      */
     toggleSortOrder(id) {
-      for (var i = 0, len = this.tableState.order.length; i < len; ++i) {
-        var item = this.tableState.order[i];
+      for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
+        let item = this.tableState.order[i];
         if (item[0] === id) {
           if (item[1] === 'asc') { item[1] = 'desc'; }
           else { item[1] = 'asc'; }
@@ -372,15 +393,20 @@
 
 
     /* COLUMN REORDERING */
-    onDropComplete(newIndex, obj, event) {
-      // move it to the first position
-      if (newIndex < 0) { newIndex = 0; }
+    /**
+     * Fires when column drop is completed
+     * @param {number} newIndex The index of the drop target
+     * @param {object} obj      The object dropped
+     */
+    onDropComplete(newIndex, obj) {
+      // set to the first position if dropped on far left column
+      if (!newIndex || newIndex < 0) { newIndex = 0; }
 
-      var draggedIndex = this.tableState.visibleHeaders.indexOf(obj.dbField);
+      let draggedIndex = this.tableState.visibleHeaders.indexOf(obj.dbField);
 
       // reorder the visible headers
       if (newIndex >= this.tableState.visibleHeaders.length) {
-        var k = newIndex - this.tableState.visibleHeaders.length;
+        let k = newIndex - this.tableState.visibleHeaders.length;
         while ((k--) + 1) {
           this.tableState.visibleHeaders.push(undefined);
         }
@@ -390,11 +416,8 @@
          this.tableState.visibleHeaders.splice(draggedIndex, 1)[0]);
 
       this.mapHeadersToFields();
-      this.SessionService.saveTableState(this.tableState)
-         .then(() => { this.loading = false; })
-         .catch((error) => {
-           this.error = error;
-         });
+
+      this.saveTableState();
     }
 
 
@@ -415,7 +438,7 @@
     toggleVisibility(id) {
       this.loading = true;
 
-      var index = this.isVisible(id);
+      let index = this.isVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
@@ -428,12 +451,11 @@
         this.getData();
       }
 
-      this.SessionService.saveTableState(this.tableState)
-        .then(() => { this.loading = false; })
-        .catch((error) => {
-          this.error = error;
-        });
+      this.saveTableState(true);
     }
+
+
+    /* internal functions -------------------------------------------------- */
 
   }
 
