@@ -102,7 +102,7 @@
       return this.$q((resolve, reject) => {
 
         var options = {
-          url   : 'tableState/sessions',
+          url   : 'tableState/sessionsNew',
           method: 'GET'
         };
 
@@ -125,7 +125,7 @@
       return this.$q((resolve, reject) => {
 
         var options = {
-          url   : 'tableState/sessions',
+          url   : 'tableState/sessionsNew',
           method: 'POST',
           data  : tableState
         };

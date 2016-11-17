@@ -30,7 +30,7 @@
         $httpBackend.when('GET', 'sessions.json?facets=1&length=100&order=fp:asc')
           .respond(200, {});
 
-        $httpBackend.when('GET', 'tableState/sessions')
+        $httpBackend.when('GET', 'tableState/sessionsNew')
           .respond(200, {});
 
         $httpBackend.when('GET', 'sessionid/node/sessionDetailNew')
@@ -69,7 +69,7 @@
 
       it('should send a GET request for tablestate', function() {
         SessionService.getColumnInfo();
-        $httpBackend.expectGET('tableState/sessions');
+        $httpBackend.expectGET('tableState/sessionsNew');
         $httpBackend.flush();
       });
 

@@ -48,7 +48,7 @@
     var scope, sessionComponent, $httpBackend;
     var sessionsEndpoint    = 'sessions.json';
     var defaultParameters   = '?facets=1&length=100&order=fp:asc';
-    var tableStateEndpoint  = 'tableState/sessions';
+    var tableStateEndpoint  = 'tableState/sessionsNew';
 
     // Initialize and a mock scope
     beforeEach(inject(function(
