@@ -692,16 +692,7 @@ function makeTitle(req, page) {
   return title;
 }
 
-app.get("/", function(req, res) {
-  var question = req.url.indexOf("?");
-  if (question === -1) {
-    res.redirect("/app#/session");
-  } else {
-    res.redirect("/app#/session" + req.url.substring(question));
-  }
-});
-
-app.get("/old", checkWebEnabled, function(req, res) {
+function sessionsOld (req, res) {
   var settings = decode.settings();
   var decodeItems = {};
   for (var key in settings) {
@@ -730,7 +721,22 @@ app.get("/old", checkWebEnabled, function(req, res) {
     isIndex: true,
     decodeItems: JSON.stringify(decodeItems)
   });
-});
+}
+
+if (Config.get("newUI", false)) {
+  app.get("/", function(req, res) {
+    var question = req.url.indexOf("?");
+    if (question === -1) {
+      res.redirect("/app#/session");
+    } else {
+      res.redirect("/app#/session" + req.url.substring(question));
+    }
+  });
+  app.get("/sessions", checkWebEnabled, sessionsOld);
+} else {
+  app.get("/", checkWebEnabled, sessionsOld);
+  app.get("/sessions", checkWebEnabled, sessionsOld);
+}
 
 app.get("/spiview", checkWebEnabled, function(req, res) {
   res.render('spiview.jade', {
