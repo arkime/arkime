@@ -1,6 +1,6 @@
 if (session.tls || session["tlsver-term"])
-  h4 TLS
-  dl
+  div.sessionDetailMeta.bold TLS
+  dl.sessionDetailMeta
     +arrayList(session, "tlsver-term", "Version", "tls.version")
     +arrayList(session, "tlscipher-term", "Cipher", "tls.cipher")
     +arrayList(session, "tlssrcid-term", "Src Session Id", "tls.sessionid.src")
@@ -10,44 +10,46 @@ if (session.tls || session["tlsver-term"])
         dt Certificate
         dd
           - if (cert.sn)
-            strong.medium Serial
-            +clickableValue('cert.serial', cert.sn)
+            | Serial: 
+            a.moloch-right-click(href='#', molochexpr='cert.serial') #{cert.sn}
           if (cert.hash)
             |  [
-            +clickableValue('cert.hash', cert.hash, true)
+            a.moloch-right-click(href='#', molochexpr='cert.hash') #{cert.hash}
             | ]
           - if (cert.notBefore)
-            strong.medium.margined-left-lg Not Before
-            span.hover-menu.margined-right-xxxlg
-              label.label.cursor-pointer
-                div.moloch-clickable.format-seconds(molochfield='cert.notbefore', molochvalue="#{cert.notBefore}") #{cert.notBefore}
+            |  Not Before: 
+            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notbefore", #{cert.notBefore});') #{cert.notBefore}
           - if (cert.notAfter)
-            strong.medium Not After
-            span.hover-menu.margined-right-xxxlg
-              label.label.cursor-pointer
-                div.moloch-clickable.format-seconds(molochfield='cert.notafter', molochvalue="#{cert.notAfter}") #{cert.notAfter}
+            |  Not After: 
+            a.formatSeconds(href='#', onclick='return addExpressionSeconds("cert.notafter", #{cert.notAfter});') #{cert.notAfter}
           - if (cert.iCn && Array.isArray(cert.iCn))
-            strong.medium Issuer Common
+            |  Issuer Common: 
             each cn,i in cert.iCn
-              +clickableValue('cert.issuer.cn', cn, true)
+              if (i > 0)
+                |, 
+              a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cn}
           - else if (cert.iCn)
-            strong.medium Issuer Common
-            +clickableValue('cert.issuer.cn', cert.iCn, true)
+            |  Issuer Common: 
+            a.moloch-right-click(href='#', molochexpr='cert.issuer.cn') #{cert.iCn}
           - if (cert.iOn)
-            strong.medium Issuer Org
-            +clickableValue('cert.issuer.on', cert.iOn, true)
+            |  Issuer Org: 
+            a.moloch-right-click(href='#', molochexpr='cert.issuer.on') #{cert.iOn}
           - if (cert.sCn && Array.isArray(cert.sCn))
-            strong.medium Subject Common
+            |  Subject Common: 
             each cn,i in cert.sCn
-              +clickableValue('cert.subject.cn', cn, true)
+              if (i > 0)
+                |, 
+              a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cn}
           - else if (cert.sCn)
-            strong.medium Subject Common
-            +clickableValue('cert.subject.cn', cert.sCn, true)
+            | Subject Common: 
+            a.moloch-right-click(href='#', molochexpr='cert.subject.cn') #{cert.sCn}
           - if (cert.sOn)
-            strong.medium Subject Org
-            +clickableValue('cert.subject.on', cert.sOn, true)
+            |  Subject Org: 
+            a.moloch-right-click(href='#', molochexpr='cert.subject.on') #{cert.sOn}
           if (cert.alt)
             |  [
             each alt,i in cert.alt
-              +clickableValue('cert.alt', alt, true)
+              if (i > 0)
+                |, 
+              a.moloch-right-click(href='#', molochexpr='cert.alt') #{alt}
             | ]

@@ -152,7 +152,7 @@
       return this.$q((resolve, reject) => {
 
         var options = {
-          url   : node + '/' + id + '/' + 'sessionDetail',
+          url   : node + '/' + id + '/' + 'sessionDetailNew',
           method: 'GET',
           params: params
         };

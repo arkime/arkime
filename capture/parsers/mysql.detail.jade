@@ -1,5 +1,5 @@
 if (session.mysql)
-  h4 mysql
-  dl
+  div.sessionDetailMeta.bold mysql
+  dl.sessionDetailMeta
     +stringList(session.mysql, "user-term", "Users", "mysql.user")
     +stringList(session.mysql, "ver-term", "Versions", "mysql.ver")

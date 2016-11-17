@@ -33,7 +33,7 @@
         $httpBackend.when('GET', 'tableState/sessions')
           .respond(200, {});
 
-        $httpBackend.when('GET', 'sessionid/node/sessionDetail')
+        $httpBackend.when('GET', 'sessionid/node/sessionDetailNew')
           .respond(200, '');
 
         $httpBackend.when('POST', 'addTags')
@@ -75,7 +75,7 @@
 
       it('should send a GET request for session detail', function() {
         SessionService.getDetail('node', 'sessionid', {});
-        $httpBackend.expectGET('sessionid/node/sessionDetail');
+        $httpBackend.expectGET('sessionid/node/sessionDetailNew');
         $httpBackend.flush();
       });
 

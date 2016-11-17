@@ -1,7 +1,6 @@
 if (session.radius)
-  h4 radius
-  dl
-    -console.log(session.radius)
+  div.sessionDetailMeta.bold radius
+  dl.sessionDetailMeta
     +arrayList(session.radius, "user-term", "User", "radius.user")
     +arrayList(session.radius, "mac-term", "Mac", "radius.mac")
     +ipArrayList(session.radius, "eip", "Endpoint IPs", "radius.endpoint-ip")

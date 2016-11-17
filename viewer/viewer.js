@@ -41,6 +41,7 @@ var Config         = require('./config.js'),
     HTTPParser     = process.binding('http_parser').HTTPParser,
     molochversion  = require('./version'),
     http           = require('http'),
+    pug            = require('pug'),
     jade           = require('jade'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
@@ -124,7 +125,7 @@ var compression = require('compression');
 
 app.enable("jsonp callback");
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 app.locals.molochversion =  molochversion.version;
 app.locals.isIndex = false;
 app.locals.basePath = Config.basePath();
@@ -358,37 +359,23 @@ function dot2value(obj, str) {
       return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
-function createSessionDetail() {
+function createSessionDetailOld() {
   var found = {};
-  var dirs;
+  var dirs = [];
 
-  dirs = Config.get("pluginsDir", "/data/moloch/plugins");
-  if (dirs) {
-    dirs.split(';').forEach(function(dir) {
-      try {
-        var files = fs.readdirSync(dir);
-        files.forEach(function(file) {
-          if (file.match(/\.detail\.jade$/i) && !found["plugin-" + file]) {
-            found[file] = "  include " + dir + "/" + file + "\n";
-          }
-        });
-      } catch (e) {}
-    });
-  }
+  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
+  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
 
-  dirs = Config.get("parsersDir", "/data/moloch/parsers");
-  if (dirs) {
-    dirs.split(';').forEach(function(dir) {
-      try {
-        var files = fs.readdirSync(dir);
-        files.forEach(function(file) {
-          if (file.match(/\.detail\.jade$/i) && !found["parser-" + file]) {
-            found[file] = "  include " + dir + "/" + file + "\n";
-          }
-        });
-      } catch (e) {}
-    });
-  }
+  dirs.forEach(function(dir) {
+    try {
+      var files = fs.readdirSync(dir);
+      files.forEach(function(file) {
+        if (file.match(/\.detail\.jade$/i) && !found[file]) {
+          found[file] = "  include " + dir + "/" + file + "\n";
+        }
+      });
+    } catch (e) {}
+  });
 
   var makers = internals.pluginEmitter.listeners("makeSessionDetail");
   async.each(makers, function(cb, nextCb) {
@@ -399,14 +386,68 @@ function createSessionDetail() {
       return nextCb();
     });
   }, function () {
-    internals.sessionDetail =    "include views/mixins\n" +
+    internals.sessionDetailOld =    "include views/mixins.jade\n" +
+                                    "div.sessionDetail(sessionid='#{session.id}')\n" +
+                                    "  include views/sessionDetail-standard.jade\n";
+    Object.keys(found).sort().forEach(function(k) {
+      internals.sessionDetailOld += found[k];
+    });
+    internals.sessionDetailOld +=   "  include views/sessionDetail-body.jade\n";
+    internals.sessionDetailOld +=   "include views/sessionDetail-footer.jade\n";
+  });
+}
+
+function createSessionDetailNew() {
+  var found = {};
+  var dirs = [];
+
+  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
+  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
+
+  dirs.forEach(function(dir) {
+    try {
+      var files = fs.readdirSync(dir);
+      // sort().reverse() so in this dir pug is processed before jade
+      files.sort().reverse().forEach(function(file) {
+        if (found[file]) {
+          return;
+        }
+        if (file.match(/\.detail\.jade$/i)) {
+          found[file] = fs.readFileSync(dir + "/" + file, 'utf8').replace(/^/mg, "  ") + "\n";
+        } else if (file.match(/\.detail\.pug$/i)) {
+          found[file] = "  include " + dir + "/" + file + "\n";
+        }
+      });
+    } catch (e) {}
+  });
+
+  var makers = internals.pluginEmitter.listeners("makeSessionDetail");
+  async.each(makers, function(cb, nextCb) {
+    cb(function (err, items) {
+      for (var k in items) {
+        found[k] = items[k].replace(/^/mg, "  ") + "\n";
+      }
+      return nextCb();
+    });
+  }, function () {
+    internals.sessionDetailNew = "include views/mixins.pug\n" +
                                  "div.sessionDetail(sessionid='#{session.id}')\n" +
                                  "  include views/sessionDetail-standard\n";
     Object.keys(found).sort().forEach(function(k) {
-      internals.sessionDetail += found[k];
+      internals.sessionDetailNew += found[k];
     });
-    internals.sessionDetail +=   "  include views/sessionDetail-body\n";
+    internals.sessionDetailNew +=   "  include views/sessionDetail-body\n";
+
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, "h4")
+                                                           .replace(/dl.sessionDetailMeta/g, "dl")
+                                                           .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
+                                                           ;
   });
+}
+
+function createSessionDetail() {
+  createSessionDetailOld();
+  createSessionDetailNew();
 }
 
 function createRightClicks() {
@@ -660,8 +701,39 @@ app.get("/", function(req, res) {
   }
 });
 
+app.get("/old", checkWebEnabled, function(req, res) {
+  var settings = decode.settings();
+  var decodeItems = {};
+  for (var key in settings) {
+    var setting = settings[key];
+    var obj = {name: setting.name || key};
+    if (setting.title || setting.fields) {
+      obj.items = {};
+      if (setting.title) {
+        obj.items.title = {name: setting.title, disabled: true};
+      }
+      obj.items[key + ":enabled"] = {name: "Enable", type: "checkbox"};
+      setting.fields.forEach(function(field) {
+        obj.items[key + ":" + field.key] = {name: field.name || field.key, type: field.type};
+      });
+      decodeItems[key] = obj;
+    } else {
+      obj.type = "checkbox";
+      decodeItems[key+":enabled"] = obj;
+    }
+  }
+
+  res.render('index.jade', {
+    user: req.user,
+    title: makeTitle(req, 'Sessions'),
+    titleLink: 'sessionsLink',
+    isIndex: true,
+    decodeItems: JSON.stringify(decodeItems)
+  });
+});
+
 app.get("/spiview", checkWebEnabled, function(req, res) {
-  res.render('spiview', {
+  res.render('spiview.jade', {
     user: req.user,
     title: makeTitle(req, 'SPI View'),
     titleLink: 'spiLink',
@@ -675,7 +747,7 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
 });
 
 app.get("/spigraph", checkWebEnabled, function(req, res) {
-  res.render('spigraph', {
+  res.render('spigraph.jade', {
     user: req.user,
     title: makeTitle(req, 'SPI Graph'),
     titleLink: 'spigraphLink',
@@ -684,7 +756,7 @@ app.get("/spigraph", checkWebEnabled, function(req, res) {
 });
 
 app.get("/connections", checkWebEnabled, function(req, res) {
-  res.render('connections', {
+  res.render('connections.jade', {
     user: req.user,
     title: makeTitle(req, 'Connections'),
     titleLink: 'connectionsLink',
@@ -693,7 +765,7 @@ app.get("/connections", checkWebEnabled, function(req, res) {
 });
 
 app.get("/upload", checkWebEnabled, function(req, res) {
-  res.render('upload', {
+  res.render('upload.jade', {
     user: req.user,
     title: makeTitle(req, 'Upload'),
     titleLink: 'uploadLink',
@@ -702,7 +774,7 @@ app.get("/upload", checkWebEnabled, function(req, res) {
 });
 
 app.get('/about', checkWebEnabled, function(req, res) {
-  res.render('about', {
+  res.render('about.jade', {
     user: req.user,
     title: makeTitle(req, 'About'),
     titleLink: 'aboutLink'
@@ -710,7 +782,7 @@ app.get('/about', checkWebEnabled, function(req, res) {
 });
 
 app.get('/files', checkWebEnabled, function(req, res) {
-  res.render('files', {
+  res.render('files.jade', {
     user: req.user,
     title: makeTitle(req, 'Files'),
     titleLink: 'filesLink'
@@ -718,7 +790,7 @@ app.get('/files', checkWebEnabled, function(req, res) {
 });
 
 app.get('/users', checkWebEnabled, function(req, res) {
-  res.render('users', {
+  res.render('users.jade', {
     user: req.user,
     title: makeTitle(req, 'Users'),
     titleLink: 'usersLink',
@@ -790,7 +862,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
       }
       actions = actions.sort();
 
-      res.render('settings', {
+      res.render('settings.jade', {
         user: req.user,
         suser: user,
         currentPassword: cp,
@@ -832,7 +904,7 @@ app.get('/stats', checkWebEnabled, function(req, res) {
       nodes.push(hit._id);
     });
     nodes.sort();
-    res.render('stats', {
+    res.render('stats.jade', {
       user: req.user,
       title: makeTitle(req, 'Stats'),
       titleLink: 'statsLink',
@@ -842,7 +914,7 @@ app.get('/stats', checkWebEnabled, function(req, res) {
 });
 
 app.get('/:nodeName/statsDetail', checkWebEnabled, function(req, res) {
-  res.render('statsDetail', {
+  res.render('statsDetail.jade', {
     user: req.user,
     nodeName: req.params.nodeName
   });
@@ -867,7 +939,7 @@ app.get('/style.css', function(req, res) {
 
 // angular app pages
 app.get('/app', checkWebEnabled, function(req, res) {
-  res.render('app');
+  res.render('app.pug');
 });
 
 // angular app bundles
@@ -3088,16 +3160,17 @@ function flattenObject1 (obj) {
 }
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
-  jade.render(internals.sessionDetail, {
-    filename: "sessionDetail",
-    user: req.user,
-    session: session,
-    data: incoming,
-    query: req.query,
-    basedir: "/",
-    reqFields: Config.headers("headers-http-request"),
-    resFields: Config.headers("headers-http-response"),
-    emailFields: Config.headers("headers-email")
+  
+  (req.isNewSessionDetail?pug:jade).render(req.isNewSessionDetail?internals.sessionDetailNew:internals.sessionDetailOld, {
+      filename: "sessionDetail",
+      user: req.user,
+      session: session,
+      data: incoming,
+      query: req.query,
+      basedir: "/",
+      reqFields: Config.headers("headers-http-request"),
+      resFields: Config.headers("headers-http-response"),
+      emailFields: Config.headers("headers-email")
   }, function(err, data) {
     if (err) {
       console.trace("ERROR - ", err);
@@ -3269,6 +3342,24 @@ function localSessionDetail(req, res) {
   },
   req.query.needimage?10000:400, 10);
 }
+
+app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
+  isLocalView(req.params.nodeName, function () {
+    noCache(req, res);
+    req.isNewSessionDetail = true;
+    localSessionDetail(req, res);
+  },
+  function () {
+    return proxyRequest(req, res, function (err) {
+      Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
+        var fields = session._source || session.fields;
+        fields._err = "Couldn't connect to remote viewer, only displaying SPI data";
+        localSessionDetailReturnFull(req, res, fields, []);
+      });
+    });
+  });
+
+});
 
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {
   isLocalView(req.params.nodeName, function () {
@@ -4967,7 +5058,7 @@ app.use(function(req,res) {
   res.status(404);
   // respond with html page
   if (req.accepts('html')) {
-    return res.render('404', {
+    return res.render('404.jade', {
       user: req.user,
       title: makeTitle(req, 'Error'),
       titleLink: 'errorLink'

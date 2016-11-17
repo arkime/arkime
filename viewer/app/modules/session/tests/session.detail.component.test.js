@@ -30,7 +30,7 @@
     beforeEach(angular.mock.module('moloch'));
 
     var scope, sessionDtlsComponent, $httpBackend, templateAsHtml;
-    var sessionDtlsEndpoint = 'node/sessionid/sessionDetail';
+    var sessionDtlsEndpoint = 'node/sessionid/sessionDetailNew';
     var defaultParameters   = '?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&ts=false';
     var configEndpoint      = 'molochRightClick';
     var fieldEndpoint       = 'fields';

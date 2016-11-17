@@ -1,6 +1,6 @@
 if (user.emailSearch && (session.esub || session.esrc || session.edst || session.eua || session.eid || session.emv || session.ect || session.efn || session.emd5 || session.eip))
-  h4 Email
-  dl(suffix="email")
+  div.sessionDetailMeta.bold Email
+  dl.sessionDetailMeta(suffix="email")
     +ipArrayListPre(session, "eip", "IPs", "email")
     +arrayList(session, 'eho', "Hosts", "host.email")
     +arrayList(session, 'ehh', "Headers", "email.hasheader")
