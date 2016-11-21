@@ -81,14 +81,19 @@
     describe('Extract IP String Filter ->', function() {
 
       it('should return the appropriate ip string', function() {
-        var session = { a1:3232235777 };
-        var result  = $filter('extractIPString')(session);
+        var ip = 3232235777;
+        var result  = $filter('extractIPString')(ip);
         expect(result).toEqual('192.168.1.1');
       });
 
+    });
+
+
+    describe('Extract IPv6 String Filter ->', function() {
+
       it('should return the appropriate ipv6 string', function() {
-        var session = { 'tipv61-term':'ff0200000000000000000001ff8295b5' };
-        var result  = $filter('extractIPString')(session);
+        var ipv6 = 'ff0200000000000000000001ff8295b5';
+        var result  = $filter('extractIPv6String')(ipv6);
         expect(result).toEqual('ff02:0:0:0:0:1:ff82:95b5');
       });
 

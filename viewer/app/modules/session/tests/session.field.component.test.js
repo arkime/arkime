@@ -30,18 +30,27 @@
     ]
   };
 
-  describe('Session Info Directive ->', function() {
+  var col = {
+    dbField     : 'fp',
+    exp         : 'starttime',
+    friendlyName: 'Start Time',
+    group       : 'general',
+    help        : 'Session Start Time',
+    type        : 'seconds'
+  };
+
+  describe('Session Field Directive ->', function() {
 
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var scope, sessionInfo, templateAsHtml;
+    var scope, sessionField, templateAsHtml;
 
     // Initialize and a mock scope
     beforeEach(inject(function($componentController, $rootScope, $compile) {
       scope = $rootScope.$new();
 
-      var htmlString = '<session-info session="session"></session-graph>';
+      var htmlString = '<session-field column="col" session="session"></session-field>';
 
       var element   = angular.element(htmlString);
       var template  = $compile(element)(scope);
@@ -50,23 +59,17 @@
 
       templateAsHtml = template.html();
 
-      sessionInfo = $componentController('sessionInfo', {}, { session:session });
+      sessionField = $componentController('sessionField', {}, {
+        column  : col,
+        session :session
+      });
     }));
 
     it('should render html with session data', function() {
-      expect(sessionInfo).toBeDefined();
+      expect(sessionField).toBeDefined();
       expect(templateAsHtml).toBeDefined();
-      expect(sessionInfo.session).toBeDefined();
-    });
-
-    it('should be able to show/hide more information', function() {
-      expect(sessionInfo.showAll).toBeFalsy();
-
-      sessionInfo.toggleShowAll();
-      expect(sessionInfo.showAll).toBeTruthy();
-
-      sessionInfo.toggleShowAll();
-      expect(sessionInfo.showAll).toBeFalsy();
+      expect(sessionField.column).toBeDefined();
+      expect(sessionField.session).toBeDefined();
     });
 
   });

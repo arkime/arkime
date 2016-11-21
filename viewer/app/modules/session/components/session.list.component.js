@@ -132,8 +132,12 @@
         for (let i = 0; i < this.headers.length; ++i) {
           let field = this.headers[i];
           if (field.children) {
+            console.log(field);
             for (let j = 0; j < field.children.length; ++j) {
-              this.query.fields.push(field.children[j].dbField);
+              console.log(field.children[j]);
+              if (field.children[j]) {
+                this.query.fields.push(field.children[j].dbField);
+              }
             }
           } else {
             this.query.fields.push(field.dbField);
@@ -221,7 +225,7 @@
         let field     = this.getField(headerId);
 
         if (field) { this.headers.push(field); }
-        else { this.tableState.visibleHeaders.splice(i, 1); }
+        // else { this.tableState.visibleHeaders.splice(i, 1); }
       }
     }
 

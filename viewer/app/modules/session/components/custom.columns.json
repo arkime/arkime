@@ -9,7 +9,7 @@
     "children": ["us", "esrc", "edst", "esub", "efn", "dnsho", "tls.alt", "ircch"]
   },
   "src": {
-    "width": 100,
+    "width": 140,
     "dbField": "src",
     "exp": "src",
     "group": "general",
@@ -19,7 +19,7 @@
     "children": ["a1", "g1"]
   },
   "dst": {
-    "width": 100,
+    "width": 140,
     "dbField": "dst",
     "exp": "dst",
     "group": "general",
