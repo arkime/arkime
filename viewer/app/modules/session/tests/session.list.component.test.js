@@ -4,16 +4,16 @@
 
   /* mock data ------------------------------- */
   // default session query
-  var query = {
+  let query = {
     length: 100,  // page length
     start : 0,    // first item index
     facets: 1,    // facets
     sorts : [ [ 'fp', 'asc' ] ],
-    fields: [ 'pr', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no' ]
+    fields: [ 'pr', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'us', 'esrc', 'edst', 'esub', 'efn', 'dnsho', 'tls.alt', 'ircch' ]
   };
 
   // sample session json
-  var sessionsJSON = {
+  let sessionsJSON = {
     recordsFiltered : 1,
     recordsTotal    : 100,
     data: [
@@ -41,7 +41,7 @@
     ]
   };
 
-  var fields = {
+  let fields = {
     'protocols': {
       dbField: 'prot-term',
       exp: 'protocols',
@@ -150,10 +150,10 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var scope, sessionComponent, $httpBackend;
-    var sessionsEndpoint    = 'sessions.json';
-    var defaultParameters   = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc';
-    var tableStateEndpoint  = 'tableState/sessionsNew';
+    let scope, sessionComponent, $httpBackend;
+    let sessionsEndpoint    = 'sessions.json';
+    let defaultParameters   = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc';
+    let tableStateEndpoint  = 'tableState/sessionsNew';
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -196,10 +196,9 @@
     afterEach(function() {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
-      sessionComponent.tableState = {};
     });
 
-    it('should exist, have dependencies, and fetch data', function() {
+    it('should exist and have dependencies', function() {
       expect(sessionComponent).toBeDefined();
       expect(sessionComponent.$scope).toBeDefined();
       expect(sessionComponent.$routeParams).toBeDefined();
@@ -220,57 +219,178 @@
 
     it('should fetch the table state', function() {
       expect(sessionComponent.getTableState).toHaveBeenCalled();
+      expect(sessionComponent.getTableState.calls.count()).toBe(1);
       expect(sessionComponent.getTableState).toHaveBeenCalledWith();
-      expect(sessionComponent.columnInfo).toEqual({});
+      expect(sessionComponent.tableState).toBeDefined();
     });
 
+    it('should toggle session detail', function() {
+      expect(sessionComponent.stickySessions.length).toEqual(0);
+      sessionComponent.toggleSessionDetail(sessionsJSON.data[0]);
+      expect(sessionComponent.stickySessions.length).toEqual(1);
+      sessionComponent.toggleSessionDetail(sessionsJSON.data[0]);
+      expect(sessionComponent.stickySessions.length).toEqual(0);
+    });
+
+
+    describe('table sorting ->', function() {
+      afterEach(function() {
+        // cleanup table state
+        sessionComponent.tableState.order = [['fp', 'asc']];
+        sessionComponent.query.sorts      = sessionComponent.tableState.order;
+      });
+
+      it('should have smart default sorts', function() {
+        expect(sessionComponent.isSorted('fp')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('fp')).toEqual('asc');
+      });
+
+      it('should toggle sort order', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:desc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        sessionComponent.sortBy({},'fp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isSorted('fp')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('fp')).toEqual('desc');
+      });
+
+      it('should change sort order', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=lp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        sessionComponent.sortBy({},'lp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isSorted('lp')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('lp')).toEqual('asc');
+      });
+
+      it('should add sort on shift click', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc,lp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        sessionComponent.sortBy({ shiftKey:true },'lp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isSorted('fp')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('fp')).toEqual('asc');
+
+        expect(sessionComponent.isSorted('lp')).toBeGreaterThan(-1);
+        expect(sessionComponent.getSortOrder('lp')).toEqual('asc');
+      });
+    });
+
+
+    describe('column visibility ->', function() {
+      afterEach(function() {
+        // cleanup table state
+        sessionComponent.tableState.visibleHeaders = ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info'];
+      });
+
+      it('should have smart default visible headers', function() {
+        var defaultHeaders = ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info'];
+        expect(sessionComponent.tableState.visibleHeaders).toEqual(defaultHeaders);
+      });
+
+      it('should toggle header visibility', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
+        sessionComponent.toggleVisibility('lp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isVisible('lp')).toEqual(-1);
+      });
+
+      it('should issue query when adding a header', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
+        let newParameters = '?facets=1&fields=pr,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&length=100&order=fp:asc';
+        $httpBackend.expectGET(sessionsEndpoint + newParameters)
+           .respond(sessionsJSON);
+
+        $httpBackend.expectPOST(tableStateEndpoint)
+           .respond(200);
+
+        sessionComponent.toggleVisibility('lp');
+        sessionComponent.toggleVisibility('lp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isVisible('lp')).toBeGreaterThan(-1);
+      });
+    });
+
+
     describe('listeners ->', function() {
-      var sorts       = [['fp', 'asc']];
-      var length      = 10;
-      var currentPage = 2;
-      var start       = (currentPage - 1) * length;
-      var sub_scope;
+      let sorts       = [['fp', 'asc']];
+      let length      = 200;
+      let currentPage = 2;
+      let start       = (currentPage - 1) * length;
+      let sub_scope;
 
       beforeEach(function() {
         sub_scope = scope.$new();
+
+        spyOn(scope, '$broadcast').and.callThrough();
+      });
+
+      afterEach(function() {
+        $httpBackend.verifyNoOutstandingExpectation();
+        $httpBackend.verifyNoOutstandingRequest();
+
+        // cleanup
+        sessionComponent.query.date   = null;
+        sessionComponent.query.start  = 0;
+        sessionComponent.query.length = 100;
       });
 
       it('should listen for "change:search" event', function() {
-        var newParameters = '?facets=1&length=100&order=fp:asc';
+        let newParameters = '?date=-1&facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
         sub_scope.$emit('change:search', {
-          startTime: 0, stopTime: 0, expression: ''
+          start: 0, stop: 0, expression: ''
+        });
+
+        sub_scope.$emit('change:search', {
+          date: -1, expression: ''
         });
 
         $httpBackend.flush();
 
         expect(sessionComponent.getData).toHaveBeenCalled();
-        expect(sessionComponent.getData).toHaveBeenCalledWith();
-      });
-
-      it('should listen for "change:sort" event', function() {
-        var newParameters = '?facets=1&length=100&order=fp:asc';
-        $httpBackend.expectGET(sessionsEndpoint + newParameters)
-          .respond(sessionsJSON);
-
-        sub_scope.$emit('change:sort', { sorts:sorts });
-
-        $httpBackend.flush();
-
-        expect(sessionComponent.query.sorts).toEqual(sorts);
-        expect(sessionComponent.getData).toHaveBeenCalled();
+        expect(sessionComponent.getData.calls.count()).toBe(2);
         expect(sessionComponent.getData).toHaveBeenCalledWith();
       });
 
       it('should listen for "change:pagination" event', function() {
-        var newParameters = '?facets=1&length=10&order=fp:asc&start=10';
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=200&order=fp:asc&start=200';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
-          .respond(sessionsJSON);
+           .respond(sessionsJSON);
 
         sub_scope.$emit('change:pagination',
-          { length:length, currentPage:currentPage, start:start }
+           { length:length, currentPage:currentPage, start:start }
         );
 
         $httpBackend.flush();
@@ -281,6 +401,25 @@
         expect(sessionComponent.getData).toHaveBeenCalled();
         expect(sessionComponent.getData).toHaveBeenCalledWith();
       });
+
+      it('should listen for "add:to:search" event', function() {
+        let args = { expression:'full == expression' };
+        scope.$emit('add:to:search', args);
+
+        expect(scope.$broadcast).toHaveBeenCalled();
+        expect(scope.$broadcast).toHaveBeenCalledWith('add:to:typeahead', args);
+        expect(scope.$broadcast.calls.count()).toBe(1);
+      });
+
+      it('should listen for "change:time" event', function() {
+        let args = { start: 0, stop: 0 };
+        scope.$emit('change:time', args);
+
+        expect(scope.$broadcast).toHaveBeenCalled();
+        expect(scope.$broadcast).toHaveBeenCalledWith('update:time', args);
+        expect(scope.$broadcast.calls.count()).toBe(1);
+      });
+
     });
 
   });

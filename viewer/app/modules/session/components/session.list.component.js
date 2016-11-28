@@ -78,7 +78,7 @@
       // (from search.component)
       let initialized;
       this.$scope.$on('change:search', (event, args) => {
-        // either startTime && stopTime || date
+        // either (startTime && stopTime) || date
         if (args.startTime && args.stopTime) {
           _query.startTime  = this.query.startTime  = args.startTime;
           _query.stopTime   = this.query.stopTime   = args.stopTime;
@@ -91,10 +91,11 @@
 
         _query.expression = this.query.expression = args.expression;
 
-        // reset the user to the first page, because we are issuing a new query
+        // reset to the first page, because we are issuing a new query
         // and there may only be 1 page of results
         _query.start = this.query.start = 0;
 
+        // don't issue search when the first change:search event is fired
         if (!initialized) { initialized = true; return; }
 
         this.getData();
@@ -126,15 +127,13 @@
       this.stickySessions = []; // clear sticky sessions
       // clear fields to query for but always include protocols field
       this.query.fields   = ['pr'];
-      
+
       // set the fields to retrieve from the server for each session
       if (this.headers) {
         for (let i = 0; i < this.headers.length; ++i) {
           let field = this.headers[i];
           if (field.children) {
-            console.log(field);
             for (let j = 0; j < field.children.length; ++j) {
-              console.log(field.children[j]);
               if (field.children[j]) {
                 this.query.fields.push(field.children[j].dbField);
               }
@@ -225,15 +224,14 @@
         let field     = this.getField(headerId);
 
         if (field) { this.headers.push(field); }
-        // else { this.tableState.visibleHeaders.splice(i, 1); }
       }
     }
 
     /**
      * Sets up the fields for the column visibility typeahead and column headers
+     * by adding custom columns to the visible columns list and table
      */
     setupFields() {
-      // add custom columns to the visible columns list and table
       for (let key in customCols) {
         if (customCols.hasOwnProperty(key)) {
           this.fields[key] = customCols[key];
@@ -242,7 +240,9 @@
           for (let c in children) {
             // (replace fieldId with field object)
             if (children.hasOwnProperty(c)) {
-              children[c] = this.getField(children[c]);
+              if (typeof children[c] !== 'object') {
+                children[c] = this.getField(children[c]);
+              }
             }
           }
         }
