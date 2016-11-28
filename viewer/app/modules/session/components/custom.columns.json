@@ -1,0 +1,41 @@
+{
+  "info": {
+    "width": 250,
+    "dbField": "info",
+    "exp": "info",
+    "group": "general",
+    "friendlyName": "Info",
+    "help": "Information",
+    "children": ["us", "esrc", "edst", "esub", "efn", "dnsho", "tls.alt", "ircch"]
+  },
+  "src": {
+    "width": 140,
+    "dbField": "src",
+    "exp": "src",
+    "group": "general",
+    "friendlyName": "Src IP - Country",
+    "help": "Src IP & Country",
+    "sortBy": "a1",
+    "children": ["a1", "g1"]
+  },
+  "dst": {
+    "width": 140,
+    "dbField": "dst",
+    "exp": "dst",
+    "group": "general",
+    "friendlyName": "Dst IP - Country",
+    "help": "Dst IP & Country",
+    "sortBy": "a2",
+    "children": ["a2", "g2"]
+  },
+  "dbby": {
+    "width": 100,
+    "dbField": "dbby",
+    "exp": "dbby",
+    "group": "general",
+    "friendlyName": "Data Bytes / Bytes",
+    "help": "Data Bytes & Bytes",
+    "sortBy": "by",
+    "children": ["db", "by"]
+  }
+}

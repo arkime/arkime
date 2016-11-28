@@ -1,0 +1,151 @@
+<div class="container-fluid margined-left margined-right">
+
+  <moloch-search></moloch-search>
+
+  <!-- session visualizations -->
+  <div class="row margin-for-search-navbar">
+    <moloch-map ng-if="$ctrl.mapData" map-data="$ctrl.mapData"></moloch-map>
+    <div class="col-md-12">
+      <div ng-if="$ctrl.graphData">
+        <session-graph graph-data="$ctrl.graphData"></session-graph>
+      </div>
+    </div>
+  </div>
+
+  <div class="margined-top-lg">
+
+    <!-- top pagination controls -->
+    <moloch-pagination length="$ctrl.query.length"
+      records-total="$ctrl.sessions.recordsTotal"
+      records-filtered="$ctrl.sessions.recordsFiltered"
+      current-page="$ctrl.currentPage"
+      start="$ctrl.query.start"></moloch-pagination>
+
+    <!-- open sessions -->
+    <sticky-sessions ng-if="!$ctrl.error && !$ctrl.loading"
+      sessions="$ctrl.stickySessions"></sticky-sessions>
+
+    <div class="table-responsive margined-top-lg">
+      <!-- session data table -->
+      <table class="table table-condensed" ng-if="$ctrl.headers">
+
+        <thead>
+          <tr>
+            <th width="6%" ng-drop="true" draggable="false"
+              ng-drop-success="$ctrl.onDropComplete(-1, $data, $event)">
+              <!-- column visibility button -->
+              <div class="btn-group" uib-dropdown is-open="$ctrl.isopen"
+                dropdown-append-to-body="true" auto-close="outsideClick">
+                <button id="visibility-button" type="button"
+                  class="btn btn-purple" tooltip-append-to-body="true"
+                  uib-dropdown-toggle tooltip-placement="top-left"
+                  uib-tooltip="Column Visibility">
+                  <span class="fa fa-th"></span>
+                </button>
+                <ul class="dropdown-menu col-vis-menu"
+                  uib-dropdown-menu role="menu"
+                  aria-labelledby="visibility-button">
+                  <input type="text" ng-if="$ctrl.isopen" focus-input="true"
+                    class="form-control input-sm dropdown-typehead"
+                    ng-model="$ctrl.colQuery"
+                    placeholder="Search for columns...">
+                  <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group'">
+                    <div class="group-header">{{::key | capitalize}}</div>
+                    <li ng-repeat="field in value"
+                      ng-click="$ctrl.toggleVisibility(field.dbField)"
+                      ng-class="{'active':$ctrl.isVisible(field.dbField) >= 0}"
+                      uib-tooltip="{{::field.help}}"
+                      tooltip-placement="right"
+                      tooltip-append-to-body="true">
+                      <a>{{::field.friendlyName}}</a>
+                    </li>
+                  </div>
+                  <li ng-hide="$ctrl.filteredFields.length">
+                    <a>
+                      <span class="fa fa-exclamation-circle"></span>&nbsp;
+                      No results
+                    </a>
+                  </li>
+                </ul>
+              </div> <!-- /column visibility button -->
+            </th>
+            <!-- table headers -->
+            <th ng-repeat="header in $ctrl.headers" width="{{::header.width}}"
+              class="moloch-col-header" ng-drop="true"
+              ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
+              ng-drag="true" ng-drag-data="header" draggable="false"
+              ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
+              <!-- unsortable column -->
+              <div ng-if="!header.exp && !header.sortBy">
+                {{::header.friendlyName}}
+              </div>
+                <!-- sortable column -->
+              <div ng-if="header.exp || header.sortBy"
+                ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
+                ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)">
+                {{::header.friendlyName}}&nbsp;
+                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
+                  class="fa fa-sort text-muted-more"></span>
+                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
+                  class="fa fa-sort-asc"></span>
+                <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
+                  class="fa fa-sort-desc"></span>
+              </div>
+            </th> <!-- /table headers -->
+          </tr>
+        </thead>
+
+        <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
+          $ctrl.sessions.data.length && !$ctrl.error" class="small">
+          <tr ng-repeat-start="session in $ctrl.sessions.data"
+            id="session{{::session.id}}">
+            <td>
+              <a class="btn btn-sm btn-green btn-toggle"
+                ng-class="{'collapsed':!session.expanded}"
+                ng-click="$ctrl.toggleSessionDetail(session)">
+                <span class="fa fa-close"></span>
+              </a>&nbsp
+              <small>{{::session.pr | protocol}}</small>
+            </td>
+            <td ng-repeat="col in $ctrl.headers"
+              ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
+              <session-field column="col" session="session"></session-field>
+            </td>
+          </tr>
+          <tr ng-repeat-end ng-show="session.expanded"
+            class="session-detail-row">
+            <td colspan="{{$ctrl.headers.length + 1}}">
+              <span ng-if="session.expanded">
+                <session-detail session="session">
+                </session-detail>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table> <!-- /session data table -->
+    </div>
+
+    <loading ng-if="$ctrl.loading"></loading>
+
+    <error ng-if="$ctrl.error" message="$ctrl.error"></error>
+
+    <!-- no results -->
+    <div class="info-area vertical-horizontal-center"
+     ng-if="!$ctrl.error && !$ctrl.sessions.data.length">
+      <div ng-if="!$ctrl.loading">
+        <span class="fa fa-3x text-center text-muted-more fa-folder-open"></span><br>
+        No results or none that match your search.
+      </div>
+    </div> <!-- /no results -->
+
+    <!-- bottom pagination controls -->
+    <moloch-pagination length="$ctrl.query.length"
+      records-total="$ctrl.sessions.recordsTotal"
+      records-filtered="$ctrl.sessions.recordsFiltered"
+      current-page="$ctrl.currentPage"
+      ng-if="!$ctrl.loading && !$ctrl.error"
+      start="$ctrl.query.start"></moloch-pagination>
+
+  </div>
+
+</div>

@@ -1,0 +1,109 @@
+moloch-map {
+
+  // overflow: hidden;
+
+  .map-btn {
+    width           : 40px;
+    display         : block;
+    position        : fixed;
+    top             : 130px;
+    right           : 0;
+    z-index         : 997;
+    margin-top      : 6px;
+    overflow        : hidden;
+    padding         : 2px 10px 4px 12px;
+    border-radius   : 4px 0 0 4px;
+    cursor          : pointer;
+    background-color: $color-water-dark;
+    color           : $color-white;
+  }
+
+  .moloch-map-container {
+    position  : fixed;
+    top       : 170px;
+    bottom    : 100px;
+    left      : 100px;
+    right     : 0;
+    z-index   : 999;
+    opacity   : 1;
+
+    -webkit-transition: opacity 300ms linear;
+       -moz-transition: opacity 300ms linear;
+            transition: opacity 300ms linear;
+
+    &.ng-hide { right: -100%; opacity:0; }
+
+    #moloch-map {
+      height: 100%;
+      width : 100%;
+    }
+
+    .btns-in-map {
+      position: absolute;
+      bottom  : 10px;
+      left    : 10px;
+
+      .btn-source, .btn-destination {
+        color       : $color-white;
+        background  : darken($color-water, 10%);
+        border-color: darken($color-water, 16%);
+
+        &:hover {
+          color       : $color-white;
+          background  : darken($color-water, 16%);
+          border-color: darken($color-water, 20%);
+        }
+
+        &:not(.active) {
+          color       : $color-gray-dark;
+          background  : $color-gray-light;
+          border-color: darken($color-gray-light, 6%);
+        }
+      }
+    }
+  }
+
+  .jvectormap-container {
+    border-radius : 4px 0 0 4px;
+    box-shadow    : 0px 2px 4px 0px rgba(0,0,0,0.75);
+    height        : 100%;
+    width         : 100%;
+  }
+
+  .jvectormap-zoomin, .jvectormap-zoomout, .jvectormap-src, .jvectormap-dst {
+    position      : absolute;
+    left          : 10px;
+    background    : darken($color-water, 10%);
+    color         : $color-white;
+    width         : 20px;
+    height        : 20px;
+    cursor        : pointer;
+    line-height   : 16px;
+    text-align    : center;
+    border-radius : 3px;
+
+    &:hover {
+      background: darken($color-water, 16%);
+      color     : $color-white;
+    }
+  }
+
+  .jvectormap-zoomin  { top: 10px; }
+
+  .jvectormap-zoomout { top: 32px; }
+
+}
+
+
+/* labels added to body by jvectormap */
+.jvectormap-label {
+  z-index       : 9999;
+  position      : absolute;
+  display       : none;
+  border        : solid 1px $color-gray-light;
+  background    : lighten($color-black, 10%);
+  color         : $color-white;
+  font-size     : $px-xlg + $px-sm;
+  padding       : 0 $px-sm;
+  border-radius : 3px;
+}

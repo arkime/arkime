@@ -1,0 +1,29 @@
+<div>
+
+  <!-- page size -->
+  <select convert-to-number ng-model="$ctrl.length"
+    ng-change="$ctrl.change()" class="form-control page-select">
+    <option value="100">100 per page</option>
+    <option value="200">200 per page</option>
+    <option value="500">500 per page</option>
+    <option value="1000">1000 per page</option>
+  </select> <!-- /page size -->
+
+  <!-- pagination -->
+  <ul uib-pagination boundary-links="true"
+    ng-change="$ctrl.change()" rotate="true"
+    total-items="$ctrl.recordsFiltered"
+    items-per-page="$ctrl.length" max-size="5"
+    ng-model="$ctrl.currentPage" class="pagination pagination-sm"
+    previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;">
+  </ul> <!-- /pagination -->
+
+  <!-- page info -->
+  <span class="pagination-info cursor-help" tooltip-placement="top"
+    uib-tooltip="filtered from {{$ctrl.recordsTotal | number:0}} total entries">
+    Showing {{$ctrl.start + 1}} - {{$ctrl.start + $ctrl.length}}
+    of {{$ctrl.recordsFiltered | number:0}} entries
+  </span> <!-- /page info -->
+
+</div>

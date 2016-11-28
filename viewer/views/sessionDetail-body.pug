@@ -1,0 +1,38 @@
+div.packet-options
+
+if (session._err)
+  div.alert.alert-danger 
+    span.fa.fa-exclamation-triangle
+    strong &nbsp; #{session._err}
+else 
+  if (session.pa > 200)
+    h5.text-yellow 
+      span.fa.fa-info-circle.fa-lg
+      | &nbsp; Only showing first 200 packets
+
+  div.row#textpacket
+    div.col-md-6
+      h4
+        span.srccol(title="Source Bytes:<br><img src='#{session.no}/raw/#{session.id}.png?type=src'>") Source
+    div.col-md-6
+      h4
+        span.dstcol(title="Source Bytes:<br><img src='#{session.no}/raw/#{session.id}.png?type=dst'>") Destination
+
+  each item, i in data
+    div.row
+      if item.client == 0
+        div.col-md-6
+          if (item.ts)
+            div.session-detail-ts(ts="#{item.ts}")
+              em.ts-value #{item.ts}
+              span.pull-right #{item.bytes} bytes
+          |!{item.html}
+        div.col-md-6
+      else
+        div.col-md-6
+        div.col-md-6
+          if (item.ts)
+            div.session-detail-ts(ts="#{item.ts}")
+              em.ts-value #{item.ts}
+              span.pull-right #{item.bytes} bytes
+          |!{item.html}
