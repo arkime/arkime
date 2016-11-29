@@ -1,5 +1,9 @@
 0.17.0 2016/12/xx
   - NOTICE: npm update required
+  - NOTICE: ES 2.4.x required
+  - New sessions UI (newUI=true)
+  - Initial ES 5.0 support (do not use in production!)
+  - Refactor many ES calls to remove depreciated syntax
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required

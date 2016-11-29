@@ -860,6 +860,10 @@ app.get('/settings', checkWebEnabled, function(req, res) {
   function render(user, cp) {
     if (user.settings === undefined) {user.settings = {};}
     Db.search("queries", "query", {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
+      if (err || data.error) {
+        console.log("ERROR - settings", err || data.error);
+      }
+
       if (data && data.hits && data.hits.hits) {
         user.queries = {};
         data.hits.hits.forEach(function(item) {
@@ -1303,13 +1307,13 @@ function buildSessionQuery(req, buildCb) {
 
   var query = {from: req.query.start || req.query.iDisplayStart || 0,
                size: limit,
-               query: {filtered: {query: {}}}
+               query: {bool: {filter: []}}
               };
 
   var interval;
-  if (req.query.date && req.query.date === '-1') {
+  if ((req.query.date && req.query.date === '-1') ||
+      (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
-    query.query.filtered.query.match_all = {};
   } else if (req.query.startTime && req.query.stopTime) {
     if (! /^[0-9]+$/.test(req.query.startTime)) {
       req.query.startTime = Date.parse(req.query.startTime.replace("+", " "))/1000;
@@ -1323,9 +1327,10 @@ function buildSessionQuery(req, buildCb) {
       req.query.stopTime = parseInt(req.query.stopTime, 10);
     }
     if (req.query.strictly === "true") {
-      query.query.filtered.query.bool = {must: [{range: {fp: {gte: req.query.startTime}}}, {range: {lp: {lte: req.query.stopTime}}}]};
+      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {lp: {lte: req.query.stopTime}}});
     } else {
-      query.query.filtered.query.range = {lp: {gte: req.query.startTime, lte: req.query.stopTime}};
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
     }
 
     var diff = req.query.stopTime - req.query.startTime;
@@ -1342,7 +1347,7 @@ function buildSessionQuery(req, buildCb) {
     }
     req.query.startTime = (Math.floor(Date.now() / 1000) - 60*60*parseInt(req.query.date, 10));
     req.query.stopTime = Date.now()/1000;
-    query.query.filtered.query.range = {lp: {from: req.query.startTime}};
+    query.query.bool.filter.push({range: {lp: {from: req.query.startTime}}});
     if (req.query.date <= 5*24) {
       interval = 60; // minute
     } else {
@@ -1366,7 +1371,7 @@ function buildSessionQuery(req, buildCb) {
   if (req.query.expression) {
     //req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
     try {
-      query.query.filtered.filter = molochparser.parse(req.query.expression);
+      query.query.bool.filter.push(molochparser.parse(req.query.expression));
     } catch (e) {
       err = e;
     }
@@ -1375,11 +1380,7 @@ function buildSessionQuery(req, buildCb) {
   if (!err && req.query.view && req.user.views && req.user.views[req.query.view]) {
     try {
       var viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = viewExpression;
-      } else {
-        query.query.filtered.filter = {bool: {must: [viewExpression, query.query.filtered.filter]}};
-      }
+      query.query.bool.filter.push(viewExpression);
     } catch (e) {
       console.log("ERR - User expression doesn't compile", req.user.views[req.query.view], e);
       err = e;
@@ -1391,18 +1392,14 @@ function buildSessionQuery(req, buildCb) {
       // Expression was set by admin, so assume email search ok
       molochparser.parser.yy.emailSearch = true;
       var userExpression = molochparser.parse(req.user.expression);
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = userExpression;
-      } else {
-        query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
-      }
+      query.query.bool.filter.push(userExpression);
     } catch (e) {
       console.log("ERR - Forced expression doesn't compile", req.user.expression, e);
       err = e;
     }
   }
 
-  lookupQueryItems(query.query.filtered, function (lerr) {
+  lookupQueryItems(query.query.bool.filter, function (lerr) {
     if (req.query.date && req.query.date === '-1') {
       return buildCb(err || lerr, query, "sessions-*");
     }
@@ -1425,10 +1422,6 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   });
 
   delete query.aggregations;
-  if (req.query.segments === "all") {
-    indices = "sessions-*";
-    query.query.filtered.query = {match_all: {}};
-  }
 
   // Do a ro search on each item
   var writes = 0;
@@ -1445,7 +1438,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     }
     processedRo[fields.ro] = true;
 
-    query.query.filtered.filter = {term: {ro: fields.ro}};
+    query.query.bool.filter.push({term: {ro: fields.ro}});
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
@@ -1494,16 +1487,21 @@ function sessionsListFromIds(req, ids, fields, cb) {
   var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro", "tipv61-term", "tipv62-term"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
+  // ES treats _source=no as turning off _source, very sad :(
+  if (fields.length === 1 && fields[0] === "no") {
+    fields.push("lp");
+  }
+
   async.eachLimit(ids, 10, function(id, nextCb) {
-    Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: fields.join(",")}, function(err, session) {
+    Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: fields.join(",")}, function(err, session) {
       if (err) {
         return nextCb(null);
       }
 
       for (var i = 0; i < fixFields.length; i++) {
         var field = fixFields[i];
-        if (session.fields[field] && Array.isArray(session.fields[field])) {
-          session.fields[field] = session.fields[field][0];
+        if (session._source[field] && Array.isArray(session._source[field])) {
+          session._source[field] = session._source[field][0];
         }
       }
 
@@ -1565,7 +1563,7 @@ app.get('/esstats.json', function(req, res) {
 
   async.parallel({
     nodes: function(nodesCb) {
-      Db.nodesStats({jvm: 1, process: 1, fs: 1, search: 1, os: 1}, nodesCb);
+      Db.nodesStats({metric: "jvm,process,fs,search,os,indices"}, nodesCb);
     },
     health: Db.healthCache
   },
@@ -1707,20 +1705,15 @@ app.get('/dstats.json', function(req, res) {
 
   var query = {
                query: {
-                 filtered: {
-                   query: {
-                     match_all: {}
-                   },
-                   filter: {
-                     and: [
-                       {
-                         range: { currentTime: { from: req.query.start, to: req.query.stop } }
-                       },
-                       {
-                         term: { interval: req.query.interval || 60}
-                       }
-                     ]
-                   }
+                 bool: {
+                   filter: [
+                     {
+                       range: { currentTime: { from: req.query.start, to: req.query.stop } }
+                     },
+                     {
+                       term: { interval: req.query.interval || 60}
+                     }
+                   ]
                  }
                }
               };
@@ -1728,7 +1721,7 @@ app.get('/dstats.json', function(req, res) {
   if (req.query.nodeName !== undefined) {
     query.sort = {currentTime: {order: 'desc' }};
     query.size = req.query.size || 1440;
-    query.query.filtered.filter.and.push({term: { nodeName: req.query.nodeName}});
+    query.query.bool.filter.push({term: { nodeName: req.query.nodeName}});
   } else {
     query.size = 100000;
   }
@@ -1895,7 +1888,7 @@ app.post('/users.json', function(req, res) {
 
   var query = {_source: columns,
                from: +req.body.start || 0,
-               size: +req.body.length
+               size: +req.body.length || 10000
               };
 
   if (req.body.filter) {
@@ -1912,6 +1905,7 @@ app.post('/users.json', function(req, res) {
     users: function (cb) {
       Db.searchUsers(query, function(err, result) {
         if (err || result.error) {
+          console.log("ERROR - users.json", err || result.error);
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
@@ -2220,15 +2214,8 @@ app.get('/spigraph.json', function(req, res) {
 
       var aggs = result.aggregations.field.buckets;
       var interval = query.aggregations.dbHisto.histogram.interval;
-      var filter;
-
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = {term: {}};
-        filter = query.query.filtered.filter;
-      } else {
-        query.query.filtered.filter = {bool: {must: [{term: {}}, query.query.filtered.filter]}};
-        filter = query.query.filtered.filter.bool.must[0];
-      }
+      var filter = {term: {}};
+      query.query.bool.filter.push(filter);
 
       delete query.aggregations.field;
 
@@ -2547,14 +2534,15 @@ function buildConnections(req, res, cb) {
       return cb(bsqErr, 0, 0, 0);
     }
 
-    if (query.query.filtered.filter === undefined) {
-      query.query.filtered.filter = {bool: {must: [{exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
-    } else {
-      query.query.filtered.filter = {bool: {must: [query.query.filtered.filter, {exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
-    }
+    query.query.bool.filter.push({exists: {field: req.query.srcField}});
+    query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
     query._source = ["by", "db", "pa", "no"];
-    query.fields=[fsrc, fdst];
+    if (Db.isES5) {
+      query.docvalue_fields = [fsrc, fdst];
+    } else {
+      query.fields = [fsrc, fdst];
+    }
     if (dstipport) {
       query._source.push("p2");
     }
@@ -2562,6 +2550,7 @@ function buildConnections(req, res, cb) {
     console.log("buildConnections query", JSON.stringify(query));
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
+    console.log("buildConnections result", JSON.stringify(graph));
       if (err || graph.error) {
         console.log("Build Connections ERROR", err, graph.error);
         return cb(err || graph.error);
@@ -2863,14 +2852,11 @@ app.get('/unique.txt', function(req, res) {
 
       query._source = [field];
 
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = {exists: {field: field}};
-      } else {
-        query.query.filtered.filter = {and: [query.query.filtered.filter, {exists: {field: field}}]};
-      }
+      query.query.bool.filter.push({exists: {field: field}});
 
       console.log("unique query", indices, JSON.stringify(query));
       Db.searchPrimary(indices, 'session', query, function(err, result) {
+        console.log(err);
         var counts = {};
 
         // Count up hits
@@ -4397,7 +4383,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: "no,pr,ps,psl"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "no,pr,ps,psl"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
@@ -5184,7 +5170,7 @@ function processCronQueries() {
   var repeat;
   async.doWhilst(function(whilstCb) {
     repeat = false;
-    Db.search("queries", "query", "{size: 1000}", function(err, data) {
+    Db.search("queries", "query", {size: 1000}, function(err, data) {
       if (err) {
         internals.cronRunning = false;
         console.log("processCronQueries", err);
@@ -5318,7 +5304,7 @@ function main () {
     internals.clusterName = health.cluster_name;
   });
 
-  Db.nodesStats({fs: 1}, function (err, info) {
+  Db.nodesStats({metric: "fs"}, function (err, info) {
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodeStats.push(info.nodes);
   });

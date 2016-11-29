@@ -111,7 +111,7 @@ case 13:
 this.$ = {bool: {should: [$$[$0-2], $$[$0]]}};
 break;
 case 14:
-this.$ = {not: $$[$0]};
+this.$ = {bool: {must_not: $$[$0]}};
 break;
 case 15:
 this.$ = -$$[$0];
@@ -440,7 +440,7 @@ function formatExists(yy, field, op)
   }
 
   if (op === "ne") {
-    return {not: {exists: {field: field2Raw(yy, field)}}};
+    return {bool: {must_not: {exists: {field: field2Raw(yy, field)}}}};
   }
 
   return {exists: {field: field2Raw(yy, field)}};
@@ -496,7 +496,7 @@ function formatQuery(yy, field, op, value)
     if (op === "eq")
       return parseIpPort(yy, field, value);
     if (op === "ne")
-      return {not: parseIpPort(yy, field, value)};
+      return {bool: {must_not: parseIpPort(yy, field, value)}};
     throw "Invalid operator '" + op + "' for ip";
   case "integer":
     if (value[0] === "/")
@@ -505,7 +505,7 @@ function formatQuery(yy, field, op, value)
     if (op === "eq" || op === "ne") {
       obj = termOrTermsInt(info.dbField, value);
       if (op === "ne") {
-        obj = {not: obj};
+        obj = {bool: {must_not: obj}};
       }
       return obj;
     }
@@ -522,21 +522,21 @@ function formatQuery(yy, field, op, value)
     if (op === "eq")
       return stringQuery(yy, field, value.toLowerCase());
     if (op === "ne")
-      return {not: stringQuery(yy, field, value.toLowerCase())};
+      return {bool: {must_not: stringQuery(yy, field, value.toLowerCase())}};
     throw "Invalid operator '" + op + "' for " + field;
   case "termfield":
   case "textfield":
     if (op === "eq")
       return stringQuery(yy, field, value);
     if (op === "ne")
-      return {not: stringQuery(yy, field, value)};
+      return {bool: {must_not: stringQuery(yy, field, value)}};
     throw "Invalid operator '" + op + "' for " + field;
   case "uptermfield":
   case "uptextfield":
     if (op === "eq")
       return stringQuery(yy, field, value.toUpperCase());
     if (op === "ne")
-      return {not: stringQuery(yy, field, value.toUpperCase())};
+      return {bool: {must_not: stringQuery(yy, field, value.toUpperCase())}};
     throw "Invalid operator '" + op + "' for " + field;
   case "fileand":
     if (value[0] === "\[")
@@ -545,7 +545,7 @@ function formatQuery(yy, field, op, value)
     if (op === "eq")
       return {fileand: stripQuotes(value)}
     if (op === "ne")
-      return {not: {findand: stripQuotes(value)}};
+      return {bool: {must_not: {findand: stripQuotes(value)}}};
     throw op + " - not supported for file queries";
     break;
   case "viewand":
@@ -559,7 +559,7 @@ function formatQuery(yy, field, op, value)
     if (op === "eq")
       return exports.parse(yy.views[value].expression);
     if (op === "ne")
-      return {not: exports.parse(yy.views[value].expression)};
+      return {bool: {must_not: exports.parse(yy.views[value].expression)}};
     throw op + " - not supported for view queries";
     break;
   case "seconds":
@@ -569,7 +569,7 @@ function formatQuery(yy, field, op, value)
     if (op === "eq" || op === "ne") {
       obj = termOrTermsSeconds(info.dbField, value);
       if (op === "ne") {
-        obj = {not: obj};
+        obj = {bool: {must_not: obj}};
       }
       return obj;
     }
@@ -640,7 +640,6 @@ function stringQuery(yy, field, str) {
 
     var obj =  [];
     var terms = null;
-    var needQueryWrap = false;
     strs.forEach(function(str) {
       var should;
 
@@ -654,7 +653,6 @@ function stringQuery(yy, field, str) {
         should = {wildcard: {}};
         should.wildcard[rawField] = str;
         obj.push(should);
-        needQueryWrap = true;
       } else {
         if (str[0] === "\"" && str[str.length -1] === "\"") {
           str = str.substring(1, str.length-1).replace(/\\(.)/g, "$1");
@@ -672,7 +670,6 @@ function stringQuery(yy, field, str) {
           should = {match: {}};
           should.match[dbField] = {query: str, type: "phrase", operator: "and"}
           obj.push(should);
-          needQueryWrap = true;
         }
       }
     });
@@ -683,9 +680,6 @@ function stringQuery(yy, field, str) {
       obj = {bool: {should: obj}};
     }
 
-    if (needQueryWrap) {
-      obj = {query: obj};
-    }
     return obj;
   }
 
@@ -698,11 +692,11 @@ function stringQuery(yy, field, str) {
     obj.term[dbField] = str;
   } else if (typeof str === "string" && str.indexOf("*") !== -1) {
     dbField = field2Raw(yy, field);
-    obj = {query: {wildcard: {}}};
-    obj.query.wildcard[dbField] = str;
+    obj = {wildcard: {}};
+    obj.wildcard[dbField] = str;
   } else if (info.type.match(/textfield/)) {
-    obj = {query: {match: {}}};
-    obj.query.match[dbField] = {query: str, type: "phrase", operator: "and"}
+    obj = {match: {}};
+    obj.match[dbField] = {query: str, type: "phrase", operator: "and"}
   } else if (info.type.match(/termfield/)) {
     obj = {term: {}};
     obj.term[dbField] = str;
@@ -1254,7 +1248,7 @@ case 22:console.log(yy_.yytext);
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?/]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
+rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?\/]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
 });
 return lexer;

@@ -114,7 +114,7 @@ sub esCopy
     while (1) {
         my $url;
         if ($id eq "") {
-            $url = "/$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
+            $url = "/$srci/$type/_search?scroll=10m&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }

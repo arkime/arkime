@@ -1722,7 +1722,7 @@ void moloch_db_load_tags()
     char               key[100];
     int                key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%stags/tag/_search?size=3000&fields=n", config.prefix);
+    key_len = snprintf(key, sizeof(key), "/%stags/tag/_search?size=3000", config.prefix);
     unsigned char     *data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data) {
@@ -1755,16 +1755,16 @@ void moloch_db_load_tags()
         unsigned char     *id = 0;
         id = moloch_js0n_get(ahits+out[i], out[i+1], "_id", &id_len);
 
-        uint32_t           fields_len;
-        unsigned char     *fields = 0;
-        fields = moloch_js0n_get(ahits+out[i], out[i+1], "fields", &fields_len);
-        if (!fields) {
+        uint32_t           source_len;
+        unsigned char     *source = 0;
+        source = moloch_js0n_get(ahits+out[i], out[i+1], "_source", &source_len);
+        if (!source) {
             continue;
         }
 
         uint32_t           n_len;
         unsigned char     *n = 0;
-        n = moloch_js0n_get(fields, fields_len, "n", &n_len);
+        n = moloch_js0n_get(source, source_len, "n", &n_len);
 
 
         if (id && n) {
@@ -1831,7 +1831,7 @@ void moloch_db_free_tag_request(MolochTagRequest_t *r)
             continue;
         }
 
-        key_len = snprintf(key, sizeof(key), "/%stags/tag/%s?fields=n", config.prefix, r->escaped);
+        key_len = snprintf(key, sizeof(key), "/%stags/tag/%s", config.prefix, r->escaped);
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         outstandingTagRequests++;
         break;
@@ -1846,7 +1846,7 @@ void moloch_db_tag_create_cb(int UNUSED(code), unsigned char *data, int UNUSED(d
     int                 key_len;
 
     if (strstr((char *)data, "{\"error\":") != 0) {
-        key_len = snprintf(key, sizeof(key), "/%stags/tag/%s?fields=n", config.prefix, r->escaped);
+        key_len = snprintf(key, sizeof(key), "/%stags/tag/%s", config.prefix, r->escaped);
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         return;
     }
@@ -1887,14 +1887,14 @@ void moloch_db_tag_cb(int UNUSED(code), unsigned char *data, int data_len, gpoin
         return;
     }
 
-    uint32_t           fields_len;
-    unsigned char     *fields = 0;
-    fields = moloch_js0n_get(data, data_len, "fields", &fields_len);
+    uint32_t           source_len;
+    unsigned char     *source = 0;
+    source = moloch_js0n_get(data, data_len, "_source", &source_len);
 
-    if (fields) {
+    if (source) {
         uint32_t           n_len;
         unsigned char     *n = 0;
-        n = moloch_js0n_get(fields, fields_len, "n", &n_len);
+        n = moloch_js0n_get(source, source_len, "n", &n_len);
 
         MolochTag_t *tag = MOLOCH_TYPE_ALLOC(MolochTag_t);
         tag->tagName = g_strdup(r->tag);
@@ -1971,7 +1971,7 @@ void moloch_db_get_tag(void *uw, int tagtype, const char *tagname, MolochTag_cb 
         char               key[500];
         int                key_len;
 
-        key_len = snprintf(key, sizeof(key), "/%stags/tag/%s?fields=n", config.prefix, r->escaped);
+        key_len = snprintf(key, sizeof(key), "/%stags/tag/%s", config.prefix, r->escaped);
         moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, moloch_db_tag_cb, r);
         outstandingTagRequests++;
     } else {
@@ -2068,14 +2068,14 @@ void moloch_db_load_fields()
         unsigned char     *id = 0;
         id = moloch_js0n_get(ahits+out[i], out[i+1], "_id", &id_len);
 
-        uint32_t           fields_len;
-        unsigned char     *fields = 0;
-        fields = moloch_js0n_get(ahits+out[i], out[i+1], "_source", &fields_len);
-        if (!fields) {
+        uint32_t           source_len;
+        unsigned char     *source = 0;
+        source = moloch_js0n_get(ahits+out[i], out[i+1], "_source", &source_len);
+        if (!source) {
             continue;
         }
 
-        moloch_field_define_json(id, id_len, fields, fields_len);
+        moloch_field_define_json(id, id_len, source, source_len);
     }
     free(data);
 }

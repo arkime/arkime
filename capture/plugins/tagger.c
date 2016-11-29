@@ -658,10 +658,10 @@ void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, 
     js0n(hits, hits_len, out);
     int i;
     for (i = 0; out[i]; i+= 2) {
-        uint32_t           fields_len;
-        unsigned char     *fields = 0;
-        fields = moloch_js0n_get(hits+out[i], out[i+1], "fields", &fields_len);
-        if (!fields) {
+        uint32_t           source_len;
+        unsigned char     *source = 0;
+        source = moloch_js0n_get(hits+out[i], out[i+1], "_source", &source_len);
+        if (!source) {
             continue;
         }
 
@@ -669,7 +669,7 @@ void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data_len, 
 
         uint32_t           md5_len;
         unsigned char     *md5 = 0;
-        md5 = moloch_js0n_get(fields, fields_len, "md5", &md5_len);
+        md5 = moloch_js0n_get(source, source_len, "md5", &md5_len);
 
         if (*md5 == '[') {
             md5+=2;
@@ -702,7 +702,7 @@ gboolean tagger_fetch_files (gpointer sync)
     char                key[500];
     int                 key_len;
 
-    key_len = snprintf(key, sizeof(key), "/tagger/_search?fields=md5&size=999");
+    key_len = snprintf(key, sizeof(key), "/tagger/_search?_source=md5&size=999");
 
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {

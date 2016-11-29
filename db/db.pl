@@ -362,8 +362,8 @@ sub statsUpdate
 my $mapping = '
 {
   "stat": {
-    "_all": {enabled : false},
-    "_source": {enabled : true},
+    "_all": {"enabled": false},
+    "_source": {"enabled": true},
     "dynamic": "true",
     "dynamic_templates": [
       {
@@ -397,7 +397,7 @@ my $mapping = '
 }';
 
     print "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats/stat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
+    esPut("/${PREFIX}stats/stat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -461,7 +461,7 @@ my $mapping = '
 }';
 
     print "Setting dstats_v1 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v1/dstat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
+    esPut("/${PREFIX}dstats_v1/dstat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -818,7 +818,7 @@ sub fieldsUpdate
     }');
 
     esPost("/${PREFIX}fields/field/dns.status/_update", '{"doc": {"type": "uptermfield"}}', 1);
-    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{"doc": {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
+    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{"doc": {"regex": "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
     esPost("/${PREFIX}fields/field/email.subject/_update", '{"doc": {"type": "textfield"}}', 1);
 }
 
@@ -885,7 +885,7 @@ sub queriesUpdate
 }';
 
     print "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries/query/_mapping?pretty&ignore_conflicts=true", $mapping);
+    esPut("/${PREFIX}queries/query/_mapping?pretty", $mapping);
 }
 
 ################################################################################
@@ -902,11 +902,11 @@ sub sessionsUpdate
           "path_match": "hdrs.*",
           "match_mapping_type": "string",
           "mapping": {
-            "type": "multi_field",
-            "path": "full",
+            "type": "string",
+            "index": "no",
             "fields": {
-              "snow" : {"type": "string", "analyzer" : "snowball"},
-              "raw" : {"type": "string", "index" : "not_analyzed"}
+              "snow": {"type": "string", "analyzer" : "snowball"},
+              "raw": {"type": "string", "index" : "not_analyzed"}
             }
           }
         }
@@ -925,8 +925,8 @@ sub sessionsUpdate
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
-            "type": "multi_field",
-            "path": "full",
+            "type": "string",
+            "index": "no",
             "fields": {
               "snow" : {"type": "string", "analyzer" : "snowball"},
               "raw" : {"type": "string", "index" : "not_analyzed"}
@@ -1274,9 +1274,10 @@ sub sessionsUpdate
             "index": "not_analyzed"
           },
           "iOn": {
-            "type": "multi_field",
+            "type": "string",
+            "analyzer": "snowball",
+            "omit_norms": true,
             "fields": {
-              "iOn": {"type": "string", "analyzer": "snowball", "omit_norms": true},
               "rawiOn": {"type": "string", "index": "not_analyzed"}
             }
           },
@@ -1286,9 +1287,10 @@ sub sessionsUpdate
             "index": "not_analyzed"
           },
           "sOn": {
-            "type": "multi_field",
+            "type": "string",
+            "analyzer": "snowball",
+            "omit_norms": true,
             "fields": {
-              "sOn": {"type": "string", "analyzer": "snowball", "omit_norms": true},
               "rawsOn": {"type": "string", "index": "not_analyzed"}
             }
           },
@@ -1631,7 +1633,7 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress($i);
-        esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping, 1);
+        esPut("/$i/session/_mapping", $mapping, 1);
 
         # Before version 12 had soft, change to node, requires a close and open
         if ($main::versionNumber < 12) {
@@ -1643,8 +1645,6 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     }
 
     print "\n";
-
-    esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
 }
 
 ################################################################################
@@ -1725,7 +1725,7 @@ sub usersUpdate
 }';
 
     print "Setting users_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v3/user/_mapping?pretty&ignore_conflicts=true", $mapping);
+    esPut("/${PREFIX}users_v3/user/_mapping?pretty", $mapping);
 }
 
 ################################################################################
@@ -1784,13 +1784,6 @@ sub dbCheckHealth {
     if ($health->{status} ne "green") {
         print("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
     }
-
-    my $settings = esGet("/_cluster/settings?flat_settings");
-    if ($settings && $settings->{persistent} && $settings->{persistent}->{"threadpool.search.queue_size"} == "-1") {
-        print "Changing threadpool.search.queue_size to 10000 to work around bug\n";
-        esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
-    }
-
     return $health;
 }
 ################################################################################
@@ -1799,10 +1792,9 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 10602) {
+    if ($main::esVersion < 20400) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* 1.6.2 is supported\n",
-              "* 1.7.x is recommended\n",
+              "* 2.4.x is supported\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -1811,13 +1803,16 @@ sub dbCheck {
     }
 
     my $error = 0;
-    my $nodes = esGet("/_nodes?settings&process&flat_settings");
-    my $nodeStats;
-    if ($main::esVersion < 20000) {
-        $nodeStats = $nodes;
+    my $nodes = esGet("/_nodes?flat_settings");
+    my $nodeStats = esGet("/_nodes/stats");
+
+    if ($main::esVersion < 50000) {
+        esPut("/_cluster/settings", '{"persistent": {"threadpool.search.queue_size":10000}}');
     } else {
-        $nodeStats = esGet("/_nodes/stats?process");
+        # ALW - Not supported with 5.0, might need to require user setting
+        # esPut("/_cluster/settings", '{"persistent": {"thread_pool.search.queue_size":10000}}');
     }
+
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
         my $node = $nodes->{nodes}->{$key};

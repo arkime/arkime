@@ -257,6 +257,9 @@ app.get("/:index/:type/_search", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
+      if (results[i].error) {
+        console.log("ERROR - GET _search", req.query.index, req.query.type,  results[i].error);
+      }
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
     }
@@ -765,6 +768,11 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
     var unique = {};
     for (var i = 0; i < results.length; i++) {
       var result = results[i];
+
+      if (result.error) {
+        console.log("ERROR - GET /fields/field/_search", result.error);
+      }
+
       for (var h = 0; h < result.hits.total; h++) {
         var hit = result.hits.hits[h];
         if (!unique[hit._id]) {
