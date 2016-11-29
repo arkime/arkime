@@ -29,11 +29,6 @@
 
     /* exposed functions --------------------------------------------------- */
     scrubPCAP() {
-      if (this.filename === '') {
-        this.error = 'No filename specified.';
-        return;
-      }
-
       this.SessionService.scrubPCAP(this.sessionid, this.include)
         .then((response) => {
           this.$scope.$emit('close:form:container', { reloadData: true });

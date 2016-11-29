@@ -21,3 +21,4 @@ npm-debug.log*
 config.dev.ini
 .DS_Store
 bundle/
+.idea
