@@ -320,6 +320,16 @@ function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
 }
 
+function queryValueToArray(val) {
+  if (val === undefined || val === null) {
+    return [];
+  }
+  if (!Array.isArray(val)) {
+    val = [val];
+  }
+  return val.join(",").split(",");
+}
+
 var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
 function fmenum(field) {
   var fieldsMap = Config.getFieldsMap();
@@ -2066,7 +2076,7 @@ app.get('/sessions.json', function(req, res) {
     }
     var addMissing = false;
     if (req.query.fields) {
-      query._source = req.query.fields.split(",");
+      query._source = queryValueToArray(req.query.fields);
       ["no", "a1", "p1", "a2", "p2"].forEach(function(item) {
         if (query._source.indexOf(item) === -1) {
           query._source.push(item);
@@ -2297,7 +2307,7 @@ app.get('/spiview.json', function(req, res) {
       query.aggregations.protocols = {terms: {field: "prot-term", size:1000}};
     }
 
-    req.query.spi.split(",").forEach(function (item) {
+    queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
         query.aggregations[parts[0]] = {terms: {field: "no", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
@@ -2702,7 +2712,7 @@ app.get(/\/sessions.csv.*/, function(req, res) {
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
   if (req.query.ids) {
-    var ids = req.query.ids.split(",");
+    var ids = queryValueToArray(req.query.ids);
 
     sessionsListFromIds(req, ids, fields, function(err, list) {
       csvListWriter(req, res, list);
@@ -3711,7 +3721,7 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   if (req.query.ids) {
-    var ids = req.query.ids.split(",");
+    var ids = queryValueToArray(req.query.ids);
 
     sessionsListFromIds(req, ids, ["lp", "no", "by", "pa", "ro"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
@@ -4235,7 +4245,7 @@ app.post('/addTags', function(req, res) {
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
-      var ids = req.body.ids.split(",");
+      var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
         addTagsList(tagIds, tags, list, function () {
@@ -4267,7 +4277,7 @@ app.post('/removeTags', function(req, res) {
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
-      var ids = req.body.ids.split(",");
+      var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term"], function(err, list) {
         removeTagsList(res, tagIds, tags, list);
@@ -4326,7 +4336,7 @@ app.post('/searchAndTag', function(req, res) {
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
-      var ids = req.body.ids.split(",");
+      var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
         searchAndTagList(tagIds, list, function () {
@@ -4510,7 +4520,7 @@ app.post('/scrub', function(req, res) {
   }
 
   if (req.body.ids) {
-    var ids = req.body.ids.split(",");
+    var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       scrubList(req, res, false, list);
@@ -4530,7 +4540,7 @@ app.post('/delete', function(req, res) {
   }
 
   if (req.body.ids) {
-    var ids = req.body.ids.split(",");
+    var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       scrubList(req, res, true, list);
@@ -4680,7 +4690,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
   }
 
   var count = 0;
-  var ids = req.body.ids.split(",");
+  var ids = queryValueToArray(req.body.ids);
   ids.forEach(function(id) {
     var options = {
       user: req.user,
@@ -4990,7 +5000,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
 app.post('/sendSessions', function(req, res) {
   if (req.body.ids) {
-    var ids = req.body.ids.split(",");
+    var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       sendSessionsList(req, res, list);
