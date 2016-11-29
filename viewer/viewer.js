@@ -1663,6 +1663,7 @@ app.get('/stats.json', function(req, res) {
     stats: function (cb) {
       Db.search('stats', 'stat', query, function(err, result) {
         if (err || result.error) {
+          console.log("ERROR - stats", query, err || result.error);
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
@@ -1737,26 +1738,29 @@ app.get('/dstats.json', function(req, res) {
   }
 
   var mapping = {
-    deltaBits: {fields: ["deltaBytes"], func: function (item) {return Math.floor(item.deltaBytes[0] * 8.0);}},
-    deltaTotalDropped: {fields: ["deltaDropped", "deltaOverloadDropped"], func: function (item) {return Math.floor(item.deltaDropped[0] + item.deltaOverloadDropped[0]);}},
-    deltaBytesPerSec: {fields: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes[0] * 1000.0/item.deltaMS[0]);}},
-    deltaBitsPerSec: {fields: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes[0] * 1000.0/item.deltaMS[0] * 8);}},
-    deltaPacketsPerSec: {fields: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets[0] * 1000.0/item.deltaMS[0]);}},
-    deltaSessionsPerSec: {fields: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions[0] * 1000.0/item.deltaMS[0]);}},
-    deltaDroppedPerSec: {fields: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaFragsDroppedPerSec: {fields: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaOverloadDroppedPerSec: {fields: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaESDroppedPerSec: {fields: ["deltaESDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaESDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaTotalDroppedPerSec: {fields: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped[0] + item.deltaOverloadDropped[0]) * 1000.0/item.deltaMS[0]);}},
-    cpu: {fields: ["cpu"], func: function (item) {return item.cpu[0] * .01;}}
+    deltaBits: {_source: ["deltaBytes"], func: function (item) {return Math.floor(item.deltaBytes * 8.0);}},
+    deltaTotalDropped: {_source: ["deltaDropped", "deltaOverloadDropped"], func: function (item) {return Math.floor(item.deltaDropped + item.deltaOverloadDropped);}},
+    deltaBytesPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS);}},
+    deltaBitsPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS * 8);}},
+    deltaPacketsPerSec: {_source: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets * 1000.0/item.deltaMS);}},
+    deltaSessionsPerSec: {_source: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions * 1000.0/item.deltaMS);}},
+    deltaDroppedPerSec: {_source: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped * 1000.0/item.deltaMS);}},
+    deltaFragsDroppedPerSec: {_source: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped * 1000.0/item.deltaMS);}},
+    deltaOverloadDroppedPerSec: {_source: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped * 1000.0/item.deltaMS);}},
+    deltaESDroppedPerSec: {_source: ["deltaESDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaESDropped * 1000.0/item.deltaMS);}},
+    deltaTotalDroppedPerSec: {_source: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped + item.deltaOverloadDropped) * 1000.0/item.deltaMS);}},
+    cpu: {_source: ["cpu"], func: function (item) {return item.cpu * .01;}}
   };
 
-  query.fields = mapping[req.query.name]?mapping[req.query.name].fields:[req.query.name];
-  query.fields.push("nodeName", "currentTime");
+  query._source = mapping[req.query.name]?mapping[req.query.name]._source:[req.query.name];
+  query._source.push("nodeName", "currentTime");
 
-  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name][0]};
+  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name]};
 
-  Db.searchScroll('dstats', 'dstat', query, {filter_path: "_scroll_id,hits.total,hits.hits.fields"}, function(err, result) {
+  Db.searchScroll('dstats', 'dstat', query, {filter_path: "_scroll_id,hits.total,hits.hits._source"}, function(err, result) {
+    if (err || result.error) {
+      console.log("ERROR - dstats", query, err || result.error);
+    }
     var i, ilen;
     var data = {};
     var num = (req.query.stop - req.query.start)/req.query.step;
@@ -1770,7 +1774,7 @@ app.get('/dstats.json', function(req, res) {
 
     if (result && result.hits && result.hits.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-        var fields = result.hits.hits[i].fields;
+        var fields = result.hits.hits[i]._source;
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
 
         if (data[fields.nodeName] === undefined) {
@@ -5089,7 +5093,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
   async.doWhilst(function(whilstCb) {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
-    query.query.filtered.query.range = {lp: {gt: cq.lpValue, lte: singleEndTime}};
+    query.query.bool.filter[0] = {range: {lp: {gt: cq.lpValue, lte: singleEndTime}}};
 
     if (Config.debug > 2) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
@@ -5234,12 +5238,12 @@ function processCronQueries() {
 
           var query = {from: 0,
                        size: 1000,
-                       query: {filtered: {query: {}}},
+                       query: {bool: {filter: [{}]}},
                        _source: ["_id", "no"]
                       };
 
           try {
-            query.query.filtered.filter = molochparser.parse(cq.query);
+            query.query.bool.filter.push(molochparser.parse(cq.query));
           } catch (e) {
             console.log("Couldn't compile cron query expression", cq, e);
             return forQueriesCb();
@@ -5250,22 +5254,18 @@ function processCronQueries() {
               // Expression was set by admin, so assume email search ok
               molochparser.parser.yy.emailSearch = true;
               var userExpression = molochparser.parse(user.expression);
-              if (query.query.filtered.filter === undefined) {
-                query.query.filtered.filter = userExpression;
-              } else {
-                query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
-              }
+              query.query.bool.filter.push(userExpression);
             } catch (e) {
               console.log("Couldn't compile user forced expression", user.expression, e);
               return forQueriesCb();
             }
           }
 
-          lookupQueryItems(query.query.filtered, function (lerr) {
+          lookupQueryItems(query.query.bool.filter, function (lerr) {
             processCronQuery(cq, options, query, endTime, function (count, lpValue) {
-	      if (Config.debug > 1) {
-		console.log("CRON - setting lpValue", new Date(lpValue*1000));
-	      }
+              if (Config.debug > 1) {
+                console.log("CRON - setting lpValue", new Date(lpValue*1000));
+              }
               // Do the ES update
               var document = {
                 doc: {
