@@ -28,14 +28,14 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       this.menu = {
-        session     : { title: 'Sessions',    link: '/app#/session' },
-        spiview     : { title: 'SPI View',    link: '/spiview' },
-        spigraph    : { title: 'SPI Graph',   link: '/spigraph' },
-        connections : { title: 'Connections', link: '/connections' },
-        files       : { title: 'Files',       link: '/files' },
-        stats       : { title: 'Stats',       link: '/stats' },
-        settings    : { title: 'Settings',    link: '/settings' },
-        users       : { title: 'Users',       link: '/users', permission: 'createEnabled' }
+        session     : { title: 'Sessions',    link: 'app#/session' },
+        spiview     : { title: 'SPI View',    link: 'spiview' },
+        spigraph    : { title: 'SPI Graph',   link: 'spigraph' },
+        connections : { title: 'Connections', link: 'connections' },
+        files       : { title: 'Files',       link: 'files' },
+        stats       : { title: 'Stats',       link: 'stats' },
+        settings    : { title: 'Settings',    link: 'settings' },
+        users       : { title: 'Users',       link: 'users', permission: 'createEnabled' }
       };
     }
 
