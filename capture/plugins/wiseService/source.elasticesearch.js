@@ -67,7 +67,7 @@ function ElasticsearchSource (api, section) {
   }
 
   this.client = new elasticsearch.Client({
-                      host: this.elasticsearch,
+                      host: this.elasticsearch.split(","),
                       keepAlive: true,
                       minSockets: 5,
                       maxSockets: 51
