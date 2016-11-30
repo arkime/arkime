@@ -46,7 +46,8 @@
      * @param {string} route The route of the nav item
      */
     isActive(route) {
-      return route === '/app#' + this.$location.path();
+      console.log(route);
+      return route === 'app#' + this.$location.path();
     }
 
     /**

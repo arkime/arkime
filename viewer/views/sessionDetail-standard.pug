@@ -3,18 +3,18 @@ ul.nav.nav-pills.margined-bottom-xlg
     li.cursor-pointer
       a.moloch-clickable(molochfield='rootId', molochvalue='\"' + session.ro + '\"') All Sessions
     li.cursor-pointer
-      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Segment Pcap
+      a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
     li.cursor-pointer
-      a(href='#{session.no}/entirePcap/#{session.ro}.pcap') Download Entire Pcap
+      a(href=session.no + '/entirePcap/' + session.ro + '.pcap', target="_blank") Download Entire Pcap
   else
     li.cursor-pointer
-      a(href='#{session.no}/pcap/#{session.id}.pcap') Download Pcap
+      a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Pcap
   li.cursor-pointer
-    a(href='#{session.no}/raw/#{session.id}?type=src',target="_blank") Source Raw
+    a(href=session.no + '/raw/' + session.id + '?type=src', target="_blank") Source Raw
   li.cursor-pointer
-    a(href='#{session.no}/raw/#{session.id}?type=dst',target="_blank") Destination Raw
+    a(href=session.no + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
   li.cursor-pointer
-    a(href='#/session?expression=id=#{session.id}&startTime=#{session.fp}&stopTime=#{session.lp}') Permalink
+    a(href='#/session?expression=id=' + session.id + '&startTime=' + session.fp + '&stopTime=' + session.lp) Permalink
   li.cursor-pointer.dropdown
     a(data-toggle="dropdown", role="button") Actions &nbsp;
       span.fa.fa-bars
