@@ -248,6 +248,8 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_tcp("zabbix", "zabbix", 0, (unsigned char*)"ZBXD\x01", 5, misc_add_protocol_classify);
 
+    moloch_parsers_classifier_register_tcp("rmi", "rmi", 0, (unsigned char*)"\x4a\x52\x4d\x49\x00\x02\x4b", 7, misc_add_protocol_classify);
+
     userField = moloch_field_by_db("user");
 }
 
