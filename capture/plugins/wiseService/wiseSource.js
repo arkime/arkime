@@ -59,6 +59,18 @@ function WISESource (api, section) {
     self.excludeIPs.add(parts[0], +parts[1] || 32, true);
   });
 
+  items = api.getConfig(section, "onlyIPs", undefined);
+  if (items) {
+    self.onlyIPs = new iptrie.IPTrie();
+    items.split(";").forEach(function(item) {
+      if (item === "") {
+        return;
+      }
+      var parts = item.split("/");
+      self.onlyIPs.add(parts[0], +parts[1] || 32, true);
+    });
+  }
+
   // fields defined for source
   var fields = api.getConfig(section, "fields");
   if (fields !== undefined) {

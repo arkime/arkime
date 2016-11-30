@@ -552,6 +552,9 @@ internals.ip.source_allowed = function(src, value) {
     }
     return false;
   }
+  if (src.onlyIPs && !src.onlyIPs.find(value)) {
+    return false;
+  }
   return true;
 };
 internals.md5.source_allowed = function(src, value) {return true;};
