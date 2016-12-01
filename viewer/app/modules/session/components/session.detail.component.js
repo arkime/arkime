@@ -72,27 +72,27 @@
           this.$scope.molochFields = response;
         });
 
-      // update session detail when tags are added
-      this.$scope.$on('update:tags', (event, args) => {
-        if (this.$scope.session.id === args.id) {
-          this.getDetailData();
-        }
-      });
-
       /* LISTEN! */
       this.$scope.$on('open:form:container', (event, args) => {
         this.$scope.displayFormContainer(args);
       });
 
       this.$scope.$on('close:form:container', (event, args) => {
-        this.$scope.hideFormContainer();
+        console.log(args);
+        if (args.ids) { // find the sessions affected
+          for (let i = 0, len = args.ids.length; i < len; ++i) {
+            this.$scope.hideFormContainer();
 
-        if (args && args.reloadData) {
-          this.getDetailData(this.$scope.params);
-        }
+            if (this.$scope.session.id === args.ids[i]) {
+              if (args && args.reloadData) {
+                this.getDetailData(this.$scope.params);
+              }
 
-        if (args && args.message) {
-          this.$scope.displayFormContainer(args);
+              if (args && args.message) {
+                this.$scope.displayFormContainer(args);
+              }
+            }
+          }
         }
       });
     }
@@ -134,7 +134,7 @@
 
     removeItem(value, field) {
       if (field === 'tags') {
-        this.SessionService.removeTags(this.$scope.session.id, value)
+        this.SessionService.removeTags([this.$scope.session.id], value)
           .then((response) => {
             this.getDetailData(); // refresh content
           })
@@ -164,11 +164,11 @@
           var formHTMLs = {
             'add:tags'      : `<div class="margined-bottom-xlg">
                                 <session-tag class="form-container"
-                                sessionid="session.id" add="true"></session-tag>
+                                sessions="[session]" add="true"></session-tag>
                               </div>`,
             'remove:tags'   : `<div class="margined-bottom-xlg">
                                 <session-tag class="form-container"
-                                sessionid="session.id" add="false"></session-tag>
+                                sessions="[session]" add="false"></session-tag>
                               </div>`,
             'export:pcap'   : `<div class="margined-bottom-xlg">
                                 <export-pcap class="form-container"

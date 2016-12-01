@@ -155,6 +155,21 @@
     })
 
     /**
+     * Min filter
+     * Returns the minimum number in a number array
+     *
+     * @example
+     * '{{[num1, num2, ...] | min}}'
+     */
+     .filter('min', function () {
+       return function (input) {
+         if(!Array.isArray(input)) { return input; }
+
+         return Math.min.apply(Math, input);
+       };
+     })
+
+    /**
      * Convert To Number Directive
      * Parses strings to integers
      * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}

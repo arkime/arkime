@@ -146,22 +146,22 @@
       <div class="btn-group">
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
-          uib-btn-radio="'openItems'"
-          uib-tooltip="Apply action to {{$ctrl.numOpenSessions}} opened sessions"
+          uib-btn-radio="'open'"
+          uib-tooltip="Apply action for {{$ctrl.openSessions.length}} opened sessions"
           tooltip-placement="top-left" tooltip-append-to-body="true">
           Open Items
         </label>
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
-          uib-btn-radio="'visibleItems'"
-          uib-tooltip="Apply action to {{[$ctrl.numVisibleSessions,$ctrl.numMatchingSessions] | min}} visible sessions"
+          uib-btn-radio="'visible'"
+          uib-tooltip="Apply action for {{[$ctrl.numVisibleSessions,$ctrl.numMatchingSessions] | min}} visible sessions"
           tooltip-placement="top-left" tooltip-append-to-body="true">
           Visible Items
         </label>
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
-          uib-btn-radio="'matchingItems'"
-          uib-tooltip="Apply action to {{$ctrl.numMatchingSessions | commaString}} query matching sessions"
+          uib-btn-radio="'matching'"
+          uib-tooltip="Apply action for {{$ctrl.numMatchingSessions | commaString}} query matching sessions"
           tooltip-placement="top-left" tooltip-append-to-body="true">
           Matching Items
         </label>
@@ -169,9 +169,17 @@
     </div>
     <div class="col-md-9">
       <session-tag ng-if="$ctrl.actionForm === 'add:tags'" add="true"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
         class="form-container small"></session-tag>
+
       <session-tag ng-if="$ctrl.actionForm === 'remove:tags'" add="false"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
         class="form-container small"></session-tag>
+
       <session-delete ng-if="$ctrl.actionForm === 'delete:session'"
         class="form-container small"></session-delete>
       <export-pcap ng-if="$ctrl.actionForm === 'export:pcap'"

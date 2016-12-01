@@ -28,35 +28,53 @@
       this.tags     = '';
     }
 
+
     /* exposed functions --------------------------------------------------- */
-    addTags() {
-      if (this.tags === '') {
+    apply(addTags) {
+      if (!this.tags || this.tags === '') {
         this.error = 'No tag(s) specified.';
         return;
       }
 
-      this.SessionService.addTags(this.sessionid, this.tags, this.include)
+      let data = {
+        tags    : this.tags,
+        segments: this.include
+      };
+
+      if (!this.applyTo || this.applyTo === 'open') {
+        data.ids    = SessionDetailTagController.getSessionIds(this.sessions);
+      } else if (this.applyTo === 'visible') {
+        data.start  = this.start || 0;
+        data['0']   = this.numVisible;
+      } else if (this.applyTo === 'matching') {
+        data.start  = 0;
+        data['0']   = this.numVisible;
+        data.length = this.numMatching;
+      }
+
+      if (addTags) {
+        this.addTags(data)
+      } else {
+        this.removeTags(data)
+      }
+    }
+
+    addTags(data) {
+      this.SessionService.addTags(data)
         .then((response) => {
-          this.tags     = '';
-          // notify parent that tags were added (namely session.detail.component)
-          this.$scope.$emit('update:tags', { id:this.sessionid });
+          this.tags = '';
+          SessionDetailTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
           this.error = error;
         });
     }
 
-    removeTags() {
-      if (this.tags === '') {
-        this.error = 'No tag(s) specified.';
-        return;
-      }
-
-      this.SessionService.removeTags(this.sessionid, this.tags, this.include)
+    removeTags(data) {
+      this.SessionService.removeTags(data)
         .then((response) => {
-          this.tags     = '';
-          // notify parent that tags were added (namely session.detail.component)
-          this.$scope.$emit('update:tags', { id:this.sessionid });
+          this.tags = '';
+          SessionDetailTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
           this.error = error;
@@ -64,8 +82,32 @@
     }
 
     cancel() {
-      // close the form container (in session.detail.component)
+      // close the form container
       this.$scope.$emit('close:form:container');
+    }
+
+
+    /* internal functions -------------------------------------------------- */
+    static closeForm(response, data, scope) {
+      // notify parent that tags were added
+      // but only reload data if tags were added to only one
+      let args = { ids: data.ids };
+      if (response.data.text) { args.message = response.data.text; }
+      if (data.ids && data.ids.length === 1) { args.reloadData = true; }
+
+      scope.$emit('close:form:container', args);
+    }
+
+    static getSessionIds(sessions) {
+      let ids = [];
+
+      if (sessions) {
+        for (let i = 0, len = sessions.length; i < len; ++i) {
+          ids.push(sessions[i].id);
+        }
+      }
+
+      return ids;
     }
 
   }
@@ -80,7 +122,14 @@
     .component('sessionTag', {
       template  : require('html!../templates/session.tag.html'),
       controller: SessionDetailTagController,
-      bindings  : { sessionid : '<', add: '<' }
+      bindings  : {
+        sessions    : '<',
+        add         : '<',
+        applyTo     : '<',
+        numMatching : '<',
+        numVisible  : '<',
+        start       : '<'
+      }
     });
 
 })();

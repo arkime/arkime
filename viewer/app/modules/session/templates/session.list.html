@@ -1,9 +1,9 @@
 <div class="container-fluid margined-left margined-right">
 
-  <moloch-search num-open-sessions="$ctrl.stickySessions.length"
+  <moloch-search open-sessions="$ctrl.stickySessions"
     num-visible-sessions="$ctrl.query.length"
-    num-matching-sessions="$ctrl.sessions.recordsFiltered">
-  </moloch-search>
+    num-matching-sessions="$ctrl.sessions.recordsFiltered"
+    start="$ctrl.query.start"></moloch-search>
 
   <!-- session visualizations -->
   <div class="row margin-for-search-navbar">

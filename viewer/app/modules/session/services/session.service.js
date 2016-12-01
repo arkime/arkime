@@ -169,21 +169,16 @@
 
     /**
      * Add tags to sessions
-     * @param {string} id         The unique id of the session to add tags to
-     * @param {string} tags       The comma separated string of tags to add
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    addTags(id, tags, segments) {
+    addTags(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id, tags:tags };
+        let url   = SessionService.getTagURL('addTags', params, this.$location);
+        let data  = SessionService.getTagData(params);
 
-        if (segments !== 'no') { data.segments = segments; }
-
-        var url = SessionService.urlWithDateParams('addTags', this.$location.search());
-
-        var options = { url:url, method:'POST', data:data };
+        let options = { url:url, method:'POST', data:data };
 
         this.$http(options)
           .then((response) => {
@@ -197,19 +192,14 @@
 
     /**
      * Remove tags from sessions
-     * @param {string} id         The unique id of the session to remove tags from
-     * @param {string} tags       The comma separated string of tags to remove
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    removeTags(id, tags, segments) {
+    removeTags(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id, tags:tags };
-
-        if (segments !== 'no') { data.segments = segments; }
-
-        var url = SessionService.urlWithDateParams('removeTags', this.$location.search());
+        let url   = SessionService.getTagURL('addTags', params, this.$location);
+        let data  = SessionService.getTagData(params);
 
         var options = { url:url, method:'POST', data:data };
 
@@ -358,6 +348,34 @@
       }
 
       return baseUrl;
+    }
+
+    static getTagData(params) {
+      let data = { tags: params.tags };
+
+      if (params.segments !== 'no') { data.segments = params.segments; }
+
+      if (params.ids && Array.isArray(params.ids)) {
+        data.ids = params.ids.join(',');
+      }
+
+      return data;
+    }
+
+    static getTagURL(baseURL, params, location) {
+      let url = SessionService.urlWithDateParams(baseURL, location.search());
+
+      if (params['0'] && params.start) {
+        url += '&0=' + params['0'];
+        url += '&start=' + params.start;
+      }
+
+      if ((params.start || params.start === 0) && params.length) {
+        url += '&start=' + params.start;
+        url += '&length=' + params.length;
+      }
+
+      return url;
     }
 
   }

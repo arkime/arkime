@@ -36,7 +36,7 @@
            this.molochclusters = clusters;
          });
 
-      this.actionFormItemRadio = 'visibleItems';
+      this.actionFormItemRadio = 'visible';
 
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
@@ -102,12 +102,6 @@
       // watch for closing the action form
       this.$scope.$on('close:form:container', (event, args) => {
         this.actionForm = false;
-
-        if (args && args.reloadData) {
-          // TODO: test this
-          let args = { expression: this.expression.value };
-          this.$scope.$emit('change:search', args);
-        }
       });
     }
 
@@ -253,9 +247,10 @@
       template  : require('html!../templates/search.html'),
       controller: SearchController,
       bindings  : {
-        numOpenSessions     : '<',
+        openSessions        : '<',
         numVisibleSessions  : '<',
-        numMatchingSessions : '<'
+        numMatchingSessions : '<',
+        start               : '<'
       }
     });
 
