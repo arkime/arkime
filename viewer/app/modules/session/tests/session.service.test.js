@@ -7,7 +7,7 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var SessionService;
+    let SessionService;
 
     // load service
     beforeEach(inject(function(_SessionService_) {
@@ -19,7 +19,7 @@
     });
 
     describe('http requests ->', function() {
-      var $httpBackend;
+      let $httpBackend;
 
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
@@ -61,13 +61,13 @@
       });
 
       it('should send a GET request (without parameters) for sessions', function() {
-        var result = SessionService.get();
+        SessionService.get();
         $httpBackend.expectGET('sessions.json');
         $httpBackend.flush();
       });
 
       it('should send a GET request (with parameters) for sessions', function() {
-        var query = {
+        let query = {
           length: 100,// page length
           start : 0,  // first item index
           sorts : [['fp','asc']], // array of sort objects

@@ -13,6 +13,7 @@ require('./session/components/session.tag.component');
 require('./session/components/session.actions.component');
 require('./session/components/session.sticky.component');
 require('./session/components/session.export.pcap.component');
+require('./session/components/session.export.csv.component');
 require('./session/components/session.scrub.pcap.component');
 require('./session/components/session.delete.component');
 require('./session/components/session.send.component');

@@ -1,44 +1,40 @@
-<form class="margined-top margined-bottom-xlg">
-
-  <div class="row">
-    <div class="col-md-5">
-      <em><strong class="text-danger">
-        This will perform a three pass overwrite of all packet data for matching
-        packets. SPI data will be non forensically removed for matching sessions.
-      </strong></em>
+<div class="row">
+  <div class="col-md-5">
+    <em><strong class="text-danger">
+      This will perform a three pass overwrite of all packet data for matching
+      packets. SPI data will be non forensically removed for matching sessions.
+    </strong></em>
+  </div>
+  <div class="col-md-4">
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        Include
+      </span>
+      <select ng-model="$ctrl.include"
+        class="form-control" style="-webkit-appearance: none;">
+        <option value="no">no</option>
+        <option value="all">all</option>
+        <option value="time">same time period</option>
+      </select>
+      <span class="input-group-addon">
+        linked segments (slow)
+      </span>
     </div>
-    <div class="col-md-4">
-      <div class="input-group input-group-sm">
-        <span class="input-group-addon">
-          Include
-        </span>
-        <select ng-model="$ctrl.include"
-          class="form-control" style="-webkit-appearance: none;">
-          <option value="no">no</option>
-          <option value="all">all</option>
-          <option value="time">same time period</option>
-        </select>
-        <span class="input-group-addon">
-          linked segments (slow)
-        </span>
-      </div>
-      <p ng-if="$ctrl.error" class="text-danger">
-        <span class="fa fa-exclamation-triangle"></span>&nbsp;
-        {{$ctrl.error}}
-      </p>
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-danger btn-sm pull-right" ng-click="$ctrl.delete()">
-        <span class="fa fa-trash-o"></span>&nbsp;
-        Destructively Delete Data
-      </button>
-    </div>
-    <div class="col-md-1">
-      <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
-        <span class="fa fa-ban"></span>&nbsp;
-        cancel
-      </div>
+    <p ng-if="$ctrl.error" class="text-danger">
+      <span class="fa fa-exclamation-triangle"></span>&nbsp;
+      {{$ctrl.error}}
+    </p>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-danger btn-sm pull-right" ng-click="$ctrl.delete()">
+      <span class="fa fa-trash-o"></span>&nbsp;
+      Destructively Delete Data
+    </button>
+  </div>
+  <div class="col-md-1">
+    <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
+      <span class="fa fa-ban"></span>&nbsp;
+      cancel
     </div>
   </div>
-
-</form>
+</div>

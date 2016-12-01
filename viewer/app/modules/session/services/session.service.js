@@ -242,6 +242,24 @@
     }
 
     /**
+     * Exports a csv by setting window.location
+     * @param {string} id         The unique id of the session to remove tags from
+     * @param {string} tags       The comma separated string of tags to remove
+     * @param {string} segments   'no', 'all', or 'time'
+     */
+    exportCSV(id, filename, segments) {
+      var baseUrl = `sessions.csv/${filename}`;
+
+      var url = SessionService.urlWithDateParams(baseUrl, this.$location.search());
+
+      url += `&ids=${id}`;
+
+      if (segments !== 'no') { url += `&segments=${segments}`; }
+
+      this.$window.location = url;
+    }
+
+    /**
      * Scrubs pcap data in session
      * @param {string} id         The unique id of the session
      * @param {string} segments   'no', 'all', or 'time'

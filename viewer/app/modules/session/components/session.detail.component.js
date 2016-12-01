@@ -162,16 +162,30 @@
 
           /* exposed functions --------------------------------------------- */
           var formHTMLs = {
-            'remove:tags'   : `<session-tag class="form-container"
-                              sessionid="session.id" add="false"></session-tag>`,
-            'export:pcap'   : `<export-pcap class="form-container"
-                              sessionid="session.id"></export-pcap>`,
-            'scrub:pcap'    : `<scrub-pcap class="form-container"
-                              sessionid="session.id"></scrub-pcap>`,
-            'delete:session': `<session-delete class="form-container"
-                              sessionid="session.id"></session-delete>`,
-            'send:session'  : `<session-send class="form-container"
-                              sessionid="session.id" cluster="cluster"></session-send>`
+            'add:tags'      : `<div class="margined-bottom-xlg">
+                                <session-tag class="form-container"
+                                sessionid="session.id" add="true"></session-tag>
+                              </div>`,
+            'remove:tags'   : `<div class="margined-bottom-xlg">
+                                <session-tag class="form-container"
+                                sessionid="session.id" add="false"></session-tag>
+                              </div>`,
+            'export:pcap'   : `<div class="margined-bottom-xlg">
+                                <export-pcap class="form-container"
+                                sessionid="session.id"></export-pcap>
+                              </div>`,
+            'scrub:pcap'    : `<div class="margined-bottom-xlg">
+                                <scrub-pcap class="form-container"
+                                sessionid="session.id"></scrub-pcap>
+                              </div>`,
+            'delete:session': `<div class="margined-bottom-xlg">
+                                <session-delete class="form-container"
+                                sessionid="session.id"></session-delete>
+                              </div>`,
+            'send:session'  : `<div class="margined-bottom-xlg">
+                                <session-send class="form-container"
+                                sessionid="session.id" cluster="cluster"></session-send>
+                              </div>`
           };
 
           scope.displayFormContainer = function(args) {
@@ -473,9 +487,13 @@
               var optContent  = $compile(optionsHTML)(scope);
               optionsEl.replaceWith(optContent);
 
-              // display tag adding form
+              // display tag adding button by the tags
               var tagEl       = element.find('.session-tag-container');
-              var tagContent  = $compile('<session-tag sessionid="session.id" add="true"></session-tag>')(scope);
+              var tagContent  = $compile(`<div ng-click="displayFormContainer({form:'add:tags'})"
+                                          uib-tooltip="Add a new tag to this session"
+                                          class="btn btn-xs btn-blue margined-left-xlg margined-bottom margined-top">
+                                          <span class="fa fa-plus-circle"></span>
+                                        </div>`)(scope);
               tagEl.replaceWith(tagContent);
 
               // add click listener to add expression to search input

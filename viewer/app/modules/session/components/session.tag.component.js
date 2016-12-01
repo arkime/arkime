@@ -24,7 +24,6 @@
     }
 
     $onInit() {
-      this.tagging  = false;
       this.include  = 'no';
       this.tags     = '';
     }
@@ -38,7 +37,6 @@
 
       this.SessionService.addTags(this.sessionid, this.tags, this.include)
         .then((response) => {
-          this.tagging  = false;
           this.tags     = '';
           // notify parent that tags were added (namely session.detail.component)
           this.$scope.$emit('update:tags', { id:this.sessionid });
@@ -56,7 +54,6 @@
 
       this.SessionService.removeTags(this.sessionid, this.tags, this.include)
         .then((response) => {
-          this.tagging  = false;
           this.tags     = '';
           // notify parent that tags were added (namely session.detail.component)
           this.$scope.$emit('update:tags', { id:this.sessionid });
@@ -67,10 +64,8 @@
     }
 
     cancel() {
-      this.tagging = false;
-      if (!this.add) { // close the form container (in session.detail.component)
-        this.$scope.$emit('close:form:container');
-      }
+      // close the form container (in session.detail.component)
+      this.$scope.$emit('close:form:container');
     }
 
   }

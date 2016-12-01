@@ -2,8 +2,8 @@
 
   'use strict';
 
-  var hourMS      = 3600000;
-  var currentTime = new Date().getTime();
+  const hourMS    = 3600000;
+  let currentTime = new Date().getTime();
 
   /**
    * @class SearchController
@@ -14,20 +14,30 @@
     /**
      * Initialize global variables for this controller
      * @param $scope        Angular application model object
-     * @param $routeParams  Retrieve the current set of route parameters
      * @param $location     Exposes browser address bar URL (based on the window.location)
+     * @param $rootScope    Angular application main scope
+     * @param $routeParams  Retrieve the current set of route parameters
+     * @param ConfigService Transacts app configurations with the server
      *
      * @ngInject
      */
-    constructor($scope, $rootScope, $routeParams, $location) {
-      this.$scope       = $scope;
-      this.$rootScope   = $rootScope;
-      this.$routeParams = $routeParams;
-      this.$location    = $location;
+    constructor($scope, $location, $rootScope, $routeParams, ConfigService) {
+      this.$scope         = $scope;
+      this.$location      = $location;
+      this.$rootScope     = $rootScope;
+      this.$routeParams   = $routeParams;
+      this.ConfigService  = ConfigService;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.ConfigService.getMolochClusters()
+         .then((clusters) => {
+           this.molochclusters = clusters;
+         });
+
+      this.actionFormItemRadio = 'visibleItems';
+
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
         if (this.timeRange === '-1') { // all time
@@ -38,8 +48,8 @@
         this.$location.search('startTime', null);
       } else if(this.$routeParams.startTime && this.$routeParams.stopTime) {
         // start and stop times available
-        var stop  = parseInt(this.$routeParams.stopTime * 1000, 10);
-        var start = parseInt(this.$routeParams.startTime * 1000, 10);
+        let stop  = parseInt(this.$routeParams.stopTime * 1000, 10);
+        let start = parseInt(this.$routeParams.startTime * 1000, 10);
         if (stop && start && !isNaN(stop) && !isNaN(start)) {
           // if we can parse start and stop time, set them
           this.timeRange  = '0'; // custom time range
@@ -88,6 +98,17 @@
           this.changeDate();
         });
       });
+
+      // watch for closing the action form
+      this.$scope.$on('close:form:container', (event, args) => {
+        this.actionForm = false;
+
+        if (args && args.reloadData) {
+          // TODO: test this
+          let args = { expression: this.expression.value };
+          this.$scope.$emit('change:search', args);
+        }
+      });
     }
 
 
@@ -109,8 +130,8 @@
      changeDate() {
        this.timeRange = '0'; // custom time range
 
-       var stopSec  = (this.stopTime / 1000).toFixed();
-       var startSec = (this.startTime / 1000).toFixed();
+       let stopSec  = (this.stopTime / 1000).toFixed();
+       let startSec = (this.startTime / 1000).toFixed();
 
        // only continue if start and stop are valid numbers
        if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
@@ -144,7 +165,7 @@
      * (startTime, stopTime, timeRange, expression, strictly)
      */
     change() {
-      var useDateRange = false;
+      let useDateRange = false;
 
       // update the parameters with the expression
       if (this.expression.value && this.expression.value !== '') {
@@ -174,7 +195,7 @@
       // querying with date range causes unexpected paging behavior
       // because there are always new sessions
       if (this.startTime && this.stopTime) {
-        var args = {
+        let args = {
           expression: this.expression.value,
           strictly  : this.strictly
         };
@@ -193,9 +214,35 @@
       }
     }
 
+
+    /* Action Menu Functions ----------------------------------------------- */
+    addTags() {
+      this.actionForm = 'add:tags';
+    }
+    removeTags() {
+      this.actionForm = 'remove:tags';
+    }
+    exportPCAP() {
+      this.actionForm = 'export:pcap';
+    }
+    exportCSV() {
+      this.actionForm = 'export:csv';
+    }
+    scrubPCAP() {
+      this.actionForm = 'scrub:pcap';
+    }
+    deleteSession() {
+      this.actionForm = 'delete:session';
+    }
+    sendSession(cluster) {
+      this.actionForm = 'send:session';
+      this.cluster    = cluster;
+    }
+
   }
 
-  SearchController.$inject = ['$scope','$rootScope','$routeParams','$location'];
+  SearchController.$inject = ['$scope','$location','$rootScope','$routeParams',
+    'ConfigService'];
 
   /**
    * Search Component
@@ -204,7 +251,12 @@
   angular.module('directives.search', [])
     .component('molochSearch', {
       template  : require('html!../templates/search.html'),
-      controller: SearchController
+      controller: SearchController,
+      bindings  : {
+        numOpenSessions     : '<',
+        numVisibleSessions  : '<',
+        numMatchingSessions : '<'
+      }
     });
 
 })();

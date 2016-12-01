@@ -1,70 +1,51 @@
-<span class="session-tag">
-
-  <div ng-if="!$ctrl.tagging && $ctrl.add"
-    ng-click="$ctrl.tagging = true;"
-    uib-tooltip="Add a new tag to this session"
-    class="btn btn-xs btn-blue margined-left-xlg margined-bottom margined-top">
-    <span class="fa fa-plus-circle"></span>
-  </div>
-
-  <div ng-if="$ctrl.tagging && $ctrl.add"
-    ng-click="$ctrl.tagging = false;"
-    uib-tooltip="Close without adding tags"
-    class="btn btn-xs btn-warning margined-left-xlg margined-bottom margined-top">
-    <span class="fa fa-minus-circle"></span>
-  </div>
-
-  <form ng-if="$ctrl.tagging || !$ctrl.add" class="margined-top margined-bottom-xlg">
-
-    <div class="row">
-      <div class="col-md-4">
-        <div class="input-group input-group-sm">
-          <span class="input-group-addon">
-            Include
-          </span>
-          <select ng-model="$ctrl.include"
-            class="form-control" style="-webkit-appearance: none;">
-            <option value="no">no</option>
-            <option value="all">all</option>
-            <option value="time">same time period</option>
-          </select>
-          <span class="input-group-addon">
-            linked segments (slow)
-          </span>
-        </div>
-      </div>
-      <div class="col-md-7">
-        <div class="input-group input-group-sm">
-          <span class="input-group-addon">
-            Tags
-          </span>
-          <input ng-model="$ctrl.tags"
-            type="text" class="form-control"
-            placeholder="Enter a comma separated list of tags">
-          <span class="input-group-btn">
-            <button class="btn btn-green" ng-if="$ctrl.add" ng-click="$ctrl.addTags()">
-              <span class="fa fa-plus-circle"></span>&nbsp;
-              Add Tags
-            </button>
-            <button class="btn btn-danger" ng-if="!$ctrl.add" ng-click="$ctrl.removeTags()">
-              <span class="fa fa-trash-o"></span>&nbsp;
-              Remove Tags
-            </button>
-          </span>
-        </div>
-        <p ng-if="$ctrl.error" class="text-danger">
-          <span class="fa fa-exclamation-triangle"></span>&nbsp;
-          {{$ctrl.error}}
-        </p>
-      </div>
-      <div class="col-md-1">
-        <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
-          <span class="fa fa-ban"></span>&nbsp;
-          cancel
-        </div>
-      </div>
+<div class="row">
+  <div class="col-md-4">
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        Include
+      </span>
+      <select ng-model="$ctrl.include"
+        class="form-control" style="-webkit-appearance: none;">
+        <option value="no">no</option>
+        <option value="all">all</option>
+        <option value="time">same time period</option>
+      </select>
+      <span class="input-group-addon">
+        linked segments (slow)
+      </span>
     </div>
-
-  </form>
-
-</span>
+  </div>
+  <div class="col-md-7">
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        Tags
+      </span>
+      <input ng-model="$ctrl.tags"
+        type="text" class="form-control"
+        placeholder="Enter a comma separated list of tags">
+      <span class="input-group-btn">
+        <button class="btn btn-green" ng-if="$ctrl.add"
+          ng-click="$ctrl.addTags()">
+          <span class="fa fa-plus-circle"></span>&nbsp;
+          Add Tags
+        </button>
+        <button class="btn btn-danger" ng-if="!$ctrl.add"
+          ng-click="$ctrl.removeTags()">
+          <span class="fa fa-trash-o"></span>&nbsp;
+          Remove Tags
+        </button>
+      </span>
+    </div>
+    <p ng-if="$ctrl.error" class="text-danger">
+      <span class="fa fa-exclamation-triangle"></span>&nbsp;
+      {{$ctrl.error}}
+    </p>
+  </div>
+  <div class="col-md-1">
+    <div class="btn btn-sm btn-warning pull-right"
+      ng-click="$ctrl.cancel()">
+      <span class="fa fa-ban"></span>&nbsp;
+      cancel
+    </div>
+  </div>
+</div>
