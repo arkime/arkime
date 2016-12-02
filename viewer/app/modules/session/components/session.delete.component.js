@@ -7,7 +7,10 @@
    * @classdesc Interacts with session delete form
    *
    * @example
-   * '<session-delete sessionid="session.id"></session-delete>'
+   * '<session-delete sessions="[session1...sessionN]"
+   *    apply-to="'open' || 'visible' || 'matching'"
+   *    num-visible="numVisibleSessions" start="startSessionIndex"
+   *    num-matching="numQueryMatchingSessions"></session-delete>'
    */
   class SessionDeleteController {
 
@@ -24,26 +27,45 @@
     }
 
     $onInit() {
-      this.include = 'no';
+      this.segments = 'no';
     }
 
     /* exposed functions --------------------------------------------------- */
-    delete() {
+    deleteSessions() {
       if (this.filename === '') {
         this.error = 'No filename specified.';
         return;
       }
 
-      this.SessionService.delete(this.sessionid, this.include)
+      let data = {
+        start       : this.start,
+        applyTo     : this.applyTo,
+        segments    : this.segments,
+        sessions    : this.sessions,
+        numVisible  : this.numVisible,
+        numMatching : this.numMatching
+      };
+
+      this.SessionService.remove(data)
         .then((response) => {
-          this.$scope.$emit('close:form:container', { reloadData: true });
+          let args = {};
+
+          if (response.data.text) { args.message = response.data.text; }
+
+          //  only reload data if tags were added to only one
+          if (data.sessions && data.sessions.length === 1) {
+            args.reloadData = true;
+          }
+
+          // notify parent to close form
+          this.$scope.$emit('close:form:container', args);
         })
         .catch((error) => {
           this.error = error;
         });
     }
 
-    cancel() { // close the form container (in session.detail.component)
+    cancel() { // close the form
       this.$scope.$emit('close:form:container');
     }
 
@@ -52,14 +74,20 @@
   SessionDeleteController.$inject = ['$scope', 'SessionService'];
 
   /**
-   * Add Tag Directive
-   * Displays add tag area
+   * Delete Session Directive
+   * Displays session deletion form
    */
   angular.module('moloch')
     .component('sessionDelete', {
       template  : require('html!../templates/session.delete.html'),
       controller: SessionDeleteController,
-      bindings  : { sessionid : '<' }
+      bindings  : {
+        start       : '<', // where to start the action
+        applyTo     : '<', // what to apply the action to [open,visible,matching]
+        sessions    : '<', // sessions to apply the action to
+        numVisible  : '<', // number of visible sessions to apply action to
+        numMatching : '<'  // number of matching sessions to apply action to
+      }
     });
 
 })();

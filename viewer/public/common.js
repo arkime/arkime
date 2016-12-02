@@ -406,7 +406,7 @@ $(document).ready(function() {
 
       if (typeof sessionsTable !== 'undefined') {
         var info = sessionsTable.page.info();
-        qs = [{name: length, value: info.length}];
+        qs = [{name: 'length', value: info.length}];
         if (type === "all") {
           updateParam(qs, "start", 0);
           updateParam(qs, "length", info.recordsDisplay);

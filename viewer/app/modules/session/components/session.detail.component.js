@@ -78,21 +78,11 @@
       });
 
       this.$scope.$on('close:form:container', (event, args) => {
-        console.log(args);
-        if (args.ids) { // find the sessions affected
-          for (let i = 0, len = args.ids.length; i < len; ++i) {
-            this.$scope.hideFormContainer();
-
-            if (this.$scope.session.id === args.ids[i]) {
-              if (args && args.reloadData) {
-                this.getDetailData(this.$scope.params);
-              }
-
-              if (args && args.message) {
-                this.$scope.displayFormContainer(args);
-              }
-            }
-          }
+        this.$scope.hideFormContainer();
+        // TODO: display args.message to user for longer
+        if (args) {
+          if (args.reloadData)  { this.getDetailData(this.$scope.params); }
+          if (args.message)     { this.$scope.displayFormContainer(args); }
         }
       });
     }
@@ -134,7 +124,8 @@
 
     removeItem(value, field) {
       if (field === 'tags') {
-        this.SessionService.removeTags([this.$scope.session.id], value)
+        let data = { sessions:[this.$scope.session], tags:value };
+        this.SessionService.removeTags(data)
           .then((response) => {
             this.getDetailData(); // refresh content
           })
@@ -172,19 +163,19 @@
                               </div>`,
             'export:pcap'   : `<div class="margined-bottom-xlg">
                                 <export-pcap class="form-container"
-                                sessionid="session.id"></export-pcap>
+                                sessions="[session]"></export-pcap>
                               </div>`,
             'scrub:pcap'    : `<div class="margined-bottom-xlg">
                                 <scrub-pcap class="form-container"
-                                sessionid="session.id"></scrub-pcap>
+                                sessions="[session]"></scrub-pcap>
                               </div>`,
             'delete:session': `<div class="margined-bottom-xlg">
                                 <session-delete class="form-container"
-                                sessionid="session.id"></session-delete>
+                                sessions="[session]"></session-delete>
                               </div>`,
             'send:session'  : `<div class="margined-bottom-xlg">
                                 <session-send class="form-container"
-                                sessionid="session.id" cluster="cluster"></session-send>
+                                sessions="[session]" cluster="cluster"></session-send>
                               </div>`
           };
 

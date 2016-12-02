@@ -3,13 +3,16 @@
   'use strict';
 
   /**
-   * @class SessionDetailTagController
-   * @classdesc Interacts with add tag area
+   * @class SessionTagController
+   * @classdesc Interacts with add/remove tag area
    *
    * @example
-   * '<session-tag sessionid="session.id"></session-tag>'
+   * '<session-tag sessions="[session1...sessionN]"
+   *    apply-to="'open' || 'visible' || 'matching'"
+   *    num-visible="numVisibleSessions" start="startSessionIndex"
+   *    num-matching="numQueryMatchingSessions"></session-tag>'
    */
-  class SessionDetailTagController {
+  class SessionTagController {
 
     /**
      * Initialize global variables for this controller
@@ -24,12 +27,16 @@
     }
 
     $onInit() {
-      this.include  = 'no';
+      this.segments  = 'no';
       this.tags     = '';
     }
 
 
     /* exposed functions --------------------------------------------------- */
+    /**
+     * Triggered by add/remove tag button in form
+     * @param {bool} addTags Whether to add tags or remove tags
+     */
     apply(addTags) {
       if (!this.tags || this.tags === '') {
         this.error = 'No tag(s) specified.';
@@ -37,33 +44,24 @@
       }
 
       let data = {
-        tags    : this.tags,
-        segments: this.include
+        tags        : this.tags,
+        start       : this.start,
+        applyTo     : this.applyTo,
+        segments    : this.segments,
+        sessions    : this.sessions,
+        numVisible  : this.numVisible,
+        numMatching : this.numMatching
       };
 
-      if (!this.applyTo || this.applyTo === 'open') {
-        data.ids    = SessionDetailTagController.getSessionIds(this.sessions);
-      } else if (this.applyTo === 'visible') {
-        data.start  = this.start || 0;
-        data['0']   = this.numVisible;
-      } else if (this.applyTo === 'matching') {
-        data.start  = 0;
-        data['0']   = this.numVisible;
-        data.length = this.numMatching;
-      }
-
-      if (addTags) {
-        this.addTags(data)
-      } else {
-        this.removeTags(data)
-      }
+      if (addTags) { this.addTags(data); }
+      else { this.removeTags(data); }
     }
 
     addTags(data) {
       this.SessionService.addTags(data)
         .then((response) => {
           this.tags = '';
-          SessionDetailTagController.closeForm(response, data, this.$scope);
+          SessionTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
           this.error = error;
@@ -74,61 +72,58 @@
       this.SessionService.removeTags(data)
         .then((response) => {
           this.tags = '';
-          SessionDetailTagController.closeForm(response, data, this.$scope);
+          SessionTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
           this.error = error;
         });
     }
 
-    cancel() {
-      // close the form container
+    cancel() { // close the form
       this.$scope.$emit('close:form:container');
     }
 
 
     /* internal functions -------------------------------------------------- */
+    /**
+     * Closes the add/remove tag form and notifies parent
+     * @param {object} response Response data from the server
+     * @param {object} data     Data sent to the server
+     * @param {object} scope    Session Tag Controller's scope
+     */
     static closeForm(response, data, scope) {
-      // notify parent that tags were added
-      // but only reload data if tags were added to only one
-      let args = { ids: data.ids };
+      let args = {};
+
       if (response.data.text) { args.message = response.data.text; }
-      if (data.ids && data.ids.length === 1) { args.reloadData = true; }
 
-      scope.$emit('close:form:container', args);
-    }
-
-    static getSessionIds(sessions) {
-      let ids = [];
-
-      if (sessions) {
-        for (let i = 0, len = sessions.length; i < len; ++i) {
-          ids.push(sessions[i].id);
-        }
+      //  only reload data if tags were added to only one
+      if (data.sessions && data.sessions.length === 1) {
+        args.reloadData = true;
       }
 
-      return ids;
+      // notify parent to close form
+      scope.$emit('close:form:container', args);
     }
 
   }
 
-  SessionDetailTagController.$inject = ['$scope', 'SessionService'];
+  SessionTagController.$inject = ['$scope', 'SessionService'];
 
   /**
-   * Add Tag Directive
-   * Displays add tag area
+   * Session Tag Directive
+   * Displays add/remove tags form
    */
   angular.module('moloch')
     .component('sessionTag', {
       template  : require('html!../templates/session.tag.html'),
-      controller: SessionDetailTagController,
+      controller: SessionTagController,
       bindings  : {
-        sessions    : '<',
-        add         : '<',
-        applyTo     : '<',
-        numMatching : '<',
-        numVisible  : '<',
-        start       : '<'
+        add         : '<', // whether to add or remove tags
+        start       : '<', // where to start the action
+        applyTo     : '<', // what to apply the action to [open,visible,matching]
+        sessions    : '<', // sessions to apply the action to
+        numVisible  : '<', // number of visible sessions to apply action to
+        numMatching : '<'  // number of matching sessions to apply action to
       }
     });
 

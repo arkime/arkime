@@ -173,23 +173,36 @@
         num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
         num-matching="$ctrl.numMatchingSessions"
         class="form-container small"></session-tag>
-
       <session-tag ng-if="$ctrl.actionForm === 'remove:tags'" add="false"
         sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
         num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
         num-matching="$ctrl.numMatchingSessions"
         class="form-container small"></session-tag>
-
       <session-delete ng-if="$ctrl.actionForm === 'delete:session'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
         class="form-container small"></session-delete>
-      <export-pcap ng-if="$ctrl.actionForm === 'export:pcap'"
-        class="form-container small"></export-pcap>
-      <export-csv ng-if="$ctrl.actionForm === 'export:csv'"
-        class="form-container small"></export-csv>
       <scrub-pcap ng-if="$ctrl.actionForm === 'scrub:pcap'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
         class="form-container small"></scrub-pcap>
       <session-send ng-if="$ctrl.actionForm === 'send:session'"
-        cluster="$ctrl.cluster" class="form-container small"></session-send>
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
+        class="form-container small"></session-send>
+      <export-pcap ng-if="$ctrl.actionForm === 'export:pcap'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
+        class="form-container small"></export-pcap>
+      <export-csv ng-if="$ctrl.actionForm === 'export:csv'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
+        class="form-container small"></export-csv>
     </div>
   </div>
 

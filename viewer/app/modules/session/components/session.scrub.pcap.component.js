@@ -7,7 +7,10 @@
    * @classdesc Interacts with scrub pcap form
    *
    * @example
-   * '<scrub-pcap sessionid="session.id"></scrub-pcap>'
+   * '<scrub-pcap sessions="[session1...sessionN]"
+   *    apply-to="'open' || 'visible' || 'matching'"
+   *    num-visible="numVisibleSessions" start="startSessionIndex"
+   *    num-matching="numQueryMatchingSessions"></scrub-pcap>'
    */
   class SessionScrubPCAPController {
 
@@ -24,21 +27,40 @@
     }
 
     $onInit() {
-      this.include = 'no';
+      this.segments = 'no';
     }
 
     /* exposed functions --------------------------------------------------- */
     scrubPCAP() {
-      this.SessionService.scrubPCAP(this.sessionid, this.include)
-        .then((response) => {
-          this.$scope.$emit('close:form:container', { reloadData: true });
-        })
-        .catch((error) => {
-          this.error = error;
-        });
+      let data = {
+        start       : this.start,
+        applyTo     : this.applyTo,
+        segments    : this.segments,
+        sessions    : this.sessions,
+        numVisible  : this.numVisible,
+        numMatching : this.numMatching
+      };
+
+      this.SessionService.scrubPCAP(data)
+         .then((response) => {
+           let args = {};
+
+           if (response.data.text) { args.message = response.data.text; }
+
+           //  only reload data if tags were added to only one
+           if (data.sessions && data.sessions.length === 1) {
+             args.reloadData = true;
+           }
+
+           // notify parent to close form
+           this.$scope.$emit('close:form:container', args);
+         })
+         .catch((error) => {
+           this.error = error;
+         });
     }
 
-    cancel() { // close the form container (in session.detail.component)
+    cancel() { // close the form
       this.$scope.$emit('close:form:container');
     }
 
@@ -48,13 +70,19 @@
 
   /**
    * Scrub PCAP Directive
-   * Displays scrub PCAP
+   * Displays scrub PCAP form
    */
   angular.module('moloch')
     .component('scrubPcap', {
       template  : require('html!../templates/session.scrub.pcap.html'),
       controller: SessionScrubPCAPController,
-      bindings  : { sessionid : '<' }
+      bindings  : {
+        start       : '<', // where to start the action
+        applyTo     : '<', // what to apply the action to [open,visible,matching]
+        sessions    : '<', // sessions to apply the action to
+        numVisible  : '<', // number of visible sessions to apply action to
+        numMatching : '<'  // number of matching sessions to apply action to
+      }
     });
 
 })();

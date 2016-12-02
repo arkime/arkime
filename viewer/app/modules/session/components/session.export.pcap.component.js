@@ -7,7 +7,10 @@
    * @classdesc Interacts with export pcap form
    *
    * @example
-   * '<export-pcap sessionid="session.id"></export-pcap>'
+   * '<export-pcap sessions="[session1...sessionN]"
+   *    apply-to="'open' || 'visible' || 'matching'"
+   *    num-visible="numVisibleSessions" start="startSessionIndex"
+   *    num-matching="numQueryMatchingSessions"></export-pcap>'
    */
   class SessionExportPCAPController {
 
@@ -24,7 +27,7 @@
     }
 
     $onInit() {
-      this.include  = 'no';
+      this.segments  = 'no';
       this.filename = 'sessions.pcap';
     }
 
@@ -35,11 +38,21 @@
         return;
       }
 
-      this.SessionService.exportPCAP(this.sessionid, this.filename, this.include);
+      let data = {
+        start       : this.start,
+        applyTo     : this.applyTo,
+        filename    : this.filename,
+        segments    : this.segments,
+        sessions    : this.sessions,
+        numVisible  : this.numVisible,
+        numMatching : this.numMatching
+      };
+
+      this.SessionService.exportPCAP(data);
       this.$scope.$emit('close:form:container');
     }
 
-    cancel() { // close the form container (in session.detail.component)
+    cancel() { // close the form
       this.$scope.$emit('close:form:container');
     }
 
@@ -49,13 +62,19 @@
 
   /**
    * Export PCAP Directive
-   * Displays export PCAP
+   * Displays export PCAP form
    */
   angular.module('moloch')
     .component('exportPcap', {
       template  : require('html!../templates/session.export.pcap.html'),
       controller: SessionExportPCAPController,
-      bindings  : { sessionid : '<' }
+      bindings  : {
+        start       : '<', // where to start the action
+        applyTo     : '<', // what to apply the action to [open,visible,matching]
+        sessions    : '<', // sessions to apply the action to
+        numVisible  : '<', // number of visible sessions to apply action to
+        numMatching : '<'  // number of matching sessions to apply action to
+      }
     });
 
 })();

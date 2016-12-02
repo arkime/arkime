@@ -101,6 +101,7 @@
 
       // watch for closing the action form
       this.$scope.$on('close:form:container', (event, args) => {
+        // TODO: display args.message to user
         this.actionForm = false;
       });
     }
@@ -213,21 +214,27 @@
     addTags() {
       this.actionForm = 'add:tags';
     }
+
     removeTags() {
       this.actionForm = 'remove:tags';
     }
+
     exportPCAP() {
       this.actionForm = 'export:pcap';
     }
+
     exportCSV() {
       this.actionForm = 'export:csv';
     }
+
     scrubPCAP() {
       this.actionForm = 'scrub:pcap';
     }
+
     deleteSession() {
       this.actionForm = 'delete:session';
     }
+
     sendSession(cluster) {
       this.actionForm = 'send:session';
       this.cluster    = cluster;

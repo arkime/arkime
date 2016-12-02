@@ -11,7 +11,7 @@
         <span class="input-group-addon">
           Include
         </span>
-        <select ng-model="$ctrl.include"
+        <select ng-model="$ctrl.segments"
           class="form-control" style="-webkit-appearance: none;">
           <option value="no">no</option>
           <option value="all">all</option>
@@ -43,7 +43,8 @@
       </p>
     </div>
     <div class="col-md-1">
-      <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
+      <div class="btn btn-sm btn-warning pull-right"
+        ng-click="$ctrl.cancel()">
         <span class="fa fa-ban"></span>&nbsp;
         cancel
       </div>

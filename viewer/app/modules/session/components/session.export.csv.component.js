@@ -7,7 +7,10 @@
    * @classdesc Interacts with export csv form
    *
    * @example
-   * '<export-csv sessionid="session.id"></export-csv>'
+   * '<export-csv sessions="[session1...sessionN]"
+   *    apply-to="'open' || 'visible' || 'matching'"
+   *    num-visible="numVisibleSessions" start="startSessionIndex"
+   *    num-matching="numQueryMatchingSessions"></export-csv>'
    */
   class SessionExportCSVController {
 
@@ -24,7 +27,7 @@
     }
 
     $onInit() {
-      this.include  = 'no';
+      this.segments = 'no';
       this.filename = 'sessions.csv';
     }
 
@@ -35,11 +38,21 @@
         return;
       }
 
-      this.SessionService.exportCSV(this.sessionid, this.filename, this.include);
+      let data = {
+        start       : this.start,
+        applyTo     : this.applyTo,
+        filename    : this.filename,
+        segments    : this.segments,
+        sessions    : this.sessions,
+        numVisible  : this.numVisible,
+        numMatching : this.numMatching
+      };
+
+      this.SessionService.exportCSV(data);
       this.$scope.$emit('close:form:container');
     }
 
-    cancel() { // close the form container
+    cancel() { // close the form
       this.$scope.$emit('close:form:container');
     }
 
@@ -49,13 +62,19 @@
 
   /**
    * Export CSV Directive
-   * Displays export CSV
+   * Displays export CSV form
    */
   angular.module('moloch')
     .component('exportCsv', {
       template  : require('html!../templates/session.export.csv.html'),
       controller: SessionExportCSVController,
-      bindings  : { sessionid : '<' }
+      bindings  : {
+        start       : '<', // where to start the action
+        applyTo     : '<', // what to apply the action to [open,visible,matching]
+        sessions    : '<', // sessions to apply the action to
+        numVisible  : '<', // number of visible sessions to apply action to
+        numMatching : '<'  // number of matching sessions to apply action to
+      }
     });
 
 })();
