@@ -21,13 +21,19 @@
       sessionExportPCAPComponent = $componentController('exportPcap', {
         $scope        : scope,
         SessionService: SessionService
-      }, { sessionid: id });
+      }, {
+        sessions    : [{id:id}],
+        start       : 0,
+        applyTo     : 'open',
+        numVisible  : 100,
+        numMatching : 999999
+      });
 
       // spy on functions called in controller
       spyOn(scope, '$emit').and.callThrough();
       spyOn(sessionExportPCAPComponent.SessionService, 'exportPCAP');
 
-      // initialize session component controller
+      // initialize component controller
       sessionExportPCAPComponent.$onInit();
     }));
 
@@ -35,13 +41,13 @@
       expect(sessionExportPCAPComponent).toBeDefined();
       expect(sessionExportPCAPComponent.$scope).toBeDefined();
       expect(sessionExportPCAPComponent.SessionService).toBeDefined();
-      expect(sessionExportPCAPComponent.sessionid).toBeDefined();
-      expect(sessionExportPCAPComponent.sessionid).toEqual(id);
+      expect(sessionExportPCAPComponent.sessions).toBeDefined();
+      expect(sessionExportPCAPComponent.sessions).toEqual([{id:id}]);
     });
 
     it('should have smart defaults', function() {
-      expect(sessionExportPCAPComponent.include).toBeDefined();
-      expect(sessionExportPCAPComponent.include).toEqual('no');
+      expect(sessionExportPCAPComponent.segments).toBeDefined();
+      expect(sessionExportPCAPComponent.segments).toEqual('no');
       expect(sessionExportPCAPComponent.filename).toBeDefined();
       expect(sessionExportPCAPComponent.filename).toEqual('sessions.pcap');
     });
@@ -55,10 +61,20 @@
     });
 
     it('should send export pcap request and close form', function() {
+      let params = {
+        start       : sessionExportPCAPComponent.start,
+        applyTo     : sessionExportPCAPComponent.applyTo,
+        filename    : sessionExportPCAPComponent.filename,
+        segments    : sessionExportPCAPComponent.segments,
+        sessions    : sessionExportPCAPComponent.sessions,
+        numVisible  : sessionExportPCAPComponent.numVisible,
+        numMatching : sessionExportPCAPComponent.numMatching
+      };
+
       sessionExportPCAPComponent.exportPCAP();
 
       expect(sessionExportPCAPComponent.SessionService.exportPCAP).toHaveBeenCalled();
-      expect(sessionExportPCAPComponent.SessionService.exportPCAP).toHaveBeenCalledWith(id, 'sessions.pcap', 'no');
+      expect(sessionExportPCAPComponent.SessionService.exportPCAP).toHaveBeenCalledWith(params);
       expect(sessionExportPCAPComponent.SessionService.exportPCAP.calls.count()).toBe(1);
 
       expect(scope.$emit).toHaveBeenCalled();

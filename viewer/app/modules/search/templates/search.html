@@ -3,20 +3,39 @@
   <!-- actions dropdown -->
   <div class="btn-group btn-group-sm pull-right margined-left"
     uib-dropdown is-open="$ctrl.isopen">
-    <button id="single-button" type="button" class="btn btn-yellow disabled"
-      uib-dropdown-toggle disabled>
-      <span class="fa fa-bars fa-lg"></span>
+    <button id="single-button" type="button" class="btn btn-yellow"
+      uib-dropdown-toggle>
+      <span class="fa fa-caret-down fa-lg"></span>
     </button>
     <ul class="dropdown-menu" uib-dropdown-menu role="menu"
       aria-labelledby="single-button">
-      <li role="menuitem" class="disabled cursor-pointer">
+      <li role="menuitem" class="cursor-pointer"
+        ng-click="$ctrl.exportPCAP()">
         <a>Export PCAP</a>
       </li>
-      <li role="menuitem" class="disabled cursor-pointer">
+      <li role="menuitem" class="cursor-pointer"
+        ng-click="$ctrl.exportCSV()">
         <a>Export CSV</a>
       </li>
-      <li role="menuitem" class="disabled cursor-pointer">
+      <li role="menuitem" class="cursor-pointer"
+        ng-click="$ctrl.addTags()">
         <a>Add Tags</a>
+      </li>
+      <li role="menuitem" class="cursor-pointer" has-permission="removeEnabled"
+        ng-click="$ctrl.removeTags()">
+        <a>Remove Tags</a>
+      </li>
+      <li role="menuitem" class="cursor-pointer" has-permission="removeEnabled"
+        ng-click="$ctrl.scrubPCAP()">
+        <a>Scrub PCAP Storage</a>
+      </li>
+      <li role="menuitem" class="cursor-pointer" has-permission="removeEnabled"
+        ng-click="$ctrl.deleteSession()">
+        <a>Delete SPI & PCAP</a>
+      </li>
+      <li ng-repeat="(key, value) in $ctrl.molochclusters"
+        ng-click="$ctrl.sendSession(key)">
+        <a>Send Session to {{::value.name}}</a>
       </li>
     </ul>
   </div> <!-- /actions dropdown -->
@@ -29,6 +48,7 @@
   <expression-typeahead query="$ctrl.expression" enter-click="$ctrl.change()">
   </expression-typeahead>
 
+  <!-- time inputs -->
   <div class="form-inline">
 
     <!-- time range select -->
@@ -120,6 +140,76 @@
       </strong>
     </div>
 
+  </div> <!-- /time inputs -->
+
+  <div class="small"> <!-- form message -->
+    <toast message="$ctrl.message" type="$ctrl.messageType"></toast>
   </div>
+
+  <!-- actions menu form -->
+  <div class="row margined-top" ng-if="$ctrl.actionForm">
+    <div class="col-md-3">
+      <div class="btn-group">
+        <label class="btn btn-sm btn-default"
+          ng-model="$ctrl.actionFormItemRadio"
+          uib-btn-radio="'open'"
+          uib-tooltip="Apply action for {{$ctrl.openSessions.length}} opened sessions"
+          tooltip-placement="top-left" tooltip-append-to-body="true">
+          Open Items
+        </label>
+        <label class="btn btn-sm btn-default"
+          ng-model="$ctrl.actionFormItemRadio"
+          uib-btn-radio="'visible'"
+          uib-tooltip="Apply action for {{[$ctrl.numVisibleSessions,$ctrl.numMatchingSessions] | min}} visible sessions"
+          tooltip-placement="top-left" tooltip-append-to-body="true">
+          Visible Items
+        </label>
+        <label class="btn btn-sm btn-default"
+          ng-model="$ctrl.actionFormItemRadio"
+          uib-btn-radio="'matching'"
+          uib-tooltip="Apply action for {{$ctrl.numMatchingSessions | commaString}} query matching sessions"
+          tooltip-placement="top-left" tooltip-append-to-body="true">
+          Matching Items
+        </label>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <session-tag ng-if="$ctrl.actionForm === 'add:tags'" add="true"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
+        class="form-container small"></session-tag>
+      <session-tag ng-if="$ctrl.actionForm === 'remove:tags'" add="false"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
+        class="form-container small"></session-tag>
+      <session-delete ng-if="$ctrl.actionForm === 'delete:session'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
+        class="form-container small"></session-delete>
+      <scrub-pcap ng-if="$ctrl.actionForm === 'scrub:pcap'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions"
+        class="form-container small"></scrub-pcap>
+      <session-send ng-if="$ctrl.actionForm === 'send:session'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
+        class="form-container small"></session-send>
+      <export-pcap ng-if="$ctrl.actionForm === 'export:pcap'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
+        class="form-container small"></export-pcap>
+      <export-csv ng-if="$ctrl.actionForm === 'export:csv'"
+        sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
+        num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
+        num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
+        class="form-container small"></export-csv>
+    </div>
+  </div> <!-- /actions menu form -->
 
 </form>

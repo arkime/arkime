@@ -24,12 +24,27 @@
       sessionScrubPCAPComponent = $componentController('scrubPcap', {
         $scope        : scope,
         SessionService: SessionService
-      }, { sessionid: id });
+      }, {
+        sessions    : [{id:id}],
+        start       : 0,
+        applyTo     : 'open',
+        numVisible  : 100,
+        numMatching : 999999
+      });
+
+      $httpBackend.whenPOST('scrub&expression=undefined',
+         function(postData) {
+           let jsonData = JSON.parse(postData);
+           expect(jsonData.ids).toBe(id);
+           expect(jsonData.segments).toEqual(sessionScrubPCAPComponent.segments);
+           return true;
+         }
+      ).respond(200, { text:'Scrub success' });
 
       // spy on functions called in controller
       spyOn(scope, '$emit').and.callThrough();
 
-      // initialize session component controller
+      // initialize component controller
       sessionScrubPCAPComponent.$onInit();
     }));
 
@@ -42,12 +57,12 @@
       expect(sessionScrubPCAPComponent).toBeDefined();
       expect(sessionScrubPCAPComponent.$scope).toBeDefined();
       expect(sessionScrubPCAPComponent.SessionService).toBeDefined();
-      expect(sessionScrubPCAPComponent.sessionid).toBeDefined();
-      expect(sessionScrubPCAPComponent.sessionid).toEqual(id);
+      expect(sessionScrubPCAPComponent.sessions).toBeDefined();
+      expect(sessionScrubPCAPComponent.sessions).toEqual([{id:id}]);
     });
 
     it('should have smart defaults', function() {
-      expect(sessionScrubPCAPComponent.include).toEqual('no');
+      expect(sessionScrubPCAPComponent.segments).toEqual('no');
     });
 
     it('should be able to close the form', function() {
@@ -59,42 +74,28 @@
     });
 
     it('should send scrub request and close form', function() {
-      $httpBackend.whenPOST('scrub',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.segments).not.toBeDefined();
-           return true;
-         }
-      ).respond(200);
+      $httpBackend.expectPOST('scrub&expression=undefined');
 
       sessionScrubPCAPComponent.scrubPCAP();
 
       $httpBackend.flush();
 
-      let args = { reloadData: true };
+      let args = { reloadData: true, message: 'Scrub success' };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
     });
 
     it('should send scrub request with segment and close form', function() {
-      sessionScrubPCAPComponent.include = 'all';
+      $httpBackend.expectPOST('scrub&expression=undefined');
 
-      $httpBackend.whenPOST('scrub',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.segments).toEqual(sessionScrubPCAPComponent.include);
-           return true;
-         }
-      ).respond(200);
+      sessionScrubPCAPComponent.include = 'all';
 
       sessionScrubPCAPComponent.scrubPCAP();
 
       $httpBackend.flush();
 
-      let args = { reloadData: true };
+      let args = { reloadData: true, message: 'Scrub success' };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);

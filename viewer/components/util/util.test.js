@@ -7,7 +7,7 @@
     // load the module
     beforeEach(angular.mock.module('moloch.util'));
 
-    var $filter, $timeout, scope;
+    let $filter, $timeout, scope;
 
     beforeEach(inject(function($rootScope, _$filter_, _$timeout_) {
         scope     = $rootScope.$new();
@@ -19,8 +19,8 @@
     describe('Comma String Filter ->', function() {
 
       it('should add commas to an integer and return a string', function () {
-        var int = 1;
-        var result = $filter('commaString')(int);
+        let int = 1;
+        let result = $filter('commaString')(int);
         expect(result).toEqual('1');
 
         int = 100;
@@ -50,8 +50,8 @@
     describe('Protocol Filter ->', function() {
 
       it('should return the appropriate protocol strings', function () {
-        var protocolInt = 1;
-        var result = $filter('protocol')(protocolInt);
+        let protocolInt = 1;
+        let result = $filter('protocol')(protocolInt);
         expect(result).toEqual('icmp');
 
         protocolInt = 6;
@@ -81,8 +81,8 @@
     describe('Extract IP String Filter ->', function() {
 
       it('should return the appropriate ip string', function() {
-        var ip = 3232235777;
-        var result  = $filter('extractIPString')(ip);
+        let ip = 3232235777;
+        let result  = $filter('extractIPString')(ip);
         expect(result).toEqual('192.168.1.1');
       });
 
@@ -92,8 +92,8 @@
     describe('Extract IPv6 String Filter ->', function() {
 
       it('should return the appropriate ipv6 string', function() {
-        var ipv6 = 'ff0200000000000000000001ff8295b5';
-        var result  = $filter('extractIPv6String')(ipv6);
+        let ipv6 = 'ff0200000000000000000001ff8295b5';
+        let result  = $filter('extractIPv6String')(ipv6);
         expect(result).toEqual('ff02:0:0:0:0:1:ff82:95b5');
       });
 
@@ -103,8 +103,8 @@
     describe('Readble Time Filter ->', function() {
 
       it('should return the appropriate readable time string', function() {
-        var ms = 3600000;
-        var result  = $filter('readableTime')(ms);
+        let ms = 3600000;
+        let result = $filter('readableTime')(ms);
         expect(result).toEqual('01:00:00');
 
         ms = ms * 24;
@@ -123,14 +123,81 @@
     });
 
 
+    describe('Field Filter ->', function() {
+
+      it('should filter an array of fields by the search term', function() {
+        let items = [
+          { friendlyName: 'item name' },
+          { friendlyName: 'different' },
+          { friendlyName: 'another' }
+        ];
+
+        let searchTerm = 'item';
+        let result = $filter('fieldFilter')(items, searchTerm);
+
+        expect(result).toEqual([items[0]]);
+
+        searchTerm = 'diff';
+        result = $filter('fieldFilter')(items, searchTerm);
+
+        expect(result).toEqual([items[1]]);
+      });
+
+      it('should return empty array if not items match the search term', function() {
+        let items = [
+          { friendlyName: 'item name' },
+          { friendlyName: 'different' },
+          { friendlyName: 'another' }
+        ];
+
+        let searchTerm = 'asdf';
+        let result = $filter('fieldFilter')(items, searchTerm);
+
+        expect(result).toEqual([]);
+      });
+
+    });
+
+
+    describe('Capitalize Filter ->', function() {
+
+      it('should return the string with the first letter capitalized', function() {
+        let str     = 'not capitalized string';
+        let result  = $filter('capitalize')(str);
+        expect(result).toEqual('Not capitalized string');
+      });
+
+    });
+
+    describe('Min Filter ->', function() {
+
+      it('should return the minimum number in an array of numbers', function() {
+        let array   = [ 932, 652, 754, 1, 73, 4, 652];
+        let result  = $filter('min')(array);
+        expect(result).toEqual(1);
+      });
+
+      it('should return the input if the input is not an array', function() {
+        let notArray  = 'x';
+        let result    = $filter('min')(notArray);
+        expect(result).toEqual(notArray);
+
+        notArray  = 4;
+        result    = $filter('min')(notArray);
+        expect(result).toEqual(notArray);
+      });
+
+    });
+
+
     describe('Convert To Number Directive ->', function() {
 
-      var element, template, templateAsHtml;
+      let element, template, templateAsHtml;
 
       beforeEach(inject(function($compile) {
         scope.model = 2;
 
-        var htmlString = '<select ng-model="model" convert-to-number>'+
+        let htmlString = '<select ng-model="model" convert-to-number>'+
           '<option value="1">One</option>' +
           '<option value="2">Two</option>' +
           '<option value="3">Three</option>' +
@@ -166,12 +233,12 @@
 
     describe('Epoch Date Directive ->', function() {
 
-      var element, template, templateAsHtml;
+      let element, template, templateAsHtml;
 
       beforeEach(inject(function($compile) {
         scope.model = '2016/09/12 15:36:48';
 
-        var htmlString = '<input ng-model="model" epoch-date />';
+        let htmlString = '<input ng-model="model" epoch-date />';
 
         element   = angular.element(htmlString);
         template  = $compile(element)(scope);
@@ -197,13 +264,13 @@
 
     describe('Caret Position Directive ->', function() {
 
-      var element, template, templateAsHtml;
+      let element, template, templateAsHtml;
 
       beforeEach(inject(function($compile) {
         scope.model     = '';
         scope.position  = 0;
 
-        var htmlString  = '<input ng-model="model" caret-pos="position" />';
+        let htmlString  = '<input ng-model="model" caret-pos="position" />';
 
         element   = angular.element(htmlString);
         template  = $compile(element)(scope);
@@ -226,7 +293,7 @@
       });
 
       it('should not exceed text length', function() {
-        var text = 'text';
+        let text = 'text';
 
         element.val(text);
 
@@ -242,12 +309,12 @@
 
     describe('Focus Input Directive ->', function() {
 
-      var element, template, templateAsHtml;
+      let element, template, templateAsHtml;
 
       beforeEach(inject(function($compile) {
         scope.focusMe  = true;
 
-        var htmlString  = '<input focus-input="focusMe" />';
+        let htmlString  = '<input focus-input="focusMe" />';
 
         element   = angular.element(htmlString);
         template  = $compile(element)(scope);
@@ -279,12 +346,12 @@
 
     describe('Enter Click Directive ->', function() {
 
-      var element, template, templateAsHtml;
+      let element, template, templateAsHtml;
 
       beforeEach(inject(function($compile) {
         scope.func = function() {};
 
-        var htmlString  = '<input enter-click="func()" />';
+        let htmlString  = '<input enter-click="func()" />';
 
         element   = angular.element(htmlString);
         template  = $compile(element)(scope);
@@ -301,7 +368,7 @@
       });
 
       it('should call function when enter is pressed', function() {
-        var e     = jQuery.Event('keypress');
+        let e     = jQuery.Event('keypress');
         e.which   = 13;
         e.keyCode = 13;
 

@@ -26,6 +26,7 @@
       this.$location  = $location;
     }
 
+
     /* service methods ----------------------------------------------------- */
     /**
      * Gets a list of sessions from the server
@@ -36,7 +37,7 @@
     get(query) {
       return this.$q((resolve, reject) => {
 
-        var params = {};
+        let params = {};
 
         if (query) {
           if (query.length)     { params.length = query.length; }
@@ -54,7 +55,7 @@
             params.date = query.date;
           }
 
-          var i, len, item;
+          let i, len, item;
           // server takes one param (order)
           if (query.sorts && query.sorts.length) {
             params.order = '';
@@ -76,7 +77,7 @@
           }
         }
 
-        var options = {
+        let options = {
           url   : 'sessions.json',
           method: 'GET',
           params: params
@@ -101,7 +102,7 @@
     getTableState() {
       return this.$q((resolve, reject) => {
 
-        var options = {
+        let options = {
           url   : 'tableState/sessionsNew',
           method: 'GET'
         };
@@ -124,7 +125,7 @@
     saveTableState(tableState) {
       return this.$q((resolve, reject) => {
 
-        var options = {
+        let options = {
           url   : 'tableState/sessionsNew',
           method: 'POST',
           data  : tableState
@@ -151,7 +152,7 @@
     getDetail(id, node, params) {
       return this.$q((resolve, reject) => {
 
-        var options = {
+        let options = {
           url   : node + '/' + id + '/' + 'sessionDetailNew',
           method: 'GET',
           params: params
@@ -169,21 +170,18 @@
 
     /**
      * Add tags to sessions
-     * @param {string} id         The unique id of the session to add tags to
-     * @param {string} tags       The comma separated string of tags to add
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    addTags(id, tags, segments) {
+    addTags(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id, tags:tags };
 
-        if (segments !== 'no') { data.segments = segments; }
+        let options = SessionService
+           .getReqOptions('addTags', 'POST', params, this.$location.search());
 
-        var url = SessionService.urlWithDateParams('addTags', this.$location.search());
-
-        var options = { url:url, method:'POST', data:data };
+        // add tag data
+        options.data.tags = params.tags;
 
         this.$http(options)
           .then((response) => {
@@ -197,21 +195,18 @@
 
     /**
      * Remove tags from sessions
-     * @param {string} id         The unique id of the session to remove tags from
-     * @param {string} tags       The comma separated string of tags to remove
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    removeTags(id, tags, segments) {
+    removeTags(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id, tags:tags };
 
-        if (segments !== 'no') { data.segments = segments; }
+        let options = SessionService
+           .getReqOptions('removeTags', 'POST', params, this.$location.search());
 
-        var url = SessionService.urlWithDateParams('removeTags', this.$location.search());
-
-        var options = { url:url, method:'POST', data:data };
+        // add tag data
+        options.data.tags = params.tags;
 
         this.$http(options)
           .then((response) => {
@@ -225,38 +220,53 @@
 
     /**
      * Exports a pcap by setting window.location
-     * @param {string} id         The unique id of the session to remove tags from
-     * @param {string} tags       The comma separated string of tags to remove
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params The parameters to be passed to server
      */
-    exportPCAP(id, filename, segments) {
-      var baseUrl = `sessions.pcap/${filename}`;
+    exportPCAP(params) {
+      let baseUrl = `sessions.pcap/${params.filename}`;
 
-      var url = SessionService.urlWithDateParams(baseUrl, this.$location.search());
+      let options = SessionService
+         .getReqOptions(baseUrl, '', params, this.$location.search());
 
-      url += `&ids=${id}`;
+      let url = options.url;
 
-      if (segments !== 'no') { url += `&segments=${segments}`; }
+      if (options.data.ids) {  url += `&ids=${options.data.ids}`; }
+
+      url += `&segments=${params.segments}`;
+
+      this.$window.location = url;
+    }
+
+    /**
+     * Exports a csv by setting window.location
+     * @param {object} params The parameters to be passed to server
+     */
+    exportCSV(params) {
+      let baseUrl = `sessions.csv/${params.filename}`;
+
+      let options = SessionService
+         .getReqOptions(baseUrl, '', params, this.$location.search());
+
+      let url = options.url;
+
+      if (options.data.ids) {  url += `&ids=${options.data.ids}`; }
+
+      url += `&segments=${params.segments}`;
 
       this.$window.location = url;
     }
 
     /**
      * Scrubs pcap data in session
-     * @param {string} id         The unique id of the session
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    scrubPCAP(id, segments) {
+    scrubPCAP(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id };
 
-        if (segments !== 'no') { data.segments = segments; }
-
-        var url = SessionService.urlWithDateParams('scrub', this.$location.search());
-
-        var options = { url:url, method:'POST', data:data };
+        let options = SessionService
+           .getReqOptions('scrub', 'POST', params, this.$location.search());
 
         this.$http(options)
           .then((response) => {
@@ -270,20 +280,15 @@
 
     /**
      * Deletes a session
-     * @param {string} id         The unique id of the session
-     * @param {string} segments   'no', 'all', or 'time'
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    delete(id, segments) {
+    remove(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id };
 
-        if (segments !== 'no') { data.segments = segments; }
-
-        var url = SessionService.urlWithDateParams('delete', this.$location.search());
-
-        var options = { url:url, method:'POST', data:data };
+        let options = SessionService
+           .getReqOptions('delete', 'POST', params, this.$location.search());
 
         this.$http(options)
           .then((response) => {
@@ -297,22 +302,19 @@
 
     /**
      * Sends a session to a cluster
-     * @param {string} id         The unique id of the session
-     * @param {string} tags       The comma separated string of tags to remove
-     * @param {string} segments   'no', 'all', or 'time'
-     * @param {string} cluster    The cluster to send the session to
+     * @param {object} params     The parameters to be passed to server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    send(id, tags, segments, cluster) {
+    send(params) {
       return this.$q((resolve, reject) => {
-        var data = { ids:id, cluster:cluster, tags:tags };
 
-        if (segments !== 'no') { data.segments = segments; }
+        let options = SessionService
+           .getReqOptions('sendSessions', 'POST', params, this.$location.search());
 
-        var url = SessionService.urlWithDateParams('sendSessions', this.$location.search());
-
-        var options = { url:url, method:'POST', data:data };
+        // add tag and cluster data
+        options.data.tags     = params.tags;
+        options.data.cluster  = params.cluster;
 
         this.$http(options)
           .then((response) => {
@@ -324,25 +326,59 @@
       });
     }
 
+
     /* internal functions -------------------------------------------------- */
     /**
-     * Adds date parameters to a given base url without parameters
+     * Adds date and expression parameters to a given base url without parameters
      * @param {string} baseUrl The url (without params) to append the params to
      * @param {Object} params  The params object where date params may exist
      */
-    static urlWithDateParams(baseUrl, params) {
+    static urlWithParams(baseUrl, params) {
       if (params.date) {
         baseUrl += '?date=' + params.date;
-      } else if (params.startTime &&
-        params.stopTime) {
+      } else if (params.startTime && params.stopTime) {
         baseUrl += '?startTime='  + params.startTime;
-        baseUrl += '?stopTime='   + params.stopTime;
+        baseUrl += '&stopTime='   + params.stopTime;
       }
+
+      baseUrl += '&expression=' + params.expression;
 
       return baseUrl;
     }
 
+    /**
+     * Get Request Options
+     * @param {string} baseUrl        The base url to append params to
+     * @param {string} method         The HTTP method (POST, GET, PUT, DELETE, etc)
+     * @param {object} params         The parameters to be applied to url or data
+     * @param {object} existingParams The parameters existing in the url bar
+     * @returns { url: {string}, method: {string}, data: {object} }
+     */
+    static getReqOptions(baseUrl, method, params, existingParams) {
+      let data  = { segments: params.segments };
+      let url   = SessionService.urlWithParams(baseUrl, existingParams);
+
+      if (!params.applyTo || params.applyTo === 'open') {
+        // specific sessions
+        data.ids = [];
+        for (let i = 0, len = params.sessions.length; i < len; ++i) {
+          data.ids.push(params.sessions[i].id);
+        }
+        data.ids = data.ids.join(',');
+      } else if (params.applyTo === 'visible') {
+        // sessions on the open page
+        url += '&start='  + params.start;
+        url += '&length=' + params.numVisible;
+      } else if (params.applyTo === 'matching') {
+        // all sessions in query results
+        url += '&start=0&length=' + params.numMatching;
+      }
+
+      return { url:url, method:method, data:data };
+    }
+
   }
+
 
   SessionService.$inject = ['$q', '$http', '$window', '$location'];
 

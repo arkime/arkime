@@ -18,22 +18,15 @@
   <div class="col-md-7">
     <div class="input-group input-group-sm">
       <span class="input-group-addon">
-        Tags
+        Filename
       </span>
-      <input ng-model="$ctrl.tags"
+      <input ng-model="$ctrl.filename"
         type="text" class="form-control"
-        placeholder="Enter a comma separated list of tags">
+        placeholder="Enter a filename">
       <span class="input-group-btn">
-        <button class="btn btn-green" ng-click="$ctrl.send()"
-          ng-class="{'disabled':$ctrl.loading}">
-          <span ng-if="!$ctrl.loading">
-            <span class="fa fa-paper-plane-o"></span>&nbsp;
-            Send Session(s)
-          </span>
-          <span ng-if="$ctrl.loading">
-            <span class="fa fa-spinner fa-spin"></span>&nbsp;
-            Sending Session(s)
-          </span>
+        <button class="btn btn-green" ng-click="$ctrl.exportCSV()">
+          <span class="fa fa-upload"></span>&nbsp;
+          Export CSV
         </button>
       </span>
     </div>
@@ -43,18 +36,9 @@
     </p>
   </div>
   <div class="col-md-1">
-    <div class="btn btn-sm btn-warning pull-right"
-      ng-click="$ctrl.cancel()">
+    <div class="btn btn-sm btn-warning pull-right" ng-click="$ctrl.cancel()">
       <span class="fa fa-ban"></span>&nbsp;
       cancel
     </div>
-  </div>
-  <div class="col-md-12">
-    <p class="text-info">
-      <em><strong>
-        <span class="fa fa-info-circle"></span>&nbsp;
-        This will send the SPI and PCAP data to the remote Moloch instance.
-      </strong></em>
-    <p>
   </div>
 </div>

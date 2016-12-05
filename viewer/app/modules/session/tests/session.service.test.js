@@ -7,7 +7,27 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var SessionService;
+    let SessionService;
+
+    let openSessionsParams = {
+      sessions:[{ id:'sessionid' }],
+      segments:'no'
+    };
+
+    let visibleSessionsParams = {
+      segments  : 'no',
+      applyTo   : 'visible',
+      start     : 1,
+      numVisible: 100
+    };
+
+    let matchingSessionsParams = {
+      segments    : 'all',
+      applyTo     : 'matching',
+      numMatching : 500
+    };
+
+    let tags = 'tag1,tag2';
 
     // load service
     beforeEach(inject(function(_SessionService_) {
@@ -19,7 +39,7 @@
     });
 
     describe('http requests ->', function() {
-      var $httpBackend;
+      let $httpBackend;
 
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
@@ -30,29 +50,150 @@
         $httpBackend.when('GET', 'sessions.json?facets=1&length=100&order=fp:asc')
           .respond(200, {});
 
+        $httpBackend.when('GET', 'sessionid/node/sessionDetailNew')
+           .respond(200, '');
+
         $httpBackend.when('GET', 'tableState/sessionsNew')
           .respond(200, {});
 
         $httpBackend.when('POST', 'tableState/sessionsNew')
           .respond(200, {});
 
-        $httpBackend.when('GET', 'sessionid/node/sessionDetailNew')
-          .respond(200, '');
+        // add tags posts
+        $httpBackend.when('POST', 'addTags&expression=undefined',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).toBe(openSessionsParams.sessions[0].id);
+             expect(jsonData.tags).toBe(tags);
+             expect(jsonData.segments).toBe(openSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'addTags&expression=undefined&start=1&length=100',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.tags).toBe(tags);
+             expect(jsonData.segments).toBe(visibleSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'addTags&expression=undefined&start=0&length=500',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.tags).toBe(tags);
+             expect(jsonData.segments).toBe(matchingSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
 
-        $httpBackend.when('POST', 'addTags')
-          .respond(200, {});
+        // remove tags posts
+        $httpBackend.when('POST', 'removeTags&expression=undefined',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).toBe(openSessionsParams.sessions[0].id);
+             expect(jsonData.tags).toBe(tags);
+             expect(jsonData.segments).toBe(openSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'removeTags&expression=undefined&start=1&length=100',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.tags).toBe(tags);
+             expect(jsonData.segments).toBe(visibleSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'removeTags&expression=undefined&start=0&length=500',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.tags).toBe(tags);
+             expect(jsonData.segments).toBe(matchingSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
 
-        $httpBackend.when('POST', 'removeTags')
-          .respond(200, {});
+        // scrub posts
+        $httpBackend.when('POST', 'scrub&expression=undefined',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).toBe(openSessionsParams.sessions[0].id);
+             expect(jsonData.segments).toBe(openSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'scrub&expression=undefined&start=1&length=100',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.segments).toBe(visibleSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'scrub&expression=undefined&start=0&length=500',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.segments).toBe(matchingSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
 
-        $httpBackend.when('POST', 'scrub')
-          .respond(200, {});
+        // delete posts
+        $httpBackend.when('POST', 'delete&expression=undefined',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).toBe(openSessionsParams.sessions[0].id);
+             expect(jsonData.segments).toBe(openSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'delete&expression=undefined&start=1&length=100',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.segments).toBe(visibleSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'delete&expression=undefined&start=0&length=500',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.segments).toBe(matchingSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
 
-        $httpBackend.when('POST', 'delete')
-          .respond(200, {});
-
-        $httpBackend.when('POST', 'sendSessions')
-          .respond(200, {});
+        // send sessions posts
+        $httpBackend.when('POST', 'sendSessions&expression=undefined',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).toBe(openSessionsParams.sessions[0].id);
+             expect(jsonData.segments).toBe(openSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'sendSessions&expression=undefined&start=1&length=100',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.segments).toBe(visibleSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
+        $httpBackend.when('POST', 'sendSessions&expression=undefined&start=0&length=500',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.ids).not.toBeDefined();
+             expect(jsonData.segments).toBe(matchingSessionsParams.segments);
+             return true;
+           }
+        ).respond(200);
       }));
 
       afterEach(function() {
@@ -61,13 +202,13 @@
       });
 
       it('should send a GET request (without parameters) for sessions', function() {
-        var result = SessionService.get();
+        SessionService.get();
         $httpBackend.expectGET('sessions.json');
         $httpBackend.flush();
       });
 
       it('should send a GET request (with parameters) for sessions', function() {
-        var query = {
+        let query = {
           length: 100,// page length
           start : 0,  // first item index
           sorts : [['fp','asc']], // array of sort objects
@@ -76,6 +217,12 @@
 
         SessionService.get(query);
         $httpBackend.expectGET('sessions.json?facets=1&length=100&order=fp:asc');
+        $httpBackend.flush();
+      });
+
+      it('should send a GET request for session detail', function() {
+        SessionService.getDetail('node', 'sessionid', {});
+        $httpBackend.expectGET('sessionid/node/sessionDetailNew');
         $httpBackend.flush();
       });
 
@@ -91,39 +238,94 @@
         $httpBackend.flush();
       });
 
-      it('should send a GET request for session detail', function() {
-        SessionService.getDetail('node', 'sessionid', {});
-        $httpBackend.expectGET('sessionid/node/sessionDetailNew');
-        $httpBackend.flush();
-      });
-
       it('should send a POST request to add tags', function() {
-        SessionService.addTags('sessionid', 'tag', 'no');
-        $httpBackend.expectPOST('addTags');
+        openSessionsParams.tags = tags;
+        SessionService.addTags(openSessionsParams);
+        $httpBackend.expectPOST('addTags&expression=undefined');
+
+        visibleSessionsParams.tags = tags;
+        SessionService.addTags(visibleSessionsParams);
+        $httpBackend.expectPOST('addTags&expression=undefined&start=1&length=100');
+
+        matchingSessionsParams.tags = tags;
+        SessionService.addTags(matchingSessionsParams);
+        $httpBackend.expectPOST('addTags&expression=undefined&start=0&length=500');
+
         $httpBackend.flush();
+
+        // cleanup
+        openSessionsParams.tags = null;
+        delete openSessionsParams.tags;
+
+        visibleSessionsParams.tags = null;
+        delete visibleSessionsParams.tags;
+
+        matchingSessionsParams.tags = null;
+        delete matchingSessionsParams.tags;
       });
 
       it('should send a POST request to remove tags', function() {
-        SessionService.removeTags('sessionid', 'tag', 'no');
-        $httpBackend.expectPOST('removeTags');
+        openSessionsParams.tags = tags;
+        SessionService.removeTags(openSessionsParams);
+        $httpBackend.expectPOST('removeTags&expression=undefined');
+
+        visibleSessionsParams.tags = tags;
+        SessionService.removeTags(visibleSessionsParams);
+        $httpBackend.expectPOST('removeTags&expression=undefined&start=1&length=100');
+
+        matchingSessionsParams.tags = tags;
+        SessionService.removeTags(matchingSessionsParams);
+        $httpBackend.expectPOST('removeTags&expression=undefined&start=0&length=500');
+
         $httpBackend.flush();
+
+        // cleanup
+        openSessionsParams.tags = null;
+        delete openSessionsParams.tags;
+
+        visibleSessionsParams.tags = null;
+        delete visibleSessionsParams.tags;
+
+        matchingSessionsParams.tags = null;
+        delete matchingSessionsParams.tags;
       });
 
       it('should send a POST request to scrub a session', function() {
-        SessionService.scrubPCAP('sessionid', 'no');
-        $httpBackend.expectPOST('scrub');
+        SessionService.scrubPCAP(openSessionsParams);
+        $httpBackend.expectPOST('scrub&expression=undefined');
+
+        SessionService.scrubPCAP(visibleSessionsParams);
+        $httpBackend.expectPOST('scrub&expression=undefined&start=1&length=100');
+
+        SessionService.scrubPCAP(matchingSessionsParams);
+        $httpBackend.expectPOST('scrub&expression=undefined&start=0&length=500');
+
         $httpBackend.flush();
       });
 
       it('should send a POST request to delete a session', function() {
-        SessionService.delete('sessionid', 'no');
-        $httpBackend.expectPOST('delete');
+        SessionService.remove(openSessionsParams);
+        $httpBackend.expectPOST('delete&expression=undefined');
+
+        SessionService.remove(visibleSessionsParams);
+        $httpBackend.expectPOST('delete&expression=undefined&start=1&length=100');
+
+        SessionService.remove(matchingSessionsParams);
+        $httpBackend.expectPOST('delete&expression=undefined&start=0&length=500');
+
         $httpBackend.flush();
       });
 
       it('should send a POST request to send a session', function() {
-        SessionService.send('sessionid', 'tag1,tag2', 'no', 'testcluster');
-        $httpBackend.expectPOST('sendSessions');
+        SessionService.send(openSessionsParams);
+        $httpBackend.expectPOST('sendSessions&expression=undefined');
+
+        SessionService.send(visibleSessionsParams);
+        $httpBackend.expectPOST('sendSessions&expression=undefined&start=1&length=100');
+
+        SessionService.send(matchingSessionsParams);
+        $httpBackend.expectPOST('sendSessions&expression=undefined&start=0&length=500');
+
         $httpBackend.flush();
       });
 

@@ -65,7 +65,7 @@
     });
 
     it('should verify active route', function() {
-      expect(navbar.isActive('/app#/session')).toBeTruthy();
+      expect(navbar.isActive('app#/session')).toBeTruthy();
     });
 
   });

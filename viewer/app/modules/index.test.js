@@ -11,6 +11,7 @@ require('./session/tests/session.field.component.test');
 require('./session/tests/session.actions.component.test');
 require('./session/tests/session.delete.component.test');
 require('./session/tests/session.export.pcap.component.test');
+require('./session/tests/session.export.csv.component.test');
 require('./session/tests/session.scrub.pcap.component.test');
 require('./session/tests/session.send.component.test');
 require('./session/tests/session.tag.component.test');

@@ -21,7 +21,11 @@
 
       $httpBackend = _$httpBackend_;
 
+      $httpBackend.expectGET('molochclusters').respond({});
+
       $httpBackend.expectGET('titleconfig').respond('');
+
+      $httpBackend.expectGET('currentUser').respond({});
 
       $httpBackend.expectGET('fields').respond({});
 

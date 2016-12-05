@@ -33,6 +33,11 @@
     }
 
     /* exposed functions --------------------------------------------------- */
+    addTags() {
+      // open the form container to remove tags (in session.detail.component)
+      this.$scope.$emit('open:form:container', { form:'add:tags' });
+    }
+
     removeTags() {
       // open the form container to remove tags (in session.detail.component)
       this.$scope.$emit('open:form:container', { form:'remove:tags' });

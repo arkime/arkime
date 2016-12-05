@@ -13,14 +13,14 @@
     /* setup --------------------------------------------------------------- */
     /**
      * Initialize global variables for this controller
-     * @param $scope  Angular application model object
      * @param $sce    Angular strict contextual escaping service
+     * @param $scope  Angular application model object
      *
      * @ngInject
      */
-    constructor($scope, $sce, SessionService, ConfigService, FieldService) {
-      this.$scope         = $scope;
+    constructor($sce, $scope, SessionService, ConfigService, FieldService) {
       this.$sce           = $sce;
+      this.$scope         = $scope;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -60,7 +60,7 @@
         }
       }
 
-      this.getDetailData(this.$scope.params);
+      this.getDetailData();
 
       this.ConfigService.getMolochClickables()
         .then((response) => {
@@ -72,13 +72,6 @@
           this.$scope.molochFields = response;
         });
 
-      // update session detail when tags are added
-      this.$scope.$on('update:tags', (event, args) => {
-        if (this.$scope.session.id === args.id) {
-          this.getDetailData();
-        }
-      });
-
       /* LISTEN! */
       this.$scope.$on('open:form:container', (event, args) => {
         this.$scope.displayFormContainer(args);
@@ -87,12 +80,11 @@
       this.$scope.$on('close:form:container', (event, args) => {
         this.$scope.hideFormContainer();
 
-        if (args && args.reloadData) {
-          this.getDetailData(this.$scope.params);
-        }
-
-        if (args && args.message) {
-          this.$scope.displayFormContainer(args);
+        if (args) {
+          if (args.reloadData)  {
+            if (args.message) { this.getDetailData(args.message); }
+            else { this.getDetailData(); }
+          }
         }
       });
     }
@@ -102,7 +94,7 @@
     /**
      * Gets the session detail from the server
      */
-    getDetailData() {
+    getDetailData(message) {
       if (localStorage) { // update browser saved options
         localStorage['moloch-base']   = this.$scope.params.base;
         localStorage['moloch-line']   = this.$scope.params.line;
@@ -116,6 +108,8 @@
           this.loading = false;
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
           this.$scope.watchClickableValues();
+
+          if (message) { this.$scope.displayMessage(message); }
         })
         .catch((error) => {
           this.loading = false;
@@ -134,9 +128,10 @@
 
     removeItem(value, field) {
       if (field === 'tags') {
-        this.SessionService.removeTags(this.$scope.session.id, value)
-          .then((response) => {
-            this.getDetailData(); // refresh content
+        let data = { sessions:[this.$scope.session], tags:value };
+        this.SessionService.removeTags(data)
+          .then((response) => { // refresh content
+            this.getDetailData(response.data.text);
           })
           .catch((error) => {
             this.error = error;
@@ -146,7 +141,7 @@
 
   }
 
-  SessionDetailController.$inject = ['$scope','$sce',
+  SessionDetailController.$inject = ['$sce','$scope',
     'SessionService','ConfigService','FieldService'];
 
 
@@ -162,35 +157,55 @@
 
           /* exposed functions --------------------------------------------- */
           var formHTMLs = {
-            'remove:tags'   : `<session-tag class="form-container"
-                              sessionid="session.id" add="false"></session-tag>`,
-            'export:pcap'   : `<export-pcap class="form-container"
-                              sessionid="session.id"></export-pcap>`,
-            'scrub:pcap'    : `<scrub-pcap class="form-container"
-                              sessionid="session.id"></scrub-pcap>`,
-            'delete:session': `<session-delete class="form-container"
-                              sessionid="session.id"></session-delete>`,
-            'send:session'  : `<session-send class="form-container"
-                              sessionid="session.id" cluster="cluster"></session-send>`
+            'add:tags'      : `<div class="margined-bottom-xlg">
+                                <session-tag class="form-container"
+                                sessions="[session]" add="true"></session-tag>
+                              </div>`,
+            'remove:tags'   : `<div class="margined-bottom-xlg">
+                                <session-tag class="form-container"
+                                sessions="[session]" add="false"></session-tag>
+                              </div>`,
+            'export:pcap'   : `<div class="margined-bottom-xlg">
+                                <export-pcap class="form-container"
+                                sessions="[session]"></export-pcap>
+                              </div>`,
+            'scrub:pcap'    : `<div class="margined-bottom-xlg">
+                                <scrub-pcap class="form-container"
+                                sessions="[session]"></scrub-pcap>
+                              </div>`,
+            'delete:session': `<div class="margined-bottom-xlg">
+                                <session-delete class="form-container"
+                                sessions="[session]"></session-delete>
+                              </div>`,
+            'send:session'  : `<div class="margined-bottom-xlg">
+                                <session-send class="form-container"
+                                sessions="[session]" cluster="cluster"></session-send>
+                              </div>`
           };
 
           scope.displayFormContainer = function(args) {
-            var formContainer = element.find('.form-container');
-            var html = formHTMLs[args.form];
+            let formContainer = element.find('.form-container');
+            let html = formHTMLs[args.form];
 
             // pass in the cluster for sending session
             if (args.cluster) { scope.cluster = args.cluster; }
 
-            // display a message to the user (overrides form)
-            if (args.message) {
-              html = `<div class="alert alert-success form-container">
-                      ${args.message}</div>`;
-            }
-
             if (html) {
-              var content = $compile(html)(scope);
+              let content = $compile(html)(scope);
               formContainer.replaceWith(content);
             }
+          };
+
+          scope.displayMessage = function(message) {
+            $timeout(function() { // timeout to wait for detail to render
+              // display a message to the user (overrides form)
+              let formContainer = element.find('.form-container');
+              let html = `<div class="form-container">
+                            <toast message="'${message}'" type="'success'"></toast>
+                          </div>`;
+              let content = $compile(html)(scope);
+              formContainer.replaceWith(content);
+            });
           };
 
           scope.hideFormContainer = function() {
@@ -473,9 +488,13 @@
               var optContent  = $compile(optionsHTML)(scope);
               optionsEl.replaceWith(optContent);
 
-              // display tag adding form
+              // display tag adding button by the tags
               var tagEl       = element.find('.session-tag-container');
-              var tagContent  = $compile('<session-tag sessionid="session.id" add="true"></session-tag>')(scope);
+              var tagContent  = $compile(`<div ng-click="displayFormContainer({form:'add:tags'})"
+                                          uib-tooltip="Add a new tag to this session"
+                                          class="btn btn-xs btn-blue margined-left-xlg margined-bottom margined-top">
+                                          <span class="fa fa-plus-circle"></span>
+                                        </div>`)(scope);
               tagEl.replaceWith(tagContent);
 
               // add click listener to add expression to search input

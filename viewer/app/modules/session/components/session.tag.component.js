@@ -3,13 +3,16 @@
   'use strict';
 
   /**
-   * @class SessionDetailTagController
-   * @classdesc Interacts with add tag area
+   * @class SessionTagController
+   * @classdesc Interacts with add/remove tag area
    *
    * @example
-   * '<session-tag sessionid="session.id"></session-tag>'
+   * '<session-tag sessions="[session1...sessionN]"
+   *    apply-to="'open' || 'visible' || 'matching'"
+   *    num-visible="numVisibleSessions" start="startSessionIndex"
+   *    num-matching="numQueryMatchingSessions"></session-tag>'
    */
-  class SessionDetailTagController {
+  class SessionTagController {
 
     /**
      * Initialize global variables for this controller
@@ -24,68 +27,111 @@
     }
 
     $onInit() {
-      this.tagging  = false;
-      this.include  = 'no';
+      this.segments = 'no';
       this.tags     = '';
     }
 
+
     /* exposed functions --------------------------------------------------- */
-    addTags() {
-      if (this.tags === '') {
+    /**
+     * Triggered by add/remove tag button in form
+     * @param {bool} addTags Whether to add tags or remove tags
+     */
+    apply(addTags) {
+      if (!this.tags || this.tags === '') {
         this.error = 'No tag(s) specified.';
         return;
       }
 
-      this.SessionService.addTags(this.sessionid, this.tags, this.include)
+      this.loading = true;
+
+      let data = {
+        tags        : this.tags,
+        start       : this.start,
+        applyTo     : this.applyTo,
+        segments    : this.segments,
+        sessions    : this.sessions,
+        numVisible  : this.numVisible,
+        numMatching : this.numMatching
+      };
+
+      if (addTags) { this.addTags(data); }
+      else { this.removeTags(data); }
+    }
+
+    addTags(data) {
+      this.SessionService.addTags(data)
         .then((response) => {
-          this.tagging  = false;
           this.tags     = '';
-          // notify parent that tags were added (namely session.detail.component)
-          this.$scope.$emit('update:tags', { id:this.sessionid });
+          this.loading  = false;
+          SessionTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
-          this.error = error;
+          this.error    = error;
+          this.loading  = false;
         });
     }
 
-    removeTags() {
-      if (this.tags === '') {
-        this.error = 'No tag(s) specified.';
-        return;
-      }
-
-      this.SessionService.removeTags(this.sessionid, this.tags, this.include)
+    removeTags(data) {
+      this.SessionService.removeTags(data)
         .then((response) => {
-          this.tagging  = false;
+          this.tags = '';
           this.tags     = '';
-          // notify parent that tags were added (namely session.detail.component)
-          this.$scope.$emit('update:tags', { id:this.sessionid });
+          this.loading  = false;
+          SessionTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
-          this.error = error;
+          this.error    = error;
+          this.loading  = false;
         });
     }
 
-    cancel() {
-      this.tagging = false;
-      if (!this.add) { // close the form container (in session.detail.component)
-        this.$scope.$emit('close:form:container');
+    cancel() { // close the form
+      this.$scope.$emit('close:form:container');
+    }
+
+
+    /* internal functions -------------------------------------------------- */
+    /**
+     * Closes the add/remove tag form and notifies parent
+     * @param {object} response Response data from the server
+     * @param {object} data     Data sent to the server
+     * @param {object} scope    Session Tag Controller's scope
+     */
+    static closeForm(response, data, scope) {
+      let args = {};
+
+      if (response.data.text) { args.message = response.data.text; }
+
+      //  only reload data if tags were added to only one
+      if (data.sessions && data.sessions.length === 1) {
+        args.reloadData = true;
       }
+
+      // notify parent to close form
+      scope.$emit('close:form:container', args);
     }
 
   }
 
-  SessionDetailTagController.$inject = ['$scope', 'SessionService'];
+  SessionTagController.$inject = ['$scope', 'SessionService'];
 
   /**
-   * Add Tag Directive
-   * Displays add tag area
+   * Session Tag Directive
+   * Displays add/remove tags form
    */
   angular.module('moloch')
     .component('sessionTag', {
       template  : require('html!../templates/session.tag.html'),
-      controller: SessionDetailTagController,
-      bindings  : { sessionid : '<', add: '<' }
+      controller: SessionTagController,
+      bindings  : {
+        add         : '<', // whether to add or remove tags
+        start       : '<', // where to start the action
+        applyTo     : '<', // what to apply the action to [open,visible,matching]
+        sessions    : '<', // sessions to apply the action to
+        numVisible  : '<', // number of visible sessions to apply action to
+        numMatching : '<'  // number of matching sessions to apply action to
+      }
     });
 
 })();

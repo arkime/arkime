@@ -3,16 +3,16 @@
   'use strict';
 
   /**
-   * @class SessionScrubPCAPController
-   * @classdesc Interacts with scrub pcap form
+   * @class SessionExportCSVController
+   * @classdesc Interacts with export csv form
    *
    * @example
-   * '<scrub-pcap sessions="[session1...sessionN]"
+   * '<export-csv sessions="[session1...sessionN]"
    *    apply-to="'open' || 'visible' || 'matching'"
    *    num-visible="numVisibleSessions" start="startSessionIndex"
-   *    num-matching="numQueryMatchingSessions"></scrub-pcap>'
+   *    num-matching="numQueryMatchingSessions"></export-csv>'
    */
-  class SessionScrubPCAPController {
+  class SessionExportCSVController {
 
     /**
      * Initialize global variables for this controller
@@ -28,41 +28,28 @@
 
     $onInit() {
       this.segments = 'no';
+      this.filename = 'sessions.csv';
     }
 
     /* exposed functions --------------------------------------------------- */
-    scrubPCAP() {
-      this.loading = true;
+    exportCSV() {
+      if (this.filename === '') {
+        this.error = 'No filename specified.';
+        return;
+      }
 
       let data = {
         start       : this.start,
         applyTo     : this.applyTo,
+        filename    : this.filename,
         segments    : this.segments,
         sessions    : this.sessions,
         numVisible  : this.numVisible,
         numMatching : this.numMatching
       };
 
-      this.SessionService.scrubPCAP(data)
-        .then((response) => {
-          this.loading = false;
-
-          let args = {};
-
-          if (response.data.text) { args.message = response.data.text; }
-
-          //  only reload data if only one was scrubbed
-          if (data.sessions && data.sessions.length === 1) {
-            args.reloadData = true;
-          }
-
-          // notify parent to close form
-          this.$scope.$emit('close:form:container', args);
-        })
-        .catch((error) => {
-          this.error    = error;
-          this.loading  = false;
-        });
+      this.SessionService.exportCSV(data);
+      this.$scope.$emit('close:form:container');
     }
 
     cancel() { // close the form
@@ -71,16 +58,16 @@
 
   }
 
-  SessionScrubPCAPController.$inject = ['$scope', 'SessionService'];
+  SessionExportCSVController.$inject = ['$scope', 'SessionService'];
 
   /**
-   * Scrub PCAP Directive
-   * Displays scrub PCAP form
+   * Export CSV Directive
+   * Displays export CSV form
    */
   angular.module('moloch')
-    .component('scrubPcap', {
-      template  : require('html!../templates/session.scrub.pcap.html'),
-      controller: SessionScrubPCAPController,
+    .component('exportCsv', {
+      template  : require('html!../templates/session.export.csv.html'),
+      controller: SessionExportCSVController,
       bindings  : {
         start       : '<', // where to start the action
         applyTo     : '<', // what to apply the action to [open,visible,matching]
