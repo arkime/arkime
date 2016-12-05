@@ -25,9 +25,16 @@
         placeholder="Enter a comma separated list of tags">
       <span class="input-group-btn">
         <button class="btn btn-green" ng-if="$ctrl.add"
+          ng-class="{'disabled':$ctrl.loading}"
           ng-click="$ctrl.apply(true)">
-          <span class="fa fa-plus-circle"></span>&nbsp;
-          Add Tags
+          <span ng-if="!$ctrl.loading">
+            <span class="fa fa-plus-circle"></span>&nbsp;
+            Add Tags
+          </span>
+          <span ng-if="$ctrl.loading">
+            <span class="fa fa-spinner fa-spin"></span>&nbsp;
+            Adding Tags
+          </span>
         </button>
         <button class="btn btn-danger" ng-if="!$ctrl.add"
           ng-click="$ctrl.apply(false)">

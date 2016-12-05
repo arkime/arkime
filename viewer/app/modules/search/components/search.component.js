@@ -101,8 +101,11 @@
 
       // watch for closing the action form
       this.$scope.$on('close:form:container', (event, args) => {
-        // TODO: display args.message to user
         this.actionForm = false;
+        if (args && args.message) {
+          this.message      = args.message;
+          this.messageType  = 'success';
+        }
       });
     }
 

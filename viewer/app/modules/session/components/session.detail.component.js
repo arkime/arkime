@@ -13,14 +13,14 @@
     /* setup --------------------------------------------------------------- */
     /**
      * Initialize global variables for this controller
-     * @param $scope  Angular application model object
      * @param $sce    Angular strict contextual escaping service
+     * @param $scope  Angular application model object
      *
      * @ngInject
      */
-    constructor($scope, $sce, SessionService, ConfigService, FieldService) {
-      this.$scope         = $scope;
+    constructor($sce, $scope, SessionService, ConfigService, FieldService) {
       this.$sce           = $sce;
+      this.$scope         = $scope;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -60,7 +60,7 @@
         }
       }
 
-      this.getDetailData(this.$scope.params);
+      this.getDetailData();
 
       this.ConfigService.getMolochClickables()
         .then((response) => {
@@ -79,10 +79,12 @@
 
       this.$scope.$on('close:form:container', (event, args) => {
         this.$scope.hideFormContainer();
-        // TODO: display args.message to user for longer
+
         if (args) {
-          if (args.reloadData)  { this.getDetailData(this.$scope.params); }
-          if (args.message)     { this.$scope.displayFormContainer(args); }
+          if (args.reloadData)  {
+            if (args.message) { this.getDetailData(args.message); }
+            else { this.getDetailData(); }
+          }
         }
       });
     }
@@ -92,7 +94,7 @@
     /**
      * Gets the session detail from the server
      */
-    getDetailData() {
+    getDetailData(message) {
       if (localStorage) { // update browser saved options
         localStorage['moloch-base']   = this.$scope.params.base;
         localStorage['moloch-line']   = this.$scope.params.line;
@@ -106,6 +108,8 @@
           this.loading = false;
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
           this.$scope.watchClickableValues();
+
+          if (message) { this.$scope.displayMessage(message); }
         })
         .catch((error) => {
           this.loading = false;
@@ -126,8 +130,8 @@
       if (field === 'tags') {
         let data = { sessions:[this.$scope.session], tags:value };
         this.SessionService.removeTags(data)
-          .then((response) => {
-            this.getDetailData(); // refresh content
+          .then((response) => { // refresh content
+            this.getDetailData(response.data.text);
           })
           .catch((error) => {
             this.error = error;
@@ -137,7 +141,7 @@
 
   }
 
-  SessionDetailController.$inject = ['$scope','$sce',
+  SessionDetailController.$inject = ['$sce','$scope',
     'SessionService','ConfigService','FieldService'];
 
 
@@ -180,22 +184,28 @@
           };
 
           scope.displayFormContainer = function(args) {
-            var formContainer = element.find('.form-container');
-            var html = formHTMLs[args.form];
+            let formContainer = element.find('.form-container');
+            let html = formHTMLs[args.form];
 
             // pass in the cluster for sending session
             if (args.cluster) { scope.cluster = args.cluster; }
 
-            // display a message to the user (overrides form)
-            if (args.message) {
-              html = `<div class="alert alert-success form-container">
-                      ${args.message}</div>`;
-            }
-
             if (html) {
-              var content = $compile(html)(scope);
+              let content = $compile(html)(scope);
               formContainer.replaceWith(content);
             }
+          };
+
+          scope.displayMessage = function(message) {
+            $timeout(function() { // timeout to wait for detail to render
+              // display a message to the user (overrides form)
+              let formContainer = element.find('.form-container');
+              let html = `<div class="form-container">
+                            <toast message="'${message}'" type="'success'"></toast>
+                          </div>`;
+              let content = $compile(html)(scope);
+              formContainer.replaceWith(content);
+            });
           };
 
           scope.hideFormContainer = function() {

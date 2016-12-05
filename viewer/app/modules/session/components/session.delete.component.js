@@ -37,6 +37,8 @@
         return;
       }
 
+      this.loading = true;
+
       let data = {
         start       : this.start,
         applyTo     : this.applyTo,
@@ -48,11 +50,13 @@
 
       this.SessionService.remove(data)
         .then((response) => {
+          this.loading = false;
+
           let args = {};
 
           if (response.data.text) { args.message = response.data.text; }
 
-          //  only reload data if tags were added to only one
+          //  only reload data if only one was deleted
           if (data.sessions && data.sessions.length === 1) {
             args.reloadData = true;
           }
@@ -61,7 +65,8 @@
           this.$scope.$emit('close:form:container', args);
         })
         .catch((error) => {
-          this.error = error;
+          this.error    = error;
+          this.loading  = false;
         });
     }
 

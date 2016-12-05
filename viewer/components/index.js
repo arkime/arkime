@@ -11,4 +11,6 @@ require('./loading/loading.component');
 
 require('./error/error.component');
 
+require('./toast/toast.component');
+
 require('./pagination/pagination.component');

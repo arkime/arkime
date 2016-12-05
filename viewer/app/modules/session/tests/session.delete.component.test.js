@@ -24,12 +24,27 @@
       sessionDeleteComponent = $componentController('sessionDelete', {
         $scope        : scope,
         SessionService: SessionService
-      }, { sessionid: id });
+      }, {
+        sessions    : [{id:id}],
+        start       : 0,
+        applyTo     : 'open',
+        numVisible  : 100,
+        numMatching : 999999
+      });
+
+      $httpBackend.whenPOST('delete&expression=undefined',
+         function(postData) {
+           let jsonData = JSON.parse(postData);
+           expect(jsonData.ids).toBe(id);
+           expect(jsonData.segments).toEqual(sessionDeleteComponent.segments);
+           return true;
+         }
+      ).respond(200, { text:'Deletion success' });
 
       // spy on functions called in controller
       spyOn(scope, '$emit').and.callThrough();
 
-      // initialize session component controller
+      // initialize component controller
       sessionDeleteComponent.$onInit();
     }));
 
@@ -42,12 +57,12 @@
       expect(sessionDeleteComponent).toBeDefined();
       expect(sessionDeleteComponent.$scope).toBeDefined();
       expect(sessionDeleteComponent.SessionService).toBeDefined();
-      expect(sessionDeleteComponent.sessionid).toBeDefined();
-      expect(sessionDeleteComponent.sessionid).toEqual(id);
+      expect(sessionDeleteComponent.sessions).toBeDefined();
+      expect(sessionDeleteComponent.sessions).toEqual([{id:id}]);
     });
 
     it('should have smart defaults', function() {
-      expect(sessionDeleteComponent.include).toEqual('no');
+      expect(sessionDeleteComponent.segments).toEqual('no');
     });
 
     it('should be able to close the form', function() {
@@ -59,42 +74,28 @@
     });
 
     it('should send delete request and close form', function() {
-      $httpBackend.whenPOST('delete',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.segments).not.toBeDefined();
-           return true;
-         }
-      ).respond(200);
+      $httpBackend.expectPOST('delete&expression=undefined');
 
-      sessionDeleteComponent.delete();
+      sessionDeleteComponent.deleteSessions();
 
       $httpBackend.flush();
 
-      let args = { reloadData: true };
+      let args = { reloadData: true, message: 'Deletion success' };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
     });
 
     it('should send delete request with segment and close form', function() {
-      sessionDeleteComponent.include = 'all';
+      $httpBackend.expectPOST('delete&expression=undefined');
 
-      $httpBackend.whenPOST('delete',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.segments).toEqual(sessionDeleteComponent.include);
-           return true;
-         }
-      ).respond(200);
+      sessionDeleteComponent.segments = 'all';
 
-      sessionDeleteComponent.delete();
+      sessionDeleteComponent.deleteSessions();
 
       $httpBackend.flush();
 
-      let args = { reloadData: true };
+      let args = { reloadData: true, message: 'Deletion success' };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);

@@ -3,6 +3,8 @@
 
 require('./error/error.test');
 
+require('./toast/toast.test');
+
 require('./footer/footer.test');
 
 require('./loading/loading.test');

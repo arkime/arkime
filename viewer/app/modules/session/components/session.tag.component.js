@@ -27,7 +27,7 @@
     }
 
     $onInit() {
-      this.segments  = 'no';
+      this.segments = 'no';
       this.tags     = '';
     }
 
@@ -42,6 +42,8 @@
         this.error = 'No tag(s) specified.';
         return;
       }
+
+      this.loading = true;
 
       let data = {
         tags        : this.tags,
@@ -60,11 +62,13 @@
     addTags(data) {
       this.SessionService.addTags(data)
         .then((response) => {
-          this.tags = '';
+          this.tags     = '';
+          this.loading  = false;
           SessionTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
-          this.error = error;
+          this.error    = error;
+          this.loading  = false;
         });
     }
 
@@ -72,10 +76,13 @@
       this.SessionService.removeTags(data)
         .then((response) => {
           this.tags = '';
+          this.tags     = '';
+          this.loading  = false;
           SessionTagController.closeForm(response, data, this.$scope);
         })
         .catch((error) => {
-          this.error = error;
+          this.error    = error;
+          this.loading  = false;
         });
     }
 

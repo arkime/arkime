@@ -1,6 +1,7 @@
 <div class="row">
-  <div class="col-md-5">
+  <div class="col-md-4">
     <em><strong class="text-danger">
+      <span class="fa fa-exclamation-triangle"></span>&nbsp;
       This will perform a three pass overwrite of all packet payloads for
       matching packets. Packet headers and SPI data will remain.
     </strong></em>
@@ -25,11 +26,18 @@
       {{$ctrl.error}}
     </p>
   </div>
-  <div class="col-md-2">
+  <div class="col-md-3">
     <button class="btn btn-danger btn-sm pull-right"
-      ng-click="$ctrl.scrubPCAP()">
-      <span class="fa fa-trash-o"></span>&nbsp;
-      Destructively Scrub Data
+      ng-click="$ctrl.scrubPCAP()"
+      ng-class="{'disabled':$ctrl.loading}">
+      <span ng-if="!$ctrl.loading">
+        <span class="fa fa-trash-o"></span>&nbsp;
+        Destructively Scrub Data
+      </span>
+      <span ng-if="$ctrl.loading">
+        <span class="fa fa-spinner fa-spin"></span>&nbsp;
+        Destructively Scrubbing Data
+      </span>
     </button>
   </div>
   <div class="col-md-1">

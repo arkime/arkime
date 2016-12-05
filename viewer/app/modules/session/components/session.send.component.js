@@ -28,12 +28,14 @@
     }
 
     $onInit() {
-      this.segments  = 'no';
+      this.segments = 'no';
       this.tags     = '';
     }
 
     /* exposed functions --------------------------------------------------- */
     send() {
+      this.loading = true;
+
       let data = {
         tags        : this.tags,
         start       : this.start,
@@ -46,22 +48,20 @@
       };
 
       this.SessionService.send(data)
-         .then((response) => {
-           let args = {};
+        .then((response) => {
+          this.loading = false;
 
-           if (response.data.text) { args.message = response.data.text; }
+          let args = {};
 
-           //  only reload data if tags were added to only one
-           if (data.sessions && data.sessions.length === 1) {
-             args.reloadData = true;
-           }
+          if (response.data.text) { args.message = response.data.text; }
 
-           // notify parent to close form
-           this.$scope.$emit('close:form:container', args);
-         })
-         .catch((error) => {
-           this.error = error;
-         });
+          // notify parent to close form
+          this.$scope.$emit('close:form:container', args);
+        })
+        .catch((error) => {
+          this.error    = error;
+          this.loading  = false;
+        });
     }
 
     cancel() { // close the form

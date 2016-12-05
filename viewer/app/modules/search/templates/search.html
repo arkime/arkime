@@ -48,6 +48,7 @@
   <expression-typeahead query="$ctrl.expression" enter-click="$ctrl.change()">
   </expression-typeahead>
 
+  <!-- time inputs -->
   <div class="form-inline">
 
     <!-- time range select -->
@@ -139,8 +140,13 @@
       </strong>
     </div>
 
+  </div> <!-- /time inputs -->
+
+  <div class="small"> <!-- form message -->
+    <toast message="$ctrl.message" type="$ctrl.messageType"></toast>
   </div>
 
+  <!-- actions menu form -->
   <div class="row margined-top" ng-if="$ctrl.actionForm">
     <div class="col-md-3">
       <div class="btn-group">
@@ -204,6 +210,6 @@
         num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
         class="form-container small"></export-csv>
     </div>
-  </div>
+  </div> <!-- /actions menu form -->
 
 </form>

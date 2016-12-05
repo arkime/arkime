@@ -24,7 +24,34 @@
       sessionTagComponent = $componentController('sessionTag', {
         $scope        : scope,
         SessionService: SessionService
-      }, { sessionid: id, add: false });
+      }, {
+        add         : false,
+        sessions    : [{id:id}],
+        start       : 0,
+        applyTo     : 'open',
+        numVisible  : 100,
+        numMatching : 999999
+      });
+
+      $httpBackend.whenPOST('addTags&expression=undefined',
+         function(postData) {
+           let jsonData = JSON.parse(postData);
+           expect(jsonData.ids).toBe(id);
+           expect(jsonData.tags).toEqual(sessionTagComponent.tags);
+           expect(jsonData.segments).toEqual(sessionTagComponent.segments);
+           return true;
+         }
+      ).respond(200, { text: 'Tag success' });
+
+      $httpBackend.whenPOST('removeTags&expression=undefined',
+         function(postData) {
+           let jsonData = JSON.parse(postData);
+           expect(jsonData.ids).toBe(id);
+           expect(jsonData.tags).toEqual(sessionTagComponent.tags);
+           expect(jsonData.segments).toEqual(sessionTagComponent.segments);
+           return true;
+         }
+      ).respond(200, { text: 'Tag success' });
 
       // spy on functions called in controller
       spyOn(scope, '$emit').and.callThrough();
@@ -42,12 +69,12 @@
       expect(sessionTagComponent).toBeDefined();
       expect(sessionTagComponent.$scope).toBeDefined();
       expect(sessionTagComponent.SessionService).toBeDefined();
-      expect(sessionTagComponent.sessionid).toBeDefined();
-      expect(sessionTagComponent.sessionid).toEqual(id);
+      expect(sessionTagComponent.sessions).toBeDefined();
+      expect(sessionTagComponent.sessions).toEqual([{id:id}]);
     });
 
     it('should have smart defaults', function() {
-      expect(sessionTagComponent.include).toEqual('no');
+      expect(sessionTagComponent.segments).toEqual('no');
       expect(sessionTagComponent.tags).toEqual('');
     });
 
@@ -60,103 +87,59 @@
     });
 
     it('should send add tags request and close form', function() {
+      $httpBackend.expectPOST('addTags&expression=undefined');
+
       sessionTagComponent.tags = 'tag1,tag2';
 
-      $httpBackend.whenPOST('addTags',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.tags).toEqual(sessionTagComponent.tags);
-           expect(jsonData.segments).not.toBeDefined();
-           return true;
-         }
-      ).respond(200);
-
-      sessionTagComponent.addTags();
+      sessionTagComponent.apply(true);
 
       $httpBackend.flush();
 
+      let args = { message: 'Tag success', reloadData: true};
       expect(scope.$emit).toHaveBeenCalled();
-      expect(scope.$emit).toHaveBeenCalledWith('update:tags', { id: id });
+      expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
     });
 
     it('should send add tags request with segments and close form', function() {
+      $httpBackend.expectPOST('addTags&expression=undefined');
+
       sessionTagComponent.tags = 'tag1,tag2';
-      sessionTagComponent.include = 'all';
+      sessionTagComponent.segments = 'all';
 
-      $httpBackend.whenPOST('addTags',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.tags).toEqual(sessionTagComponent.tags);
-           expect(jsonData.segments).toEqual(sessionTagComponent.include);
-           return true;
-         }
-      ).respond(200);
-
-      sessionTagComponent.addTags();
+      sessionTagComponent.apply(true);
 
       $httpBackend.flush();
 
+      let args = { message: 'Tag success', reloadData: true};
       expect(scope.$emit).toHaveBeenCalled();
-      expect(scope.$emit).toHaveBeenCalledWith('update:tags', { id: id });
+      expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
     });
 
     it('should not send add tags request and close form', function() {
-      sessionTagComponent.addTags();
+      sessionTagComponent.apply(true);
 
       expect(sessionTagComponent.error).toEqual('No tag(s) specified.');
     });
 
     it('should send remove tags request and close form', function() {
+      $httpBackend.expectPOST('removeTags&expression=undefined');
+
       sessionTagComponent.tags = 'tag1,tag2';
 
-      $httpBackend.whenPOST('removeTags',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.tags).toEqual(sessionTagComponent.tags);
-           expect(jsonData.segments).not.toBeDefined();
-           return true;
-         }
-      ).respond(200);
-
-      sessionTagComponent.removeTags();
+      sessionTagComponent.apply(false);
 
       $httpBackend.flush();
 
+      let args = { message: 'Tag success', reloadData: true};
       expect(scope.$emit).toHaveBeenCalled();
-      expect(scope.$emit).toHaveBeenCalledWith('update:tags', { id: id });
-      expect(scope.$emit.calls.count()).toBe(1);
-    });
-
-    it('should send remove tags request with segments and close form', function() {
-      sessionTagComponent.tags = 'tag1,tag2';
-      sessionTagComponent.include = 'all';
-
-      $httpBackend.whenPOST('removeTags',
-         function(postData) {
-           let jsonData = JSON.parse(postData);
-           expect(jsonData.ids).toBe(id);
-           expect(jsonData.tags).toEqual(sessionTagComponent.tags);
-           expect(jsonData.segments).toEqual(sessionTagComponent.include);
-           return true;
-         }
-      ).respond(200);
-
-      sessionTagComponent.removeTags();
-
-      $httpBackend.flush();
-
-      expect(scope.$emit).toHaveBeenCalled();
-      expect(scope.$emit).toHaveBeenCalledWith('update:tags', { id: id });
+      expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
     });
 
     it('should not send remove tags request and close form', function() {
-      sessionTagComponent.removeTags();
+      sessionTagComponent.apply(false);
 
       expect(sessionTagComponent.error).toEqual('No tag(s) specified.');
     });

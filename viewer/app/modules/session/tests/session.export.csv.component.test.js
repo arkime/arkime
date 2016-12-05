@@ -21,7 +21,13 @@
       sessionExportCSVComponent = $componentController('exportCsv', {
         $scope        : scope,
         SessionService: SessionService
-      }, { sessionid: id });
+      }, {
+        sessions    : [{id:id}],
+        start       : 0,
+        applyTo     : 'open',
+        numVisible  : 100,
+        numMatching : 999999
+      });
 
       // spy on functions called in controller
       spyOn(scope, '$emit').and.callThrough();
@@ -35,13 +41,13 @@
       expect(sessionExportCSVComponent).toBeDefined();
       expect(sessionExportCSVComponent.$scope).toBeDefined();
       expect(sessionExportCSVComponent.SessionService).toBeDefined();
-      expect(sessionExportCSVComponent.sessionid).toBeDefined();
-      expect(sessionExportCSVComponent.sessionid).toEqual(id);
+      expect(sessionExportCSVComponent.sessions).toBeDefined();
+      expect(sessionExportCSVComponent.sessions).toEqual([{id:id}]);
     });
 
     it('should have smart defaults', function() {
-      expect(sessionExportCSVComponent.include).toBeDefined();
-      expect(sessionExportCSVComponent.include).toEqual('no');
+      expect(sessionExportCSVComponent.segments).toBeDefined();
+      expect(sessionExportCSVComponent.segments).toEqual('no');
       expect(sessionExportCSVComponent.filename).toBeDefined();
       expect(sessionExportCSVComponent.filename).toEqual('sessions.csv');
     });
@@ -55,10 +61,20 @@
     });
 
     it('should send export csv request and close form', function() {
+      let params = {
+        start       : sessionExportCSVComponent.start,
+        applyTo     : sessionExportCSVComponent.applyTo,
+        filename    : sessionExportCSVComponent.filename,
+        segments    : sessionExportCSVComponent.segments,
+        sessions    : sessionExportCSVComponent.sessions,
+        numVisible  : sessionExportCSVComponent.numVisible,
+        numMatching : sessionExportCSVComponent.numMatching
+      };
+
       sessionExportCSVComponent.exportCSV();
 
       expect(sessionExportCSVComponent.SessionService.exportCSV).toHaveBeenCalled();
-      expect(sessionExportCSVComponent.SessionService.exportCSV).toHaveBeenCalledWith(id, 'sessions.csv', 'no');
+      expect(sessionExportCSVComponent.SessionService.exportCSV).toHaveBeenCalledWith(params);
       expect(sessionExportCSVComponent.SessionService.exportCSV.calls.count()).toBe(1);
 
       expect(scope.$emit).toHaveBeenCalled();

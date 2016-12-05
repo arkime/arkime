@@ -313,6 +313,16 @@ body {
 }
 
 
+// small alert areas
+.alert {
+  &.alert-sm {
+    padding       : 4px 35px 5px 8px;
+    margin-top    : $px-md;
+    margin-bottom : $px-sm;
+  }
+}
+
+
 
 /* animations ================================ */
 .animate-opacity {
