@@ -38,12 +38,12 @@ dl
   dd
     span.hover-menu
       label.label.cursor-pointer
-        div.moloch-clickable.format-seconds(molochstart="#{session.fp}") #{session.fp}
+        div.moloch-clickable.format-seconds(molochstart=session.fp) #{session.fp}
         
     strong.margined-left-xxxxlg Stop:
     span.hover-menu
       label.label.cursor-pointer
-        div.moloch-clickable.format-seconds(molochstop='#{session.lp}') #{session.lp}
+        div.moloch-clickable.format-seconds(molochstop=session.lp) #{session.lp}
         
     strong.margined-left-xxxxlg Node:
     +clickableValue('node', session.no, true)

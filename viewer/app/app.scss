@@ -324,6 +324,156 @@ body {
 
 
 
+// TODO: remove hover-menu
+/* moloch menu items ========================= */
+.hover-menu {
+
+  word-break    : break-all;
+  overflow-wrap : break-word;
+
+  .moloch-clickable { // clickable value
+    margin  : 4px;
+    display : inline;
+  }
+
+  // display the menu underneath the value
+  .moloch-menu {
+    display : inherit;
+    margin  : 0;
+  }
+
+  // hide button and dropdown when not hovered
+  .btn, ul.dropdown-menu {
+    opacity           : 0;
+    visibility        : hidden;
+
+    -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
+       -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+            transition: visibility 0s linear 400ms, opacity 400ms;
+  }
+
+  .btn {
+    margin-top: -3px;
+    padding   : 0 4px;
+  }
+
+  ul.dropdown-menu {
+    min-width: 200px;
+    max-width: 100%;
+
+    > li {
+      > a { // truncate long values
+        overflow      : hidden;
+        text-overflow : ellipsis;
+      }
+    }
+  }
+
+  .label { // clickable value container
+    z-index     : 3;
+    font-size   : 14px;
+    font-weight : normal;
+    white-space : normal;
+    text-align  : left;
+    padding     : 3px;
+    margin      : 0 -20px 0 0;
+    position    : relative;
+    border      : 1px solid rgba(0, 0, 0, 0);
+    color       : lighten($color-blue-light, 16%);
+
+    -webkit-transition: background 400ms linear, border-color 400ms;
+       -moz-transition: background 400ms linear, border-color 400ms;
+            transition: background 400ms linear, border-color 400ms;
+  }
+
+  &:hover {
+    // show button and menu (if opened) on hover
+    .btn, ul.dropdown-menu {;
+      opacity           : 1;
+      visibility        : visible;
+
+      -webkit-transition: visibility 0s linear 0s, opacity 400ms;
+         -moz-transition: visibility 0s linear 0s, opacity 400ms;
+              transition: visibility 0s linear 0s, opacity 400ms;
+    }
+
+    .label {
+      background-color: $color-white;
+      border          : 1px solid darken($color-gray, 13%);
+      z-index         : 4;
+    }
+  }
+
+}
+
+.field {
+  display       : inline-block;
+  word-break    : break-all;
+  overflow-wrap : break-word;
+  font-size     : 14px;
+  font-weight   : normal;
+  white-space   : normal;
+  text-align    : left;
+  padding       : 3px;
+  margin        : 0 -20px 0 0;
+  position      : relative;
+  border        : 1px solid rgba(0, 0, 0, 0);
+  border-radius : 4px;
+
+  -webkit-transition: background 400ms linear, border-color 400ms;
+     -moz-transition: background 400ms linear, border-color 400ms;
+          transition: background 400ms linear, border-color 400ms;
+  
+  a {
+    color           : $color-blue-light;
+    text-decoration : none;
+
+    .fa {
+      margin-left: $px-sm;
+      opacity    : 0;
+      visibility : hidden;
+      -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
+         -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+              transition: visibility 0s linear 400ms, opacity 400ms;
+    }
+  }
+
+  ul.dropdown-menu {
+    opacity   : 0;
+    visibility: hidden;
+    min-width : 200px;
+    max-width : 100%;
+    -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
+       -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+            transition: visibility 0s linear 400ms, opacity 400ms;
+
+    > li {
+      > a { // truncate long values
+        overflow      : hidden;
+        text-overflow : ellipsis;
+      }
+    }
+  }
+
+  &:hover {
+      background-color: $color-white;
+      border          : 1px solid darken($color-gray, 13%);
+
+    // show button and menu (if opened) on hover
+    .fa, ul.dropdown-menu {;
+      opacity           : 1;
+      visibility        : visible;
+
+      -webkit-transition: visibility 0s linear 0s, opacity 400ms;
+         -moz-transition: visibility 0s linear 0s, opacity 400ms;
+              transition: visibility 0s linear 0s, opacity 400ms;
+    }
+  }
+
+}
+
+
+
 /* animations ================================ */
 .animate-opacity {
   opacity           : 1;

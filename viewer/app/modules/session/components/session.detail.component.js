@@ -18,9 +18,11 @@
      *
      * @ngInject
      */
-    constructor($sce, $scope, SessionService, ConfigService, FieldService) {
+    constructor($sce, $scope, $compile, $element, SessionService, ConfigService, FieldService) {
       this.$sce           = $sce;
       this.$scope         = $scope;
+      this.$compile   = $compile;
+      this.$element = $element;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -106,7 +108,15 @@
         this.$scope.session.no, this.$scope.params)
         .then((response) => {
           this.loading = false;
+          // this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
+
+          // let asdf = this.$element.find('.asdf');
+          // let template  = angular.element(this.$scope.detailHtml);
+          // let linkFn    = this.$compile(template);
+          // let element   = linkFn(this.$scope);
+          // asdf.prevObject[0].innerHTML = element[0];
+
           this.$scope.watchClickableValues();
 
           if (message) { this.$scope.displayMessage(message); }
@@ -141,7 +151,7 @@
 
   }
 
-  SessionDetailController.$inject = ['$sce','$scope',
+  SessionDetailController.$inject = ['$sce','$scope','$compile','$element',
     'SessionService','ConfigService','FieldService'];
 
 
@@ -471,6 +481,12 @@
           var srccol, dstcol, imgs;
 
           scope.watchClickableValues = function() {
+            let template = scope.detailHtml.toString();
+            console.log(template);
+            let compiled = $compile(template)(scope);
+            element.append(compiled);
+
+
             $timeout(function() { // wait until session detail is rendered
               var i, len, time, value, timeEl;
 

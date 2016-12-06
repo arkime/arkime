@@ -1,15 +1,12 @@
 //- Display a clickable value
 //- set true for stringify if the value should be surrounded by "" in the query
 mixin clickableValue(expr, value, stringify)
-  - var exprval = value
-  if (stringify || (typeof value === "string" && value.match(/[\[\]+&| ]/)))
-    - exprval = '\"' + value + '\"'
-    
-  span.hover-menu
-    label.label.cursor-pointer
-      div.moloch-clickable(molochfield=expr, molochvalue=exprval) #{value}
-      a.btn.btn-link.btn-xs.pull-right(molochmenu, molochfield=expr, molochvalue=exprval)
-        span.fa.fa-bars
+  - var exprval = '\"' + value + '\"'
+  //if (stringify || expr === 'payload8.src.hex' || expr === 'file' || expr === 'http.md5' || (typeof value === "string" && value.match(/[\[\]+&| ]/)))
+  //  - exprval = '\"' + value + '\"'
+
+  - expr = '\"' + expr + '\"'
+  session-field(expr=expr, value=exprval)
 
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)
