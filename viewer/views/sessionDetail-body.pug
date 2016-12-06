@@ -13,17 +13,17 @@ else
   div.row#textpacket
     div.col-md-6
       h4
-        span.srccol(title="Source Bytes:<br><img src='#{session.no}/raw/#{session.id}.png?type=src'>") Source
+        span.srccol(title="Source Bytes:<br><img src='" + session.no + "/raw/" + session.id + ".png?type=src'>") Source
     div.col-md-6
       h4
-        span.dstcol(title="Source Bytes:<br><img src='#{session.no}/raw/#{session.id}.png?type=dst'>") Destination
+        span.dstcol(title="Source Bytes:<br><img src='" + session.no + "/raw/" + session.id + ".png?type=dst'>") Destination
 
   each item, i in data
     div.row
       if item.client == 0
         div.col-md-6
           if (item.ts)
-            div.session-detail-ts(ts="#{item.ts}")
+            div.session-detail-ts(ts=item.ts)
               em.ts-value #{item.ts}
               span.pull-right #{item.bytes} bytes
           |!{item.html}
@@ -32,7 +32,7 @@ else
         div.col-md-6
         div.col-md-6
           if (item.ts)
-            div.session-detail-ts(ts="#{item.ts}")
+            div.session-detail-ts(ts=item.ts)
               em.ts-value #{item.ts}
               span.pull-right #{item.bytes} bytes
           |!{item.html}
