@@ -74,9 +74,7 @@
 
         newExpr += args.expression;
 
-        // this.$scope.$apply(() => {
-          this.query.value += newExpr;
-        // });
+        this.query.value += newExpr;
       });
     }
 

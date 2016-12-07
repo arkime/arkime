@@ -1,12 +1,13 @@
 //- Display a clickable value
 //- set true for stringify if the value should be surrounded by "" in the query
-mixin clickableValue(expr, value, stringify)
+mixin clickableValue(expr, value, stringify, parse)
   - var exprval = '\"' + value + '\"'
   //if (stringify || expr === 'payload8.src.hex' || expr === 'file' || expr === 'http.md5' || (typeof value === "string" && value.match(/[\[\]+&| ]/)))
   //  - exprval = '\"' + value + '\"'
 
   - expr = '\"' + expr + '\"'
-  session-field(expr=expr, value=exprval)
+  - parse = '\"' + (parse || false) + '\"'
+  session-field(expr=expr, value=exprval, parse=parse class="detail-field")
 
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)
@@ -36,7 +37,7 @@ mixin arrayPrint(container, field, expr, stringify)
   if ((container && container[field]))
     each value,i in container[field]
       if (value.length == 0)
-        span(molochfield=expr, molochvalue=value) &lt;empty&gt;
+        span &lt;empty&gt;
       else
         +clickableValue(expr, value, stringify)
 
@@ -53,7 +54,7 @@ mixin arrayList(container, field, title, expr, extra, max, stringify)
           if (i == max)
             |<span style="display:none">
           if (value.length == 0)
-            span(molochfield=expr, molochvalue=value) &lt;empty&gt;
+            span &lt;empty&gt;
           else
             +clickableValue(expr, value, stringify)
         if (container[field].length > max)
@@ -70,7 +71,7 @@ mixin stringList(container, field, title, expr, extra)
       if (container && container[field])
         - value = container[field]
         if (value.length == 0)
-          span(molochfield=expr, molochvalue=value) &lt;empty&gt;
+          span &lt;empty&gt;
         else
           +clickableValue(expr, value, true)
       if (extra)
@@ -105,7 +106,7 @@ mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
       if (full)
         +clickableValue(expr + '.asn', as, true)
       else
-        +clickableValue('asn.' + expr, as, true) 
+        +clickableValue('asn.' + expr, as, true)
       |] &nbsp;
     - if (rir)
       | {
@@ -113,7 +114,7 @@ mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
         +clickableValue(expr + '.rir', rir)
       else
         +clickableValue('rir.' + expr, rir)
-      |} 
+      |}
 
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
   - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 

@@ -18,11 +18,9 @@
      *
      * @ngInject
      */
-    constructor($sce, $scope, $compile, $element, SessionService, ConfigService, FieldService) {
+    constructor($sce, $scope, SessionService, ConfigService, FieldService) {
       this.$sce           = $sce;
       this.$scope         = $scope;
-      this.$compile   = $compile;
-      this.$element = $element;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -108,14 +106,7 @@
         this.$scope.session.no, this.$scope.params)
         .then((response) => {
           this.loading = false;
-          // this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
-
-          // let asdf = this.$element.find('.asdf');
-          // let template  = angular.element(this.$scope.detailHtml);
-          // let linkFn    = this.$compile(template);
-          // let element   = linkFn(this.$scope);
-          // asdf.prevObject[0].innerHTML = element[0];
 
           this.$scope.watchClickableValues();
 
@@ -151,7 +142,7 @@
 
   }
 
-  SessionDetailController.$inject = ['$sce','$scope','$compile','$element',
+  SessionDetailController.$inject = ['$sce','$scope',
     'SessionService','ConfigService','FieldService'];
 
 
@@ -346,20 +337,20 @@
            * Must have attribute molochstart or molochstop
            * @param {Object} e The click event
            */
-          function timeClick(e) {
-            e.preventDefault();
-
-            var start = e.target.getAttribute('molochstart');
-            var stop  = e.target.getAttribute('molochstop');
-
-            var result = {};
-            if (start) { result.start = start; }
-            if (stop)  { result.stop  = stop; }
-
-            if (result.start || result.stop) {
-              scope.$emit('change:time', result);
-            }
-          }
+          // function timeClick(e) {
+          //   e.preventDefault();
+          //
+          //   var start = e.target.getAttribute('molochstart');
+          //   var stop  = e.target.getAttribute('molochstop');
+          //
+          //   var result = {};
+          //   if (start) { result.start = start; }
+          //   if (stop)  { result.stop  = stop; }
+          //
+          //   if (result.start || result.stop) {
+          //     scope.$emit('change:time', result);
+          //   }
+          // }
 
 
           /**
@@ -480,9 +471,10 @@
           var clickableValues, clickableTimes, molochMenus, showMore;
           var srccol, dstcol, imgs;
 
+          // TODO: remove stuff about moloch menus
           scope.watchClickableValues = function() {
-            let template = scope.detailHtml.toString();
-            console.log(template);
+            // TODO: put this in own function
+            let template = `<div ng-class="{'show-ts':params.ts === true}">${scope.detailHtml}</div>`;
             let compiled = $compile(template)(scope);
             element.append(compiled);
 
@@ -505,25 +497,25 @@
               optionsEl.replaceWith(optContent);
 
               // display tag adding button by the tags
-              var tagEl       = element.find('.session-tag-container');
-              var tagContent  = $compile(`<div ng-click="displayFormContainer({form:'add:tags'})"
-                                          uib-tooltip="Add a new tag to this session"
-                                          class="btn btn-xs btn-blue margined-left-xlg margined-bottom margined-top">
-                                          <span class="fa fa-plus-circle"></span>
-                                        </div>`)(scope);
-              tagEl.replaceWith(tagContent);
+              // var tagEl       = element.find('.session-tag-container');
+              // var tagContent  = $compile(`<div ng-click="displayFormContainer({form:'add:tags'})"
+              //                             uib-tooltip="Add a new tag to this session"
+              //                             class="btn btn-xs btn-blue margined-left-sm">
+              //                             <span class="fa fa-plus-circle"></span>
+              //                           </div>`)(scope);
+              // tagEl.replaceWith(tagContent);
 
               // add click listener to add expression to search input
-              clickableValues = element[0].querySelectorAll('.moloch-clickable[molochfield]');
-              for (i = 0, len = clickableValues.length; i < len; ++i) {
-                clickableValues[i].addEventListener('click', molochExprClick);
-              }
+              // clickableValues = element[0].querySelectorAll('.moloch-clickable[molochfield]');
+              // for (i = 0, len = clickableValues.length; i < len; ++i) {
+              //   clickableValues[i].addEventListener('click', molochExprClick);
+              // }
 
               // add click listener for all menus (next to each value)
-              molochMenus = element[0].querySelectorAll('[molochmenu]');
-              for (i = 0, len = molochMenus.length; i < len; ++i) {
-                molochMenus[i].addEventListener('click', contextMenuClick);
-              }
+              // molochMenus = element[0].querySelectorAll('[molochmenu]');
+              // for (i = 0, len = molochMenus.length; i < len; ++i) {
+              //   molochMenus[i].addEventListener('click', contextMenuClick);
+              // }
 
               // add click listener to show more values in list
               showMore = element[0].querySelectorAll('.show-more-items');
@@ -531,28 +523,28 @@
                 showMore[i].addEventListener('click', showMoreItems);
               }
 
-              clickableTimes = element[0].querySelectorAll('.format-seconds');
-              for (i = 0, len = clickableTimes.length; i < len; ++i) {
-                timeEl  = clickableTimes[i];
-                value   = timeEl.innerText;
-                if (!isNaN(value)) { // only parse value if it's a number (s from 1970)
-                  time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
-                  timeEl.innerHTML = time;
-                }
-
-                // if it has a value, set it to parsed time
-                if (timeEl.getAttribute('molochvalue')) {
-                  timeEl.setAttribute('molochvalue', "\"" + time + "\"");
-                }
-
-                // add click listener for time values
-                // if it has molochstart or molochstop, add these to the
-                // time range, not the search input
-                if (timeEl.getAttribute('molochstart') ||
-                    timeEl.getAttribute('molochstop')) {
-                  timeEl.addEventListener('click', timeClick);
-                }
-              }
+              // clickableTimes = element[0].querySelectorAll('.format-seconds');
+              // for (i = 0, len = clickableTimes.length; i < len; ++i) {
+              //   timeEl  = clickableTimes[i];
+              //   value   = timeEl.innerText;
+              //   if (!isNaN(value)) { // only parse value if it's a number (s from 1970)
+              //     time = $filter('date')(timeEl.innerHTML * 1000, 'yyyy/MM/dd HH:mm:ss');
+              //     timeEl.innerHTML = time;
+              //   }
+              //
+              //   // if it has a value, set it to parsed time
+              //   if (timeEl.getAttribute('molochvalue')) {
+              //     timeEl.setAttribute('molochvalue', "\"" + time + "\"");
+              //   }
+              //
+              //   // add click listener for time values
+              //   // if it has molochstart or molochstop, add these to the
+              //   // time range, not the search input
+              //   if (timeEl.getAttribute('molochstart') ||
+              //       timeEl.getAttribute('molochstop')) {
+              //     timeEl.addEventListener('click', timeClick);
+              //   }
+              // }
 
               // modify the packet timestamp values
               var tss = element[0].querySelectorAll('.session-detail-ts');
@@ -582,8 +574,8 @@
                 var href = img.getAttribute('href');
                 href = href.replace('body', 'bodypng');
                 $(img).tooltip({
-                  placement :'top',
-                  html      :true,
+                  placement : 'top',
+                  html      : true,
                   title     : `File Bytes:<br><img src="${href}">`
                 });
               }
@@ -595,17 +587,17 @@
             // remove event listeners to prevent memory leaks
             var i, len;
 
-            if (clickableTimes) {
-              for (i = 0, len = clickableTimes.length; i < len; ++i) {
-                clickableTimes[i].removeEventListener('click', timeClick);
-              }
-            }
-
-            if (clickableValues) {
-              for (i = 0, len = clickableValues.length; i < len; ++i) {
-                clickableValues[i].removeEventListener('click', molochExprClick);
-              }
-            }
+            // if (clickableTimes) {
+            //   for (i = 0, len = clickableTimes.length; i < len; ++i) {
+            //     clickableTimes[i].removeEventListener('click', timeClick);
+            //   }
+            // }
+            //
+            // if (clickableValues) {
+            //   for (i = 0, len = clickableValues.length; i < len; ++i) {
+            //     clickableValues[i].removeEventListener('click', molochExprClick);
+            //   }
+            // }
 
             if (showMore) {
               for (i = 0, len = showMore.length; i < len; ++i) {
