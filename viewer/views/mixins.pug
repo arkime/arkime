@@ -1,13 +1,12 @@
 //- Display a clickable value
 //- set true for stringify if the value should be surrounded by "" in the query
 mixin clickableValue(expr, value, stringify, parse)
+  // stringify everything for Angular
   - var exprval = '\"' + value + '\"'
-  //if (stringify || expr === 'payload8.src.hex' || expr === 'file' || expr === 'http.md5' || (typeof value === "string" && value.match(/[\[\]+&| ]/)))
-  //  - exprval = '\"' + value + '\"'
-
   - expr = '\"' + expr + '\"'
   - parse = '\"' + (parse || false) + '\"'
-  session-field(expr=expr, value=exprval, parse=parse class="detail-field")
+  - stringify = '\"' + stringify + '\"'
+  session-field(expr=expr, value=exprval, parse=parse class="detail-field", stringify=stringify)
 
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)
@@ -58,8 +57,8 @@ mixin arrayList(container, field, title, expr, extra, max, stringify)
           else
             +clickableValue(expr, value, stringify)
         if (container[field].length > max)
-          |</span>
-          a.cursor-pointer.show-more-items &hellip;
+          |<a class="cursor-pointer show-more-items" ng-click="$ctrl.showFewerItems($event)">less...</a></span>
+          a.cursor-pointer.show-more-items(ng-click="$ctrl.showMoreItems($event)") more...
       if (extra)
         |!{extra}
 

@@ -3,7 +3,7 @@ session-field {
 
   &.detail-field {
     .field {
-      margin: 0 -12px 0 -1px;
+      margin : 0 -12px 0 -1px;
 
       a {
         color: $color-blue;
@@ -12,52 +12,52 @@ session-field {
   }
 
   .field {
-    z-index: 3;
-    display: inline-block;
-    padding: 2px;
-    margin: 0 -4px 0 -4px;
-    border-radius: 3px;
-    border: 1px solid rgba(0, 0, 0, 0);
+    z-index       : 3;
+    display       : inline-block;
+    padding       : 2px;
+    margin        : 0 -4px 0 -4px;
+    border-radius : 3px;
+    border        : 1px solid rgba(0, 0, 0, 0);
 
     -webkit-transition: background 400ms linear, border-color 400ms;
-    -moz-transition: background 400ms linear, border-color 400ms;
-    transition: background 400ms linear, border-color 400ms;
+       -moz-transition: background 400ms linear, border-color 400ms;
+            transition: background 400ms linear, border-color 400ms;
 
     a {
-      color: lighten($color-black, 10%);
-      text-decoration: none;
+      color           : lighten($color-black, 10%);
+      text-decoration : none;
 
       .fa {
-        opacity: 0;
-        visibility: hidden;
-        margin-left: $px-xs;
+        opacity     : 0;
+        visibility  : hidden;
+        margin-left : $px-xs;
 
         -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
-        -moz-transition: visibility 0s linear 400ms, opacity 400ms;
-        transition: visibility 0s linear 400ms, opacity 400ms;
+           -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+                transition: visibility 0s linear 400ms, opacity 400ms;
       }
     }
 
     ul.dropdown-menu {
-      opacity: 0;
+      opacity   : 0;
       visibility: hidden;
 
       -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
-      -moz-transition: visibility 0s linear 400ms, opacity 400ms;
-      transition: visibility 0s linear 400ms, opacity 400ms;
+         -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+              transition: visibility 0s linear 400ms, opacity 400ms;
 
       > li {
         > a { // truncate long values
-          overflow: hidden;
-          text-overflow: ellipsis;
+          overflow      : hidden;
+          text-overflow : ellipsis;
         }
       }
     }
 
     &:hover {
-      z-index: 4;
+      z-index         : 4;
       background-color: $color-white;
-      border: 1px solid lighten($color-black, 10%);
+      border          : 1px solid lighten($color-black, 10%);
 
       a {
         color: $color-blue-dark;
@@ -65,12 +65,12 @@ session-field {
 
       // show button and menu (if opened) on hover
       .fa, ul.dropdown-menu {
-        opacity: 1;
+        opacity   : 1;
         visibility: visible;
 
         -webkit-transition: visibility 0s linear 0s, opacity 400ms;
-        -moz-transition: visibility 0s linear 0s, opacity 400ms;
-        transition: visibility 0s linear 0s, opacity 400ms;
+           -moz-transition: visibility 0s linear 0s, opacity 400ms;
+                transition: visibility 0s linear 0s, opacity 400ms;
       }
     }
 

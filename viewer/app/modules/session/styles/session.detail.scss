@@ -12,9 +12,7 @@ session {
       margin-right: 2px;
       border-bottom: 1px solid $color-gray;
 
-      + pre {
-        margin-top: -1px;
-      }
+      + pre { margin-top: -1px; }
     }
 
     .show-ts {
@@ -38,8 +36,10 @@ session {
     }
 
     .show-more-items {
-      margin-left : 20px;
-      font-size   : 16px;
+      margin-left : 6px;
+      margin-right: 6px;
+      font-size   : 12px;
+      text-decoration: none;
     }
 
     .nav-pills {

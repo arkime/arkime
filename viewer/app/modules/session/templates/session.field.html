@@ -1,5 +1,5 @@
 <!-- normal field with a single value -->
-<span ng-if="!$ctrl.fieldObj.children">
+<span ng-if="!$ctrl.fieldObj.children && $ctrl.value">
   <!-- search expression -->
   <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="!$ctrl.time">
     <a href id="simple-dropdown" uib-dropdown-toggle>
@@ -7,21 +7,22 @@
       <span class="fa fa-caret-down"></span>
     </a>
     <ul class="dropdown-menu" uib-dropdown-menu>
-      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.value, '==')">
+      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '==')">
         <a href>
           <strong>and</strong>
           {{::$ctrl.parsed}}
         </a>
       </li>
-      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.value, '!=')">
+      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '!=')">
         <a href>
           <strong>and not</strong>
           {{::$ctrl.parsed}}
         </a>
       </li>
-      <li ng-repeat="item in $ctrl.menuItems"
-          ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.value, item.exp)">
-        <a href>{{::item.name}}</a>
+      <li ng-repeat="item in $ctrl.menuItems">
+        <a href="{{::item.url}}" target="_blank">
+          <strong>{{::item.name}}</strong> {{::item.value}}
+        </a>
       </li>
     </ul>
   </span>

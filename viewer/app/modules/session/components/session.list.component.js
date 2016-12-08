@@ -33,7 +33,7 @@
      * @param $routeParams    Retrieve the current set of route parameters
      * @param $anchorScroll   Scrolls to the element related to given hash
      * @param SessionService  Transacts sessions with the server
-     * @param FieldService    Retrieves available fiels from the server
+     * @param FieldService    Retrieves available fields from the server
      *
      * @ngInject
      */
