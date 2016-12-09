@@ -6,7 +6,8 @@ session-field {
       margin : 0 -12px 0 -1px;
 
       a {
-        color: $color-blue;
+        color     : $color-blue;
+        word-break: break-word;
       }
     }
   }

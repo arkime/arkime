@@ -112,7 +112,7 @@
             </td>
             <td ng-repeat="col in $ctrl.headers"
               ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
-              <session-field column="col" expr="col.exp"
+              <session-field field="col" expr="col.exp"
                 value="session[col.dbField]" session="session"
                 parse="true"></session-field>
             </td>

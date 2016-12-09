@@ -2,15 +2,13 @@
 
   'use strict';
 
-  let customCols = require('json!./custom.columns.json');
-
   /**
    * @class SessionFieldController
-   * @classdesc Interacts with add session fields
+   * @classdesc Interacts with all clickable session fields
    *
    * @example
-   * TODO: fix this example add add params to constructor documentation
-   * '<session-field column="col" session="session"></session-field>'
+   * '<session-field field="fieldObj" expr="'src.ip'"
+   *   value="16843009" session="sessionObj" parse="true"></session-field>'
    */
   class SessionFieldController {
 
@@ -34,9 +32,10 @@
       this.SessionService = SessionService;
     }
 
+    /* Callback when component is mounted and ready */
     $onInit() {
       // only display fields that have a value
-      if (!this.value && (!this.column || !this.column.children)) { return; }
+      if (!this.value && (!this.field || !this.field.children)) { return; }
 
       if (typeof this.parse === 'string') {
         this.parse = this.parse === 'true';
@@ -49,13 +48,13 @@
       // for values required to be strings in the search expression
       if (this.stringify) { this.stringVal = '\"' + this.value + '\"'; }
 
-      if (this.column) { this.parseValue(this.column); }
+      if (this.field) { this.parseValue(this.field); }
 
       this.FieldService.get()
         .then((response) => {
           this.molochFields = response;
 
-          if (!this.column) {
+          if (!this.field) {
             this.parseValue(this.molochFields[this.expr]);
           }
         });
@@ -63,22 +62,44 @@
       // TODO: only do this if the user opens on dropdown menu
       this.ConfigService.getMolochClickables()
          .then((response) => {
-           this.molochClickables = response;
+           let emptyObject = true;
+           for (let key in response) {
+             if (response.hasOwnProperty(key)) {
+               emptyObject = false;
+             }
+           }
 
-           this.buildMenu();
+           if (!emptyObject) {
+             this.molochClickables = response;
+             this.buildMenu();
+           }
          });
     }
 
     /* exposed functions --------------------------------------------------- */
-    fieldClick(field, value, expr) {
-      let fullExpression = `${field} ${expr} ${value}`;
+    /**
+     * Triggered when a field's menu item is clicked
+     * Emits an event to add an expression to the query in the search bar
+     * @param {string} field  The field name
+     * @param {string} value  The field value
+     * @param {string} op     The relational operator
+     */
+    fieldClick(field, value, op) {
+      let fullExpression = `${field} ${op} ${value}`;
 
       this.$scope.$emit('add:to:search', { expression: fullExpression });
     }
 
+    /**
+     * Triggered when a time field is clicked
+     * Emits an event to update the time constraints in the search bar
+     * @param {string} field The field name ('starttime' || 'stoptime')
+     * @param {string} value The value of the field
+     */
     timeClick(field, value) {
       let result = {};
 
+      // starttime & stoptime are the search bar time constraints
       if (field === 'starttime') { result.start = value; }
       if (field === 'stoptime')  { result.stop  = value; }
 
@@ -87,6 +108,11 @@
       }
     }
 
+    /* utility functions --------------------------------------------------- */
+    /**
+     * Gets info to display the menu for a field
+     * @returns {Object} The info to be displayed in the menu
+     */
     getInfo() {
       let field = this.molochFields[this.expr];
       if (!field) { return { category: [] }; }
@@ -98,7 +124,10 @@
       }
     }
 
-    /* utility functions --------------------------------------------------- */
+    /**
+     * Parses a session field value based on its type
+     * @param {Object} fieldObj The field to be parsed
+     */
     parseValue(fieldObj) {
       this.fieldObj = fieldObj;
 
@@ -131,8 +160,9 @@
       }
     }
 
+    /* Builds the dropdown menu items to display */
     buildMenu() {
-      if (!this.value) { return; }
+      if (!this.value || !this.molochClickables) { return; }
 
       let info  = this.getInfo();
       let text  = this.value.toString();
@@ -212,6 +242,7 @@
   SessionFieldController.$inject = ['$scope','$filter','$location',
     'FieldService','ConfigService','SessionService'];
 
+
   /**
    * SessionField Directive
    * Displays session fields
@@ -224,7 +255,7 @@
         expr      : '<',  // the query expression to be put in the search
         value     : '<',  // the value of the session field
         session   : '<',  // the session (required for custom columns)
-        column    : '<',  // the column the field belongs to (for table)
+        field     : '<',  // the column the field belongs to (for table)
         parse     : '<',  // whether to parse the value
         stringify : '<'   // whether to stringify the value in the search expression
       }
