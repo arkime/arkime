@@ -21,7 +21,7 @@ else
   each item, i in data
     div.row
       if item.client == 0
-        div.col-md-6
+        div.col-md-6.sessionsrc
           if (item.ts)
             div.session-detail-ts(ts=item.ts)
               em.ts-value #{item.ts}
@@ -30,7 +30,7 @@ else
         div.col-md-6
       else
         div.col-md-6
-        div.col-md-6
+        div.col-md-6.sessiondst
           if (item.ts)
             div.session-detail-ts(ts=item.ts)
               em.ts-value #{item.ts}

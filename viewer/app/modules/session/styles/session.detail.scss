@@ -2,6 +2,10 @@ session {
 
   session-detail {
 
+    .sessiondst { color: blue !important; }
+
+    .sessionsrc { color: rgb(202, 4, 4) !important; }
+
     // packet timestamps
     .session-detail-ts {
       display     : none;
@@ -13,7 +17,10 @@ session {
       border-bottom: 1px solid $color-gray;
 
       + pre {
+        color: inherit;
         margin-top: -1px;
+
+        .sessionln { color: darkgreen; }
       }
     }
 
