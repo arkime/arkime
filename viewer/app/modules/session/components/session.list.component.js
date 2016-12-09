@@ -11,7 +11,7 @@
 
   const defaultTableState = {
     order         : [['fp', 'asc']],
-    visibleHeaders: ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info']
+    visibleHeaders: ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
   };
 
   let customCols = require('json!./custom.columns.json');
@@ -33,7 +33,7 @@
      * @param $routeParams    Retrieve the current set of route parameters
      * @param $anchorScroll   Scrolls to the element related to given hash
      * @param SessionService  Transacts sessions with the server
-     * @param FieldService    Retrieves available fiels from the server
+     * @param FieldService    Retrieves available fields from the server
      *
      * @ngInject
      */

@@ -27,7 +27,7 @@
     }
 
     $onInit() {
-      this.segments  = 'no';
+      this.segments = 'no';
       this.filename = 'sessions.pcap';
     }
 

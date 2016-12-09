@@ -145,7 +145,7 @@
     'irc.channel': { dbField: 'ircch', exp: 'irc.channel' }
   };
 
-  describe('Session Component ->', function() {
+  describe('Session List Component ->', function() {
 
     // load the module
     beforeEach(angular.mock.module('moloch'));
@@ -301,11 +301,12 @@
     describe('column visibility ->', function() {
       afterEach(function() {
         // cleanup table state
-        sessionComponent.tableState.visibleHeaders = ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info'];
+        sessionComponent.tableState.visibleHeaders = ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
       });
 
       it('should have smart default visible headers', function() {
-        var defaultHeaders = ['', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'info'];
+        let defaultHeaders = ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
+
         expect(sessionComponent.tableState.visibleHeaders).toEqual(defaultHeaders);
       });
 

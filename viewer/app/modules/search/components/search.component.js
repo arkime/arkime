@@ -87,16 +87,14 @@
 
       // watch for changes in time parameters
       this.$scope.$on('update:time', (event, args) => {
-        this.$scope.$apply(() => {
-          if (args.start) { // start time changed
-            this.startTime  = parseInt(args.start * 1000, 10);
-          }
-          if (args.stop) {  // stop time changed
-            this.stopTime   = parseInt(args.stop * 1000, 10);
-          }
+        if (args.start) { // start time changed
+          this.startTime  = parseInt(args.start * 1000, 10);
+        }
+        if (args.stop) {  // stop time changed
+          this.stopTime   = parseInt(args.stop * 1000, 10);
+        }
 
-          this.changeDate();
-        });
+        this.changeDate();
       });
 
       // watch for closing the action form

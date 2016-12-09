@@ -1,15 +1,12 @@
 //- Display a clickable value
 //- set true for stringify if the value should be surrounded by "" in the query
-mixin clickableValue(expr, value, stringify)
-  - var exprval = value
-  if (stringify || (typeof value === "string" && value.match(/[\[\]+&| ]/)))
-    - exprval = '\"' + value + '\"'
-    
-  span.hover-menu
-    label.label.cursor-pointer
-      div.moloch-clickable(molochfield=expr, molochvalue=exprval) #{value}
-      a.btn.btn-link.btn-xs.pull-right(molochmenu, molochfield=expr, molochvalue=exprval)
-        span.fa.fa-bars
+mixin clickableValue(expr, value, stringify, parse)
+  // stringify everything for Angular
+  - var exprval = '\"' + value + '\"'
+  - expr = '\"' + expr + '\"'
+  - parse = '\"' + (parse || false) + '\"'
+  - stringify = '\"' + stringify + '\"'
+  session-field(expr=expr, value=exprval, parse=parse class="detail-field", stringify=stringify)
 
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)
@@ -39,7 +36,7 @@ mixin arrayPrint(container, field, expr, stringify)
   if ((container && container[field]))
     each value,i in container[field]
       if (value.length == 0)
-        span(molochfield=expr, molochvalue=value) &lt;empty&gt;
+        span &lt;empty&gt;
       else
         +clickableValue(expr, value, stringify)
 
@@ -56,12 +53,12 @@ mixin arrayList(container, field, title, expr, extra, max, stringify)
           if (i == max)
             |<span style="display:none">
           if (value.length == 0)
-            span(molochfield=expr, molochvalue=value) &lt;empty&gt;
+            span &lt;empty&gt;
           else
             +clickableValue(expr, value, stringify)
         if (container[field].length > max)
-          |</span>
-          a.cursor-pointer.show-more-items &hellip;
+          |<a class="cursor-pointer show-more-items" ng-click="$ctrl.showFewerItems($event)">less...</a></span>
+          a.cursor-pointer.show-more-items(ng-click="$ctrl.showMoreItems($event)") more...
       if (extra)
         |!{extra}
 
@@ -73,7 +70,7 @@ mixin stringList(container, field, title, expr, extra)
       if (container && container[field])
         - value = container[field]
         if (value.length == 0)
-          span(molochfield=expr, molochvalue=value) &lt;empty&gt;
+          span &lt;empty&gt;
         else
           +clickableValue(expr, value, true)
       if (extra)
@@ -108,7 +105,7 @@ mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
       if (full)
         +clickableValue(expr + '.asn', as, true)
       else
-        +clickableValue('asn.' + expr, as, true) 
+        +clickableValue('asn.' + expr, as, true)
       |] &nbsp;
     - if (rir)
       | {
@@ -116,7 +113,7 @@ mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
         +clickableValue(expr + '.rir', rir)
       else
         +clickableValue('rir.' + expr, rir)
-      |} 
+      |}
 
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
   - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
