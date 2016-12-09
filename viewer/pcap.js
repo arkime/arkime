@@ -20,7 +20,8 @@
 */
 'use strict';
 
-var fs             = require('fs');
+var fs             = require('fs'),
+    crypto         = require('crypto');
 
 var Pcap = module.exports = exports = function Pcap (key) {
   this.key     = key;
@@ -73,11 +74,28 @@ Pcap.prototype.isOpen = function() {
   return this.fd !== undefined;
 };
 
-Pcap.prototype.open = function(filename) {
+Pcap.prototype.open = function(filename, info) {
   if (this.fd) {
     return;
   }
   this.filename = filename;
+  if (info) {
+    this.encoding = info.encoding || "normal";
+    if (info.key) {
+      var decipher = crypto.createDecipher("aes-192-cbc", info.kek);
+      delete info.kek;
+      this.encKey = Buffer.concat([decipher.update(new Buffer(info.key, 'hex')), decipher.final()]);
+    }
+
+    if (info.iv) {
+      var iv   = new Buffer(info.iv, 'hex');
+      this.iv  = Buffer.alloc(16);
+      iv.copy(this.iv);
+    }
+  } else {
+    this.encoding = "normal";
+  }
+
   this.fd = fs.openSync(filename, "r");
   this.readHeader();
 };
@@ -116,6 +134,11 @@ Pcap.prototype.unref = function() {
   }, 500);
 };
 
+Pcap.prototype.createDecipher = function(pos) {
+    this.iv.writeInt32BE(pos, 12);
+    return crypto.createDecipheriv(this.encoding, this.encKey, this.iv);
+}
+
 Pcap.prototype.readHeader = function(cb) {
   if (this.headBuffer) {
     if (cb) {
@@ -126,6 +149,18 @@ Pcap.prototype.readHeader = function(cb) {
 
   this.headBuffer = new Buffer(24);
   fs.readSync(this.fd, this.headBuffer, 0, 24, 0);
+
+  if (this.encoding === "aes-256-ctr") {
+    var decipher = this.createDecipher(0);
+    this.headBuffer = Buffer.concat([decipher.update(this.headBuffer),
+                                     decipher.final()]);
+  } else if (this.encoding === "xor-256") {
+    for (var i = 0; i < this.headBuffer.length; i++) {
+      this.headBuffer[i] ^= this.encKey[i%256];
+    }
+}
+
+
   this.bigEndian  = this.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
   if (this.bigEndian) {
     this.linkType   = this.headBuffer.readUInt32BE(20);
@@ -148,14 +183,37 @@ Pcap.prototype.readPacket = function(pos, cb) {
     return;
   }
 
-  var buffer = new Buffer(1550);
+
+  var buffer = new Buffer(1792); // Divisible by 256 and 16 and > 1550
+  var posoffset = 0;
+
+  if (self.encoding === "aes-256-ctr") {
+    posoffset = pos%16;
+    pos = pos & ~0xf;
+  } else if (self.encoding === "xor-256") {
+    posoffset = pos%256;
+    pos = pos & ~0xff;
+  }
+
   try {
 
     // Try and read full packet and header in one read
     fs.read(self.fd, buffer, 0, buffer.length, pos, function (err, bytesRead, buffer) {
-      if (bytesRead < 16) {
+      if (bytesRead - posoffset < 16) {
         return cb(null);
       }
+
+      if (self.encoding === "aes-256-ctr") {
+        var decipher = self.createDecipher(pos/16);
+        buffer = Buffer.concat([decipher.update(buffer),
+                                         decipher.final()]).slice(posoffset);
+      } else if (self.encoding === "xor-256") {
+        for (var i = posoffset; i < bytesRead; i++) {
+          buffer[i] ^= self.encKey[i%256];
+        }
+        buffer = buffer.slice(posoffset);
+      }
+
       var len = (self.bigEndian?buffer.readUInt32BE(8):buffer.readUInt32LE(8));
 
       if (len < 0 || len > 0xffff) {
@@ -163,16 +221,26 @@ Pcap.prototype.readPacket = function(pos, cb) {
       }
 
       // Full packet fit
-      if (16 + len <= bytesRead) {
+      if ((16 + len) <= (bytesRead - posoffset)) {
           return cb(buffer.slice(0,16+len));
       }
       // Full packet didn't fit, get what was missed
       try {
-        var b = new Buffer(16+len);
-        buffer.copy(b, 0, 0, bytesRead);
-        buffer = b;
-        fs.read(self.fd, buffer, bytesRead, (16+len)-bytesRead, pos+bytesRead, function (err, bytesRead, buffer) {
-          return cb(buffer.slice(0,16+len));
+        var buffer2 = new Buffer((16 + len) - bytesRead - posoffset);
+        fs.read(self.fd, buffer2, 0, buffer2.length, pos+bytesRead, function (err, bytesRead, ignore) {
+          if (self.info) {
+            if (self.info.encoding === "aes-256-ctr") {
+              var decipher = self.createDecipher((pos+bytesRead)/16);
+              return cb(Buffer.concat([buffer, decipher.update(buffer2),
+                                           decipher.final()]));
+            } else if (self.info.encoding === "xor-256") {
+              for (var i = posoffset; i < bytesRead; i++) {
+                buffer2[i] ^= self.encKey[i%256];
+              }
+            }
+          }
+
+          return cb(Buffer.concat([buffer, buffer2]));
         });
       } catch (e) {
         console.log("Error ", e, "for file", self.filename);

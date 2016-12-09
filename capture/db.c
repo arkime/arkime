@@ -1545,7 +1545,7 @@ void moloch_db_mkpath(char *path)
     }
 }
 /******************************************************************************/
-char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id)
+char *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
     char               key[100];
     int                key_len;
@@ -1553,12 +1553,14 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
     char               filename[1024];
     struct tm         *tmp;
     char              *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
-    int                json_len;
+    BSB                jbsb;
     const uint64_t     fp = firstPacket;
     double             maxFreeSpacePercent = 0;
     uint64_t           maxFreeSpaceBytes   = 0;
     int                i;
 
+
+    BSB_INIT(jbsb, json, MOLOCH_HTTP_BUFFER_SIZE);
 
     MOLOCH_LOCK(nextFileNum);
     snprintf(key, sizeof(key), "fn-%s", config.nodeName);
@@ -1587,7 +1589,7 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
         name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)moloch_char_to_hexstr[num%256], 0, NULL);
         g_free(name1);
 
-        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d}", num, name, fp, config.nodeName, size, locked);
+        BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
     } else {
 
@@ -1659,11 +1661,33 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
 
         snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08d.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
 
-        json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d}", num, filename, fp, config.nodeName, locked);
+        BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d?refresh=true", config.prefix, config.nodeName,num);
     }
 
-    moloch_http_set(esServer, key, key_len, json, json_len, NULL, NULL);
+    char    *field, *value;
+    va_list  args;
+    va_start(args, id);
+    while (1) {
+        field = va_arg(args, char *);
+        if (!field)
+            break;
+
+        value = va_arg(args, char *);
+        if (!value)
+            break;
+
+        BSB_EXPORT_sprintf(jbsb, ", \"%s\": ", field);
+        if (*value == '{' || *value == '[')
+            BSB_EXPORT_sprintf(jbsb, "%s", value);
+        else
+            BSB_EXPORT_sprintf(jbsb, "\"%s\"", value);
+    }
+    va_end(args);
+
+    BSB_EXPORT_u08(jbsb, '}');
+
+    moloch_http_set(esServer, key, key_len, json, BSB_LENGTH(jbsb), NULL, NULL);
 
     MOLOCH_UNLOCK(nextFileNum);
 
@@ -1676,6 +1700,11 @@ char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int l
         return name;
 
     return g_strdup(filename);
+}
+/******************************************************************************/
+char *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id)
+{
+    return moloch_db_create_file_full(firstPacket, name, size, locked, id, NULL);
 }
 /******************************************************************************/
 void moloch_db_check()

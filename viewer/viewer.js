@@ -2959,16 +2959,16 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     var opcap = Pcap.get(fields.no + ":" + fileNum);
     if (!opcap.isOpen()) {
       Db.fileIdToFile(fields.no, fileNum, function(file) {
-
         if (!file) {
           console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
           return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
         }
+        file.kek = Config.getFull(fields.no, "simpleKEK", undefined);
 
         var ipcap = Pcap.get(fields.no + ":" + file.num);
 
         try {
-          ipcap.open(file.name);
+          ipcap.open(file.name, file);
         } catch (err) {
           console.log("ERROR - Couldn't open file ", err);
           return nextCb("Couldn't open file " + err);
@@ -4421,7 +4421,7 @@ function pcapScrub(req, res, id, entire, endCb) {
           var ipcap = Pcap.get("write"+fields.no + ":" + file.num);
 
           try {
-            ipcap.openReadWrite(file.name);
+            ipcap.openReadWrite(file.name, file);
           } catch (err) {
             console.log("ERROR - Couldn't open file for writing", err);
             return nextCb("Couldn't open file for writing " + err);

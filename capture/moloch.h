@@ -656,6 +656,7 @@ char moloch_config_boolean(GKeyFile *keyfile, char *key, char d);
 void     moloch_db_init();
 int      moloch_db_tags_loading();
 char    *moloch_db_create_file(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id);
+char    *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
 uint32_t moloch_db_peek_tag(const char *tagname);

@@ -36,6 +36,7 @@
 # 27 - table states
 # 28 - timestamp, firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc
 # 29 - stats/dstats uses dynamic_templates
+# 30 - change file to dynamic
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -44,7 +45,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 29;
+my $VERSION = 30;
 my $verbose = 0;
 my $PREFIX = "";
 my $SHARDS = -1;
@@ -303,7 +304,17 @@ sub filesUpdate
   "file": {
     "_all": {"enabled": 0},
     "_source": {"enabled": 1},
-    "dynamic": "strict",
+    "dynamic": "dynamic",
+    "dynamic_templates": [
+      {
+        "any": {
+          "match_mapping_type": "*",
+          "mapping": {
+            "index": "no"
+          }
+        }
+      }
+    ],
     "properties": {
       "num": {
         "type": "long",
@@ -2294,6 +2305,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         esCopy("users_v2", "users_v3", "user");
         print "users_v2 table can be deleted now\n";
 
+        filesUpdate();
         fieldsUpdate();
         sessionsUpdate();
         queriesCreate();
@@ -2306,16 +2318,19 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 26) {
         usersUpdate();
         sessionsUpdate();
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
-    } elsif ($main::versionNumber <= 29) {
+        filesUpdate();
+    } elsif ($main::versionNumber <= 30) {
         sessionsUpdate();
         statsUpdate();
         dstatsUpdate();
+        filesUpdate();
     } else {
         print "db.pl is hosed\n";
     }
