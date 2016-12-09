@@ -30,7 +30,7 @@
 
     <div class="table-responsive margined-top-lg">
       <!-- session data table -->
-      <table class="table table-condensed" ng-if="$ctrl.headers">
+      <table class="table table-condensed table-striped" ng-if="$ctrl.headers">
 
         <thead>
           <tr>
@@ -112,10 +112,12 @@
             </td>
             <td ng-repeat="col in $ctrl.headers"
               ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
-              <session-field column="col" session="session"></session-field>
+              <session-field field="col" expr="col.exp"
+                value="session[col.dbField]" session="session"
+                parse="true"></session-field>
             </td>
           </tr>
-          <tr ng-repeat-end ng-show="session.expanded"
+          <tr ng-repeat-end ng-if="session.expanded"
             class="session-detail-row">
             <td colspan="{{$ctrl.headers.length + 1}}">
               <span ng-if="session.expanded">

@@ -28,6 +28,7 @@
 
     $onInit() {
       this.segments = 'no';
+      this.loading  = false;
     }
 
     /* exposed functions --------------------------------------------------- */

@@ -53,6 +53,7 @@
       this.$scope.$on('issue:search', (event, args) => {
         // remove typeahead results once query has been issued
         if (timeout) { this.$timeout.cancel(timeout); }
+
         this.results    = null;
         this.activeIdx  = -1;
       });
@@ -73,9 +74,7 @@
 
         newExpr += args.expression;
 
-        this.$scope.$apply(() => {
-          this.query.value += newExpr;
-        });
+        this.query.value += newExpr;
       });
     }
 

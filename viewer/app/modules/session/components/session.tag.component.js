@@ -29,6 +29,7 @@
     $onInit() {
       this.segments = 'no';
       this.tags     = '';
+      this.loading  = false;
     }
 
 

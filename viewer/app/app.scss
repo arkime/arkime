@@ -41,10 +41,13 @@ $color-purple-dark  : #66057A;
 
 
 /* imports =================================== */
+@import 'overrides';
+
 @import '../components/navbar/navbar';
 @import '../components/footer/footer';
 @import '../components/loading/loading';
 @import '../components/pagination/pagination';
+
 @import './modules/search/search';
 @import './modules/health/health';
 @import './modules/session/styles/session.list';
@@ -53,6 +56,7 @@ $color-purple-dark  : #66057A;
 @import './modules/session/styles/session.actions';
 @import './modules/session/styles/session.detail';
 @import './modules/session/styles/session.map';
+@import './modules/session/styles/session.field';
 
 
 /* appwide styles ============================ */
@@ -196,6 +200,18 @@ body {
 // displaying
 .display-inline {
   display: inline;
+}
+
+
+// overflow
+.no-overflow {
+  overflow: hidden;
+}
+.no-overflow-x {
+  overflow-x: hidden;
+}
+.no-overflow-y {
+  overflow-y: hidden;
 }
 
 

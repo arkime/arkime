@@ -40,8 +40,8 @@
               {{::session.lp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
             </em>
             <br>
-            <strong>{{::session | extractIPString:'src'}}</strong>:{{::session.p1}} <strong>{{::session.g1}}</strong> -
-            <strong>{{::session | extractIPString:'dst'}}</strong>:{{::session.p2}} <strong>{{::session.g2}}</strong>
+            <strong>{{::session.a1 | extractIPString}}{{::session.tipv61-term | extractIPv6String}}</strong>:{{::session.p1}} <strong>{{::session.g1}}</strong> -
+            <strong>{{::session.a2 | extractIPString}}{{::session.tipv62-term | extractIPv6String}}</strong>:{{::session.p2}} <strong>{{::session.g2}}</strong>
             <br>
             <strong>{{::session.pr | protocol}}</strong> - {{::session.no}}
           </small>

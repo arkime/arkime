@@ -1,48 +1,50 @@
-<div>
-
-  <!-- normal field with a single value -->
-  <span ng-if="$ctrl.column.exp && !$ctrl.column.children">
-    <div ng-switch on="$ctrl.column.type">
-      <div ng-switch-when="seconds">
-        {{::$ctrl.session[$ctrl.column.dbField] * 1000 | date:'yyyy/MM/dd'}}<br>
-        {{::$ctrl.session[$ctrl.column.dbField] * 1000 | date:'HH:mm:ss'}}
-      </div>
-      <div ng-switch-when="ip">
-        {{::$ctrl.session[$ctrl.column.dbField] | extractIPString}}
-      </div>
-      <div ng-switch-when="lotermfield">
-        <div ng-if="$ctrl.column.dbField === 'tipv61-term' || $ctrl.column.dbField === 'tipv62-term'">
-          {{::$ctrl.session[$ctrl.column.dbField] | extractIPv6String}}
-        </div>
-        <div ng-if="$ctrl.column.dbField !== 'tipv61-term' && $ctrl.column.dbField !== 'tipv62-term'">
-          {{::$ctrl.session[$ctrl.column.dbField]}}
-        </div>
-      </div>
-      <div ng-switch-when="integer">
-        <span ng-if="$ctrl.column.category !== 'port'">
-          {{::$ctrl.session[$ctrl.column.dbField] | number:0}}
-        </span>
-        <span ng-if="$ctrl.column.category === 'port'">
-          {{::$ctrl.session[$ctrl.column.dbField]}}
-        </span>
-      </div>
-      <div ng-switch-default>
-        {{::$ctrl.session[$ctrl.column.dbField]}}
-      </div>
-    </div>
+<!-- normal field with a single value -->
+<span ng-if="!$ctrl.fieldObj.children && $ctrl.value">
+  <!-- search expression -->
+  <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="!$ctrl.time">
+    <a href id="simple-dropdown" uib-dropdown-toggle>
+      {{::$ctrl.parsed}}
+      <span class="fa fa-caret-down"></span>
+    </a>
+    <ul class="dropdown-menu" uib-dropdown-menu>
+      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '==')">
+        <a href>
+          <strong>and</strong>
+          {{::$ctrl.parsed}}
+        </a>
+      </li>
+      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '!=')">
+        <a href>
+          <strong>and not</strong>
+          {{::$ctrl.parsed}}
+        </a>
+      </li>
+      <li ng-repeat="item in $ctrl.menuItems">
+        <a href="{{::item.url}}" target="_blank">
+          <strong>{{::item.name}}</strong> {{::item.value}}
+        </a>
+      </li>
+    </ul>
   </span>
-
-  <!-- info column is super special -->
-  <span ng-if="$ctrl.column.dbField === 'info'">
-    <session-info session="$ctrl.session"></session-info>
+  <!-- time constraint -->
+  <span ng-if="$ctrl.time" class="field cursor-pointer"
+    ng-click="$ctrl.timeClick($ctrl.expr, $ctrl.value)"
+    uib-tooltip="Click to apply time constraint">
+    <a>{{::$ctrl.parsed}}</a>
   </span>
+</span>
 
-  <!-- special column (with multiple field values) -->
-  <span ng-if="$ctrl.column.children && $ctrl.column.dbField !== 'info'">
-    <!-- recurse on child fields -->
-    <div ng-repeat="child in $ctrl.column.children">
-      <session-field column="child" session="$ctrl.session"></session-field>
-    </div>
-  </span>
+<!-- info column is super special -->
+<span ng-if="$ctrl.fieldObj.dbField === 'info'">
+  <session-info session="$ctrl.session"></session-info>
+</span>
 
-</div>
+<!-- special column (with multiple fields to display) -->
+<span ng-if="$ctrl.session && $ctrl.fieldObj.children && $ctrl.fieldObj.dbField !== 'info'">
+  <!-- recurse on child fields -->
+  <div class="field-children" ng-repeat="child in $ctrl.fieldObj.children">
+    <session-field field="child" expr="child.exp"
+      value="$ctrl.session[child.dbField]" parse="$ctrl.parse"
+      session="$ctrl.session"></session-field>
+  </div>
+</span>
