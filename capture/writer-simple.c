@@ -59,7 +59,7 @@ static MolochSimpleHead_t simpleQ;
 static MOLOCH_LOCK_DEFINE(simpleQ);
 static MOLOCH_COND_DEFINE(simpleQ);
 
-enum MolochSimpleMode { MOLOCH_SIMPLE_NORMAL, MOLOCH_SIMPLE_XOR256, MOLOCH_SIMPLE_AES256CTR};
+enum MolochSimpleMode { MOLOCH_SIMPLE_NORMAL, MOLOCH_SIMPLE_XOR2048, MOLOCH_SIMPLE_AES256CTR};
 
 LOCAL MolochSimple_t        *currentInfo[MOLOCH_MAX_PACKET_THREADS];
 LOCAL MolochSimpleHead_t     freeList[MOLOCH_MAX_PACKET_THREADS];
@@ -100,7 +100,7 @@ MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
             break;
-        case MOLOCH_SIMPLE_XOR256:
+        case MOLOCH_SIMPLE_XOR2048:
             break;
         case MOLOCH_SIMPLE_AES256CTR:
             info->file->cipher_ctx = EVP_CIPHER_CTX_new();
@@ -118,7 +118,7 @@ void writer_simple_free(MolochSimple_t *info)
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
             break;
-        case MOLOCH_SIMPLE_XOR256:
+        case MOLOCH_SIMPLE_XOR2048:
             break;
         case MOLOCH_SIMPLE_AES256CTR:
             EVP_CIPHER_CTX_free(info->file->cipher_ctx);
@@ -165,7 +165,8 @@ void writer_simple_encrypt_key(uint8_t *inkey, int inkeylen, char *outkeyhex)
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     EVP_EncryptInit_ex(ctx, EVP_aes_192_cbc(), NULL, simpleKEK, simpleIV);
-    EVP_EncryptUpdate(ctx, ciphertext, &len, inkey, inkeylen);
+    if (!EVP_EncryptUpdate(ctx, ciphertext, &len, inkey, inkeylen))
+        LOGEXIT("Encrypting key failed");
     ciphertext_len = len;
     EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
     ciphertext_len += len;
@@ -196,11 +197,11 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
         case MOLOCH_SIMPLE_NORMAL:
             name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
             break;
-        case MOLOCH_SIMPLE_XOR256:
+        case MOLOCH_SIMPLE_XOR2048:
             RAND_bytes(info->file->key, 256);
             writer_simple_encrypt_key(info->file->key, 256, keyhex);
             name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                              "encoding", "xor-256",
+                                              "encoding", "xor-2048",
                                               "key", keyhex,
                                               NULL);
 
@@ -291,7 +292,7 @@ void *writer_simple_thread(void *UNUSED(arg))
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
             break;
-        case MOLOCH_SIMPLE_XOR256: {
+        case MOLOCH_SIMPLE_XOR2048: {
             uint32_t i;
             for (i = 0; i < total; i++)
                 info->buf[i] ^= info->file->key[i % 256];
@@ -299,7 +300,8 @@ void *writer_simple_thread(void *UNUSED(arg))
         }
         case MOLOCH_SIMPLE_AES256CTR: {
             int outl;
-            EVP_EncryptUpdate(info->file->cipher_ctx, (uint8_t *)info->buf, &outl, (uint8_t *)info->buf, total);
+            if (!EVP_EncryptUpdate(info->file->cipher_ctx, (uint8_t *)info->buf, &outl, (uint8_t *)info->buf, total))
+                LOGEXIT("Encrypting data failed");
             if ((int)total != outl)
                 LOGEXIT("Encryption in (%d) and out (%d) didn't match", total, outl);
             break;
@@ -357,9 +359,9 @@ void writer_simple_init(char *UNUSED(name))
     } else if (strcmp(mode, "aes-256-ctr") == 0) {
         simpleMode = MOLOCH_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
-    } else if (strcmp(mode, "xor-256") == 0) {
-        LOG("WARNING - simpleEncoding of xor-256 is not actually secure");
-        simpleMode = MOLOCH_SIMPLE_XOR256;
+    } else if (strcmp(mode, "xor-2048") == 0) {
+        LOG("WARNING - simpleEncoding of xor-2048 is not actually secure");
+        simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {
         LOGEXIT("Unknown simpleEncoding '%s'", mode);
     }
