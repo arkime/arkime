@@ -78,12 +78,12 @@
               ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
               ng-drag="true" ng-drag-data="header" draggable="false"
               ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
-              <!-- unsortable column -->
-              <div ng-if="!header.exp && !header.sortBy">
+              <!-- non-sortable column -->
+              <div ng-if="header.dbField === 'info'">
                 {{::header.friendlyName}}
               </div>
                 <!-- sortable column -->
-              <div ng-if="header.exp || header.sortBy"
+              <div ng-if="(header.exp || header.sortBy) && header.dbField !== 'info'"
                 ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
                 ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)">
                 {{::header.friendlyName}}&nbsp;

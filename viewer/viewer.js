@@ -742,6 +742,7 @@ if (Config.get("newUI", false)) {
       res.redirect("/app" + req.url.substring(question));
     }
   });
+  app.get("/sessions", checkWebEnabled, sessionsOld);
 } else {
   app.get("/", checkWebEnabled, sessionsOld);
   app.get("/sessions", checkWebEnabled, sessionsOld);

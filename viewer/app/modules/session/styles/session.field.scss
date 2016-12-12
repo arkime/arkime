@@ -19,6 +19,8 @@ session-field {
     margin        : 0 -4px 0 -4px;
     border-radius : 3px;
     border        : 1px solid rgba(0, 0, 0, 0);
+    overflow-wrap : break-word;
+    max-width     : 100%;
 
     -webkit-transition: background 400ms linear, border-color 400ms;
        -moz-transition: background 400ms linear, border-color 400ms;
@@ -42,6 +44,7 @@ session-field {
     ul.dropdown-menu {
       opacity   : 0;
       visibility: hidden;
+      max-width : 100%;
 
       -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
          -moz-transition: visibility 0s linear 400ms, opacity 400ms;
