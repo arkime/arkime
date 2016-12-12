@@ -154,7 +154,7 @@ Pcap.prototype.readHeader = function(cb) {
     var decipher = this.createDecipher(0);
     this.headBuffer = Buffer.concat([decipher.update(this.headBuffer),
                                      decipher.final()]);
-  } else if (this.encoding === "xor-256") {
+  } else if (this.encoding === "xor-2048") {
     for (var i = 0; i < this.headBuffer.length; i++) {
       this.headBuffer[i] ^= this.encKey[i%256];
     }
@@ -190,7 +190,7 @@ Pcap.prototype.readPacket = function(pos, cb) {
   if (self.encoding === "aes-256-ctr") {
     posoffset = pos%16;
     pos = pos & ~0xf;
-  } else if (self.encoding === "xor-256") {
+  } else if (self.encoding === "xor-2048") {
     posoffset = pos%256;
     pos = pos & ~0xff;
   }
@@ -207,7 +207,7 @@ Pcap.prototype.readPacket = function(pos, cb) {
         var decipher = self.createDecipher(pos/16);
         buffer = Buffer.concat([decipher.update(buffer),
                                          decipher.final()]).slice(posoffset);
-      } else if (self.encoding === "xor-256") {
+      } else if (self.encoding === "xor-2048") {
         for (var i = posoffset; i < bytesRead; i++) {
           buffer[i] ^= self.encKey[i%256];
         }
@@ -228,15 +228,13 @@ Pcap.prototype.readPacket = function(pos, cb) {
       try {
         var buffer2 = new Buffer((16 + len) - bytesRead - posoffset);
         fs.read(self.fd, buffer2, 0, buffer2.length, pos+bytesRead, function (err, bytesRead, ignore) {
-          if (self.info) {
-            if (self.info.encoding === "aes-256-ctr") {
-              var decipher = self.createDecipher((pos+bytesRead)/16);
-              return cb(Buffer.concat([buffer, decipher.update(buffer2),
-                                           decipher.final()]));
-            } else if (self.info.encoding === "xor-256") {
-              for (var i = posoffset; i < bytesRead; i++) {
-                buffer2[i] ^= self.encKey[i%256];
-              }
+          if (self.encoding === "aes-256-ctr") {
+            var decipher = self.createDecipher((pos+bytesRead)/16);
+            return cb(Buffer.concat([buffer, decipher.update(buffer2),
+                                         decipher.final()]));
+          } else if (self.encoding === "xor-2048") {
+            for (var i = posoffset; i < bytesRead; i++) {
+              buffer2[i] ^= self.encKey[i%256];
             }
           }
 

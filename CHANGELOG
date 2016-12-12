@@ -6,6 +6,9 @@
   - Refactor many ES calls to remove depreciated syntax
   - Handle multiple query parameters better
   - WISE - basic elasticsearch source
+  - Initial pcap encoding support, variables
+    * simpleEncoding: aes-256-ctr or xor-2048
+    * simpleKEK - the password used to encrypt the DEK
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required
