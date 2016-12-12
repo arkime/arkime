@@ -28,7 +28,7 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       this.menu = {
-        session     : { title: 'Sessions',    link: 'app#/session' },
+        session     : { title: 'Sessions',    link: 'app' },
         spiview     : { title: 'SPI View',    link: 'spiview' },
         spigraph    : { title: 'SPI Graph',   link: 'spigraph' },
         connections : { title: 'Connections', link: 'connections' },
@@ -46,7 +46,7 @@
      * @param {string} route The route of the nav item
      */
     isActive(route) {
-      return route === 'app#' + this.$location.path();
+      return route === this.$location.path().split('/')[1];
     }
 
     /**
@@ -54,11 +54,8 @@
      * @param {string} link The link to redirect to
      */
     navTabClick(link) {
-      var path = this.$location.path();
-      var fullURL = this.$location.url();
-      var urlWithQuery = fullURL.replace(path, link);
-
-      this.$window.location.href = urlWithQuery;
+      let path = this.$location.path();
+      this.$window.location.href = this.$location.url().replace(path, link);
     }
 
   }

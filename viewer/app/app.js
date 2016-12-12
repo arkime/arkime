@@ -40,17 +40,19 @@
 
   .constant('molochVersion', require('../version'))
 
-  .config(['$routeProvider',
-      function($routeProvider) {
+  .config(['$routeProvider', '$locationProvider',
+      function($routeProvider, $locationProvider) {
 
         $routeProvider
-          .when('/session', {
+          .when('/app', {
             title         : 'Sessions',
             template      : '<session></session>',
             reloadOnSearch: false
           })
           // default route is the sessions page
-          .otherwise({ redirectTo: '/session' });
+          .otherwise({ redirectTo: '/app' });
+
+        $locationProvider.html5Mode(true); // activate HTML5 Mode
 
       }
     ]
