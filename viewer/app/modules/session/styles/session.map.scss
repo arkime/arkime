@@ -1,7 +1,5 @@
 moloch-map {
 
-  // overflow: hidden;
-
   .map-btn {
     width           : 40px;
     display         : block;
@@ -42,24 +40,6 @@ moloch-map {
       position: absolute;
       bottom  : 10px;
       left    : 10px;
-
-      .btn-source, .btn-destination {
-        color       : $color-white;
-        background  : darken($color-water, 10%);
-        border-color: darken($color-water, 16%);
-
-        &:hover {
-          color       : $color-white;
-          background  : darken($color-water, 16%);
-          border-color: darken($color-water, 20%);
-        }
-
-        &:not(.active) {
-          color       : $color-gray-dark;
-          background  : $color-gray-light;
-          border-color: darken($color-gray-light, 6%);
-        }
-      }
     }
   }
 
@@ -71,20 +51,22 @@ moloch-map {
   }
 
   .jvectormap-zoomin, .jvectormap-zoomout, .jvectormap-src, .jvectormap-dst {
-    position      : absolute;
-    left          : 10px;
-    background    : darken($color-water, 10%);
-    color         : $color-white;
-    width         : 20px;
-    height        : 20px;
-    cursor        : pointer;
-    line-height   : 16px;
-    text-align    : center;
-    border-radius : 3px;
+    position        : absolute;
+    left            : 10px;
+    width           : 18px;
+    height          : 20px;
+    cursor          : pointer;
+    line-height     : 16px;
+    text-align      : center;
+    border-radius   : 3px;
+    color           : #333;
+    border-color    : #ccc;
+    background-color: #fff;
 
     &:hover {
-      background: darken($color-water, 16%);
-      color     : $color-white;
+      color           : #333;
+      border-color    : #adadad;
+      background-color: #e6e6e6;
     }
   }
 

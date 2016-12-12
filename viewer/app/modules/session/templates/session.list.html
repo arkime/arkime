@@ -103,8 +103,8 @@
           <tr ng-repeat-start="session in $ctrl.sessions.data"
             id="session{{::session.id}}">
             <td>
-              <a class="btn btn-sm btn-green btn-toggle"
-                ng-class="{'collapsed':!session.expanded}"
+              <a class="btn btn-sm btn-toggle"
+                ng-class="{'collapsed':!session.expanded, 'btn-green':!session.expanded, 'btn-danger':session.expanded}"
                 ng-click="$ctrl.toggleSessionDetail(session)">
                 <span class="fa fa-close"></span>
               </a>&nbsp
