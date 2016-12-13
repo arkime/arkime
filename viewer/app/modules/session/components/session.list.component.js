@@ -4,7 +4,7 @@
 
   // local variable to save query state
   let _query = {  // set query defaults:
-    length: 100,  // page length
+    length: 50,   // page length
     start : 0,    // first item index
     facets: 1     // facets
   };

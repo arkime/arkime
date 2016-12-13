@@ -60,7 +60,7 @@
 
     it('should have smart defaults', function() {
       expect(pagination.start).toEqual(0);
-      expect(pagination.length).toEqual(100);
+      expect(pagination.length).toEqual(50);
       expect(pagination.currentPage).toEqual(1);
     });
 

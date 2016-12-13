@@ -50,6 +50,7 @@
 
       if (this.field) { this.parseValue(this.field); }
 
+      // TODO: only get moloch fields if user opens drop down OR if field is not passed into component
       this.FieldService.get()
         .then((response) => {
           this.molochFields = response;
@@ -124,6 +125,7 @@
       }
     }
 
+    // TODO: put this logic in the SessionService
     /**
      * Parses a session field value based on its type
      * @param {Object} fieldObj The field to be parsed

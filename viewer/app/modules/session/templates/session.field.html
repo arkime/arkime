@@ -1,7 +1,7 @@
 <!-- normal field with a single value -->
-<span ng-if="!$ctrl.fieldObj.children && $ctrl.value">
+<span ng-if="::!$ctrl.fieldObj.children && $ctrl.value">
   <!-- search expression -->
-  <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="!$ctrl.time">
+  <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="::!$ctrl.time">
     <a href id="simple-dropdown" uib-dropdown-toggle>
       {{::$ctrl.parsed}}
       <span class="fa fa-caret-down"></span>
@@ -19,7 +19,7 @@
           {{::$ctrl.parsed}}
         </a>
       </li>
-      <li ng-repeat="item in $ctrl.menuItems">
+      <li ng-repeat="item in ::$ctrl.menuItems">
         <a href="{{::item.url}}" target="_blank">
           <strong>{{::item.name}}</strong> {{::item.value}}
         </a>
@@ -27,7 +27,7 @@
     </ul>
   </span>
   <!-- time constraint -->
-  <span ng-if="$ctrl.time" class="field cursor-pointer"
+  <span ng-if="::$ctrl.time" class="field cursor-pointer"
     ng-click="$ctrl.timeClick($ctrl.expr, $ctrl.value)"
     uib-tooltip="Click to apply time constraint">
     <a>{{::$ctrl.parsed}}</a>
@@ -35,14 +35,14 @@
 </span>
 
 <!-- info column is super special -->
-<span ng-if="$ctrl.fieldObj.dbField === 'info'">
-  <session-info session="$ctrl.session"></session-info>
+<span ng-if="::$ctrl.fieldObj.dbField === 'info'">
+  <session-info session="$ctrl.session" field="$ctrl.field"></session-info>
 </span>
 
 <!-- special column (with multiple fields to display) -->
-<span ng-if="$ctrl.session && $ctrl.fieldObj.children && $ctrl.fieldObj.dbField !== 'info'">
+<span ng-if="::$ctrl.session && $ctrl.fieldObj.children && $ctrl.fieldObj.dbField !== 'info'">
   <!-- recurse on child fields -->
-  <div class="field-children" ng-repeat="child in $ctrl.fieldObj.children">
+  <div class="field-children" ng-repeat="child in ::$ctrl.fieldObj.children">
     <session-field field="child" expr="child.exp"
       value="$ctrl.session[child.dbField]" parse="$ctrl.parse"
       session="$ctrl.session"></session-field>

@@ -14,8 +14,17 @@
     $onInit() {
       this.limit        = 3;
       this.initialLimit = this.limit;
-
       this.showAll      = false;
+
+      if (!this.field || !this.field.children) { return; }
+
+      this.fieldMap = {};
+
+      // build field map to send field to session-field
+      for (let i = 0, len = this.field.children.length; i < len; ++i) {
+        let field = this.field.children[i];
+        this.fieldMap[field.exp] = field;
+      }
     }
 
     /* exposed functions --------------------------------------------------- */
@@ -36,7 +45,7 @@
     .component('sessionInfo', {
       template  : require('html!../templates/session.info.html'),
       controller: SessionInfoController,
-      bindings  : { session : '<' }
+      bindings  : { session : '<', field : '<' }
     });
 
 })();

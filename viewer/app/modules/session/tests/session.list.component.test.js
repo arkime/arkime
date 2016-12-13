@@ -5,7 +5,7 @@
   /* mock data ------------------------------- */
   // default session query
   let query = {
-    length: 100,  // page length
+    length: 50,   // page length
     start : 0,    // first item index
     facets: 1,    // facets
     sorts : [ [ 'fp', 'asc' ] ],
@@ -15,7 +15,7 @@
   // sample session json
   let sessionsJSON = {
     recordsFiltered : 1,
-    recordsTotal    : 100,
+    recordsTotal    : 50,
     data: [
       {
         pa2   :0,
@@ -152,7 +152,7 @@
 
     let scope, sessionComponent, $httpBackend;
     let sessionsEndpoint    = 'sessions.json';
-    let defaultParameters   = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc';
+    let defaultParameters   = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
     let tableStateEndpoint  = 'tableState/sessionsNew';
 
     // Initialize and a mock scope
@@ -249,7 +249,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:desc';
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:desc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -265,7 +265,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=lp:asc';
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=lp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -281,7 +281,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc,lp:asc';
+        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc,lp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -325,7 +325,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&length=100&order=fp:asc';
+        let newParameters = '?facets=1&fields=pr,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&length=50&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -362,11 +362,11 @@
         // cleanup
         sessionComponent.query.date   = null;
         sessionComponent.query.start  = 0;
-        sessionComponent.query.length = 100;
+        sessionComponent.query.length = 50;
       });
 
       it('should listen for "change:search" event', function() {
-        let newParameters = '?date=-1&facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=100&order=fp:asc';
+        let newParameters = '?date=-1&facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 

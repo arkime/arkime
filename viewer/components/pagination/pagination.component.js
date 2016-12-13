@@ -44,11 +44,11 @@
       }
 
       if (!this.length) {
-        this.length = 100;    // default with page size of 100
+        this.length = 50;     // default to page size of 50
       }
 
       // update page length if length parameter exists
-      var lenParam = this.$location.search().length;
+      let lenParam = this.$location.search().length;
       if (lenParam) { this.length = parseInt(lenParam); }
     }
 
