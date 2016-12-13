@@ -37,7 +37,7 @@ typedef struct {
     uint64_t             pos;
     uint32_t             id;
     int                  fd;
-    uint8_t              key[256];
+    uint8_t              dek[256];
 } MolochSimpleFile_t;
 
 typedef struct molochsimple {
@@ -65,6 +65,7 @@ LOCAL MolochSimple_t        *currentInfo[MOLOCH_MAX_PACKET_THREADS];
 LOCAL MolochSimpleHead_t     freeList[MOLOCH_MAX_PACKET_THREADS];
 LOCAL int                    pageSize;
 LOCAL enum MolochSimpleMode  simpleMode;
+LOCAL char                  *simpleKEKId;
 LOCAL uint8_t                simpleKEK[EVP_MAX_KEY_LENGTH];
 LOCAL int                    simpleKEKLen;
 LOCAL uint8_t                simpleIV[EVP_MAX_IV_LENGTH];
@@ -187,7 +188,7 @@ struct pcap_sf_pkthdr {
 /******************************************************************************/
 void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    char    keyhex[1024];
+    char    dekhex[1024];
     int thread = session->thread;
     char *name;
 
@@ -198,27 +199,29 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
             name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
             break;
         case MOLOCH_SIMPLE_XOR2048:
-            RAND_bytes(info->file->key, 256);
-            writer_simple_encrypt_key(info->file->key, 256, keyhex);
+            RAND_bytes(info->file->dek, 256);
+            writer_simple_encrypt_key(info->file->dek, 256, dekhex);
             name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
                                               "encoding", "xor-2048",
-                                              "key", keyhex,
+                                              "dek", dekhex,
+                                              "kekId", simpleKEKId,
                                               NULL);
 
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
-            uint8_t key[32];
+            uint8_t dek[32];
             uint8_t iv[16];
             char    ivhex[33];
             RAND_bytes(iv, 8);
             memset(iv+8, 0, 8);
-            writer_simple_encrypt_key(key, 32, keyhex);
+            writer_simple_encrypt_key(dek, 32, dekhex);
             moloch_sprint_hex_string(ivhex, iv, 8);
-            EVP_EncryptInit(info->file->cipher_ctx, cipher, key, iv);
+            EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
             name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
                                               "encoding", "aes-256-ctr",
                                               "iv", ivhex,
-                                              "key", keyhex,
+                                              "dek", dekhex,
+                                              "kekId", simpleKEKId,
                                               NULL);
             break;
         }
@@ -295,7 +298,7 @@ void *writer_simple_thread(void *UNUSED(arg))
         case MOLOCH_SIMPLE_XOR2048: {
             uint32_t i;
             for (i = 0; i < total; i++)
-                info->buf[i] ^= info->file->key[i % 256];
+                info->buf[i] ^= info->file->dek[i % 256];
             break;
         }
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -349,17 +352,26 @@ void writer_simple_init(char *UNUSED(name))
     moloch_writer_write        = writer_simple_write;
 
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
-    char *key = moloch_config_str(NULL, "simpleKEK", NULL);
+    simpleKEKId = moloch_config_str(NULL, "simpleKEKId", NULL);
 
-    if (key) {
+    if (simpleKEKId) {
+       char *key = moloch_config_section_str(NULL, "keks", simpleKEKId, NULL);
+       if (!key) {
+           LOGEXIT("No kek with id '%s' found in keks config section", simpleKEKId);
+       }
+
         simpleKEKLen = EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)key, strlen(key), 1, simpleKEK, simpleIV);
     }
 
     if (mode == NULL) {
     } else if (strcmp(mode, "aes-256-ctr") == 0) {
+        if (!simpleKEKId)
+            LOGEXIT("Must set simpleKEKId");
         simpleMode = MOLOCH_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
     } else if (strcmp(mode, "xor-2048") == 0) {
+        if (!simpleKEKId)
+            LOGEXIT("Must set simpleKEKId");
         LOG("WARNING - simpleEncoding of xor-2048 is not actually secure");
         simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {

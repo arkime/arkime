@@ -2963,7 +2963,13 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
           console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
           return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
         }
-        file.kek = Config.getFull(fields.no, "simpleKEK", undefined);
+        if (file.kekId) {
+          file.kek = Config.sectionGet("keks", file.kekId, undefined);
+          if (file.kek === undefined) {
+            console.log("ERROR - Couldn't find kek", file.kekId, "in keks section");
+            return nextCb("Couldn't find kek " + file.kekId + " in keks section");
+          }
+        }
 
         var ipcap = Pcap.get(fields.no + ":" + file.num);
 

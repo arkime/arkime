@@ -641,6 +641,7 @@ void moloch_config_add_header(MolochStringHashStd_t *hash, char *key, int pos);
 void moloch_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *dbBase, MolochStringHashStd_t *hash, int flags);
 void moloch_config_exit();
 
+gchar *moloch_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d);
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
 gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);

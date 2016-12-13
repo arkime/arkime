@@ -25,6 +25,27 @@ extern MolochConfig_t        config;
 LOCAL GKeyFile             *molochKeyFile;
 
 /******************************************************************************/
+gchar *moloch_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d)
+{
+    char *result;
+    if (!keyfile)
+        keyfile = molochKeyFile;
+
+    if (g_key_file_has_key(keyfile, section, key, NULL)) {
+        result = g_key_file_get_string(keyfile, section, key, NULL);
+    } else if (d) {
+        result = g_strdup(d);
+    } else {
+        result = NULL;
+    }
+
+    if (config.debug) {
+        LOG("%s.%s=%s", section, key, result?result:"(null)");
+    }
+
+    return result;
+}
+/******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
 {
     char *result;
