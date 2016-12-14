@@ -18,15 +18,17 @@
      * @param $rootScope    Angular application main scope
      * @param $routeParams  Retrieve the current set of route parameters
      * @param ConfigService Transacts app configurations with the server
+     * @param UserService   Transacts users with the server
      *
      * @ngInject
      */
-    constructor($scope, $location, $rootScope, $routeParams, ConfigService) {
+    constructor($scope, $location, $rootScope, $routeParams, ConfigService, UserService) {
       this.$scope         = $scope;
       this.$location      = $location;
       this.$rootScope     = $rootScope;
       this.$routeParams   = $routeParams;
       this.ConfigService  = ConfigService;
+      this.UserService    = UserService;
     }
 
     /* Callback when component is mounted and ready */
@@ -34,6 +36,11 @@
       this.ConfigService.getMolochClusters()
          .then((clusters) => {
            this.molochclusters = clusters;
+         });
+
+      this.UserService.getCurrent()
+         .then((user) => {
+           this.views = user.views || {};
          });
 
       this.actionFormItemRadio = 'visible';
@@ -74,6 +81,12 @@
 
       this.strictly = false; // default to unbounded results
       if (this.$routeParams.strictly) { this.strictly = true; }
+
+      // load user's previous view choice
+      if (sessionStorage && sessionStorage['moloch-view']) {
+        this.view = sessionStorage['moloch-view'];
+        this.$location.search('view', this.view); // update url params
+      }
 
       // date picker popups hidden to start
       this.startTimePopup   = { opened: false };
@@ -156,6 +169,26 @@
        this.change();
      }
 
+     // TODO
+     setView(view) {
+       this.view = view;
+
+       // update url and session storage (to persist user's choice)
+       if (!view) {
+         delete sessionStorage['moloch-view'];
+         this.$location.search('view', null);
+       } else {
+         sessionStorage['moloch-view'] = view;
+         this.$location.search('view', view);
+       }
+
+       this.$scope.$emit('change:search', { view: this.view });
+
+       this.$rootScope.$broadcast('issue:search', {
+         view : this.view
+       });
+     }
+
     /**
      * Fired when a search control value is changed
      * (startTime, stopTime, timeRange, expression, strictly)
@@ -193,7 +226,8 @@
       if (this.startTime && this.stopTime) {
         let args = {
           expression: this.expression.value,
-          strictly  : this.strictly
+          strictly  : this.strictly,
+          view      : this.view
         };
 
         if (useDateRange) { args.date = -1; }
@@ -205,7 +239,8 @@
         this.$scope.$emit('change:search', args);
 
         this.$rootScope.$broadcast('issue:search', {
-          expression: this.expression.value
+          expression: this.expression.value,
+          view      : this.view
         });
       }
     }
@@ -241,10 +276,27 @@
       this.cluster    = cluster;
     }
 
+    // TODO: document
+    createView() {
+      console.log('coming soon!');
+      this.actionForm = 'create:view';
+    }
+
+    // TODO: document
+    deleteView(view) {
+      console.log('coming soon!');
+      this.UserService.deleteView(view)
+        .then(() => {
+          // TODO: display success
+          this.views[view] = null;
+          delete this.views[view];
+        })
+    }
+
   }
 
   SearchController.$inject = ['$scope','$location','$rootScope','$routeParams',
-    'ConfigService'];
+    'ConfigService', 'UserService'];
 
   /**
    * Search Component

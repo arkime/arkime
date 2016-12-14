@@ -95,6 +95,8 @@
         // and there may only be 1 page of results
         _query.start = this.query.start = 0;
 
+        this.query.view = args.view;
+
         // don't issue search when the first change:search event is fired
         if (!initialized) { initialized = true; return; }
 

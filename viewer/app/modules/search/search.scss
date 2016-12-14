@@ -14,8 +14,6 @@ moloch-search {
 
     .time-range-control { -webkit-appearance: none; }
 
-    .search-control { border-radius: 0 4px 4px 0 !important; }
-
     .clear-input {
       z-index : 3;
       position: absolute;
@@ -34,6 +32,46 @@ moloch-search {
         max-height: 250px;
       }
     }
+
+    .dropdown-menu {
+      min-width: 200px;
+
+      > li > div {
+        display     : block;
+        padding     : 2px 8px;
+        white-space : nowrap;
+        margin-left : 0;
+        margin-right: 0;
+
+        > div {
+          padding-left : 0;
+          padding-right: 0;
+        }
+
+        a {
+          color           : #333;
+          text-decoration : none;
+        }
+
+        &:hover, &:focus {
+          color           : #262626;
+          text-decoration : none;
+          background-color: #f5f5f5;
+        }
+      }
+    }
+
+    .dropdown-menu > .active > div,
+    .dropdown-menu > .active > div:hover,
+    .dropdown-menu > .active > div:focus {
+      background-color: #337ab7;
+
+      a {
+        color           : #fff;
+        text-decoration : none;
+      }
+    }
+
   }
 
   @media (max-width: 768px) {

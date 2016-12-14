@@ -665,7 +665,8 @@ function checkToken(req, res, next) {
   if (!req.body.token) {
     return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
-
+  console.log('TOKEN!!!!!!!!!!!!!!!!!!!!!!!');
+  console.log(req.body.token);
   req.token = Config.auth2obj(req.body.token);
   var diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
@@ -826,7 +827,7 @@ app.get('/currentUser', function(req, res) {
     }
 
     var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-                    'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+                    'headerAuthEnabled', 'settings', 'userId', 'webEnabled', 'views'];
 
     var clone     = {};
     var source    = user._source;
@@ -3356,9 +3357,9 @@ function localSessionDetail(req, res) {
 }
 
 app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
+  req.isNewSessionDetail = true;
   isLocalView(req.params.nodeName, function () {
     noCache(req, res);
-    req.isNewSessionDetail = true;
     localSessionDetail(req, res);
   },
   function () {

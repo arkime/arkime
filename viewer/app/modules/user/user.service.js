@@ -53,6 +53,19 @@
       });
     }
 
+    deleteView(view) {
+      return this.$q((resolve, reject) => {
+
+        this.$http({ url:'deleteView', method:'POST', data:{ view:view } })
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
   }
 
   UserService.$inject = ['$q', '$http'];

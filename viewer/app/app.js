@@ -63,7 +63,7 @@
 
     $rootScope.$on('issue:search', (event, args) => {
       // update title with expression
-      ConfigService.setTitle('', args.expression, '');
+      ConfigService.setTitle('', args.expression, args.view);
     });
 
     $rootScope.$on('$routeChangeSuccess', function (event, current) {
