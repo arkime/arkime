@@ -38,9 +38,9 @@
            this.molochclusters = clusters;
          });
 
-      this.UserService.getCurrent()
-         .then((user) => {
-           this.views = user.views || {};
+      this.UserService.getViews()
+         .then((views) => {
+           this.views = views || {};
          });
 
       this.actionFormItemRadio = 'visible';
@@ -115,8 +115,12 @@
         this.actionForm = false;
         if (args && args.message) {
           this.message      = args.message;
-          this.messageType  = 'success';
+          this.messageType  = args.success ? 'success' : 'warning';
         }
+      });
+
+      this.$scope.$on('update:views', (event, args) => {
+        if (args.views) { this.views = args.views; }
       });
     }
 
@@ -169,7 +173,10 @@
        this.change();
      }
 
-     // TODO
+    /**
+     * Sets the view that applies the query expression to the results
+     * @param {string} view The name of the view to set
+     */
      setView(view) {
        this.view = view;
 
@@ -188,6 +195,36 @@
          view : this.view
        });
      }
+
+    /**
+     * Removes a view
+     * @param {string} view The name of the view to remove
+     */
+    deleteView(view) {
+      this.UserService.deleteView(view)
+        .then((response) => {
+          let args = {};
+
+          if (response.text) {
+            args.message = response.text;
+            args.success = response.success;
+          }
+
+          // notify parent to close form and display message
+          this.$scope.$emit('close:form:container', args);
+
+          if (response.success) {
+            this.views[view] = null;
+            delete this.views[view];
+          }
+        })
+        .catch((err) => {
+          // notify parent to close form and display message
+          this.$scope.$emit('close:form:container', {
+            message: err, success: false
+          });
+        });
+    }
 
     /**
      * Fired when a search control value is changed
@@ -247,50 +284,57 @@
 
 
     /* Action Menu Functions ----------------------------------------------- */
+    /* displays the remove tag form */
     addTags() {
       this.actionForm = 'add:tags';
+      this.showApplyButtons = true;
     }
 
+    /* displays the remove tag form */
     removeTags() {
       this.actionForm = 'remove:tags';
+      this.showApplyButtons = true;
     }
 
+    /* displays the export pcap form */
     exportPCAP() {
       this.actionForm = 'export:pcap';
+      this.showApplyButtons = true;
     }
 
+    /* displays the export csv form */
     exportCSV() {
       this.actionForm = 'export:csv';
+      this.showApplyButtons = true;
     }
 
+    /* displays the scrub pcap form */
     scrubPCAP() {
       this.actionForm = 'scrub:pcap';
+      this.showApplyButtons = true;
     }
 
+    /* displays the delete session form */
     deleteSession() {
       this.actionForm = 'delete:session';
+      this.showApplyButtons = true;
     }
 
+    /**
+     * displays the send session form
+     * @param {string} cluster The name of the cluster
+     */
     sendSession(cluster) {
+      console.log(cluster);
+      this.cluster = cluster;
       this.actionForm = 'send:session';
-      this.cluster    = cluster;
+      this.showApplyButtons = true;
     }
 
-    // TODO: document
+    /* display the create view form */
     createView() {
-      console.log('coming soon!');
       this.actionForm = 'create:view';
-    }
-
-    // TODO: document
-    deleteView(view) {
-      console.log('coming soon!');
-      this.UserService.deleteView(view)
-        .then(() => {
-          // TODO: display success
-          this.views[view] = null;
-          delete this.views[view];
-        })
+      this.showApplyButtons = false;
     }
 
   }

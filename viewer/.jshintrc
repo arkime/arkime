@@ -13,6 +13,7 @@
   "esversion": 6,
   "predef": [
     "angular", "document", "jasmine", "jQuery", "$", "window", "localStorage",
-    "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn"
+    "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn",
+    "sessionStorage"
   ]
 }

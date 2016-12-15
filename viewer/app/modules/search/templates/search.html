@@ -224,7 +224,7 @@
 
   <!-- actions menu form -->
   <div class="row margined-top" ng-if="$ctrl.actionForm">
-    <div class="col-md-3">
+    <div class="col-md-3" ng-if="$ctrl.showApplyButtons">
       <div class="btn-group">
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
@@ -249,7 +249,7 @@
         </label>
       </div>
     </div>
-    <div class="col-md-9">
+    <div ng-class="{'col-md-9':$ctrl.showApplyButtons,'col-md-12':!$ctrl.showApplyButtons}">
       <session-tag ng-if="$ctrl.actionForm === 'add:tags'" add="true"
         sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
         num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
@@ -285,9 +285,9 @@
         num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
         num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
         class="form-container small"></export-csv>
-      <div ng-if="$ctrl.actionForm === 'create:view'">
-        Coming soon...
-      </div>
+      <create-view ng-if="$ctrl.actionForm === 'create:view'"
+        expression="$ctrl.expression.value">
+      </create-view>
     </div>
   </div> <!-- /actions menu form -->
 

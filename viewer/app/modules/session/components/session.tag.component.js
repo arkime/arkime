@@ -102,7 +102,10 @@
     static closeForm(response, data, scope) {
       let args = {};
 
-      if (response.data.text) { args.message = response.data.text; }
+      if (response.data.text) {
+        args.message = response.data.text;
+        args.success = response.data.success;
+      }
 
       //  only reload data if tags were added to only one
       if (data.sessions && data.sessions.length === 1) {

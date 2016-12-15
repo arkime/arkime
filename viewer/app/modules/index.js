@@ -3,6 +3,7 @@
 
 require('./user/user.service');
 require('./user/has.permission');
+require('./user/components/create.view');
 
 require('./session/services/session.service');
 require('./session/components/session.list.component');
