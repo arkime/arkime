@@ -40,8 +40,8 @@
 
   .constant('molochVersion', require('../version'))
 
-  .config(['$routeProvider', '$locationProvider',
-      function($routeProvider, $locationProvider) {
+  .config(['$routeProvider', '$locationProvider', '$httpProvider',
+      function($routeProvider, $locationProvider, $httpProvider) {
 
         $routeProvider
           .when('/app', {
@@ -54,6 +54,9 @@
 
         $locationProvider.html5Mode(true); // activate HTML5 Mode
 
+        $httpProvider.defaults.withCredentials  = true;
+        $httpProvider.defaults.xsrfCookieName   = 'MOLOCH-COOKIE';
+        $httpProvider.defaults.xsrfHeaderName   = 'X-MOLOCH-COOKIE';
       }
     ]
   )
@@ -63,7 +66,7 @@
 
     $rootScope.$on('issue:search', (event, args) => {
       // update title with expression
-      ConfigService.setTitle('', args.expression, '');
+      ConfigService.setTitle('', args.expression, args.view);
     });
 
     $rootScope.$on('$routeChangeSuccess', function (event, current) {

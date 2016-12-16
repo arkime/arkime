@@ -682,6 +682,21 @@ function checkToken(req, res, next) {
   return next();
 }
 
+function checkCookieToken(req, res, next) {
+  if (!req.headers['x-moloch-cookie']) {
+    return res.send(JSON.stringify({success: false, text: "Missing token"}));
+  }
+
+  req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
+  var diff = Math.abs(Date.now() - req.token.date);
+  if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
+    console.trace("bad token", req.token);
+    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+  }
+
+  return next();
+}
+
 function checkWebEnabled(req, res, next) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
@@ -814,7 +829,7 @@ app.get('/users', checkWebEnabled, function(req, res) {
   });
 });
 
-app.get('/currentUser', function(req, res) {
+app.get('/users/current', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
@@ -4000,6 +4015,100 @@ app.post('/deleteView', checkToken, function(req, res) {
         return error("Create View update failed");
       }
       return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
+    });
+  });
+});
+
+app.get('/views', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        return res.send(req.user);
+      } else {
+        console.log("Unknown user", err, user);
+        return res.send("{}");
+      }
+    }
+
+    res.cookie(
+      'MOLOCH-COOKIE',
+      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+      { path: app.locals.basePath }
+    );
+
+    var views = user._source.views || {};
+
+    return res.send(views);
+  });
+});
+
+app.post('/views/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.view) { return error("Missing view"); }
+
+  Db.getUser(req.token.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Delete view failed", err, user);
+      return error("Unknown user");
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    delete user.views[req.body.view];
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("Delete view failed", err, info);
+        return error("Delete view failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
+    });
+  });
+});
+
+app.post('/views/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.viewName)   { return error("Missing view name"); }
+  if (!req.body.expression) { return error("Missing view expression"); }
+
+  Db.getUser(req.token.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Create view failed", err, user);
+      return error("Unknown user");
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    var container = user.views;
+    if (req.body.groupName) {
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+      if (!user.views._groups) {
+        user.views._groups = {};
+      }
+      if (!user.views._groups[req.body.groupName]) {
+        user.views._groups[req.body.groupName] = {};
+      }
+      container = user.views._groups[req.body.groupName];
+    }
+    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+    if (container[req.body.viewName]) {
+      container[req.body.viewName].expression = req.body.expression;
+    } else {
+      container[req.body.viewName] = {expression: req.body.expression};
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("Create view error", err, info);
+        return error("Create view failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Created view successfully", views:user.views}));
     });
   });
 });

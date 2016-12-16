@@ -3,7 +3,7 @@
   <!-- actions dropdown -->
   <div class="btn-group btn-group-sm pull-right margined-left"
     uib-dropdown is-open="$ctrl.isopen">
-    <button id="single-button" type="button" class="btn btn-yellow"
+    <button id="single-button" type="button" class="btn btn-purple"
       uib-dropdown-toggle>
       <span class="fa fa-caret-down fa-lg"></span>
     </button>
@@ -11,34 +11,110 @@
       aria-labelledby="single-button">
       <li role="menuitem" class="cursor-pointer"
         ng-click="$ctrl.exportPCAP()">
-        <a>Export PCAP</a>
+        <a>
+          <span class="fa fa-fw fa-file-o"></span>&nbsp;
+          Export PCAP
+        </a>
       </li>
       <li role="menuitem" class="cursor-pointer"
         ng-click="$ctrl.exportCSV()">
-        <a>Export CSV</a>
+        <a>
+          <span class="fa fa-fw fa-file-excel-o"></span>&nbsp;
+          Export CSV
+        </a>
       </li>
       <li role="menuitem" class="cursor-pointer"
         ng-click="$ctrl.addTags()">
-        <a>Add Tags</a>
+        <a>
+          <span class="fa fa-fw fa-tags"></span>&nbsp;
+          Add Tags
+        </a>
       </li>
       <li role="menuitem" class="cursor-pointer" has-permission="removeEnabled"
         ng-click="$ctrl.removeTags()">
-        <a>Remove Tags</a>
+        <a>
+          <span class="fa fa-fw fa-trash-o"></span>&nbsp;
+          Remove Tags
+        </a>
       </li>
       <li role="menuitem" class="cursor-pointer" has-permission="removeEnabled"
         ng-click="$ctrl.scrubPCAP()">
-        <a>Scrub PCAP Storage</a>
+        <a>
+          <span class="fa fa-fw fa-trash-o"></span>&nbsp;
+          Scrub PCAP Storage
+        </a>
       </li>
       <li role="menuitem" class="cursor-pointer" has-permission="removeEnabled"
         ng-click="$ctrl.deleteSession()">
-        <a>Delete SPI & PCAP</a>
+        <a>
+          <span class="fa fa-fw fa-trash-o"></span>&nbsp;
+          Delete SPI & PCAP
+        </a>
       </li>
       <li ng-repeat="(key, value) in $ctrl.molochclusters"
         ng-click="$ctrl.sendSession(key)">
-        <a>Send Session to {{::value.name}}</a>
+        <a>
+          <span class="fa fa-fw fa-paper-plane-o"></span>&nbsp;
+          Send Session to {{::value.name}}
+        </a>
       </li>
     </ul>
   </div> <!-- /actions dropdown -->
+
+  <!-- views dropdown -->
+  <div class="btn-group btn-group-sm pull-right margined-left"
+    uib-dropdown is-open="$ctrl.viewsopen">
+    <button type="button" class="btn btn-blue"
+      ng-if="!$ctrl.view" tooltip-placement="left"
+      uib-dropdown-toggle tooltip-append-to-body="true"
+      uib-tooltip="Apply a view to the results. Currently, there is no view applied to these results.">
+      <span class="fa fa-eye fa-lg"></span>
+    </button>
+    <button type="button" class="btn btn-yellow"
+      ng-if="$ctrl.view" tooltip-placement="left"
+      uib-dropdown-toggle tooltip-append-to-body="true"
+      uib-tooltip="{{$ctrl.view}} view applied to these results. Click to change or remove this view.">
+      <span class="fa fa-eye fa-lg"></span>&nbsp;
+      {{$ctrl.view}}
+    </button>
+    <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+      <li role="menuitem" class="cursor-pointer"
+        ng-click="$ctrl.setView(null)"
+        ng-class="{'active':!$ctrl.view}"
+        uib-tooltip="Apply no view"
+        tooltip-placement="left">
+        <div><a>None</a></div>
+      </li>
+      <li role="menuitem" class="cursor-pointer"
+        ng-repeat="(key,val) in $ctrl.views"
+        ng-class="{'active':$ctrl.view === key}"
+        uib-tooltip="Apply {{::key}} View ({{::val.expression}})"
+        tooltip-placement="left">
+        <div class="row">
+          <div class="col-md-11"
+            ng-click="$ctrl.setView(key)">
+            <a>{{::key}}</a>
+          </div>
+          <div class="col-md-1">
+            <button class="btn btn-xs btn-default pull-right"
+              ng-click="$ctrl.deleteView(key)">
+              <span class="fa fa-trash-o"></span>
+            </button>
+          </div>
+        </div>
+      </li>
+      <li class="divider"></li>
+      <li role="menuitem" class="cursor-pointer"
+        ng-click="$ctrl.createView()"
+        uib-tooltip="Create a new view"
+        tooltip-placement="left">
+        <div><a>
+          <span class="fa fa-plus-circle"></span>&nbsp;
+          Create View
+        </a></div>
+      </li>
+    </ul>
+  </div> <!-- /views dropdown -->
 
   <!-- search button -->
   <a class="btn btn-sm btn-green pull-right margined-left"
@@ -148,7 +224,7 @@
 
   <!-- actions menu form -->
   <div class="row margined-top" ng-if="$ctrl.actionForm">
-    <div class="col-md-3">
+    <div class="col-md-3" ng-if="$ctrl.showApplyButtons">
       <div class="btn-group">
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
@@ -173,7 +249,7 @@
         </label>
       </div>
     </div>
-    <div class="col-md-9">
+    <div ng-class="{'col-md-9':$ctrl.showApplyButtons,'col-md-12':!$ctrl.showApplyButtons}">
       <session-tag ng-if="$ctrl.actionForm === 'add:tags'" add="true"
         sessions="$ctrl.openSessions" apply-to="$ctrl.actionFormItemRadio"
         num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
@@ -209,6 +285,9 @@
         num-visible="$ctrl.numVisibleSessions" start="$ctrl.start"
         num-matching="$ctrl.numMatchingSessions" cluster="$ctrl.cluster"
         class="form-container small"></export-csv>
+      <create-view ng-if="$ctrl.actionForm === 'create:view'"
+        expression="$ctrl.expression.value">
+      </create-view>
     </div>
   </div> <!-- /actions menu form -->
 

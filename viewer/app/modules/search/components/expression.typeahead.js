@@ -215,7 +215,6 @@
            params.stopTime  = this.$routeParams.stopTime;
          }
 
-         // TODO view parameter
          if (field.type === 'ip') {
            params.expression = token + '==' + lastToken;
          } else {

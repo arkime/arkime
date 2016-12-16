@@ -7,8 +7,8 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var $httpBackend, $compile, element, template, templateAsHtml, scope;
-    var user = {
+    let $httpBackend, $compile, element, template, templateAsHtml, scope;
+    let user = {
       userId            : 'anonymous',
       enabled           : true,
       webEnabled        : true,
@@ -27,14 +27,14 @@
       $httpBackend = _$httpBackend_;
       $compile = _$compile_;
 
-      $httpBackend.expectGET('currentUser')
+      $httpBackend.expectGET('users/current')
         .respond(200, user);
 
       scope = _$rootScope_.$new();
 
       scope.hasPermission = 'enabled';
 
-      var htmlString = '<div class="btn" has-permission="enabled">Special Button!</div>';
+      let htmlString = '<div class="btn" has-permission="enabled">Special Button!</div>';
 
       element = angular.element(htmlString);
       template  = $compile(element)(scope);
@@ -62,7 +62,7 @@
     it('should hide the element if necessary', function() {
       scope.hasPermission = 'headerAuthEnabled';
 
-      var htmlString = '<div class="btn" has-permission="headerAuthEnabled">Special Button!</div>';
+      let htmlString = '<div class="btn" has-permission="headerAuthEnabled">Special Button!</div>';
 
       element = angular.element(htmlString);
       template  = $compile(element)(scope);

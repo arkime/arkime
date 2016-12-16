@@ -2,32 +2,32 @@
   <div class="col-md-4">
     <div class="input-group input-group-sm">
       <span class="input-group-addon">
-        Include
+        View Name
       </span>
-      <select ng-model="$ctrl.segments"
-        class="form-control" style="-webkit-appearance: none;">
-        <option value="no">no</option>
-        <option value="all">all</option>
-        <option value="time">same time period</option>
-      </select>
-      <span class="input-group-addon">
-        linked segments (slow)
-      </span>
+      <input ng-model="$ctrl.viewName"
+        maxlength="20" type="text" class="form-control"
+        placeholder="Enter a (short) view name">
     </div>
   </div>
   <div class="col-md-7">
     <div class="input-group input-group-sm">
       <span class="input-group-addon">
-        Filename
+        Expression
       </span>
-      <input ng-model="$ctrl.filename"
+      <input ng-model="$ctrl.expression"
         type="text" class="form-control"
-        placeholder="Enter a filename">
+        placeholder="Enter a query expression">
       <span class="input-group-btn">
-        <button class="btn btn-green"
-          ng-click="$ctrl.exportPCAP()">
-          <span class="fa fa-upload"></span>&nbsp;
-          Export PCAP
+        <button class="btn btn-green" ng-click="$ctrl.createView()"
+          ng-class="{'disabled':$ctrl.loading}">
+          <span ng-if="!$ctrl.loading">
+            <span class="fa fa-plus-circle"></span>&nbsp;
+            Create View
+          </span>
+          <span ng-if="$ctrl.loading">
+            <span class="fa fa-spinner fa-spin"></span>&nbsp;
+            Creating View(s)
+          </span>
         </button>
       </span>
     </div>
@@ -38,7 +38,7 @@
   </div>
   <div class="col-md-1">
     <div class="btn btn-sm btn-warning pull-right"
-      ng-click="$ctrl.cancel()">
+         ng-click="$ctrl.cancel()">
       <span class="fa fa-ban"></span>&nbsp;
       cancel
     </div>

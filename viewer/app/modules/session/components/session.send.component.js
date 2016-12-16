@@ -54,7 +54,10 @@
 
           let args = {};
 
-          if (response.data.text) { args.message = response.data.text; }
+          if (response.data.text) {
+            args.message = response.data.text;
+            args.success = response.data.success;
+          }
 
           // notify parent to close form
           this.$scope.$emit('close:form:container', args);

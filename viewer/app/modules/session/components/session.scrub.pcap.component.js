@@ -50,7 +50,10 @@
 
           let args = {};
 
-          if (response.data.text) { args.message = response.data.text; }
+          if (response.data.text) {
+            args.message = response.data.text;
+            args.success = response.data.success;
+          }
 
           //  only reload data if only one was scrubbed
           if (data.sessions && data.sessions.length === 1) {

@@ -44,6 +44,7 @@
           if (query.start)      { params.start  = query.start; }
           if (query.facets)     { params.facets = query.facets; }
           if (query.expression) { params.expression = query.expression; }
+          if (query.view)       { params.view = query.view; }
 
           if (query.startTime) {
             params.startTime = (query.startTime) | 0;
