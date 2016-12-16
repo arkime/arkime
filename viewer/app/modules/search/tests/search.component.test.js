@@ -9,7 +9,7 @@
     beforeEach(angular.mock.module('directives.search'));
     beforeEach(angular.mock.module('moloch.util'));
 
-    var scope, search, templateAsHtml, $httpBackend;
+    let scope, search, templateAsHtml, $httpBackend;
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -23,17 +23,21 @@
 
       $httpBackend.expectGET('molochclusters').respond({});
 
+      $httpBackend.expectGET('views').respond({});
+
       $httpBackend.expectGET('titleconfig').respond('');
 
-      $httpBackend.expectGET('currentUser').respond({});
+      $httpBackend.expectGET('users/current').respond({});
 
       $httpBackend.expectGET('fields').respond({});
 
-      scope = $rootScope.$new();
-      var htmlString = '<moloch-search></moloch-search>';
+      $httpBackend.expectGET('views').respond({});
 
-      var element   = angular.element(htmlString);
-      var template  = $compile(element)(scope);
+      scope = $rootScope.$new();
+      let htmlString = '<moloch-search></moloch-search>';
+
+      let element   = angular.element(htmlString);
+      let template  = $compile(element)(scope);
 
       scope.$digest();
 
@@ -71,7 +75,7 @@
     });
 
     it('should emit a "change:search" event when time range is changed', function() {
-      var callCount = 2;
+      let callCount = 2;
 
       function changeTimeRange(timeRange) {
         search.timeRange = timeRange;
@@ -90,7 +94,7 @@
     });
 
     it('should emit a "change:search" event when start or stop time is changed', function() {
-      var callCount = 2;
+      let callCount = 2;
 
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;
@@ -111,15 +115,13 @@
     });
 
     it('should emit a "change:search" event when strictly flag is changed', function() {
-      var callCount   = 2;
+      let callCount   = 2;
       search.strictly = false;
 
       function changeBounded(bounded) {
         search.timeRange  = 1;
         search.strictly   = bounded;
         search.changeBounded();
-
-        var currentTime = new Date().getTime();
 
         expect(scope.$emit).toHaveBeenCalled();
 
@@ -138,7 +140,7 @@
     });
 
     it('should not emit a "change:search" event when start or stop time is invalid', function() {
-      var callCount = 2;
+      let callCount = 2;
 
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;

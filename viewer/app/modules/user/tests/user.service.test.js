@@ -7,7 +7,7 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var UserService, user = {
+    let UserService, user = {
       userId            : 'anonymous',
       enabled           : true,
       webEnabled        : true,
@@ -28,12 +28,12 @@
     });
 
     describe('http requests ->', function() {
-      var $httpBackend;
+      let $httpBackend;
 
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
 
-        $httpBackend.when('GET', 'currentUser')
+        $httpBackend.when('GET', 'users/current')
           .respond(200, user);
       }));
 
@@ -44,12 +44,15 @@
 
       it('should send a GET request for the current user', function() {
         UserService.getCurrent();
-        $httpBackend.expectGET('currentUser');
+
+        $httpBackend.expectGET('users/current');
+
         $httpBackend.flush();
       });
 
       it('should cache the user', function() {
         UserService.getCurrent();
+
         $httpBackend.flush();
       });
 
@@ -71,6 +74,41 @@
 
         UserService.hasPermission('headerAuthEnabled')
           .then((result) => { expect(result).toBeFalsy(); });
+
+        $httpBackend.flush();
+      });
+
+      it('should get user\'s view', function() {
+        UserService.getViews();
+        $httpBackend.expectGET('views').respond({});
+        $httpBackend.flush();
+      });
+
+      it('should create a specified view', function() {
+        UserService.createView({viewName: 'viewName', expression: 'protocols == udp'});
+
+        $httpBackend.expect('POST', 'views/create',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.viewName).toBe('viewName');
+             expect(jsonData.expression).toBe('protocols == udp');
+             return true;
+           }
+        ).respond(200);
+
+        $httpBackend.flush();
+      });
+
+      it('should delete a user\'s specified view', function() {
+        UserService.deleteView('viewName');
+
+        $httpBackend.expect('POST', 'views/delete',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.view).toBe('viewName');
+             return true;
+           }
+        ).respond(200);
 
         $httpBackend.flush();
       });

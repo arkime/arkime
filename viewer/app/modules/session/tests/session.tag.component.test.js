@@ -95,7 +95,7 @@
 
       $httpBackend.flush();
 
-      let args = { message: 'Tag success', reloadData: true};
+      let args = { message: 'Tag success', reloadData: true, success: undefined };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
@@ -111,7 +111,7 @@
 
       $httpBackend.flush();
 
-      let args = { message: 'Tag success', reloadData: true};
+      let args = { message: 'Tag success', reloadData: true, success: undefined };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
@@ -132,7 +132,7 @@
 
       $httpBackend.flush();
 
-      let args = { message: 'Tag success', reloadData: true};
+      let args = { message: 'Tag success', reloadData: true, success: undefined };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);

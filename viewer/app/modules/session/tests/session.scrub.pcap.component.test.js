@@ -80,7 +80,7 @@
 
       $httpBackend.flush();
 
-      let args = { reloadData: true, message: 'Scrub success' };
+      let args = { reloadData: true, message: 'Scrub success', success: undefined };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
@@ -95,7 +95,7 @@
 
       $httpBackend.flush();
 
-      let args = { reloadData: true, message: 'Scrub success' };
+      let args = { reloadData: true, message: 'Scrub success', success: undefined };
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('close:form:container', args);
       expect(scope.$emit.calls.count()).toBe(1);
