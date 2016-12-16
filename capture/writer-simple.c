@@ -190,7 +190,7 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
 {
     char    dekhex[1024];
     int thread = session->thread;
-    char *name;
+    char *name = 0;
 
     if (!currentInfo[thread]) {
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
@@ -225,6 +225,8 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
                                               NULL);
             break;
         }
+        default:
+            LOGEXIT("Unknown simpleMode %d", simpleMode);
         }
 
         int options = O_NOATIME | O_WRONLY | O_CREAT | O_TRUNC;

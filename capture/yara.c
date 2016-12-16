@@ -301,8 +301,8 @@ void moloch_yara_exit()
 #else
 // Yara 1.x
 
-static YARA_CONTEXT *yContext[MOLOCH_MAX_PACKET_THREADS] = 0;
-static YARA_CONTEXT *yEmailContext[MOLOCH_MAX_PACKET_THREADS] = 0;
+static YARA_CONTEXT *yContext[MOLOCH_MAX_PACKET_THREADS];
+static YARA_CONTEXT *yEmailContext[MOLOCH_MAX_PACKET_THREADS];
 
 
 /******************************************************************************/
