@@ -301,8 +301,8 @@ void moloch_yara_exit()
 #else
 // Yara 1.x
 
-static YARA_CONTEXT *yContext = 0;
-static YARA_CONTEXT *yEmailContext = 0;
+static YARA_CONTEXT *yContext[MOLOCH_MAX_PACKET_THREADS] = 0;
+static YARA_CONTEXT *yEmailContext[MOLOCH_MAX_PACKET_THREADS] = 0;
 
 
 /******************************************************************************/
@@ -345,8 +345,12 @@ void moloch_yara_init()
 {
     yr_init();
 
-    yContext = moloch_yara_open(config.yara);
-    yEmailContext = moloch_yara_open(config.emailYara);
+    int t;
+
+    for (t = 0; t < config.packetThreads; t++) {
+        yContext[t] = moloch_yara_open(config.yara);
+        yEmailContext[t] = moloch_yara_open(config.emailYara);
+    }
 }
 
 /******************************************************************************/
@@ -392,7 +396,7 @@ void  moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len
     }
     block.next = NULL;
 
-    yr_scan_mem_blocks(&block, yContext, (YARACALLBACK)moloch_yara_callback, session);
+    yr_scan_mem_blocks(&block, yContext[session->thread], (YARACALLBACK)moloch_yara_callback, session);
     return;
 }
 /******************************************************************************/
@@ -418,12 +422,17 @@ void moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, in
     }
     block.next = NULL;
 
-    yr_scan_mem_blocks(&block, yEmailContext, (YARACALLBACK)moloch_yara_callback, session);
+    yr_scan_mem_blocks(&block, yEmailContext[session->thread], (YARACALLBACK)moloch_yara_callback, session);
     return;
 }
 /******************************************************************************/
 void moloch_yara_exit()
 {
-    yr_destroy_context(yContext);
+    int t;
+
+    for (t = 0; t < config.packetThreads; t++) {
+        yr_destroy_context(yContext[t]);
+        yr_destroy_context(yEmailContext[t]);
+    }
 }
 #endif
