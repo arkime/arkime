@@ -752,9 +752,9 @@ if (Config.get("newUI", false)) {
   app.get("/", function(req, res) {
     var question = req.url.indexOf("?");
     if (question === -1) {
-      res.redirect("/app");
+      res.redirect("app");
     } else {
-      res.redirect("/app" + req.url.substring(question));
+      res.redirect("app" + req.url.substring(question));
     }
   });
   app.get("/sessions", checkWebEnabled, sessionsOld);
