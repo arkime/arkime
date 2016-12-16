@@ -40,8 +40,8 @@
 
   .constant('molochVersion', require('../version'))
 
-  .config(['$routeProvider', '$locationProvider',
-      function($routeProvider, $locationProvider) {
+  .config(['$routeProvider', '$locationProvider', '$httpProvider',
+      function($routeProvider, $locationProvider, $httpProvider) {
 
         $routeProvider
           .when('/app', {
@@ -54,6 +54,9 @@
 
         $locationProvider.html5Mode(true); // activate HTML5 Mode
 
+        $httpProvider.defaults.withCredentials  = true;
+        $httpProvider.defaults.xsrfCookieName   = 'MOLOCH-COOKIE';
+        $httpProvider.defaults.xsrfHeaderName   = 'X-MOLOCH-COOKIE';
       }
     ]
   )

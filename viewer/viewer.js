@@ -683,11 +683,11 @@ function checkToken(req, res, next) {
 }
 
 function checkCookieToken(req, res, next) {
-  if (!req.headers['x-xsrf-token']) {
+  if (!req.headers['x-moloch-cookie']) {
     return res.send(JSON.stringify({success: false, text: "Missing token"}));
   }
 
-  req.token = Config.auth2obj(req.headers['x-xsrf-token']);
+  req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
   var diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
     console.trace("bad token", req.token);
@@ -4030,7 +4030,11 @@ app.get('/views', function(req, res) {
       }
     }
 
-    res.cookie('XSRF-TOKEN', Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}));
+    res.cookie(
+      'MOLOCH-COOKIE',
+      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+      { path: app.locals.basePath }
+    );
 
     var views = user._source.views || {};
 
