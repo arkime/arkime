@@ -4023,7 +4023,8 @@ app.get('/views', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
-        return res.send(req.user);
+        // TODO: send anonymous user's views
+        return res.send("{}");
       } else {
         console.log("Unknown user", err, user);
         return res.send("{}");

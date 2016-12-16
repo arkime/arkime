@@ -325,7 +325,6 @@
      * @param {string} cluster The name of the cluster
      */
     sendSession(cluster) {
-      console.log(cluster);
       this.cluster = cluster;
       this.actionForm = 'send:session';
       this.showApplyButtons = true;

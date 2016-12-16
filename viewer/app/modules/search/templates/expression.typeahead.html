@@ -1,4 +1,4 @@
-<div class="form-group margined-bottom" uib-drowpdown>
+<div class="form-group margined-bottom">
 
   <div class="input-group input-group-sm">
     <span class="input-group-addon cursor-help"
@@ -18,7 +18,7 @@
   </div>
 
   <!-- results dropdown -->
-  <ul id="typeahead-results" uib-drowpdown-menu
+  <ul id="typeahead-results" uib-dropdown-menu
     class="dropdown-menu typeahead-results"
     ng-show="$ctrl.query.value && $ctrl.results && $ctrl.results.length">
     <li ng-repeat="(key, value) in $ctrl.results"
@@ -35,7 +35,7 @@
   </ul>
 
   <!-- error -->
-  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+  <ul class="dropdown-menu typeahead-results" uib-dropdown-menu
     ng-show="$ctrl.query.value && $ctrl.loadingError">
     <li><a><span class="text-danger">
       <span class="fa fa-warning"></span>&nbsp;
@@ -44,7 +44,7 @@
   </ul>
 
   <!-- loading -->
-  <ul class="dropdown-menu typeahead-results" uib-drowpdown-menu
+  <ul class="dropdown-menu typeahead-results" uib-dropdown-menu
     ng-show="$ctrl.query.value && $ctrl.loadingValues">
     <li><a>
       <span class="fa fa-spinner fa-spin"></span>&nbsp;
