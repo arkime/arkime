@@ -34,6 +34,7 @@
   "scripts": {
     "start": "node viewer.js -c ../config.ini",
     "start:test": "node viewer.js -c ../tests/config.test.ini -n test & webpack -d --inline --watch --display-error-details",
+    "start:testuser": "node viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --inline --watch --display-error-details",
     "start:dev": "node viewer.js -c config.dev.ini & webpack -d --inline --watch --display-error-details",
     "prestart": "npm run bundle:min",
     "build": "npm run test && npm run bundle:min",
