@@ -28,22 +28,29 @@ var crypto = require('crypto');
 
 var escInfo = Config.get("elasticsearch", "http://localhost:9200").split(",");
 function help() {
-  console.log("addUser.js <user id> <user friendly name> <password> [<options>]");
+  console.log("addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]");
   console.log("");
   console.log("Options:");
-  console.log("  --admin       Has admin privileges");
-  console.log("  --apionly     Can only use api, not web pages");
-  console.log("  --email       Can do email searches");
-  console.log("  --remove      Can remove data (scrub, delete tags)");
-  console.log("  --webauth     Can auth using the web auth header or password");
-  console.log("  --webauthonly Can auth using the web auth header only, password ignored");
+  console.log("  --admin               Has admin privileges");
+  console.log("  --apionly             Can only use api, not web pages");
+  console.log("  --email               Can do email searches");
+  console.log("  --expression  <expr>  Forced user expression");
+  console.log("  --remove              Can remove data (scrub, delete tags)");
+  console.log("  --webauth             Can auth using the web auth header or password");
+  console.log("  --webauthonly         Can auth using the web auth header only, password ignored");
+  console.log("");
+  console.log("Config Options:");
+  console.log("  -c <config file>      Config file to use");
+  console.log("  -n <node name>        Node name section to use in config file");
 
   process.exit(0);
 }
 
 function main() {
-  if (process.argv.length < 5) {
-    help();
+
+  if (process.argv[2].length < 2) {
+    console.log("userId must be set");
+    process.exit(0);
   }
 
   var nuser = {
@@ -91,6 +98,12 @@ function main() {
       nuser.emailSearch = true;
       break;
 
+    case "--expression":
+    case "-expression":
+      nuser.expression = process.argv[i+1];
+      i++;
+      break;
+
     default:
       console.log("Unknown option", process.argv[i]);
       help();
@@ -105,6 +118,10 @@ function main() {
     }
     Db.close();
   });
+}
+
+if (process.argv.length < 5) {
+  help();
 }
 
 Db.initialize({host : escInfo,
