@@ -24,11 +24,13 @@
 
       let element   = angular.element(`<toast message="\'${message}\'"></toast>`);
       let template  = $compile(element)(scope);
+      let done      = () => { message = undefined; };
 
       toast = $componentController('toast', {
         $timeout: $timeout
       }, {
-        message: message
+        message: message,
+        done   : done
       });
 
       spyOn(toast, '$onChanges').and.callThrough();

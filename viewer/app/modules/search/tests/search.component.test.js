@@ -75,7 +75,7 @@
     });
 
     it('should emit a "change:search" event when time range is changed', function() {
-      let callCount = 2;
+      let callCount = 4;
 
       function changeTimeRange(timeRange) {
         search.timeRange = timeRange;
@@ -94,7 +94,7 @@
     });
 
     it('should emit a "change:search" event when start or stop time is changed', function() {
-      let callCount = 2;
+      let callCount = 4;
 
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;
@@ -115,7 +115,7 @@
     });
 
     it('should emit a "change:search" event when strictly flag is changed', function() {
-      let callCount   = 2;
+      let callCount   = 4;
       search.strictly = false;
 
       function changeBounded(bounded) {
@@ -140,7 +140,7 @@
     });
 
     it('should not emit a "change:search" event when start or stop time is invalid', function() {
-      let callCount = 2;
+      let callCount = 4;
 
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;

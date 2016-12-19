@@ -8,7 +8,7 @@
     beforeEach(angular.mock.module('moloch'));
     beforeEach(angular.mock.module('moloch.config'));
 
-    var ConfigService, $rootScope;
+    let ConfigService, $rootScope;
 
     // load service
     beforeEach(inject(function(_$rootScope_, _ConfigService_) {
@@ -21,7 +21,7 @@
     });
 
     describe('http requests ->', function() {
-      var $httpBackend;
+      let $httpBackend;
 
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
@@ -36,27 +36,36 @@
       });
 
       it('should send a GET request for title config', function() {
-        var result = ConfigService.getTitleConfig();
+        ConfigService.getTitleConfig();
         $httpBackend.expectGET('titleconfig');
         $httpBackend.flush();
       });
 
       it('should update the title (page)', function() {
-        ConfigService.setTitle('Page 1', null, null);
+        ConfigService.setTitle('Page 1', null, null)
+          .then((title) => {
+            expect(title).toContain('Page 1');
+          });
+
         $httpBackend.flush();
-        expect($rootScope.title).toContain('Page 1');
       });
 
       it('should update the title (expression)', function() {
-        ConfigService.setTitle('Page 1', 'country == USA', null);
+        ConfigService.setTitle(null, 'country == USA', null)
+          .then((title) => {
+            expect(title).toContain('country == USA');
+          });
+
         $httpBackend.flush();
-        expect($rootScope.title).toContain('country == USA');
       });
 
       it('should update the title (view)', function() {
-        ConfigService.setTitle('Page 1', 'country == USA', 'super cool view');
+        ConfigService.setTitle('Page 1', 'country == USA', 'super cool view')
+          .then((title) => {
+            expect(title).toContain('super cool view');
+          });
+
         $httpBackend.flush();
-        expect($rootScope.title).toContain('super cool view');
       });
 
     });

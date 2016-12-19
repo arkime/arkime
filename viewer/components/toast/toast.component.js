@@ -38,8 +38,7 @@
     /* Watch for changes to bindings */
     $onChanges(changes) {
       if (changes.message) {
-        if (changes.message.currentValue &&
-            changes.message.currentValue !== changes.message.previousValue) {
+        if (changes.message.currentValue) {
           this.visible = true;
           this.dismissAfter();
         }
@@ -52,6 +51,8 @@
     dismiss() {
       this.message = undefined;
       this.visible = false;
+
+      this.done();
     }
 
     /* Dismisses the toast after a set duration */
@@ -78,7 +79,8 @@
        bindings  : {
          message : '<', // message to display in toast
          duration: '<', // duration that toast is displayed
-         type    : '<'  // type of toast (danger, warning, success, info)
+         type    : '<', // type of toast (danger, warning, success, info)
+         done    : '&'  // function to run when message duration is over
        }
      });
 

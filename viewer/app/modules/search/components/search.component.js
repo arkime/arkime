@@ -201,6 +201,7 @@
      * @param {string} view The name of the view to remove
      */
     deleteView(view) {
+
       this.UserService.deleteView(view)
         .then((response) => {
           let args = {};
@@ -214,6 +215,10 @@
           this.$scope.$emit('close:form:container', args);
 
           if (response.success) {
+            if (this.view === view) {
+              this.setView(undefined);
+            }
+
             this.views[view] = null;
             delete this.views[view];
           }
@@ -280,6 +285,12 @@
           view      : this.view
         });
       }
+    }
+
+    /* remove the message when user is done with it or duration ends */
+    messageDone() {
+      this.message = null;
+      this.messageType = null;
     }
 
 

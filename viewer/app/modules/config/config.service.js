@@ -49,27 +49,33 @@
      * @param {string} page       The title of the current app page
      * @param {string} expression The search expression
      * @param {string} view       The view being applied
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
      */
     setTitle(page, expression, view) {
+      return this.$q((resolve, reject) => {
+        if (!page)  { page = _page; }
+        else        { _page = page; } // cache page
 
-      if (!page)  { page = _page; }
-      else        { _page = page; } // cache page
+        this.getTitleConfig()
+           .then((title) => {
+             if (!expression) { expression = ''; }
+             else { expression = ' - ' + expression; }
 
-      this.getTitleConfig()
-        .then((title) => {
-          if (!expression) { expression = ''; }
-          else { expression = ' - ' + expression; }
+             if (!view) { view = ''; }
+             else { view = ' - ' + view; }
 
-          if (!view) { view = ''; }
-          else { view = ' - ' + view; }
+             this.$rootScope.title = title.replace(/_page_/g, page)
+                .replace(/( *_-expression|_expression)_/g, expression)
+                .replace(/( *_-view|_view)_/g, view);
 
-          this.$rootScope.title = title.replace(/_page_/g, page)
-            .replace(/( *_-expression|_expression)_/g, expression)
-            .replace(/( *_-view|_view)_/g, view);
-        })
-        .catch((error) => {
-          this.$rootScope.title = 'Moloch - ' + page;
-        });
+             resolve(this.$rootScope.title);
+           })
+           .catch((error) => {
+             this.$rootScope.title = 'Moloch - ' + page;
+             resolve(this.$rootScope.title);
+           });
+      });
     }
 
     /**
