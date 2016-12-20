@@ -20,9 +20,13 @@ moloch-help {
     &.nav-pills { min-width: 200px; }
 
     li {
+      a { padding: 5px 8px !important; }
+
       &.nested {
-        margin-left : 2.2em;
-        font-size   : 1.4rem;
+        margin-left : 2.4em;
+        font-size   : 0.85em;
+
+        a { padding: 2px 5px !important; }
       }
     }
   }
