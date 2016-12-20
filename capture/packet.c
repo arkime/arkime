@@ -762,7 +762,7 @@ void moloch_packet_frags_free(MolochFrags_t * const frags)
     MOLOCH_TYPE_FREE(MolochFrags_t, frags);
 }
 /******************************************************************************/
-void moloch_packet_frags_process(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
+gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
 {
     MolochPacket_t * fpacket;
     MolochFrags_t   *frags;
@@ -788,7 +788,7 @@ void moloch_packet_frags_process(MolochPacketBatch_t *batch, MolochPacket_t * co
             droppedFrags++;
             moloch_packet_frags_free(DLL_PEEK_HEAD(fragl_, &fragsList));
         }
-        return;
+        return FALSE;
     } else {
         DLL_MOVE_TAIL(fragl_, &fragsList, frags);
     }
@@ -818,7 +818,7 @@ void moloch_packet_frags_process(MolochPacketBatch_t *batch, MolochPacket_t * co
 
     // Don't bother checking until we get a packet with no flags
     if (!frags->haveNoFlags) {
-        return;
+        return FALSE;
     }
 
     int off = 0;
@@ -836,14 +836,14 @@ void moloch_packet_frags_process(MolochPacketBatch_t *batch, MolochPacket_t * co
     }
     // We have a hole
     if ((void*)fpacket != (void*)&frags->packets) {
-        return;
+        return FALSE;
     }
 
     // Packet is too large, hacker
     if (payloadLen + packet->payloadOffset >= MOLOCH_PACKET_MAX_LEN) {
         droppedFrags++;
         moloch_packet_frags_free(frags);
-        return;
+        return FALSE;
     }
 
     // Now alloc the full packet
@@ -873,8 +873,7 @@ void moloch_packet_frags_process(MolochPacketBatch_t *batch, MolochPacket_t * co
     packet->payloadLen = payloadLen;
     DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed
     moloch_packet_frags_free(frags);
-
-    moloch_packet_batch(batch, packet);
+    return TRUE;
 }
 /******************************************************************************/
 void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
@@ -894,8 +893,11 @@ void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * const pac
         moloch_packet_frags_free(frags);
     }
 
-    moloch_packet_frags_process(batch, packet);
+    gboolean process = moloch_packet_frags_process(packet);
     MOLOCH_UNLOCK(frags);
+
+    if (process)
+        moloch_packet_batch(batch, packet);
 }
 /******************************************************************************/
 int moloch_packet_frags_size()

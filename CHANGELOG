@@ -11,6 +11,7 @@
     * simpleKEKId - The kek id to use from the keks section
     * [keks] - A section with multipl kekid=passwords
   - Fixed yara 1.7 multithread crash (issue #568)
+  - Handle frag gre with frag ip inside
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required
