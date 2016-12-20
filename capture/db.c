@@ -1692,7 +1692,7 @@ char *moloch_db_create_file_full(time_t firstPacket, char *name, uint64_t size, 
     MOLOCH_UNLOCK(nextFileNum);
 
     if (config.logFileCreation)
-        LOG("Creating file %d with key >%s< using >%s<", num, key, json);
+        LOG("Creating file %d with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
 
     *id = num;
 
