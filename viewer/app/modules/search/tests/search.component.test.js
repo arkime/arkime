@@ -59,6 +59,9 @@
     }));
 
     afterEach(function() {
+      // cleanup
+      search.$location.search.calls.reset();
+
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
     });
@@ -75,16 +78,11 @@
     });
 
     it('should emit a "change:search" event when time range is changed', function() {
-      let callCount = 4;
-
       function changeTimeRange(timeRange) {
         search.timeRange = timeRange;
         search.changeTimeRange();
 
         expect(scope.$emit).toHaveBeenCalled();
-
-        callCount = callCount + 4;
-        expect(search.$location.search.calls.count()).toBe(callCount);
         expect(search.$location.search).toHaveBeenCalledWith('date', timeRange);
       }
 
@@ -94,17 +92,12 @@
     });
 
     it('should emit a "change:search" event when start or stop time is changed', function() {
-      let callCount = 4;
-
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;
         search.startTime  = startTime;
         search.changeDate();
 
         expect(scope.$emit).toHaveBeenCalled();
-
-        callCount = callCount + 4;
-        expect(search.$location.search.calls.count()).toBe(callCount);
         expect(search.$location.search).toHaveBeenCalledWith('startTime', (startTime/1000).toFixed());
         expect(search.$location.search).toHaveBeenCalledWith('stopTime', (stopTime/1000).toFixed());
       }
@@ -115,7 +108,6 @@
     });
 
     it('should emit a "change:search" event when strictly flag is changed', function() {
-      let callCount   = 4;
       search.strictly = false;
 
       function changeBounded(bounded) {
@@ -125,8 +117,6 @@
 
         expect(scope.$emit).toHaveBeenCalled();
 
-        callCount = callCount + 2;
-        expect(search.$location.search.calls.count()).toBe(callCount);
         if (!bounded) {
           expect(search.$location.search).toHaveBeenCalledWith('strictly', 'true');
         } else {
@@ -140,14 +130,13 @@
     });
 
     it('should not emit a "change:search" event when start or stop time is invalid', function() {
-      let callCount = 4;
-
       function changeDate(stopTime, startTime) {
         search.stopTime   = stopTime;
         search.startTime  = startTime;
         search.changeDate();
 
-        expect(search.$location.search.calls.count()).toBe(callCount);
+        expect(search.$location.search.calls.mostRecent()).not.toEqual('startTime', (startTime/1000).toFixed());
+        expect(search.$location.search.calls.mostRecent()).not.toEqual('stopTime', (stopTime/1000).toFixed());
       }
 
       changeDate(1473775168701, 'asdf');
