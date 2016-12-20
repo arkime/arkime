@@ -196,6 +196,7 @@ function simpleGatherAdd(req, res) {
 
 app.get("/_cluster/nodes/stats", simpleGatherCopy);
 app.get("/_nodes/stats", simpleGatherCopy);
+app.get("/_nodes/stats/:kinds", simpleGatherCopy);
 app.get("/_cluster/health", simpleGatherAdd);
 
 app.get("/:index/_aliases", simpleGatherCopy);
