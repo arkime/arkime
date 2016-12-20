@@ -68,6 +68,18 @@
         $httpBackend.flush();
       });
 
+      it('should send a GET request for moloch clickable fields', function() {
+        ConfigService.getMolochClickables();
+        $httpBackend.expectGET('molochRightClick').respond(200);
+        $httpBackend.flush();
+      });
+
+      it('should send a GET request for moloch clusters', function() {
+        ConfigService.getMolochClusters();
+        $httpBackend.expectGET('molochclusters').respond(200);
+        $httpBackend.flush();
+      });
+
     });
 
   });
