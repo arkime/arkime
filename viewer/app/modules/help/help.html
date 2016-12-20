@@ -1,0 +1,372 @@
+<div class="container-fluid container-help">
+  <div class="row">
+
+    <div class="col-md-3 col-sm-4">
+      <ul class="nav nav-pills nav-stacked affix">
+        <li role="presentation">
+          <a href="#about">
+            <span class="fa fa-fw fa-question-circle"></span>&nbsp;
+            About
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#search">
+            <span class="fa fa-fw fa-search"></span>&nbsp;
+            Search
+          </a>
+        </li>
+        <li role="presentation" class="nested">
+          <a href="#stringSearch">
+            String Search
+          </a>
+        </li>
+        <li role="presentation" class="nested">
+          <a href="#ipSearch">
+            IP Search
+          </a>
+        </li>
+        <li role="presentation" class="nested">
+          <a href="#numericSearch">
+            Numeric Search
+          </a>
+        </li>
+        <li role="presentation" class="nested">
+          <a href="#dateSearch">
+            Date Search
+          </a>
+        </li>
+        <li role="presentation" class="nested">
+          <a href="#fieldExistsSearch">
+            Field Exists Search
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#sessions">
+            <span class="fa fa-fw fa-exchange"></span>&nbsp;
+            Sessions
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#spiview">
+            <span class="fa fa-fw fa-eye"></span>&nbsp;
+            SPI View
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#spigraph">
+            <span class="fa fa-fw fa-bar-chart"></span>&nbsp;
+            SPI Graph
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#connections">
+            <span class="fa fa-fw fa-sitemap"></span>&nbsp;
+            Connections
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#stats">
+            <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+            Stats
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#examples">
+            <span class="fa fa-fw fa-lightbulb-o"></span>&nbsp;
+            Examples
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#fields">
+            <span class="fa fa-fw fa-list"></span>&nbsp;
+            Fields
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="col-md-9 col-sm-8">
+
+      <h3 id="about">
+        <span class="fa fa-question-circle"></span>&nbsp;
+        About
+      </h3>
+      <p><strong>
+        Moloch is a large scale, open source, full packet capturing, indexing,
+        and database system.
+      </strong></p>
+      <p>
+        Moloch is not meant to replace Intrusion Detection Systems (IDS).
+        Moloch augments your current security infrastructure by storing and
+        indexing network traffic in standard PCAP format, while also providing
+        fast indexed access. Moloch is built with an intuitive UI/UX which
+        reduces the analysis time of suspected incidents.
+      </p>
+      <p>
+        Moloch uses a very simple query language for building expresions. It
+        supports grouping using parenthesis and logical AND and OR using && and
+        || respectively. Fields can be accessed directly using the field names
+        and operators described in the table below. Most fields also support a
+        shorthand OR query using square brackets using CSV rules to list
+        possible values.
+      </p>
+
+      <hr>
+
+      <h3 id="search">
+        <span class="fa fa-search"></span>&nbsp;
+        Search
+      </h3>
+      <p>
+        <!-- TODO: describe searching here -->
+      </p>
+
+      <br>
+
+      <h4 id="stringSearch">String Search</h4>
+      <p>
+        String fields are special since they can be searched several different
+        ways. Before fields are indexed, their case may or may not be normalized,
+        which is documented in the table below. The types of string searches are:
+      </p>
+      <dl class="dl-horizontal small">
+        <dt>Token</dt>
+        <dd class="margined-bottom">
+          Some string fields are tokenized for faster searching. The query
+          engine will automatically turn the search string(s) into tokens
+          using the same algorithms as the indexing system.
+        </dd>
+        <dt>Lists</dt>
+        <dd class="margined-bottom">
+          This is a short hand method for doing multiple OR queries. For example
+          <code>http.uri == [www, moloch]</code>. Currently a list containing
+          wildcard or regex strings will be processed as normal tokens instead
+          of wildcards and regexes.
+        </dd>
+        <dt>Wildcard</dt>
+        <dd class="margined-bottom">
+          If a <code>*</code> appears in a expression, it is assumed a wildcard
+          match is being used. Supported wildcards are <code>*</code>, which
+          matches any character sequence (including the empty one), and
+          <code>?</code>, which matches any single character. The wildcard query
+          is run against the full text strings, after case normalization if
+          enabled for the field. For example
+          <code>http.uri == "www.f*k.com"</code>.
+        </dd>
+        <dt>Regex</dt>
+        <dd class="margined-bottom">
+          A regex query needs to be surrounded by forward slashes, and is always
+          anchored. This means you will almost always want to include a leading
+          and trailing <code>.*.</code> The regex query is run against the full
+          text strings, after case normalization if enabled for the field. For
+          example <code>http.uri == /.*www\.f.*k\.com.*/.</code> It uses the
+          Lucene regex implementation which doesn't support most PCRE features.
+        </dd>
+      </dl>
+
+      <br>
+
+      <h4 id="ipSearch">IP Search</h4>
+      <p>
+        IP searching is very flexible and can be performed using the full ip
+        address, a partial ip address, or using CIDR representation. For fields
+        that include a port number, it is possible to follow any of the ip
+        representations with a colon and then the port number. Ports are also
+        first class searchable and may be searched for directly. For example:
+        <code>ip == 1.2.3/24:80</code>. IP search can also be done with list of
+        IPs: <code>ip == [1.2.3.4, 1.3/16]</code>
+      </p>
+
+      <br>
+
+      <h4 id="numericSearch">Numeric Search</h4>
+      <p>
+        Numeric fields support simple range operators besides the default equals
+        and not equals. For example: <code>port == 80</code>. They also support
+        lists for a simple OR query. For example: <code>port == [80,443,23]</code>
+      </p>
+
+      <br>
+
+      <h4 id="dateSearch">Date Search</h4>
+      <p>
+        Date fields support simple range operators besides the default equals
+        and not equals. For example: <code>starttime == "2004/07/31 05:33:41"</code>.
+        They also support lists for a simple OR query. For example:
+        <code>stoptime == ["2004/07/31 05:33:41", "2004/07/31 06:33:41"]</code>.
+        Finally, relative dates and optional snapping are supported using the
+        Splunk syntax:
+      </p>
+
+      <ul class="small">
+        <li>
+          Begin string with a plus (+) or minus (-) to indicate the offset from
+          the current time.
+        </li>
+        <li>
+          Define time amount with a number and a unit. The supported time units
+          are:
+          <ul>
+            <li>
+              <strong>second:</strong> s, sec, secs, second, seconds
+            </li>
+            <li>
+              <strong>minute:</strong> m, min, minute, minutes
+            </li>
+            <li>
+              <strong>hour:</strong> h, hr, hrs, hour, hours
+            </li>
+            <li>
+              <strong>day:</strong> d, day, days
+            </li>
+            <li>
+              <strong>week:</strong> w, week, weeks
+            </li>
+            <li>
+              <strong>month:</strong> mon, month, months
+            </li>
+            <li>
+              <strong>quarter:</strong> q, qtr, qtrs, quarter, quarters
+            </li>
+            <li>
+              <strong>year:</strong> y, yr, yrs, year, years
+            </li>
+          </ul>
+        </li>
+        <li>
+          Optionally, specify a "snap to" time unit that indicates the nearest
+          or latest time to which the time amount rounds down. Separate the time
+          amount from the "snap to" time unit with an "@" character.
+        </li>
+      </ul>
+
+      <br>
+
+      <h4 id="fieldExistsSearch">Field Exists Search</h4>
+      <p>
+        It is possible to check if a field has been set or not in the session by
+        using the special comparison value of <code>EXISTS!</code>. For example,
+        to verify that a certificate doesn't have a issuer common name, but does
+        have a issuer organizational name the follow query could be used:
+        <code>cert.issuer.cn != EXISTS! && cert.issuer.on == EXISTS!</code>
+      </p>
+
+      <hr>
+
+      <h3 id="sessions">
+        <span class="fa fa-fw fa-exchange"></span>&nbsp;
+        Sessions
+      </h3>
+      <p>
+        <!-- TODO: describe sessions tab here -->
+      </p>
+
+      <hr>
+
+      <h3 id="spiview">
+        <span class="fa fa-fw fa-eye"></span>&nbsp;
+        SPI View
+      </h3>
+      <p>
+        <!-- TODO: describe spi view tab here -->
+      </p>
+
+      <hr>
+
+      <h3 id="spigraph">
+        <span class="fa fa-fw fa-bar-chart"></span>&nbsp;
+        SPI Graph
+      </h3>
+      <p>
+        <!-- TODO: describe spi graph tab here -->
+      </p>
+
+      <hr>
+
+      <h3 id="connections">
+        <span class="fa fa-fw fa-sitemap"></span>&nbsp;
+        Connections
+      </h3>
+      <p>
+        <!-- TODO: describe connections tab here -->
+      </p>
+
+      <hr>
+
+      <h3 id="stats">
+        <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+        Stats
+      </h3>
+      <p>
+        <!-- TODO: describe stats tab here -->
+      </p>
+
+      <hr>
+
+      <h3 id="examples">
+        <span class="fa fa-fw fa-lightbulb-o"></span>&nbsp;
+        Examples
+      </h3>
+      <p>
+        Find all the sessions involving Russia (RUS) or China (CHN) that are
+        on port 80 and the hostname contains "com":
+        <pre>
+          (country == RUS || country == CHN) && port == 80 && host == *com
+        </pre>
+      </p>
+      <p>
+        Find all the sessions of type "text/plain", involving Canada (CAN), and
+        containing less than 20 packets:
+        <pre>
+          tags == "http:content:text/plain" && country == CAN && packets < 20
+        </pre>
+      </p>
+
+      <hr>
+
+      <h3 id="fields">
+        <span class="fa fa-fw fa-list"></span>&nbsp;
+        Fields
+        <div class="input-group input-group-sm pull-right header-input">
+          <span class="input-group-addon">
+            <span class="fa fa-search"></span>
+          </span>
+          <input type="text" class="form-control" ng-model="$ctrl.searchFields"
+            placeholder="Search for fields in the table below">
+        </div>
+      </h3>
+      <table class="table table-condensed table-striped margined-top-xxxlg"
+        ng-if="!$ctrl.error && $ctrl.fields">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Operators</th>
+            <th>Data Type</th>
+            <th>What?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="animate-repeat"
+            ng-repeat="field in $ctrl.filteredFields = ($ctrl.fields | filter:$ctrl.searchFields)">
+            <td class="no-wrap">{{field.exp}}</td>
+            <td class="no-wrap">{{$ctrl.info[field.type].operator}}</td>
+            <td class="no-wrap">{{$ctrl.info[field.type].type}}</td>
+            <td>{{field.help}}</td>
+          </tr>
+          <tr ng-if="!$ctrl.filteredFields.length">
+            <td colspan="4" class="text-danger">
+              <span class="fa fa-warning"></span>&nbsp;
+              No results match your search
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="alert alert-warning margined-top-xxxlg" ng-if="$ctrl.error">
+        <span class="fa fa-warning"></span>&nbsp;
+        Error retrieving fields: {{::$ctrl.error}}
+      </div>
+
+    </div>
+
+  </div>
+</div>

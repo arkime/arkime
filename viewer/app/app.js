@@ -49,6 +49,10 @@
             template      : '<session></session>',
             reloadOnSearch: false
           })
+          .when('/help', {
+            title    : 'Help',
+            template : '<moloch-help></moloch-help>'
+          })
           // default route is the sessions page
           .otherwise({ redirectTo: '/app' });
 

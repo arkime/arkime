@@ -27,13 +27,18 @@
     /* service methods ----------------------------------------------------- */
     /**
      * Gets a field map from the server
+     * @param {bool} array        Whether to request an array or map
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    get() {
+    get(array) {
       return this.$q((resolve, reject) => {
 
-        this.$http({method:'GET',url:'fields',cache:true})
+        let config = { method:'GET', url:'fields', cache:true };
+
+        if (array) { config.url += '?array=true'; }
+
+        this.$http(config)
           .then((response) => {
             resolve(response.data);
           }, (error) => {

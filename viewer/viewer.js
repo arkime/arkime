@@ -973,7 +973,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get('/app', checkWebEnabled, function(req, res) {
+app.get(['/app', '/help'], checkWebEnabled, function(req, res) {
   res.render('app.pug');
 });
 
@@ -1555,7 +1555,12 @@ app.get('/fields', function(req, res) {
     res.status(404);
     res.send('Cannot locate fields');
   }
-  res.send(app.locals.fieldsMap);
+
+  if (req.query && req.query.array) {
+    res.send(app.locals.fieldsArr)
+  } else {
+    res.send(app.locals.fieldsMap);
+  }
 });
 
 app.get('/titleconfig', checkWebEnabled, function(req, res) {
@@ -1574,7 +1579,7 @@ app.get('/molochRightClick', checkWebEnabled, function(req, res) {
     res.send('Cannot locate right clicks');
   }
   res.send(app.locals.molochRightClick);
-})
+});
 
 app.get('/eshealth.json', function(req, res) {
   Db.healthCache(function(err, health) {
