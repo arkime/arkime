@@ -1,7 +1,7 @@
 <div class="container-fluid container-help">
   <div class="row">
 
-    <div class="col-md-3 col-sm-4">
+    <div class="col-md-2 col-sm-4">
       <ul class="nav nav-pills nav-stacked affix">
         <li role="presentation">
           <a href="#about">
@@ -12,7 +12,7 @@
         <li role="presentation">
           <a href="#search">
             <span class="fa fa-fw fa-search"></span>&nbsp;
-            Search Expressions
+            Search Bar
           </a>
         </li>
         <li role="presentation" class="nested">
@@ -100,15 +100,15 @@
           </a>
         </li>
         <li role="presentation">
-          <a href="#information">
+          <a href="#links">
             <span class="fa fa-fw fa-link"></span>&nbsp;
-            More Information
+            Links
           </a>
         </li>
       </ul>
     </div>
 
-    <div class="col-md-9 col-sm-8">
+    <div class="col-md-10 col-sm-8">
 
       <h3 id="about">
         <span class="fa fa-question-circle"></span>&nbsp;
@@ -125,24 +125,41 @@
         fast indexed access. Moloch is built with an intuitive UI/UX which
         reduces the analysis time of suspected incidents.
       </p>
-      <p>
-        Moloch uses a very simple query language for building expresions. It
-        supports grouping using parenthesis and logical AND and OR using && and
-        || respectively. Fields can be accessed directly using the field names
-        and operators described in the table below. Most fields also support a
-        shorthand OR query using square brackets using CSV rules to list
-        possible values.
-      </p>
 
       <hr>
 
       <h3 id="search">
         <span class="fa fa-search"></span>&nbsp;
-        Search
+        Search Bar
       </h3>
       <p>
-        <!-- TODO: describe searching here -->
+        Most Moloch tabs have a search bar on the top of the page.
+        Moloch uses a very simple query language for building expresions. It
+        supports grouping using parenthesis and logical AND and OR using &amp;&amp; and
+        || respectively. Fields can be accessed directly using the field names
+        and operators described in the <a href="#fields">table below</a>.
+        Most fields also support a shorthand OR query using square brackets
+        using CSV rules to list possible values.
       </p>
+      <p>
+        All queries are bounded by a start and stop time, which can be
+        set either by selecting a choice from a quick relative drop down,
+        or by entering extact time sections.  Since every session has
+        a first packet, last packet, and database timestamp, Moloch offers
+        a choice on how to select the sessions:
+      </p>
+      <dl class="dl-horizontal small">
+        <dt>First Packet</dt>
+        <dd class="margined-bottom">The timestamp of the first packet received for the session.</dd>
+        <dt>Last Packet</dt>
+        <dd class="margined-bottom">The timestamp of the last packet received for the session.</dd>
+        <dt>Bounded</dt>
+        <dd class="margined-bottom">Both the first and last packet timestamps for the session must be inside the time window.</dd>
+        <dt>Session Overlaps</dt>
+        <dd class="margined-bottom">The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
+        <dt>Database</dt>
+        <dd class="margined-bottom">The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
+      </dl>
 
       <br>
 
@@ -420,9 +437,9 @@
 
       <hr>
 
-      <h3 id="information">
+      <h3 id="links">
         <span class="fa fa-fw fa-link"></span>&nbsp;
-        More Information
+       Links
       </h3>
       <p>
         <ul>

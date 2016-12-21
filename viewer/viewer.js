@@ -1381,6 +1381,9 @@ function buildSessionQuery(req, buildCb) {
       query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
       query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
       break;
+    case "database":
+      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      break;
     }
 
     var diff = req.query.stopTime - req.query.startTime;
@@ -1411,6 +1414,9 @@ function buildSessionQuery(req, buildCb) {
       query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
       query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
       break;
+    case "database":
+      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime}}});
+      break;
     }
 
     if (req.query.date <= 5*24) {
@@ -1423,9 +1429,19 @@ function buildSessionQuery(req, buildCb) {
 
   if (req.query.facets) {
     query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
-                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}},
-                        dbHisto: {histogram : {field: "lp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
+                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}
                  };
+    switch (req.query.bounding) {
+    case "first":
+      query.aggregations.dbHisto = {histogram : {field: "fp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      break;
+    case "database":
+      query.aggregations.dbHisto = {histogram : {field: "timestamp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      break;
+    default:
+      query.aggregations.dbHisto = {histogram : {field: "lp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      break;
+    }
   }
 
   addSortToQuery(query, req.query, "fp");
@@ -2042,12 +2058,21 @@ function graphMerge(req, query, aggregations) {
     return graph;
   }
 
-  aggregations.dbHisto.buckets.forEach(function (item) {
-    var key = item.key*1000;
-    graph.lpHisto.push([key, item.doc_count]);
-    graph.paHisto.push([key, item.pa.value]);
-    graph.dbHisto.push([key, item.db.value]);
-  });
+  if (req.query.bounding === "database") { 
+    aggregations.dbHisto.buckets.forEach(function (item) {
+      var key = item.key;
+      graph.lpHisto.push([key, item.doc_count]);
+      graph.paHisto.push([key, item.pa.value]);
+      graph.dbHisto.push([key, item.db.value]);
+    });
+  } else {
+    aggregations.dbHisto.buckets.forEach(function (item) {
+      var key = item.key*1000;
+      graph.lpHisto.push([key, item.doc_count]);
+      graph.paHisto.push([key, item.pa.value]);
+      graph.dbHisto.push([key, item.db.value]);
+    });
+  }
   return graph;
 }
 

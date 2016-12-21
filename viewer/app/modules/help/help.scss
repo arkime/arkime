@@ -11,13 +11,8 @@ moloch-help {
     margin-bottom : 32px;
   }
 
-  .dl-horizontal {
-    dt { width: 85px; }
-    dd { margin-left: 100px; }
-  }
-
   ul {
-    &.nav-pills { min-width: 200px; }
+    &.nav-pills { min-width: 150px; }
 
     li {
       a { padding: 5px 8px !important; }
