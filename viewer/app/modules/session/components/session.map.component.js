@@ -20,8 +20,8 @@
           /* setup --------------------------------------------------------- */
           scope.state = { open:false, src:true, dst:true };
 
-          var map, countryCodes;
-          var mapEl = element.find('.moloch-map-container > #moloch-map');
+          let map, countryCodes;
+          let mapEl = element.find('.moloch-map-container > #moloch-map');
 
           mapEl.vectorMap({ // setup map
             map             : 'world_en',
@@ -39,7 +39,9 @@
                 $filter('commaString')(map.series.regions[0].values[code] || 0));
             },
             onRegionClick: function(e, code){
-              scope.$emit('add:to:search', { expression: 'country == ' + code });
+              scope.$apply(() => {
+                scope.$emit('add:to:search', { expression: 'country == ' + code });
+              });
             }
           });
 
@@ -59,7 +61,7 @@
             if (scope.state.src && scope.state.dst) {
               if (!data.tot) {
                 data.tot = {};
-                var k;
+                let k;
                 for (k in data.src) {
                   data.tot[k] = data.src[k];
                 }

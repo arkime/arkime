@@ -14,6 +14,7 @@
   - Handle frag gre with frag ip inside
   - About/Help always uses new ui now
   - New bounding select box
+  - Fix clicking map not applying query expression
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required
