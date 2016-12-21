@@ -200,14 +200,24 @@
       </div>
     </div> <!-- /stop time -->
 
-    <!-- strictly (results bounded) checkbox -->
-    <div class="no-wrap display-inline">
-      <span class="fa fa-lg fa-fw fa-square-o cursor-pointer"
-        ng-if="!$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
-      <span class="fa fa-lg fa-fw fa-check-square-o cursor-pointer"
-        ng-if="$ctrl.strictly" ng-click="$ctrl.changeBounded()"></span>
-      <small>Results bounded</small>
-    </div> <!-- /strictly (results bounded) checkbox -->
+    <!-- time bounding select -->
+    <div class="form-group margined-bottom">
+      <div class="input-group input-group-sm">
+        <span class="input-group-addon cursor-help"
+          tooltip-placement="top-left"
+          uib-tooltip="Time Bounding">
+          Bounding
+        </span>
+        <select class="form-control time-range-control"
+          ng-model="$ctrl.timeBounding"
+          ng-change="$ctrl.changeTimeBounding()">
+          <option value="first">First Packet</option>
+          <option value="last">Last Packet</option>
+          <option value="both">Bounded</option>
+          <option value="either">Session Overlaps</option>
+        </select>
+      </div>
+    </div> <!-- /time bounding select -->
 
     <!-- human readable time range -->
     <div class="pull-right-md margined-top display-inline">

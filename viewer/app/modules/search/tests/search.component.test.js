@@ -107,26 +107,26 @@
       changeDate(1472829659701, 1472738480000);
     });
 
-    it('should emit a "change:search" event when strictly flag is changed', function() {
-      search.strictly = false;
+    it('should emit a "change:search" event when bounding flag is changed', function() {
+      search.timeBounding = "last";
 
-      function changeBounded(bounded) {
+      function changeTimeBounding(bounding) {
         search.timeRange  = 1;
-        search.strictly   = bounded;
-        search.changeBounded();
+        search.timeBounding   = bounding;
+        search.changeTimeBounding();
 
         expect(scope.$emit).toHaveBeenCalled();
 
-        if (!bounded) {
-          expect(search.$location.search).toHaveBeenCalledWith('strictly', 'true');
+        if (bounding !== "last") {
+          expect(search.$location.search).toHaveBeenCalledWith('bounding', bounding);
         } else {
-          expect(search.$location.search).toHaveBeenCalledWith('strictly', null);
+          expect(search.$location.search).toHaveBeenCalledWith('bounding', null);
         }
       }
 
-      changeBounded(true);
-      changeBounded(false);
-      changeBounded(true);
+      changeTimeBounding("first");
+      changeTimeBounding("last");
+      changeTimeBounding("first");
     });
 
     it('should not emit a "change:search" event when start or stop time is invalid', function() {
