@@ -12,32 +12,37 @@
         <li role="presentation">
           <a href="#search">
             <span class="fa fa-fw fa-search"></span>&nbsp;
-            Search
+            Search Expressions
           </a>
         </li>
         <li role="presentation" class="nested">
           <a href="#stringSearch">
-            String Search
+            String
           </a>
         </li>
         <li role="presentation" class="nested">
           <a href="#ipSearch">
-            IP Search
+            IP
           </a>
         </li>
         <li role="presentation" class="nested">
           <a href="#numericSearch">
-            Numeric Search
+            Numeric
           </a>
         </li>
         <li role="presentation" class="nested">
           <a href="#dateSearch">
-            Date Search
+            Date
           </a>
         </li>
         <li role="presentation" class="nested">
           <a href="#fieldExistsSearch">
-            Field Exists Search
+            Field Exists
+          </a>
+        </li>
+        <li role="presentation" class="nested">
+          <a href="#examples">
+            Examples
           </a>
         </li>
         <li role="presentation">
@@ -65,21 +70,39 @@
           </a>
         </li>
         <li role="presentation">
+          <a href="#files">
+            <span class="fa fa-fw fa-files-o"></span>&nbsp;
+            Files
+          </a>
+        </li>
+        <li role="presentation">
           <a href="#stats">
             <span class="fa fa-fw fa-line-chart"></span>&nbsp;
             Stats
           </a>
         </li>
         <li role="presentation">
-          <a href="#examples">
-            <span class="fa fa-fw fa-lightbulb-o"></span>&nbsp;
-            Examples
+          <a href="#settings">
+            <span class="fa fa-fw fa-cog"></span>&nbsp;
+            Settings
+          </a>
+        </li>
+        <li role="presentation" has-permission="createEnabled">
+          <a href="#users">
+            <span class="fa fa-fw fa-users"></span>&nbsp;
+            Users
           </a>
         </li>
         <li role="presentation">
           <a href="#fields">
             <span class="fa fa-fw fa-list"></span>&nbsp;
             Fields
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#information">
+            <span class="fa fa-fw fa-link"></span>&nbsp;
+            More Information
           </a>
         </li>
       </ul>
@@ -126,8 +149,9 @@
       <h4 id="stringSearch">String Search</h4>
       <p>
         String fields are special since they can be searched several different
-        ways. Before fields are indexed, their case may or may not be normalized,
-        which is documented in the table below. The types of string searches are:
+        ways. When fields are indexed, their case may or may not be normalized,
+        which is documented in the <a href="#fields">fields table below</a>.
+        The types of string searches are:
       </p>
       <dl class="dl-horizontal small">
         <dt>Token</dt>
@@ -135,13 +159,6 @@
           Some string fields are tokenized for faster searching. The query
           engine will automatically turn the search string(s) into tokens
           using the same algorithms as the indexing system.
-        </dd>
-        <dt>Lists</dt>
-        <dd class="margined-bottom">
-          This is a short hand method for doing multiple OR queries. For example
-          <code>http.uri == [www, moloch]</code>. Currently a list containing
-          wildcard or regex strings will be processed as normal tokens instead
-          of wildcards and regexes.
         </dd>
         <dt>Wildcard</dt>
         <dd class="margined-bottom">
@@ -161,6 +178,13 @@
           text strings, after case normalization if enabled for the field. For
           example <code>http.uri == /.*www\.f.*k\.com.*/.</code> It uses the
           Lucene regex implementation which doesn't support most PCRE features.
+        </dd>
+        <dt>Lists</dt>
+        <dd class="margined-bottom">
+          This is a short hand method for doing multiple OR queries. For example
+          <code>http.uri == [www, moloch]</code>. Currently a list containing
+          wildcard or regex strings will be processed as normal tokens instead
+          of wildcards and regexes.
         </dd>
       </dl>
 
@@ -253,6 +277,25 @@
 
       <hr>
 
+      <h4 id="examples">Examples</h4>
+
+      <p>
+        Find all the sessions involving Russia (RUS) or China (CHN) that are
+        on port 80 and the hostname contains "com":
+        <pre>
+          (country == RUS || country == CHN) && port == 80 && host == *com
+        </pre>
+      </p>
+      <p>
+        Find all the sessions of type "text/plain", involving Canada (CAN), and
+        containing less than 20 packets:
+        <pre>
+          tags == "http:content:text/plain" && country == CAN && packets &lt; 20
+        </pre>
+      </p>
+
+      <hr>
+
       <h3 id="sessions">
         <span class="fa fa-fw fa-exchange"></span>&nbsp;
         Sessions
@@ -293,6 +336,16 @@
 
       <hr>
 
+      <h3 id="files">
+        <span class="fa fa-fw fa-files-o"></span>&nbsp;
+        Files
+      </h3>
+      <p>
+        <!-- TODO: describe files tab here -->
+      </p>
+
+      <hr>
+
       <h3 id="stats">
         <span class="fa fa-fw fa-line-chart"></span>&nbsp;
         Stats
@@ -303,26 +356,25 @@
 
       <hr>
 
-      <h3 id="examples">
-        <span class="fa fa-fw fa-lightbulb-o"></span>&nbsp;
-        Examples
+      <h3 id="settings">
+        <span class="fa fa-fw fa-cog"></span>&nbsp;
+        Settings
       </h3>
       <p>
-        Find all the sessions involving Russia (RUS) or China (CHN) that are
-        on port 80 and the hostname contains "com":
-        <pre>
-          (country == RUS || country == CHN) && port == 80 && host == *com
-        </pre>
-      </p>
-      <p>
-        Find all the sessions of type "text/plain", involving Canada (CAN), and
-        containing less than 20 packets:
-        <pre>
-          tags == "http:content:text/plain" && country == CAN && packets &lt; 20
-        </pre>
+        <!-- TODO: describe settings tab here -->
       </p>
 
       <hr>
+
+      <h3 id="users" has-permission="createEnabled">
+        <span class="fa fa-fw fa-users"></span>&nbsp;
+        Users
+      </h3>
+      <p has-permission="createEnabled">
+        <!-- TODO: describe users tab here -->
+      </p>
+
+      <hr has-permission="createEnabled">
 
       <h3 id="fields">
         <span class="fa fa-fw fa-list"></span>&nbsp;
@@ -365,6 +417,24 @@
         <span class="fa fa-warning"></span>&nbsp;
         Error retrieving fields: {{::$ctrl.error}}
       </div>
+
+      <hr>
+
+      <h3 id="information">
+        <span class="fa fa-fw fa-link"></span>&nbsp;
+        More Information
+      </h3>
+      <p>
+        <ul>
+          <li> <a href="http://molo.ch">Home Page</a>
+          <li> <a href="http://github.aol.com/aol/moloch/wiki/FAQ">FAQ</a>
+          <li> <a href="http://github.aol.com/aol/moloch/wiki">Wiki</a>
+          <li> <a href="http://github.aol.com/aol/moloch">github</a>
+          <li> <a href="https://slackinvite.molo.ch/">Request Slack Invite</a>
+        </ul>
+      </p>
+
+      <hr>
 
     </div>
 

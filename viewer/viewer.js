@@ -743,6 +743,7 @@ function sessionsOld (req, res) {
     user: req.user,
     title: makeTitle(req, 'Sessions'),
     titleLink: 'sessionsLink',
+    helpLink: 'sessions',
     isIndex: true,
     decodeItems: JSON.stringify(decodeItems)
   });
@@ -768,6 +769,7 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'SPI View'),
     titleLink: 'spiLink',
+    helpLink: 'spiview',
     isIndex: true,
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
@@ -782,6 +784,7 @@ app.get("/spigraph", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'SPI Graph'),
     titleLink: 'spigraphLink',
+    helpLink: 'spigraph',
     isIndex: true
   });
 });
@@ -791,6 +794,7 @@ app.get("/connections", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'Connections'),
     titleLink: 'connectionsLink',
+    helpLink: 'connections',
     isIndex: true
   });
 });
@@ -800,31 +804,34 @@ app.get("/upload", checkWebEnabled, function(req, res) {
     user: req.user,
     title: makeTitle(req, 'Upload'),
     titleLink: 'uploadLink',
+    helpLink: 'upload',
     isIndex: false
   });
 });
 
 app.get('/about', checkWebEnabled, function(req, res) {
-  res.render('about.jade', {
-    user: req.user,
-    title: makeTitle(req, 'About'),
-    titleLink: 'aboutLink'
-  });
+  res.redirect("help");
 });
 
 app.get('/files', checkWebEnabled, function(req, res) {
   res.render('files.jade', {
     user: req.user,
     title: makeTitle(req, 'Files'),
-    titleLink: 'filesLink'
+    titleLink: 'filesLink',
+    helpLink: 'files'
   });
 });
 
 app.get('/users', checkWebEnabled, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.status(404).send("Not found");
+  }
+
   res.render('users.jade', {
     user: req.user,
     title: makeTitle(req, 'Users'),
     titleLink: 'usersLink',
+    helpLink: 'users',
     token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
   });
 });
@@ -904,6 +911,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
         token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
         title: makeTitle(req, 'Settings'),
         titleLink: 'settingsLink',
+        helpLink: 'settings',
         actions: actions
       });
     });
@@ -943,6 +951,7 @@ app.get('/stats', checkWebEnabled, function(req, res) {
       user: req.user,
       title: makeTitle(req, 'Stats'),
       titleLink: 'statsLink',
+      helpLink: 'stats',
       nodes: nodes
     });
   });
@@ -3834,6 +3843,10 @@ app.post('/updateUser/:userId', checkToken, function(req, res) {
   if (!req.user.createEnabled) {
     return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
   }
+
+  /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
+    return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
+  }*/
 
   Db.getUser(req.params.userId, function(err, user) {
     if (err || !user.found) {
