@@ -13,6 +13,7 @@
   - Fixed yara 1.7 multithread crash (issue #568)
   - Handle frag gre with frag ip inside
   - About/Help always uses new ui now
+  - New bounding select box
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required

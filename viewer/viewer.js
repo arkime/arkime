@@ -1344,6 +1344,10 @@ function buildSessionQuery(req, buildCb) {
                query: {bool: {filter: []}}
               };
 
+  if (req.query.strictly === "true") {
+    req.query.bounding = "both";
+  }
+
   var interval;
   if ((req.query.date && req.query.date === '-1') ||
       (req.query.segments && req.query.segments === "all")) {
@@ -1360,11 +1364,23 @@ function buildSessionQuery(req, buildCb) {
     } else {
       req.query.stopTime = parseInt(req.query.stopTime, 10);
     }
-    if (req.query.strictly === "true") {
+
+    switch (req.query.bounding) {
+    case "first":
+      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      break;
+    case "last":
+    default:
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      break;
+    case "both":
       query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
       query.query.bool.filter.push({range: {lp: {lte: req.query.stopTime}}});
-    } else {
-      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      break;
+    case "either":
+      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      break;
     }
 
     var diff = req.query.stopTime - req.query.startTime;
@@ -1381,13 +1397,29 @@ function buildSessionQuery(req, buildCb) {
     }
     req.query.startTime = (Math.floor(Date.now() / 1000) - 60*60*parseInt(req.query.date, 10));
     req.query.stopTime = Date.now()/1000;
-    query.query.bool.filter.push({range: {lp: {from: req.query.startTime}}});
+
+    switch (req.query.bounding) {
+    case "first":
+      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
+      break;
+    case "both":
+    case "last":
+    default:
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      break;
+    case "either":
+      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      break;
+    }
+
     if (req.query.date <= 5*24) {
       interval = 60; // minute
     } else {
       interval = 60*60; // hour
     }
   }
+
 
   if (req.query.facets) {
     query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},

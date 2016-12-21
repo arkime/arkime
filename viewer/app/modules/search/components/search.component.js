@@ -79,8 +79,8 @@
         this.expression = { value: this.$routeParams.expression };
       } else { this.expression = { value: null }; }
 
-      this.strictly = false; // default to unbounded results
-      if (this.$routeParams.strictly) { this.strictly = true; }
+      this.timeBounding = "last"; // default to lastPacket
+      if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
 
       // load user's previous view choice
       if (sessionStorage && sessionStorage['moloch-view']) {
@@ -161,13 +161,11 @@
      /**
       * Fired when change bounded checkbox is (un)checked
       */
-     changeBounded() {
-       this.strictly = !this.strictly;
-
-       if (this.strictly) {
-         this.$location.search('strictly', 'true');
+     changeTimeBounding() {
+       if (this.timeBounding !== "last") {
+         this.$location.search('bounding', this.timeBounding);
        } else {
-         this.$location.search('strictly', null);
+         this.$location.search('bounding', null);
        }
 
        this.change();
@@ -233,7 +231,7 @@
 
     /**
      * Fired when a search control value is changed
-     * (startTime, stopTime, timeRange, expression, strictly)
+     * (startTime, stopTime, timeRange, expression, bounding)
      */
     change() {
       let useDateRange = false;
@@ -268,7 +266,7 @@
       if (this.startTime && this.stopTime) {
         let args = {
           expression: this.expression.value,
-          strictly  : this.strictly,
+          bounding  : this.timeBounding,
           view      : this.view
         };
 
