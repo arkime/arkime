@@ -29,7 +29,7 @@
     "children": ["a2", "g2"]
   },
   "dbby": {
-    "width": 100,
+    "width": 120,
     "dbField": "dbby",
     "exp": "dbby",
     "group": "general",

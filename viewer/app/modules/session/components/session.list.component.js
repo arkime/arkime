@@ -461,6 +461,17 @@
       this.saveTableState(true);
     }
 
+
+    /* UNIQUE VALUES */
+    /**
+     * Open a page to view unique values for different fields
+     * @param {string} dbField  The field to get unique values for
+     * @param {number} counts   1 or 0 whether to include counts of the values
+     */
+    exportUnique(dbField, counts) {
+      this.SessionService.exportUniqueValues(dbField, counts);
+    }
+
   }
 
   SessionListController.$inject = ['$scope', '$timeout', '$location',

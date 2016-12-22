@@ -150,7 +150,7 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    let scope, sessionComponent, $httpBackend;
+    let scope, sessionComponent, sessionService, $httpBackend;
     let sessionsEndpoint    = 'sessions.json';
     let defaultParameters   = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
     let tableStateEndpoint  = 'tableState/sessionsNew';
@@ -162,6 +162,8 @@
       SessionService,
       $componentController,
       $rootScope) {
+        sessionService = SessionService;
+
         $httpBackend = _$httpBackend_;
 
         // initial query for table state
@@ -187,6 +189,7 @@
         // spy on functions called in controller
         spyOn(sessionComponent, 'getData').and.callThrough();
         spyOn(sessionComponent, 'getTableState').and.callThrough();
+        spyOn(sessionService, 'exportUniqueValues').and.callThrough();
 
         // initialize session component controller
         sessionComponent.$onInit();
@@ -419,6 +422,20 @@
         expect(scope.$broadcast).toHaveBeenCalled();
         expect(scope.$broadcast).toHaveBeenCalledWith('update:time', args);
         expect(scope.$broadcast.calls.count()).toBe(1);
+      });
+
+      it('should call SessionService when exporting unique column values', function() {
+        sessionComponent.exportUnique('a1', 0);
+        expect(sessionService.exportUniqueValues).toHaveBeenCalled();
+        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('a1', 0);
+
+        sessionComponent.exportUnique('a1:p1', 0);
+        expect(sessionService.exportUniqueValues).toHaveBeenCalled();
+        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('a1:p1', 0);
+
+        sessionComponent.exportUnique('g2', 1);
+        expect(sessionService.exportUniqueValues).toHaveBeenCalled();
+        expect(sessionService.exportUniqueValues).toHaveBeenCalledWith('g2', 1);
       });
 
     });
