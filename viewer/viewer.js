@@ -1382,7 +1382,7 @@ function buildSessionQuery(req, buildCb) {
       query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
       break;
     case "database":
-      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
       break;
     }
 
@@ -1415,7 +1415,7 @@ function buildSessionQuery(req, buildCb) {
       query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
       break;
     case "database":
-      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000}}});
       break;
     }
 
