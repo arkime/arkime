@@ -7,6 +7,14 @@ session {
     table-layout: fixed;
     border-top  : $color-gray-light solid 1px;
 
+    thead {
+      tr {
+        th {
+          vertical-align: top;
+        }
+      }
+    }
+
     tbody {
       tr {
 
@@ -33,10 +41,17 @@ session {
   .moloch-col-header {
     font-size   : 1.4rem;
     font-weight : 500;
-    position    : relative !important;
-    cursor      : pointer;
 
     &.active { color: $color-purple-dark; }
+
+    &:hover {
+      .btn-group { visibility: visible; }
+    }
+
+    .btn-group {
+      visibility  : hidden;
+      margin-left : -8px;
+    }
   }
 
   /* draggable table column headers ---------- */
@@ -62,6 +77,7 @@ session {
 
 }
 
+
 /* column visibility menu ------------------ */
 .col-vis-menu {
   max-height: 300px;
@@ -71,7 +87,11 @@ session {
     margin: 0 6px;
     width : 200px;
   }
+}
 
+
+/* grouped dropdown menu --------------------- */
+ul.dropdown-menu {
   // display nested (grouped) dropdown list like normal dropdown list
   div {
     // dropdown list group header
@@ -85,7 +105,9 @@ session {
     }
 
     li {
-      &:hover { background-color: $color-gray-light; }
+      &:hover {
+        background-color: $color-gray-light;
+      }
 
       &.active {
         background-color: #337ab7;
@@ -94,15 +116,15 @@ session {
       }
 
       a {
-        display     : block;
-        padding     : 2px 10px;
-        clear       : both;
-        font-weight : normal;
-        line-height : 1.42857143;
-        color       : darken($color-gray-dark, 10%);
-        white-space : nowrap;
-        cursor      : pointer;
-        text-decoration: none;
+        display         : block;
+        padding         : 2px 10px;
+        clear           : both;
+        font-weight     : normal;
+        line-height     : 1.42857143;
+        color           : darken($color-gray-dark, 15%);
+        white-space     : nowrap;
+        cursor          : pointer;
+        text-decoration : none;
       }
     }
   }

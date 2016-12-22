@@ -29,6 +29,7 @@
       sessions="$ctrl.stickySessions"></sticky-sessions>
 
     <div class="table-responsive margined-top-lg">
+
       <!-- session data table -->
       <table class="table table-condensed table-striped" ng-if="$ctrl.headers">
 
@@ -36,6 +37,7 @@
           <tr>
             <th width="6%" ng-drop="true" draggable="false"
               ng-drop-success="$ctrl.onDropComplete(-1, $data, $event)">
+
               <!-- column visibility button -->
               <div class="btn-group" uib-dropdown is-open="$ctrl.isopen"
                 dropdown-append-to-body="true" auto-close="outsideClick">
@@ -71,29 +73,94 @@
                   </li>
                 </ul>
               </div> <!-- /column visibility button -->
+
             </th>
+
             <!-- table headers -->
             <th ng-repeat="header in $ctrl.headers" width="{{::header.width}}"
               class="moloch-col-header" ng-drop="true"
               ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
               ng-drag="true" ng-drag-data="header" draggable="false"
               ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
-              <!-- non-sortable column -->
-              <div ng-if="header.dbField === 'info'">
-                {{::header.friendlyName}}
-              </div>
-                <!-- sortable column -->
+
+              <!-- column dropdown menu -->
+              <div class="btn-group pull-right" uib-dropdown is-open="status.isopen"
+                   ng-if="header.type !== 'seconds'">
+                <button type="button" uib-dropdown-toggle
+                        class="btn btn-xs btn-default">
+                  <span class="fa fa-share-square"></span>
+                </button>
+                <!-- single field column -->
+                <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu role="menu"
+                    ng-if="::!header.children">
+                  <li role="menuitem">
+                    <a ng-click="$ctrl.exportUnique(header.dbField, 0)">
+                      Export Unique {{::header.friendlyName}}
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a ng-click="$ctrl.exportUnique(header.dbField, 1)">
+                      Export Unique {{::header.friendlyName}} with counts
+                    </a>
+                  </li>
+                  <li role="menuitem" ng-if="::header.portField">
+                    <a ng-click="$ctrl.exportUnique(header.dbField + ':' + header.portField, 0)">
+                      Export Unique {{::header.friendlyName}}:Ports
+                    </a>
+                  </li>
+                  <li role="menuitem" ng-if="::header.portField">
+                    <a ng-click="$ctrl.exportUnique(header.dbField + ':' + header.portField, 1)">
+                      Export Unique {{::header.friendlyName}}:Ports with counts
+                    </a>
+                  </li>
+                </ul> <!-- /single field column -->
+                <!-- multiple field column -->
+                <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu role="menu"
+                    ng-if="::header.children">
+                  <div ng-repeat="child in ::header.children">
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.exportUnique(child.dbField, 0)">
+                        Export Unique {{::child.friendlyName}}
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.exportUnique(child.dbField, 1)">
+                        Export Unique {{::child.friendlyName}} with counts
+                      </a>
+                    </li>
+                    <li role="menuitem" ng-if="::child.portField">
+                      <a ng-click="$ctrl.exportUnique(child.dbField + ':' + child.portField, 0)">
+                        Export Unique {{::child.friendlyName}}:Ports
+                      </a>
+                    </li>
+                    <li role="menuitem" ng-if="::child.portField">
+                      <a ng-click="$ctrl.exportUnique(child.dbField + ':' + child.portField, 1)">
+                        Export Unique {{::child.friendlyName}}:Ports with counts
+                      </a>
+                    </li>
+                  </div>
+                </ul> <!-- /multiple field column -->
+              </div> <!-- /column dropdown menu -->
+
+              <!-- sortable column -->
               <div ng-if="(header.exp || header.sortBy) && header.dbField !== 'info'"
                 ng-mousedown="$ctrl.mouseDown()" ng-mouseup="$ctrl.mouseUp()"
-                ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)">
-                {{::header.friendlyName}}&nbsp;
+                ng-click="$ctrl.sortBy($event, header.sortBy || header.dbField)"
+                class="cursor-pointer">
                 <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) < 0"
                   class="fa fa-sort text-muted-more"></span>
                 <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'asc'"
                   class="fa fa-sort-asc"></span>
                 <span ng-if="$ctrl.isSorted(header.sortBy || header.dbField) >= 0 && $ctrl.getSortOrder(header.sortBy || header.dbField) === 'desc'"
                   class="fa fa-sort-desc"></span>
+                {{::header.friendlyName}}
               </div>
+
+              <!-- non-sortable column -->
+              <div ng-if="header.dbField === 'info'" class="cursor-pointer">
+                {{::header.friendlyName}}
+              </div>
+
             </th> <!-- /table headers -->
           </tr>
         </thead>
@@ -128,6 +195,7 @@
           </tr>
         </tbody>
       </table> <!-- /session data table -->
+
     </div>
 
     <loading ng-if="$ctrl.loading"></loading>

@@ -328,6 +328,21 @@
       });
     }
 
+    /**
+     * Open a new page to view unique values for different fields
+     * @param {string} dbField  The field to get unique values for
+     * @param {number} counts   1 or 0 whether to include counts of the values
+     */
+    exportUniqueValues(dbField, counts) {
+      let url = 'unique.txt';
+
+      url = SessionService.urlWithParams(url, this.$location.search());
+
+      url += `&field=${dbField}&counts=${counts}`;
+
+      this.$window.open(url, '_blank');
+    }
+
 
     /* internal functions -------------------------------------------------- */
     /**
