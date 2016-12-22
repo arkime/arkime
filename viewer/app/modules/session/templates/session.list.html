@@ -84,40 +84,47 @@
               ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
 
               <!-- column dropdown menu -->
-              <div class="btn-group pull-right" uib-dropdown is-open="status.isopen"
-                   ng-if="header.type !== 'seconds'">
+              <div class="btn-group pull-right" uib-dropdown
+                is-open="status.isopen">
                 <button type="button" uib-dropdown-toggle
                         class="btn btn-xs btn-default">
                   <span class="fa fa-share-square"></span>
                 </button>
-                <!-- single field column -->
-                <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu role="menu"
-                    ng-if="::!header.children">
-                  <li role="menuitem">
-                    <a ng-click="$ctrl.exportUnique(header.dbField, 0)">
-                      Export Unique {{::header.friendlyName}}
-                    </a>
-                  </li>
-                  <li role="menuitem">
-                    <a ng-click="$ctrl.exportUnique(header.dbField, 1)">
-                      Export Unique {{::header.friendlyName}} with counts
-                    </a>
-                  </li>
-                  <li role="menuitem" ng-if="::header.portField">
-                    <a ng-click="$ctrl.exportUnique(header.dbField + ':' + header.portField, 0)">
-                      Export Unique {{::header.friendlyName}}:Ports
-                    </a>
-                  </li>
-                  <li role="menuitem" ng-if="::header.portField">
-                    <a ng-click="$ctrl.exportUnique(header.dbField + ':' + header.portField, 1)">
-                      Export Unique {{::header.friendlyName}}:Ports with counts
-                    </a>
-                  </li>
-                </ul> <!-- /single field column -->
-                <!-- multiple field column -->
-                <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu role="menu"
-                    ng-if="::header.children">
-                  <div ng-repeat="child in ::header.children">
+                <ul class="dropdown-menu cursor-pointer"
+                  uib-dropdown-menu role="menu">
+                  <div>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.toggleVisibility(header.dbField)">
+                        Hide Column
+                      </a>
+                    </li>
+                  </div>
+                  <!-- single field column -->
+                  <div ng-if="::!header.children && header.type !== 'seconds'">
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.exportUnique(header.dbField, 0)">
+                        Export Unique {{::header.friendlyName}}
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a ng-click="$ctrl.exportUnique(header.dbField, 1)">
+                        Export Unique {{::header.friendlyName}} with counts
+                      </a>
+                    </li>
+                    <li role="menuitem" ng-if="::header.portField">
+                      <a ng-click="$ctrl.exportUnique(header.dbField + ':' + header.portField, 0)">
+                        Export Unique {{::header.friendlyName}}:Ports
+                      </a>
+                    </li>
+                    <li role="menuitem" ng-if="::header.portField">
+                      <a ng-click="$ctrl.exportUnique(header.dbField + ':' + header.portField, 1)">
+                        Export Unique {{::header.friendlyName}}:Ports with counts
+                      </a>
+                    </li>
+                  </div> <!-- /single field column -->
+                  <!-- multiple field column -->
+                  <div ng-repeat="child in ::header.children"
+                    ng-if="::header.children && header.type !== 'seconds'">
                     <li role="menuitem">
                       <a ng-click="$ctrl.exportUnique(child.dbField, 0)">
                         Export Unique {{::child.friendlyName}}
