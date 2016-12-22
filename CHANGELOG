@@ -1,20 +1,22 @@
 0.17.0 2016/12/xx
   - NOTICE: npm update required
   - NOTICE: ES 2.4.x required
-  - New sessions UI (newUI=true)
-  - Initial ES 5.0 support (do not use in production!)
-  - Refactor many ES calls to remove depreciated syntax
-  - Handle multiple query parameters better
+  - viewer - New sessions UI (newUI=true)
+  - all - Initial ES 5.0 support (do not use in production!)
+  - all - Refactor many ES calls to remove depreciated syntax
+  - viewer - Handle multiple query parameters better
   - WISE - basic elasticsearch source
-  - Initial pcap encoding support, variables
+  - all - Initial pcap encoding support, variables
     * simpleEncoding: aes-256-ctr or xor-2048
     * simpleKEKId - The kek id to use from the keks section
     * [keks] - A section with multipl kekid=passwords
-  - Fixed yara 1.7 multithread crash (issue #568)
-  - Handle frag gre with frag ip inside
-  - About/Help always uses new ui now
-  - New bounding select box
-  - Fix clicking map not applying query expression
+  - capture - Fixed yara 1.7 multithread crash (issue #568)
+  - capture - Handle frag gre with frag ip inside
+  - viewer - New Help UI (based on new ui)
+  - viewer - New bounding select box
+  - viewer - Fix clicking map not applying query expression
+  - db - New sync-files which does both add/rm missing faster
+
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required

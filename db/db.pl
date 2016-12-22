@@ -48,6 +48,7 @@ use strict;
 my $VERSION = 30;
 my $verbose = 0;
 my $PREFIX = "";
+my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
 
@@ -71,6 +72,7 @@ sub showHelp($)
     print "Global Options:\n";
     print "  -v                           - Verbose, multiple increases level\n";
     print "  --prefix <prefix>            - Prefix for table names\n";
+    print "  -n                           - Make no db changes\n";
     print "\n";
     print "Commands:\n";
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
@@ -89,7 +91,8 @@ sub showHelp($)
     print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
     print "  add-missing <node> <dir>     - Add to db any MISSING file on THIS machine for named node and directory\n";
-    print "  expire <type> <num> [<opts>] - Perform daily maintenance and optimize all indices in ES\n";
+    print "  sync-files  <nodes> <dirs>   - Add/Remove db any MISSING file on THIS machine for named node(s) and directory(s)\n";
+    print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
@@ -128,6 +131,12 @@ sub esGet
 sub esPost
 {
     my ($url, $content, $dontcheck) = @_;
+
+    if ($NOCHANGES && $url !~ /_search/) {
+      print "NOCHANGE: PUT ${main::elasticsearch}$url\n";
+      return;
+    }
+
     print "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content);
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
@@ -142,6 +151,12 @@ sub esPost
 sub esPut
 {
     my ($url, $content, $dontcheck) = @_;
+
+    if ($NOCHANGES) {
+      print "NOCHANGE: PUT ${main::elasticsearch}$url\n";
+      return;
+    }
+
     print "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
@@ -156,6 +171,12 @@ sub esPut
 sub esDelete
 {
     my ($url, $dontcheck) = @_;
+
+    if ($NOCHANGES) {
+      print "NOCHANGE: DELETE ${main::elasticsearch}$url\n";
+      return;
+    }
+
     print "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "${main::elasticsearch}$url"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
@@ -181,7 +202,7 @@ sub esCopy
         }
         my $url;
         if ($id eq "") {
-            $url = "/${PREFIX}$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
+            $url = "/${PREFIX}$srci/$type/_search?scroll=10m&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
@@ -201,6 +222,38 @@ sub esCopy
         esPost("/_bulk", $out);
     }
     print "\n"
+}
+################################################################################
+sub esScroll
+{
+    my ($index, $type, $query) = @_;
+
+    my @hits = ();
+
+    my $id = "";
+    while (1) {
+        if ($verbose > 0) {
+            local $| = 1;
+            print ".";
+        }
+        my $url;
+        if ($id eq "") {
+            $url = "/${PREFIX}$index/$type/_search?scroll=10m&size=500";
+        } else {
+            $url = "/_search/scroll?scroll=10m&scroll_id=$id";
+            $query = "";
+        }
+
+
+        my $incoming = esPost($url, $query, 1);
+        #print Dumper($incoming);
+        last if (@{$incoming->{hits}->{hits}} == 0);
+
+        push(@hits, @{$incoming->{hits}->{hits}});
+
+        $id = $incoming->{_scroll_id};
+    }
+    return \@hits;
 }
 ################################################################################
 sub esAlias
@@ -1905,17 +1958,19 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
         $PREFIX = $ARGV[1];
         shift @ARGV;
         $PREFIX .= "_" if ($PREFIX !~ /_$/);
+    } elsif ($ARGV[0] =~ /-n$/) {
+        $NOCHANGES = 1;
     } else {
-        showHelp("Unknkown option $ARGV[0]")
+        showHelp("Unknkown global option $ARGV[0]")
     }
     shift @ARGV;
 }
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-files)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2127,6 +2182,53 @@ sub printIndex {
             print "Ok $dir/$file\n";
         }
     }
+    exit 0;
+} elsif ($ARGV[1] =~ /^sync-?files$/) {
+    my @nodes = split(",", $ARGV[2]);
+    my @dirs = split(",", $ARGV[3]);
+
+    # find all local files, do this first also to make sure we can access dirs
+    my @localfiles = ();
+    foreach my $dir (@dirs) {
+        chop $dir if (substr($dir, -1) eq "/");
+        opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
+        foreach my $node (@nodes) {
+            my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
+            @files = map "$dir/$_", @files;
+            push (@localfiles, @files);
+        }
+        closedir $dh;
+    }
+
+    # See what files are in db
+    my $remotefiles = esScroll("files", "file", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
+    my %remotefileshash;
+    foreach my $hit (@{$remotefiles}) {
+        if (! -f $hit->{_source}->{name}) {
+            print "Removing", $hit->{_source}->{name}, " id: ", $hit->{_id}, "\n";
+            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+        } else {
+            $remotefileshash{$hit->{_source}->{name}} = 1;
+        }
+    }
+
+    # Now see which local are missing
+    foreach my $file (@localfiles) {
+        if (!exists $remotefileshash{$file}) {
+            $file =~ /\/([^\/]*)-(\d+)-(\d+).pcap/;
+            my $node = $1;
+            my $filenum = int($3);
+            my $ctime = (stat("$file"))[10];
+            print "Adding $file $node $filenum $ctime\n";
+            esPost("/${PREFIX}files/file/$node-$filenum", to_json({
+                         'locked' => 0,
+                         'first' => $ctime,
+                         'num' => $filenum,
+                         'name' => "$file",
+                         'node' => $node}), 1);
+        }
+    }
+
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
     my $result = esGet("/${PREFIX}fields/field/$ARGV[3]", 1);
