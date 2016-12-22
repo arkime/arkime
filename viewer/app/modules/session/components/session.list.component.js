@@ -11,7 +11,7 @@
 
   const defaultTableState = {
     order         : [['fp', 'asc']],
-    visibleHeaders: ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+    visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
   };
 
   let customCols = require('json!./custom.columns.json');

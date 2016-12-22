@@ -16,6 +16,8 @@
   - viewer - New bounding select box
   - viewer - Fix clicking map not applying query expression
   - db - New sync-files which does both add/rm missing faster
+  - viewer - Add column menus
+  - viewer - Fix reordering columns
 
 
 0.16.1 2016/11/28

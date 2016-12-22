@@ -304,11 +304,11 @@
     describe('column visibility ->', function() {
       afterEach(function() {
         // cleanup table state
-        sessionComponent.tableState.visibleHeaders = ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
+        sessionComponent.tableState.visibleHeaders = ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
       });
 
       it('should have smart default visible headers', function() {
-        let defaultHeaders = ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
+        let defaultHeaders = ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
 
         expect(sessionComponent.tableState.visibleHeaders).toEqual(defaultHeaders);
       });
