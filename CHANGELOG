@@ -18,6 +18,7 @@
   - db - New sync-files which does both add/rm missing faster
   - viewer - Add column menus
   - viewer - Fix reordering columns
+  - viewer - Fix unnecessary whitespace when copying values from session table
 
 
 0.16.1 2016/11/28

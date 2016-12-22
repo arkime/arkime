@@ -3,8 +3,7 @@
   <!-- search expression -->
   <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="::!$ctrl.time">
     <a href id="simple-dropdown" uib-dropdown-toggle>
-      {{::$ctrl.parsed}}
-      <span class="fa fa-caret-down"></span>
+      <span class="all-copy">{{::$ctrl.parsed}}</span><span class="fa fa-caret-down"></span>
     </a>
     <ul class="dropdown-menu" uib-dropdown-menu>
       <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '==')">
