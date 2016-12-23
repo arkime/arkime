@@ -14,6 +14,6 @@
   "predef": [
     "angular", "document", "jasmine", "jQuery", "$", "window", "localStorage",
     "describe", "beforeEach", "afterEach", "inject", "it", "expect", "spyOn",
-    "sessionStorage"
+    "sessionStorage", "alert"
   ]
 }

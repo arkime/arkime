@@ -154,6 +154,10 @@
           this.sessions   = response.data;
           this.mapData    = response.data.map;
           this.graphData  = response.data.graph;
+
+          if (parseInt(this.$routeParams.openAll) === 1) {
+            this.openAll();
+          }
         })
         .catch((error) => {
           this.error    = error;
@@ -284,6 +288,23 @@
         let index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
+    }
+
+    /* Opens up to 10 session details in the table */
+    openAll() {
+      // opening too many session details at once is bad!
+      if (this.sessions.data.length > 10) {
+        alert('You\'re trying to open too many session details at once! I\'ll only open the first 10 for you, sorry!');
+      }
+
+      let len = Math.min(this.sessions.data.length, 10);
+
+      for (let i = 0; i < len; ++i) {
+        this.toggleSessionDetail(this.sessions.data[i]);
+      }
+
+      // unset open all for future queries
+      this.$location.search('openAll', null);
     }
 
 
