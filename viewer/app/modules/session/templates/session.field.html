@@ -5,24 +5,43 @@
     <a href id="simple-dropdown" uib-dropdown-toggle>
       <span class="all-copy">{{::$ctrl.parsed}}</span><span class="fa fa-caret-down"></span>
     </a>
-    <ul class="dropdown-menu" uib-dropdown-menu>
-      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '==')">
-        <a href>
-          <strong>and</strong>
-          {{::$ctrl.parsed}}
-        </a>
-      </li>
-      <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '!=')">
-        <a href>
-          <strong>and not</strong>
-          {{::$ctrl.parsed}}
-        </a>
-      </li>
-      <li ng-repeat="item in ::$ctrl.menuItems">
-        <a href="{{::item.url}}" target="_blank">
-          <strong>{{::item.name}}</strong> {{::item.value}}
-        </a>
-      </li>
+    <ul class="dropdown-menu pull-right" uib-dropdown-menu>
+      <div>
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '==')">
+          <a href>
+            <strong>and</strong>
+            {{::$ctrl.parsed}}
+          </a>
+        </li>
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, $ctrl.stringVal || $ctrl.value, '!=')">
+          <a href>
+            <strong>and not</strong>
+            {{::$ctrl.parsed}}
+          </a>
+        </li>
+      </div>
+      <div ng-if="::$ctrl.fieldObj.portField && $ctrl.session[$ctrl.fieldObj.portField]">
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, ($ctrl.stringVal || $ctrl.value) + ':' + $ctrl.session[$ctrl.fieldObj.portField], '==')">
+          <a href>
+            <strong>and</strong>
+            {{::$ctrl.parsed}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
+          </a>
+        </li>
+        <li ng-if="::$ctrl.fieldObj.portField && $ctrl.session[$ctrl.fieldObj.portField]"
+          ng-click="$ctrl.fieldClick($ctrl.expr, ($ctrl.stringVal || $ctrl.value) + ':' + $ctrl.session[$ctrl.fieldObj.portField], '!=')">
+          <a href>
+            <strong>and not</strong>
+            {{::$ctrl.parsed}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
+          </a>
+        </li>
+      </div>
+      <div>
+        <li ng-repeat="item in ::$ctrl.menuItems">
+          <a href="{{::item.url}}" target="_blank">
+            <strong>{{::item.name}}</strong> {{::item.value}}
+          </a>
+        </li>
+      </div>
     </ul>
   </span>
   <!-- time constraint -->

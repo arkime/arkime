@@ -41,7 +41,7 @@ session {
     dd {
       margin: 0 0 0 165px;
 
-      strong { font-size: 16px; }
+      > strong { font-size: 16px; }
     }
 
     .show-more-items {

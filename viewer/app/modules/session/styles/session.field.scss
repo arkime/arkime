@@ -51,13 +51,14 @@ session-field {
     ul.dropdown-menu {
       opacity   : 0;
       visibility: hidden;
-      max-width : 100%;
+      max-width : 800px;
+      font-size : 1.25rem;
 
       -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
          -moz-transition: visibility 0s linear 400ms, opacity 400ms;
               transition: visibility 0s linear 400ms, opacity 400ms;
 
-      > li {
+      > div > li {
         > a { // truncate long values
           overflow      : hidden;
           text-overflow : ellipsis;
@@ -70,9 +71,7 @@ session-field {
       background-color: $color-white;
       border          : 1px solid lighten($color-black, 10%);
 
-      a {
-        color: $color-blue-dark;
-      }
+      a { color: $color-blue-dark; }
 
       // show button and menu (if opened) on hover
       .fa, ul.dropdown-menu {
