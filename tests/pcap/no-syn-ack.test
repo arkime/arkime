@@ -1,0 +1,97 @@
+{
+   "sessions" : [
+      {
+         "body" : {
+            "ss" : 1,
+            "by" : 522,
+            "prot-term" : [
+               "mysql",
+               "tcp"
+            ],
+            "pa2" : 1,
+            "fs" : [],
+            "lastPacket" : 1482381409513,
+            "lpd" : 1482381409513,
+            "by2" : 152,
+            "tags-term" : [
+               "acked-unseen-segment-src"
+            ],
+            "pa1" : 4,
+            "mac2-term-cnt" : 1,
+            "fb2" : "4e0000000a352e36",
+            "psl" : [
+               94,
+               86,
+               168,
+               86,
+               168
+            ],
+            "ta" : [
+               "acked-unseen-segment-src"
+            ],
+            "p2" : 3306,
+            "ipSrc" : "10.10.10.10",
+            "vlan-cnt" : 1,
+            "no" : "test",
+            "timestamp" : "SET",
+            "mac1-term" : [
+               "00:22:83:3f:17:cc"
+            ],
+            "a1" : "10.10.10.10",
+            "mac1-term-cnt" : 1,
+            "fb1" : "4e0000018da20200",
+            "portDst" : 3306,
+            "p1" : 40041,
+            "fp" : 1482381409,
+            "portSrc" : 40041,
+            "db" : 164,
+            "db2" : 82,
+            "mac2-term" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "fpd" : 1482381409512,
+            "tacnt" : 1,
+            "lp" : 1482381409,
+            "by1" : 370,
+            "a2" : "10.176.176.11",
+            "ps" : [
+               24,
+               118,
+               204,
+               372,
+               458
+            ],
+            "sl" : 0,
+            "pr" : 6,
+            "vlan" : [
+               50
+            ],
+            "firstPacket" : 1482381409512,
+            "ipDst" : "10.176.176.11",
+            "mysql" : {
+               "user-term" : "xxxxxxxxxxxxx",
+               "ver-term" : "5.6.12-log"
+            },
+            "db1" : 82,
+            "prot-term-cnt" : 2,
+            "tcpflags" : {
+               "rst" : 0,
+               "ack" : 2,
+               "fin" : 0,
+               "syn-ack" : 0,
+               "syn" : 1,
+               "urg" : 0,
+               "psh" : 2
+            },
+            "pa" : 5
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-161222",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+
