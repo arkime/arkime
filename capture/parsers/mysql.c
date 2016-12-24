@@ -17,16 +17,25 @@
 typedef struct {
     int       versionLen;
     char     *version;
+    char      ssl;
 } Info_t;
 
 static int userField;
 static int versionField;
 
+extern MolochConfig_t        config;
+
 /******************************************************************************/
-int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) 
+int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
 {
     Info_t *info = uw;
     if (which != 0) {
+        return 0;
+    }
+
+    if (info->ssl) {
+        moloch_parsers_classify_tcp(session, data, len, which);
+        moloch_parsers_unregister(session, info);
         return 0;
     }
 
@@ -57,7 +66,11 @@ int mysql_parser(MolochSession_t *session, void *uw, const unsigned char *data, 
         moloch_field_string_add(userField, session, lower, ptr - (data + 36), FALSE);
     }
 
-    moloch_parsers_unregister(session, info);
+    if (data[5] & 0x08) { //CLIENT_SSL
+        info->ssl = 1;
+    } else {
+        moloch_parsers_unregister(session, info);
+    }
     return 0;
 }
 /******************************************************************************/

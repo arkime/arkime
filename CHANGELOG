@@ -21,6 +21,7 @@
   - viewer - Fix unnecessary whitespace when copying values from session table
   - viewer - Add IP:Port option to field menus
   - viewer - Permalink adds "openAll=1" parameter
+  - capture - mysql tls parser
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required
