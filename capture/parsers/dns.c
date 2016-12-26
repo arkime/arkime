@@ -347,7 +347,9 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
 /******************************************************************************/
 int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
 {
-    dns_parser(session, (long)uw, data, len);
+    if (uw == 0 || !moloch_session_has_protocol(session, "dns")) {
+        dns_parser(session, (long)uw, data, len);
+    }
     return 0;
 }
 /******************************************************************************/
