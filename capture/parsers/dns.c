@@ -347,7 +347,7 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
 /******************************************************************************/
 int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
 {
-    if (uw == 0 || !moloch_session_has_protocol(session, "dns")) {
+    if (uw == 0 || (session->port1 != 53 && session->port2 != 53)) {
         dns_parser(session, (long)uw, data, len);
     }
     return 0;
