@@ -122,7 +122,7 @@ unsigned char *dns_name(const unsigned char *full, int fulllen, BSB *inbsb, unsi
     return name;
 }
 /******************************************************************************/
-void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
+void dns_parser(MolochSession_t *session, int kind, const unsigned char *data, int len)
 {
 
     if (len < 17)
@@ -182,7 +182,17 @@ void dns_parser(MolochSession_t *session, const unsigned char *data, int len)
         }
     }
     moloch_field_string_add(opCodeField, session, opcodes[opcode], -1, TRUE);
-    moloch_session_add_protocol(session, "dns");
+    switch(kind) {
+    case 0:
+        moloch_session_add_protocol(session, "dns");
+        break;
+    case 1:
+        moloch_session_add_protocol(session, "llmnr");
+        break;
+    case 2:
+        moloch_session_add_protocol(session, "mdns");
+        break;
+    }
 
     if (qr == 0 && opcode != 5)
         return;
@@ -299,7 +309,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
 
             // Have all the data in this first packet, just parse it
             if (dnslength <= len-2) {
-                dns_parser(session, data+2, dnslength);
+                dns_parser(session, 0, data+2, dnslength);
                 data += 2 + dnslength;
                 len -= 2 + dnslength;
             } else {
@@ -314,7 +324,7 @@ int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data
                 memcpy(info->data[which] + info->pos[which], data, rem);
                 len -= rem;
                 data += rem;
-                dns_parser(session, info->data[which], info->len[which]);
+                dns_parser(session, 0, info->data[which], info->len[which]);
                 info->len[which] = 0;
             } else {
                 memcpy(info->data[which] + info->pos[which], data, len);
@@ -335,15 +345,15 @@ void dns_tcp_classify(MolochSession_t *session, const unsigned char *UNUSED(data
     }
 }
 /******************************************************************************/
-int dns_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+int dns_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int UNUSED(which))
 {
-    dns_parser(session, data, len);
+    dns_parser(session, (long)uw, data, len);
     return 0;
 }
 /******************************************************************************/
 void dns_udp_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    moloch_parsers_register(session, dns_udp_parser, 0, 0);
+    moloch_parsers_register(session, dns_udp_parser, uw, 0);
 }
 /******************************************************************************/
 void moloch_parser_init()
@@ -457,44 +467,10 @@ void moloch_parser_init()
     qtypes[255] = "ANY";
 
     moloch_parsers_classifier_register_port("dns", NULL, 53, MOLOCH_PARSERS_PORT_TCP_DST, dns_tcp_classify);
-    moloch_parsers_classifier_register_port("dns", NULL, 53, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
 
-#ifdef OLD
-#define DNS_CLASSIFY(_str) \
-    moloch_parsers_classifier_register_tcp("dns", NULL, 4, (unsigned char*)_str, 2, dns_tcp_classify); \
-    moloch_parsers_classifier_register_udp("dns", NULL, 2, (unsigned char*)_str, 2, dns_udp_classify);
+    moloch_parsers_classifier_register_port("dns",   (void*)(long)0,   53, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
+    moloch_parsers_classifier_register_port("llmnr", (void*)(long)1, 5355, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
+    moloch_parsers_classifier_register_port("mdns",  (void*)(long)2, 5353, MOLOCH_PARSERS_PORT_UDP, dns_udp_classify);
 
-    DNS_CLASSIFY("\x00\x00");
-    DNS_CLASSIFY("\x00\x10");
-    DNS_CLASSIFY("\x01\x00");
-    DNS_CLASSIFY("\x01\x10");
-    DNS_CLASSIFY("\x01\x82");
-    DNS_CLASSIFY("\x24\x00"); // NOTIFY request
-    DNS_CLASSIFY("\x25\x81"); // NOTIFY request
-    DNS_CLASSIFY("\x28\x00"); // UPDATE request
-    DNS_CLASSIFY("\x80\x00");
-    DNS_CLASSIFY("\x80\x02"); // QUERY response, auth = 0, rd = 0, ra = 0, server failure
-    DNS_CLASSIFY("\x80\x05"); // QUERY response, auth = 0, rd = 0, ra = 0, query refused
-    DNS_CLASSIFY("\x81\x00");
-    DNS_CLASSIFY("\x81\x80");
-    DNS_CLASSIFY("\x81\x82");
-    DNS_CLASSIFY("\x81\x83"); // QUERY response, auth = 1, rd = 1, ra = 1, no such name
-    DNS_CLASSIFY("\x81\x90");
-    DNS_CLASSIFY("\x81\xb0");
-    DNS_CLASSIFY("\x83\x80");
-    DNS_CLASSIFY("\x84\x00");
-    DNS_CLASSIFY("\x84\x10");
-    DNS_CLASSIFY("\x84\x03"); // QUERY response, auth = 1, rd = 0, ra =0, no such name
-    DNS_CLASSIFY("\x84\x83"); // QUERY response, auth = 1, rd = 0, ra =1, no such name
-    DNS_CLASSIFY("\x84\x80"); // QUERY response, auth = 1, rd = 0, ra =1, no error
-    DNS_CLASSIFY("\x84\x90");
-    DNS_CLASSIFY("\x84\x93");
-    DNS_CLASSIFY("\x85\x00");
-    DNS_CLASSIFY("\x85\x80"); // QUERY response, auth = 1, rd = 1, ra =1, no error
-    DNS_CLASSIFY("\x85\x83");
-    DNS_CLASSIFY("\xa4\x00"); // NOTIFY response
-    DNS_CLASSIFY("\xa8\x00"); // UPDATE response
-    DNS_CLASSIFY("\xa8\x05"); // UPDATE response
-#endif
 }
 

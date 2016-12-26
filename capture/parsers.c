@@ -813,7 +813,7 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
     c->func     = func;
 
     if (config.debug)
-        LOG("adding %s port:%u type:%02x", name, port, type);
+        LOG("adding %s port:%u type:%02x uw:%p", name, port, type, uw);
 
     if (type & MOLOCH_PARSERS_PORT_TCP_SRC)
         moloch_parsers_classifier_add(&classifersTcpPortSrc[port], c);
@@ -907,11 +907,11 @@ void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *
 #endif
 
     for (i = 0; i < classifersUdpPortSrc[session->port1].cnt; i++) {
-        classifersUdpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersUdpPortSrc[session->port1].arr[i]);
+        classifersUdpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersUdpPortSrc[session->port1].arr[i]->uw);
     }
 
     for (i = 0; i < classifersUdpPortDst[session->port2].cnt; i++) {
-        classifersUdpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersUdpPortDst[session->port2].arr[i]);
+        classifersUdpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersUdpPortDst[session->port2].arr[i]->uw);
     }
 
     for (i = 0; i < classifersUdp0.cnt; i++) {

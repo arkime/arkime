@@ -819,6 +819,8 @@ static const char *method_strings[] =
         moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
     }
 
+    moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)"HTTP", 4, http_classify);
+
     memset(&parserSettings, 0, sizeof(parserSettings));
     parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;
     parserSettings.on_url = moloch_hp_cb_on_url;
