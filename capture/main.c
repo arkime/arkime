@@ -97,7 +97,6 @@ void parse_args(int argc, char **argv)
 
     extern char *curl_version(void);
     extern char *pcre_version(void);
-    extern int   magic_version(void);
     extern char *GeoIP_lib_version(void);
 
     context = g_option_context_new ("- capture");
@@ -121,7 +120,7 @@ void parse_args(int argc, char **argv)
         printf("libpcap: %s\n", pcap_lib_version());
         printf("curl: %s\n", curl_version());
         printf("pcre: %s\n", pcre_version());
-        printf("magic: %d\n", magic_version());
+        //printf("magic: %d\n", magic_version());
         printf("yara: %s\n", moloch_yara_version());
         printf("GeoIP: %s\n", GeoIP_lib_version());
 
