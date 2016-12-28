@@ -922,10 +922,11 @@ void moloch_plugins_exit();
 /*
  * yara.c
  */
-void moloch_yara_init();
-void moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len, int first);
-void moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, int len, int first);
-void moloch_yara_exit();
+void  moloch_yara_init();
+void  moloch_yara_execute(MolochSession_t *session, const uint8_t *data, int len, int first);
+void  moloch_yara_email_execute(MolochSession_t *session, const uint8_t *data, int len, int first);
+void  moloch_yara_exit();
+char *moloch_yara_version();
 
 /******************************************************************************/
 /*

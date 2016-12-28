@@ -95,6 +95,11 @@ void parse_args(int argc, char **argv)
     GError *error = NULL;
     GOptionContext *context;
 
+    extern char *curl_version(void);
+    extern char *pcre_version(void);
+    extern int   magic_version(void);
+    extern char *GeoIP_lib_version(void);
+
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
     if (!g_option_context_parse (context, &argc, &argv, &error))
@@ -112,8 +117,26 @@ void parse_args(int argc, char **argv)
 
     if (showVersion) {
         printf("moloch-capture %s session size=%zd packet size=%zd\n", PACKAGE_VERSION, sizeof(MolochSession_t), sizeof(MolochPacket_t));
+        printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
+        printf("libpcap: %s\n", pcap_lib_version());
+        printf("curl: %s\n", curl_version());
+        printf("pcre: %s\n", pcre_version());
+        printf("magic: %d\n", magic_version());
+        printf("yara: %s\n", moloch_yara_version());
+        printf("GeoIP: %s\n", GeoIP_lib_version());
+
         exit(0);
     }
+
+    if (glib_major_version !=  GLIB_MAJOR_VERSION ||
+        glib_minor_version !=  GLIB_MINOR_VERSION ||
+        glib_micro_version !=  GLIB_MICRO_VERSION) {
+
+        LOG("WARNING - gilb compiled %d.%d.%d vs linked %d.%d.%d",
+                GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
+                glib_major_version, glib_minor_version, glib_micro_version);
+    }
+
 
     if (!config.nodeName) {
         config.nodeName = g_malloc(256);

@@ -19,12 +19,34 @@
 
 extern MolochConfig_t config;
 
+/******************************************************************************/
+char *moloch_yara_version() {
+    static char buf[100];
+#ifdef YR_MAJOR_VERSION
+ #ifdef YR_MINOR_VERSION
+    sprintf(buf, "%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION);
+ #else /* YR_MINOR_VERSION */
+    sprintf(buf, "%d.x", YR_MAJOR_VERSION);
+ #endif /* YR_MINOR_VERSION */
+#else /* YR_MAJOR_VERSION */
+
+ #ifdef STRING_IS_HEX
+    sprintf(buf, "2.x");
+ #else
+    sprintf(buf, "1.x");
+ #endif
+#endif
+    return buf;
+}
+
+
 #if YR_MAJOR_VERSION == 3 && YR_MINOR_VERSION == 4
 // Yara 3
 static YR_COMPILER *yCompiler = 0;
 static YR_COMPILER *yEmailCompiler = 0;
 static YR_RULES *yRules = 0;
 static YR_RULES *yEmailRules = 0;
+
 
 
 /******************************************************************************/
