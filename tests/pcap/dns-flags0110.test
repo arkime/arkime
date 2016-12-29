@@ -9,118 +9,118 @@
          },
          "body" : {
             "ss" : 1,
-            "p1" : 53,
-            "a2" : "10.0.0.1",
+            "rir1" : "ARIN",
+            "db1" : 127,
             "fs" : [],
-            "fb2" : "5aae011000010000",
+            "ps" : [
+               24,
+               175
+            ],
+            "portDst" : 62928,
+            "mac2-term-cnt" : 2,
+            "mac2-term" : [
+               "00:1a:e3:dc:2e:c0",
+               "00:23:04:17:9b:00"
+            ],
+            "mac1-term" : [
+               "00:19:e2:b1:ef:c6",
+               "00:19:e2:ba:2f:c1"
+            ],
             "g1" : "USA",
-            "ipSrc" : "8.8.8.8",
+            "lp" : 1393428477,
+            "by" : 226,
+            "ta" : [
+               "srcip"
+            ],
+            "pr" : 17,
+            "as2" : "AS0000 This is neat",
             "lastPacket" : 1393428477327,
+            "a2" : "10.0.0.1",
+            "by1" : 135,
+            "tacnt" : 1,
+            "pa1" : 1,
+            "pa" : 2,
+            "no" : "test",
+            "asdnsip" : [
+               "AS41231 Canonical Ltd",
+               "AS41231 Canonical Ltd",
+               "AS41231 Canonical Ltd"
+            ],
+            "g2" : "RUS",
+            "ipDst" : "10.0.0.1",
+            "a1" : "8.8.8.8",
+            "p1" : 53,
+            "dnsipcnt" : 3,
+            "fpd" : 1393428477363,
+            "fb1" : "5aae819000010003",
+            "sl" : 4294967260,
+            "fp" : 1393428477,
+            "prot-term-cnt" : 2,
+            "psl" : [
+               151,
+               107
+            ],
+            "dnsho" : [
+               "start.ubuntu.com"
+            ],
+            "db2" : 83,
+            "dnshocnt" : 1,
             "dns" : {
-               "status-term" : [
-                  "NOERROR"
+               "opcode-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "qt-term" : [
+                  "A"
                ],
                "qc-term" : [
                   "IN"
                ],
-               "opcode-term" : [
-                  "QUERY"
-               ],
                "qc-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
-               "status-term-cnt" : 1,
                "qt-term-cnt" : 1,
-               "qt-term" : [
-                  "A"
+               "status-term" : [
+                  "NOERROR"
                ]
             },
+            "firstPacket" : 1393428477363,
+            "tags-term" : [
+               "srcip"
+            ],
+            "vlan" : [
+               500
+            ],
+            "by2" : 91,
+            "db" : 210,
+            "lpd" : 1393428477327,
+            "p2" : 62928,
             "rirdnsip" : [
                "RIPE",
                "RIPE",
                "RIPE"
             ],
-            "pa1" : 1,
-            "dnshocnt" : 1,
-            "sl" : 4294967260,
+            "as1" : "AS15169 Google Inc.",
+            "vlan-cnt" : 1,
+            "mac1-term-cnt" : 2,
+            "fb2" : "5aae011000010000",
+            "portSrc" : 53,
             "gdnsip" : [
                "GBR",
                "GBR",
                "GBR"
             ],
-            "db2" : 83,
-            "lp" : 1393428477,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "pa2" : 1,
             "dnsip" : [
                "91.189.89.88",
                "91.189.90.40",
                "91.189.90.41"
             ],
-            "by1" : 135,
-            "portSrc" : 53,
-            "mac1-term" : [
-               "00:19:e2:b1:ef:c6",
-               "00:19:e2:ba:2f:c1"
-            ],
-            "psl" : [
-               151,
-               107
-            ],
-            "fb1" : "5aae819000010003",
-            "dnsipcnt" : 3,
-            "pa2" : 1,
-            "pa" : 2,
-            "ta" : [
-               "srcip"
-            ],
-            "tags-term" : [
-               "srcip"
-            ],
-            "by" : 226,
-            "fp" : 1393428477,
-            "ps" : [
-               24,
-               175
-            ],
-            "vlan-cnt" : 1,
-            "mac1-term-cnt" : 2,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "as1" : "AS15169 Google Inc.",
-            "p2" : 62928,
-            "as2" : "AS0000 This is neat",
-            "lpd" : 1393428477327,
-            "a1" : "8.8.8.8",
-            "prot-term-cnt" : 2,
-            "mac2-term" : [
-               "00:1a:e3:dc:2e:c0",
-               "00:23:04:17:9b:00"
-            ],
-            "firstPacket" : 1393428477363,
-            "tacnt" : 1,
-            "g2" : "RUS",
-            "pr" : 17,
-            "db1" : 127,
-            "ipDst" : "10.0.0.1",
-            "rir1" : "ARIN",
-            "by2" : 91,
-            "portDst" : 62928,
-            "asdnsip" : [
-               "AS41231 CANONICAL-AS",
-               "AS41231 CANONICAL-AS",
-               "AS41231 CANONICAL-AS"
-            ],
-            "dnsho" : [
-               "start.ubuntu.com"
-            ],
-            "no" : "test",
-            "fpd" : 1393428477363,
             "timestamp" : "SET",
-            "vlan" : [
-               500
-            ],
-            "db" : 210,
-            "mac2-term-cnt" : 2
+            "ipSrc" : "8.8.8.8"
          }
       }
    ]
