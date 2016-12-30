@@ -158,6 +158,12 @@ void flap_classify(MolochSession_t *session, const unsigned char *data, int len,
         moloch_session_add_protocol(session, "flap");
 }
 /******************************************************************************/
+void tacacs_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    if (session->port1 == 49 || session->port2 == 49)
+        moloch_session_add_protocol(session, "tacacs");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -250,6 +256,13 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("zabbix", "zabbix", 0, (unsigned char*)"ZBXD\x01", 5, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("rmi", "rmi", 0, (unsigned char*)"\x4a\x52\x4d\x49\x00\x02\x4b", 7, misc_add_protocol_classify);
+
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x02", 3, tacacs_classify);
+
+    moloch_parsers_classifier_register_tcp("flash-policy", "flash-policy", 0, (unsigned char*)"<policy-file-request/>", 22, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }

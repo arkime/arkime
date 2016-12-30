@@ -41,6 +41,7 @@
   - capture - The tpacketv3, libpcap* pcapReadMethod now batch packets before adding
               to packet queues to reduce mutex lock contention
   - wise - Support dos format tagger files
+  - capture - basic tacacs, flash-policy detection
 
 0.16.0 2016/10/14
   - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the
