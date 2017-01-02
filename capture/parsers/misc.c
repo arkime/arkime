@@ -139,7 +139,24 @@ void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data)
 /******************************************************************************/
 void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (20 + data[3] == len && memcmp(data+4, "\x21\x12\xa4\x42", 4) == 0)
+    if (20 + data[3] != len)
+        return;
+
+    if (memcmp(data+4, "\x21\x12\xa4\x42", 4) == 0) {
+        moloch_session_add_protocol(session, "stun");
+        return;
+    }
+
+    if (data[1] == 1 && len > 25 && data[23] + 24 == len) {
+        moloch_session_add_protocol(session, "stun");
+        return;
+    }
+
+}
+/******************************************************************************/
+void stun_rsp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (moloch_memstr((const char *)data+7, len-7, "STUN", 4))
         moloch_session_add_protocol(session, "stun");
 }
 /******************************************************************************/
@@ -242,7 +259,7 @@ void moloch_parser_init()
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
 
-    PARSERS_CLASSIFY_BOTH("stun", "stun", 0, (unsigned char*)"RSP/2.0 STUN", 12, misc_add_protocol_classify);
+    PARSERS_CLASSIFY_BOTH("stun", NULL, 0, (unsigned char*)"RSP/", 4,stun_rsp_classify);
 
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00", 3, stun_classify);
     moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x03\x00", 3, stun_classify);
