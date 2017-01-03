@@ -15,15 +15,17 @@
      * Initialize global variables for this controller
      * @param $sce            Angular strict contextual escaping service
      * @param $scope          Angular application model object
+     * @param $routeParams    Retrieve the current set of route parameters
      * @param SessionService  Transacts sessions with the server
      * @param ConfigService   Transacts app configurations with the server
      * @param FieldService    Retrieves available fields from the server
      *
      * @ngInject
      */
-    constructor($sce, $scope, SessionService, ConfigService, FieldService) {
+    constructor($sce, $scope, $routeParams, SessionService, ConfigService, FieldService) {
       this.$sce           = $sce;
       this.$scope         = $scope;
+      this.$routeParams   = $routeParams;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
@@ -147,15 +149,34 @@
       $(e.target).parent().hide().next().show();
     }
 
+    /**
+     * Adds a rootId expression
+     * @param {string} rootId The root id of the session
+     * @param {int} startTime The start time of the session
+     */
+    allSessions(rootId, startTime) {
+      let fullExpression = `rootId == \"${rootId}\"`;
+
+      this.$scope.$emit('add:to:search', { expression: fullExpression });
+
+      if (this.$routeParams.startTime) {
+        if (this.$routeParams.startTime > startTime) {
+          startTime = this.$routeParams.startTime;
+        }
+      }
+
+      this.$scope.$emit('change:time', { start:startTime });
+    }
+
   }
 
-  SessionDetailController.$inject = ['$sce','$scope',
+  SessionDetailController.$inject = ['$sce','$scope', '$routeParams',
     'SessionService','ConfigService','FieldService'];
 
 
   angular.module('moloch')
-    .directive('sessionDetail', ['$timeout', '$filter', '$compile', '$location',
-    function($timeout, $filter, $compile, $location) {
+    .directive('sessionDetail', ['$timeout', '$filter', '$compile', '$routeParams',
+    function($timeout, $filter, $compile, $routeParams) {
       return {
         template    : require('html!../templates/session.detail.html'),
         controller  : SessionDetailController,
