@@ -4,7 +4,7 @@
  *  ips, domains, email, and md5s which can use various
  *  services to return data.  It caches all the results.
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -73,26 +73,19 @@ LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url"};
 
 LOCAL uint32_t stats[INTEL_TYPE_SIZE][INTEL_STAT_SIZE];
 /******************************************************************************/
-typedef struct wise_op {
-    char                 *str;
-    int                   strLenOrInt;
-    int                   fieldPos;
-} WiseOp_t;
-
 typedef struct wiseitem {
     struct wiseitem      *wih_next, *wih_prev;
     struct wiseitem      *wil_next, *wil_prev;
     uint32_t              wih_bucket;
     uint32_t              wih_hash;
 
-    WiseOp_t             *ops;
+    MolochFieldOps_t      ops;
     MolochSession_t     **sessions;
     char                 *key;
 
     uint32_t              loadTime;
     short                 sessionsSize;
     short                 numSessions;
-    short                 numOps;
     char                  type;
 } WiseItem_t;
 
@@ -175,54 +168,12 @@ void wise_load_fields()
     free(data);
 }
 /******************************************************************************/
-void wise_process_ops(MolochSession_t *session, WiseItem_t *wi)
-{
-    int i;
-    for (i = 0; i < wi->numOps; i++) {
-        WiseOp_t *op = &(wi->ops[i]);
-        switch (config.fields[op->fieldPos]->type) {
-        case  MOLOCH_FIELD_TYPE_INT_HASH:
-        case  MOLOCH_FIELD_TYPE_INT_GHASH:
-            if (op->fieldPos == tagsField) {
-                moloch_session_add_tag(session, op->str);
-                continue;
-            }
-            // Fall Thru
-        case  MOLOCH_FIELD_TYPE_INT:
-        case  MOLOCH_FIELD_TYPE_INT_ARRAY:
-        case  MOLOCH_FIELD_TYPE_IP:
-        case  MOLOCH_FIELD_TYPE_IP_HASH:
-        case  MOLOCH_FIELD_TYPE_IP_GHASH:
-            moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
-            break;
-        case  MOLOCH_FIELD_TYPE_STR:
-        case  MOLOCH_FIELD_TYPE_STR_ARRAY:
-        case  MOLOCH_FIELD_TYPE_STR_HASH:
-            moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
-            break;
-        }
-    }
-}
-/******************************************************************************/
-void wise_free_ops(WiseItem_t *wi)
-{
-    int i;
-    for (i = 0; i < wi->numOps; i++) {
-        if (wi->ops[i].str)
-            g_free(wi->ops[i].str);
-    }
-    if (wi->ops)
-        g_free(wi->ops);
-    wi->numOps = 0;
-    wi->ops = NULL;
-}
-/******************************************************************************/
 void wise_session_cmd_cb(MolochSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
 {
     WiseItem_t    *wi = uw1;
 
     if (wi) {
-        wise_process_ops(session, wi);
+        moloch_field_ops_run(session, &wi->ops);
     }
     moloch_session_decr_outstanding(session);
 }
@@ -238,7 +189,7 @@ void wise_free_item_unlocked(WiseItem_t *wi)
         g_free(wi->sessions);
     }
     g_free(wi->key);
-    wise_free_ops(wi);
+    moloch_field_ops_free(&wi->ops);
     MOLOCH_TYPE_FREE(WiseItem_t, wi);
 }
 /******************************************************************************/
@@ -275,23 +226,20 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
 
     for (i = 0; i < request->numItems; i++) {
         WiseItem_t    *wi = request->items[i];
-        BSB_IMPORT_u08(bsb, wi->numOps);
+        int numOps = 0;
+        BSB_IMPORT_u08(bsb, numOps);
 
-        if (wi->numOps > 0) {
-            wi->ops = malloc(wi->numOps * sizeof(WiseOp_t));
-
+        moloch_field_ops_init(&wi->ops, numOps, MOLOCH_FIELD_OPS_FLAGS_COPY);
+        if (numOps > 0) {
             int i;
-            for (i = 0; i < wi->numOps; i++) {
-                WiseOp_t *op = &(wi->ops[i]);
+            for (i = 0; i < numOps; i++) {
 
                 int rfield = 0;
                 BSB_IMPORT_u08(bsb, rfield);
-                op->fieldPos = fieldsMap[rfield];
+                int fieldPos = fieldsMap[rfield];
 
-                if (op->fieldPos == -1) {
+                if (fieldPos == -1) {
                     LOG("Couldn't find pos %d", rfield);
-                    wi->numOps--;
-                    i--;
                     continue;
                 }
 
@@ -300,37 +248,7 @@ void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer uw)
                 char *str = (char*)BSB_WORK_PTR(bsb);
                 BSB_IMPORT_skip(bsb, len);
 
-                switch (config.fields[op->fieldPos]->type) {
-                case  MOLOCH_FIELD_TYPE_INT_HASH:
-                case  MOLOCH_FIELD_TYPE_INT_GHASH:
-                    if (op->fieldPos == tagsField) {
-                        moloch_db_get_tag(NULL, tagsField, str, NULL); // Preload the tagname -> tag mapping
-                        op->str = g_strdup(str);
-                        op->strLenOrInt = len - 1;
-                        continue;
-                    }
-                    // Fall thru
-                case  MOLOCH_FIELD_TYPE_INT:
-                case  MOLOCH_FIELD_TYPE_INT_ARRAY:
-                    op->str = 0;
-                    op->strLenOrInt = atoi(str);
-                    break;
-                case  MOLOCH_FIELD_TYPE_STR:
-                case  MOLOCH_FIELD_TYPE_STR_ARRAY:
-                case  MOLOCH_FIELD_TYPE_STR_HASH:
-                    op->str = g_strdup(str);
-                    op->strLenOrInt = len - 1;
-                    break;
-                case  MOLOCH_FIELD_TYPE_IP:
-                case  MOLOCH_FIELD_TYPE_IP_HASH:
-                case  MOLOCH_FIELD_TYPE_IP_GHASH:
-                    op->str = 0;
-                    op->strLenOrInt = inet_addr(str);
-                    break;
-                default:
-                    LOG("WARNING - Unsupported expression type for %s", str);
-                    continue;
-                }
+                moloch_field_ops_add(&wi->ops, fieldPos, str, len - 1);
             }
         }
 
@@ -393,14 +311,14 @@ void wise_lookup(MolochSession_t *session, WiseRequest_t *request, char *value, 
         gettimeofday(&currentTime, NULL);
 
         if (wi->loadTime + cacheSecs > currentTime.tv_sec) {
-            wise_process_ops(session, wi);
+            moloch_field_ops_run(session, &wi->ops);
             stats[type][INTEL_STAT_CACHE]++;
             goto cleanup;
         }
 
         /* Had it in cache, but it is too old */
         DLL_REMOVE(wil_, &itemList[type], wi);
-        wise_free_ops(wi);
+        moloch_field_ops_free(&wi->ops);
     } else {
         // Know nothing about it
         wi = MOLOCH_TYPE_ALLOC0(WiseItem_t);

@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* moloch.h -- General Moloch include file
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 16
+#define MOLOCH_API_VERSION 17
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -210,6 +210,21 @@ typedef struct {
     uint32_t                   jsonSize;
 } MolochField_t;
 
+#define MOLOCH_FIELD_OPS_FLAGS_COPY 0x0001
+
+typedef struct {
+    char                 *str;
+    int                   strLenOrInt;
+    int16_t               fieldPos;
+} MolochFieldOp_t;
+
+typedef struct {
+    MolochFieldOp_t     *ops;
+    uint16_t              size;
+    uint16_t              num;
+    uint16_t              flags;
+} MolochFieldOps_t;
+
 #define MOLOCH_LOCK_DEFINE(var)         pthread_mutex_t var##_mutex = PTHREAD_MUTEX_INITIALIZER
 #define MOLOCH_LOCK_EXTERN(var)         pthread_mutex_t var##_mutex
 #define MOLOCH_LOCK_INIT(var)           pthread_mutex_init(&var##_mutex, NULL)
@@ -255,6 +270,8 @@ typedef struct moloch_config {
     char    **pcapReadDirs;
     gboolean  pcapReadOffline;
     gchar   **extraTags;
+    gchar   **extraOps;
+    MolochFieldOps_t ops;
     gchar     debug;
     gboolean  quiet;
     gboolean  dryRun;
@@ -275,6 +292,8 @@ typedef struct moloch_config {
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
     MolochFieldInfo_t *fields[200];
     int                maxField;
+    int                tagsField;
+    int                tagsStringField;
 
     int                numPlugins;
 
@@ -946,6 +965,11 @@ int  moloch_field_count(int pos, MolochSession_t *session);
 void moloch_field_certsinfo_free (MolochCertsInfo_t *certs);
 void moloch_field_free(MolochSession_t *session);
 void moloch_field_exit();
+
+void moloch_field_ops_init(MolochFieldOps_t *ops, int numOps, uint16_t flags);
+void moloch_field_ops_free(MolochFieldOps_t *ops);
+void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int valuelen);
+void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops);
 
 /******************************************************************************/
 /*

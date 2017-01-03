@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* db.c  -- Functions dealing with database queries and updates
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -48,9 +48,6 @@ LOCAL patricia_tree_t  *ipTree = 0;
 extern char            *moloch_char_to_hex;
 extern unsigned char    moloch_char_to_hexstr[256][3];
 extern unsigned char    moloch_hex_to_char[256][256];
-
-LOCAL int               tagsField = -1;
-LOCAL int               tagsStringField = -1;
 
 LOCAL uint32_t          nextFileNum;
 LOCAL MOLOCH_LOCK_DEFINE(nextFileNum);
@@ -110,17 +107,12 @@ MolochIpInfo_t *moloch_db_get_local_ip6(MolochSession_t *session, struct in6_add
     if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
         return 0;
 
-    if (tagsField == -1) {
-        tagsField = moloch_field_by_db("ta");
-        tagsStringField = moloch_field_by_db("tags-term");
-    }
-
     MolochIpInfo_t *ii = node->data;
     int t;
 
     for (t = 0; t < ii->numtags; t++) {
-        moloch_field_int_add(tagsField, session, ii->tags[t]);
-        moloch_field_string_add(tagsStringField, session, ii->tagsStr[t], -1, TRUE);
+        moloch_field_int_add(config.tagsField, session, ii->tags[t]);
+        moloch_field_string_add(config.tagsStringField, session, ii->tagsStr[t], -1, TRUE);
     }
 
     return ii;
@@ -138,17 +130,12 @@ MolochIpInfo_t *moloch_db_get_local_ip4(MolochSession_t *session, uint32_t ip)
     if ((node = patricia_search_best2 (ipTree, &prefix, 1)) == NULL)
         return 0;
 
-    if (tagsField == -1) {
-        tagsField = moloch_field_by_db("ta");
-        tagsStringField = moloch_field_by_db("tags-term");
-    }
-
     MolochIpInfo_t *ii = node->data;
     int t;
 
     for (t = 0; t < ii->numtags; t++) {
-        moloch_field_int_add(tagsField, session, ii->tags[t]);
-        moloch_field_string_add(tagsStringField, session, ii->tagsStr[t], -1, TRUE);
+        moloch_field_int_add(config.tagsField, session, ii->tags[t]);
+        moloch_field_string_add(config.tagsStringField, session, ii->tagsStr[t], -1, TRUE);
     }
 
     return ii;
@@ -347,20 +334,25 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (pluginsCbs & MOLOCH_PLUGIN_SAVE)
         moloch_plugins_cb_save(session, final);
 
+    /* Don't save spi data for session */
+    if (session->stopSPI)
+        return;
+
+    /* No Packets */
+    if (!config.dryRun && !session->filePosArray->len)
+        return;
+
+    /* Not enough packets */
+    if (session->packets[0] + session->packets[1] < session->minSaving) {
+        return;
+    }
+
     /* jsonSize is an estimate of how much space it will take to encode the session */
     jsonSize = 1100 + session->filePosArray->len*12 + 10*session->fileNumArray->len + 10*session->fileLenArray->len;
     for (pos = 0; pos < session->maxFields; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
         }
-    }
-
-    /* No Packets */
-    if (!config.dryRun && !session->filePosArray->len)
-        return;
-
-    if (session->packets[0] + session->packets[1] < session->minSaving) {
-        return;
     }
 
     totalSessions++;

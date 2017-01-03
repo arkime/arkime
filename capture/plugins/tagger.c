@@ -4,7 +4,7 @@
  *              once a minute to see if the files in the database have
  *              changed.
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -87,22 +87,10 @@ typedef struct {
 } TaggerFileHead_t;
 
 /******************************************************************************/
-typedef struct tagger_op {
-    struct tagger_op     *o_next, *o_prev;
-    char                 *str;
-    int                   strLenOrInt;
-    int                   fieldPos;
-} TaggerOp_t; 
-
-typedef struct {
-    struct tagger_op     *o_next, *o_prev;
-    int                   o_count;
-} TaggerOpHead_t;
-/******************************************************************************/
 
 typedef struct tagger_info {
-    TaggerOpHead_t ops;
-    TaggerFile_t  *file;
+    MolochFieldOps_t  ops;
+    TaggerFile_t     *file;
 } TaggerInfo_t;
 
 /******************************************************************************/
@@ -127,29 +115,7 @@ void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
         for (t = 0; file->tags[t]; t++) {
             moloch_session_add_tag(session, file->tags[t]);
         }
-        TaggerOp_t *op;
-        DLL_FOREACH(o_, &info->ops, op) {
-            switch (config.fields[op->fieldPos]->type) {
-            case  MOLOCH_FIELD_TYPE_INT:
-            case  MOLOCH_FIELD_TYPE_INT_ARRAY:
-            case  MOLOCH_FIELD_TYPE_INT_HASH:
-            case  MOLOCH_FIELD_TYPE_INT_GHASH:
-            case  MOLOCH_FIELD_TYPE_IP:
-            case  MOLOCH_FIELD_TYPE_IP_HASH:
-            case  MOLOCH_FIELD_TYPE_IP_GHASH:
-                if (op->fieldPos == tagsField) {
-                    moloch_session_add_tag(session, op->str);
-                } else {
-                    moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
-                }
-                break;
-            case  MOLOCH_FIELD_TYPE_STR:
-            case  MOLOCH_FIELD_TYPE_STR_ARRAY:
-            case  MOLOCH_FIELD_TYPE_STR_HASH:
-                moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
-                break;
-            }
-        }
+        moloch_field_ops_run(session, &info->ops);
     }
 }
 /******************************************************************************/
@@ -431,11 +397,8 @@ void tagger_unload_file(TaggerFile_t *file) {
 void tagger_info_free(gpointer data)
 {
     TaggerInfo_t *info = data;
-    TaggerOp_t   *op;
 
-    while (DLL_POP_HEAD(o_, &info->ops, op)) {
-        MOLOCH_TYPE_FREE(TaggerOp_t, op);
-    }
+    moloch_field_ops_free(&info->ops);
     MOLOCH_TYPE_FREE(TaggerInfo_t, info);
 }
 /******************************************************************************/
@@ -525,7 +488,7 @@ void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gp
 
         TaggerInfo_t *info = MOLOCH_TYPE_ALLOC(TaggerInfo_t);
         info->file = file;
-        DLL_INIT(o_, &info->ops);
+        moloch_field_ops_init(&info->ops, p-2, 0);
 
         int j;
         for(j = 2; j < p; j+=2) {
@@ -541,40 +504,8 @@ void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_len, gp
                 LOG("WARNING - Unknown expression field %s", parts[j]);
                 continue;
             }
-            TaggerOp_t *op = MOLOCH_TYPE_ALLOC(TaggerOp_t);
-            op->fieldPos = pos;
 
-            switch (config.fields[pos]->type) {
-            case  MOLOCH_FIELD_TYPE_INT:
-            case  MOLOCH_FIELD_TYPE_INT_ARRAY:
-            case  MOLOCH_FIELD_TYPE_INT_HASH:
-            case  MOLOCH_FIELD_TYPE_INT_GHASH:
-                if (pos == tagsField) {
-                    moloch_db_get_tag(NULL, tagsField, parts[j+1], NULL); // Preload the tagname -> tag mapping
-                    op->str = parts[j+1];
-                    op->strLenOrInt = strlen(op->str);
-                } else {
-                    op->strLenOrInt = atoi(parts[j+1]);
-                }
-                break;
-            case  MOLOCH_FIELD_TYPE_STR:
-            case  MOLOCH_FIELD_TYPE_STR_ARRAY:
-            case  MOLOCH_FIELD_TYPE_STR_HASH:
-                op->str = parts[j+1];
-                op->strLenOrInt = strlen(op->str);
-                break;
-            case  MOLOCH_FIELD_TYPE_IP:
-            case  MOLOCH_FIELD_TYPE_IP_HASH:
-            case  MOLOCH_FIELD_TYPE_IP_GHASH:
-                op->strLenOrInt = inet_addr(parts[j+1]);
-                break;
-            default:
-                LOG("WARNING - Unsupported expression type for %s", parts[j]);
-                continue;
-            }
-
-            DLL_PUSH_TAIL(o_, &info->ops, op);
-
+            moloch_field_ops_add(&info->ops, pos, parts[j+1], strlen(parts[j+1]));
         }
 
         TaggerStringHash_t *hash = 0;

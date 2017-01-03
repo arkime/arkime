@@ -1,6 +1,6 @@
 /* parsers.c  -- Functions for dealing with classification and parsers
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -354,6 +354,8 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
         moloch_session_add_protocol(session, "icmp");
         break;
     }
+
+    moloch_field_ops_run(session, &config.ops);
 }
 
 
@@ -640,10 +642,16 @@ void moloch_parsers_init()
     );
 
     // Set tags field up AFTER loading plugins
-    int tagsField = moloch_field_define("general", "termfield",
+    config.tagsField = moloch_field_define("general", "termfield",
         "tags", "Tags", "ta",
         "Tags set for session",
         MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        NULL);
+
+    config.tagsStringField = moloch_field_define("general", "notreal",
+        "tags", "Tags", "tags-term",
+        "Tags set for session",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
     moloch_field_define("general", "lotermfield",
@@ -654,14 +662,38 @@ void moloch_parsers_init()
 
     if (config.nodeClass) {
         snprintf(classTag, sizeof(classTag), "node:%s", config.nodeClass);
-        moloch_db_get_tag(NULL, tagsField, classTag, NULL);
+        moloch_db_get_tag(NULL, config.tagsField, classTag, NULL);
     }
 
     if (config.extraTags) {
         int i;
         for (i = 0; config.extraTags[i]; i++) {
-            moloch_db_get_tag(NULL, tagsField, config.extraTags[i], NULL);
+            moloch_db_get_tag(NULL, config.tagsField, config.extraTags[i], NULL);
         }
+    }
+
+    if (config.extraOps) {
+        int i;
+        for (i = 0; config.extraOps[i]; i++) { }
+        moloch_field_ops_init(&config.ops, i, 0);
+        for (i = 0; config.extraOps[i]; i++) {
+            char *equal = strchr(config.extraOps[i], '=');
+            if (!equal) {
+                LOGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
+            }
+            int len = strlen(equal+1);
+            if (!len) {
+                LOGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
+            }
+            *equal = 0;
+            int fieldPos = moloch_field_by_exp(config.extraOps[i]);
+            if (fieldPos == -1) {
+                LOGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
+            }
+            moloch_field_ops_add(&config.ops, fieldPos, equal+1, len);
+        }
+    } else {
+        moloch_field_ops_init(&config.ops, 0, 0);
     }
 }
 /******************************************************************************/
