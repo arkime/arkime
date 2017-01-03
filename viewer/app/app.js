@@ -40,29 +40,39 @@
 
   .constant('molochVersion', require('../version'))
 
-  .config(['$routeProvider', '$locationProvider', '$httpProvider',
-      function($routeProvider, $locationProvider, $httpProvider) {
-
-        $routeProvider
-          .when('/app', {
-            title         : 'Sessions',
-            template      : '<session></session>',
-            reloadOnSearch: false
-          })
-          .when('/help', {
-            title    : 'Help',
-            template : '<moloch-help></moloch-help>'
-          })
-          // default route is the sessions page
-          .otherwise({ redirectTo: '/app' });
-
-        $locationProvider.html5Mode(true); // activate HTML5 Mode
-
-        $httpProvider.defaults.withCredentials  = true;
-        $httpProvider.defaults.xsrfCookieName   = 'MOLOCH-COOKIE';
-        $httpProvider.defaults.xsrfHeaderName   = 'X-MOLOCH-COOKIE';
+  // watch for rejection status -1 to let the user know the server is down
+  .factory('myHttpInterceptor', ['$q', function($q) {
+    return {
+      'responseError': function(rejection) {
+        if (rejection.status === -1) { rejection = 'Cannot connect to server.'; }
+        return $q.reject(rejection);
       }
-    ]
+    };
+  }])
+
+  .config(['$routeProvider', '$locationProvider', '$httpProvider',
+    function($routeProvider, $locationProvider, $httpProvider) {
+      $routeProvider
+        .when('/app', {
+          title         : 'Sessions',
+          template      : '<session></session>',
+          reloadOnSearch: false
+        })
+        .when('/help', {
+          title    : 'Help',
+          template : '<moloch-help></moloch-help>'
+        })
+        // default route is the sessions page
+        .otherwise({ redirectTo: '/app' });
+
+      $locationProvider.html5Mode(true); // activate HTML5 Mode
+
+      $httpProvider.interceptors.push('myHttpInterceptor');
+
+      $httpProvider.defaults.withCredentials  = true;
+      $httpProvider.defaults.xsrfCookieName   = 'MOLOCH-COOKIE';
+      $httpProvider.defaults.xsrfHeaderName   = 'X-MOLOCH-COOKIE';
+    }]
   )
 
   .run(['$rootScope', 'ConfigService',
