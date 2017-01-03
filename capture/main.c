@@ -189,7 +189,7 @@ void parse_args(int argc, char **argv)
     }
 
     if (config.pcapMonitor && !config.pcapReadDirs)  {
-        printf("Must specify directories to monitor\n");
+        printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
 }

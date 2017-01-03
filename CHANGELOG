@@ -25,6 +25,7 @@
   - capture - llmnr and mdns
   - capture - version command line option prints library versions too
   - release - GeoIP 1.6.9, curl 7.52.1, pcap 1.8.1, glib 2.50.2, node 4.6.2
+  - capture - Use inotify directly since glib2 monitor doesn't expose close write
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required

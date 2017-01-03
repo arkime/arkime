@@ -4,6 +4,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_CONFIG_HEADERS([capture/molochconfig.h])
 AC_PREFIX_DEFAULT(["/data/moloch"])
+AC_CHECK_HEADERS([sys/inotify.h])
 AC_CONFIG_FILES([
   Makefile
   capture/Makefile

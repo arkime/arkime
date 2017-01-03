@@ -20,3 +20,6 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* sys/inotify.h */
+#undef HAVE_SYS_INOTIFY_H
