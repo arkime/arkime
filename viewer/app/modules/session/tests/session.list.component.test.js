@@ -18,25 +18,26 @@
     recordsTotal    : 50,
     data: [
       {
-        pa2   :0,
-        p1    :10000,
-        no    :'demo',
-        pa1   :1,
-        p2    :2948,
-        pr    :17,
-        lp    :0,
-        fp    :0,
-        a1    :16843009,
-        a2    :33686018,
-        pa    :1,
-        db1   :437,
-        db2   :0,
-        by    :445,
-        by2   :0,
-        by1   :445,
-        db    :437,
-        index :'sessions-',
-        id    :'--RzB4CrWwqlMZIHRa0CzjUYn'
+        pa2     :0,
+        p1      :10000,
+        no      :'demo',
+        pa1     :1,
+        p2      :2948,
+        pr      :17,
+        lp      :0,
+        fp      :0,
+        a1      :16843009,
+        a2      :33686018,
+        pa      :1,
+        db1     :437,
+        db2     :0,
+        by      :445,
+        by2     :0,
+        by1     :445,
+        db      :437,
+        index   :'sessions-',
+        id      :'sessionid',
+        expanded:false
       }
     ]
   };
@@ -157,9 +158,13 @@
 
     // Initialize and a mock scope
     beforeEach(inject(function(
-      _$httpBackend_,
+      $timeout,
+      $location,
       $routeParams,
+      $anchorScroll,
+      _$httpBackend_,
       SessionService,
+      FieldService,
       $componentController,
       $rootScope) {
         sessionService = SessionService;
@@ -182,14 +187,20 @@
 
         sessionComponent = $componentController('session', {
           $scope            : scope,
-          $routeParams      : $routeParams,
-          SessionService    : SessionService
+          $timeout          : $timeout,
+          $location         : $location,
+          $routeParams      : { openAll:1 },
+          $anchorScroll     : $anchorScroll,
+          SessionService    : SessionService,
+          FieldService      : FieldService
         });
 
         // spy on functions called in controller
         spyOn(sessionComponent, 'getData').and.callThrough();
         spyOn(sessionComponent, 'getTableState').and.callThrough();
         spyOn(sessionService, 'exportUniqueValues').and.callThrough();
+        spyOn(sessionComponent, 'openAll').and.callThrough();
+        spyOn(sessionComponent, 'toggleSessionDetail').and.callThrough();
 
         // initialize session component controller
         sessionComponent.$onInit();
@@ -204,11 +215,17 @@
     it('should exist and have dependencies', function() {
       expect(sessionComponent).toBeDefined();
       expect(sessionComponent.$scope).toBeDefined();
+      expect(sessionComponent.$timeout).toBeDefined();
+      expect(sessionComponent.$location).toBeDefined();
       expect(sessionComponent.$routeParams).toBeDefined();
+      expect(sessionComponent.$anchorScroll).toBeDefined();
       expect(sessionComponent.SessionService).toBeDefined();
+      expect(sessionComponent.FieldService).toBeDefined();
     });
 
     it('should fetch the table data', function() {
+      sessionsJSON.data[0].expanded = true;
+
       expect(sessionComponent.getData).toHaveBeenCalled();
       expect(sessionComponent.getData).toHaveBeenCalledWith();
       expect(sessionComponent.sessions).toEqual(sessionsJSON);
@@ -228,11 +245,22 @@
     });
 
     it('should toggle session detail', function() {
+      sessionComponent.toggleSessionDetail(sessionsJSON.data[0]);
       expect(sessionComponent.stickySessions.length).toEqual(0);
       sessionComponent.toggleSessionDetail(sessionsJSON.data[0]);
       expect(sessionComponent.stickySessions.length).toEqual(1);
-      sessionComponent.toggleSessionDetail(sessionsJSON.data[0]);
-      expect(sessionComponent.stickySessions.length).toEqual(0);
+    });
+
+    it('should accept an openAll parameter', function() {
+      sessionsJSON.data[0].expanded = false;
+
+      expect(sessionComponent.$routeParams.openAll).toEqual(1);
+
+      expect(sessionComponent.openAll).toHaveBeenCalled();
+      expect(sessionComponent.openAll).toHaveBeenCalledWith();
+
+      expect(sessionComponent.toggleSessionDetail).toHaveBeenCalled();
+      expect(sessionComponent.toggleSessionDetail).toHaveBeenCalledWith(sessionsJSON.data[0]);
     });
 
 
