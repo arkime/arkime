@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var session = {
+  let session = {
     pa2   :0,
     p1    :10000,
     no    :'node',
@@ -29,11 +29,11 @@
     // load the module
     beforeEach(angular.mock.module('moloch'));
 
-    var scope, sessionDtlsComponent, $httpBackend, templateAsHtml;
-    var sessionDtlsEndpoint = 'node/sessionid/sessionDetailNew';
-    var defaultParameters   = '?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&ts=false';
-    var configEndpoint      = 'molochRightClick';
-    var fieldEndpoint       = 'fields';
+    let scope, sessionDtlsComponent, $httpBackend, templateAsHtml;
+    let sessionDtlsEndpoint = 'node/sessionid/sessionDetailNew';
+    let defaultParameters   = '?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&ts=false';
+    let configEndpoint      = 'molochRightClick';
+    let fieldEndpoint       = 'fields';
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -63,14 +63,17 @@
 
         scope.session   = session;
 
-        var htmlString  = '<session-detail session="session"></session-detail>';
+        let htmlString  = '<session-detail session="session"></session-detail>';
 
-        var element     = angular.element(htmlString);
-        var template    = $compile(element)(scope);
+        let element     = angular.element(htmlString);
+        let template    = $compile(element)(scope);
 
         scope.$digest();
 
-        templateAsHtml  = template.html();
+        sessionDtlsComponent = element.controller('sessionDetail');
+        templateAsHtml = template.html();
+
+        spyOn(sessionDtlsComponent.$scope, '$emit').and.callThrough();
 
         $httpBackend.flush();
     }));
@@ -83,6 +86,28 @@
     it('should render html with session info', function() {
       expect(templateAsHtml).toBeDefined();
       expect(scope.session).toBeDefined();
+    });
+
+    it('should issue query for all sessions with new start time', function() {
+      sessionDtlsComponent.allSessions('rootId', 0);
+
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search', { expression:'rootId == "rootId"' });
+
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time', { start:0 });
+    });
+
+    it('should issue query for all sessions with current start time', function() {
+      sessionDtlsComponent.allSessions('rootId', 1476102173);
+
+      sessionDtlsComponent.$routeParams.startTime = 1476102172;
+
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search', { expression:'rootId == "rootId"' });
+
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time', { start:1476102173 });
     });
 
   });
