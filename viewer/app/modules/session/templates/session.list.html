@@ -182,7 +182,11 @@
                 ng-click="$ctrl.toggleSessionDetail(session)">
                 <span class="fa fa-close"></span>
               </a>&nbsp
-              <small>{{::session.pr | protocol}}</small>
+              <small>
+                <session-field field="{dbField:'prot-term', exp:'protocols', type:'termfield', group:'general'}"
+                  expr="'protocols'" value="session.pr"
+                  session="session" parse="true" pull-left="true"></session-field>
+              </small>
             </td>
             <td ng-repeat="col in $ctrl.headers"
               ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">

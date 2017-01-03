@@ -153,6 +153,12 @@
             this.value  = this.parsed;
           }
           break;
+        case 'termfield':
+          if (this.fieldObj.dbField === 'prot-term') {
+            this.parsed = this.$filter('protocol')(this.parsed);
+            this.value  = this.parsed;
+          }
+          break;
         case 'integer':
           if (this.fieldObj.category !== 'port') {
             this.value  = this.parsed;
@@ -259,7 +265,8 @@
         session   : '<',  // the session (required for custom columns)
         field     : '<',  // the column the field belongs to (for table)
         parse     : '<',  // whether to parse the value
-        stringify : '<'   // whether to stringify the value in the search expression
+        stringify : '<',  // whether to stringify the value in the search expression
+        pullLeft  : '<'   // whether the dropdown should drop down from the left (default is right)
       }
     });
 
