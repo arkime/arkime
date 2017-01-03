@@ -9,13 +9,14 @@
     beforeEach(angular.mock.module('directives.search'));
     beforeEach(angular.mock.module('moloch.util'));
 
-    var scope, typeahead, templateAsHtml, $httpBackend;
+    let scope, rootScope, typeahead, templateAsHtml, $httpBackend;
 
     // Initialize and a mock scope
     beforeEach(inject(function(
       _$httpBackend_,
       $componentController,
       $rootScope,
+      $timeout,
       $compile,
       FieldService) {
 
@@ -23,24 +24,30 @@
 
       $httpBackend.expectGET('fields').respond({});
 
-      scope = $rootScope.$new();
+      rootScope = $rootScope;
+      scope     = $rootScope.$new();
 
       scope.expression = { value: '' };
 
-      var htmlString = '<expression-typeahead query="expression"></expression-typeahead>';
+      let htmlString = '<expression-typeahead query="expression"></expression-typeahead>';
 
-      var element   = angular.element(htmlString);
-      var template  = $compile(element)(scope);
+      let element   = angular.element(htmlString);
+      let template  = $compile(element)(scope);
 
       scope.$digest();
 
       templateAsHtml = template.html();
 
       typeahead = $componentController('expressionTypeahead',
-        { $routeParams: {}, FieldService: FieldService },
+        {
+          $scope      : scope,
+          $timeout    : $timeout,
+          $routeParams: {},
+          FieldService: FieldService
+        },
         { query: scope.expression });
 
-      typeahead.$onInit();
+      // typeahead.$onInit();
 
       $httpBackend.flush();
     }));
@@ -83,6 +90,9 @@
     });
 
     it('should be able to add operator to end of query', function() {
+      typeahead.$onInit();
+      typeahead.$timeout.flush();
+
       typeahead.query.value = 'country =';
       typeahead.caretPos = 9;
 
@@ -93,6 +103,9 @@
     });
 
     it('should be able to add value to end of query', function() {
+      typeahead.$onInit();
+      typeahead.$timeout.flush();
+
       typeahead.query.value = 'country == U';
       typeahead.caretPos = 12;
 
@@ -113,6 +126,9 @@
     });
 
     it('should be able to change operation in query', function() {
+      typeahead.$onInit();
+      typeahead.$timeout.flush();
+
       typeahead.query.value = 'country = USA';
       typeahead.caretPos = 9;
 
@@ -123,6 +139,9 @@
     });
 
     it('should be able to change value in query', function() {
+      typeahead.$onInit();
+      typeahead.$timeout.flush();
+
       typeahead.query.value = 'country != U';
       typeahead.caretPos = 11;
 
@@ -130,6 +149,13 @@
       typeahead.addToQuery({exp:'AUS'});
 
       expect(typeahead.query.value).toEqual('country != AUS ');
+    });
+
+    it('should be able to add a value with a "-" in it', function() {
+      let expression = 'rootId == "rootId-1234567890"';
+      rootScope.$broadcast('add:to:typeahead', { expression: expression });
+
+      expect(typeahead.query.value).toEqual(expression);
     });
 
   });

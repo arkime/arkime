@@ -160,7 +160,7 @@
       this.$scope.$emit('add:to:search', { expression: fullExpression });
 
       if (this.$routeParams.startTime) {
-        if (this.$routeParams.startTime > startTime) {
+        if (this.$routeParams.startTime < startTime) {
           startTime = this.$routeParams.startTime;
         }
       }

@@ -99,15 +99,27 @@
     });
 
     it('should issue query for all sessions with current start time', function() {
-      sessionDtlsComponent.allSessions('rootId', 1476102173);
+      sessionDtlsComponent.allSessions('rootId', 1476102172);
 
-      sessionDtlsComponent.$routeParams.startTime = 1476102172;
+      sessionDtlsComponent.$routeParams.startTime = 1476102173;
 
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search', { expression:'rootId == "rootId"' });
 
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
-      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time', { start:1476102173 });
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time', { start:1476102172 });
+    });
+
+    it('should issue query for all sessions with "-" in rootId', function() {
+      sessionDtlsComponent.allSessions('rootId-1234567890', 0);
+
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search',
+         { expression:'rootId == "rootId-1234567890"' });
+
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time',
+         { start:0 });
     });
 
   });

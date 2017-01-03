@@ -1,7 +1,7 @@
 ul.nav.nav-pills.margined-bottom-xlg
   if (session.ro)
     li.cursor-pointer
-      a(ng-click='$ctrl.allSessions(' + session.ro + ', ' + session.fp + ')') All Sessions
+      a(ng-click='$ctrl.allSessions(' + '"' + session.ro + '"' + ', ' + session.fp + ')') All Sessions
     li.cursor-pointer
       a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
     li.cursor-pointer
