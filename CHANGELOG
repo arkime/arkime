@@ -29,6 +29,7 @@
   - capture - support yara 3.5 (issue #521)
   - capture - new --op option to set any field (issue #412)
   - capture - added dontSaveSPI=1 support to tagger/wise to not save SPI data (issue #505)
+  - capture - basic kafka, dropbox-lan-sync detection
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required

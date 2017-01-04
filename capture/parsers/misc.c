@@ -188,6 +188,19 @@ void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned char *da
     }
 }
 /******************************************************************************/
+void kafka_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 50 || data[4] != 0 || data[5] > 6|| data[7] != 0 || data[8] != 0)
+        return;
+
+    int flen = 4 + ((data[2] << 8) | data[3]);
+
+    if (len != flen)
+        return;
+
+    moloch_session_add_protocol(session, "kafka");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -291,6 +304,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("flash-policy", "flash-policy", 0, (unsigned char*)"<policy-file-request/>", 22, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_port("dropbox-lan-sync",  NULL, 17500, MOLOCH_PARSERS_PORT_UDP, dropbox_lan_sync_classify);
+
+    moloch_parsers_classifier_register_tcp("kafka", NULL, 0, (unsigned char*)"\x00\x00", 2, kafka_classify);
 
     userField = moloch_field_by_db("user");
 }
