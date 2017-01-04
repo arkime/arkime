@@ -35,7 +35,7 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       // only display fields that have a value
-      if (!this.value && (!this.field || !this.field.children)) { return; }
+      if (this.value === undefined && (!this.field || !this.field.children)) { return; }
 
       if (typeof this.parse === 'string') {
         this.parse = this.parse === 'true';

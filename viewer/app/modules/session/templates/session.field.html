@@ -1,5 +1,5 @@
 <!-- normal field with a single value -->
-<span ng-if="::!$ctrl.fieldObj.children && $ctrl.value">
+<span ng-if="::!$ctrl.fieldObj.children && $ctrl.value !== undefined">
   <!-- search expression -->
   <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="::!$ctrl.time">
     <a href id="simple-dropdown" uib-dropdown-toggle>
