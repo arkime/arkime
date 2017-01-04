@@ -120,64 +120,69 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
     BSB bsb;
     BSB_INIT(bsb, data, len);
 
-    unsigned char *ver;
-    BSB_IMPORT_ptr(bsb, ver, 2);
-
+    uint16_t ver = 0;
+    BSB_IMPORT_u16(bsb, ver);
     BSB_IMPORT_skip(bsb, 32);     // Random
 
-    int skiplen = 0;
-    BSB_IMPORT_u08(bsb, skiplen);   // Session Id Length
-    if (skiplen > 0 && BSB_REMAINING(bsb) > skiplen) {
-        unsigned char *ptr = BSB_WORK_PTR(bsb);
-        char sessionId[513];
-        int  i;
+    if(BSB_IS_ERROR(bsb))
+        return;
 
-        for(i=0; i < skiplen; i++) {
-            sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
-            sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
-        }
-        sessionId[skiplen*2] = 0;
-        moloch_field_string_add(dstIdField, session, sessionId, skiplen*2, TRUE);
+    char str[100];
+
+    /* Parse SSL/TLS version */
+    switch (ver) {
+    case 0x0300:
+        moloch_field_string_add(verField, session, "SSLv3", 5, TRUE);
+        break;
+    case 0x0301:
+        moloch_field_string_add(verField, session, "TLSv1", 5, TRUE);
+        break;
+    case 0x0302:
+        moloch_field_string_add(verField, session, "TLSv1.1", 7, TRUE);
+        break;
+    case 0x0303:
+        moloch_field_string_add(verField, session, "TLSv1.2", 7, TRUE);
+        break;
+    case 0x0304:
+        moloch_field_string_add(verField, session, "TLSv1.3", 7, TRUE);
+        break;
+    case 0x7f00 ... 0x7fff:
+        snprintf(str, sizeof(str), "TLSv1.3-draft-%02d", ver & 0xff);
+        moloch_field_string_add(verField, session, str, -1, TRUE);
+        break;
+    default:
+        snprintf(str, sizeof(str), "0x%04x", ver);
+        moloch_field_string_add(verField, session, str, 6, TRUE);
     }
-    BSB_IMPORT_skip(bsb, skiplen);  // Session Id
 
-
-    unsigned char *cipher;
-    BSB_IMPORT_ptr(bsb, cipher, 2);
-
-    if (!BSB_IS_ERROR(bsb)) {
-        char str[100];
-        if (ver[0] == 3) {
-            switch (ver[1]) {
-            case 0:
-                moloch_field_string_add(verField, session, "SSLv3", 5, TRUE);
-                break;
-            case 1:
-                moloch_field_string_add(verField, session, "TLSv1", 5, TRUE);
-                break;
-            case 2:
-                moloch_field_string_add(verField, session, "TLSv1.1", 7, TRUE);
-                break;
-            case 3:
-                moloch_field_string_add(verField, session, "TLSv1.2", 7, TRUE);
-                break;
-            default:
-                snprintf(str, sizeof(str), "0x%02x.%02x", ver[0], ver[1]);
-                moloch_field_string_add(verField, session, str, 6, TRUE);
+    /* Parse sessionid, only for SSLv3 - TLSv1.2 */
+    if (ver >= 0x0300 && ver <= 0x0303) {
+        int skiplen = 0;
+        BSB_IMPORT_u08(bsb, skiplen);   // Session Id Length
+        if (skiplen > 0 && BSB_REMAINING(bsb) > skiplen) {
+            unsigned char *ptr = BSB_WORK_PTR(bsb);
+            char sessionId[513];
+            int  i;
+            for(i=0; i < skiplen; i++) {
+                sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
+                sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
             }
-        } else {
-            snprintf(str, sizeof(str), "0x%02x.%02x", ver[0], ver[1]);
-            moloch_field_string_add(verField, session, str, 7, TRUE);
+            sessionId[skiplen*2] = 0;
+            moloch_field_string_add(dstIdField, session, sessionId, skiplen*2, TRUE);
         }
+        BSB_IMPORT_skip(bsb, skiplen);  // Session Id
+    }
 
+    uint16_t cipher = 0;
+    BSB_IMPORT_u16(bsb, cipher);
 
-        char *cipherStr = ciphers[cipher[0]][cipher[1]];
-        if (cipherStr)
-            moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
-        else {
-            snprintf(str, sizeof(str), "%02X%02X", cipher[0], cipher[1]);
-            moloch_field_string_add(cipherField, session, str, 4, TRUE);
-        }
+    /* Parse cipher */
+    char *cipherStr = ciphers[cipher >> 8][cipher & 0xff];
+    if (cipherStr)
+        moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
+    else {
+        snprintf(str, sizeof(str), "0x%04x", cipher);
+        moloch_field_string_add(cipherField, session, str, 6, TRUE);
     }
 }
 

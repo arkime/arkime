@@ -1,0 +1,72 @@
+{
+    "sessions": [{
+        "body": {
+            "fp": 1483560476,
+            "lp": 1483560476,
+            "fpd": 1483560476240,
+            "lpd": 1483560476263,
+            "sl": 23,
+            "a1": 689809843,
+            "p1": 62510,
+            "a2": 1746125414,
+            "p2": 443,
+            "pr": 6,
+            "tcpflags": {
+                "syn": 1,
+                "syn-ack": 1,
+                "ack": 3,
+                "psh": 1,
+                "fin": 0,
+                "rst": 0,
+                "urg": 0
+            },
+            "fb1": "1603010200010001",
+            "fb2": "1603010052020000",
+            "tipv61-term": "200116d8ffce0010aca8353c291da9b3",
+            "tipv62-term": "2400cb0020480001000000006813c266",
+            "timestamp": 1483568167997,
+            "firstPacket": 1483560476240,
+            "lastPacket": 1483560476263,
+            "ipSrc": "0.0.0.0",
+            "portSrc": 62510,
+            "ipDst": "0.0.0.0",
+            "portDst": 443,
+            "g1": "SWE",
+            "g2": "USA",
+            "as1": "AS16150 Availo Networks AB",
+            "as2": "AS13335 CloudFlare",
+            "pa": 6,
+            "pa1": 3,
+            "pa2": 3,
+            "by": 2205,
+            "by1": 751,
+            "by2": 1454,
+            "db": 1737,
+            "db1": 517,
+            "db2": 1220,
+            "ss": 1,
+            "no": "test",
+            "ps": [24, 126, 228, 318, 925, 1015],
+            "psl": [102, 102, 90, 607, 90, 1310],
+            "fs": [],
+            "mac1-term-cnt": 1,
+            "mac1-term": ["c8:f7:33:1d:84:95"],
+            "mac2-term-cnt": 1,
+            "mac2-term": ["00:26:55:d1:4d:97"],
+            "hocnt": 1,
+            "ho": ["blog.cloudflare.com"],
+            "tlsver-termcnt": 1,
+            "tlsver-term": ["TLSv1.3-draft-18"],
+            "tlscipher-termcnt": 1,
+            "tlscipher-term": ["TLS_AES_128_GCM_SHA256"],
+            "prot-term-cnt": 2,
+            "prot-term": ["tls", "tcp"]
+        },
+        "header": {
+            "index": {
+                "_index": "tests_sessions-170104",
+                "_type": "session"
+            }
+        }
+    }]
+}

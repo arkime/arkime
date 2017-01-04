@@ -23,6 +23,9 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
+#ifdef __FreeBSD__
+#include <sys/stat.h>
+#endif
 #include "openssl/rand.h"
 #include "openssl/evp.h"
 

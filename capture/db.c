@@ -1174,7 +1174,7 @@ uint64_t moloch_db_memory_size()
 {
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
-    return usage.ru_maxrss * 1024UL
+    return usage.ru_maxrss * 1024UL;
 }
 #endif
 /******************************************************************************/
