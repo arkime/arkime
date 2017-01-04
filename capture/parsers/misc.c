@@ -1,4 +1,4 @@
-/* Copyright 2012-2016 AOL Inc. All rights reserved.
+/* Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -181,6 +181,13 @@ void tacacs_classify(MolochSession_t *session, const unsigned char *UNUSED(data)
         moloch_session_add_protocol(session, "tacacs");
 }
 /******************************************************************************/
+void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (moloch_memstr((const char *)data+1, len-1, "host_int", 8)) {
+        moloch_session_add_protocol(session, "dropbox-lan-sync");
+    }
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -282,6 +289,8 @@ void moloch_parser_init()
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x02", 3, tacacs_classify);
 
     moloch_parsers_classifier_register_tcp("flash-policy", "flash-policy", 0, (unsigned char*)"<policy-file-request/>", 22, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_port("dropbox-lan-sync",  NULL, 17500, MOLOCH_PARSERS_PORT_UDP, dropbox_lan_sync_classify);
 
     userField = moloch_field_by_db("user");
 }
