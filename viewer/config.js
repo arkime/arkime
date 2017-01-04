@@ -29,7 +29,7 @@ var ini    = require('iniparser'),
     fs     = require('fs'),
     crypto = require('crypto');
 
-exports.debug = false;
+exports.debug = 0;
 var internals = {
     configFile: "/data/moloch/etc/config.ini",
     nodeName: os.hostname().split(".")[0],
@@ -48,7 +48,7 @@ function processArgs() {
       i++;
       internals.nodeName = process.argv[i];
     } else if (process.argv[i] === "--debug") {
-      exports.debug = true;
+      exports.debug++;
     } else {
       args.push(process.argv[i]);
     }
@@ -117,6 +117,22 @@ internals.config = ini.parseSync(internals.configFile);
 if (internals.config["default"] === undefined) {
   console.log("ERROR - [default] section missing from", internals.configFile);
   process.exit(1);
+}
+
+exports.sectionGet = function(section, key, defaultValue) {
+  var value;
+
+  if (internals.config[section] && internals.config[section][key] !== undefined ) {
+    value = internals.config[section][key];
+  } else {
+    value = defaultValue;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return value;
 }
 
 exports.getFull = function(node, key, defaultValue) {
@@ -277,6 +293,10 @@ exports.configMap = function(section, name, d) {
   return map;
 };
 
+if (exports.isHTTPS()) {
+    exports.keyFileData = fs.readFileSync(exports.get("keyFile"));
+    exports.certFileData = fs.readFileSync(exports.get("certFile"));
+}
 dropPrivileges();
 
 //////////////////////////////////////////////////////////////////////////////////

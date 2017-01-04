@@ -1,98 +1,100 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140505"
+               "_index" : "tests_sessions-140505",
+               "_type" : "session"
             }
          },
          "body" : {
-            "fpd" : 1399312748531,
+            "ss" : 1,
+            "mac2-term-cnt" : 1,
+            "tcpflags" : {
+               "syn" : 1,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "ack" : 5,
+               "psh" : 4,
+               "fin" : 2
+            },
+            "no" : "test",
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "lp" : 1399312748,
             "test" : {
-               "ip-rir" : [
-                  ""
-               ],
                "string" : [
                   "16777226:53499,33554442:5432"
+               ],
+               "ip-rir" : [
+                  ""
                ],
                "ip-asn" : [
                   "AS0000 This is neat"
                ],
-               "number" : [
-                  33554442
-               ],
                "ip-geo" : [
                   "RUS"
+               ],
+               "number" : [
+                  33554442
                ],
                "ip" : [
                   167772161
                ]
             },
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
             ],
-            "pa1" : 8,
-            "fb1" : "0000000804d2162f",
-            "mac1-term-cnt" : 2,
-            "ss" : 1,
-            "fb2" : "4e520000000c0000",
-            "pr" : 6,
-            "as1" : "AS0000 This is neat",
-            "fs" : [],
-            "lpd" : 1399312748549,
-            "lp" : 1399312748,
-            "g1" : "RUS",
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "rir2" : "TEST",
-            "no" : "test",
-            "mac2-term-cnt" : 1,
-            "by" : 974,
-            "p1" : 53499,
-            "fp" : 1399312748,
-            "as2" : "AS0001 Cool Beans!",
-            "db1" : 82,
-            "by2" : 352,
-            "by1" : 622,
-            "postgresql" : {
-               "user-term" : "foo",
-               "app-term" : "psql",
-               "db-term" : "bar"
-            },
-            "tacnt" : 2,
-            "g2" : "CAN",
             "a2" : "10.0.0.2",
-            "p2" : 5432,
-            "db" : 96,
-            "pa" : 13,
+            "firstPacket" : 1399312748531,
+            "fb2" : "4e520000000c0000",
             "prot-term" : [
                "tcp",
                "postgresql"
             ],
-            "db2" : 14,
-            "ps" : [
-               24,
-               118,
-               208,
-               290,
-               380,
-               462,
-               545,
-               627,
-               783,
-               878,
-               960,
-               1042,
-               1124
+            "ta" : [
+               "dstip",
+               "srcip"
             ],
+            "a1" : "10.0.0.1",
+            "db1" : 82,
+            "mac1-term-cnt" : 2,
+            "ipSrc" : "10.0.0.1",
             "mac1-term" : [
                "00:00:0c:07:ac:01",
                "00:d0:2b:d1:76:00"
             ],
+            "by" : 974,
+            "pa2" : 5,
+            "ipDst" : "10.0.0.2",
+            "portSrc" : 53499,
+            "g2" : "CAN",
+            "as1" : "AS0000 This is neat",
+            "portDst" : 5432,
+            "postgresql" : {
+               "app-term" : "psql",
+               "db-term" : "bar",
+               "user-term" : "foo"
+            },
+            "as2" : "AS0001 Cool Beans!",
+            "p2" : 5432,
+            "fs" : [],
+            "tacnt" : 2,
+            "g1" : "RUS",
+            "pa" : 13,
+            "p1" : 53499,
+            "fp" : 1399312748,
+            "prot-term-cnt" : 2,
+            "sl" : 18,
+            "db" : 96,
+            "fb1" : "0000000804d2162f",
+            "pr" : 6,
+            "lpd" : 1399312748549,
+            "by2" : 352,
+            "fpd" : 1399312748531,
             "psl" : [
                94,
                90,
@@ -108,13 +110,27 @@
                82,
                82
             ],
-            "sl" : 18,
-            "prot-term-cnt" : 2,
-            "pa2" : 5,
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
+            "timestamp" : "SET",
+            "rir2" : "TEST",
+            "pa1" : 8,
+            "by1" : 622,
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               380,
+               462,
+               545,
+               627,
+               783,
+               878,
+               960,
+               1042,
+               1124
             ],
-            "a1" : "10.0.0.1"
+            "lastPacket" : 1399312748549,
+            "db2" : 14
          }
       }
    ]

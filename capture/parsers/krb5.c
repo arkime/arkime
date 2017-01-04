@@ -41,7 +41,7 @@ void krb5_parse_principal_name(MolochSession_t *session, int field, const unsign
 
     int num = moloch_parsers_asn_get_sequence(seq, 2, data, len, TRUE);
 
-    if (seq[1].tag != 1) 
+    if (num < 2 || seq[1].tag != 1)
         return;
 
     num = moloch_parsers_asn_get_sequence(seq, 2, seq[1].value, seq[1].len, TRUE);
@@ -218,10 +218,9 @@ void krb5_udp_classify(MolochSession_t *session, const unsigned char *data, int 
 
     BSB obsb;
     uint32_t opc, otag, olen;
-    unsigned char *ovalue;
 
     BSB_INIT(obsb, data, len);
-    ovalue = moloch_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
+    moloch_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
 #ifdef KRB5_DEBUG
     LOG("enter %d %d %d", opc, otag, olen);
 #endif
@@ -291,6 +290,7 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_udp("krb5", 0, 7, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
     moloch_parsers_classifier_register_udp("krb5", 0, 9, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_udp_classify);
+    moloch_parsers_classifier_register_tcp("krb5", 0, 11, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
     moloch_parsers_classifier_register_tcp("krb5", 0, 13, (unsigned char*)"\x03\x02\x01\x05", 4, krb5_tcp_classify);
 }
 

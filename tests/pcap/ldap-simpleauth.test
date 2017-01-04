@@ -1,34 +1,35 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "ldap" : {
-               "bindname-term-cnt" : 2,
-               "authtype-term" : [
-                  "simple"
-               ],
-               "bindname-term" : [
-                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
-                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
-               ],
-               "authtype-term-cnt" : 1
-            },
-            "a1" : "10.0.0.1",
+            "ss" : 1,
+            "portDst" : 3268,
+            "fb2" : "3084000000100201",
             "db2" : 188,
-            "fs" : [],
             "tacnt" : 2,
+            "as1" : "AS0000 This is neat",
+            "db1" : 258,
             "pa2" : 4,
-            "a2" : "10.0.0.2",
-            "mac2-term-cnt" : 2,
-            "by2" : 432,
-            "mac2-term" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
-            ],
             "lp" : 1463256637,
-            "fb1" : "3032020101602d02",
+            "fp" : 1463256456,
+            "portSrc" : 25936,
+            "fs" : [],
             "by1" : 742,
-            "pa" : 12,
+            "by" : 1174,
+            "g1" : "RUS",
+            "mac1-term" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "pa1" : 8,
+            "db" : 446,
+            "pr" : 6,
+            "sl" : 181520,
+            "prot-term" : [
+               "ldap",
+               "tcp"
+            ],
+            "ipSrc" : "10.0.0.1",
             "ps" : [
                24,
                110,
@@ -43,9 +44,57 @@
                1238,
                1314
             ],
-            "fb2" : "3084000000100201",
-            "p2" : 3268,
-            "ss" : 1,
+            "mac2-term" : [
+               "00:22:83:3f:17:cc",
+               "2c:6b:f5:d6:17:cc"
+            ],
+            "mac2-term-cnt" : 2,
+            "no" : "test",
+            "mac1-term-cnt" : 2,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "vlan-cnt" : 1,
+            "tcpflags" : {
+               "fin" : 0,
+               "rst" : 1,
+               "psh" : 6,
+               "syn" : 1,
+               "urg" : 0,
+               "ack" : 3,
+               "syn-ack" : 1
+            },
+            "a1" : "10.0.0.1",
+            "rir2" : "TEST",
+            "test" : {
+               "string" : [
+                  "16777226:25936,33554442:3268"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ]
+            },
+            "prot-term-cnt" : 2,
+            "a2" : "10.0.0.2",
+            "ipDst" : "10.0.0.2",
+            "p1" : 25936,
+            "timestamp" : "SET",
+            "fpd" : 1463256456040,
+            "by2" : 432,
+            "as2" : "AS0001 Cool Beans!",
             "psl" : [
                86,
                86,
@@ -60,64 +109,31 @@
                76,
                76
             ],
-            "prot-term" : [
-               "ldap",
-               "tcp"
-            ],
-            "sl" : 181520,
-            "vlan" : [
-               50
-            ],
-            "vlan-cnt" : 1,
-            "pa1" : 8,
             "g2" : "CAN",
-            "db" : 446,
-            "fp" : 1463256456,
-            "by" : 1174,
-            "p1" : 25936,
-            "as1" : "AS0000 This is neat",
-            "mac1-term-cnt" : 2,
-            "no" : "test",
-            "fpd" : 1463256456040,
-            "as2" : "AS0001 Cool Beans!",
             "tags-term" : [
                "srcip",
                "dstip"
             ],
-            "pr" : 6,
-            "db1" : 258,
-            "mac1-term" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "rir2" : "TEST",
-            "g1" : "RUS",
+            "firstPacket" : 1463256456040,
+            "fb1" : "3032020101602d02",
+            "lastPacket" : 1463256637560,
             "lpd" : 1463256637560,
-            "test" : {
-               "ip" : [
-                  167772161
+            "p2" : 3268,
+            "ldap" : {
+               "bindname-term-cnt" : 2,
+               "bindname-term" : [
+                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
+                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
                ],
-               "ip-geo" : [
-                  "RUS"
+               "authtype-term" : [
+                  "simple"
                ],
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:25936,33554442:3268"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
+               "authtype-term-cnt" : 1
             },
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "prot-term-cnt" : 2
+            "pa" : 12,
+            "vlan" : [
+               50
+            ]
          },
          "header" : {
             "index" : {

@@ -1,76 +1,83 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "body" : {
-            "vlan" : [
-               300
-            ],
-            "lp" : 1467241187,
-            "as2" : "AS15169 Google Inc.",
-            "prot-term" : [
-               "udp",
-               "quic"
-            ],
-            "pa2" : 0,
-            "by1" : 1396,
-            "pa" : 1,
-            "lpd" : 1467241187446,
-            "prot-term-cnt" : 2,
-            "vlan-cnt" : 1,
-            "quic" : {
-               "version-termcnt" : 1,
-               "host-term" : [
-                  "ssl.gstatic.com"
-               ],
-               "version-term" : [
-                  "Q034"
-               ],
-               "ua-termcnt" : 1,
-               "host-termcnt" : 1,
-               "ua-term" : [
-                  "canary Chrome/53.0.2782.0 Windows NT 6.1; Win64; x64"
-               ]
-            },
-            "psl" : [
-               1412
-            ],
-            "by" : 1396,
-            "a1" : "10.0.0.4",
-            "p2" : 443,
-            "mac2-term-cnt" : 1,
-            "a2" : "216.58.194.195",
-            "pa1" : 1,
-            "pr" : 17,
-            "db" : 1388,
-            "sl" : 0,
-            "fb1" : "0d9300a653775210",
-            "ss" : 1,
-            "by2" : 0,
-            "no" : "test",
-            "mac1-term" : [
-               "00:1b:17:00:02:30"
-            ],
-            "fs" : [],
-            "db1" : 1388,
-            "db2" : 0,
-            "ps" : [
-               24
-            ],
-            "mac2-term" : [
-               "00:00:5e:00:01:01"
-            ],
-            "p1" : 54800,
-            "rir2" : "ARIN",
-            "mac1-term-cnt" : 1,
-            "g2" : "USA",
-            "fp" : 1467241187,
-            "fpd" : 1467241187446
-         },
          "header" : {
             "index" : {
                "_index" : "tests_sessions-160629",
                "_type" : "session"
             }
+         },
+         "body" : {
+            "no" : "test",
+            "ps" : [
+               24
+            ],
+            "by2" : 0,
+            "fb1" : "0d9300a653775210",
+            "rir2" : "ARIN",
+            "portSrc" : 54800,
+            "as2" : "AS15169 Google Inc.",
+            "fs" : [],
+            "by" : 1396,
+            "db" : 1388,
+            "ipDst" : "216.58.194.195",
+            "pa" : 1,
+            "mac2-term" : [
+               "00:00:5e:00:01:01"
+            ],
+            "sl" : 0,
+            "g2" : "USA",
+            "p2" : 443,
+            "db2" : 0,
+            "firstPacket" : 1467241187446,
+            "prot-term" : [
+               "udp",
+               "quic"
+            ],
+            "ss" : 1,
+            "psl" : [
+               1412
+            ],
+            "fp" : 1467241187,
+            "lpd" : 1467241187446,
+            "vlan-cnt" : 1,
+            "pr" : 17,
+            "mac2-term-cnt" : 1,
+            "vlan" : [
+               300
+            ],
+            "p1" : 54800,
+            "by1" : 1396,
+            "a2" : "216.58.194.195",
+            "lastPacket" : 1467241187446,
+            "pa1" : 1,
+            "lp" : 1467241187,
+            "fpd" : 1467241187446,
+            "timestamp" : "SET",
+            "ipSrc" : "10.0.0.4",
+            "prot-term-cnt" : 2,
+            "a1" : "10.0.0.4",
+            "pa2" : 0,
+            "db1" : 1388,
+            "portDst" : 443,
+            "mac1-term" : [
+               "00:1b:17:00:02:30"
+            ],
+            "quic" : {
+               "version-term" : [
+                  "Q034"
+               ],
+               "host-termcnt" : 1,
+               "version-termcnt" : 1,
+               "host-term" : [
+                  "ssl.gstatic.com"
+               ],
+               "ua-termcnt" : 1,
+               "ua-term" : [
+                  "canary Chrome/53.0.2782.0 Windows NT 6.1; Win64; x64"
+               ]
+            },
+            "mac1-term-cnt" : 1
          }
       }
    ]

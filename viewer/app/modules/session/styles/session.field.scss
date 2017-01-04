@@ -1,0 +1,93 @@
+/* moloch clickable fields =================== */
+session-field {
+
+  &.detail-field {
+    .field {
+      margin : 0 -12px 0 -1px;
+
+      a {
+        color     : $color-blue;
+        word-break: break-word;
+      }
+    }
+  }
+
+  .field {
+    z-index       : 3;
+    display       : inline-block;
+    padding       : 2px;
+    margin        : 0 -4px 0 -4px;
+    border-radius : 3px;
+    border        : 1px solid rgba(0, 0, 0, 0);
+    overflow-wrap : break-word;
+    max-width     : 100%;
+
+    -webkit-transition: background 400ms linear, border-color 400ms;
+       -moz-transition: background 400ms linear, border-color 400ms;
+            transition: background 400ms linear, border-color 400ms;
+
+    a {
+      color           : lighten($color-black, 10%);
+      text-decoration : none;
+
+      .all-copy {
+        -webkit-user-select: all;
+           -moz-user-select: all;
+            -ms-user-select: all;
+                user-select: all;
+      }
+
+      .fa {
+        opacity     : 0;
+        visibility  : hidden;
+        margin-left : $px-xs;
+
+        -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
+           -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+                transition: visibility 0s linear 400ms, opacity 400ms;
+      }
+    }
+
+    ul.dropdown-menu {
+      opacity   : 0;
+      visibility: hidden;
+      max-width : 800px;
+      font-size : 1.25rem;
+
+      -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
+         -moz-transition: visibility 0s linear 400ms, opacity 400ms;
+              transition: visibility 0s linear 400ms, opacity 400ms;
+
+      > div > li {
+        > a { // truncate long values
+          overflow      : hidden;
+          text-overflow : ellipsis;
+        }
+      }
+    }
+
+    &:hover {
+      z-index         : 4;
+      background-color: $color-white;
+      border          : 1px solid lighten($color-black, 10%);
+
+      a { color: $color-blue-dark; }
+
+      // show button and menu (if opened) on hover
+      .fa, ul.dropdown-menu {
+        opacity   : 1;
+        visibility: visible;
+
+        -webkit-transition: visibility 0s linear 0s, opacity 400ms;
+           -moz-transition: visibility 0s linear 0s, opacity 400ms;
+                transition: visibility 0s linear 0s, opacity 400ms;
+      }
+    }
+
+  }
+
+  .field-children:not(:first-child) {
+    margin-top: -6px;
+  }
+
+}

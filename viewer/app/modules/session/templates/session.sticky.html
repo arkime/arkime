@@ -1,0 +1,54 @@
+<div ng-show="sessions">
+
+  <div class="sticky-session-btn"
+    ng-click="toggleStickySessions()"
+    ng-if="sessions && sessions.length > 0"
+    tooltip-placement="left" uib-tooltip="View open/expanded sessions"
+    tooltip-popup-delay="500">
+    <span class="fa fa-fw fa-angle-double-left"></span>&nbsp;
+    <small>{{sessions.length}}</small>
+  </div>
+
+  <div ng-show="state.open" class="sticky-session-detail">
+
+    <ul class="list-group">
+      <li class="list-group-item">
+        <a class="btn btn-default btn-sm pull-right"
+          ng-click="toggleStickySessions()">
+          <span class="fa fa-angle-double-right"></span>
+        </a>
+        <h4>
+          {{sessions.length}} Open
+          Session<span ng-if="sessions.length > 1">s</span>&nbsp;
+          <small><a class="cursor-pointer" ng-click="closeAll()">
+            close all
+          </a></small>
+        </h4>
+      </li>
+      <a class="list-group-item cursor-pointer"
+        ng-click="scrollTo($event, session.id)"
+        ng-repeat="session in sessions">
+        <p class="list-group-item-text">
+          <button class="btn btn-xs btn-link pull-right"
+            ng-click="closeSessionDetail(session)">
+            <span class="fa fa-close fa-lg"></span>
+          </button>
+          <small>
+            <span class="fa fa-clock-o fa-fw"></span>
+            <em>
+              {{::session.fp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}} -
+              {{::session.lp * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}
+            </em>
+            <br>
+            <strong>{{::session.a1 | extractIPString}}{{::session.tipv61-term | extractIPv6String}}</strong>:{{::session.p1}} <strong>{{::session.g1}}</strong> -
+            <strong>{{::session.a2 | extractIPString}}{{::session.tipv62-term | extractIPv6String}}</strong>:{{::session.p2}} <strong>{{::session.g2}}</strong>
+            <br>
+            <strong>{{::session.pr | protocol}}</strong> - {{::session.no}}
+          </small>
+        </p>
+      </a>
+    </ul>
+
+  </div>
+
+</div>

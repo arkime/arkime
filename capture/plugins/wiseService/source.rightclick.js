@@ -28,6 +28,37 @@ function RightClickSource (api, section) {
   RightClickSource.super_.call(this, api, section);
 
   this.file    = api.getConfig(section, "file");
+
+  if (this.file === undefined) {
+    console.log(this.section, "- ERROR not loading", this.section, "since no file specified in config file");
+    return;
+  }
+
+  if (!fs.existsSync(this.file)) {
+    console.log(this.section, "- ERROR not loading", this.section, "since", this.file, "doesn't exist");
+    return;
+  }
+
+  setImmediate(this.load.bind(this));
+
+  var self = this;
+  // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
+  self.watchTimeout = null;
+  self.watch = fs.watch(this.file, function watchCb(event, filename) {
+    clearTimeout(self.watchTimeout);
+    if (event === "rename") {
+      self.watch.close();
+      setTimeout(function () {
+        self.load();
+        self.watch = fs.watch(self.file, watchCb);
+      }, 500);
+    } else {
+      self.watchTimeout = setTimeout(function () {
+        self.watchTimeout = null;
+        self.load();
+      }, 2000);
+    }
+  });
 }
 util.inherits(RightClickSource, wiseSource);
 //////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +66,7 @@ RightClickSource.prototype.load = function() {
   var self = this;
 
   if (!fs.existsSync(self.file)) {
-    console.log("RightClick - ERROR not loading", self.section, "since", self.file, "doesn't exist");
+    console.log(this.section, "- ERROR not loading", self.section, "since", self.file, "doesn't exist");
     return;
   }
 
@@ -75,47 +106,10 @@ RightClickSource.prototype.load = function() {
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
-RightClickSource.prototype.init = function() {
-  var self = this;
-
-  if (this.file === undefined) {
-    console.log("RightClick - ERROR not loading", this.section, "since no file specified in config file");
-    return;
-  }
-
-  if (!fs.existsSync(self.file)) {
-    console.log("RightClick - ERROR not loading", self.section, "since", self.file, "doesn't exist");
-    return;
-  }
-
-  //this.api.addSource(this.section, this);
-  setImmediate(this.load.bind(this));
-
-
-  // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
-  self.watchTimeout = null;
-  self.watch = fs.watch(this.file, function watchCb(event, filename) {
-    clearTimeout(self.watchTimeout);
-    if (event === "rename") {
-      self.watch.close();
-      setTimeout(function () {
-        self.load();
-        self.watch = fs.watch(self.file, watchCb);
-      }, 500);
-    } else {
-      self.watchTimeout = setTimeout(function () {
-        self.watchTimeout = null;
-        self.load();
-      }, 2000);
-    }
-  });
-};
-//////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter(function(e) {return e.match(/(^right-click$|^right-click:)/);});
   sections.forEach(function(section) {
     var source = new RightClickSource(api, section);
-    source.init();
   });
 };
 //////////////////////////////////////////////////////////////////////////////////

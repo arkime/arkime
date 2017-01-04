@@ -58,12 +58,17 @@ ItemTransform.prototype._transform = function (item, encoding, callback) {
     if (self._shouldProcess(item)) {
       self._itemTransform.state = 1;
       async.each(self._itemTransform.items, function (item, cb) {
-        self._process(item, function(err, data) {
-          if (data) {
-            self.push(data);
-          }
-          return cb();
-        });
+        try {
+          self._process(item, function(err, data) {
+            if (data) {
+              self.push(data);
+            }
+            return cb();
+          });
+        } catch (err) {
+          cb(err);
+          console.log("Couldn't decode", err);
+        };
       }, function (err) {
         self._itemTransform.items = [];
         return callback();
@@ -478,7 +483,7 @@ function ItemHTTPStream(options) {
 }
 util.inherits(ItemHTTPStream, ItemTransform);
 ItemHTTPStream.onBody = function(buf, start, len) {
-  //console.log("onBody", start, len);
+  //console.log("onBody", start, len, item);
   var item = this.curitem;
   delete this.curitem;
   if (!this.bufferStream) {
@@ -491,6 +496,7 @@ ItemHTTPStream.onBody = function(buf, start, len) {
     var pipes = exports.createPipeline(this.httpstream.options, order, this.bufferStream, this.headerInfo);
 
     item.bodyNum = ++this.httpstream.bodyNum;
+    item.bodyName = this.httpstream.bodyName;
     var heb = new CollectBodyStream(this.httpstream, item, this.headerInfo);
     pipes[pipes.length-1].pipe(heb);
 
@@ -511,13 +517,15 @@ ItemHTTPStream.onMessageComplete = function() {
   delete this.curitem;
 };
 
-ItemHTTPStream.onHeadersComplete = function(info) {
-  //console.log("onHeadersComplete", this.bufferStream?"bufferStream":"no bufferStream");
-  info.headersMap = {};
-  for (var i = 0; i < info.headers.length; i += 2) {
-    info.headersMap[info.headers[i].toLowerCase()] = info.headers[i+1];
+ItemHTTPStream.onHeadersComplete = function(major, minor, headers, method, url) {
+  //console.log("onHeadersComplete", headers, method, url);
+  var info = {headersMap: {}};
+  for (var i = 0; i < headers.length; i += 2) {
+    info.headersMap[headers[i].toLowerCase()] = headers[i+1];
   }
   this.headerInfo = info;
+  if (url)
+    this.httpstream.bodyName = url.split(/[\/?=]/).pop();
 };
 
 ItemHTTPStream.prototype._shouldProcess = function (item) {
@@ -533,9 +541,9 @@ ItemHTTPStream.prototype._process = function (item, callback) {
       this.parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
     }
     this.parsers[0].httpstream = this.parsers[1].httpstream = this;
-    this.parsers[0].onBody = this.parsers[1].onBody = ItemHTTPStream.onBody;
-    this.parsers[0].onMessageComplete = this.parsers[1].onMessageComplete = ItemHTTPStream.onMessageComplete;
-    this.parsers[0].onHeadersComplete = this.parsers[1].onHeadersComplete = ItemHTTPStream.onHeadersComplete;
+    this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
+    this.parsers[0][HTTPParser.kOnMessageComplete] = this.parsers[1][HTTPParser.kOnMessageComplete] = ItemHTTPStream.onMessageComplete;
+    this.parsers[0][HTTPParser.kOnHeadersComplete] = this.parsers[1][HTTPParser.kOnHeadersComplete] = ItemHTTPStream.onHeadersComplete;
   }
 
   if (item.data.length === 0) {
@@ -560,7 +568,8 @@ ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
     }
   }
 
-  this.push({client: item.client, ts: item.ts, data: data, bodyNum: item.bodyNum, bodyType: bodyType, bodyName: bodyType + item.bodyNum});
+  var bodyName = item.bodyName || bodyType + item.bodyNum;
+  this.push({client: item.client, ts: item.ts, data: data, bodyNum: item.bodyNum, bodyType: bodyType, bodyName: bodyName});
   this.runningStreams--;
   if (this.runningStreams === 0 && this.endCb) {
     this.endCb();
@@ -799,7 +808,7 @@ if(require.main === module) {
   };
 
   var base = "ITEM-NATURAL";
-  var data;
+  var filename;
   var ending = ["ITEM-SORTER", "ITEM-PRINTER"];
   for (var aa = 2; aa < process.argv.length; aa++) {
     if (process.argv[aa] === "--hex") {
@@ -831,14 +840,51 @@ if(require.main === module) {
       options["ITEM-RAWBODY"] = {bodyNumber: +process.argv[aa]};
       base = "ITEM-RAWBODY";
     } else {
-      data   = require("./" + process.argv[aa]);
+      filename = process.argv[aa];
     }
   }
+
 
   options.order.push("ITEM-HTTP");
   options.order.push("ITEM-SMTP");
 
   options.order = options.order.concat("ITEM-BYTES", base, ending);
   console.log(options);
-  exports.createPipeline(options, options.order, new Pcap2ItemStream(options, data));
+
+  if (!filename) {
+    console.log("ERROR, must provide a file");
+  } else if (filename.match(/\.pcap$/)) {
+    var Pcap = require('./pcap.js');
+    var fs = require('fs');
+    var pcap = new Pcap(filename);
+    pcap.open(filename);
+    var stat = fs.statSync(filename);
+    var pos = 24;
+    var packets = [];
+
+    async.whilst(
+        function () { return pos < stat.size;},
+        function (callback) {
+          pcap.readPacket(pos, function(packet) {
+            var obj = {};
+            pcap.decode(packet, obj);
+            packets.push(obj);
+            pos += packet.length;
+            callback();
+          });
+        },
+        function (err, n) {
+          Pcap.reassemble_tcp(packets, packets[0].ip.addr1 + ':' + packets[0].tcp.sport, function(err, results) {
+            exports.createPipeline(options, options.order, new Pcap2ItemStream(options, results));
+          });
+        }
+    );
+
+    console.log("process", filename);
+  } else {
+    var data   = require("./" + filename);
+    exports.createPipeline(options, options.order, new Pcap2ItemStream(options, data));
+  }
+
+
 }

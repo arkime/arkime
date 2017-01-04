@@ -1,6 +1,6 @@
 /* session.c  -- Session functions
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -25,8 +25,6 @@ extern time_t                lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 
-LOCAL int                   tagsField;
-LOCAL int                   tagsStringField;
 LOCAL int                   protocolField;
 
 LOCAL MolochSessionHead_t   closingQ[MOLOCH_MAX_PACKET_THREADS];
@@ -117,17 +115,23 @@ char *moloch_session_id_string (char *sessionId, char *buf)
     return moloch_sprint_hex_string(buf, (uint8_t *)sessionId, sessionId[0]);
 }
 /******************************************************************************/
-/* Must match moloch_session_cmp and moloch_session_id
- * a1 0-3
- * p1 4-5
- * a2 6-9
- * p2 10-11
+/* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
+ * MurmurHash based
  */
 uint32_t moloch_session_hash(const void *key)
 {
-    unsigned char *p = (unsigned char *)key;
-    //return ((p[2] << 16 | p[3] << 8 | p[4]) * 59) ^ (p[8] << 16 | p[9] << 8 |  p[10]);
-    return (((p[1]<<24) ^ (p[2]<<18) ^ (p[3]<<12) ^ (p[4]<<6) ^ p[5]) * 13) ^ (p[8]<<24|p[9]<<16 | p[10]<<8 | p[11]);
+    const uint32_t m = 0xc6a4a793;
+    uint32_t *p = (uint32_t *)key;
+    uint32_t *end = (uint32_t *)((unsigned char *)key + ((unsigned char *)key)[0] - 4);
+    uint32_t h = m;
+
+    while (p < end) {
+        h = (h + *p) * m;
+        h ^= h >> 16;
+        p += 1;
+    }
+
+    return h;
 }
 
 /******************************************************************************/
@@ -172,14 +176,14 @@ gboolean moloch_session_has_tag(MolochSession_t *session, const char *tagName)
 {
     uint32_t tagValue;
 
-    if (!session->fields[tagsField])
+    if (!session->fields[config.tagsField])
         return FALSE;
 
     if ((tagValue = moloch_db_peek_tag(tagName)) == 0)
         return FALSE;
 
     MolochInt_t          *hint;
-    HASH_FIND_INT(i_, *(session->fields[tagsField]->ihash), tagValue, hint);
+    HASH_FIND_INT(i_, *(session->fields[config.tagsField]->ihash), tagValue, hint);
     return hint != 0;
 }
 /******************************************************************************/
@@ -200,8 +204,8 @@ gboolean moloch_session_has_protocol(MolochSession_t *session, const char *proto
 /******************************************************************************/
 void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
     moloch_session_incr_outstanding(session);
-    moloch_db_get_tag(session, tagsField, tag, moloch_session_get_tag_cb);
-    moloch_field_string_add(tagsStringField, session, tag, -1, TRUE);
+    moloch_db_get_tag(session, config.tagsField, tag, moloch_session_get_tag_cb);
+    moloch_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 
     if (session->stopSaving == 0 && HASH_COUNT(s_, config.dontSaveTags)) {
         MolochString_t *tstring;
@@ -355,6 +359,7 @@ void moloch_session_mid_save(MolochSession_t *session, uint32_t tv_sec)
     session->packets[0] = 0;
     session->packets[1] = 0;
     session->midSave = 0;
+    memset(session->tcpFlagCnt, 0, sizeof(session->tcpFlagCnt));
 }
 /******************************************************************************/
 gboolean moloch_session_decr_outstanding(MolochSession_t *session)
@@ -420,11 +425,14 @@ MolochSession_t *moloch_session_find(int ses, char *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-MolochSession_t *moloch_session_find_or_create(int ses, char *sessionId, int *isNew)
+MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew)
 {
     MolochSession_t *session;
 
-    uint32_t hash = moloch_session_hash(sessionId);
+    if (hash == 0) {
+        hash = moloch_session_hash(sessionId);
+    }
+
     int      thread = hash % config.packetThreads;
 
     HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);
@@ -475,7 +483,7 @@ void moloch_session_process_commands(int thread)
     // Commands
     MolochSesCmd_t *cmd = 0;
     int count;
-    for (count = 0; count < 100; count++) {
+    for (count = 0; count < 50; count++) {
         MOLOCH_LOCK(sessionCmds[thread].lock);
         DLL_POP_HEAD(cmd_, &sessionCmds[thread], cmd);
         MOLOCH_UNLOCK(sessionCmds[thread].lock);
@@ -497,7 +505,7 @@ void moloch_session_process_commands(int thread)
     }
 
     // Closing Q
-    for (count = 0; count < 100; count++) {
+    for (count = 0; count < 10; count++) {
         MolochSession_t *session = DLL_PEEK_HEAD(q_, &closingQ[thread]);
 
         if (session && session->saveTime < (uint64_t)lastPacketSecs[thread]) {
@@ -510,7 +518,7 @@ void moloch_session_process_commands(int thread)
     // Sessions Idle Long Time
     int ses;
     for (ses = 0; ses < SESSION_MAX; ses++) {
-        for (count = 0; count < 100; count++) {
+        for (count = 0; count < 10; count++) {
             MolochSession_t *session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
 
             if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams ||
@@ -524,7 +532,7 @@ void moloch_session_process_commands(int thread)
     }
 
     // TCP Sessions Open Long Time
-    for (count = 0; count < 100; count++) {
+    for (count = 0; count < 50; count++) {
         MolochSession_t *session = DLL_PEEK_HEAD(tcp_, &tcpWriteQ[thread]);
 
         if (session && (uint64_t)session->saveTime < (uint64_t)lastPacketSecs[thread]) {
@@ -578,18 +586,10 @@ void moloch_session_init()
     }
     if (p == 12) p = 11;
 
-    tagsField = moloch_field_by_db("ta");
-
     protocolField = moloch_field_define("general", "termfield",
         "protocols", "Protocols", "prot-term",
         "Protocols set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_COUNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
-        NULL);
-
-    tagsStringField = moloch_field_define("general", "notreal",
-        "tags", "Tags", "tags-term",
-        "Tags set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NODB,
         NULL);
 
     if (config.debug)
@@ -626,7 +626,7 @@ static void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED
     }
 }
 /******************************************************************************/
-/* Only called on main thread. Wait for all packet threads to be empty and then 
+/* Only called on main thread. Wait for all packet threads to be empty and then
  * start the save process on sessions.
  */
 void moloch_session_flush()

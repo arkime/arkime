@@ -22,8 +22,29 @@
 
 extern MolochConfig_t        config;
 
-static GKeyFile             *molochKeyFile;
+LOCAL GKeyFile             *molochKeyFile;
 
+/******************************************************************************/
+gchar *moloch_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d)
+{
+    char *result;
+    if (!keyfile)
+        keyfile = molochKeyFile;
+
+    if (g_key_file_has_key(keyfile, section, key, NULL)) {
+        result = g_key_file_get_string(keyfile, section, key, NULL);
+    } else if (d) {
+        result = g_strdup(d);
+    } else {
+        result = NULL;
+    }
+
+    if (config.debug) {
+        LOG("%s.%s=%s", section, key, result?result:"(null)");
+    }
+
+    return result;
+}
 /******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
 {
@@ -469,6 +490,44 @@ void moloch_config_load_local_ips()
             }
         }
         moloch_db_add_local_ip(keys[k], ii);
+        g_strfreev(values);
+    }
+    g_strfreev(keys);
+}
+/******************************************************************************/
+void moloch_config_load_packet_ips()
+{
+    GError   *error = 0;
+
+    if (!g_key_file_has_group(molochKeyFile, "packet-drop-ips"))
+        return;
+
+    gsize keys_len;
+    gchar **keys = g_key_file_get_keys (molochKeyFile, "packet-drop-ips", &keys_len, &error);
+    if (error) {
+        LOG("Error with packet-drop-ips: %s", error->message);
+        exit(1);
+    }
+
+    gsize k, v;
+    for (k = 0 ; k < keys_len; k++) {
+        gsize values_len;
+        gchar **values = g_key_file_get_string_list(molochKeyFile,
+                                                   "packet-drop-ips",
+                                                   keys[k],
+                                                  &values_len,
+                                                   NULL);
+        int mode = 0;
+        for (v = 0; v < values_len; v++) {
+            if (strncmp(values[v], "drop", 4) == 0) {
+
+            } else if (strncmp(values[v], "allow", 4) == 0) {
+                mode = 1;
+            } else {
+                LOGEXIT("Unknown argument to packet-drop-ips %s %s", keys[k], values[v]);
+            }
+        }
+        moloch_packet_add_packet_ip(keys[k], mode);
         g_strfreev(values);
     }
     g_strfreev(keys);

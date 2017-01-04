@@ -88,6 +88,7 @@ uint64_t connectionsSet[2048];
 #define BIT_CLR(bit, bits) bits[bit/64] &= ~(1 << (bit % 64))
 
 struct molochhttpserver_t {
+    uint64_t              dropped;
     char                **names;
     int                   namesCnt;
     int                   namesPos;
@@ -99,6 +100,7 @@ struct molochhttpserver_t {
     uint16_t              outstanding;
     uint16_t              connections;
 
+    MOLOCH_LOCK_EXTERN(syncRequest);
     MolochHttpRequest_t   syncRequest;
     CURL                 *multi;
     guint                 multiTimer;
@@ -153,6 +155,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     CURL *easy;
 
+    MOLOCH_LOCK(server->syncRequest);
     if (!server->syncRequest.easy) {
         easy = server->syncRequest.easy = curl_easy_init();
         if (config.debug >= 2) {
@@ -189,6 +192,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     if (res != CURLE_OK) {
         LOG("libcurl failure %s error '%s'", url, curl_easy_strerror(res));
+        MOLOCH_UNLOCK(server->syncRequest);
         return 0;
     }
 
@@ -220,7 +224,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
            connectTime*1000,
            totalTime*1000);
     }
-    return (unsigned char *)server->syncRequest.dataIn;
+    uint8_t *dataIn = server->syncRequest.dataIn;
+    server->syncRequest.dataIn = 0;
+    MOLOCH_UNLOCK(server->syncRequest);
+    return dataIn;
 }
 /******************************************************************************/
 static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
@@ -378,29 +385,48 @@ static gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition condit
     MolochHttpServer_t        *server = serverV;
 
 
-    struct sockaddr_in localAddress, remoteAddress;
+    struct sockaddr_storage localAddressStorage, remoteAddressStorage;
 
-    socklen_t addressLength = sizeof(localAddress);
-    int rc = getsockname(fd, (struct sockaddr*)&localAddress, &addressLength);
+    socklen_t addressLength = sizeof(localAddressStorage);
+    int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
     if (rc != 0)
         return FALSE;
 
-    addressLength = sizeof(remoteAddress);
-    rc = getpeername(fd, (struct sockaddr*)&remoteAddress, &addressLength);
+    addressLength = sizeof(remoteAddressStorage);
+    rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
     if (rc != 0)
         return FALSE;
 
     char sessionId[MOLOCH_SESSIONID_LEN];
-    moloch_session_id(sessionId, localAddress.sin_addr.s_addr, localAddress.sin_port,
-                      remoteAddress.sin_addr.s_addr, remoteAddress.sin_port);
+    int  localPort, remotePort;
+    char remoteIp[INET6_ADDRSTRLEN+2];
+    if (localAddressStorage.ss_family == AF_INET) {
+        struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
+        struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
+        moloch_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
+                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port);
+        localPort = ntohs(localAddress->sin_port);
+        remotePort = ntohs(remoteAddress->sin_port);
+        inet_ntop(AF_INET, &remoteAddress->sin_addr, remoteIp, sizeof(remoteIp));
+    } else {
+        struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
+        struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
+        moloch_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
+                          remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
+        localPort = ntohs(localAddress->sin6_port);
+        remotePort = ntohs(remoteAddress->sin6_port);
+        inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp+1, sizeof(remoteIp)-2);
+        remoteIp[0] = '[';
+        strcat(remoteIp, "]");
+    }
 
-    LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d", 
+    LOG("Connected %d/%d - %s   %d->%s:%d - fd:%d",
             server->outstanding,
             server->connections,
             server->names[0],
-            ntohs(localAddress.sin_port),
-            inet_ntoa(remoteAddress.sin_addr),
-            ntohs(remoteAddress.sin_port),
+            localPort,
+            remoteIp,
+            remotePort,
             fd);
 
     MolochHttpConn_t *conn;
@@ -442,19 +468,41 @@ int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
         return 0;
     }
 
-    struct sockaddr_in localAddress, remoteAddress;
-    memset(&localAddress, 0, sizeof(localAddress));
-    memset(&remoteAddress, 0, sizeof(localAddress));
+    struct sockaddr_storage localAddressStorage, remoteAddressStorage;
 
-    socklen_t addressLength = sizeof(localAddress);
-    getsockname(fd, (struct sockaddr*)&localAddress, &addressLength);
-    addressLength = sizeof(remoteAddress);
-    getpeername(fd, (struct sockaddr*)&remoteAddress, &addressLength);
+    socklen_t addressLength = sizeof(localAddressStorage);
+    int rc = getsockname(fd, (struct sockaddr*)&localAddressStorage, &addressLength);
+    if (rc != 0)
+        return 0;
+
+    addressLength = sizeof(remoteAddressStorage);
+    rc = getpeername(fd, (struct sockaddr*)&remoteAddressStorage, &addressLength);
+    if (rc != 0)
+        return 0;
 
     char sessionId[MOLOCH_SESSIONID_LEN];
+    int  localPort, remotePort;
+    char remoteIp[INET6_ADDRSTRLEN+2];
+    if (localAddressStorage.ss_family == AF_INET) {
+        struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
+        struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
+        moloch_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
+                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port);
+        localPort = ntohs(localAddress->sin_port);
+        remotePort = ntohs(remoteAddress->sin_port);
+        inet_ntop(AF_INET, &remoteAddress->sin_addr, remoteIp, sizeof(remoteIp));
+    } else {
+        struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
+        struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
+        moloch_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
+                          remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
+        localPort = ntohs(localAddress->sin6_port);
+        remotePort = ntohs(remoteAddress->sin6_port);
+        inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp+1, sizeof(remoteIp)-2);
+        remoteIp[0] = '[';
+        strcat(remoteIp, "]");
+    }
 
-    moloch_session_id(sessionId, localAddress.sin_addr.s_addr, localAddress.sin_port,
-                      remoteAddress.sin_addr.s_addr, remoteAddress.sin_port);
 
     MolochHttpConn_t *conn;
     BIT_CLR(fd, connectionsSet);
@@ -469,14 +517,15 @@ int moloch_http_curl_close_callback(void *serverV, curl_socket_t fd)
 
     server->connections--;
 
-    LOG("Close %d/%d - %s   %d->%s:%d fd:%d", 
+    LOG("Close %d/%d - %s   %d->%s:%d fd:%d removed: %s",
             server->outstanding,
             server->connections,
             server->names[0],
-            ntohs(localAddress.sin_port),
-            inet_ntoa(remoteAddress.sin_addr),
-            ntohs(remoteAddress.sin_port),
-            fd);
+            localPort,
+            remoteIp,
+            remotePort,
+            fd,
+            conn?"true":"false");
 
     close (fd);
     return 0;
@@ -512,6 +561,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     // Are we overloaded
     if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
         LOG("ERROR - Dropping request %.*s of size %d queue %d is too big", key_len, key, data_len, server->outstanding);
+        server->dropped++;
 
         if (data) {
             MOLOCH_SIZE_FREE(buffer, data);
@@ -570,6 +620,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, server);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETFUNCTION, moloch_http_curl_close_callback);
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, server);
+    curl_easy_setopt(request->easy, CURLOPT_ACCEPT_ENCODING, ""); // https://curl.haxx.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
 
     if (request->headerList) {
         curl_easy_setopt(request->easy, CURLOPT_HTTPHEADER, request->headerList);
@@ -633,10 +684,16 @@ unsigned char *moloch_http_get(void *serverV, char *key, int key_len, size_t *ml
 }
 
 /******************************************************************************/
-int moloch_http_queue_length(void *serverV) 
+int moloch_http_queue_length(void *serverV)
 {
     MolochHttpServer_t        *server = serverV;
     return server?server->outstanding:0;
+}
+/******************************************************************************/
+uint64_t moloch_http_dropped_count(void *serverV)
+{
+    MolochHttpServer_t        *server = serverV;
+    return server?server->dropped:0;
 }
 /******************************************************************************/
 void moloch_http_set_header_cb(void *serverV, MolochHttpHeader_cb cb)
@@ -668,7 +725,7 @@ void moloch_http_free_server(void *serverV)
 
     // Free multi info
     curl_multi_cleanup(server->multi);
-    
+
 
     g_strfreev(server->names);
 
@@ -718,6 +775,8 @@ void *moloch_http_create_server(const char *hostnames, int defaultPort, int maxC
     curl_multi_setopt(server->multi, CURLMOPT_MAXCONNECTS, server->maxConns);
 
     server->multiTimer = g_timeout_add(50, moloch_http_timer_callback, server);
+
+    MOLOCH_LOCK_INIT(server->syncRequest);
 
     return server;
 }

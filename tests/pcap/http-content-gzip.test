@@ -1,29 +1,47 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "hdvercnt" : 1,
+            "hmd5cnt" : 1,
+            "db" : 895,
+            "hh2cnt" : 10,
+            "mac2-term-cnt" : 2,
+            "by" : 2093,
+            "p2" : 80,
+            "lpd" : 1407242225628,
+            "hckey-term" : [
+               "xxxxxxxxxx"
+            ],
+            "db1" : 417,
+            "sl" : 916,
+            "g2" : "CAN",
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "00:26:88:d8:bf:c2"
+            ],
+            "fpd" : 1407242224712,
+            "us" : [
+               "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
+            ],
+            "g1" : "RUS",
+            "uscnt" : 1,
+            "fp" : 1407242224,
+            "uacnt" : 1,
+            "fb2" : "485454502f312e31",
+            "as1" : "AS0000 This is neat",
+            "portDst" : 80,
+            "pa2" : 5,
+            "p1" : 50638,
+            "mac1-term-cnt" : 1,
             "prot-term" : [
                "http",
                "tcp"
             ],
-            "hdver" : [
-               "1.1"
-            ],
-            "hcval-term-cnt" : 1,
-            "fs" : [],
-            "fb2" : "485454502f312e31",
             "a2" : "10.0.0.2",
-            "hpathcnt" : 1,
+            "pa1" : 7,
             "test" : {
                "ip-geo" : [
                   "RUS"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "number" : [
-                  33554442
                ],
                "string" : [
                   "16777226:50638,33554442:80"
@@ -33,16 +51,14 @@
                ],
                "ip-rir" : [
                   ""
+               ],
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
                ]
             },
-            "pa" : 12,
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "g1" : "RUS",
-            "hh1cnt" : 9,
-            "hh2cnt" : 10,
             "ps" : [
                24,
                106,
@@ -57,40 +73,47 @@
                2157,
                2233
             ],
-            "tags-term" : [
-               "srcip",
-               "dstip"
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:if-none-match",
+               "http:header:referer",
+               "http:header:user-agent"
             ],
-            "tacnt" : 2,
-            "fpd" : 1407242224712,
-            "hocnt" : 1,
-            "hmd5" : [
-               "5ff7b2c69c3b22826a717cd5ea4c9f32"
-            ],
-            "mac2-term-cnt" : 2,
-            "db" : 895,
-            "no" : "test",
             "prot-term-cnt" : 2,
-            "hsver" : [
-               "1.1"
-            ],
-            "by2" : 1250,
-            "hdrs" : {
-               "hreq-referer" : [
-                  "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
-               ],
-               "hreq-referercnt" : 1
-            },
-            "hmd5cnt" : 1,
+            "fs" : [],
             "mac1-term" : [
                "00:0a:f3:31:90:00"
             ],
-            "sl" : 916,
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+            "tcpflags" : {
+               "syn" : 1,
+               "ack" : 5,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "fin" : 2,
+               "psh" : 3
+            },
+            "hdver" : [
+               "1.1"
             ],
-            "lpd" : 1407242225628,
-            "pa2" : 5,
+            "hcval-term-cnt" : 1,
+            "hcval-term" : [
+               "xxx"
+            ],
+            "ipDst" : "10.0.0.2",
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "hpathcnt" : 1,
+            "as2" : "AS0001 Cool Beans!",
+            "ipSrc" : "10.0.0.1",
+            "rir2" : "TEST",
             "hh2" : [
                "http:header:age",
                "http:header:alternate-protocol",
@@ -103,72 +126,26 @@
                "http:header:expires",
                "http:header:server"
             ],
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:d8:bf:c2"
-            ],
-            "uacnt" : 1,
-            "lp" : 1407242225,
-            "hpath" : [
-               "/crossdomain.xml"
-            ],
-            "hckey-term-cnt" : 1,
-            "uscnt" : 1,
-            "db2" : 478,
+            "by1" : 843,
+            "tacnt" : 2,
+            "hh1cnt" : 9,
             "http" : {
-               "bodymagic-term-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term" : [
-                  "application/x-gzip"
-               ],
+               "method-term-cnt" : 1,
                "statuscode" : [
                   200
                ],
+               "method-term" : [
+                  "GET"
+               ],
                "statuscode-cnt" : 1,
-               "method-term-cnt" : 1
+               "bodymagic-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "application/x-gzip"
+               ]
             },
-            "fp" : 1407242224,
-            "us" : [
-               "//xxxxxxxxxxx.xxxxxxx.xxx/crossdomain.xml"
-            ],
-            "g2" : "CAN",
-            "hckey-term" : [
-               "xxxxxxxxxx"
-            ],
-            "mac1-term-cnt" : 1,
-            "hcval-term" : [
-               "xxx"
-            ],
-            "a1" : "10.0.0.1",
-            "as1" : "AS0000 This is neat",
-            "as2" : "AS0001 Cool Beans!",
-            "ho" : [
-               "xxxxxxxxxxx.xxxxxxx.xxx"
-            ],
-            "rir2" : "TEST",
-            "pa1" : 7,
-            "p2" : 80,
-            "p1" : 50638,
-            "by1" : 843,
-            "fb1" : "474554202f63726f",
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:if-none-match",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "db1" : 417,
-            "by" : 2093,
-            "pr" : 6,
+            "hdvercnt" : 1,
+            "db2" : 478,
             "hsvercnt" : 1,
-            "ss" : 1,
             "psl" : [
                82,
                82,
@@ -182,12 +159,51 @@
                76,
                76,
                76
+            ],
+            "lp" : 1407242225,
+            "ss" : 1,
+            "timestamp" : "SET",
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+            ],
+            "no" : "test",
+            "pa" : 12,
+            "hpath" : [
+               "/crossdomain.xml"
+            ],
+            "hmd5" : [
+               "5ff7b2c69c3b22826a717cd5ea4c9f32"
+            ],
+            "a1" : "10.0.0.1",
+            "hckey-term-cnt" : 1,
+            "portSrc" : 50638,
+            "ho" : [
+               "xxxxxxxxxxx.xxxxxxx.xxx"
+            ],
+            "firstPacket" : 1407242224712,
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "by2" : 1250,
+            "pr" : 6,
+            "hocnt" : 1,
+            "fb1" : "474554202f63726f",
+            "hdrs" : {
+               "hreq-referercnt" : 1,
+               "hreq-referer" : [
+                  "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
+               ]
+            },
+            "lastPacket" : 1407242225628,
+            "hsver" : [
+               "1.1"
             ]
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-140805",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-140805"
             }
          }
       }

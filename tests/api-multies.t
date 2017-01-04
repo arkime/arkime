@@ -75,12 +75,12 @@ my $json;
     cmp_ok($json->{hits}->{total}, '>=', 1, "stats/search count is at least 1");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats", "Correct stats index name");
 
-    $json = mesPost("/MULTIPREFIX_fields/field/_search", "{size:1000}");
+    $json = mesPost("/MULTIPREFIX_fields/field/_search", "{\"size\":1000}");
     cmp_ok($json->{hits}->{total}, '>=', 190, "fields count is at least 190");
     cmp_ok($json->{hits}->{total}, '<',  300, "fields count is less then 300");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields", "Correct fields index name");
 
-    $json = mesGet("/MULTIPREFIX_sessions-141015/session/_search?preference=_primary_first&ignoreIndices=missing&ignore_unavailable=true");
+    $json = mesGet("/MULTIPREFIX_sessions-141015/session/_search?preference=_primary_first&ignore_unavailable=true");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions-141015", "Correct sessions index name");
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 

@@ -25,20 +25,16 @@ if [ "$#" -gt 0 ]; then
     echo "Installing to ${TDIR}"
 fi
 
-
 ES=2.4.0
-NODEJS=0.10.45
+NODEJS=4.6.0
 INSTALL_DIR=$PWD
+
+echo "WARNING - easybutton will be removed in 0.17, please try the deb/rpm builds at http://molo.ch/?date=1#downloads and provide feedback"
+sleep 3
 
 if [ "$(id -u)" != "0" ]; then
    echo "ERROR - This script must be run as root" 1>&2
    exit 1
-fi
-
-pver=`python -c 'import sys; print("%i" % (sys.hexversion>=0x02060000))'`
-if [ $pver -eq 0 ]; then
-    echo "ERROR - node.js requires python 2.6 or higher to build"
-    exit 1
 fi
 
 if [ "$(umask)" != "022" -a "$(umask)" != "0022" ]; then
@@ -84,7 +80,7 @@ if [ $JAVA_VAL -ne 0 ]; then
             echo "ERROR - 'yum install java-1.7.0-openjdk' failed"
             exit
         fi
-    elif [ $(uname) == "FreeBSD" ]; then
+    elif [ $(uname) = "FreeBSD" ]; then
         pkg_add -Fr openjdk7
     else
         echo "ERROR - Not sure how to install java for this OS, please install and run again"
@@ -170,28 +166,23 @@ fi
 
 #make
 MAKE=make
-if [ $(uname) == "FreeBSD" ]; then
+if [ $(uname) = "FreeBSD" ]; then
     MAKE=gmake
 fi
 
 # NodeJS
 echo "MOLOCH: Downloading and installing node"
-cd ${INSTALL_DIR}/thirdparty
-if [ ! -f "node-v${NODEJS}.tar.gz" ]; then
-  wget http://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}.tar.gz
+cd ${TDIR}
+if [ ! -f "node-v${NODEJS}-linux-x64.tar.xz" ]; then
+  wget https://nodejs.org/dist/v${NODEJS}/node-v${NODEJS}-linux-x64.tar.xz
 fi
 
-tar xfz node-v${NODEJS}.tar.gz
-cd node-v${NODEJS}
-./configure 
-$MAKE
-$MAKE install
-./configure --prefix=${TDIR}
-$MAKE install
+xzcat node-v${NODEJS}-linux-x64.tar.xz | tar xf -
 
 # William likes the links so easier to find in ps
-ln -s $TDIR/bin/node $TDIR/bin/node-viewer
-ln -s $TDIR/bin/node $TDIR/bin/node-wise
+ln -sf $TDIR/node-v${NODEJS}-linux-x64/bin/* $TDIR/bin/
+ln -sf $TDIR/bin/node $TDIR/bin/node-viewer
+ln -sf $TDIR/bin/node $TDIR/bin/node-wise
 
 if [ "x$http_proxy" != "x" ]; then
     ${TDIR}/bin/npm config set proxy $http_proxy

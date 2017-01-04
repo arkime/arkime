@@ -121,7 +121,10 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
 #endif
 
     if (!(http->inBody & (1 << http->which))) {
-        if (moloch_memcasestr(at, length, "password=", 9)) {
+        if (moloch_memcasestr(at, length, "password=", 9) ||
+            moloch_memcasestr(at, length, "passwd=", 7) ||
+            moloch_memcasestr(at, length, "pass=", 5)
+           ) {
             moloch_session_add_tag(session, "http:password");
         }
 
@@ -253,7 +256,8 @@ http_add_value(MolochSession_t *session, HTTPInfo_t *http)
             in_addr_t ia = inet_addr(ip);
             if (ia == 0 || ia == 0xffffffff) {
                 moloch_session_add_tag(session, "http:bad-xff");
-                LOG("ERROR - Didn't understand ip: %s %s %d", http->valueString[http->which]->str, ip, ia);
+                if (config.debug)
+                    LOG("INFO - Didn't understand ip: %s %s %d", http->valueString[http->which]->str, ip, ia);
                 continue;
             }
 
@@ -814,6 +818,8 @@ static const char *method_strings[] =
     for (i = 0; method_strings[i]; i++) {
         moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
     }
+
+    moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)"HTTP", 4, http_classify);
 
     memset(&parserSettings, 0, sizeof(parserSettings));
     parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;

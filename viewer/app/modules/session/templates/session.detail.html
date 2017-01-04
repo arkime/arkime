@@ -1,0 +1,13 @@
+<div ng-if="$ctrl.loading"
+  class="margined-top margined-bottom large">
+  <span class="fa fa-spinner fa-spin"></span>&nbsp;
+  Loading session details...
+</div>
+
+<div ng-if="$ctrl.error"
+  class="text-danger margined-top margined-bottom large">
+  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+  {{$ctrl.error}}
+</div>
+
+<div class="detail-container"></div>

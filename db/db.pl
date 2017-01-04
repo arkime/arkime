@@ -34,6 +34,9 @@
 # 25 - cert hash
 # 26 - dynamic stats, ES 2.0
 # 27 - table states
+# 28 - timestamp, firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc
+# 29 - stats/dstats uses dynamic_templates
+# 30 - change file to dynamic
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -42,9 +45,10 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 27;
+my $VERSION = 30;
 my $verbose = 0;
 my $PREFIX = "";
+my $NOCHANGES = 0;
 my $SHARDS = -1;
 my $REPLICAS = -1;
 
@@ -68,6 +72,7 @@ sub showHelp($)
     print "Global Options:\n";
     print "  -v                           - Verbose, multiple increases level\n";
     print "  --prefix <prefix>            - Prefix for table names\n";
+    print "  -n                           - Make no db changes\n";
     print "\n";
     print "Commands:\n";
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
@@ -86,7 +91,8 @@ sub showHelp($)
     print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
     print "  add-missing <node> <dir>     - Add to db any MISSING file on THIS machine for named node and directory\n";
-    print "  expire <type> <num> [<opts>] - Perform daily maintenance and optimize all indices in ES\n";
+    print "  sync-files  <nodes> <dirs>   - Add/Remove db any MISSING file on THIS machine for named node(s) and directory(s)\n";
+    print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
@@ -125,6 +131,12 @@ sub esGet
 sub esPost
 {
     my ($url, $content, $dontcheck) = @_;
+
+    if ($NOCHANGES && $url !~ /_search/) {
+      print "NOCHANGE: PUT ${main::elasticsearch}$url\n";
+      return;
+    }
+
     print "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content);
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
@@ -139,6 +151,12 @@ sub esPost
 sub esPut
 {
     my ($url, $content, $dontcheck) = @_;
+
+    if ($NOCHANGES) {
+      print "NOCHANGE: PUT ${main::elasticsearch}$url\n";
+      return;
+    }
+
     print "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
@@ -153,6 +171,12 @@ sub esPut
 sub esDelete
 {
     my ($url, $dontcheck) = @_;
+
+    if ($NOCHANGES) {
+      print "NOCHANGE: DELETE ${main::elasticsearch}$url\n";
+      return;
+    }
+
     print "DELETE ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "${main::elasticsearch}$url"));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
@@ -178,7 +202,7 @@ sub esCopy
         }
         my $url;
         if ($id eq "") {
-            $url = "/${PREFIX}$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
+            $url = "/${PREFIX}$srci/$type/_search?scroll=10m&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
@@ -200,6 +224,38 @@ sub esCopy
     print "\n"
 }
 ################################################################################
+sub esScroll
+{
+    my ($index, $type, $query) = @_;
+
+    my @hits = ();
+
+    my $id = "";
+    while (1) {
+        if ($verbose > 0) {
+            local $| = 1;
+            print ".";
+        }
+        my $url;
+        if ($id eq "") {
+            $url = "/${PREFIX}$index/$type/_search?scroll=10m&size=500";
+        } else {
+            $url = "/_search/scroll?scroll=10m&scroll_id=$id";
+            $query = "";
+        }
+
+
+        my $incoming = esPost($url, $query, 1);
+        #print Dumper($incoming);
+        last if (@{$incoming->{hits}->{hits}} == 0);
+
+        push(@hits, @{$incoming->{hits}->{hits}});
+
+        $id = $incoming->{_scroll_id};
+    }
+    return \@hits;
+}
+################################################################################
 sub esAlias
 {
     my ($cmd, $index, $alias) = @_;
@@ -216,7 +272,7 @@ sub tagsCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-all"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -252,7 +308,7 @@ sub sequenceCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-all"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -284,7 +340,7 @@ sub filesCreate
   "settings": {
     "number_of_shards": 2,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -301,7 +357,17 @@ sub filesUpdate
   "file": {
     "_all": {"enabled": 0},
     "_source": {"enabled": 1},
-    "dynamic": "strict",
+    "dynamic": "dynamic",
+    "dynamic_templates": [
+      {
+        "any": {
+          "match_mapping_type": "*",
+          "mapping": {
+            "index": "no"
+          }
+        }
+      }
+    ],
     "properties": {
       "num": {
         "type": "long",
@@ -342,15 +408,10 @@ sub statsCreate
 {
     my $settings = '
 {
-  "index": {
-    "store": {
-      "type": "memory"
-    }
-  },
   "settings": {
-      "number_of_shards": 1,
-      "number_of_replicas": 0,
-      "auto_expand_replicas": "0-all"
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -365,9 +426,28 @@ sub statsUpdate
 my $mapping = '
 {
   "stat": {
-    "_all": {enabled : false},
-    "_source": {enabled : true},
+    "_all": {"enabled": false},
+    "_source": {"enabled": true},
     "dynamic": "true",
+    "dynamic_templates": [
+      {
+        "numeric": {
+          "match_mapping_type": "long",
+          "mapping": {
+            "type": "long",
+            "index": "no"
+          }
+        }
+      },
+      {
+        "noindex": {
+          "match": "*",
+          "mapping": {
+            "index": "no"
+          }
+        }
+      }
+    ],
     "properties": {
       "hostname": {
         "type": "string",
@@ -375,69 +455,13 @@ my $mapping = '
       },
       "currentTime": {
         "type": "long"
-      },
-      "freeSpaceM": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalK": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalPackets": {
-        "type": "long",
-        "index": "no"
-      },
-      "monitoring": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalSessions": {
-        "type": "long",
-        "index": "no"
-      },
-      "totalDropped": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaMS": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaBytes": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaPackets": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaSessions": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaDropped": {
-        "type": "long",
-        "index": "no"
-      },
-      "memory": {
-        "type": "long",
-        "index": "no"
-      },
-      "cpu": {
-        "type": "integer",
-        "index": "no"
-      },
-      "diskQueue": {
-        "type": "long",
-        "index": "no"
       }
     }
   }
 }';
 
     print "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats/stat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
+    esPut("/${PREFIX}stats/stat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -447,7 +471,7 @@ sub dstatsCreate
   "settings": {
     "number_of_shards": 2,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -466,6 +490,25 @@ my $mapping = '
     "_all": {"enabled": false},
     "_source": {"enabled": true},
     "dynamic": "true",
+    "dynamic_templates": [
+      {
+        "numeric": {
+          "match_mapping_type": "long",
+          "mapping": {
+            "type": "long",
+            "index": "no"
+          }
+        }
+      },
+      {
+        "noindex": {
+          "match": "*",
+          "mapping": {
+            "index": "no"
+          }
+        }
+      }
+    ],
     "properties": {
       "nodeName": {
         "type": "string",
@@ -476,53 +519,13 @@ my $mapping = '
       },
       "currentTime": {
         "type": "long"
-      },
-      "freeSpaceM": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaMS": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaBytes": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaPackets": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaSessions": {
-        "type": "long",
-        "index": "no"
-      },
-      "deltaDropped": {
-        "type": "long",
-        "index": "no"
-      },
-      "monitoring": {
-        "type": "long",
-        "index": "no"
-      },
-      "memory": {
-        "type": "long",
-        "index": "no"
-      },
-      "cpu": {
-        "type": "integer",
-        "index": "no"
-      },
-      "diskQueue": {
-        "type": "long",
-        "index": "no"
       }
     }
   }
 }';
 
     print "Setting dstats_v1 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v1/dstat/_mapping?pretty&ignore_conflicts=true", $mapping, 1);
+    esPut("/${PREFIX}dstats_v1/dstat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -532,7 +535,7 @@ sub fieldsCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -879,7 +882,7 @@ sub fieldsUpdate
     }');
 
     esPost("/${PREFIX}fields/field/dns.status/_update", '{"doc": {"type": "uptermfield"}}', 1);
-    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{"doc": {regex: "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
+    esPost("/${PREFIX}fields/field/http.hasheader/_update", '{"doc": {"regex": "^http.hasheader\\\\.(?:(?!\\\\.cnt$).)*$"}}', 1);
     esPost("/${PREFIX}fields/field/email.subject/_update", '{"doc": {"type": "textfield"}}', 1);
 }
 
@@ -891,7 +894,7 @@ sub queriesCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -946,7 +949,7 @@ sub queriesUpdate
 }';
 
     print "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries/query/_mapping?pretty&ignore_conflicts=true", $mapping);
+    esPut("/${PREFIX}queries/query/_mapping?pretty", $mapping);
 }
 
 ################################################################################
@@ -963,11 +966,11 @@ sub sessionsUpdate
           "path_match": "hdrs.*",
           "match_mapping_type": "string",
           "mapping": {
-            "type": "multi_field",
-            "path": "full",
+            "type": "string",
+            "index": "no",
             "fields": {
-              "snow" : {"type": "string", "analyzer" : "snowball"},
-              "raw" : {"type": "string", "index" : "not_analyzed"}
+              "snow": {"type": "string", "analyzer" : "snowball"},
+              "raw": {"type": "string", "index" : "not_analyzed"}
             }
           }
         }
@@ -986,8 +989,8 @@ sub sessionsUpdate
         "template_string": {
           "match_mapping_type": "string",
           "mapping": {
-            "type": "multi_field",
-            "path": "full",
+            "type": "string",
+            "index": "no",
             "fields": {
               "snow" : {"type": "string", "analyzer" : "snowball"},
               "raw" : {"type": "string", "index" : "not_analyzed"}
@@ -997,6 +1000,27 @@ sub sessionsUpdate
       }
     ],
     "properties": {
+      "timestamp": {
+        "type": "date"
+      },
+      "firstPacket": {
+        "type": "date"
+      },
+      "lastPacket": {
+        "type": "date"
+      },
+      "ipSrc": {
+        "type": "ip"
+      },
+      "portSrc": {
+        "type": "integer"
+      },
+      "ipDst": {
+        "type": "ip"
+      },
+      "portDst": {
+        "type": "integer"
+      },
       "us": {
         "type": "string",
         "analyzer": "url_analyzer",
@@ -1314,9 +1338,10 @@ sub sessionsUpdate
             "index": "not_analyzed"
           },
           "iOn": {
-            "type": "multi_field",
+            "type": "string",
+            "analyzer": "snowball",
+            "omit_norms": true,
             "fields": {
-              "iOn": {"type": "string", "analyzer": "snowball", "omit_norms": true},
               "rawiOn": {"type": "string", "index": "not_analyzed"}
             }
           },
@@ -1326,9 +1351,10 @@ sub sessionsUpdate
             "index": "not_analyzed"
           },
           "sOn": {
-            "type": "multi_field",
+            "type": "string",
+            "analyzer": "snowball",
+            "omit_norms": true,
             "fields": {
-              "sOn": {"type": "string", "analyzer": "snowball", "omit_norms": true},
               "rawsOn": {"type": "string", "index": "not_analyzed"}
             }
           },
@@ -1671,7 +1697,7 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress($i);
-        esPut("/$i/session/_mapping?ignore_conflicts=true", $mapping, 1);
+        esPut("/$i/session/_mapping", $mapping, 1);
 
         # Before version 12 had soft, change to node, requires a close and open
         if ($main::versionNumber < 12) {
@@ -1683,8 +1709,6 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
     }
 
     print "\n";
-
-    esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
 }
 
 ################################################################################
@@ -1695,7 +1719,7 @@ sub usersCreate
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
-    "auto_expand_replicas": "0-2"
+    "auto_expand_replicas": "0-3"
   }
 }';
 
@@ -1765,7 +1789,7 @@ sub usersUpdate
 }';
 
     print "Setting users_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v3/user/_mapping?pretty&ignore_conflicts=true", $mapping);
+    esPut("/${PREFIX}users_v3/user/_mapping?pretty", $mapping);
 }
 
 ################################################################################
@@ -1824,13 +1848,6 @@ sub dbCheckHealth {
     if ($health->{status} ne "green") {
         print("WARNING elasticsearch health is '$health->{status}' instead of 'green', things may be broken\n\n");
     }
-
-    my $settings = esGet("/_cluster/settings?flat_settings");
-    if ($settings && $settings->{persistent} && $settings->{persistent}->{"threadpool.search.queue_size"} == "-1") {
-        print "Changing threadpool.search.queue_size to 10000 to work around bug\n";
-        esPut("/_cluster/settings", '{persistent: {"threadpool.search.queue_size":10000}}');
-    }
-
     return $health;
 }
 ################################################################################
@@ -1839,10 +1856,9 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 10602) {
+    if ($main::esVersion < 20400) {
         print("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* 1.6.2 is supported\n",
-              "* 1.7.x is recommended\n",
+              "* 2.4.x is supported\n",
               "\n",
               "Instructions: https://github.com/aol/moloch/wiki/FAQ#wiki-How_do_I_upgrade_Elastic_Search\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -1851,13 +1867,16 @@ sub dbCheck {
     }
 
     my $error = 0;
-    my $nodes = esGet("/_nodes?settings&process&flat_settings");
-    my $nodeStats;
-    if ($main::esVersion < 20000) {
-        $nodeStats = $nodes;
+    my $nodes = esGet("/_nodes?flat_settings");
+    my $nodeStats = esGet("/_nodes/stats");
+
+    if ($main::esVersion < 50000) {
+        esPut("/_cluster/settings", '{"persistent": {"threadpool.search.queue_size":10000}}');
     } else {
-        $nodeStats = esGet("/_nodes/stats?process");
+        # ALW - Not supported with 5.0, might need to require user setting
+        # esPut("/_cluster/settings", '{"persistent": {"thread_pool.search.queue_size":10000}}');
     }
+
     foreach my $key (sort {$nodes->{nodes}->{$a}->{name} cmp $nodes->{nodes}->{$b}->{name}} keys %{$nodes->{nodes}}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
         my $node = $nodes->{nodes}->{$key};
@@ -1939,17 +1958,19 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
         $PREFIX = $ARGV[1];
         shift @ARGV;
         $PREFIX .= "_" if ($PREFIX !~ /_$/);
+    } elsif ($ARGV[0] =~ /-n$/) {
+        $NOCHANGES = 1;
     } else {
-        showHelp("Unknkown option $ARGV[0]")
+        showHelp("Unknkown global option $ARGV[0]")
     }
     shift @ARGV;
 }
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|info|wipe|upgrade|upgradenoprompt|users-?import|users-?export|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|users-?export|rm|rm-?missing|rm-?node)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|add-?missing|sync-files)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
@@ -2049,20 +2070,20 @@ if ($ARGV[1] =~ /^users-?import$/) {
     dbVersion(0);
     my $esversion = dbESVersion();
     my $nodes = esGet("/_nodes");
-    my $status = esGet("/_status", 1);
+    my $status = esGet("/_stats", 1);
     my $sessions = 0;
     my $sessionsBytes = 0;
-    my @sessions = grep /^${PREFIX}session/, keys %{$status->{indices}};
+    my @sessions = grep /^${PREFIX}sessions-/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
         next if ($index !~ /^${PREFIX}sessions-/);
-        $sessions += $status->{indices}->{$index}->{docs}->{num_docs};
-        $sessionsBytes += $status->{indices}->{$index}->{index}->{primary_size_in_bytes};
+        $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
+        $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }
 
 sub printIndex {
     my ($index, $name) = @_;
     return if (!$index);
-    printf "%-20s %s (%s bytes)\n", $name . ":", commify($index->{docs}->{num_docs}), commify($index->{index}->{primary_size_in_bytes});
+    printf "%-20s %s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
 }
 
     printf "ES Version:          %s\n", $esversion->{version}->{number};
@@ -2161,6 +2182,53 @@ sub printIndex {
             print "Ok $dir/$file\n";
         }
     }
+    exit 0;
+} elsif ($ARGV[1] =~ /^sync-?files$/) {
+    my @nodes = split(",", $ARGV[2]);
+    my @dirs = split(",", $ARGV[3]);
+
+    # find all local files, do this first also to make sure we can access dirs
+    my @localfiles = ();
+    foreach my $dir (@dirs) {
+        chop $dir if (substr($dir, -1) eq "/");
+        opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
+        foreach my $node (@nodes) {
+            my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
+            @files = map "$dir/$_", @files;
+            push (@localfiles, @files);
+        }
+        closedir $dh;
+    }
+
+    # See what files are in db
+    my $remotefiles = esScroll("files", "file", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
+    my %remotefileshash;
+    foreach my $hit (@{$remotefiles}) {
+        if (! -f $hit->{_source}->{name}) {
+            print "Removing", $hit->{_source}->{name}, " id: ", $hit->{_id}, "\n";
+            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+        } else {
+            $remotefileshash{$hit->{_source}->{name}} = 1;
+        }
+    }
+
+    # Now see which local are missing
+    foreach my $file (@localfiles) {
+        if (!exists $remotefileshash{$file}) {
+            $file =~ /\/([^\/]*)-(\d+)-(\d+).pcap/;
+            my $node = $1;
+            my $filenum = int($3);
+            my $ctime = (stat("$file"))[10];
+            print "Adding $file $node $filenum $ctime\n";
+            esPost("/${PREFIX}files/file/$node-$filenum", to_json({
+                         'locked' => 0,
+                         'first' => $ctime,
+                         'num' => $filenum,
+                         'name' => "$file",
+                         'node' => $node}), 1);
+        }
+    }
+
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
     my $result = esGet("/${PREFIX}fields/field/$ARGV[3]", 1);
@@ -2339,6 +2407,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         esCopy("users_v2", "users_v3", "user");
         print "users_v2 table can be deleted now\n";
 
+        filesUpdate();
         fieldsUpdate();
         sessionsUpdate();
         queriesCreate();
@@ -2351,14 +2420,19 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 26) {
         usersUpdate();
         sessionsUpdate();
         fieldsUpdate();
         statsUpdate();
         dstatsUpdate();
-    } elsif ($main::versionNumber <= 27) {
+        filesUpdate();
+    } elsif ($main::versionNumber <= 30) {
         sessionsUpdate();
+        statsUpdate();
+        dstatsUpdate();
+        filesUpdate();
     } else {
         print "db.pl is hosed\n";
     }

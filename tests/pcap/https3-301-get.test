@@ -1,35 +1,43 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131125"
+               "_index" : "tests_sessions-131125",
+               "_type" : "session"
             }
          },
          "body" : {
-            "p2" : 443,
+            "ipDst" : "192.30.252.130",
             "db2" : 4208,
             "mac1-term-cnt" : 1,
-            "no" : "test",
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "g1" : "USA",
-            "ss" : 1,
-            "prot-term-cnt" : 2,
-            "rir2" : "ARIN",
-            "a2" : "192.30.252.130",
             "tlsdstid-term" : [
                "dddbfd5162689bb01e3f0ba158a586de9097b26cfc83599391cbb5e128d34b97"
             ],
             "sl" : 223,
-            "pa" : 23,
-            "by1" : 1530,
-            "hocnt" : 1,
-            "db" : 4838,
-            "tlsver-termcnt" : 1,
+            "portDst" : 443,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:0e:d6:0b:98:80"
+            ],
+            "g1" : "USA",
+            "as2" : "AS36459 GitHub, Inc.",
+            "db1" : 630,
+            "tcpflags" : {
+               "psh" : 8,
+               "syn" : 1,
+               "fin" : 2,
+               "rst" : 3,
+               "syn-ack" : 1,
+               "ack" : 8,
+               "urg" : 0
+            },
+            "lpd" : 1385396821236,
+            "tlscipher-termcnt" : 1,
             "tlscnt" : 2,
+            "fb2" : "1603010055020000",
+            "ss" : 1,
+            "firstPacket" : 1385396821013,
             "psl" : [
                94,
                90,
@@ -55,6 +63,77 @@
                82,
                70
             ],
+            "p2" : 443,
+            "by1" : 1530,
+            "prot-term-cnt" : 2,
+            "p1" : 62599,
+            "pr" : 6,
+            "hocnt" : 1,
+            "lastPacket" : 1385396821236,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "g2" : "USA",
+            "fb1" : "1603010072010000",
+            "no" : "test",
+            "by" : 6340,
+            "mac2-term-cnt" : 2,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "a2" : "192.30.252.130",
+            "portSrc" : 62599,
+            "a1" : "10.180.156.141",
+            "tls" : [
+               {
+                  "sOn" : "GitHub, Inc.",
+                  "alt" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "notAfter" : 1441195200,
+                  "notBefore" : 1370822400,
+                  "altcnt" : 2,
+                  "sCn" : [
+                     "github.com"
+                  ],
+                  "iOn" : "DigiCert Inc",
+                  "diffDays" : 814,
+                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
+                  "iCn" : [
+                     "digicert high assurance ev ca-1"
+                  ]
+               },
+               {
+                  "diffDays" : 5114,
+                  "sn" : "0337b928347c60a6aec5adb1217f3860",
+                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
+                  "sCn" : [
+                     "digicert high assurance ev ca-1"
+                  ],
+                  "iOn" : "DigiCert Inc",
+                  "iCn" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "notBefore" : 1194609600,
+                  "notAfter" : 1636502400
+               }
+            ],
+            "fp" : 1385396821,
+            "pa1" : 14,
+            "rir2" : "ARIN",
+            "db" : 4838,
+            "ho" : [
+               "www.github.com"
+            ],
+            "pa2" : 9,
+            "fpd" : 1385396821013,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
+            "ipSrc" : "10.180.156.141",
             "ps" : [
                24,
                118,
@@ -80,79 +159,16 @@
                6580,
                6662
             ],
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "by" : 6340,
-            "a1" : "10.180.156.141",
-            "tlscipher-termcnt" : 1,
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
-            ],
+            "pa" : 23,
+            "timestamp" : "SET",
             "by2" : 4810,
-            "db1" : 630,
-            "lpd" : 1385396821236,
-            "as2" : "AS36459 GitHub, Inc.",
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "mac2-term-cnt" : 2,
-            "fb1" : "1603010072010000",
+            "lp" : 1385396821,
+            "tlsver-termcnt" : 1,
             "prot-term" : [
                "tls",
                "tcp"
             ],
-            "tls" : [
-               {
-                  "iOn" : "DigiCert Inc",
-                  "notAfter" : 1441195200,
-                  "sCn" : [
-                     "github.com"
-                  ],
-                  "notBefore" : 1370822400,
-                  "diffDays" : 814,
-                  "iCn" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "altcnt" : 2,
-                  "alt" : [
-                     "github.com",
-                     "www.github.com"
-                  ],
-                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
-                  "sOn" : "GitHub, Inc.",
-                  "sn" : "047fbe2e4bde0084d2caf8e3ecfe7058"
-               },
-               {
-                  "sOn" : "DigiCert Inc",
-                  "sn" : "0337b928347c60a6aec5adb1217f3860",
-                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
-                  "notAfter" : 1636502400,
-                  "iOn" : "DigiCert Inc",
-                  "sCn" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "notBefore" : 1194609600,
-                  "iCn" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "diffDays" : 5114
-               }
-            ],
-            "g2" : "USA",
-            "lp" : 1385396821,
-            "fb2" : "1603010055020000",
-            "ho" : [
-               "www.github.com"
-            ],
-            "fs" : [],
-            "fp" : 1385396821,
-            "pr" : 6,
-            "p1" : 62599,
-            "pa2" : 9,
-            "fpd" : 1385396821013,
-            "pa1" : 14
+            "fs" : []
          }
       }
    ]

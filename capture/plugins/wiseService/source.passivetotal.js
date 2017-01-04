@@ -25,8 +25,34 @@ var request        = require('request')
 //////////////////////////////////////////////////////////////////////////////////
 function PassiveTotalSource (api, section) {
   PassiveTotalSource.super_.call(this, api, section);
+
+  this.key = this.api.getConfig("passivetotal", "key");
+  this.user = this.api.getConfig("passivetotal", "user");
+  if (this.key === undefined) {
+    console.log(this.section, "- No key defined");
+    return;
+  }
+  if (this.user === undefined) {
+    console.log(this.section, "- No user defined");
+    return;
+  }
+
   this.waiting      = [];
   this.processing   = {};
+
+  this.api.addSource("passivetotal", this);
+
+  setInterval(this.performQuery.bind(this), 500);
+
+  var str = 
+    "if (session.passivetotal)\n" +
+    "  div.sessionDetailMeta.bold PassiveTotal\n" +
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.passivetotal, 'tags-term', 'Tags', 'passivetotal.tags')\n";
+
+  this.tagsField = this.api.addField("field:passivetotal.tags;db:passivetotal.tags-term;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true");
+
+  this.api.addView("passivetotal", str);
 }
 util.inherits(PassiveTotalSource, wiseSource);
 
@@ -39,7 +65,7 @@ PassiveTotalSource.prototype.performQuery = function () {
   }
 
   if (self.api.debug > 0) {
-    console.log("PassiveTotal - Fetching %d", self.waiting.length);
+    console.log(this.section, "- Fetching %d", self.waiting.length);
   }
 
   var options = {
@@ -56,7 +82,7 @@ PassiveTotalSource.prototype.performQuery = function () {
 
   var req = request(options, function(err, im, results) {
     if (err) {
-      console.log("Error parsing for request:\n", options, "\nresults:\n", results);
+      console.log(self.section, "- Error parsing for request:\n", options, "\nresults:\n", results);
       results = {results:{}};
     } 
 
@@ -88,57 +114,30 @@ PassiveTotalSource.prototype.performQuery = function () {
       }
     }
   }).on('error', function (err) {
-    console.log(err);
+    console.log(self.section, err);
   });
 
   self.waiting.length = 0;
 };
 //////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.init = function() {
-  this.key = this.api.getConfig("passivetotal", "key");
-  this.user = this.api.getConfig("passivetotal", "user");
-  if (this.key === undefined) {
-    console.log("PassiveTotal - No key defined");
-    return;
-  }
-  if (this.user === undefined) {
-    console.log("PassiveTotal - No user defined");
+PassiveTotalSource.prototype.fetch = function(key, cb) {
+  if (key in this.processing) {
+    this.processing[key].push(cb);
     return;
   }
 
-  this.api.addSource("passivetotal", this);
-  setInterval(this.performQuery.bind(this), 500);
-
-  var str = 
-    "if (session.passivetotal)\n" +
-    "  div.sessionDetailMeta.bold PassiveTotal\n" +
-    "  dl.sessionDetailMeta\n" +
-    "    +arrayList(session.passivetotal, 'tags-term', 'Tags', 'passivetotal.tags')\n";
-
-  this.tagsField = this.api.addField("field:passivetotal.tags;db:passivetotal.tags-term;kind:termfield;friendly:Tags;help:PassiveTotal Tags;count:true");
-
-  this.api.addView("passivetotal", str);
-};
-
-//////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.getDomain = function(domain, cb) {
-  if (domain in this.processing) {
-    this.processing[domain].push(cb);
-    return;
-  }
-
-  this.processing[domain] = [cb];
-  this.waiting.push(domain);
+  this.processing[key] = [cb];
+  this.waiting.push(key);
   if (this.waiting.length >= 25) {
     this.performQuery();
   }
 };
 //////////////////////////////////////////////////////////////////////////////////
-PassiveTotalSource.prototype.getIp = PassiveTotalSource.prototype.getDomain;
+PassiveTotalSource.prototype.getIp     = PassiveTotalSource.prototype.fetch;
+PassiveTotalSource.prototype.getDomain = PassiveTotalSource.prototype.fetch;
 //////////////////////////////////////////////////////////////////////////////////
 var source;
 exports.initSource = function(api) {
   source = new PassiveTotalSource(api, "passivetotal");
-  source.init();
 };
 //////////////////////////////////////////////////////////////////////////////////

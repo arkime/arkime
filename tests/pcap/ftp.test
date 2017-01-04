@@ -1,43 +1,7 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-160201",
-               "_type" : "session"
-            }
-         },
          "body" : {
-            "user" : [
-               "anonymous"
-            ],
-            "by1" : 376,
-            "no" : "test",
-            "a2" : "129.21.171.72",
-            "fs" : [],
-            "mac2-term" : [
-               "58:f3:9c:f7:2f:9f"
-            ],
-            "p2" : 21,
-            "mac2-term-cnt" : 1,
-            "fb1" : "5553455220616e6f",
-            "g2" : "USA",
-            "fb2" : "3232302057656c63",
-            "pa" : 10,
-            "pa1" : 5,
-            "psl" : [
-               90,
-               90,
-               82,
-               115,
-               82,
-               98,
-               82,
-               116,
-               104,
-               105
-            ],
-            "ss" : 1,
             "ps" : [
                24,
                114,
@@ -50,32 +14,84 @@
                779,
                883
             ],
-            "db" : 128,
-            "by" : 804,
-            "sl" : 78,
+            "ipSrc" : "10.10.30.26",
+            "lp" : 1454301531,
+            "mac2-term" : [
+               "58:f3:9c:f7:2f:9f"
+            ],
+            "a2" : "129.21.171.72",
+            "lastPacket" : 1454301531009,
+            "ss" : 1,
+            "fpd" : 1454301530932,
+            "no" : "test",
+            "user" : [
+               "anonymous"
+            ],
+            "timestamp" : "SET",
+            "fs" : [],
+            "portDst" : 21,
+            "tcpflags" : {
+               "psh" : 5,
+               "ack" : 3,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "fin" : 0,
+               "syn" : 1
+            },
+            "psl" : [
+               90,
+               90,
+               82,
+               115,
+               82,
+               98,
+               82,
+               116,
+               104,
+               105
+            ],
             "as2" : "AS4385 Rochester Institute of Technology",
+            "mac2-term-cnt" : 1,
             "by2" : 428,
+            "pa" : 10,
+            "fp" : 1454301530,
+            "ipDst" : "129.21.171.72",
+            "mac1-term-cnt" : 1,
+            "mac1-term" : [
+               "00:08:e3:ff:fc:28"
+            ],
+            "a1" : "10.10.30.26",
+            "lpd" : 1454301531009,
+            "prot-term-cnt" : 2,
+            "pa2" : 5,
+            "p1" : 43958,
+            "pr" : 6,
+            "rir2" : "ARIN",
+            "by" : 804,
+            "db" : 128,
+            "fb2" : "3232302057656c63",
+            "portSrc" : 43958,
+            "firstPacket" : 1454301530932,
+            "fb1" : "5553455220616e6f",
+            "sl" : 78,
+            "by1" : 376,
+            "db1" : 38,
+            "g2" : "USA",
+            "usercnt" : 1,
+            "pa1" : 5,
+            "db2" : 90,
             "prot-term" : [
                "ftp",
                "tcp"
             ],
-            "lpd" : 1454301531009,
-            "mac1-term" : [
-               "00:08:e3:ff:fc:28"
-            ],
-            "db2" : 90,
-            "p1" : 43958,
-            "a1" : "10.10.30.26",
-            "rir2" : "ARIN",
-            "fpd" : 1454301530932,
-            "fp" : 1454301530,
-            "usercnt" : 1,
-            "mac1-term-cnt" : 1,
-            "pr" : 6,
-            "db1" : 38,
-            "lp" : 1454301531,
-            "prot-term-cnt" : 2,
-            "pa2" : 5
+            "p2" : 21
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-160201"
+            }
          }
       }
    ]

@@ -1,74 +1,68 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "pa2" : 5,
-            "lpd" : 1404135330336,
-            "by1" : 3811,
-            "hocnt" : 1,
-            "http" : {
-               "method-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "bodymagic-term-cnt" : 1,
-               "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term" : [
-                  "image/gif"
-               ]
-            },
-            "hpath" : [
-               "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
+            "tags-term" : [
+               "srcip",
+               "dstip"
             ],
-            "fpd" : 1404135320459,
-            "pr" : 6,
-            "a1" : "10.0.0.1",
-            "hh2cnt" : 17,
-            "psl" : [
-               78,
-               78,
-               76,
-               1240,
-               948,
-               76,
-               1240,
-               265,
-               76,
-               776,
-               76,
-               76
-            ],
-            "hsvercnt" : 1,
-            "ss" : 1,
             "fb1" : "474554202f782f78",
-            "fb2" : "485454502f312e31",
             "p1" : 61462,
+            "as2" : "AS0001 Cool Beans!",
+            "mac2-term-cnt" : 1,
+            "g2" : "CAN",
+            "a2" : "10.0.0.2",
             "mac1-term-cnt" : 1,
-            "hcval-term" : [
-               "xxxx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "ie",
-               "false",
-               "xxxxxx",
-               "true",
-               "xx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "1"
+            "p2" : 80,
+            "hdrs" : {
+               "hreq-referer" : [
+                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
+               ],
+               "hreq-referercnt" : 1
+            },
+            "mac2-term" : [
+               "88:43:e1:94:fc:2d"
             ],
+            "a1" : "10.0.0.1",
+            "hcval-term-cnt" : 10,
             "hckey-term-cnt" : 9,
-            "db1" : 3413,
+            "ps" : [
+               24,
+               102,
+               180,
+               256,
+               1496,
+               2444,
+               2520,
+               3760,
+               4025,
+               4101,
+               4877,
+               4953
+            ],
+            "mac1-term" : [
+               "a4:93:4c:43:13:9b"
+            ],
+            "uscnt" : 1,
             "prot-term" : [
                "http",
                "tcp"
             ],
-            "hdver" : [
-               "1.1"
+            "hmd5" : [
+               "ad480fd0732d0f6f1a8b06359e3a42bb"
             ],
-            "db" : 4119,
+            "rir2" : "TEST",
+            "hckey-term" : [
+               "xxxx",
+               "autocomplete",
+               "xxxxxxxxxxxxxxxxxxx",
+               "lp",
+               "xxxxx",
+               "xxxxxx",
+               "rememberUn",
+               "xxxxxxxxxxxxxxxxxxxxxx",
+               "xxx.xxxxxxxxxx.xxxxxxxxxx"
+            ],
             "hh2" : [
                "http:header:access-control-allow-origin",
                "http:header:cache-control",
@@ -88,72 +82,51 @@
                "http:header:x-c",
                "http:header:xserver"
             ],
-            "prot-term-cnt" : 2,
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
-            ],
-            "by" : 4813,
-            "fs" : [],
-            "mac1-term" : [
-               "a4:93:4c:43:13:9b"
-            ],
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "fp" : 1404135320,
-            "p2" : 80,
-            "by2" : 1002,
-            "hmd5cnt" : 1,
-            "as2" : "AS0001 Cool Beans!",
-            "hsver" : [
-               "1.1"
-            ],
-            "hdvercnt" : 1,
-            "hmd5" : [
-               "ad480fd0732d0f6f1a8b06359e3a42bb"
-            ],
-            "hvalcnt" : 14,
-            "hpathcnt" : 1,
-            "tacnt" : 2,
-            "lp" : 1404135330,
-            "g2" : "CAN",
-            "mac2-term" : [
-               "88:43:e1:94:fc:2d"
-            ],
-            "hcval-term-cnt" : 10,
-            "hdrs" : {
-               "hreq-referer" : [
-                  "http://www.xxxxxxxxxx.xxx/xx/xxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxx/xxxxxxxxxxxx.jsp"
-               ],
-               "hreq-referercnt" : 1
-            },
-            "ta" : [
-               "dstip",
-               "srcip"
-            ],
-            "g1" : "RUS",
-            "hckey-term" : [
-               "xxxx",
-               "autocomplete",
-               "xxxxxxxxxxxxxxxxxxx",
-               "lp",
-               "xxxxx",
-               "xxxxxx",
-               "rememberUn",
-               "xxxxxxxxxxxxxxxxxxxxxx",
-               "xxx.xxxxxxxxxx.xxxxxxxxxx"
-            ],
+            "portSrc" : 61462,
             "as1" : "AS0000 This is neat",
-            "pa" : 12,
-            "a2" : "10.0.0.2",
-            "hkeycnt" : 15,
+            "ho" : [
+               "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
+            ],
+            "no" : "test",
+            "fb2" : "485454502f312e31",
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "string" : [
+                  "16777226:61462,33554442:80"
+               ]
+            },
+            "firstPacket" : 1404135320459,
+            "db2" : 706,
+            "tacnt" : 2,
+            "hsvercnt" : 1,
+            "hocnt" : 1,
+            "g1" : "RUS",
+            "hdvercnt" : 1,
+            "us" : [
+               "//xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
+            ],
+            "by1" : 3811,
+            "by2" : 1002,
+            "timestamp" : "SET",
+            "hh1cnt" : 8,
+            "sl" : 9877,
+            "ipDst" : "10.0.0.2",
+            "ss" : 1,
+            "hpathcnt" : 1,
             "hval" : [
                "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "xxxxxxxxxxxxxxx",
@@ -170,58 +143,65 @@
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp"
             ],
-            "sl" : 9877,
-            "mac2-term-cnt" : 1,
-            "us" : [
-               "//xxxxx.xxxxxxxx.xxxxxxxxxx.xxx/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx?xxx=1&xxx=1&x=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&vmf=xxxxxxxxxx.xxx.xxx.xxx&ce=UTF-8&ns=xxxxxxxxxx&pageName=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&g=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jsp&r=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&events=xxxxxxxxxxxxxxxxxxxxxxxxxxx&products=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v1=xxxxxxxxxxxxxxx&v2=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&v17=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&c49=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AQE=1"
-            ],
-            "ho" : [
-               "xxxxx.xxxxxxxx.xxxxxxxxxx.xxx"
-            ],
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "db2" : 706,
-            "test" : {
-               "string" : [
-                  "16777226:61462,33554442:80"
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "number" : [
-                  33554442
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ]
-            },
-            "no" : "test",
-            "hh1cnt" : 8,
-            "ps" : [
-               24,
-               102,
-               180,
-               256,
-               1496,
-               2444,
-               2520,
-               3760,
-               4025,
-               4101,
-               4877,
-               4953
-            ],
+            "hh2cnt" : 17,
+            "fs" : [],
+            "lp" : 1404135330,
             "pa1" : 7,
-            "rir2" : "TEST",
-            "uacnt" : 1,
+            "tcpflags" : {
+               "psh" : 3,
+               "urg" : 0,
+               "fin" : 0,
+               "syn-ack" : 1,
+               "ack" : 6,
+               "syn" : 1,
+               "rst" : 1
+            },
+            "prot-term-cnt" : 2,
+            "psl" : [
+               78,
+               78,
+               76,
+               1240,
+               948,
+               76,
+               1240,
+               265,
+               76,
+               776,
+               76,
+               76
+            ],
+            "hvalcnt" : 14,
+            "fp" : 1404135320,
+            "lpd" : 1404135330336,
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+            ],
+            "hmd5cnt" : 1,
+            "lastPacket" : 1404135330336,
+            "pa2" : 5,
+            "hsver" : [
+               "1.1"
+            ],
+            "hcval-term" : [
+               "xxxx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "ie",
+               "false",
+               "xxxxxx",
+               "true",
+               "xx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "xxxxv1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "1"
+            ],
+            "db" : 4119,
+            "fpd" : 1404135320459,
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "db1" : 3413,
             "hkey" : [
                "v17",
                "events",
@@ -239,12 +219,48 @@
                "ce",
                "g"
             ],
-            "uscnt" : 1
+            "ipSrc" : "10.0.0.1",
+            "by" : 4813,
+            "portDst" : 80,
+            "hkeycnt" : 15,
+            "pa" : 12,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "uacnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "pr" : 6,
+            "hpath" : [
+               "/x/xx/xxxxxxxxxxxxxxxxxxx/x/xxxxxx/xxxxxxxxxxxxxxx"
+            ],
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "bodymagic-term" : [
+                  "image/gif"
+               ],
+               "statuscode-cnt" : 1,
+               "bodymagic-term-cnt" : 1
+            }
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-140630"
+               "_index" : "tests_sessions-140630",
+               "_type" : "session"
             }
          }
       }

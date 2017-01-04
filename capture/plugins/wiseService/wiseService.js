@@ -154,7 +154,7 @@ function addField(field) {
     internals.fieldsBuf.writeUInt8(0, offset+2+len);
     offset += 3 + len;
   }
-  internals.fieldsBuf.length = offset;
+  internals.fieldsBuf = internals.fieldsBuf.slice(0, offset);
 
   wiseSource.pos2Field[pos] = name;
   wiseSource.field2Pos[name] = pos;
@@ -533,11 +533,26 @@ internals.domain.global_allowed = function(value) {
   }
   return true;
 };
+internals.url.global_allowed = function(value) {
+  for(var i = 0; i < internals.excludeURLs.length; i++) {
+    if (value.match(internals.excludeURLs[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in Global URL Exclude", value);
+      }
+      return false;
+    }
+  }
+  return true;
+};
+
 internals.ip.source_allowed = function(src, value) {
   if (src.excludeIPs.find(value)) {
     if (internals.debug > 0) {
       console.log("Found in", src.section, "IP Exclude", value);
     }
+    return false;
+  }
+  if (src.onlyIPs && !src.onlyIPs.find(value)) {
     return false;
   }
   return true;
@@ -565,9 +580,20 @@ internals.domain.source_allowed = function(src, value) {
   }
   return true;
 };
+internals.url.source_allowed = function(src, value) {
+  for(var i = 0; i < src.excludeURLs.length; i++) {
+    if (value.match(src.excludeURLs[i])) {
+      if (internals.debug > 0) {
+        console.log("Found in", src.section, "URL Exclude", value);
+      }
+      return false;
+    }
+  }
+  return true;
+};
 //////////////////////////////////////////////////////////////////////////////////
 function loadExcludes() {
-  ["excludeDomains", "excludeEmails"].forEach(function(type) {
+  ["excludeDomains", "excludeEmails", "excludeURLs"].forEach(function(type) {
     var items = getConfig("wiseService", type);
     internals[type] = [];
     if (!items) {return;}

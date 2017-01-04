@@ -35,7 +35,8 @@ function WISESource (api, section) {
   self.cacheRefreshStat = 0;
   self.cacheDroppedStat = 0;
 
-  ["excludeDomains", "excludeEmails"].forEach(function(type) {
+  // Domain and Email wildcards to exclude from source
+  ["excludeDomains", "excludeEmails", "excludeURLs"].forEach(function(type) {
     var items = api.getConfig(section, type);
     self[type] = [];
     if (!items) {return;}
@@ -47,6 +48,7 @@ function WISESource (api, section) {
     });
   });
 
+  // IP CIDRs to exclude from source
   self.excludeIPs = new iptrie.IPTrie();
   var items = api.getConfig(section, "excludeIPs", "");
   items.split(";").forEach(function(item) {
@@ -56,6 +58,37 @@ function WISESource (api, section) {
     var parts = item.split("/");
     self.excludeIPs.add(parts[0], +parts[1] || 32, true);
   });
+
+  items = api.getConfig(section, "onlyIPs", undefined);
+  if (items) {
+    self.onlyIPs = new iptrie.IPTrie();
+    items.split(";").forEach(function(item) {
+      if (item === "") {
+        return;
+      }
+      var parts = item.split("/");
+      self.onlyIPs.add(parts[0], +parts[1] || 32, true);
+    });
+  }
+
+  // fields defined for source
+  var fields = api.getConfig(section, "fields");
+  if (fields !== undefined) {
+    fields = fields.split("\\n");
+    for (var i = 0; i < fields.length; i++) {
+      self.parseFieldDef(fields[i]);
+    }
+  }
+
+  // views defined for source
+  var view = api.getConfig(section, "view");
+  if (view !== undefined) {
+    self.view = view.replace(/\\n/g, "\n");
+  }
+
+  if (self.view !== "") {
+    self.api.addView(self.section, self.view);
+  }
 }
 
 module.exports = WISESource;
@@ -79,7 +112,7 @@ function splitRemain(str, separator, limit) {
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
   var self = this;
 
-  var parser = csv.parse(body, {skip_empty_lines: true, comment: '#'}, function(err, data) {
+  var parser = csv.parse(body, {skip_empty_lines: true, comment: '#', relax_column_count: true}, function(err, data) {
     if (err) {
       return endCb(err);
     }
@@ -120,7 +153,7 @@ WISESource.prototype.parseFieldDef = function(line) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseTagger = function(body, setCb, endCb) {
-  var lines = body.toString().split("\n");
+  var lines = body.toString().split(/\r?\n/);
   for (var l = 0, llen = lines.length; l < llen; l++) {
     if (lines[l][0] === "#") {
       this.parseFieldDef(lines[l]);
@@ -281,6 +314,45 @@ WISESource.request = function (url, file, cb) {
   })
   ;
 };
-
+//////////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.tagsSetting = function () {
+  var tagsField = this.api.addField("field:tags");
+  var tags = this.api.getConfig(this.section, "tags");
+  if (tags) {
+    var args = [];
+    tags.split(",").forEach(function (part) {
+      args.push(tagsField, part);
+    });
+    this.tagsResult = {num: args.length/2, buffer: WISESource.encode.apply(null, args)};
+  } else {
+    this.tagsResult = WISESource.emptyResult;
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////
+WISESource.prototype.formatSetting = function () {
+  this.format  = this.api.getConfig(this.section, "format", "csv");
+  if (this.format === "csv") {
+    this.parse = this.parseCSV;
+  } else if (this.format === "tagger") {
+    this.parse = this.parseTagger;
+  } else if (this.format === "json") {
+    this.parse = this.parseJSON;
+  } else {
+    console.log(this.section, "- ERROR not loading unknown data format", this.format);
+    return false;
+  }
+  return true;
+}
+//////////////////////////////////////////////////////////////////////////////////
+var typeName2Func = {ip: "getIp", domain: "getDomain", md5: "getMd5", email: "getEmail", url: "getURL"};
+WISESource.prototype.typeSetting = function ()
+{
+  this.type     = this.api.getConfig(this.section, "type");
+  this.typeFunc = typeName2Func[this.type];
+  if (this.typeFunc === undefined) {
+    console.log(this.section, "ERROR - unknown type", this.type);
+    return;
+  }
+}
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.emptyCombinedResult = WISESource.combineResults([]);

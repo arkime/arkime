@@ -1,25 +1,150 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131202"
-            }
-         },
          "body" : {
+            "ipSrc" : "10.180.156.185",
+            "fpd" : 1386004472572,
+            "p2" : 1080,
+            "a1" : "10.180.156.185",
+            "pa2" : 13,
+            "firstPacket" : 1386004472572,
+            "tlsdstid-term" : [
+               "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
+            ],
+            "lpd" : 1386004472629,
+            "sl" : 57,
+            "fp" : 1386004472,
+            "tcpflags" : {
+               "ack" : 15,
+               "rst" : 0,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "fin" : 2,
+               "syn" : 1,
+               "psh" : 11
+            },
+            "ss" : 1,
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ],
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "db" : 8920,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "lastPacket" : 1386004472629,
+            "g1" : "USA",
+            "pr" : 6,
+            "by1" : 1775,
+            "fb1" : "040101bb5db8d877",
+            "prot-term-cnt" : 3,
+            "hocnt" : 1,
+            "tlscnt" : 2,
+            "tlsver-termcnt" : 1,
             "sockspo" : 443,
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
+            "by2" : 9145,
+            "psl" : [
+               94,
+               90,
+               82,
+               91,
+               82,
+               90,
+               82,
+               202,
+               1530,
+               94,
+               82,
+               1530,
+               1530,
+               82,
+               1530,
+               82,
+               836,
+               82,
+               396,
+               129,
+               82,
+               253,
+               428,
+               82,
+               1402,
+               82,
+               109,
+               82,
+               82,
+               82
+            ],
+            "rirsocksip" : "RIPE",
+            "mac2-term-cnt" : 1,
+            "ipDst" : "10.180.156.249",
+            "lp" : 1386004472,
+            "gsocksip" : "USA",
+            "db2" : 8279,
+            "socksip" : "93.184.216.119",
+            "ps" : [
+               24,
+               118,
+               208,
+               290,
+               381,
+               463,
+               553,
+               635,
+               837,
+               2367,
+               2461,
+               2543,
+               4073,
+               5603,
+               5685,
+               7215,
+               7297,
+               8133,
+               8215,
+               8611,
+               8740,
+               8822,
+               9075,
+               9503,
+               9585,
+               10987,
+               11069,
+               11178,
+               11260,
+               11342
+            ],
+            "tlscipher-termcnt" : 1,
             "ho" : [
                "www.example.com"
             ],
-            "by" : 10920,
-            "db2" : 8279,
+            "p1" : 53554,
+            "timestamp" : "SET",
+            "portDst" : 1080,
+            "pa" : 30,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "mac1-term-cnt" : 1,
+            "pa1" : 17,
+            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+            "no" : "test",
             "fb2" : "005a99b40ab49cf9",
+            "g2" : "USA",
             "db1" : 641,
+            "by" : 10920,
+            "portSrc" : 53554,
+            "a2" : "10.180.156.249",
+            "fs" : [],
             "tls" : [
                {
-                  "notAfter" : 1418212800,
-                  "sOn" : "EdgeCast Networks, Inc.",
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -172,156 +297,57 @@
                      "wac.a8b5.edgecastcdn.net"
                   ],
                   "altcnt" : 149,
+                  "iCn" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "notAfter" : 1418212800,
                   "sCn" : [
                      "gp1.wac.edgecastcdn.net"
                   ],
-                  "iCn" : [
-                     "digicert high assurance ca-3"
-                  ],
+                  "sOn" : "EdgeCast Networks, Inc.",
                   "sn" : "062d488986c9a6d7f94901c2b5906882",
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "iOn" : "DigiCert Inc",
+                  "diffDays" : 1164,
                   "notBefore" : 1317600000,
-                  "diffDays" : 1164
+                  "iOn" : "DigiCert Inc",
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c"
                },
                {
-                  "notAfter" : 1648944000,
-                  "sOn" : "DigiCert Inc",
-                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "iOn" : "DigiCert Inc",
                   "iCn" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notAfter" : 1648944000,
                   "sCn" : [
                      "digicert high assurance ca-3"
                   ],
+                  "sOn" : "DigiCert Inc",
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
                   "diffDays" : 5113,
-                  "notBefore" : 1207137600
+                  "notBefore" : 1207137600,
+                  "iOn" : "DigiCert Inc",
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05"
                }
-            ],
-            "tlscipher-termcnt" : 1,
-            "fb1" : "040101bb5db8d877",
-            "pa2" : 13,
-            "socksip" : "93.184.216.119",
-            "mac2-term-cnt" : 1,
-            "pa1" : 17,
-            "psl" : [
-               94,
-               90,
-               82,
-               91,
-               82,
-               90,
-               82,
-               202,
-               1530,
-               94,
-               82,
-               1530,
-               1530,
-               82,
-               1530,
-               82,
-               836,
-               82,
-               396,
-               129,
-               82,
-               253,
-               428,
-               82,
-               1402,
-               82,
-               109,
-               82,
-               82,
-               82
-            ],
-            "g2" : "USA",
-            "g1" : "USA",
-            "by2" : 9145,
-            "lp" : 1386004472,
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "pa" : 30,
-            "p1" : 53554,
-            "db" : 8920,
-            "no" : "test",
-            "hocnt" : 1,
-            "fp" : 1386004472,
-            "ss" : 1,
-            "tlsdstid-term" : [
-               "85bbc584132410aa03c3d6aac195e2d81e7b8d24e63b314a4a5d214cbcf0080a"
-            ],
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "gsocksip" : "USA",
-            "prot-term-cnt" : 3,
-            "tlsver-termcnt" : 1,
-            "a2" : "10.180.156.249",
-            "sl" : 57,
-            "prot-term" : [
-               "tls",
-               "socks",
-               "tcp"
-            ],
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
-            ],
-            "a1" : "10.180.156.185",
-            "by1" : 1775,
-            "ps" : [
-               24,
-               118,
-               208,
-               290,
-               381,
-               463,
-               553,
-               635,
-               837,
-               2367,
-               2461,
-               2543,
-               4073,
-               5603,
-               5685,
-               7215,
-               7297,
-               8133,
-               8215,
-               8611,
-               8740,
-               8822,
-               9075,
-               9503,
-               9585,
-               10987,
-               11069,
-               11178,
-               11260,
-               11342
-            ],
-            "rirsocksip" : "RIPE",
-            "mac1-term-cnt" : 1,
-            "fpd" : 1386004472572,
-            "p2" : 1080,
-            "tlscnt" : 2,
-            "lpd" : 1386004472629,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "fs" : [],
-            "pr" : 6
+            ]
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131202"
+            }
          }
       },
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131202",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "g2" : "USA",
+            "tlsver-termcnt" : 1,
+            "hocnt" : 1,
+            "tlscnt" : 2,
+            "prot-term-cnt" : 3,
+            "fb1" : "040101bb00000001",
             "psl" : [
                94,
                90,
@@ -354,37 +380,98 @@
                82,
                82
             ],
-            "pa1" : 17,
-            "lp" : 1386004475,
             "by2" : 9120,
-            "g1" : "USA",
-            "p1" : 53555,
-            "pa" : 30,
-            "no" : "test",
-            "db" : 8911,
-            "fb2" : "005a99b50ab49cf9",
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
+            ],
+            "sockspo" : 443,
             "db2" : 8254,
+            "ipDst" : "10.180.156.249",
+            "lp" : 1386004475,
+            "mac2-term-cnt" : 1,
+            "p1" : 53555,
+            "tlscipher-termcnt" : 1,
+            "ps" : [
+               11424,
+               11518,
+               11608,
+               11690,
+               11797,
+               11879,
+               11969,
+               12051,
+               12253,
+               13783,
+               13877,
+               13959,
+               15489,
+               17019,
+               18549,
+               18631,
+               18713,
+               19549,
+               19631,
+               20027,
+               20156,
+               20238,
+               20491,
+               20919,
+               21001,
+               22378,
+               22460,
+               22569,
+               22651,
+               22733
+            ],
             "ho" : [
                "www.example.com"
             ],
-            "sockspo" : 443,
+            "pa2" : 13,
+            "p2" : 1080,
+            "socksho" : "www.example.com",
+            "ipSrc" : "10.180.156.185",
+            "fpd" : 1386004475691,
+            "a1" : "10.180.156.185",
+            "tlsdstid-term" : [
+               "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
+            ],
+            "lpd" : 1386004475761,
+            "sl" : 69,
+            "fp" : 1386004475,
+            "firstPacket" : 1386004475691,
+            "db" : 8911,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ],
+            "tcpflags" : {
+               "ack" : 15,
+               "rst" : 0,
+               "urg" : 0,
+               "syn-ack" : 1,
+               "fin" : 2,
+               "psh" : 11,
+               "syn" : 1
+            },
+            "ss" : 1,
+            "by1" : 1791,
+            "pr" : 6,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "g1" : "USA",
+            "lastPacket" : 1386004475761,
+            "no" : "test",
+            "db1" : 657,
+            "g2" : "USA",
+            "fb2" : "005a99b50ab49cf9",
             "by" : 10911,
-            "tlscipher-termcnt" : 1,
-            "fb1" : "040101bb00000001",
             "tls" : [
                {
-                  "sCn" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ],
-                  "iOn" : "DigiCert Inc",
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "sn" : "062d488986c9a6d7f94901c2b5906882",
-                  "iCn" : [
-                     "digicert high assurance ca-3"
-                  ],
-                  "diffDays" : 1164,
-                  "notBefore" : 1317600000,
-                  "notAfter" : 1418212800,
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -536,118 +623,57 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "sOn" : "EdgeCast Networks, Inc.",
-                  "altcnt" : 149
-               },
-               {
-                  "sOn" : "DigiCert Inc",
-                  "notAfter" : 1648944000,
-                  "notBefore" : 1207137600,
-                  "diffDays" : 5113,
-                  "sCn" : [
+                  "iCn" : [
                      "digicert high assurance ca-3"
                   ],
+                  "altcnt" : 149,
+                  "notAfter" : 1418212800,
+                  "notBefore" : 1317600000,
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
+                  "iOn" : "DigiCert Inc",
+                  "sCn" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ],
+                  "sOn" : "EdgeCast Networks, Inc.",
+                  "diffDays" : 1164,
+                  "sn" : "062d488986c9a6d7f94901c2b5906882"
+               },
+               {
+                  "notAfter" : 1648944000,
                   "iCn" : [
                      "digicert high assurance ev root ca"
                   ],
-                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notBefore" : 1207137600,
+                  "iOn" : "DigiCert Inc",
                   "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "iOn" : "DigiCert Inc"
+                  "sCn" : [
+                     "digicert high assurance ca-3"
+                  ],
+                  "sOn" : "DigiCert Inc",
+                  "diffDays" : 5113,
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b"
                }
             ],
-            "db1" : 657,
-            "mac2-term-cnt" : 1,
-            "pa2" : 13,
-            "by1" : 1791,
-            "a1" : "10.180.156.185",
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
-            ],
-            "prot-term" : [
-               "tls",
-               "socks",
-               "tcp"
-            ],
-            "p2" : 1080,
-            "mac1-term-cnt" : 1,
-            "ps" : [
-               11424,
-               11518,
-               11608,
-               11690,
-               11797,
-               11879,
-               11969,
-               12051,
-               12253,
-               13783,
-               13877,
-               13959,
-               15489,
-               17019,
-               18549,
-               18631,
-               18713,
-               19549,
-               19631,
-               20027,
-               20156,
-               20238,
-               20491,
-               20919,
-               21001,
-               22378,
-               22460,
-               22569,
-               22651,
-               22733
-            ],
-            "fpd" : 1386004475691,
-            "tlscnt" : 2,
             "fs" : [],
-            "pr" : 6,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "lpd" : 1386004475761,
+            "a2" : "10.180.156.249",
+            "portSrc" : 53555,
+            "portDst" : 1080,
+            "timestamp" : "SET",
+            "pa" : 30,
+            "pa1" : 17,
             "tlsver-term" : [
                "TLSv1"
             ],
-            "tlsdstid-term" : [
-               "8142ff7f5af97c1486dc2addaf9cb504fdfb6c26df171cbd15bd29551adacd03"
-            ],
-            "ss" : 1,
-            "fp" : 1386004475,
-            "hocnt" : 1,
-            "prot-term-cnt" : 3,
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "tlsver-termcnt" : 1,
-            "a2" : "10.180.156.249",
-            "socksho" : "www.example.com",
-            "sl" : 69
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131202",
-               "_type" : "session"
-            }
+            "mac1-term-cnt" : 1
          }
       },
       {
          "body" : {
-            "prot-term" : [
-               "tls",
-               "socks",
-               "tcp"
+            "p1" : 53556,
+            "tlscipher-termcnt" : 1,
+            "ho" : [
+               "www.example.com"
             ],
-            "tlscipher-term" : [
-               "TLS_RSA_WITH_RC4_128_SHA"
-            ],
-            "a1" : "10.180.156.185",
-            "by1" : 1912,
-            "rirsocksip" : "RIPE",
             "ps" : [
                22815,
                22909,
@@ -683,34 +709,12 @@
                34306,
                34388
             ],
-            "mac1-term-cnt" : 1,
-            "fpd" : 1386004480852,
-            "p2" : 1080,
-            "tlscnt" : 2,
-            "lpd" : 1386004480888,
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "fs" : [],
-            "pr" : 6,
-            "hocnt" : 1,
-            "fp" : 1386004480,
-            "ss" : 1,
-            "tlsdstid-term" : [
-               "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
-            ],
-            "tlsver-term" : [
-               "TLSv1"
-            ],
-            "mac2-term" : [
-               "00:13:72:c4:f1:e1"
-            ],
+            "socksip" : "93.184.216.119",
+            "db2" : 8283,
             "gsocksip" : "USA",
-            "prot-term-cnt" : 3,
-            "a2" : "10.180.156.249",
-            "tlsver-termcnt" : 1,
-            "sl" : 35,
-            "pa1" : 19,
+            "lp" : 1386004480,
+            "ipDst" : "10.180.156.249",
+            "mac2-term-cnt" : 1,
             "psl" : [
                94,
                90,
@@ -746,37 +750,62 @@
                82,
                82
             ],
-            "g2" : "USA",
-            "g1" : "USA",
+            "rirsocksip" : "RIPE",
             "by2" : 9215,
-            "lp" : 1386004480,
-            "assocksip" : "AS15133 EdgeCast Networks, Inc.",
-            "pa" : 33,
-            "p1" : 53556,
-            "db" : 8929,
-            "no" : "test",
-            "ho" : [
-               "www.example.com"
+            "tlscipher-term" : [
+               "TLS_RSA_WITH_RC4_128_SHA"
             ],
             "sockspo" : 443,
-            "by" : 11127,
-            "db2" : 8283,
-            "fb2" : "0500050000010ab4",
+            "tlsver-termcnt" : 1,
+            "hocnt" : 1,
+            "tlscnt" : 2,
+            "prot-term-cnt" : 3,
+            "fb1" : "0502000105010001",
+            "by1" : 1912,
+            "pr" : 6,
+            "lastPacket" : 1386004480888,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "g1" : "USA",
+            "db" : 8929,
+            "mac2-term" : [
+               "00:13:72:c4:f1:e1"
+            ],
+            "prot-term" : [
+               "tls",
+               "socks",
+               "tcp"
+            ],
+            "tcpflags" : {
+               "rst" : 0,
+               "ack" : 16,
+               "psh" : 13,
+               "syn" : 1,
+               "fin" : 2,
+               "urg" : 0,
+               "syn-ack" : 1
+            },
+            "ss" : 1,
+            "tlsdstid-term" : [
+               "f7186f0670e348e24ec9b816eb2a2832c21ce3a14ea81aa1a388f91c3cd014b1"
+            ],
+            "sl" : 35,
+            "fp" : 1386004480,
+            "lpd" : 1386004480888,
+            "firstPacket" : 1386004480852,
+            "pa2" : 14,
+            "p2" : 1080,
+            "ipSrc" : "10.180.156.185",
+            "a1" : "10.180.156.185",
+            "fpd" : 1386004480852,
             "tls" : [
                {
-                  "notBefore" : 1317600000,
-                  "diffDays" : 1164,
-                  "sn" : "062d488986c9a6d7f94901c2b5906882",
                   "iCn" : [
                      "digicert high assurance ca-3"
                   ],
-                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
-                  "iOn" : "DigiCert Inc",
-                  "sCn" : [
-                     "gp1.wac.edgecastcdn.net"
-                  ],
                   "altcnt" : 149,
-                  "sOn" : "EdgeCast Networks, Inc.",
+                  "notAfter" : 1418212800,
                   "alt" : [
                      "gp1.wac.edgecastcdn.net",
                      "www.edgecast.com",
@@ -928,30 +957,49 @@
                      "static.teamtreehouse.com",
                      "wac.a8b5.edgecastcdn.net"
                   ],
-                  "notAfter" : 1418212800
+                  "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
+                  "iOn" : "DigiCert Inc",
+                  "notBefore" : 1317600000,
+                  "sn" : "062d488986c9a6d7f94901c2b5906882",
+                  "diffDays" : 1164,
+                  "sOn" : "EdgeCast Networks, Inc.",
+                  "sCn" : [
+                     "gp1.wac.edgecastcdn.net"
+                  ]
                },
                {
-                  "iOn" : "DigiCert Inc",
-                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
-                  "sn" : "0a5f114d035b179117d2efd4038c3f3b",
+                  "notAfter" : 1648944000,
                   "iCn" : [
                      "digicert high assurance ev root ca"
                   ],
+                  "notBefore" : 1207137600,
+                  "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
+                  "iOn" : "DigiCert Inc",
                   "sCn" : [
                      "digicert high assurance ca-3"
                   ],
+                  "sOn" : "DigiCert Inc",
                   "diffDays" : 5113,
-                  "notBefore" : 1207137600,
-                  "notAfter" : 1648944000,
-                  "sOn" : "DigiCert Inc"
+                  "sn" : "0a5f114d035b179117d2efd4038c3f3b"
                }
             ],
+            "fs" : [],
+            "a2" : "10.180.156.249",
+            "portSrc" : 53556,
+            "by" : 11127,
             "db1" : 646,
-            "tlscipher-termcnt" : 1,
-            "fb1" : "0502000105010001",
-            "pa2" : 14,
-            "socksip" : "93.184.216.119",
-            "mac2-term-cnt" : 1
+            "g2" : "USA",
+            "fb2" : "0500050000010ab4",
+            "no" : "test",
+            "assocksip" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+            "pa1" : 19,
+            "mac1-term-cnt" : 1,
+            "tlsver-term" : [
+               "TLSv1"
+            ],
+            "pa" : 33,
+            "portDst" : 1080,
+            "timestamp" : "SET"
          },
          "header" : {
             "index" : {

@@ -1,5 +1,5 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
@@ -8,7 +8,89 @@
             }
          },
          "body" : {
-            "gsocksip" : "USA",
+            "assocksip" : "AS15169 Google Inc.",
+            "ss" : 1,
+            "mac2-term-cnt" : 2,
+            "fp" : 1386790367,
+            "hdver" : [
+               "1.1"
+            ],
+            "hmd5" : [
+               "2069181ae704855f29caf964ca52ec49",
+               "b0cecae354b9eab1f04f70e46a612cb1"
+            ],
+            "db1" : 23392,
+            "db2" : 954,
+            "as1" : "AS0000 This is neat",
+            "socksip" : "74.125.131.103",
+            "prot-term" : [
+               "http",
+               "socks",
+               "tcp"
+            ],
+            "fb1" : "4e5a8d08874e0500",
+            "us" : [
+               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "hval" : [
+               "firefox",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "en",
+               "sheepskin boots",
+               "10",
+               "0",
+               "us"
+            ],
+            "fpd" : 1386790367120,
+            "hckey-term" : [
+               "NID",
+               "PREF"
+            ],
+            "tags-term" : [
+               "srcip",
+               "dstip"
+            ],
+            "hdrs" : {
+               "hres-location" : [
+                  "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "hreq-referercnt" : 2,
+               "hreq-referer" : [
+                  "",
+                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
+               ]
+            },
+            "mac1-term-cnt" : 1,
+            "by" : 27311,
+            "mac2-term" : [
+               "00:00:5e:00:01:01",
+               "80:71:1f:83:9f:c6"
+            ],
+            "test" : {
+               "number" : [
+                  33554442
+               ],
+               "ip-rir" : [
+                  ""
+               ],
+               "string" : [
+                  "16777226:54263,33554442:8855"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ]
+            },
+            "hh2cnt" : 15,
+            "by1" : 25112,
+            "tacnt" : 2,
+            "hmd5cnt" : 2,
             "psl" : [
                82,
                82,
@@ -63,33 +145,8 @@
                76,
                76
             ],
-            "hcval-term" : [
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "pa1" : 31,
-            "p2" : 8855,
-            "pr" : 6,
-            "db2" : 954,
-            "tags-term" : [
-               "srcip",
-               "dstip"
-            ],
-            "mac1-term-cnt" : 1,
+            "firstPacket" : 1386790367120,
             "lpd" : 1386790404657,
-            "hckey-term" : [
-               "NID",
-               "PREF"
-            ],
-            "prot-term" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "hmd5cnt" : 2,
-            "hh2cnt" : 15,
-            "mac2-term-cnt" : 2,
-            "by" : 27311,
             "hkey" : [
                "uule",
                "hl",
@@ -100,128 +157,12 @@
                "num",
                "gl"
             ],
-            "hpath" : [
-               "/search"
-            ],
-            "fb1" : "4e5a8d08874e0500",
-            "hdvercnt" : 1,
-            "by1" : 25112,
-            "mac1-term" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "lp" : 1386790404,
-            "by2" : 2199,
-            "uacnt" : 1,
-            "hmd5" : [
-               "2069181ae704855f29caf964ca52ec49",
-               "b0cecae354b9eab1f04f70e46a612cb1"
-            ],
-            "p1" : 54263,
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "ip-rir" : [
-                  ""
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "string" : [
-                  "16777226:54263,33554442:8855"
-               ],
-               "number" : [
-                  33554442
-               ]
-            },
-            "hh1cnt" : 6,
-            "sl" : 37537,
-            "db" : 24346,
-            "http" : {
-               "bodymagic-term-cnt" : 2,
-               "statuscode" : [
-                  302,
-                  200
-               ],
-               "bodymagic-term" : [
-                  "application/x-gzip",
-                  "text/html"
-               ],
-               "method-term" : [
-                  "GET"
-               ],
-               "method-term-cnt" : 1,
-               "statuscode-cnt" : 2
-            },
-            "hvalcnt" : 7,
-            "prot-term-cnt" : 3,
-            "hdver" : [
+            "g2" : "CAN",
+            "hsver" : [
                "1.1"
             ],
-            "as1" : "AS0000 This is neat",
-            "pa2" : 21,
-            "assocksip" : "AS15169 Google Inc.",
-            "hkeycnt" : 8,
-            "uscnt" : 2,
-            "hckey-term-cnt" : 2,
-            "tacnt" : 2,
-            "hval" : [
-               "firefox",
-               "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "en",
-               "sheepskin boots",
-               "10",
-               "0",
-               "us"
-            ],
-            "rir2" : "TEST",
+            "uacnt" : 1,
             "as2" : "AS0001 Cool Beans!",
-            "hdrs" : {
-               "hreq-referer" : [
-                  "",
-                  "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
-               ],
-               "hres-location" : [
-                  "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ],
-               "hreq-referercnt" : 2
-            },
-            "fp" : 1386790367,
-            "no" : "test",
-            "fs" : [],
-            "hh2" : [
-               "http:header:alternate-protocol",
-               "http:header:cache-control",
-               "http:header:content-encoding",
-               "http:header:content-length",
-               "http:header:content-type",
-               "http:header:date",
-               "http:header:expires",
-               "http:header:location",
-               "http:header:p3p",
-               "http:header:pragma",
-               "http:header:server",
-               "http:header:set-cookie",
-               "http:header:transfer-encoding",
-               "http:header:x-frame-options",
-               "http:header:x-xss-protection"
-            ],
-            "fpd" : 1386790367120,
-            "ua" : [
-               "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
-            ],
-            "fb2" : "050100050100014a",
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:cookie",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
             "ps" : [
                24,
                106,
@@ -276,38 +217,113 @@
                28015,
                28091
             ],
-            "hsver" : [
-               "1.1"
-            ],
-            "pa" : 52,
-            "a2" : "10.0.0.2",
-            "sockspo" : 80,
-            "g2" : "CAN",
-            "socksip" : "74.125.131.103",
-            "hsvercnt" : 1,
-            "hocnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:83:9f:c6"
-            ],
-            "g1" : "RUS",
-            "hcval-term-cnt" : 2,
-            "db1" : 23392,
-            "rirsocksip" : "ARIN",
-            "us" : [
-               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-               "//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            ],
-            "a1" : "10.0.0.1",
-            "ho" : [
-               "www.google.com"
-            ],
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "ss" : 1,
-            "hpathcnt" : 1
+            "sockspo" : 80,
+            "gsocksip" : "USA",
+            "prot-term-cnt" : 3,
+            "hvalcnt" : 7,
+            "hpathcnt" : 1,
+            "hh1cnt" : 6,
+            "hckey-term-cnt" : 2,
+            "uscnt" : 2,
+            "ua" : [
+               "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)"
+            ],
+            "portDst" : 8855,
+            "hsvercnt" : 1,
+            "by2" : 2199,
+            "ipSrc" : "10.0.0.1",
+            "g1" : "RUS",
+            "mac1-term" : [
+               "00:0a:f3:31:94:00"
+            ],
+            "hpath" : [
+               "/search"
+            ],
+            "hocnt" : 1,
+            "timestamp" : "SET",
+            "sl" : 37537,
+            "ho" : [
+               "www.google.com"
+            ],
+            "portSrc" : 54263,
+            "ipDst" : "10.0.0.2",
+            "db" : 24346,
+            "lastPacket" : 1386790404657,
+            "pa1" : 31,
+            "tcpflags" : {
+               "fin" : 1,
+               "rst" : 0,
+               "urg" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "ack" : 20,
+               "psh" : 29
+            },
+            "pa" : 52,
+            "fb2" : "050100050100014a",
+            "hh2" : [
+               "http:header:alternate-protocol",
+               "http:header:cache-control",
+               "http:header:content-encoding",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:expires",
+               "http:header:location",
+               "http:header:p3p",
+               "http:header:pragma",
+               "http:header:server",
+               "http:header:set-cookie",
+               "http:header:transfer-encoding",
+               "http:header:x-frame-options",
+               "http:header:x-xss-protection"
+            ],
+            "http" : {
+               "statuscode" : [
+                  302,
+                  200
+               ],
+               "bodymagic-term-cnt" : 2,
+               "method-term-cnt" : 1,
+               "statuscode-cnt" : 2,
+               "method-term" : [
+                  "GET"
+               ],
+               "bodymagic-term" : [
+                  "application/x-gzip",
+                  "text/html"
+               ]
+            },
+            "hkeycnt" : 8,
+            "fs" : [],
+            "a2" : "10.0.0.2",
+            "lp" : 1386790404,
+            "pa2" : 21,
+            "p1" : 54263,
+            "no" : "test",
+            "hdvercnt" : 1,
+            "rirsocksip" : "ARIN",
+            "hcval-term-cnt" : 2,
+            "rir2" : "TEST",
+            "hcval-term" : [
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+               "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:cookie",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "a1" : "10.0.0.1",
+            "pr" : 6,
+            "p2" : 8855
          }
       }
    ]

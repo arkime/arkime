@@ -1,67 +1,83 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160616"
+               "_index" : "tests_sessions-160616",
+               "_type" : "session"
             }
          },
          "body" : {
-            "mac1-term-cnt" : 2,
-            "by" : 341,
-            "by2" : 78,
-            "lpd" : 1466085103897,
-            "db" : 41,
-            "fp" : 1466085103,
-            "pa" : 4,
-            "vlan-cnt" : 2,
-            "pr" : 6,
-            "prot-term" : [
-               "cassandra",
-               "tcp"
-            ],
-            "db2" : 0,
-            "mac2-term" : [
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "db1" : 41,
-            "mac2-term-cnt" : 1,
-            "sl" : 10,
-            "pa1" : 3,
-            "prot-term-cnt" : 2,
-            "by1" : 263,
-            "mac1-term" : [
-               "00:1b:17:00:02:30",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "lp" : 1466085103,
-            "fpd" : 1466085103886,
-            "no" : "test",
-            "vlan" : [
-               50,
-               300
-            ],
-            "a1" : "10.10.10.10",
-            "fb1" : "0000002580010001",
-            "p2" : 9160,
             "psl" : [
                98,
                94,
                86,
                127
             ],
+            "fp" : 1466085103,
+            "portSrc" : 56391,
+            "ss" : 1,
+            "lpd" : 1466085103897,
+            "prot-term-cnt" : 2,
+            "by" : 341,
+            "lastPacket" : 1466085103897,
+            "lp" : 1466085103,
+            "p2" : 9160,
+            "ipDst" : "10.176.171.11",
+            "timestamp" : "SET",
+            "fb1" : "0000002580010001",
+            "no" : "test",
+            "tcpflags" : {
+               "urg" : 0,
+               "fin" : 0,
+               "syn" : 1,
+               "ack" : 1,
+               "psh" : 1,
+               "syn-ack" : 1,
+               "rst" : 0
+            },
+            "db1" : 41,
+            "by1" : 263,
+            "by2" : 78,
             "pa2" : 1,
+            "pa" : 4,
+            "mac2-term-cnt" : 1,
+            "pr" : 6,
+            "firstPacket" : 1466085103886,
             "p1" : 56391,
-            "fs" : [],
+            "sl" : 10,
+            "portDst" : 9160,
+            "pa1" : 3,
             "a2" : "10.176.171.11",
+            "vlan-cnt" : 2,
+            "mac1-term-cnt" : 2,
             "ps" : [
                24,
                122,
                216,
                302
             ],
-            "ss" : 1
+            "mac2-term" : [
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "prot-term" : [
+               "cassandra",
+               "tcp"
+            ],
+            "vlan" : [
+               50,
+               300
+            ],
+            "ipSrc" : "10.10.10.10",
+            "db2" : 0,
+            "fs" : [],
+            "a1" : "10.10.10.10",
+            "fpd" : 1466085103886,
+            "db" : 41,
+            "mac1-term" : [
+               "00:1b:17:00:02:30",
+               "2c:6b:f5:d6:17:cc"
+            ]
          }
       }
    ]

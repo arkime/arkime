@@ -1,100 +1,36 @@
 {
-   "packets" : [
+   "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131125"
+            }
+         },
          "body" : {
-            "db2" : 107,
-            "pa2" : 3,
-            "db" : 252,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "pa1" : 5,
-            "no" : "test",
-            "lpd" : 1385394928608,
-            "psl" : [
-               94,
-               90,
-               82,
-               227,
-               189,
-               82,
-               82,
-               82
-            ],
-            "fs" : [],
-            "fp" : 1385394928,
-            "ho" : [
-               "www.github.com"
-            ],
-            "p1" : 62341,
-            "by2" : 313,
-            "a1" : "10.180.156.141",
-            "us" : [
-               "//www.github.com/"
-            ],
-            "by1" : 487,
-            "fb1" : "474554202f204854",
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "mac1-term-cnt" : 1,
-            "pa" : 8,
-            "hocnt" : 1,
-            "uacnt" : 1,
-            "mac2-term-cnt" : 2,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
+            "hh2" : [
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:location"
             ],
             "rir2" : "ARIN",
-            "fb2" : "485454502f312e31",
-            "hdver" : [
-               "1.1"
-            ],
-            "sl" : 125,
-            "p2" : 80,
-            "hsver" : [
-               "1.1"
-            ],
+            "db1" : 145,
+            "hocnt" : 1,
+            "pa1" : 5,
             "http" : {
                "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
                "statuscode" : [
                   301
                ],
+               "method-term" : [
+                  "GET"
+               ],
                "method-term-cnt" : 1
             },
-            "pr" : 6,
-            "hpath" : [
-               "/"
-            ],
-            "ss" : 1,
-            "lp" : 1385394928,
-            "hh2cnt" : 3,
-            "as2" : "AS36459 GitHub, Inc.",
-            "prot-term-cnt" : 2,
-            "fpd" : 1385394928482,
-            "g1" : "USA",
-            "hsvercnt" : 1,
-            "hpathcnt" : 1,
-            "hdrs" : {
-               "hres-location" : [
-                  "https://www.github.com/"
-               ]
-            },
-            "hdvercnt" : 1,
-            "by" : 800,
             "g2" : "USA",
-            "db1" : 145,
-            "a2" : "192.30.252.130",
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
-            ],
+            "ipSrc" : "10.180.156.141",
+            "p2" : 80,
+            "hpathcnt" : 1,
             "ps" : [
                24,
                118,
@@ -105,22 +41,102 @@
                788,
                870
             ],
+            "pa2" : 3,
+            "lastPacket" : 1385394928608,
+            "prot-term-cnt" : 2,
+            "mac2-term-cnt" : 2,
+            "g1" : "USA",
+            "by1" : 487,
+            "sl" : 125,
+            "hsvercnt" : 1,
+            "portDst" : 80,
+            "hdrs" : {
+               "hres-location" : [
+                  "https://www.github.com/"
+               ]
+            },
+            "db" : 252,
+            "pr" : 6,
+            "hh2cnt" : 3,
+            "tcpflags" : {
+               "psh" : 1,
+               "rst" : 0,
+               "ack" : 3,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "fin" : 2,
+               "syn" : 1
+            },
+            "hdver" : [
+               "1.1"
+            ],
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "hh1cnt" : 3,
+            "us" : [
+               "//www.github.com/"
+            ],
+            "a1" : "10.180.156.141",
+            "mac1-term-cnt" : 1,
+            "as2" : "AS36459 GitHub, Inc.",
+            "lpd" : 1385394928608,
+            "p1" : 62341,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "firstPacket" : 1385394928482,
+            "hdvercnt" : 1,
+            "db2" : 107,
+            "no" : "test",
+            "fb1" : "474554202f204854",
+            "timestamp" : "SET",
+            "by" : 800,
+            "fb2" : "485454502f312e31",
+            "pa" : 8,
+            "portSrc" : 62341,
+            "fp" : 1385394928,
+            "uacnt" : 1,
             "uscnt" : 1,
-            "hh2" : [
-               "http:header:connection",
-               "http:header:content-length",
-               "http:header:location"
+            "hpath" : [
+               "/"
+            ],
+            "ipDst" : "192.30.252.130",
+            "ss" : 1,
+            "by2" : 313,
+            "lp" : 1385394928,
+            "psl" : [
+               94,
+               90,
+               82,
+               227,
+               189,
+               82,
+               82,
+               82
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
             ],
             "ua" : [
                "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
             ],
-            "hh1cnt" : 3
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131125",
-               "_type" : "session"
-            }
+            "fs" : [],
+            "fpd" : 1385394928482,
+            "hsver" : [
+               "1.1"
+            ],
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "ho" : [
+               "www.github.com"
+            ],
+            "a2" : "192.30.252.130"
          }
       }
    ]

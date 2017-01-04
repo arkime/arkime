@@ -1,26 +1,25 @@
 {
-    "name": "intelProxy"
-  , "version": "0.0.1"
-  , "private": true
-  , "dependencies": {
-    "elasticsearch": "~10.1.2"
-    , "express": "~4.13.3"
-    , "morgan": "~1.6.1"
-    , "connect-timeout": ""
-    , "async": "~0.9.0"
-    , "keep-alive-agent": "~0.0.1"
-    , "iniparser": "http://github.com/awick/node-iniparser/tarball/master"
-    , "glob": "~4.0.6"
-    , "lru-cache": "~2.5.0"
-    , "unzip": "~0.1.11"
-    , "csv": "~0.4.1"
-    , "console-stamp": "~0.1.3"
-    , "request": "~2.54.0"
-    , "iptrie": "~0.0.6"
-    , "native-dns": "~0.7.0"
-    , "hashtable": "~0.5.3"
-    , "redis": "~2.6.2"
-    , "bson": "~0.5.2"
-    , "sqlite3": "3.1.2"
+  "name": "WISE",
+  "version": "0.16.0",
+  "private": true,
+  "dependencies": {
+    "async": "^2.0.1",
+    "bson": "^0.5.5",
+    "connect-timeout": "^1.7.0",
+    "console-stamp": "^0.2.2",
+    "csv": "^1.1.0",
+    "elasticsearch": "^11.0.1",
+    "express": "^4.14.0",
+    "glob": "^7.1.0",
+    "hashtable": "^2.0.2",
+    "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
+    "iptrie": "http://github.com/postwait/node-iptrie/tarball/master",
+    "lru-cache": "^4.0.1",
+    "morgan": "^1.7.0",
+    "native-dns": "^0.7.0",
+    "redis": "^2.6.2",
+    "request": "^2.75.0",
+    "sqlite3": "^3.1.4",
+    "unzip": "^0.1.11"
   }
 }

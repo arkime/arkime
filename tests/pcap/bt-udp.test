@@ -1,116 +1,130 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131217",
-               "_type" : "session"
-            }
-         },
          "body" : {
+            "lp" : 1387253713,
+            "no" : "test",
+            "a1" : "10.0.0.2",
+            "tacnt" : 2,
+            "as2" : "AS0000 This is neat",
+            "pa" : 1,
+            "prot-term" : [
+               "udp",
+               "bittorrent"
+            ],
+            "psl" : [
+               161
+            ],
+            "ipDst" : "10.0.0.1",
+            "by2" : 0,
+            "by1" : 145,
+            "by" : 145,
             "mac1-term" : [
                "78:fe:3d:11:21:f2"
             ],
-            "pa" : 1,
-            "db" : 137,
-            "ps" : [
-               24
-            ],
             "prot-term-cnt" : 2,
-            "tacnt" : 2,
-            "lpd" : 1387253713030,
-            "mac1-term-cnt" : 1,
+            "db1" : 137,
+            "mac2-term-cnt" : 1,
             "ta" : [
                "dstip",
                "srcip"
             ],
-            "pa1" : 1,
-            "by2" : 0,
-            "no" : "test",
-            "db2" : 0,
-            "a1" : "10.0.0.2",
-            "pa2" : 0,
+            "ipSrc" : "10.0.0.2",
             "rir1" : "TEST",
-            "prot-term" : [
-               "udp",
-               "bittorrent"
-            ],
-            "lp" : 1387253713,
-            "as2" : "AS0000 This is neat",
-            "db1" : 137,
-            "g1" : "CAN",
-            "by1" : 145,
+            "pr" : 17,
+            "g2" : "RUS",
             "tags-term" : [
                "srcip",
                "dstip"
             ],
+            "ss" : 1,
+            "pa2" : 0,
+            "ps" : [
+               24
+            ],
+            "db2" : 0,
+            "fs" : [],
+            "timestamp" : "SET",
+            "p1" : 50759,
             "sl" : 0,
-            "fb1" : "64313a6164323a69",
-            "mac2-term-cnt" : 1,
+            "pa1" : 1,
+            "lastPacket" : 1387253713030,
+            "fp" : 1387253713,
+            "p2" : 3207,
             "mac2-term" : [
                "00:10:db:ff:26:00"
             ],
-            "pr" : 17,
-            "p1" : 50759,
-            "p2" : 3207,
-            "g2" : "RUS",
-            "fp" : 1387253713,
-            "a2" : "10.0.0.1",
-            "fpd" : 1387253713030,
-            "psl" : [
-               161
-            ],
             "as1" : "AS0001 Cool Beans!",
-            "by" : 145,
-            "ss" : 1,
-            "fs" : []
+            "fb1" : "64313a6164323a69",
+            "a2" : "10.0.0.1",
+            "db" : 137,
+            "firstPacket" : 1387253713030,
+            "mac1-term-cnt" : 1,
+            "lpd" : 1387253713030,
+            "g1" : "CAN",
+            "portDst" : 3207,
+            "fpd" : 1387253713030,
+            "portSrc" : 50759
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-131217",
+               "_type" : "session"
+            }
          }
       },
       {
          "body" : {
-            "fp" : 1387253793,
-            "a2" : "10.0.0.3",
-            "fpd" : 1387253793904,
-            "p1" : 44102,
-            "p2" : 12074,
-            "fs" : [],
+            "mac2-term-cnt" : 1,
+            "db1" : 321,
+            "prot-term-cnt" : 2,
+            "ipSrc" : "10.0.0.4",
+            "pr" : 17,
+            "as2" : "AS0002 Hmm!@#$%^&*()",
+            "no" : "test",
+            "a1" : "10.0.0.4",
+            "lp" : 1387253793,
             "psl" : [
                345
             ],
-            "ss" : 1,
-            "by" : 329,
-            "by1" : 329,
-            "as2" : "AS0002 Hmm!@#$%^&*()",
-            "db1" : 321,
-            "pr" : 17,
-            "sl" : 0,
-            "fb1" : "64313a7264323a69",
-            "mac2-term-cnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:03"
-            ],
-            "db2" : 0,
-            "a1" : "10.0.0.4",
-            "pa2" : 0,
-            "by2" : 0,
-            "no" : "test",
             "prot-term" : [
                "udp",
                "bittorrent"
             ],
-            "lp" : 1387253793,
-            "prot-term-cnt" : 2,
+            "pa" : 1,
             "mac1-term" : [
                "00:10:db:ff:26:00"
             ],
-            "pa" : 1,
+            "by2" : 0,
+            "by1" : 329,
+            "by" : 329,
+            "ipDst" : "10.0.0.3",
+            "fb1" : "64313a7264323a69",
+            "p2" : 12074,
+            "mac2-term" : [
+               "00:00:5e:00:01:03"
+            ],
+            "a2" : "10.0.0.3",
             "db" : 321,
+            "portDst" : 12074,
+            "firstPacket" : 1387253793904,
+            "mac1-term-cnt" : 1,
+            "lpd" : 1387253793904,
+            "portSrc" : 44102,
+            "fpd" : 1387253793904,
+            "ss" : 1,
+            "fs" : [],
+            "db2" : 0,
             "ps" : [
                185
             ],
-            "pa1" : 1,
-            "mac1-term-cnt" : 1,
-            "lpd" : 1387253793904
+            "pa2" : 0,
+            "sl" : 0,
+            "p1" : 44102,
+            "timestamp" : "SET",
+            "fp" : 1387253793,
+            "lastPacket" : 1387253793904,
+            "pa1" : 1
          },
          "header" : {
             "index" : {
@@ -120,55 +134,62 @@
          }
       },
       {
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-131217",
-               "_type" : "session"
-            }
-         },
          "body" : {
+            "ss" : 1,
+            "db2" : 0,
+            "fs" : [],
+            "pa2" : 0,
+            "ps" : [
+               530
+            ],
+            "sl" : 0,
+            "timestamp" : "SET",
+            "p1" : 47061,
+            "pa1" : 1,
+            "fp" : 1387257610,
+            "lastPacket" : 1387257610963,
+            "fb1" : "64313a71393a6669",
+            "mac2-term" : [
+               "00:00:5e:00:01:03"
+            ],
+            "p2" : 20551,
+            "db" : 328,
+            "a2" : "10.0.0.5",
+            "portDst" : 20551,
+            "mac1-term-cnt" : 1,
+            "firstPacket" : 1387257610963,
+            "lpd" : 1387257610963,
+            "portSrc" : 47061,
+            "fpd" : 1387257610963,
+            "a1" : "10.0.0.6",
+            "no" : "test",
+            "lp" : 1387257610,
+            "psl" : [
+               352
+            ],
+            "pa" : 1,
             "prot-term" : [
                "udp",
                "bittorrent"
             ],
-            "psl" : [
-               352
-            ],
-            "by" : 336,
-            "ss" : 1,
-            "lp" : 1387257610,
-            "fs" : [],
-            "p1" : 47061,
-            "by2" : 0,
-            "p2" : 20551,
-            "no" : "test",
-            "fp" : 1387257610,
-            "a2" : "10.0.0.5",
-            "db2" : 0,
-            "a1" : "10.0.0.6",
-            "fpd" : 1387257610963,
-            "pa2" : 0,
-            "sl" : 0,
-            "fb1" : "64313a71393a6669",
-            "mac2-term-cnt" : 1,
-            "mac2-term" : [
-               "00:00:5e:00:01:03"
-            ],
-            "mac1-term-cnt" : 1,
-            "lpd" : 1387257610963,
-            "pa1" : 1,
-            "pr" : 17,
             "mac1-term" : [
                "00:10:db:ff:26:00"
             ],
-            "pa" : 1,
-            "db" : 328,
-            "db1" : 328,
-            "ps" : [
-               530
-            ],
+            "ipDst" : "10.0.0.5",
+            "by1" : 336,
+            "by2" : 0,
+            "by" : 336,
+            "mac2-term-cnt" : 1,
             "prot-term-cnt" : 2,
-            "by1" : 336
+            "db1" : 328,
+            "ipSrc" : "10.0.0.6",
+            "pr" : 17
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131217"
+            }
          }
       }
    ]

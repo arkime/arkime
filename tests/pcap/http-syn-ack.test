@@ -1,7 +1,25 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
+            "hdvercnt" : 1,
+            "ipDst" : "10.0.0.33",
+            "hsvercnt" : 1,
+            "mac1-term-cnt" : 1,
+            "db1" : 427,
+            "fb1" : "474554202f312048",
+            "firstPacket" : 1467366160266,
+            "hh2cnt" : 11,
+            "ho" : [
+               "js.navigator.io"
+            ],
+            "a2" : "10.0.0.33",
+            "hmd5cnt" : 1,
+            "us" : [
+               "//js.navigator.io/1"
+            ],
+            "ss" : 1,
+            "hh1cnt" : 7,
             "hh2" : [
                "http:header:access-control-allow-origin",
                "http:header:cache-control",
@@ -15,112 +33,7 @@
                "http:header:transfer-encoding",
                "http:header:vary"
             ],
-            "hpath" : [
-               "/1"
-            ],
-            "fb2" : "485454502f312e31",
-            "hh1" : [
-               "http:header:accept",
-               "http:header:accept-encoding",
-               "http:header:accept-language",
-               "http:header:connection",
-               "http:header:host",
-               "http:header:referer",
-               "http:header:user-agent"
-            ],
-            "fpd" : 1467366160266,
-            "ho" : [
-               "js.navigator.io"
-            ],
-            "hsver" : [
-               "1.1"
-            ],
-            "p1" : 10882,
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "by2" : 12880,
-            "psl" : [
-               84,
-               76,
-               500,
-               72,
-               1532,
-               1532,
-               1532,
-               1532,
-               1532,
-               1084,
-               1532,
-               1532,
-               1092
-            ],
-            "pa" : 13,
-            "hocnt" : 1,
-            "hmd5" : [
-               "38bf34783fc26180631a614a88301cab"
-            ],
-            "lp" : 1467366160,
-            "fp" : 1467366160,
-            "a1" : "10.0.0.32",
-            "mac2-term-cnt" : 1,
-            "by1" : 544,
-            "hpathcnt" : 1,
-            "pr" : 6,
-            "mac1-term-cnt" : 1,
-            "hsvercnt" : 1,
-            "db2" : 12252,
-            "uacnt" : 1,
-            "us" : [
-               "//js.navigator.io/1"
-            ],
-            "prot-term-cnt" : 2,
-            "mac1-term" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "by" : 13424,
-            "mac2-term" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "fb1" : "474554202f312048",
-            "fs" : [],
-            "hdvercnt" : 1,
             "lpd" : 1467366160339,
-            "db" : 12679,
-            "a2" : "10.0.0.33",
-            "http" : {
-               "method-term-cnt" : 1,
-               "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "application/x-gzip"
-               ],
-               "statuscode" : [
-                  200
-               ]
-            },
-            "hh2cnt" : 11,
-            "hdrs" : {
-               "hreq-referercnt" : 1,
-               "hreq-referer" : [
-                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-               ]
-            },
-            "pa1" : 2,
-            "pa2" : 11,
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
-            ],
-            "sl" : 73,
-            "p2" : 80,
-            "ss" : 1,
-            "hh1cnt" : 7,
-            "hmd5cnt" : 1,
-            "no" : "test",
             "ps" : [
                24,
                108,
@@ -136,16 +49,119 @@
                11032,
                12564
             ],
-            "uscnt" : 1,
-            "db1" : 427,
+            "by" : 13424,
+            "db2" : 12252,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "hpath" : [
+               "/1"
+            ],
+            "pr" : 6,
+            "uacnt" : 1,
+            "lastPacket" : 1467366160339,
+            "prot-term-cnt" : 2,
+            "mac1-term" : [
+               "aa:aa:aa:aa:aa:aa"
+            ],
+            "hh1" : [
+               "http:header:accept",
+               "http:header:accept-encoding",
+               "http:header:accept-language",
+               "http:header:connection",
+               "http:header:host",
+               "http:header:referer",
+               "http:header:user-agent"
+            ],
+            "hmd5" : [
+               "38bf34783fc26180631a614a88301cab"
+            ],
+            "no" : "test",
+            "pa1" : 2,
+            "fpd" : 1467366160266,
+            "mac2-term" : [
+               "aa:aa:aa:aa:aa:aa"
+            ],
+            "by1" : 544,
+            "tcpflags" : {
+               "rst" : 0,
+               "psh" : 3,
+               "urg" : 0,
+               "fin" : 0,
+               "ack" : 9,
+               "syn" : 0,
+               "syn-ack" : 1
+            },
+            "pa2" : 11,
+            "hdrs" : {
+               "hreq-referer" : [
+                  "http://xxxxxxx.xxxxx.xx/news/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+               ],
+               "hreq-referercnt" : 1
+            },
+            "hsver" : [
+               "1.1"
+            ],
+            "by2" : 12880,
+            "sl" : 73,
+            "a1" : "10.0.0.32",
+            "fp" : 1467366160,
+            "timestamp" : "SET",
+            "p1" : 10882,
+            "p2" : 80,
             "hdver" : [
                "1.1"
-            ]
+            ],
+            "hocnt" : 1,
+            "hpathcnt" : 1,
+            "db" : 12679,
+            "lp" : 1467366160,
+            "portSrc" : 10882,
+            "http" : {
+               "bodymagic-term" : [
+                  "application/x-gzip"
+               ],
+               "statuscode" : [
+                  200
+               ],
+               "statuscode-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "method-term-cnt" : 1,
+               "bodymagic-term-cnt" : 1
+            },
+            "uscnt" : 1,
+            "portDst" : 80,
+            "psl" : [
+               84,
+               76,
+               500,
+               72,
+               1532,
+               1532,
+               1532,
+               1532,
+               1532,
+               1084,
+               1532,
+               1532,
+               1092
+            ],
+            "fs" : [],
+            "pa" : 13,
+            "mac2-term-cnt" : 1,
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+            ],
+            "fb2" : "485454502f312e31",
+            "ipSrc" : "10.0.0.32"
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160701"
+               "_index" : "tests_sessions-160701",
+               "_type" : "session"
             }
          }
       }

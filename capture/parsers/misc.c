@@ -1,4 +1,4 @@
-/* Copyright 2012-2016 AOL Inc. All rights reserved.
+/* Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -139,7 +139,24 @@ void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data)
 /******************************************************************************/
 void stun_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (20 + data[3] == len)
+    if (20 + data[3] != len)
+        return;
+
+    if (memcmp(data+4, "\x21\x12\xa4\x42", 4) == 0) {
+        moloch_session_add_protocol(session, "stun");
+        return;
+    }
+
+    if (data[1] == 1 && len > 25 && data[23] + 24 == len) {
+        moloch_session_add_protocol(session, "stun");
+        return;
+    }
+
+}
+/******************************************************************************/
+void stun_rsp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (moloch_memstr((const char *)data+7, len-7, "STUN", 4))
         moloch_session_add_protocol(session, "stun");
 }
 /******************************************************************************/
@@ -158,6 +175,32 @@ void flap_classify(MolochSession_t *session, const unsigned char *data, int len,
         moloch_session_add_protocol(session, "flap");
 }
 /******************************************************************************/
+void tacacs_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    if (session->port1 == 49 || session->port2 == 49)
+        moloch_session_add_protocol(session, "tacacs");
+}
+/******************************************************************************/
+void dropbox_lan_sync_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (moloch_memstr((const char *)data+1, len-1, "host_int", 8)) {
+        moloch_session_add_protocol(session, "dropbox-lan-sync");
+    }
+}
+/******************************************************************************/
+void kafka_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 50 || data[4] != 0 || data[5] > 6|| data[7] != 0 || data[8] != 0)
+        return;
+
+    int flen = 4 + ((data[2] << 8) | data[3]);
+
+    if (len != flen)
+        return;
+
+    moloch_session_add_protocol(session, "kafka");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -165,6 +208,7 @@ void flap_classify(MolochSession_t *session, const unsigned char *data, int len,
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"\x13" "BitTorrent protocol", 20, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("bt", "bittorrent", 0, (unsigned char*)"BSYNC\x00", 6, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("rdp", NULL, 0, (unsigned char*)"\x03\x00", 2, rdp_classify);
     moloch_parsers_classifier_register_tcp("imap", NULL, 0, (unsigned char*)"* OK ", 5, imap_classify);
     moloch_parsers_classifier_register_tcp("pop3", "pop3", 0, (unsigned char*)"+OK POP3 ", 9, misc_add_protocol_classify);
@@ -235,9 +279,11 @@ void moloch_parser_init()
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<8", 2, syslog_classify);
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (unsigned char*)"<9", 2, syslog_classify);
 
-    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x00", 4, stun_classify);
-    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00\x08", 4, stun_classify);
-    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x01\x01\x00\x0c", 4, stun_classify);
+    PARSERS_CLASSIFY_BOTH("stun", NULL, 0, (unsigned char*)"RSP/", 4,stun_rsp_classify);
+
+    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x01\x00", 3, stun_classify);
+    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x00\x03\x00", 3, stun_classify);
+    moloch_parsers_classifier_register_udp("stun", NULL, 0, (unsigned char*)"\x01\x01\x00", 3, stun_classify);
 
     moloch_parsers_classifier_register_tcp("flap", NULL, 0, (unsigned char*)"\x2a\x01", 2, flap_classify);
 
@@ -247,6 +293,19 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("ssdp", "ssdp", 0, (unsigned char*)"M-SEARCH ", 9, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("zabbix", "zabbix", 0, (unsigned char*)"ZBXD\x01", 5, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_tcp("rmi", "rmi", 0, (unsigned char*)"\x4a\x52\x4d\x49\x00\x02\x4b", 7, misc_add_protocol_classify);
+
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x02", 3, tacacs_classify);
+
+    moloch_parsers_classifier_register_tcp("flash-policy", "flash-policy", 0, (unsigned char*)"<policy-file-request/>", 22, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_port("dropbox-lan-sync",  NULL, 17500, MOLOCH_PARSERS_PORT_UDP, dropbox_lan_sync_classify);
+
+    moloch_parsers_classifier_register_tcp("kafka", NULL, 0, (unsigned char*)"\x00\x00", 2, kafka_classify);
 
     userField = moloch_field_by_db("user");
 }

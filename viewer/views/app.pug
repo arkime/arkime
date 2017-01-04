@@ -1,0 +1,17 @@
+doctype html
+html(ng-app="moloch")
+
+  head
+    base(href=basePath)
+    title(ng-bind="title")
+    meta(charset='utf8')
+    link(rel='stylesheet', href='font-awesome/css/font-awesome.min.css')
+    link(rel='stylesheet', href='bootstrap/dist/css/bootstrap.css')
+
+  body
+    navbar
+    div.margin-for-main-navbar(ng-view)
+    footer.footer
+
+    script(src='vendor.bundle.js')
+    script(src='app.bundle.js')

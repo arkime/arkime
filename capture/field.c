@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* field.c  -- Functions dealing with declaring fields
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -17,12 +17,16 @@
  */
 #include "moloch.h"
 #include <stdarg.h>
+#include <arpa/inet.h>
 #include "patricia.h"
 
 extern patricia_tree_t *ipTree;
 extern MolochConfig_t        config;
 HASH_VAR(d_, fieldsByDb, MolochFieldInfo_t, 13);
 HASH_VAR(e_, fieldsByExp, MolochFieldInfo_t, 13);
+
+#define MOLOCH_FIELD_SPECIAL_NOT_FOUND -1
+#define MOLOCH_FIELD_SPECIAL_STOP_SPI  -2
 
 /******************************************************************************/
 int moloch_field_exp_cmp(const void *keyv, const void *elementv)
@@ -407,11 +411,21 @@ int moloch_field_by_exp(const char *exp)
     return -1;
 }
 /******************************************************************************/
+void moloch_field_by_exp_add_special(char *exp, int pos)
+{
+    MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
+    info->expression = exp;
+    info->pos = pos;
+    HASH_ADD(e_, fieldsByExp, info->expression, info);
+}
+/******************************************************************************/
 void moloch_field_init()
 {
     config.maxField = 0;
     HASH_INIT(d_, fieldsByDb, moloch_string_hash, moloch_string_cmp);
     HASH_INIT(e_, fieldsByExp, moloch_string_hash, moloch_field_exp_cmp);
+
+    moloch_field_by_exp_add_special("dontSaveSPI", MOLOCH_FIELD_SPECIAL_STOP_SPI);
 }
 /******************************************************************************/
 void moloch_field_exit()
@@ -817,3 +831,138 @@ int moloch_field_count(int pos, MolochSession_t *session)
         exit (1);
     }
 }
+/******************************************************************************/
+void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
+{
+    int i;
+
+    for (i = 0; i < ops->num; i++) {
+        MolochFieldOp_t *op = &(ops->ops[i]);
+
+        // Special field pos that really are setting a field in sessions
+        if (op->fieldPos < 0) {
+            switch (op->fieldPos) {
+            case MOLOCH_FIELD_SPECIAL_STOP_SPI:
+                session->stopSPI = op->strLenOrInt;
+                break;
+            }
+            continue;
+        }
+
+        switch (config.fields[op->fieldPos]->type) {
+        case  MOLOCH_FIELD_TYPE_INT_HASH:
+        case  MOLOCH_FIELD_TYPE_INT_GHASH:
+            if (op->fieldPos == config.tagsField) {
+                moloch_session_add_tag(session, op->str);
+                continue;
+            }
+            // Fall Thru
+        case  MOLOCH_FIELD_TYPE_INT:
+        case  MOLOCH_FIELD_TYPE_INT_ARRAY:
+        case  MOLOCH_FIELD_TYPE_IP:
+        case  MOLOCH_FIELD_TYPE_IP_HASH:
+        case  MOLOCH_FIELD_TYPE_IP_GHASH:
+            moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
+            break;
+        case  MOLOCH_FIELD_TYPE_STR:
+        case  MOLOCH_FIELD_TYPE_STR_ARRAY:
+        case  MOLOCH_FIELD_TYPE_STR_HASH:
+            moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
+            break;
+        }
+    }
+}
+/******************************************************************************/
+void moloch_field_ops_free(MolochFieldOps_t *ops)
+{
+    if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY) {
+        int i;
+        for (i = 0; i < ops->num; i++) {
+            if (ops->ops[i].str)
+                g_free(ops->ops[i].str);
+        }
+    }
+    if (ops->ops)
+        free(ops->ops);
+    ops->ops = NULL;
+    ops->size = 0;
+    ops->num = 0;
+}
+/******************************************************************************/
+void moloch_field_ops_init(MolochFieldOps_t *ops, int numOps, uint16_t flags)
+{
+    ops->num   = 0;
+    ops->size  = numOps;
+    ops->flags = flags;
+
+    if (numOps > 0)
+        ops->ops = malloc(numOps * sizeof(MolochFieldOp_t));
+    else
+        ops->ops = NULL;
+}
+
+
+/******************************************************************************/
+void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int valuelen)
+{
+    if (ops->num >= ops->size || fieldPos == -1 || fieldPos > config.maxField) {
+        LOG("WARNING - Not adding %d %s %d", fieldPos, value, valuelen);
+        return;
+    }
+
+    MolochFieldOp_t *op = &(ops->ops[ops->num]);
+
+    op->fieldPos = fieldPos;
+
+    if (fieldPos < 0) {
+        switch (op->fieldPos) {
+        case MOLOCH_FIELD_SPECIAL_STOP_SPI:
+            op->strLenOrInt = atoi(value);
+            op->str = 0;
+            break;
+        default:
+            LOG("WARNING - Unknown special field pos %d", fieldPos);
+            break;
+        }
+    } else {
+        switch (config.fields[fieldPos]->type) {
+        case  MOLOCH_FIELD_TYPE_INT_HASH:
+        case  MOLOCH_FIELD_TYPE_INT_GHASH:
+            if (fieldPos == config.tagsField) {
+                moloch_db_get_tag(NULL, config.tagsField, value, NULL); // Preload the tagname -> tag mapping
+                if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY)
+                    op->str = g_strndup(value, valuelen);
+                else
+                    op->str = value;
+                op->strLenOrInt = valuelen;
+                break;
+            }
+            // Fall thru
+        case  MOLOCH_FIELD_TYPE_INT:
+        case  MOLOCH_FIELD_TYPE_INT_ARRAY:
+            op->str = 0;
+            op->strLenOrInt = atoi(value);
+            break;
+        case  MOLOCH_FIELD_TYPE_STR:
+        case  MOLOCH_FIELD_TYPE_STR_ARRAY:
+        case  MOLOCH_FIELD_TYPE_STR_HASH:
+            if (ops->flags & MOLOCH_FIELD_OPS_FLAGS_COPY)
+                op->str = g_strndup(value, valuelen);
+            else
+                op->str = value;
+            op->strLenOrInt = valuelen;
+            break;
+        case  MOLOCH_FIELD_TYPE_IP:
+        case  MOLOCH_FIELD_TYPE_IP_HASH:
+        case  MOLOCH_FIELD_TYPE_IP_GHASH:
+            op->str = 0;
+            op->strLenOrInt = inet_addr(value);
+            break;
+        default:
+            LOG("WARNING - Unsupported expression type %d for %s", config.fields[fieldPos]->type, value);
+            return;
+        }
+    }
+    ops->num++;
+}
+/******************************************************************************/

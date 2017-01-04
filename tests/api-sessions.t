@@ -1,4 +1,4 @@
-use Test::More tests => 52;
+use Test::More tests => 54;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -73,20 +73,20 @@ my $pwd = getcwd() . "/pcap";
     $json = viewerGet("/sessions.json?date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1]]'), "lpHisto ALL");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4]]'), "paHisto ALL");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68]]'), "dbHisto ALL");
-    is ($json->{recordsFiltered}, 5, "records ALL");
+    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
+    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4], [1482552000000,4]]'), "paHisto ALL");
+    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68], [1482552000000,68]]'), "dbHisto ALL");
+    is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
 # multi Check facets ALL 
     $json = multiGet("/sessions.json?date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "multi map ALL");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1]]'), "multi lpHisto ALL");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4]]'), "multi paHisto ALL");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68]]'), "multi dbHisto ALL");
-    is ($json->{recordsFiltered}, 5, "multi records ALL");
+    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "multi lpHisto ALL");
+    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4], [1482552000000,4]]'), "multi paHisto ALL");
+    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68], [1482552000000,68]]'), "multi dbHisto ALL");
+    is ($json->{recordsFiltered}, 6, "multi records ALL");
     is ($json->{graph}->{interval}, 3600, "multi correct interval ALL");
 
 # Check ip.protocol=blah
@@ -113,3 +113,11 @@ tcp, 1386004317, 1386004317, 10.180.156.185, 53535, USA, 10.180.156.249, 1080, U
 'Protocol, First Packet, Last Packet, Source IP, Source Port, Source Geo, Destination IP, Destination Port, Destination Geo, Packets, Bytes, Data Bytes, Node
 tcp, 1386004309, 1386004309, 10.180.156.185, 53533, USA, 10.180.156.249, 1080, USA, 14, 2698, 1754, test
 ', "CSV Ids");
+
+# bigendian pcap fs tests
+    my $json = viewerGet("/sessions.json?date=-1&fields=fs&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fs}->[0] =~ /bigendian.pcap/, "correct fs");
+
+# bigendian pcap fs tests 2 fields
+    my $json = viewerGet("/sessions.json?date=-1&fields=tls&fields=fs&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok ($json->{data}->[0]->{fs}->[0] =~ /bigendian.pcap/, "correct fs");

@@ -1,50 +1,19 @@
 {
-   "packets" : [
+   "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-051119"
+            }
+         },
          "body" : {
-            "fpd" : 1132371118535,
-            "mac2-term" : [
-               "00:0c:29:30:60:27"
-            ],
-            "ss" : 1,
-            "smbdm" : [
-               "VNET3"
-            ],
-            "mac1-term-cnt" : 1,
-            "p2" : 445,
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
-            "ps" : [
-               24,
-               114,
-               204,
-               286,
-               591,
-               826,
-               908,
-               1206,
-               1704,
-               2110,
-               2438,
-               2620,
-               2760,
-               2881
-            ],
-            "tacnt" : 1,
-            "db" : 1824,
-            "smbdmcnt" : 1,
-            "mac2-term-cnt" : 1,
-            "db1" : 902,
-            "a2" : "192.168.114.129",
-            "no" : "test",
-            "p1" : 52703,
-            "fs" : [],
             "prot-term-cnt" : 2,
-            "smbos" : [
-               "Unix"
-            ],
+            "pa2" : 6,
+            "rir2" : "ARIN",
+            "ipSrc" : "192.168.114.1",
+            "tacnt" : 1,
+            "smboscnt" : 1,
             "psl" : [
                90,
                90,
@@ -61,47 +30,94 @@
                121,
                131
             ],
-            "fp" : 1132371118,
-            "pr" : 6,
-            "rir1" : "ARIN",
-            "mac1-term" : [
-               "00:50:56:c0:00:01"
-            ],
+            "p2" : 445,
             "pa" : 14,
-            "smbver" : [
-               "Samba 3.9.0-SVN-build-11572"
+            "ps" : [
+               24,
+               114,
+               204,
+               286,
+               591,
+               826,
+               908,
+               1206,
+               1704,
+               2110,
+               2438,
+               2620,
+               2760,
+               2881
             ],
-            "lp" : 1132371118,
-            "sl" : 56,
-            "smbshcnt" : 1,
+            "a1" : "192.168.114.1",
             "tags-term" : [
                "smb:bad-security-blob"
             ],
-            "rir2" : "ARIN",
-            "db2" : 922,
-            "smbsh" : [
-               "\\\\192.168.114.129\\TEST"
+            "mac1-term-cnt" : 1,
+            "portDst" : 445,
+            "tcpflags" : {
+               "fin" : 0,
+               "syn-ack" : 1,
+               "rst" : 0,
+               "psh" : 10,
+               "urg" : 0,
+               "syn" : 1,
+               "ack" : 2
+            },
+            "timestamp" : "SET",
+            "smbdmcnt" : 1,
+            "smbdm" : [
+               "VNET3"
             ],
-            "fb2" : "00000095ff534d42",
-            "pa2" : 6,
-            "a1" : "192.168.114.1",
-            "pa1" : 8,
+            "by" : 2764,
+            "smbvercnt" : 1,
+            "db1" : 902,
+            "fpd" : 1132371118535,
             "lpd" : 1132371118592,
+            "portSrc" : 52703,
+            "p1" : 52703,
+            "prot-term" : [
+               "smb",
+               "tcp"
+            ],
+            "smbver" : [
+               "Samba 3.9.0-SVN-build-11572"
+            ],
+            "pr" : 6,
+            "by1" : 1438,
+            "pa1" : 8,
+            "no" : "test",
+            "mac2-term-cnt" : 1,
+            "fb1" : "000000dbff534d42",
+            "fs" : [],
+            "mac2-term" : [
+               "00:0c:29:30:60:27"
+            ],
             "ta" : [
                "smb:bad-security-blob"
             ],
-            "by1" : 1438,
-            "smboscnt" : 1,
-            "smbvercnt" : 1,
+            "db" : 1824,
+            "smbos" : [
+               "Unix"
+            ],
             "by2" : 1326,
-            "by" : 2764,
-            "fb1" : "000000dbff534d42"
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions-051119",
-               "_type" : "session"
-            }
+            "smbshcnt" : 1,
+            "fp" : 1132371118,
+            "db2" : 922,
+            "lastPacket" : 1132371118592,
+            "smbsh" : [
+               "\\\\192.168.114.129\\TEST"
+            ],
+            "mac1-term" : [
+               "00:50:56:c0:00:01"
+            ],
+            "lp" : 1132371118,
+            "a2" : "192.168.114.129",
+            "rir1" : "ARIN",
+            "fb2" : "00000095ff534d42",
+            "ss" : 1,
+            "firstPacket" : 1132371118535,
+            "ipDst" : "192.168.114.129",
+            "sl" : 56
          }
       }
    ]

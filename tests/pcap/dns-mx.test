@@ -1,84 +1,91 @@
 {
-   "packets" : [
+   "sessions" : [
       {
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131203"
-            }
-         },
          "body" : {
-            "g1" : "USA",
-            "pa1" : 1,
-            "by1" : 66,
-            "db" : 266,
-            "dnshocnt" : 3,
+            "lpd" : 1386104997055,
+            "fpd" : 1386104996973,
+            "db2" : 208,
+            "portSrc" : 51427,
+            "no" : "test",
             "prot-term" : [
                "udp",
                "dns"
             ],
             "pa" : 2,
-            "p2" : 53,
-            "sl" : 83,
-            "fpd" : 1386104996973,
-            "fb1" : "4c17010000010000",
-            "db2" : 208,
-            "mac2-term" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "pr" : 17,
-            "mac1-term-cnt" : 1,
+            "prot-term-cnt" : 2,
+            "fs" : [],
             "psl" : [
                82,
                232
             ],
-            "fb2" : "4c17818000010002",
-            "lp" : 1386104997,
-            "mac2-term-cnt" : 2,
-            "lpd" : 1386104997055,
-            "fs" : [],
-            "pa2" : 1,
-            "dns" : {
-               "status-term" : [
-                  "NOERROR"
-               ],
-               "status-term-cnt" : 1,
-               "opcode-term" : [
-                  "QUERY"
-               ],
-               "qt-term" : [
-                  "MX"
-               ],
-               "qt-term-cnt" : 1,
-               "qc-term-cnt" : 1,
-               "opcode-term-cnt" : 1,
-               "qc-term" : [
-                  "IN"
-               ]
-            },
+            "by1" : 66,
             "dnsho" : [
                "cluster5.us.messagelabs.com",
                "mx.com",
                "cluster5a.us.messagelabs.com"
             ],
-            "fp" : 1386104996,
-            "ss" : 1,
-            "db1" : 58,
-            "a2" : "10.2.95.39",
-            "mac1-term" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "by" : 282,
-            "p1" : 51427,
-            "a1" : "10.180.156.185",
-            "no" : "test",
             "ps" : [
                24,
                106
             ],
-            "prot-term-cnt" : 2,
-            "by2" : 216
+            "fb1" : "4c17010000010000",
+            "a2" : "10.2.95.39",
+            "pr" : 17,
+            "mac1-term" : [
+               "00:1f:5b:ff:51:cb"
+            ],
+            "dnshocnt" : 3,
+            "pa1" : 1,
+            "by" : 282,
+            "db" : 266,
+            "fb2" : "4c17818000010002",
+            "ss" : 1,
+            "portDst" : 53,
+            "a1" : "10.180.156.185",
+            "mac2-term-cnt" : 2,
+            "sl" : 83,
+            "mac2-term" : [
+               "00:00:0c:07:ac:01",
+               "00:d0:2b:d1:76:00"
+            ],
+            "ipSrc" : "10.180.156.185",
+            "dns" : {
+               "qt-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "opcode-term" : [
+                  "QUERY"
+               ],
+               "status-term-cnt" : 1,
+               "status-term" : [
+                  "NOERROR"
+               ],
+               "qc-term-cnt" : 1,
+               "qt-term" : [
+                  "MX"
+               ],
+               "qc-term" : [
+                  "IN"
+               ]
+            },
+            "mac1-term-cnt" : 1,
+            "fp" : 1386104996,
+            "lp" : 1386104997,
+            "g1" : "USA",
+            "firstPacket" : 1386104996973,
+            "lastPacket" : 1386104997055,
+            "db1" : 58,
+            "timestamp" : "SET",
+            "ipDst" : "10.2.95.39",
+            "by2" : 216,
+            "pa2" : 1,
+            "p1" : 51427,
+            "p2" : 53
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-131203"
+            }
          }
       }
    ]

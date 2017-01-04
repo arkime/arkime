@@ -1,34 +1,24 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "body" : {
-            "prot-term" : [
-               "tcp",
-               "postgresql"
-            ],
+            "ss" : 1,
             "db1" : 129,
-            "a2" : "10.0.13.120",
-            "g1" : "RUS",
-            "mac2-term" : [
-               "00:0c:29:18:7f:fe"
-            ],
-            "fb1" : "0000000804d2162f",
-            "pa1" : 6,
-            "lpd" : 1399300685032,
-            "tags-term" : [
-               "srcip"
-            ],
-            "sl" : 8,
-            "by" : 1198,
-            "as1" : "AS0000 This is neat",
+            "portDst" : 5432,
             "pa" : 11,
-            "postgresql" : {
-               "db-term" : "dbdbdbdb",
-               "user-term" : "cooluser",
-               "app-term" : "pgAdmin III - Browser"
-            },
-            "p1" : 36060,
-            "fb2" : "4e520000000c0000",
+            "db2" : 327,
+            "portSrc" : 36060,
+            "tacnt" : 1,
+            "by1" : 533,
+            "mac2-term-cnt" : 1,
+            "as1" : "AS0000 This is neat",
+            "g1" : "RUS",
+            "a1" : "10.0.0.1",
+            "lastPacket" : 1399300685032,
+            "fs" : [],
+            "pr" : 6,
+            "a2" : "10.0.13.120",
+            "by2" : 665,
             "psl" : [
                90,
                90,
@@ -42,38 +32,21 @@
                123,
                395
             ],
-            "p2" : 5432,
-            "by1" : 533,
-            "mac2-term-cnt" : 1,
-            "by2" : 665,
-            "db2" : 327,
-            "no" : "test",
-            "lp" : 1399300685,
-            "fpd" : 1399300685023,
+            "sl" : 8,
             "db" : 456,
-            "fp" : 1399300685,
-            "mac1-term-cnt" : 2,
-            "test" : {
-               "ip-geo" : [
-                  "RUS"
-               ],
-               "string" : [
-                  "16777226:36060,2014117898:5432"
-               ],
-               "number" : [
-                  2014117898
-               ],
-               "ip" : [
-                  167772161
-               ],
-               "ip-asn" : [
-                  "AS0000 This is neat"
-               ],
-               "ip-rir" : [
-                  ""
-               ]
-            },
-            "fs" : [],
+            "no" : "test",
+            "pa1" : 6,
+            "fb2" : "4e520000000c0000",
+            "by" : 1198,
+            "fpd" : 1399300685023,
+            "mac1-term" : [
+               "90:e2:ba:52:f6:2a",
+               "00:00:5e:00:01:71"
+            ],
+            "ipDst" : "10.0.13.120",
+            "ta" : [
+               "srcip"
+            ],
             "ps" : [
                24,
                114,
@@ -87,19 +60,62 @@
                880,
                1003
             ],
-            "a1" : "10.0.0.1",
-            "pa2" : 5,
-            "mac1-term" : [
-               "90:e2:ba:52:f6:2a",
-               "00:00:5e:00:01:71"
-            ],
-            "tacnt" : 1,
-            "ta" : [
+            "fb1" : "0000000804d2162f",
+            "tags-term" : [
                "srcip"
             ],
+            "mac1-term-cnt" : 2,
+            "timestamp" : "SET",
+            "lpd" : 1399300685032,
+            "test" : {
+               "ip-rir" : [
+                  ""
+               ],
+               "ip-asn" : [
+                  "AS0000 This is neat"
+               ],
+               "ip" : [
+                  167772161
+               ],
+               "number" : [
+                  2014117898
+               ],
+               "ip-geo" : [
+                  "RUS"
+               ],
+               "string" : [
+                  "16777226:36060,2014117898:5432"
+               ]
+            },
+            "prot-term" : [
+               "tcp",
+               "postgresql"
+            ],
+            "lp" : 1399300685,
+            "pa2" : 5,
             "prot-term-cnt" : 2,
-            "pr" : 6,
-            "ss" : 1
+            "postgresql" : {
+               "user-term" : "cooluser",
+               "app-term" : "pgAdmin III - Browser",
+               "db-term" : "dbdbdbdb"
+            },
+            "mac2-term" : [
+               "00:0c:29:18:7f:fe"
+            ],
+            "ipSrc" : "10.0.0.1",
+            "fp" : 1399300685,
+            "p2" : 5432,
+            "p1" : 36060,
+            "tcpflags" : {
+               "fin" : 0,
+               "psh" : 6,
+               "syn-ack" : 1,
+               "urg" : 0,
+               "rst" : 0,
+               "syn" : 1,
+               "ack" : 3
+            },
+            "firstPacket" : 1399300685023
          },
          "header" : {
             "index" : {

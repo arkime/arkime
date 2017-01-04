@@ -1,41 +1,36 @@
 {
-   "packets" : [
+   "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-160120",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "ss" : 1,
-            "sl" : 6167,
+            "mac1-term-cnt" : 1,
+            "pr" : 6,
+            "db1" : 82,
+            "esrccnt" : 1,
+            "mac2-term-cnt" : 1,
+            "ipDst" : "127.0.0.1",
+            "pa2" : 9,
+            "lpd" : 1453298304047,
+            "by2" : 872,
+            "prot-term" : [
+               "smtp",
+               "tcp"
+            ],
+            "fpd" : 1453298297881,
+            "timestamp" : "SET",
+            "p2" : 25,
+            "a1" : "127.0.0.1",
+            "portDst" : 25,
             "mac1-term" : [
                "00:00:00:00:00:00"
             ],
-            "fp" : 1453298297,
-            "fb2" : "323230206c6f6361",
-            "pa" : 19,
-            "pa2" : 9,
-            "fs" : [],
-            "a2" : "127.0.0.1",
-            "esrc" : [
-               "random@example.com"
-            ],
-            "by1" : 750,
-            "db" : 352,
-            "lp" : 1453298304,
-            "fb1" : "48454c4f0d0a4d41",
-            "mac1-term-cnt" : 1,
-            "mac2-term" : [
-               "00:00:00:00:00:00"
-            ],
-            "mac2-term-cnt" : 1,
-            "lpd" : 1453298304047,
-            "prot-term-cnt" : 2,
             "p1" : 42971,
-            "pa1" : 10,
-            "a1" : "127.0.0.1",
-            "edstcnt" : 1,
-            "edst" : [
-               "reciever@example.com"
-            ],
-            "pr" : 6,
-            "db1" : 82,
+            "lastPacket" : 1453298304047,
             "ps" : [
                24,
                114,
@@ -58,7 +53,37 @@
                1868
             ],
             "by" : 1622,
-            "esrccnt" : 1,
+            "edst" : [
+               "reciever@example.com"
+            ],
+            "mac2-term" : [
+               "00:00:00:00:00:00"
+            ],
+            "prot-term-cnt" : 2,
+            "no" : "test",
+            "pa" : 19,
+            "fb1" : "48454c4f0d0a4d41",
+            "by1" : 750,
+            "a2" : "127.0.0.1",
+            "fb2" : "323230206c6f6361",
+            "pa1" : 10,
+            "tcpflags" : {
+               "fin" : 0,
+               "urg" : 0,
+               "rst" : 0,
+               "ack" : 9,
+               "psh" : 8,
+               "syn-ack" : 1,
+               "syn" : 1
+            },
+            "firstPacket" : 1453298297881,
+            "db" : 352,
+            "esrc" : [
+               "random@example.com"
+            ],
+            "sl" : 6167,
+            "edstcnt" : 1,
+            "portSrc" : 42971,
             "psl" : [
                90,
                90,
@@ -80,21 +105,12 @@
                86,
                82
             ],
-            "prot-term" : [
-               "smtp",
-               "tcp"
-            ],
-            "p2" : 25,
             "db2" : 270,
-            "fpd" : 1453298297881,
-            "no" : "test",
-            "by2" : 872
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-160120"
-            }
+            "lp" : 1453298304,
+            "ipSrc" : "127.0.0.1",
+            "fp" : 1453298297,
+            "ss" : 1,
+            "fs" : []
          }
       }
    ]

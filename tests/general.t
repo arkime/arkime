@@ -1,4 +1,4 @@
-use Test::More tests => 521;
+use Test::More tests => 537;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -19,9 +19,9 @@ my $pwd = getcwd() . "/pcap";
 # file tests
     countTest(0, "date=-1&expression=file=nofile.pcap");
     countTest(3, "date=-1&expression=file=$pwd/bt-udp.pcap");
-    countTest(1, "date=-1&expression=file=$pwd/bt-tcp.pcap");
-    countTest(4, "date=-1&expression=file=$pwd/bt-*.pcap");
-    countTest(4, "date=-1&expression=file=/.*\\/bt-.*.pcap/");
+    countTest(2, "date=-1&expression=file=$pwd/bt-tcp.pcap");
+    countTest(5, "date=-1&expression=file=$pwd/bt-*.pcap");
+    countTest(5, "date=-1&expression=file=/.*\\/bt-.*.pcap/");
     errTest("date=-1&expression=file=[$pwd/bt-udp.pcap,$pwd/bt-tcp.pcap]");
     countTest(2, "date=-1&expression=file=$pwd/dns-tcp.pcap");
     countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/smtp-starttls.pcap)"));
@@ -66,8 +66,8 @@ my $pwd = getcwd() . "/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip.country==RUS"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&country==Rus"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip.country==Rus"));
-    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&country!=RUS"));
-    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip.country!=RUS"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&country!=RUS"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip.country!=RUS"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&country==/.*US/"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip.country==/.*US/"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&country==*US"));
@@ -105,7 +105,7 @@ my $pwd = getcwd() . "/pcap";
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=0"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst!=0"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip=10.0.0.1"));
-    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip!=10.0.0.1"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip!=10.0.0.1"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1]"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1,10.0.0.3]"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0.1/32,10.0.0.3/32]"));
@@ -132,15 +132,15 @@ my $pwd = getcwd() . "/pcap";
 
 # ip.protocol
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=1"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=6"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=6"));
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=17"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol!=17"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol!=17"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=icmp"));
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=udp"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol!=udp"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=tcp"));
-    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,6]"));
-    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,17]"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol!=udp"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=tcp"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,6]"));
+    countTest(5, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=[tcp,17]"));
 # IP:Port tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0:50759"));
@@ -325,3 +325,13 @@ if (0) {
     countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.cnt==2"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.cnt==1"));
     countTest(6, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/gre-sample.pcap)&&gre.ip.rir==ARIN"));
+
+#tcpflags
+    countTest(9, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.urg > 0"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.syn > 0"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.syn-ack < 2"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.ack < 7"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.psh==8"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.fin==2"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.rst==0"));

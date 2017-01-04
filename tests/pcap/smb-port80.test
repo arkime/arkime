@@ -1,49 +1,73 @@
 {
-   "packets" : [
+   "sessions" : [
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-130918",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-130918"
             }
          },
          "body" : {
-            "g1" : "CAN",
-            "ta" : [
-               "dstip",
-               "srcip"
+            "firstPacket" : 1379519109833,
+            "fb2" : "b378fd2aae2d4aee",
+            "prot-term" : [
+               "smb",
+               "tcp"
             ],
+            "pa" : 9,
+            "g1" : "CAN",
+            "p2" : 80,
+            "by1" : 506,
+            "rir1" : "TEST",
+            "fb1" : "000000a4ff534d42",
+            "g2" : "RUS",
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "syn" : 1,
+               "fin" : 2,
+               "rst" : 0,
+               "psh" : 3,
+               "ack" : 3,
+               "urg" : 0
+            },
+            "fs" : [],
+            "pa1" : 5,
+            "ss" : 1,
+            "by" : 847,
+            "mac2-term-cnt" : 1,
+            "portDst" : 80,
+            "tacnt" : 2,
+            "pr" : 6,
+            "db2" : 69,
             "mac2-term" : [
                "00:0b:45:b7:08:80"
             ],
-            "pa1" : 5,
-            "fb1" : "000000a4ff534d42",
-            "lp" : 1379519110,
-            "prot-term-cnt" : 2,
-            "p1" : 46735,
-            "fp" : 1379519109,
-            "as2" : "AS0000 This is neat",
-            "db1" : 168,
-            "mac1-term" : [
-               "00:26:88:df:17:c6",
-               "00:00:5e:00:01:02"
-            ],
-            "a1" : "10.0.0.2",
-            "lpd" : 1379519110616,
-            "g2" : "RUS",
-            "p2" : 80,
-            "mac2-term-cnt" : 1,
-            "db2" : 69,
-            "tacnt" : 2,
-            "fpd" : 1379519109833,
-            "no" : "test",
-            "by1" : 506,
-            "sl" : 784,
-            "as1" : "AS0001 Cool Beans!",
             "tags-term" : [
                "srcip",
                "dstip"
             ],
+            "a2" : "10.0.0.1",
+            "ta" : [
+               "dstip",
+               "srcip"
+            ],
+            "mac1-term" : [
+               "00:26:88:df:17:c6",
+               "00:00:5e:00:01:02"
+            ],
+            "as2" : "AS0000 This is neat",
+            "timestamp" : "SET",
+            "ipDst" : "10.0.0.1",
+            "prot-term-cnt" : 2,
+            "fp" : 1379519109,
+            "lpd" : 1379519110616,
+            "lastPacket" : 1379519110616,
+            "portSrc" : 46735,
+            "db1" : 168,
+            "no" : "test",
+            "p1" : 46735,
+            "by2" : 341,
+            "mac1-term-cnt" : 2,
             "psl" : [
                90,
                90,
@@ -55,20 +79,13 @@
                82,
                82
             ],
-            "by2" : 341,
-            "prot-term" : [
-               "smb",
-               "tcp"
-            ],
-            "ss" : 1,
-            "pr" : 6,
-            "pa2" : 4,
-            "by" : 847,
-            "mac1-term-cnt" : 2,
-            "rir1" : "TEST",
-            "pa" : 9,
+            "lp" : 1379519110,
+            "fpd" : 1379519109833,
             "db" : 237,
-            "a2" : "10.0.0.1",
+            "pa2" : 4,
+            "a1" : "10.0.0.2",
+            "as1" : "AS0001 Cool Beans!",
+            "ipSrc" : "10.0.0.2",
             "ps" : [
                24,
                114,
@@ -80,8 +97,7 @@
                851,
                933
             ],
-            "fb2" : "b378fd2aae2d4aee",
-            "fs" : []
+            "sl" : 784
          }
       }
    ]

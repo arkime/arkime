@@ -17,10 +17,8 @@
  */
 'use strict';
 
-var fs             = require('fs')
-  , util           = require('util')
-  , wiseSource     = require('./wiseSource.js')
-  , iptrie         = require('iptrie')
+var util           = require('util')
+  , simpleSource   = require('./simpleSource.js')
   , request        = require('request')
   ;
 
@@ -31,13 +29,14 @@ function URLSource (api, section) {
 
   self.url          = api.getConfig(section, "url");
   self.reload       = +api.getConfig(section, "reload", -1);
-  self.column       = +api.getConfig(section, "column", 0);
-  this.keyColumn    = api.getConfig(section, "keyColumn", 0);
-  self.type         = api.getConfig(section, "type");
-  self.format       = api.getConfig(section, "format", "csv");
   self.headers      = {};
   var headers       = api.getConfig(section, "headers");
   this.cacheTimeout = -1;
+
+  if (this.url === undefined) {
+    console.log(this.section, "- ERROR not loading since no url specified in config file");
+    return;
+  }
 
   if (headers) {
     headers.split(";").forEach(function(header) {
@@ -47,163 +46,35 @@ function URLSource (api, section) {
       }
     });
   }
-  
-  if (self.type === "ip") {
-    self.cache = {items: [], trie: new iptrie.IPTrie()};
-  } else {
-    self.cache = {};
-  }
-  var fields = api.getConfig(section, "fields");
-  if (fields !== undefined) {
-    fields = fields.split("\\n");
-    for (var i = 0; i < fields.length; i++) {
-      this.parseFieldDef(fields[i]);
-    }
-  }
 
-  var view = api.getConfig(section, "view");
-  if (view !== undefined) {
-    this.view = view.replace(/\\n/g, "\n");
-  }
-
-  if (this.view !== "") {
-    this.api.addView(this.section, this.view);
-  }
-}
-util.inherits(URLSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.load = function() {
-  var self = this;
-  var setFunc;
-  var newCache;
-  var count = 0;
-  if (this.type === "ip") {
-    newCache = {items: [], trie: new iptrie.IPTrie()};
-    setFunc  = function(key, value) {
-      var parts = key.split("/");
-      try {
-        newCache.trie.add(parts[0], +parts[1] || 32, value);
-      } catch (e) {
-        console.log("ERROR adding", self, key, e);
-      }
-      newCache.items[key] = value;
-      count++;
-    };
-  } else {
-    newCache ={};
-    setFunc = function(key, value) {
-      newCache[key] = value;
-      count++;
-    };
-  }
-  request(self.url, {headers: self.headers}, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      self.parse(body, setFunc, function(err) {
-        if (err) {
-          console.log("ERROR loading", self.section, err);
-          return;
-        }
-        self.cache = newCache;
-        console.log(self.section, "- Done Loading", count, "elements");
-      });
-    } else {
-      console.log("Couldn't load", self.section, self.url, response, error);
-    }
-  });
-};
-//////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.dump = function(res) {
-  var cache = this.type === "ip"?this.cache.items:this.cache;
-  for (var key in cache) {
-    var str = "{key: \"" + key + "\", ops:\n" + 
-      wiseSource.result2Str(wiseSource.combineResults([this.result, cache[key]])) + "},\n";
-    res.write(str);
-  }
-  res.end();
-};
-//////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.sendResult = function(key, cb) {
-  var result = this.type === "ip"?this.cache.trie.find(key):this.cache[key];
-
-  // Not found, or found but no extra values to add
-  if (!result) {
-    return cb(null, undefined);
-  }
-  if (result.num === 0) {
-    return cb(null, this.result);
-  }
-
-  // Found, so combine the two results (per item, and per source)
-  var newresult = {num: result.num + this.result.num, buffer: Buffer.concat([result.buffer, this.result.buffer])};
-  return cb(null, newresult);
-};
-//////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.init = function() {
-  if (this.url === undefined) {
-    console.log("URL - ERROR not loading", this.section, "since no url specified in config file");
+  if (!this.initSimple())
     return;
-  }
 
-  if (!this.type) {
-    console.log("URL - ERROR not loading", this.section, "since no type specified in config file");
-    return;
-  }
-
-  var tagsField = this.api.addField("field:tags");
-  var tags = this.api.getConfig(this.section, "tags");
-  if (tags) {
-    var args = [];
-    tags.split(",").forEach(function (part) {
-      args.push(tagsField, part);
-    });
-    this.result = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
-  } else {
-    this.result = wiseSource.emptyResult;
-  }
-
-
-  if (this.format === "csv") {
-    this.parse = this.parseCSV;
-  } else if (this.format === "tagger") {
-    this.parse = this.parseTagger;
-  } else if (this.format === "json") {
-    this.parse = this.parseJSON;
-  } else {
-    console.log("URL - ERROR not loading", this.section, "unknown data format", this.format);
-    return;
-  }
-
-  if (this.type === "domain") {
-    this.getDomain = function(domain, cb) {
-      if (this.cache[domain]) {
-        return this.sendResult(domain, cb);
-      }
-      domain = domain.substring(domain.indexOf(".")+1);
-      return this.sendResult(domain, cb);
-    };
-  } else if (this.type === "ip") {
-    this.getIp = this.sendResult;
-  } else if (this.type === "md5") {
-    this.getMd5 = this.sendResult;
-  } else if (this.type === "email") {
-    this.getEmail = this.sendResult;
-  } else {
-    console.log("URL - ERROR not loading", this.section, "since unknown type specified in config file", this.type);
-    return;
-  }
-
-  this.api.addSource(this.section, this);
   setImmediate(this.load.bind(this));
+
+  // Reload url every so often
   if (this.reload > 0) {
     setInterval(this.load.bind(this), this.reload*1000*60);
   }
+}
+util.inherits(URLSource, simpleSource);
+//////////////////////////////////////////////////////////////////////////////////
+URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
+  var self = this;
+
+  request(self.url, {headers: self.headers}, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      self.parse(body, setFunc, cb);
+    } else {
+      cb(error);
+    }
+  });
 };
 //////////////////////////////////////////////////////////////////////////////////
 exports.initSource = function(api) {
   var sections = api.getConfigSections().filter(function(e) {return e.match(/^url:/);});
   sections.forEach(function(section) {
     var source = new URLSource(api, section);
-    source.init();
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
