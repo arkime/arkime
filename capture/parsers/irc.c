@@ -121,5 +121,6 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NICK ", 5, irc_classify);
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"USER ", 5, irc_classify);
+    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"CAP REQ ", 8, irc_classify);
 }
 
