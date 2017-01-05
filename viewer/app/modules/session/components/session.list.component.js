@@ -34,11 +34,12 @@
      * @param $anchorScroll   Scrolls to the element related to given hash
      * @param SessionService  Transacts sessions with the server
      * @param FieldService    Retrieves available fields from the server
+     * @param UserService     Transacts users and user data with the server
      *
      * @ngInject
      */
     constructor($scope, $timeout, $location, $routeParams, $anchorScroll,
-      SessionService, FieldService) {
+      SessionService, FieldService, UserService) {
 
       this.$scope         = $scope;
       this.$timeout       = $timeout;
@@ -47,6 +48,7 @@
       this.$anchorScroll  = $anchorScroll;
       this.SessionService = SessionService;
       this.FieldService   = FieldService;
+      this.UserService    = UserService;
 
       // offset anchor scroll position to account for navbars
       this.$anchorScroll.yOffset = 140;
@@ -61,6 +63,7 @@
 
       this.getTableState(); // IMPORTANT: kicks off the initial search query!
 
+      this.getUserSettings();
 
       /* Listen! */
       // watch for pagination changes (from pagination.component)
@@ -163,6 +166,19 @@
           this.error    = error;
           this.loading  = false;
         });
+    }
+
+    /**
+     * Gets the current user's settings
+     */
+    getUserSettings() {
+      this.UserService.getSettings()
+         .then((settings) => {
+           this.settings = settings || {};
+         })
+         .catch((error) => {
+           this.error = error;
+         });
     }
 
     /**
@@ -496,7 +512,7 @@
   }
 
   SessionListController.$inject = ['$scope', '$timeout', '$location',
-    '$routeParams', '$anchorScroll', 'SessionService', 'FieldService'];
+    '$routeParams', '$anchorScroll', 'SessionService', 'FieldService', 'UserService'];
 
 
   angular.module('moloch')

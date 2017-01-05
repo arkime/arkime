@@ -836,7 +836,7 @@ app.get('/users', checkWebEnabled, function(req, res) {
   });
 });
 
-app.get('/users/current', function(req, res) {
+app.get('/user/current', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
@@ -983,6 +983,13 @@ app.get('/style.css', function(req, res) {
 
 // angular app pages
 app.get(['/app', '/help'], checkWebEnabled, function(req, res) {
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     { path: app.locals.basePath }
+  );
+
   res.render('app.pug');
 });
 
@@ -4095,7 +4102,25 @@ app.post('/deleteView', checkToken, function(req, res) {
   });
 });
 
-app.get('/views', function(req, res) {
+app.get('/user/settings', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's settings
+        return res.send("{}");
+      } else {
+        console.log("Unknown user", err, user);
+        return res.send("{}");
+      }
+    }
+
+    var settings = user._source.settings || {};
+
+    return res.send(settings);
+  });
+});
+
+app.get('/user/views', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
@@ -4107,19 +4132,13 @@ app.get('/views', function(req, res) {
       }
     }
 
-    res.cookie(
-      'MOLOCH-COOKIE',
-      Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
-      { path: app.locals.basePath }
-    );
-
     var views = user._source.views || {};
 
     return res.send(views);
   });
 });
 
-app.post('/views/delete', checkCookieToken, function(req, res) {
+app.post('/user/views/delete', checkCookieToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
@@ -4146,7 +4165,7 @@ app.post('/views/delete', checkCookieToken, function(req, res) {
   });
 });
 
-app.post('/views/create', checkCookieToken, function(req, res) {
+app.post('/user/views/create', checkCookieToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }

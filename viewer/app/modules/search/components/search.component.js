@@ -199,7 +199,6 @@
      * @param {string} view The name of the view to remove
      */
     deleteView(view) {
-
       this.UserService.deleteView(view)
         .then((response) => {
           let args = {};
@@ -362,7 +361,8 @@
         openSessions        : '<',
         numVisibleSessions  : '<',
         numMatchingSessions : '<',
-        start               : '<'
+        start               : '<',
+        timezone            : '<'
       }
     });
 

@@ -33,7 +33,7 @@
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
 
-        $httpBackend.when('GET', 'users/current')
+        $httpBackend.when('GET', 'user/current')
           .respond(200, user);
       }));
 
@@ -45,7 +45,7 @@
       it('should send a GET request for the current user', function() {
         UserService.getCurrent();
 
-        $httpBackend.expectGET('users/current');
+        $httpBackend.expectGET('user/current');
 
         $httpBackend.flush();
       });
@@ -80,14 +80,14 @@
 
       it('should get user\'s view', function() {
         UserService.getViews();
-        $httpBackend.expectGET('views').respond({});
+        $httpBackend.expectGET('user/views').respond({});
         $httpBackend.flush();
       });
 
       it('should create a specified view', function() {
         UserService.createView({viewName: 'viewName', expression: 'protocols == udp'});
 
-        $httpBackend.expect('POST', 'views/create',
+        $httpBackend.expect('POST', 'user/views/create',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.viewName).toBe('viewName');
@@ -102,7 +102,7 @@
       it('should delete a user\'s specified view', function() {
         UserService.deleteView('viewName');
 
-        $httpBackend.expect('POST', 'views/delete',
+        $httpBackend.expect('POST', 'user/views/delete',
            function(postData) {
              let jsonData = JSON.parse(postData);
              expect(jsonData.view).toBe('viewName');
@@ -110,6 +110,12 @@
            }
         ).respond(200);
 
+        $httpBackend.flush();
+      });
+
+      it('should get user\'s settings', function() {
+        UserService.getSettings();
+        $httpBackend.expectGET('user/settings').respond({});
         $httpBackend.flush();
       });
 

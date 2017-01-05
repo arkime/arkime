@@ -24,10 +24,10 @@
      * '{{session.pr | protocol}}'
      */
     .filter('protocol', () => {
-      var lookup = { 1:'icmp', 6:'tcp', 17:'udp', 47:'gre', 58:'icmp6' };
+      let lookup = { 1:'icmp', 6:'tcp', 17:'udp', 47:'gre', 58:'icmp6' };
 
       return (input) => {
-        var result = lookup[input];
+        let result = lookup[input];
         if (!result) { result = input; }
         return result;
       };
@@ -62,7 +62,7 @@
 
         ipv6 = ipv6.toString();
 
-        var ip = ipv6.match(/.{1,4}/g).join(':').replace(/:0{1,3}/g, ':').replace(/^0000:/, '0:');
+        let ip = ipv6.match(/.{1,4}/g).join(':').replace(/:0{1,3}/g, ':').replace(/^0000:/, '0:');
         [/(^|:)0:0:0:0:0:0:0:0($|:)/,
          /(^|:)0:0:0:0:0:0:0($|:)/,
          /(^|:)0:0:0:0:0:0($|:)/,
@@ -93,12 +93,12 @@
       return (ms) => {
         if (isNaN(ms)) { return '?'; }
 
-        var seconds = parseInt((ms/1000)%60);
-        var minutes = parseInt((ms/(1000*60))%60);
-        var hours   = parseInt((ms/(1000*60*60))%24);
-        var days    = parseInt((ms/(1000*60*60*24)));
+        let seconds = parseInt((ms/1000)%60);
+        let minutes = parseInt((ms/(1000*60))%60);
+        let hours   = parseInt((ms/(1000*60*60))%24);
+        let days    = parseInt((ms/(1000*60*60*24)));
 
-        var result = '';
+        let result = '';
 
         if (days) {
           result += days + ' day';
@@ -128,11 +128,11 @@
      */
     .filter('fieldFilter', function () {
       return function (items, search) {
-        var results = [];
+        let results = [];
 
-        for (var i = 0, len = items.length; i < len; ++i) {
-          var str     = items[i].friendlyName.toLowerCase();
-          var match   = str.match(search);
+        for (let i = 0, len = items.length; i < len; ++i) {
+          let str     = items[i].friendlyName.toLowerCase();
+          let match   = str.match(search);
           if (match) { results.push(items[i]); }
         }
 
@@ -169,6 +169,28 @@
        };
      })
 
+     /**
+      * Applies the selected timezone to the given time
+      * Returns local time by default
+      *
+      * @example
+      * '{{seconds | 'timezone-date' : 'gmt'}}
+      *
+      * @param {int} seconds      The time in seconds from epoch
+      * @param {string} timezone  The timezone to use ('gmt' or 'utc')
+      */
+     .filter('timezone-date', function() {
+       return function (seconds, timezone) {
+         let d = new Date(seconds * 1000);
+
+         if (timezone === 'gmt') {
+           d = new Date(d.getTime() + (60000 * d.getTimezoneOffset()));
+         }
+
+         return +d;
+       };
+     })
+
     /**
      * Convert To Number Directive
      * Parses strings to integers
@@ -193,20 +215,36 @@
 
     /**
      * Epoch Date Directive
-     * Parses date strings to integers (ms from 1970)
+     * Parses date strings to integers (ms from 1970) based on timezone
+     *
+     * In the future, maybe we can use ng-model-options on the input?
+     * https://github.com/angular-ui/bootstrap/issues/2952
+     * https://github.com/angular-ui/bootstrap/issues/4837
      *
      * @example
-     * '<input epoch-date ng-model="$ctrl.time" type="text"
+     * '<input epoch-date="'gmt'" ng-model="$ctrl.time" type="text"
      *   uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" />'
      */
     .directive('epochDate', function() {
       return {
     		require: 'ngModel',
     		link: function(scope, element, attrs, ngModel) {
-      		ngModel.$parsers.push(function(viewValue) {
-           	return +viewValue;
-    			});
-    		}
+          ngModel.$formatters.push(function (value) {
+            let date = new Date(value);
+            if (attrs.epochDate === 'gmt') { // apply gmt instead of local time
+              date = new Date(date.getTime() + (60000 * date.getTimezoneOffset()));
+            }
+            return +date;
+          });
+
+          ngModel.$parsers.push(function (value) {
+            let date = value;
+            if (attrs.epochDate === 'gmt') { // apply gmt instead of local time
+              date = new Date(value.getTime() - (60000 * value.getTimezoneOffset()));
+            }
+            return +date;
+          });
+        }
     	};
     })
 
@@ -230,8 +268,8 @@
               } else if (document.selection) {
                 // the user has highlighted text in the input
                 element[0].focus();
-                var selection = document.selection.createRange();
-                var selectionLen = document.selection.createRange().text.length;
+                let selection = document.selection.createRange();
+                let selectionLen = document.selection.createRange().text.length;
                 selection.moveStart('character', -element[0].value.length);
                 scope.caretPos = selection.text.length - selectionLen;
               }
@@ -256,7 +294,7 @@
       return {
         restrict: 'A',
         link    : function(scope, element, attrs) {
-          var dom = element[0];
+          let dom = element[0];
 
           if (attrs.focusInput) { dom.focus(); }
 

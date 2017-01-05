@@ -64,6 +64,6 @@
   <div class="field-children" ng-repeat="child in ::$ctrl.fieldObj.children">
     <session-field field="child" expr="child.exp"
       value="$ctrl.session[child.dbField]" parse="$ctrl.parse"
-      session="$ctrl.session"></session-field>
+      session="$ctrl.session" timezone="$ctrl.timezone"></session-field>
   </div>
 </span>
