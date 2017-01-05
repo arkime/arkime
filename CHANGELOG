@@ -31,6 +31,7 @@
   - capture - added dontSaveSPI=1 support to tagger/wise to not save SPI data (issue #505)
   - capture - basic kafka, dropbox-lan-sync detection
   - capture - new scrubspi plugin
+  - viewer - Apply user setting timezone
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required
