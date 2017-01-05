@@ -1,0 +1,105 @@
+{
+   "sessions" : [
+      {
+         "body" : {
+            "pr" : 6,
+            "fpd" : 1483560476240,
+            "pa1" : 3,
+            "portSrc" : 62510,
+            "g1" : "SWE",
+            "ho" : [
+               "blog.cloudflare.com"
+            ],
+            "by1" : 751,
+            "ipSrc" : "0.0.0.0",
+            "lastPacket" : 1483560476263,
+            "tlsver-termcnt" : 1,
+            "psl" : [
+               102,
+               102,
+               90,
+               607,
+               90,
+               1310
+            ],
+            "by2" : 1454,
+            "g2" : "USA",
+            "p2" : 443,
+            "by" : 2205,
+            "tcpflags" : {
+               "urg" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "ack" : 3
+            },
+            "fb1" : "1603010200010001",
+            "mac1-term" : [
+               "c8:f7:33:1d:84:95"
+            ],
+            "ps" : [
+               24,
+               126,
+               228,
+               318,
+               925,
+               1015
+            ],
+            "as2" : "AS13335 CloudFlare",
+            "mac2-term-cnt" : 1,
+            "db2" : 1220,
+            "a2" : "104.19.194.102",
+            "ss" : 1,
+            "ipDst" : "0.0.0.0",
+            "p1" : 62510,
+            "tlsdstid-term" : [
+               "01002800280024001d0020ae0e282a3b7a463e"
+            ],
+            "as1" : "AS16150 Availo Networks AB",
+            "portDst" : 443,
+            "pa2" : 3,
+            "pa" : 6,
+            "db1" : 517,
+            "hocnt" : 1,
+            "fp" : 1483560476,
+            "lpd" : 1483560476263,
+            "tlsver-term" : [
+               "0x7f.12"
+            ],
+            "mac2-term" : [
+               "00:26:55:d1:4d:97"
+            ],
+            "tipv62-term" : "2400cb0020480001000000006813c266",
+            "a1" : "41.29.169.179",
+            "fb2" : "1603010052020000",
+            "firstPacket" : 1483560476240,
+            "timestamp" : "SET",
+            "mac1-term-cnt" : 1,
+            "db" : 1737,
+            "no" : "test",
+            "lp" : 1483560476,
+            "tlscipher-termcnt" : 1,
+            "fs" : [],
+            "prot-term-cnt" : 2,
+            "tlscipher-term" : [
+               "7106"
+            ],
+            "prot-term" : [
+               "tls",
+               "tcp"
+            ],
+            "sl" : 23,
+            "tipv61-term" : "200116d8ffce0010aca8353c291da9b3"
+         },
+         "header" : {
+            "index" : {
+               "_type" : "session",
+               "_index" : "tests_sessions-170104"
+            }
+         }
+      }
+   ]
+}
+
