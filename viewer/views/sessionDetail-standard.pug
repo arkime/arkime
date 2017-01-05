@@ -112,9 +112,9 @@ dl
       if (session.fb2)
         strong.medium.margined-left Dst 
         - var fb2a = new Buffer(session.fb2, "hex");
-        +clickableValue('payload8.src.hex', session.fb2)
+        +clickableValue('payload8.dst.hex', session.fb2)
         | (
-        +clickableValue('payload8.src.utf8', fb2a, true)
+        +clickableValue('payload8.dst.utf8', fb2a, true)
         |)
   
   div.tag-list  
