@@ -46,6 +46,26 @@ gchar *moloch_config_section_str(GKeyFile *keyfile, char *section, char *key, ch
     return result;
 }
 /******************************************************************************/
+gchar **moloch_config_section_keys(GKeyFile *keyfile, char *section, gsize *keys_len)
+{
+    if (!keyfile)
+        keyfile = molochKeyFile;
+
+    if (!g_key_file_has_group(keyfile, section)) {
+        *keys_len = 0;
+        return NULL;
+    }
+
+    GError *error = 0;
+    gchar **keys = g_key_file_get_keys (keyfile, section, keys_len, &error);
+    if (error) {
+        *keys_len = 0;
+        return NULL;
+    }
+    return keys;
+}
+
+/******************************************************************************/
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
 {
     char *result;
