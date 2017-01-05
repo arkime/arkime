@@ -33,21 +33,21 @@ LOCAL SS_t               ss[MAX_SS];
 /******************************************************************************/
 void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
-    int                    p;
+    int                    s;
     guint                  i;
     gchar                 *newstr;
     MolochStringHashStd_t *shash;
     MolochString_t        *hstring;
 
-    for (p = 0; p < ssLen; p++) {
-        const int pos = ss[p].pos;
+    for (s = 0; s < ssLen; s++) {
+        const int pos = ss[s].pos;
         if (!session->fields[pos])
             continue;
 
         MolochFieldInfo_t *field = config.fields[pos];
         switch (field->type) {
         case MOLOCH_FIELD_TYPE_STR:
-            newstr = g_regex_replace(ss[i].search, session->fields[pos]->str, -1, 0, ss[i].replace, 0, NULL);
+            newstr = g_regex_replace(ss[s].search, session->fields[pos]->str, -1, 0, ss[s].replace, 0, NULL);
             if (newstr) {
                 g_free(session->fields[pos]->str);
                 session->fields[pos]->str = newstr;
@@ -55,7 +55,7 @@ void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             for(i = 0; i < session->fields[pos]->sarray->len; i++) {
-                newstr = g_regex_replace(ss[i].search, g_ptr_array_index(session->fields[pos]->sarray, i), -1, 0, ss[i].replace, 0, NULL);
+                newstr = g_regex_replace(ss[s].search, g_ptr_array_index(session->fields[pos]->sarray, i), -1, 0, ss[s].replace, 0, NULL);
                 if (newstr) {
                     g_free(g_ptr_array_index(session->fields[pos]->sarray, i));
                     g_ptr_array_index(session->fields[pos]->sarray, i) = newstr;
@@ -65,7 +65,7 @@ void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
         case MOLOCH_FIELD_TYPE_STR_HASH:
             shash = session->fields[pos]->shash;
             HASH_FORALL(s_, *shash, hstring,
-                newstr = g_regex_replace(ss[i].search, hstring->str, -1, 0, ss[i].replace, 0, NULL);
+                newstr = g_regex_replace(ss[s].search, hstring->str, -1, 0, ss[s].replace, 0, NULL);
                 if (newstr) {
                     g_free(hstring->str);
                     hstring->str = newstr;

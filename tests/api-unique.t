@@ -141,8 +141,8 @@ $mtxt = get("date=-1&field=rawus&expression=$files&counts=0", 1);
 eq_or_diff($txt,
 "//www.example.com/
 //www.google.com/
-//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ", "http uri", { context => 3 });
 eq_or_diff($txt, $mtxt, "single doesn't match multi", { context => 3 });
 
@@ -152,8 +152,8 @@ $mtxt = get("date=-1&field=rawus&expression=$files&counts=1", 1);
 eq_or_diff($txt,
 "//www.example.com/, 4
 //www.google.com/, 1
-//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
-//www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
+//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=0&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
+//www.google.com/search?client=firefox&rls=en&q=Sheepskin%20Boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx, 1
 ", "http uri", { context => 3 });
 eq_or_diff($txt, $mtxt, "single doesn't match multi", { context => 3 });
 
