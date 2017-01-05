@@ -158,6 +158,19 @@
       expect(typeahead.query.value).toEqual(expression);
     });
 
+    it('should be able to add EXISTS! to end of query', function() {
+      typeahead.$onInit();
+      typeahead.$timeout.flush();
+
+      typeahead.query.value = 'country == EXIS';
+      typeahead.caretPos = 12;
+
+      typeahead.changeExpression();
+      typeahead.addToQuery('EXISTS!');
+
+      expect(typeahead.query.value).toEqual('country == EXISTS! ');
+    });
+
   });
 
 })();
