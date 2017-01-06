@@ -441,12 +441,11 @@ function createSessionDetailNew() {
     });
   }, function () {
     internals.sessionDetailNew = "include views/mixins.pug\n" +
-                                 "div.sessionDetail(sessionid='#{session.id}')\n" + // TODO: pass in correct session id
-                                 "  include views/sessionDetail-standard\n";
+                                 "div.sessionDetail(sessionid=session.id)\n" +
+                                 "  include views/sessionDetail\n";
     Object.keys(found).sort().forEach(function(k) {
       internals.sessionDetailNew += found[k];
     });
-    // internals.sessionDetailNew +=   "  include views/sessionDetail-body\n";
 
     internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, "h4")
                                                            .replace(/dl.sessionDetailMeta/g, "dl")
@@ -3266,11 +3265,8 @@ function flattenObject1 (obj) {
 }
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
-  // TODO if req.whatever
-  // res.render 'sessionDetail-body.pug'
-  // otherwise jade version
-  if (req.packetsOnly) {
-    res.render('sessionDetail-body.pug', {
+  if (req.packetsOnly) { // only return packets
+    res.render('sessionPackets.pug', {
       filename: 'sessionPackets',
       user: req.user,
       session: session,
@@ -3287,7 +3283,7 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
       }
       res.send(data);
     });
-  } else {
+  } else { // return SPI data and packets
     jade.render(internals.sessionDetailOld, {
       filename: "sessionDetail",
       user: req.user,
@@ -3396,7 +3392,6 @@ function localSessionDetail(req, res) {
   req.query.base  = req.query.base  || "ascii";
 
   var packets = [];
-  // TODO change true !req.whatever
   processSessionId(req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
     var obj = {};
     if (buffer.length > 16) {
@@ -3418,7 +3413,6 @@ function localSessionDetail(req, res) {
     }
     session.id = req.params.id;
 
-    // TODO check for session.ta
     if (session.ta) {
       session.ta = session.ta.sort();
     }
@@ -3477,8 +3471,10 @@ function localSessionDetail(req, res) {
   req.query.needimage?10000:400, 10);
 }
 
+/**
+ * Get SPI data for a session
+ */
 app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
-  console.log('new session detail endpoint');
   Db.getWithOptions(Db.id2Index(req.params.id), 'session', req.params.id, {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
@@ -3501,7 +3497,7 @@ app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
       session.pr = Pcap.protocol2Name(session.pr);
     }
 
-    pug.render(internals.sessionDetailNew, { // TODO: rename this to sessionDetail.pug
+    pug.render(internals.sessionDetailNew, {
       filename    : "sessionDetail",
       user        : req.user,
       session     : session,
@@ -3519,25 +3515,25 @@ app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
     });
   });
 });
+
+/**
+ * Get Session Packets
+ */
 app.get('/:nodeName/:id/sessionPackets', function(req, res) {
-  setTimeout(function() {
-    console.log('new session packets endpoint');
-    isLocalView(req.params.nodeName, function () {
-         noCache(req, res);
-         req.packetsOnly = true;
-         // req.isNewSessionDetail = true;
-         localSessionDetail(req, res);
-       },
-       function () {
-         return proxyRequest(req, res, function (err) {
-           Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
-             var fields = session._source || session.fields;
-             fields._err = "Couldn't connect to remote viewer to fetch packets";
-             localSessionDetailReturnFull(req, res, fields, []);
-           });
-         });
+  isLocalView(req.params.nodeName, function () {
+     noCache(req, res);
+     req.packetsOnly = true;
+     localSessionDetail(req, res);
+   },
+   function () {
+     return proxyRequest(req, res, function (err) {
+       Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
+         var fields = session._source || session.fields;
+         fields._err = "Couldn't connect to remote viewer to fetch packets";
+         localSessionDetailReturnFull(req, res, fields, []);
        });
-  }, 5000);
+     });
+   });
 });
 
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {

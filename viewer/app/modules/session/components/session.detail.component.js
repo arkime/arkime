@@ -113,8 +113,7 @@
         localStorage['moloch-image']  = this.$scope.params.image;
       }
 
-      this.SessionService.getDetail(this.$scope.session.id,
-        this.$scope.session.no, this.$scope.params)
+      this.SessionService.getDetail(this.$scope.session.id, this.$scope.session.no)
         .then((response) => {
           this.loading = false;
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
@@ -270,7 +269,9 @@
 
           scope.renderDetail = function() {
             // compile and render the session detail
-            let template = `<div class="detail-container" ng-class="{'show-ts':params.ts === true}">${scope.detailHtml}</div>`;
+            let template = `<div class="detail-container" 
+                              ng-class="{'show-ts':params.ts === true}">
+                                ${scope.detailHtml}</div>`;
             let compiled = $compile(template)(scope);
             element.find('.detail-container').replaceWith(compiled);
 
@@ -284,52 +285,11 @@
                 actionsEl.append(actionsContent);
                 actionsEl.dropdown();
               }
-
-              // // display packet option buttons
-              // let optionsEl   = element.find('.packet-options');
-              // let optContent  = $compile(optionsHTML)(scope);
-              // optionsEl.replaceWith(optContent);
-              //
-              // // modify the packet timestamp values
-              // let tss = element[0].querySelectorAll('.session-detail-ts');
-              // for (i = 0, len = tss.length; i < len; ++i) {
-              //   timeEl  = tss[i];
-              //   value   = timeEl.getAttribute('ts');
-              //   timeEl  = timeEl.querySelectorAll('.ts-value');
-              //   if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
-              //     time = $filter('date')(value, 'yyyy/MM/dd HH:mm:ss.sss');
-              //     timeEl[0].innerHTML = time;
-              //   }
-              // }
-              //
-              // // add tooltips to display source/destination byte visualization
-              // srccol = element[0].querySelector('.srccol');
-              // if (srccol) {
-              //   $(srccol).tooltip({ placement:'right', html:true });
-              // }
-              //
-              // dstcol = element[0].querySelector('.dstcol');
-              // if (dstcol) {
-              //   $(dstcol).tooltip({ placement:'right', html:true });
-              // }
-              //
-              // imgs = element[0].querySelectorAll('.imagetag');
-              // for (i = 0, len = imgs.length; i < len; ++i) {
-              //   let img = imgs[i];
-              //   let href = img.getAttribute('href');
-              //   href = href.replace('body', 'bodypng');
-              //   $(img).tooltip({
-              //     placement : 'top',
-              //     html      : true,
-              //     title     : `File Bytes:<br><img src="${href}">`
-              //   });
-              // }
             });
           };
           
           scope.renderPackets = function() {
-            let template = `<div class="packet-container" ng-class="{'show-ts':params.ts === true}">${scope.packetHtml}</div>`;
-            // let compiled = $compile(template)(scope);
+            let template = `<div class="packet-container">${scope.packetHtml}</div>`;
             element.find('.packet-container').replaceWith(template);
 
             $timeout(function() { // wait until session packets are rendered
