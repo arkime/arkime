@@ -33,9 +33,13 @@ int irc_parser(MolochSession_t *session, void *uw, const unsigned char *data, in
         if (irc->ircState & 0x1) {
             unsigned char *newline = memchr(data, '\n', remaining);
             if (newline) {
+                irc->ircState &= ~ 0x1;
                 remaining -= (newline - data) +1;
                 data = newline+1;
-                irc->ircState &= ~ 0x1;
+                while (*data == 0 && remaining > 0) { // Some irc clients have 0's after new lines
+                    remaining--;
+                    data++;
+                }
             } else {
                 return 0;
             }
@@ -121,5 +125,6 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NOTICE AUTH", 11, irc_classify);
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"NICK ", 5, irc_classify);
     moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"USER ", 5, irc_classify);
+    moloch_parsers_classifier_register_tcp("irc", NULL, 0, (unsigned char*)"CAP REQ ", 8, irc_classify);
 }
 

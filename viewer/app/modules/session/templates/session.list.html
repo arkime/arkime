@@ -3,7 +3,8 @@
   <moloch-search open-sessions="$ctrl.stickySessions"
     num-visible-sessions="$ctrl.query.length"
     num-matching-sessions="$ctrl.sessions.recordsFiltered"
-    start="$ctrl.query.start"></moloch-search>
+    start="$ctrl.query.start" timezone="$ctrl.settings.timezone">
+  </moloch-search>
 
   <!-- session visualizations -->
   <div class="row margin-for-search-navbar">
@@ -183,8 +184,8 @@
                 <span class="fa fa-close"></span>
               </a>&nbsp
               <small>
-                <session-field field="{dbField:'prot-term', exp:'protocols', type:'termfield', group:'general'}"
-                  expr="'protocols'" value="session.pr"
+                <session-field field="{dbField:'prot-term', exp:'ip.protocol', type:'termfield', group:'general'}"
+                  expr="'ip.protocol'" value="session.pr"
                   session="session" parse="true" pull-left="true"></session-field>
               </small>
             </td>
@@ -192,7 +193,7 @@
               ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
               <session-field field="col" expr="col.exp"
                 value="session[col.dbField]" session="session"
-                parse="true"></session-field>
+                parse="true" timezone="$ctrl.settings.timezone"></session-field>
             </td>
           </tr>
           <tr ng-repeat-end ng-if="session.expanded"

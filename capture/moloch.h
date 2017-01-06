@@ -290,7 +290,7 @@ typedef struct moloch_config {
     int       writeMethod;
 
     HASH_VAR(s_, dontSaveTags, MolochStringHead_t, 11);
-    MolochFieldInfo_t *fields[200];
+    MolochFieldInfo_t *fields[256];
     int                maxField;
     int                tagsField;
     int                tagsStringField;
@@ -661,6 +661,8 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
 void moloch_config_exit();
 
 gchar *moloch_config_section_str(GKeyFile *keyfile, char *section, char *key, char *d);
+gchar **moloch_config_section_keys(GKeyFile *keyfile, char *section, gsize *keys_len);
+
 gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d);
 gchar **moloch_config_str_list(GKeyFile *keyfile, char *key, char *d);
 uint32_t moloch_config_int(GKeyFile *keyfile, char *key, uint32_t d, uint32_t min, uint32_t max);

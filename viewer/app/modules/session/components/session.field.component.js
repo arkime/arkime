@@ -35,7 +35,7 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       // only display fields that have a value
-      if (!this.value && (!this.field || !this.field.children)) { return; }
+      if (this.value === undefined && (!this.field || !this.field.children)) { return; }
 
       if (typeof this.parse === 'string') {
         this.parse = this.parse === 'true';
@@ -141,7 +141,10 @@
         case 'seconds':
           this.time   = true;
           this.value  = this.parsed;
-          this.parsed = this.$filter('date')(this.parsed * 1000, 'yyyy/MM/dd HH:mm:ss');
+          this.parsed = this.$filter('timezone-date')(this.parsed, this.timezone);
+          let dateFormat = 'yyyy/MM/dd HH:mm:ss';
+          if (this.timezone === 'gmt') { dateFormat = 'yyyy/MM/dd HH:mm:ss\'Z\''; }
+          this.parsed = this.$filter('date')(this.parsed, dateFormat);
           break;
         case 'ip':
           this.parsed = this.$filter('extractIPString')(this.parsed);
@@ -266,7 +269,8 @@
         field     : '<',  // the column the field belongs to (for table)
         parse     : '<',  // whether to parse the value
         stringify : '<',  // whether to stringify the value in the search expression
-        pullLeft  : '<'   // whether the dropdown should drop down from the left (default is right)
+        pullLeft  : '<',  // whether the dropdown should drop down from the left (default is right)
+        timezone  : '<'   // what timezone date fields should be in ('gmt' or 'utc')
       }
     });
 

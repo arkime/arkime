@@ -2,9 +2,8 @@
 
   'use strict';
 
-  var tokens;
-  var operations = ['==', '!=', '<', '<=', '>', '>='];
-  var timeout;
+  let tokens, timeout;
+  const operations = ['==', '!=', '<', '<=', '>', '>='];
 
   /**
    * @class ExpressionController
@@ -60,7 +59,7 @@
 
       // watch for additions to search parameters
       this.$scope.$on('add:to:typeahead', (event, args) => {
-        var newExpr = '';
+        let newExpr = '';
 
         if (!this.query.value) { this.query.value = ''; }
 
@@ -106,24 +105,25 @@
        this.loadingError  = false;
 
        // if the cursor is at a space
-       var spaceCP = (this.caretPos > 0 &&
+       let spaceCP = (this.caretPos > 0 &&
          this.caretPos === this.query.value.length &&
          this.query.value[this.caretPos - 1] === ' ');
 
-       var end    = this.caretPos;
-       var endLen = this.query.value.length;
+       let end    = this.caretPos;
+       let endLen = this.query.value.length;
        for (end; end < endLen; ++end) {
          if (this.query.value[end] === ' ') {
            break;
          }
        }
 
-       var currentInput = this.query.value.substr(0, end);
+       let currentInput = this.query.value.substr(0, end);
        tokens = ExpressionController.splitExpression(currentInput);
-       var lastToken = tokens[tokens.length - 1];
 
        // add the space to the tokens
        if (spaceCP) { tokens.push(' '); }
+
+       let lastToken = tokens[tokens.length - 1];
 
        // display fields
        if (tokens.length <= 1) {
@@ -132,8 +132,8 @@
        }
 
        // display operators (depending on field type)
-       var token = tokens[tokens.length - 2];
-       var field = this.fields[token];
+       let token = tokens[tokens.length - 2];
+       let field = this.fields[token];
        if (field) {
          if (field.type === 'integer') {
            // if at a space, show all operators
@@ -146,6 +146,9 @@
 
          return;
        }
+
+       // save the operator token for possibly adding 'EXISTS!' result
+       let operatorToken = token;
 
        token = tokens[tokens.length - 3];
        field = this.fields[token];
@@ -173,6 +176,7 @@
            .then((result) => {
              this.loadingValues = false;
              this.results = ExpressionController.findMatch(lastToken, result);
+             this.addExistsItem(lastToken, operatorToken);
            })
            .catch((error) => {
              this.loadingValues = false;
@@ -190,6 +194,7 @@
              .then((result) => {
                this.loadingValues = false;
                this.results       = result;
+               this.addExistsItem(lastToken, operatorToken);
                return;
              })
              .catch((error) => {
@@ -202,8 +207,8 @@
        }
 
        // autocomplete other values after 2 chars
-       if (lastToken.length > 2) {
-         var params = { // build parameters for getting value(s)
+       if (lastToken.length >= 2) {
+         let params = { // build parameters for getting value(s)
            autocomplete : true,
            field        : field.dbField
          };
@@ -226,6 +231,7 @@
            .then((result) => {
              this.loadingValues = false;
              this.results       = result;
+             this.addExistsItem(lastToken, operatorToken);
              return;
            })
            .catch((error) => {
@@ -237,72 +243,84 @@
        return;
      }
 
-     /**
-      * Fired when a value from the autocomplete menu is selected
-      * @param {Object} val The value to be added to the query
-      */
-     addToQuery(val) {
-       var str = val;
-       if (val.exp) { str = val.exp; }
+    /**
+     * Fired when a value from the autocomplete menu is selected
+     * @param {Object} val The value to be added to the query
+     */
+    addToQuery(val) {
+      let str = val;
+      if (val.exp) { str = val.exp; }
 
-       var newValue = ExpressionController.rebuildQuery(this.query.value, str);
-       this.query.value = newValue;
+      let newValue = ExpressionController.rebuildQuery(this.query.value, str);
+      this.query.value = newValue;
 
-       this.results     = null;
-       this.focusInput  = true; // re-focus on input
-       this.activeIdx   = -1;
-     }
+      this.results     = null;
+      this.focusInput  = true; // re-focus on input
+      this.activeIdx   = -1;
+    }
 
-     /**
-      * Removes the query text from the input
-      */
-     clear() {
-       this.query.value = null;
-     }
+    /**
+     * Removes the query text from the input
+     */
+    clear() {
+      this.query.value = null;
+    }
 
-     /**
-      * Watches for keydown events and determines if a user is
-      * pressing the up and down arrows to navigate the drop down.
-      * When the user presses enter, their selection is added to the query.
-      * When the user presses escape, the typeahead results are removed.
-      * @param {Object} event The keydown event fired by the input
-      */
-     keydown(event) {
-       var target;
+    /**
+     * Watches for keydown events and determines if a user is
+     * pressing the up and down arrows to navigate the drop down.
+     * When the user presses enter, their selection is added to the query.
+     * When the user presses escape, the typeahead results are removed.
+     * @param {Object} event The keydown event fired by the input
+     */
+    keydown(event) {
+      let target;
 
-       // there's nothing to do if there are no results in the dropdown menu
-       if (!this.results || this.results.length === 0) { return; }
+      // there's nothing to do if there are no results in the dropdown menu
+      if (!this.results || this.results.length === 0) { return; }
 
-       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
+      if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
-       switch (event.keyCode) {
-         case 40: // down arrow
+      switch (event.keyCode) {
+       case 40: // down arrow
+         event.preventDefault();
+         this.activeIdx = (this.activeIdx + 1) % this.results.length;
+         target = this.resultsElement[0].querySelectorAll('li')[this.activeIdx];
+         target.parentNode.scrollTop = target.offsetTop;
+         break;
+       case 38: // up arrow
+         event.preventDefault();
+         this.activeIdx = (this.activeIdx > 0 ?
+           this.activeIdx : this.results.length) - 1;
+         target = this.resultsElement[0].querySelectorAll('li')[this.activeIdx];
+         target.parentNode.scrollTop = target.offsetTop;
+         break;
+       case 13: // enter
+         if (this.activeIdx >= 0) {
            event.preventDefault();
-           this.activeIdx = (this.activeIdx + 1) % this.results.length;
-           target = this.resultsElement[0].querySelectorAll('li')[this.activeIdx];
-           target.parentNode.scrollTop = target.offsetTop;
-           break;
-         case 38: // up arrow
-           event.preventDefault();
-           this.activeIdx = (this.activeIdx > 0 ?
-             this.activeIdx : this.results.length) - 1;
-           target = this.resultsElement[0].querySelectorAll('li')[this.activeIdx];
-           target.parentNode.scrollTop = target.offsetTop;
-           break;
-         case 13: // enter
-           if (this.activeIdx >= 0) {
-             event.preventDefault();
-             var result = this.results[this.activeIdx];
-             if (result) { this.addToQuery(result); }
-           }
-           break;
-         case 27: // escape
-           this.results   = null;
-           this.activeIdx = -1;
-           break;
-       }
-     }
+           let result = this.results[this.activeIdx];
+           if (result) { this.addToQuery(result); }
+         }
+         break;
+       case 27: // escape
+         this.results   = null;
+         this.activeIdx = -1;
+         break;
+      }
+    }
 
+    /**
+     * Adds 'EXISTS!' result item to the typeahead options
+     * @param {string} strToMatch The string to compare 'EXISTS!' to
+     * @param {string} operator   The operator of the expression
+     */
+    addExistsItem(strToMatch, operator) {
+      if (operator !== '==' && operator !== '!=') { return; }
+
+      if ('EXISTS!'.match(new RegExp(strToMatch + '.*'))) {
+        this.results.push('EXISTS!');
+      }
+    }
 
      /* internal functions -------------------------------------------------- */
      /**
@@ -313,11 +331,11 @@
      static findMatch(strToMatch, values) {
        if (!strToMatch || strToMatch === '') { return []; }
 
-       var results = [], exact = false;
+       let results = [], exact = false;
 
-       for (var key in values) {
+       for (let key in values) {
          if (values.hasOwnProperty(key)) {
-           var field = values[key], str;
+           let field = values[key], str;
            strToMatch = strToMatch.toLowerCase();
 
            if (field.exp) { str = field.exp.toLowerCase(); }
@@ -325,7 +343,7 @@
 
            if (str === strToMatch) { exact = field; }
            else {
-             var match = str.match(strToMatch);
+             let match = str.match(strToMatch);
              if (match) { results.push(field); }
            }
          }
@@ -344,15 +362,15 @@
       * @param {string} str The string to add to the query
       */
      static rebuildQuery(q, str) {
-       var lastToken = tokens[tokens.length - 1], result = '';
-       var allTokens = ExpressionController.splitExpression(q);
+       let lastToken = tokens[tokens.length - 1], result = '';
+       let allTokens = ExpressionController.splitExpression(q);
 
        if (lastToken === ' ') { result = q += str + ' '; }
        else { // replace the last token and rebuild query
-         var t;
+         let t, i;
          tokens[tokens.length - 1] = str;
 
-         for (var i = 0; i < tokens.length; ++i) {
+         for (i = 0; i < tokens.length; ++i) {
            t = tokens[i];
            if (t === ' ') { break; }
            result += t + ' ';
@@ -377,10 +395,10 @@
       */
      static splitExpression(input) {
        input = input.replace(/ /g, '');
-       var output = [];
-       var cur = '';
+       let output = [];
+       let cur = '';
 
-       for (var i = 0, ilen = input.length; i < ilen; i++) {
+       for (let i = 0, ilen = input.length; i < ilen; i++) {
            if (/[)(]/.test(input[i])) {
              if (cur !== '') {
                output.push(cur);

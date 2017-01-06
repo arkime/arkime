@@ -32,6 +32,12 @@ $rows[0xe4][0x1D] = "TLS_DHE_PSK_WITH_SALSA20_SHA1";
 $rows[0xe4][0x1E] = "TLS_DHE_RSA_WITH_ESTREAM_SALSA20_SHA1";
 $rows[0xe4][0x1F] = "TLS_DHE_RSA_WITH_SALSA20_SHA1";
 
+# https://tools.ietf.org/html/draft-ietf-tls-tls13-18
+$rows[0x13][0x01] = "TLS_AES_128_GCM_SHA256";
+$rows[0x13][0x02] = "TLS_AES_256_GCM_SHA384";
+$rows[0x13][0x03] = "TLS_CHACHA20_POLY1305_SHA256";
+$rows[0x13][0x04] = "TLS_AES_128_CCM_SHA256";
+$rows[0x13][0x05] = "TLS_AES_128_CCM_8_SHA256";
 
 while (<>) {
     my @row = split(",");

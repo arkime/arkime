@@ -4,7 +4,7 @@
 
   /**
    * @class UserService
-   * @classdesc Transacts users with the server
+   * @classdesc Transacts users and user data with the server
    */
   class UserService {
 
@@ -30,7 +30,7 @@
     getCurrent() {
       return this.$q((resolve, reject) => {
 
-        this.$http({ url:'users/current', method:'GET', cache:true })
+        this.$http({ url:'user/current', method:'GET', cache:true })
           .then((response) => {
             resolve(response.data);
           }, (error) => {
@@ -62,6 +62,26 @@
     }
 
     /**
+     * Gets current user's settings
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getSettings() {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/settings', method:'GET' };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
+    /**
      * Gets current user's views
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
@@ -69,7 +89,7 @@
     getViews() {
       return this.$q((resolve, reject) => {
 
-        let options = { url:'views', method:'GET' };
+        let options = { url:'user/views', method:'GET' };
 
         this.$http(options)
            .then((response) => {
@@ -90,7 +110,7 @@
     deleteView(view) {
       return this.$q((resolve, reject) => {
 
-        let options = { url:'views/delete', method:'POST', data:{ view:view } };
+        let options = { url:'user/views/delete', method:'POST', data:{ view:view } };
 
         this.$http(options)
            .then((response) => {
@@ -111,7 +131,7 @@
      */
     createView(params) {
       return this.$q((resolve, reject) => {
-        let options = { url:'views/create', method:'POST', data:params };
+        let options = { url:'user/views/create', method:'POST', data:params };
 
         this.$http(options)
            .then((response) => {

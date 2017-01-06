@@ -169,6 +169,7 @@
 
     });
 
+
     describe('Min Filter ->', function() {
 
       it('should return the minimum number in an array of numbers', function() {
@@ -185,6 +186,20 @@
         notArray  = 4;
         result    = $filter('min')(notArray);
         expect(result).toEqual(notArray);
+      });
+
+    });
+
+
+    describe('Timezone Date Filter ->', function() {
+
+      it('should return an integer date in the requested timezone', function() {
+        let time   = 18000;
+        let result = $filter('timezone-date')(time, 'utc');
+        expect(result).toEqual(18000000);
+
+        result = $filter('timezone-date')(time, 'gmt');
+        expect(result).toEqual(36000000);
       });
 
     });
@@ -233,30 +248,60 @@
 
     describe('Epoch Date Directive ->', function() {
 
-      let element, template, templateAsHtml;
+      let element, template, templateAsHtml, compile;
 
       beforeEach(inject(function($compile) {
+        compile = $compile;
+      }));
+
+      it('should render html with ng-model', function() {
+        scope.model = '2016/09/12 03:36:48';
+
+        let htmlString = '<input ng-model="model" epoch-date />';
+
+        element   = angular.element(htmlString);
+        template  = compile(element)(scope);
+
+        scope.$digest();
+
+        templateAsHtml = template.html();
+
+        expect(element.val()).toEqual('1473665808000');
+        expect(templateAsHtml).toBeDefined();
+      });
+
+      it('should apply changes to ng-model', function() {
         scope.model = '2016/09/12 15:36:48';
 
         let htmlString = '<input ng-model="model" epoch-date />';
 
         element   = angular.element(htmlString);
-        template  = $compile(element)(scope);
+        template  = compile(element)(scope);
 
         scope.$digest();
 
         templateAsHtml = template.html();
-      }));
 
-      it('should render html with ng-model', function() {
-        expect(element.val()).toEqual('2016/09/12 15:36:48');
-        expect(templateAsHtml).toBeDefined();
-      });
-
-      it('should apply changes to ng-model', function() {
         scope.model = '2015/03/14 03:14:15';
         scope.$digest();
-        expect(element.val()).toEqual('2015/03/14 03:14:15');
+        expect(element.val()).toEqual('1426317255000');
+      });
+
+      it('should apply gmt to time', function() {
+        scope.model = '2016/09/12 03:36:48';
+
+        let htmlString = `<input ng-model="model" epoch-date="gmt" />`;
+
+        element   = angular.element(htmlString);
+        template  = compile(element)(scope);
+
+        scope.$digest();
+
+        templateAsHtml = template.html();
+
+        expect(element.val()).toEqual('1473680208000');
+        expect(element.attr('epoch-date')).toEqual('gmt');
+        expect(templateAsHtml).toBeDefined();
       });
 
     });

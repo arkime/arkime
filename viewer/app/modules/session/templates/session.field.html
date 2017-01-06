@@ -1,5 +1,5 @@
 <!-- normal field with a single value -->
-<span ng-if="::!$ctrl.fieldObj.children && $ctrl.value">
+<span ng-if="::!$ctrl.fieldObj.children && $ctrl.value !== undefined">
   <!-- search expression -->
   <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="::!$ctrl.time">
     <a href id="simple-dropdown" uib-dropdown-toggle>
@@ -64,6 +64,6 @@
   <div class="field-children" ng-repeat="child in ::$ctrl.fieldObj.children">
     <session-field field="child" expr="child.exp"
       value="$ctrl.session[child.dbField]" parse="$ctrl.parse"
-      session="$ctrl.session"></session-field>
+      session="$ctrl.session" timezone="$ctrl.timezone"></session-field>
   </div>
 </span>

@@ -6,7 +6,7 @@ mixin clickableValue(expr, value, stringify, parse)
   - expr = '\"' + expr + '\"'
   - parse = '\"' + (parse || false) + '\"'
   - stringify = '\"' + stringify + '\"'
-  session-field(expr=expr, value=exprval, parse=parse class="detail-field", stringify=stringify)
+  session-field(expr=expr, value=exprval, parse=parse class="detail-field", stringify=stringify, timezone='"' + user.settings.timezone + '"')
 
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)

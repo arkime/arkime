@@ -175,6 +175,9 @@
         $httpBackend.expectGET(tableStateEndpoint)
            .respond({});
 
+        $httpBackend.expectGET('user/settings')
+           .respond({});
+
         // initial query for fields
         $httpBackend.expectGET('fields')
            .respond(fields);
