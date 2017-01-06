@@ -199,7 +199,7 @@
       register: st
 
     - name: Build daq
-      shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-1.7.4/ --with-libpcap-libraries=/home/vagrant/libpcap-1.7.4; make; make install
+      shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-{{pcap_version}}/ --with-libpcap-libraries=/home/vagrant/libpcap-{{pcap_version}}; make; make install
       when: st.stat.exists == False
 
     - name: Check lua
