@@ -223,7 +223,7 @@
       <h4 id="numericSearch">Numeric Search</h4>
       <p>
         Numeric fields support simple range operators besides the default equals
-        and not equals query types. For example - show events with bytes transferred being less then 10000: <code>bytes <= 10000</code>.
+        and not equals query types. For example - show events with bytes transferred being less then 10000: <code>bytes &lt;= 10000</code>.
         Numeric fields also support lists for a simple OR query. For example: <code>port == [80,443,23]</code>
       </p>
 
@@ -289,7 +289,7 @@
         using the special comparison value of <code>field == EXISTS!</code> OR negated: <code>field != EXISTS!</code>.
         For example, to verify that a certificate doesn't have an issuer common name, but does
         have a issuer organizational name, the follow query could be used:
-        <code>cert.issuer.cn != EXISTS! && cert.issuer.on == EXISTS!</code>
+        <code>cert.issuer.cn != EXISTS! &amp;&amp; cert.issuer.on == EXISTS!</code>
       </p>
 
       <hr>
@@ -300,14 +300,14 @@
         Find all the sessions involving Russia (RUS) or China (CHN) that are
         using port 80 and also a hostname which contains "com":
         <pre>
-          <code>(country == RUS || country == CHN) && port == 80 && host == *com</code>
+          <code>(country == RUS || country == CHN) &amp;&amp; port == 80 &amp;&amp; host == *com</code>
         </pre>
       </p>
       <p>
         Find all the sessions of type "text/plain", involving Canada (CAN), and
         containing less than 20 packets:
         <pre>
-          <code>tags == "http:content:text/plain" && country == CAN && packets < 20</code>
+          <code>tags == "http:content:text/plain" &amp;&amp; country == CAN &amp;&amp; packets &lt; 20</code>
         </pre>
       </p>
 
