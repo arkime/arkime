@@ -91,7 +91,7 @@ sub showHelp($)
     print "  rm-missing <node>            - Remove from db any MISSING file on THIS machine for named node\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
     print "  add-missing <node> <dir>     - Add to db any MISSING file on THIS machine for named node and directory\n";
-    print "  sync-files  <nodes> <dirs>   - Add/Remove db any MISSING file on THIS machine for named node(s) and directory(s)\n";
+    print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING file on THIS machine for named node(s) and directory(s), both comma separated\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,daily,weekly,monthly\n";
     print "       num                     - number of indexes to keep\n";
@@ -246,7 +246,7 @@ sub esScroll
 
 
         my $incoming = esPost($url, $query, 1);
-        #print Dumper($incoming);
+        die Dumper($incoming) if ($incoming->{status} == 404);
         last if (@{$incoming->{hits}->{hits}} == 0);
 
         push(@hits, @{$incoming->{hits}->{hits}});
@@ -1696,7 +1696,7 @@ my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 
     print "Updating sessions mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
-        progress($i);
+        progress("$i ");
         esPut("/$i/session/_mapping", $mapping, 1);
 
         # Before version 12 had soft, change to node, requires a close and open
@@ -1914,20 +1914,20 @@ sub dbCheck {
 }
 ################################################################################
 sub progress {
-    my ($index) = @_;
+    my ($msg) = @_;
     if ($verbose == 1) {
         local $| = 1;
         print ".";
     } elsif ($verbose == 2) {
         local $| = 1;
-        print "$index ";
+        print "$msg";
     }
 }
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
     foreach my $i ("${PREFIX}dstats_v1", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
-        progress($i);
+        progress("$i ");
         esGet("/$i/_optimize?max_num_segments=1", 1);
         esPost("/$i/_upgrade", "", 1);
     }
@@ -2040,7 +2040,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     optimizeOther();
     printf ("Expiring %s indices, optimizing %s\n", commify(scalar(keys %{$indices}) - $optimizecnt), commify($optimizecnt));
     foreach my $i (sort (keys %{$indices})) {
-        progress($i);
+        progress("$i ");
         if (exists $indices->{$i}->{OPTIMIZEIT}) {
             esGet("/$i/_optimize?max_num_segments=4", 1);
             if ($REPLICAS != -1) {
@@ -2060,7 +2060,7 @@ if ($ARGV[1] =~ /^users-?import$/) {
     optimizeOther();
     printf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
-        progress($i);
+        progress("$i ");
         esGet("/$i/_optimize?max_num_segments=4", 1);
         esPost("/$i/_upgrade", "", 1);
     }
@@ -2205,30 +2205,38 @@ sub printIndex {
     my %remotefileshash;
     foreach my $hit (@{$remotefiles}) {
         if (! -f $hit->{_source}->{name}) {
-            print "Removing", $hit->{_source}->{name}, " id: ", $hit->{_id}, "\n";
-            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+            progress("Removing " . $hit->{_source}->{name} . " id: " . $hit->{_id}, "\n");
+            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 1);
         } else {
-            $remotefileshash{$hit->{_source}->{name}} = 1;
+            $remotefileshash{$hit->{_source}->{name}} = $hit->{_source};
         }
     }
 
     # Now see which local are missing
     foreach my $file (@localfiles) {
+        my @stat = stat("$file");
         if (!exists $remotefileshash{$file}) {
             $file =~ /\/([^\/]*)-(\d+)-(\d+).pcap/;
             my $node = $1;
             my $filenum = int($3);
-            my $ctime = (stat("$file"))[10];
-            print "Adding $file $node $filenum $ctime\n";
+            progress("Adding $file $node $filenum $stat[7]\n");
             esPost("/${PREFIX}files/file/$node-$filenum", to_json({
                          'locked' => 0,
-                         'first' => $ctime,
+                         'first' => $stat[10],
                          'num' => $filenum,
                          'name' => "$file",
-                         'node' => $node}), 1);
+                         'node' => $node,
+                         'filesize' => $stat[7]}), 1);
+        } elsif ($stat[7] != $remotefileshash{$file}->{filesize}) {
+          progress("Updating filesize $file $stat[7]\n");
+          $file =~ /\/([^\/]*)-(\d+)-(\d+).pcap/;
+          my $node = $1;
+          my $filenum = int($3);
+          $remotefileshash{$file}->{filesize} = $stat[7];
+          esPost("/${PREFIX}files/file/$node-$filenum", to_json($remotefileshash{$file}), 1);
         }
     }
-
+    print("\n") if ($verbose > 0);
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
     my $result = esGet("/${PREFIX}fields/field/$ARGV[3]", 1);
