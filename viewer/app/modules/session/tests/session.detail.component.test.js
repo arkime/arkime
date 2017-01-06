@@ -31,6 +31,7 @@
 
     let scope, sessionDtlsComponent, $httpBackend, templateAsHtml;
     let sessionDtlsEndpoint = 'node/sessionid/sessionDetailNew';
+    let packetEndpoint      = 'node/sessionid/sessionPackets';
     let defaultParameters   = '?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&ts=false';
     let configEndpoint      = 'molochRightClick';
     let fieldEndpoint       = 'fields';
@@ -48,8 +49,12 @@
         $httpBackend = _$httpBackend_;
 
         // initial query for session detail
-        $httpBackend.expectGET(sessionDtlsEndpoint + defaultParameters)
-          .respond('');
+        $httpBackend.expectGET(sessionDtlsEndpoint)
+           .respond('');
+
+        // initial query for session detail
+        $httpBackend.expectGET(packetEndpoint + defaultParameters)
+           .respond('');
 
         // query for moloch clickable values
         $httpBackend.expectGET(configEndpoint)
