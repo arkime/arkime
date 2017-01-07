@@ -281,12 +281,13 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
 
     if (tcphdr->th_flags & TH_PUSH) {
         session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]++;
+    }
 
-        // If we've seen no SYN_ACK and this is a PSH and no tcpSeq set, then just assume we've missed the syn-ack
-        if (session->haveTcpSession && session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
-            moloch_session_add_tag(session, "no-syn-ack");
-            session->tcpSeq[packet->direction] = seq;
-        }
+
+    // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
+    if (session->haveTcpSession && session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
+        moloch_session_add_tag(session, "no-syn-ack");
+        session->tcpSeq[packet->direction] = seq;
     }
 
     MolochTcpDataHead_t * const tcpData = &session->tcpData;
