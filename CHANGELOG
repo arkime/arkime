@@ -1,5 +1,6 @@
 0.17.1 2017/01/XX
   - capture - handle mssing syn/ack better
+  - capture - better mongo detection
 
 0.17.0 2017/01/05
   - NOTICE: npm update required

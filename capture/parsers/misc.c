@@ -68,12 +68,6 @@ void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, 
         moloch_session_add_protocol(session, "vnc");
 }
 /******************************************************************************/
-void mongo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (data[12] == 0xd4 && data[13] == 0x07 && g_strstr_len((gchar*)data+20, len-20, ".$cmd") != NULL)
-        moloch_session_add_protocol(session, "mongo");
-}
-/******************************************************************************/
 void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (g_strstr_len((gchar*)data+5, len-5, "jabber") != NULL)
@@ -227,17 +221,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:r", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:q", 4, misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x35\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x36\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x37\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x38\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x39\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3a\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3b\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3c\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3d\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3e\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3f\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", "mongo", 8, (unsigned char*)"\x00\x00\x00\x00\xd4\x07\x00\x00", 8, misc_add_protocol_classify);
 
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "SIP/2.0", 7, misc_add_protocol_classify);
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "REGISTER sip:", 13, misc_add_protocol_classify);
