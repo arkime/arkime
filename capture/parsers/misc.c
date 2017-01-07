@@ -222,6 +222,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:q", 4, misc_add_protocol_classify);
 
     moloch_parsers_classifier_register_tcp("mongo", "mongo", 8, (unsigned char*)"\x00\x00\x00\x00\xd4\x07\x00\x00", 8, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("mongo", "mongo", 8, (unsigned char*)"\xff\xff\xff\xff\xd4\x07\x00\x00", 8, misc_add_protocol_classify);
 
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "SIP/2.0", 7, misc_add_protocol_classify);
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "REGISTER sip:", 13, misc_add_protocol_classify);
