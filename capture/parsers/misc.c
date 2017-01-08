@@ -290,6 +290,9 @@ void moloch_parser_init()
 
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x01", 3, tacacs_classify);
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x02\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x03\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x03\x02", 3, tacacs_classify);
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x01", 3, tacacs_classify);
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x02", 3, tacacs_classify);
 
@@ -302,6 +305,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("steam-friends", "steam-friends", 0, (unsigned char*)"VS01", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("value-a2s", "value-a2s", 0, (unsigned char*)"\xff\xff\xff\xff\x54\x53\x6f\x75", 8, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("stream-ihscp", "stream-ihscp", 0, (unsigned char*)"\xa4\x00\x00\x00\x56\x54\x30\x31", 8, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_tcp("honeywell-tcc", "honeywell-tcc", 0, (unsigned char*)"\x43\x42\x4b\x50\x50\x52\x05\x50", 8, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }
