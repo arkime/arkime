@@ -195,6 +195,12 @@ void kafka_classify(MolochSession_t *session, const unsigned char *data, int len
     moloch_session_add_protocol(session, "kafka");
 }
 /******************************************************************************/
+void thrift_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len > 20 && data[4] == 0x80 && data[5] == 0x01 && data[6] == 0)
+    moloch_session_add_protocol(session, "thrift");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -233,6 +239,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("user", NULL, 0, (unsigned char*)"USER ", 5, user_classify);
 
     moloch_parsers_classifier_register_tcp("thrift", "thrift", 0, (unsigned char*)"\x80\x01\x00\x01\x00\x00\x00", 7, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("thrift", NULL, 0, (unsigned char*)"\x00\x00", 2, thrift_classify);
 
     moloch_parsers_classifier_register_tcp("aerospike", "aerospike", 0, (unsigned char*)"\x02\x01\x00\x00\x00\x00\x00\x4e\x6e\x6f\x64\x65", 12, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("aerospike", "aerospike", 0, (unsigned char*)"\x02\x01\x00\x00\x00\x00\x00\x23\x6e\x6f\x64\x65", 12, misc_add_protocol_classify);
