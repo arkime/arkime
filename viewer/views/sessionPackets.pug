@@ -1,14 +1,12 @@
-div.packet-options
-
 if (session._err)
   div.alert.alert-danger 
     span.fa.fa-exclamation-triangle
     strong &nbsp; #{session._err}
 else 
-  if (session.pa > 200)
-    h5.text-yellow 
+  if (session.pa[0] > reqPackets)
+    h5.text-yellow
       span.fa.fa-info-circle.fa-lg
-      | &nbsp; Only showing first 200 packets
+      | &nbsp; Only showing first #{reqPackets} packets
 
   div.row#textpacket
     div.col-md-6

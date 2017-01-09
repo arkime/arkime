@@ -44,7 +44,9 @@
   .factory('myHttpInterceptor', ['$q', function($q) {
     return {
       'responseError': function(rejection) {
-        if (rejection.status === -1) { rejection = 'Cannot connect to server.'; }
+        if (rejection.status === -1) {
+          rejection = 'Server request timed out or canceled';
+        }
         return $q.reject(rejection);
       }
     };

@@ -154,7 +154,7 @@
       return this.$q((resolve, reject) => {
 
         let options = {
-          url   : node + '/' + id + '/' + 'sessionDetailNew',
+          url   : node + '/session/' + id + '/detail',
           method: 'GET'
         };
 
@@ -177,22 +177,33 @@
      *                            or rejection of the request.
      */
     getPackets(id, node, params) {
-      return this.$q((resolve, reject) => {
+      let deferred = this.$q.defer();
 
-        let options = {
-          url   : node + '/' + id + '/' + 'sessionPackets',
-          method: 'GET',
-          params: params
-        };
-
-        this.$http(options)
-           .then((response) => {
-             resolve(response);
-           }, (error) => {
-             reject(error);
-           });
-
+      let request = this.$http({
+        url     : node + '/session/' + id + '/packets',
+        method  : 'GET',
+        params  : params,
+        timeout : deferred.promise
       });
+
+      let promise = request
+         .then((response) => {
+           return(response);
+         }, (error) => {
+           return(this.$q.reject(error));
+         });
+
+      promise.abort = () => {
+        deferred.resolve({error:'fudge'});
+      };
+
+      // cleanup
+      promise.finally(() => {
+        promise.abort = angular.noop;
+        deferred = request = promise = null;
+      });
+
+      return(promise);
     }
 
     /**

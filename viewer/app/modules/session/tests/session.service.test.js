@@ -50,7 +50,7 @@
         $httpBackend.when('GET', 'sessions.json?facets=1&length=100&order=fp:asc')
           .respond(200, {});
 
-        $httpBackend.when('GET', 'sessionid/node/sessionDetailNew')
+        $httpBackend.when('GET', 'node/session/sessionid/detail')
            .respond(200, '');
 
         $httpBackend.when('GET', 'tableState/sessionsNew')
@@ -221,10 +221,12 @@
       });
 
       it('should send a GET request for session detail', function() {
-        SessionService.getDetail('node', 'sessionid', {});
-        $httpBackend.expectGET('sessionid/node/sessionDetailNew');
+        SessionService.getDetail('sessionid', 'node');
+        $httpBackend.expectGET('node/session/sessionid/detail');
         $httpBackend.flush();
       });
+
+      // TODO: get request for session packets
 
       it('should send a GET request for tablestate', function() {
         SessionService.getTableState();

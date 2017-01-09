@@ -3095,7 +3095,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {fields: "no,ps,psl"};
+    options  = {fields: "no,pa,ps,psl"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
@@ -3271,6 +3271,7 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
       user: req.user,
       session: session,
       data: incoming,
+      reqPackets: req.query.packets,
       query: req.query,
       basedir: "/",
       reqFields: Config.headers("headers-http-request"),
@@ -3306,8 +3307,9 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
 
 function localSessionDetailReturn(req, res, session, incoming) {
   //console.log("ALW", JSON.stringify(incoming));
-  if (incoming.length > 200) {
-    incoming.length = 200;
+  var numPackets = req.query.packets || 100;
+  if (incoming.length > numPackets) {
+    incoming.length = numPackets;
   }
 
   if (incoming.length === 0) {
@@ -3383,7 +3385,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
 
 function localSessionDetail(req, res) {
   if (!req.query) {
-    req.query = {gzip: false, line: false, base: "natural"};
+    req.query = {gzip: false, line: false, base: "natural", packets: 100};
   }
 
   req.query.needgzip  = req.query.gzip === "true" || false;
@@ -3474,7 +3476,7 @@ function localSessionDetail(req, res) {
 /**
  * Get SPI data for a session
  */
-app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
+app.get('/:nodeName/session/:id/detail', function(req, res) {
   Db.getWithOptions(Db.id2Index(req.params.id), 'session', req.params.id, {}, function(err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
@@ -3483,7 +3485,10 @@ app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
     session = session._source;
 
     session.id = req.params.id;
-    session.ta = session.ta.sort();
+
+    if (session.ta) {
+      session.ta = session.ta.sort();
+    }
     if (session.hh) {
       session.hh = session.hh.sort();
     }
@@ -3519,7 +3524,7 @@ app.get('/:nodeName/:id/sessionDetailNew', function(req, res) {
 /**
  * Get Session Packets
  */
-app.get('/:nodeName/:id/sessionPackets', function(req, res) {
+app.get('/:nodeName/session/:id/packets', function(req, res) {
   isLocalView(req.params.nodeName, function () {
      noCache(req, res);
      req.packetsOnly = true;

@@ -24,7 +24,7 @@ session {
       }
     }
 
-    .detail-container.show-ts + .packet-container {
+    .detail-container.show-ts ~ .packet-container {
       .session-detail-ts { display: block; }
     }
 
@@ -61,9 +61,12 @@ session {
       }
     }
 
-    .packet-container {
-      padding   : 8px 0;
-      border-top: 1px solid $color-gray-light;
+    .packet-options {
+      .btn {
+        &.active {
+          font-weight: bolder;
+        }
+      }
     }
 
   }
