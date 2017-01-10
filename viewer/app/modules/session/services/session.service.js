@@ -394,7 +394,7 @@
         baseUrl += '&stopTime='   + params.stopTime;
       }
 
-      baseUrl += '&expression=' + params.expression;
+      baseUrl += '&expression=' + encodeURIComponent(params.expression);
 
       return baseUrl;
     }
