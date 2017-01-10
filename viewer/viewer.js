@@ -3095,7 +3095,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {fields: "no,pa,ps,psl"};
+    options  = {fields: "no,pa,ps,psl,a1,p1,tipv61-term"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
