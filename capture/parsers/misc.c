@@ -68,12 +68,6 @@ void vnc_classify(MolochSession_t *session, const unsigned char *data, int len, 
         moloch_session_add_protocol(session, "vnc");
 }
 /******************************************************************************/
-void mongo_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (data[12] == 0xd4 && data[13] == 0x07 && g_strstr_len((gchar*)data+20, len-20, ".$cmd") != NULL)
-        moloch_session_add_protocol(session, "mongo");
-}
-/******************************************************************************/
 void jabber_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (g_strstr_len((gchar*)data+5, len-5, "jabber") != NULL)
@@ -201,6 +195,12 @@ void kafka_classify(MolochSession_t *session, const unsigned char *data, int len
     moloch_session_add_protocol(session, "kafka");
 }
 /******************************************************************************/
+void thrift_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len > 20 && data[4] == 0x80 && data[5] == 0x01 && data[6] == 0)
+    moloch_session_add_protocol(session, "thrift");
+}
+/******************************************************************************/
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -227,17 +227,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:r", 4, misc_add_protocol_classify);
     moloch_parsers_classifier_register_udp("bt", "bittorrent", 0, (unsigned char*)"d1:q", 4, misc_add_protocol_classify);
 
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x35\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x36\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x37\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x38\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x39\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3a\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3b\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3c\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3d\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3e\x00\x00\x00", 4, mongo_classify);
-    moloch_parsers_classifier_register_tcp("mongo", NULL, 0, (unsigned char*)"\x3f\x00\x00\x00", 4, mongo_classify);
+    moloch_parsers_classifier_register_tcp("mongo", "mongo", 8, (unsigned char*)"\x00\x00\x00\x00\xd4\x07\x00\x00", 8, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("mongo", "mongo", 8, (unsigned char*)"\xff\xff\xff\xff\xd4\x07\x00\x00", 8, misc_add_protocol_classify);
 
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "SIP/2.0", 7, misc_add_protocol_classify);
     PARSERS_CLASSIFY_BOTH("sip", "sip", 0, "REGISTER sip:", 13, misc_add_protocol_classify);
@@ -248,6 +239,7 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_tcp("user", NULL, 0, (unsigned char*)"USER ", 5, user_classify);
 
     moloch_parsers_classifier_register_tcp("thrift", "thrift", 0, (unsigned char*)"\x80\x01\x00\x01\x00\x00\x00", 7, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("thrift", NULL, 0, (unsigned char*)"\x00\x00", 2, thrift_classify);
 
     moloch_parsers_classifier_register_tcp("aerospike", "aerospike", 0, (unsigned char*)"\x02\x01\x00\x00\x00\x00\x00\x4e\x6e\x6f\x64\x65", 12, misc_add_protocol_classify);
     moloch_parsers_classifier_register_tcp("aerospike", "aerospike", 0, (unsigned char*)"\x02\x01\x00\x00\x00\x00\x00\x23\x6e\x6f\x64\x65", 12, misc_add_protocol_classify);
@@ -298,6 +290,9 @@ void moloch_parser_init()
 
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x01", 3, tacacs_classify);
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x01\x02", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x02\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x03\x01", 3, tacacs_classify);
+    PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc0\x03\x02", 3, tacacs_classify);
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x01", 3, tacacs_classify);
     PARSERS_CLASSIFY_BOTH("tacacs", NULL, 0, (unsigned char*)"\xc1\x01\x02", 3, tacacs_classify);
 
@@ -306,6 +301,12 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_port("dropbox-lan-sync",  NULL, 17500, MOLOCH_PARSERS_PORT_UDP, dropbox_lan_sync_classify);
 
     moloch_parsers_classifier_register_tcp("kafka", NULL, 0, (unsigned char*)"\x00\x00", 2, kafka_classify);
+
+    moloch_parsers_classifier_register_udp("steam-friends", "steam-friends", 0, (unsigned char*)"VS01", 4, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_udp("value-a2s", "value-a2s", 0, (unsigned char*)"\xff\xff\xff\xff\x54\x53\x6f\x75", 8, misc_add_protocol_classify);
+    moloch_parsers_classifier_register_tcp("stream-ihscp", "stream-ihscp", 0, (unsigned char*)"\xa4\x00\x00\x00\x56\x54\x30\x31", 8, misc_add_protocol_classify);
+
+    moloch_parsers_classifier_register_tcp("honeywell-tcc", "honeywell-tcc", 0, (unsigned char*)"\x43\x42\x4b\x50\x50\x52\x05\x50", 8, misc_add_protocol_classify);
 
     userField = moloch_field_by_db("user");
 }
