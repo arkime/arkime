@@ -3525,20 +3525,22 @@ app.get('/:nodeName/session/:id/detail', function(req, res) {
  * Get Session Packets
  */
 app.get('/:nodeName/session/:id/packets', function(req, res) {
-  isLocalView(req.params.nodeName, function () {
-     noCache(req, res);
-     req.packetsOnly = true;
-     localSessionDetail(req, res);
-   },
-   function () {
-     return proxyRequest(req, res, function (err) {
-       Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
-         var fields = session._source || session.fields;
-         fields._err = "Couldn't connect to remote viewer to fetch packets";
-         localSessionDetailReturnFull(req, res, fields, []);
+  setTimeout(function() {
+    isLocalView(req.params.nodeName, function () {
+         noCache(req, res);
+         req.packetsOnly = true;
+         localSessionDetail(req, res);
+       },
+       function () {
+         return proxyRequest(req, res, function (err) {
+           Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
+             var fields = session._source || session.fields;
+             fields._err = "Couldn't connect to remote viewer to fetch packets";
+             localSessionDetailReturnFull(req, res, fields, []);
+           });
+         });
        });
-     });
-   });
+  }, 5000);
 });
 
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {

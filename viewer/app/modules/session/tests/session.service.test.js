@@ -53,6 +53,12 @@
         $httpBackend.when('GET', 'node/session/sessionid/detail')
            .respond(200, '');
 
+        $httpBackend.when('GET', 'node/session/sessionid/packets')
+           .respond(200, '');
+
+        $httpBackend.when('GET', 'node/session/sessionid/packets?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&packets=200&ts=false')
+           .respond(200, '');
+
         $httpBackend.when('GET', 'tableState/sessionsNew')
           .respond(200, {});
 
@@ -227,6 +233,31 @@
       });
 
       // TODO: get request for session packets
+      it('should send a GET request for session packets', function() {
+        SessionService.getPackets('sessionid', 'node');
+        $httpBackend.expectGET('node/session/sessionid/packets');
+        $httpBackend.flush();
+      });
+
+      it('should send a GET request for session packets (with parameters)', function() {
+        let params = {
+          base    : 'hex',
+          line    : false,
+          image   : false,
+          gzip    : false,
+          ts      : false,
+          decode  : {},
+          packets : 200
+        };
+        SessionService.getPackets('sessionid', 'node', params);
+        $httpBackend.expectGET('node/session/sessionid/packets?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&packets=200&ts=false');
+        $httpBackend.flush();
+      });
+
+      it('should be able to cancel a GET request for session packets', function() {
+        let promise = SessionService.getPackets('sessionid', 'node');
+        promise.abort();
+      });
 
       it('should send a GET request for tablestate', function() {
         SessionService.getTableState();

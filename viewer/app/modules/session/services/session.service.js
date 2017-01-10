@@ -191,10 +191,10 @@
            return(response);
          }, (error) => {
            return(this.$q.reject(error));
-         });
+         }).catch(angular.noop); // handle abort
 
       promise.abort = () => {
-        deferred.resolve({error:'fudge'});
+        deferred.resolve({error:'Request canceled.'});
       };
 
       // cleanup

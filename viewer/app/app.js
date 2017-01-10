@@ -45,7 +45,7 @@
     return {
       'responseError': function(rejection) {
         if (rejection.status === -1) {
-          rejection = 'Server request timed out or canceled';
+          rejection = 'Cannot connect to server: request timed out or canceled.';
         }
         return $q.reject(rejection);
       }

@@ -43,7 +43,7 @@
         gzip    : false,
         ts      : false,
         decode  : {},
-        packets : 100
+        packets : 200
       };
 
       if (localStorage) { // display browser saved options
@@ -62,7 +62,7 @@
         if (localStorage['moloch-image']) {
           this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
         }
-        if (JSON.parse(localStorage['moloch-packets'])) {
+        if (localStorage['moloch-packets'] && JSON.parse(localStorage['moloch-packets'])) {
           this.$scope.params.packets = JSON.parse(localStorage['moloch-packets']);
         }
       }
@@ -208,7 +208,8 @@
      */
     cancelPacketLoad() {
       this.packetPromise.abort();
-      this.errorPackets = 'Request canceled.';
+      this.packetPromise  = null;
+      this.errorPackets   = 'Request canceled.';
     }
 
   }
