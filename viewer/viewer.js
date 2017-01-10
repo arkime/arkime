@@ -3486,7 +3486,6 @@ app.get('/:nodeName/session/:id/detail', function(req, res) {
 
     session.id = req.params.id;
 
-    console.log('session tags: ', session.ta);
     if (session.ta) {
       session.ta = session.ta.sort();
     }
