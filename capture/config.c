@@ -437,7 +437,7 @@ void moloch_config_load()
     config.timeouts[SESSION_TCP] = moloch_config_int(keyfile, "tcpTimeout", 60*8, 10, 0xffff);
     config.tcpSaveTimeout        = moloch_config_int(keyfile, "tcpSaveTimeout", 60*8, 10, 60*120);
     config.maxStreams            = moloch_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
-    config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 1000000);
+    config.maxPackets            = moloch_config_int(keyfile, "maxPackets", 10000, 1, 100000);
     config.maxPacketsInQueue     = moloch_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
     config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 1000000);
     config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);

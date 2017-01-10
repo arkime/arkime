@@ -30,8 +30,7 @@
     beforeEach(angular.mock.module('moloch'));
 
     let scope, sessionDtlsComponent, $httpBackend, templateAsHtml;
-    let sessionDtlsEndpoint = 'node/sessionid/sessionDetailNew';
-    let defaultParameters   = '?base=hex&decode=%7B%7D&gzip=false&image=false&line=false&ts=false';
+    let sessionDtlsEndpoint = 'node/session/sessionid/detail';
     let configEndpoint      = 'molochRightClick';
     let fieldEndpoint       = 'fields';
 
@@ -45,19 +44,20 @@
       FieldService,
       $controller,
       $rootScope) {
+
         $httpBackend = _$httpBackend_;
 
         // initial query for session detail
-        $httpBackend.expectGET(sessionDtlsEndpoint + defaultParameters)
-          .respond('');
+        $httpBackend.expectGET(sessionDtlsEndpoint)
+           .respond(200, '');
 
         // query for moloch clickable values
         $httpBackend.expectGET(configEndpoint)
-          .respond({});
+           .respond(200, {});
 
         // query for moloch fields
         $httpBackend.expectGET(fieldEndpoint)
-          .respond({});
+           .respond(200, {});
 
         scope = $rootScope.$new();
 
@@ -92,10 +92,12 @@
       sessionDtlsComponent.allSessions('rootId', 0);
 
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
-      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search', { expression:'rootId == "rootId"' });
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search',
+         {expression:'rootId == "rootId"' });
 
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
-      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time', { start:0 });
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time',
+         { start:0 });
     });
 
     it('should issue query for all sessions with current start time', function() {
@@ -104,10 +106,12 @@
       sessionDtlsComponent.$routeParams.startTime = 1476102173;
 
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
-      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search', { expression:'rootId == "rootId"' });
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('add:to:search',
+         { expression:'rootId == "rootId"' });
 
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
-      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time', { start:1476102172 });
+      expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time',
+         { start:1476102172 });
     });
 
     it('should issue query for all sessions with "-" in rootId', function() {
@@ -120,6 +124,21 @@
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalled();
       expect(sessionDtlsComponent.$scope.$emit).toHaveBeenCalledWith('change:time',
          { start:0 });
+    });
+
+    it('should set promise for packet request', function() {
+      sessionDtlsComponent.getPackets();
+      expect(sessionDtlsComponent.packetPromise).toBeDefined();
+      expect(sessionDtlsComponent.packetPromise).not.toBeNull();
+    });
+
+    it('should cancel a query for packets', function() {
+      sessionDtlsComponent.getPackets();
+      expect(sessionDtlsComponent.packetPromise).toBeDefined();
+      expect(sessionDtlsComponent.packetPromise).not.toBeNull();
+
+      sessionDtlsComponent.cancelPacketLoad();
+      expect(sessionDtlsComponent.packetPromise).toBeNull();
     });
 
   });

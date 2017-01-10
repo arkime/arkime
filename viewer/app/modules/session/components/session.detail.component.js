@@ -2,8 +2,6 @@
 
   'use strict';
 
-  let optionsHTML = require('html!../templates/session.detail.options.html');
-
   /**
    * @class SessionDetailController
    * @classdesc Interacts with session details
@@ -39,12 +37,13 @@
       // default session detail parameters
       // add to $scope so session.detail.options can use it
       this.$scope.params = {
-        base  : 'hex',
-        line  : false,
-        image : false,
-        gzip  : false,
-        ts    : false,
-        decode: {}
+        base    : 'hex',
+        line    : false,
+        image   : false,
+        gzip    : false,
+        ts      : false,
+        decode  : {},
+        packets : 200
       };
 
       if (localStorage) { // display browser saved options
@@ -63,9 +62,14 @@
         if (localStorage['moloch-image']) {
           this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
         }
+        if (localStorage['moloch-packets'] && JSON.parse(localStorage['moloch-packets'])) {
+          this.$scope.params.packets = JSON.parse(localStorage['moloch-packets']);
+        }
       }
 
-      this.getDetailData();
+      this.getDetailData(); // get SPI data
+
+      this.getPackets();    // get packet data
 
       this.ConfigService.getMolochClickables()
         .then((response) => {
@@ -103,15 +107,9 @@
      * @param {string} message An optional message to display to the user
      */
     getDetailData(message) {
-      if (localStorage) { // update browser saved options
-        localStorage['moloch-base']   = this.$scope.params.base;
-        localStorage['moloch-line']   = this.$scope.params.line;
-        localStorage['moloch-gzip']   = this.$scope.params.gzip;
-        localStorage['moloch-image']  = this.$scope.params.image;
-      }
+      this.loading = true;
 
-      this.SessionService.getDetail(this.$scope.session.id,
-        this.$scope.session.no, this.$scope.params)
+      this.SessionService.getDetail(this.$scope.session.id, this.$scope.session.no)
         .then((response) => {
           this.loading = false;
           this.$scope.detailHtml = this.$sce.trustAsHtml(response.data);
@@ -124,6 +122,43 @@
           this.loading = false;
           this.error   = error;
         });
+    }
+
+    /**
+     * Gets the packets for the session from the server
+     */
+    getPackets() {
+      // already loading, don't load again!
+      if (this.loadingPackets) { return; }
+
+      this.loadingPackets = true;
+      this.errorPackets   = false;
+
+      if (localStorage) { // update browser saved options
+        localStorage['moloch-base']     = this.$scope.params.base;
+        localStorage['moloch-line']     = this.$scope.params.line;
+        localStorage['moloch-gzip']     = this.$scope.params.gzip;
+        localStorage['moloch-image']    = this.$scope.params.image;
+        localStorage['moloch-packets']  = this.$scope.params.packets;
+      }
+
+      this.packetPromise = this.SessionService.getPackets(this.$scope.session.id,
+         this.$scope.session.no, this.$scope.params);
+
+      this.packetPromise.then((response) => {
+        this.loadingPackets = false;
+        this.packetPromise  = null;
+
+        if (response && response.data) {
+          this.$scope.packetHtml = this.$sce.trustAsHtml(response.data);
+          this.$scope.renderPackets();
+        }
+      })
+      .catch((error) => {
+        this.loadingPackets = false;
+        this.errorPackets   = error;
+        this.packetPromise  = null;
+      });
     }
 
     /* Toggles the view of packet timestamps */
@@ -166,6 +201,15 @@
       }
 
       this.$scope.$emit('change:time', { start:startTime });
+    }
+
+    /**
+     * Cancels the packet loading request
+     */
+    cancelPacketLoad() {
+      this.packetPromise.abort();
+      this.packetPromise  = null;
+      this.errorPackets   = 'Request canceled.';
     }
 
   }
@@ -252,7 +296,9 @@
 
           scope.renderDetail = function() {
             // compile and render the session detail
-            let template = `<div class="detail-container" ng-class="{'show-ts':params.ts === true}">${scope.detailHtml}</div>`;
+            let template = `<div class="detail-container" 
+                              ng-class="{'show-ts':params.ts === true}">
+                                ${scope.detailHtml}</div>`;
             let compiled = $compile(template)(scope);
             element.find('.detail-container').replaceWith(compiled);
 
@@ -266,11 +312,16 @@
                 actionsEl.append(actionsContent);
                 actionsEl.dropdown();
               }
+            });
+          };
+          
+          scope.renderPackets = function() {
+            // render session packets (don't compile!)
+            let template = `<div class="inner">${scope.packetHtml}</div>`;
+            element.find('.packet-container > .inner').replaceWith(template);
 
-              // display packet option buttons
-              let optionsEl   = element.find('.packet-options');
-              let optContent  = $compile(optionsHTML)(scope);
-              optionsEl.replaceWith(optContent);
+            $timeout(function() { // wait until session packets are rendered
+              let i, len, time, value, timeEl;
 
               // modify the packet timestamp values
               let tss = element[0].querySelectorAll('.session-detail-ts');
