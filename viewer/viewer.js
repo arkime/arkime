@@ -3307,7 +3307,7 @@ function localSessionDetailReturnFull(req, res, session, incoming) {
 
 function localSessionDetailReturn(req, res, session, incoming) {
   //console.log("ALW", JSON.stringify(incoming));
-  var numPackets = req.query.packets || 100;
+  var numPackets = req.query.packets || 200;
   if (incoming.length > numPackets) {
     incoming.length = numPackets;
   }
@@ -3385,7 +3385,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
 
 function localSessionDetail(req, res) {
   if (!req.query) {
-    req.query = {gzip: false, line: false, base: "natural", packets: 100};
+    req.query = {gzip: false, line: false, base: "natural", packets: 200};
   }
 
   req.query.needgzip  = req.query.gzip === "true" || false;
@@ -3486,6 +3486,7 @@ app.get('/:nodeName/session/:id/detail', function(req, res) {
 
     session.id = req.params.id;
 
+    console.log('session tags: ', session.ta);
     if (session.ta) {
       session.ta = session.ta.sort();
     }
@@ -3502,21 +3503,23 @@ app.get('/:nodeName/session/:id/detail', function(req, res) {
       session.pr = Pcap.protocol2Name(session.pr);
     }
 
-    pug.render(internals.sessionDetailNew, {
-      filename    : "sessionDetail",
-      user        : req.user,
-      session     : session,
-      query       : req.query,
-      basedir     : "/",
-      reqFields   : Config.headers("headers-http-request"),
-      resFields   : Config.headers("headers-http-response"),
-      emailFields : Config.headers("headers-email")
-    }, function(err, data) {
-      if (err) {
-        console.trace("ERROR - ", err);
-        return req.next(err);
-      }
-      res.send(data);
+    fixFields(session, function() {
+      pug.render(internals.sessionDetailNew, {
+        filename    : "sessionDetail",
+        user        : req.user,
+        session     : session,
+        query       : req.query,
+        basedir     : "/",
+        reqFields   : Config.headers("headers-http-request"),
+        resFields   : Config.headers("headers-http-response"),
+        emailFields : Config.headers("headers-email")
+      }, function(err, data) {
+        if (err) {
+          console.trace("ERROR - ", err);
+          return req.next(err);
+        }
+        res.send(data);
+      });
     });
   });
 });
@@ -3525,22 +3528,20 @@ app.get('/:nodeName/session/:id/detail', function(req, res) {
  * Get Session Packets
  */
 app.get('/:nodeName/session/:id/packets', function(req, res) {
-  setTimeout(function() {
-    isLocalView(req.params.nodeName, function () {
-         noCache(req, res);
-         req.packetsOnly = true;
-         localSessionDetail(req, res);
-       },
-       function () {
-         return proxyRequest(req, res, function (err) {
-           Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
-             var fields = session._source || session.fields;
-             fields._err = "Couldn't connect to remote viewer to fetch packets";
-             localSessionDetailReturnFull(req, res, fields, []);
-           });
-         });
+  isLocalView(req.params.nodeName, function () {
+     noCache(req, res);
+     req.packetsOnly = true;
+     localSessionDetail(req, res);
+   },
+   function () {
+     return proxyRequest(req, res, function (err) {
+       Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
+         var fields = session._source || session.fields;
+         fields._err = "Couldn't connect to remote viewer to fetch packets";
+         localSessionDetailReturnFull(req, res, fields, []);
        });
-  }, 5000);
+     });
+   });
 });
 
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {
@@ -3557,7 +3558,6 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
       });
     });
   });
-
 });
 
 function reqGetRawBody(req, cb) {

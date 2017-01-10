@@ -33,6 +33,7 @@
   - capture - new scrubspi plugin
   - viewer - Apply user setting timezone
   - viewer - Add "EXISTS!" to search expression typeahead results
+  - viewer - split session spi data and pcap loading into two apis
 
 0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required

@@ -1,16 +1,18 @@
+<!-- detail loading -->
 <div ng-if="$ctrl.loading"
   class="margined-top margined-bottom large">
   <span class="fa fa-spinner fa-spin"></span>&nbsp;
   Loading session details...
 </div>
 
+<!-- detail error -->
 <div ng-if="$ctrl.error"
   class="text-danger margined-top margined-bottom large">
   <span class="fa fa-exclamation-triangle"></span>&nbsp;
   {{$ctrl.error}}
 </div>
 
-<!-- session detail -->
+<!-- detail -->
 <div class="detail-container"></div>
 
 <hr ng-if="!$ctrl.loading && !$ctrl.error">
@@ -88,6 +90,7 @@
   </form>
 </div> <!-- /packet options -->
 
+<!-- packets loading -->
 <div ng-if="!$ctrl.loading && $ctrl.loadingPackets"
   class="margined-top-xxxlg margined-bottom-xxxlg large">
   <span class="fa fa-spinner fa-spin"></span>&nbsp;
@@ -99,6 +102,7 @@
   </a>
 </div>
 
+<!-- packets error -->
 <div ng-if="!$ctrl.error && $ctrl.errorPackets"
   class="text-danger margined-top-xxxlg margined-bottom-xxxlg large">
   <span class="fa fa-exclamation-triangle"></span>&nbsp;

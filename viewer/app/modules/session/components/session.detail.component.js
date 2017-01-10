@@ -316,6 +316,7 @@
           };
           
           scope.renderPackets = function() {
+            // render session packets (don't compile!)
             let template = `<div class="inner">${scope.packetHtml}</div>`;
             element.find('.packet-container > .inner').replaceWith(template);
 
