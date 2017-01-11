@@ -196,6 +196,29 @@
       });
     });
 
+    it('should set a view and expression', function() {
+      let expression = { value: 'protocols == tcp' };
+      let view = 'viewy';
+
+      search.expression = expression;
+      search.setView(view);
+
+      expect(search.view).toEqual(view);
+      expect(sessionStorage['moloch-view']).toEqual(view);
+
+      expect(scope.$emit).toHaveBeenCalled();
+      expect(scope.$emit).toHaveBeenCalledWith('change:search', {
+        expression: expression.value,
+        view      : view
+      });
+
+      expect(rootScope.$broadcast).toHaveBeenCalled();
+      expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
+        expression: expression.value,
+        view      : view
+      });
+    });
+
     it('should unset a view', function() {
       search.setView();
 

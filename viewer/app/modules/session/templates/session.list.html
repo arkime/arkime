@@ -220,6 +220,11 @@
       <div ng-if="!$ctrl.loading">
         <span class="fa fa-3x text-center text-muted-more fa-folder-open"></span><br>
         No results or none that match your search.
+        <small ng-if="$ctrl.query.view" class="text-purple">
+          <br>
+          Don't forget! You have a view applied to your search:&nbsp;
+          <strong>{{$ctrl.query.view}}</strong>
+        </small>
       </div>
     </div> <!-- /no results -->
 
