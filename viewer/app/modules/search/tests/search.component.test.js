@@ -185,12 +185,14 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        view: 'viewy'
+        expression: null,
+        view      : 'viewy'
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        view: 'viewy'
+        expression: null,
+        view      : 'viewy'
       });
     });
 
@@ -202,12 +204,14 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        view: undefined
+        expression: null,
+        view      : undefined
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        view: undefined
+        expression: null,
+        view      : undefined
       });
     });
 
@@ -239,12 +243,14 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        view: 'viewy'
+        expression: null,
+        view      : 'viewy'
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        view: 'viewy'
+        expression: null,
+        view      : 'viewy'
       });
 
       // delete view
@@ -271,12 +277,14 @@
 
       expect(scope.$emit).toHaveBeenCalled();
       expect(scope.$emit).toHaveBeenCalledWith('change:search', {
-        view: undefined
+        expression: null,
+        view      : undefined
       });
 
       expect(rootScope.$broadcast).toHaveBeenCalled();
       expect(rootScope.$broadcast).toHaveBeenCalledWith('issue:search', {
-        view: undefined
+        expression: null,
+        view      : undefined
       });
     });
 
