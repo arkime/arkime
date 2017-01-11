@@ -187,10 +187,14 @@
          this.$location.search('view', view);
        }
 
-       this.$scope.$emit('change:search', { view: this.view });
+       this.$scope.$emit('change:search', {
+         expression : this.expression.value,
+         view       : this.view
+       });
 
        this.$rootScope.$broadcast('issue:search', {
-         view : this.view
+         expression : this.expression.value,
+         view       : this.view
        });
      }
 
