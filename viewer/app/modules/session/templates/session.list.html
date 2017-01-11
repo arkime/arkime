@@ -103,22 +103,22 @@
                   <!-- single field column -->
                   <div ng-if="::!header.children && header.type !== 'seconds'">
                     <li role="menuitem">
-                      <a ng-click="$ctrl.exportUnique(child.rawField || header.dbField, 0)">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField, 0)">
                         Export Unique {{::header.friendlyName}}
                       </a>
                     </li>
                     <li role="menuitem">
-                      <a ng-click="$ctrl.exportUnique(child.rawField || header.dbField, 1)">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField, 1)">
                         Export Unique {{::header.friendlyName}} with counts
                       </a>
                     </li>
                     <li role="menuitem" ng-if="::header.portField">
-                      <a ng-click="$ctrl.exportUnique(child.rawField || header.dbField + ':' + header.portField, 0)">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField + ':' + header.portField, 0)">
                         Export Unique {{::header.friendlyName}}:Ports
                       </a>
                     </li>
                     <li role="menuitem" ng-if="::header.portField">
-                      <a ng-click="$ctrl.exportUnique(child.rawField || header.dbField + ':' + header.portField, 1)">
+                      <a ng-click="$ctrl.exportUnique(header.rawField || header.dbField + ':' + header.portField, 1)">
                         Export Unique {{::header.friendlyName}}:Ports with counts
                       </a>
                     </li>
