@@ -14,12 +14,12 @@ my $json;
 
     $json = mesGet("/MULTIPREFIX_dstats/version/version");
     cmp_ok($json->{_source}->{version}, '>=', 20, "dstats version is at least 20");
-    is ($json->{_index}, "MULTIPREFIX_dstats_v1", "Correct dstats index name");
+    is ($json->{_index}, "MULTIPREFIX_dstats_v2", "Correct dstats index name");
 
 #_stats
     $json = mesGet("/MULTIPREFIX_stats/_stats");
     is ($json->{_node}, "127.0.0.1:9200,prefix:tests", "Correct _node status");
-    is (exists $json->{indices}->{MULTIPREFIX_stats}, 1, "Correct stats/_stats index");
+    is (exists $json->{indices}->{MULTIPREFIX_stats_v1}, 1, "Correct stats/_stats index");
 
     $json = mesGet("/MULTIPREFIX_tags/_stats");
     is (exists $json->{indices}->{MULTIPREFIX_tags_v2}, 1, "Correct tags/_stats version");
@@ -32,7 +32,7 @@ my $json;
     cmp_ok($json->{indices}->{MULTIPREFIX_sequence}->{total}->{docs}->{count}, '>=', 2, "sequence count is at least 2");
 
     $json = mesGet("/MULTIPREFIX_dstats/_stats");
-    cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v1}->{total}->{docs}->{count}, '>=', 2, "dstats count is at least 60");
+    cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v2}->{total}->{docs}->{count}, '>=', 2, "dstats count is at least 60");
 
 # _count
     $json = mesPost("/MULTIPREFIX_users/_count?ignore_unavailable=true", "");
@@ -69,11 +69,11 @@ my $json;
 
     $json = mesGet("/MULTIPREFIX_stats/stat/_search");
     cmp_ok($json->{hits}->{total}, '>=', 1, "stats/search count is at least 1");
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats", "Correct stats index name");
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v1", "Correct stats index name");
 
     $json = mesPost("/MULTIPREFIX_stats/stat/_search", "{}");
     cmp_ok($json->{hits}->{total}, '>=', 1, "stats/search count is at least 1");
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats", "Correct stats index name");
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v1", "Correct stats index name");
 
     $json = mesPost("/MULTIPREFIX_fields/field/_search", "{\"size\":1000}");
     cmp_ok($json->{hits}->{total}, '>=', 190, "fields count is at least 190");
