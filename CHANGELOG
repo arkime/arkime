@@ -1,10 +1,13 @@
 0.17.1 2017/01/XX
+  - NOTICE: Can only update directly from Moloch 0.11.1 or later
   - capture - handle mssing syn/ack better
   - capture - better mongo detection
+  - db - dstats_2 and stats_v1 now use date for time for kibana support, also prepares for ES 5 upgrade
 
 0.17.0 2017/01/05
   - NOTICE: npm update required
   - NOTICE: ES 2.4.x required
+  - NOTICE: Last version that can be updated directly from Moloch 0.11.0 or earlier
   - viewer - New sessions UI (newUI=true)
   - all - Initial ES 5.0 support (do not use in production!)
   - all - Refactor many ES calls to remove depreciated syntax

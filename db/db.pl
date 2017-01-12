@@ -37,6 +37,7 @@
 # 28 - timestamp, firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc
 # 29 - stats/dstats uses dynamic_templates
 # 30 - change file to dynamic
+# 31 - dstats_v2, stats_v1
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -45,7 +46,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 30;
+my $VERSION = 31;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -124,6 +125,7 @@ sub esGet
       die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
+    print "GET RESULT:", Dumper($json), "\n" if ($verbose > 3);
     return $json
 }
 
@@ -138,12 +140,14 @@ sub esPost
     }
 
     print "POST ${main::elasticsearch}$url\n" if ($verbose > 2);
+    print "POST DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->post("${main::elasticsearch}$url", Content => $content);
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
       die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
 
     my $json = from_json($response->content);
+    print "POST RESULT:", Dumper($json), "\n" if ($verbose > 3);
     return $json
 }
 
@@ -158,12 +162,15 @@ sub esPut
     }
 
     print "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
+    print "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content));
     if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
       print Dumper($response);
       die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
     }
+
     my $json = from_json($response->content);
+    print "PUT RESULT:", Dumper($json), "\n" if ($verbose > 3);
     return $json
 }
 
@@ -194,33 +201,8 @@ sub esCopy
     my $status = esGet("/_status", 1);
     print "Copying " . $status->{indices}->{$PREFIX . $srci}->{docs}->{num_docs} . " elements from ${PREFIX}$srci/$type to ${PREFIX}$dsti/$type\n";
 
-    my $id = "";
-    while (1) {
-        if ($verbose > 0) {
-            local $| = 1;
-            print ".";
-        }
-        my $url;
-        if ($id eq "") {
-            $url = "/${PREFIX}$srci/$type/_search?scroll=10m&size=500";
-        } else {
-            $url = "/_search/scroll?scroll=10m&scroll_id=$id";
-        }
+    esPost("/_reindex", to_json({"source" => {"index" => $PREFIX.$srci, "type" => $type}, "dest" => {"index" => $PREFIX.$dsti}, "conflicts" => "proceed"}));
 
-
-        my $incoming = esGet($url);
-        my $out = "";
-        last if (@{$incoming->{hits}->{hits}} == 0);
-
-        foreach my $hit (@{$incoming->{hits}->{hits}}) {
-            $out .= "{\"index\": {\"_index\": \"${PREFIX}$dsti\", \"_type\": \"$type\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
-            $out .= to_json($hit->{_source}) . "\n";
-        }
-
-        $id = $incoming->{_scroll_id};
-
-        esPost("/_bulk", $out);
-    }
     print "\n"
 }
 ################################################################################
@@ -416,7 +398,8 @@ sub statsCreate
 }';
 
     print "Creating stats index\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats", $settings);
+    esPut("/${PREFIX}stats_v1", $settings);
+    esAlias("add", "stats_v1", "stats");
     statsUpdate();
 }
 
@@ -454,14 +437,42 @@ my $mapping = '
         "index": "not_analyzed"
       },
       "currentTime": {
-        "type": "long"
+        "type": "date",
+        "format": "epoch_second"
       }
     }
   }
 }';
 
     print "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats/stat/_mapping?pretty", $mapping, 1);
+    esPut("/${PREFIX}stats_v1/stat/_mapping?pretty", $mapping, 1);
+}
+################################################################################
+# Since we are changing stats from index to alias there is some timing issues we try and handle
+sub statsCreateFromOld
+{
+    my $indices = esGet("/${PREFIX}stats_v1,${PREFIX}stats/_aliases?ignore_unavailable=1", 1);
+
+    # Need to create new name
+    if (!exists $indices->{"${PREFIX}stats_v1"}) {
+        statsCreate();
+        sleep 1;
+        $indices = esGet("/${PREFIX}stats_v1,${PREFIX}stats/_aliases?ignore_unavailable=1", 1);
+    }
+
+    # Copy old index to new index
+    if (exists $indices->{"${PREFIX}stats_v1"} && exists $indices->{"${PREFIX}stats"}) {
+        esCopy("stats", "stats_v1", "stat");
+    }
+
+    # Delete old index and add alias.  Do in a loop since there is a race condition of capture
+    # processes trying to save their information.
+    $indices = esGet("/${PREFIX}stats_v1,${PREFIX}stats/_aliases?ignore_unavailable=1", 1);
+    while (exists $indices->{"${PREFIX}stats"} || ! exists $indices->{"${PREFIX}stats_v1"}->{aliases}->{"${PREFIX}stats"}) {
+        esDelete("/${PREFIX}stats", 1);
+        esAlias("add", "stats_v1", "stats");
+        $indices = esGet("/${PREFIX}stats_v1,${PREFIX}stats/_aliases?ignore_unavailable=1", 1);
+    }
 }
 ################################################################################
 sub dstatsCreate
@@ -475,9 +486,9 @@ sub dstatsCreate
   }
 }';
 
-    print "Creating dstats_v1 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v1", $settings);
-    esAlias("add", "dstats_v1", "dstats");
+    print "Creating dstats_v2 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}dstats_v2", $settings);
+    esAlias("add", "dstats_v2", "dstats");
     dstatsUpdate();
 }
 
@@ -518,14 +529,23 @@ my $mapping = '
         "type": "short"
       },
       "currentTime": {
-        "type": "long"
+        "type": "date",
+        "format": "epoch_second"
       }
     }
   }
 }';
 
-    print "Setting dstats_v1 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v1/dstat/_mapping?pretty", $mapping, 1);
+    print "Setting dstats_v2 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}dstats_v2/dstat/_mapping?pretty", $mapping, 1);
+}
+################################################################################
+sub dstatsCreateFromOld
+{
+    dstatsCreate();
+    esAlias("remove", "dstats_v1", "dstats");
+    esCopy("dstats_v1", "dstats_v2", "dstat");
+    esDelete("/${PREFIX}dstats_v1", 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -1926,7 +1946,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}dstats_v1", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
+    foreach my $i ("${PREFIX}dstats_v2", "${PREFIX}files_v3", "${PREFIX}sequence", "${PREFIX}tags_v2", "${PREFIX}users_v3") {
         progress("$i ");
         esGet("/$i/_optimize?max_num_segments=1", 1);
         esPost("/$i/_upgrade", "", 1);
@@ -2306,9 +2326,11 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/${PREFIX}files_v1", 1);
     esDelete("/${PREFIX}files", 1);
     esDelete("/${PREFIX}stats", 1);
+    esDelete("/${PREFIX}stats_v1", 1);
     esDelete("/${PREFIX}dstats", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}dstats_v1", 1);
+    esDelete("/${PREFIX}dstats_v2", 1);
     esDelete("/${PREFIX}sessions*", 1);
     esDelete("/${PREFIX}template_1", 1);
     if ($ARGV[1] =~ "init") {
@@ -2340,107 +2362,43 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 # Remaing is upgrade or upgradenoprompt
 
 # For really old versions don't support upgradenoprompt
-    if ($main::versionNumber == 0) {
-        print "Trying to upgrade from version 0 to version $VERSION.  This may or may not work since the elasticsearch moloch db was a wildwest before version 1.  This upgrade will reset some of the stats, sorry.\n\n";
-        waitFor("UPGRADE", "do you want to upgrade?");
-    } elsif ($main::versionNumber < 19 || $ARGV[1] ne "upgradenoprompt") {
-        print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
-        waitFor("UPGRADE", "do you want to upgrade?");
-    } elsif ($health->{status} eq "red") {
+    if ($main::versionNumber < 19) {
+        print "No longer supported.  Please upgrade to Moloch 0.17.0 first.\n\n";
+        exit 1;
+    }
+
+    if ($health->{status} eq "red") {
         print "Not auto upgrading when elasticsearch status is red.\n\n";
         waitFor("RED", "do you want to really want to upgrade?");
+    } elsif ($ARGV[1] ne "upgradenoprompt") {
+        print "Trying to upgrade from version $main::versionNumber to version $VERSION.\n\n";
+        waitFor("UPGRADE", "do you want to upgrade?");
     }
 
     print "Starting Upgrade\n";
 
-    if ($main::versionNumber == 0) {
-        esDelete("/${PREFIX}stats", 1);
-
-        tagsUpdate();
-        sequenceUpdate();
-        statsCreate();
-        sessionsUpdate();
-        fieldsCreate();
-
-        filesCreate();
-        esAlias("remove", "files_v1", "files");
-        esCopy("files_v1", "files_v3", "file");
-
-        usersCreate();
-        esAlias("remove", "users_v1", "users");
-        esCopy("users_v1", "users_v3", "user");
-
-        dstatsCreate();
-        esCopy("dstats", "dstats_v1", "user");
-        sleep 1;
-
-        esDelete("/${PREFIX}dstats", 1);
-        sleep 1;
-
-        esAlias("add", "dstats_v1", "dstats");
-
-        queriesCreate();
-
-        print "users_v1 and files_v1 tables can be deleted now\n";
-    } elsif ($main::versionNumber < 7) {
-        filesCreate();
-        esAlias("remove", "files_v2", "files");
-        esCopy("files_v2", "files_v3", "file");
-
-        usersCreate();
-        esAlias("remove", "users_v2", "users");
-        esCopy("users_v2", "users_v3", "user");
-        print "users_v2 and files_v2 table can be deleted now\n";
-
-        sessionsUpdate();
-        statsUpdate();
-        dstatsUpdate();
-        fieldsCreate();
-        queriesCreate();
-    } elsif ($main::versionNumber < 18) {
-        usersCreate();
-        esAlias("remove", "users_v2", "users");
-        esCopy("users_v2", "users_v3", "user");
-        print "users_v2 table can be deleted now\n";
-
-        filesUpdate();
-        sessionsUpdate();
-        statsUpdate();
-        dstatsUpdate();
-        fieldsCreate();
-        queriesCreate();
-    } elsif ($main::versionNumber < 19) {
-        usersCreate();
-        esAlias("remove", "users_v2", "users");
-        esCopy("users_v2", "users_v3", "user");
-        print "users_v2 table can be deleted now\n";
-
-        filesUpdate();
+    if ($main::versionNumber < 20) {
+        dstatsCreateFromOld();
         fieldsUpdate();
-        sessionsUpdate();
+        filesUpdate();
         queriesCreate();
-        statsUpdate();
-        dstatsUpdate();
-    } elsif ($main::versionNumber < 20) {
+        sessionsUpdate();
+        statsCreateFromOld();
         usersUpdate();
-        sessionsUpdate();
-        queriesCreate();
-        fieldsUpdate();
-        statsUpdate();
-        dstatsUpdate();
-        filesUpdate();
     } elsif ($main::versionNumber <= 26) {
-        usersUpdate();
-        sessionsUpdate();
+        dstatsCreateFromOld();
         fieldsUpdate();
-        statsUpdate();
-        dstatsUpdate();
         filesUpdate();
-    } elsif ($main::versionNumber <= 30) {
         sessionsUpdate();
-        statsUpdate();
-        dstatsUpdate();
+        statsCreateFromOld();
+        usersUpdate();
+    } elsif ($main::versionNumber <= 30) {
+        dstatsCreateFromOld();
         filesUpdate();
+        sessionsUpdate();
+        statsCreateFromOld();
+    } elsif ($main::versionNumber <= 31) {
+        sessionsUpdate();
     } else {
         print "db.pl is hosed\n";
     }
