@@ -133,6 +133,17 @@
     parseValue(fieldObj) {
       this.fieldObj = fieldObj;
 
+      // TODO: this goes away with ES5
+      if (this.session && this.fieldObj.dbField === 'a1' && this.session['tipv61-term']) {
+        this.expr     = 'tipv6.src';
+        this.fieldObj = {dbField:'tipv61-term',exp:'tipv6.src',friendlyName:'IPv6 Src',group:'general',help:'Temporary IPv6 Source',portField:'p1',transform:'ipv6ToHex',type:'lotermfield'};
+        this.value    = this.session['tipv61-term'];
+      } else if (this.session && this.fieldObj.dbField === 'a2' && this.session['tipv62-term']) {
+        this.expr     = 'tipv6.dst';
+        this.fieldObj = {dbField:'tipv62-term',exp:'tipv6.dst',friendlyName:'IPv6 Dst',group:'general',help:'Temporary IPv6 Destination',portField:'p2',transform:'ipv6ToHex',type:'lotermfield'};
+        this.value    = this.session['tipv62-term'];
+      }
+
       this.parsed   = this.value;
 
       if (!this.fieldObj || !this.parse) { return; }

@@ -9,7 +9,7 @@
     start : 0,    // first item index
     facets: 1,    // facets
     sorts : [ [ 'fp', 'asc' ] ],
-    fields: [ 'pr', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'us', 'esrc', 'edst', 'esub', 'efn', 'dnsho', 'tls.alt', 'ircch' ]
+    fields: [ 'pr', 'tipv61-term', 'tipv62-term', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'us', 'esrc', 'edst', 'esub', 'efn', 'dnsho', 'tls.alt', 'ircch' ]
   };
 
   // sample session json
@@ -153,7 +153,7 @@
 
     let scope, sessionComponent, sessionService, $httpBackend;
     let sessionsEndpoint    = 'sessions.json';
-    let defaultParameters   = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
+    let defaultParameters   = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
     let tableStateEndpoint  = 'tableState/sessionsNew';
 
     // Initialize and a mock scope
@@ -283,7 +283,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:desc';
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:desc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -299,7 +299,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=lp:asc';
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=lp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -315,7 +315,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc,lp:asc';
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc,lp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -359,7 +359,7 @@
         $httpBackend.expectPOST(tableStateEndpoint)
            .respond(200);
 
-        let newParameters = '?facets=1&fields=pr,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&length=50&order=fp:asc';
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch,lp&length=50&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 
@@ -400,7 +400,7 @@
       });
 
       it('should listen for "change:search" event', function() {
-        let newParameters = '?date=-1&facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
+        let newParameters = '?date=-1&facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=50&order=fp:asc';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
           .respond(sessionsJSON);
 
@@ -420,7 +420,7 @@
       });
 
       it('should listen for "change:pagination" event', function() {
-        let newParameters = '?facets=1&fields=pr,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=200&order=fp:asc&start=200';
+        let newParameters = '?facets=1&fields=pr,tipv61-term,tipv62-term,fp,lp,a1,p1,a2,p2,pa,by,no,us,esrc,edst,esub,efn,dnsho,tls.alt,ircch&length=200&order=fp:asc&start=200';
         $httpBackend.expectGET(sessionsEndpoint + newParameters)
            .respond(sessionsJSON);
 

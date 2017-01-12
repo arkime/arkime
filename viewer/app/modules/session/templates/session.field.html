@@ -21,15 +21,14 @@
           </a>
         </li>
       </div>
-      <div ng-if="::$ctrl.fieldObj.portField && $ctrl.session[$ctrl.fieldObj.portField]">
+      <div ng-if="::$ctrl.fieldObj.portField && $ctrl.session[$ctrl.fieldObj.portField] !== undefined">
         <li ng-click="$ctrl.fieldClick($ctrl.expr, ($ctrl.stringVal || $ctrl.value) + ':' + $ctrl.session[$ctrl.fieldObj.portField], '==')">
           <a href>
             <strong>and</strong>
             {{::$ctrl.parsed}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
           </a>
         </li>
-        <li ng-if="::$ctrl.fieldObj.portField && $ctrl.session[$ctrl.fieldObj.portField]"
-          ng-click="$ctrl.fieldClick($ctrl.expr, ($ctrl.stringVal || $ctrl.value) + ':' + $ctrl.session[$ctrl.fieldObj.portField], '!=')">
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, ($ctrl.stringVal || $ctrl.value) + ':' + $ctrl.session[$ctrl.fieldObj.portField], '!=')">
           <a href>
             <strong>and not</strong>
             {{::$ctrl.parsed}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
