@@ -21,7 +21,7 @@
   <ul id="typeahead-results" uib-dropdown-menu
     class="dropdown-menu typeahead-results"
     ng-show="$ctrl.query.value && $ctrl.results && $ctrl.results.length">
-    <li ng-repeat="(key, value) in $ctrl.results"
+    <li ng-repeat="(key, value) in $ctrl.results track by key"
       ng-class="{'active':key === $ctrl.activeIdx}"
       ng-click="$ctrl.addToQuery(value)" class="cursor-pointer"
       uib-tooltip="{{::value.help}}" tooltip-placement="right"

@@ -51,7 +51,7 @@
           Delete SPI & PCAP
         </a>
       </li>
-      <li ng-repeat="(key, value) in $ctrl.molochclusters"
+      <li ng-repeat="(key, value) in $ctrl.molochclusters track by key"
         ng-click="$ctrl.sendSession(key)">
         <a>
           <span class="fa fa-fw fa-paper-plane-o"></span>&nbsp;
@@ -86,7 +86,7 @@
         <div><a>None</a></div>
       </li>
       <li role="menuitem" class="cursor-pointer"
-        ng-repeat="(key,val) in $ctrl.views"
+        ng-repeat="(key,val) in $ctrl.views track by key"
         ng-class="{'active':$ctrl.view === key}"
         uib-tooltip="Apply {{::key}} View ({{::val.expression}})"
         tooltip-placement="left">

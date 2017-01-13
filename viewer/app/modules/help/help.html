@@ -474,7 +474,7 @@
         </thead>
         <tbody>
           <tr class="animate-repeat"
-            ng-repeat="field in $ctrl.filteredFields = ($ctrl.fields | filter:$ctrl.searchFields)">
+            ng-repeat="field in $ctrl.filteredFields = ($ctrl.fields | filter:$ctrl.searchFields) track by field.exp">
             <td class="no-wrap">{{field.exp}}</td>
             <td class="no-wrap">{{$ctrl.info[field.type].operator}}</td>
             <td class="no-wrap">{{$ctrl.info[field.type].type}}</td>

@@ -27,7 +27,7 @@
       </li>
       <a class="list-group-item cursor-pointer"
         ng-click="scrollTo($event, session.id)"
-        ng-repeat="session in sessions">
+        ng-repeat="session in sessions track by session.id">
         <p class="list-group-item-text">
           <button class="btn btn-xs btn-link pull-right"
             ng-click="closeSessionDetail(session)">

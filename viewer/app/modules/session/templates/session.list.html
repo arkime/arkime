@@ -55,9 +55,9 @@
                     class="form-control input-sm dropdown-typehead"
                     ng-model="$ctrl.colQuery"
                     placeholder="Search for columns...">
-                  <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group'">
+                  <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group' track by key">
                     <div class="group-header">{{::key | capitalize}}</div>
-                    <li ng-repeat="field in value"
+                    <li ng-repeat="field in value track by $index"
                       ng-click="$ctrl.toggleVisibility(field.dbField)"
                       ng-class="{'active':$ctrl.isVisible(field.dbField) >= 0}"
                       uib-tooltip="{{::field.help}}"
@@ -78,7 +78,7 @@
             </th>
 
             <!-- table headers -->
-            <th ng-repeat="header in $ctrl.headers" width="{{::header.width}}"
+            <th ng-repeat="header in $ctrl.headers track by header.dbField" width="{{::header.width}}"
               class="moloch-col-header" ng-drop="true"
               ng-drop-success="$ctrl.onDropComplete($index, $data, $event)"
               ng-drag="true" ng-drag-data="header" draggable="false"
@@ -124,7 +124,7 @@
                     </li>
                   </div> <!-- /single field column -->
                   <!-- multiple field column -->
-                  <div ng-repeat="child in ::header.children"
+                  <div ng-repeat="child in ::header.children track by child.dbField"
                     ng-if="::header.children && header.type !== 'seconds'">
                     <li role="menuitem">
                       <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 0)">
@@ -175,7 +175,7 @@
 
         <tbody ng-show="$ctrl.sessions && $ctrl.sessions.data &&
           $ctrl.sessions.data.length && !$ctrl.error" class="small">
-          <tr ng-repeat-start="session in $ctrl.sessions.data"
+          <tr ng-repeat-start="session in $ctrl.sessions.data track by session.id"
             id="session{{::session.id}}">
             <td>
               <a class="btn btn-sm btn-toggle"
@@ -189,7 +189,7 @@
                   session="session" parse="true" pull-left="true"></session-field>
               </small>
             </td>
-            <td ng-repeat="col in $ctrl.headers"
+            <td ng-repeat="col in $ctrl.headers track by $index"
               ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
               <session-field field="col" expr="col.exp"
                 value="session[col.dbField]" session="session"
