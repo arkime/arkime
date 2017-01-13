@@ -59,7 +59,7 @@
         numVisibleSessions  : 100,
         numMatchingSessions : 10,
         start               : 0,
-        timezone            : 'utc'
+        timezone            : 'local'
       });
 
       // spy on functions in controller
@@ -108,7 +108,7 @@
       expect(search.start).toEqual(0);
 
       expect(search.timezone).toBeDefined();
-      expect(search.timezone).toEqual('utc');
+      expect(search.timezone).toEqual('local');
     });
 
     it('should emit a "change:search" event when time range is changed', function() {

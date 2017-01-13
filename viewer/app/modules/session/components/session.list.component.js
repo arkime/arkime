@@ -175,7 +175,7 @@
     getUserSettings() {
       this.UserService.getSettings()
          .then((settings) => {
-           this.settings = settings || {};
+           this.settings = settings || { timezone: 'local' };
          })
          .catch((error) => {
            this.error = error;

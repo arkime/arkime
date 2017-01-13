@@ -177,7 +177,7 @@
       * '{{seconds | 'timezone-date' : 'gmt'}}
       *
       * @param {int} seconds      The time in seconds from epoch
-      * @param {string} timezone  The timezone to use ('gmt' or 'utc')
+      * @param {string} timezone  The timezone to use ('gmt' or 'local')
       */
      .filter('timezone-date', function() {
        return function (seconds, timezone) {

@@ -195,7 +195,7 @@
 
       it('should return an integer date in the requested timezone', function() {
         let time   = 18000;
-        let result = $filter('timezone-date')(time, 'utc');
+        let result = $filter('timezone-date')(time, 'local');
         expect(result).toEqual(18000000);
 
         result = $filter('timezone-date')(time, 'gmt');

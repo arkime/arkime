@@ -291,7 +291,7 @@
         parse     : '<',  // whether to parse the value
         stringify : '<',  // whether to stringify the value in the search expression
         pullLeft  : '<',  // whether the dropdown should drop down from the left (default is right)
-        timezone  : '<'   // what timezone date fields should be in ('gmt' or 'utc')
+        timezone  : '<'   // what timezone date fields should be in ('gmt' or 'local')
       }
     });
 
