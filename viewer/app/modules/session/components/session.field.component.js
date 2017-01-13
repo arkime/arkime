@@ -37,17 +37,17 @@
       // only display fields that have a value
       if (this.value === undefined && (!this.field || !this.field.children)) { return; }
 
+      // setup parse flag
       if (typeof this.parse === 'string') {
         this.parse = this.parse === 'true';
       }
 
+      // setup stringify flag
       if (typeof this.stringify === 'string') {
         this.stringify = this.stringify === 'true';
       }
 
-      // for values required to be strings in the search expression
-      if (this.stringify) { this.stringVal = '\"' + this.value + '\"'; }
-
+      // only parse values if we know how to (requires field param)
       if (this.field) { this.parseValue(this.field); }
 
       // TODO: only get moloch fields if user opens drop down OR if field is not passed into component
@@ -86,6 +86,9 @@
      * @param {string} op     The relational operator
      */
     fieldClick(field, value, op) {
+      // for values required to be strings in the search expression
+      if (this.stringify) { value = '\"' + this.value + '\"'; }
+
       let fullExpression = `${field} ${op} ${value}`;
 
       this.$scope.$emit('add:to:search', { expression: fullExpression });
@@ -144,41 +147,48 @@
         this.value    = this.session['tipv62-term'];
       }
 
-      this.parsed   = this.value;
+      this.parsed = this.value;
 
-      if (!this.fieldObj || !this.parse) { return; }
+      // the parsed value is always an array
+      if (!Array.isArray(this.value)) { this.parsed = [this.value]; }
 
-      switch(this.fieldObj.type) {
-        case 'seconds':
-          this.time   = true;
-          this.value  = this.parsed;
-          this.parsed = this.$filter('timezone-date')(this.parsed, this.timezone);
-          let dateFormat = 'yyyy/MM/dd HH:mm:ss';
-          if (this.timezone === 'gmt') { dateFormat = 'yyyy/MM/dd HH:mm:ss\'Z\''; }
-          this.parsed = this.$filter('date')(this.parsed, dateFormat);
-          break;
-        case 'ip':
-          this.parsed = this.$filter('extractIPString')(this.parsed);
-          this.value  = this.parsed;
-          break;
-        case 'lotermfield':
-          if (this.fieldObj.dbField === 'tipv61-term' || this.fieldObj.dbField === 'tipv62-term') {
-            this.parsed = this.$filter('extractIPv6String')(this.parsed);
-            this.value  = this.parsed;
-          }
-          break;
-        case 'termfield':
-          if (this.fieldObj.dbField === 'prot-term') {
-            this.parsed = this.$filter('protocol')(this.parsed);
-            this.value  = this.parsed;
-          }
-          break;
-        case 'integer':
-          if (this.fieldObj.category !== 'port') {
-            this.value  = this.parsed;
-            this.parsed = this.$filter('number')(this.parsed, 0);
-          }
-          break;
+      if (!this.fieldObj || !this.value) { return; }
+
+      for (let i = 0, len = this.parsed.length; i < len; ++i) {
+        let val = this.parsed[i];
+
+        switch (this.fieldObj.type) {
+          case 'seconds':
+            this.time = val;
+            val = this.$filter('timezone-date')(val, this.timezone);
+            let dateFormat = 'yyyy/MM/dd HH:mm:ss';
+            if (this.timezone === 'gmt') {
+              dateFormat = 'yyyy/MM/dd HH:mm:ss\'Z\'';
+            }
+            val = this.$filter('date')(val, dateFormat);
+            break;
+          case 'ip':
+            val = this.$filter('extractIPString')(val);
+            break;
+          case 'lotermfield':
+            if (this.fieldObj.dbField === 'tipv61-term' ||
+                this.fieldObj.dbField === 'tipv62-term') {
+              val = this.$filter('extractIPv6String')(val);
+            }
+            break;
+          case 'termfield':
+            if (this.fieldObj.dbField === 'prot-term') {
+              val = this.$filter('protocol')(val);
+            }
+            break;
+          case 'integer':
+            if (this.fieldObj.category !== 'port') {
+              val = this.$filter('number')(val, 0);
+            }
+            break;
+        }
+
+        this.parsed[i] = val; // update parsed value in array
       }
     }
 

@@ -2153,6 +2153,45 @@ function fixFields(fields, fixCb) {
   );
 }
 
+/**
+ * Flattens fields that are objects (only goes 1 level deep)
+ *
+ * @example
+ * { http: { statuscode: [200, 302] } } => { "http.statuscode": [200, 302] }
+ *
+ * @param {object} fields The object containing fields to be flattened
+ * @returns {object} fields The object with fields flattened
+ */
+function flattenFields(fields) {
+  var newFields = {};
+
+  for (var key in fields) {
+    if (fields.hasOwnProperty(key)) {
+      var field = fields[key];
+      if (typeof field === 'object' && !field.length) {
+        var baseKey = key + '.';
+        for (var nestedKey in field) {
+          if (field.hasOwnProperty(nestedKey)) {
+            var nestedField = field[nestedKey];
+            var newKey = baseKey + nestedKey;
+            newFields[newKey] = nestedField;
+          }
+        }
+        fields[key] = null;
+        delete fields[key];
+      }
+    }
+  }
+
+  for (var key in newFields) {
+    if (newFields.hasOwnProperty(key)) {
+      fields[key] = newFields[key];
+    }
+  }
+
+  return fields;
+}
+
 app.get('/sessions.json', function(req, res) {
   var i;
 
@@ -2213,6 +2252,10 @@ app.get('/sessions.json', function(req, res) {
             }
             fields.index = hit._index;
             fields.id = hit._id;
+
+            if (req.query.flatten === '1') {
+              fields = flattenFields(fields);
+            }
 
             if (addMissing) {
               ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {

@@ -44,10 +44,10 @@
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
 
-        $httpBackend.when('GET', 'sessions.json')
-          .respond(200, {});
+        $httpBackend.when('GET', 'sessions.json?flatten=1')
+           .respond(200, {});
 
-        $httpBackend.when('GET', 'sessions.json?facets=1&length=100&order=fp:asc')
+        $httpBackend.when('GET', 'sessions.json?facets=1&flatten=1&length=100&order=fp:asc')
           .respond(200, {});
 
         $httpBackend.when('GET', 'node/session/sessionid/detail')
@@ -209,7 +209,7 @@
 
       it('should send a GET request (without parameters) for sessions', function() {
         SessionService.get();
-        $httpBackend.expectGET('sessions.json');
+        $httpBackend.expectGET('sessions.json?flatten=1');
         $httpBackend.flush();
       });
 
@@ -222,7 +222,7 @@
         };
 
         SessionService.get(query);
-        $httpBackend.expectGET('sessions.json?facets=1&length=100&order=fp:asc');
+        $httpBackend.expectGET('sessions.json?facets=1&flatten=1&length=100&order=fp:asc');
         $httpBackend.flush();
       });
 

@@ -37,7 +37,7 @@
     get(query) {
       return this.$q((resolve, reject) => {
 
-        let params = {};
+        let params = { flatten: 1 };
 
         if (query) {
           if (query.length)     { params.length = query.length; }
