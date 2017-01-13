@@ -165,7 +165,7 @@
         <input type="text" class="form-control date-control"
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
-          close-text="Close" ng-change="$ctrl.changeDate()"
+          close-text="Close" enter-click="$ctrl.changeDate()"
           ng-model-options="{ debounce: 600 }"
           alt-input-formats="$ctrl.altInputFormats" />
         <div class="input-group-btn">
@@ -190,7 +190,7 @@
         <input type="text" class="form-control date-control"
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
-          close-text="Close" ng-change="$ctrl.changeDate()"
+          close-text="Close" enter-click="$ctrl.changeDate()"
           ng-model-options="{ debounce: 600 }"
           alt-input-formats="$ctrl.altInputFormats" />
         <div class="input-group-btn">
