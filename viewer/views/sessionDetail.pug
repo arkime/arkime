@@ -46,7 +46,7 @@ dl
     strong.margined-left-lg IP Protocol:
     +clickableValue('ip.protocol', session.pr)
 
-  +arrayList(session, "user", "Users", "user")
+  +arrayList(session, "user", "Users", "user", null, null, true)
   +arrayList(session, "asset-term", "Assets", "asset")
 
   if (session.by1 || session.by2)
