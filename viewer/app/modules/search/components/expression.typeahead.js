@@ -394,7 +394,8 @@
       * @param {string} input The string to be tokenized
       */
      static splitExpression(input) {
-       input = input.replace(/ /g, '');
+       // replace spaces that are not enclosed in quotes
+       input = input.replace(/ (?=([^"]*"[^"]*")*[^"]*$)/g, '');
        let output = [];
        let cur = '';
 

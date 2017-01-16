@@ -125,6 +125,16 @@
       expect(typeahead.query.value).toEqual('country.src == USA ');
     });
 
+    it('should be able to change query and preserve spaces', function() {
+      typeahead.query.value = 'asn.dst == "value with spaces in it"';
+      typeahead.caretPos = 7;
+
+      typeahead.changeExpression();
+      typeahead.addToQuery({exp:'asn.dst'});
+
+      expect(typeahead.query.value).toEqual('asn.dst == "value with spaces in it" ');
+    });
+
     it('should be able to change operation in query', function() {
       typeahead.$onInit();
       typeahead.$timeout.flush();
