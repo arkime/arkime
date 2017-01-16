@@ -1,0 +1,236 @@
+<div class="container container-settings">
+
+  <div class="row">
+    <div class="col-md-12">
+      <h2>
+        <span class="fa fa-cogs"></span>&nbsp;
+        Settings
+      </h2>
+    </div>
+  </div>
+
+  <hr>
+
+  <loading ng-if="$ctrl.loading"></loading>
+
+  <error ng-if="$ctrl.error" message="$ctrl.error"></error>
+
+  <div class="row" ng-if="!$ctrl.loading && !$ctrl.error">
+
+    <!-- navigation -->
+    <div class="col-md-2 col-sm-4">
+      <ul class="nav nav-pills nav-stacked affix">
+        <li role="presentation" ng-class="{'active':$ctrl.view === 'general'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('general')">
+            <span class="fa fa-fw fa-cog"></span>&nbsp;
+            General
+          </a>
+        </li>
+        <li role="presentation" ng-class="{'active':$ctrl.view === 'views'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('views')">
+            <span class="fa fa-fw fa-eye"></span>&nbsp;
+            Views
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- content -->
+    <div class="col-md-10 col-sm-8">
+
+      <!-- general settings -->
+      <form class="form-horizontal" ng-if="$ctrl.view === 'general'">
+
+        <h3>General</h3>
+
+        <hr>
+
+        <!-- timezone -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Timezone Format</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
+                uib-btn-radio="'gmt'" ng-change="$ctrl.updateTime()">gmt</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
+                uib-btn-radio="'local'" ng-change="$ctrl.updateTime()">local</label>
+            </div>
+            <label class="margined-left-xxlg text-purple">
+              {{$ctrl.date | date : $ctrl.dateFormat : $ctrl.settings.timezone}}
+            </label>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- session detail format -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Session Detail Format</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'natural'" ng-change="$ctrl.update()">natural</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'ascii'" ng-change="$ctrl.update()">ascii</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'utf8'" ng-change="$ctrl.update()">utf8</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'hex'" ng-change="$ctrl.update()">hex</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- number of packets -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Number of Packets</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'50'" ng-change="$ctrl.update()">50</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'200'" ng-change="$ctrl.update()">200</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'500'" ng-change="$ctrl.update()">500</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'1000'" ng-change="$ctrl.update()">1,000</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'2000'" ng-change="$ctrl.update()">2,000</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- show packet timestamps -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Show Packet Timestamps</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+                uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+                uib-btn-radio="'on'" ng-change="$ctrl.update()">on</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+                uib-btn-radio="'off'" ng-change="$ctrl.update()">off</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- default spi graph -->
+        <div class="form-group" ng-if="$ctrl.fields">
+          <label class="col-sm-3 control-label">Default SPI Graph</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <input type="text" ng-model="$ctrl.settings.spiGraph" class="form-control"
+                typeahead-input-formatter="$ctrl.formatField($model)"
+                typeahead-on-select="$ctrl.update()"
+                uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:20">
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- connections src field -->
+        <div class="form-group" ng-if="$ctrl.fields">
+          <label class="col-sm-3 control-label">Connections Src Field</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <input type="text" ng-model="$ctrl.settings.connSrcField" class="form-control"
+                typeahead-input-formatter="$ctrl.formatField($model)"
+                typeahead-on-select="$ctrl.update()"
+                uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:20">
+            </div>
+          </div>
+        </div>
+
+        <!-- connections dst field -->
+        <div class="form-group" ng-if="$ctrl.fields">
+          <label class="col-sm-3 control-label">Connections Dst Field</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <input type="text" ng-model="$ctrl.settings.connDstField" class="form-control"
+                typeahead-input-formatter="$ctrl.formatField($model)"
+                typeahead-on-select="$ctrl.update()"
+                uib-typeahead="field.dbField as field.exp for field in $ctrl.fieldsPlus | filter:$viewValue | limitTo:20">
+            </div>
+          </div>
+        </div>
+
+      </form> <!-- /general settings -->
+
+      <!-- view settings -->
+      <form class="form-horizontal" ng-if="$ctrl.view === 'views'">
+
+        <h3>Views</h3>
+
+        <p>
+           Saved views provide an easier method to specify common base queries
+           and can be activated in the search bar.
+        </p>
+
+        <hr>
+
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Expression</th>
+            <th>&nbsp;</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="(key, val) in $ctrl.views">
+              <td>{{::key}}</td>
+              <td>{{::val.expression}}</td>
+              <td>
+                <a class="btn btn-sm btn-danger pull-right"
+                  ng-click="$ctrl.deleteView(key)">
+                  <span class="fa fa-trash-o"></span>&nbsp;
+                  Delete
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="text" ng-model="$ctrl.newViewName" class="form-control"
+                  placeholder="Enter a new view name">
+              </td>
+              <td>
+                <input type="text" ng-model="$ctrl.newViewExpression" class="form-control"
+                  placeholder="Enter a new view expression">
+              </td>
+              <td>
+                <a class="btn btn-primary btn-sm pull-right"
+                  ng-click="$ctrl.createView()">
+                  <span class="fa fa-plus-circle"></span>&nbsp;
+                  Create
+                </a>
+              </td>
+            </tr>
+            <tr ng-if="$ctrl.viewError">
+              <td colspan="3">
+                <p class="small text-danger margined-bottom-none">
+                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                  {{$ctrl.viewError}}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </form> <!-- /view settings -->
+
+    </div> <!-- /content -->
+
+  </div>
+
+</div>

@@ -878,7 +878,7 @@ app.get('/molochclusters', function(req, res) {
   return res.send(app.locals.molochClusters);
 });
 
-app.get('/settings', checkWebEnabled, function(req, res) {
+app.get('/settingsOld', checkWebEnabled, function(req, res) {
   var actions = [{name: "Tag", value: "tag"}];
 
   var molochClusters = Config.configMap("moloch-clusters");
@@ -981,7 +981,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help'], checkWebEnabled, function(req, res) {
+app.get(['/app', '/help', '/settings'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
