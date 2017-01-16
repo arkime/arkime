@@ -134,7 +134,7 @@
       </h3>
       <p>
         Most Moloch tabs have a search bar on the top of the page.
-        Moloch uses a very simple query language for building expresions. It
+        Moloch uses a very simple query language for building expressions. It
         supports grouping using parenthesis as well as logical AND and OR statements using &amp;&amp; and
         || respectively. Fields can be accessed directly using the field names
         and operators described in the <a href="#fields">table below</a>.
@@ -143,7 +143,7 @@
       </p>
       <p>
         All queries are bounded by a start and stop time. The bounded start and stop times can be
-        set either by selecting a choice from a quick relative drop down or by entering extact time sections.
+        set either by selecting a choice from a quick relative drop down or by entering exact time sections.
         Since every session has a first packet, last packet, and database timestamp, Moloch offers
         a choice on how to select the sessions:
       </p>
@@ -340,11 +340,12 @@
         The Start box allows a start time/date to be selected. The End box allows an end time/date to be selected.
         The bounding box is used to select where time bounding is applied (last packet, bounded, Session Overlaps, Database)
       </p>
-        The next section contains a visulization of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
+      <p>
+        The next section contains a visualisation of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
         Clicking and dragging over bars within the chart will drill into the selected time frame so only it is selected. Additionally, a user can click the "+" or "-" magnifying glasses to quickly zoom out or zoom in the time window being observed.
       </p>
       <p>
-      The pagination header and records per page selected box is immediatly below the quick visulization and are self descriptive.
+      The pagination header and records per page selected box is immediately below the quick visualisation and are self descriptive.
       </p>
       <p>
         Now we arrive at the meat of the Sessions tab... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the purple box which contains 9 white squares. By clicking this box an Analyst may select
@@ -353,14 +354,14 @@
         configurable per investigation.
       </p>
       <p>
-        <!-- TODO: describe right click interations for column headers -->
+        <!-- TODO: describe right click interactions for column headers -->
       </p>
       <p>
         Viewing the sessions data of a specific network session is as easy as clicking the "Plus" sign next to a session. Upon clicking the + the session drawer will expand giving further context to the session.
         All packet data which was parsed will now be displayed. This includes everything fro the USer making the connection to the TCP Flags observed during the session.
         If the sessions is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
         Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
-        they may be downloaded and analyzed when neccesary.
+        they may be downloaded and analyzed when necessary.
       </p>
       <hr>
 
@@ -398,7 +399,7 @@
       <p>
         The Connections tab allows a user to view a tree force graph based on a source node and destination node of there choosing. Relationships may be visually determined using this method.
         An example of using this graph may be to set your Src node to ip.src, Dst node to ip.dst:port which will show the relationship of source IP addresses to destination IP address / port combinations.
-        Those whom prefer to analyze session data view visulization may heavily use these graphs. The default settings for this page may be set in the settings tab.
+        Those whom prefer to analyze session data view visualisation may heavily use these graphs. The default settings for this page may be set in the settings tab.
       </p>
 
       <hr>
@@ -418,11 +419,11 @@
         Stats
       </h3>
       <p>
-        The Stats tab provides both a visual representation and table view of the metrics listed below, per node. Additoinal options for filtering may also be applied.
+        The Stats tab provides both a visual representation and table view of the metrics listed below, per node. Additional options for filtering may also be applied.
         Options:
       </p>
       <p>
-        Packets/Sec, Bytes/Sec, Bits/Sec, Sessions/Sec, Input Dropped/Sec, Active Sessions, Active TCP Sessions, Active UDP Sessions, ACtive ICMP Sessions, Free Space (MB), Free Space (%), Memory, Memory (%), CPU, Disk Queue, ES Queue, ES Dropped/Sec, Packet Queue, Closing Queue, Waiting Queue, Fragments Queue, Active Fragments, Framents Dropped/Sec, Overload Dropped/Sec, Total Dropped/Sec.
+        Packets/Sec, Bytes/Sec, Bits/Sec, Sessions/Sec, Input Dropped/Sec, Active Sessions, Active TCP Sessions, Active UDP Sessions, Active ICMP Sessions, Free Space (MB), Free Space (%), Memory, Memory (%), CPU, Disk Queue, ES Queue, ES Dropped/Sec, Packet Queue, Closing Queue, Waiting Queue, Fragments Queue, Active Fragments, Framents Dropped/Sec, Overload Dropped/Sec, Total Dropped/Sec.
       <hr>
 
       <h3 id="settings">
