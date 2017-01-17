@@ -2300,7 +2300,7 @@ app.get('/sessions.json', function(req, res) {
 app.get('/spigraph.json', function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
-    var results = {items: [], graph: {}, map: {}, iTotalReords: 0};
+    var results = {items: [], graph: {}, map: {}, iTotalRecords: 0};
     if (bsqErr) {
       results.bsqErr = bsqErr.toString();
       results.health = Db.healthCache();
