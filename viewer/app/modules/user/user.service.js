@@ -143,6 +143,93 @@
       });
     }
 
+    /**
+     * Gets current user's cron queries
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    getCronQueries() {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/cron', method:'GET' };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
+    /**
+     * Creates a specified cron query for the current user
+     * @param {Object} data     The cron query data to pass to the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    createCronQuery(data) {
+      return this.$q((resolve, reject) => {
+        let options = { url:'user/cron/create', method:'POST', data:data };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
+    /**
+     * Deletes current user's specified cron query
+     * @param {string} key        The key of the cron query to be removed
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    deleteCronQuery(key) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/cron/delete', method:'POST', data:{ key:key } };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
+    /**
+     * Changes current user's password
+     * @param {string} currentPassword  The user's current password
+     * @param {string} newPassword      The user's new password
+     * @returns {Promise} Promise       A promise object that signals the completion
+     *                                  or rejection of the request.
+     */
+    changePassword(currentPassword, newPassword) {
+      return this.$q((resolve, reject) => {
+
+        let options = {
+          url:'user/password/change',
+          method:'POST',
+          data:{ currentPassword:currentPassword, newPassword:newPassword }
+        };
+
+        this.$http(options)
+           .then((response) => {
+             resolve(response.data);
+           }, (error) => {
+             reject(error);
+           });
+
+      });
+    }
+
   }
 
   UserService.$inject = ['$q', '$http'];

@@ -863,6 +863,44 @@ app.get('/user/current', function(req, res) {
   });
 });
 
+/* TODO: look over this! */
+app.get('/user/cron', checkWebEnabled, function(req, res) {
+  function sendCronQueries(user, cp) {
+    if (user.settings === undefined) {user.settings = {};}
+    Db.search("queries", "query", {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
+      if (err || data.error) {
+        console.log("ERROR - settings", err || data.error);
+      }
+
+      let queries = {};
+
+      if (data && data.hits && data.hits.hits) {
+        // user.queries = {};
+        data.hits.hits.forEach(function(item) {
+          queries[item._id] = item._source;
+        });
+      }
+
+      res.send(queries);
+    });
+  }
+
+  if (req.query.userId) {
+    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
+      return res.send("Moloch Permision Denied");
+    }
+    Db.getUser(req.query.userId, function(err, user) {
+      if (err || !user.found) {
+        console.log("ERROR - /password error", err, user);
+        return res.send("Unknown user");
+      }
+      sendCronQueries(user._source, 0);
+    });
+  } else {
+    sendCronQueries(req.user, 1);
+  }
+});
+
 app.get('/molochclusters', function(req, res) {
   if(!app.locals.molochClusters) {
     var molochClusters = Config.configMap("moloch-clusters");
@@ -4326,6 +4364,112 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
     });
   });
 });
+
+// TODO: check this endpoint (same contents as updateCronQuery)
+app.post('/user/cron/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.key || !req.body.name || req.body.query === undefined || !req.body.action) {
+    return error("Missing required parameter");
+  }
+
+  var document = {
+    doc: {
+      enabled: (req.body.enabled === "true"),
+      name:req.body.name,
+      query: req.body.query,
+      tags: req.body.tags,
+      action: req.body.action
+    }
+  };
+
+  if (req.body.key === "_create_") {
+    if (req.body.since === "-1") {
+      document.doc.lpValue =  document.doc.lastRun = 0;
+    } else {
+      document.doc.lpValue =  document.doc.lastRun = Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || "0", 10);
+    }
+    document.doc.count = 0;
+    document.doc.creator = req.user.userId || "anonymous";
+    Db.indexNow("queries", "query", null, document.doc, function(err, info) {
+      if (Config.get("cronQueries", false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({success: true, text: "Created", key: info._id}));
+    });
+    return;
+  }
+
+  Db.get("queries", 'query', req.body.key, function(err, sq) {
+    if (err || !sq.found) {
+      console.log("updateCronQuery failed", err, sq);
+      return error("Unknown query");
+    }
+
+    Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
+      if (err) {
+        console.log("updateCronQuery error", err, document, data);
+        return error("Cron query update failed");
+      }
+      if (Config.get("cronQueries", false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({success: true, text: "Updated cron query successfully"}));
+    });
+  });
+});
+// TODO: check this endpoint (same contents as updateCronQuery)
+app.post('/user/cron/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.key) {
+    return error("Missing cron query key");
+  }
+
+  Db.deleteDocument("queries", 'query', req.body.key, {refresh: 1}, function(err, sq) {
+    res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
+  });
+});
+// TODO: check this endpoint (same contents as changePassword)
+app.post('/user/password/change', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (Config.get("disableChangePassword", false)) {
+    return error("Disabled");
+  }
+
+  if (!req.body.newPassword || req.body.newPassword.length < 3) {
+    return error("New password needs to be at least 3 characters");
+  }
+
+  if (req.token.cp && (req.user.passStore !== Config.pass2store(req.token.suserId, req.body.currentPassword) ||
+     req.token.suserId !== req.user.userId)) {
+    return error("Current password mismatch");
+  }
+
+  Db.getUser(req.token.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("changePassword failed", err, user);
+      return error("Unknown user");
+    }
+    user = user._source;
+    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("changePassword error", err, info);
+        return error("Update failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
+    });
+  });
+});
+
 
 app.post('/cronQueries.json', checkToken, function(req, res) {
   var results = [];
