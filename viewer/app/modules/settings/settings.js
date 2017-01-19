@@ -12,7 +12,10 @@
 
     /**
      * Initialize global variables for this controller
-     * TODO
+     * @param $interval     Angular's wrapper for window.setInterval
+     * @param UserService   Transacts users and user data with the server
+     * @param FieldService  Transacts fields with the server
+     * @param ConfigService Transacts app configurations with the server
      *
      * @ngInject
      */
@@ -50,7 +53,7 @@
            this.views = response;
          })
          .catch((error) => {
-           this.viewError = error;
+           this.viewListError = error;
          });
 
       this.UserService.getCronQueries()
@@ -58,7 +61,7 @@
           this.cronQueries = response;
         })
         .catch((error) => {
-          this.cronQueryError = error;
+          this.cronQueryListError = error;
         });
 
       this.ConfigService.getMolochClusters()
@@ -78,23 +81,34 @@
         });
     }
 
+    /* page functions ------------------------------------------------------ */
     openView(view) {
       this.view = view;
     }
 
+    /* remove the message when user is done with it or duration ends */
+    messageDone() {
+      this.msg = null;
+      this.msgType = null;
+    }
+
     /* GENERAL ------------------------------------------------------------- */
-    /* TODO */
+    /* saves the user's settings and displays a message */
     update() {
       this.UserService.saveSettings(this.settings)
         .then((response) => {
-          // TODO doooo stuff?
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
         })
         .catch((error) => {
-          this.error = error;
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
         });
     }
 
-    /* TODO */
+    /* updates the date and format for the timezone setting */
     tick() {
       this.date = new Date();
       if (this.settings.timezone === 'gmt') {
@@ -104,22 +118,31 @@
       }
     }
 
-    /* TODO */
+    /* updates the displayed date for the timzeone setting
+     * triggered by the user changing the timezone setting */
     updateTime() {
       this.tick();
       this.update();
     }
 
-    /** TODO */
-    formatField(model) {
+    /**
+     * Displays the field.exp instead of field.dbField in the
+     * field typeahead inputs
+     * @param {string} value The dbField of the field
+     */
+    formatField(value) {
       for (let i = 0, len = this.fields.length; i < len; i++) {
-        if (model === this.fields[i].dbField) {
+        if (value === this.fields[i].dbField) {
           return this.fields[i].exp;
         }
       }
     }
 
-    /** TODO */
+    /**
+     * Gets the field that corresponds to a field's dbField value
+     * @param {string} dbField The fields dbField value
+     * @returns {object} field The field that corresponds to the entered dbField
+     */
     getField(dbField) {
       for (let i = 0, len = this.fields.length; i < len; i++) {
         if (dbField === this.fields[i].dbField) {
@@ -129,15 +152,15 @@
     }
 
     /* VIEWS --------------------------------------------------------------- */
-    /** TODO */
+    /* creates a view given the view name and expression */
     createView() {
       if (!this.newViewName || this.newViewName === '') {
-        this.viewError = 'No view name specified.';
+        this.viewFormError = 'No view name specified.';
         return;
       }
 
       if (!this.newViewExpression || this.newViewExpression === '') {
-        this.viewError = 'No expression specified.';
+        this.viewFormError = 'No expression specified.';
         return;
       }
 
@@ -148,52 +171,123 @@
 
       this.UserService.createView(data)
         .then((response) => {
-          // TODO: display success
-          this.viewError = false;
-          this.views = response.data.views;
+          // add the view to the view list
+          this.views[data.viewName] = {
+            expression: data.expression,
+            name      : data.viewName
+          };
+          this.viewFormError = false;
+          // clear the inputs
+          this.newViewName = null;
+          this.newViewExpression = null;
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
         })
         .catch((error) => {
-          this.viewError = error;
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
         });
     }
 
-    /** TODO */
+    /**
+     * Sets a view as having been changed
+     * @param {string} key The unique id of the changed view
+     */
+    viewChanged(key) {
+      this.views[key].changed = true;
+    }
+
+    /**
+     * Cancels a view change by retrieving the view
+     * @param {string} key The unique id of the view
+     */
+    cancelViewChange(key) {
+      this.UserService.getViews()
+        .then((response) => {
+          this.views[key] = response[key];
+        })
+        .catch((error) => {
+          this.viewListError = error;
+        });
+    }
+
+    /**
+     * Updates a view
+     * TODO: watch for unfilled fields
+     * @param {string} key The unique id of the view to update
+     */
+    updateView(key) {
+      let data = this.views[key];
+
+      if (!data) {
+        this.msg = 'Could not find corresponding view';
+        this.msgType = 'danger';
+        return;
+      }
+
+      data.key = key;
+
+      this.UserService.updateView(data)
+        .then((response) => {
+          // update view list
+          this.views = response.views;
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+          // set the view as unchanged
+          data.changed = false;
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    }
+
+    /**
+     * Deletes a view given its name
+     * @param {string} name The name of the view to delete
+     */
     deleteView(name) {
       this.UserService.deleteView(name)
         .then((response) => {
-          // TODO: display success
-          if (response.success) {
-            this.viewError = false;
-            this.views[name] = null;
-            delete this.views[name];
-          }
+          // remove the view from the view list
+          this.views[name] = null;
+          delete this.views[name];
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+
         })
         .catch((error) => {
-          this.viewError = error;
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
         });
     }
 
     /* CRON QUERIES -------------------------------------------------------- */
-    /** TODO */
+    /* creates a cron query given the name, expression, process, and tags */
     createCronQuery() {
       if (!this.newCronQueryName || this.newCronQueryName === '') {
-        this.cronQueryError = 'No cron query name specified.';
+        this.cronQueryFormError = 'No cron query name specified.';
         return;
       }
 
       if (!this.newCronQueryExpression || this.newCronQueryExpression === '') {
-        this.cronQueryError = 'No expression specified.';
+        this.cronQueryFormError = 'No expression specified.';
         return;
       }
 
       if (!this.newCronQueryTags || this.newCronQueryTags === '') {
-        this.cronQueryError = 'No tags specified.';
+        this.cronQueryFormError = 'No tags specified.';
         return;
       }
 
       let data = {
-        key     : '_create_',
-        enabled : 'true',
+        enabled : true,
         name    : this.newCronQueryName,
         query   : this.newCronQueryExpression,
         action  : this.newCronQueryAction,
@@ -203,36 +297,98 @@
 
       this.UserService.createCronQuery(data)
          .then((response) => {
-           // TODO: display success
-           if (response.data.success) {
-             this.cronQueryError = false;
-             data.count = 0;
-             this.cronQueries[response.data.key] = data;
-           }
+           // add the cron query to the view
+           this.cronQueryFormError = false;
+           data.count = 0; // initialize count to 0
+           this.cronQueries[response.key] = data;
+           // display success message to user
+           this.msg = response.text;
+           this.msgType = 'success';
          })
          .catch((error) => {
-           this.cronQueryError = error;
+           // display error message to user
+           this.msg = error.text;
+           this.msgType = 'danger';
          });
     }
 
-    /** TODO */
+    /**
+     * Sets a cron query as having been changed
+     * @param {string} key The unique id of the cron query
+     */
+    cronQueryChanged(key) {
+      this.cronQueries[key].changed = true;
+    }
+
+    /**
+     * Cancels a cron query change by retrieving the cron query
+     * @param {string} key The unique id of the cron query
+     */
+    cancelCronQueryChange(key) {
+      this.UserService.getCronQueries()
+        .then((response) => {
+          this.cronQueries[key] = response[key];
+        })
+        .catch((error) => {
+          this.cronQueryListError = error;
+        });
+    }
+
+    /**
+     * Updates a cron query
+     * TODO: watch for unfilled fields
+     * @param {string} key The unique id of the cron query to update
+     */
+    updateCronQuery(key) {
+      let data = this.cronQueries[key];
+
+      if (!data) {
+        this.msg = 'Could not find corresponding cron query';
+        this.msgType = 'danger';
+        return;
+      }
+
+      data.key = key;
+
+      this.UserService.updateCronQuery(data)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+          // set the cron query as unchanged
+          data.changed = false;
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    }
+
+    /**
+     * Deletes a cron query given its key
+     * @param {string} key The cron query's key
+     */
     deleteCronQuery(key) {
       this.UserService.deleteCronQuery(key)
-         .then((response) => {
-           // TODO: display success
-           if (response.success) {
-             this.cronQueryError = false;
-             this.cronQueries[key] = null;
-             delete this.cronQueries[key];
-           }
-         })
-         .catch((error) => {
-           this.cronQueryError = error;
-         });
+        .then((response) => {
+          // remove the cron query from the view
+          this.cronQueries[key]  = null;
+          delete this.cronQueries[key];
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
     }
 
     /* PASSWORD ------------------------------------------------------------ */
-    /** TODO */
+    /* changes the user's password given the current password, the new password,
+     * and confirmation of the new password */
     changePassword() {
       if (!this.currentPassword || this.currentPassword === '') {
         this.changePasswordError = 'You must enter your current password';
@@ -255,16 +411,20 @@
       }
 
       this.UserService.changePassword(this.currentPassword, this.newPassword)
-         .then((response) => {
-           // TODO: display success
-           this.changePasswordError = false;
-           this.currentPassword = null;
-           this.newPassword = null;
-           this.confirmNewPassword = null;
-         })
-         .catch((error) => {
-           this.changePasswordError = error;
-         });
+        .then((response) => {
+          this.changePasswordError = false;
+          this.currentPassword     = null;
+          this.newPassword         = null;
+          this.confirmNewPassword  = null;
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
     }
   }
 

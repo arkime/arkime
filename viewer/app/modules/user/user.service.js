@@ -72,11 +72,32 @@
         let options = { url:'user/settings', method:'GET' };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response.data);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Updates current user's settings
+     * @param {object} settings   The object containing user settings
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    saveSettings(settings) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/settings/update', method:'POST', data: settings };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -92,11 +113,12 @@
         let options = { url:'user/views', method:'GET' };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response.data);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            response.data = UserService.parseViews(response.data);
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -113,11 +135,11 @@
         let options = { url:'user/views/delete', method:'POST', data:{ view:view } };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response.data);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -134,11 +156,32 @@
         let options = { url:'user/views/create', method:'POST', data:params };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Updates a specified view for the current user
+     * @param {Object} data       The view data to pass to the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    updateView(data) {
+      return this.$q((resolve, reject) => {
+        let options = { url:'user/views/update', method:'POST', data:data };
+
+        this.$http(options)
+        .then((response) => {
+          response.data.views = UserService.parseViews(response.data.views);
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
 
       });
     }
@@ -154,18 +197,18 @@
         let options = { url:'user/cron', method:'GET' };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response.data);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
 
     /**
      * Creates a specified cron query for the current user
-     * @param {Object} data     The cron query data to pass to the server
+     * @param {Object} data       The cron query data to pass to the server
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
@@ -174,11 +217,31 @@
         let options = { url:'user/cron/create', method:'POST', data:data };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Updates a specified cron query for the current user
+     * @param {Object} data       The cron query data to pass to the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    updateCronQuery(data) {
+      return this.$q((resolve, reject) => {
+        let options = { url:'user/cron/update', method:'POST', data:data };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -195,11 +258,11 @@
         let options = { url:'user/cron/delete', method:'POST', data:{ key:key } };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response.data);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -215,19 +278,29 @@
       return this.$q((resolve, reject) => {
 
         let options = {
-          url:'user/password/change',
+          url   :'user/password/change',
           method:'POST',
-          data:{ currentPassword:currentPassword, newPassword:newPassword }
+          data  :{ currentPassword:currentPassword, newPassword:newPassword }
         };
 
         this.$http(options)
-           .then((response) => {
-             resolve(response.data);
-           }, (error) => {
-             reject(error);
-           });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
+    }
+
+    /* internal */
+    static parseViews(views) {
+      for (var name in views) {
+        if (views.hasOwnProperty(name)) {
+          views[name].name = name;
+        }
+      }
+      return views;
     }
 
   }
