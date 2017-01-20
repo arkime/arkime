@@ -170,6 +170,17 @@
     });
 
 
+    describe('Lowercase Filter ->', function() {
+
+      it('should return the string with the all letters lowercased', function() {
+        let str     = 'CAPITALIZED string HERE!';
+        let result  = $filter('lowercase')(str);
+        expect(result).toEqual('capitalized string here!');
+      });
+
+    });
+
+
     describe('Min Filter ->', function() {
 
       it('should return the minimum number in an array of numbers', function() {

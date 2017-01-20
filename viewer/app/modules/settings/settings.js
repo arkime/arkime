@@ -215,11 +215,16 @@
 
     /**
      * Updates a view
-     * TODO: watch for unfilled fields
      * @param {string} key The unique id of the view to update
      */
     updateView(key) {
       let data = this.views[key];
+
+      if (!data.changed) {
+        this.msg = 'This view has not changed';
+        this.msgType = 'warning';
+        return;
+      }
 
       if (!data) {
         this.msg = 'Could not find corresponding view';
@@ -301,6 +306,10 @@
            this.cronQueryFormError = false;
            data.count = 0; // initialize count to 0
            this.cronQueries[response.key] = data;
+           // reset fields
+           this.newCronQueryName = null;
+           this.newCronQueryTags = null;
+           this.newCronQueryExpression = null;
            // display success message to user
            this.msg = response.text;
            this.msgType = 'success';
@@ -336,7 +345,6 @@
 
     /**
      * Updates a cron query
-     * TODO: watch for unfilled fields
      * @param {string} key The unique id of the cron query to update
      */
     updateCronQuery(key) {

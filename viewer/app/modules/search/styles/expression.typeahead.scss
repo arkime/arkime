@@ -1,0 +1,61 @@
+expression-typeahead {
+
+  .clear-input {
+    z-index : 3;
+    position: absolute;
+    right   : 10px;
+    top     : 8px;
+  }
+
+  .typeahead-results {
+    top       : initial;
+    left      : initial;
+    display   : block;
+    overflow  : scroll;
+    max-height: 500px;
+
+    @media screen and (max-height: 600px) {
+      max-height: 250px;
+    }
+  }
+
+  .dropdown-menu {
+    min-width: 200px;
+
+    > li > div {
+      display     : block;
+      padding     : 2px 8px;
+      white-space : nowrap;
+      margin-left : 0;
+      margin-right: 0;
+
+      > div {
+        padding-left : 0;
+        padding-right: 0;
+      }
+
+      a {
+        color           : #333;
+        text-decoration : none;
+      }
+
+      &:hover, &:focus {
+        color           : #262626;
+        text-decoration : none;
+        background-color: #f5f5f5;
+      }
+    }
+  }
+
+  .dropdown-menu > .active > div,
+  .dropdown-menu > .active > div:hover,
+  .dropdown-menu > .active > div:focus {
+    background-color: #337ab7;
+
+    a {
+      color           : #fff;
+      text-decoration : none;
+    }
+  }
+
+}

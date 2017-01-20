@@ -1171,7 +1171,6 @@ app.post('/user/views/update', function(req, res) {
   if (!req.body.expression) { return error("Missing view expression"); }
   if (!req.body.key)        { return error("Missing view key"); }
 
-  console.log(req);
   Db.getUser(req.user.userId, function(err, user) {
     if (err || !user.found) {
       console.log("updateView failed", err, user);
@@ -1197,8 +1196,9 @@ app.post('/user/views/update', function(req, res) {
     } else {
       container[req.body.name] = {expression: req.body.expression};
     }
-    // delete the old one
-    if (user.views[req.body.key]) {
+
+    // delete the old one if the key (view name) has changed
+    if (user.views[req.body.key] && req.body.name !== req.body.key) {
       user.views[req.body.key] = null;
       delete user.views[req.body.key];
     }
@@ -1267,9 +1267,10 @@ app.post('/user/cron/create', checkCookieToken, function(req, res) {
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
-  if (!req.body.name || req.body.query === undefined || !req.body.action) {
-    return error("Missing required parameter");
-  }
+  if (!req.body.name)   { return error('Missing cron query name'); }
+  if (!req.body.query)  { return error('Missing cron query expression'); }
+  if (!req.body.action) { return error('Missing cron query action'); }
+  if (!req.body.tags)   { return error('Missing cron query tag(s)'); }
 
   var document = {
     doc: {
@@ -1308,10 +1309,11 @@ app.post('/user/cron/update', checkCookieToken, function(req, res) {
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
-  if (!req.body.key || !req.body.name ||
-     req.body.query === undefined || !req.body.action) {
-    return error("Missing required parameter");
-  }
+  if (!req.body.key)    { return error('Missing cron query key'); }
+  if (!req.body.name)   { return error('Missing cron query name'); }
+  if (!req.body.query)  { return error('Missing cron query expression'); }
+  if (!req.body.action) { return error('Missing cron query action'); }
+  if (!req.body.tags)   { return error('Missing cron query tag(s)'); }
 
   var document = {
     doc: {

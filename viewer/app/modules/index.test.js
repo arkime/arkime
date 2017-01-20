@@ -30,3 +30,5 @@ require('./user/tests/user.service.test');
 require('./user/tests/has.permission.test');
 
 require('./help/help.test');
+
+require('./settings/settings.test');

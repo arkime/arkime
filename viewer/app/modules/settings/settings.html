@@ -214,7 +214,8 @@
           </thead>
           <tbody>
             <!-- views -->
-            <tr ng-repeat="(key, val) in $ctrl.views">
+            <tr ng-repeat="(key, val) in $ctrl.views"
+              enter-click="$ctrl.updateView(key)">
               <td>
                 <input type="text" ng-model="val.name" maxlength="20"
                   class="form-control" ng-change="$ctrl.viewChanged(key);">
@@ -255,7 +256,7 @@
               </td>
             </tr> <!-- /view list error -->
             <!-- new view form -->
-            <tr>
+            <tr enter-click="$ctrl.createView()">
               <td>
                 <input type="text" ng-model="$ctrl.newViewName"
                   class="form-control" maxlength="20"
@@ -315,7 +316,8 @@
           </thead>
           <tbody>
             <!-- cron queries -->
-            <tr ng-repeat="(key, val) in $ctrl.cronQueries">
+            <tr ng-repeat="(key, val) in $ctrl.cronQueries"
+              enter-click="$ctrl.updateCronQuery(key)">
               <td>
                 <input type="checkbox" ng-model="val.enabled"
                   ng-change="$ctrl.cronQueryChanged(key);">
@@ -374,7 +376,7 @@
               </td>
             </tr> <!-- /cron query form error -->
             <!-- new cron query form -->
-            <tr>
+            <tr enter-click="$ctrl.createCronQuery()">
               <td>&nbsp;</td>
               <td>
                 <select class="form-control" ng-model="$ctrl.newCronQueryProcess"
@@ -439,7 +441,8 @@
       </form> <!-- /cron query settings -->
 
       <!-- password settings -->
-      <form class="form-horizontal" ng-if="$ctrl.view === 'password'">
+      <form class="form-horizontal" ng-if="$ctrl.view === 'password'"
+        enter-click="$ctrl.changePassword()">
 
         <h3>Change Password</h3>
 

@@ -49,8 +49,9 @@ $color-purple-dark  : #66057A;
 @import '../components/pagination/pagination';
 
 @import './modules/help/help';
-@import './modules/search/search';
 @import './modules/health/health';
+@import './modules/search/styles/search';
+@import './modules/search/styles/expression.typeahead';
 @import './modules/session/styles/session.list';
 @import './modules/session/styles/session.sticky';
 @import './modules/session/styles/session.graph';
