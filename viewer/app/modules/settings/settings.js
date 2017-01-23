@@ -74,8 +74,8 @@
           this.fields     = response;
           this.fieldsPlus = response;
           this.fieldsPlus.push({
-            dbField : "ip.dst:port",
-            exp     : "ip.dst:port",
+            dbField : 'ip.dst:port',
+            exp     : 'ip.dst:port',
             help    : 'Destination IP:Destination Port'
           });
         });
@@ -160,7 +160,7 @@
       }
 
       if (!this.newViewExpression || this.newViewExpression === '') {
-        this.viewFormError = 'No expression specified.';
+        this.viewFormError = 'No view expression specified.';
         return;
       }
 
@@ -220,15 +220,15 @@
     updateView(key) {
       let data = this.views[key];
 
-      if (!data.changed) {
-        this.msg = 'This view has not changed';
-        this.msgType = 'warning';
-        return;
-      }
-
       if (!data) {
         this.msg = 'Could not find corresponding view';
         this.msgType = 'danger';
+        return;
+      }
+
+      if (!data.changed) {
+        this.msg = 'This view has not changed';
+        this.msgType = 'warning';
         return;
       }
 
@@ -282,12 +282,12 @@
       }
 
       if (!this.newCronQueryExpression || this.newCronQueryExpression === '') {
-        this.cronQueryFormError = 'No expression specified.';
+        this.cronQueryFormError = 'No cron query expression specified.';
         return;
       }
 
       if (!this.newCronQueryTags || this.newCronQueryTags === '') {
-        this.cronQueryFormError = 'No tags specified.';
+        this.cronQueryFormError = 'No cron query tags specified.';
         return;
       }
 
@@ -353,6 +353,12 @@
       if (!data) {
         this.msg = 'Could not find corresponding cron query';
         this.msgType = 'danger';
+        return;
+      }
+
+      if (!data.changed) {
+        this.msg = 'This cron query has not changed';
+        this.msgType = 'warning';
         return;
       }
 

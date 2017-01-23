@@ -293,7 +293,7 @@
       });
     }
 
-    /* internal */
+    /* internal methods ---------------------------------------------------- */
     static parseViews(views) {
       for (var name in views) {
         if (views.hasOwnProperty(name)) {

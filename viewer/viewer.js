@@ -682,15 +682,21 @@ function checkToken(req, res, next) {
 }
 
 function checkCookieToken(req, res, next) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
   if (!req.headers['x-moloch-cookie']) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
+    return error('Missing token');
   }
 
   req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
   var diff = Math.abs(Date.now() - req.token.date);
-  if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
+  if (diff > 2400000 || req.token.pid !== process.pid ||
+      req.token.userId !== req.user.userId) {
     console.trace("bad token", req.token);
-    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+    return error('Timeout - Please try reloading page and repeating the action');
   }
 
   return next();
