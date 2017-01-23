@@ -916,7 +916,7 @@ app.get('/settings', checkWebEnabled, function(req, res) {
     });
   }
 
-  if (Config.get("disableChangePassword", false)) {
+  if (Config.get("demoMode", false)) {
     return res.send("Disabled");
   }
 
@@ -4091,7 +4091,7 @@ app.post('/changePassword', checkToken, function(req, res) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
 
-  if (Config.get("disableChangePassword", false)) {
+  if (Config.get("demoMode", false)) {
     return error("Disabled");
   }
 
@@ -4415,6 +4415,11 @@ app.post('/tableState/:tablename', function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
+
+  if (Config.get("demoMode", false)) {
+    return error("Demo mode");
+  }
+
   Db.getUser(req.user.userId, function(err, user) {
     if (err || !user.found) {
       console.log("save tableState failed", err, user);
