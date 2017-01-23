@@ -151,9 +151,9 @@ Building Capture
             wget http://ftp.gnome.org/pub/gnome/sources/glib/2.47/glib-2.47.4.tar.xz
             ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux
 
-     + `yara <http://yara-project.googlecode.com>`_ version 1.6 or higher::
+     + `yara <https://github.com/VirusTotal/yara>`_ version 1.6 or higher::
 
-            wget http://yara-project.googlecode.com/files/yara-1.7.tar.gz
+            wget https://github.com/VirusTotal/yara/archive/v3.5.0.tar.gz -O yara-3.5.0.tar.gz
             ./configure --enable-static
 
      + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be recent enough::
