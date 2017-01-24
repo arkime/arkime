@@ -856,64 +856,6 @@ app.get('/molochclusters', function(req, res) {
   return res.send(app.locals.molochClusters);
 });
 
-app.get('/settingsOld', checkWebEnabled, function(req, res) {
-  var actions = [{name: "Tag", value: "tag"}];
-
-  var molochClusters = Config.configMap("moloch-clusters");
-  if (molochClusters) {
-    Object.keys(molochClusters).forEach( function (cluster) {
-      actions.push({name: "Tag & Export to " + molochClusters[cluster].name, value: "forward:" + cluster});
-    });
-  }
-
-  function render(user, cp) {
-    if (user.settings === undefined) {user.settings = {};}
-    Db.search("queries", "query", {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
-      if (err || data.error) {
-        console.log("ERROR - settings", err || data.error);
-      }
-
-      if (data && data.hits && data.hits.hits) {
-        user.queries = {};
-        data.hits.hits.forEach(function(item) {
-          user.queries[item._id] = item._source;
-        });
-      }
-      actions = actions.sort();
-
-      res.render('settings.jade', {
-        user: req.user,
-        suser: user,
-        currentPassword: cp,
-        token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
-        title: makeTitle(req, 'Settings'),
-        titleLink: 'settingsLink',
-        helpLink: 'settings',
-        actions: actions
-      });
-    });
-  }
-
-  if (Config.get("disableChangePassword", false)) {
-    return res.send("Disabled");
-  }
-
-  if (req.query.userId) {
-    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
-      return res.send("Moloch Permision Denied");
-    }
-    Db.getUser(req.query.userId, function(err, user) {
-      if (err || !user.found) {
-        console.log("ERROR - /password error", err, user);
-        return res.send("Unknown user");
-      }
-      render(user._source, 0);
-    });
-  } else {
-    render(req.user, 1);
-  }
-});
-
 app.get('/stats', checkWebEnabled, function(req, res) {
   var query = {size: 100};
 
@@ -995,8 +937,9 @@ app.get('/user/current', function(req, res) {
       if (app.locals.noPasswordSecret) {
         return res.send(req.user);
       } else {
-        console.log("Unknown user", err, user);
-        return res.send("{}");
+        console.log('/user/current error', err, user);
+        res.status(500);
+        return res.send(JSON.stringify({success: false, text: 'Unknown user'}));
       }
     }
 
@@ -1017,36 +960,71 @@ app.get('/user/current', function(req, res) {
   });
 });
 
-// gets the current user's settings
+// gets a user's settings
 app.get('/user/settings', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (Config.get('demoMode', false)) { return error('Disabled'); }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to get another user's settings without admin privilege
+    return error('Need admin privileges');
+  }
+
+  var settingDefaults = {
+    timezone      : 'local',
+    detailFormat  : 'last',
+    showTimestamps: 'last',
+    sortColumn    : 'start',
+    sortDirection : 'asc',
+    spiGraph      : 'no',
+    connSrcField  : 'a1',
+    connDstField  : 'ip.dst:port',
+    numPackets    : 'last'
+  };
+
+  Db.getUserCache(userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
         // TODO: send anonymous user's settings
-        return res.send("{}");
+        return res.send('{}');
       } else {
-        console.log("Unknown user", err, user);
-        return res.send("{}");
+        console.log('Unknown user', err, user);
+        return res.send('{}');
       }
     }
 
-    var settings = user._source.settings || {};
+    var settings = user._source.settings || settingDefaults;
 
     return res.send(settings);
   });
 });
 
-// udpates the current user's settings
+// updates a user's settings
 app.post('/user/settings/update', checkCookieToken, function(req, res) {
   function error(text) {
     res.status(500);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
-  Db.getUser(req.token.userId, function(err, user) {
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update another user's settings without admin privilege
+    return error('Need admin privileges');
+  }
+
+  Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
-      console.log("changeSettings failed", err, user);
-      return error("Unknown user");
+      console.log('/user/settings/update failed', err, user);
+      return error('Unknown user');
     }
 
     user = user._source;
@@ -1055,27 +1033,36 @@ app.post('/user/settings/update', checkCookieToken, function(req, res) {
 
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
-        console.log("changeSettings error", err, info);
-        return error("Change settings update failed");
+        console.log('/user/settings/update error', err, info);
+        return error('Settings update failed');
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : "Updated settings successfully"
+        text    : 'Updated settings successfully'
       }));
     });
   });
 });
 
-// gets the current user's views
+// gets a user's views
 app.get('/user/views', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to get another user's views without admin privilege
+    res.status(500);
+    return res.send(JSON.stringify({success: false, text: 'Need admin privileges'}));
+  }
+
+  Db.getUserCache(userId, function(err, user) {
     if (err || !user || !user.found) {
       if (app.locals.noPasswordSecret) {
         // TODO: send anonymous user's views
-        return res.send("{}");
+        return res.send('{}');
       } else {
-        console.log("Unknown user", err, user);
-        return res.send("{}");
+        console.log('Unknown user', err, user);
+        return res.send('{}');
       }
     }
 
@@ -1085,59 +1072,35 @@ app.get('/user/views', function(req, res) {
   });
 });
 
-// deletes a current user's specified view
-app.post('/user/views/delete', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
-
-  if (!req.body.view) { return error("Missing view"); }
-
-  Db.getUser(req.token.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("Delete view failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    delete user.views[req.body.view];
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("Delete view failed", err, info);
-        return error("Delete view failed");
-      }
-      return res.send(JSON.stringify({
-        success : true,
-        text    : "Deleted view successfully"
-      }));
-    });
-  });
-});
-
-// creates a new view for the current user
+// creates a new view for a user
 app.post('/user/views/create', checkCookieToken, function(req, res) {
   function error(text) {
     res.status(500);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
-  if (!req.body.viewName)   { return error("Missing view name"); }
-  if (!req.body.expression) { return error("Missing view expression"); }
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a view for another user without admin privilege
+    return error('Need admin privileges');
+  }
 
-  Db.getUser(req.token.userId, function(err, user) {
+  if (!req.body.viewName)   { return error('Missing view name'); }
+  if (!req.body.expression) { return error('Missing view expression'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
-      console.log("Create view failed", err, user);
-      return error("Unknown user");
+      console.log('/user/views/create failed', err, user);
+      return error('Unknown user');
     }
 
     user = user._source;
     user.views = user.views || {};
     var container = user.views;
     if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
       if (!user.views._groups) {
         user.views._groups = {};
       }
@@ -1146,7 +1109,7 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
       }
       container = user.views._groups[req.body.groupName];
     }
-    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
     if (container[req.body.viewName]) {
       container[req.body.viewName].expression = req.body.expression;
     } else {
@@ -1155,39 +1118,87 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
 
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
-        console.log("Create view error", err, info);
-        return error("Create view failed");
+        console.log('/user/views/create error', err, info);
+        return error('Create view failed');
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : "Created view successfully"
+        text    : 'Created view successfully'
       }));
     });
   });
 });
 
-// updates the current user's specified view
+// deletes a user's specified view
+app.post('/user/views/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete another user's view without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.view) { return error('Missing view'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/delete failed', err, user);
+      return error('Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    delete user.views[req.body.view];
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/delete failed', err, info);
+        return error('Delete view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted view successfully'
+      }));
+    });
+  });
+});
+
+// updates a user's specified view
 app.post('/user/views/update', function(req, res) {
   function error(text) {
     res.status(500);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
-  if (!req.body.name)       { return error("Missing view name"); }
-  if (!req.body.expression) { return error("Missing view expression"); }
-  if (!req.body.key)        { return error("Missing view key"); }
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update another user's view without admin privilege
+    return error('Need admin privileges');
+  }
 
-  Db.getUser(req.user.userId, function(err, user) {
+  if (!req.body.name)       { return error('Missing view name'); }
+  if (!req.body.expression) { return error('Missing view expression'); }
+  if (!req.body.key)        { return error('Missing view key'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
-      console.log("updateView failed", err, user);
-      return error("Unknown user");
+      console.log('/user/views/update failed', err, user);
+      return error('Unknown user');
     }
 
     user = user._source;
     user.views = user.views || {};
     var container = user.views;
     if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
       if (!user.views._groups) {
         user.views._groups = {};
       }
@@ -1196,7 +1207,7 @@ app.post('/user/views/update', function(req, res) {
       }
       container = user.views._groups[req.body.groupName];
     }
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, "");
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
     if (container[req.body.name]) {
       container[req.body.name].expression = req.body.expression;
     } else {
@@ -1211,19 +1222,19 @@ app.post('/user/views/update', function(req, res) {
 
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
-        console.log("updateView error", err, info);
-        return error("Updating view failed");
+        console.log('/user/views/update error', err, info);
+        return error('Updating view failed');
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : "Updated view successfully",
+        text    : 'Updated view successfully',
         views   : user.views
       }));
     });
   });
 });
 
-// gets the current user's cron queries
+// gets a user's cron queries
 app.get('/user/cron', function(req, res) {
   function error(text) {
     res.status(500);
@@ -1232,9 +1243,9 @@ app.get('/user/cron', function(req, res) {
 
   function sendCronQueries(user, cp) {
     if (user.settings === undefined) {user.settings = {};}
-    Db.search("queries", "query", {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
+    Db.search('queries', 'query', {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
       if (err || data.error) {
-        console.log("ERROR - settings", err || data.error);
+        console.log('/user/cron error', err || data.error);
       }
 
       let queries = {};
@@ -1252,12 +1263,13 @@ app.get('/user/cron', function(req, res) {
 
   if (req.query.userId) {
     if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
-      return error("Moloch Permision Denied");
+      // user is trying to get another user's cron queries without admin privilege
+      return error('Need admin privileges');
     }
     Db.getUser(req.query.userId, function(err, user) {
       if (err || !user.found) {
-        console.log("ERROR - /password error", err, user);
-        return error("Unknown user");
+        console.log('/user/cron error', err, user);
+        return error('Unknown user');
       }
       sendCronQueries(user._source, 0);
     });
@@ -1266,11 +1278,16 @@ app.get('/user/cron', function(req, res) {
   }
 });
 
-// creates a new cron query for the current user
+// creates a new cron query for a user
 app.post('/user/cron/create', checkCookieToken, function(req, res) {
   function error(text) {
     res.status(500);
     return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a cron query for another user without admin privilege
+    return error('Need admin privileges');
   }
 
   if (!req.body.name)   { return error('Missing cron query name'); }
@@ -1288,31 +1305,62 @@ app.post('/user/cron/create', checkCookieToken, function(req, res) {
     }
   };
 
-  if (req.body.since === "-1") {
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.body.since === '-1') {
     document.doc.lpValue =  document.doc.lastRun = 0;
   } else {
     document.doc.lpValue =  document.doc.lastRun =
-       Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || "0", 10);
+       Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10);
   }
   document.doc.count = 0;
-  document.doc.creator = req.user.userId || "anonymous";
-  Db.indexNow("queries", "query", null, document.doc, function(err, info) {
-    if (Config.get("cronQueries", false)) {
+  document.doc.creator = userId || 'anonymous';
+
+  Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
+    if (Config.get('cronQueries', false)) {
       processCronQueries();
     }
     return res.send(JSON.stringify({
       success : true,
-      text    : "Created cron query successfully",
+      text    : 'Created cron query successfully',
       key     : info._id
     }));
   });
 });
 
-// updates current user's specified cron query
+// deletes a user's specified cron query
+app.post('/user/cron/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete a cron query for another user without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.key) { return error('Missing cron query key'); }
+
+  Db.deleteDocument('queries', 'query', req.body.key, {refresh: 1}, function(err, sq) {
+    res.send(JSON.stringify({
+      success : true,
+      text    : 'Deleted cron query successfully'
+    }));
+  });
+});
+
+// updates a user's specified cron query
 app.post('/user/cron/update', checkCookieToken, function(req, res) {
   function error(text) {
     res.status(500);
     return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update a cron query for another user without admin privilege
+    return error('Need admin privileges');
   }
 
   if (!req.body.key)    { return error('Missing cron query key'); }
@@ -1331,72 +1379,59 @@ app.post('/user/cron/update', checkCookieToken, function(req, res) {
     }
   };
 
-  Db.get("queries", 'query', req.body.key, function(err, sq) {
+  Db.get('queries', 'query', req.body.key, function(err, sq) {
     if (err || !sq.found) {
-      console.log("updateCronQuery failed", err, sq);
-      return error("Unknown query");
+      console.log('/user/cron/update failed', err, sq);
+      return error('Unknown query');
     }
 
     Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
       if (err) {
-        console.log("updateCronQuery error", err, document, data);
-        return error("Cron query update failed");
+        console.log('/user/cron/update error', err, document, data);
+        return error('Cron query update failed');
       }
-      if (Config.get("cronQueries", false)) {
+      if (Config.get('cronQueries', false)) {
         processCronQueries();
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : "Updated cron query successfully"
+        text    : 'Updated cron query successfully'
       }));
     });
   });
 });
 
-// deletes current user's specified cron query
-app.post('/user/cron/delete', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
-    return res.send(JSON.stringify({ success: false, text: text }));
-  }
-
-  if (!req.body.key) {
-    return error("Missing cron query key");
-  }
-
-  Db.deleteDocument("queries", 'query', req.body.key, {refresh: 1}, function(err, sq) {
-    res.send(JSON.stringify({
-      success : true,
-      text    : "Deleted cron query successfully"
-    }));
-  });
-});
-
-// changes the current user's password given their current password
+// changes a user's password
 app.post('/user/password/change', checkCookieToken, function(req, res) {
   function error(text) {
     res.status(500);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
-  if (Config.get("disableChangePassword", false)) {
-    return error("Disabled");
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to change password for another user without admin privilege
+    return error('Need admin privileges');
   }
+
+  if (Config.get('demoMode', false)) { return error('Disabled'); }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return error("New password needs to be at least 3 characters");
+    return error('New password needs to be at least 3 characters');
   }
 
-  if (req.user.passStore !==
+  if (!req.query.userId && (req.user.passStore !==
      Config.pass2store(req.token.userId, req.body.currentPassword) ||
-     req.token.userId !== req.user.userId) {
-    return error("Current password mismatch");
+     req.token.userId !== req.user.userId)) {
+    return error('Current password mismatch');
   }
 
-  Db.getUser(req.token.userId, function(err, user) {
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
-      console.log("changePassword failed", err, user);
-      return error("Unknown user");
+      console.log('/user/password/change error', err, user);
+      return error('Unknown user');
     }
 
     user = user._source;
@@ -1404,12 +1439,12 @@ app.post('/user/password/change', checkCookieToken, function(req, res) {
 
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
-        console.log("changePassword error", err, info);
-        return error("Update failed");
+        console.log('/user/password/change error', err, info);
+        return error('Update failed');
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : "Changed password successfully"
+        text    : 'Changed password successfully'
       }));
     });
   });
@@ -4490,249 +4525,6 @@ app.post('/updateUser/:userId', checkToken, function(req, res) {
 
     Db.setUser(req.params.userId, user, function(err, info) {
       return res.send(JSON.stringify({success: true}));
-    });
-  });
-});
-
-app.post('/changePassword', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (Config.get("disableChangePassword", false)) {
-    return error("Disabled");
-  }
-
-  if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return error("New password needs to be at least 3 characters");
-  }
-
-  if (req.token.cp && (req.user.passStore !== Config.pass2store(req.token.suserId, req.body.currentPassword) ||
-                   req.token.suserId !== req.user.userId)) {
-    return error("Current password mismatch");
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("changePassword failed", err, user);
-      return error("Unknown user");
-    }
-    user = user._source;
-    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("changePassword error", err, info);
-        return error("Update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
-    });
-  });
-});
-
-app.post('/changeSettings', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("changeSettings failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.settings = req.body;
-    delete user.settings.token;
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("changeSettings error", err, info);
-        return error("Change settings update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
-    });
-  });
-});
-
-app.post('/updateView', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.viewName || !req.body.viewExpression) {
-    return error("Missing viewName or viewExpression");
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("updateView failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    var container = user.views;
-    if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
-      if (!user.views._groups) {
-        user.views._groups = {};
-      }
-      if (!user.views._groups[req.body.groupName]) {
-        user.views._groups[req.body.groupName] = {};
-      }
-      container = user.views._groups[req.body.groupName];
-    }
-    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
-    if (container[req.body.viewName]) {
-      container[req.body.viewName].expression = req.body.viewExpression;
-    } else {
-      container[req.body.viewName] = {expression: req.body.viewExpression};
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("updateView error", err, info);
-        return error("Create View update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Updated view successfully"}));
-    });
-  });
-});
-
-app.post('/deleteView', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.view) {
-    return error("Missing view");
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("deleteView failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    delete user.views[req.body.view];
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("deleteView error", err, info);
-        return error("Create View update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
-    });
-  });
-});
-
-app.post('/cronQueries.json', checkToken, function(req, res) {
-  var results = [];
-  Db.search("queries", "query", {size:1000, query: {term: {creator: req.user.userId}}}, function (err, data) {
-    if (err || !data.hits || !data.hits.hits) {
-      return res.send(JSON.stringify(results));
-    }
-
-    for (var i = 0, ilen = data.hits.hits.length; i < ilen; i++) {
-      results.push(data.hits.hits[i]._source);
-    }
-
-    res.send(JSON.stringify(results));
-  });
-});
-
-app.post('/updateCronQuery', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.key || !req.body.name || req.body.query === undefined || !req.body.action) {
-    return error("Missing required parameter");
-  }
-
-  var document = {
-    doc: {
-      enabled: (req.body.enabled === "true"),
-      name:req.body.name,
-      query: req.body.query,
-      tags: req.body.tags,
-      action: req.body.action
-    }
-  };
-
-  if (req.body.key === "_create_") {
-    if (req.body.since === "-1") {
-      document.doc.lpValue =  document.doc.lastRun = 0;
-    } else {
-      document.doc.lpValue =  document.doc.lastRun = Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || "0", 10);
-    }
-    document.doc.count = 0;
-    document.doc.creator = req.user.userId || "anonymous";
-    Db.indexNow("queries", "query", null, document.doc, function(err, info) {
-      if (Config.get("cronQueries", false)) {
-        processCronQueries();
-      }
-      return res.send(JSON.stringify({success: true, text: "Created", key: info._id}));
-    });
-    return;
-  }
-
-  Db.get("queries", 'query', req.body.key, function(err, sq) {
-    if (err || !sq.found) {
-      console.log("updateCronQuery failed", err, sq);
-      return error("Unknown query");
-    }
-
-    Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
-      if (err) {
-        console.log("updateCronQuery error", err, document, data);
-        return error("Cron query update failed");
-      }
-      if (Config.get("cronQueries", false)) {
-        processCronQueries();
-      }
-      return res.send(JSON.stringify({success: true, text: "Updated cron query successfully"}));
-    });
-  });
-});
-
-app.post('/deleteCronQuery', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.key) {
-    return error("Missing cron query key");
-  }
-
-  Db.deleteDocument("queries", 'query', req.body.key, {refresh: 1}, function(err, sq) {
-    res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
-  });
-});
-
-app.post('/tableState/:tablename', function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-  Db.getUser(req.user.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("save tableState failed", err, user);
-      return error("Unknown user");
-    }
-    user = user._source;
-
-    if (!user.tableStates) {
-      user.tableStates = {};
-    }
-    user.tableStates[req.params.tablename] = req.body;
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("tableState error", err, info);
-        return error("tableState update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "updated table state successfully"}));
     });
   });
 });

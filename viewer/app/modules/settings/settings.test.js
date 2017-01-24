@@ -3,16 +3,25 @@
   'use strict';
 
   /* mock data ------------------------------------------------------------- */
-  let userSettings = {
-    timezone      : 'local',
-    detailFormat  : 'last',
-    showTimestamps: 'last',
-    sortColumn    : 'start',
-    sortDirection : 'asc',
-    spiGraph      : 'no',
-    connSrcField  : 'a1',
-    connDstField  : 'ip.dst:port',
-    numPackets    : 'last'
+  let user = {
+    userId            : 'anonymous',
+    enabled           : true,
+    webEnabled        : true,
+    emailSearch       : true,
+    createEnabled     : true,
+    removeEnabled     : true,
+    headerAuthEnabled : false,
+    settings          : {
+      timezone        : 'local',
+      detailFormat    : 'last',
+      showTimestamps  : 'last',
+      sortColumn      : 'start',
+      sortDirection   : 'asc',
+      spiGraph        : 'no',
+      connSrcField    : 'a1',
+      connDstField    : 'ip.dst:port',
+      numPackets      : 'last'
+    }
   };
 
   let userViews = { viewy: { name:'viewy', expression:'expression' } };
@@ -54,26 +63,30 @@
        $rootScope,
        $compile,
        $interval,
+       $location,
+       $routeParams,
        FieldService,
        ConfigService,
        UserService) {
 
       $httpBackend = _$httpBackend_;
 
-      $httpBackend.expectGET('user/settings').respond(200, userSettings);
-
-      $httpBackend.expectGET('user/views').respond(200, userViews);
-
-      $httpBackend.expectGET('user/cron').respond(200, userCronQueries);
+      $httpBackend.expectGET('user/current').respond(200, user);
 
       $httpBackend.expectGET('molochclusters').respond(200, {});
 
       $httpBackend.expectGET('fields?array=true').respond(200, fields);
 
+      $httpBackend.expectGET('user/views').respond(200, userViews);
+
+      $httpBackend.expectGET('user/cron').respond(200, userCronQueries);
+
       scope = $rootScope.$new();
 
       settingsCtrl = $componentController('molochSettings', {
         $interval     : $interval,
+        $location     : $location,
+        $routeParams  : $routeParams,
         UserService   : UserService,
         FieldService  : FieldService,
         ConfigService : ConfigService
@@ -92,6 +105,8 @@
     it('should exist and have dependencies', function() {
       expect(settingsCtrl).toBeDefined();
       expect(settingsCtrl.$interval).toBeDefined();
+      expect(settingsCtrl.$location).toBeDefined();
+      expect(settingsCtrl.$routeParams).toBeDefined();
       expect(settingsCtrl.UserService).toBeDefined();
       expect(settingsCtrl.FieldService).toBeDefined();
       expect(settingsCtrl.ConfigService).toBeDefined();
@@ -99,7 +114,7 @@
 
     it('should have user\'s settings', function() {
       expect(settingsCtrl.settings).toBeDefined();
-      expect(settingsCtrl.settings).toEqual(userSettings);
+      expect(settingsCtrl.settings).toEqual(user.settings);
     });
 
     it('should have user\'s views', function() {
@@ -157,7 +172,7 @@
           numPackets    : 'last'
         };
 
-        expect(settingsCtrl.settings).toEqual(userSettings);
+        expect(settingsCtrl.settings).toEqual(user.settings);
 
         settingsCtrl.settings = newSettings;
 

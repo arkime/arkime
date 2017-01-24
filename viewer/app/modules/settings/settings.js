@@ -13,14 +13,19 @@
     /**
      * Initialize global variables for this controller
      * @param $interval     Angular's wrapper for window.setInterval
+     * @param $location     Exposes browser address bar URL (window.location)
+     * @param $routeParams  Retrieves the current set of route parameters
      * @param UserService   Transacts users and user data with the server
      * @param FieldService  Transacts fields with the server
      * @param ConfigService Transacts app configurations with the server
      *
      * @ngInject
      */
-    constructor($interval, UserService, FieldService, ConfigService) {
+    constructor($interval, $routeParams, $location,
+                UserService, FieldService, ConfigService) {
       this.$interval      = $interval;
+      this.$location      = $location;
+      this.$routeParams   = $routeParams;
       this.UserService    = UserService;
       this.FieldService   = FieldService;
       this.ConfigService  = ConfigService;
@@ -35,33 +40,34 @@
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
 
-      this.UserService.getSettings()
+      this.UserService.getCurrent()
         .then((response) => {
-          this.settings = response;
+          // only admins can edit other users' settings
+          if (response.createEnabled) {
+            if (response.userId === this.$routeParams.userId) {
+              // admin editing their own user so the routeParam is unnecessary
+              this.$location.search('userId', null);
+            } else { // admin editing another user
+              this.userId = this.$routeParams.userId;
+            }
+          } else { // normal user has no permission, so remove the routeParam
+            // (even if it's their own userId because it's unnecessary)
+            this.$location.search('userId', null);
+          }
+
           this.loading  = false;
+          this.settings = response.settings;
 
           this.tick();
           this.$interval(() => { this.tick(); }, 1000);
+
+          // get all the other things!
+          this.getViews();
+          this.getCronQueries();
         })
         .catch((error) => {
+          this.error    = error.text;
           this.loading  = false;
-          this.error    = error;
-        });
-
-      this.UserService.getViews()
-         .then((response) => {
-           this.views = response;
-         })
-         .catch((error) => {
-           this.viewListError = error;
-         });
-
-      this.UserService.getCronQueries()
-        .then((response) => {
-          this.cronQueries = response;
-        })
-        .catch((error) => {
-          this.cronQueryListError = error;
         });
 
       this.ConfigService.getMolochClusters()
@@ -81,6 +87,29 @@
         });
     }
 
+
+    /* service functions --------------------------------------------------- */
+    getViews() {
+      this.UserService.getViews(this.userId)
+        .then((response) => {
+          this.views = response;
+        })
+        .catch((error) => {
+          this.viewListError = error.text;
+        });
+    }
+
+    getCronQueries() {
+      this.UserService.getCronQueries(this.userId)
+        .then((response) => {
+          this.cronQueries = response;
+        })
+        .catch((error) => {
+          this.cronQueryListError = error.text;
+        });
+    }
+
+
     /* page functions ------------------------------------------------------ */
     openView(view) {
       this.view = view;
@@ -92,10 +121,11 @@
       this.msgType = null;
     }
 
+
     /* GENERAL ------------------------------------------------------------- */
     /* saves the user's settings and displays a message */
     update() {
-      this.UserService.saveSettings(this.settings)
+      this.UserService.saveSettings(this.settings, this.userId)
         .then((response) => {
           // display success message to user
           this.msg = response.text;
@@ -151,6 +181,7 @@
       }
     }
 
+
     /* VIEWS --------------------------------------------------------------- */
     /* creates a view given the view name and expression */
     createView() {
@@ -169,7 +200,7 @@
         expression: this.newViewExpression
       };
 
-      this.UserService.createView(data)
+      this.UserService.createView(data, this.userId)
         .then((response) => {
           // add the view to the view list
           this.views[data.viewName] = {
@@ -192,6 +223,28 @@
     }
 
     /**
+     * Deletes a view given its name
+     * @param {string} name The name of the view to delete
+     */
+    deleteView(name) {
+      this.UserService.deleteView(name, this.userId)
+      .then((response) => {
+        // remove the view from the view list
+        this.views[name] = null;
+        delete this.views[name];
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+
+      })
+      .catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
+    }
+
+    /**
      * Sets a view as having been changed
      * @param {string} key The unique id of the changed view
      */
@@ -204,7 +257,7 @@
      * @param {string} key The unique id of the view
      */
     cancelViewChange(key) {
-      this.UserService.getViews()
+      this.UserService.getViews(this.userId)
         .then((response) => {
           this.views[key] = response[key];
         })
@@ -234,7 +287,7 @@
 
       data.key = key;
 
-      this.UserService.updateView(data)
+      this.UserService.updateView(data, this.userId)
         .then((response) => {
           // update view list
           this.views = response.views;
@@ -251,27 +304,6 @@
         });
     }
 
-    /**
-     * Deletes a view given its name
-     * @param {string} name The name of the view to delete
-     */
-    deleteView(name) {
-      this.UserService.deleteView(name)
-        .then((response) => {
-          // remove the view from the view list
-          this.views[name] = null;
-          delete this.views[name];
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
-    }
 
     /* CRON QUERIES -------------------------------------------------------- */
     /* creates a cron query given the name, expression, process, and tags */
@@ -300,7 +332,7 @@
         since   : this.newCronQueryProcess,
       };
 
-      this.UserService.createCronQuery(data)
+      this.UserService.createCronQuery(data, this.userId)
          .then((response) => {
            // add the cron query to the view
            this.cronQueryFormError = false;
@@ -322,6 +354,27 @@
     }
 
     /**
+     * Deletes a cron query given its key
+     * @param {string} key The cron query's key
+     */
+    deleteCronQuery(key) {
+      this.UserService.deleteCronQuery(key, this.userId)
+      .then((response) => {
+        // remove the cron query from the view
+        this.cronQueries[key]  = null;
+        delete this.cronQueries[key];
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      })
+      .catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
+    }
+
+    /**
      * Sets a cron query as having been changed
      * @param {string} key The unique id of the cron query
      */
@@ -334,7 +387,7 @@
      * @param {string} key The unique id of the cron query
      */
     cancelCronQueryChange(key) {
-      this.UserService.getCronQueries()
+      this.UserService.getCronQueries(this.userId)
         .then((response) => {
           this.cronQueries[key] = response[key];
         })
@@ -364,7 +417,7 @@
 
       data.key = key;
 
-      this.UserService.updateCronQuery(data)
+      this.UserService.updateCronQuery(data, this.userId)
         .then((response) => {
           // display success message to user
           this.msg = response.text;
@@ -379,32 +432,12 @@
         });
     }
 
-    /**
-     * Deletes a cron query given its key
-     * @param {string} key The cron query's key
-     */
-    deleteCronQuery(key) {
-      this.UserService.deleteCronQuery(key)
-        .then((response) => {
-          // remove the cron query from the view
-          this.cronQueries[key]  = null;
-          delete this.cronQueries[key];
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
-    }
 
     /* PASSWORD ------------------------------------------------------------ */
     /* changes the user's password given the current password, the new password,
      * and confirmation of the new password */
     changePassword() {
-      if (!this.currentPassword || this.currentPassword === '') {
+      if (!this.userId && (!this.currentPassword || this.currentPassword === '')) {
         this.changePasswordError = 'You must enter your current password';
         return;
       }
@@ -424,7 +457,12 @@
         return;
       }
 
-      this.UserService.changePassword(this.currentPassword, this.newPassword)
+      let data = {
+        newPassword     : this.newPassword,
+        currentPassword : this.currentPassword
+      };
+
+      this.UserService.changePassword(data, this.userId)
         .then((response) => {
           this.changePasswordError = false;
           this.currentPassword     = null;
@@ -442,7 +480,7 @@
     }
   }
 
-  SettingsController.$inject = ['$interval',
+  SettingsController.$inject = ['$interval', '$routeParams', '$location',
     'UserService', 'FieldService', 'ConfigService'];
 
   /**

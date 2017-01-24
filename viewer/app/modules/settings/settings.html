@@ -2,10 +2,15 @@
 
   <div class="row">
     <div class="col-md-12">
-      <h2>
+      <h2 class="margined-bottom-none">
         <span class="fa fa-cogs"></span>&nbsp;
-        Settings
-        <div class="pull-right small">
+        <span ng-if="!$ctrl.userId">
+          Settings
+        </span>
+        <span ng-if="$ctrl.userId" class="text-danger">
+          Admin Updating Settings for {{::$ctrl.userId}}
+        </span>
+        <div class="pull-right small toast-container">
           <toast message="$ctrl.msg" type="$ctrl.msgType"
             done="$ctrl.messageDone()"></toast>
         </div>
@@ -449,7 +454,7 @@
         <hr>
 
         <!-- current password -->
-        <div class="form-group">
+        <div class="form-group" ng-if="!$ctrl.userId">
           <label class="col-sm-3 control-label">Current Password</label>
           <div class="col-sm-9">
             <input type="password" class="form-control short-control"

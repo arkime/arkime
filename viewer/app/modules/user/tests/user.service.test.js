@@ -87,9 +87,15 @@
         $httpBackend.flush();
       });
 
-      it('should get user\'s settings', function() {
+      it('should get the current user\'s settings', function() {
         UserService.getSettings();
         $httpBackend.expectGET('user/settings').respond({});
+        $httpBackend.flush();
+      });
+
+      it('should get a user\'s settings', function() {
+        UserService.getSettings('userid');
+        $httpBackend.expectGET('user/settings?userId=userid').respond({});
         $httpBackend.flush();
       });
 
@@ -241,7 +247,12 @@
       });
 
       it('should change a user\'s password', function() {
-        UserService.changePassword('currentpassword', 'newawesomepassword!');
+        let data = {
+          currentPassword :'currentpassword',
+          newPassword     :'newawesomepassword!'
+        };
+
+        UserService.changePassword(data);
 
         $httpBackend.expect('POST', 'user/password/change',
            function(postData) {

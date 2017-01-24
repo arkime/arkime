@@ -62,15 +62,19 @@
     }
 
     /**
-     * Gets current user's settings
+     * Gets a user's settings
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getSettings() {
+    getSettings(userId) {
       return this.$q((resolve, reject) => {
 
         let options = { url:'user/settings', method:'GET' };
 
+        if (userId) { options.url += `?userId=${userId}`; }
+
         this.$http(options)
           .then((response) => {
             resolve(response.data);
@@ -82,16 +86,20 @@
     }
 
     /**
-     * Updates current user's settings
+     * Updates a user's settings
      * @param {object} settings   The object containing user settings
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    saveSettings(settings) {
+    saveSettings(settings, userId) {
       return this.$q((resolve, reject) => {
 
         let options = { url:'user/settings/update', method:'POST', data: settings };
 
+        if (userId) { options.url += `?userId=${userId}`; }
+
         this.$http(options)
           .then((response) => {
             resolve(response.data);
@@ -103,14 +111,18 @@
     }
 
     /**
-     * Gets current user's views
+     * Gets a user's views
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getViews() {
+    getViews(userId) {
       return this.$q((resolve, reject) => {
 
         let options = { url:'user/views', method:'GET' };
+
+        if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
           .then((response) => {
@@ -124,36 +136,45 @@
     }
 
     /**
-     * Deletes current user's specified view
-     * @param {string} view       The name of the view to be removed
+     * Creates a specified view for a user
+     * @param {Object} params     The params to pass as data to the server
+     *                            { viewName: 'specialview', expression: 'something == somethingelse'}
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    deleteView(view) {
+    createView(params, userId) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/views/create', method:'POST', data:params };
+
+        if (userId) { options.url += `?userId=${userId}`; }
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Deletes a user's specified view
+     * @param {string} view       The name of the view to be removed
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    deleteView(view, userId) {
       return this.$q((resolve, reject) => {
 
         let options = { url:'user/views/delete', method:'POST', data:{ view:view } };
 
-        this.$http(options)
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error.data);
-          });
-
-      });
-    }
-
-    /**
-     * Creates a specified view for the current user
-     * @param {Object} params     The params to pass as data to the server
-     *                            { viewName: 'specialview', expression: 'something == somethingelse'}
-     * @returns {Promise} Promise A promise object that signals the completion
-     *                            or rejection of the request.
-     */
-    createView(params) {
-      return this.$q((resolve, reject) => {
-        let options = { url:'user/views/create', method:'POST', data:params };
+        if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
           .then((response) => {
@@ -166,14 +187,19 @@
     }
 
     /**
-     * Updates a specified view for the current user
+     * Updates a specified view for a user
      * @param {Object} data       The view data to pass to the server
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    updateView(data) {
+    updateView(data, userId) {
       return this.$q((resolve, reject) => {
+
         let options = { url:'user/views/update', method:'POST', data:data };
+
+        if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
         .then((response) => {
@@ -187,15 +213,19 @@
     }
 
     /**
-     * Gets current user's cron queries
+     * Gets a user's cron queries
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    getCronQueries() {
+    getCronQueries(userId) {
       return this.$q((resolve, reject) => {
 
         let options = { url:'user/cron', method:'GET' };
 
+        if (userId) { options.url += `?userId=${userId}`; }
+
         this.$http(options)
           .then((response) => {
             resolve(response.data);
@@ -207,34 +237,19 @@
     }
 
     /**
-     * Creates a specified cron query for the current user
+     * Creates a specified cron query for a user
      * @param {Object} data       The cron query data to pass to the server
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    createCronQuery(data) {
+    createCronQuery(data, userId) {
       return this.$q((resolve, reject) => {
+
         let options = { url:'user/cron/create', method:'POST', data:data };
 
-        this.$http(options)
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error.data);
-          });
-
-      });
-    }
-
-    /**
-     * Updates a specified cron query for the current user
-     * @param {Object} data       The cron query data to pass to the server
-     * @returns {Promise} Promise A promise object that signals the completion
-     *                            or rejection of the request.
-     */
-    updateCronQuery(data) {
-      return this.$q((resolve, reject) => {
-        let options = { url:'user/cron/update', method:'POST', data:data };
+        if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
           .then((response) => {
@@ -247,15 +262,44 @@
     }
 
     /**
-     * Deletes current user's specified cron query
+     * Deletes a user's specified cron query
      * @param {string} key        The key of the cron query to be removed
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
-    deleteCronQuery(key) {
+    deleteCronQuery(key, userId) {
       return this.$q((resolve, reject) => {
 
         let options = { url:'user/cron/delete', method:'POST', data:{ key:key } };
+
+        if (userId) { options.url += `?userId=${userId}`; }
+
+        this.$http(options)
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error.data);
+        });
+
+      });
+    }
+
+    /**
+     * Updates a specified cron query for a user
+     * @param {Object} data       The cron query data to pass to the server
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    updateCronQuery(data, userId) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/cron/update', method:'POST', data:data };
+
+        if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
           .then((response) => {
@@ -269,19 +313,22 @@
 
     /**
      * Changes current user's password
-     * @param {string} currentPassword  The user's current password
-     * @param {string} newPassword      The user's new password
-     * @returns {Promise} Promise       A promise object that signals the completion
-     *                                  or rejection of the request.
+     * @param {object} data       The data to send to the server
+     *                            { userId, currentPassword, newPassword }
+     * @param {string} userId     The unique identifier for a user
+     *                            (only required if not the current user)
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
      */
-    changePassword(currentPassword, newPassword) {
+    changePassword(data, userId) {
       return this.$q((resolve, reject) => {
 
-        let options = {
-          url   :'user/password/change',
-          method:'POST',
-          data  :{ currentPassword:currentPassword, newPassword:newPassword }
-        };
+        let options = { url:'user/password/change', method:'POST' };
+
+        if (userId) {
+          options.url += `?userId=${userId}`;
+          options.data = { newPassword:data.newPassword };
+        } else { options.data = data; }
 
         this.$http(options)
           .then((response) => {
@@ -294,6 +341,12 @@
     }
 
     /* internal methods ---------------------------------------------------- */
+    /**
+     * Adds the name as a property on a view (instead of just key)
+     * @param {object} views    The object containing view objects
+     * @returns {object} views  The object containing views, now with name
+     *                          properties on each view object
+     */
     static parseViews(views) {
       for (var name in views) {
         if (views.hasOwnProperty(name)) {
