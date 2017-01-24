@@ -683,7 +683,7 @@ void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_get_tag(void *uw, int tagtype, const char *tag, MolochTag_cb func);
 uint32_t moloch_db_peek_tag(const char *tagname);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);
-void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap);
+void     moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
 void     moloch_db_update_field(char *expression, char *name, char *value);
 gboolean moloch_db_file_exists(char *filename);
 void     moloch_db_exit();

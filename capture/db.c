@@ -2101,7 +2101,7 @@ void moloch_db_load_fields()
     free(data);
 }
 /******************************************************************************/
-void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, va_list ap)
+void moloch_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap)
 {
     char                   key[100];
     int                    key_len;
@@ -2124,7 +2124,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
              dbField,
              kind);
 
-    if (ap) {
+    if (haveap) {
         while (1) {
             field = va_arg(ap, char *);
             if (!field)
