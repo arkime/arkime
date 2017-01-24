@@ -1,7 +1,7 @@
 //- Display a clickable value
 //- set true for stringify if the value should be surrounded by "" in the query
 mixin clickableValue(expr, value, stringify, parse)
-  // stringify everything for Angular
+  //- stringify everything for Angular
   - var exprval = '\"' + value + '\"'
   - expr = '\"' + expr + '\"'
   - parse = '\"' + (parse || false) + '\"'
@@ -116,8 +116,7 @@ mixin ipPrintCommon(ipstr,port,geo,as,rir,expr,full,v6)
       |}
 
 mixin ipPrint(ip,port,geo,as,rir,expr, full)
-  - var ipstr = (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) + '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff); 
-  +ipPrintCommon(ipstr, port, geo, as, rir, expr, full, 0)
+  +ipPrintCommon(ip, port, geo, as, rir, expr, full, 0)
 
 mixin ipPrint6(ip,port,geo,as,rir,expr, full)
   - var ipstr = ip.match(/.{1,4}/g).join(":").replace(/:0{1,3}/g, ":").replace(/^0000:/, "0:");

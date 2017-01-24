@@ -43,6 +43,7 @@
     .filter('extractIPString', () => {
       return (ip) => {
         if (!ip) { return ''; }
+        if (typeof ip === 'string' && ip.indexOf('.') !== -1) { return ip; }
 
         return (ip>>24 & 0xff) + '.' + (ip>>16 & 0xff) +
                 '.' + (ip>>8 & 0xff) + '.' + (ip & 0xff);
