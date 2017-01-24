@@ -15,7 +15,17 @@
       createEnabled     : true,
       removeEnabled     : true,
       headerAuthEnabled : false,
-      settings          : {}
+      settings          : {
+        timezone        : 'local',
+        detailFormat    : 'last',
+        showTimestamps  : 'last',
+        sortColumn      : 'start',
+        sortDirection   : 'asc',
+        spiGraph        : 'no',
+        connSrcField    : 'a1',
+        connDstField    : 'ip.dst:port',
+        numPackets      : 'last'
+      }
     };
 
     // load service
@@ -33,8 +43,7 @@
       beforeEach(inject(function(_$httpBackend_) {
         $httpBackend = _$httpBackend_;
 
-        $httpBackend.when('GET', 'user/current')
-          .respond(200, user);
+        $httpBackend.when('GET', 'user/current').respond(200, user);
       }));
 
       afterEach(function() {
@@ -78,7 +87,41 @@
         $httpBackend.flush();
       });
 
-      it('should get user\'s view', function() {
+      it('should get the current user\'s settings', function() {
+        UserService.getSettings();
+        $httpBackend.expectGET('user/settings').respond({});
+        $httpBackend.flush();
+      });
+
+      it('should get a user\'s settings', function() {
+        UserService.getSettings('userid');
+        $httpBackend.expectGET('user/settings?userId=userid').respond({});
+        $httpBackend.flush();
+      });
+
+      it('should save user\'s settings', function() {
+        UserService.saveSettings(user.settings);
+
+        $httpBackend.expect('POST', 'user/settings/update',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.timezone).toEqual('local');
+             expect(jsonData.detailFormat).toEqual('last');
+             expect(jsonData.showTimestamps).toEqual('last');
+             expect(jsonData.sortColumn).toEqual('start');
+             expect(jsonData.sortDirection).toEqual('asc');
+             expect(jsonData.spiGraph).toEqual('no');
+             expect(jsonData.connSrcField).toEqual('a1');
+             expect(jsonData.connDstField).toEqual('ip.dst:port');
+             expect(jsonData.numPackets).toEqual('last');
+             return true;
+           }
+        ).respond(200);
+
+        $httpBackend.flush();
+      });
+
+      it('should get user\'s views', function() {
         UserService.getViews();
         $httpBackend.expectGET('user/views').respond({});
         $httpBackend.flush();
@@ -90,8 +133,8 @@
         $httpBackend.expect('POST', 'user/views/create',
            function(postData) {
              let jsonData = JSON.parse(postData);
-             expect(jsonData.viewName).toBe('viewName');
-             expect(jsonData.expression).toBe('protocols == udp');
+             expect(jsonData.viewName).toEqual('viewName');
+             expect(jsonData.expression).toEqual('protocols == udp');
              return true;
            }
         ).respond(200);
@@ -105,7 +148,7 @@
         $httpBackend.expect('POST', 'user/views/delete',
            function(postData) {
              let jsonData = JSON.parse(postData);
-             expect(jsonData.view).toBe('viewName');
+             expect(jsonData.view).toEqual('viewName');
              return true;
            }
         ).respond(200);
@@ -113,9 +156,113 @@
         $httpBackend.flush();
       });
 
-      it('should get user\'s settings', function() {
-        UserService.getSettings();
-        $httpBackend.expectGET('user/settings').respond({});
+      it('should update a user\'s specified view', function() {
+        UserService.updateView({
+          key       : 'viewName',
+          viewName  : 'viewName',
+          expression: 'protocols == udp'
+        });
+
+        $httpBackend.expect('POST', 'user/views/update',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.key).toEqual('viewName');
+             expect(jsonData.viewName).toEqual('viewName');
+             expect(jsonData.expression).toEqual('protocols == udp');
+             return true;
+           }
+        ).respond(200, { views: {
+          viewName : { expression: 'protocols == udp' }
+        }});
+
+        $httpBackend.flush();
+      });
+
+      it('should get user\'s cron queries', function() {
+        UserService.getCronQueries();
+        $httpBackend.expectGET('user/cron').respond({});
+        $httpBackend.flush();
+      });
+
+      it('should create a specified cron query', function() {
+        UserService.createCronQuery({
+          enabled : true,
+          name    : 'cron query name',
+          query   : 'expression',
+          tags    : 'taggy',
+          action  : 'tag'
+        });
+
+        $httpBackend.expect('POST', 'user/cron/create',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.enabled).toBeTruthy();
+             expect(jsonData.name).toEqual('cron query name');
+             expect(jsonData.query).toEqual('expression');
+             expect(jsonData.tags).toEqual('taggy');
+             expect(jsonData.action).toEqual('tag');
+             return true;
+           }
+        ).respond(200);
+
+        $httpBackend.flush();
+      });
+
+      it('should delete a user\'s specified cron query', function() {
+        UserService.deleteCronQuery('key1');
+
+        $httpBackend.expect('POST', 'user/cron/delete',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.key).toEqual('key1');
+             return true;
+           }
+        ).respond(200);
+
+        $httpBackend.flush();
+      });
+
+      it('should update a user\'s specified cron query', function() {
+        UserService.updateCronQuery({
+          enabled : false,
+          name    : 'new cron query name',
+          query   : 'new expression',
+          tags    : 'taggy,tag2',
+          action  : 'tag'
+        });
+
+        $httpBackend.expect('POST', 'user/cron/update',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.enabled).toBeFalsy();
+             expect(jsonData.name).toEqual('new cron query name');
+             expect(jsonData.query).toEqual('new expression');
+             expect(jsonData.tags).toEqual('taggy,tag2');
+             expect(jsonData.action).toEqual('tag');
+             return true;
+           }
+        ).respond(200);
+
+        $httpBackend.flush();
+      });
+
+      it('should change a user\'s password', function() {
+        let data = {
+          currentPassword :'currentpassword',
+          newPassword     :'newawesomepassword!'
+        };
+
+        UserService.changePassword(data);
+
+        $httpBackend.expect('POST', 'user/password/change',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.currentPassword).toEqual('currentpassword');
+             expect(jsonData.newPassword).toEqual('newawesomepassword!');
+             return true;
+           }
+        ).respond(200);
+
         $httpBackend.flush();
       });
 

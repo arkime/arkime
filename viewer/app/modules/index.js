@@ -31,3 +31,5 @@ require('./health/eshealth.component');
 require('./config/config.service');
 
 require('./help/help');
+
+require('./settings/settings');

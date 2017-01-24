@@ -60,16 +60,16 @@
 
            let args = {};
 
-           if (response.data.text) {
-             args.message = response.data.text;
-             args.success = response.data.success;
+           if (response.text) {
+             args.message = response.text;
+             args.success = response.success;
            }
 
            // notify parent to close form
            this.$scope.$emit('close:form:container', args);
 
            // notify parent to update views
-           this.$scope.$emit('update:views', { views: response.data.views });
+           this.$scope.$emit('update:views', { views: response.views });
          })
          .catch((error) => {
            this.error    = error;

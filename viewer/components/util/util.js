@@ -156,6 +156,19 @@
     })
 
     /**
+     * Lowercase filter
+     * Sets every letter to lower case in a string
+     *
+     * @example
+     * '{{someString | capitalize}}'
+     */
+     .filter('lowercase', function() {
+       return function(input) {
+         return input.toLowerCase();
+       };
+     })
+
+    /**
      * Min filter
      * Returns the minimum number in a number array
      *

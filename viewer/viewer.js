@@ -682,15 +682,21 @@ function checkToken(req, res, next) {
 }
 
 function checkCookieToken(req, res, next) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
   if (!req.headers['x-moloch-cookie']) {
-    return res.send(JSON.stringify({success: false, text: "Missing token"}));
+    return error('Missing token');
   }
 
   req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
   var diff = Math.abs(Date.now() - req.token.date);
-  if (diff > 2400000 || req.token.pid !== process.pid || req.token.userId !== req.user.userId) {
+  if (diff > 2400000 || req.token.pid !== process.pid ||
+      req.token.userId !== req.user.userId) {
     console.trace("bad token", req.token);
-    return res.send(JSON.stringify({success: false, text: "Timeout - Please try reloading page and repeating the action"}));
+    return error('Timeout - Please try reloading page and repeating the action');
   }
 
   return next();
@@ -835,34 +841,6 @@ app.get('/users', checkWebEnabled, function(req, res) {
   });
 });
 
-app.get('/user/current', function(req, res) {
-  Db.getUserCache(req.user.userId, function(err, user) {
-    if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
-        return res.send(req.user);
-      } else {
-        console.log("Unknown user", err, user);
-        return res.send("{}");
-      }
-    }
-
-    var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-                    'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
-
-    var clone     = {};
-    var source    = user._source;
-
-    for (var i = 0, len = userProps.length; i < len; ++i) {
-      var prop = userProps[i];
-      if (source.hasOwnProperty(prop)) {
-        clone[prop] = source[prop];
-      }
-    }
-
-    return res.send(clone);
-  });
-});
-
 app.get('/molochclusters', function(req, res) {
   if(!app.locals.molochClusters) {
     var molochClusters = Config.configMap("moloch-clusters");
@@ -876,64 +854,6 @@ app.get('/molochclusters', function(req, res) {
   }
 
   return res.send(app.locals.molochClusters);
-});
-
-app.get('/settings', checkWebEnabled, function(req, res) {
-  var actions = [{name: "Tag", value: "tag"}];
-
-  var molochClusters = Config.configMap("moloch-clusters");
-  if (molochClusters) {
-    Object.keys(molochClusters).forEach( function (cluster) {
-      actions.push({name: "Tag & Export to " + molochClusters[cluster].name, value: "forward:" + cluster});
-    });
-  }
-
-  function render(user, cp) {
-    if (user.settings === undefined) {user.settings = {};}
-    Db.search("queries", "query", {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
-      if (err || data.error) {
-        console.log("ERROR - settings", err || data.error);
-      }
-
-      if (data && data.hits && data.hits.hits) {
-        user.queries = {};
-        data.hits.hits.forEach(function(item) {
-          user.queries[item._id] = item._source;
-        });
-      }
-      actions = actions.sort();
-
-      res.render('settings.jade', {
-        user: req.user,
-        suser: user,
-        currentPassword: cp,
-        token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
-        title: makeTitle(req, 'Settings'),
-        titleLink: 'settingsLink',
-        helpLink: 'settings',
-        actions: actions
-      });
-    });
-  }
-
-  if (Config.get("demoMode", false)) {
-    return res.send("Disabled");
-  }
-
-  if (req.query.userId) {
-    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
-      return res.send("Moloch Permision Denied");
-    }
-    Db.getUser(req.query.userId, function(err, user) {
-      if (err || !user.found) {
-        console.log("ERROR - /password error", err, user);
-        return res.send("Unknown user");
-      }
-      render(user._source, 0);
-    });
-  } else {
-    render(req.user, 1);
-  }
 });
 
 app.get('/stats', checkWebEnabled, function(req, res) {
@@ -981,7 +901,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help'], checkWebEnabled, function(req, res) {
+app.get(['/app', '/help', '/settings'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -1007,6 +927,531 @@ app.get('/app.bundle.js.map', function(req, res) {
 app.get('/vendor.bundle.js.map', function(req, res) {
   res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
 });
+
+
+/* User Endpoints ---------------------------------------------------------- */
+// gets the current user
+app.get('/user/current', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        return res.send(req.user);
+      } else {
+        console.log('/user/current error', err, user);
+        res.status(500);
+        return res.send(JSON.stringify({success: false, text: 'Unknown user'}));
+      }
+    }
+
+    var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+
+    var clone     = {};
+    var source    = user._source;
+
+    for (var i = 0, len = userProps.length; i < len; ++i) {
+      var prop = userProps[i];
+      if (source.hasOwnProperty(prop)) {
+        clone[prop] = source[prop];
+      }
+    }
+
+    return res.send(clone);
+  });
+});
+
+// gets a user's settings
+app.get('/user/settings', function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (Config.get('demoMode', false)) { return error('Disabled'); }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to get another user's settings without admin privilege
+    return error('Need admin privileges');
+  }
+
+  var settingDefaults = {
+    timezone      : 'local',
+    detailFormat  : 'last',
+    showTimestamps: 'last',
+    sortColumn    : 'start',
+    sortDirection : 'asc',
+    spiGraph      : 'no',
+    connSrcField  : 'a1',
+    connDstField  : 'ip.dst:port',
+    numPackets    : 'last'
+  };
+
+  Db.getUserCache(userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's settings
+        return res.send('{}');
+      } else {
+        console.log('Unknown user', err, user);
+        return res.send('{}');
+      }
+    }
+
+    var settings = user._source.settings || settingDefaults;
+
+    return res.send(settings);
+  });
+});
+
+// updates a user's settings
+app.post('/user/settings/update', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update another user's settings without admin privilege
+    return error('Need admin privileges');
+  }
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/settings/update failed', err, user);
+      return error('Unknown user');
+    }
+
+    user = user._source;
+    user.settings = req.body;
+    delete user.settings.token;
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/settings/update error', err, info);
+        return error('Settings update failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated settings successfully'
+      }));
+    });
+  });
+});
+
+// gets a user's views
+app.get('/user/views', function(req, res) {
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to get another user's views without admin privilege
+    res.status(500);
+    return res.send(JSON.stringify({success: false, text: 'Need admin privileges'}));
+  }
+
+  Db.getUserCache(userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's views
+        return res.send('{}');
+      } else {
+        console.log('Unknown user', err, user);
+        return res.send('{}');
+      }
+    }
+
+    var views = user._source.views || {};
+
+    return res.send(views);
+  });
+});
+
+// creates a new view for a user
+app.post('/user/views/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a view for another user without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.viewName)   { return error('Missing view name'); }
+  if (!req.body.expression) { return error('Missing view expression'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/create failed', err, user);
+      return error('Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    var container = user.views;
+    if (req.body.groupName) {
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+      if (!user.views._groups) {
+        user.views._groups = {};
+      }
+      if (!user.views._groups[req.body.groupName]) {
+        user.views._groups[req.body.groupName] = {};
+      }
+      container = user.views._groups[req.body.groupName];
+    }
+    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (container[req.body.viewName]) {
+      container[req.body.viewName].expression = req.body.expression;
+    } else {
+      container[req.body.viewName] = {expression: req.body.expression};
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/create error', err, info);
+        return error('Create view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created view successfully'
+      }));
+    });
+  });
+});
+
+// deletes a user's specified view
+app.post('/user/views/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete another user's view without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.view) { return error('Missing view'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/delete failed', err, user);
+      return error('Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    delete user.views[req.body.view];
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/delete failed', err, info);
+        return error('Delete view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted view successfully'
+      }));
+    });
+  });
+});
+
+// updates a user's specified view
+app.post('/user/views/update', function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update another user's view without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.name)       { return error('Missing view name'); }
+  if (!req.body.expression) { return error('Missing view expression'); }
+  if (!req.body.key)        { return error('Missing view key'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/update failed', err, user);
+      return error('Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    var container = user.views;
+    if (req.body.groupName) {
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+      if (!user.views._groups) {
+        user.views._groups = {};
+      }
+      if (!user.views._groups[req.body.groupName]) {
+        user.views._groups[req.body.groupName] = {};
+      }
+      container = user.views._groups[req.body.groupName];
+    }
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (container[req.body.name]) {
+      container[req.body.name].expression = req.body.expression;
+    } else {
+      container[req.body.name] = {expression: req.body.expression};
+    }
+
+    // delete the old one if the key (view name) has changed
+    if (user.views[req.body.key] && req.body.name !== req.body.key) {
+      user.views[req.body.key] = null;
+      delete user.views[req.body.key];
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/update error', err, info);
+        return error('Updating view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated view successfully',
+        views   : user.views
+      }));
+    });
+  });
+});
+
+// gets a user's cron queries
+app.get('/user/cron', function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  function sendCronQueries(user, cp) {
+    if (user.settings === undefined) {user.settings = {};}
+    Db.search('queries', 'query', {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
+      if (err || data.error) {
+        console.log('/user/cron error', err || data.error);
+      }
+
+      let queries = {};
+
+      if (data && data.hits && data.hits.hits) {
+        user.queries = {};
+        data.hits.hits.forEach(function(item) {
+          queries[item._id] = item._source;
+        });
+      }
+
+      res.send(queries);
+    });
+  }
+
+  if (Config.get('demoMode', false)) { return res.send('Disabled'); }
+
+  if (req.query.userId) {
+    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
+      // user is trying to get another user's cron queries without admin privilege
+      return error('Need admin privileges');
+    }
+    Db.getUser(req.query.userId, function(err, user) {
+      if (err || !user.found) {
+        console.log('/user/cron error', err, user);
+        return error('Unknown user');
+      }
+      sendCronQueries(user._source, 0);
+    });
+  } else {
+    sendCronQueries(req.user, 1);
+  }
+});
+
+// creates a new cron query for a user
+app.post('/user/cron/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a cron query for another user without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.name)   { return error('Missing cron query name'); }
+  if (!req.body.query)  { return error('Missing cron query expression'); }
+  if (!req.body.action) { return error('Missing cron query action'); }
+  if (!req.body.tags)   { return error('Missing cron query tag(s)'); }
+
+  var document = {
+    doc: {
+      enabled : true,
+      name    : req.body.name,
+      query   : req.body.query,
+      tags    : req.body.tags,
+      action  : req.body.action
+    }
+  };
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.body.since === '-1') {
+    document.doc.lpValue =  document.doc.lastRun = 0;
+  } else {
+    document.doc.lpValue =  document.doc.lastRun =
+       Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10);
+  }
+  document.doc.count = 0;
+  document.doc.creator = userId || 'anonymous';
+
+  Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
+    if (Config.get('cronQueries', false)) {
+      processCronQueries();
+    }
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Created cron query successfully',
+      key     : info._id
+    }));
+  });
+});
+
+// deletes a user's specified cron query
+app.post('/user/cron/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete a cron query for another user without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.key) { return error('Missing cron query key'); }
+
+  Db.deleteDocument('queries', 'query', req.body.key, {refresh: 1}, function(err, sq) {
+    res.send(JSON.stringify({
+      success : true,
+      text    : 'Deleted cron query successfully'
+    }));
+  });
+});
+
+// updates a user's specified cron query
+app.post('/user/cron/update', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update a cron query for another user without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (!req.body.key)    { return error('Missing cron query key'); }
+  if (!req.body.name)   { return error('Missing cron query name'); }
+  if (!req.body.query)  { return error('Missing cron query expression'); }
+  if (!req.body.action) { return error('Missing cron query action'); }
+  if (!req.body.tags)   { return error('Missing cron query tag(s)'); }
+
+  var document = {
+    doc: {
+      enabled : req.body.enabled,
+      name    : req.body.name,
+      query   : req.body.query,
+      tags    : req.body.tags,
+      action  : req.body.action
+    }
+  };
+
+  Db.get('queries', 'query', req.body.key, function(err, sq) {
+    if (err || !sq.found) {
+      console.log('/user/cron/update failed', err, sq);
+      return error('Unknown query');
+    }
+
+    Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
+      if (err) {
+        console.log('/user/cron/update error', err, document, data);
+        return error('Cron query update failed');
+      }
+      if (Config.get('cronQueries', false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated cron query successfully'
+      }));
+    });
+  });
+});
+
+// changes a user's password
+app.post('/user/password/change', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to change password for another user without admin privilege
+    return error('Need admin privileges');
+  }
+
+  if (Config.get('demoMode', false)) { return error('Disabled'); }
+
+  if (!req.body.newPassword || req.body.newPassword.length < 3) {
+    return error('New password needs to be at least 3 characters');
+  }
+
+  if (!req.query.userId && (req.user.passStore !==
+     Config.pass2store(req.token.userId, req.body.currentPassword) ||
+     req.token.userId !== req.user.userId)) {
+    return error('Current password mismatch');
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/password/change error', err, user);
+      return error('Unknown user');
+    }
+
+    user = user._source;
+    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/password/change error', err, info);
+        return error('Update failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Changed password successfully'
+      }));
+    });
+  });
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING
