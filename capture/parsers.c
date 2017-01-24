@@ -135,6 +135,30 @@ void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *m
 void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
     switch (data[0]) {
+    case 0:
+        if (len > 10 && memcmp(data+4, "ftyp", 4) == 0) {
+            if (memcmp(data+8, "qt", 2) == 0) {
+                moloch_field_string_add(field, session, "video/quicktime", 15, TRUE);
+                return;
+            }
+            if (memcmp(data+8, "3g", 2) == 0) {
+                moloch_field_string_add(field, session, "video/3gpp", 10, TRUE);
+                return;
+            }
+        }
+        break;
+    case '\032':
+        if (memcmp(data, "\x1a\x45\xdf\xa3", 4) == 0) {
+            if (moloch_memstr(data+4, len-4, "webm", 4)) {
+                moloch_field_string_add(field, session, "video/webm", 10, TRUE);
+                return;
+            }
+            if (moloch_memstr(data+4, len-4, "matroska", 8)) {
+                moloch_field_string_add(field, session, "video/x-matroska", 16, TRUE);
+                return;
+            }
+        }
+        break;
     case '\037':
         if (data[1] == '\213') {
             moloch_field_string_add(field, session, "application/x-gzip", 18, TRUE);
@@ -151,6 +175,12 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             return;
         }
         break;
+    case '%':
+        if (memcmp(data, "%PDF-", 5) == 0) {
+            moloch_field_string_add(field, session, "application/pdf", 15, TRUE);
+            return;
+        }
+        break;
     case '<':
         switch(data[1]) {
         case '!':
@@ -161,6 +191,10 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             break;
         case '?':
             if (strncasecmp(data, "<?xml", 5) == 0) {
+                if (moloch_memstr(data+5, len-5, "<svg", 4)) {
+                    moloch_field_string_add(field, session, "image/svg+xml", 13, TRUE);
+                    return;
+                }
                 moloch_field_string_add(field, session, "text/xml", 8, TRUE);
                 return;
             }
@@ -191,9 +225,32 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             return;
         }
         break;
+    case '8':
+        if (memcmp(data, "8BPS", 4) == 0) {
+            moloch_field_string_add(field, session, "image/vnd.adobe.photoshop", 25, TRUE);
+            return;
+        }
+        break;
     case 'B':
+        if (data[1] == 'M') {
+            moloch_field_string_add(field, session, "application/x-ms-bmp", 20, TRUE);
+            return;
+        }
+
         if (memcmp(data, "BZh", 3) == 0) {
             moloch_field_string_add(field, session, "application/x-bzip2", 19, TRUE);
+            return;
+        }
+        break;
+    case 'C':
+        if (memcmp(data, "CWS", 3) == 0) {
+            moloch_field_string_add(field, session, "application/x-shockwave-flash", 29, TRUE);
+            return;
+        }
+        break;
+    case 'F':
+        if (memcmp(data, "FLV\001", 4) == 0) {
+            moloch_field_string_add(field, session, "video/x-flv", 11, TRUE);
             return;
         }
         break;
@@ -214,6 +271,37 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             moloch_field_string_add(field, session, "application/x-dosexec", 21, TRUE);
             return;
         }
+        if (memcmp(data, "MSCF\000\000", 6) == 0) {
+            moloch_field_string_add(field, session, "application/vnd.ms-cab-compressed", 33, TRUE);
+            return;
+        }
+        break;
+    case 'O':
+        if (len > 40 && memcmp(data, "OggS", 4) == 0) {
+            // https://speex.org/docs/manual/speex-manual/node8.html
+            if (memcmp(data+28, "Speex   ", 8) == 0) {
+                moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
+                return;
+            }
+
+            // https://xiph.org/flac/ogg_mapping.html
+            if (memcmp(data+29, "FLAC", 4) == 0) {
+                moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
+                return;
+            }
+
+            // https://xiph.org/vorbis/doc/Vorbis_I_spec.html
+            if (memcmp(data+28, "\001vorbis", 7) == 0) {
+                moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
+                return;
+            }
+
+            // https://www.theora.org/doc/Theora.pdf
+            if (memcmp(data+28, "\x80theora", 7) == 0) {
+                moloch_field_string_add(field, session, "video/ogg", 9, TRUE);
+                return;
+            }
+        }
         break;
     case 'P':
         if (memcmp(data, "PK\003\004", 4) == 0) {
@@ -230,10 +318,20 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
             return;
         }
+        if (memcmp(data, "Rar!\x1a", 5) == 0) {
+            moloch_field_string_add(field, session, "application/x-rar", 17, TRUE);
+            return;
+        }
         break;
     case 'W':
         if (memcmp(data, "WAVE", 4) == 0) {
             moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
+            return;
+        }
+        break;
+    case 'd':
+        if (len > 20 && memcmp(data, "d8:announce", 11) == 0) {
+            moloch_field_string_add(field, session, "application/x-bittorrent", 24, TRUE);
             return;
         }
         break;
@@ -243,13 +341,19 @@ void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char 
             return;
         }
         break;
+    case '\375':
+        if (memcmp(data, "\3757zXZ", 5) == 0) {
+            moloch_field_string_add(field, session, "application/x-xz", 16, TRUE);
+            return;
+        }
+        break;
     case '\377':
         if (len > 10 && memcmp(data, "\377\330\377", 3) == 0) {
             moloch_field_string_add(field, session, "image/jpeg", 10, TRUE);
             return;
         }
         break;
-    }
+    } /* switch */
 }
 /******************************************************************************/
 void moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const char *data, int len)
