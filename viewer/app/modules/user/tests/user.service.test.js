@@ -94,7 +94,7 @@
       });
 
       it('should save user\'s settings', function() {
-        UserService.saveSettings(user.settings``);
+        UserService.saveSettings(user.settings);
 
         $httpBackend.expect('POST', 'user/settings/update',
            function(postData) {
