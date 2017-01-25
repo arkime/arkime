@@ -204,7 +204,6 @@
 
           $httpBackend.flush();
 
-          expect(settingsCtrl.date).toEqual(date);
           expect(settingsCtrl.dateFormat).toEqual('yyyy/MM/dd HH:mm:ss');
 
           // change the timezone and update time
@@ -222,7 +221,6 @@
 
           expect(settingsCtrl.msg).toEqual('SUCCESS!');
           expect(settingsCtrl.msgType).toEqual('success');
-          expect(settingsCtrl.date).toEqual(date);
           expect(settingsCtrl.dateFormat).toEqual('yyyy/MM/dd HH:mm:ss\'Z\'');
         });
 
@@ -732,7 +730,6 @@
 
           $httpBackend.flush();
 
-          expect(settingsCtrl.date).toEqual(date);
           expect(settingsCtrl.dateFormat).toEqual('yyyy/MM/dd HH:mm:ss');
 
           // change the timezone and update time
@@ -749,7 +746,6 @@
 
           expect(settingsCtrl.msg).toEqual('SUCCESS!');
           expect(settingsCtrl.msgType).toEqual('success');
-          expect(settingsCtrl.date).toEqual(date);
           expect(settingsCtrl.dateFormat).toEqual('yyyy/MM/dd HH:mm:ss\'Z\'');
         });
 
