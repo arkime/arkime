@@ -100,8 +100,8 @@
     });
 
     it('should set the parsed value', function() {
-      expect(sessionField.parsed).not.toEqual(session.value);
-      expect(sessionField.parsed).toEqual(['2003/06/10 20:06:18']);
+      expect(sessionField.parsed[0].value).not.toEqual(session.value);
+      expect(sessionField.parsed[0].value).toEqual('2003/06/10 20:06:18');
     });
 
     it('should not update the parsed value for unparsed values', function() {
@@ -117,7 +117,7 @@
 
       sessionField.parseValue(sessionField.field);
 
-      expect(sessionField.parsed).toEqual([sessionField.value]);
+      expect(sessionField.parsed[0].queryVal).toEqual(sessionField.value);
     });
 
     it('should be able to click the field', function() {

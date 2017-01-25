@@ -1,37 +1,37 @@
 <!-- normal field with a single value -->
 <span ng-if="::!$ctrl.fieldObj.children && $ctrl.parsed !== undefined"
-  ng-repeat="val in ::$ctrl.parsed track by $index">
+  ng-repeat="parsed in ::$ctrl.parsed track by $index">
   <span uib-dropdown on-toggle="toggled(open)" class="field" ng-if="::!$ctrl.time">
     <a href id="simple-dropdown" uib-dropdown-toggle>
-      <span class="all-copy">{{::val}}</span><span class="fa fa-caret-down"></span>
+      <span class="all-copy">{{::parsed.value}}</span><span class="fa fa-caret-down"></span>
     </a>
     <ul class="dropdown-menu" uib-dropdown-menu
       ng-class="{'pull-left':$ctrl.pullLeft, 'pull-right':!$ctrl.pullLeft}">
       <div>
-        <li ng-click="$ctrl.fieldClick($ctrl.expr, val, '==')">
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '==')">
           <a href>
             <strong>and</strong>
-            {{::val}}
+            {{::parsed.value}}
           </a>
         </li>
-        <li ng-click="$ctrl.fieldClick($ctrl.expr, val, '!=')">
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '!=')">
           <a href>
             <strong>and not</strong>
-            {{::val}}
+            {{::parsed.value}}
           </a>
         </li>
       </div>
       <div ng-if="::$ctrl.fieldObj.portField && $ctrl.session[$ctrl.fieldObj.portField] !== undefined">
-        <li ng-click="$ctrl.fieldClick($ctrl.expr, val + ':' + $ctrl.session[$ctrl.fieldObj.portField], '==')">
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.fieldObj.portField], '==')">
           <a href>
             <strong>and</strong>
-            {{::val}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
+            {{::parsed.value}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
           </a>
         </li>
-        <li ng-click="$ctrl.fieldClick($ctrl.expr, val + ':' + $ctrl.session[$ctrl.fieldObj.portField], '!=')">
+        <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.fieldObj.portField], '!=')">
           <a href>
             <strong>and not</strong>
-            {{::val}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
+            {{::parsed.value}}:{{$ctrl.session[$ctrl.fieldObj.portField]}}
           </a>
         </li>
       </div>
@@ -48,7 +48,7 @@
   <span ng-if="::$ctrl.time" class="field cursor-pointer"
     ng-click="$ctrl.timeClick($ctrl.expr, $ctrl.time)"
     uib-tooltip="Click to apply time constraint">
-    <a>{{::val}}</a>
+    <a>{{::parsed.value}}</a>
   </span>
 </span>
 

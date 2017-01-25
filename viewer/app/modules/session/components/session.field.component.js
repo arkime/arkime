@@ -147,20 +147,24 @@
         this.value    = this.session['tipv62-term'];
       }
 
-      this.parsed = this.value;
+      this.parsed = {
+        queryVal: this.value,
+        value   : this.value
+      };
 
       // the parsed value is always an array
-      if (!Array.isArray(this.value)) { this.parsed = [this.value]; }
+      if (!Array.isArray(this.value)) { this.parsed = [this.parsed]; }
 
       if (!this.fieldObj || !this.value) { return; }
 
       for (let i = 0, len = this.parsed.length; i < len; ++i) {
-        let val = this.parsed[i];
+        let val   = this.parsed[i].value;
+        let qVal  = this.parsed[i].queryVal;
 
         switch (this.fieldObj.type) {
           case 'seconds':
-            this.time = val;
-            val = this.$filter('timezone-date')(val, this.timezone);
+            qVal  = val; // save original value as the query value
+            val   = this.$filter('timezone-date')(val, this.timezone);
             let dateFormat = 'yyyy/MM/dd HH:mm:ss';
             if (this.timezone === 'gmt') {
               dateFormat = 'yyyy/MM/dd HH:mm:ss\'Z\'';
@@ -168,27 +172,32 @@
             val = this.$filter('date')(val, dateFormat);
             break;
           case 'ip':
-            val = this.$filter('extractIPString')(val);
+            val   = this.$filter('extractIPString')(val);
+            qVal  = val; // save the parsed value as the query value
             break;
           case 'lotermfield':
             if (this.fieldObj.dbField === 'tipv61-term' ||
                 this.fieldObj.dbField === 'tipv62-term') {
-              val = this.$filter('extractIPv6String')(val);
+              val   = this.$filter('extractIPv6String')(val);
+              qVal  = val; // don't save original value
             }
             break;
           case 'termfield':
             if (this.fieldObj.dbField === 'prot-term') {
-              val = this.$filter('protocol')(val);
+              val   = this.$filter('protocol')(val);
+              qVal  = val; // save the parsed value as the query value
             }
             break;
           case 'integer':
             if (this.fieldObj.category !== 'port') {
-              val = this.$filter('number')(val, 0);
+              qVal  = val; // save original value as the query value
+              val   = this.$filter('number')(val, 0);
             }
             break;
         }
 
-        this.parsed[i] = val; // update parsed value in array
+        this.parsed[i].value    = val;  // update parsed value in array
+        this.parsed[i].queryVal = qVal; // update query value in array
       }
     }
 
