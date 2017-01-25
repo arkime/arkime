@@ -930,6 +930,19 @@ app.get('/vendor.bundle.js.map', function(req, res) {
 
 
 /* User Endpoints ---------------------------------------------------------- */
+// default settings for users with no settings
+var settingDefaults = {
+  timezone      : 'local',
+  detailFormat  : 'last',
+  showTimestamps: 'last',
+  sortColumn    : 'start',
+  sortDirection : 'asc',
+  spiGraph      : 'no',
+  connSrcField  : 'a1',
+  connDstField  : 'ip.dst:port',
+  numPackets    : 'last'
+};
+
 // gets the current user
 app.get('/user/current', function(req, res) {
   Db.getUserCache(req.user.userId, function(err, user) {
@@ -956,6 +969,11 @@ app.get('/user/current', function(req, res) {
       }
     }
 
+    // send default settings if user doesn't have settings
+    if (Object.keys(clone.settings).length === 0) {
+      clone.settings = settingDefaults;
+    }
+
     return res.send(clone);
   });
 });
@@ -976,18 +994,6 @@ app.get('/user/settings', function(req, res) {
     // user is trying to get another user's settings without admin privilege
     return error(403, 'Need admin privileges');
   }
-
-  var settingDefaults = {
-    timezone      : 'local',
-    detailFormat  : 'last',
-    showTimestamps: 'last',
-    sortColumn    : 'start',
-    sortDirection : 'asc',
-    spiGraph      : 'no',
-    connSrcField  : 'a1',
-    connDstField  : 'ip.dst:port',
-    numPackets    : 'last'
-  };
 
   Db.getUserCache(userId, function(err, user) {
     if (err || !user || !user.found) {

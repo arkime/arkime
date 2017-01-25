@@ -156,7 +156,7 @@
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:10">
             <label class="label label-lg label-info"
               uib-tooltip="{{$ctrl.getField($ctrl.settings.spiGraph).help}}">
-              {{$ctrl.formatField($ctrl.settings.spiGraph) || '???'}}
+              {{$ctrl.formatField($ctrl.settings.spiGraph) || 'unknown field'}}
             </label>
           </div>
         </div>
@@ -174,7 +174,7 @@
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:10">
             <label class="label label-lg label-info"
               uib-tooltip="{{$ctrl.getField($ctrl.settings.connSrcField).help}}">
-              {{$ctrl.formatField($ctrl.settings.connSrcField) || '???'}}
+              {{$ctrl.formatField($ctrl.settings.connSrcField) || 'unknown field'}}
             </label>
           </div>
         </div>
@@ -190,7 +190,7 @@
               uib-typeahead="field.dbField as field.exp for field in $ctrl.fieldsPlus | filter:$viewValue | limitTo:10">
             <label class="label label-lg label-info"
               uib-tooltip="{{$ctrl.getField($ctrl.settings.connDstField).help}}">
-              {{$ctrl.formatField($ctrl.settings.connDstField) || '???'}}
+              {{$ctrl.formatField($ctrl.settings.connDstField) || 'unknown field'}}
             </label>
           </div>
         </div>

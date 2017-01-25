@@ -46,7 +46,7 @@
           let isAdminEdit = false;
 
           // only admins can edit other users' settings
-          if (response.createEnabled) {
+          if (response.createEnabled && this.$routeParams.userId) {
             if (response.userId === this.$routeParams.userId) {
               // admin editing their own user so the routeParam is unnecessary
               this.$location.search('userId', null);
