@@ -4,7 +4,7 @@
   - capture - better mongo detection
   - db - dstats_2 and stats_v1 now use date for time for kibana support, also prepares for ES 5 upgrade
   - capture - some arm64 fixes (issue #584)
-  - viewer - new settings page:
+  - viewer - new settings page
 
 0.17.0 2017/01/05
   - NOTICE: npm update required

@@ -29,25 +29,25 @@
     <!-- navigation -->
     <div class="col-md-2 col-sm-4">
       <ul class="nav nav-pills nav-stacked affix">
-        <li role="presentation" ng-class="{'active':$ctrl.view === 'general'}">
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'general'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('general')">
             <span class="fa fa-fw fa-cog"></span>&nbsp;
             General
           </a>
         </li>
-        <li role="presentation" ng-class="{'active':$ctrl.view === 'views'}">
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'views'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('views')">
             <span class="fa fa-fw fa-eye"></span>&nbsp;
             Views
           </a>
         </li>
-        <li role="presentation" ng-class="{'active':$ctrl.view === 'cron'}">
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'cron'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('cron')">
             <span class="fa fa-fw fa-search"></span>&nbsp;
             Cron Queries
           </a>
         </li>
-        <li role="presentation" ng-class="{'active':$ctrl.view === 'password'}">
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'password'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('password')">
             <span class="fa fa-fw fa-lock"></span>&nbsp;
             Password
@@ -60,7 +60,7 @@
     <div class="col-md-10 col-sm-8">
 
       <!-- general settings -->
-      <form class="form-horizontal" ng-if="$ctrl.view === 'general'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'general'">
 
         <h3>General</h3>
 
@@ -198,7 +198,7 @@
       </form> <!-- /general settings -->
 
       <!-- view settings -->
-      <form class="form-horizontal" ng-if="$ctrl.view === 'views'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'views'">
 
         <h3>Views</h3>
 
@@ -294,7 +294,7 @@
       </form> <!-- /view settings -->
 
       <!-- cron query settings -->
-      <form class="form-horizontal" ng-if="$ctrl.view === 'cron'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'cron'">
 
         <h3>Cron Queries</h3>
 
@@ -446,7 +446,7 @@
       </form> <!-- /cron query settings -->
 
       <!-- password settings -->
-      <form class="form-horizontal" ng-if="$ctrl.view === 'password'"
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'password'"
         enter-click="$ctrl.changePassword()">
 
         <h3>Change Password</h3>

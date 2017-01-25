@@ -695,7 +695,7 @@ function checkCookieToken(req, res, next) {
   var diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || req.token.pid !== process.pid ||
       req.token.userId !== req.user.userId) {
-    console.trace("bad token", req.token);
+    console.trace('bad token', req.token);
     return error('Timeout - Please try reloading page and repeating the action');
   }
 
@@ -938,7 +938,7 @@ app.get('/user/current', function(req, res) {
         return res.send(req.user);
       } else {
         console.log('/user/current error', err, user);
-        res.status(500);
+        res.status(403);
         return res.send(JSON.stringify({success: false, text: 'Unknown user'}));
       }
     }
@@ -962,19 +962,19 @@ app.get('/user/current', function(req, res) {
 
 // gets a user's settings
 app.get('/user/settings', function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   var userId = req.user.userId;                         // get current user
   if (req.query.userId) { userId = req.query.userId; }  // or requested user
 
-  if (Config.get('demoMode', false)) { return error('Disabled'); }
+  if (Config.get('demoMode', false)) { return error(403, 'Disabled'); }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to get another user's settings without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
   var settingDefaults = {
@@ -1008,8 +1008,8 @@ app.get('/user/settings', function(req, res) {
 
 // updates a user's settings
 app.post('/user/settings/update', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
@@ -1018,13 +1018,13 @@ app.post('/user/settings/update', checkCookieToken, function(req, res) {
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to update another user's settings without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
   Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
       console.log('/user/settings/update failed', err, user);
-      return error('Unknown user');
+      return error(403, 'Unknown user');
     }
 
     user = user._source;
@@ -1034,7 +1034,7 @@ app.post('/user/settings/update', checkCookieToken, function(req, res) {
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log('/user/settings/update error', err, info);
-        return error('Settings update failed');
+        return error(500, 'Settings update failed');
       }
       return res.send(JSON.stringify({
         success : true,
@@ -1051,7 +1051,7 @@ app.get('/user/views', function(req, res) {
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to get another user's views without admin privilege
-    res.status(500);
+    res.status(403);
     return res.send(JSON.stringify({success: false, text: 'Need admin privileges'}));
   }
 
@@ -1074,18 +1074,18 @@ app.get('/user/views', function(req, res) {
 
 // creates a new view for a user
 app.post('/user/views/create', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to create a view for another user without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (!req.body.viewName)   { return error('Missing view name'); }
-  if (!req.body.expression) { return error('Missing view expression'); }
+  if (!req.body.viewName)   { return error(403, 'Missing view name'); }
+  if (!req.body.expression) { return error(403, 'Missing view expression'); }
 
   var userId = req.user.userId;                         // get current user
   if (req.query.userId) { userId = req.query.userId; }  // or requested user
@@ -1093,7 +1093,7 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
   Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
       console.log('/user/views/create failed', err, user);
-      return error('Unknown user');
+      return error(403, 'Unknown user');
     }
 
     user = user._source;
@@ -1119,7 +1119,7 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log('/user/views/create error', err, info);
-        return error('Create view failed');
+        return error(500, 'Create view failed');
       }
       return res.send(JSON.stringify({
         success : true,
@@ -1131,17 +1131,17 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
 
 // deletes a user's specified view
 app.post('/user/views/delete', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to delete another user's view without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (!req.body.view) { return error('Missing view'); }
+  if (!req.body.view) { return error(403, 'Missing view'); }
 
   var userId = req.user.userId;                         // get current user
   if (req.query.userId) { userId = req.query.userId; }  // or requested user
@@ -1149,7 +1149,7 @@ app.post('/user/views/delete', checkCookieToken, function(req, res) {
   Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
       console.log('/user/views/delete failed', err, user);
-      return error('Unknown user');
+      return error(403, 'Unknown user');
     }
 
     user = user._source;
@@ -1159,7 +1159,7 @@ app.post('/user/views/delete', checkCookieToken, function(req, res) {
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log('/user/views/delete failed', err, info);
-        return error('Delete view failed');
+        return error(500, 'Delete view failed');
       }
       return res.send(JSON.stringify({
         success : true,
@@ -1171,19 +1171,19 @@ app.post('/user/views/delete', checkCookieToken, function(req, res) {
 
 // updates a user's specified view
 app.post('/user/views/update', function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to update another user's view without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (!req.body.name)       { return error('Missing view name'); }
-  if (!req.body.expression) { return error('Missing view expression'); }
-  if (!req.body.key)        { return error('Missing view key'); }
+  if (!req.body.name)       { return error(403, 'Missing view name'); }
+  if (!req.body.expression) { return error(403, 'Missing view expression'); }
+  if (!req.body.key)        { return error(403, 'Missing view key'); }
 
   var userId = req.user.userId;                         // get current user
   if (req.query.userId) { userId = req.query.userId; }  // or requested user
@@ -1191,7 +1191,7 @@ app.post('/user/views/update', function(req, res) {
   Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
       console.log('/user/views/update failed', err, user);
-      return error('Unknown user');
+      return error(403, 'Unknown user');
     }
 
     user = user._source;
@@ -1223,7 +1223,7 @@ app.post('/user/views/update', function(req, res) {
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log('/user/views/update error', err, info);
-        return error('Updating view failed');
+        return error(500, 'Updating view failed');
       }
       return res.send(JSON.stringify({
         success : true,
@@ -1237,7 +1237,7 @@ app.post('/user/views/update', function(req, res) {
 // gets a user's cron queries
 app.get('/user/cron', function(req, res) {
   function error(text) {
-    res.status(500);
+    res.status(403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
@@ -1282,20 +1282,20 @@ app.get('/user/cron', function(req, res) {
 
 // creates a new cron query for a user
 app.post('/user/cron/create', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to create a cron query for another user without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (!req.body.name)   { return error('Missing cron query name'); }
-  if (!req.body.query)  { return error('Missing cron query expression'); }
-  if (!req.body.action) { return error('Missing cron query action'); }
-  if (!req.body.tags)   { return error('Missing cron query tag(s)'); }
+  if (!req.body.name)   { return error(403, 'Missing cron query name'); }
+  if (!req.body.query)  { return error(403, 'Missing cron query expression'); }
+  if (!req.body.action) { return error(403, 'Missing cron query action'); }
+  if (!req.body.tags)   { return error(403, 'Missing cron query tag(s)'); }
 
   var document = {
     doc: {
@@ -1320,6 +1320,10 @@ app.post('/user/cron/create', checkCookieToken, function(req, res) {
   document.doc.creator = userId || 'anonymous';
 
   Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
+    if (err) {
+      console.log('/user/cron/create error', err, info);
+      return error(500, 'Create cron query failed');
+    }
     if (Config.get('cronQueries', false)) {
       processCronQueries();
     }
@@ -1333,19 +1337,23 @@ app.post('/user/cron/create', checkCookieToken, function(req, res) {
 
 // deletes a user's specified cron query
 app.post('/user/cron/delete', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to delete a cron query for another user without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (!req.body.key) { return error('Missing cron query key'); }
+  if (!req.body.key) { return error(403, 'Missing cron query key'); }
 
   Db.deleteDocument('queries', 'query', req.body.key, {refresh: 1}, function(err, sq) {
+    if (err) {
+      console.log('/user/cron/delete error', err, info);
+      return error(500, 'Delete cron query failed');
+    }
     res.send(JSON.stringify({
       success : true,
       text    : 'Deleted cron query successfully'
@@ -1355,21 +1363,21 @@ app.post('/user/cron/delete', checkCookieToken, function(req, res) {
 
 // updates a user's specified cron query
 app.post('/user/cron/update', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to update a cron query for another user without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (!req.body.key)    { return error('Missing cron query key'); }
-  if (!req.body.name)   { return error('Missing cron query name'); }
-  if (!req.body.query)  { return error('Missing cron query expression'); }
-  if (!req.body.action) { return error('Missing cron query action'); }
-  if (!req.body.tags)   { return error('Missing cron query tag(s)'); }
+  if (!req.body.key)    { return error(403, 'Missing cron query key'); }
+  if (!req.body.name)   { return error(403, 'Missing cron query name'); }
+  if (!req.body.query)  { return error(403, 'Missing cron query expression'); }
+  if (!req.body.action) { return error(403, 'Missing cron query action'); }
+  if (!req.body.tags)   { return error(403, 'Missing cron query tag(s)'); }
 
   var document = {
     doc: {
@@ -1384,13 +1392,13 @@ app.post('/user/cron/update', checkCookieToken, function(req, res) {
   Db.get('queries', 'query', req.body.key, function(err, sq) {
     if (err || !sq.found) {
       console.log('/user/cron/update failed', err, sq);
-      return error('Unknown query');
+      return error(403, 'Unknown query');
     }
 
     Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
       if (err) {
         console.log('/user/cron/update error', err, document, data);
-        return error('Cron query update failed');
+        return error(500, 'Cron query update failed');
       }
       if (Config.get('cronQueries', false)) {
         processCronQueries();
@@ -1405,26 +1413,26 @@ app.post('/user/cron/update', checkCookieToken, function(req, res) {
 
 // changes a user's password
 app.post('/user/password/change', checkCookieToken, function(req, res) {
-  function error(text) {
-    res.status(500);
+  function error(status, text) {
+    res.status(status || 403);
     return res.send(JSON.stringify({ success: false, text: text }));
   }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to change password for another user without admin privilege
-    return error('Need admin privileges');
+    return error(403, 'Need admin privileges');
   }
 
-  if (Config.get('demoMode', false)) { return error('Disabled'); }
+  if (Config.get('demoMode', false)) { return error(403, 'Disabled'); }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return error('New password needs to be at least 3 characters');
+    return error(403, 'New password needs to be at least 3 characters');
   }
 
   if (!req.query.userId && (req.user.passStore !==
      Config.pass2store(req.token.userId, req.body.currentPassword) ||
      req.token.userId !== req.user.userId)) {
-    return error('Current password mismatch');
+    return error(403, 'Current password mismatch');
   }
 
   var userId = req.user.userId;                         // get current user
@@ -1433,7 +1441,7 @@ app.post('/user/password/change', checkCookieToken, function(req, res) {
   Db.getUser(userId, function(err, user) {
     if (err || !user.found) {
       console.log('/user/password/change error', err, user);
-      return error('Unknown user');
+      return error(403, 'Unknown user');
     }
 
     user = user._source;
@@ -1442,7 +1450,7 @@ app.post('/user/password/change', checkCookieToken, function(req, res) {
     Db.setUser(user.userId, user, function(err, info) {
       if (err) {
         console.log('/user/password/change error', err, info);
-        return error('Update failed');
+        return error(500, 'Update failed');
       }
       return res.send(JSON.stringify({
         success : true,

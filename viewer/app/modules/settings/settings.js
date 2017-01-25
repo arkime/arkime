@@ -35,19 +35,23 @@
     $onInit() {
       this.loading  = true;
       this.error    = false;
-      this.view     = 'general';
+
+      this.visibleTab = 'general';
 
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
 
       this.UserService.getCurrent()
         .then((response) => {
+          let isAdminEdit = false;
+
           // only admins can edit other users' settings
           if (response.createEnabled) {
             if (response.userId === this.$routeParams.userId) {
               // admin editing their own user so the routeParam is unnecessary
               this.$location.search('userId', null);
             } else { // admin editing another user
+              isAdminEdit = true;
               this.userId = this.$routeParams.userId;
             }
           } else { // normal user has no permission, so remove the routeParam
@@ -55,11 +59,15 @@
             this.$location.search('userId', null);
           }
 
-          this.loading  = false;
-          this.settings = response.settings;
+          // set the settings
+          if (isAdminEdit) { // get settings if it's for a different user
+            this.getSettings();
+          } else { // we already have the current user's settings
+            this.loading  = false;
+            this.settings = response.settings;
 
-          this.tick();
-          this.$interval(() => { this.tick(); }, 1000);
+            this.startClock();
+          }
 
           // get all the other things!
           this.getViews();
@@ -89,6 +97,22 @@
 
 
     /* service functions --------------------------------------------------- */
+    /* retrieves the specified user's settings */
+    getSettings() {
+      this.UserService.getSettings(this.userId)
+        .then((response) => {
+          this.settings = response;
+          this.loading  = false;
+
+          this.startClock();
+        })
+        .catch((error) => {
+          this.loading  = false;
+          this.error    = error;
+        });
+    }
+
+    /* retrieves the specified user's views */
     getViews() {
       this.UserService.getViews(this.userId)
         .then((response) => {
@@ -99,6 +123,7 @@
         });
     }
 
+    /* retrieves the specified user's cron queries */
     getCronQueries() {
       this.UserService.getCronQueries(this.userId)
         .then((response) => {
@@ -111,14 +136,21 @@
 
 
     /* page functions ------------------------------------------------------ */
-    openView(view) {
-      this.view = view;
+    /* opens a specific settings tab */
+    openView(tabName) {
+      this.visibleTab = tabName;
     }
 
     /* remove the message when user is done with it or duration ends */
     messageDone() {
       this.msg = null;
       this.msgType = null;
+    }
+
+    /* starts the clock for the timezone setting */
+    startClock() {
+      this.tick();
+      this.$interval(() => { this.tick(); }, 1000);
     }
 
 
