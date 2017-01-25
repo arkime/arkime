@@ -193,14 +193,6 @@
           expect(settingsCtrl.settings).toEqual(newSettings);
         });
 
-        it('should tick the clock', function () {
-          let date = new Date();
-
-          settingsCtrl.tick();
-
-          expect(settingsCtrl.date).toEqual(date);
-        });
-
         it('should be able to update the time', function () {
           let date = new Date();
 
