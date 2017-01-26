@@ -18,7 +18,7 @@ Basic Moloch Installation steps:
   b) If this is an update to moloch package
       /data/moloch/db/db.pl http://ESHOST:9200 upgrade
  6) Add an admin user if a new install or after an init
-      /data/moloch/bin/moloch_add_user.sh admin admin THEPASSWORDGOESHERE --admin
+      /data/moloch/bin/moloch_add_user.sh admin "Admin User" THEPASSWORD --admin
  7) Start everything
    a) If using Centos 6 or Ubuntu 14.02:
       /sbin/start molochcapture
@@ -30,6 +30,8 @@ Basic Moloch Installation steps:
       /data/moloch/logs/viewer.log
       /data/moloch/logs/capture.log
  9) Visit http://molochhost:8005 with your favorite browser.
+      user: admin
+      password: password from step #6
 
 
 Additional information can be found at:
