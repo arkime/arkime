@@ -279,11 +279,13 @@ void reader_tpacketv3_init(char *UNUSED(name))
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
             LOGEXIT("Error setting PROMISC: %s", strerror(errno));
 
-        struct sock_fprog       fcode;
-        fcode.len = bpf.bf_len;
-        fcode.filter = (struct sock_filter *)bpf.bf_insns;
-        if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
-            LOGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+        if (config.bpf) {
+            struct sock_fprog       fcode;
+            fcode.len = bpf.bf_len;
+            fcode.filter = (struct sock_filter *)bpf.bf_insns;
+            if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
+                LOGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+        }
 
         infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
                              PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
