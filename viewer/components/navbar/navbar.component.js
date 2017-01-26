@@ -55,6 +55,14 @@
      */
     navTabClick(link) {
       let path = this.$location.path();
+
+      // going from settings -> help page
+      if (path.contains('settings') && link.contains('help')) {
+        this.$location.hash('settings');
+      } else { // remove the hash value
+        this.$location.hash(null);
+      }
+
       this.$window.location.href = this.$location.url().replace(path, link);
     }
 

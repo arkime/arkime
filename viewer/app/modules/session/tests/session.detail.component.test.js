@@ -24,6 +24,18 @@
     id    :'sessionid'
   };
 
+  let userSettings = {
+    timezone        : 'local',
+    detailFormat    : 'last',
+    showTimestamps  : 'last',
+    sortColumn      : 'start',
+    sortDirection   : 'asc',
+    spiGraph        : 'no',
+    connSrcField    : 'a1',
+    connDstField    : 'ip.dst:port',
+    numPackets      : 'last'
+  };
+
   describe('Session Detail Component ->', function() {
 
     // load the module
@@ -45,37 +57,41 @@
       $controller,
       $rootScope) {
 
-        $httpBackend = _$httpBackend_;
+      $httpBackend = _$httpBackend_;
 
-        // initial query for session detail
-        $httpBackend.expectGET(sessionDtlsEndpoint)
-           .respond(200, '');
+      // query for user settings
+      $httpBackend.expectGET('user/settings')
+        .respond(200, userSettings);
 
-        // query for moloch clickable values
-        $httpBackend.expectGET(configEndpoint)
-           .respond(200, {});
+      // initial query for session detail
+      $httpBackend.expectGET(sessionDtlsEndpoint)
+         .respond(200, '');
 
-        // query for moloch fields
-        $httpBackend.expectGET(fieldEndpoint)
-           .respond(200, {});
+      // query for moloch clickable values
+      $httpBackend.expectGET(configEndpoint)
+         .respond(200, {});
 
-        scope = $rootScope.$new();
+      // query for moloch fields
+      $httpBackend.expectGET(fieldEndpoint)
+         .respond(200, {});
 
-        scope.session   = session;
+      scope = $rootScope.$new();
 
-        let htmlString  = '<session-detail session="session"></session-detail>';
+      scope.session   = session;
 
-        let element     = angular.element(htmlString);
-        let template    = $compile(element)(scope);
+      let htmlString  = '<session-detail session="session"></session-detail>';
 
-        scope.$digest();
+      let element     = angular.element(htmlString);
+      let template    = $compile(element)(scope);
 
-        sessionDtlsComponent = element.controller('sessionDetail');
-        templateAsHtml = template.html();
+      scope.$digest();
 
-        spyOn(sessionDtlsComponent.$scope, '$emit').and.callThrough();
+      sessionDtlsComponent = element.controller('sessionDetail');
+      templateAsHtml = template.html();
 
-        $httpBackend.flush();
+      spyOn(sessionDtlsComponent.$scope, '$emit').and.callThrough();
+
+      $httpBackend.flush();
     }));
 
     afterEach(function() {

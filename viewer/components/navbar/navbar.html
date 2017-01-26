@@ -1,7 +1,7 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="container-fluid">
 
-    <a href="help">
+    <a ng-click="$ctrl.navTabClick('help')" class="cursor-pointer">
       <img ng-src="header_logo.png" class="moloch-logo">
     </a>
 
@@ -18,7 +18,10 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a href="app" class="navbar-brand">Moloch</a>
+      <a ng-click="$ctrl.navTabClick('app')"
+        class="navbar-brand cursor-pointer">
+        Moloch
+      </a>
     </div>
 
     <div uib-collapse="$ctrl.isCollapsed" class="navbar-collapse collapse">

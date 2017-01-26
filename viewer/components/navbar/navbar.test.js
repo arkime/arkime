@@ -2,6 +2,8 @@
 
   'use strict';
 
+  let fakeWindow = { location: { href: '' } };
+
   describe('Navbar Directive ->', function() {
 
     // load the module
@@ -26,15 +28,14 @@
 
       scope = $rootScope.$new();
 
-      var element   = angular.element('<navbar></navbar>');
-      var template  = $compile(element)(scope);
+      let element   = angular.element('<navbar></navbar>');
+      let template  = $compile(element)(scope);
 
       navbar = $componentController('navbar', {
         $location     : $location,
+        $window       : fakeWindow,
         molochVersion : molochVersion
       });
-
-      spyOn(navbar, 'isActive').and.callThrough();
 
       scope.$digest();
       templateAsHtml = template.html();
@@ -49,12 +50,13 @@
     it('should exist and have dependencies', function() {
       expect(navbar).toBeDefined();
       expect(navbar.$location).toBeDefined();
+      expect(navbar.$window).toBeDefined();
       expect(navbar.molochVersion).toBeDefined();
     });
 
     it('should render html with menu items', function() {
       expect(templateAsHtml).toBeDefined();
-      for (var key in navbar.menu) {
+      for (let key in navbar.menu) {
         expect(templateAsHtml).toContain(navbar.menu[key].title);
       }
     });
@@ -66,6 +68,15 @@
 
     it('should verify active route', function() {
       expect(navbar.isActive('app')).toBeTruthy();
+    });
+
+    it('should add #settings to the url', function() {
+      // navigating from the settings page to the help page should append
+      // #settings to the url
+      navbar.$location.path('/settings');
+      navbar.navTabClick('help');
+
+      expect(fakeWindow.location.href.contains('#settings')).toBeTruthy();
     });
 
   });

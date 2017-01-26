@@ -2,6 +2,12 @@
 
   'use strict';
 
+  const defaultUserSettings = {
+    detailFormat  : 'last',
+    numPackets    : 'last',
+    showTimestamps: 'last'
+  };
+
   /**
    * @class SessionDetailController
    * @classdesc Interacts with session details
@@ -17,16 +23,19 @@
      * @param SessionService  Transacts sessions with the server
      * @param ConfigService   Transacts app configurations with the server
      * @param FieldService    Retrieves available fields from the server
+     * @param UserService     Transacts users and user data with the server
      *
      * @ngInject
      */
-    constructor($sce, $scope, $routeParams, SessionService, ConfigService, FieldService) {
+    constructor($sce, $scope, $routeParams,
+                SessionService, ConfigService, FieldService, UserService) {
       this.$sce           = $sce;
       this.$scope         = $scope;
       this.$routeParams   = $routeParams;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
       this.FieldService   = FieldService;
+      this.UserService    = UserService;
     }
 
     /* Callback when component is mounted and ready */
@@ -46,30 +55,22 @@
         packets : 200
       };
 
-      if (localStorage) { // display browser saved options
-        if (localStorage['moloch-base']) {
-          this.$scope.params.base = localStorage['moloch-base'];
-        }
-        if (localStorage['moloch-ts']) {
-          this.$scope.params.ts = JSON.parse(localStorage['moloch-ts']);
-        }
-        if (localStorage['moloch-line']) {
-          this.$scope.params.line = JSON.parse(localStorage['moloch-line']);
-        }
-        if (localStorage['moloch-gzip']) {
-          this.$scope.params.gzip = JSON.parse(localStorage['moloch-gzip']);
-        }
-        if (localStorage['moloch-image']) {
-          this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
-        }
-        if (localStorage['moloch-packets'] && JSON.parse(localStorage['moloch-packets'])) {
-          this.$scope.params.packets = JSON.parse(localStorage['moloch-packets']);
-        }
-      }
+      this.UserService.getSettings()
+        .then((response) => {
+          this.userSettings = response;
+
+          this.setParameters();
+          this.getPackets();
+        })
+        .catch((error) => {
+          // can't get user, so use defaults
+          this.userSettings = defaultUserSettings;
+
+          this.setParameters();
+          this.getPackets();
+        });
 
       this.getDetailData(); // get SPI data
-
-      this.getPackets();    // get packet data
 
       this.ConfigService.getMolochClickables()
         .then((response) => {
@@ -100,6 +101,37 @@
       });
     }
 
+    /* sets the session detail query parameters based on user settings and
+       browser saved options */
+    setParameters() {
+      if (localStorage) { // display user and browser saved options
+        if (this.userSettings.detailFormat === 'last' && localStorage['moloch-base']) {
+          this.$scope.params.base = localStorage['moloch-base'];
+        } else if (this.userSettings.detailFormat) {
+          this.$scope.params.base = this.userSettings.detailFormat;
+        }
+        if (this.userSettings.numPackets === 'last' && localStorage['moloch-packets']) {
+          this.$scope.params.packets = localStorage['moloch-packets'];
+        } else if (this.userSettings.numPackets) {
+          this.$scope.params.packets = this.userSettings.numPackets;
+        }
+        if (this.userSettings.showTimestamps === 'last' && localStorage['moloch-ts']) {
+          this.$scope.params.ts = localStorage['moloch-ts'] === 'true';
+        } else if (this.userSettings.showTimestamps) {
+          this.$scope.params.ts = this.userSettings.showTimestamps === 'on';
+        }
+        if (localStorage['moloch-line']) {
+          this.$scope.params.line = JSON.parse(localStorage['moloch-line']);
+        }
+        if (localStorage['moloch-gzip']) {
+          this.$scope.params.gzip = JSON.parse(localStorage['moloch-gzip']);
+        }
+        if (localStorage['moloch-image']) {
+          this.$scope.params.image = JSON.parse(localStorage['moloch-image']);
+        }
+      }
+    }
+
 
     /* exposed functions --------------------------------------------------- */
     /**
@@ -124,9 +156,7 @@
         });
     }
 
-    /**
-     * Gets the packets for the session from the server
-     */
+    /* Gets the packets for the session from the server */
     getPackets() {
       // already loading, don't load again!
       if (this.loadingPackets) { return; }
@@ -135,11 +165,15 @@
       this.errorPackets   = false;
 
       if (localStorage) { // update browser saved options
-        localStorage['moloch-base']     = this.$scope.params.base;
-        localStorage['moloch-line']     = this.$scope.params.line;
-        localStorage['moloch-gzip']     = this.$scope.params.gzip;
-        localStorage['moloch-image']    = this.$scope.params.image;
-        localStorage['moloch-packets']  = this.$scope.params.packets;
+        if (this.userSettings.detailFormat === 'last') {
+          localStorage['moloch-base'] = this.$scope.params.base;
+        }
+        if (this.userSettings.numPackets === 'last') {
+          localStorage['moloch-packets'] = this.$scope.params.packets;
+        }
+        localStorage['moloch-line']   = this.$scope.params.line;
+        localStorage['moloch-gzip']   = this.$scope.params.gzip;
+        localStorage['moloch-image']  = this.$scope.params.image;
       }
 
       this.packetPromise = this.SessionService.getPackets(this.$scope.session.id,
@@ -163,7 +197,8 @@
 
     /* Toggles the view of packet timestamps */
     toggleTimeStamps() {
-      if (localStorage) { // update browser saved ts
+      if (localStorage && this.userSettings.showTimestamps === 'last') {
+        // update browser saved ts if the user settings is set to lastl
         localStorage['moloch-ts'] = this.$scope.params.ts;
       }
     }
@@ -203,9 +238,7 @@
       this.$scope.$emit('change:time', { start:startTime });
     }
 
-    /**
-     * Cancels the packet loading request
-     */
+    /* Cancels the packet loading request */
     cancelPacketLoad() {
       this.packetPromise.abort();
       this.packetPromise  = null;
@@ -214,8 +247,8 @@
 
   }
 
-  SessionDetailController.$inject = ['$sce','$scope', '$routeParams',
-    'SessionService','ConfigService','FieldService'];
+  SessionDetailController.$inject = ['$sce','$scope','$routeParams',
+    'SessionService','ConfigService','FieldService','UserService'];
 
 
   angular.module('moloch')

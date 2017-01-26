@@ -1,4 +1,4 @@
-<div class="container container-settings">
+<div class="container-fluid container-settings">
 
   <div class="row">
     <div class="col-md-12">
@@ -27,7 +27,7 @@
   <div class="row" ng-if="!$ctrl.loading && !$ctrl.error">
 
     <!-- navigation -->
-    <div class="col-md-2 col-sm-4">
+    <div class="col-md-2 col-sm-3">
       <ul class="nav nav-pills nav-stacked affix">
         <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'general'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('general')">
@@ -57,7 +57,7 @@
     </div>
 
     <!-- content -->
-    <div class="col-md-10 col-sm-8">
+    <div class="col-md-10 col-sm-9">
 
       <!-- general settings -->
       <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'general'">
@@ -402,12 +402,12 @@
                 <input type="text" ng-model="$ctrl.newCronQueryName"
                   class="form-control" maxlength="20"
                   uib-tooltip="Enter a new cron query name"
-                  placeholder="Enter a new cron query name">
+                  placeholder="Cron query name">
               </td>
               <td>
                 <input type="text" ng-model="$ctrl.newCronQueryExpression" class="form-control"
-                  uib-tooltip="Enter a comma separated list of tags"
-                  placeholder="Enter a new cron query expression">
+                  uib-tooltip="Enter a new cron query expression"
+                  placeholder="Cron query expression">
               </td>
               <td>
                 <select class="form-control" ng-model="$ctrl.newCronQueryAction">
@@ -421,7 +421,7 @@
               <td>
                 <input type="text" ng-model="$ctrl.newCronQueryTags" class="form-control"
                   uib-tooltip="Enter a comma separated list of tags"
-                  placeholder="Enter a comma separated list of tags">
+                  placeholder="Comma separated list of tags">
               </td>
               <td>
                 <a class="btn btn-primary btn-sm pull-right"
