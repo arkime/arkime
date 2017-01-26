@@ -247,6 +247,10 @@
       expect(sessionComponent.tableState).toBeDefined();
     });
 
+    it('should have smart user settings defaults', function() {
+      expect(sessionComponent.settings).toEqual({ timezone: 'local' });
+    });
+
     it('should toggle session detail', function() {
       sessionComponent.toggleSessionDetail(sessionsJSON.data[0]);
       expect(sessionComponent.stickySessions.length).toEqual(0);

@@ -14,6 +14,8 @@
     visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
   };
 
+  const defaultSettings = { timezone: 'local' };
+
   let customCols = require('json!./custom.columns.json');
 
   let holdingClick = false, timeout;
@@ -175,10 +177,15 @@
     getUserSettings() {
       this.UserService.getSettings()
          .then((settings) => {
-           this.settings = settings || { timezone: 'local' };
+           this.settings = settings;
+           // if the settings are empty, set smart default
+           if (Object.keys(this.settings).length === 0) {
+             this.settings = defaultSettings;
+           }
          })
          .catch((error) => {
-           this.error = error;
+           this.error     = error;
+           this.settings  = defaultSettings;
          });
     }
 
