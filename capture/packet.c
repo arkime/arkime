@@ -980,6 +980,7 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
 
     if (batch) {
         DLL_PUSH_TAIL(packet_, &batch->packetQ[thread], packet);
+        batch->count++;
     } else {
         MOLOCH_LOCK(packetQ[thread].lock);
         DLL_PUSH_TAIL(packet_, &packetQ[thread], packet);
@@ -1238,6 +1239,7 @@ void moloch_packet_batch_init(MolochPacketBatch_t *batch)
     for (t = 0; t < config.packetThreads; t++) {
         DLL_INIT(packet_, &batch->packetQ[t]);
     }
+    batch->count = 0;
 }
 /******************************************************************************/
 void moloch_packet_batch_flush(MolochPacketBatch_t *batch)
@@ -1252,6 +1254,7 @@ void moloch_packet_batch_flush(MolochPacketBatch_t *batch)
             MOLOCH_UNLOCK(packetQ[t].lock);
         }
     }
+    batch->count = 0;
 }
 /******************************************************************************/
 void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet)

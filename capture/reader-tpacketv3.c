@@ -120,6 +120,7 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
     pfd.revents = 0;
 
     MolochPacketBatch_t batch;
+    moloch_packet_batch_init(&batch);
 
     while (!config.quitting) {
         if (pos == -1) {
@@ -155,7 +156,6 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
 
         struct tpacket3_hdr *th;
 
-        moloch_packet_batch_init(&batch);
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
         uint16_t p;
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
