@@ -19,6 +19,7 @@
      * Initialize global variables for this controller
      * @param $sce            Angular strict contextual escaping service
      * @param $scope          Angular application model object
+     * @param $sanitize       Sanitizes an html string by stripping all potentially dangerous tokens
      * @param $routeParams    Retrieve the current set of route parameters
      * @param SessionService  Transacts sessions with the server
      * @param ConfigService   Transacts app configurations with the server
@@ -27,10 +28,11 @@
      *
      * @ngInject
      */
-    constructor($sce, $scope, $routeParams,
+    constructor($sce, $scope, $sanitize, $routeParams,
                 SessionService, ConfigService, FieldService, UserService) {
       this.$sce           = $sce;
       this.$scope         = $scope;
+      this.$sanitize      = $sanitize;
       this.$routeParams   = $routeParams;
       this.SessionService = SessionService;
       this.ConfigService  = ConfigService;
@@ -65,8 +67,7 @@
         .catch((error) => {
           // can't get user, so use defaults
           this.userSettings = defaultUserSettings;
-
-          this.setParameters();
+          // but still get the packets
           this.getPackets();
         });
 
@@ -185,6 +186,9 @@
 
         if (response && response.data) {
           this.$scope.packetHtml = this.$sce.trustAsHtml(response.data);
+          // remove all un-whitelisted tokens from the html
+          this.$scope.packetHtml = this.$sanitize(this.$scope.packetHtml);
+
           this.$scope.renderPackets();
         }
       })
@@ -247,7 +251,7 @@
 
   }
 
-  SessionDetailController.$inject = ['$sce','$scope','$routeParams',
+  SessionDetailController.$inject = ['$sce','$scope','$sanitize','$routeParams',
     'SessionService','ConfigService','FieldService','UserService'];
 
 

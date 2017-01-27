@@ -103,18 +103,18 @@ dl
     dd
       if (session.fb1)
         strong.medium.margined-left Src
-        - var fb1a = new Buffer(session.fb1, "hex");
-        +clickableValue('payload8.src.hex', session.fb1)
+        - var fb1a = new Buffer(session.fb1, "hex").toString();
+        +clickableValue('payload8.src.hex', session.fb1, true, false)
         | (
-        +clickableValue('payload8.src.utf8', fb1a, true)
+        +clickableValue('payload8.src.utf8', fb1a, true, false)
         |)
 
       if (session.fb2)
         strong.medium.margined-left Dst
-        - var fb2a = new Buffer(session.fb2, "hex");
-        +clickableValue('payload8.dst.hex', session.fb2)
+        - var fb2a = new Buffer(session.fb2, "hex").toString();
+        +clickableValue('payload8.dst.hex', session.fb2, true, false)
         | (
-        +clickableValue('payload8.dst.utf8', fb2a, true)
+        +clickableValue('payload8.dst.utf8', fb2a, true, false)
         |)
 
   div.tag-list

@@ -34,6 +34,15 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      // field came from session detail
+      if (!this.value && this.stringval !== undefined) {
+        this.value = this.stringval;
+      }
+      // expr came from session detail
+      if (!this.expr && this.stringexpr !== undefined) {
+        this.expr = this.stringexpr;
+      }
+
       // only display fields that have a value
       if (this.value === undefined && (!this.field || !this.field.children)) { return; }
 
@@ -163,6 +172,7 @@
 
         switch (this.fieldObj.type) {
           case 'seconds':
+            this.time = true;
             qVal  = val; // save original value as the query value
             val   = this.$filter('timezone-date')(val, this.timezone);
             let dateFormat = 'yyyy/MM/dd HH:mm:ss';
@@ -297,10 +307,12 @@
         value     : '<',  // the value of the session field
         session   : '<',  // the session (required for custom columns)
         field     : '<',  // the column the field belongs to (for table)
-        parse     : '<',  // whether to parse the value
-        stringify : '<',  // whether to stringify the value in the search expression
-        pullLeft  : '<',  // whether the dropdown should drop down from the left (default is right)
-        timezone  : '<'   // what timezone date fields should be in ('gmt' or 'local')
+        parse     : '@',  // whether to parse the value
+        stringify : '@',  // whether to stringify the value in the search expression
+        pullLeft  : '@',  // whether the dropdown should drop down from the left (default is right)
+        timezone  : '@',  // what timezone date fields should be in ('gmt' or 'local')
+        stringval : '@',  // the string value that comes from sessionDetail.pug
+        stringexpr: '@'   // the string expr that comes from sessionDetail.pug
       }
     });
 

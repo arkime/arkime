@@ -4,7 +4,7 @@
     <div ng-repeat="value in $ctrl.session.us | limitTo:$ctrl.limit track by $index">
       <session-field  expr="'http.uri'" field="$ctrl.fieldMap['http.uri']"
          value="value" session="$ctrl.session"
-         parse="false" stringify="true"></session-field>
+         parse="'false'" stringify="'true'"></session-field>
     </div>
     <a class="cursor-pointer"
       style="text-decoration:none;"
@@ -20,7 +20,7 @@
     <span ng-repeat="value in ::$ctrl.session.esrc track by $index">
       <session-field  expr="'email.dst'" field="$ctrl.fieldMap['email.dst']"
         value="value" session="$ctrl.session"
-        parse="false"></session-field>
+        parse="'false'"></session-field>
     </span>
     <br>
     <div ng-if="::$ctrl.session.edst">
@@ -28,7 +28,7 @@
       <span ng-repeat="value in ::$ctrl.session.edst track by $index">
       <session-field  expr="'email.src'" field="$ctrl.fieldMap['email.src']"
         value="value" session="$ctrl.session"
-        parse="false"></session-field>
+        parse="'false'"></session-field>
       </span>
       <br>
     </div>
@@ -37,7 +37,7 @@
       <span ng-repeat="value in ::$ctrl.session.esub track by $index">
       <session-field  expr="'email.subject'" field="$ctrl.fieldMap['email.subject']"
         value="value" session="$ctrl.session"
-        parse="false" stringify="true"></session-field>
+        parse="'false'" stringify="'true'"></session-field>
       </span>
       <br>
     </div>
@@ -46,7 +46,7 @@
       <span ng-repeat="value in ::$ctrl.session.efn track by $index">
       <session-field  expr="'email.fn'" field="$ctrl.fieldMap['email.fn']"
         value="value" session="$ctrl.session"
-        parse="false" stringify="true"></session-field>
+        parse="'false'" stringify="'true'"></session-field>
       </span>
       <br>
     </div>
@@ -56,7 +56,7 @@
     <span ng-repeat="value in $ctrl.session.dnsho | limitTo:$ctrl.limit track by $index">
       <session-field  expr="'dns.host'" field="$ctrl.fieldMap['host.dns']"
         value="value" session="$ctrl.session"
-        parse="false"></session-field>
+        parse="'false'"></session-field>
     </span>
     <a class="cursor-pointer"
       style="text-decoration:none;"
@@ -72,14 +72,14 @@
     <span ng-repeat="value in ::tls.sCn track by $index">
       <session-field  expr="'cert.subject.cn'" field="$ctrl.fieldMap['cert.subject.cn']"
         value="value" session="$ctrl.session"
-        parse="false" stringify="true"></session-field>
+        parse="'false'" stringify="'true'"></session-field>
     </span>
     <span ng-if="::tls.alt">
       <div ng-repeat="value in tls.alt | limitTo:$ctrl.limit track by $index">
         <span ng-if="::$first">[</span>
         <session-field  expr="'cert.alt'" field="$ctrl.fieldMap['cert.alt']"
           value="value" session="$ctrl.session"
-          parse="false" stringify="true"></session-field>
+          parse="'false'" stringify="'true'"></session-field>
         <span ng-if="$last">
           <a class="cursor-pointer"
             style="text-decoration:none;"
@@ -99,7 +99,7 @@
     <span ng-repeat="value in ::$ctrl.session.ircch track by $index">
       <session-field  expr="'irc.channel'" field="$ctrl.fieldMap['irc.channel']"
         value="value" session="$ctrl.session"
-        parse="false" stringify="true"></session-field>
+        parse="'false'" stringify="'true'"></session-field>
     </span>
   </div>
 

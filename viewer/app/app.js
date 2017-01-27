@@ -8,6 +8,7 @@
   require('angular-filter');
   require('angular-animate');
   require('angular-resource');
+  require('angular-sanitize');
   require('angular-ui-bootstrap');
   require('ngdraggable');
   require('bootstrap/js/tooltip');
@@ -26,7 +27,7 @@
   angular.module('moloch', [
     // angular dependencies
     'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
-    'angular.filter', 'ngDraggable',
+    'angular.filter', 'ngDraggable', 'ngSanitize',
 
     // custom directives
     'directives.navbar', 'directives.footer',
