@@ -61,8 +61,8 @@ void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, con
     packet->pktlen        = h->len;
 
     moloch_packet_batch(batch, packet);
-    if (batch->count > 2000)
-        moloch_packet_flush(batch);
+    if (batch->count > 10000)
+        moloch_packet_batch_flush(batch);
 }
 /******************************************************************************/
 static void *reader_pfring_thread(void *ringv)
@@ -75,7 +75,7 @@ static void *reader_pfring_thread(void *ringv)
     while (1) {
         int r = pfring_loop(ring, reader_pfring_packet_cb, (u_char *)&batch, -1);
 
-        moloch_packet_flush(&batch);
+        moloch_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
         if (unlikely(r <= 0)) {

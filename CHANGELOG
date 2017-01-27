@@ -1,4 +1,6 @@
 0.17.1 2017/01/XX
+  - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5 isn't recommended for production)
+    ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
   - NOTICE: Can only update directly from Moloch 0.11.1 or later
   - capture - handle mssing syn/ack better
   - capture - better mongo detection
@@ -7,6 +9,7 @@
   - viewer - new settings page
   - capture - tpacketv3 no longer requires a bpf
   - capture - pfring uses batch packet api
+  - capture - fix libpcap multiple interface crash (issue #610)
 
 0.17.0 2017/01/05
   - NOTICE: npm update required

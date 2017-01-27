@@ -73,9 +73,9 @@ static void *reader_libpcap_thread(gpointer pcapv)
     pcap_t *pcap = pcapv;
     LOG("THREAD %p", (gpointer)pthread_self());
 
-    LOCAL MolochPacketBatch_t   batch;
+    MolochPacketBatch_t   batch;
+    moloch_packet_batch_init(&batch);
     while (1) {
-        moloch_packet_batch_init(&batch);
         int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char*)&batch);
         moloch_packet_batch_flush(&batch);
 
