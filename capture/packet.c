@@ -856,6 +856,8 @@ gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
     // Now alloc the full packet
     packet->pktlen = packet->payloadOffset + payloadLen;
     uint8_t *pkt = malloc(packet->pktlen);
+
+    // Copy packet header
     memcpy(pkt, packet->pkt, packet->payloadOffset);
 
     // Fix header of new packet
@@ -868,7 +870,10 @@ gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
         struct ip *fip4 = (struct ip*)(fpacket->pkt + fpacket->ipOffset);
         uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
 
-        memcpy(pkt+packet->payloadOffset+(fip_off*8), fpacket->pkt+fpacket->payloadOffset, fpacket->payloadLen);
+        if (packet->payloadOffset+(fip_off*8) + fpacket->payloadLen <= packet->pktlen)
+            memcpy(pkt+packet->payloadOffset+(fip_off*8), fpacket->pkt+fpacket->payloadOffset, fpacket->payloadLen);
+        else
+            LOG("WARNING - Not enough room for frag %d > %d", packet->payloadOffset+(fip_off*8) + fpacket->payloadLen, packet->pktlen);
     }
 
     // Set all the vars in the current packet to new defraged packet
@@ -878,7 +883,7 @@ gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
     packet->copied = 1;
     packet->wasfrag = 1;
     packet->payloadLen = payloadLen;
-    DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed
+    DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed in frags_free
     moloch_packet_frags_free(frags);
     return TRUE;
 }
