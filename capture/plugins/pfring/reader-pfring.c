@@ -45,8 +45,10 @@ int reader_pfring_stats(MolochReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, const u_char *UNUSED(user_bytes))
+void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, const u_char *user_bytes)
 {
+    MolochPacketBatch_t *batch = (MolochPacketBatch_t *)user_bytes;
+
     if (unlikely(h->caplen != h->len)) {
         LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
         exit (0);
@@ -58,16 +60,22 @@ void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, con
     packet->ts            = h->ts;
     packet->pktlen        = h->len;
 
-    moloch_packet(packet);
+    moloch_packet_batch(batch, packet);
+    if (batch->count > 10000)
+        moloch_packet_batch_flush(batch);
 }
 /******************************************************************************/
 static void *reader_pfring_thread(void *ringv)
 {
     pfring                *ring = ringv;
 
+    MolochPacketBatch_t batch;
+    moloch_packet_batch_init(&batch);
     pfring_enable_ring(ring);
     while (1) {
-        int r = pfring_loop(ring, reader_pfring_packet_cb, NULL, -1);
+        int r = pfring_loop(ring, reader_pfring_packet_cb, (u_char *)&batch, -1);
+
+        moloch_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
         if (unlikely(r <= 0)) {

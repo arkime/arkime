@@ -427,6 +427,7 @@ typedef struct
 typedef struct
 {
     MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
+    int                   count;
 } MolochPacketBatch_t;
 /******************************************************************************/
 typedef struct moloch_tcp_data {

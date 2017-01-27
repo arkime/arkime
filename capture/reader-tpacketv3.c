@@ -120,6 +120,7 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
     pfd.revents = 0;
 
     MolochPacketBatch_t batch;
+    moloch_packet_batch_init(&batch);
 
     while (!config.quitting) {
         if (pos == -1) {
@@ -155,7 +156,6 @@ static void *reader_tpacketv3_thread(gpointer tinfov)
 
         struct tpacket3_hdr *th;
 
-        moloch_packet_batch_init(&batch);
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
         uint16_t p;
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
@@ -279,11 +279,13 @@ void reader_tpacketv3_init(char *UNUSED(name))
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
             LOGEXIT("Error setting PROMISC: %s", strerror(errno));
 
-        struct sock_fprog       fcode;
-        fcode.len = bpf.bf_len;
-        fcode.filter = (struct sock_filter *)bpf.bf_insns;
-        if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
-            LOGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+        if (config.bpf) {
+            struct sock_fprog       fcode;
+            fcode.len = bpf.bf_len;
+            fcode.filter = (struct sock_filter *)bpf.bf_insns;
+            if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
+                LOGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+        }
 
         infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
                              PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
