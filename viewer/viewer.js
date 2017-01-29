@@ -2115,7 +2115,7 @@ app.get('/esstats.json', function(req, res) {
 
   async.parallel({
     nodes: function(nodesCb) {
-      Db.nodesStats({metric: "jvm,process,fs,search,os,indices"}, nodesCb);
+      Db.nodesStats({metric: "jvm,process,fs,os,indices"}, nodesCb);
     },
     health: Db.healthCache
   },
@@ -2138,6 +2138,7 @@ app.get('/esstats.json', function(req, res) {
     var nodes = Object.keys(results.nodes.nodes);
     for (var n = 0, nlen = nodes.length; n < nlen; n++) {
       var node = results.nodes.nodes[nodes[n]];
+
       stats.push({
         name: node.name,
         storeSize: node.indices.store.size_in_bytes,
@@ -2146,30 +2147,11 @@ app.get('/esstats.json', function(req, res) {
         searchesTime: node.indices.search.query_time_in_millis,
         heapSize: node.jvm.mem.heap_used_in_bytes,
         nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
-        cpu: (typeof node.process.cpu !== 'undefined') ? node.process.cpu.percent : 0,
-        read: 0,
-        write: 0,
-        load: (typeof node.os.load_average === 'undefined') ? 0 : Array.isArray(node.os.load_average)?node.os.load_average[0] : node.os.load_average
+        cpu: node.process.cpu.percent,
+        read: node.fs.io_stats ? /*ES 5*/ node.fs.io_stats.total.read_kilobytes : /*ES 2*/ 0,
+        write: node.fs.io_stats ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
+        load: node.os.load_average ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
-
-      var oldnode = internals.previousNodeStats[0][nodes[n]];
-      if (oldnode) {
-        var olddisk = [0, 0], newdisk = [0, 0];
-        for (var i = 0, ilen = oldnode.fs.data.length; i < ilen; i++) {
-          olddisk[0] += oldnode.fs.data[i].disk_read_size_in_bytes;
-          olddisk[1] += oldnode.fs.data[i].disk_write_size_in_bytes;
-          newdisk[0] += node.fs.data[i].disk_read_size_in_bytes;
-          newdisk[1] += node.fs.data[i].disk_write_size_in_bytes;
-        }
-
-        var read = Math.ceil((newdisk[0] - olddisk[0])/(node.timestamp - oldnode.timestamp));
-        var write = Math.ceil((newdisk[1] - olddisk[1])/(node.timestamp - oldnode.timestamp));
-
-        if (!(isNaN(read) && isNaN(write))) {
-            stats[stats.length-1].read = read;
-            stats[stats.length-1].write = write;
-        }
-      }
     }
 
     results.nodes.nodes.timestamp = new Date().getTime();
