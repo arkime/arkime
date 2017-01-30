@@ -364,7 +364,7 @@
               let tss = element[0].querySelectorAll('.session-detail-ts');
               for (i = 0, len = tss.length; i < len; ++i) {
                 timeEl  = tss[i];
-                value   = timeEl.getAttribute('ts');
+                value   = timeEl.getAttribute('value');
                 timeEl  = timeEl.querySelectorAll('.ts-value');
                 if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
                   time = $filter('date')(value, 'yyyy/MM/dd HH:mm:ss.sss');
