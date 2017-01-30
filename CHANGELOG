@@ -1,3 +1,14 @@
+0.18.0 2017/02/xx
+  - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture
+  - NOTICE: db.pl upgrade REQUIRES *ALL* moloch-capture to be down
+  - NOTICE: ES 2.4 or ES 5.1.2 required
+    ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
+  - wise - md5 lookups now associated with contentType
+  - wise - virustotal support
+  - capture - contentType now sent to wise for md5 lookups
+  - db - all indices except sessions-* are reindex for ES5 support
+  - capture - all readers must use batch interface
+
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
     ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
