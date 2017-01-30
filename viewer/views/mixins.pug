@@ -1,7 +1,7 @@
 //- Display a clickable value
 //- set true for stringify if the value should be surrounded by "" in the query
 mixin clickableValue(expr, value, stringify, parse)
-  session-field(stringexpr=expr, stringval=value, parse=parse class="detail-field", stringify=stringify, timezone=user.settings.timezone)
+  session-field(expr=expr, value=value, parse=parse class="detail-field", stringify=stringify, timezone=user.settings.timezone)
 
 //- Standard method to print an array of values with commas
 mixin fieldsSelect(name,classname,simple,extra)

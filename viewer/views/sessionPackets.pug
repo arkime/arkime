@@ -21,7 +21,7 @@ else
       if item.client == 0
         div.col-md-6.sessionsrc
           if (item.ts)
-            div.session-detail-ts(ts=item.ts)
+            div.session-detail-ts(value=item.ts)
               em.ts-value #{item.ts}
               span.pull-right #{item.bytes} bytes
           |!{item.html}
@@ -30,7 +30,7 @@ else
         div.col-md-6
         div.col-md-6.sessiondst
           if (item.ts)
-            div.session-detail-ts(ts=item.ts)
+            div.session-detail-ts(value=item.ts)
               em.ts-value #{item.ts}
               span.pull-right #{item.bytes} bytes
           |!{item.html}

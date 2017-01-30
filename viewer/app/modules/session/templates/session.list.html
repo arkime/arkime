@@ -185,15 +185,17 @@
               </a>&nbsp
               <small>
                 <session-field field="{dbField:'prot-term', exp:'ip.protocol', type:'termfield', group:'general'}"
-                  expr="'ip.protocol'" value="session.pr"
-                  session="session" parse="'true'" pull-left="'true'"></session-field>
+                  expr="ip.protocol" value="{{::session.pr}}"
+                  session="session" parse="true" pull-left="true">
+                </session-field>
               </small>
             </td>
             <td ng-repeat="col in $ctrl.headers track by $index"
               ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
-              <session-field field="col" expr="col.exp"
-                value="session[col.dbField]" session="session"
-                parse="'true'" timezone="{{::$ctrl.settings.timezone}}"></session-field>
+              <session-field field="col" session="session"
+                value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
+                parse="true" timezone="{{::$ctrl.settings.timezone}}">
+              </session-field>
             </td>
           </tr>
           <tr ng-repeat-end ng-if="session.expanded"
