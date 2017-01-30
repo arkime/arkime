@@ -57,7 +57,7 @@ function VirusTotalSource (api, section) {
     "  div.sessionDetailMeta.bold VirusTotal\n" +
     "  dl.sessionDetailMeta\n" +
     "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n" +
-    "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
+    "    +arrayList(session.virustotal, 'links-term', 'Links', 'virustotal.links')\n";
 
   for(var i = 0; i < this.dataSources.length; i++) {
     var uc = this.dataSources[i];
