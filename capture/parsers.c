@@ -132,231 +132,195 @@ void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *m
 }
 
 /******************************************************************************/
-void moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
+const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, const char *data, int len)
 {
     switch (data[0]) {
     case 0:
         if (len > 10 && memcmp(data+4, "ftyp", 4) == 0) {
             if (memcmp(data+8, "qt", 2) == 0) {
-                moloch_field_string_add(field, session, "video/quicktime", 15, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "video/quicktime", 15, TRUE);
             }
             if (memcmp(data+8, "3g", 2) == 0) {
-                moloch_field_string_add(field, session, "video/3gpp", 10, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "video/3gpp", 10, TRUE);
             }
         }
         break;
     case '\032':
         if (memcmp(data, "\x1a\x45\xdf\xa3", 4) == 0) {
             if (moloch_memstr(data+4, len-4, "webm", 4)) {
-                moloch_field_string_add(field, session, "video/webm", 10, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "video/webm", 10, TRUE);
             }
             if (moloch_memstr(data+4, len-4, "matroska", 8)) {
-                moloch_field_string_add(field, session, "video/x-matroska", 16, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "video/x-matroska", 16, TRUE);
             }
         }
         break;
     case '\037':
         if (data[1] == '\213') {
-            moloch_field_string_add(field, session, "application/x-gzip", 18, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-gzip", 18, TRUE);
         }
         if (data[1] == '\235') {
-            moloch_field_string_add(field, session, "application/x-compress", 22, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-compress", 22, TRUE);
         }
         break;
     case '#':
         if (data[1] == '!') {
-            moloch_field_string_add(field, session, "text/x-shellscript", 18, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "text/x-shellscript", 18, TRUE);
         }
         break;
     case '%':
         if (memcmp(data, "%PDF-", 5) == 0) {
-            moloch_field_string_add(field, session, "application/pdf", 15, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/pdf", 15, TRUE);
         }
         break;
     case '<':
         switch(data[1]) {
         case '!':
             if (len > 14 && strncasecmp(data, "<!doctype html", 14) == 0) {
-                moloch_field_string_add(field, session, "text/html", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "text/html", 9, TRUE);
             }
             break;
         case '?':
             if (strncasecmp(data, "<?xml", 5) == 0) {
                 if (moloch_memstr(data+5, len-5, "<svg", 4)) {
-                    moloch_field_string_add(field, session, "image/svg+xml", 13, TRUE);
-                    return;
+                    return moloch_field_string_add(field, session, "image/svg+xml", 13, TRUE);
                 }
-                moloch_field_string_add(field, session, "text/xml", 8, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "text/xml", 8, TRUE);
             }
             break;
         case 'H':
         case 'h':
             if (strncasecmp(data, "<head", 5) == 0) {
-                moloch_field_string_add(field, session, "text/html", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "text/html", 9, TRUE);
             }
             if (strncasecmp(data, "<html", 5) == 0) {
-                moloch_field_string_add(field, session, "text/html", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "text/html", 9, TRUE);
             }
             break;
         case 's':
         case 'S':
             if (strncasecmp(data, "<svg", 4) == 0) {
-                moloch_field_string_add(field, session, "image/svg", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "image/svg", 9, TRUE);
             }
             break;
         }
         break;
     case '{':
         if (data[1] == '"' && isalpha(data[2])) {
-            moloch_field_string_add(field, session, "application/json", 16, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/json", 16, TRUE);
         }
         break;
     case '8':
         if (memcmp(data, "8BPS", 4) == 0) {
-            moloch_field_string_add(field, session, "image/vnd.adobe.photoshop", 25, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "image/vnd.adobe.photoshop", 25, TRUE);
         }
         break;
     case 'B':
         if (data[1] == 'M') {
-            moloch_field_string_add(field, session, "application/x-ms-bmp", 20, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-ms-bmp", 20, TRUE);
         }
 
         if (memcmp(data, "BZh", 3) == 0) {
-            moloch_field_string_add(field, session, "application/x-bzip2", 19, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-bzip2", 19, TRUE);
         }
         break;
     case 'C':
         if (memcmp(data, "CWS", 3) == 0) {
-            moloch_field_string_add(field, session, "application/x-shockwave-flash", 29, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-shockwave-flash", 29, TRUE);
         }
         break;
     case 'F':
         if (memcmp(data, "FLV\001", 4) == 0) {
-            moloch_field_string_add(field, session, "video/x-flv", 11, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "video/x-flv", 11, TRUE);
         }
         break;
     case 'G':
         if (memcmp(data, "GIF8", 4) == 0) {
-            moloch_field_string_add(field, session, "image/gif", 9, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "image/gif", 9, TRUE);
         }
         break;
     case 'I':
         if (memcmp(data, "ID3", 3) == 0) {
-            moloch_field_string_add(field, session, "audio/mpeg", 10, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "audio/mpeg", 10, TRUE);
         }
         break;
     case 'M':
         if (data[1] == 'Z') {
-            moloch_field_string_add(field, session, "application/x-dosexec", 21, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-dosexec", 21, TRUE);
         }
         if (memcmp(data, "MSCF\000\000", 6) == 0) {
-            moloch_field_string_add(field, session, "application/vnd.ms-cab-compressed", 33, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/vnd.ms-cab-compressed", 33, TRUE);
         }
         break;
     case 'O':
         if (len > 40 && memcmp(data, "OggS", 4) == 0) {
             // https://speex.org/docs/manual/speex-manual/node8.html
             if (memcmp(data+28, "Speex   ", 8) == 0) {
-                moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
             }
 
             // https://xiph.org/flac/ogg_mapping.html
             if (memcmp(data+29, "FLAC", 4) == 0) {
-                moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
             }
 
             // https://xiph.org/vorbis/doc/Vorbis_I_spec.html
             if (memcmp(data+28, "\001vorbis", 7) == 0) {
-                moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "audio/ogg", 9, TRUE);
             }
 
             // https://www.theora.org/doc/Theora.pdf
             if (memcmp(data+28, "\x80theora", 7) == 0) {
-                moloch_field_string_add(field, session, "video/ogg", 9, TRUE);
-                return;
+                return moloch_field_string_add(field, session, "video/ogg", 9, TRUE);
             }
         }
         break;
     case 'P':
         if (memcmp(data, "PK\003\004", 4) == 0) {
-            moloch_field_string_add(field, session, "application/zip", 15, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/zip", 15, TRUE);
         }
         if (memcmp(data, "PK\005\005", 4) == 0) {
-            moloch_field_string_add(field, session, "application/zip", 15, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/zip", 15, TRUE);
         }
         break;
     case 'R':
         if (memcmp(data, "RIFF", 4) == 0) {
-            moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
         }
         if (memcmp(data, "Rar!\x1a", 5) == 0) {
-            moloch_field_string_add(field, session, "application/x-rar", 17, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-rar", 17, TRUE);
         }
         break;
     case 'W':
         if (memcmp(data, "WAVE", 4) == 0) {
-            moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "audio/x-wav", 11, TRUE);
         }
         break;
     case 'd':
         if (len > 20 && memcmp(data, "d8:announce", 11) == 0) {
-            moloch_field_string_add(field, session, "application/x-bittorrent", 24, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-bittorrent", 24, TRUE);
         }
         break;
     case '\x89':
         if (memcmp(data, "\x89PNG", 4) == 0) {
-            moloch_field_string_add(field, session, "image/png", 9, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "image/png", 9, TRUE);
         }
         break;
     case '\375':
         if (memcmp(data, "\3757zXZ", 5) == 0) {
-            moloch_field_string_add(field, session, "application/x-xz", 16, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "application/x-xz", 16, TRUE);
         }
         break;
     case '\377':
         if (len > 10 && memcmp(data, "\377\330\377", 3) == 0) {
-            moloch_field_string_add(field, session, "image/jpeg", 10, TRUE);
-            return;
+            return moloch_field_string_add(field, session, "image/jpeg", 10, TRUE);
         }
         break;
     } /* switch */
+    return NULL;
 }
 /******************************************************************************/
-void moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const char *data, int len)
+const char *moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const char *data, int len)
 {
     int i, offset, offsetPos;
     uint8_t *udata = (uint8_t *)data;
@@ -376,13 +340,11 @@ void moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const
                 continue;
             if (list->magic[i]->ignoreCase) {
                 if (strncasecmp((const char *)udata+offset, (const char *)list->magic[i]->match, list->magic[i]->matchlen) == 0) {
-                    moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
-                    return;
+                    return moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
                 }
             } else {
                 if (memcmp(udata+offset, list->magic[i]->match, list->magic[i]->matchlen) == 0) {
-                    moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
-                    return;
+                    return moloch_field_string_add(field, session, list->magic[i]->mime, list->magic[i]->mimelen, TRUE);
                 }
             }
         }
@@ -391,23 +353,23 @@ void moloch_parsers_magic_molochmagic(MolochSession_t *session, int field, const
     for (i = 0; i < magicSearchLen; i++) {
         if (magicSearch[i].ignoreCase) {
             if (moloch_memcasestr(data, len, (const char*)magicSearch[i].match, magicSearch[i].matchlen)) {
-                moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
-                return;
+                return moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
             }
         } else {
             if (moloch_memstr(data, len, (const char*)magicSearch[i].match, magicSearch[i].matchlen)) {
-                moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
-                return;
+                return moloch_field_string_add(field, session, magicSearch[i].mime, magicSearch[i].mimelen, TRUE);
             }
         }
     }
+
+    return NULL;
 }
 /******************************************************************************/
-void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
+const char *moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len)
 {
     const char *m;
     if (len < 5 || magicMode == MOLOCH_MAGICMODE_NONE)
-        return;
+        return NULL;
 
     switch (magicMode) {
     case MOLOCH_MAGICMODE_LIBMAGIC:
@@ -420,17 +382,15 @@ void moloch_parsers_magic(MolochSession_t *session, int field, const char *data,
             } else {
                 len = strlen(m);
             }
-            moloch_field_string_add(field, session, m, len, TRUE);
+            return moloch_field_string_add(field, session, m, len, TRUE);
         }
-        return;
+        return NULL;
     case MOLOCH_MAGICMODE_BASIC:
-        moloch_parsers_magic_basic(session, field, data, len);
-        return;
+        return moloch_parsers_magic_basic(session, field, data, len);
     case MOLOCH_MAGICMODE_MOLOCHMAGIC:
-        moloch_parsers_magic_molochmagic(session, field, data, len);
-        return;
+        return moloch_parsers_magic_molochmagic(session, field, data, len);
     default:
-        return;
+        return NULL;
     }
 }
 /******************************************************************************/

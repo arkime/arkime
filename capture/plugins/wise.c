@@ -494,7 +494,13 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     if (session->fields[httpMd5Field]) {
         MolochStringHashStd_t *shash = session->fields[httpMd5Field]->shash;
         HASH_FORALL(s_, *shash, hstring,
-            wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_MD5);
+            if (hstring->uw) {
+                char str[1000];
+                snprintf(str, sizeof(str), "%s;%s", hstring->str, hstring->uw);
+                wise_lookup(session, iRequest, str, INTEL_TYPE_MD5);
+            } else {
+                wise_lookup(session, iRequest, hstring->str, INTEL_TYPE_MD5);
+            }
         );
     }
 

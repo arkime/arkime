@@ -37,7 +37,7 @@
 #define UNUSED(x) x __attribute((unused))
 
 
-#define MOLOCH_API_VERSION 17
+#define MOLOCH_API_VERSION 18
 
 #define MOLOCH_SESSIONID_LEN 37
 
@@ -708,7 +708,7 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
 void moloch_parsers_classify_udp(MolochSession_t *session, const unsigned char *data, int remaining, int which);
 void moloch_parsers_exit();
 
-void moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len);
+const char *moloch_parsers_magic(MolochSession_t *session, int field, const char *data, int len);
 
 void moloch_parsers_molochmagic_add(int offset, uint8_t *match, int matchlen, char *mime, int ignoreCase);
 void moloch_parsers_molochmagic_add_search(uint8_t *match, int matchlen, char *mime, int ignoreCase);
@@ -836,7 +836,6 @@ uint64_t moloch_packet_dropped_frags();
 uint64_t moloch_packet_dropped_overload();
 void     moloch_packet_thread_wake(int thread);
 void     moloch_packet_flush();
-void     moloch_packet(MolochPacket_t * const packet);
 void     moloch_packet_process_data(MolochSession_t *session, const uint8_t *data, int len, int which);
 void     moloch_packet_add_packet_ip(char *ip, int mode);
 
@@ -961,7 +960,8 @@ int  moloch_field_define_text(char *text, int *shortcut);
 int  moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...);
 int  moloch_field_by_db(const char *dbField);
 int  moloch_field_by_exp(const char *exp);
-gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
+const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy);
+const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy);
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *info, int len);
 int  moloch_field_count(int pos, MolochSession_t *session);

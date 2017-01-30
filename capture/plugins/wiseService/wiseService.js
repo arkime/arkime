@@ -227,6 +227,12 @@ function processQuery(req, query, cb) {
   var funcName = internals.type2Func[query.type];
   var typeInfo = internals[typeName];
 
+  if (query.type === 2) {
+    var parts = query.value.split(";");
+    query.value = parts[0];
+    query.contentType = parts[1];
+  }
+
   try {
     if (!typeInfo.global_allowed(query.value)) {
       return cb(null, wiseSource.emptyCombinedResult);
@@ -275,7 +281,7 @@ function processQuery(req, query, cb) {
 
         // First query for this value
         src.srcInProgress[typeName][query.value] = [cb];
-        src[funcName](query.value, function (err, result) {
+        src[funcName](src.fullQuery===true?query:query.value, function (err, result) {
           if (!err && src.cacheTimeout !== -1 && result !== undefined) { // If err or cacheTimeout is -1 then don't cache
             cacheResult[src.section] = {ts:now, result:result};
             cacheChanged = true;

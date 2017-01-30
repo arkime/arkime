@@ -449,14 +449,14 @@ void moloch_field_exit()
     );
 }
 /******************************************************************************/
-gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy)
+const char *moloch_field_string_add(int pos, MolochSession_t *session, const char *string, int len, gboolean copy)
 {
     MolochField_t         *field;
     MolochStringHashStd_t *hash;
     MolochString_t        *hstring;
 
     if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
-        return FALSE;
+        return NULL;
 
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
@@ -469,11 +469,11 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
         switch (config.fields[pos]->type) {
         case MOLOCH_FIELD_TYPE_STR:
             field->str = (char*)string;
-            return TRUE;
+            return string;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             field->sarray = g_ptr_array_new_with_free_func(g_free);
             g_ptr_array_add(field->sarray, (char*)string);
-            return TRUE;
+            return string;
         case MOLOCH_FIELD_TYPE_STR_HASH:
             hash = MOLOCH_TYPE_ALLOC(MolochStringHashStd_t);
             HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_ncmp);
@@ -483,7 +483,7 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
             hstring->len = len;
             hstring->utf8 = 0;
             HASH_ADD(s_, *hash, hstring->str, hstring);
-            return TRUE;
+            return string;
         default:
             LOG("Not a string %s", config.fields[pos]->dbField);
             exit (1);
@@ -505,12 +505,12 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
             string = g_strndup(string, len);
         g_free(field->str);
         field->str = (char*)string;
-        return TRUE;
+        return string;
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
         if (copy)
             string = g_strndup(string, len);
         g_ptr_array_add(field->sarray, (char*)string);
-        return TRUE;
+        return string;
     case MOLOCH_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(string, len), string, hstring);
 
@@ -529,9 +529,78 @@ gboolean moloch_field_string_add(int pos, MolochSession_t *session, const char *
             hstring->utf8 = 0;
         }
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
-        return TRUE;
+        return string;
     default:
         LOG("Not a string %s", config.fields[pos]->dbField);
+        exit (1);
+    }
+}
+/******************************************************************************/
+const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const char *string, int len, gpointer uw, gboolean copy)
+{
+    MolochField_t         *field;
+    MolochStringHashStd_t *hash;
+    MolochString_t        *hstring;
+
+    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+        return NULL;
+
+    if (!session->fields[pos]) {
+        field = MOLOCH_TYPE_ALLOC(MolochField_t);
+        session->fields[pos] = field;
+        if (len == -1)
+            len = strlen(string);
+        field->jsonSize = 6 + config.fields[pos]->dbFieldLen + 2*len;
+        if (copy)
+            string = g_strndup(string, len);
+        switch (config.fields[pos]->type) {
+        case MOLOCH_FIELD_TYPE_STR_HASH:
+            hash = MOLOCH_TYPE_ALLOC(MolochStringHashStd_t);
+            HASH_INIT(s_, *hash, moloch_string_hash, moloch_string_ncmp);
+            field->shash = hash;
+            hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
+            hstring->str = (char*)string;
+            hstring->len = len;
+            hstring->utf8 = 0;
+            hstring->uw = uw;
+            HASH_ADD(s_, *hash, hstring->str, hstring);
+            return string;
+        default:
+            LOG("Not a string hash %s", config.fields[pos]->dbField);
+            exit (1);
+        }
+    }
+
+    if (len == -1)
+        len = strlen(string);
+
+    field = session->fields[pos];
+    field->jsonSize += (6 + 2*len);
+
+    if (field->jsonSize > 20000)
+        session->midSave = 1;
+
+    switch (config.fields[pos]->type) {
+    case MOLOCH_FIELD_TYPE_STR_HASH:
+        HASH_FIND_HASH(s_, *(field->shash), moloch_string_hash_len(string, len), string, hstring);
+
+        if (hstring) {
+            field->jsonSize -= (6 + 2*len);
+            return NULL;
+        }
+        hstring = MOLOCH_TYPE_ALLOC(MolochString_t);
+        if (copy) {
+            hstring->str = g_strndup(string, len);
+        } else {
+            hstring->str = (char*)string;
+        }
+        hstring->len = len;
+        hstring->utf8 = 0;
+        hstring->uw = uw;
+        HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        return string;
+    default:
+        LOG("Not a string hash %s", config.fields[pos]->dbField);
         exit (1);
     }
 }

@@ -983,15 +983,8 @@ int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, 
         packet->copied = 1;
     }
 
-    if (batch) {
-        DLL_PUSH_TAIL(packet_, &batch->packetQ[thread], packet);
-        batch->count++;
-    } else {
-        MOLOCH_LOCK(packetQ[thread].lock);
-        DLL_PUSH_TAIL(packet_, &packetQ[thread], packet);
-        MOLOCH_COND_SIGNAL(packetQ[thread].lock);
-        MOLOCH_UNLOCK(packetQ[thread].lock);
-    }
+    DLL_PUSH_TAIL(packet_, &batch->packetQ[thread], packet);
+    batch->count++;
     return 0;
 }
 /******************************************************************************/
@@ -1293,11 +1286,6 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     if (rc) {
         moloch_packet_free(packet);
     }
-}
-/******************************************************************************/
-void moloch_packet(MolochPacket_t * const packet)
-{
-    moloch_packet_batch(NULL, packet);
 }
 /******************************************************************************/
 int moloch_packet_outstanding()
