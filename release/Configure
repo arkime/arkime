@@ -73,13 +73,13 @@ chmod 0700 /data/$MOLOCH_NAME/raw
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo Elasticsearch"
-    ES_VERSION=2.4.0
+    ES_VERSION=2.4.4
     if [ ! -f "/data/$MOLOCH_NAME/elasticsearch-${ES_VERSION}.tar.gz" ]; then
         wget http://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz -O /data/$MOLOCH_NAME/elasticsearch-${ES_VERSION}.tar.gz
         (cd /data/$MOLOCH_NAME ; tar xf elasticsearch-${ES_VERSION}.tar.gz)
         (cd /data/$MOLOCH_NAME/elasticsearch-${ES_VERSION}; ./bin/plugin install mobz/elasticsearch-head)
         ln -sf /data/$MOLOCH_NAME/elasticsearch-${ES_VERSION} /data/$MOLOCH_NAME/elasticsearch
-        mkdir /data/$MOLOCH_NAME/data /data/$MOLOCH_NAME/etc/scripts
+        mkdir /data/$MOLOCH_NAME/data /data/$MOLOCH_NAME/etc/scripts /data/$MOLOCH_NAME/elasticsearch/plugins
         chown nobody /data/$MOLOCH_NAME/data /data/$MOLOCH_NAME/etc/scripts
     fi
 
@@ -127,4 +127,6 @@ echo "Moloch - Downloading GEO files"
 ################################################################################
 echo ""
 echo "Moloch - Configured - Now continue with step 4 in /data/$MOLOCH_NAME/README.txt"
+echo "
+tail -n +10 /data/$MOLOCH_NAME/README.txt
 
