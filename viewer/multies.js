@@ -132,7 +132,7 @@ function simpleGather(req, res, bodies, doneCb) {
       pres.on('end', function () {
         if (result.length) {
           result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|tags|dstats|sequence|files|users)", "g"), "$1\"MULTIPREFIX_$2");
-          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields)\"", "g"), "$1\"MULTIPREFIX_$2\"");
+          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v1)\"", "g"), "$1\"MULTIPREFIX_$2\"");
           result = JSON.parse(result);
         } else {
           result = {};
