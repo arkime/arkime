@@ -2148,9 +2148,9 @@ app.get('/esstats.json', function(req, res) {
         heapSize: node.jvm.mem.heap_used_in_bytes,
         nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
         cpu: node.process.cpu.percent,
-        read: node.fs.io_stats ? /*ES 5*/ node.fs.io_stats.total.read_kilobytes : /*ES 2*/ 0,
-        write: node.fs.io_stats ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
-        load: node.os.load_average ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
+        read: node.fs.io_stats !== undefined ? /*ES 5*/ node.fs.io_stats.total.read_kilobytes : /*ES 2*/ 0,
+        write: node.fs.io_stats !== undefined ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
+        load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
     }
 
