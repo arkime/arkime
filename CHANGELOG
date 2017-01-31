@@ -8,6 +8,7 @@
   - capture - contentType now sent to wise for md5 lookups
   - db - all indices except sessions-* are reindex for ES5 support
   - capture - all readers must use batch interface
+  - multi - fixed tags for new ui /detail and added tests
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
@@ -21,6 +22,7 @@
   - capture - tpacketv3 no longer requires a bpf
   - capture - pfring uses batch packet api
   - capture - fix libpcap multiple interface crash (issue #610)
+  - release - Configure improvements
 
 0.17.0 2017/01/05
   - NOTICE: npm update required

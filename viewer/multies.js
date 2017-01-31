@@ -268,6 +268,45 @@ app.get("/:index/:type/_search", function(req, res) {
   });
 });
 
+app.get("/MULTIPREFIX_sessions-*/:type/:id", function(req, res) {
+  function fixTags(node, container, field, doneCb) {
+    if (!container || !container[field]) {
+      return doneCb(null);
+    }
+
+    async.map(container[field], function (item, cb) {
+      tagIdToName(node, item, function (name) {
+        cb(null, name);
+      });
+    },
+    function(err, results) {
+      container[field] = results;
+      doneCb(err);
+    });
+  }
+
+  simpleGather(req, res, null, function(err, results) {
+    for (var i = 0; i < results.length; i++) {
+      if (results[i].found) {
+        async.parallel([
+          function(parallelCb) {
+            fixTags(results[i]._node, results[i]._source, "ta", parallelCb);
+          },
+          function(parallelCb) {
+            fixTags(results[i]._node, results[i]._source, "hh1", parallelCb);
+          },
+          function(parallelCb) {
+            fixTags(results[i]._node, results[i]._source, "hh2", parallelCb);
+          }], function () {
+            return res.send(results[i]);
+          });
+        return;
+      }
+    }
+    res.send(results[0]);
+  });
+});
+
 app.get("/:index/:type/:id", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     for (var i = 0; i < results.length; i++) {
