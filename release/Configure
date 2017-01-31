@@ -13,7 +13,7 @@ MOLOCH_NAME=BUILD_MOLOCH_NAME
 if [ -z $MOLOCH_INTERFACE ]; then
     echo -n "Found interfaces: "
     /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d","
-    echo -n "Interface to monitor [eth1] "
+    echo -n "Single interface to monitor [eth1] "
     read MOLOCH_INTERFACE
 fi
 if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth1"; fi
@@ -52,18 +52,19 @@ if [ ! -f "/data/$MOLOCH_NAME/etc/config.ini" ]; then
     echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/config.ini.sample > /data/$MOLOCH_NAME/etc/config.ini
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/config.ini.sample > /data/$MOLOCH_NAME/etc/config.ini
 else
-    echo "Not overwriting /data/$MOLOCH_NAME/etc/config.ini, delete and run again if update required (usually not)"
+    echo "Not overwriting /data/$MOLOCH_NAME/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
     sleep 2
 fi
 
-if [ -d "/etc/init" ]; then
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
-fi
 
 if [ -d "/etc/systemd" ]; then
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
+elif [ -d "/etc/init" ]; then
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+else
+    echo "No startup scripts created for capture and viewer"
 fi
 
 ################################################################################
@@ -84,13 +85,14 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     fi
 
     HOSTNAME=`hostname -s`
-    if [ -d "/etc/init" ]; then
-        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
-    fi
-
     if [ -d "/etc/systemd" ]; then
         sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/elasticsearch.systemd.service > /etc/systemd/system/elasticsearch.service
+    elif [ -d "/etc/init" ]; then
+        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
+    else
+        echo "No startup scripts created for elasticsearch"
     fi
+
     cp -f /data/$MOLOCH_NAME/etc/logging.demo.yml /data/$MOLOCH_NAME/etc/logging.yml
     cp -f /data/$MOLOCH_NAME/etc/elasticsearch.demo.yml /data/$MOLOCH_NAME/etc/elasticsearch.yml
 fi
@@ -127,6 +129,6 @@ echo "Moloch - Downloading GEO files"
 ################################################################################
 echo ""
 echo "Moloch - Configured - Now continue with step 4 in /data/$MOLOCH_NAME/README.txt"
-echo "
+echo ""
 tail -n +10 /data/$MOLOCH_NAME/README.txt
 
