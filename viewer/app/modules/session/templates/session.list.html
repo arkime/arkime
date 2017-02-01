@@ -26,7 +26,8 @@
       start="$ctrl.query.start"></moloch-pagination>
 
     <!-- open sessions -->
-    <sticky-sessions sessions="$ctrl.stickySessions"></sticky-sessions>
+    <sticky-sessions ng-if="$ctrl.stickySessions.length"
+      sessions="$ctrl.stickySessions"></sticky-sessions>
 
     <div class="table-responsive margined-top-lg">
 
@@ -87,14 +88,11 @@
               ng-class="{'active':$ctrl.isSorted(header.sortBy || header.dbField) >= 0}">
 
               <!-- column dropdown menu -->
-              <div class="btn-group pull-right" uib-dropdown
-                is-open="status.isopen">
-                <button type="button" uib-dropdown-toggle
-                        class="btn btn-xs btn-default">
+              <div class="btn-group pull-right" uib-dropdown>
+                <button type="button" uib-dropdown-toggle class="btn btn-xs btn-default">
                   <span class="fa fa-caret-down"></span>
                 </button>
-                <ul class="dropdown-menu cursor-pointer"
-                  uib-dropdown-menu role="menu">
+                <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu>
                   <div>
                     <li role="menuitem">
                       <a ng-click="$ctrl.toggleVisibility(header.dbField)">
@@ -195,21 +193,21 @@
                 </session-field>
               </small>
             </td>
-            <td ng-repeat="col in $ctrl.headers track by $index"
-              ng-class="{'active':$ctrl.isSorted(col.sortBy || col.dbField) >= 0}">
+            <td ng-repeat="col in $ctrl.headers track by $index">
               <session-field field="::col" session="::session"
                 value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
                 parse="true" timezone="{{::$ctrl.settings.timezone}}">
               </session-field>
             </td>
           </tr>
-          <tr ng-repeat-end ng-if="session.expanded"
-            class="session-detail-row">
+          <tr ng-repeat-end ng-if="session.expanded" class="session-detail-row">
             <td colspan="{{::$ctrl.headers.length + 1}}">
-              <session-detail session="::session">
-              </session-detail>
+              <session-detail session="::session"></session-detail>
             </td>
           </tr>
+        </tbody>
+        <tbody>
+
         </tbody>
       </table> <!-- /session data table -->
 
@@ -221,24 +219,26 @@
 
     <!-- no results -->
     <div class="info-area vertical-horizontal-center"
-     ng-if="!$ctrl.error && !$ctrl.sessions.data.length && !$ctrl.loading">
-      <span class="fa fa-3x text-center text-muted-more fa-folder-open"></span>
-      <br>
-      No results or none that match your search.
-      <small ng-if="$ctrl.query.view" class="text-purple">
-        <br>
-        Don't forget! You have a view applied to your search:&nbsp;
-        <strong>{{::$ctrl.query.view}}</strong>
-      </small>
+     ng-if="!$ctrl.error && !$ctrl.sessions.data.length">
+      <div ng-if="!$ctrl.loading">
+        <span class="fa fa-3x text-muted-more fa-folder-open"></span>
+        No results or none that match your search.
+        <small ng-if="$ctrl.query.view" class="text-purple">
+          <br>
+          Don't forget! You have a view applied to your search:&nbsp;
+          <strong>{{::$ctrl.query.view}}</strong>
+        </small>
+      </div>
     </div> <!-- /no results -->
 
-    <!-- bottom pagination controls -->
-    <moloch-pagination length="$ctrl.query.length"
-      records-total="$ctrl.sessions.recordsTotal"
-      records-filtered="$ctrl.sessions.recordsFiltered"
-      current-page="$ctrl.currentPage"
-      start="$ctrl.query.start"></moloch-pagination>
-
   </div>
+
+  <!-- bottom pagination controls -->
+  <moloch-pagination ng-if="!$ctrl.loading && !$ctrl.error"
+    length="$ctrl.query.length"
+    records-total="$ctrl.sessions.recordsTotal"
+    records-filtered="$ctrl.sessions.recordsFiltered"
+    current-page="$ctrl.currentPage"
+    start="$ctrl.query.start"></moloch-pagination>
 
 </div>

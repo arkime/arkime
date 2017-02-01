@@ -43,9 +43,9 @@ session-field {
         visibility  : hidden;
         margin-left : $px-xs;
 
-        -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
-           -moz-transition: visibility 0s linear 400ms, opacity 400ms;
-                transition: visibility 0s linear 400ms, opacity 400ms;
+        -webkit-transition: visibility 0s linear, opacity 400ms;
+           -moz-transition: visibility 0s linear, opacity 400ms;
+                transition: visibility 0s linear, opacity 400ms;
       }
     }
 
@@ -54,10 +54,6 @@ session-field {
       visibility: hidden;
       max-width : 800px;
       font-size : 1.25rem;
-
-      -webkit-transition: visibility 0s linear 400ms, opacity 400ms;
-         -moz-transition: visibility 0s linear 400ms, opacity 400ms;
-              transition: visibility 0s linear 400ms, opacity 400ms;
 
       > div > li {
         > a { // truncate long values
@@ -74,14 +70,19 @@ session-field {
 
       a { color: $color-blue-dark; }
 
-      // show button and menu (if opened) on hover
-      .fa, ul.session-field-dropdown {
+      // show menu (if opened) on hover
+      ul.session-field-dropdown {
+        opacity   : 1;
+        visibility: visible;
+      }
+
+      .fa { // fade in button on hover
         opacity   : 1;
         visibility: visible;
 
-        -webkit-transition: visibility 0s linear 0s, opacity 400ms;
-           -moz-transition: visibility 0s linear 0s, opacity 400ms;
-                transition: visibility 0s linear 0s, opacity 400ms;
+        -webkit-transition: visibility 0s linear, opacity 400ms;
+           -moz-transition: visibility 0s linear, opacity 400ms;
+                transition: visibility 0s linear, opacity 400ms;
       }
     }
 
@@ -91,36 +92,42 @@ session-field {
     margin-top: -6px;
   }
 
+  /* custom session field dropdown styles because we can't use the dropdown-menu
+   * class as it is specific to bootstraps dropdown implementation
+   * this class is the same as dropdown-menu, but LESS whitespace */
   .session-field-dropdown {
-    position: absolute;
-    z-index: 1000;
-    display: block;
-    min-width: 160px;
-    padding: 5px 0;
-    margin: 2px 0 0 -4px;
-    text-align: left;
-    list-style: none;
+    position        : absolute;
+    z-index         : 1000;
+    display         : block;
+    min-width       : 160px;
+    padding         : 5px 0;
+    margin          : 2px 0 0 -4px;
+    text-align      : left;
+    list-style      : none;
+    border-radius   : 4px;
     background-color: #fff;
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
+
     border: 1px solid #ccc;
     border: 1px solid rgba(0, 0, 0, .15);
-    border-radius: 4px;
+
+            background-clip: padding-box;
+    -webkit-background-clip: padding-box;
+
+            box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
     -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
 
     li > a {
-      display: block;
-      padding: 2px 8px;
-      clear: both;
-      font-weight: normal;
-      line-height: 1.42857143;
-      color: #333;
-      white-space: nowrap;
+      display     : block;
+      padding     : 2px 8px;
+      clear       : both;
+      font-weight : normal;
+      line-height : 1.42857143;
+      color       : #333;
+      white-space : nowrap;
 
       &:hover {
-        color: #262626;
-        text-decoration: none;
+        color           : #262626;
+        text-decoration : none;
         background-color: #f5f5f5;
       }
     }

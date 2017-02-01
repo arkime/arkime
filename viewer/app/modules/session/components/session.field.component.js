@@ -64,6 +64,9 @@
      * @param {string} op     The relational operator
      */
     fieldClick(field, value, op) {
+      // close the dropdown
+      this.isopen = false;
+
       // for values required to be strings in the search expression
       if (this.stringify) { value = `"${value}"`; }
 
@@ -93,28 +96,25 @@
     /**
      * Toggles the dropdown menu for a field
      * If the dropdown menu is opened for the first time, get more menu options
-     * @param {bool} open Whether the dropdown is being opened
+     * @param {object} $event The click event
      */
-    toggled(open) {
-      if (open && !this.molochClickables) {
-        this.ConfigService.getMolochClickables()
-          .then((response) => {
-            this.molochClickables = response;
-
-            if (Object.keys(this.molochClickables).length !== 0) {
-              // add items to the menu if they exist
-              this.buildMenu();
-            }
-          });
-      }
-    }
-
-    // TODO
     toggleDropdown($event) {
       $event.preventDefault();
       $event.stopPropagation();
-      // TODO FETCH MOLOCH CLICKABLES
+
       this.isopen = !this.isopen;
+
+      if (this.isopen && !this.molochClickables) {
+        this.ConfigService.getMolochClickables()
+        .then((response) => {
+          this.molochClickables = response;
+
+          if (Object.keys(this.molochClickables).length !== 0) {
+            // add items to the menu if they exist
+            this.buildMenu();
+          }
+        });
+      }
     }
 
     /* utility functions --------------------------------------------------- */
