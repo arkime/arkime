@@ -120,8 +120,12 @@
         // notify children (namely search component)
         this.$scope.$broadcast('update:time', args);
       });
-    } /* /$onInit */
 
+      // TODO: REMOVE
+      // this.$timeout(() => {
+      //   require('../../../stats');
+      // }, 5000);
+    } /* /$onInit */
 
     /* data retrieve/setup/update ------------------------------------------ */
     /**

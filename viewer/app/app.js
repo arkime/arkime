@@ -53,8 +53,8 @@
     };
   }])
 
-  .config(['$routeProvider', '$locationProvider', '$httpProvider',
-    function($routeProvider, $locationProvider, $httpProvider) {
+  .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider',
+    function($routeProvider, $locationProvider, $httpProvider, $compileProvider) {
       $routeProvider
         .when('/app', {
           title         : 'Sessions',
@@ -73,6 +73,8 @@
         .otherwise({ redirectTo: '/app' });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode
+
+      // $compileProvider.debugInfoEnabled(false);
 
       $httpProvider.interceptors.push('myHttpInterceptor');
 

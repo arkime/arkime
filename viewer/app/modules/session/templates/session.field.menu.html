@@ -1,0 +1,38 @@
+<ul class="session-field-dropdown" ng-if="$ctrl.isopen"
+  ng-class="::{'pull-left':$ctrl.pullLeft, 'pull-right':!$ctrl.pullLeft}">
+  <div>
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '==')">
+      <a href>
+        <strong>and</strong>
+        {{::parsed.value}}
+      </a>
+    </li>
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '!=')">
+      <a href>
+        <strong>and not</strong>
+        {{::parsed.value}}
+      </a>
+    </li>
+  </div>
+  <div ng-if="::($ctrl.field.portField && $ctrl.session[$ctrl.field.portField] !== undefined)">
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.field.portField], '==')">
+      <a href>
+        <strong>and</strong>
+        {{::parsed.value}}:{{::$ctrl.session[$ctrl.field.portField]}}
+      </a>
+    </li>
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.field.portField], '!=')">
+      <a href>
+        <strong>and not</strong>
+        {{::parsed.value}}:{{::$ctrl.session[$ctrl.field.portField]}}
+      </a>
+    </li>
+  </div>
+  <div>
+    <li ng-repeat="item in ::$ctrl.menuItems track by $index">
+      <a href="{{::item.url}}" target="_blank">
+        <strong>{{::item.name}}</strong> {{::item.value}}
+      </a>
+    </li>
+  </div>
+</ul>

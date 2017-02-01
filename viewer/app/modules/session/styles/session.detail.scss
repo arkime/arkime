@@ -69,6 +69,13 @@ session {
       }
     }
 
+    .packet-container {
+      .tooltip {
+        // increase max width of tooltips to accommodate src/dst images
+        .tooltip-inner { max-width: 400px; }
+      }
+    }
+
   }
 
 }
