@@ -720,7 +720,12 @@ if (Config.get('demoMode', false)) {
     return res.send('Disabled in demo mode.');
   });
 
-  app.all(['/user/settings', '/user/cron', '/user/password/change', '/changePassword', '/tableState/:tablename'], function(req, res) {
+  app.get(['/user/settings', '/user/cron'], function(req, res) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
+  });
+
+  app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], function(req, res) {
     res.status(403);
     return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
   });
