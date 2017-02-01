@@ -818,7 +818,7 @@ app.get('/about', checkWebEnabled, function(req, res) {
   res.redirect("help");
 });
 
-app.get('/files', checkWebEnabled, function(req, res) {
+app.get('/files.old', checkWebEnabled, function(req, res) {
   res.render('files.jade', {
     user: req.user,
     title: makeTitle(req, 'Files'),
@@ -901,7 +901,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help', '/settings'], checkWebEnabled, function(req, res) {
+app.get(['/app', '/help', '/settings', '/files'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -2085,6 +2085,42 @@ app.get('/fields', function(req, res) {
   }
 });
 
+app.get('/filelist', function(req, res) {
+  var columns = ["num", "node", "name", "locked", "first", "filesize"];
+
+  var query = {_source: columns,
+               from: +req.query.start || 0,
+               size: +req.query.length || 10000,
+               sort: {}
+
+              };
+
+  query.sort[req.query.sortField || "num"] = { order: req.query.desc === "true" ? "desc": "asc"};
+
+  if (req.query.filter) {
+    query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
+  }
+
+  Db.search('files', 'file', query, function(err, result) {
+    if (err || result.error) {
+      console.log("ERROR - filelist", err, result.error);
+      return res.send([]);
+    }
+
+    var data = [];
+
+    for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+      var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+      if (fields.locked === undefined) {
+        fields.locked = 0;
+      }
+      fields.id = result.hits.hits[i]._id;
+      data.push(fields);
+    }
+    return res.send(data);
+  });
+});
+
 app.get('/titleconfig', checkWebEnabled, function(req, res) {
   var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
 
@@ -2505,7 +2541,7 @@ function graphMerge(req, query, aggregations) {
     return graph;
   }
 
-  if (req.query.bounding === "database") { 
+  if (req.query.bounding === "database") {
     graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
     aggregations.dbHisto.buckets.forEach(function (item) {
       var key = item.key;

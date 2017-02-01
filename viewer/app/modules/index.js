@@ -33,3 +33,6 @@ require('./config/config.service');
 require('./help/help');
 
 require('./settings/settings');
+
+require('./files/files');
+require('./files/files.service');
