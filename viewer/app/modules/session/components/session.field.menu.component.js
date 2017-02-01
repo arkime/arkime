@@ -13,10 +13,9 @@
 
           let addMenu = function(event) {
             let item = $(this).closest('span');
-            let localScope = item.scope();
 
             // add menu to the DOM tree
-            transcludeMenu(localScope, function(clone, $scope) {
+            transcludeMenu($scope, function(clone) {
               item.append(clone);
             });
 
@@ -27,11 +26,11 @@
           // when clickable field element is clicked, inject the menu
           element.on('mousedown', 'a.value', addMenu);
         };
+
       }
 
       // return the directive configuration
       return({ compile: compile });
-
     }]);
 
 })();

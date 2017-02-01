@@ -58,7 +58,7 @@
                       ng-model="$ctrl.colQuery"
                       placeholder="Search for columns...">
                     <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group' track by key">
-                      <div class="group-header">{{::key | capitalize}}</div>
+                      <div class="group-header">{{key | capitalize}}</div>
                       <li ng-repeat="field in value track by $index"
                         ng-click="$ctrl.toggleVisibility(field.dbField)"
                         ng-class="{'active':$ctrl.isVisible(field.dbField) >= 0}"
@@ -206,9 +206,7 @@
             </td>
           </tr>
         </tbody>
-        <tbody>
 
-        </tbody>
       </table> <!-- /session data table -->
 
     </div>
