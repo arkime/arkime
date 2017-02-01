@@ -48,8 +48,12 @@
 
   describe('Session Sticky Component ->', function() {
 
-    // load the module
-    beforeEach(angular.mock.module('moloch'));
+    // load the module and enable debug info (to access isolateScope)
+    beforeEach(function() {
+      angular.mock.module('moloch', function (_$compileProvider_) {
+        _$compileProvider_.debugInfoEnabled(true);
+      });
+    });
 
     let scope, element, template, isolateScope, templateAsHtml, clones;
     let $location, $timeout;

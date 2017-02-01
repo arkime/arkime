@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var graph = {
+  let graph = {
     dbHisto : [[1, 1], [2, 2]],
     lpHisto : [[1, 1], [2, 2]],
     paHisto : [[1, 1], [2, 2]],
@@ -13,11 +13,14 @@
 
   describe('Session Graph Component ->', function() {
 
-    // load the module
-    beforeEach(angular.mock.module('moloch'));
-    beforeEach(angular.mock.module('directives.search'));
+    // load the module// load the module and enable debug info (to access isolateScope)
+    beforeEach(function() {
+      angular.mock.module('moloch', function (_$compileProvider_) {
+        _$compileProvider_.debugInfoEnabled(true);
+      });
+    });
 
-    var scope, isolateScope, compiledTemplate, templateAsHtml, $timeout, $httpBackend;
+    let scope, isolateScope, compiledTemplate, templateAsHtml, $timeout, $httpBackend;
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -31,9 +34,9 @@
 
         scope.graphData   = graph;
 
-        var htmlString    = '<session-graph graph-data="graphData"></session-graph>';
+        let htmlString    = '<session-graph graph-data="graphData"></session-graph>';
 
-        var element       = angular.element(htmlString);
+        let element       = angular.element(htmlString);
         compiledTemplate  = $compile(element)(scope);
         isolateScope      = compiledTemplate.isolateScope();
 
@@ -50,11 +53,11 @@
     });
 
     it('should render the graph', function() {
-      var plotArea = compiledTemplate.find('.plot-area');
+      let plotArea = compiledTemplate.find('.plot-area');
       expect(plotArea).toBeDefined();
       expect(plotArea.length).toBeGreaterThan(0);
 
-      var canvas = plotArea.find('canvas');
+      let canvas = plotArea.find('canvas');
       expect(canvas).toBeDefined();
       expect(canvas.length).toBeGreaterThan(0);
     });
@@ -78,8 +81,8 @@
     });
 
     it('should be able to select time range within plot', function() {
-      var plotArea = compiledTemplate.find('.plot-area');
-      var ranges = { xaxis: { from: 3600, to: 36000000000 }};
+      let plotArea = compiledTemplate.find('.plot-area');
+      let ranges = { xaxis: { from: 3600, to: 36000000000 }};
       plotArea.triggerHandler('plotselected', ranges);
       expect(isolateScope.$emit).toHaveBeenCalled();
     });
