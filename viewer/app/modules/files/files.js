@@ -4,32 +4,37 @@
 
   /**
    * @class FilesController
-   * @classdesc Interacts with moloch help page
+   * @classdesc Interacts with moloch files page
    * @example
-   * '<moloch-help></moloch-help>'
+   * '<moloch-fields></moloch-fields>'
    */
   class FilesController {
 
     /**
      * Initialize global variables for this controller
-     * @param $anchorScroll Scrolls to the element related to given hash
      * @param FilesService  Transacts files with the server
      *
      * @ngInject
      */
-    constructor($anchorScroll, FilesService) {
-      this.$anchorScroll  = $anchorScroll;
+    constructor(FilesService) {
       this.FilesService   = FilesService;
-      this.sortField = 'num';
-      this.sortReverse = false;
-
-      // offset anchor scroll position to account for navbars
-      this.$anchorScroll.yOffset = 90;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.sortField    = 'num';
+      this.sortReverse  = false;
+
       this.loadData();
+
+      this.columns = [
+        { name: 'File Number', sort: 'num' },
+        { name: 'Node', sort: 'node' },
+        { name: 'Name', sort: 'name' },
+        { name: 'Locked', sort: 'locked' },
+        { name: 'First Date', sort: 'first' },
+        { name: 'File Size', sort: 'filesize' },
+      ]
     }
 
     columnClick(name) {
@@ -46,11 +51,11 @@
 
   }
 
-  FilesController.$inject = ['$anchorScroll','FilesService'];
+  FilesController.$inject = ['FilesService'];
 
   /**
-   * ES Health Directive
-   * Displays elasticsearch health status
+   * Moloch Files Directive
+   * Displays pcap files
    */
   angular.module('moloch')
      .component('molochFiles', {

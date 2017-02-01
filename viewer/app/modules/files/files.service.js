@@ -28,7 +28,6 @@
      *                            or rejection of the request.
      */
     get(options) {
-      console.log("ALW GET", options);
       return this.$q((resolve, reject) => {
 
         let config = { method:'GET', 

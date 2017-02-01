@@ -6,7 +6,8 @@
       <span class="input-group-addon">
         <span class="fa fa-search"></span>
       </span>
-      <input type="text" class="form-control" ng-model="$ctrl.searchFiles" ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+      <input type="text" class="form-control" ng-model="$ctrl.searchFiles"
+        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
         placeholder="Search for files in the table below">
     </div>
   </h3>
@@ -14,53 +15,12 @@
     ng-if="!$ctrl.error && $ctrl.files">
     <thead>
       <tr>
-        <th>
-          <a href="#" ng-click="$ctrl.columnClick('num')">
-            File Number
-            <span ng-show="$ctrl.sortField == 'num' && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField == 'num' && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-show="$ctrl.sortField != 'num'" class="fa fa-sort"></span>
-          </a>
-        </th>
-        <th>
-          <a href="#" ng-click="$ctrl.columnClick('node')">
-            Node 
-            <span ng-show="$ctrl.sortField == 'node' && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField == 'node' && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-show="$ctrl.sortField != 'node'" class="fa fa-sort"></span>
-          </a>
-        </th>
-        <th>
-          <a href="#" ng-click="$ctrl.columnClick('name')">
-            Name
-            <span ng-show="$ctrl.sortField == 'name' && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField == 'name' && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-show="$ctrl.sortField != 'name'" class="fa fa-sort"></span>
-          </a>
-        </th>
-        <th>
-          <a href="#" ng-click="$ctrl.columnClick('locked')">
-            Locked
-            <span ng-show="$ctrl.sortField == 'locked' && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField == 'locked' && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-show="$ctrl.sortField != 'locked'" class="fa fa-sort"></span>
-          </a>
-        </th>
-        <th>
-          <a href="#" ng-click="$ctrl.columnClick('first')">
-            First Date
-            <span ng-show="$ctrl.sortField == 'first' && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField == 'first' && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-show="$ctrl.sortField != 'first'" class="fa fa-sort"></span>
-          </a>
-        </th>
-        <th>
-          <a href="#" ng-click="$ctrl.columnClick('filesize')">
-            File Number
-            <span ng-show="$ctrl.sortField == 'filesize' && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-            <span ng-show="$ctrl.sortField == 'filesize' && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-            <span ng-show="$ctrl.sortField != 'filesize'" class="fa fa-sort"></span>
-          </a>
+        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+          ng-click="$ctrl.columnClick(column.sort)">
+          {{::column.name}}
+          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
+          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
+          <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
         </th>
       </tr>
     </thead>
@@ -71,12 +31,12 @@
         <td class="no-wrap">{{file.num}}</td>
         <td class="no-wrap">{{file.node}}</td>
         <td class="no-wrap">{{file.name}}</td>
-        <td class="no-wrap">{{file.locked}}</td>
+        <td class="no-wrap">{{file.locked === 1 ? 'True' : 'False'}}</td>
         <td class="no-wrap">{{file.first * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}</td>
         <td class="no-wrap">{{file.filesize}}</td>
       </tr>
       <tr ng-if="!$ctrl.filteredFiles.length">
-        <td colspan="4" class="text-danger">
+        <td colspan="6" class="text-danger">
           <span class="fa fa-warning"></span>&nbsp;
           No results match your search
         </td>
