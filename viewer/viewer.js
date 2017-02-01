@@ -712,6 +712,20 @@ function checkWebEnabled(req, res, next) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
+
+// APIs disabled in demoMode, needs to be before real callbacks
+if (Config.get('demoMode', false)) {
+  console.log("WARNING - Starting in demo mode, some APIs disabled");
+  app.all(['/settings', '/users'], function(req, res) {
+    return res.send('Disabled in demo mode.');
+  });
+
+  app.all(['/user/settings', '/user/cron', '/user/password/change', '/changePassword', '/tableState/:tablename'], function(req, res) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
+  });
+}
+
 function makeTitle(req, page) {
   var title = Config.get("titleTemplate", "_cluster_ - _page_ _-view_ _-expression_");
   title = title.replace(/_cluster_/g, internals.clusterName)
@@ -987,8 +1001,6 @@ app.get('/user/settings', function(req, res) {
 
   var userId = req.user.userId;                         // get current user
   if (req.query.userId) { userId = req.query.userId; }  // or requested user
-
-  if (Config.get('demoMode', false)) { return error(403, 'Disabled'); }
 
   if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
     // user is trying to get another user's settings without admin privilege
@@ -1267,8 +1279,6 @@ app.get('/user/cron', function(req, res) {
     });
   }
 
-  if (Config.get('demoMode', false)) { return res.send('Disabled'); }
-
   if (req.query.userId) {
     if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
       // user is trying to get another user's cron queries without admin privilege
@@ -1428,8 +1438,6 @@ app.post('/user/password/change', checkCookieToken, function(req, res) {
     // user is trying to change password for another user without admin privilege
     return error(403, 'Need admin privileges');
   }
-
-  if (Config.get('demoMode', false)) { return error(403, 'Disabled'); }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
     return error(403, 'New password needs to be at least 3 characters');
@@ -4583,10 +4591,6 @@ app.post('/changePassword', checkToken, function(req, res) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
 
-  if (Config.get("demoMode", false)) {
-    return error("Disabled");
-  }
-
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
     return error("New password needs to be at least 3 characters");
   }
@@ -4906,10 +4910,6 @@ app.post('/deleteCronQuery', checkToken, function(req, res) {
 app.post('/tableState/:tablename', function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (Config.get("demoMode", false)) {
-    return error("Demo mode");
   }
 
   Db.getUser(req.user.userId, function(err, user) {
