@@ -69,6 +69,10 @@
           title    : 'Settings',
           template : '<moloch-settings></moloch-settings>'
         })
+        .when('/files', {
+          title    : 'Files',
+          template : '<moloch-files></moloch-files>'
+        })
         // default route is the sessions page
         .otherwise({ redirectTo: '/app' });
 

@@ -1,0 +1,46 @@
+<div class="container-fluid container-files">
+  <h3 id="files">
+    <span class="fa fa-fw fa-list"></span>&nbsp;
+    Files
+    <div class="input-group input-group-sm pull-right header-input">
+      <span class="input-group-addon">
+        <span class="fa fa-search"></span>
+      </span>
+      <input type="text" class="form-control" ng-model="$ctrl.searchFiles"
+        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+        placeholder="Search for files in the table below">
+    </div>
+  </h3>
+  <table class="table table-condensed table-striped margined-top-xxxlg"
+    ng-if="!$ctrl.error && $ctrl.files">
+    <thead>
+      <tr>
+        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+          ng-click="$ctrl.columnClick(column.sort)">
+          {{::column.name}}
+          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
+          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
+          <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+    <tbody>
+      <tr class="animate-repeat"
+        ng-repeat="file in $ctrl.filteredFiles = ($ctrl.files) track by file.id">
+        <td class="no-wrap">{{file.num}}</td>
+        <td class="no-wrap">{{file.node}}</td>
+        <td class="no-wrap">{{file.name}}</td>
+        <td class="no-wrap">{{file.locked === 1 ? 'True' : 'False'}}</td>
+        <td class="no-wrap"><span ng-if="::$ctrl.settings">{{file.first | timezoneDateString:$ctrl.settings.timezone}}</span></td>
+        <td class="no-wrap">{{file.filesize}}</td>
+      </tr>
+      <tr ng-if="!$ctrl.filteredFiles.length">
+        <td colspan="6" class="text-danger">
+          <span class="fa fa-warning"></span>&nbsp;
+          No results match your search
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

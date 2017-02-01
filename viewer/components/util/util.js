@@ -205,6 +205,16 @@
        };
      })
 
+     .filter('timezoneDateString', ['$filter', function($filter) {
+       return function (seconds, timezone) {
+         if (timezone === 'gmt') {
+           return $filter('date')(1000 * (seconds + new Date().getTimezoneOffset()*60), 'yyyy/MM/dd HH:mm:ss') + 'Z';
+         }
+
+         return $filter('date')(1000 * seconds, 'yyyy/MM/dd HH:mm:ss');
+       };
+     }])
+
     /**
      * Convert To Number Directive
      * Parses strings to integers
