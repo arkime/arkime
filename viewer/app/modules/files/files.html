@@ -32,7 +32,7 @@
         <td class="no-wrap">{{file.node}}</td>
         <td class="no-wrap">{{file.name}}</td>
         <td class="no-wrap">{{file.locked === 1 ? 'True' : 'False'}}</td>
-        <td class="no-wrap">{{file.first * 1000 | date:'yyyy/MM/dd HH:mm:ss'}}</td>
+        <td class="no-wrap"><span ng-if="::$ctrl.settings">{{file.first | timezoneDateString:$ctrl.settings.timezone}}</span></td>
         <td class="no-wrap">{{file.filesize}}</td>
       </tr>
       <tr ng-if="!$ctrl.filteredFiles.length">

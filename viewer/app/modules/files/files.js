@@ -16,14 +16,19 @@
      *
      * @ngInject
      */
-    constructor(FilesService) {
+    constructor(FilesService, UserService) {
       this.FilesService   = FilesService;
+      this.UserService    = UserService;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
       this.sortField    = 'num';
       this.sortReverse  = false;
+
+      this.UserService.getSettings()
+        .then((response) => {this.settings = response; })
+        .catch((error)   => {this.settings = {timezone: "local"}; });
 
       this.loadData();
 
@@ -51,7 +56,7 @@
 
   }
 
-  FilesController.$inject = ['FilesService'];
+  FilesController.$inject = ['FilesService', 'UserService'];
 
   /**
    * Moloch Files Directive
