@@ -34,7 +34,7 @@
         { name: 'Locked', sort: 'locked' },
         { name: 'First Date', sort: 'first' },
         { name: 'File Size', sort: 'filesize' },
-      ]
+      ];
     }
 
     columnClick(name) {
