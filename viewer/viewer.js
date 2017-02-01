@@ -2090,7 +2090,7 @@ app.get('/filelist', function(req, res) {
 
   var query = {_source: columns,
                from: +req.query.start || 0,
-               size: +req.query.length || 10000,
+               size: +req.query.length || 10,
                sort: {}
 
               };
@@ -2101,23 +2101,38 @@ app.get('/filelist', function(req, res) {
     query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
   }
 
-  Db.search('files', 'file', query, function(err, result) {
-    if (err || result.error) {
-      console.log("ERROR - filelist", err, result.error);
-      return res.send([]);
+  async.parallel({
+    files: function (cb) {
+      Db.search('files', 'file', query, function(err, result) {
+        var results = {total: result.hits.total, results: []};
+        if (err || result.error) {
+          return cb(err || result.error);
+        }
+
+        for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+          if (fields.locked === undefined) {
+            fields.locked = 0;
+          }
+          fields.id = result.hits.hits[i]._id;
+          results.results.push(fields);
+        }
+        cb(null, results);
+      });
+    },
+    total: function (cb) {
+      Db.numberOfDocuments('files', cb);
+    }
+  },
+  function(err, results) {
+    if (err) {
+      return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
     }
 
-    var data = [];
-
-    for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-      var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-      if (fields.locked === undefined) {
-        fields.locked = 0;
-      }
-      fields.id = result.hits.hits[i]._id;
-      data.push(fields);
-    }
-    return res.send(data);
+    var r = {recordsTotal: results.total,
+             recordsFiltered: results.files.total,
+             data: results.files.results};
+    res.send(r);
   });
 });
 

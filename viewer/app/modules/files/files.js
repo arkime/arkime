@@ -16,7 +16,8 @@
      *
      * @ngInject
      */
-    constructor(FilesService, UserService) {
+    constructor($scope, FilesService, UserService) {
+      this.$scope         = $scope;
       this.FilesService   = FilesService;
       this.UserService    = UserService;
     }
@@ -25,6 +26,17 @@
     $onInit() {
       this.sortField    = 'num';
       this.sortReverse  = false;
+      this.query        = {length: 50, start: 0};
+      this.currentPage  = 1;
+
+      this.$scope.$on('change:pagination', (event, args) => {
+        // pagination affects length, currentPage, and start
+        this.query.length = args.length;
+        this.query.start  = args.start;
+        this.currentPage  = args.currentPage;
+
+        this.loadData();
+      });
 
       this.UserService.getSettings()
         .then((response) => {this.settings = response; })
@@ -49,14 +61,14 @@
     }
 
     loadData() {
-      this.FilesService.get({filter: this.searchFiles, sortField: this.sortField, desc: this.sortReverse})
+      this.FilesService.get({filter: this.searchFiles, sortField: this.sortField, desc: this.sortReverse, start: this.query.start, length:this.query.length})
         .then((response)  => { this.files = response; })
         .catch((error)    => { this.error = error; });
     }
 
   }
 
-  FilesController.$inject = ['FilesService', 'UserService'];
+  FilesController.$inject = ['$scope', 'FilesService', 'UserService'];
 
   /**
    * Moloch Files Directive

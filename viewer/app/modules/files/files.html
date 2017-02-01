@@ -2,15 +2,29 @@
   <h3 id="files">
     <span class="fa fa-fw fa-list"></span>&nbsp;
     Files
-    <div class="input-group input-group-sm pull-right header-input">
-      <span class="input-group-addon">
-        <span class="fa fa-search"></span>
-      </span>
-      <input type="text" class="form-control" ng-model="$ctrl.searchFiles"
-        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
-        placeholder="Search for files in the table below">
-    </div>
   </h3>
+
+  <div class="row">
+  <!-- top pagination controls -->
+    <div class="col-md-4">
+      <moloch-pagination length="$ctrl.query.length"
+        records-total="$ctrl.files.recordsTotal"
+        records-filtered="$ctrl.files.recordsFiltered"
+        current-page="$ctrl.currentPage"
+        start="$ctrl.query.start"></moloch-pagination>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+      <div class="input-group input-group-sm pull-right header-input">
+        <span class="input-group-addon">
+          <span class="fa fa-search"></span>
+        </span>
+        <input type="text" class="form-control" ng-model="$ctrl.searchFiles"
+          ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+          placeholder="Search for files in the table below">
+      </div>
+    </div>
+  </div>
+
   <table class="table table-condensed table-striped margined-top-xxxlg"
     ng-if="!$ctrl.error && $ctrl.files">
     <thead>
@@ -27,7 +41,7 @@
     <tbody>
     <tbody>
       <tr class="animate-repeat"
-        ng-repeat="file in $ctrl.filteredFiles = ($ctrl.files) track by file.id">
+        ng-repeat="file in $ctrl.filteredFiles = ($ctrl.files.data) track by file.id">
         <td class="no-wrap">{{file.num}}</td>
         <td class="no-wrap">{{file.node}}</td>
         <td class="no-wrap">{{file.name}}</td>
