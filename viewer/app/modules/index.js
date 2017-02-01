@@ -20,6 +20,7 @@ require('./session/components/session.delete.component');
 require('./session/components/session.send.component');
 require('./session/components/session.info.component');
 require('./session/components/session.field.component');
+require('./session/components/session.field.menu.component');
 
 require('./search/components/search.component');
 require('./search/components/expression.typeahead');

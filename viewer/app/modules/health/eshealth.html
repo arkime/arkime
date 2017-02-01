@@ -12,22 +12,22 @@
 
 </div>
 
-<div ng-show="$ctrl.tooltipVisible"
+<div ng-if="$ctrl.tooltipVisible"
   class="tooltip es-health-tooltip bottom-left fade in">
   <div class="tooltip-arrow"></div>
   <div class="tooltip-inner">
     <div ng-if="!$ctrl.loading && !$ctrl.error">
       <strong>Elasticsearch</strong><br>
-      Version: <strong>{{$ctrl.esHealth.version}}</strong><br>
-      Cluster: <strong>{{$ctrl.esHealth.cluster_name}}</strong><br>
-      Status: <strong>{{$ctrl.esHealth.status}}</strong><br>
-      Nodes: <strong>{{$ctrl.esHealth.number_of_nodes}}</strong><br>
-      Shards: <strong>{{$ctrl.esHealth.active_shards}}</strong><br>
-      Relocating Shards: <strong>{{$ctrl.esHealth.relocating_shards}}</strong><br>
-      Unassigned Shards: <strong>{{$ctrl.esHealth.unassigned_shards}}</strong>
+      Version: <strong>{{::$ctrl.esHealth.version}}</strong><br>
+      Cluster: <strong>{{::$ctrl.esHealth.cluster_name}}</strong><br>
+      Status: <strong>{{::$ctrl.esHealth.status}}</strong><br>
+      Nodes: <strong>{{::$ctrl.esHealth.number_of_nodes}}</strong><br>
+      Shards: <strong>{{::$ctrl.esHealth.active_shards}}</strong><br>
+      Relocating Shards: <strong>{{::$ctrl.esHealth.relocating_shards}}</strong><br>
+      Unassigned Shards: <strong>{{::$ctrl.esHealth.unassigned_shards}}</strong>
     </div>
     <div ng-if="$ctrl.error">
-      {{$ctrl.error}}
+      {{::$ctrl.error}}
     </div>
   </div>
 </div>

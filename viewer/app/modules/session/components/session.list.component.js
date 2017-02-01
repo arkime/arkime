@@ -122,7 +122,6 @@
       });
     } /* /$onInit */
 
-
     /* data retrieve/setup/update ------------------------------------------ */
     /**
      * Makes a request to the Session Service to get the list of sessions

@@ -232,7 +232,6 @@
         $httpBackend.flush();
       });
 
-      // TODO: get request for session packets
       it('should send a GET request for session packets', function() {
         SessionService.getPackets('sessionid', 'node');
         $httpBackend.expectGET('node/session/sessionid/packets');

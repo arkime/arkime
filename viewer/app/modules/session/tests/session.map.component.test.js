@@ -2,18 +2,21 @@
 
   'use strict';
 
-  var map = {
+  let map = {
     dst: { CHE: 1, DEU: 7, IRL: 41, USA: 699 },
     src: { IRL: 4, USA: 9 }
   };
 
   describe('Session Map Component ->', function() {
 
-    // load the module
-    beforeEach(angular.mock.module('moloch'));
-    beforeEach(angular.mock.module('directives.search'));
+    // load the module and enable debug info (to access isolateScope)
+    beforeEach(function() {
+      angular.mock.module('moloch', function (_$compileProvider_) {
+        _$compileProvider_.debugInfoEnabled(true);
+      });
+    });
 
-    var scope, isolateScope, compiledTemplate, templateAsHtml, $timeout, $httpBackend;
+    let scope, isolateScope, compiledTemplate, templateAsHtml, $timeout, $httpBackend;
 
     // Initialize and a mock scope
     beforeEach(inject(function(
@@ -27,9 +30,9 @@
 
         scope.mapData     = map;
 
-        var htmlString    = '<moloch-map map-data="mapData"></moloch-map>';
+        let htmlString    = '<moloch-map map-data="mapData"></moloch-map>';
 
-        var element       = angular.element(htmlString);
+        let element       = angular.element(htmlString);
         compiledTemplate  = $compile(element)(scope);
         isolateScope      = compiledTemplate.isolateScope();
 
@@ -46,11 +49,11 @@
     });
 
     it('should render the map', function() {
-      var mapContainer = compiledTemplate.find('.moloch-map-container');
+      let mapContainer = compiledTemplate.find('.moloch-map-container');
       expect(mapContainer).toBeDefined();
       expect(mapContainer.length).toBeGreaterThan(0);
 
-      var jvectormap = mapContainer.find('.jvectormap-container');
+      let jvectormap = mapContainer.find('.jvectormap-container');
       expect(jvectormap).toBeDefined();
       expect(jvectormap.length).toBeGreaterThan(0);
     });

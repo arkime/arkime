@@ -7,8 +7,9 @@
    * @classdesc Interacts with all clickable session fields
    *
    * @example
-   * '<session-field field="fieldObj" expr="'src.ip'"
-   *   value="16843009" session="sessionObj" parse="true"></session-field>'
+   * '<session-field field="::fieldObj" expr="src.ip"
+   *   value="{{::sessionObj.field}}" session="::sessionObj"
+   *   parse="true" stringify="true"></session-field>'
    */
   class SessionFieldController {
 
@@ -38,44 +39,20 @@
       if ((this.value === undefined || this.value === '') &&
          (!this.field || !this.field.children)) { return; }
 
-      // setup parse flag
+      // setup parse flag if it's a string
       if (typeof this.parse === 'string') {
         this.parse = this.parse === 'true';
       }
 
-      // setup stringify flag
+      // setup stringify flag if it's a string
       if (typeof this.stringify === 'string') {
         this.stringify = this.stringify === 'true';
       }
 
       // only parse values if we know how to (requires field param)
-      if (this.field) { this.parseValue(this.field); }
-
-      // TODO: only get moloch fields if user opens drop down OR if field is not passed into component
-      this.FieldService.get()
-        .then((response) => {
-          this.molochFields = response;
-
-          if (!this.field) {
-            this.parseValue(this.molochFields[this.expr]);
-          }
-        });
-
-      // TODO: only do this if the user opens on dropdown menu
-      this.ConfigService.getMolochClickables()
-         .then((response) => {
-           let emptyObject = true;
-           for (let key in response) {
-             if (response.hasOwnProperty(key)) {
-               emptyObject = false;
-             }
-           }
-
-           if (!emptyObject) {
-             this.molochClickables = response;
-             this.buildMenu();
-           }
-         });
+      if (this.field) { this.parseValue(); }
+      // otherwise get the corresponding field definition before parsing
+      else { this.getField(); }
     }
 
     /* exposed functions --------------------------------------------------- */
@@ -87,8 +64,11 @@
      * @param {string} op     The relational operator
      */
     fieldClick(field, value, op) {
+      // close the dropdown
+      this.isopen = false;
+
       // for values required to be strings in the search expression
-      if (this.stringify) { value = '\"' + this.value + '\"'; }
+      if (this.stringify) { value = `"${value}"`; }
 
       let fullExpression = `${field} ${op} ${value}`;
 
@@ -113,39 +93,72 @@
       }
     }
 
+    /**
+     * Toggles the dropdown menu for a field
+     * If the dropdown menu is opened for the first time, get more menu options
+     * @param {object} $event The click event
+     */
+    toggleDropdown($event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+
+      this.isopen = !this.isopen;
+
+      if (this.isopen && !this.molochClickables) {
+        this.ConfigService.getMolochClickables()
+        .then((response) => {
+          this.molochClickables = response;
+
+          if (Object.keys(this.molochClickables).length !== 0) {
+            // add items to the menu if they exist
+            this.buildMenu();
+          }
+        });
+      }
+    }
+
     /* utility functions --------------------------------------------------- */
+    /* Retrieves fields and finds the corresponding field
+     * Should only get fields if field binding was not passed into directive
+     * (like from session detail) */
+    getField() {
+      this.FieldService.get()
+        .then((response) => {
+          // set the field object for the view and parsing
+          this.field = response[this.expr];
+
+          // if the value has not been parsed, parse it!
+          if (!this.parsed) { this.parseValue(); }
+        });
+    }
+
     /**
      * Gets info to display the menu for a field
      * @returns {Object} The info to be displayed in the menu
      */
     getInfo() {
-      let field = this.molochFields[this.expr];
-      if (!field) { return { category: [] }; }
+      if (!this.field) { return { category: [] }; }
 
-      if (Array.isArray(field.category)) {
-        return { field: this.expr, category: field.category, info: field };
+      if (Array.isArray(this.field.category)) {
+        return { field:this.expr, category:this.field.category, info:this.field };
       } else {
-        return { field: this.expr, category: [field.category], info: field };
+        return { field:this.expr, category:[this.field.category], info:this.field };
       }
     }
 
-    // TODO: put this logic in the SessionService
-    /**
-     * Parses a session field value based on its type
-     * @param {Object} fieldObj The field to be parsed
-     */
-    parseValue(fieldObj) {
-      this.fieldObj = fieldObj;
+    /* Parses a session field value based on its type */
+    parseValue() {
+      if (!this.field || !this.value) { return; }
 
       // TODO: this goes away with ES5
-      if (this.session && this.fieldObj.dbField === 'a1' && this.session['tipv61-term']) {
-        this.expr     = 'tipv6.src';
-        this.fieldObj = {dbField:'tipv61-term',exp:'tipv6.src',friendlyName:'IPv6 Src',group:'general',help:'Temporary IPv6 Source',portField:'p1',transform:'ipv6ToHex',type:'lotermfield'};
-        this.value    = this.session['tipv61-term'];
-      } else if (this.session && this.fieldObj.dbField === 'a2' && this.session['tipv62-term']) {
-        this.expr     = 'tipv6.dst';
-        this.fieldObj = {dbField:'tipv62-term',exp:'tipv6.dst',friendlyName:'IPv6 Dst',group:'general',help:'Temporary IPv6 Destination',portField:'p2',transform:'ipv6ToHex',type:'lotermfield'};
-        this.value    = this.session['tipv62-term'];
+      if (this.session && this.field.dbField === 'a1' && this.session['tipv61-term']) {
+        this.expr   = 'tipv6.src';
+        this.field  = {dbField:'tipv61-term',exp:'tipv6.src',friendlyName:'IPv6 Src',group:'general',help:'Temporary IPv6 Source',portField:'p1',transform:'ipv6ToHex',type:'lotermfield'};
+        this.value  = this.session['tipv61-term'];
+      } else if (this.session && this.field.dbField === 'a2' && this.session['tipv62-term']) {
+        this.expr   = 'tipv6.dst';
+        this.field  = {dbField:'tipv62-term',exp:'tipv6.dst',friendlyName:'IPv6 Dst',group:'general',help:'Temporary IPv6 Destination',portField:'p2',transform:'ipv6ToHex',type:'lotermfield'};
+        this.value  = this.session['tipv62-term'];
       }
 
       this.parsed = {
@@ -156,13 +169,11 @@
       // the parsed value is always an array
       if (!Array.isArray(this.value)) { this.parsed = [this.parsed]; }
 
-      if (!this.fieldObj || !this.value) { return; }
-
       for (let i = 0, len = this.parsed.length; i < len; ++i) {
         let val   = this.parsed[i].value;
         let qVal  = this.parsed[i].queryVal;
 
-        switch (this.fieldObj.type) {
+        switch (this.field.type) {
           case 'seconds':
             this.time = true;
             qVal  = val; // save original value as the query value
@@ -178,20 +189,20 @@
             qVal  = val; // save the parsed value as the query value
             break;
           case 'lotermfield':
-            if (this.fieldObj.dbField === 'tipv61-term' ||
-                this.fieldObj.dbField === 'tipv62-term') {
+            if (this.field.dbField === 'tipv61-term' ||
+                this.field.dbField === 'tipv62-term') {
               val   = this.$filter('extractIPv6String')(val);
               qVal  = val; // don't save original value
             }
             break;
           case 'termfield':
-            if (this.fieldObj.dbField === 'prot-term') {
+            if (this.field.dbField === 'prot-term') {
               val   = this.$filter('protocol')(val);
               qVal  = val; // save the parsed value as the query value
             }
             break;
           case 'integer':
-            if (this.fieldObj.category !== 'port') {
+            if (this.field.category !== 'port') {
               qVal  = val; // save original value as the query value
               val   = this.$filter('number')(val, 0);
             }
@@ -205,10 +216,10 @@
 
     /* Builds the dropdown menu items to display */
     buildMenu() {
-      if (!this.value || !this.molochClickables) { return; }
+      if (!this.parsed[0].value || !this.molochClickables) { return; }
 
       let info  = this.getInfo();
-      let text  = this.value.toString();
+      let text  = this.parsed[0].value.toString();
       let url   = text.indexOf('?') === -1 ? text :
          text.substring(0, text.indexOf('?'));
       let host  = url;
