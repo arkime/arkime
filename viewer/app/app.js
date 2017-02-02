@@ -10,6 +10,7 @@
   require('angular-resource');
   require('angular-sanitize');
   require('angular-ui-bootstrap');
+  require('angular-bind-notifier');
   require('ngdraggable');
   require('bootstrap/js/tooltip');
   require('bootstrap/js/dropdown');
@@ -20,14 +21,13 @@
   require('../public/jquery-jvectormap-1.2.2.min.js');
   require('../public/jquery-jvectormap-world-en.js');
 
-
   /**
    * Moloch Angular Application Definition
    */
   angular.module('moloch', [
     // angular dependencies
     'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
-    'angular.filter', 'ngDraggable', 'ngSanitize',
+    'angular.filter', 'ngDraggable', 'ngSanitize', 'angular.bind.notifier',
 
     // custom directives
     'directives.navbar', 'directives.footer',

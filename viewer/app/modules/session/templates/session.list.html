@@ -193,8 +193,9 @@
                 </session-field>
               </small>
             </td>
-            <td ng-repeat="col in $ctrl.headers track by $index">
-              <session-field field="::col" session="::session"
+            <td ng-repeat="col in :refresh:$ctrl.headers track by $index">
+              <session-field ng-if=":refresh:$ctrl.showSessions"
+                field="::col" session="::session"
                 value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
                 parse="true" timezone="{{::$ctrl.settings.timezone}}">
               </session-field>
@@ -206,7 +207,6 @@
             </td>
           </tr>
         </tbody>
-
       </table> <!-- /session data table -->
 
     </div>

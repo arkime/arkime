@@ -49,20 +49,6 @@ session-field {
       }
     }
 
-    ul.session-field-dropdown {
-      opacity   : 0;
-      visibility: hidden;
-      max-width : 800px;
-      font-size : 1.25rem;
-
-      > div > li {
-        > a { // truncate long values
-          overflow      : hidden;
-          text-overflow : ellipsis;
-        }
-      }
-    }
-
     &:hover {
       z-index         : 4;
       background-color: $color-white;
@@ -95,11 +81,15 @@ session-field {
   /* custom session field dropdown styles because we can't use the dropdown-menu
    * class as it is specific to bootstraps dropdown implementation
    * this class is the same as dropdown-menu, but LESS whitespace */
-  .session-field-dropdown {
+  ul.session-field-dropdown {
+    opacity         : 0;
+    visibility      : hidden;
+    max-width       : 100%;
+    min-width       : 160px;
+    font-size       : 1.25rem;
     position        : absolute;
     z-index         : 1000;
     display         : block;
-    min-width       : 160px;
     padding         : 5px 0;
     margin          : 2px 0 0 -4px;
     text-align      : left;
@@ -116,14 +106,21 @@ session-field {
             box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
     -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
 
-    li > a {
-      display     : block;
-      padding     : 2px 8px;
-      clear       : both;
-      font-weight : normal;
-      line-height : 1.42857143;
-      color       : #333;
-      white-space : nowrap;
+    &.pull-right {
+      right : 0;
+      left  : auto;
+    }
+
+    div > li > a {
+      overflow      : hidden;
+      text-overflow : ellipsis;
+      display       : block;
+      padding       : 2px 8px;
+      clear         : both;
+      font-weight   : normal;
+      line-height   : 1.42857143;
+      color         : #333;
+      white-space   : nowrap;
 
       &:hover {
         color           : #262626;

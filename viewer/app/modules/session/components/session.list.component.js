@@ -58,6 +58,7 @@
 
     /* Callback when component is mounted and ready */
     $onInit() { // initialize scope variables
+      this.showSessions   = true;   // show sessions in table
       this.loading        = true;   // the page starts out in loading state
       this.currentPage    = 1;      // always start on the first page
       this.query          = _query; // load saved query
@@ -295,6 +296,21 @@
       }
     }
 
+    /* reloads the data in the table (even one time bindings) */
+    reloadTable() {
+      this.loading      = true;
+      this.showSessions = false;
+      this.$scope.$broadcast('$$rebind::refresh');
+
+      this.mapHeadersToFields();
+
+      this.$timeout(() => {
+        this.loading      = false;
+        this.showSessions = true;
+        this.$scope.$broadcast('$$rebind::refresh');
+      });
+    }
+
 
     /* exposed functions --------------------------------------------------- */
     /* SESSION DETAIL */
@@ -466,7 +482,7 @@
       this.tableState.visibleHeaders.splice(newIndex, 0,
          this.tableState.visibleHeaders.splice(draggedIndex, 1)[0]);
 
-      this.mapHeadersToFields();
+      this.reloadTable();
 
       this.saveTableState();
     }
@@ -487,6 +503,7 @@
      * @param {string} id The id of the column to show/hide (toggle)
      */
     toggleVisibility(id) {
+      this.isopen  = false; // close the column visibility dropdown
       this.loading = true;
 
       let index = this.isVisible(id);
@@ -494,11 +511,11 @@
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
         this.tableState.visibleHeaders.splice(index,1);
-        this.mapHeadersToFields();
+        this.reloadTable();
       } else { // it's hidden
         // add it to the visible headers list
         this.tableState.visibleHeaders.push(id);
-        this.mapHeadersToFields();
+        this.reloadTable();
         this.getData();
       }
 
