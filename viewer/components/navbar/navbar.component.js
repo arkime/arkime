@@ -28,7 +28,7 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       this.menu = {
-        session     : { title: 'Sessions',    link: 'app' },
+        app         : { title: 'Sessions',    link: 'app' },
         spiview     : { title: 'SPI View',    link: 'spiview' },
         spigraph    : { title: 'SPI Graph',   link: 'spigraph' },
         connections : { title: 'Connections', link: 'connections' },
@@ -56,10 +56,11 @@
     navTabClick(link) {
       let path = this.$location.path();
 
-      // going from settings -> help page
-      if (path.contains('settings') && link.contains('help')) {
-        this.$location.hash('settings');
-      } else { // remove the hash value
+      let basePath = path.split('/')[1];
+      if (this.menu[basePath] && link.contains('help')) {
+        // going to help page, so set section of help to navigate to
+        this.$location.hash(basePath);
+      } else {
         this.$location.hash(null);
       }
 

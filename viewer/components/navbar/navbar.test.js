@@ -63,7 +63,14 @@
 
     it('should have menu items', function() {
       expect(navbar.menu).toBeDefined();
-      expect(navbar.menu.session).toBeDefined();
+      expect(navbar.menu.app).toBeDefined();
+      expect(navbar.menu.spiview).toBeDefined();
+      expect(navbar.menu.spigraph).toBeDefined();
+      expect(navbar.menu.connections).toBeDefined();
+      expect(navbar.menu.files).toBeDefined();
+      expect(navbar.menu.stats).toBeDefined();
+      expect(navbar.menu.settings).toBeDefined();
+      expect(navbar.menu.users).toBeDefined();
     });
 
     it('should verify active route', function() {
