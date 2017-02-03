@@ -203,6 +203,12 @@ sub getToken {
     return $1;
 }
 ################################################################################
+sub getToken2 {
+    my $usersPage = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->content;
+    $usersPage =~ /token.*value: "(.*)"/;
+    return $1;
+}
+################################################################################
 sub getTokenCookie {
     my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/users")->{"_headers"}->{"set-cookie"};
     $setCookie =~ /MOLOCH-COOKIE=([^;]*)/;
