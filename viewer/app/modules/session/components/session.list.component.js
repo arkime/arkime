@@ -198,6 +198,8 @@
            this.tableState = response.data;
            if (Object.keys(this.tableState).length === 0) {
              this.tableState = defaultTableState;
+           } else if (this.tableState.visibleHeaders[0] === '') {
+             this.tableState.visibleHeaders.shift();
            }
 
            // update the sort order for the session table query

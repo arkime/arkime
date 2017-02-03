@@ -247,6 +247,29 @@
       expect(sessionComponent.tableState).toBeDefined();
     });
 
+    it('should fetch the table state and remove empty entry in visible headers', function() {
+      let tableState = {
+        order         : [['fp', 'asc']],
+        visibleHeaders: ['', 'fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+      };
+
+      $httpBackend.expectGET(tableStateEndpoint)
+        .respond(tableState);
+
+      sessionComponent.getTableState();
+      
+      $httpBackend.flush();
+
+      tableState.visibleHeaders.shift();
+
+      expect(sessionComponent.getTableState).toHaveBeenCalled();
+      expect(sessionComponent.getTableState.calls.count()).toBe(2);
+      expect(sessionComponent.getTableState).toHaveBeenCalledWith();
+      expect(sessionComponent.tableState).toBeDefined();
+      expect(sessionComponent.tableState).toEqual(tableState);
+
+    });
+
     it('should have smart user settings defaults', function() {
       expect(sessionComponent.settings).toEqual({ timezone: 'local' });
     });
