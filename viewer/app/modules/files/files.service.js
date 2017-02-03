@@ -30,8 +30,8 @@
     get(options) {
       return this.$q((resolve, reject) => {
 
-        let config = { method:'GET', 
-                          url:'filelist', 
+        let config = { method:'GET',
+                          url:'file/list',
                         cache:false,
                        params:options};
 

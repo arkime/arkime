@@ -4,6 +4,7 @@
 require('./user/user.service');
 require('./user/components/has.permission');
 require('./user/components/create.view');
+require('./user/components/user.list');
 
 require('./session/services/session.service');
 require('./session/components/session.list.component');

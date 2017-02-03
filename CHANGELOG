@@ -10,6 +10,7 @@
   - capture - all readers must use batch interface
   - multi - fixed tags for new ui /detail and added tests
   - viewer - files tab uses new ui
+  - viewer - users tab uses new ui
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
