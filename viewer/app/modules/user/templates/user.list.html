@@ -1,11 +1,23 @@
 <div class="container-fluid container-users">
-  <h3 id="users">
-    <span class="fa fa-fw fa-list"></span>&nbsp;
+
+  <h2 id="users" class="margined-bottom-none">
+    <span class="fa fa-fw fa-users"></span>&nbsp;
     Users
-  </h3>
+    <button class="pull-right btn btn-blue btn-header"
+      ng-click="$ctrl.goToNewUserForm()">
+      <span class="fa fa-plus-circle"></span>&nbsp;
+      New User
+    </button>
+    <div class="pull-right small toast-container">
+      <toast message="$ctrl.msg" type="$ctrl.msgType"
+        done="$ctrl.messageDone()"></toast>
+    </div>
+  </h2>
+
+  <hr>
 
   <div class="row">
-  <!-- top pagination controls -->
+    <!-- top pagination controls -->
     <div class="col-md-6">
       <moloch-pagination length="$ctrl.query.length"
         records-total="$ctrl.users.recordsTotal"
@@ -18,29 +30,31 @@
         <span class="input-group-addon">
           <span class="fa fa-search"></span>
         </span>
-        <input type="text" class="form-control" ng-model="$ctrl.searchUsers"
+        <input type="text" class="form-control input-sm" ng-model="$ctrl.searchUsers"
           ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
           placeholder="Search for users in the table below">
       </div>
     </div>
   </div>
 
-  <p ng-if="$ctrl.error" class="small text-danger margined-bottom-none">
-    <span class="fa fa-exclamation-triangle"></span>&nbsp;
-    {{$ctrl.error}}
-  </p>
+  <loading ng-if="$ctrl.loading"></loading>
+
+  <error ng-if="$ctrl.error" message="$ctrl.error"></error>
 
   <table class="table table-condensed table-striped margined-top-xxxlg"
     ng-if="$ctrl.users">
     <thead>
       <tr>
         <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
-            ng-click="$ctrl.columnClick(column.sort)">
-          {{::column.name}}
+          ng-class="::{'no-wrap':column.nowrap}"
+          ng-click="$ctrl.columnClick(column.sort)" tooltip-placement="top-left"
+          uib-tooltip="{{::column.help}}" tooltip-append-to-body="true">
           <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
           <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
           <span ng-if="::column.sort !== ''" ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+          {{::column.name}}
         </th>
+        <th>&nbsp;</th>
       </tr>
     </thead>
     <tbody>
@@ -48,8 +62,8 @@
       <tr class="animate-repeat"
         ng-repeat="user in $ctrl.filteredUsers = ($ctrl.users.data) track by user.userId">
         <td class="no-wrap">{{user.userId}}</td>
-        <td class="no-wrap"><input type="text" ng-model="user.userName" ng-change="$ctrl.userChanged(user);"></td>
-        <td class="no-wrap"><input type="text" ng-model="user.expression" ng-change="$ctrl.userChanged(user);"></td>
+        <td class="no-wrap"><input class="form-control input-sm" type="text" ng-model="user.userName" ng-change="$ctrl.userChanged(user);"></td>
+        <td class="no-wrap"><input class="form-control input-sm" type="text" ng-model="user.expression" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.enabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.createEnabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.webEnabled" ng-change="$ctrl.userChanged(user);"></td>
@@ -59,42 +73,153 @@
         <td class="no-wrap">
           <a class="btn btn-sm btn-green"
             href="settings?userId={{user.userId}}">
-            <span class="fa fa-gear"></span>&nbsp;
+            <span class="fa fa-gear"></span>
           </a>
           <a class="btn btn-sm btn-danger"
             ng-click="$ctrl.deleteUser(user)">
-            <span class="fa fa-trash-o"></span>&nbsp;
+            <span class="fa fa-trash-o"></span>
           </a>
         </td>
       </tr>
-      <tr class="animate-repeat">
-        <td class="no-wrap"><input type="text" ng-model="$ctrl.newuser.userId"></td>
-        <td class="no-wrap"><input type="text" ng-model="$ctrl.newuser.userName"></td>
-        <td class="no-wrap"><input type="text" ng-model="$ctrl.newuser.expression"></td>
-        <td class="no-wrap"><input type="checkbox" ng-model="$ctrl.newuser.enabled"></td>
-        <td class="no-wrap"><input type="checkbox" ng-model="$ctrl.newuser.createEnabled"></td>
-        <td class="no-wrap"><input type="checkbox" ng-model="$ctrl.newuser.webEnabled"></td>
-        <td class="no-wrap"><input type="checkbox" ng-model="$ctrl.newuser.headerAuthEnabled"></td>
-        <td class="no-wrap"><input type="checkbox" ng-model="$ctrl.newuser.emailSearch"></td>
-        <td class="no-wrap"><input type="checkbox" ng-model="$ctrl.newuser.removeEnabled"></td>
-        <td>
-          <button class="btn btn-green" ng-click="$ctrl.createUser()">
-            <span>
-              <span class="fa fa-plus-circle"></span>&nbsp;
-              Create
-            </span>
-          </button>
-      </tr>
-      <tr>
-        <td>Password:</td>
-        <td class="no-wrap"><input type="password" ng-model="$ctrl.newuser.password"></td>
-      </tr>
       <tr ng-if="$ctrl.searchUsers !== undefined && !$ctrl.filteredUsers.length">
-        <td colspan="6" class="text-danger">
+        <td colspan="10" class="text-danger">
           <span class="fa fa-warning"></span>&nbsp;
           No results match your search
         </td>
       </tr>
     </tbody>
   </table>
+
+  <br>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="well well-sm">
+
+        <div class="row" id="newUser"> <!-- new user form -->
+
+          <div class="col-sm-8">
+            <div class="row margined-bottom-xlg">
+              <div class="col-sm-9 col-sm-offset-3">
+                <h3>New User</h3>
+              </div>
+            </div>
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="userid" class="col-sm-3 control-label">User ID</label>
+                <div class="col-sm-9">
+                  <input id="userid" class="form-control input-sm" type="text"
+                    ng-model="$ctrl.newuser.userId" focus-input="$ctrl.focusInput">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="username" class="col-sm-3 control-label">User Name</label>
+                <div class="col-sm-9">
+                  <input id="username" class="form-control input-sm" type="text"
+                    ng-model="$ctrl.newuser.userName">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="expression" class="col-sm-3 control-label">Forced Expression</label>
+                <div class="col-sm-9">
+                  <input id="expression" class="form-control input-sm" type="text"
+                    ng-model="$ctrl.newuser.expression">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="password" class="col-sm-3 control-label">Password</label>
+                <div class="col-sm-9">
+                  <input id="password" class="form-control input-sm" type="password"
+                    ng-model="$ctrl.newuser.password">
+                </div>
+              </div>
+              <div>
+              <button class="btn btn-sm btn-green pull-right margined-top"
+                ng-click="$ctrl.createUser()">
+                <span class="fa fa-plus-circle"></span>&nbsp;
+                Create
+              </button>
+              <span ng-if="$ctrl.createError"
+                class="pull-right alert alert-sm alert-danger margined-right-xxlg">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                {{$ctrl.createError}}
+              </span>
+              </div>
+            </form>
+          </div>
+
+          <div class="col-sm-4">
+            <div class="row margined-bottom-xlg">
+              <div class="col-sm-12"><h3>&nbsp;</h3></div>
+            </div>
+            <form class="form-horizontal">
+              <div class="form-group form-group-sm">
+                <div class="col-sm-offset-1 col-sm-11">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="$ctrl.newuser.enabled">
+                      Enabled
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="col-sm-offset-1 col-sm-11">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="$ctrl.newuser.createEnabled">
+                      Admin
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="col-sm-offset-1 col-sm-11">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="$ctrl.newuser.webEnabled">
+                      Web Interface
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="col-sm-offset-1 col-sm-11">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="$ctrl.newuser.headerAuthEnabled">
+                      Web Auth Header
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="col-sm-offset-1 col-sm-11">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="$ctrl.newuser.emailSearch">
+                      Email Search
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="col-sm-offset-1 col-sm-11">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="$ctrl.newuser.removeEnabled">
+                      Can Remove Data
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+        </div> <!-- /new user form -->
+
+      </div>
+    </div>
+  </div>
+
 </div>

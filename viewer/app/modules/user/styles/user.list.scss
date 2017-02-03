@@ -3,14 +3,14 @@ moloch-users {
 
   .container-users { margin-top: 72px; }
 
-  hr {
-    margin-top    : 32px;
-    margin-bottom : 32px;
+  .btn-header {
+    margin-top: 3px;
+    margin-left: 10px;
   }
 
   table {
     tr {
-      max-height: 100px;
+      //max-height: 100px;
 
       // animations for filtering table contents
       &.ng-move, &.ng-enter, &.ng-leave {
@@ -27,6 +27,16 @@ moloch-users {
       &.ng-enter.ng-enter-active,
       &.ng-leave, &.ng-move.ng-move-active {
         opacity   : 1;
+      }
+    }
+  }
+
+  form {
+    .form-group-sm {
+      .checkbox {
+        min-height    : 0;
+        padding-top   : 0;
+        margin-bottom : -8px;
       }
     }
   }

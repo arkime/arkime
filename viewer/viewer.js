@@ -4640,22 +4640,27 @@ app.post('/user/list', function(req, res) {
 });
 
 app.post('/user/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
   if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
+    return error('Need admin privileges');
   }
 
   if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return res.send(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
+    return error('Missing/Empty required fields');
   }
 
   if (req.body.userId.match(/[^\w.-]/)) {
-    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
+    return error('User ID must be word characters');
   }
 
   Db.getUser(req.body.userId, function(err, user) {
     if (!user || user.found) {
-      console.log("Trying to add duplicate user", err, user);
-      return res.send(JSON.stringify({success: false, text: "User already exists"}));
+      console.log('Trying to add duplicate user', err, user);
+      return error('User already exists');
     }
 
     var nuser = {
@@ -4671,35 +4676,47 @@ app.post('/user/create', checkCookieToken, function(req, res) {
       removeEnabled: req.body.removeEnabled === true
     };
 
-    console.log("Creating new user", nuser);
+    console.log('Creating new user', nuser);
     Db.setUser(req.body.userId, nuser, function(err, info) {
       if (!err) {
-        return res.send(JSON.stringify({success: true}));
+        return res.send(JSON.stringify({success: true, text:'User created succesfully'}));
       } else {
-        console.log("ERROR - add user", err, info);
-        return res.send(JSON.stringify({success: false, text: err}));
+        console.log('ERROR - add user', err, info);
+        return error(err);
       }
     });
   });
 });
 
 app.post('/user/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
   if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
+    return error('Need admin privileges');
   }
 
   if (req.body.userId === req.user.userId) {
-    return res.send(JSON.stringify({success: false, text: "Can not delete yourself"}));
+    return error('Can not delete yourself');
   }
 
   Db.deleteUser(req.body.userId, function(err, data) {
-    setTimeout(function (){res.send(JSON.stringify({success: true, text: "User deleted"}));}, 200);
+    setTimeout(function () {
+      res.send(JSON.stringify({success: true, text: 'User deleted successfully'}));
+    }, 200);
   });
 });
 
 app.post('/user/update', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
   if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
+    return error('Need admin privileges');
   }
 
   /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
@@ -4708,8 +4725,8 @@ app.post('/user/update', checkCookieToken, function(req, res) {
 
   Db.getUser(req.body.userId, function(err, user) {
     if (err || !user.found) {
-      console.log("update user failed", err, user);
-      return res.send(JSON.stringify({success: false, text: "User not found"}));
+      console.log('update user failed', err, user);
+      return error('User not found');
     }
     user = user._source;
 
@@ -4726,7 +4743,7 @@ app.post('/user/update', checkCookieToken, function(req, res) {
     if (req.body.userName !== undefined) {
       if (req.body.userName.match(/^\s*$/)) {
         console.log("ERROR - empty username", req.body);
-        return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
+        return error('Username can not be empty');
       } else {
         user.userName = req.body.userName;
       }
@@ -4744,7 +4761,7 @@ app.post('/user/update', checkCookieToken, function(req, res) {
 
     Db.setUser(req.body.userId, user, function(err, info) {
       console.log(user, err, info);
-      return res.send(JSON.stringify({success: true}));
+      return res.send(JSON.stringify({success: true, text:'User updated successfully'}));
     });
   });
 });
