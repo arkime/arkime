@@ -1011,7 +1011,7 @@ app.get('/user/settings', function(req, res) {
         return res.send('{}');
       } else {
         console.log('Unknown user', err, user);
-        return res.send('{}');
+        return error(404, 'User not found');
       }
     }
 

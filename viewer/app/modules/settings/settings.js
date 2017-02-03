@@ -108,7 +108,7 @@
         })
         .catch((error) => {
           this.loading  = false;
-          this.error    = error;
+          this.error    = error.text;
         });
     }
 
@@ -294,7 +294,7 @@
           this.views[key] = response[key];
         })
         .catch((error) => {
-          this.viewListError = error;
+          this.viewListError = error.text;
         });
     }
 
@@ -424,7 +424,7 @@
           this.cronQueries[key] = response[key];
         })
         .catch((error) => {
-          this.cronQueryListError = error;
+          this.cronQueryListError = error.text;
         });
     }
 

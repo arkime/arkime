@@ -156,7 +156,8 @@
               <div class="form-group form-group-sm">
                 <div class="col-sm-offset-1 col-sm-11">
                   <div class="checkbox">
-                    <label>
+                    <label tooltip-placement="left"
+                      uib-tooltip="Is the account currently enabled for anything?">
                       <input type="checkbox" ng-model="$ctrl.newuser.enabled">
                       Enabled
                     </label>
@@ -166,7 +167,8 @@
               <div class="form-group form-group-sm">
                 <div class="col-sm-offset-1 col-sm-11">
                   <div class="checkbox">
-                    <label>
+                    <label tooltip-placement="left"
+                      uib-tooltip="Can create new accounts and change the settings for other accounts">
                       <input type="checkbox" ng-model="$ctrl.newuser.createEnabled">
                       Admin
                     </label>
@@ -176,7 +178,8 @@
               <div class="form-group form-group-sm">
                 <div class="col-sm-offset-1 col-sm-11">
                   <div class="checkbox">
-                    <label>
+                    <label tooltip-placement="left"
+                      uib-tooltip="Can access the web interface. When off only APIs can be used">
                       <input type="checkbox" ng-model="$ctrl.newuser.webEnabled">
                       Web Interface
                     </label>
@@ -186,7 +189,8 @@
               <div class="form-group form-group-sm">
                 <div class="col-sm-offset-1 col-sm-11">
                   <div class="checkbox">
-                    <label>
+                    <label tooltip-placement="left"
+                      uib-tooltip="Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled">
                       <input type="checkbox" ng-model="$ctrl.newuser.headerAuthEnabled">
                       Web Auth Header
                     </label>
@@ -196,7 +200,8 @@
               <div class="form-group form-group-sm">
                 <div class="col-sm-offset-1 col-sm-11">
                   <div class="checkbox">
-                    <label>
+                    <label tooltip-placement="left"
+                      uib-tooltip="Can perform email searches">
                       <input type="checkbox" ng-model="$ctrl.newuser.emailSearch">
                       Email Search
                     </label>
@@ -206,7 +211,8 @@
               <div class="form-group form-group-sm">
                 <div class="col-sm-offset-1 col-sm-11">
                   <div class="checkbox">
-                    <label>
+                    <label tooltip-placement="left"
+                      uib-tooltip="Can delete tags or delete/scrub pcap data">
                       <input type="checkbox" ng-model="$ctrl.newuser.removeEnabled">
                       Can Remove Data
                     </label>
