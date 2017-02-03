@@ -837,29 +837,6 @@ app.get('/about', checkWebEnabled, function(req, res) {
   res.redirect("help");
 });
 
-app.get('/files.old', checkWebEnabled, function(req, res) {
-  res.render('files.jade', {
-    user: req.user,
-    title: makeTitle(req, 'Files'),
-    titleLink: 'filesLink',
-    helpLink: 'files'
-  });
-});
-
-app.get('/users', checkWebEnabled, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.status(404).send("Not found");
-  }
-
-  res.render('users.jade', {
-    user: req.user,
-    title: makeTitle(req, 'Users'),
-    titleLink: 'usersLink',
-    helpLink: 'users',
-    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
-  });
-});
-
 app.get('/molochclusters', function(req, res) {
   if(!app.locals.molochClusters) {
     var molochClusters = Config.configMap("moloch-clusters");
@@ -921,6 +898,21 @@ app.get('/style.css', function(req, res) {
 
 // angular app pages
 app.get(['/app', '/help', '/settings', '/files'], checkWebEnabled, function(req, res) {
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     { path: app.locals.basePath }
+  );
+
+  res.render('app.pug');
+});
+
+app.get(['/users'], checkWebEnabled, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.status(404).send("Not found");
+  }
+
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -1612,6 +1604,7 @@ function expireCheckAll () {
 //// Sessions Query
 //////////////////////////////////////////////////////////////////////////////////
 function addSortToQuery(query, info, d, missing) {
+
   function addSortDefault() {
     if (d) {
       if (!query.sort) {
@@ -1625,7 +1618,6 @@ function addSortToQuery(query, info, d, missing) {
       query.sort.push(obj);
     }
   }
-
 
   if (!info) {
     addSortDefault();
@@ -2098,7 +2090,7 @@ app.get('/fields', function(req, res) {
   }
 });
 
-app.get('/filelist', function(req, res) {
+app.get('/file/list', function(req, res) {
   var columns = ["num", "node", "name", "locked", "first", "filesize"];
 
   var query = {_source: columns,
@@ -2395,146 +2387,6 @@ app.get('/:nodeName/:fileNum/filesize.json', function(req, res) {
         return res.send({filesize: stats.size});
       }
     });
-  });
-});
-
-app.get('/files.json', function(req, res) {
-  noCache(req, res);
-
-  var columns = ["num", "node", "name", "locked", "first", "filesize"];
-
-  var query = {_source: columns,
-               from: +req.query.start || 0,
-               size: +req.query.length || 500
-              };
-
-  if (req.query.filter) {
-    query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
-  }
-
-  addSortToQuery(query, req.query, "num");
-
-  async.parallel({
-    files: function (cb) {
-      Db.search('files', 'file', query, function(err, result) {
-        if (err || result.error) {
-          return cb(err || result.error);
-        }
-
-        var results = {total: result.hits.total, results: []};
-        for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-          if (fields.locked === undefined) {
-            fields.locked = 0;
-          }
-          fields.id = result.hits.hits[i]._id;
-          results.results.push(fields);
-        }
-
-        async.forEach(results.results, function (item, cb) {
-          if (item.filesize && item.filesize !== 0) {
-            return cb(null);
-          }
-
-          isLocalView(item.node, function () {
-            fs.stat(item.name, function (err, stats) {
-              if (err || !stats) {
-                item.filesize = -1;
-              } else {
-                item.filesize = stats.size;
-                if (item.locked) {
-                  Db.updateFileSize(item, stats.size);
-                }
-              }
-              cb(null);
-            });
-          }, function () {
-            item.filesize = -2;
-            cb(null);
-          });
-        }, function (err) {
-          cb(null, results);
-        });
-      });
-    },
-    total: function (cb) {
-      Db.numberOfDocuments('files', cb);
-    }
-  },
-  function(err, results) {
-    if (err) {
-      return res.send({total: 0, results: []});
-    }
-
-    var r = {draw: req.query.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.files.total,
-             data: results.files.results};
-    res.send(r);
-  });
-});
-
-
-internals.usersMissing = {
-  userName: "",
-  enabled: "F",
-  createEnabled: "F",
-  webEnabled: "F",
-  headerAuthEnabled: "F",
-  emailSearch: "F",
-  removeEnabled: "F",
-  expression: ""
-};
-app.post('/users.json', function(req, res) {
-  var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
-
-  var query = {_source: columns,
-               from: +req.body.start || 0,
-               size: +req.body.length || 10000
-              };
-
-  if (req.body.filter) {
-    query.query = {bool: {should: [{wildcard: {userName: "*" + req.body.filter + "*"}},
-                                   {wildcard: {userId: "*" + req.body.filter + "*"}}
-                                  ]
-                         }
-                  };
-  }
-
-  addSortToQuery(query, req.body, "userId", internals.usersMissing);
-
-  async.parallel({
-    users: function (cb) {
-      Db.searchUsers(query, function(err, result) {
-        if (err || result.error) {
-          console.log("ERROR - users.json", err || result.error);
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-            fields.id = result.hits.hits[i]._id;
-            fields.expression = safeStr(fields.expression || "");
-            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-            fields.emailSearch = fields.emailSearch || false;
-            fields.removeEnabled = fields.removeEnabled || false;
-            fields.userName = safeStr(fields.userName || "");
-            results.results.push(fields);
-          }
-          cb(null, results);
-        }
-      });
-    },
-    total: function (cb) {
-      Db.numberOfUsers(cb);
-    }
-  },
-  function(err, results) {
-    var r = {draw: req.body.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.users.total,
-             data: results.users.results};
-    res.send(r);
   });
 });
 
@@ -4483,114 +4335,6 @@ app.post('/deleteUser/:userId', checkToken, function(req, res) {
   });
 });
 
-app.post('/addUser', checkToken, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
-  if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return res.send(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
-  }
-
-  if (req.body.userId.match(/[^\w.-]/)) {
-    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
-  }
-
-  Db.getUser(req.body.userId, function(err, user) {
-    if (!user || user.found) {
-      console.log("Adding duplicate user", err, user);
-      return res.send(JSON.stringify({success: false, text: "User already exists"}));
-    }
-
-    var nuser = {
-      userId: req.body.userId,
-      userName: req.body.userName,
-      expression: req.body.expression,
-      passStore: Config.pass2store(req.body.userId, req.body.password),
-      enabled: req.body.enabled  === "on",
-      webEnabled: req.body.webEnabled  === "on",
-      emailSearch: req.body.emailSearch  === "on",
-      headerAuthEnabled: req.body.headerAuthEnabled === "on",
-      createEnabled: req.body.createEnabled === "on",
-      removeEnabled: req.body.removeEnabled === "on"
-    };
-
-    console.log("Creating new user", nuser);
-    Db.setUser(req.body.userId, nuser, function(err, info) {
-      if (!err) {
-        return res.send(JSON.stringify({success: true}));
-      } else {
-        console.log("ERROR - add user", err, info);
-        return res.send(JSON.stringify({success: false, text: err}));
-      }
-    });
-  });
-});
-
-app.post('/updateUser/:userId', checkToken, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
-  /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
-    return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
-  }*/
-
-  Db.getUser(req.params.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("update user failed", err, user);
-      return res.send(JSON.stringify({success: false, text: "User not found"}));
-    }
-    user = user._source;
-
-    if (req.query.enabled !== undefined) {
-      user.enabled = req.query.enabled === "true";
-    }
-
-    if (req.query.expression !== undefined) {
-      if (req.query.expression.match(/^\s*$/)) {
-        delete user.expression;
-      } else {
-        user.expression = req.query.expression;
-      }
-    }
-
-    if (req.query.userName !== undefined) {
-      if (req.query.userName.match(/^\s*$/)) {
-        console.log("ERROR - empty username", req.query);
-        return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
-      } else {
-        user.userName = req.query.userName;
-      }
-    }
-
-    if (req.query.webEnabled !== undefined) {
-      user.webEnabled = req.query.webEnabled === "true";
-    }
-
-    if (req.query.emailSearch !== undefined) {
-      user.emailSearch = req.query.emailSearch === "true";
-    }
-
-    if (req.query.headerAuthEnabled !== undefined) {
-      user.headerAuthEnabled = req.query.headerAuthEnabled === "true";
-    }
-
-    if (req.query.removeEnabled !== undefined) {
-      user.removeEnabled = req.query.removeEnabled === "true";
-    }
-
-    // Can only change createEnabled if it is currently turned on
-    if (req.query.createEnabled !== undefined && req.user.createEnabled && req.query.createEnabled) {
-      user.createEnabled = req.query.createEnabled === "true";
-    }
-
-    Db.setUser(req.params.userId, user, function(err, info) {
-      return res.send(JSON.stringify({success: true}));
-    });
-  });
-});
-
 app.post('/changePassword', checkToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
@@ -4824,6 +4568,183 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
         return error("Create view failed");
       }
       return res.send(JSON.stringify({success: true, text: "Created view successfully", views:user.views}));
+    });
+  });
+});
+
+internals.usersMissing = {
+  userId: "",
+  userName: "",
+  expression: "",
+  enabled: 0,
+  createEnabled: 0,
+  webEnabled: 0,
+  headerAuthEnabled: 0,
+  emailSearch: 0,
+  removeEnabled: 0
+};
+app.post('/user/list', function(req, res) {
+  var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
+
+  var query = {_source: columns,
+               sort: {},
+               from: +req.body.start || 0,
+               size: +req.body.length || 10000
+              };
+
+  if (req.body.filter) {
+    query.query = {bool: {should: [{wildcard: {userName: "*" + req.body.filter + "*"}},
+                                   {wildcard: {userId: "*" + req.body.filter + "*"}}
+                                  ]
+                         }
+                  };
+  }
+
+  req.body.sortField = req.body.sortField || "userId";
+  query.sort[req.body.sortField] = { order: req.body.desc === true ? "desc": "asc"};
+  query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
+
+  async.parallel({
+    users: function (cb) {
+      Db.searchUsers(query, function(err, result) {
+        if (err || result.error) {
+          console.log("ERROR - users.json", err || result.error);
+          res.send({total: 0, results: []});
+        } else {
+          var results = {total: result.hits.total, results: []};
+          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+            fields.id = result.hits.hits[i]._id;
+            fields.expression = safeStr(fields.expression || "");
+            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+            fields.emailSearch = fields.emailSearch || false;
+            fields.removeEnabled = fields.removeEnabled || false;
+            fields.userName = safeStr(fields.userName || "");
+            results.results.push(fields);
+          }
+          cb(null, results);
+        }
+      });
+    },
+    total: function (cb) {
+      Db.numberOfUsers(cb);
+    }
+  },
+  function(err, results) {
+    var r = {draw: req.body.draw,
+             recordsTotal: results.total,
+             recordsFiltered: results.users.total,
+             data: results.users.results};
+    res.send(r);
+  });
+});
+
+app.post('/user/create', checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
+  }
+
+  if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
+    return res.send(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
+  }
+
+  if (req.body.userId.match(/[^\w.-]/)) {
+    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
+  }
+
+  Db.getUser(req.body.userId, function(err, user) {
+    if (!user || user.found) {
+      console.log("Trying to add duplicate user", err, user);
+      return res.send(JSON.stringify({success: false, text: "User already exists"}));
+    }
+
+    var nuser = {
+      userId: req.body.userId,
+      userName: req.body.userName,
+      expression: req.body.expression,
+      passStore: Config.pass2store(req.body.userId, req.body.password),
+      enabled: req.body.enabled === true,
+      webEnabled: req.body.webEnabled === true,
+      emailSearch: req.body.emailSearch === true,
+      headerAuthEnabled: req.body.headerAuthEnabled === true,
+      createEnabled: req.body.createEnabled === true,
+      removeEnabled: req.body.removeEnabled === true
+    };
+
+    console.log("Creating new user", nuser);
+    Db.setUser(req.body.userId, nuser, function(err, info) {
+      if (!err) {
+        return res.send(JSON.stringify({success: true}));
+      } else {
+        console.log("ERROR - add user", err, info);
+        return res.send(JSON.stringify({success: false, text: err}));
+      }
+    });
+  });
+});
+
+app.post('/user/delete', checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
+  }
+
+  if (req.body.userId === req.user.userId) {
+    return res.send(JSON.stringify({success: false, text: "Can not delete yourself"}));
+  }
+
+  Db.deleteUser(req.body.userId, function(err, data) {
+    setTimeout(function (){res.send(JSON.stringify({success: true, text: "User deleted"}));}, 200);
+  });
+});
+
+app.post('/user/update', checkCookieToken, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
+  }
+
+  /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
+    return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
+  }*/
+
+  Db.getUser(req.body.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("update user failed", err, user);
+      return res.send(JSON.stringify({success: false, text: "User not found"}));
+    }
+    user = user._source;
+
+    user.enabled = req.body.enabled === true;
+
+    if (req.body.expression !== undefined) {
+      if (req.body.expression.match(/^\s*$/)) {
+        delete user.expression;
+      } else {
+        user.expression = req.body.expression;
+      }
+    }
+
+    if (req.body.userName !== undefined) {
+      if (req.body.userName.match(/^\s*$/)) {
+        console.log("ERROR - empty username", req.body);
+        return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
+      } else {
+        user.userName = req.body.userName;
+      }
+    }
+
+    user.webEnabled = req.body.webEnabled === true;
+    user.emailSearch = req.body.emailSearch === true;
+    user.headerAuthEnabled = req.body.headerAuthEnabled === true;
+    user.removeEnabled = req.body.removeEnabled === true;
+
+    // Can only change createEnabled if it is currently turned on
+    if (req.body.createEnabled !== undefined && req.user.createEnabled && req.body.createEnabled) {
+      user.createEnabled = req.body.createEnabled === true;
+    }
+
+    Db.setUser(req.body.userId, user, function(err, info) {
+      console.log(user, err, info);
+      return res.send(JSON.stringify({success: true}));
     });
   });
 });

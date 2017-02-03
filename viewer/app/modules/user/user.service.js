@@ -111,6 +111,69 @@
     }
 
     /**
+     * Updates a user's information
+     * @param {object} user   The object containing the user
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    updateUser(user) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/update', method:'POST', data: user };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Create a user
+     * @param {object} user   The object containing the user
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    createUser(user) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/create', method:'POST', data: user };
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Delete a user
+     * @param {object} user   The user to delete
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    deleteUser(user) {
+      return this.$q((resolve, reject) => {
+
+        let options = { url:'user/delete', method:'POST', data: user};
+
+        this.$http(options)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
+
+      });
+    }
+
+    /**
      * Gets a user's views
      * @param {string} userId     The unique identifier for a user
      *                            (only required if not the current user)
@@ -335,6 +398,29 @@
             resolve(response.data);
           }, (error) => {
             reject(error.data);
+          });
+
+      });
+    }
+
+    /**
+     * Gets users from the server
+     * @returns {Promise} Promise A promise object that signals the completion
+     *                            or rejection of the request.
+     */
+    listUsers(options) {
+      return this.$q((resolve, reject) => {
+
+        let config = { method:'POST',
+                          url:'user/list',
+                        cache:false,
+                       data:options};
+
+        this.$http(config)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
           });
 
       });

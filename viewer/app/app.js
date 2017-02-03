@@ -71,7 +71,13 @@
         })
         .when('/files', {
           title    : 'Files',
-          template : '<moloch-files></moloch-files>'
+          template : '<moloch-files></moloch-files>',
+          reloadOnSearch: false
+        })
+        .when('/users', {
+          title    : 'Users',
+          template : '<moloch-users></moloch-users>',
+          reloadOnSearch: false
         })
         // default route is the sessions page
         .otherwise({ redirectTo: '/app' });
