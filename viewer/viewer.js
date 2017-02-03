@@ -4761,7 +4761,7 @@ app.post('/user/update', checkCookieToken, function(req, res) {
 
     Db.setUser(req.body.userId, user, function(err, info) {
       console.log(user, err, info);
-      return res.send(JSON.stringify({success: true, text:'User updated successfully'}));
+      return res.send(JSON.stringify({success: true, text:'User "' + req.body.userId + '" updated successfully'}));
     });
   });
 });

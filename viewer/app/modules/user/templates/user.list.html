@@ -62,8 +62,12 @@
       <tr class="animate-repeat"
         ng-repeat="user in $ctrl.filteredUsers = ($ctrl.users.data) track by user.userId">
         <td class="no-wrap">{{user.userId}}</td>
-        <td class="no-wrap"><input class="form-control input-sm" type="text" ng-model="user.userName" ng-change="$ctrl.userChanged(user);"></td>
-        <td class="no-wrap"><input class="form-control input-sm" type="text" ng-model="user.expression" ng-change="$ctrl.userChanged(user);"></td>
+        <td class="no-wrap">
+          <input class="form-control input-sm" type="text" ng-model="user.userName" ng-change="$ctrl.userChanged(user);" ng-model-options="{debounce:300}">
+        </td>
+        <td class="no-wrap">
+          <input class="form-control input-sm" type="text" ng-model="user.expression" ng-change="$ctrl.userChanged(user);" ng-model-options="{debounce:300}">
+        </td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.enabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.createEnabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.webEnabled" ng-change="$ctrl.userChanged(user);"></td>
@@ -72,11 +76,14 @@
         <td class="no-wrap"><input type="checkbox" ng-model="user.removeEnabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap">
           <a class="btn btn-sm btn-green"
-            href="settings?userId={{user.userId}}">
+            href="settings?userId={{user.userId}}"
+            uib-tooltip="Settings for {{user.userId}}">
             <span class="fa fa-gear"></span>
           </a>
           <a class="btn btn-sm btn-danger"
-            ng-click="$ctrl.deleteUser(user)">
+            ng-click="$ctrl.deleteUser(user)"
+            uib-tooltip="Delete {{user.userId}}"
+            >
             <span class="fa fa-trash-o"></span>
           </a>
         </td>
