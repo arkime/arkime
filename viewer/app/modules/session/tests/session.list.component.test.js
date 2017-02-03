@@ -257,7 +257,7 @@
         .respond(tableState);
 
       sessionComponent.getTableState();
-      
+
       $httpBackend.flush();
 
       tableState.visibleHeaders.shift();
@@ -267,7 +267,6 @@
       expect(sessionComponent.getTableState).toHaveBeenCalledWith();
       expect(sessionComponent.tableState).toBeDefined();
       expect(sessionComponent.tableState).toEqual(tableState);
-
     });
 
     it('should have smart user settings defaults', function() {
