@@ -327,6 +327,7 @@ void *writer_simple_thread(void *UNUSED(arg))
         if (info->closing) {
             ftruncate(info->file->fd, info->file->pos);
             close(info->file->fd);
+            moloch_db_update_filesize(info->file->id, info->file->pos);
         }
 
         writer_simple_free(info);

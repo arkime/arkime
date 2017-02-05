@@ -41,6 +41,7 @@ typedef struct moloch_output {
     uint64_t   max;
     uint64_t   pos;
     char       close;
+    uint32_t   fileId;
 } MolochDiskOutput_t;
 
 
@@ -179,6 +180,7 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
         close(outputFd);
         outputFd = 0;
         free(out->name);
+        moloch_db_update_filesize(out->fileId, out->pos);
     }
 
     // Cleanup buffer
@@ -248,6 +250,7 @@ void *writer_disk_output_thread(void *UNUSED(arg))
             close(outputFd);
             outputFd = 0;
             free(out->name);
+            moloch_db_update_filesize(out->fileId, out->pos);
         }
         writer_disk_free_buf(out);
         MOLOCH_TYPE_FREE(MolochDiskOutput_t, out);
@@ -329,6 +332,7 @@ void writer_disk_create(MolochPacket_t * const packet)
     output->pos = 24;
     gettimeofday(&outputFileTime, 0);
 
+    output->fileId = outputId;
     memcpy(output->buf, &pcapFileHeader, 24);
 }
 /******************************************************************************/

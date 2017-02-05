@@ -2148,7 +2148,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
 /******************************************************************************/
 void moloch_db_update_field(char *expression, char *name, char *value)
 {
-    char                   key[100];
+    char                   key[1000];
     int                    key_len;
     BSB                    bsb;
 
@@ -2169,6 +2169,24 @@ void moloch_db_update_field(char *expression, char *name, char *value)
     }
     BSB_EXPORT_sprintf(bsb, "}}");
     moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, FALSE, NULL, NULL);
+}
+/******************************************************************************/
+void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
+{
+    char                   key[1000];
+    int                    key_len;
+    int                    json_len;
+
+    if (config.dryRun)
+        return;
+
+    char                  *json = moloch_http_get_buffer(1000);
+
+    key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d/_update", config.prefix, config.nodeName, fileid);
+
+    json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %lld}}", filesize);
+
+    moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
 }
 /******************************************************************************/
 gboolean moloch_db_file_exists(char *filename)
