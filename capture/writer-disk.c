@@ -268,6 +268,7 @@ void writer_disk_flush(gboolean all)
 
     MolochDiskOutput_t *noutput = MOLOCH_TYPE_ALLOC0(MolochDiskOutput_t);
     noutput->max = config.pcapWriteSize;
+    noutput->fileId = output->fileId;
     writer_disk_alloc_buf(noutput);
 
 
