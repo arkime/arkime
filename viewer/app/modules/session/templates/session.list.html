@@ -199,7 +199,7 @@
                 <span class="fa fa-close"></span>
               </a>&nbsp;
               <small>
-                <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'termfield', group:'general'}"
+                <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                   expr="ip.protocol" value="{{::session.pr}}"
                   session="::session" parse="true" pull-left="true">
                 </session-field>

@@ -202,15 +202,15 @@
     });
 
 
-    describe('Timezone Date Filter ->', function() {
+    describe('Timezone Date String Filter ->', function() {
 
-      it('should return an integer date in the requested timezone', function() {
+      it('should return a string date in the requested timezone', function() {
         let time   = 18000;
-        let result = $filter('timezone-date')(time, 'local');
-        expect(result).toEqual(18000000);
+        let result = $filter('timezoneDateString')(time, 'local');
+        expect(result).toEqual('1970/01/01 00:00:00');
 
-        result = $filter('timezone-date')(time, 'gmt');
-        expect(result).toEqual(36000000);
+        result = $filter('timezoneDateString')(time, 'gmt');
+        expect(result).toEqual('1970/01/01 05:00:00Z');
       });
 
     });

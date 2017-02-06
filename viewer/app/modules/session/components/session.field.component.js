@@ -177,28 +177,19 @@
           case 'seconds':
             this.time = true;
             qVal  = val; // save original value as the query value
-            val   = this.$filter('timezone-date')(val, this.timezone);
-            let dateFormat = 'yyyy/MM/dd HH:mm:ss';
-            if (this.timezone === 'gmt') {
-              dateFormat = 'yyyy/MM/dd HH:mm:ss\'Z\'';
-            }
-            val = this.$filter('date')(val, dateFormat);
+            val   = this.$filter('timezoneDateString')(parseInt(val), this.timezone);
             break;
           case 'ip':
             val   = this.$filter('extractIPString')(val);
-            qVal  = val; // save the parsed value as the query value
+            qVal  = val; // don't save original value (parsed val is query val)
             break;
           case 'lotermfield':
-            if (this.field.dbField === 'tipv61-term' ||
-                this.field.dbField === 'tipv62-term') {
+            if (this.field.transform === 'ipv6ToHex') {
               val   = this.$filter('extractIPv6String')(val);
-              qVal  = val; // don't save original value
-            }
-            break;
-          case 'termfield':
-            if (this.field.dbField === 'prot-term') {
+              qVal  = val; // don't save original value (parsed val is query val)
+            } else if (this.field.transform === 'ipProtocolLookup') {
               val   = this.$filter('protocol')(val);
-              qVal  = val; // save the parsed value as the query value
+              qVal  = val; // don't save original value (parsed val is query val)
             }
             break;
           case 'integer':

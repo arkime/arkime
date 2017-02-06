@@ -184,31 +184,22 @@
      })
 
      /**
-      * Applies the selected timezone to the given time
+      * Parses date to string and applies the selected timezone
       * Returns local time by default
       *
       * @example
-      * '{{seconds | 'timezone-date' : 'gmt'}}
+      * '{{seconds | timezoneDateString : timezone}}
+      * $filter('timezoneDateString')(seconds, timezone)
       *
       * @param {int} seconds      The time in seconds from epoch
       * @param {string} timezone  The timezone to use ('gmt' or 'local')
       */
-     .filter('timezone-date', function() {
+     .filter('timezoneDateString', ['$filter', function($filter) {
        return function (seconds, timezone) {
          let d = new Date(seconds * 1000);
 
          if (timezone === 'gmt') {
-           d = new Date(d.getTime() + (60000 * d.getTimezoneOffset()));
-         }
-
-         return +d;
-       };
-     })
-
-     .filter('timezoneDateString', ['$filter', function($filter) {
-       return function (seconds, timezone) {
-         if (timezone === 'gmt') {
-           return $filter('date')(1000 * (seconds + new Date().getTimezoneOffset()*60), 'yyyy/MM/dd HH:mm:ss') + 'Z';
+           return $filter('date')(1000 * (seconds + d.getTimezoneOffset()*60), 'yyyy/MM/dd HH:mm:ss') + 'Z';
          }
 
          return $filter('date')(1000 * seconds, 'yyyy/MM/dd HH:mm:ss');
