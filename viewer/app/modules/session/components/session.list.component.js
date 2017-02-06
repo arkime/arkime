@@ -128,8 +128,9 @@
     /**
      * Makes a request to the Session Service to get the list of sessions
      * that match the query parameters
+     * @param {bool} updateTable Whether the table needs updating
      */
-    getData() {
+    getData(updateTable) {
       this.loading  = true;
       this.error    = false;
 
@@ -138,6 +139,8 @@
       // TODO: tipv6*-term goes away with ES5
       // clear fields to query for but always include protocols field
       this.query.fields   = ['pr','tipv61-term','tipv62-term'];
+
+      this.mapHeadersToFields();
 
       // set the fields to retrieve from the server for each session
       if (this.headers) {
@@ -161,6 +164,8 @@
           this.sessions   = response.data;
           this.mapData    = response.data.map;
           this.graphData  = response.data.graph;
+
+          if (updateTable) { this.reloadTable(); }
 
           if (parseInt(this.$routeParams.openAll) === 1) {
             this.openAll();
@@ -281,8 +286,6 @@
           }
         }
       }
-
-      this.mapHeadersToFields();
 
       // convert fields map to array (for ng-repeat with filter and group)
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
@@ -548,7 +551,7 @@
 
       this.reloadTable();
 
-      if (reloadData) { this.getData(); }
+      if (reloadData) { this.getData(true); } // need data from the server
 
       this.saveTableState(true);
     }
