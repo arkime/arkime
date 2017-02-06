@@ -57,6 +57,16 @@
                       class="form-control input-sm dropdown-typeahead"
                       ng-model="$ctrl.colQuery"
                       placeholder="Search for columns...">
+                    <div class="margined-top">
+                      <li uib-tooltip="Reset column visibilty and order to default column visibility and order"
+                        tooltip-placement="right"
+                        tooltip-append-to-body="true">
+                        <a ng-click="$ctrl.resetDefaultColumns()">
+                          <span class="fa fa-fw fa-undo"></span>&nbsp;
+                          Reset to Default Columns
+                        </a>
+                      </li>
+                    </div>
                     <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group' track by key">
                       <div class="group-header">{{key | capitalize}}</div>
                       <li ng-repeat="field in value track by $index"
@@ -68,12 +78,14 @@
                         <a>{{field.friendlyName}}</a>
                       </li>
                     </div>
-                    <li ng-hide="$ctrl.filteredFields.length">
-                      <a>
-                        <span class="fa fa-exclamation-circle"></span>&nbsp;
-                        No results
-                      </a>
-                    </li>
+                    <div>
+                      <li ng-hide="$ctrl.filteredFields.length">
+                        <a>
+                          <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
+                          No results
+                        </a>
+                      </li>
+                    </div>
                   </span>
                 </ul>
               </div> <!-- /column visibility button -->

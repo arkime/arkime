@@ -247,6 +247,24 @@
       expect(sessionComponent.tableState).toBeDefined();
     });
 
+    it('should reset the table state', function() {
+      let defaultTableState = {
+        order         : [['fp', 'asc']],
+        visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+      };
+
+      expect(sessionComponent.tableState).toBeDefined();
+
+      sessionComponent.tableState = {
+        order         : [['pr', 'desc']],
+        visibleHeaders: ['dst', 'src', 'info', 'p1', 'p2', 'pa', 'fp', 'lp', 'dbby', 'no', 'pr']
+      };
+
+      sessionComponent.resetDefaultColumns();
+
+      expect(sessionComponent.tableState).toEqual(defaultTableState);
+    });
+
     it('should fetch the table state and remove empty entry in visible headers', function() {
       let tableState = {
         order         : [['fp', 'asc']],
@@ -361,6 +379,7 @@
     describe('column visibility ->', function() {
       afterEach(function() {
         // cleanup table state
+        sessionComponent.tableState.order = [['fp','asc']];
         sessionComponent.tableState.visibleHeaders = ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info'];
       });
 
@@ -398,6 +417,38 @@
         $httpBackend.flush();
 
         expect(sessionComponent.isVisible('lp')).toBeGreaterThan(-1);
+      });
+
+      it('should reset sort field and order to default', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+          .respond(200);
+
+        sessionComponent.sortBy({}, 'lp');
+
+        expect(sessionComponent.tableState.order).toEqual([['lp','asc']]);
+
+        sessionComponent.toggleVisibility('lp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isVisible('lp')).toEqual(-1);
+        expect(sessionComponent.tableState.order).toEqual([['fp','asc']]);
+      });
+
+      it('should remove non-visible column from sort order', function() {
+        $httpBackend.expectPOST(tableStateEndpoint)
+        .respond(200);
+
+        sessionComponent.sortBy({ shiftKey:true },'lp');
+
+        expect(sessionComponent.tableState.order).toEqual([['fp','asc'],['lp','asc']]);
+
+        sessionComponent.toggleVisibility('lp');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.isVisible('lp')).toEqual(-1);
+        expect(sessionComponent.tableState.order).toEqual([['fp','asc']]);
       });
     });
 

@@ -123,6 +123,7 @@
       });
     } /* /$onInit */
 
+
     /* data retrieve/setup/update ------------------------------------------ */
     /**
      * Makes a request to the Session Service to get the list of sessions
@@ -461,7 +462,17 @@
     }
 
 
-    /* COLUMN REORDERING */
+    /* COLUMN INTERACTIONS */
+    /* resets the columns to default, reloads table, saves new table state */
+    resetDefaultColumns() {
+      this.isopen     = false; // close the column visibility dropdown
+      this.loading    = true;
+      this.tableState = defaultTableState;
+
+      this.reloadTable();
+      this.saveTableState();
+    }
+
     /**
      * Fires when column drop is completed
      * @param {number} newIndex The index of the drop target
@@ -489,8 +500,6 @@
       this.saveTableState();
     }
 
-
-    /* COLUMN VISIBILITY */
     /**
      * Determines a column's visibility given its id
      * @param {string} id       The id of the column
@@ -505,21 +514,41 @@
      * @param {string} id The id of the column to show/hide (toggle)
      */
     toggleVisibility(id) {
-      this.isopen  = false; // close the column visibility dropdown
-      this.loading = true;
+      this.isopen    = false; // close the column visibility dropdown
+      this.loading   = true;
+      let reloadData = false;
 
       let index = this.isVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
         this.tableState.visibleHeaders.splice(index,1);
-        this.reloadTable();
+
+        // update the sort field and order if the table was being sorted by that field
+        let sortIndex = this.isSorted(id);
+        if (sortIndex > -1) {
+          reloadData = true; // requires a data reload
+          // if we are sorting by this column, remove it
+          if (this.tableState.order.length === 1) {
+            // this column is the only column we are sorting by
+            // so reset it to the first field in the visible headers
+            this.tableState.order = [[this.tableState.visibleHeaders[0],'asc']];
+          } else {
+            // this column is one of many we are sorting by, so just remove it
+            this.tableState.order.splice(sortIndex, 1);
+          }
+
+          this.query.sorts = this.tableState.order;
+        }
       } else { // it's hidden
+        reloadData = true; // requires a data reload
         // add it to the visible headers list
         this.tableState.visibleHeaders.push(id);
-        this.reloadTable();
-        this.getData();
       }
+
+      this.reloadTable();
+
+      if (reloadData) { this.getData(); }
 
       this.saveTableState(true);
     }
