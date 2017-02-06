@@ -25,10 +25,19 @@
       this.$anchorScroll.yOffset = 90;
     }
 
+    fixFields(fields) {
+      fields.forEach(function(item) {
+        if (item.regex) {item.dbField = '';}
+        else if (item.rawField) {item.dbField = item.dbField + ', ' + item.rawField;}
+        else if (item.dbField === 'ipall') {item.dbField = '';}
+      });
+      return fields;
+    }
+
     /* Callback when component is mounted and ready */
     $onInit() {
       this.FieldService.get(true)
-        .then((response)  => { this.fields = response; })
+        .then((response)  => { this.fields = this.fixFields(response); })
         .catch((error)    => { this.error = error; });
 
       this.info = {
