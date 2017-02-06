@@ -462,12 +462,17 @@
           <input type="text" class="form-control" ng-model="$ctrl.searchFields"
             placeholder="Search for fields in the table below">
         </div>
+        <button class="btn btn-default btn-sm pull-right margined-right"
+          ng-model="$ctrl.showDBFields" uib-btn-checkbox>
+          Display Database Fields
+        </button>
       </h3>
       <table class="table table-condensed table-striped margined-top-xxxlg"
         ng-if="!$ctrl.error && $ctrl.fields">
         <thead>
           <tr>
             <th>Name</th>
+            <th ng-if="$ctrl.showDBFields">Database Field</th>
             <th>Operators</th>
             <th>Data Type</th>
             <th>What?</th>
@@ -477,18 +482,17 @@
           <tr class="animate-repeat"
             ng-repeat="field in $ctrl.filteredFields = ($ctrl.fields | filter:$ctrl.searchFields) track by field.exp">
             <td class="no-wrap">{{field.exp}}</td>
+            <td class="no-wrap" ng-if="$ctrl.showDBFields">{{field.dbField}}</td>
             <td class="no-wrap">{{$ctrl.info[field.type].operator}}</td>
             <td class="no-wrap">{{$ctrl.info[field.type].type}}</td>
             <td>{{field.help}}</td>
           </tr>
-          <tr ng-if="!$ctrl.filteredFields.length">
-            <td colspan="4" class="text-danger">
-              <span class="fa fa-warning"></span>&nbsp;
-              No results match your search
-            </td>
-          </tr>
         </tbody>
       </table>
+      <div class="text-danger" ng-if="!$ctrl.filteredFields.length">
+        <span class="fa fa-warning"></span>&nbsp;
+        No results match your search
+      </div>
       <div class="alert alert-warning margined-top-xxxlg" ng-if="$ctrl.error">
         <span class="fa fa-warning"></span>&nbsp;
         Error retrieving fields: {{::$ctrl.error}}
