@@ -178,6 +178,9 @@
         $httpBackend.expectGET('user/settings')
            .respond({});
 
+        $httpBackend.expectGET('user/columns')
+          .respond({});
+
         // initial query for fields
         $httpBackend.expectGET('fields')
            .respond(fields);

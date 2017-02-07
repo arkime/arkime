@@ -1471,6 +1471,126 @@ app.post('/user/password/change', checkCookieToken, function(req, res) {
   });
 });
 
+// gets custom column configurations for a user
+app.get('/user/columns', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's views
+        return res.send('[]');
+      } else {
+        console.log('Unknown user', err, user);
+        return res.send('[]');
+      }
+    }
+
+    var columnConfigurations = user._source.columnConfigs || [];
+
+    return res.send(columnConfigurations);
+  });
+});
+
+// creates a new custom column configuration for a user
+app.post('/user/columns/create', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a view for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name)     { return error(403, 'Missing custom column configuration name'); }
+  if (!req.body.columns)  { return error(403, 'Missing columns'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/columns/create failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.columnConfigs = user.columnConfigs || [];
+
+    var duplicate = false;
+    // don't let user use duplicate names
+    for (var i = 0, len = user.columnConfigs.length; i < len; ++i) {
+      if (req.body.name === user.columnConfigs[i].name) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate) { return error(403, 'There is already a custom column with that name'); }
+
+    user.columnConfigs.push({
+      name    : req.body.name,
+      columns : req.body.columns
+    });
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/columns/create error', err, info);
+        return error(500, 'Create custom column configuration failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created custom column configuration successfully'
+      }));
+    });
+  });
+});
+
+// deletes a user's specified custom column configuration
+app.post('/user/columns/delete', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete another user's view without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name) { return error(403, 'Missing custom column configuration name'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/columns/delete failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.columnConfigs = user.columnConfigs || [];
+
+    for (var i = 0, len = user.columnConfigs.length; i < len; ++i) {
+      if (req.body.name === user.columnConfigs[i].name) {
+        user.columnConfigs.splice(i, 1);
+        break;
+      }
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/columns/delete failed', err, info);
+        return error(500, 'Delete custom column configuration failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted custom column configuration successfully'
+      }));
+    });
+  });
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING

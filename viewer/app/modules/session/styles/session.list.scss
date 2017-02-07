@@ -78,7 +78,7 @@ session {
 }
 
 
-/* column visibility menu ------------------ */
+/* column visibility menu -------------------- */
 .col-vis-menu {
   max-height: 300px;
   overflow  : auto;
@@ -87,6 +87,12 @@ session {
     margin: 0 6px;
     width : 200px;
   }
+}
+
+
+/* custom column configurations menu --------- */
+.col-config-menu {
+  max-width: 280px;
 }
 
 

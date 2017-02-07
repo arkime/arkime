@@ -68,6 +68,8 @@
 
       this.getUserSettings();
 
+      this.getCustomColumnConfigurations();
+
       /* Listen! */
       // watch for pagination changes (from pagination.component)
       this.$scope.$on('change:pagination', (event, args) => {
@@ -177,9 +179,7 @@
         });
     }
 
-    /**
-     * Gets the current user's settings
-     */
+    /* Gets the current user's settings */
     getUserSettings() {
       this.UserService.getSettings()
          .then((settings) => {
@@ -195,9 +195,7 @@
          });
     }
 
-    /**
-     * Gets the state of the table (sort order and column order/visibility)
-     */
+    /* Gets the state of the table (sort order and column order/visibility) */
     getTableState() {
       this.SessionService.getTableState()
          .then((response) => {
@@ -221,6 +219,17 @@
                 this.getData();
               }).catch((error) => { this.error = error; });
          }).catch((error) => { this.error = error; });
+    }
+
+    /* Gets the current user's custom column configurations */
+    getCustomColumnConfigurations() {
+      this.UserService.getColumnConfigs()
+        .then((response) => {
+          this.colConfigs = response;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
     }
 
     /**
@@ -468,7 +477,7 @@
     /* COLUMN INTERACTIONS */
     /* resets the columns to default, reloads table, saves new table state */
     resetDefaultColumns() {
-      this.isopen     = false; // close the column visibility dropdown
+      this.colVisOpen = false; // close the column visibility dropdown
       this.loading    = true;
       this.tableState = defaultTableState;
 
@@ -517,9 +526,9 @@
      * @param {string} id The id of the column to show/hide (toggle)
      */
     toggleVisibility(id) {
-      this.isopen    = false; // close the column visibility dropdown
-      this.loading   = true;
-      let reloadData = false;
+      this.colVisOpen = false; // close the column visibility dropdown
+      this.loading    = true;
+      let reloadData  = false;
 
       let index = this.isVisible(id);
 
@@ -554,6 +563,80 @@
       if (reloadData) { this.getData(true); } // need data from the server
 
       this.saveTableState(true);
+    }
+
+    /* Saves a custom column configuration */
+    saveColumnConfiguration() {
+      if (!this.newColConfigName) {
+        this.colConfigError = 'You must name your new column configuration';
+      }
+
+      let data = {
+        name    : this.newColConfigName,
+        columns : this.tableState.visibleHeaders
+      };
+
+      this.UserService.createColumnConfig(data)
+        .then((response) => {
+          this.colConfigs.push(data);
+          this.saveColumnOpen = false;
+          this.colConfigError = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    }
+
+    /**
+     * Loads a previously saved custom column configuration and
+     * reloads table and table data
+     * @param {int} index The index in the array of the column config to load
+     */
+    loadColumnConfiguration(index) {
+      this.saveColumnOpen = false;
+      this.tableState.visibleHeaders = this.colConfigs[index].columns;
+
+      this.reloadTable();
+      this.getData(true);
+      this.saveTableState();
+    }
+
+    /**
+     * Deletes a previously saved custom column configuration
+     * @param {string} name The name of the column config to remove
+     * @param {int} index   The index in the array of the column config to remove
+     */
+    deleteColumnConfiguration(name, index) {
+      this.UserService.deleteColumnConfig(name)
+        .then((response) => {
+          this.colConfigs.splice(index, 1);
+          this.colConfigError = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    }
+
+    /**
+     * Determines whether the custom column configuration is the same as the
+     * visible columns in the table
+     * @param {int} index The index in the array of the column config to compare
+     * @returns {boolean} Whether the custom column config is the same as the
+     *                    visible columns in the table
+     */
+    isSameAsVisible(index) {
+      let customCols  = this.colConfigs[index].columns;
+      let tableCols   = this.tableState.visibleHeaders;
+
+      if (customCols === tableCols)                   { return true; }
+      if (customCols === null || tableCols === null)  { return false; }
+      if (customCols.length !== tableCols.length)     { return false; }
+
+      for (let i = 0, len = customCols.length; i < len; ++i) {
+        if (customCols[i] !== tableCols[i]) { return false; }
+      }
+
+      return true;
     }
 
 
