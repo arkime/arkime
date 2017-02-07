@@ -39,6 +39,7 @@
 # 30 - change file to dynamic
 # 31 - Require ES >= 2.4, dstats_v2, stats_v1
 # 32 - Require ES >= 2.4 or ES >= 5.1.2, tags_v3, queries_v1, fields_v1, users_v4, files_v4, sequence_v1
+# 33 - user columnConfigs
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -47,7 +48,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 32;
+my $VERSION = 33;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -1728,6 +1729,10 @@ sub usersUpdate
         "type": "object",
         "dynamic": "true"
       },
+      "columnConfigs": {
+        "type": "object",
+        "dynamic": "true"
+      },
       "tableStates": {
         "type": "object",
         "dynamic": "true"
@@ -2397,7 +2402,8 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
         esDelete("/_template/${PREFIX}template_1", 1);
         sessionsUpdate();
-    } elsif ($main::versionNumber <= 32) {
+    } elsif ($main::versionNumber <= 33) {
+        usersUpdate();
         sessionsUpdate();
     } else {
         print "db.pl is hosed\n";
