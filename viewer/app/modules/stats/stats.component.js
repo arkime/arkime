@@ -46,9 +46,9 @@
       // https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout#Inactive_tabs
       if(document.addEventListener) {
         document.addEventListener('visibilitychange', function () {
-          if (!self.context) return;
-          if (document.hidden) self.context.stop();
-          else self.context.start();
+          if (!self.context) {return;}
+          if (document.hidden) {self.context.stop();}
+          else {self.context.start();}
         });
       }
     }
@@ -70,7 +70,7 @@
    */
     makeStatsGraph(metricName, interval) {
       var context = this.context;
-      var nodes = this.stats.map(function(item) {return item.nodeName});
+      var nodes = this.stats.map(function(item) {return item.nodeName;});
       function metric(name) {
         return context.metric(function(startV, stopV, stepV, callback) {
           $.ajax( {
@@ -83,14 +83,14 @@
                           "&interval=" + interval +
                           "&name=" + metricName,
             "success": function(data) {
-              if (!data) callback(new Error('Unable to load data'));
+              if (!data) {return callback(new Error('Unable to load data'));}
               callback(null, data);
             }
           });
         }, name);
       }
 
-      if (context) context.stop(); // Stop old context
+      if (context) {context.stop();} // Stop old context
 
       context = cubism.context()
           .step(interval * 1000)

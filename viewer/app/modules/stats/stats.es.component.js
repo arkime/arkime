@@ -73,7 +73,7 @@
           this.totalValues = {};
           var stats = this.stats.data;
 
-          var columnNames = this.columns.map(function(item) {return item.field || item.sort});
+          var columnNames = this.columns.map(function(item) {return item.field || item.sort;});
 
           for (var i = 1; i < columnNames.length; i++) {
             var columnName = columnNames[i];

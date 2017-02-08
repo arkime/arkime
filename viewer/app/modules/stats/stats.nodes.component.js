@@ -79,7 +79,7 @@
           this.totalValues = {};
           var stats = this.stats.data;
 
-          var columnNames = this.columns.map(function(item) {return item.field || item.sort});
+          var columnNames = this.columns.map(function(item) {return item.field || item.sort;});
           columnNames.push("memoryP");
           columnNames.push("freeSpaceP");
 
@@ -125,8 +125,8 @@
           });
         }, name);
       }
-      var headerNames = this.columns.map(function(item) {return item.name});
-      var dataSrcs = this.columns.map(function(item) {return item.sort});
+      var headerNames = this.columns.map(function(item) {return item.name;});
+      var dataSrcs = this.columns.map(function(item) {return item.sort;});
       var metrics = [];
       for (var i = 3; i < headerNames.length; i++) {
         if (headerNames[i].match("/s")) {
