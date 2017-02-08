@@ -263,7 +263,7 @@
         visibleHeaders: ['dst', 'src', 'info', 'p1', 'p2', 'pa', 'fp', 'lp', 'dbby', 'no', 'pr']
       };
 
-      sessionComponent.resetDefaultColumns();
+      sessionComponent.loadColumnConfiguration();
 
       expect(sessionComponent.tableState).toEqual(defaultTableState);
     });
