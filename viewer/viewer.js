@@ -1504,6 +1504,7 @@ app.post('/user/columns/create', checkCookieToken, function(req, res) {
 
   if (!req.body.name)     { return error(403, 'Missing custom column configuration name'); }
   if (!req.body.columns)  { return error(403, 'Missing columns'); }
+  if (!req.body.order)    { return error(403, 'Missing sort order'); }
 
   var userId = req.user.userId;                         // get current user
   if (req.query.userId) { userId = req.query.userId; }  // or requested user
@@ -1512,6 +1513,12 @@ app.post('/user/columns/create', checkCookieToken, function(req, res) {
     if (err || !user.found) {
       console.log('/user/columns/create failed', err, user);
       return error(403, 'Unknown user');
+    }
+
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_:]/g, '');
+
+    if (req.body.name.length < 1) {
+      return error(403, 'Invalid custom column configuration name');
     }
 
     user = user._source;
@@ -1529,7 +1536,8 @@ app.post('/user/columns/create', checkCookieToken, function(req, res) {
 
     user.columnConfigs.push({
       name    : req.body.name,
-      columns : req.body.columns
+      columns : req.body.columns,
+      order   : req.body.order
     });
 
     Db.setUser(user.userId, user, function(err, info) {
@@ -1539,7 +1547,8 @@ app.post('/user/columns/create', checkCookieToken, function(req, res) {
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : 'Created custom column configuration successfully'
+        text    : 'Created custom column configuration successfully',
+        name    : req.body.name
       }));
     });
   });

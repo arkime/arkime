@@ -389,11 +389,11 @@
         if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -415,11 +415,11 @@
         if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }
@@ -440,11 +440,11 @@
         if (userId) { options.url += `?userId=${userId}`; }
 
         this.$http(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error.data);
+          });
 
       });
     }

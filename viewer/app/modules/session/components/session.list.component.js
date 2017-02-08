@@ -393,7 +393,7 @@
         } else {
           // if it's a shift click - toggle the order between 3 states:
           // 'asc' -> 'desc' -> removed from sorts
-          if (this.getSortOrder(id) === 'desc') {
+          if (this.getSortOrder(id) === 'desc' && this.tableState.order.length > 1) {
             for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
               if (this.tableState.order[i][0] === id) {
                 this.tableState.order.splice(i, 1);
@@ -496,25 +496,6 @@
     }
 
     /**
-     * Looks through all the orders in table state to determine
-     * whether there is still a corresponding column to sort by.
-     * If there is no corresponding column, the sort is updated
-     */
-    updateSorts() {
-      for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
-        let orderField = this.tableState.order[i][0], exists = false;
-        for (let j = 0, len = this.tableState.visibleHeaders.length; j < len; ++j) {
-          if (this.tableState.visibleHeaders[j] === orderField) {
-            exists = true;
-          }
-        }
-        // if the current sort order does not have a corresponding column
-        // update the sort order
-        if (!exists) { this.updateSort(this.tableState.order[i][0]); }
-      }
-    }
-
-    /**
      * Sets holdingClick to true if the user holds the click for
      * 300ms or longer. If the user clicks and holds/drags, the
      * sortBy function returns immediately and does not issue query
@@ -576,7 +557,8 @@
 
     /**
      * Toggles the visibility of a column given its id
-     * @param {string} id The id of the column to show/hide (toggle)
+     * @param {string} id   The id of the column to show/hide (toggle)
+     * @param {string} sort Option sort id for columns that have sortBy
      */
     toggleVisibility(id, sort) {
       this.colVisOpen = false; // close the column visibility dropdown
@@ -602,25 +584,10 @@
       this.saveTableState(true);
     }
 
-    /* resets the columns to default, reloads table, saves new table state */
-    resetDefaultColumns() {
-      this.colConfigsOpen = false; // close the column config dropdown
-
-      if (this.isSameAsVisible()) { return; }
-
-      this.loading = true;
-      this.tableState.visibleHeaders = defaultTableState.visibleHeaders;
-
-      this.reloadTable();
-      this.getData(true);
-      this.saveTableState();
-
-      this.updateSorts();
-    }
-
     /**
      * Loads a previously saved custom column configuration and
      * reloads table and table data
+     * If no index is given, loads the default columns
      * @param {int} index The index in the array of the column config to load
      */
     loadColumnConfiguration(index) {
@@ -629,13 +596,20 @@
       if (this.isSameAsVisible(index)) { return; }
 
       this.loading = true;
-      this.tableState.visibleHeaders = this.colConfigs[index].columns;
 
-      this.reloadTable();
-      this.getData(true);
+      if (!index && index !== 0) {
+        this.tableState.visibleHeaders  = defaultTableState.visibleHeaders.slice();
+        this.tableState.order           = defaultTableState.order.slice();
+      } else {
+        this.tableState.visibleHeaders  = this.colConfigs[index].columns.slice();
+        this.tableState.order           = this.colConfigs[index].order.slice();
+      }
+
+      this.query.sorts = this.tableState.order;
+
       this.saveTableState();
 
-      this.updateSorts();
+      this.getData(true);
     }
 
     /* Saves a custom column configuration */
@@ -646,14 +620,19 @@
 
       let data = {
         name    : this.newColConfigName,
-        columns : this.tableState.visibleHeaders
+        columns : this.tableState.visibleHeaders.slice(),
+        order   : this.tableState.order.slice()
       };
 
       this.UserService.createColumnConfig(data)
         .then((response) => {
+          data.name = response.name; // update column config name
+
           this.colConfigs.push(data);
-          this.colConfigsOpen = false;
-          this.colConfigError = false;
+
+          this.newColConfigName = null;
+          this.colConfigsOpen   = false;
+          this.colConfigError   = false;
         })
         .catch((error) => {
           this.colConfigError = error.text;
@@ -687,7 +666,7 @@
       let customCols;
 
       if (index === undefined) {
-        customCols = defaultTableState.visibleHeaders;
+        customCols = defaultTableState.visibleHeaders.slice();
       } else { customCols = this.colConfigs[index].columns; }
 
       let tableCols   = this.tableState.visibleHeaders;
