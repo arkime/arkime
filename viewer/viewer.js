@@ -852,7 +852,7 @@ app.get('/molochclusters', function(req, res) {
   return res.send(app.locals.molochClusters);
 });
 
-app.get('/stats', checkWebEnabled, function(req, res) {
+app.get('/stats.old', checkWebEnabled, function(req, res) {
   var query = {size: 100};
 
   Db.search('stats', 'stat', query, function(err, data) {
@@ -897,7 +897,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help', '/settings', '/files'], checkWebEnabled, function(req, res) {
+app.get(['/app', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -2237,7 +2237,20 @@ app.get('/stats.json', function(req, res) {
   var query = {from: +req.query.start || 0,
                size: Math.min(10000, +req.query.length || 500)
               };
-  addSortToQuery(query, req.query, "_uid");
+
+  if (req.query.filter !== undefined) {
+    query.query = {wildcard: {nodeName: "*" + req.query.filter + "*"}};
+  }
+
+  if (req.query.sortField !== undefined || req.query.desc !== undefined) {
+    console.log("DESC", req.query.desc, typeof req.query.desc);
+    query.sort = {};
+    req.query.sortField = req.query.sortField || "nodeName";
+    query.sort[req.query.sortField] = { order: req.query.desc === "true" ? "desc": "asc"};
+    query.sort[req.query.sortField].missing = internals.usersMissing[req.query.sortField];
+  } else {
+    addSortToQuery(query, req.query, "_uid");
+  }
 
   async.parallel({
     stats: function (cb) {

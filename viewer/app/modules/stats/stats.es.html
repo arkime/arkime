@@ -1,0 +1,83 @@
+<h3>Elasticsearch</h3>
+<div class="row">
+<!-- top pagination controls -->
+  <div class="col-md-6">
+    <moloch-pagination length="$ctrl.query.length"
+      records-total="$ctrl.stats.recordsTotal"
+      records-filtered="$ctrl.stats.recordsFiltered"
+      current-page="$ctrl.currentPage"
+      start="$ctrl.query.start"></moloch-pagination>
+  </div>
+  <div class="col-md-4 col-md-offset-2">
+    <div class="input-group input-group-sm pull-right header-input">
+      <span class="input-group-addon">
+        <span class="fa fa-search"></span>
+      </span>
+      <input type="text" class="form-control" ng-model="$ctrl.searchStats"
+        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+        placeholder="Search for node in the table below">
+    </div>
+  </div>
+</div>
+
+<table class="table table-condensed table-striped margined-top-xxxlg"
+  ng-if="!$ctrl.error && $ctrl.stats">
+  <thead class="small">
+    <tr>
+      <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+        ng-click="$ctrl.columnClick(column.sort)">
+        {{::column.name}}
+        <span ng-if="column.sort !== undefined">
+          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
+          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
+          <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+        </span>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+  <tbody>
+    <tr class="animate-repeat"
+      ng-repeat="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.id">
+      <td class="no-wrap">{{stat.name}}</td>
+      <td class="no-wrap">{{stat.docs|number:0}}</td>
+      <td class="no-wrap">{{stat.storeSize|humanReadable}}</td>
+      <td class="no-wrap">{{stat.heapSize|humanReadable}}</td>
+      <td class="no-wrap">{{stat.load|number:2}}</td>
+      <td class="no-wrap">{{stat.cpu|number:1}}%</td>
+      <td class="no-wrap">{{stat.read|number:0}}</td>
+      <td class="no-wrap">{{stat.write|number:0}}</td>
+      <td class="no-wrap">{{stat.searches|number:0}}</td>
+    </tr>
+    <tr ng-if="!$ctrl.filteredStats.length">
+      <td colspan="6" class="text-danger">
+        <span class="fa fa-warning"></span>&nbsp;
+        No results match your search
+      </td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td class="no-wrap">Average</td>
+      <td class="no-wrap">{{$ctrl.averageValues.docs|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.storeSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.heapSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.load|number:2}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.cpu|number:1}}%</td>
+      <td class="no-wrap">{{$ctrl.averageValues.read|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.write|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.averageValues.searches|number:0}}</td>
+    </tr>
+    <tr>
+      <td class="no-wrap">Total</td>
+      <td class="no-wrap">{{$ctrl.totalValues.docs|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.storeSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.heapSize|humanReadable}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.load|number:2}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
+      <td class="no-wrap">{{$ctrl.totalValues.read|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.write|number:0}}</td>
+      <td class="no-wrap">{{$ctrl.totalValues.searches|number:0}}</td>
+    </tr>
+  </tfoot>
+</table>
