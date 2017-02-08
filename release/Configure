@@ -101,8 +101,8 @@ fi
 if [ -d "/etc/logrotate.d" -a ! -f "/etc/logrotate.d/$MOLOCH_NAME" ]; then
     echo "Moloch - Installing /etc/logrotate.d/$MOLOCH_NAME to rotate files after 7 days"
     cat << EOF > /etc/logrotate.d/$MOLOCH_NAME
-/nids/$MOLOCH_NAME/logs/capture.log
-/nids/$MOLOCH_NAME/logs/viewer.log {
+/data/$MOLOCH_NAME/logs/capture.log
+/data/$MOLOCH_NAME/logs/viewer.log {
     daily
     rotate 7
     notifempty
