@@ -16,6 +16,7 @@
  */
 
 #include "moloch.h"
+#include "patricia.h"
 #include <inttypes.h>
 #include <arpa/inet.h>
 
@@ -45,18 +46,20 @@ LOCAL uint64_t               droppedFrags;
 
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
 
+LOCAL patricia_tree_t       *ipTree = 0;
+
 /******************************************************************************/
 extern MolochSessionHead_t   tcpWriteQ[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDrops[MOLOCH_MAX_PACKET_THREADS];
 
-LOCAL  MolochPacketHead_t    fragsQ;
+MOLOCH_LOCK_DEFINE(frags);
 
 LOCAL  gboolean              callFilters;
 
 
-int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int len);
+int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len);
 
 typedef struct molochfrags_t {
     struct molochfrags_t  *fragh_next, *fragh_prev;
@@ -278,6 +281,13 @@ int moloch_packet_process_tcp(MolochSession_t * const session, MolochPacket_t * 
 
     if (tcphdr->th_flags & TH_PUSH) {
         session->tcpFlagCnt[MOLOCH_TCPFLAG_PSH]++;
+    }
+
+
+    // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
+    if (session->haveTcpSession && session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
+        moloch_session_add_tag(session, "no-syn-ack");
+        session->tcpSeq[packet->direction] = seq;
     }
 
     MolochTcpDataHead_t * const tcpData = &session->tcpData;
@@ -693,8 +703,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 }
 
 /******************************************************************************/
-int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int len);
-int moloch_packet_gre4(MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_gre4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     BSB bsb;
 
@@ -745,7 +754,7 @@ int moloch_packet_gre4(MolochPacket_t * const packet, const uint8_t *data, int l
     if (BSB_IS_ERROR(bsb))
         return 1;
 
-    return moloch_packet_ip4(packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
+    return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
 }
 /******************************************************************************/
 void moloch_packet_frags_free(MolochFrags_t * const frags)
@@ -760,7 +769,7 @@ void moloch_packet_frags_free(MolochFrags_t * const frags)
     MOLOCH_TYPE_FREE(MolochFrags_t, frags);
 }
 /******************************************************************************/
-void moloch_packet_frags_process(MolochPacket_t * const packet)
+gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
 {
     MolochPacket_t * fpacket;
     MolochFrags_t   *frags;
@@ -786,7 +795,7 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
             droppedFrags++;
             moloch_packet_frags_free(DLL_PEEK_HEAD(fragl_, &fragsList));
         }
-        return;
+        return FALSE;
     } else {
         DLL_MOVE_TAIL(fragl_, &fragsList, frags);
     }
@@ -816,7 +825,7 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
 
     // Don't bother checking until we get a packet with no flags
     if (!frags->haveNoFlags) {
-        return;
+        return FALSE;
     }
 
     int off = 0;
@@ -834,19 +843,21 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
     }
     // We have a hole
     if ((void*)fpacket != (void*)&frags->packets) {
-        return;
+        return FALSE;
     }
 
     // Packet is too large, hacker
     if (payloadLen + packet->payloadOffset >= MOLOCH_PACKET_MAX_LEN) {
         droppedFrags++;
         moloch_packet_frags_free(frags);
-        return;
+        return FALSE;
     }
 
     // Now alloc the full packet
     packet->pktlen = packet->payloadOffset + payloadLen;
     uint8_t *pkt = malloc(packet->pktlen);
+
+    // Copy packet header
     memcpy(pkt, packet->pkt, packet->payloadOffset);
 
     // Fix header of new packet
@@ -859,7 +870,10 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
         struct ip *fip4 = (struct ip*)(fpacket->pkt + fpacket->ipOffset);
         uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
 
-        memcpy(pkt+packet->payloadOffset+(fip_off*8), fpacket->pkt+fpacket->payloadOffset, fpacket->payloadLen);
+        if (packet->payloadOffset+(fip_off*8) + fpacket->payloadLen <= packet->pktlen)
+            memcpy(pkt+packet->payloadOffset+(fip_off*8), fpacket->pkt+fpacket->payloadOffset, fpacket->payloadLen);
+        else
+            LOG("WARNING - Not enough room for frag %d > %d", packet->payloadOffset+(fip_off*8) + fpacket->payloadLen, packet->pktlen);
     }
 
     // Set all the vars in the current packet to new defraged packet
@@ -869,56 +883,33 @@ void moloch_packet_frags_process(MolochPacket_t * const packet)
     packet->copied = 1;
     packet->wasfrag = 1;
     packet->payloadLen = payloadLen;
-    DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed
+    DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed in frags_free
     moloch_packet_frags_free(frags);
-
-    moloch_packet(packet);
+    return TRUE;
 }
 /******************************************************************************/
-LOCAL void *moloch_packet_frags_thread(void *UNUSED(unused))
+void moloch_packet_frags4(MolochPacketBatch_t *batch, MolochPacket_t * const packet)
 {
-    MolochPacket_t  *packet;
-    MolochFrags_t   *frags;
+    MolochFrags_t *frags;
 
-
-    while (1) {
-        MOLOCH_LOCK(fragsQ.lock);
-        while (DLL_COUNT(packet_, &fragsQ) == 0) {
-            MOLOCH_COND_WAIT(fragsQ.lock);
-        }
-        DLL_POP_HEAD(packet_, &fragsQ, packet);
-        MOLOCH_UNLOCK(fragsQ.lock);
-
-
-        // Remove expired entries
-        while ((frags = DLL_PEEK_HEAD(fragl_, &fragsList)) && (frags->secs + config.fragsTimeout < packet->ts.tv_sec)) {
-            droppedFrags++;
-            moloch_packet_frags_free(frags);
-        }
-
-        moloch_packet_frags_process(packet);
-    }
-    return NULL;
-}
-/******************************************************************************/
-void moloch_packet_frags4(MolochPacket_t * const packet)
-{
+    // ALW - Should change frags_process to make the copy when needed
     uint8_t *pkt = malloc(packet->pktlen);
     memcpy(pkt, packet->pkt, packet->pktlen);
     packet->pkt = pkt;
     packet->copied = 1;
 
-    // When running tests we do on the same thread so results are more determinstic
-    if (config.tests) {
-        moloch_packet_frags_process(packet);
-        return;
+    MOLOCH_LOCK(frags);
+    // Remove expired entries
+    while ((frags = DLL_PEEK_HEAD(fragl_, &fragsList)) && (frags->secs + config.fragsTimeout < packet->ts.tv_sec)) {
+        droppedFrags++;
+        moloch_packet_frags_free(frags);
     }
 
+    gboolean process = moloch_packet_frags_process(packet);
+    MOLOCH_UNLOCK(frags);
 
-    MOLOCH_LOCK(fragsQ.lock);
-    DLL_PUSH_TAIL(packet_, &fragsQ, packet);
-    MOLOCH_COND_SIGNAL(fragsQ.lock);
-    MOLOCH_UNLOCK(fragsQ.lock);
+    if (process)
+        moloch_packet_batch(batch, packet);
 }
 /******************************************************************************/
 int moloch_packet_frags_size()
@@ -928,10 +919,10 @@ int moloch_packet_frags_size()
 /******************************************************************************/
 int moloch_packet_frags_outstanding()
 {
-    return DLL_COUNT(packet_, &fragsQ);
+    return 0;
 }
 /******************************************************************************/
-int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId)
+int moloch_packet_ip(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const char * const sessionId)
 {
     totalBytes += packet->pktlen;
 
@@ -976,7 +967,7 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
     if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
         MOLOCH_LOCK(packetQ[thread].lock);
         overloadDrops[thread]++;
-        if ((overloadDrops[thread] % 1000) == 1) {
+        if ((overloadDrops[thread] % 10000) == 1) {
             LOG("WARNING - Packet Q %d is overflowing, total dropped %u, increase packetThreads or maxPacketsInQueue", thread, overloadDrops[thread]);
         }
         packet->pkt = 0;
@@ -992,14 +983,12 @@ int moloch_packet_ip(MolochPacket_t * const packet, const char * const sessionId
         packet->copied = 1;
     }
 
-    MOLOCH_LOCK(packetQ[thread].lock);
-    DLL_PUSH_TAIL(packet_, &packetQ[thread], packet);
-    MOLOCH_COND_SIGNAL(packetQ[thread].lock);
-    MOLOCH_UNLOCK(packetQ[thread].lock);
+    DLL_PUSH_TAIL(packet_, &batch->packetQ[thread], packet);
+    batch->count++;
     return 0;
 }
 /******************************************************************************/
-int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_ip4(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip*)data;
     struct tcphdr       *tcphdr = 0;
@@ -1028,6 +1017,21 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
 #endif
         return 1;
     }
+    if (ipTree) {
+        prefix_t prefix;
+        patricia_node_t *node;
+
+        prefix.family = AF_INET;
+        prefix.bitlen = 32;
+
+        prefix.add.sin= ip4->ip_src;
+        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+            return 1;
+
+        prefix.add.sin= ip4->ip_dst;
+        if ((node = patricia_search_best2 (ipTree, &prefix, 1)) && node->data == NULL)
+            return 1;
+    }
 
     packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -1039,7 +1043,7 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
 
 
     if ((ip_flags & IP_MF) || ip_off > 0) {
-        moloch_packet_frags4(packet);
+        moloch_packet_frags4(batch, packet);
         return 0;
     }
 
@@ -1079,7 +1083,7 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
     case IPPROTO_GRE:
         packet->vpnType = MOLOCH_PACKET_VPNTYPE_GRE;
         packet->vpnIpOffset = packet->ipOffset; // ipOffset will get reset
-        return moloch_packet_gre4(packet, data + ip_hdr_len, len - ip_hdr_len);
+        return moloch_packet_gre4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
     default:
         if (config.logUnknownProtocols)
             LOG("Unknown protocol %d", ip4->ip_p);
@@ -1087,10 +1091,10 @@ int moloch_packet_ip4(MolochPacket_t * const packet, const uint8_t *data, int le
     }
     packet->protocol = ip4->ip_p;
 
-    return moloch_packet_ip(packet, sessionId);
+    return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
-int moloch_packet_ip6(MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
     struct tcphdr       *tcphdr = 0;
@@ -1175,10 +1179,10 @@ int moloch_packet_ip6(MolochPacket_t * const packet, const uint8_t *data, int le
     packet->protocol = nxt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
     packet->payloadLen = ip_len - ip_hdr_len + sizeof(struct ip6_hdr);
-    return moloch_packet_ip(packet, sessionId);
+    return moloch_packet_ip(batch, packet, sessionId);
 }
 /******************************************************************************/
-int moloch_packet_pppoe(MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_pppoe(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 8 || data[0] != 0x11 || data[1] != 0) {
         return 1;
@@ -1192,15 +1196,15 @@ int moloch_packet_pppoe(MolochPacket_t * const packet, const uint8_t *data, int 
     packet->vpnType = MOLOCH_PACKET_VPNTYPE_PPPOE;
     switch (type) {
     case 0x21:
-        return moloch_packet_ip4(packet, data + 8, plen-2);
+        return moloch_packet_ip4(batch, packet, data + 8, plen-2);
     case 0x57:
-        return moloch_packet_ip6(packet, data + 8, plen-2);
+        return moloch_packet_ip6(batch, packet, data + 8, plen-2);
     default:
         return 1;
     }
 }
 /******************************************************************************/
-int moloch_packet_ether(MolochPacket_t * const packet, const uint8_t *data, int len)
+int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     if (len < 14) {
         return 1;
@@ -1211,11 +1215,11 @@ int moloch_packet_ether(MolochPacket_t * const packet, const uint8_t *data, int 
         n += 2;
         switch (ethertype) {
         case 0x0800:
-            return moloch_packet_ip4(packet, data+n, len - n);
+            return moloch_packet_ip4(batch, packet, data+n, len - n);
         case 0x86dd:
-            return moloch_packet_ip6(packet, data+n, len - n);
+            return moloch_packet_ip6(batch, packet, data+n, len - n);
         case 0x8864:
-            return moloch_packet_pppoe(packet, data+n, len - n);
+            return moloch_packet_pppoe(batch, packet, data+n, len - n);
         case 0x8100:
             n += 2;
             break;
@@ -1226,7 +1230,32 @@ int moloch_packet_ether(MolochPacket_t * const packet, const uint8_t *data, int 
     return 0;
 }
 /******************************************************************************/
-void moloch_packet(MolochPacket_t * const packet)
+void moloch_packet_batch_init(MolochPacketBatch_t *batch)
+{
+    int t;
+
+    for (t = 0; t < config.packetThreads; t++) {
+        DLL_INIT(packet_, &batch->packetQ[t]);
+    }
+    batch->count = 0;
+}
+/******************************************************************************/
+void moloch_packet_batch_flush(MolochPacketBatch_t *batch)
+{
+    int t;
+
+    for (t = 0; t < config.packetThreads; t++) {
+        if (DLL_COUNT(packet_, &batch->packetQ[t]) > 0) {
+            MOLOCH_LOCK(packetQ[t].lock);
+            DLL_PUSH_TAIL_DLL(packet_, &packetQ[t], &batch->packetQ[t]);
+            MOLOCH_COND_SIGNAL(packetQ[t].lock);
+            MOLOCH_UNLOCK(packetQ[t].lock);
+        }
+    }
+    batch->count = 0;
+}
+/******************************************************************************/
+void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet)
 {
     int rc;
 
@@ -1237,18 +1266,18 @@ void moloch_packet(MolochPacket_t * const packet)
     switch(pcapFileHeader.linktype) {
     case 0: // NULL
         if (packet->pktlen > 4)
-            rc = moloch_packet_ip4(packet, packet->pkt+4, packet->pktlen-4);
+            rc = moloch_packet_ip4(batch, packet, packet->pkt+4, packet->pktlen-4);
         else
             rc = 1;
         break;
     case 1: // Ether
-        rc = moloch_packet_ether(packet, packet->pkt, packet->pktlen);
+        rc = moloch_packet_ether(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 12: // RAW
-        rc = moloch_packet_ip4(packet, packet->pkt, packet->pktlen);
+        rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
     case 113: // SLL
-        rc = moloch_packet_ip4(packet, packet->pkt, packet->pktlen);
+        rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
     default:
         LOG("ERROR - Unsupported pcap link type %d", pcapFileHeader.linktype);
@@ -1397,14 +1426,8 @@ void moloch_packet_init()
         g_thread_new(name, &moloch_packet_thread, (gpointer)(long)t);
     }
 
-    DLL_INIT(packet_, &fragsQ);
-    MOLOCH_LOCK_INIT(fragsQ.lock);
-    MOLOCH_COND_INIT(fragsQ.lock);
-
     HASH_INIT(fragh_, fragsHash, moloch_packet_frag_hash, moloch_packet_frag_cmp);
     DLL_INIT(fragl_, &fragsList);
-
-    g_thread_new("moloch-frags4", &moloch_packet_frags_thread, NULL);
 
     moloch_add_can_quit(moloch_packet_outstanding, "packet outstanding");
     moloch_add_can_quit(moloch_packet_frags_outstanding, "packet frags outstanding");
@@ -1436,6 +1459,20 @@ uint64_t moloch_packet_dropped_overload()
     return count;
 }
 /******************************************************************************/
+void moloch_packet_add_packet_ip(char *ipstr, int mode)
+{
+    patricia_node_t *node;
+    if (!ipTree) {
+        ipTree = New_Patricia(128);
+    }
+    node = make_and_lookup(ipTree, ipstr);
+    node->data = (void *)(long)mode;
+}
+/******************************************************************************/
 void moloch_packet_exit()
 {
+    if (ipTree) {
+        Destroy_Patricia(ipTree, NULL);
+        ipTree = 0;
+    }
 }

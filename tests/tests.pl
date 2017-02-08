@@ -164,6 +164,32 @@ sub doMake {
     }
 }
 ################################################################################
+sub ip2bin {
+    my @parts = split(/\./, $_[0]);
+    return pack('H*', sprintf("%02x%02x%02x%02x", $parts[0], $parts[1], $parts[2], $parts[3]));
+}
+################################################################################
+sub doReip {
+    open my $in, '<', "$ARGV[0]" or die "error opening $ARGV[0]: $!";
+    open my $out, '>', "$ARGV[0].tmp" or die "error opening $ARGV[0].tmp: $!";
+    binmode($in);
+    binmode($out);
+
+    my $buf;
+    read($in, $buf, 1000000);
+
+    for (my $i = 1; $i < $#ARGV; $i+=2) {
+        my $src = ip2bin($ARGV[$i]);
+        my $dst = ip2bin($ARGV[$i+1]);
+        $buf =~ s/\Q$src\E/$dst/g;
+    }
+
+    syswrite($out, $buf);
+
+    close($in);
+    close($out);
+}
+################################################################################
 sub doViewer {
 my ($cmd) = @_;
 
@@ -284,7 +310,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|help)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|help|reip)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^-/) {
@@ -300,6 +326,8 @@ if ($main::cmd eq "--fix") {
     doFix();
 } elsif ($main::cmd eq "--make") {
     doMake();
+} elsif ($main::cmd eq "--reip") {
+    doReip();
 } elsif ($main::cmd eq "--help") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
@@ -307,11 +335,12 @@ if ($main::cmd eq "--fix") {
     print "  --valgrind    Use valgrind on capture\n";
     print "\n";
     print "Commands:\n";
-    print "  --help        This help\n";
-    print "  --make        Create a .test file for each .pcap file on command line\n";
-    print "  --viewer      viewer tests\n";
-    print "                This will init local ES, import data, start a viewer, run tests\n";
-    print " [default]      Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
+    print "  --help                This help\n";
+    print "  --make                Create a .test file for each .pcap file on command line\n";
+    print "  --reip file ip newip  Create file.tmp, replace ip with newip\n";
+    print "  --viewer              viewer tests\n";
+    print "                        This will init local ES, import data, start a viewer, run tests\n";
+    print " [default]              Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;

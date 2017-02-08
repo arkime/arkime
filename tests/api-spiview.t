@@ -1,4 +1,4 @@
-use Test::More tests => 59;
+use Test::More tests => 64;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -12,10 +12,12 @@ my $pwd = getcwd() . "/pcap";
 # bigendian pcap file tests
     my $json = viewerGet("/spiview.json?date=-1&facets=1&spi=a1,a2,pr,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
     my $mjson = multiGet("/spiview.json?date=-1&facets=1&spi=a1,a2,pr,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $djson = multiGet("/spiview.json?startTime=1332734457&stopTime=1389743152&facets=1&spi=a1,a2,pr,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"src": {}, "dst":{}}'), "map bigendian");
     eq_or_diff($json->{protocols}, from_json('{"icmp": 1}'), "protocols bigendian");
     eq_or_diff($json->{graph}, from_json('{"lpHisto": [[1335956400000, 1]], "dbHisto": [[1335956400000, 0]], "paHisto": [[1335956400000, 2]], "xmin": null, "xmax": null, "interval":3600}'), "graph bigendian");
+    eq_or_diff($djson->{graph}, from_json('{"lpHisto": [[1335956400000, 1]], "dbHisto": [[1335956400000, 0]], "paHisto": [[1335956400000, 2]], "xmin": 1332734457000, "xmax": 1389743152000, "interval":3600}'), "date graph bigendian");
     eq_or_diff($json->{spi}->{a1}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":3232280992}]}'), "bigendian a1");
     eq_or_diff($json->{spi}->{a2}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":171969329}]}'), "bigendian a2");
     eq_or_diff($json->{spi}->{pr}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian pr");
@@ -26,7 +28,11 @@ my $pwd = getcwd() . "/pcap";
 
     delete $json->{health};
     delete $mjson->{health};
+    delete $djson->{health};
+    $djson->{graph}->{xmax} = undef;
+    $djson->{graph}->{xmin} = undef;
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
+    eq_or_diff($json, $djson, "single doesn't match date", { context => 3 });
 
 # bigendian pcap file tests no facets
     $json = viewerGet("/spiview.json?date=-1&spi=a1,a2,pr&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
@@ -93,30 +99,35 @@ my $pwd = getcwd() . "/pcap";
 
 # Check facets ALL
     $json = viewerGet("/spiview.json?date=-1&facets=1&spi=a1,a2,pr,fileand,ta:3,hh1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    print("/spiview.json?date=-1&facets=1&spi=a1,a2,pr,fileand,ta:2,hh1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"),"\n");
     $mjson = multiGet("/spiview.json?date=-1&facets=1&spi=a1,a2,pr,fileand,ta:3,hh1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $djson = viewerGet("/spiview.json?startTime=1332734457&stopTime=1482563001&facets=1&spi=a1,a2,pr,fileand,ta:3,hh1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"USA": 3, "CAN": 1}, "src":{"USA": 3, "RUS":1}}'), "map ALL");
-    eq_or_diff($json->{protocols}, from_json('{"tcp": 4, "http": 3, "socks": 3, "bittorrent": 1, "icmp": 1}'), "protocols ALL");
-    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1]]'), "lpHisto ALL");
-    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4]]'), "paHisto ALL");
-    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68]]'), "dbHisto ALL");
-    is ($json->{recordsFiltered}, 5, "records ALL");
+    eq_or_diff($json->{protocols}, from_json('{"tcp": 5, "http": 3, "socks": 3, "bittorrent": 2, "icmp": 1}'), "protocols ALL");
+    eq_or_diff($json->{graph}->{lpHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "lpHisto ALL");
+    eq_or_diff($json->{graph}->{paHisto}, from_json('[["1335956400000", 2], ["1386003600000", 46], [1387742400000, 4], [1482552000000,4]]'), "paHisto ALL");
+    eq_or_diff($json->{graph}->{dbHisto}, from_json('[["1335956400000", 0], ["1386003600000", 5287], [1387742400000, 68], [1482552000000,68]]'), "dbHisto ALL");
+    is($djson->{graph}->{xmin}, 1332734457000, "date graph ALL xmin");
+    is($djson->{graph}->{xmax}, 1482563001000, "date graph ALL xmax");
+    is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
     eq_or_diff($json->{spi}->{a1}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
-            "buckets":[{"doc_count":3, "key":179608761},{"doc_count":1, "key":167772161}, {"doc_count":1, "key":3232280992}]}'), "ALL a1");
+            "buckets":[{"doc_count":3, "key":179608761},{"doc_count":1, "key":167772161}, {"doc_count":1, "key":168430090}, {"doc_count":1, "key":3232280992}]}'), "ALL a1");
     eq_or_diff($json->{spi}->{a2}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
-            "buckets":[{"doc_count":3, "key":179608825}, {"doc_count":1, "key":167772162}, {"doc_count":1, "key":171969329}]}'), "ALL a2");
+            "buckets":[{"doc_count":3, "key":179608825}, {"doc_count":1, "key":167772162}, {"doc_count":1, "key":168495883}, {"doc_count":1, "key":171969329}]}'), "ALL a2");
     eq_or_diff($json->{spi}->{pr}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
-            "buckets":[{"doc_count":4, "key":"tcp"}, {"doc_count":1, "key":"icmp"}]}'), "ALL pr");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$pwd/socks-http-example.pcap"}, {"doc_count":1, "key":"$pwd/bigendian.pcap"},{"doc_count":1, "key":"$pwd/bt-tcp.pcap"}]})), "bigendian fileand");
+            "buckets":[{"doc_count":5, "key":"tcp"}, {"doc_count":1, "key":"icmp"}]}'), "ALL pr");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$pwd/socks-http-example.pcap"}, {"doc_count":2, "key":"$pwd/bt-tcp.pcap"},{"doc_count":1, "key":"$pwd/bigendian.pcap"}]})), "bigendian fileand");
 
     my @buckets = sort {$a->{key} cmp $b->{key}} @{$json->{spi}->{ta}->{buckets}};
     $json->{spi}->{ta}->{buckets} = \@buckets;
 
-    @buckets = sort {$a->{key} cmp $b->{key}} @{$mjson->{spi}->{ta}->{buckets}};
-    $mjson->{spi}->{ta}->{buckets} = \@buckets;
+    my @mbuckets = sort {$a->{key} cmp $b->{key}} @{$mjson->{spi}->{ta}->{buckets}};
+    $mjson->{spi}->{ta}->{buckets} = \@mbuckets;
+
+    my @dbuckets = sort {$a->{key} cmp $b->{key}} @{$djson->{spi}->{ta}->{buckets}};
+    $djson->{spi}->{ta}->{buckets} = \@dbuckets;
 
     eq_or_diff($json->{spi}->{ta}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 14,
             "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"}]}'), "ALL ta");
@@ -125,4 +136,8 @@ my $pwd = getcwd() . "/pcap";
 
     delete $json->{health};
     delete $mjson->{health};
+    delete $djson->{health};
+    $djson->{graph}->{xmax} = undef;
+    $djson->{graph}->{xmin} = undef;
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
+    eq_or_diff($json, $djson, "single doesn't match date", { context => 3 });

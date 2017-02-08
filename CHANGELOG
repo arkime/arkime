@@ -1,4 +1,70 @@
-0.16.1 2016/10/XX
+0.18.0 2017/02/xx
+  - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture
+  - NOTICE: db.pl upgrade REQUIRES *ALL* moloch-capture to be down
+  - NOTICE: ES 2.4 or ES 5.1.2 required
+    ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
+  - wise - md5 lookups now associated with contentType
+  - wise - virustotal support
+  - capture - contentType now sent to wise for md5 lookups
+  - db - all indices except sessions-* are reindex for ES5 support
+  - capture - all readers must use batch interface
+  - multi - fixed tags for new ui /detail and added tests
+  - viewer - files tab uses new ui
+  - viewer - users tab uses new ui
+
+0.17.1 2017/01/30
+  - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
+    ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
+  - NOTICE: Can only update directly from Moloch 0.11.1 or later
+  - capture - handle missing syn/ack better
+  - capture - better mongo detection
+  - db - dstats_2 and stats_v1 now use date for time for kibana support, also prepares for ES 5 upgrade
+  - capture - some arm64 fixes (issue #584)
+  - viewer - new settings page
+  - capture - tpacketv3 no longer requires a bpf
+  - capture - pfring uses batch packet api
+  - capture - fix libpcap multiple interface crash (issue #610)
+  - release - Configure improvements
+
+0.17.0 2017/01/05
+  - NOTICE: npm update required
+  - NOTICE: ES 2.4.x required
+  - NOTICE: Last version that can be updated directly from Moloch 0.11.0 or earlier
+  - viewer - New sessions UI (newUI=true)
+  - all - Initial ES 5.0 support (do not use in production!)
+  - all - Refactor many ES calls to remove depreciated syntax
+  - viewer - Handle multiple query parameters better
+  - WISE - basic elasticsearch source
+  - all - Initial pcap encoding support, variables
+    * simpleEncoding: aes-256-ctr or xor-2048
+    * simpleKEKId - The kek id to use from the keks section
+    * [keks] - A section with multipl kekid=passwords
+  - capture - Fixed yara 1.7 multithread crash (issue #568)
+  - capture - Handle frag gre with frag ip inside
+  - viewer - New Help UI (based on new ui)
+  - viewer - New bounding select box
+  - viewer - Fix clicking map not applying query expression
+  - db - New sync-files which does both add/rm missing faster
+  - viewer - Add column menus
+  - viewer - Fix reordering columns
+  - viewer - Fix unnecessary whitespace when copying values from session table
+  - viewer - Add IP:Port option to field menus
+  - viewer - Permalink adds "openAll=1" parameter
+  - capture - mysql tls parser
+  - capture - llmnr and mdns
+  - capture - version command line option prints library versions too
+  - release - GeoIP 1.6.9, curl 7.52.1, pcap 1.8.1, glib 2.50.2, node 4.6.2
+  - capture - Use inotify directly since glib2 monitor doesn't expose close write
+  - capture - support yara 3.5 (issue #521)
+  - capture - new --op option to set any field (issue #412)
+  - capture - added dontSaveSPI=1 support to tagger/wise to not save SPI data (issue #505)
+  - capture - basic kafka, dropbox-lan-sync detection
+  - capture - new scrubspi plugin
+  - viewer - Apply user setting timezone
+  - viewer - Add "EXISTS!" to search expression typeahead results
+  - viewer - split session spi data and pcap loading into two apis
+
+0.16.1 2016/11/28
   - NOTICE: db.pl upgrade is required
   - capture - out-of-order and acked-unseen-segment tags
   - capture - initial pppoe support (issue #536)
@@ -6,6 +72,14 @@
   - db - new duplicate firstPacket, lastPacket, ipSrc, ipDst, portSrc, portSrc to
          make Kibana work better with moloch data.
   - db - fix info command
+  - viewer - don't crash if we can't decode, still might not decode well though (issue #522)
+  - wise - threatstream sql capture importId and handle stripping hostname for lookups
+  - capture - new pcapReadMethod of tpacketv3 on linux
+  - capture - new option magicMode: libmagic, libmagicnotext, molochmagic, basic, none
+  - capture - The tpacketv3, libpcap* pcapReadMethod now batch packets before adding
+              to packet queues to reduce mutex lock contention
+  - wise - Support dos format tagger files
+  - capture - basic tacacs, flash-policy detection
 
 0.16.0 2016/10/14
   - NOTICE: Requires node v4.x (development done with v4.6.0).  If upgrading, remove the

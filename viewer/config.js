@@ -119,6 +119,22 @@ if (internals.config["default"] === undefined) {
   process.exit(1);
 }
 
+exports.sectionGet = function(section, key, defaultValue) {
+  var value;
+
+  if (internals.config[section] && internals.config[section][key] !== undefined ) {
+    value = internals.config[section][key];
+  } else {
+    value = defaultValue;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return value;
+}
+
 exports.getFull = function(node, key, defaultValue) {
   var value;
   if (internals.config[node] && internals.config[node][key] !== undefined ) {

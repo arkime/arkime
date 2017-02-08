@@ -1,0 +1,165 @@
+ul.nav.nav-pills.margined-bottom-xlg
+  if (session.ro)
+    li.cursor-pointer
+      a(ng-click='$ctrl.allSessions(' + '"' + session.ro + '"' + ', ' + session.fp + ')') All Sessions
+    li.cursor-pointer
+      a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
+    li.cursor-pointer
+      a(href=session.no + '/entirePcap/' + session.ro + '.pcap', target="_blank") Download Entire Pcap
+  else
+    li.cursor-pointer
+      a(href=session.no + '/pcap/' + session.id + '.pcap', target="_blank") Download Pcap
+  li.cursor-pointer
+    a(href=session.no + '/raw/' + session.id + '?type=src', target="_blank") Source Raw
+  li.cursor-pointer
+    a(href=session.no + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
+  li.cursor-pointer
+    a(href='app?expression=id=' + session.id + '&startTime=' + session.fp + '&stopTime=' + session.lp + '&openAll=1') Permalink
+  li.cursor-pointer.dropdown
+    a(data-toggle="dropdown", role="button") Actions &nbsp;
+      span.fa.fa-caret-down
+    ul.dropdown-menu.session-actions-menu
+
+div.form-container
+
+dl
+  dt Id:
+  dd
+    +clickableValue('id', session.id, true)
+    if (session.ro)
+      strong.margined-left-xxxxlg Root Id:
+      +clickableValue('rootId', session.ro, true)
+    else
+      | &nbsp;
+
+  +arrayList(session, "prot-term", "Protocols:", "protocols")
+
+  dt Start:
+  dd
+    + clickableValue('stoptime', session.lp, false, true)
+    strong.margined-left-xxxxlg Stop:
+    + clickableValue('stoptime', session.lp, false, true)
+
+    strong.margined-left-xxxxlg Node:
+    +clickableValue('node', session.no, true)
+
+    strong.margined-left-lg IP Protocol:
+    +clickableValue('ip.protocol', session.pr)
+
+  +arrayList(session, "user", "Users", "user", null, null, true)
+  +arrayList(session, "asset-term", "Assets", "asset")
+
+  if (session.by1 || session.by2)
+    dt Src:
+    dd
+      strong.medium Packets
+      +clickableValue('packets.src', session.pa1)
+
+      strong.medium Bytes
+      +clickableValue('bytes.src', session.by1)
+
+      strong.medium Databytes
+      +clickableValue('databytes.src', session.db1)
+
+      strong Dst:
+      strong.medium.margined-left Packets
+      +clickableValue('packets.dst', session.pa2)
+
+      strong.medium Bytes
+      +clickableValue('bytes.dst', session.by2)
+
+      strong.medium Databytes
+      +clickableValue('databytes.dst', session.db2)
+
+  if (session["mac1-term"])
+    dt Ethernet:
+    dd
+      strong.medium Src Mac
+      +arrayPrint(session, "mac1-term", "mac.src", true)
+
+      strong.medium Dst Mac
+      +arrayPrint(session, "mac2-term", "mac.dst", true)
+
+      if (session.vlan)
+        strong.medium VLan
+        +arrayPrint(session, "vlan", "vlan")
+
+  dt Src IP/Port:
+  dd
+    if (session['tipv61-term'])
+      +ipPrint6(session['tipv61-term'], session.p1, session.g1, session.as1, session.rir1, "src")
+    else
+      +ipPrint(session.a1, session.p1, session.g1, session.as1, session.rir1, "src")
+
+  dt Dst IP/Port:
+  dd
+    if (session['tipv62-term'])
+      +ipPrint6(session['tipv62-term'], session.p2, session.g2, session.as2, session.rir2, "dst")
+    else
+      +ipPrint(session.a2, session.p2, session.g2, session.as2, session.rir2, "dst")
+
+  if (session.fb1 || session.fb2)
+    dt Payload8:
+    dd
+      if (session.fb1)
+        strong.medium.margined-left Src
+        - var fb1a = new Buffer(session.fb1, "hex").toString();
+        +clickableValue('payload8.src.hex', session.fb1, true, false)
+        | (
+        +clickableValue('payload8.src.utf8', fb1a, true, false)
+        |)
+
+      if (session.fb2)
+        strong.medium.margined-left Dst
+        - var fb2a = new Buffer(session.fb2, "hex").toString();
+        +clickableValue('payload8.dst.hex', session.fb2, true, false)
+        | (
+        +clickableValue('payload8.dst.utf8', fb2a, true, false)
+        |)
+
+  div.tag-list
+    +arrayList(session, "ta", "Tags:", "tags", '<div ng-click="displayFormContainer({form:\'add:tags\'})" uib-tooltip="Add a new tag to this session" class="btn btn-xs btn-blue margined-left-sm"><span class="fa fa-plus-circle"></span> </div>')
+
+  if (session.fs && session.fs.length > 0)
+    +arrayList(session, "fs", "Files:", "file")
+
+  if (session.scrubby)
+    dt Scrubbed:
+    dd By Moloch user #{session.scrubby} at #{new Date(session.scrubat)}
+
+  if (session.socksip)
+    dt Socks Dst:
+    dd
+      +ipPrint(session.socksip, session.sockspo, session.gsocksip, session.assocksip, session.rirsocksip, "socks")
+
+  if (session.greip)
+    +ipArrayList(session, "greip", "GRE IPs", "gre.ip")
+
+  if (session.socksho)
+    dt Socks Dst:
+    dd
+      +clickableValue('host.socks', session.socksho)
+      | :
+      +clickableValue('port.socks', session.sockspo)
+
+  if (session.socksuser)
+    dt Socks User:
+    dd
+      +clickableValue('socks.user', session.socksuser)
+  if (session.tcpflags)
+    dt TCP Flags
+    dd
+      strong.medium.margined-left SYN
+      +clickableValue('tcpflags.syn', session.tcpflags.syn)
+      strong.medium.margined-left SYN-ACK
+      +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
+      strong.medium.margined-left ACK
+      +clickableValue('tcpflags.ack', session.tcpflags.ack)
+      strong.medium.margined-left PSH
+      +clickableValue('tcpflags.psh', session.tcpflags.psh)
+      strong.medium.margined-left RST
+      +clickableValue('tcpflags.rst', session.tcpflags.rst)
+      strong.medium.margined-left FIN
+      +clickableValue('tcpflags.fin', session.tcpflags.fin)
+      strong.medium.margined-left URG
+      +clickableValue('tcpflags.urg', session.tcpflags.urg)

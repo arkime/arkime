@@ -1,6 +1,6 @@
 /* main.c  -- Initialization of components
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -63,6 +63,7 @@ static GOptionEntry entries[] =
     { "recursive",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,         &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
+    { "op",          0,                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraOps,      "FieldExpr=Value to set on all session, can be used multiple times", NULL},
     { "version",   'v',                    0, G_OPTION_ARG_NONE,           &showVersion,          "Show version number", NULL },
     { "debug",     'd', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,       moloch_debug_flag,     "Turn on all debugging", NULL },
     { "quiet",     'q',                    0, G_OPTION_ARG_NONE,           &config.quiet,         "Turn off regular logging", NULL },
@@ -88,12 +89,18 @@ void free_args()
         g_strfreev(config.pcapReadDirs);
     if (config.extraTags)
         g_strfreev(config.extraTags);
+    if (config.extraOps)
+        g_strfreev(config.extraOps);
 }
 /******************************************************************************/
 void parse_args(int argc, char **argv)
 {
     GError *error = NULL;
     GOptionContext *context;
+
+    extern char *curl_version(void);
+    extern char *pcre_version(void);
+    extern char *GeoIP_lib_version(void);
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
@@ -112,8 +119,26 @@ void parse_args(int argc, char **argv)
 
     if (showVersion) {
         printf("moloch-capture %s session size=%zd packet size=%zd\n", PACKAGE_VERSION, sizeof(MolochSession_t), sizeof(MolochPacket_t));
+        printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
+        printf("libpcap: %s\n", pcap_lib_version());
+        printf("curl: %s\n", curl_version());
+        printf("pcre: %s\n", pcre_version());
+        //printf("magic: %d\n", magic_version());
+        printf("yara: %s\n", moloch_yara_version());
+        printf("GeoIP: %s\n", GeoIP_lib_version());
+
         exit(0);
     }
+
+    if (glib_major_version !=  GLIB_MAJOR_VERSION ||
+        glib_minor_version !=  GLIB_MINOR_VERSION ||
+        glib_micro_version !=  GLIB_MICRO_VERSION) {
+
+        LOG("WARNING - gilb compiled %d.%d.%d vs linked %d.%d.%d",
+                GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION,
+                glib_major_version, glib_minor_version, glib_micro_version);
+    }
+
 
     if (!config.nodeName) {
         config.nodeName = g_malloc(256);
@@ -167,7 +192,7 @@ void parse_args(int argc, char **argv)
     }
 
     if (config.pcapMonitor && !config.pcapReadDirs)  {
-        printf("Must specify directories to monitor\n");
+        printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
 }
@@ -240,12 +265,11 @@ char *moloch_js0n_get_str(unsigned char *data, uint32_t len, char *key)
 const char *moloch_memstr(const char *haystack, int haysize, const char *needle, int needlesize)
 {
     const char *p;
-    const char *end = haystack + haysize - needlesize;
-
-    for (p = haystack; p <= end; p++)
-    {
-        if (p[0] == needle[0] && memcmp(p+1, needle+1, needlesize-1) == 0)
+    while (haysize >= needlesize && (p = memchr(haystack, *needle, haysize - needlesize + 1))) {
+        if (memcmp(p, needle, needlesize) == 0)
             return p;
+        haysize -= (p - haystack + 1);
+        haystack = p+1;
     }
     return NULL;
 }
@@ -598,6 +622,7 @@ int main(int argc, char **argv)
     moloch_db_init();
     moloch_packet_init();
     moloch_config_load_local_ips();
+    moloch_config_load_packet_ips();
     moloch_yara_init();
     moloch_parsers_init();
     moloch_session_init();

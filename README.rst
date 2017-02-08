@@ -68,7 +68,7 @@ Moloch is a complex system to build and install. The following are rough guideli
 Installing Elasticsearch
 ------------------------
 
-Recommended version **2.4.0**, Moloch versions since 0.15.0 requires at least 2.1.x
+Recommended version **2.4.4**, Moloch versions since 0.17.0 requires at least 2.4.0.  Elasticsearch 5.x is not recommended for production use yet.
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors and allowing memory locking. 
    On CentOS and others this is done by adding the following to bottom of: 
@@ -81,7 +81,7 @@ Recommended version **2.4.0**, Moloch versions since 0.15.0 requires at least 2.
 
 3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   2.4.0 <https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-0>`_.
+   2.4.4 <https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-4>`_.
 
 4. Uncompress the archive you downloaded.
 
@@ -116,7 +116,7 @@ Recommended version **2.4.0**, Moloch versions since 0.15.0 requires at least 2.
 9. Use ``elasticsearch-head`` to look at your cluster and make sure it is **GREEN**.
 
 10. Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
-    ``db.pl A_ES_HOSTNAME init`` script.
+    ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
 
 11. Check ``elasticsearch-head`` again and make sure it is still **GREEN** and now you should see some of the indexes.
 
@@ -146,18 +146,18 @@ Building Capture
    - Or if you want build yourself, or use some already installed packages then here are the pieces you need:
 
      + `glib-2 <http://ftp.gnome.org/pub/gnome/sources/glib>`_ version 2.40 or
-       higher (2.47.4 is recommended)::
+       higher (2.50.2 is recommended)::
 
-            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.47/glib-2.47.4.tar.xz
-            ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux
+            wget http://ftp.gnome.org/pub/gnome/sources/glib/2.50/glib-2.50.2.tar.xz
+            ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal
 
-     + `yara <http://yara-project.googlecode.com>`_ version 1.6 or higher::
+     + `yara <https://github.com/VirusTotal/yara>`_ version 1.6 or higher::
 
-            wget http://yara-project.googlecode.com/files/yara-1.7.tar.gz
+            wget https://github.com/VirusTotal/yara/archive/v3.5.0.tar.gz -O yara-3.5.0.tar.gz
             ./configure --enable-static
 
      + `MaxMind GeoIP <http://www.maxmind.com/app/c>`_ - The OS version may be recent enough::
-            wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.6.0.tar.gz
+            wget http://www.maxmind.com/download/geoip/api/c/GeoIP-1.6.9.tar.gz
             libtoolize -f # Only some platforms need this
             ./configure --enable-static
 
@@ -191,9 +191,9 @@ Configuration
 
 2. Edit the ``config.ini`` file.
    
-3. In the ``viewer`` directory, run ``addUser.js`` to add users. Pass the ``-admin`` flag if you want admin users that can edit users from the web site. This is a good test if ``elasticsearch`` and ``config.ini`` are setup correctly::
+3. In the ``viewer`` directory, run ``addUser.js`` to add users. Pass the ``--admin`` flag if you want admin users that can edit users from the web site. This is a good test if ``elasticsearch`` and ``config.ini`` are setup correctly::
 
-    node addUser.js <userid> "<Friendly Name>" <password>
+    node addUser.js <userid> "<Friendly Name>" <password> [--admin]
 
 4. Edit the ``db/daily.sh`` script, and set it up in the crontab on one
    machine.

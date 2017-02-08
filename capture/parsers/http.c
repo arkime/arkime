@@ -34,6 +34,7 @@ typedef struct {
     http_parser      parsers[2];
 
     GChecksum       *checksum[2];
+    const char      *magicString[2];
 
     uint16_t         wParsers:2;
     uint16_t         inHeader:2;
@@ -80,6 +81,7 @@ moloch_hp_cb_on_message_begin (http_parser *parser)
     LOG("HTTPDEBUG: which: %d", http->which);
 #endif
 
+    http->magicString[http->which] = NULL;
     http->inHeader &= ~(1 << http->which);
     http->inValue  &= ~(1 << http->which);
     http->inBody   &= ~(1 << http->which);
@@ -128,7 +130,7 @@ moloch_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
             moloch_session_add_tag(session, "http:password");
         }
 
-        moloch_parsers_magic(session, magicField, at, length);
+        http->magicString[http->which] = moloch_parsers_magic(session, magicField, at, length);
         http->inBody |= (1 << http->which);
     }
 
@@ -210,7 +212,7 @@ moloch_hp_cb_on_message_complete (http_parser *parser)
 
     if (http->inBody & (1 << http->which)) {
         const char *md5 = g_checksum_get_string(http->checksum[http->which]);
-        moloch_field_string_add(md5Field, session, (char*)md5, 32, TRUE);
+        moloch_field_string_uw_add(md5Field, session, (char*)md5, 32, (gpointer)http->magicString[http->which], TRUE);
     }
 
     return 0;
@@ -818,6 +820,8 @@ static const char *method_strings[] =
     for (i = 0; method_strings[i]; i++) {
         moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)method_strings[i], strlen(method_strings[i]), http_classify);
     }
+
+    moloch_parsers_classifier_register_tcp("http", NULL, 0, (unsigned char*)"HTTP", 4, http_classify);
 
     memset(&parserSettings, 0, sizeof(parserSettings));
     parserSettings.on_message_begin = moloch_hp_cb_on_message_begin;

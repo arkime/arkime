@@ -41,6 +41,7 @@ var Config         = require('./config.js'),
     HTTPParser     = process.binding('http_parser').HTTPParser,
     molochversion  = require('./version'),
     http           = require('http'),
+    pug            = require('pug'),
     jade           = require('jade'),
     https          = require('https'),
     EventEmitter   = require('events').EventEmitter,
@@ -124,7 +125,7 @@ var compression = require('compression');
 
 app.enable("jsonp callback");
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 app.locals.molochversion =  molochversion.version;
 app.locals.isIndex = false;
 app.locals.basePath = Config.basePath();
@@ -156,6 +157,12 @@ if (_accesslogfile) {
 app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms',{stream: _stream}));
 app.use(compression());
 app.use(methodOverride());
+
+
+app.use('/font-awesome', express.static(__dirname + '/node_modules/font-awesome', { maxAge: 600 * 1000}));
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap', { maxAge: 600 * 1000}));
+
+
 app.use("/", express.static(__dirname + '/public', { maxAge: 600 * 1000}));
 if (Config.get("passwordSecret")) {
   app.locals.alwaysShowESStatus = false;
@@ -229,6 +236,7 @@ if (Config.get("passwordSecret")) {
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   app.locals.alwaysShowESStatus = true;
+  app.locals.noPasswordSecret   = true;
   app.use(function(req, res, next) {
     req.user = {userId: "anonymous", enabled: true, createEnabled: Config.get("regressionTests", false), webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, settings: {}};
     Db.getUserCache("anonymous", function(err, suser) {
@@ -312,6 +320,16 @@ function twoDigitString(value) {
   return (value < 10) ? ("0" + value) : value.toString();
 }
 
+function queryValueToArray(val) {
+  if (val === undefined || val === null) {
+    return [];
+  }
+  if (!Array.isArray(val)) {
+    val = [val];
+  }
+  return val.join(",").split(",");
+}
+
 var FMEnum = Object.freeze({other: 0, ip: 1, tags: 2, hh: 3});
 function fmenum(field) {
   var fieldsMap = Config.getFieldsMap();
@@ -351,37 +369,23 @@ function dot2value(obj, str) {
       return str.split(".").reduce(function(o, x) { return o[x]; }, obj);
 }
 
-function createSessionDetail() {
+function createSessionDetailOld() {
   var found = {};
-  var dirs;
+  var dirs = [];
 
-  dirs = Config.get("pluginsDir", "/data/moloch/plugins");
-  if (dirs) {
-    dirs.split(';').forEach(function(dir) {
-      try {
-        var files = fs.readdirSync(dir);
-        files.forEach(function(file) {
-          if (file.match(/\.detail\.jade$/i) && !found["plugin-" + file]) {
-            found[file] = "  include " + dir + "/" + file + "\n";
-          }
-        });
-      } catch (e) {}
-    });
-  }
+  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
+  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
 
-  dirs = Config.get("parsersDir", "/data/moloch/parsers");
-  if (dirs) {
-    dirs.split(';').forEach(function(dir) {
-      try {
-        var files = fs.readdirSync(dir);
-        files.forEach(function(file) {
-          if (file.match(/\.detail\.jade$/i) && !found["parser-" + file]) {
-            found[file] = "  include " + dir + "/" + file + "\n";
-          }
-        });
-      } catch (e) {}
-    });
-  }
+  dirs.forEach(function(dir) {
+    try {
+      var files = fs.readdirSync(dir);
+      files.forEach(function(file) {
+        if (file.match(/\.detail\.jade$/i) && !found[file]) {
+          found[file] = "  include " + dir + "/" + file + "\n";
+        }
+      });
+    } catch (e) {}
+  });
 
   var makers = internals.pluginEmitter.listeners("makeSessionDetail");
   async.each(makers, function(cb, nextCb) {
@@ -392,15 +396,67 @@ function createSessionDetail() {
       return nextCb();
     });
   }, function () {
-    internals.sessionDetail =    "include views/mixins\n" +
-                                 "div.sessionDetail(sessionid='#{session.id}')\n" +
-                                 "  include views/sessionDetail-standard\n";
+    internals.sessionDetailOld =    "include views/mixins.jade\n" +
+                                    "div.sessionDetail(sessionid='#{session.id}')\n" +
+                                    "  include views/sessionDetail-standard.jade\n";
     Object.keys(found).sort().forEach(function(k) {
-      internals.sessionDetail += found[k];
+      internals.sessionDetailOld += found[k];
     });
-    internals.sessionDetail +=   "  include views/sessionDetail-body\n";
-    internals.sessionDetail +=   "include views/sessionDetail-footer\n";
+    internals.sessionDetailOld +=   "  include views/sessionDetail-body.jade\n";
+    internals.sessionDetailOld +=   "include views/sessionDetail-footer.jade\n";
   });
+}
+
+function createSessionDetailNew() {
+  var found = {};
+  var dirs = [];
+
+  dirs = dirs.concat(Config.get("pluginsDir", "/data/moloch/plugins").split(';'));
+  dirs = dirs.concat(Config.get("parsersDir", "/data/moloch/parsers").split(';'));
+
+  dirs.forEach(function(dir) {
+    try {
+      var files = fs.readdirSync(dir);
+      // sort().reverse() so in this dir pug is processed before jade
+      files.sort().reverse().forEach(function(file) {
+        if (found[file]) {
+          return;
+        }
+        if (file.match(/\.detail\.jade$/i)) {
+          found[file] = fs.readFileSync(dir + "/" + file, 'utf8').replace(/^/mg, "  ") + "\n";
+        } else if (file.match(/\.detail\.pug$/i)) {
+          found[file] = "  include " + dir + "/" + file + "\n";
+        }
+      });
+    } catch (e) {}
+  });
+
+  var makers = internals.pluginEmitter.listeners("makeSessionDetail");
+  async.each(makers, function(cb, nextCb) {
+    cb(function (err, items) {
+      for (var k in items) {
+        found[k] = items[k].replace(/^/mg, "  ") + "\n";
+      }
+      return nextCb();
+    });
+  }, function () {
+    internals.sessionDetailNew = "include views/mixins.pug\n" +
+                                 "div.sessionDetail(sessionid=session.id)\n" +
+                                 "  include views/sessionDetail\n";
+    Object.keys(found).sort().forEach(function(k) {
+      internals.sessionDetailNew += found[k];
+    });
+
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, "h4")
+                                                           .replace(/dl.sessionDetailMeta/g, "dl")
+                                                           .replace(/a.moloch-right-click.*molochexpr='([^']+)'.*#{(.*)}/g, "+clickableValue('$1', $2)")
+                                                           ;
+  });
+}
+
+function createSessionDetail() {
+  createSessionDetailOld();
+  createSessionDetailNew();
 }
 
 function createRightClicks() {
@@ -625,6 +681,27 @@ function checkToken(req, res, next) {
   return next();
 }
 
+function checkCookieToken(req, res, next) {
+  function error(text) {
+    res.status(500);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (!req.headers['x-moloch-cookie']) {
+    return error('Missing token');
+  }
+
+  req.token = Config.auth2obj(req.headers['x-moloch-cookie']);
+  var diff = Math.abs(Date.now() - req.token.date);
+  if (diff > 2400000 || req.token.pid !== process.pid ||
+      req.token.userId !== req.user.userId) {
+    console.trace('bad token', req.token);
+    return error('Timeout - Please try reloading page and repeating the action');
+  }
+
+  return next();
+}
+
 function checkWebEnabled(req, res, next) {
   if (!req.user.webEnabled) {
     return res.send("Moloch Permision Denied");
@@ -635,6 +712,25 @@ function checkWebEnabled(req, res, next) {
 //////////////////////////////////////////////////////////////////////////////////
 //// Pages
 //////////////////////////////////////////////////////////////////////////////////
+
+// APIs disabled in demoMode, needs to be before real callbacks
+if (Config.get('demoMode', false)) {
+  console.log("WARNING - Starting in demo mode, some APIs disabled");
+  app.all(['/settings', '/users'], function(req, res) {
+    return res.send('Disabled in demo mode.');
+  });
+
+  app.get(['/user/settings', '/user/cron'], function(req, res) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
+  });
+
+  app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], function(req, res) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: "Disabled in demo mode."}));
+  });
+}
+
 function makeTitle(req, page) {
   var title = Config.get("titleTemplate", "_cluster_ - _page_ _-view_ _-expression_");
   title = title.replace(/_cluster_/g, internals.clusterName)
@@ -645,7 +741,7 @@ function makeTitle(req, page) {
   return title;
 }
 
-app.get("/", checkWebEnabled, function(req, res) {
+function sessionsOld (req, res) {
   var settings = decode.settings();
   var decodeItems = {};
   for (var key in settings) {
@@ -667,20 +763,37 @@ app.get("/", checkWebEnabled, function(req, res) {
     }
   }
 
-  res.render('index', {
+  res.render('index.jade', {
     user: req.user,
     title: makeTitle(req, 'Sessions'),
     titleLink: 'sessionsLink',
+    helpLink: 'sessions',
     isIndex: true,
     decodeItems: JSON.stringify(decodeItems)
   });
-});
+}
+
+if (Config.get("newUI", false)) {
+  app.get("/", function(req, res) {
+    var question = req.url.indexOf("?");
+    if (question === -1) {
+      res.redirect("app");
+    } else {
+      res.redirect("app" + req.url.substring(question));
+    }
+  });
+  app.get("/sessions", checkWebEnabled, sessionsOld);
+} else {
+  app.get("/", checkWebEnabled, sessionsOld);
+  app.get("/sessions", checkWebEnabled, sessionsOld);
+}
 
 app.get("/spiview", checkWebEnabled, function(req, res) {
-  res.render('spiview', {
+  res.render('spiview.jade', {
     user: req.user,
     title: makeTitle(req, 'SPI View'),
     titleLink: 'spiLink',
+    helpLink: 'spiview',
     isIndex: true,
     reqFields: Config.headers("headers-http-request"),
     resFields: Config.headers("headers-http-response"),
@@ -691,108 +804,52 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
 });
 
 app.get("/spigraph", checkWebEnabled, function(req, res) {
-  res.render('spigraph', {
+  res.render('spigraph.jade', {
     user: req.user,
     title: makeTitle(req, 'SPI Graph'),
     titleLink: 'spigraphLink',
+    helpLink: 'spigraph',
     isIndex: true
   });
 });
 
 app.get("/connections", checkWebEnabled, function(req, res) {
-  res.render('connections', {
+  res.render('connections.jade', {
     user: req.user,
     title: makeTitle(req, 'Connections'),
     titleLink: 'connectionsLink',
+    helpLink: 'connections',
     isIndex: true
   });
 });
 
 app.get("/upload", checkWebEnabled, function(req, res) {
-  res.render('upload', {
+  res.render('upload.jade', {
     user: req.user,
     title: makeTitle(req, 'Upload'),
     titleLink: 'uploadLink',
+    helpLink: 'upload',
     isIndex: false
   });
 });
 
 app.get('/about', checkWebEnabled, function(req, res) {
-  res.render('about', {
-    user: req.user,
-    title: makeTitle(req, 'About'),
-    titleLink: 'aboutLink'
-  });
+  res.redirect("help");
 });
 
-app.get('/files', checkWebEnabled, function(req, res) {
-  res.render('files', {
-    user: req.user,
-    title: makeTitle(req, 'Files'),
-    titleLink: 'filesLink'
-  });
-});
+app.get('/molochclusters', function(req, res) {
+  if(!app.locals.molochClusters) {
+    var molochClusters = Config.configMap("moloch-clusters");
 
-app.get('/users', checkWebEnabled, function(req, res) {
-  res.render('users', {
-    user: req.user,
-    title: makeTitle(req, 'Users'),
-    titleLink: 'usersLink',
-    token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId})
-  });
-});
-
-app.get('/settings', checkWebEnabled, function(req, res) {
-  var actions = [{name: "Tag", value: "tag"}];
-
-  var molochClusters = Config.configMap("moloch-clusters");
-  if (molochClusters) {
-    Object.keys(molochClusters).forEach( function (cluster) {
-      actions.push({name: "Tag & Export to " + molochClusters[cluster].name, value: "forward:" + cluster});
-    });
-  }
-
-  function render(user, cp) {
-    if (user.settings === undefined) {user.settings = {};}
-    Db.search("queries", "query", {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
-      if (data && data.hits && data.hits.hits) {
-        user.queries = {};
-        data.hits.hits.forEach(function(item) {
-          user.queries[item._id] = item._source;
-        });
-      }
-      actions = actions.sort();
-
-      res.render('settings', {
-        user: req.user,
-        suser: user,
-        currentPassword: cp,
-        token: Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId, suserId: user.userId, cp:cp}),
-        title: makeTitle(req, 'Settings'),
-        titleLink: 'settingsLink',
-        actions: actions
-      });
-    });
-  }
-
-  if (Config.get("disableChangePassword", false)) {
-    return res.send("Disabled");
-  }
-
-  if (req.query.userId) {
-    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
-      return res.send("Moloch Permision Denied");
+    if (!molochClusters) {
+      res.status(404);
+      return res.send('Cannot locate right clicks');
     }
-    Db.getUser(req.query.userId, function(err, user) {
-      if (err || !user.found) {
-        console.log("ERROR - /password error", err, user);
-        return res.send("Unknown user");
-      }
-      render(user._source, 0);
-    });
-  } else {
-    render(req.user, 1);
+
+    return res.send(molochClusters);
   }
+
+  return res.send(app.locals.molochClusters);
 });
 
 app.get('/stats', checkWebEnabled, function(req, res) {
@@ -805,17 +862,18 @@ app.get('/stats', checkWebEnabled, function(req, res) {
       nodes.push(hit._id);
     });
     nodes.sort();
-    res.render('stats', {
+    res.render('stats.jade', {
       user: req.user,
       title: makeTitle(req, 'Stats'),
       titleLink: 'statsLink',
+      helpLink: 'stats',
       nodes: nodes
     });
   });
 });
 
 app.get('/:nodeName/statsDetail', checkWebEnabled, function(req, res) {
-  res.render('statsDetail', {
+  res.render('statsDetail.jade', {
     user: req.user,
     nodeName: req.params.nodeName
   });
@@ -837,6 +895,582 @@ app.get('/style.css', function(req, res) {
     });
   });
 });
+
+// angular app pages
+app.get(['/app', '/help', '/settings', '/files'], checkWebEnabled, function(req, res) {
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     { path: app.locals.basePath }
+  );
+
+  res.render('app.pug');
+});
+
+app.get(['/users'], checkWebEnabled, function(req, res) {
+  if (!req.user.createEnabled) {
+    return res.status(404).send("Not found");
+  }
+
+  // send cookie for basic, non admin functions
+  res.cookie(
+     'MOLOCH-COOKIE',
+     Config.obj2auth({date: Date.now(), pid: process.pid, userId: req.user.userId}),
+     { path: app.locals.basePath }
+  );
+
+  res.render('app.pug');
+});
+
+// angular app bundles
+app.get('/app.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js');
+});
+app.get('/vendor.bundle.js', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js');
+});
+
+// source maps
+app.get('/app.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/app.bundle.js.map');
+});
+app.get('/vendor.bundle.js.map', function(req, res) {
+  res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
+});
+
+
+/* User Endpoints ---------------------------------------------------------- */
+// default settings for users with no settings
+var settingDefaults = {
+  timezone      : 'local',
+  detailFormat  : 'last',
+  showTimestamps: 'last',
+  sortColumn    : 'start',
+  sortDirection : 'asc',
+  spiGraph      : 'no',
+  connSrcField  : 'a1',
+  connDstField  : 'ip.dst:port',
+  numPackets    : 'last'
+};
+
+// gets the current user
+app.get('/user/current', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        return res.send(req.user);
+      } else {
+        console.log('/user/current error', err, user);
+        res.status(403);
+        return res.send(JSON.stringify({success: false, text: 'Unknown user'}));
+      }
+    }
+
+    var userProps = ['createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'headerAuthEnabled', 'settings', 'userId', 'webEnabled'];
+
+    var clone     = {};
+    var source    = user._source;
+
+    for (var i = 0, len = userProps.length; i < len; ++i) {
+      var prop = userProps[i];
+      if (source.hasOwnProperty(prop)) {
+        clone[prop] = source[prop];
+      }
+    }
+
+    // send default settings if user doesn't have settings
+    if (Object.keys(clone.settings).length === 0) {
+      clone.settings = settingDefaults;
+    }
+
+    return res.send(clone);
+  });
+});
+
+// gets a user's settings
+app.get('/user/settings', function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to get another user's settings without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  Db.getUserCache(userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's settings
+        return res.send('{}');
+      } else {
+        console.log('Unknown user', err, user);
+        return error(404, 'User not found');
+      }
+    }
+
+    var settings = user._source.settings || settingDefaults;
+
+    return res.send(settings);
+  });
+});
+
+// updates a user's settings
+app.post('/user/settings/update', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update another user's settings without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/settings/update failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.settings = req.body;
+    delete user.settings.token;
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/settings/update error', err, info);
+        return error(500, 'Settings update failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated settings successfully'
+      }));
+    });
+  });
+});
+
+// gets a user's views
+app.get('/user/views', function(req, res) {
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to get another user's views without admin privilege
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: 'Need admin privileges'}));
+  }
+
+  Db.getUserCache(userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's views
+        return res.send('{}');
+      } else {
+        console.log('Unknown user', err, user);
+        return res.send('{}');
+      }
+    }
+
+    var views = user._source.views || {};
+
+    return res.send(views);
+  });
+});
+
+// creates a new view for a user
+app.post('/user/views/create', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a view for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.viewName)   { return error(403, 'Missing view name'); }
+  if (!req.body.expression) { return error(403, 'Missing view expression'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/create failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    var container = user.views;
+    if (req.body.groupName) {
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+      if (!user.views._groups) {
+        user.views._groups = {};
+      }
+      if (!user.views._groups[req.body.groupName]) {
+        user.views._groups[req.body.groupName] = {};
+      }
+      container = user.views._groups[req.body.groupName];
+    }
+    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (container[req.body.viewName]) {
+      container[req.body.viewName].expression = req.body.expression;
+    } else {
+      container[req.body.viewName] = {expression: req.body.expression};
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/create error', err, info);
+        return error(500, 'Create view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created view successfully'
+      }));
+    });
+  });
+});
+
+// deletes a user's specified view
+app.post('/user/views/delete', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete another user's view without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.view) { return error(403, 'Missing view'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/delete failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    delete user.views[req.body.view];
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/delete failed', err, info);
+        return error(500, 'Delete view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted view successfully'
+      }));
+    });
+  });
+});
+
+// updates a user's specified view
+app.post('/user/views/update', function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update another user's view without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name)       { return error(403, 'Missing view name'); }
+  if (!req.body.expression) { return error(403, 'Missing view expression'); }
+  if (!req.body.key)        { return error(403, 'Missing view key'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/views/update failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    var container = user.views;
+    if (req.body.groupName) {
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, '');
+      if (!user.views._groups) {
+        user.views._groups = {};
+      }
+      if (!user.views._groups[req.body.groupName]) {
+        user.views._groups[req.body.groupName] = {};
+      }
+      container = user.views._groups[req.body.groupName];
+    }
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+    if (container[req.body.name]) {
+      container[req.body.name].expression = req.body.expression;
+    } else {
+      container[req.body.name] = {expression: req.body.expression};
+    }
+
+    // delete the old one if the key (view name) has changed
+    if (user.views[req.body.key] && req.body.name !== req.body.key) {
+      user.views[req.body.key] = null;
+      delete user.views[req.body.key];
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/views/update error', err, info);
+        return error(500, 'Updating view failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated view successfully',
+        views   : user.views
+      }));
+    });
+  });
+});
+
+// gets a user's cron queries
+app.get('/user/cron', function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  function sendCronQueries(user, cp) {
+    if (user.settings === undefined) {user.settings = {};}
+    Db.search('queries', 'query', {size:1000, query: {term: {creator: user.userId}}}, function (err, data) {
+      if (err || data.error) {
+        console.log('/user/cron error', err || data.error);
+      }
+
+      let queries = {};
+
+      if (data && data.hits && data.hits.hits) {
+        user.queries = {};
+        data.hits.hits.forEach(function(item) {
+          queries[item._id] = item._source;
+        });
+      }
+
+      res.send(queries);
+    });
+  }
+
+  if (req.query.userId) {
+    if (!req.user.createEnabled && req.query.userId !== req.user.userId) {
+      // user is trying to get another user's cron queries without admin privilege
+      return error('Need admin privileges');
+    }
+    Db.getUser(req.query.userId, function(err, user) {
+      if (err || !user.found) {
+        console.log('/user/cron error', err, user);
+        return error('Unknown user');
+      }
+      sendCronQueries(user._source, 0);
+    });
+  } else {
+    sendCronQueries(req.user, 1);
+  }
+});
+
+// creates a new cron query for a user
+app.post('/user/cron/create', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a cron query for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name)   { return error(403, 'Missing cron query name'); }
+  if (!req.body.query)  { return error(403, 'Missing cron query expression'); }
+  if (!req.body.action) { return error(403, 'Missing cron query action'); }
+  if (!req.body.tags)   { return error(403, 'Missing cron query tag(s)'); }
+
+  var document = {
+    doc: {
+      enabled : true,
+      name    : req.body.name,
+      query   : req.body.query,
+      tags    : req.body.tags,
+      action  : req.body.action
+    }
+  };
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  if (req.body.since === '-1') {
+    document.doc.lpValue =  document.doc.lastRun = 0;
+  } else {
+    document.doc.lpValue =  document.doc.lastRun =
+       Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || '0', 10);
+  }
+  document.doc.count = 0;
+  document.doc.creator = userId || 'anonymous';
+
+  Db.indexNow('queries', 'query', null, document.doc, function(err, info) {
+    if (err) {
+      console.log('/user/cron/create error', err, info);
+      return error(500, 'Create cron query failed');
+    }
+    if (Config.get('cronQueries', false)) {
+      processCronQueries();
+    }
+    return res.send(JSON.stringify({
+      success : true,
+      text    : 'Created cron query successfully',
+      key     : info._id
+    }));
+  });
+});
+
+// deletes a user's specified cron query
+app.post('/user/cron/delete', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete a cron query for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.key) { return error(403, 'Missing cron query key'); }
+
+  Db.deleteDocument('queries', 'query', req.body.key, {refresh: 1}, function(err, sq) {
+    if (err) {
+      console.log('/user/cron/delete error', err, info);
+      return error(500, 'Delete cron query failed');
+    }
+    res.send(JSON.stringify({
+      success : true,
+      text    : 'Deleted cron query successfully'
+    }));
+  });
+});
+
+// updates a user's specified cron query
+app.post('/user/cron/update', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to update a cron query for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.key)    { return error(403, 'Missing cron query key'); }
+  if (!req.body.name)   { return error(403, 'Missing cron query name'); }
+  if (!req.body.query)  { return error(403, 'Missing cron query expression'); }
+  if (!req.body.action) { return error(403, 'Missing cron query action'); }
+  if (!req.body.tags)   { return error(403, 'Missing cron query tag(s)'); }
+
+  var document = {
+    doc: {
+      enabled : req.body.enabled,
+      name    : req.body.name,
+      query   : req.body.query,
+      tags    : req.body.tags,
+      action  : req.body.action
+    }
+  };
+
+  Db.get('queries', 'query', req.body.key, function(err, sq) {
+    if (err || !sq.found) {
+      console.log('/user/cron/update failed', err, sq);
+      return error(403, 'Unknown query');
+    }
+
+    Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
+      if (err) {
+        console.log('/user/cron/update error', err, document, data);
+        return error(500, 'Cron query update failed');
+      }
+      if (Config.get('cronQueries', false)) {
+        processCronQueries();
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Updated cron query successfully'
+      }));
+    });
+  });
+});
+
+// changes a user's password
+app.post('/user/password/change', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to change password for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.newPassword || req.body.newPassword.length < 3) {
+    return error(403, 'New password needs to be at least 3 characters');
+  }
+
+  if (!req.query.userId && (req.user.passStore !==
+     Config.pass2store(req.token.userId, req.body.currentPassword) ||
+     req.token.userId !== req.user.userId)) {
+    return error(403, 'Current password mismatch');
+  }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/password/change error', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/password/change error', err, info);
+        return error(500, 'Update failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Changed password successfully'
+      }));
+    });
+  });
+});
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //// EXPIRING
@@ -970,6 +1604,7 @@ function expireCheckAll () {
 //// Sessions Query
 //////////////////////////////////////////////////////////////////////////////////
 function addSortToQuery(query, info, d, missing) {
+
   function addSortDefault() {
     if (d) {
       if (!query.sort) {
@@ -983,7 +1618,6 @@ function addSortToQuery(query, info, d, missing) {
       query.sort.push(obj);
     }
   }
-
 
   if (!info) {
     addSortDefault();
@@ -1177,13 +1811,17 @@ function buildSessionQuery(req, buildCb) {
 
   var query = {from: req.query.start || req.query.iDisplayStart || 0,
                size: limit,
-               query: {filtered: {query: {}}}
+               query: {bool: {filter: []}}
               };
 
+  if (req.query.strictly === "true") {
+    req.query.bounding = "both";
+  }
+
   var interval;
-  if (req.query.date && req.query.date === '-1') {
+  if ((req.query.date && req.query.date === '-1') ||
+      (req.query.segments && req.query.segments === "all")) {
     interval = 60*60; // Hour to be safe
-    query.query.filtered.query.match_all = {};
   } else if (req.query.startTime && req.query.stopTime) {
     if (! /^[0-9]+$/.test(req.query.startTime)) {
       req.query.startTime = Date.parse(req.query.startTime.replace("+", " "))/1000;
@@ -1196,10 +1834,26 @@ function buildSessionQuery(req, buildCb) {
     } else {
       req.query.stopTime = parseInt(req.query.stopTime, 10);
     }
-    if (req.query.strictly === "true") {
-      query.query.filtered.query.bool = {must: [{range: {fp: {gte: req.query.startTime}}}, {range: {lp: {lte: req.query.stopTime}}}]};
-    } else {
-      query.query.filtered.query.range = {lp: {gte: req.query.startTime, lte: req.query.stopTime}};
+
+    switch (req.query.bounding) {
+    case "first":
+      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      break;
+    case "last":
+    default:
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime, lte: req.query.stopTime}}});
+      break;
+    case "both":
+      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
+      query.query.bool.filter.push({range: {lp: {lte: req.query.stopTime}}});
+      break;
+    case "either":
+      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      break;
+    case "database":
+      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000, lte: req.query.stopTime*1000}}});
+      break;
     }
 
     var diff = req.query.stopTime - req.query.startTime;
@@ -1216,7 +1870,25 @@ function buildSessionQuery(req, buildCb) {
     }
     req.query.startTime = (Math.floor(Date.now() / 1000) - 60*60*parseInt(req.query.date, 10));
     req.query.stopTime = Date.now()/1000;
-    query.query.filtered.query.range = {lp: {from: req.query.startTime}};
+
+    switch (req.query.bounding) {
+    case "first":
+      query.query.bool.filter.push({range: {fp: {gte: req.query.startTime}}});
+      break;
+    case "both":
+    case "last":
+    default:
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      break;
+    case "either":
+      query.query.bool.filter.push({range: {fp: {lte: req.query.stopTime}}});
+      query.query.bool.filter.push({range: {lp: {gte: req.query.startTime}}});
+      break;
+    case "database":
+      query.query.bool.filter.push({range: {timestamp: {gte: req.query.startTime*1000}}});
+      break;
+    }
+
     if (req.query.date <= 5*24) {
       interval = 60; // minute
     } else {
@@ -1224,11 +1896,22 @@ function buildSessionQuery(req, buildCb) {
     }
   }
 
+
   if (req.query.facets) {
     query.aggregations = {mapG1: {terms: {field: "g1", size:1000, min_doc_count:1}},
-                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}},
-                        dbHisto: {histogram : {field: "lp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}}
+                          mapG2: {terms: {field: "g2", size:1000, min_doc_count:1}}
                  };
+    switch (req.query.bounding) {
+    case "first":
+      query.aggregations.dbHisto = {histogram : {field: "fp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      break;
+    case "database":
+      query.aggregations.dbHisto = {histogram : {field: "timestamp", interval: interval*1000, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      break;
+    default:
+      query.aggregations.dbHisto = {histogram : {field: "lp", interval: interval, min_doc_count:1}, aggregations: {db : {sum: {field:"db"}}, pa: {sum: {field:"pa"}}}};
+      break;
+    }
   }
 
   addSortToQuery(query, req.query, "fp");
@@ -1240,7 +1923,7 @@ function buildSessionQuery(req, buildCb) {
   if (req.query.expression) {
     //req.query.expression = req.query.expression.replace(/\\/g, "\\\\");
     try {
-      query.query.filtered.filter = molochparser.parse(req.query.expression);
+      query.query.bool.filter.push(molochparser.parse(req.query.expression));
     } catch (e) {
       err = e;
     }
@@ -1249,11 +1932,7 @@ function buildSessionQuery(req, buildCb) {
   if (!err && req.query.view && req.user.views && req.user.views[req.query.view]) {
     try {
       var viewExpression = molochparser.parse(req.user.views[req.query.view].expression);
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = viewExpression;
-      } else {
-        query.query.filtered.filter = {bool: {must: [viewExpression, query.query.filtered.filter]}};
-      }
+      query.query.bool.filter.push(viewExpression);
     } catch (e) {
       console.log("ERR - User expression doesn't compile", req.user.views[req.query.view], e);
       err = e;
@@ -1265,18 +1944,14 @@ function buildSessionQuery(req, buildCb) {
       // Expression was set by admin, so assume email search ok
       molochparser.parser.yy.emailSearch = true;
       var userExpression = molochparser.parse(req.user.expression);
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = userExpression;
-      } else {
-        query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
-      }
+      query.query.bool.filter.push(userExpression);
     } catch (e) {
       console.log("ERR - Forced expression doesn't compile", req.user.expression, e);
       err = e;
     }
   }
 
-  lookupQueryItems(query.query.filtered, function (lerr) {
+  lookupQueryItems(query.query.bool.filter, function (lerr) {
     if (req.query.date && req.query.date === '-1') {
       return buildCb(err || lerr, query, "sessions-*");
     }
@@ -1299,10 +1974,6 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
   });
 
   delete query.aggregations;
-  if (req.query.segments === "all") {
-    indices = "sessions-*";
-    query.query.filtered.query = {match_all: {}};
-  }
 
   // Do a ro search on each item
   var writes = 0;
@@ -1319,7 +1990,7 @@ function sessionsListAddSegments(req, indices, query, list, cb) {
     }
     processedRo[fields.ro] = true;
 
-    query.query.filtered.filter = {term: {ro: fields.ro}};
+    query.query.bool.filter.push({term: {ro: fields.ro}});
 
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
@@ -1368,16 +2039,21 @@ function sessionsListFromIds(req, ids, fields, cb) {
   var nonArrayFields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no", "ro", "tipv61-term", "tipv62-term"];
   var fixFields = nonArrayFields.filter(function(x) {return fields.indexOf(x) !== -1;});
 
+  // ES treats _source=no as turning off _source, very sad :(
+  if (fields.length === 1 && fields[0] === "no") {
+    fields.push("lp");
+  }
+
   async.eachLimit(ids, 10, function(id, nextCb) {
-    Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: fields.join(",")}, function(err, session) {
+    Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: fields.join(",")}, function(err, session) {
       if (err) {
         return nextCb(null);
       }
 
       for (var i = 0; i < fixFields.length; i++) {
         var field = fixFields[i];
-        if (session.fields[field] && Array.isArray(session.fields[field])) {
-          session.fields[field] = session.fields[field][0];
+        if (session._source[field] && Array.isArray(session._source[field])) {
+          session._source[field] = session._source[field][0];
         }
       }
 
@@ -1401,6 +2077,88 @@ function sessionsListFromIds(req, ids, fields, cb) {
 //////////////////////////////////////////////////////////////////////////////////
 //// APIs
 //////////////////////////////////////////////////////////////////////////////////
+app.get('/fields', function(req, res) {
+  if (!app.locals.fieldsMap) {
+    res.status(404);
+    res.send('Cannot locate fields');
+  }
+
+  if (req.query && req.query.array) {
+    res.send(app.locals.fieldsArr)
+  } else {
+    res.send(app.locals.fieldsMap);
+  }
+});
+
+app.get('/file/list', function(req, res) {
+  var columns = ["num", "node", "name", "locked", "first", "filesize"];
+
+  var query = {_source: columns,
+               from: +req.query.start || 0,
+               size: +req.query.length || 10,
+               sort: {}
+
+              };
+
+  query.sort[req.query.sortField || "num"] = { order: req.query.desc === "true" ? "desc": "asc"};
+
+  if (req.query.filter) {
+    query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
+  }
+
+  async.parallel({
+    files: function (cb) {
+      Db.search('files', 'file', query, function(err, result) {
+        var results = {total: result.hits.total, results: []};
+        if (err || result.error) {
+          return cb(err || result.error);
+        }
+
+        for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+          if (fields.locked === undefined) {
+            fields.locked = 0;
+          }
+          fields.id = result.hits.hits[i]._id;
+          results.results.push(fields);
+        }
+        cb(null, results);
+      });
+    },
+    total: function (cb) {
+      Db.numberOfDocuments('files', cb);
+    }
+  },
+  function(err, results) {
+    if (err) {
+      return res.send({recordsTotal: 0, recordsFiltered: 0, data: []});
+    }
+
+    var r = {recordsTotal: results.total,
+             recordsFiltered: results.files.total,
+             data: results.files.results};
+    res.send(r);
+  });
+});
+
+app.get('/titleconfig', checkWebEnabled, function(req, res) {
+  var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
+
+  titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
+    .replace(/_userId_/g, req.user?req.user.userId:"-")
+    .replace(/_userName_/g, req.user?req.user.userName:"-");
+
+  res.send(titleConfig);
+});
+
+app.get('/molochRightClick', checkWebEnabled, function(req, res) {
+  if(!app.locals.molochRightClick) {
+    res.status(404);
+    res.send('Cannot locate right clicks');
+  }
+  res.send(app.locals.molochRightClick);
+});
+
 app.get('/eshealth.json', function(req, res) {
   Db.healthCache(function(err, health) {
     res.send(health);
@@ -1413,7 +2171,7 @@ app.get('/esstats.json', function(req, res) {
 
   async.parallel({
     nodes: function(nodesCb) {
-      Db.nodesStats({jvm: 1, process: 1, fs: 1, search: 1, os: 1}, nodesCb);
+      Db.nodesStats({metric: "jvm,process,fs,os,indices"}, nodesCb);
     },
     health: Db.healthCache
   },
@@ -1436,6 +2194,7 @@ app.get('/esstats.json', function(req, res) {
     var nodes = Object.keys(results.nodes.nodes);
     for (var n = 0, nlen = nodes.length; n < nlen; n++) {
       var node = results.nodes.nodes[nodes[n]];
+
       stats.push({
         name: node.name,
         storeSize: node.indices.store.size_in_bytes,
@@ -1444,30 +2203,11 @@ app.get('/esstats.json', function(req, res) {
         searchesTime: node.indices.search.query_time_in_millis,
         heapSize: node.jvm.mem.heap_used_in_bytes,
         nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
-        cpu: (typeof node.process.cpu !== 'undefined') ? node.process.cpu.percent : 0,
-        read: 0,
-        write: 0,
-        load: (typeof node.os.load_average === 'undefined') ? 0 : Array.isArray(node.os.load_average)?node.os.load_average[0] : node.os.load_average
+        cpu: node.process.cpu.percent,
+        read: node.fs.io_stats !== undefined ? /*ES 5*/ node.fs.io_stats.total.read_kilobytes : /*ES 2*/ 0,
+        write: node.fs.io_stats !== undefined ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
+        load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
-
-      var oldnode = internals.previousNodeStats[0][nodes[n]];
-      if (oldnode) {
-        var olddisk = [0, 0], newdisk = [0, 0];
-        for (var i = 0, ilen = oldnode.fs.data.length; i < ilen; i++) {
-          olddisk[0] += oldnode.fs.data[i].disk_read_size_in_bytes;
-          olddisk[1] += oldnode.fs.data[i].disk_write_size_in_bytes;
-          newdisk[0] += node.fs.data[i].disk_read_size_in_bytes;
-          newdisk[1] += node.fs.data[i].disk_write_size_in_bytes;
-        }
-
-        var read = Math.ceil((newdisk[0] - olddisk[0])/(node.timestamp - oldnode.timestamp));
-        var write = Math.ceil((newdisk[1] - olddisk[1])/(node.timestamp - oldnode.timestamp));
-
-        if (!(isNaN(read) && isNaN(write))) {
-            stats[stats.length-1].read = read;
-            stats[stats.length-1].write = write;
-        }
-      }
     }
 
     results.nodes.nodes.timestamp = new Date().getTime();
@@ -1503,6 +2243,7 @@ app.get('/stats.json', function(req, res) {
     stats: function (cb) {
       Db.search('stats', 'stat', query, function(err, result) {
         if (err || result.error) {
+          console.log("ERROR - stats", query, err || result.error);
           res.send({total: 0, results: []});
         } else {
           var results = {total: result.hits.total, results: []};
@@ -1517,7 +2258,7 @@ app.get('/stats.json', function(req, res) {
              "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
              "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
              "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
-             "deltaFragsDropped", "deltaOverloadDropped"
+             "deltaFragsDropped", "deltaOverloadDropped", "deltaESDropped"
             ].forEach(function(key) {
               fields[key] = fields[key] || 0;
             });
@@ -1529,6 +2270,7 @@ app.get('/stats.json', function(req, res) {
             fields.deltaDroppedPerSec         = Math.floor(fields.deltaDropped * 1000.0/fields.deltaMS);
             fields.deltaFragsDroppedPerSec    = Math.floor(fields.deltaFragsDropped * 1000.0/fields.deltaMS);
             fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0/fields.deltaMS);
+            fields.deltaESDroppedPerSec       = Math.floor(fields.deltaESDropped * 1000.0/fields.deltaMS);
             fields.deltaTotalDroppedPerSec    = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0/fields.deltaMS);
             results.results.push(fields);
           }
@@ -1554,20 +2296,15 @@ app.get('/dstats.json', function(req, res) {
 
   var query = {
                query: {
-                 filtered: {
-                   query: {
-                     match_all: {}
-                   },
-                   filter: {
-                     and: [
-                       {
-                         range: { currentTime: { from: req.query.start, to: req.query.stop } }
-                       },
-                       {
-                         term: { interval: req.query.interval || 60}
-                       }
-                     ]
-                   }
+                 bool: {
+                   filter: [
+                     {
+                       range: { currentTime: { from: req.query.start, to: req.query.stop } }
+                     },
+                     {
+                       term: { interval: req.query.interval || 60}
+                     }
+                   ]
                  }
                }
               };
@@ -1575,31 +2312,35 @@ app.get('/dstats.json', function(req, res) {
   if (req.query.nodeName !== undefined) {
     query.sort = {currentTime: {order: 'desc' }};
     query.size = req.query.size || 1440;
-    query.query.filtered.filter.and.push({term: { nodeName: req.query.nodeName}});
+    query.query.bool.filter.push({term: { nodeName: req.query.nodeName}});
   } else {
     query.size = 100000;
   }
 
   var mapping = {
-    deltaBits: {fields: ["deltaBytes"], func: function (item) {return Math.floor(item.deltaBytes[0] * 8.0);}},
-    deltaTotalDropped: {fields: ["deltaDropped", "deltaOverloadDropped"], func: function (item) {return Math.floor(item.deltaDropped[0] + item.deltaOverloadDropped[0]);}},
-    deltaBytesPerSec: {fields: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes[0] * 1000.0/item.deltaMS[0]);}},
-    deltaBitsPerSec: {fields: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes[0] * 1000.0/item.deltaMS[0] * 8);}},
-    deltaPacketsPerSec: {fields: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets[0] * 1000.0/item.deltaMS[0]);}},
-    deltaSessionsPerSec: {fields: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions[0] * 1000.0/item.deltaMS[0]);}},
-    deltaDroppedPerSec: {fields: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaFragsDroppedPerSec: {fields: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaOverloadDroppedPerSec: {fields: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped[0] * 1000.0/item.deltaMS[0]);}},
-    deltaTotalDroppedPerSec: {fields: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped[0] + item.deltaOverloadDropped[0]) * 1000.0/item.deltaMS[0]);}},
-    cpu: {fields: ["cpu"], func: function (item) {return item.cpu[0] * .01;}}
+    deltaBits: {_source: ["deltaBytes"], func: function (item) {return Math.floor(item.deltaBytes * 8.0);}},
+    deltaTotalDropped: {_source: ["deltaDropped", "deltaOverloadDropped"], func: function (item) {return Math.floor(item.deltaDropped + item.deltaOverloadDropped);}},
+    deltaBytesPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS);}},
+    deltaBitsPerSec: {_source: ["deltaBytes", "deltaMS"], func: function(item) {return Math.floor(item.deltaBytes * 1000.0/item.deltaMS * 8);}},
+    deltaPacketsPerSec: {_source: ["deltaPackets", "deltaMS"], func: function(item) {return Math.floor(item.deltaPackets * 1000.0/item.deltaMS);}},
+    deltaSessionsPerSec: {_source: ["deltaSessions", "deltaMS"], func: function(item) {return Math.floor(item.deltaSessions * 1000.0/item.deltaMS);}},
+    deltaDroppedPerSec: {_source: ["deltaDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaDropped * 1000.0/item.deltaMS);}},
+    deltaFragsDroppedPerSec: {_source: ["deltaFragsDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaFragsDropped * 1000.0/item.deltaMS);}},
+    deltaOverloadDroppedPerSec: {_source: ["deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaOverloadDropped * 1000.0/item.deltaMS);}},
+    deltaESDroppedPerSec: {_source: ["deltaESDropped", "deltaMS"], func: function(item) {return Math.floor(item.deltaESDropped * 1000.0/item.deltaMS);}},
+    deltaTotalDroppedPerSec: {_source: ["deltaDropped", "deltaOverloadDropped", "deltaMS"], func: function(item) {return Math.floor((item.deltaDropped + item.deltaOverloadDropped) * 1000.0/item.deltaMS);}},
+    cpu: {_source: ["cpu"], func: function (item) {return item.cpu * .01;}}
   };
 
-  query.fields = mapping[req.query.name]?mapping[req.query.name].fields:[req.query.name];
-  query.fields.push("nodeName", "currentTime");
+  query._source = mapping[req.query.name]?mapping[req.query.name]._source:[req.query.name];
+  query._source.push("nodeName", "currentTime");
 
-  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name][0]};
+  var func = mapping[req.query.name]?mapping[req.query.name].func:function(item) {return item[req.query.name]};
 
-  Db.searchScroll('dstats', 'dstat', query, {filter_path: "_scroll_id,hits.total,hits.hits.fields"}, function(err, result) {
+  Db.searchScroll('dstats', 'dstat', query, {filter_path: "_scroll_id,hits.total,hits.hits._source"}, function(err, result) {
+    if (err || result.error) {
+      console.log("ERROR - dstats", query, err || result.error);
+    }
     var i, ilen;
     var data = {};
     var num = (req.query.stop - req.query.start)/req.query.step;
@@ -1613,7 +2354,7 @@ app.get('/dstats.json', function(req, res) {
 
     if (result && result.hits && result.hits.hits) {
       for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-        var fields = result.hits.hits[i].fields;
+        var fields = result.hits.hits[i]._source;
         var pos = Math.floor((fields.currentTime - req.query.start)/req.query.step);
 
         if (data[fields.nodeName] === undefined) {
@@ -1649,145 +2390,6 @@ app.get('/:nodeName/:fileNum/filesize.json', function(req, res) {
   });
 });
 
-app.get('/files.json', function(req, res) {
-  noCache(req, res);
-
-  var columns = ["num", "node", "name", "locked", "first", "filesize"];
-
-  var query = {_source: columns,
-               from: +req.query.start || 0,
-               size: +req.query.length || 500
-              };
-
-  if (req.query.filter) {
-    query.query = {wildcard: {name: "*" + req.query.filter + "*"}};
-  }
-
-  addSortToQuery(query, req.query, "num");
-
-  async.parallel({
-    files: function (cb) {
-      Db.search('files', 'file', query, function(err, result) {
-        if (err || result.error) {
-          return cb(err || result.error);
-        }
-
-        var results = {total: result.hits.total, results: []};
-        for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-          if (fields.locked === undefined) {
-            fields.locked = 0;
-          }
-          fields.id = result.hits.hits[i]._id;
-          results.results.push(fields);
-        }
-
-        async.forEach(results.results, function (item, cb) {
-          if (item.filesize && item.filesize !== 0) {
-            return cb(null);
-          }
-
-          isLocalView(item.node, function () {
-            fs.stat(item.name, function (err, stats) {
-              if (err || !stats) {
-                item.filesize = -1;
-              } else {
-                item.filesize = stats.size;
-                if (item.locked) {
-                  Db.updateFileSize(item, stats.size);
-                }
-              }
-              cb(null);
-            });
-          }, function () {
-            item.filesize = -2;
-            cb(null);
-          });
-        }, function (err) {
-          cb(null, results);
-        });
-      });
-    },
-    total: function (cb) {
-      Db.numberOfDocuments('files', cb);
-    }
-  },
-  function(err, results) {
-    if (err) {
-      return res.send({total: 0, results: []});
-    }
-
-    var r = {draw: req.query.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.files.total,
-             data: results.files.results};
-    res.send(r);
-  });
-});
-
-
-internals.usersMissing = {
-  userName: "",
-  enabled: "F",
-  createEnabled: "F",
-  webEnabled: "F",
-  headerAuthEnabled: "F",
-  emailSearch: "F",
-  removeEnabled: "F",
-  expression: ""
-};
-app.post('/users.json', function(req, res) {
-  var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
-
-  var query = {_source: columns,
-               from: +req.body.start || 0,
-               size: +req.body.length
-              };
-
-  if (req.body.filter) {
-    query.query = {bool: {should: [{wildcard: {userName: "*" + req.body.filter + "*"}},
-                                   {wildcard: {userId: "*" + req.body.filter + "*"}}
-                                  ]
-                         }
-                  };
-  }
-
-  addSortToQuery(query, req.body, "userId", internals.usersMissing);
-
-  async.parallel({
-    users: function (cb) {
-      Db.searchUsers(query, function(err, result) {
-        if (err || result.error) {
-          res.send({total: 0, results: []});
-        } else {
-          var results = {total: result.hits.total, results: []};
-          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
-            fields.id = result.hits.hits[i]._id;
-            fields.expression = safeStr(fields.expression || "");
-            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-            fields.emailSearch = fields.emailSearch || false;
-            fields.removeEnabled = fields.removeEnabled || false;
-            fields.userName = safeStr(fields.userName || "");
-            results.results.push(fields);
-          }
-          cb(null, results);
-        }
-      });
-    },
-    total: function (cb) {
-      Db.numberOfUsers(cb);
-    }
-  },
-  function(err, results) {
-    var r = {draw: req.body.draw,
-             recordsTotal: results.total,
-             recordsFiltered: results.users.total,
-             data: results.users.results};
-    res.send(r);
-  });
-});
-
 function mapMerge(aggregations) {
   var map = {src: {}, dst: {}};
   if (!aggregations || !aggregations.mapG1) {
@@ -1819,13 +2421,132 @@ function graphMerge(req, query, aggregations) {
     return graph;
   }
 
-  aggregations.dbHisto.buckets.forEach(function (item) {
-    var key = item.key*1000;
-    graph.lpHisto.push([key, item.doc_count]);
-    graph.paHisto.push([key, item.pa.value]);
-    graph.dbHisto.push([key, item.db.value]);
-  });
+  if (req.query.bounding === "database") {
+    graph.interval = query.aggregations?(query.aggregations.dbHisto.histogram.interval/1000) || 60 : 60;
+    aggregations.dbHisto.buckets.forEach(function (item) {
+      var key = item.key;
+      graph.lpHisto.push([key, item.doc_count]);
+      graph.paHisto.push([key, item.pa.value]);
+      graph.dbHisto.push([key, item.db.value]);
+    });
+  } else {
+    aggregations.dbHisto.buckets.forEach(function (item) {
+      var key = item.key*1000;
+      graph.lpHisto.push([key, item.doc_count]);
+      graph.paHisto.push([key, item.pa.value]);
+      graph.dbHisto.push([key, item.db.value]);
+    });
+  }
   return graph;
+}
+
+function fixTagsField(container, field, doneCb, offset) {
+  if (container[field] === undefined) {
+    return doneCb(null);
+  }
+  async.map(container[field], function (item, cb) {
+    Db.tagIdToName(item, function (name) {
+      cb(null, name.substring(offset));
+    });
+  },
+  function(err, results) {
+    container[field] = results;
+    doneCb(err);
+  });
+}
+
+function fixTagBucketsField(container, field, doneCb, offset) {
+  if (container[field] === undefined) {
+    return doneCb(null);
+  }
+  async.map(container[field].buckets, function (item, cb) {
+    Db.tagIdToName(item.key, function (name) {
+      item.key = name.substring(offset);
+      cb(null, item);
+    });
+  },
+  function(err, results) {
+    container[field].buckets = results;
+    doneCb(err);
+  });
+}
+
+function fixFields(fields, fixCb) {
+  async.parallel([
+    function(parallelCb) {
+      fixTagsField(fields, "ta", parallelCb, 0);
+    },
+    function(parallelCb) {
+      fixTagsField(fields, "hh", parallelCb, 12);
+    },
+    function(parallelCb) {
+      fixTagsField(fields, "hh1", parallelCb, 12);
+    },
+    function(parallelCb) {
+      fixTagsField(fields, "hh2", parallelCb, 12);
+    },
+    function(parallelCb) {
+      var files = [];
+      if (!fields.fs) {
+        fields.fs = [];
+        return parallelCb(null);
+      }
+      async.forEachSeries(fields.fs, function (item, cb) {
+        Db.fileIdToFile(fields.no, item, function (file) {
+          if (file && file.locked === 1) {
+            files.push(file.name);
+          }
+          cb(null);
+        });
+      },
+      function(err) {
+        fields.fs = files;
+        parallelCb(err);
+      });
+    }],
+    function(err, results) {
+      fixCb(err, fields);
+    }
+  );
+}
+
+/**
+ * Flattens fields that are objects (only goes 1 level deep)
+ *
+ * @example
+ * { http: { statuscode: [200, 302] } } => { "http.statuscode": [200, 302] }
+ *
+ * @param {object} fields The object containing fields to be flattened
+ * @returns {object} fields The object with fields flattened
+ */
+function flattenFields(fields) {
+  var newFields = {};
+
+  for (var key in fields) {
+    if (fields.hasOwnProperty(key)) {
+      var field = fields[key];
+      if (typeof field === 'object' && !field.length) {
+        var baseKey = key + '.';
+        for (var nestedKey in field) {
+          if (field.hasOwnProperty(nestedKey)) {
+            var nestedField = field[nestedKey];
+            var newKey = baseKey + nestedKey;
+            newFields[newKey] = nestedField;
+          }
+        }
+        fields[key] = null;
+        delete fields[key];
+      }
+    }
+  }
+
+  for (var key in newFields) {
+    if (newFields.hasOwnProperty(key)) {
+      fields[key] = newFields[key];
+    }
+  }
+
+  return fields;
 }
 
 app.get('/sessions.json', function(req, res) {
@@ -1846,9 +2567,16 @@ app.get('/sessions.json', function(req, res) {
       res.send(r);
       return;
     }
+    var addMissing = false;
     if (req.query.fields) {
-      query._source = req.query.fields.split(",");
+      query._source = queryValueToArray(req.query.fields);
+      ["no", "a1", "p1", "a2", "p2"].forEach(function(item) {
+        if (query._source.indexOf(item) === -1) {
+          query._source.push(item);
+        }
+      });
     } else {
+      addMissing = true;
       query._source = ["pr", "ro", "db", "db1", "db2", "fp", "lp", "a1", "p1", "a2", "p2", "pa", "pa1", "pa2", "by", "by1", "by2", "no", "us", "g1", "g2", "esub", "esrc", "edst", "efn", "dnsho", "tls", "ircch", "tipv61-term", "tipv62-term"];
     }
 
@@ -1874,25 +2602,35 @@ app.get('/sessions.json', function(req, res) {
           map = mapMerge(result.aggregations);
 
           var results = {total: result.hits.total, results: []};
-          var hits = result.hits.hits;
-          for (var i = 0, ilen = hits.length; i < ilen; i++) {
-            if (!hits[i]) {
-              continue;
+          async.each(result.hits.hits, function (hit, hitCb) {
+            var fields = hit._source || hit.fields;
+            if (fields === undefined) {
+              return hitCb(null);
             }
-            var fields = hits[i]._source || hits[i].fields;
-            if (!fields) {
-              continue;
+            fields.index = hit._index;
+            fields.id = hit._id;
+
+            if (req.query.flatten === '1') {
+              fields = flattenFields(fields);
             }
-            fields.index = hits[i]._index;
-            fields.id = hits[i]._id;
-            ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
-              if (fields[item] === undefined) {
-                fields[item] = -1;
-              }
-            });
-            results.results.push(fields);
-          }
-          sessionsCb(null, results);
+
+            if (addMissing) {
+              ["pa1", "pa2", "by1", "by2", "db1", "db2"].forEach(function(item) {
+                if (fields[item] === undefined) {
+                  fields[item] = -1;
+                }
+              });
+              results.results.push(fields);
+              return hitCb();
+            } else {
+              fixFields(fields, function() {
+                results.results.push(fields);
+                return hitCb();
+              });
+            }
+          }, function () {
+            sessionsCb(null, results);
+          });
         });
       },
       total: function (totalCb) {
@@ -1919,7 +2657,7 @@ app.get('/sessions.json', function(req, res) {
 app.get('/spigraph.json', function(req, res) {
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
-    var results = {items: [], graph: {}, map: {}, iTotalReords: 0};
+    var results = {items: [], graph: {}, map: {}, iTotalRecords: 0};
     if (bsqErr) {
       results.bsqErr = bsqErr.toString();
       results.health = Db.healthCache();
@@ -1983,15 +2721,8 @@ app.get('/spigraph.json', function(req, res) {
 
       var aggs = result.aggregations.field.buckets;
       var interval = query.aggregations.dbHisto.histogram.interval;
-      var filter;
-
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = {term: {}};
-        filter = query.query.filtered.filter;
-      } else {
-        query.query.filtered.filter = {bool: {must: [{term: {}}, query.query.filtered.filter]}};
-        filter = query.query.filtered.filter.bool.must[0];
-      }
+      var filter = {term: {}};
+      query.query.bool.filter.push(filter);
 
       delete query.aggregations.field;
 
@@ -2073,7 +2804,7 @@ app.get('/spiview.json', function(req, res) {
       query.aggregations.protocols = {terms: {field: "prot-term", size:1000}};
     }
 
-    req.query.spi.split(",").forEach(function (item) {
+    queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(":");
       if (parts[0] === "fileand") {
         query.aggregations[parts[0]] = {terms: {field: "no", size: 1000}, aggs: {fs: {terms: {field: "fs", size: parts.length>1?parseInt(parts[1],10):10}}}};
@@ -2154,22 +2885,6 @@ app.get('/spiview.json', function(req, res) {
       health: Db.healthCache
     },
     function(err, results) {
-      function tags(container, field, doneCb, offset) {
-        if (!container[field]) {
-          return doneCb(null);
-        }
-        async.map(container[field].buckets, function (item, cb) {
-          Db.tagIdToName(item.key, function (name) {
-            item.key = name.substring(offset);
-            cb(null, item);
-          });
-        },
-        function(err, tagsResults) {
-          container[field].buckets = tagsResults;
-          doneCb(err);
-        });
-      }
-
       async.parallel([
         function(parallelCb) {
           if (!results.spi.fileand) {
@@ -2201,16 +2916,16 @@ app.get('/spiview.json', function(req, res) {
           });
         },
         function(parallelCb) {
-          tags(results.spi, "ta", parallelCb, 0);
+          fixTagBucketsField(results.spi, "ta", parallelCb, 0);
         },
         function(parallelCb) {
-          tags(results.spi, "hh", parallelCb, 12);
+          fixTagBucketsField(results.spi, "hh", parallelCb, 12);
         },
         function(parallelCb) {
-          tags(results.spi, "hh1", parallelCb, 12);
+          fixTagBucketsField(results.spi, "hh1", parallelCb, 12);
         },
         function(parallelCb) {
-          tags(results.spi, "hh2", parallelCb, 12);
+          fixTagBucketsField(results.spi, "hh2", parallelCb, 12);
         }],
         function() {
           r = {health: results.health,
@@ -2326,14 +3041,15 @@ function buildConnections(req, res, cb) {
       return cb(bsqErr, 0, 0, 0);
     }
 
-    if (query.query.filtered.filter === undefined) {
-      query.query.filtered.filter = {bool: {must: [{exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
-    } else {
-      query.query.filtered.filter = {bool: {must: [query.query.filtered.filter, {exists: {field: req.query.srcField}}, {exists: {field: req.query.dstField}}]}};
-    }
+    query.query.bool.filter.push({exists: {field: req.query.srcField}});
+    query.query.bool.filter.push({exists: {field: req.query.dstField}});
 
     query._source = ["by", "db", "pa", "no"];
-    query.fields=[fsrc, fdst];
+    if (Db.isES5) {
+      query.docvalue_fields = [fsrc, fdst];
+    } else {
+      query.fields = [fsrc, fdst];
+    }
     if (dstipport) {
       query._source.push("p2");
     }
@@ -2341,6 +3057,7 @@ function buildConnections(req, res, cb) {
     console.log("buildConnections query", JSON.stringify(query));
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
+    console.log("buildConnections result", JSON.stringify(graph));
       if (err || graph.error) {
         console.log("Build Connections ERROR", err, graph.error);
         return cb(err || graph.error);
@@ -2492,7 +3209,7 @@ app.get(/\/sessions.csv.*/, function(req, res) {
   var fields = ["pr", "fp", "lp", "a1", "p1", "g1", "a2", "p2", "g2", "by", "db", "pa", "no"];
 
   if (req.query.ids) {
-    var ids = req.query.ids.split(",");
+    var ids = queryValueToArray(req.query.ids);
 
     sessionsListFromIds(req, ids, fields, function(err, list) {
       csvListWriter(req, res, list);
@@ -2642,14 +3359,11 @@ app.get('/unique.txt', function(req, res) {
 
       query._source = [field];
 
-      if (query.query.filtered.filter === undefined) {
-        query.query.filtered.filter = {exists: {field: field}};
-      } else {
-        query.query.filtered.filter = {and: [query.query.filtered.filter, {exists: {field: field}}]};
-      }
+      query.query.bool.filter.push({exists: {field: field}});
 
       console.log("unique query", indices, JSON.stringify(query));
       Db.searchPrimary(indices, 'session', query, function(err, result) {
+        console.log(err);
         var counts = {};
 
         // Count up hits
@@ -2738,16 +3452,22 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
     var opcap = Pcap.get(fields.no + ":" + fileNum);
     if (!opcap.isOpen()) {
       Db.fileIdToFile(fields.no, fileNum, function(file) {
-
         if (!file) {
           console.log("WARNING - Only have SPI data, PCAP file no longer available", fields.no + '-' + fileNum);
           return nextCb("Only have SPI data, PCAP file no longer available for " + fields.no + '-' + fileNum);
+        }
+        if (file.kekId) {
+          file.kek = Config.sectionGet("keks", file.kekId, undefined);
+          if (file.kek === undefined) {
+            console.log("ERROR - Couldn't find kek", file.kekId, "in keks section");
+            return nextCb("Couldn't find kek " + file.kekId + " in keks section");
+          }
         }
 
         var ipcap = Pcap.get(fields.no + ":" + file.num);
 
         try {
-          ipcap.open(file.name);
+          ipcap.open(file.name, file);
         } catch (err) {
           console.log("ERROR - Couldn't open file ", err);
           return nextCb("Couldn't open file " + err);
@@ -2775,7 +3495,7 @@ function processSessionIdDisk(session, headerCb, packetCb, endCb, limit) {
 function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
   var options;
   if (!fullSession) {
-    options  = {fields: "no,ps,psl"};
+    options  = {_source: "no,pa,ps,psl,a1,p1,tipv61-term"};
   }
 
   Db.getWithOptions(Db.id2Index(id), 'session', id, options, function(err, session) {
@@ -2828,61 +3548,11 @@ function processSessionId(id, fullSession, headerCb, packetCb, endCb, maxPackets
           return endCb(err, fields);
         }
 
-        function tags(container, field, doneCb, offset) {
-          if (!container[field]) {
-            return doneCb(null);
-          }
-          async.map(container[field], function (item, cb) {
-            Db.tagIdToName(item, function (name) {
-              cb(null, name.substring(offset));
-            });
-          },
-          function(err, results) {
-            container[field] = results;
-            doneCb(err);
-          });
+        if (!fields.ta) {
+          fields.ta = [];
         }
 
-        async.parallel([
-          function(parallelCb) {
-            if (!fields.ta) {
-              fields.ta = [];
-              return parallelCb(null);
-            }
-            tags(fields, "ta", parallelCb, 0);
-          },
-          function(parallelCb) {
-            tags(fields, "hh", parallelCb, 12);
-          },
-          function(parallelCb) {
-            tags(fields, "hh1", parallelCb, 12);
-          },
-          function(parallelCb) {
-            tags(fields, "hh2", parallelCb, 12);
-          },
-          function(parallelCb) {
-            var files = [];
-            if (!fields.fs) {
-              fields.fs = [];
-              return parallelCb(null);
-            }
-            async.forEachSeries(fields.fs, function (item, cb) {
-              Db.fileIdToFile(fields.no, item, function (file) {
-                if (file && file.locked === 1) {
-                  files.push(file.name);
-                }
-                cb(null);
-              });
-            },
-            function(err) {
-              fields.fs = files;
-              parallelCb(err);
-            });
-          }],
-          function(err, results) {
-            endCb(err, fields);
-          }
-        );
+        fixFields(fields, endCb);
       }, limit);
     }
   });
@@ -2995,29 +3665,51 @@ function flattenObject1 (obj) {
 }
 
 function localSessionDetailReturnFull(req, res, session, incoming) {
-  jade.render(internals.sessionDetail, {
-    filename: "sessionDetail",
-    user: req.user,
-    session: session,
-    data: incoming,
-    query: req.query,
-    basedir: "/",
-    reqFields: Config.headers("headers-http-request"),
-    resFields: Config.headers("headers-http-response"),
-    emailFields: Config.headers("headers-email")
-  }, function(err, data) {
-    if (err) {
-      console.trace("ERROR - ", err);
-      return req.next(err);
-    }
-    res.send(data);
-  });
+  if (req.packetsOnly) { // only return packets
+    res.render('sessionPackets.pug', {
+      filename: 'sessionPackets',
+      user: req.user,
+      session: session,
+      data: incoming,
+      reqPackets: req.query.packets,
+      query: req.query,
+      basedir: "/",
+      reqFields: Config.headers("headers-http-request"),
+      resFields: Config.headers("headers-http-response"),
+      emailFields: Config.headers("headers-email")
+    }, function(err, data) {
+      if (err) {
+        console.trace("ERROR - ", err);
+        return req.next(err);
+      }
+      res.send(data);
+    });
+  } else { // return SPI data and packets
+    jade.render(internals.sessionDetailOld, {
+      filename: "sessionDetail",
+      user: req.user,
+      session: session,
+      data: incoming,
+      query: req.query,
+      basedir: "/",
+      reqFields: Config.headers("headers-http-request"),
+      resFields: Config.headers("headers-http-response"),
+      emailFields: Config.headers("headers-email")
+    }, function(err, data) {
+      if (err) {
+        console.trace("ERROR - ", err);
+        return req.next(err);
+      }
+      res.send(data);
+    });
+  }
 }
 
 function localSessionDetailReturn(req, res, session, incoming) {
   //console.log("ALW", JSON.stringify(incoming));
-  if (incoming.length > 200) {
-    incoming.length = 200;
+  var numPackets = req.query.packets || 200;
+  if (incoming.length > numPackets) {
+    incoming.length = numPackets;
   }
 
   if (incoming.length === 0) {
@@ -3093,7 +3785,7 @@ function localSessionDetailReturn(req, res, session, incoming) {
 
 function localSessionDetail(req, res) {
   if (!req.query) {
-    req.query = {gzip: false, line: false, base: "natural"};
+    req.query = {gzip: false, line: false, base: "natural", packets: 200};
   }
 
   req.query.needgzip  = req.query.gzip === "true" || false;
@@ -3102,7 +3794,7 @@ function localSessionDetail(req, res) {
   req.query.base  = req.query.base  || "ascii";
 
   var packets = [];
-  processSessionId(req.params.id, true, null, function (pcap, buffer, cb, i) {
+  processSessionId(req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
     var obj = {};
     if (buffer.length > 16) {
       try {
@@ -3122,7 +3814,11 @@ function localSessionDetail(req, res) {
       return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
     }
     session.id = req.params.id;
-    session.ta = session.ta.sort();
+
+    if (session.ta) {
+      session.ta = session.ta.sort();
+    }
+
     if (session.hh) {
       session.hh = session.hh.sort();
     }
@@ -3177,6 +3873,76 @@ function localSessionDetail(req, res) {
   req.query.needimage?10000:400, 10);
 }
 
+/**
+ * Get SPI data for a session
+ */
+app.get('/:nodeName/session/:id/detail', function(req, res) {
+  Db.getWithOptions(Db.id2Index(req.params.id), 'session', req.params.id, {}, function(err, session) {
+    if (err || !session.found) {
+      return res.end("Couldn't look up SPI data, error for session " + req.params.id + " Error: " +  err);
+    }
+
+    session = session._source;
+
+    session.id = req.params.id;
+
+    if (session.ta) {
+      session.ta = session.ta.sort();
+    }
+    if (session.hh) {
+      session.hh = session.hh.sort();
+    }
+    if (session.hh1) {
+      session.hh1 = session.hh1.sort();
+    }
+    if (session.hh2) {
+      session.hh2 = session.hh2.sort();
+    }
+    if (session.pr) {
+      session.pr = Pcap.protocol2Name(session.pr);
+    }
+
+    fixFields(session, function() {
+      pug.render(internals.sessionDetailNew, {
+        filename    : "sessionDetail",
+        user        : req.user,
+        session     : session,
+        query       : req.query,
+        basedir     : "/",
+        reqFields   : Config.headers("headers-http-request"),
+        resFields   : Config.headers("headers-http-response"),
+        emailFields : Config.headers("headers-email")
+      }, function(err, data) {
+        if (err) {
+          console.trace("ERROR - ", err);
+          return req.next(err);
+        }
+        res.send(data);
+      });
+    });
+  });
+});
+
+/**
+ * Get Session Packets
+ */
+app.get('/:nodeName/session/:id/packets', function(req, res) {
+  isLocalView(req.params.nodeName, function () {
+     noCache(req, res);
+     req.packetsOnly = true;
+     localSessionDetail(req, res);
+   },
+   function () {
+     return proxyRequest(req, res, function (err) {
+       Db.get(Db.id2Index(req.params.id), 'session', req.params.id, function(err, session) {
+         var fields = session._source || session.fields;
+         fields._err = "Couldn't connect to remote viewer to fetch packets";
+         localSessionDetailReturnFull(req, res, fields, []);
+       });
+     });
+   });
+});
+
 app.get('/:nodeName/:id/sessionDetail', function(req, res) {
   isLocalView(req.params.nodeName, function () {
     noCache(req, res);
@@ -3191,7 +3957,6 @@ app.get('/:nodeName/:id/sessionDetail', function(req, res) {
       });
     });
   });
-
 });
 
 function reqGetRawBody(req, cb) {
@@ -3535,7 +4300,7 @@ function sessionsPcap(req, res, pcapWriter, extension) {
   noCache(req, res, "application/vnd.tcpdump.pcap");
 
   if (req.query.ids) {
-    var ids = req.query.ids.split(",");
+    var ids = queryValueToArray(req.query.ids);
 
     sessionsListFromIds(req, ids, ["lp", "no", "by", "pa", "ro"], function(err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
@@ -3570,117 +4335,9 @@ app.post('/deleteUser/:userId', checkToken, function(req, res) {
   });
 });
 
-app.post('/addUser', checkToken, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
-  if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return res.send(JSON.stringify({success: false, text: "Missing/Empty required fields"}));
-  }
-
-  if (req.body.userId.match(/[^\w.-]/)) {
-    return res.send(JSON.stringify({success: false, text: "User id must be word characters"}));
-  }
-
-  Db.getUser(req.body.userId, function(err, user) {
-    if (!user || user.found) {
-      console.log("Adding duplicate user", err, user);
-      return res.send(JSON.stringify({success: false, text: "User already exists"}));
-    }
-
-    var nuser = {
-      userId: req.body.userId,
-      userName: req.body.userName,
-      expression: req.body.expression,
-      passStore: Config.pass2store(req.body.userId, req.body.password),
-      enabled: req.body.enabled  === "on",
-      webEnabled: req.body.webEnabled  === "on",
-      emailSearch: req.body.emailSearch  === "on",
-      headerAuthEnabled: req.body.headerAuthEnabled === "on",
-      createEnabled: req.body.createEnabled === "on",
-      removeEnabled: req.body.removeEnabled === "on"
-    };
-
-    console.log("Creating new user", nuser);
-    Db.setUser(req.body.userId, nuser, function(err, info) {
-      if (!err) {
-        return res.send(JSON.stringify({success: true}));
-      } else {
-        console.log("ERROR - add user", err, info);
-        return res.send(JSON.stringify({success: false, text: err}));
-      }
-    });
-  });
-});
-
-app.post('/updateUser/:userId', checkToken, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
-  Db.getUser(req.params.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("update user failed", err, user);
-      return res.send(JSON.stringify({success: false, text: "User not found"}));
-    }
-    user = user._source;
-
-    if (req.query.enabled !== undefined) {
-      user.enabled = req.query.enabled === "true";
-    }
-
-    if (req.query.expression !== undefined) {
-      if (req.query.expression.match(/^\s*$/)) {
-        delete user.expression;
-      } else {
-        user.expression = req.query.expression;
-      }
-    }
-
-    if (req.query.userName !== undefined) {
-      if (req.query.userName.match(/^\s*$/)) {
-        console.log("ERROR - empty username", req.query);
-        return res.send(JSON.stringify({success: false, text: "Username can not be empty"}));
-      } else {
-        user.userName = req.query.userName;
-      }
-    }
-
-    if (req.query.webEnabled !== undefined) {
-      user.webEnabled = req.query.webEnabled === "true";
-    }
-
-    if (req.query.emailSearch !== undefined) {
-      user.emailSearch = req.query.emailSearch === "true";
-    }
-
-    if (req.query.headerAuthEnabled !== undefined) {
-      user.headerAuthEnabled = req.query.headerAuthEnabled === "true";
-    }
-
-    if (req.query.removeEnabled !== undefined) {
-      user.removeEnabled = req.query.removeEnabled === "true";
-    }
-
-    // Can only change createEnabled if it is currently turned on
-    if (req.query.createEnabled !== undefined && req.user.createEnabled && req.query.createEnabled) {
-      user.createEnabled = req.query.createEnabled === "true";
-    }
-
-    Db.setUser(req.params.userId, user, function(err, info) {
-      return res.send(JSON.stringify({success: true}));
-    });
-  });
-});
-
 app.post('/changePassword', checkToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (Config.get("disableChangePassword", false)) {
-    return error("Disabled");
   }
 
   if (!req.body.newPassword || req.body.newPassword.length < 3) {
@@ -3808,6 +4465,307 @@ app.post('/deleteView', checkToken, function(req, res) {
   });
 });
 
+app.get('/user/settings', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's settings
+        return res.send("{}");
+      } else {
+        console.log("Unknown user", err, user);
+        return res.send("{}");
+      }
+    }
+
+    var settings = user._source.settings || {};
+
+    return res.send(settings);
+  });
+});
+
+app.get('/user/views', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's views
+        return res.send("{}");
+      } else {
+        console.log("Unknown user", err, user);
+        return res.send("{}");
+      }
+    }
+
+    var views = user._source.views || {};
+
+    return res.send(views);
+  });
+});
+
+app.post('/user/views/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.view) { return error("Missing view"); }
+
+  Db.getUser(req.token.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Delete view failed", err, user);
+      return error("Unknown user");
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    delete user.views[req.body.view];
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("Delete view failed", err, info);
+        return error("Delete view failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
+    });
+  });
+});
+
+app.post('/user/views/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.body.viewName)   { return error("Missing view name"); }
+  if (!req.body.expression) { return error("Missing view expression"); }
+
+  Db.getUser(req.token.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log("Create view failed", err, user);
+      return error("Unknown user");
+    }
+
+    user = user._source;
+    user.views = user.views || {};
+    var container = user.views;
+    if (req.body.groupName) {
+      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+      if (!user.views._groups) {
+        user.views._groups = {};
+      }
+      if (!user.views._groups[req.body.groupName]) {
+        user.views._groups[req.body.groupName] = {};
+      }
+      container = user.views._groups[req.body.groupName];
+    }
+    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
+    if (container[req.body.viewName]) {
+      container[req.body.viewName].expression = req.body.expression;
+    } else {
+      container[req.body.viewName] = {expression: req.body.expression};
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log("Create view error", err, info);
+        return error("Create view failed");
+      }
+      return res.send(JSON.stringify({success: true, text: "Created view successfully", views:user.views}));
+    });
+  });
+});
+
+internals.usersMissing = {
+  userId: "",
+  userName: "",
+  expression: "",
+  enabled: 0,
+  createEnabled: 0,
+  webEnabled: 0,
+  headerAuthEnabled: 0,
+  emailSearch: 0,
+  removeEnabled: 0
+};
+app.post('/user/list', function(req, res) {
+  var columns = ["userId", "userName", "expression", "enabled", "createEnabled", "webEnabled", "headerAuthEnabled", "emailSearch", "removeEnabled"];
+
+  var query = {_source: columns,
+               sort: {},
+               from: +req.body.start || 0,
+               size: +req.body.length || 10000
+              };
+
+  if (req.body.filter) {
+    query.query = {bool: {should: [{wildcard: {userName: "*" + req.body.filter + "*"}},
+                                   {wildcard: {userId: "*" + req.body.filter + "*"}}
+                                  ]
+                         }
+                  };
+  }
+
+  req.body.sortField = req.body.sortField || "userId";
+  query.sort[req.body.sortField] = { order: req.body.desc === true ? "desc": "asc"};
+  query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
+
+  async.parallel({
+    users: function (cb) {
+      Db.searchUsers(query, function(err, result) {
+        if (err || result.error) {
+          console.log("ERROR - users.json", err || result.error);
+          res.send({total: 0, results: []});
+        } else {
+          var results = {total: result.hits.total, results: []};
+          for (var i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
+            var fields = result.hits.hits[i]._source || result.hits.hits[i].fields;
+            fields.id = result.hits.hits[i]._id;
+            fields.expression = safeStr(fields.expression || "");
+            fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+            fields.emailSearch = fields.emailSearch || false;
+            fields.removeEnabled = fields.removeEnabled || false;
+            fields.userName = safeStr(fields.userName || "");
+            results.results.push(fields);
+          }
+          cb(null, results);
+        }
+      });
+    },
+    total: function (cb) {
+      Db.numberOfUsers(cb);
+    }
+  },
+  function(err, results) {
+    var r = {draw: req.body.draw,
+             recordsTotal: results.total,
+             recordsFiltered: results.users.total,
+             data: results.users.results};
+    res.send(r);
+  });
+});
+
+app.post('/user/create', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.user.createEnabled) {
+    return error('Need admin privileges');
+  }
+
+  if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
+    return error('Missing/Empty required fields');
+  }
+
+  if (req.body.userId.match(/[^\w.-]/)) {
+    return error('User ID must be word characters');
+  }
+
+  Db.getUser(req.body.userId, function(err, user) {
+    if (!user || user.found) {
+      console.log('Trying to add duplicate user', err, user);
+      return error('User already exists');
+    }
+
+    var nuser = {
+      userId: req.body.userId,
+      userName: req.body.userName,
+      expression: req.body.expression,
+      passStore: Config.pass2store(req.body.userId, req.body.password),
+      enabled: req.body.enabled === true,
+      webEnabled: req.body.webEnabled === true,
+      emailSearch: req.body.emailSearch === true,
+      headerAuthEnabled: req.body.headerAuthEnabled === true,
+      createEnabled: req.body.createEnabled === true,
+      removeEnabled: req.body.removeEnabled === true
+    };
+
+    console.log('Creating new user', nuser);
+    Db.setUser(req.body.userId, nuser, function(err, info) {
+      if (!err) {
+        return res.send(JSON.stringify({success: true, text:'User created succesfully'}));
+      } else {
+        console.log('ERROR - add user', err, info);
+        return error(err);
+      }
+    });
+  });
+});
+
+app.post('/user/delete', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.user.createEnabled) {
+    return error('Need admin privileges');
+  }
+
+  if (req.body.userId === req.user.userId) {
+    return error('Can not delete yourself');
+  }
+
+  Db.deleteUser(req.body.userId, function(err, data) {
+    setTimeout(function () {
+      res.send(JSON.stringify({success: true, text: 'User deleted successfully'}));
+    }, 200);
+  });
+});
+
+app.post('/user/update', checkCookieToken, function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
+  if (!req.user.createEnabled) {
+    return error('Need admin privileges');
+  }
+
+  /*if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
+    return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
+  }*/
+
+  Db.getUser(req.body.userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('update user failed', err, user);
+      return error('User not found');
+    }
+    user = user._source;
+
+    user.enabled = req.body.enabled === true;
+
+    if (req.body.expression !== undefined) {
+      if (req.body.expression.match(/^\s*$/)) {
+        delete user.expression;
+      } else {
+        user.expression = req.body.expression;
+      }
+    }
+
+    if (req.body.userName !== undefined) {
+      if (req.body.userName.match(/^\s*$/)) {
+        console.log("ERROR - empty username", req.body);
+        return error('Username can not be empty');
+      } else {
+        user.userName = req.body.userName;
+      }
+    }
+
+    user.webEnabled = req.body.webEnabled === true;
+    user.emailSearch = req.body.emailSearch === true;
+    user.headerAuthEnabled = req.body.headerAuthEnabled === true;
+    user.removeEnabled = req.body.removeEnabled === true;
+
+    // Can only change createEnabled if it is currently turned on
+    if (req.body.createEnabled !== undefined && req.user.createEnabled && req.body.createEnabled) {
+      user.createEnabled = req.body.createEnabled === true;
+    }
+
+    Db.setUser(req.body.userId, user, function(err, info) {
+      console.log(user, err, info);
+      return res.send(JSON.stringify({success: true, text:'User "' + req.body.userId + '" updated successfully'}));
+    });
+  });
+});
+
 app.post('/cronQueries.json', checkToken, function(req, res) {
   var results = [];
   Db.search("queries", "query", {size:1000, query: {term: {creator: req.user.userId}}}, function (err, data) {
@@ -3896,6 +4854,7 @@ app.post('/tableState/:tablename', function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
   }
+
   Db.getUser(req.user.userId, function(err, user) {
     if (err || !user.found) {
       console.log("save tableState failed", err, user);
@@ -4059,7 +5018,7 @@ app.post('/addTags', function(req, res) {
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
-      var ids = req.body.ids.split(",");
+      var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
         addTagsList(tagIds, tags, list, function () {
@@ -4091,7 +5050,7 @@ app.post('/removeTags', function(req, res) {
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
-      var ids = req.body.ids.split(",");
+      var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term"], function(err, list) {
         removeTagsList(res, tagIds, tags, list);
@@ -4150,7 +5109,7 @@ app.post('/searchAndTag', function(req, res) {
 
   mapTags(tags, "", function(err, tagIds) {
     if (req.body.ids) {
-      var ids = req.body.ids.split(",");
+      var ids = queryValueToArray(req.body.ids);
 
       sessionsListFromIds(req, ids, ["ta", "tags-term", "no"], function(err, list) {
         searchAndTagList(tagIds, list, function () {
@@ -4207,7 +5166,7 @@ function pcapScrub(req, res, id, entire, endCb) {
     });
   }
 
-  Db.getWithOptions(Db.id2Index(id), 'session', id, {fields: "no,pr,ps,psl"}, function(err, session) {
+  Db.getWithOptions(Db.id2Index(id), 'session', id, {_source: "no,pr,ps,psl"}, function(err, session) {
     var fields = session._source || session.fields;
 
     var fileNum;
@@ -4231,7 +5190,7 @@ function pcapScrub(req, res, id, entire, endCb) {
           var ipcap = Pcap.get("write"+fields.no + ":" + file.num);
 
           try {
-            ipcap.openReadWrite(file.name);
+            ipcap.openReadWrite(file.name, file);
           } catch (err) {
             console.log("ERROR - Couldn't open file for writing", err);
             return nextCb("Couldn't open file for writing " + err);
@@ -4334,7 +5293,7 @@ app.post('/scrub', function(req, res) {
   }
 
   if (req.body.ids) {
-    var ids = req.body.ids.split(",");
+    var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       scrubList(req, res, false, list);
@@ -4354,7 +5313,7 @@ app.post('/delete', function(req, res) {
   }
 
   if (req.body.ids) {
-    var ids = req.body.ids.split(",");
+    var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       scrubList(req, res, true, list);
@@ -4504,7 +5463,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function(req, res) {
   }
 
   var count = 0;
-  var ids = req.body.ids.split(",");
+  var ids = queryValueToArray(req.body.ids);
   ids.forEach(function(id) {
     var options = {
       user: req.user,
@@ -4814,7 +5773,7 @@ app.post('/receiveSession', function receiveSession(req, res) {
 
 app.post('/sendSessions', function(req, res) {
   if (req.body.ids) {
-    var ids = req.body.ids.split(",");
+    var ids = queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ["no"], function(err, list) {
       sendSessionsList(req, res, list);
@@ -4874,7 +5833,7 @@ app.use(function(req,res) {
   res.status(404);
   // respond with html page
   if (req.accepts('html')) {
-    return res.render('404', {
+    return res.render('404.jade', {
       user: req.user,
       title: makeTitle(req, 'Error'),
       titleLink: 'errorLink'
@@ -4903,7 +5862,7 @@ function processCronQuery(cq, options, query, endTime, cb) {
   async.doWhilst(function(whilstCb) {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24*60*60);
-    query.query.filtered.query.range = {lp: {gt: cq.lpValue, lte: singleEndTime}};
+    query.query.bool.filter[0] = {range: {lp: {gt: cq.lpValue, lte: singleEndTime}}};
 
     if (Config.debug > 2) {
       console.log("CRON", cq.name, cq.creator, "- start:", new Date(cq.lpValue*1000), "stop:", new Date(singleEndTime*1000), "end:", new Date(endTime*1000), "remaining runs:", ((endTime-singleEndTime)/(24*60*60.0)));
@@ -4994,7 +5953,7 @@ function processCronQueries() {
   var repeat;
   async.doWhilst(function(whilstCb) {
     repeat = false;
-    Db.search("queries", "query", "{size: 1000}", function(err, data) {
+    Db.search("queries", "query", {size: 1000}, function(err, data) {
       if (err) {
         internals.cronRunning = false;
         console.log("processCronQueries", err);
@@ -5048,12 +6007,12 @@ function processCronQueries() {
 
           var query = {from: 0,
                        size: 1000,
-                       query: {filtered: {query: {}}},
+                       query: {bool: {filter: [{}]}},
                        _source: ["_id", "no"]
                       };
 
           try {
-            query.query.filtered.filter = molochparser.parse(cq.query);
+            query.query.bool.filter.push(molochparser.parse(cq.query));
           } catch (e) {
             console.log("Couldn't compile cron query expression", cq, e);
             return forQueriesCb();
@@ -5064,22 +6023,18 @@ function processCronQueries() {
               // Expression was set by admin, so assume email search ok
               molochparser.parser.yy.emailSearch = true;
               var userExpression = molochparser.parse(user.expression);
-              if (query.query.filtered.filter === undefined) {
-                query.query.filtered.filter = userExpression;
-              } else {
-                query.query.filtered.filter = {bool: {must: [userExpression, query.query.filtered.filter]}};
-              }
+              query.query.bool.filter.push(userExpression);
             } catch (e) {
               console.log("Couldn't compile user forced expression", user.expression, e);
               return forQueriesCb();
             }
           }
 
-          lookupQueryItems(query.query.filtered, function (lerr) {
+          lookupQueryItems(query.query.bool.filter, function (lerr) {
             processCronQuery(cq, options, query, endTime, function (count, lpValue) {
-	      if (Config.debug > 1) {
-		console.log("CRON - setting lpValue", new Date(lpValue*1000));
-	      }
+              if (Config.debug > 1) {
+                console.log("CRON - setting lpValue", new Date(lpValue*1000));
+              }
               // Do the ES update
               var document = {
                 doc: {
@@ -5128,7 +6083,7 @@ function main () {
     internals.clusterName = health.cluster_name;
   });
 
-  Db.nodesStats({fs: 1}, function (err, info) {
+  Db.nodesStats({metric: "fs"}, function (err, info) {
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodeStats.push(info.nodes);
   });

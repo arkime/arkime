@@ -59,6 +59,18 @@ function WISESource (api, section) {
     self.excludeIPs.add(parts[0], +parts[1] || 32, true);
   });
 
+  items = api.getConfig(section, "onlyIPs", undefined);
+  if (items) {
+    self.onlyIPs = new iptrie.IPTrie();
+    items.split(";").forEach(function(item) {
+      if (item === "") {
+        return;
+      }
+      var parts = item.split("/");
+      self.onlyIPs.add(parts[0], +parts[1] || 32, true);
+    });
+  }
+
   // fields defined for source
   var fields = api.getConfig(section, "fields");
   if (fields !== undefined) {
@@ -141,7 +153,7 @@ WISESource.prototype.parseFieldDef = function(line) {
 };
 //////////////////////////////////////////////////////////////////////////////////
 WISESource.prototype.parseTagger = function(body, setCb, endCb) {
-  var lines = body.toString().split("\n");
+  var lines = body.toString().split(/\r?\n/);
   for (var l = 0, llen = lines.length; l < llen; l++) {
     if (lines[l][0] === "#") {
       this.parseFieldDef(lines[l]);

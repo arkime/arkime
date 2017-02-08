@@ -19,8 +19,8 @@
 #include "moloch.h"
 #include <errno.h>
 #include <sys/stat.h>
-#include <gio/gio.h>
 #include "pcap.h"
+#include "molochconfig.h"
 
 extern MolochPcapFileHdr_t   pcapFileHeader;
 
@@ -37,66 +37,92 @@ LOCAL  char                 *offlinePcapName;
 
 void reader_libpcapfile_opened();
 
-static struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
+LOCAL struct bpf_program   *bpf_programs[MOLOCH_FILTER_MAX];
+LOCAL MolochPacketBatch_t   batch;
 
-/******************************************************************************/
+#ifdef HAVE_SYS_INOTIFY_H
+#include <sys/inotify.h>
+LOCAL int         monitorFd;
+LOCAL GHashTable *wdHashTable;
+
 void reader_libpcapfile_monitor_dir(char *dirname);
-static void
-reader_libpcapfile_monitor_changed (GFileMonitor      *UNUSED(monitor),
-                                    GFile             *file,
-                                    GFile             *UNUSED(other_file),
-                                    GFileMonitorEvent  event_type,
-                                    gpointer           UNUSED(user_data))
+
+void reader_libpcapfile_monitor_do(struct inotify_event *event)
 {
-    // Monitor new directories?
+    gchar *dirname = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
+    gchar *fullfilename = g_build_filename (dirname, event->name, NULL);
+
     if (config.pcapRecursive &&
-        event_type == G_FILE_MONITOR_EVENT_CREATED &&
-        g_file_query_file_type(file, G_FILE_QUERY_INFO_NONE, NULL) == G_FILE_TYPE_DIRECTORY) {
+        (event->mask & IN_CREATE) &&
+        g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
 
-        gchar *path = g_file_get_path(file);
-        reader_libpcapfile_monitor_dir(path);
-        g_free(path);
-
+        reader_libpcapfile_monitor_dir(fullfilename);
+        g_free(fullfilename);
         return;
     }
 
-    if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
-        return;
-
-    gchar *basename = g_file_get_path(file);
-    if (!g_regex_match(config.offlineRegex, basename, 0, NULL)) {
-        g_free(basename);
+    if ((event->mask & IN_CLOSE_WRITE) == 0) {
+        g_free(fullfilename);
         return;
     }
-    g_free(basename);
 
-    gchar *path = g_file_get_path(file);
+    if (!g_regex_match(config.offlineRegex, fullfilename, 0, NULL)) {
+        g_free(fullfilename);
+        return;
+    }
+
     MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
-    string->str = path;
+    string->str = fullfilename;
 
     if (config.debug) 
         LOG("Monitor enqueing %s", string->str);
     DLL_PUSH_TAIL(s_, &monitorQ, string);
+    return;
+}
+/******************************************************************************/
+gboolean reader_libpcapfile_monitor_read()
+{
+    char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__ ((aligned(8)));
+    struct inotify_event *event;
+
+    int rc = read (monitorFd, buf, sizeof(buf));
+    if (rc == 0)
+        return TRUE;
+    if (rc == -1)
+        LOGEXIT("Monitor read failed - %s", strerror(errno));
+    buf[rc] = 0;
+
+    char *p;
+    for (p = buf; p < buf + rc; ) {
+        event = (struct inotify_event *) p;
+        reader_libpcapfile_monitor_do(event);
+        p += sizeof(struct inotify_event) + event->len;
+     }
+    return TRUE;
 }
 /******************************************************************************/
 void reader_libpcapfile_monitor_dir(char *dirname)
 {
-    GError      *error = 0;
     if (config.debug)
         LOG("Monitoring %s", dirname);
-    if (error) {
-        LOG("ERROR: Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
-        exit(0);
-    }
 
-    GFile *filedir = g_file_new_for_path(dirname);
-    GFileMonitor *monitor = g_file_monitor_directory (filedir, 0, NULL, &error);
-    g_file_monitor_set_rate_limit(monitor, 0);
-    g_signal_connect (monitor, "changed", G_CALLBACK (reader_libpcapfile_monitor_changed), 0);
+    int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE);
+    if (rc == -1) {
+        LOG ("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
+        return;
+    } else {
+        g_hash_table_insert(wdHashTable, (void*)(long)rc, g_strdup(dirname));
+    }
 
     if (!config.pcapRecursive)
         return;
-    GDir *dir = g_dir_open(dirname, 0, &error);
+
+    GError   *error = NULL;
+    GDir     *dir = g_dir_open(dirname, 0, &error);
+
+    if (error)
+        LOGEXIT("ERROR: Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
+
     while (1) {
         const gchar *filename = g_dir_read_name(dir);
 
@@ -122,11 +148,24 @@ void reader_libpcapfile_monitor_dir(char *dirname)
 void reader_libpcapfile_init_monitor()
 {
     int          dir;
+    monitorFd = inotify_init1(IN_NONBLOCK);
+
+    if (monitorFd < 0)
+        LOGEXIT("Couldn't init inotify %s", strerror(errno));
+
+    wdHashTable = g_hash_table_new (g_direct_hash, g_direct_equal);
+    moloch_watch_fd(monitorFd, MOLOCH_GIO_READ_COND, reader_libpcapfile_monitor_read, NULL);
 
     for (dir = 0; config.pcapReadDirs[dir] && config.pcapReadDirs[dir][0]; dir++) {
         reader_libpcapfile_monitor_dir(config.pcapReadDirs[dir]);
     }
 }
+#else
+void reader_libpcapfile_init_monitor()
+{
+    LOGEXIT("Monitoring not supporting on this OS");
+}
+#endif
 /******************************************************************************/
 int reader_libpcapfile_next()
 {
@@ -342,7 +381,7 @@ void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *
     packet->ts            = h->ts;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerName    = offlinePcapName;
-    moloch_packet(packet);
+    moloch_packet_batch(&batch, packet);
 }
 /******************************************************************************/
 gboolean reader_libpcapfile_read()
@@ -362,7 +401,9 @@ gboolean reader_libpcapfile_read()
         return TRUE;
     }
 
+    moloch_packet_batch_init(&batch);
     int r = pcap_dispatch(pcap, 10000, reader_libpcapfile_pcap_cb, NULL);
+    moloch_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
     if (r <= 0) {

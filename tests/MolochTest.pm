@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGet2 viewerPost viewerPost2 countTest countTest2 errTest bin2hex getToken getToken2 mesGet mesPost multiGet);
+@MolochTest::EXPORT = qw (esGet esPost esDelete esCopy viewerGet viewerGet2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex getToken getToken2 mesGet mesPost multiGet getTokenCookie getTokenCookie2);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -61,6 +61,33 @@ my ($url, $content) = @_;
     return ($json);
 }
 ################################################################################
+sub viewerPostToken {
+my ($url, $content, $token, $debug) = @_;
+
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-moloch-cookie" => $token);
+    } else {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "x-moloch-cookie" => $token);
+    }
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub viewerPostToken2 {
+my ($url, $content, $token, $debug) = @_;
+
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-moloch-cookie" => $token);
+    } else {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "x-moloch-cookie" => $token);
+    }
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
 sub mesGet {
 my ($url, $debug) = @_;
 
@@ -114,7 +141,7 @@ sub esCopy
     while (1) {
         my $url;
         if ($id eq "") {
-            $url = "/$srci/$type/_search?scroll=10m&scroll_id=$id&size=500";
+            $url = "/$srci/$type/_search?scroll=10m&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
@@ -179,6 +206,18 @@ sub getToken {
 sub getToken2 {
     my $usersPage = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->content;
     $usersPage =~ /token.*value: "(.*)"/;
+    return $1;
+}
+################################################################################
+sub getTokenCookie {
+    my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/users")->{"_headers"}->{"set-cookie"};
+    $setCookie =~ /MOLOCH-COOKIE=([^;]*)/;
+    return $1;
+}
+################################################################################
+sub getTokenCookie2 {
+    my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->{"_headers"}->{"set-cookie"};
+    $setCookie =~ /MOLOCH-COOKIE=([^;]*)/;
     return $1;
 }
 ################################################################################

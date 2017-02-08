@@ -24,6 +24,7 @@ block content
       option(value="cpu") CPU
       option(value="diskQueue") Disk Queue
       option(value="esQueue") ES Queue
+      option(value="deltaESDroppedPerSec") ES Dropped/Sec
       option(value="packetQueue") Packet Queue
       option(value="closeQueue") Closing Queue
       option(value="needSave") Waiting Queue
@@ -62,6 +63,7 @@ block content
         th Input Drops / Sec
         th Disk Queue
         th ES Queue
+        th ES Drops / Sec
         th Packet Queue
         th Closing Queue
         th Waiting Queue
@@ -95,6 +97,7 @@ block content
         th#avg_deltaDroppedPerSec
         th#avg_diskQueue
         th#avg_esQueue
+        th#avg_deltaESDroppedPerSec
         th#avg_packetQueue
         th#avg_closeQueue
         th#avg_needSave
@@ -126,6 +129,7 @@ block content
         th#tot_deltaDroppedPerSec
         th#tot_diskQueue
         th#tot_esQueue
+        th#tot_deltaESDroppedPerSec
         th#tot_packetQueue
         th#tot_closeQueue
         th#tot_needSave
@@ -484,6 +488,12 @@ block content
             searchable: false
           },
           {
+            data : "deltaESDroppedPerSec",
+            render: numberRender,
+            className: "right",
+            searchable: false
+          },
+          {
             data : "packetQueue",
             render: numberRender,
             className: "right",
@@ -542,7 +552,7 @@ block content
                       "monitoring", "tcpSessions", "udpSessions", "icmpSessions",
                       "freeSpaceM", "freeSpaceP", "memory", "memoryP", "frags", "cpu",
                       "diskQueue", "esQueue", "packetQueue", "closeQueue", "needSave", "fragsQueue",
-                      "deltaDroppedPerSec", "deltaSessionsPerSec", "deltaPacketsPerSec", "deltaBytesPerSec", "deltaBitsPerSec", "deltaFragsDroppedPerSec", "deltaOverloadDroppedPerSec", "deltaTotalDroppedPerSec"];
+                      "deltaDroppedPerSec", "deltaSessionsPerSec", "deltaPacketsPerSec", "deltaBytesPerSec", "deltaBitsPerSec", "deltaFragsDroppedPerSec", "deltaOverloadDroppedPerSec", "deltaTotalDroppedPerSec", "deltaESDroppedPerSec"];
 
           keys.forEach(function(key) {
             totals[key] = 0;

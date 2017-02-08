@@ -41,6 +41,7 @@ typedef struct moloch_output {
     uint64_t   max;
     uint64_t   pos;
     char       close;
+    uint32_t   fileId;
 } MolochDiskOutput_t;
 
 
@@ -144,6 +145,7 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
     }
 
     int len;
+    uint64_t filelen = 0;
     if (writeMethod == MOLOCH_WRITE_NORMAL) {
         len = write(outputFd, out->buf+out->pos, (out->max - out->pos));
         if (len < 0) {
@@ -152,7 +154,6 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
         }
     } else {
         int wlen = (out->max - out->pos);
-        uint64_t filelen = 0;
         if (out->close && wlen % pageSize != 0) {
             filelen = lseek(outputFd, 0, SEEK_CUR) + wlen;
             wlen = (wlen - (wlen % pageSize) + pageSize);
@@ -161,9 +162,6 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
         if (len < 0) {
             LOG("ERROR - Write %d failed with %d %d\n", outputFd, len, errno);
             exit (0);
-        }
-        if (out->close && filelen) {
-            (void)ftruncate(outputFd, filelen);
         }
     }
 
@@ -176,9 +174,15 @@ gboolean writer_disk_output_cb(gint fd, GIOCondition UNUSED(cond), gpointer UNUS
 
     // The last write for this fd
     if (out->close) {
+        if (filelen) {
+            (void)ftruncate(outputFd, filelen);
+        } else {
+            filelen = lseek(outputFd, 0, SEEK_CUR);
+        }
         close(outputFd);
         outputFd = 0;
         free(out->name);
+        moloch_db_update_filesize(out->fileId, filelen);
     }
 
     // Cleanup buffer
@@ -244,10 +248,13 @@ void *writer_disk_output_thread(void *UNUSED(arg))
         if (out->close) {
             if (filelen) {
                 (void)ftruncate(outputFd, filelen);
+            } else {
+                filelen = lseek(outputFd, 0, SEEK_CUR);
             }
             close(outputFd);
             outputFd = 0;
             free(out->name);
+            moloch_db_update_filesize(out->fileId, filelen);
         }
         writer_disk_free_buf(out);
         MOLOCH_TYPE_FREE(MolochDiskOutput_t, out);
@@ -265,6 +272,7 @@ void writer_disk_flush(gboolean all)
 
     MolochDiskOutput_t *noutput = MOLOCH_TYPE_ALLOC0(MolochDiskOutput_t);
     noutput->max = config.pcapWriteSize;
+    noutput->fileId = output->fileId;
     writer_disk_alloc_buf(noutput);
 
 
@@ -329,6 +337,7 @@ void writer_disk_create(MolochPacket_t * const packet)
     output->pos = 24;
     gettimeofday(&outputFileTime, 0);
 
+    output->fileId = outputId;
     memcpy(output->buf, &pcapFileHeader, 24);
 }
 /******************************************************************************/

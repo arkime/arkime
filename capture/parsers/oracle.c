@@ -22,23 +22,23 @@ extern MolochConfig_t        config;
 // Lots of info from https://www.pythian.com/blog/repost-oracle-protocol/
 
 /******************************************************************************/
-void oracle_get_item(const char *data, char *needle, int needle_len, char *buf, int *len)
+char *oracle_get_item(const char *data, char *needle, int needle_len, int *len)
 {
     const char *start = data + data[27];
     char *item, *paren;
-
-    buf[0] = 0;
 
     item = g_strstr_len((char *)start, data[25], (gchar *)needle);
     if (item) {
         paren = g_strstr_len(item, data[25] - (item - start), ")");
         if (paren) {
             *len = (paren-item)-needle_len;
-            memcpy(buf, item+needle_len, *len);
-            buf[*len] = 0;
-            g_ascii_strdown(buf, *len);
+            if (*len == 0)
+                return NULL;
+
+            return g_ascii_strdown(item+needle_len, *len);
         }
     }
+    return NULL;
 }
 /******************************************************************************/
 void oracle_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
@@ -46,20 +46,23 @@ void oracle_classify(MolochSession_t *session, const unsigned char *data, int le
     if (which != 0 || len <= 27 || len != data[1] || (data[25] + data[27] != len))
         return;
 
-    char buf[257];  // can't be more then 1 byte big
+    char *buf;  // can't be more then 1 byte big
     int  blen;
 
-    oracle_get_item((const char *)data, "HOST=", 5, buf, &blen);
-    if (buf[0])
-        moloch_field_string_add(hostField, session, buf, blen, TRUE);
+    buf = oracle_get_item((const char *)data, "HOST=", 5, &blen);
+    if (buf && !moloch_field_string_add(hostField, session, buf, blen, FALSE)) {
+        g_free(buf);
+    }
 
-    oracle_get_item((const char *)data, "USER=", 5, buf, &blen);
-    if (buf[0])
-        moloch_field_string_add(userField, session, buf, blen, TRUE);
+    buf = oracle_get_item((const char *)data, "USER=", 5, &blen);
+    if (buf && !moloch_field_string_add(userField, session, buf, blen, FALSE)) {
+        g_free(buf);
+    }
 
-    oracle_get_item((const char *)data, "SERVICE_NAME=", 13, buf, &blen);
-    if (buf[0])
-        moloch_field_string_add(serviceField, session, buf, blen, TRUE);
+    buf = oracle_get_item((const char *)data, "SERVICE_NAME=", 13, &blen);
+    if (buf && !moloch_field_string_add(serviceField, session, buf, blen, FALSE)) {
+        g_free(buf);
+    }
 
     moloch_session_add_protocol(session, "oracle");
 }

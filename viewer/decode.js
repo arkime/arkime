@@ -58,12 +58,17 @@ ItemTransform.prototype._transform = function (item, encoding, callback) {
     if (self._shouldProcess(item)) {
       self._itemTransform.state = 1;
       async.each(self._itemTransform.items, function (item, cb) {
-        self._process(item, function(err, data) {
-          if (data) {
-            self.push(data);
-          }
-          return cb();
-        });
+        try {
+          self._process(item, function(err, data) {
+            if (data) {
+              self.push(data);
+            }
+            return cb();
+          });
+        } catch (err) {
+          cb(err);
+          console.log("Couldn't decode", err);
+        };
       }, function (err) {
         self._itemTransform.items = [];
         return callback();
@@ -478,7 +483,7 @@ function ItemHTTPStream(options) {
 }
 util.inherits(ItemHTTPStream, ItemTransform);
 ItemHTTPStream.onBody = function(buf, start, len) {
-  //console.log("onBody", start, len);
+  //console.log("onBody", start, len, item);
   var item = this.curitem;
   delete this.curitem;
   if (!this.bufferStream) {
@@ -491,6 +496,7 @@ ItemHTTPStream.onBody = function(buf, start, len) {
     var pipes = exports.createPipeline(this.httpstream.options, order, this.bufferStream, this.headerInfo);
 
     item.bodyNum = ++this.httpstream.bodyNum;
+    item.bodyName = this.httpstream.bodyName;
     var heb = new CollectBodyStream(this.httpstream, item, this.headerInfo);
     pipes[pipes.length-1].pipe(heb);
 
@@ -511,18 +517,15 @@ ItemHTTPStream.onMessageComplete = function() {
   delete this.curitem;
 };
 
-ItemHTTPStream.onHeadersComplete = function(info, ignore, headers) {
-  //console.log("onHeadersComplete", this.bufferStream?"bufferStream":"no bufferStream");
-  if (headers === undefined) {
-    headers = info.headers;
-  }
-  info = {};
-
-  info.headersMap = {};
+ItemHTTPStream.onHeadersComplete = function(major, minor, headers, method, url) {
+  //console.log("onHeadersComplete", headers, method, url);
+  var info = {headersMap: {}};
   for (var i = 0; i < headers.length; i += 2) {
     info.headersMap[headers[i].toLowerCase()] = headers[i+1];
   }
   this.headerInfo = info;
+  if (url)
+    this.httpstream.bodyName = url.split(/[\/?=]/).pop();
 };
 
 ItemHTTPStream.prototype._shouldProcess = function (item) {
@@ -538,15 +541,9 @@ ItemHTTPStream.prototype._process = function (item, callback) {
       this.parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
     }
     this.parsers[0].httpstream = this.parsers[1].httpstream = this;
-    if (HTTPParser.kOnBody === undefined) {
-      this.parsers[0].onBody = this.parsers[1].onBody = ItemHTTPStream.onBody;
-      this.parsers[0].onMessageComplete = this.parsers[1].onMessageComplete = ItemHTTPStream.onMessageComplete;
-      this.parsers[0].onHeadersComplete = this.parsers[1].onHeadersComplete = ItemHTTPStream.onHeadersComplete;
-    } else {
-      this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
-      this.parsers[0][HTTPParser.kOnMessageComplete] = this.parsers[1][HTTPParser.kOnMessageComplete] = ItemHTTPStream.onMessageComplete;
-      this.parsers[0][HTTPParser.kOnHeadersComplete] = this.parsers[1][HTTPParser.kOnHeadersComplete] = ItemHTTPStream.onHeadersComplete;
-    }
+    this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
+    this.parsers[0][HTTPParser.kOnMessageComplete] = this.parsers[1][HTTPParser.kOnMessageComplete] = ItemHTTPStream.onMessageComplete;
+    this.parsers[0][HTTPParser.kOnHeadersComplete] = this.parsers[1][HTTPParser.kOnHeadersComplete] = ItemHTTPStream.onHeadersComplete;
   }
 
   if (item.data.length === 0) {
@@ -571,7 +568,8 @@ ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
     }
   }
 
-  this.push({client: item.client, ts: item.ts, data: data, bodyNum: item.bodyNum, bodyType: bodyType, bodyName: bodyType + item.bodyNum});
+  var bodyName = item.bodyName || bodyType + item.bodyNum;
+  this.push({client: item.client, ts: item.ts, data: data, bodyNum: item.bodyNum, bodyType: bodyType, bodyName: bodyName});
   this.runningStreams--;
   if (this.runningStreams === 0 && this.endCb) {
     this.endCb();

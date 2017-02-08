@@ -132,7 +132,7 @@ function simpleGather(req, res, bodies, doneCb) {
       pres.on('end', function () {
         if (result.length) {
           result = result.replace(new RegExp('(index":\s*|[,{]|  )"' + prefix + "(sessions|stats|tags|dstats|sequence|files|users)", "g"), "$1\"MULTIPREFIX_$2");
-          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields)\"", "g"), "$1\"MULTIPREFIX_$2\"");
+          result = result.replace(new RegExp('(index":\s*)"' + prefix + "(fields_v1)\"", "g"), "$1\"MULTIPREFIX_$2\"");
           result = JSON.parse(result);
         } else {
           result = {};
@@ -196,6 +196,7 @@ function simpleGatherAdd(req, res) {
 
 app.get("/_cluster/nodes/stats", simpleGatherCopy);
 app.get("/_nodes/stats", simpleGatherCopy);
+app.get("/_nodes/stats/:kinds", simpleGatherCopy);
 app.get("/_cluster/health", simpleGatherAdd);
 
 app.get("/:index/_aliases", simpleGatherCopy);
@@ -257,10 +258,52 @@ app.get("/:index/:type/_search", function(req, res) {
   simpleGather(req, res, null, function(err, results) {
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
+      if (results[i].error) {
+        console.log("ERROR - GET _search", req.query.index, req.query.type,  results[i].error);
+      }
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
     }
     res.send(obj);
+  });
+});
+
+app.get("/MULTIPREFIX_sessions-*/:type/:id", function(req, res) {
+  function fixTags(node, container, field, doneCb) {
+    if (!container || !container[field]) {
+      return doneCb(null);
+    }
+
+    async.map(container[field], function (item, cb) {
+      tagIdToName(node, item, function (name) {
+        cb(null, name);
+      });
+    },
+    function(err, results) {
+      container[field] = results;
+      doneCb(err);
+    });
+  }
+
+  simpleGather(req, res, null, function(err, results) {
+    for (var i = 0; i < results.length; i++) {
+      if (results[i].found) {
+        async.parallel([
+          function(parallelCb) {
+            fixTags(results[i]._node, results[i]._source, "ta", parallelCb);
+          },
+          function(parallelCb) {
+            fixTags(results[i]._node, results[i]._source, "hh1", parallelCb);
+          },
+          function(parallelCb) {
+            fixTags(results[i]._node, results[i]._source, "hh2", parallelCb);
+          }], function () {
+            return res.send(results[i]);
+          });
+        return;
+      }
+    }
+    res.send(results[0]);
   });
 });
 
@@ -765,6 +808,11 @@ app.post("/MULTIPREFIX_fields/field/_search", function(req, res) {
     var unique = {};
     for (var i = 0; i < results.length; i++) {
       var result = results[i];
+
+      if (result.error) {
+        console.log("ERROR - GET /fields/field/_search", result.error);
+      }
+
       for (var h = 0; h < result.hits.total; h++) {
         var hit = result.hits.hits[h];
         if (!unique[hit._id]) {

@@ -70,11 +70,12 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(2.0|1|0)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 2.1.x or later required.");
+    if (data.version.number.match(/^(2.[0-3]|1|0)/)) {
+      console.log("ERROR - ES", data.version.number, "not supported, ES 2.4.x or later required.");
       process.exit();
       throw new Error("Exiting");
     }
+    exports.isES5 = data.version.number.match(/^5/);
 
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
@@ -167,6 +168,8 @@ exports.searchScroll = function (index, type, query, options, cb) {
     var totalResults;
     var params = {scroll: '1m'};
     exports.merge(params, options);
+    var querySize = query.size;
+    delete query.size
     exports.search(index, type, query, params,
       function getMoreUntilDone(error, response) {
         if (totalResults === undefined) {
@@ -175,7 +178,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
           Array.prototype.push.apply(totalResults.hits.hits, response.hits.hits);
         }
 
-        if (!error && totalResults.hits.hits.length < Math.min(response.hits.total, query.size)) {
+        if (!error && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
           exports.scroll({
             scrollId: response._scroll_id,
             scroll: '1m'
@@ -553,8 +556,8 @@ exports.updateFileSize = function (item, filesize) {
 exports.checkVersion = function(minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 1020) {
-    console.log("ERROR - Need at least node 0.10.20, currently using", process.version);
+  if (version < 40600) {
+    console.log("ERROR - Need at least node 4.6.0, currently using", process.version);
     process.exit(1);
     throw new Error("Exiting");
   }

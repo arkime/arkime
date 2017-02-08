@@ -88,6 +88,7 @@ uint64_t connectionsSet[2048];
 #define BIT_CLR(bit, bits) bits[bit/64] &= ~(1 << (bit % 64))
 
 struct molochhttpserver_t {
+    uint64_t              dropped;
     char                **names;
     int                   namesCnt;
     int                   namesPos;
@@ -99,6 +100,7 @@ struct molochhttpserver_t {
     uint16_t              outstanding;
     uint16_t              connections;
 
+    MOLOCH_LOCK_EXTERN(syncRequest);
     MolochHttpRequest_t   syncRequest;
     CURL                 *multi;
     guint                 multiTimer;
@@ -153,6 +155,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     CURL *easy;
 
+    MOLOCH_LOCK(server->syncRequest);
     if (!server->syncRequest.easy) {
         easy = server->syncRequest.easy = curl_easy_init();
         if (config.debug >= 2) {
@@ -189,6 +192,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     if (res != CURLE_OK) {
         LOG("libcurl failure %s error '%s'", url, curl_easy_strerror(res));
+        MOLOCH_UNLOCK(server->syncRequest);
         return 0;
     }
 
@@ -220,7 +224,10 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
            connectTime*1000,
            totalTime*1000);
     }
-    return (unsigned char *)server->syncRequest.dataIn;
+    uint8_t *dataIn = server->syncRequest.dataIn;
+    server->syncRequest.dataIn = 0;
+    MOLOCH_UNLOCK(server->syncRequest);
+    return dataIn;
 }
 /******************************************************************************/
 static void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
@@ -554,6 +561,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, ui
     // Are we overloaded
     if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
         LOG("ERROR - Dropping request %.*s of size %d queue %d is too big", key_len, key, data_len, server->outstanding);
+        server->dropped++;
 
         if (data) {
             MOLOCH_SIZE_FREE(buffer, data);
@@ -682,6 +690,12 @@ int moloch_http_queue_length(void *serverV)
     return server?server->outstanding:0;
 }
 /******************************************************************************/
+uint64_t moloch_http_dropped_count(void *serverV)
+{
+    MolochHttpServer_t        *server = serverV;
+    return server?server->dropped:0;
+}
+/******************************************************************************/
 void moloch_http_set_header_cb(void *serverV, MolochHttpHeader_cb cb)
 {
     MolochHttpServer_t        *server = serverV;
@@ -761,6 +775,8 @@ void *moloch_http_create_server(const char *hostnames, int defaultPort, int maxC
     curl_multi_setopt(server->multi, CURLMOPT_MAXCONNECTS, server->maxConns);
 
     server->multiTimer = g_timeout_add(50, moloch_http_timer_callback, server);
+
+    MOLOCH_LOCK_INIT(server->syncRequest);
 
     return server;
 }

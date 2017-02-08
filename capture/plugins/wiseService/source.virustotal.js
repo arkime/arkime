@@ -2,13 +2,13 @@
 /*
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ var source;
 
 //////////////////////////////////////////////////////////////////////////////////
 function VirusTotalSource (api, section) {
+  var self = this;
   VirusTotalSource.super_.call(this, api, section);
   this.waiting    = [];
   this.processing = {};
@@ -36,17 +37,27 @@ function VirusTotalSource (api, section) {
     return;
   }
 
-  this.dataSources = ["McAfee", "Symantec", "Microsoft", "Kaspersky"];
+  this.contentTypes = {};
+  var contentTypes = this.api.getConfig("virustotal", "contentTypes",
+          "application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar").split(",");
+  contentTypes.forEach(function(type) { self.contentTypes[type] = 1;});
+
+  this.queriesPerMinute = +this.api.getConfig("virustotal", "queriesPerMinute", 3); // Keeps us under default limit, however most wise queries will time out :(
+  this.maxOutstanding = +this.api.getConfig("virustotal", "maxOutstanding", 25);
+  this.dataSources = this.api.getConfig("virustotal", "dataSources", "McAfee,Symantec,Microsoft,Kaspersky").split(",");
   this.dataSourcesLC = this.dataSources.map(function(x) {return x.toLowerCase();});
   this.dataFields = [];
+  this.fullQuery = true;
 
   this.api.addSource("virustotal", this);
-  setInterval(this.performQuery.bind(this), 500);
+  setInterval(this.performQuery.bind(this), 60000/this.queriesPerMinute);
 
-  var str = 
+  var str =
     "if (session.virustotal)\n" +
     "  div.sessionDetailMeta.bold VirusTotal\n" +
-    "  dl.sessionDetailMeta\n";
+    "  dl.sessionDetailMeta\n" +
+    "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n" +
+    "    +arrayList(session.virustotal, 'links-term', 'Links', 'virustotal.links')\n";
 
   for(var i = 0; i < this.dataSources.length; i++) {
     var uc = this.dataSources[i];
@@ -58,9 +69,6 @@ function VirusTotalSource (api, section) {
   this.hitsField = this.api.addField("field:virustotal.hits;db:virustotal.hits;kind:integer;friendly:Hits;help:VirusTotal Hits;count:true");
   this.linksField = this.api.addField("field:virustotal.links;db:virustotal.links-term;kind:termfield;friendly:Link;help:VirusTotal Link;count:true");
 
-
-  str += "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n";
-  str += "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
 
   this.api.addView("virustotal", str);
 }
@@ -85,25 +93,34 @@ VirusTotalSource.prototype.performQuery = function () {
       method: 'GET',
       json: true
   };
+  var sent = self.waiting;
 
-  self.waiting.length = 0;
-
+  self.waiting = [];
 
   var req = request(options, function(err, im, results) {
-    if (err) {
-      console.log(self.section, "Error parsing for request:\n", options, "\nresults:\n", results);
-      results = [];
-    } 
+    if (err || im.statusCode != 200 || results === undefined) {
+      console.log(self.section, "Error for request:\n", options, "\n", im, "\nresults:\n", results);
+      sent.forEach(function (md5) {
+        var cb = self.processing[md5];
+        if (!cb) {
+          return;
+        }
+        delete self.processing[md5];
+        cb(undefined, undefined);
+      });
+      return;
+    }
+
     if (!Array.isArray(results)) {
       results = [results];
     }
 
     results.forEach(function(result) {
-      var cbs = self.processing[result];
-      if (!cbs) {
+      var cb = self.processing[result.md5];
+      if (!cb) {
         return;
       }
-      delete self.processing[result];
+      delete self.processing[result.md5];
 
       var wiseResult;
       if (result.response_code === 0) {
@@ -123,29 +140,24 @@ VirusTotalSource.prototype.performQuery = function () {
         wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
       }
 
-      var cb;
-      while ((cb = cbs.shift())) {
-        cb(null, wiseResult);
-      }
+      cb(null, wiseResult);
     });
   }).on('error', function (err) {
     console.log(self.section, err);
   });
 };
 //////////////////////////////////////////////////////////////////////////////////
-VirusTotalSource.prototype.getMd5 = function(md5, cb) {
-  var info = this.cache.get(md5);
-  console.log(this.section, "Looking for", md5);
+VirusTotalSource.prototype.getMd5 = function(query, cb) {
 
-  if (md5 in this.processing) {
-    this.processing[md5].push(cb);
-    return;
+  if (query.contentType === undefined || this.contentTypes[query.contentType] !== 1) {
+    return cb (null, undefined);
   }
 
-  this.processing[md5] = [cb];
-  this.waiting.push(md5);
-  if (this.waiting.length >= 25) {
-    this.performQuery();
+  this.processing[query.value] = cb;
+  if (this.waiting.length < this.maxOutstanding) {
+    this.waiting.push(query.value);
+  } else {
+    return cb ("dropped");
   }
 };
 //////////////////////////////////////////////////////////////////////////////////

@@ -1,94 +1,94 @@
 {
    "sessions" : [
       {
-         "body" : {
-            "mac2-term" : [
-               "52:54:00:d9:83:b3"
-            ],
-            "mac1-term" : [
-               "00:23:33:69:4d:00",
-               "00:00:5e:00:01:01"
-            ],
-            "db" : 222,
-            "lastPacket" : 1379970300840,
-            "ps" : [
-               24,
-               205
-            ],
-            "mac1-term-cnt" : 2,
-            "fb1" : "9668240000010001",
-            "portDst" : 53,
-            "pr" : 17,
-            "rir2" : "ARIN",
-            "a2" : "204.62.14.153",
-            "fpd" : 1379970300840,
-            "p2" : 53,
-            "no" : "test",
-            "by2" : 73,
-            "dns" : {
-               "status-term" : [
-                  "NOERROR"
-               ],
-               "qc-term" : [
-                  "IN"
-               ],
-               "opcode-term-cnt" : 1,
-               "qt-term-cnt" : 1,
-               "opcode-term" : [
-                  "NOTIFY"
-               ],
-               "qc-term-cnt" : 1,
-               "status-term-cnt" : 1,
-               "qt-term" : [
-                  "SOA"
-               ]
-            },
-            "pa" : 2,
-            "fp" : 1379970300,
-            "prot-term" : [
-               "udp",
-               "dns"
-            ],
-            "pa2" : 1,
-            "portSrc" : 55612,
-            "fb2" : "9668a40000010000",
-            "mac2-term-cnt" : 1,
-            "db2" : 65,
-            "rir1" : "RIPE",
-            "prot-term-cnt" : 2,
-            "lp" : 1379970300,
-            "by1" : 165,
-            "dnsho" : [
-               "bortzmeyer.42"
-            ],
-            "lpd" : 1379970300840,
-            "ipDst" : "204.62.14.153",
-            "ipSrc" : "217.70.190.232",
-            "fs" : [],
-            "psl" : [
-               181,
-               89
-            ],
-            "g1" : "FRA",
-            "as1" : "AS29169 Domain name registrar - http://www.gandi.net",
-            "dnshocnt" : 1,
-            "g2" : "USA",
-            "db1" : 157,
-            "ss" : 1,
-            "a1" : "217.70.190.232",
-            "firstPacket" : 1379970300840,
-            "sl" : 0,
-            "as2" : "AS46636 NatCoWeb Corp.",
-            "p1" : 55612,
-            "timestamp" : "SET",
-            "by" : 238,
-            "pa1" : 1
-         },
          "header" : {
             "index" : {
                "_type" : "session",
                "_index" : "tests_sessions-130923"
             }
+         },
+         "body" : {
+            "db2" : 65,
+            "mac2-term" : [
+               "52:54:00:d9:83:b3"
+            ],
+            "by1" : 165,
+            "pa" : 2,
+            "g1" : "FRA",
+            "portDst" : 53,
+            "pa1" : 1,
+            "lastPacket" : 1379970300840,
+            "ss" : 1,
+            "portSrc" : 55612,
+            "fpd" : 1379970300840,
+            "pa2" : 1,
+            "a1" : "217.70.190.232",
+            "rir2" : "ARIN",
+            "sl" : 0,
+            "ipSrc" : "217.70.190.232",
+            "db" : 222,
+            "mac2-term-cnt" : 1,
+            "fb2" : "9668a40000010000",
+            "rir1" : "RIPE",
+            "g2" : "USA",
+            "db1" : 157,
+            "lpd" : 1379970300840,
+            "as1" : "AS29169 GANDI SAS",
+            "as2" : "AS46636 NatCoWeb Corp.",
+            "mac1-term" : [
+               "00:23:33:69:4d:00",
+               "00:00:5e:00:01:01"
+            ],
+            "prot-term-cnt" : 2,
+            "fb1" : "9668240000010001",
+            "dns" : {
+               "qc-term" : [
+                  "IN"
+               ],
+               "qt-term-cnt" : 1,
+               "opcode-term-cnt" : 1,
+               "qt-term" : [
+                  "SOA"
+               ],
+               "qc-term-cnt" : 1,
+               "status-term-cnt" : 1,
+               "opcode-term" : [
+                  "NOTIFY"
+               ],
+               "status-term" : [
+                  "NOERROR"
+               ]
+            },
+            "no" : "test",
+            "p2" : 53,
+            "fs" : [],
+            "a2" : "204.62.14.153",
+            "dnshocnt" : 1,
+            "by" : 238,
+            "ipDst" : "204.62.14.153",
+            "firstPacket" : 1379970300840,
+            "mac1-term-cnt" : 2,
+            "by2" : 73,
+            "psl" : [
+               181,
+               89
+            ],
+            "dnsho" : [
+               "bortzmeyer.42"
+            ],
+            "lp" : 1379970300,
+            "prot-term" : [
+               "udp",
+               "dns"
+            ],
+            "fp" : 1379970300,
+            "timestamp" : "SET",
+            "ps" : [
+               24,
+               205
+            ],
+            "p1" : 55612,
+            "pr" : 17
          }
       }
    ]

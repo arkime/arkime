@@ -6,12 +6,12 @@
   become_method: sudo
   vars:
     - yara_version: 1.7
-    - geoip_version: 1.6.0
-    - pcap_version: 1.7.4
-    - curl_version: 7.50.2
-    - glib2_dir: 2.48
-    - glib2_version: 2.48.2
-    - node_version: 4.6.0
+    - geoip_version: 1.6.9
+    - pcap_version: 1.8.1
+    - curl_version: 7.52.1
+    - glib2_dir: "2.50"
+    - glib2_version: 2.50.2
+    - node_version: 4.6.2
     - daq_version: 2.0.6
     - lua_version: 5.3.3
     - rvm1_rubies:
@@ -30,7 +30,7 @@
         - name: epel repo
           yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ansible_distribution_major_version}}.noarch.rpm state=installed
 
-        # On Centos 6 need to upgrade kernel so we get TPACKET_V3.  User doesn't have to have new kernel
+        # On Centos 6 need to upgrade kernel so we get TPACKET_V3.  User doesn't have to have new kernel, but should
         - block:
           - name: remove old kernel headers
             yum: state=absent name=kernel-headers
@@ -135,7 +135,7 @@
       get_url: url={{item}} dest=. validate_certs=no
       with_items:
         - https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/yara-project/yara-{{yara_version}}.tar.gz
-        - http://www.maxmind.com/download/geoip/api/c/GeoIP-{{geoip_version}}.tar.gz
+        - https://github.com/maxmind/geoip-api-c/releases/download/v{{geoip_version}}/GeoIP-{{geoip_version}}.tar.gz
         - http://www.tcpdump.org/release/libpcap-{{pcap_version}}.tar.gz
         - http://curl.haxx.se/download/curl-{{curl_version}}.tar.gz
         - http://ftp.gnome.org/pub/gnome/sources/glib/{{glib2_dir}}/glib-{{glib2_version}}.tar.xz
@@ -175,7 +175,7 @@
       register: st
 
     - name: Build libpcap
-      shell: cd libpcap-{{pcap_version}}; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth; make
+      shell: cd libpcap-{{pcap_version}}; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth --with-snf=no; make
       when: st.stat.exists == False
 
     - name: Check curl
@@ -191,7 +191,7 @@
       register: st
 
     - name: Build glib2
-      shell: cd glib-{{glib2_version}}; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --with-pcre=internal; make
+      shell: cd glib-{{glib2_version}}; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal; make
       when: st.stat.exists == False
 
     - name: Check daq
@@ -199,7 +199,7 @@
       register: st
 
     - name: Build daq
-      shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-1.7.4/ --with-libpcap-libraries=/home/vagrant/libpcap-1.7.4; make; make install
+      shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-{{pcap_version}}/ --with-libpcap-libraries=/home/vagrant/libpcap-{{pcap_version}}; make; make install
       when: st.stat.exists == False
 
     - name: Check lua
@@ -344,7 +344,7 @@
       - name: fpm centos
         shell: bash -lc "{{item}}"
         with_items:
-          - fpm -s dir -t rpm -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" /data/{{moloch_name}}
+          - fpm -s dir -t rpm -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d perl-libwww-perl -d perl-JSON -d ethtool /data/{{moloch_name}}
 
       - name: copy centos back
         fetch: src={{moloch_name}}-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=./builds
@@ -364,7 +364,7 @@
       - name: fpm ubuntu
         shell: bash -lc "{{item}}"
         with_items:
-          - fpm -s dir -t deb -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" /data/{{moloch_name}}
+          - fpm -s dir -t deb -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d libwww-perl -d libjson-perl -d ethtool /data/{{moloch_name}}
 
       - name: copy ubuntu back
         fetch: src={{moloch_name}}_{{moloch_version}}-{{iteration}}_amd64.deb dest=./builds

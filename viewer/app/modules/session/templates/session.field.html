@@ -1,0 +1,37 @@
+<!-- normal field with a single value -->
+<span ng-if="::(!$ctrl.field.children && $ctrl.parsed !== undefined)"
+  ng-repeat="parsed in ::$ctrl.parsed track by $index">
+
+  <span lazy-menu class="field dropdown" ng-if="::(!$ctrl.time)">
+    <a href class="value" ng-click="$ctrl.toggleDropdown($event)">
+      <span class="all-copy">{{::parsed.value}}</span><span class="fa fa-caret-down"></span>
+    </a>
+  </span>
+
+  <!-- time constraint -->
+  <span ng-if="::($ctrl.time)" class="field cursor-pointer"
+    ng-click="$ctrl.timeClick($ctrl.expr, parsed.queryVal)"
+    uib-tooltip="Click to apply time constraint">
+    <a>{{::parsed.value}}</a>
+  </span>
+
+</span>
+
+<!-- special column (with multiple fields to display) -->
+<span ng-if="::($ctrl.session && $ctrl.field.children)">
+
+  <!-- info column is super special (has its own template) -->
+  <span ng-if="::($ctrl.field.dbField === 'info')">
+    <session-info session="::$ctrl.session" field="::$ctrl.field"></session-info>
+  </span>
+
+  <!-- recurse on child fields -->
+  <span ng-if="::($ctrl.field.dbField !== 'info')">
+    <div class="field-children" ng-repeat="child in ::$ctrl.field.children track by $index">
+      <session-field field="::child" expr="{{::child.exp}}" stringify="{{::$ctrl.stringify}}"
+        value="{{::$ctrl.session[child.dbField]}}" parse="{{::$ctrl.parse}}"
+        session="::$ctrl.session" timezone="{{::$ctrl.timezone}}"></session-field>
+    </div>
+  </span>
+
+</span>

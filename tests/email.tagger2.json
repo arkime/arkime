@@ -5,6 +5,6 @@
 #view:  div.sessionDetailMeta.bold Tagger
 #view:  dl.sessionDetailMeta.bold Tagger
 #view:    +arrayList(session.tagger, 'str-term', 'Str', 'tagger.str')
-12345678@aol.com;email.dst=added1;2=srcmatch;0=house;tagger.str=boat
+12345678@aol.com;email.dst=added1;2=srcmatch;0=house;tagger.str=boat;dontSaveSPI=0
 xxxxx-xxxx@xxxx.xxx.xx.jp;email.src=added2;tags=dstmatch;1=1;tagger.int=3
 

@@ -1,0 +1,514 @@
+<div class="container-fluid container-settings">
+
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="margined-bottom-none">
+        <span class="fa fa-cogs"></span>&nbsp;
+        <span ng-if="!$ctrl.userId">
+          Settings
+        </span>
+        <span ng-if="$ctrl.userId" class="text-danger">
+          Admin Updating Settings for {{::$ctrl.userId}}
+        </span>
+        <div class="pull-right small toast-container">
+          <toast message="$ctrl.msg" type="$ctrl.msgType"
+            done="$ctrl.messageDone()"></toast>
+        </div>
+      </h2>
+    </div>
+  </div>
+
+  <hr>
+
+  <loading ng-if="$ctrl.loading"></loading>
+
+  <error ng-if="$ctrl.error" message="$ctrl.error"></error>
+
+  <div class="row" ng-if="!$ctrl.loading && !$ctrl.error">
+
+    <!-- navigation -->
+    <div class="col-md-2 col-sm-3">
+      <ul class="nav nav-pills nav-stacked affix">
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'general'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('general')">
+            <span class="fa fa-fw fa-cog"></span>&nbsp;
+            General
+          </a>
+        </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'views'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('views')">
+            <span class="fa fa-fw fa-eye"></span>&nbsp;
+            Views
+          </a>
+        </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'cron'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('cron')">
+            <span class="fa fa-fw fa-search"></span>&nbsp;
+            Cron Queries
+          </a>
+        </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'password'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('password')">
+            <span class="fa fa-fw fa-lock"></span>&nbsp;
+            Password
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- content -->
+    <div class="col-md-10 col-sm-9">
+
+      <!-- general settings -->
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'general'">
+
+        <h3>General</h3>
+
+        <hr>
+
+        <!-- timezone -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Timezone Format</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
+                uib-btn-radio="'local'" ng-change="$ctrl.updateTime()">local</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
+                uib-btn-radio="'gmt'" ng-change="$ctrl.updateTime()">gmt</label>
+            </div>
+            <label class="margined-left-xxlg text-purple">
+              {{$ctrl.date | date : $ctrl.dateFormat : $ctrl.settings.timezone}}
+            </label>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- session detail format -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Session Detail Format</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'natural'" ng-change="$ctrl.update()">natural</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'ascii'" ng-change="$ctrl.update()">ascii</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'utf8'" ng-change="$ctrl.update()">utf8</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+                uib-btn-radio="'hex'" ng-change="$ctrl.update()">hex</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- number of packets -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Number of Packets</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'50'" ng-change="$ctrl.update()">50</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'200'" ng-change="$ctrl.update()">200</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'500'" ng-change="$ctrl.update()">500</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'1000'" ng-change="$ctrl.update()">1,000</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+                uib-btn-radio="'2000'" ng-change="$ctrl.update()">2,000</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- show packet timestamps -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Show Packet Timestamps</label>
+          <div class="col-sm-9">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+                uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+                uib-btn-radio="'on'" ng-change="$ctrl.update()">on</label>
+              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+                uib-btn-radio="'off'" ng-change="$ctrl.update()">off</label>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- default spi graph -->
+        <div class="form-group" ng-if="$ctrl.fields">
+          <label class="col-sm-3 control-label">Default SPI Graph</label>
+          <div class="col-sm-9">
+            <input type="text" ng-model="$ctrl.settings.spiGraph"
+              class="form-control short-control"
+              typeahead-on-select="$ctrl.update()"
+              typeahead-input-formatter="$ctrl.formatField($model)"
+              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:10">
+            <label class="label label-lg label-info"
+              uib-tooltip="{{$ctrl.getField($ctrl.settings.spiGraph).help}}">
+              {{$ctrl.formatField($ctrl.settings.spiGraph) || 'unknown field'}}
+            </label>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- connections src field -->
+        <div class="form-group" ng-if="$ctrl.fields">
+          <label class="col-sm-3 control-label">Connections Src Field</label>
+          <div class="col-sm-9">
+            <input type="text" ng-model="$ctrl.settings.connSrcField"
+              class="form-control short-control"
+              typeahead-on-select="$ctrl.update()"
+              typeahead-input-formatter="$ctrl.formatField($model)"
+              uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:10">
+            <label class="label label-lg label-info"
+              uib-tooltip="{{$ctrl.getField($ctrl.settings.connSrcField).help}}">
+              {{$ctrl.formatField($ctrl.settings.connSrcField) || 'unknown field'}}
+            </label>
+          </div>
+        </div>
+
+        <!-- connections dst field -->
+        <div class="form-group" ng-if="$ctrl.fields">
+          <label class="col-sm-3 control-label">Connections Dst Field</label>
+          <div class="col-sm-9">
+            <input type="text" ng-model="$ctrl.settings.connDstField"
+              class="form-control short-control"
+              typeahead-on-select="$ctrl.update()"
+              typeahead-input-formatter="$ctrl.formatField($model)"
+              uib-typeahead="field.dbField as field.exp for field in $ctrl.fieldsPlus | filter:$viewValue | limitTo:10">
+            <label class="label label-lg label-info"
+              uib-tooltip="{{$ctrl.getField($ctrl.settings.connDstField).help}}">
+              {{$ctrl.formatField($ctrl.settings.connDstField) || 'unknown field'}}
+            </label>
+          </div>
+        </div>
+
+      </form> <!-- /general settings -->
+
+      <!-- view settings -->
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'views'">
+
+        <h3>Views</h3>
+
+        <p>
+           Saved views provide an easier method to specify common base queries
+           and can be activated in the search bar.
+        </p>
+
+        <hr>
+
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Expression</th>
+            <th>&nbsp;</th>
+          </tr>
+          </thead>
+          <tbody>
+            <!-- views -->
+            <tr ng-repeat="(key, val) in $ctrl.views"
+              enter-click="$ctrl.updateView(key)">
+              <td>
+                <input type="text" ng-model="val.name" maxlength="20"
+                  class="form-control" ng-change="$ctrl.viewChanged(key);">
+              </td>
+              <td>
+                <input type="text" ng-model="val.expression"
+                  class="form-control" ng-change="$ctrl.viewChanged(key);">
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm pull-right" role="group"
+                  ng-if="val.changed">
+                  <a class="btn btn-primary" tooltip-append-to-body="true"
+                     uib-tooltip="Save changes to this view"
+                     ng-click="$ctrl.updateView(key)">
+                    <span class="fa fa-save"></span>
+                  </a>
+                  <a class="btn btn-warning" tooltip-append-to-body="true"
+                     uib-tooltip="Undo changes to this view"
+                     ng-click="$ctrl.cancelViewChange(key)">
+                    <span class="fa fa-ban"></span>
+                  </a>
+                </div>
+                <a class="btn btn-sm btn-danger pull-right"
+                  ng-if="!val.changed"
+                  ng-click="$ctrl.deleteView(key)">
+                  <span class="fa fa-trash-o"></span>&nbsp;
+                  Delete
+                </a>
+              </td>
+            </tr> <!-- /views -->
+            <!-- view list error -->
+            <tr ng-if="$ctrl.viewListError">
+              <td colspan="3">
+                <p class="text-danger margined-bottom-none">
+                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                  {{$ctrl.viewListError}}
+                </p>
+              </td>
+            </tr> <!-- /view list error -->
+            <!-- new view form -->
+            <tr enter-click="$ctrl.createView()">
+              <td>
+                <input type="text" ng-model="$ctrl.newViewName"
+                  class="form-control" maxlength="20"
+                  placeholder="Enter a new view name">
+              </td>
+              <td>
+                <input type="text" ng-model="$ctrl.newViewExpression"
+                  class="form-control" placeholder="Enter a new view expression">
+              </td>
+              <td>
+                <a class="btn btn-primary btn-sm pull-right"
+                  ng-click="$ctrl.createView()">
+                  <span class="fa fa-plus-circle"></span>&nbsp;
+                  Create
+                </a>
+              </td>
+            </tr> <!-- /new view form -->
+            <!-- view form error -->
+            <tr ng-if="$ctrl.viewFormError">
+              <td colspan="3">
+                <p class="small text-danger margined-bottom-none">
+                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                  {{$ctrl.viewFormError}}
+                </p>
+              </td>
+            </tr> <!-- /view form error -->
+          </tbody>
+        </table>
+
+      </form> <!-- /view settings -->
+
+      <!-- cron query settings -->
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'cron'">
+
+        <h3>Cron Queries</h3>
+
+        <p>
+          Allow queries to be run periodically that can perform actions on
+          sessions that match the queries. The query runs against sessions
+          delayed by 90 second to make sure all updates have been completed
+          for that session.
+        </p>
+
+        <hr>
+
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Enabled</th>
+              <th>Processed</th>
+              <th>Name</th>
+              <th>Expression</th>
+              <th>Action</th>
+              <th>Tags</th>
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- cron queries -->
+            <tr ng-repeat="(key, val) in $ctrl.cronQueries"
+              enter-click="$ctrl.updateCronQuery(key)">
+              <td>
+                <input type="checkbox" ng-model="val.enabled"
+                  ng-change="$ctrl.cronQueryChanged(key);">
+              </td>
+              <td>{{::val.count}}</td>
+              <td>
+                <input type="text" maxlength="20" ng-model="val.name"
+                  class="form-control" ng-change="$ctrl.cronQueryChanged(key);">
+              </td>
+              <td>
+                <input type="text" ng-model="val.query"
+                  class="form-control" ng-change="$ctrl.cronQueryChanged(key);">
+              </td>
+              <td>
+                <select class="form-control" ng-model="val.action"
+                  ng-change="$ctrl.cronQueryChanged(key);">
+                  <option value="tag">Tag</option>
+                  <option ng-repeat="cluster in ::$ctrl.molochClusters"
+                    value="forward:{{::cluster.name | lowercase}}">
+                    Tag & Export to {{::cluster.name}}
+                  </option>
+                </select>
+              </td>
+              <td>
+                <input type="text" ng-model="val.tags"
+                  class="form-control" ng-change="$ctrl.cronQueryChanged(key);">
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm pull-right" role="group" ng-if="val.changed">
+                  <a class="btn btn-primary" tooltip-append-to-body="true"
+                    uib-tooltip="Save changes to this cron query"
+                    ng-click="$ctrl.updateCronQuery(key)">
+                    <span class="fa fa-save"></span>
+                  </a>
+                  <a class="btn btn-warning" tooltip-append-to-body="true"
+                    uib-tooltip="Undo changes to this cron query"
+                    ng-click="$ctrl.cancelCronQueryChange(key)">
+                    <span class="fa fa-ban"></span>
+                  </a>
+                </div>
+                <a class="btn btn-sm btn-danger pull-right"
+                  ng-if="!val.changed"
+                  ng-click="$ctrl.deleteCronQuery(key)">
+                  <span class="fa fa-trash-o"></span>&nbsp;
+                  Delete
+                </a>
+              </td>
+            </tr> <!-- /cron queries -->
+            <!-- cron query form error -->
+            <tr ng-if="$ctrl.cronQueryListError">
+              <td colspan="7">
+                <p class="text-danger margined-bottom-none">
+                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                  {{$ctrl.cronQueryListError}}
+                </p>
+              </td>
+            </tr> <!-- /cron query form error -->
+            <!-- new cron query form -->
+            <tr enter-click="$ctrl.createCronQuery()">
+              <td>&nbsp;</td>
+              <td>
+                <select class="form-control" ng-model="$ctrl.newCronQueryProcess"
+                  convert-to-number uib-tooltip="Start processing cron query since">
+                  <option value="0">Now</option>
+                  <option value="1">1 hr ago</option>
+                  <option value="6">6 hrs ago</option>
+                  <option value="24">24 hrs ago</option>
+                  <option value="48">48 hrs ago</option>
+                  <option value="72">3 days ago</option>
+                  <option value="168">1 week ago</option>
+                  <option value="720">1 month ago</option>
+                  <option value="4380">6 months ago</option>
+                  <option value="-1">All (careful)</option>
+                </select>
+              </td>
+              <td>
+                <input type="text" ng-model="$ctrl.newCronQueryName"
+                  class="form-control" maxlength="20"
+                  uib-tooltip="Enter a new cron query name"
+                  placeholder="Cron query name">
+              </td>
+              <td>
+                <input type="text" ng-model="$ctrl.newCronQueryExpression" class="form-control"
+                  uib-tooltip="Enter a new cron query expression"
+                  placeholder="Cron query expression">
+              </td>
+              <td>
+                <select class="form-control" ng-model="$ctrl.newCronQueryAction">
+                  <option value="tag">Tag</option>
+                  <option ng-repeat="cluster in ::$ctrl.molochClusters"
+                    value="forward:{{::cluster.name | lowercase}}">
+                    Tag & Export to {{::cluster.name}}
+                  </option>
+                </select>
+              </td>
+              <td>
+                <input type="text" ng-model="$ctrl.newCronQueryTags" class="form-control"
+                  uib-tooltip="Enter a comma separated list of tags"
+                  placeholder="Comma separated list of tags">
+              </td>
+              <td>
+                <a class="btn btn-primary btn-sm pull-right"
+                  ng-click="$ctrl.createCronQuery()">
+                  <span class="fa fa-plus-circle"></span>&nbsp;
+                  Create
+                </a>
+              </td>
+            </tr> <!-- /new cron query form -->
+            <!-- cron query form error -->
+            <tr ng-if="$ctrl.cronQueryFormError">
+              <td colspan="7">
+                <p class="small text-danger margined-bottom-none">
+                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                  {{$ctrl.cronQueryFormError}}
+                </p>
+              </td>
+            </tr> <!-- /cron query form error -->
+          </tbody>
+        </table>
+
+      </form> <!-- /cron query settings -->
+
+      <!-- password settings -->
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'password'"
+        enter-click="$ctrl.changePassword()">
+
+        <h3>Change Password</h3>
+
+        <hr>
+
+        <!-- current password -->
+        <div class="form-group" ng-if="!$ctrl.userId">
+          <label class="col-sm-3 control-label">Current Password</label>
+          <div class="col-sm-9">
+            <input type="password" class="form-control short-control"
+              ng-model="$ctrl.currentPassword"
+              placeholder="Enter your current password">
+          </div>
+        </div>
+
+        <!-- new password -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">New Password</label>
+          <div class="col-sm-9">
+            <input type="password" class="form-control short-control"
+              ng-model="$ctrl.newPassword"
+              placeholder="Enter a new password">
+          </div>
+        </div>
+
+        <!-- confirm new password -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">New Password</label>
+          <div class="col-sm-9">
+            <input type="password" class="form-control short-control"
+              ng-model="$ctrl.confirmNewPassword"
+              placeholder="Confirm your new password">
+          </div>
+        </div>
+
+        <!-- error -->
+        <div class="row" ng-if="$ctrl.changePasswordError">
+          <div class="col-sm-3">&nbsp;</div>
+          <div class="col-sm-9">
+            <p class="small text-danger">
+              <span class="fa fa-exclamation-triangle"></span>&nbsp;
+              {{$ctrl.changePasswordError}}
+            </p>
+          </div>
+        </div>
+
+        <!-- button -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">&nbsp;</label>
+          <div class="col-sm-9">
+            <a class="btn btn-primary"
+              ng-click="$ctrl.changePassword()">
+              Change Password
+            </a>
+          </div>
+        </div>
+
+      </form> <!-- /password settings -->
+
+    </div> <!-- /content -->
+
+  </div>
+
+</div>

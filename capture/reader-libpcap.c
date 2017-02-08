@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* reader-libpcap-file.c  -- Reader using libpcap to a file
+/* reader-libpcap.c  -- Reader using libpcap
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
@@ -50,7 +50,7 @@ int reader_libpcap_stats(MolochReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-void reader_libpcap_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
+void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_char *bytes)
 {
     if (unlikely(h->caplen != h->len)) {
         LOG("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
@@ -65,7 +65,7 @@ void reader_libpcap_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, c
     packet->ts            = h->ts;
     packet->pktlen        = h->len;
 
-    moloch_packet(packet);
+    moloch_packet_batch((MolochPacketBatch_t *)batch, packet);
 }
 /******************************************************************************/
 static void *reader_libpcap_thread(gpointer pcapv)
@@ -73,11 +73,14 @@ static void *reader_libpcap_thread(gpointer pcapv)
     pcap_t *pcap = pcapv;
     LOG("THREAD %p", (gpointer)pthread_self());
 
+    MolochPacketBatch_t   batch;
+    moloch_packet_batch_init(&batch);
     while (1) {
-        int r = pcap_loop(pcap, -1, reader_libpcap_pcap_cb, NULL);
+        int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char*)&batch);
+        moloch_packet_batch_flush(&batch);
 
         // Some kind of failure we quit
-        if (unlikely(r <= 0)) {
+        if (unlikely(r < 0)) {
             moloch_quit();
             pcap = 0;
             break;

@@ -61,6 +61,8 @@ LOCAL void *reader_snf_thread(gpointer ring)
 {
     struct snf_recv_req req;
 
+    MolochPacketBatch_t batch;
+    moloch_packet_batch_init(&batch);
     while (!config.quitting) {
         int err = snf_ring_recv(ring, -1, &req);
         if (err) {
@@ -78,8 +80,12 @@ LOCAL void *reader_snf_thread(gpointer ring)
         packet->ts.tv_usec    = req.timestamp % 1000000000000;
         packet->pktlen        = req.length;
 
-        moloch_packet(packet);
+        moloch_packet_batch(&batch, packet);
+
+        if (batch.count > 10000)
+            moloch_packet_batch_flush(&batch);
     }
+    moloch_packet_batch_flush(&batch);
     return NULL;
 }
 /******************************************************************************/
