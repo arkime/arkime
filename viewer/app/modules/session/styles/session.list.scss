@@ -9,8 +9,10 @@ session {
 
     thead {
       tr {
-        th {
-          vertical-align: top;
+        th { vertical-align: top; }
+        th:first-child {
+          vertical-align: middle;
+          padding : 0;
         }
       }
     }
@@ -32,6 +34,8 @@ session {
         &.session-detail-row {
           background-color: lighten($color-yellow-light, 36%);
         }
+
+        td { padding: 0 1px; }
 
       }
     }
@@ -78,7 +82,7 @@ session {
 }
 
 
-/* column visibility menu ------------------ */
+/* column visibility menu -------------------- */
 .col-vis-menu {
   max-height: 300px;
   overflow  : auto;
@@ -88,6 +92,10 @@ session {
     width : 200px;
   }
 }
+
+
+/* custom column configurations menu --------- */
+.col-config-menu { max-width: 280px; }
 
 
 /* grouped dropdown menu --------------------- */

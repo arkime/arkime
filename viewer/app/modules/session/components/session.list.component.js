@@ -68,6 +68,8 @@
 
       this.getUserSettings();
 
+      this.getCustomColumnConfigurations();
+
       /* Listen! */
       // watch for pagination changes (from pagination.component)
       this.$scope.$on('change:pagination', (event, args) => {
@@ -177,9 +179,7 @@
         });
     }
 
-    /**
-     * Gets the current user's settings
-     */
+    /* Gets the current user's settings */
     getUserSettings() {
       this.UserService.getSettings()
          .then((settings) => {
@@ -195,9 +195,7 @@
          });
     }
 
-    /**
-     * Gets the state of the table (sort order and column order/visibility)
-     */
+    /* Gets the state of the table (sort order and column order/visibility) */
     getTableState() {
       this.SessionService.getTableState()
          .then((response) => {
@@ -221,6 +219,17 @@
                 this.getData();
               }).catch((error) => { this.error = error; });
          }).catch((error) => { this.error = error; });
+    }
+
+    /* Gets the current user's custom column configurations */
+    getCustomColumnConfigurations() {
+      this.UserService.getColumnConfigs()
+        .then((response) => {
+          this.colConfigs = response;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
     }
 
     /**
@@ -384,7 +393,7 @@
         } else {
           // if it's a shift click - toggle the order between 3 states:
           // 'asc' -> 'desc' -> removed from sorts
-          if (this.getSortOrder(id) === 'desc') {
+          if (this.getSortOrder(id) === 'desc' && this.tableState.order.length > 1) {
             for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
               if (this.tableState.order[i][0] === id) {
                 this.tableState.order.splice(i, 1);
@@ -443,6 +452,50 @@
     }
 
     /**
+     * Updates the sort field and order if the current sort column has
+     * been removed
+     * @param {string} id The id of the sort field
+     * @returns {boolean} Whether the table requires a data reload
+     */
+    updateSort(id) {
+      let updated = false;
+
+      // update the sort field and order if the table was being sorted by that field
+      let sortIndex = this.isSorted(id);
+      if (sortIndex > -1) {
+        updated = true; // requires a data reload because the sort is different
+        // if we are sorting by this column, remove it
+        if (this.tableState.order.length === 1) {
+          // this column is the only column we are sorting by
+          // so reset it to the first sortable field in the visible headers
+          let newSort;
+          for (let i = 0, len = this.headers.length; i < len; ++i) {
+            let header = this.headers[i];
+            // find the first sortable column
+            if ((!header.children || (header.children && header.sortBy)) &&
+               (header.dbField !== id && header.sortBy !== id)) {
+              newSort = header.sortBy || header.dbField;
+              break;
+            }
+          }
+
+          // if there are no columns to sort by, sort by start time
+          if (!newSort) { newSort = 'fp'; }
+
+          this.tableState.order = [[newSort,'asc']];
+        } else {
+          // this column is one of many we are sorting by, so just remove it
+          this.tableState.order.splice(sortIndex, 1);
+        }
+
+        // update the query
+        this.query.sorts = this.tableState.order;
+      }
+
+      return updated;
+    }
+
+    /**
      * Sets holdingClick to true if the user holds the click for
      * 300ms or longer. If the user clicks and holds/drags, the
      * sortBy function returns immediately and does not issue query
@@ -466,16 +519,6 @@
 
 
     /* COLUMN INTERACTIONS */
-    /* resets the columns to default, reloads table, saves new table state */
-    resetDefaultColumns() {
-      this.isopen     = false; // close the column visibility dropdown
-      this.loading    = true;
-      this.tableState = defaultTableState;
-
-      this.reloadTable();
-      this.saveTableState();
-    }
-
     /**
      * Fires when column drop is completed
      * @param {number} newIndex The index of the drop target
@@ -514,35 +557,20 @@
 
     /**
      * Toggles the visibility of a column given its id
-     * @param {string} id The id of the column to show/hide (toggle)
+     * @param {string} id   The id of the column to show/hide (toggle)
+     * @param {string} sort Option sort id for columns that have sortBy
      */
-    toggleVisibility(id) {
-      this.isopen    = false; // close the column visibility dropdown
-      this.loading   = true;
-      let reloadData = false;
+    toggleVisibility(id, sort) {
+      this.colVisOpen = false; // close the column visibility dropdown
+      this.loading    = true;
+      let reloadData  = false;
 
       let index = this.isVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
         this.tableState.visibleHeaders.splice(index,1);
-
-        // update the sort field and order if the table was being sorted by that field
-        let sortIndex = this.isSorted(id);
-        if (sortIndex > -1) {
-          reloadData = true; // requires a data reload
-          // if we are sorting by this column, remove it
-          if (this.tableState.order.length === 1) {
-            // this column is the only column we are sorting by
-            // so reset it to the first field in the visible headers
-            this.tableState.order = [[this.tableState.visibleHeaders[0],'asc']];
-          } else {
-            // this column is one of many we are sorting by, so just remove it
-            this.tableState.order.splice(sortIndex, 1);
-          }
-
-          this.query.sorts = this.tableState.order;
-        }
+        reloadData = this.updateSort(sort || id);
       } else { // it's hidden
         reloadData = true; // requires a data reload
         // add it to the visible headers list
@@ -554,6 +582,107 @@
       if (reloadData) { this.getData(true); } // need data from the server
 
       this.saveTableState(true);
+    }
+
+    /**
+     * Loads a previously saved custom column configuration and
+     * reloads table and table data
+     * If no index is given, loads the default columns
+     * @param {int} index The index in the array of the column config to load
+     */
+    loadColumnConfiguration(index) {
+      this.colConfigsOpen = false;  // close the column config dropdown
+
+      if (this.isSameAsVisible(index)) { return; }
+
+      this.loading = true;
+
+      if (!index && index !== 0) {
+        this.tableState.visibleHeaders  = defaultTableState.visibleHeaders.slice();
+        this.tableState.order           = defaultTableState.order.slice();
+      } else {
+        this.tableState.visibleHeaders  = this.colConfigs[index].columns.slice();
+        this.tableState.order           = this.colConfigs[index].order.slice();
+      }
+
+      this.query.sorts = this.tableState.order;
+
+      this.reloadTable();
+
+      this.saveTableState();
+
+      this.getData(true);
+    }
+
+    /* Saves a custom column configuration */
+    saveColumnConfiguration() {
+      if (!this.newColConfigName) {
+        this.colConfigError = 'You must name your new column configuration';
+        return;
+      }
+
+      let data = {
+        name    : this.newColConfigName,
+        columns : this.tableState.visibleHeaders.slice(),
+        order   : this.tableState.order.slice()
+      };
+
+      this.UserService.createColumnConfig(data)
+        .then((response) => {
+          data.name = response.name; // update column config name
+
+          this.colConfigs.push(data);
+
+          this.newColConfigName = null;
+          this.colConfigsOpen   = false;
+          this.colConfigError   = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    }
+
+    /**
+     * Deletes a previously saved custom column configuration
+     * @param {string} name The name of the column config to remove
+     * @param {int} index   The index in the array of the column config to remove
+     */
+    deleteColumnConfiguration(name, index) {
+      this.UserService.deleteColumnConfig(name)
+        .then((response) => {
+          this.colConfigs.splice(index, 1);
+          this.colConfigError = false;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
+        });
+    }
+
+    /**
+     * Determines whether the custom column configuration is the same as the
+     * visible columns in the table
+     * @param {int} index The index in the array of the column config to compare
+     * @returns {boolean} Whether the custom column config is the same as the
+     *                    visible columns in the table
+     */
+    isSameAsVisible(index) {
+      let customCols;
+
+      if (index === undefined) {
+        customCols = defaultTableState.visibleHeaders.slice();
+      } else { customCols = this.colConfigs[index].columns; }
+
+      let tableCols   = this.tableState.visibleHeaders;
+
+      if (customCols === tableCols)                   { return true; }
+      if (customCols === null || tableCols === null)  { return false; }
+      if (customCols.length !== tableCols.length)     { return false; }
+
+      for (let i = 0, len = customCols.length; i < len; ++i) {
+        if (customCols[i] !== tableCols[i]) { return false; }
+      }
+
+      return true;
     }
 
 
