@@ -41,7 +41,7 @@
       templateAsHtml = template.html();
 
       // set default location
-      navbar.$location.path('/app');
+      navbar.$location.path('/sessions');
 
       // initialize component controller
       navbar.$onInit();
@@ -63,7 +63,7 @@
 
     it('should have menu items', function() {
       expect(navbar.menu).toBeDefined();
-      expect(navbar.menu.app).toBeDefined();
+      expect(navbar.menu.sessions).toBeDefined();
       expect(navbar.menu.spiview).toBeDefined();
       expect(navbar.menu.spigraph).toBeDefined();
       expect(navbar.menu.connections).toBeDefined();
@@ -74,7 +74,7 @@
     });
 
     it('should verify active route', function() {
-      expect(navbar.isActive('app')).toBeTruthy();
+      expect(navbar.isActive('sessions')).toBeTruthy();
     });
 
     it('should add #settings to the url', function() {

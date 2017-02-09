@@ -773,20 +773,16 @@ function sessionsOld (req, res) {
   });
 }
 
-if (Config.get("newUI", false)) {
-  app.get("/", function(req, res) {
-    var question = req.url.indexOf("?");
-    if (question === -1) {
-      res.redirect("app");
-    } else {
-      res.redirect("app" + req.url.substring(question));
-    }
-  });
-  app.get("/sessions", checkWebEnabled, sessionsOld);
-} else {
-  app.get("/", checkWebEnabled, sessionsOld);
-  app.get("/sessions", checkWebEnabled, sessionsOld);
-}
+app.get(['/', '/app'], function(req, res) {
+  var question = req.url.indexOf("?");
+  if (question === -1) {
+    res.redirect("sessions");
+  } else {
+    res.redirect("sessions" + req.url.substring(question));
+  }
+});
+
+app.get("/sessions.old", checkWebEnabled, sessionsOld);
 
 app.get("/spiview", checkWebEnabled, function(req, res) {
   res.render('spiview.jade', {
@@ -897,7 +893,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
+app.get(['/sessions', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
