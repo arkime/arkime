@@ -42,6 +42,14 @@ moloch-stats {
         opacity   : 1;
       }
     }
+
+    &.table-striped > tbody > tr:nth-of-type(odd) {
+      background-color: $color-gray-light;
+    }
+
+    &.table > tfoot > tr:first-child > td {
+      border-top: 2px solid lighten($color-gray, 5%);
+    }
   }
 
   // Cubism stuff

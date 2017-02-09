@@ -1,109 +1,113 @@
-<div class="row">
-<!-- top pagination controls -->
-  <div class="col-md-6">
-    <moloch-pagination length="$ctrl.query.length"
-      records-total="$ctrl.stats.recordsTotal"
-      records-filtered="$ctrl.stats.recordsFiltered"
-      current-page="$ctrl.currentPage"
-      start="$ctrl.query.start"></moloch-pagination>
-  </div>
-  <div class="col-md-4 col-md-offset-2">
-    <div class="input-group input-group-sm pull-right header-input">
-      <span class="input-group-addon">
-        <span class="fa fa-search"></span>
-      </span>
-      <input type="text" class="form-control" ng-model="$ctrl.searchStats"
-        ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
-        placeholder="Search for stats in the table below">
+<div class="well well-sm">
+
+  <div class="row">
+  <!-- top pagination controls -->
+    <div class="col-md-6">
+      <moloch-pagination length="$ctrl.query.length"
+        records-total="$ctrl.stats.recordsTotal"
+        records-filtered="$ctrl.stats.recordsFiltered"
+        current-page="$ctrl.currentPage"
+        start="$ctrl.query.start"></moloch-pagination>
+    </div>
+    <div class="col-md-4 col-md-offset-2">
+      <div class="input-group input-group-sm pull-right header-input">
+        <span class="input-group-addon">
+          <span class="fa fa-search"></span>
+        </span>
+        <input type="text" class="form-control" ng-model="$ctrl.searchStats"
+          ng-model-options="{debounce:300}" ng-change="$ctrl.loadData()"
+          placeholder="Search for stats in the table below">
+      </div>
     </div>
   </div>
-</div>
 
-<table class="table table-condensed table-striped margined-top-xxxlg"
-  ng-if="!$ctrl.error && $ctrl.stats">
-  <thead class="small">
-    <tr>
-      <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
-        ng-click="$ctrl.columnClick(column.sort)">
-        {{::column.name}}
-        <span ng-if="column.sort !== undefined">
-          <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
-          <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
-          <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
-        </span>
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-  <tbody>
-    <tr class="animate-repeat"
-      ng-repeat-start="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.id">
-      <td class="no-wrap">
-        <a class="btn btn-sm btn-toggle"
-          ng-class="{'collapsed':!$ctrl.expanded[stat.id], 'btn-green':!$ctrl.expanded[stat.id], 'btn-danger':$ctrl.expanded[stat.id]}"
-          ng-click="$ctrl.toggleStatDetail(stat)">
-          <span class="fa fa-close"></span>
-        </a>
-      </td>
-      <td class="no-wrap">{{stat.id}}</td>
-      <td class="no-wrap">{{stat.currentTime | timezoneDateString:$ctrl.settings.timezone}}</td>
-      <td class="no-wrap">{{stat.monitoring|number:0}}</td>
-      <td class="no-wrap">{{stat.freeSpaceM*1000000|humanReadable}} ({{stat.freeSpaceP|number:1}}%)</td>
-      <td class="no-wrap">{{stat.cpu|number:1}}%</td>
-      <td class="no-wrap">{{stat.memory|humanReadable}} ({{stat.memoryP|number:1}}%)</td>
-      <td class="no-wrap">{{stat.packetQueue|number:0}}</td>
-      <td class="no-wrap">{{stat.deltaPacketsPerSec|number:0}}</td>
-      <td class="no-wrap">{{stat.deltaBytesPerSec|number:0}}</td>
-      <td class="no-wrap">{{stat.deltaSessionsPerSec|number:0}}</td>
-      <td class="no-wrap">{{stat.deltaDroppedPerSec|number:0}}</td>
-      <td class="no-wrap">{{stat.deltaOverloadDroppedPerSec|number:0}}</td>
-      <td class="no-wrap">{{stat.deltaESDroppedPerSec|number:0}}</td>
-    </tr>
-    <tr ng-repeat-end ng-show="$ctrl.expanded[stat.id]">
-      <td colspan="11">
-        <div id="statsGraph-{{stat.id}}">
-        </div>
-      </td>
-    </tr>
-    <tr ng-if="!$ctrl.filteredStats.length">
-      <td colspan="6" class="text-danger">
-        <span class="fa fa-warning"></span>&nbsp;
-        No results match your search
-      </td>
-    </tr>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td class="no-wrap"></td>
-      <td class="no-wrap">Average</td>
-      <td class="no-wrap"></td>
-      <td class="no-wrap">{{$ctrl.averageValues.monitoring|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.averageValues.freeSpaceP|number:1}}%)</td>
-      <td class="no-wrap">{{$ctrl.averageValues.cpu|number:1}}%</td>
-      <td class="no-wrap">{{$ctrl.averageValues.memory|humanReadable}} ({{$ctrl.averageValues.memoryP|number:1}}%)</td>
-      <td class="no-wrap">{{$ctrl.averageValues.packetQueue|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.deltaPacketsPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.deltaBytesPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.deltaSessionsPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.deltaDroppedPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.deltaOverloadDroppedPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.averageValues.deltaESDroppedPerSec|number:0}}</td>
-    </tr>
-    <tr>
-      <td class="no-wrap"></td>
-      <td class="no-wrap">Total</td>
-      <td class="no-wrap"></td>
-      <td class="no-wrap">{{$ctrl.totalValues.monitoring}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.totalValues.freeSpaceP|number:1}}%)</td>
-      <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
-      <td class="no-wrap">{{$ctrl.totalValues.memory|humanReadable}} ({{$ctrl.totalValues.memoryP|number:1}}%)</td>
-      <td class="no-wrap">{{$ctrl.totalValues.packetQueue|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.deltaPacketsPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.deltaBytesPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.deltaSessionsPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.deltaDroppedPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.deltaOverloadDroppedPerSec|number:0}}</td>
-      <td class="no-wrap">{{$ctrl.totalValues.deltaESDroppedPerSec|number:0}}</td>
-    </tr>
-  </tfoot>
-</table>
+  <table class="table table-condensed margined-top-xxxlg"
+    ng-if="!$ctrl.error && $ctrl.stats">
+    <thead class="small">
+      <tr>
+        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+          ng-click="$ctrl.columnClick(column.sort)">
+          {{::column.name}}
+          <span ng-if="column.sort !== undefined">
+            <span ng-show="$ctrl.sortField === column.sort && !$ctrl.sortReverse" class="fa fa-sort-desc"></span>
+            <span ng-show="$ctrl.sortField === column.sort && $ctrl.sortReverse" class="fa fa-sort-asc"></span>
+            <span ng-show="$ctrl.sortField !== column.sort" class="fa fa-sort"></span>
+          </span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+    <tbody>
+      <tr class="animate-repeat"
+        ng-repeat-start="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.id">
+        <td class="no-wrap">
+          <a class="btn btn-sm btn-toggle"
+            ng-class="{'collapsed':!$ctrl.expanded[stat.id], 'btn-green':!$ctrl.expanded[stat.id], 'btn-danger':$ctrl.expanded[stat.id]}"
+            ng-click="$ctrl.toggleStatDetail(stat)">
+            <span class="fa fa-close"></span>
+          </a>
+        </td>
+        <td class="no-wrap">{{stat.id}}</td>
+        <td class="no-wrap">{{stat.currentTime | timezoneDateString:$ctrl.settings.timezone}}</td>
+        <td class="no-wrap">{{stat.monitoring|number:0}}</td>
+        <td class="no-wrap">{{stat.freeSpaceM*1000000|humanReadable}} ({{stat.freeSpaceP|number:1}}%)</td>
+        <td class="no-wrap">{{stat.cpu|number:1}}%</td>
+        <td class="no-wrap">{{stat.memory|humanReadable}} ({{stat.memoryP|number:1}}%)</td>
+        <td class="no-wrap">{{stat.packetQueue|number:0}}</td>
+        <td class="no-wrap">{{stat.deltaPacketsPerSec|number:0}}</td>
+        <td class="no-wrap">{{stat.deltaBytesPerSec|number:0}}</td>
+        <td class="no-wrap">{{stat.deltaSessionsPerSec|number:0}}</td>
+        <td class="no-wrap">{{stat.deltaDroppedPerSec|number:0}}</td>
+        <td class="no-wrap">{{stat.deltaOverloadDroppedPerSec|number:0}}</td>
+        <td class="no-wrap">{{stat.deltaESDroppedPerSec|number:0}}</td>
+      </tr>
+      <tr ng-repeat-end ng-show="$ctrl.expanded[stat.id]">
+        <td colspan="{{::$ctrl.columns.length}}">
+          <div id="statsGraph-{{stat.id}}">
+          </div>
+        </td>
+      </tr>
+      <tr ng-if="!$ctrl.filteredStats.length">
+        <td colspan="{{::$ctrl.columns.length}}" class="text-danger">
+          <span class="fa fa-warning"></span>&nbsp;
+          No results match your search
+        </td>
+      </tr>
+    </tbody>
+    <tfoot class="bold">
+      <tr>
+        <td class="no-wrap"></td>
+        <td class="no-wrap">Average</td>
+        <td class="no-wrap"></td>
+        <td class="no-wrap">{{$ctrl.averageValues.monitoring|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.averageValues.freeSpaceP|number:1}}%)</td>
+        <td class="no-wrap">{{$ctrl.averageValues.cpu|number:1}}%</td>
+        <td class="no-wrap">{{$ctrl.averageValues.memory|humanReadable}} ({{$ctrl.averageValues.memoryP|number:1}}%)</td>
+        <td class="no-wrap">{{$ctrl.averageValues.packetQueue|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.deltaPacketsPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.deltaBytesPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.deltaSessionsPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.deltaDroppedPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.deltaOverloadDroppedPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.deltaESDroppedPerSec|number:0}}</td>
+      </tr>
+      <tr>
+        <td class="no-wrap"></td>
+        <td class="no-wrap">Total</td>
+        <td class="no-wrap"></td>
+        <td class="no-wrap">{{$ctrl.totalValues.monitoring}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.totalValues.freeSpaceP|number:1}}%)</td>
+        <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
+        <td class="no-wrap">{{$ctrl.totalValues.memory|humanReadable}} ({{$ctrl.totalValues.memoryP|number:1}}%)</td>
+        <td class="no-wrap">{{$ctrl.totalValues.packetQueue|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.deltaPacketsPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.deltaBytesPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.deltaSessionsPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.deltaDroppedPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.deltaOverloadDroppedPerSec|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.deltaESDroppedPerSec|number:0}}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+</div>
