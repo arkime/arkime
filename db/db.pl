@@ -2262,6 +2262,7 @@ my ($nodes) = @_;
 
     foreach my $key (keys %{$nodes}) {
         next if (exists $nodes->{$key}->{attributes} && exists $nodes->{$key}->{attributes}->{data} && $nodes->{$key}->{attributes}->{data} eq "false");
+        next if (exists $nodes->{$key}->{settings} && exists $nodes->{$key}->{settings}->{node} && $nodes->{$key}->{settings}->{node}->{data} eq "false");
         $total++;
     }
     return $total;
