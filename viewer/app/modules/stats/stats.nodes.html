@@ -21,11 +21,11 @@
     </div>
   </div>
 
-  <table class="table table-condensed margined-top-xxxlg"
+  <table class="table table-condensed margined-top-xxxlg text-right"
     ng-if="!$ctrl.error && $ctrl.stats">
     <thead class="small">
       <tr>
-        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer text-right"
           ng-click="$ctrl.columnClick(column.sort)">
           {{::column.name}}
           <span ng-if="column.sort !== undefined">
@@ -95,7 +95,7 @@
         <td class="no-wrap"></td>
         <td class="no-wrap">Total</td>
         <td class="no-wrap"></td>
-        <td class="no-wrap">{{$ctrl.totalValues.monitoring}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.monitoring|number:0}}</td>
         <td class="no-wrap">{{$ctrl.totalValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.totalValues.freeSpaceP|number:1}}%)</td>
         <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
         <td class="no-wrap">{{$ctrl.totalValues.memory|humanReadable}} ({{$ctrl.totalValues.memoryP|number:1}}%)</td>

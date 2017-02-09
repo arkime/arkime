@@ -1,5 +1,7 @@
 0.18.0 2017/02/xx
-  - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture
+  - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)
+  - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture.
+            New 0.18.0 wiseService can be used with older moloch-capture.
   - NOTICE: db.pl upgrade REQUIRES *ALL* moloch-capture to be down
   - NOTICE: ES 2.4 or ES 5.1.2 required
     ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x

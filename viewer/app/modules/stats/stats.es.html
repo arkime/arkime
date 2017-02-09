@@ -23,11 +23,11 @@
     </div>
   </div>
 
-  <table class="table table-condensed table-striped margined-top-xxxlg"
+  <table class="table table-condensed table-striped margined-top-xxxlg text-right"
     ng-if="!$ctrl.error && $ctrl.stats">
     <thead class="small">
       <tr>
-        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer"
+        <th ng-repeat="column in ::$ctrl.columns" class="cursor-pointer text-right"
           ng-click="$ctrl.columnClick(column.sort)">
           {{::column.name}}
           <span ng-if="column.sort !== undefined">
