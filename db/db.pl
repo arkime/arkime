@@ -40,6 +40,7 @@
 # 31 - Require ES >= 2.4, dstats_v2, stats_v1
 # 32 - Require ES >= 2.4 or ES >= 5.1.2, tags_v3, queries_v1, fields_v1, users_v4, files_v4, sequence_v1
 # 33 - user columnConfigs
+# 34 - stats_v2
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -48,7 +49,7 @@ use Data::Dumper;
 use POSIX;
 use strict;
 
-my $VERSION = 33;
+my $VERSION = 34;
 my $verbose = 0;
 my $PREFIX = "";
 my $NOCHANGES = 0;
@@ -418,8 +419,8 @@ sub statsCreate
 }';
 
     print "Creating stats index\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v1", $settings);
-    esAlias("add", "stats_v1", "stats");
+    esPut("/${PREFIX}stats_v2", $settings);
+    esAlias("add", "stats_v2", "stats");
     statsUpdate();
 }
 
@@ -437,16 +438,7 @@ my $mapping = '
         "numeric": {
           "match_mapping_type": "long",
           "mapping": {
-            "type": "long",
-            "index": "no"
-          }
-        }
-      },
-      {
-        "noindex": {
-          "match": "*",
-          "mapping": {
-            "index": "no"
+            "type": "long"
           }
         }
       }
@@ -469,7 +461,7 @@ my $mapping = '
 }';
 
     print "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v1/stat/_mapping?pretty", $mapping, 1);
+    esPut("/${PREFIX}stats_v2/stat/_mapping?pretty", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -1749,31 +1741,31 @@ sub usersUpdate
     esPut("/${PREFIX}users_v4/user/_mapping?pretty", $mapping);
 }
 ################################################################################
-sub createAliasedV1FromNonAliased
+sub createAliasedFromNonAliased
 {
-    my ($name, $createFunction) = @_;
+    my ($name, $newName, $createFunction) = @_;
 
-    my $indices = esGet("/${PREFIX}{$name}_v1,${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+    my $indices = esGet("/${PREFIX}{$newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
 
     # Need to create new name
-    if (!exists $indices->{"${PREFIX}{$name}_v1"}) {
+    if (!exists $indices->{"${PREFIX}{$newName}"}) {
         $createFunction->();
         sleep 1;
-        $indices = esGet("/${PREFIX}${name}_v1,${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
     }
 
     # Copy old index to new index
-    if (exists $indices->{"${PREFIX}${name}_v1"} && exists $indices->{"${PREFIX}${name}"}) {
-        esCopy("${name}", "${name}_v1");
+    if (exists $indices->{"${PREFIX}${newName}"} && exists $indices->{"${PREFIX}${name}"}) {
+        esCopy("${name}", "${newName}");
     }
 
     # Delete old index and add alias.  Do in a loop since there is a race condition of capture
     # processes trying to save their information.
-    $indices = esGet("/${PREFIX}${name}_v1,${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
-    while (exists $indices->{"${PREFIX}${name}"} || ! exists $indices->{"${PREFIX}${name}_v1"}->{aliases}->{"${PREFIX}${name}"}) {
+    $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+    while (exists $indices->{"${PREFIX}${name}"} || ! exists $indices->{"${PREFIX}${newName}"}->{aliases}->{"${PREFIX}${name}"}) {
         esDelete("/${PREFIX}${name}", 1);
-        esAlias("add", "${name}_v1", "${name}");
-        $indices = esGet("/${PREFIX}${name}_v1,${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
+        esAlias("add", "${newName}", "${name}");
+        $indices = esGet("/${PREFIX}${newName},${PREFIX}${name}/_aliases?ignore_unavailable=1", 1);
     }
 }
 ################################################################################
@@ -1940,7 +1932,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     print "Optimizing Admin Indices\n";
-    foreach my $i ("${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1", "${PREFIX}tags_v3", "${PREFIX}users_v4") {
+    foreach my $i ("${PREFIX}stats_v2", "${PREFIX}dstats_v2", "${PREFIX}files_v4", "${PREFIX}sequence_v1", "${PREFIX}tags_v3", "${PREFIX}users_v4") {
         progress("$i ");
         esGet("/$i/_optimize?max_num_segments=1", 1);
         esPost("/$i/_upgrade", "", 1);
@@ -2321,6 +2313,7 @@ if ($ARGV[1] =~ /(init|wipe)/) {
     esDelete("/${PREFIX}files", 1);
     esDelete("/${PREFIX}stats", 1);
     esDelete("/${PREFIX}stats_v1", 1);
+    esDelete("/${PREFIX}stats_v2", 1);
     esDelete("/${PREFIX}dstats", 1);
     esDelete("/${PREFIX}fields", 1);
     esDelete("/${PREFIX}dstats_v1", 1);
@@ -2384,11 +2377,11 @@ if ($ARGV[1] =~ /(init|wipe)/) {
         if ($main::versionNumber < 20) {
             queriesCreate();
         } else {
-            createAliasedV1FromNonAliased("queries", \&queriesCreate);
+            createAliasedFromNonAliased("queries", "queries_v1", \&queriesCreate);
         }
 
         esDelete("/${PREFIX}tags_v1", 1);
-        createAliasedV1FromNonAliased("fields", \&fieldsCreate);
+        createAliasedFromNonAliased("fields", "fields_v1", \&fieldsCreate);
         createNewAliasesFromOld("tags", "tags_v3", "tags_v2", \&tagsCreate);
 
         esDelete("/${PREFIX}users_v1", 1);
@@ -2401,13 +2394,16 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
         if ($main::versionNumber <= 30) {
             createNewAliasesFromOld("dstats", "dstats_v2", "dstats_v1", \&dstatsCreate);
-            createAliasedV1FromNonAliased("stats", \&statsCreate);
+            createAliasedFromNonAliased("stats", "stats_v2", \&statsCreate);
         }
 
         esDelete("/_template/${PREFIX}template_1", 1);
         sessionsUpdate();
     } elsif ($main::versionNumber <= 33) {
+        createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
+        sessionsUpdate();
+    } elsif ($main::versionNumber <= 34) {
         sessionsUpdate();
     } else {
         print "db.pl is hosed\n";
