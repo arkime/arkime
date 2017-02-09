@@ -51,7 +51,7 @@
         <td class="no-wrap">{{stat.currentTime | timezoneDateString:$ctrl.settings.timezone}}</td>
         <td class="no-wrap">{{stat.monitoring|number:0}}</td>
         <td class="no-wrap">{{stat.freeSpaceM*1000000|humanReadable}} ({{stat.freeSpaceP|number:1}}%)</td>
-        <td class="no-wrap">{{stat.cpu|number:1}}%</td>
+        <td class="no-wrap">{{stat.cpu/100.0|number:1}}%</td>
         <td class="no-wrap">{{stat.memory|humanReadable}} ({{stat.memoryP|number:1}}%)</td>
         <td class="no-wrap">{{stat.packetQueue|number:0}}</td>
         <td class="no-wrap">{{stat.deltaPacketsPerSec|number:0}}</td>
@@ -81,7 +81,7 @@
         <td class="no-wrap"></td>
         <td class="no-wrap">{{$ctrl.averageValues.monitoring|number:0}}</td>
         <td class="no-wrap">{{$ctrl.averageValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.averageValues.freeSpaceP|number:1}}%)</td>
-        <td class="no-wrap">{{$ctrl.averageValues.cpu|number:1}}%</td>
+        <td class="no-wrap">{{$ctrl.averageValues.cpu/100.0|number:1}}%</td>
         <td class="no-wrap">{{$ctrl.averageValues.memory|humanReadable}} ({{$ctrl.averageValues.memoryP|number:1}}%)</td>
         <td class="no-wrap">{{$ctrl.averageValues.packetQueue|number:0}}</td>
         <td class="no-wrap">{{$ctrl.averageValues.deltaPacketsPerSec|number:0}}</td>
@@ -97,7 +97,7 @@
         <td class="no-wrap"></td>
         <td class="no-wrap">{{$ctrl.totalValues.monitoring|number:0}}</td>
         <td class="no-wrap">{{$ctrl.totalValues.freeSpaceM*1000000|humanReadable}} ({{$ctrl.totalValues.freeSpaceP|number:1}}%)</td>
-        <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
+        <td class="no-wrap">{{$ctrl.totalValues.cpu/100.0|number:1}}%</td>
         <td class="no-wrap">{{$ctrl.totalValues.memory|humanReadable}} ({{$ctrl.totalValues.memoryP|number:1}}%)</td>
         <td class="no-wrap">{{$ctrl.totalValues.packetQueue|number:0}}</td>
         <td class="no-wrap">{{$ctrl.totalValues.deltaPacketsPerSec|number:0}}</td>
