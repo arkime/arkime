@@ -62,6 +62,7 @@ $color-purple-dark  : #66057A;
 @import './modules/settings/settings';
 @import './modules/files/files';
 @import './modules/user/styles/user.list';
+@import './modules/stats/stats';
 
 
 /* appwide styles ============================ */
@@ -193,6 +194,12 @@ body {
 }
 .xlarge {
   font-size: 2rem;
+}
+
+
+// font weight
+.bold {
+  font-weight: bold;
 }
 
 

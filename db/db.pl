@@ -456,6 +456,10 @@ my $mapping = '
         "type": "string",
         "index": "not_analyzed"
       },
+      "nodeName": {
+        "type": "string",
+        "index": "not_analyzed"
+      },
       "currentTime": {
         "type": "date",
         "format": "epoch_second"

@@ -207,6 +207,30 @@
      }])
 
     /**
+     * humanReadable filter
+     * Returns the <=4 char human readable version of bytes
+     *
+     * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
+     */
+     .filter('humanReadable', function () {
+       return function (fileSizeInBytes) {
+        var i = -1;
+        var byteUnits = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+        do {
+            fileSizeInBytes = fileSizeInBytes / 1000;
+            i++;
+        } while (fileSizeInBytes > 1000);
+
+        if (fileSizeInBytes >= 10) {
+          return fileSizeInBytes.toFixed(0) + byteUnits[i];
+        } else {
+          return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+        }
+
+       };
+     })
+
+    /**
      * Convert To Number Directive
      * Parses strings to integers
      * @see {@link https://docs.angularjs.org/api/ng/directive/select|Angular Select}

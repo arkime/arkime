@@ -852,7 +852,7 @@ app.get('/molochclusters', function(req, res) {
   return res.send(app.locals.molochClusters);
 });
 
-app.get('/stats', checkWebEnabled, function(req, res) {
+app.get('/stats.old', checkWebEnabled, function(req, res) {
   var query = {size: 100};
 
   Db.search('stats', 'stat', query, function(err, data) {
@@ -897,7 +897,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help', '/settings', '/files'], checkWebEnabled, function(req, res) {
+app.get(['/app', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -2191,9 +2191,17 @@ app.get('/esstats.json', function(req, res) {
       internals.previousNodeStats.shift();
     }
 
+    var regex;
+    if (req.query.filter !== undefined) {
+      regex = new RegExp(req.query.filter);
+    }
+
+
     var nodes = Object.keys(results.nodes.nodes);
     for (var n = 0, nlen = nodes.length; n < nlen; n++) {
       var node = results.nodes.nodes[nodes[n]];
+
+      if (regex && !node.name.match(regex)) {continue;}
 
       stats.push({
         name: node.name,
@@ -2208,6 +2216,21 @@ app.get('/esstats.json', function(req, res) {
         write: node.fs.io_stats !== undefined ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
+    }
+
+    if (req.query.sortField) {
+      if (req.query.sortField === "nodeName") {
+        if (req.query.desc === "true")
+          stats = stats.sort(function(a,b){ return b.name.localeCompare(a.name); })
+        else
+          stats = stats.sort(function(a,b){ return a.name.localeCompare(b.name); })
+      } else {
+        var field = req.query.sortField;
+        if (req.query.desc === "true")
+          stats = stats.sort(function(a,b){ return b[field] - a[field]; })
+        else
+          stats = stats.sort(function(a,b){ return a[field] - b[field]; })
+      }
     }
 
     results.nodes.nodes.timestamp = new Date().getTime();
@@ -2237,7 +2260,20 @@ app.get('/stats.json', function(req, res) {
   var query = {from: +req.query.start || 0,
                size: Math.min(10000, +req.query.length || 500)
               };
-  addSortToQuery(query, req.query, "_uid");
+
+  if (req.query.filter !== undefined) {
+    query.query = {wildcard: {nodeName: "*" + req.query.filter + "*"}};
+  }
+
+  if (req.query.sortField !== undefined || req.query.desc !== undefined) {
+    console.log("DESC", req.query.desc, typeof req.query.desc);
+    query.sort = {};
+    req.query.sortField = req.query.sortField || "nodeName";
+    query.sort[req.query.sortField] = { order: req.query.desc === "true" ? "desc": "asc"};
+    query.sort[req.query.sortField].missing = internals.usersMissing[req.query.sortField];
+  } else {
+    addSortToQuery(query, req.query, "_uid");
+  }
 
   async.parallel({
     stats: function (cb) {

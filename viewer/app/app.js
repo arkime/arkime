@@ -79,6 +79,11 @@
           template : '<moloch-users></moloch-users>',
           reloadOnSearch: false
         })
+        .when('/stats', {
+          title    : 'Stats',
+          template : '<moloch-stats></moloch-stats>',
+          reloadOnSearch: false
+        })
         // default route is the sessions page
         .otherwise({ redirectTo: '/app' });
 
