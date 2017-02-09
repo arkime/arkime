@@ -607,6 +607,8 @@
 
       this.query.sorts = this.tableState.order;
 
+      this.reloadTable();
+
       this.saveTableState();
 
       this.getData(true);
@@ -616,6 +618,7 @@
     saveColumnConfiguration() {
       if (!this.newColConfigName) {
         this.colConfigError = 'You must name your new column configuration';
+        return;
       }
 
       let data = {

@@ -396,6 +396,86 @@
         $httpBackend.flush();
       });
 
+      it('should get a users custom column configurations', function() {
+        UserService.getColumnConfigs();
+
+        $httpBackend.expectGET('user/columns').respond([]);
+
+        $httpBackend.flush();
+      });
+
+      it('should get another user\'s custom column configurations', function() {
+        UserService.getColumnConfigs('userid');
+
+        $httpBackend.expectGET('user/columns?userId=userid').respond([]);
+
+        $httpBackend.flush();
+      });
+
+      it('should create a specified custom column configuration', function() {
+        UserService.createColumnConfig({
+          name    : 'new col config name',
+          columns : ['fp', 'a1', 'p1'],
+          order   : [['fp','asc']]
+        });
+
+        $httpBackend.expectPOST('user/columns/create',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.name).toEqual('new col config name');
+             expect(jsonData.columns).toEqual(['fp', 'a1', 'p1']);
+             expect(jsonData.order).toEqual([['fp','asc']]);
+             return true;
+           }).respond({name: 'new col config name'}, 200);
+
+        $httpBackend.flush();
+      });
+
+      it('should create a specified custom column configuration for another user', function() {
+        UserService.createColumnConfig({
+          name    : 'new col config name',
+          columns : ['fp', 'a1', 'p1'],
+          order   : [['fp','asc']]
+        }, 'userid');
+
+        $httpBackend.expectPOST('user/columns/create?userId=userid',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.name).toEqual('new col config name');
+             expect(jsonData.columns).toEqual(['fp', 'a1', 'p1']);
+             expect(jsonData.order).toEqual([['fp','asc']]);
+             return true;
+           }).respond({name: 'new col config name'}, 200);
+
+        $httpBackend.flush();
+      });
+
+      it('should delete a specified custom column configuration', function() {
+        UserService.deleteColumnConfig('new col config name');
+
+        $httpBackend.expectPOST('user/columns/delete',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.name).toEqual('new col config name');
+             return true;
+           }).respond(200);
+
+        $httpBackend.flush();
+      });
+
+      it('should delete a specified custom column configuration for another user', function() {
+        UserService.deleteColumnConfig('new col config name', 'userid');
+
+        $httpBackend.expectPOST('user/columns/delete?userId=userid',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.name).toEqual('new col config name');
+             return true;
+           }).respond(200);
+
+        $httpBackend.flush();
+      });
+
       it('should change a user\'s password', function() {
         let data = {
           currentPassword :'currentpassword',

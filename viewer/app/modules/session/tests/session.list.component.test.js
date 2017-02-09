@@ -12,6 +12,12 @@
     fields: [ 'pr', 'tipv61-term', 'tipv62-term', 'fp', 'lp', 'a1', 'p1', 'a2', 'p2', 'pa', 'by', 'no', 'us', 'esrc', 'edst', 'esub', 'efn', 'dnsho', 'tls.alt', 'ircch' ]
   };
 
+  // default table state
+  let defaultTableState = {
+    order         : [['fp', 'asc']],
+    visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
+  };
+
   // sample session json
   let sessionsJSON = {
     recordsFiltered : 1,
@@ -251,11 +257,6 @@
     });
 
     it('should reset the table state', function() {
-      let defaultTableState = {
-        order         : [['fp', 'asc']],
-        visibleHeaders: ['fp', 'lp', 'src', 'p1', 'dst', 'p2', 'pa', 'dbby', 'no', 'info']
-      };
-
       expect(sessionComponent.tableState).toBeDefined();
 
       sessionComponent.tableState = {
@@ -379,7 +380,7 @@
     });
 
 
-    describe('column visibility ->', function() {
+    describe('column interactions ->', function() {
       afterEach(function() {
         // cleanup table state
         sessionComponent.tableState.order = [['fp','asc']];
@@ -440,7 +441,7 @@
 
       it('should remove non-visible column from sort order', function() {
         $httpBackend.expectPOST(tableStateEndpoint)
-        .respond(200);
+          .respond(200);
 
         sessionComponent.sortBy({ shiftKey:true },'lp');
 
@@ -452,6 +453,111 @@
 
         expect(sessionComponent.isVisible('lp')).toEqual(-1);
         expect(sessionComponent.tableState.order).toEqual([['fp','asc']]);
+      });
+
+      it('should load a saved column configuration', function() {
+        let columnConfigurations = [{
+          name    : 'column config name',
+          columns : ['fp', 'a1', 'p1'],
+          order   : [['a1','asc']]
+        }];
+
+        $httpBackend.expectPOST(tableStateEndpoint)
+          .respond(200);
+
+        sessionComponent.colConfigs = columnConfigurations;
+
+        sessionComponent.loadColumnConfiguration(0);
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.tableState.visibleHeaders).toEqual(columnConfigurations[0].columns);
+        expect(sessionComponent.tableState.order).toEqual(columnConfigurations[0].order);
+        expect(sessionComponent.query.sorts).toEqual(columnConfigurations[0].order);
+      });
+
+      it('should load a default column configuration', function() {
+        sessionComponent.loadColumnConfiguration();
+
+        expect(sessionComponent.tableState.visibleHeaders).toEqual(defaultTableState.visibleHeaders);
+        expect(sessionComponent.tableState.order).toEqual(defaultTableState.order);
+        expect(sessionComponent.query.sorts).toEqual(defaultTableState.order);
+      });
+
+      it('should save a custom column configuration', function() {
+        $httpBackend.expectPOST('user/columns/create',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.name).toEqual('new col config name');
+             expect(jsonData.columns).toEqual(['fp', 'a1', 'p1']);
+             expect(jsonData.order).toEqual([['a1','asc']]);
+             return true;
+           }).respond({name: 'new col config name'}, 200);
+
+        sessionComponent.colConfigs = [];
+        sessionComponent.newColConfigName = 'new col config name';
+        sessionComponent.tableState.visibleHeaders = ['fp', 'a1', 'p1'];
+        sessionComponent.tableState.order = [['a1','asc']];
+
+        sessionComponent.saveColumnConfiguration();
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.colConfigs[0].columns).toEqual(sessionComponent.tableState.visibleHeaders);
+        expect(sessionComponent.colConfigs[0].order).toEqual(sessionComponent.tableState.order);
+        expect(sessionComponent.newColConfigName).toBeNull();
+        expect(sessionComponent.colConfigsOpen).toBeFalsy();
+        expect(sessionComponent.colConfigError).toBeFalsy();
+      });
+
+      it('should not save a custom column configuration if provided no name', function() {
+        let error = 'You must name your new column configuration';
+
+        sessionComponent.newColConfigName = null;
+        sessionComponent.saveColumnConfiguration();
+        expect(sessionComponent.colConfigError).toEqual(error);
+
+        sessionComponent.newColConfigName = '';
+        sessionComponent.saveColumnConfiguration();
+        expect(sessionComponent.colConfigError).toEqual(error);
+      });
+
+      it('should delete a custom column configuration', function() {
+        $httpBackend.expectPOST('user/columns/delete',
+           function(postData) {
+             let jsonData = JSON.parse(postData);
+             expect(jsonData.name).toEqual('new col config name');
+             return true;
+           }).respond(200);
+
+        sessionComponent.colConfigs = [{
+          name    : 'new col config name',
+          columns : ['fp', 'a1', 'p1'],
+          order   : [['fp','asc']]
+        }];
+
+        sessionComponent.deleteColumnConfiguration('new col config name');
+
+        $httpBackend.flush();
+
+        expect(sessionComponent.colConfigs).toEqual([]);
+        expect(sessionComponent.colConfigError).toBeFalsy();
+      });
+
+      it('should determine if a col config is the same as the visible headers', function() {
+        sessionComponent.colConfigs = [{
+          name    : 'new col config name',
+          columns : ['fp', 'a1', 'p1'],
+          order   : [['fp','asc']]
+        }];
+
+        sessionComponent.tableState.visibleHeaders = ['fp', 'a1', 'p1'];
+        let isSame = sessionComponent.isSameAsVisible(0);
+        expect(isSame).toBeTruthy();
+
+        sessionComponent.tableState.visibleHeaders = ['fp', 'a1', 'p1', 'lp', 'a2', 'p2'];
+        isSame = sessionComponent.isSameAsVisible(0);
+        expect(isSame).toBeFalsy();
       });
     });
 
