@@ -480,13 +480,15 @@
               </td>
               <td>
                 <label class="label label-md label-default margined-right"
+                  uib-tooltip="{{::$ctrl.fieldsMap[col].help}}"
                   ng-repeat="col in ::config.columns">
                   {{::$ctrl.fieldsMap[col].friendlyName}}
                 </label>
               </td>
               <td>
                 <span ng-repeat="order in ::config.order">
-                  <label class="label label-md label-default margined-right">
+                  <label class="label label-md label-default margined-right"
+                    uib-tooltip="{{::$ctrl.fieldsMap[order[0]].help}}">
                     {{::$ctrl.fieldsMap[order[0]].friendlyName}}&nbsp;
                     ({{::order[1]}})
                   </label>
