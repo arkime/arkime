@@ -1515,7 +1515,7 @@ app.post('/user/columns/create', checkCookieToken, function(req, res) {
       return error(403, 'Unknown user');
     }
 
-    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_:]/g, '');
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
 
     if (req.body.name.length < 1) {
       return error(403, 'Invalid custom column configuration name');

@@ -2,6 +2,8 @@
 
   'use strict';
 
+  let customCols = require('json!../session/components/custom.columns.json');
+
   /**
    * @class SettingsController
    * @classdesc Interacts with moloch settings page
@@ -72,6 +74,7 @@
           // get all the other things!
           this.getViews();
           this.getCronQueries();
+          this.getColConfigs();
         })
         .catch((error) => {
           this.error    = error.text;
@@ -92,6 +95,20 @@
             exp     : 'ip.dst:port',
             help    : 'Destination IP:Destination Port'
           });
+
+          // add custom columns to the fields array
+          for (let key in customCols) {
+            if (customCols.hasOwnProperty(key)) {
+              this.fields.push(customCols[key]);
+            }
+          }
+
+          // build fields map for quick lookup by dbField
+          this.fieldsMap = {};
+          for (let i = 0, len = this.fields.length; i < len; ++i) {
+            let field = this.fields[i];
+            this.fieldsMap[field.dbField] = field;
+          }
         });
     }
 
@@ -131,6 +148,17 @@
         })
         .catch((error) => {
           this.cronQueryListError = error.text;
+        });
+    }
+
+    /* retrieves the specified user's custom column configurations */
+    getColConfigs() {
+      this.UserService.getColumnConfigs(this.userId)
+        .then((response) => {
+          this.colConfigs = response;
+        })
+        .catch((error) => {
+          this.colConfigError = error.text;
         });
     }
 
@@ -456,6 +484,28 @@
           this.msgType = 'success';
           // set the cron query as unchanged
           data.changed = false;
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    }
+
+
+    /* COLUMN CONFIGURATIONS ----------------------------------------------- */
+    /**
+     * Deletes a previously saved custom column configuration
+     * @param {string} name The name of the column config to remove
+     * @param {int} index   The index in the array of the column config to remove
+     */
+    deleteColConfig(name, index) {
+      this.UserService.deleteColumnConfig(name, this.userId)
+        .then((response) => {
+          this.colConfigs.splice(index, 1);
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
         })
         .catch((error) => {
           // display error message to user

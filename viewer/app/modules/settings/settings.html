@@ -47,6 +47,12 @@
             Cron Queries
           </a>
         </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'col'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('col')">
+            <span class="fa fa-fw fa-columns"></span>&nbsp;
+            Column Configs
+          </a>
+        </li>
         <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'password'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('password')">
             <span class="fa fa-fw fa-lock"></span>&nbsp;
@@ -444,6 +450,81 @@
         </table>
 
       </form> <!-- /cron query settings -->
+
+
+
+
+
+
+
+      <!-- col configs settings -->
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'col'">
+
+        <h3>Custom Column Configurations</h3>
+
+        <p>
+          Custom column configurations allow the user to save their table's
+          column layout for future use.
+        </p>
+
+        <hr>
+
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Columns</th>
+            <th>Order</th>
+            <th>&nbsp;</th>
+          </tr>
+          </thead>
+          <tbody>
+            <!-- col configs -->
+            <tr ng-if="$ctrl.fieldsMap" ng-repeat="config in $ctrl.colConfigs">
+              <td>
+                {{::config.name}}
+              </td>
+              <td>
+                <label class="label label-md label-default margined-right"
+                  ng-repeat="col in ::config.columns">
+                  {{::$ctrl.fieldsMap[col].friendlyName}}
+                </label>
+              </td>
+              <td>
+                <span ng-repeat="order in ::config.order">
+                  <label class="label label-md label-default margined-right">
+                    {{::$ctrl.fieldsMap[order[0]].friendlyName}}&nbsp;
+                    ({{::order[1]}})
+                  </label>
+                </span>
+              </td>
+              <td>
+                <a class="btn btn-sm btn-danger pull-right"
+                  ng-click="$ctrl.deleteColConfig(config.name, $index)">
+                  <span class="fa fa-trash-o"></span>&nbsp;
+                  Delete
+                </a>
+              </td>
+            </tr> <!-- /col configs -->
+            <!-- col config list error -->
+            <tr ng-if="$ctrl.colConfigError">
+              <td colspan="3">
+                <p class="text-danger margined-bottom-none">
+                  <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                  {{$ctrl.colConfigError}}
+                </p>
+              </td>
+            </tr> <!-- /col config list error -->
+          </tbody>
+        </table>
+
+      </form> <!-- /col configs settings -->
+
+
+
+
+
+
 
       <!-- password settings -->
       <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'password'"
