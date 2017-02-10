@@ -217,9 +217,9 @@
         var i = -1;
         var byteUnits = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
         do {
-            fileSizeInBytes = fileSizeInBytes / 1000;
+            fileSizeInBytes = fileSizeInBytes / 1024;
             i++;
-        } while (fileSizeInBytes > 1000);
+        } while (fileSizeInBytes > 1024);
 
         if (fileSizeInBytes >= 10) {
           return fileSizeInBytes.toFixed(0) + byteUnits[i];
