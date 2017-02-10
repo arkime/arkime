@@ -57,8 +57,8 @@
   HelpController.$inject = ['$anchorScroll','FieldService'];
 
   /**
-   * ES Health Directive
-   * Displays elasticsearch health status
+   * Help Directive
+   * Displays the moloch help page
    */
   angular.module('moloch')
      .component('molochHelp', {

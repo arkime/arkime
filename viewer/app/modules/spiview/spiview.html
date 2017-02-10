@@ -1,0 +1,39 @@
+<div class="container-fluid margined-left margined-right">
+
+  <!-- TODO there are no "open sessions" all are open -->
+  <moloch-search open-sessions="$ctrl.stickySessions"
+    num-visible-sessions="$ctrl.query.length"
+    num-matching-sessions="$ctrl.recordsFiltered"
+    start="$ctrl.query.start" timezone="$ctrl.settings.timezone">
+  </moloch-search>
+
+  <!-- session visualizations -->
+  <div class="row margin-for-search-navbar">
+    <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
+    <div class="col-md-12">
+      <div ng-if="::($ctrl.graphData)">
+        <session-graph graph-data="$ctrl.graphData"></session-graph>
+      </div>
+    </div>
+  </div>
+
+  <label class="label label-info">
+    Showing {{$ctrl.filtered}} entries filtered from
+    {{$ctrl.total}} total entries
+  </label>
+
+  <div ng-if="!$ctrl.loading && !$ctrl.error">
+    <uib-accordion close-others="false">
+      <div uib-accordion-group class="panel-default"
+        ng-repeat="category in $ctrl.categories"
+        heading="{{::category}}">
+        {{::category}}
+      </div>
+    </uib-accordion>
+  </div>
+
+  <loading ng-if="$ctrl.loading"></loading>
+
+  <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
+
+</div>

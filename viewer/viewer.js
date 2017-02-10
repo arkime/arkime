@@ -784,7 +784,7 @@ app.get(['/', '/app'], function(req, res) {
 
 app.get("/sessions.old", checkWebEnabled, sessionsOld);
 
-app.get("/spiview", checkWebEnabled, function(req, res) {
+app.get("/spiview.old", checkWebEnabled, function(req, res) {
   res.render('spiview.jade', {
     user: req.user,
     title: makeTitle(req, 'SPI View'),
@@ -893,7 +893,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/sessions', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
+app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -935,6 +935,17 @@ app.get('/vendor.bundle.js.map', function(req, res) {
   res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
 });
 
+
+// TODO ECR
+app.get('/spiview/categories', function(req, res) {
+  var categories  = Config.getCategories();
+  var sorted      = Object.keys(categories).sort();
+
+  sorted.splice(sorted.indexOf('general'), 1);
+  sorted.unshift('general');
+
+  res.send(sorted);
+});
 
 /* User Endpoints ---------------------------------------------------------- */
 // default settings for users with no settings
