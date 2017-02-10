@@ -289,6 +289,10 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
         infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
                              PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
+        if (unlikely(infos[i].map == (void*)-1) {
+            LOG("ERROR - MMap64 failure in reader_tpacketv3_init, %d: %s",errno,perror(errno));
+            exit (0);
+        }
         infos[i].rd = malloc(infos[i].req.tp_block_nr * sizeof(*infos[i].rd));
 
         uint16_t j;
