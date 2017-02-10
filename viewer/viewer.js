@@ -2328,6 +2328,16 @@ app.get('/esstats.json', function(req, res) {
 
       if (regex && !node.name.match(regex)) {continue;}
 
+      var read = 0;
+      var write = 0;
+
+      var oldnode = internals.previousNodeStats[0][nodes[n]];
+      if (node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined) {
+        var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
+        read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
+        write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
+      }
+
       stats.push({
         name: node.name,
         storeSize: node.indices.store.size_in_bytes,
@@ -2337,8 +2347,8 @@ app.get('/esstats.json', function(req, res) {
         heapSize: node.jvm.mem.heap_used_in_bytes,
         nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
         cpu: node.process.cpu.percent,
-        read: node.fs.io_stats !== undefined ? /*ES 5*/ node.fs.io_stats.total.read_kilobytes : /*ES 2*/ 0,
-        write: node.fs.io_stats !== undefined ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
+        read: read,
+        write: write,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
     }

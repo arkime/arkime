@@ -48,8 +48,8 @@
         <td class="no-wrap">{{stat.heapSize|humanReadable}}</td>
         <td class="no-wrap">{{stat.load|number:2}}</td>
         <td class="no-wrap">{{stat.cpu|number:1}}%</td>
-        <td class="no-wrap">{{stat.read|number:0}}</td>
-        <td class="no-wrap">{{stat.write|number:0}}</td>
+        <td class="no-wrap">{{stat.read|humanReadable}}</td>
+        <td class="no-wrap">{{stat.write|humanReadable}}</td>
         <td class="no-wrap">{{stat.searches|number:0}}</td>
       </tr>
       <tr ng-if="!$ctrl.filteredStats.length">
@@ -67,8 +67,8 @@
         <td class="no-wrap">{{$ctrl.averageValues.heapSize|humanReadable}}</td>
         <td class="no-wrap">{{$ctrl.averageValues.load|number:2}}</td>
         <td class="no-wrap">{{$ctrl.averageValues.cpu|number:1}}%</td>
-        <td class="no-wrap">{{$ctrl.averageValues.read|number:0}}</td>
-        <td class="no-wrap">{{$ctrl.averageValues.write|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.read|humanReadable}}</td>
+        <td class="no-wrap">{{$ctrl.averageValues.write|humanReadable}}</td>
         <td class="no-wrap">{{$ctrl.averageValues.searches|number:0}}</td>
       </tr>
       <tr>
