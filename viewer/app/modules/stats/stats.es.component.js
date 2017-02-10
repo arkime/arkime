@@ -50,7 +50,7 @@
         { name: 'OS Load', sort: 'load', doStats: true },
         { name: 'CPU', sort: 'cpu', doStats: true },
         { name: 'Read/s', sort: 'read', doStats: true },
-        { name: 'Write/s Q', sort: 'write', doStats: true },
+        { name: 'Write/s', sort: 'write', doStats: true },
         { name: 'Searches/s', sort: 'searches', doStats: true },
       ];
 

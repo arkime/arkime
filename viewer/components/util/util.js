@@ -219,7 +219,7 @@
         do {
             fileSizeInBytes = fileSizeInBytes / 1024;
             i++;
-        } while (fileSizeInBytes > 1024);
+        } while (fileSizeInBytes > 1000);
 
         if (fileSizeInBytes >= 10) {
           return fileSizeInBytes.toFixed(0) + byteUnits[i];
