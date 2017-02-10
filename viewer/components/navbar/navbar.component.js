@@ -28,7 +28,7 @@
     /* Callback when component is mounted and ready */
     $onInit() {
       this.menu = {
-        app         : { title: 'Sessions',    link: 'app' },
+        sessions    : { title: 'Sessions',    link: 'sessions' },
         spiview     : { title: 'SPI View',    link: 'spiview' },
         spigraph    : { title: 'SPI Graph',   link: 'spigraph' },
         connections : { title: 'Connections', link: 'connections' },

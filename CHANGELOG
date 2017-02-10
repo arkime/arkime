@@ -1,5 +1,7 @@
 0.18.0 2017/02/xx
-  - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture
+  - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)
+  - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture.
+            New 0.18.0 wiseService can be used with older moloch-capture.
   - NOTICE: db.pl upgrade REQUIRES *ALL* moloch-capture to be down
   - NOTICE: ES 2.4 or ES 5.1.2 required
     ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
@@ -11,6 +13,9 @@
   - multi - fixed tags for new ui /detail and added tests
   - viewer - files tab uses new ui
   - viewer - users tab uses new ui
+  - viewer - stats tab uses new ui (/stats.old available temporarily)
+  - viewer - sessions tab uses new ui (/sessions.old available temporarily)
+  - viewer - newUI setting removed
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)

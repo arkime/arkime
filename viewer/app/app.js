@@ -56,7 +56,7 @@
   .config(['$routeProvider','$locationProvider','$httpProvider','$compileProvider',
     function($routeProvider, $locationProvider, $httpProvider, $compileProvider) {
       $routeProvider
-        .when('/app', {
+        .when('/sessions', {
           title         : 'Sessions',
           template      : '<session></session>',
           reloadOnSearch: false
@@ -79,8 +79,13 @@
           template : '<moloch-users></moloch-users>',
           reloadOnSearch: false
         })
+        .when('/stats', {
+          title    : 'Stats',
+          template : '<moloch-stats></moloch-stats>',
+          reloadOnSearch: false
+        })
         // default route is the sessions page
-        .otherwise({ redirectTo: '/app' });
+        .otherwise({ redirectTo: '/sessions' });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode
 

@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var MIN_DB_VERSION = 27;
+var MIN_DB_VERSION = 34;
 
 //// Modules
 //////////////////////////////////////////////////////////////////////////////////
@@ -773,20 +773,16 @@ function sessionsOld (req, res) {
   });
 }
 
-if (Config.get("newUI", false)) {
-  app.get("/", function(req, res) {
-    var question = req.url.indexOf("?");
-    if (question === -1) {
-      res.redirect("app");
-    } else {
-      res.redirect("app" + req.url.substring(question));
-    }
-  });
-  app.get("/sessions", checkWebEnabled, sessionsOld);
-} else {
-  app.get("/", checkWebEnabled, sessionsOld);
-  app.get("/sessions", checkWebEnabled, sessionsOld);
-}
+app.get(['/', '/app'], function(req, res) {
+  var question = req.url.indexOf("?");
+  if (question === -1) {
+    res.redirect("sessions");
+  } else {
+    res.redirect("sessions" + req.url.substring(question));
+  }
+});
+
+app.get("/sessions.old", checkWebEnabled, sessionsOld);
 
 app.get("/spiview", checkWebEnabled, function(req, res) {
   res.render('spiview.jade', {
@@ -852,7 +848,7 @@ app.get('/molochclusters', function(req, res) {
   return res.send(app.locals.molochClusters);
 });
 
-app.get('/stats', checkWebEnabled, function(req, res) {
+app.get('/stats.old', checkWebEnabled, function(req, res) {
   var query = {size: 100};
 
   Db.search('stats', 'stat', query, function(err, data) {
@@ -897,7 +893,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/app', '/help', '/settings', '/files'], checkWebEnabled, function(req, res) {
+app.get(['/sessions', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -1466,6 +1462,135 @@ app.post('/user/password/change', checkCookieToken, function(req, res) {
       return res.send(JSON.stringify({
         success : true,
         text    : 'Changed password successfully'
+      }));
+    });
+  });
+});
+
+// gets custom column configurations for a user
+app.get('/user/columns', function(req, res) {
+  Db.getUserCache(req.user.userId, function(err, user) {
+    if (err || !user || !user.found) {
+      if (app.locals.noPasswordSecret) {
+        // TODO: send anonymous user's views
+        return res.send('[]');
+      } else {
+        console.log('Unknown user', err, user);
+        return res.send('[]');
+      }
+    }
+
+    var columnConfigurations = user._source.columnConfigs || [];
+
+    return res.send(columnConfigurations);
+  });
+});
+
+// creates a new custom column configuration for a user
+app.post('/user/columns/create', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to create a view for another user without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name)     { return error(403, 'Missing custom column configuration name'); }
+  if (!req.body.columns)  { return error(403, 'Missing columns'); }
+  if (!req.body.order)    { return error(403, 'Missing sort order'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/columns/create failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+
+    if (req.body.name.length < 1) {
+      return error(403, 'Invalid custom column configuration name');
+    }
+
+    user = user._source;
+    user.columnConfigs = user.columnConfigs || [];
+
+    var duplicate = false;
+    // don't let user use duplicate names
+    for (var i = 0, len = user.columnConfigs.length; i < len; ++i) {
+      if (req.body.name === user.columnConfigs[i].name) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate) { return error(403, 'There is already a custom column with that name'); }
+
+    user.columnConfigs.push({
+      name    : req.body.name,
+      columns : req.body.columns,
+      order   : req.body.order
+    });
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/columns/create error', err, info);
+        return error(500, 'Create custom column configuration failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Created custom column configuration successfully',
+        name    : req.body.name
+      }));
+    });
+  });
+});
+
+// deletes a user's specified custom column configuration
+app.post('/user/columns/delete', checkCookieToken, function(req, res) {
+  function error(status, text) {
+    res.status(status || 403);
+    return res.send(JSON.stringify({ success: false, text: text }));
+  }
+
+  if (req.query.userId && (req.query.userId !== req.user.userId) && !req.user.createEnabled) {
+    // user is trying to delete another user's view without admin privilege
+    return error(403, 'Need admin privileges');
+  }
+
+  if (!req.body.name) { return error(403, 'Missing custom column configuration name'); }
+
+  var userId = req.user.userId;                         // get current user
+  if (req.query.userId) { userId = req.query.userId; }  // or requested user
+
+  Db.getUser(userId, function(err, user) {
+    if (err || !user.found) {
+      console.log('/user/columns/delete failed', err, user);
+      return error(403, 'Unknown user');
+    }
+
+    user = user._source;
+    user.columnConfigs = user.columnConfigs || [];
+
+    for (var i = 0, len = user.columnConfigs.length; i < len; ++i) {
+      if (req.body.name === user.columnConfigs[i].name) {
+        user.columnConfigs.splice(i, 1);
+        break;
+      }
+    }
+
+    Db.setUser(user.userId, user, function(err, info) {
+      if (err) {
+        console.log('/user/columns/delete failed', err, info);
+        return error(500, 'Delete custom column configuration failed');
+      }
+      return res.send(JSON.stringify({
+        success : true,
+        text    : 'Deleted custom column configuration successfully'
       }));
     });
   });
@@ -2191,9 +2316,27 @@ app.get('/esstats.json', function(req, res) {
       internals.previousNodeStats.shift();
     }
 
+    var regex;
+    if (req.query.filter !== undefined) {
+      regex = new RegExp(req.query.filter);
+    }
+
+
     var nodes = Object.keys(results.nodes.nodes);
     for (var n = 0, nlen = nodes.length; n < nlen; n++) {
       var node = results.nodes.nodes[nodes[n]];
+
+      if (regex && !node.name.match(regex)) {continue;}
+
+      var read = 0;
+      var write = 0;
+
+      var oldnode = internals.previousNodeStats[0][nodes[n]];
+      if (node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined) {
+        var timediffsec = (node.timestamp - oldnode.timestamp)/1000.0;
+        read = Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes)/timediffsec*1024);
+        write = Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes)/timediffsec*1024);
+      }
 
       stats.push({
         name: node.name,
@@ -2204,10 +2347,25 @@ app.get('/esstats.json', function(req, res) {
         heapSize: node.jvm.mem.heap_used_in_bytes,
         nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
         cpu: node.process.cpu.percent,
-        read: node.fs.io_stats !== undefined ? /*ES 5*/ node.fs.io_stats.total.read_kilobytes : /*ES 2*/ 0,
-        write: node.fs.io_stats !== undefined ? /*ES 5*/node.fs.io_stats.total.write_kilobytes : /*ES 2*/ 0,
+        read: read,
+        write: write,
         load: node.os.load_average !== undefined ? /* ES 2*/ node.os.load_average : /*ES 5*/ node.os.cpu.load_average["5m"]
       });
+    }
+
+    if (req.query.sortField) {
+      if (req.query.sortField === "nodeName") {
+        if (req.query.desc === "true")
+          stats = stats.sort(function(a,b){ return b.name.localeCompare(a.name); })
+        else
+          stats = stats.sort(function(a,b){ return a.name.localeCompare(b.name); })
+      } else {
+        var field = req.query.sortField;
+        if (req.query.desc === "true")
+          stats = stats.sort(function(a,b){ return b[field] - a[field]; })
+        else
+          stats = stats.sort(function(a,b){ return a[field] - b[field]; })
+      }
     }
 
     results.nodes.nodes.timestamp = new Date().getTime();
@@ -2237,7 +2395,20 @@ app.get('/stats.json', function(req, res) {
   var query = {from: +req.query.start || 0,
                size: Math.min(10000, +req.query.length || 500)
               };
-  addSortToQuery(query, req.query, "_uid");
+
+  if (req.query.filter !== undefined) {
+    query.query = {wildcard: {nodeName: "*" + req.query.filter + "*"}};
+  }
+
+  if (req.query.sortField !== undefined || req.query.desc !== undefined) {
+    console.log("DESC", req.query.desc, typeof req.query.desc);
+    query.sort = {};
+    req.query.sortField = req.query.sortField || "nodeName";
+    query.sort[req.query.sortField] = { order: req.query.desc === "true" ? "desc": "asc"};
+    query.sort[req.query.sortField].missing = internals.usersMissing[req.query.sortField];
+  } else {
+    addSortToQuery(query, req.query, "_uid");
+  }
 
   async.parallel({
     stats: function (cb) {

@@ -85,6 +85,8 @@
 
         $httpBackend.expectGET('user/cron').respond(200, userCronQueries);
 
+        $httpBackend.expectGET('user/columns').respond(200, []);
+
         scope = $rootScope.$new();
 
         settingsCtrl = $componentController('molochSettings', {
@@ -132,14 +134,8 @@
       });
 
       it('should have fields', function () {
-        fields.push({
-          dbField : 'ip.dst:port',
-          exp     : 'ip.dst:port',
-          help    : 'Destination IP:Destination Port'
-        });
-
         expect(settingsCtrl.fields).toBeDefined();
-        expect(settingsCtrl.fields).toEqual(fields);
+        expect(settingsCtrl.fieldsMap).toBeDefined();
       });
 
       it('should be able to switch settings tabs', function () {
@@ -529,6 +525,35 @@
 
       });
 
+      /* custom column configurations tab */
+      describe('Column Configuration Settings ->', function () {
+
+        it('should delete a column configuration', function () {
+          settingsCtrl.colConfigs = [{
+            name    : 'new col config name',
+            columns : ['fp', 'a1', 'p1'],
+            order   : [['fp','asc']]
+          }];
+
+          $httpBackend.expectPOST('user/columns/delete',
+             function (postData) {
+               let jsonData = JSON.parse(postData);
+               expect(jsonData.name).toEqual('new col config name');
+               return true;
+             }
+          ).respond(200, { text: 'SUCCESS!' });
+
+          settingsCtrl.deleteColConfig('new col config name', 0);
+
+          $httpBackend.flush();
+
+          expect(settingsCtrl.colConfigs.length).toEqual(0);
+          expect(settingsCtrl.msg).toEqual('SUCCESS!');
+          expect(settingsCtrl.msgType).toEqual('success');
+        });
+
+      });
+
       /* password tab */
       describe('Password Settings ->', function () {
 
@@ -641,6 +666,9 @@
 
         $httpBackend.expectGET('user/cron?userId=anotheruserid')
           .respond(200, userCronQueries);
+
+        $httpBackend.expectGET('user/columns?userId=anotheruserid')
+          .respond(200, []);
 
         scope = $rootScope.$new();
 
@@ -979,6 +1007,35 @@
 
       });
 
+      /* custom column configurations tab */
+      describe('Column Configuration Settings ->', function () {
+
+        it('should delete a column configuration', function () {
+          settingsCtrl.colConfigs = [{
+            name    : 'new col config name',
+            columns : ['fp', 'a1', 'p1'],
+            order   : [['fp','asc']]
+          }];
+
+          $httpBackend.expectPOST('user/columns/delete?userId=anotheruserid',
+             function (postData) {
+               let jsonData = JSON.parse(postData);
+               expect(jsonData.name).toEqual('new col config name');
+               return true;
+             }
+          ).respond(200, { text: 'SUCCESS!' });
+
+          settingsCtrl.deleteColConfig('new col config name', 0);
+
+          $httpBackend.flush();
+
+          expect(settingsCtrl.colConfigs.length).toEqual(0);
+          expect(settingsCtrl.msg).toEqual('SUCCESS!');
+          expect(settingsCtrl.msgType).toEqual('success');
+        });
+
+      });
+
       /* password tab */
       describe('Password Settings ->', function () {
 
@@ -1057,6 +1114,8 @@
         $httpBackend.expectGET('user/views').respond(200, userViews);
 
         $httpBackend.expectGET('user/cron').respond(200, userCronQueries);
+
+        $httpBackend.expectGET('user/columns').respond(200, []);
 
         scope = $rootScope.$new();
 

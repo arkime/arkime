@@ -37,14 +37,14 @@
 
         <thead>
           <tr>
-            <th width="7%" ng-drop="true" draggable="false"
+            <th width="80px" ng-drop="true" draggable="false"
               ng-drop-success="$ctrl.onDropComplete(-1, $data, $event)">
 
               <!-- column visibility button -->
-              <div class="btn-group" uib-dropdown is-open="$ctrl.isopen"
+              <div class="btn-group" uib-dropdown is-open="$ctrl.colVisOpen"
                 dropdown-append-to-body="true" auto-close="outsideClick">
                 <button id="visibility-button" type="button"
-                  class="btn btn-purple" tooltip-append-to-body="true"
+                  class="btn btn-sm btn-purple" tooltip-append-to-body="true"
                   uib-dropdown-toggle tooltip-placement="top-left"
                   uib-tooltip="Column Visibility">
                   <span class="fa fa-th"></span>
@@ -52,21 +52,11 @@
                 <ul class="dropdown-menu col-vis-menu"
                   uib-dropdown-menu role="menu"
                   aria-labelledby="visibility-button">
-                  <span ng-if="$ctrl.isopen">
+                  <span ng-if="$ctrl.colVisOpen">
                     <input type="text" focus-input="true"
                       class="form-control input-sm dropdown-typeahead"
                       ng-model="$ctrl.colQuery"
                       placeholder="Search for columns...">
-                    <div class="margined-top">
-                      <li uib-tooltip="Reset column visibilty and order to default column visibility and order"
-                        tooltip-placement="right"
-                        tooltip-append-to-body="true">
-                        <a ng-click="$ctrl.resetDefaultColumns()">
-                          <span class="fa fa-fw fa-undo"></span>&nbsp;
-                          Reset to Default Columns
-                        </a>
-                      </li>
-                    </div>
                     <div ng-repeat="(key,value) in $ctrl.filteredFields = ($ctrl.fieldsArray | fieldFilter:$ctrl.colQuery) | groupBy: 'group' track by key">
                       <div class="group-header">{{key | capitalize}}</div>
                       <li ng-repeat="field in value track by $index"
@@ -90,6 +80,66 @@
                 </ul>
               </div> <!-- /column visibility button -->
 
+              <!-- column save button -->
+              <div class="btn-group" uib-dropdown is-open="$ctrl.colConfigsOpen"
+                 dropdown-append-to-body="true" auto-close="outsideClick">
+                <button class="btn btn-sm btn-blue dropdown-toggle" uib-dropdown-toggle
+                  tooltip-append-to-body="true" tooltip-placement="top-left"
+                  uib-tooltip="Save or load custom column configuration">
+                  <span class="fa fa-columns"></span>
+                </button>
+                <ul class="dropdown-menu col-config-menu"
+                  uib-dropdown-menu role="menu">
+                  <span ng-if="$ctrl.colConfigsOpen">
+                    <div class="input-group input-group-sm margined-bottom margined-right margined-left">
+                      <input type="text" focus-input="true" maxlength="30"
+                        class="form-control" ng-model="$ctrl.newColConfigName"
+                        placeholder="Enter new column configuration name"
+                        enter-click="$ctrl.saveColumnConfiguration()">
+                      <span class="input-group-btn">
+                        <button class="btn btn-blue" type="button"
+                          ng-disabled="!$ctrl.newColConfigName"
+                          ng-click="$ctrl.saveColumnConfiguration()"
+                          tooltip-placement="right" tooltip-append-to-body="true"
+                          uib-tooltip="Save this custom column configuration">
+                          <span class="fa fa-save"></span>
+                        </button>
+                      </span>
+                    </div>
+                    <div class="small text-danger margined-right margined-left margined-bottom"
+                      ng-if="$ctrl.colConfigError">
+                      {{$ctrl.colConfigError}}
+                    </div>
+                    <div>
+                      <li ng-click="$ctrl.loadColumnConfiguration()"
+                        ng-class="{'active':$ctrl.isSameAsVisible()}"
+                        uib-tooltip="Reset columns to the default columns"
+                        tooltip-placement="right"
+                        tooltip-append-to-body="true">
+                        <a>Default</a>
+                      </li>
+                    </div>
+                    <div ng-repeat="config in $ctrl.colConfigs track by $index">
+                      <li ng-class="{'active':$ctrl.isSameAsVisible($index)}">
+                        <div class="row">
+                          <div class="col-xs-10">
+                            <a ng-click="$ctrl.loadColumnConfiguration($index)">
+                              {{config.name}}
+                            </a>
+                          </div>
+                          <div class="col-xs-2">
+                            <button class="btn btn-xs btn-default pull-right margined-right"
+                              ng-click="$ctrl.deleteColumnConfiguration(config.name, $index)">
+                              <span class="fa fa-trash-o"></span>
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    </div>
+                  </span>
+                </ul>
+              </div> <!-- /column save button -->
+
             </th>
 
             <!-- table headers -->
@@ -107,7 +157,7 @@
                 <ul class="dropdown-menu cursor-pointer" uib-dropdown-menu>
                   <div>
                     <li role="menuitem">
-                      <a ng-click="$ctrl.toggleVisibility(header.dbField)">
+                      <a ng-click="$ctrl.toggleVisibility(header.dbField, header.sortBy)">
                         Hide Column
                       </a>
                     </li>
@@ -189,21 +239,23 @@
           </tr>
         </thead>
 
-        <tbody class="small">
+        <tbody class="small" ng-if="!$ctrl.error">
           <tr ng-repeat-start="session in $ctrl.sessions.data track by session.id"
             id="session{{::session.id}}">
             <td>
-              <a class="btn btn-sm btn-toggle"
-                ng-class="{'collapsed':!session.expanded, 'btn-green':!session.expanded, 'btn-danger':session.expanded}"
-                ng-click="$ctrl.toggleSessionDetail(session)">
-                <span class="fa fa-close"></span>
-              </a>&nbsp;
-              <small>
-                <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                  expr="ip.protocol" value="{{::session.pr}}"
-                  session="::session" parse="true" pull-left="true">
-                </session-field>
-              </small>
+              <span ng-if=":refresh:$ctrl.showSessions">
+                <a class="btn btn-sm btn-toggle"
+                  ng-class="{'collapsed':!session.expanded, 'btn-green':!session.expanded, 'btn-danger':session.expanded}"
+                  ng-click="$ctrl.toggleSessionDetail(session)">
+                  <span class="fa fa-close"></span>
+                </a>
+                <small>
+                  <session-field field="::{dbField:'prot-term', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                    expr="ip.protocol" value="{{::session.pr}}"
+                    session="::session" parse="true" pull-left="true">
+                  </session-field>
+                </small>
+              </span>&nbsp;
             </td>
             <td ng-repeat="col in :refresh:$ctrl.headers track by $index">
               <session-field ng-if=":refresh:$ctrl.showSessions"
