@@ -1830,19 +1830,22 @@ my ($loud) = @_;
 ################################################################################
 sub dbCheckForActivity {
     print "This upgrade requires all capture nodes to be stopped.  Checking\n";
-    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000&sort=nodeName");
+    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000");
     sleep(6);
-    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000&sort=nodeName");
+    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000");
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
 
+    my @hits1 = sort {$a->{_source}->{_id} cmp $b->{_source}->{_id}} @{$json1->{hits}->{hits}};
+    my @hits2 = sort {$a->{_source}->{_id} cmp $b->{_source}->{_id}} @{$json2->{hits}->{hits}};
+
     for (my $i = 0; $i < $json1->{hits}->{total}; $i++) {
-        if ($json1->{hits}->{hits}->[$i]->{_source}->{nodeName} ne $json2->{hits}->{hits}->[$i]->{_source}->{nodeName}) {
-            die "Capture node '" . $json1->{hits}->{hits}->[$i]->{_source}->{nodeName} . "' or '" . $json2->{hits}->{hits}->[$i]->{_source}->{nodeName} . "' still active";
+        if ($hits1[$i]->{_source}->{nodeName} ne $hits2[$i]->{_source}->{nodeName}) {
+            die "Capture node '" . $hits1[$i]->{_source}->{nodeName} . "' or '" . $hits2[$i]->{_source}->{nodeName} . "' still active";
         }
 
-        if ($json1->{hits}->{hits}->[$i]->{_source}->{currentTime} != $json2->{hits}->{hits}->[$i]->{_source}->{currentTime}) {
-            die "Capture node '" . $json1->{hits}->{hits}->[$i]->{_source}->{nodeName} . "' still active";
+        if ($hits1[$i]->{_source}->{currentTime} != $hits2[$i]->{_source}->{currentTime}) {
+            die "Capture node '" . $hits1[$i]->{_source}->{nodeName} . "' still active";
         }
     }
 }

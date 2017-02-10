@@ -78,8 +78,8 @@
         <td class="no-wrap">{{$ctrl.totalValues.heapSize|humanReadable}}</td>
         <td class="no-wrap">{{$ctrl.totalValues.load|number:2}}</td>
         <td class="no-wrap">{{$ctrl.totalValues.cpu|number:1}}%</td>
-        <td class="no-wrap">{{$ctrl.totalValues.read|number:0}}</td>
-        <td class="no-wrap">{{$ctrl.totalValues.write|number:0}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.read|humanReadable}}</td>
+        <td class="no-wrap">{{$ctrl.totalValues.write|humanReadable}}</td>
         <td class="no-wrap">{{$ctrl.totalValues.searches|number:0}}</td>
       </tr>
     </tfoot>
