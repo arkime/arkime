@@ -56,12 +56,13 @@
 
     loadData() {
       this.StatsService.getMolochStats({})
-        .then((response)  => { 
+        .then((response)  => {
           this.stats = response.data;
           this.makeStatsGraph(this.graphSelect, parseInt(this.graphTimeSelect, 10));
         })
         .catch((error)    => { this.error = error; });
     }
+
 
   /**
    * Creates a cubism graph of time series data for a specific metric
@@ -69,36 +70,33 @@
    * @param {string} metricName the name of the metric to visualize data for
    */
     makeStatsGraph(metricName, interval) {
-      var context = this.context;
-      var nodes = this.stats.map(function(item) {return item.nodeName;});
+      var self = this;
+      if (self.context) {self.context.stop();} // Stop old context
+      self.context = cubism.context()
+          .step(interval * 1000)
+          .size(1440);
+      var context = self.context;
+      var nodes = self.stats.map(function(item) {return item.nodeName;});
+
       function metric(name) {
         return context.metric(function(startV, stopV, stepV, callback) {
-          $.ajax( {
-            "dataType": 'json',
-            "type": "GET",
-            "url": "dstats.json?nodeName=" + name +
-                          "&start=" + startV/1000 +
-                          "&stop=" + stopV/1000 +
-                          "&step=" + stepV/1000 +
-                          "&interval=" + interval +
-                          "&name=" + metricName,
-            "success": function(data) {
-              if (!data) {return callback(new Error('Unable to load data'));}
-              callback(null, data);
-            }
-          });
+          self.StatsService.getDetailStats({nodeName: name,
+                                            start: startV/1000,
+                                            stop: stopV/1000,
+                                            step: stepV/1000,
+                                            interval: interval,
+                                            name: metricName})
+            .then((response)  => {
+              callback(null, response);
+            })
+            .catch((error)    => { return callback(new Error('Unable to load data')); });
         }, name);
       }
 
-      if (context) {context.stop();} // Stop old context
-
-      context = cubism.context()
-          .step(interval * 1000)
-          .size(1440);
 
       context.on("focus", function(i) {
-            d3.selectAll(".value").style("right", i === null ? null : context.size() - i + "px");
-          });
+        d3.selectAll(".value").style("right", i === null ? null : context.size() - i + "px");
+      });
 
       $("#statsGraph").empty();
       d3.select("#statsGraph").call(function(div) {

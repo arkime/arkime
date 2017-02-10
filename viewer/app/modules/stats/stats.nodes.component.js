@@ -44,7 +44,7 @@
         .catch((error)   => {this.settings = {timezone: "local"}; });
 
       this.columns = [
-        { name: '', doStats: false}, 
+        { name: '', doStats: false},
         { name: 'Node', sort: 'nodeName', doStats: false },
         { name: 'Time', sort: 'currentTime', doStats: true },
         { name: 'Sessions', sort: 'monitoring', doStats: true },
@@ -65,15 +65,15 @@
     }
 
     columnClick(name) {
-      this.sortField=name; 
+      this.sortField=name;
       this.sortReverse = !this.sortReverse;
       this.loadData();
     }
 
     loadData() {
       this.StatsService.getMolochStats({filter: this.searchStats, sortField: this.sortField, desc: this.sortReverse, start: this.query.start, length:this.query.length})
-        .then((response)  => { 
-          this.stats = response; 
+        .then((response)  => {
+          this.stats = response;
 
           this.averageValues = {};
           this.totalValues = {};
@@ -96,10 +96,11 @@
         .catch((error)    => { this.error = error; });
     }
     toggleStatDetail(stat) {
+      var self = this;
       this.expanded[stat.id] = !this.expanded[stat.id];
 
       $(document.getElementById("statsGraph-" + stat.id)).empty();
-      
+
       if (!this.expanded[stat.id]) {return;}
 
       var dcontext = cubism.context()
@@ -110,19 +111,16 @@
 
       function dmetric(name, mname) {
         return dcontext.metric(function(startV, stopV, stepV, callback) {
-          $.ajax( {
-            "dataType": 'json',
-            "type": "GET",
-            "url": "dstats.json?nodeName=" + stat.id +
-                          "&start=" + startV/1000 +
-                          "&stop=" + stopV/1000 +
-                          "&step=" + stepV/1000 +
-                          "&interval=60" +
-                          "&name=" + mname,
-            "success": function(data) {
-              callback(null, data);
-            }
-          });
+          self.StatsService.getDetailStats({nodeName: stat.id,
+                                            start: startV/1000,
+                                            stop: stopV/1000,
+                                            step: stepV/1000,
+                                            interval: 60,
+                                            name: mname})
+            .then((response)  => {
+              callback(null, response);
+            })
+            .catch((error)    => { return callback(new Error('Unable to load data')); });
         }, name);
       }
       var headerNames = this.columns.map(function(item) {return item.name;});

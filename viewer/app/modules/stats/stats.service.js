@@ -31,8 +31,8 @@
     getMolochStats(options) {
       return this.$q((resolve, reject) => {
 
-        let config = { method:'GET', 
-                          url:'stats.json', 
+        let config = { method:'GET',
+                          url:'stats.json',
                         cache:false,
                        params:options};
 
@@ -54,8 +54,29 @@
     getElasticsearchStats(options) {
       return this.$q((resolve, reject) => {
 
-        let config = { method:'GET', 
-                          url:'esstats.json', 
+        let config = { method:'GET',
+                          url:'esstats.json',
+                        cache:false,
+                       params:options};
+
+        this.$http(config)
+          .then((response) => {
+            resolve(response.data);
+          }, (error) => {
+            reject(error);
+          });
+
+      });
+    }
+
+    /**
+     * Gets moloch dstats from the server
+     */
+    getDetailStats(options) {
+      return this.$q((resolve, reject) => {
+
+        let config = { method:'GET',
+                          url:'dstats.json',
                         cache:false,
                        params:options};
 
