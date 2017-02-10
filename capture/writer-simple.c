@@ -92,8 +92,7 @@ MolochSimple_t *writer_simple_alloc(int thread, MolochSimple_t *previous)
         info = MOLOCH_TYPE_ALLOC0(MolochSimple_t);
         info->buf = mmap (0, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
         if (unlikely(info.buf == (void*)-1) {
-            LOG("ERROR - MMap failure in writer_simple_alloc, %d: %s",errno,perror(errno));
-            exit (0);
+            LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s",errno,perror(errno));
         }
         info->thread = thread;
     } else {
