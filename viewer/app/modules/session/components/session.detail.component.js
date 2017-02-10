@@ -389,7 +389,7 @@
                 let href = img.getAttribute('href');
                 href = href.replace('body', 'bodypng');
                 $(img).tooltip({
-                  placement : 'top',
+                  placement : 'right',
                   html      : true,
                   title     : `File Bytes:<br><img src="${href}">`
                 });

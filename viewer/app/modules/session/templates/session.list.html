@@ -37,7 +37,7 @@
 
         <thead>
           <tr>
-            <th width="6%" ng-drop="true" draggable="false"
+            <th width="80px" ng-drop="true" draggable="false"
               ng-drop-success="$ctrl.onDropComplete(-1, $data, $event)">
 
               <!-- column visibility button -->
@@ -254,8 +254,8 @@
                     expr="ip.protocol" value="{{::session.pr}}"
                     session="::session" parse="true" pull-left="true">
                   </session-field>
-                </small>&nbsp;
-              </span>
+                </small>
+              </span>&nbsp;
             </td>
             <td ng-repeat="col in :refresh:$ctrl.headers track by $index">
               <session-field ng-if=":refresh:$ctrl.showSessions"

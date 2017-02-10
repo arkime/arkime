@@ -749,7 +749,7 @@ exports.register("ITEM-LINKBODY", through.ctor({objectMode: true}, function(item
   if (item.bodyType === "image") {
     item.html = "<img src=\"" + url + "\">";
   } else {
-    item.html = "<a class='imagetag' href=\"" + url + "\">" + item.bodyName + "</a>";
+    item.html = "<a target='_blank' class='imagetag file' href=\"" + url + "\">" + item.bodyName + "</a>";
   }
   callback(null, item);
 }));
