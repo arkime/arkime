@@ -18,7 +18,8 @@
   <div class="tooltip-inner">
     <div ng-if="!$ctrl.loading && !$ctrl.error">
       <strong>Elasticsearch</strong><br>
-      Version: <strong>{{::$ctrl.esHealth.version}}</strong><br>
+      ES Version: <strong>{{::$ctrl.esHealth.version}}</strong><br>
+      DB Version: <strong>{{::$ctrl.esHealth.molochDbVersion}}</strong><br>
       Cluster: <strong>{{::$ctrl.esHealth.cluster_name}}</strong><br>
       Status: <strong>{{::$ctrl.esHealth.status}}</strong><br>
       Nodes: <strong>{{::$ctrl.esHealth.number_of_nodes}}</strong><br>
