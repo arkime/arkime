@@ -936,17 +936,6 @@ app.get('/vendor.bundle.js.map', function(req, res) {
 });
 
 
-// TODO ECR
-app.get('/spiview/categories', function(req, res) {
-  var categories  = Config.getCategories();
-  var sorted      = Object.keys(categories).sort();
-
-  sorted.splice(sorted.indexOf('general'), 1);
-  sorted.unshift('general');
-
-  res.send(sorted);
-});
-
 /* User Endpoints ---------------------------------------------------------- */
 // default settings for users with no settings
 var settingDefaults = {

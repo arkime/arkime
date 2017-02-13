@@ -7,7 +7,7 @@
     length: 50,   // page length
     start : 0,    // first item index
     facets: 1,    // facets
-    spi   : 'a2:100,prot-term:100,a1:100' //?spi=a2:100,prot-term:100,a1:100&date=1&length=100
+    spi   : 'a2:100,prot-term:100,a1:100' // which spi data values to query for
   };
 
   /**
@@ -18,13 +18,21 @@
    */
   class SpiviewController {
 
+    /* setup --------------------------------------------------------------- */
     /**
      * Initialize global variables for this controller
-     * TODO
+     * @param $scope          Angular application model object
+     * @param $location       Exposes browser address bar URL (based on the window.location)
+     * @param $routeParams    Retrieve the current set of route parameters
+     * @param FieldService    Retrieves available fields from the server
+     * @param SpiviewService  Transacts spiview data with the server
      * @ngInject
      */
-    constructor($scope, SpiviewService) {
+    constructor($scope, $location, $routeParams, FieldService, SpiviewService) {
       this.$scope         = $scope;
+      this.$location      = $location;
+      this.$routeParams   = $routeParams;
+      this.FieldService   = FieldService;
       this.SpiviewService = SpiviewService;
     }
 
@@ -33,13 +41,14 @@
       this.loading  = true;
       this.query    = _query; // load saved query
 
-      // TODO default query?
-      // TODO read query parameters in url
-      // TODO build spi query string
+      if (this.$routeParams.spi) {
+        // if there's a spi param use it
+        this.query.spi = _query.spi = this.$routeParams.spi;
+      } else { // if there isn't, set it for future use
+        this.$location.search('spi', this.query.spi);
+      }
 
-      // TODO chain promises?
-      this.getCategories();
-      this.getSpiData();
+      this.getFields(); // IMPORTANT: kicks off initial query for spi data!
 
       let initialized;
       this.$scope.$on('change:search', (event, args) => {
@@ -57,32 +66,61 @@
         _query.expression = this.query.expression = args.expression;
         if (args.bounding) {_query.bounding = this.query.bounding = args.bounding;}
 
-        // reset to the first page, because we are issuing a new query
-        // and there may only be 1 page of results
-        _query.start = this.query.start = 0;
-
         this.query.view = args.view;
 
         // don't issue search when the first change:search event is fired
         if (!initialized) { initialized = true; return; }
 
-        this.getSpiData();
+        this.getFields();
+      });
+
+      // watch for additions to search parameters from spi values
+      this.$scope.$on('add:to:search', (event, args) => {
+        // notify children (namely expression typeahead)
+        this.$scope.$broadcast('add:to:typeahead', args);
+      });
+
+      // watch for changes to time parameters from graph
+      this.$scope.$on('change:time', (event, args) => {
+        // notify children (namely search component)
+        this.$scope.$broadcast('update:time', args);
       });
     }
 
-    getCategories() {
-      this.SpiviewService.getCategories()
+
+    /* data retrieve/setup/update ------------------------------------------ */
+    /* Retrieves the list of fields from the server and groups them into
+     * categories, then kicks of the query for spi data */
+    getFields() {
+      this.loading = true;
+
+      this.FieldService.get(true)
         .then((response) => {
-          this.categories = response;
+          this.error = false;
+          this.fields = response;
+          this.categoryFields = {};
+
+          for (let i = 0, len = this.fields.length; i < len; ++i) {
+            let field = this.fields[i];
+            if (this.categoryFields.hasOwnProperty(field.group)) {
+              // already created, just add a new field
+              this.categoryFields[field.group].fields.push(field);
+            } else { // create it
+              this.categoryFields[field.group] = { fields: [ field ] };
+            }
+          }
+
+          this.getSpiData(); // IMPORTANT: queries for spi data!
         })
         .catch((error) => {
-          this.error = error.text;
+          this.loading  = false;
+          this.error    = error.text;
         });
     }
 
+    /* Retrieves spiview data from the server and puts each piece of data into
+     * it's appropriate category */
     getSpiData() {
-      this.loading = true;
-
       this.SpiviewService.get(this.query)
         .then((response) => {
           this.loading  = false;
@@ -95,7 +133,52 @@
           this.total      = response.recordsTotal;
           this.filtered   = response.recordsFiltered;
 
-          console.log(response);
+          for (let key in this.protocols) {
+            if (this.protocols.hasOwnProperty(key)) {
+
+              let category;
+
+              if (this.categoryFields.hasOwnProperty(key)) {
+                category = this.categoryFields[key];
+              } else { // categorize special protocols that don't match category
+                if (key === 'tcp' || key === 'udp' || key === 'icmp') {
+                  category = this.categoryFields.general;
+                } else if (key === 'smtp' || key === 'lmtp') {
+                  category = this.categoryFields.email;
+                }
+              }
+
+              if (category) {
+                if (category.protocols) { // already created, just add new
+                  category.protocols.push({ name:key, value:this.protocols[key] });
+                } else { // create protocols object
+                  category.protocols = [{ name:key, value:this.protocols[key] }];
+                }
+              }
+
+            }
+          }
+
+          for (let key in this.spi) {
+            if (this.spi.hasOwnProperty(key)) {
+              for (let f in this.fields) {
+                if (this.fields.hasOwnProperty(f)) {
+                  let field = this.fields[f];
+                  if (field.dbField === key) { // found the field!
+                    let spi = this.spi[key];
+                    let category = this.categoryFields[field.group];
+                    if (category) { // found the category it belongs to
+                      if (category.spi) { // already created, just add new
+                        category.spi.push({ field:field, value:spi });
+                      } else { // create spi object
+                        category.spi = [{ field:field, value:spi }];
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         })
         .catch((error) => {
           this.loading  = false;
@@ -103,9 +186,36 @@
         });
     }
 
+
+    /* exposed functions --------------------------------------------------- */
+    /**
+     * Toggles the view of field spi data by updating the query.spi string
+     * @param {string} fieldID The id (dbField) of the field to toggle
+     */
+    toggleSpiData(fieldID) {
+      if (this.query.spi.contains(fieldID)) {
+        let split = this.query.spi.split(',');
+        for (let i = 0, len = split.length; i < len; ++i) {
+          if (split[i].contains(fieldID)) {
+            split.splice(i, 1);
+            break;
+          }
+        }
+        this.query.spi = split.join(',');
+      } else {
+        if (this.query.spi && this.query.spi !== '') {
+          this.query.spi += ',';
+        }
+        this.query.spi += `${fieldID}:100`;
+      }
+
+      this.getFields();
+    }
+
   }
 
-  SpiviewController.$inject = ['$scope','SpiviewService'];
+  SpiviewController.$inject = ['$scope','$location','$routeParams',
+    'FieldService','SpiviewService'];
 
   /**
    * SPI View Directive

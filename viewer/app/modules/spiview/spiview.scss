@@ -1,0 +1,39 @@
+moloch-spiview {
+  .panel-heading { padding: 0; }
+
+  .panel-title a { // make entire heading clickable
+    display         : block;
+    padding         : 10px 15px;
+    text-decoration : none;
+
+    strong { font-size: 2.3rem; }
+  }
+
+  .panel-body {
+    .btn-drawer {
+      margin-right: -15px;
+    }
+
+    a.active { font-weight: bold; }
+
+    .spi-buckets {
+      margin-left   : -15px;
+      margin-right  : -15px;
+      padding-left  : 15px;
+      padding-right : 15px;
+      padding-top   : 5px;
+      padding-bottom: 5px;
+
+      &:nth-child(odd) {
+        background-color: lighten($color-yellow-light, 32%);
+      }
+    }
+
+    .spi-bucket {
+      font-size : 85%;
+      display   : inline-block;
+
+      sup { margin-left: -10px; }
+    }
+  }
+}

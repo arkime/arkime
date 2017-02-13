@@ -41,20 +41,6 @@
       });
     }
 
-    // TODO ECR
-    getCategories() {
-      return this.$q((resolve, reject) => {
-
-        this.$http({ url:'spiview/categories', method:'GET' })
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error);
-          });
-
-      });
-    }
-
   }
 
   SpiviewService.$inject = ['$q', '$http'];

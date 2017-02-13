@@ -1,4 +1,4 @@
-<div class="container-fluid margined-left margined-right">
+<div class="container-fluid">
 
   <!-- TODO there are no "open sessions" all are open -->
   <moloch-search open-sessions="$ctrl.stickySessions"
@@ -17,17 +17,51 @@
     </div>
   </div>
 
-  <label class="label label-info">
+  <label class="label label-primary">
     Showing {{$ctrl.filtered}} entries filtered from
     {{$ctrl.total}} total entries
   </label>
 
   <div ng-if="!$ctrl.loading && !$ctrl.error">
     <uib-accordion close-others="false">
-      <div uib-accordion-group class="panel-default"
-        ng-repeat="category in $ctrl.categories"
-        heading="{{::category}}">
-        {{::category}}
+      <div uib-accordion-group class="panel-default" is-open="isopen"
+        ng-repeat="(key, value) in $ctrl.categoryFields">
+        <uib-accordion-heading>
+          <strong>{{::key}}</strong>
+          <sup ng-if="::$ctrl.protocols[key]">
+            ({{::$ctrl.protocols[key]}})
+          </sup>
+          <span ng-if="::!$ctrl.protocols[key] && value.protocols.length">
+            -
+            <span ng-repeat="protocol in value.protocols">
+              {{::protocol.name}} <sup>({{::protocol.value}})</sup>
+            </span>
+          </span>
+          <span class="pull-right fa"
+           ng-class="{'fa-minus': isopen, 'fa-plus': !isopen}"></span>
+        </uib-accordion-heading>
+        <div class="btn-drawer">
+          <a ng-repeat="field in value.fields | orderBy: 'friendlyName'"
+            class="btn btn-sm btn-default margined-right margined-bottom"
+            ng-class="{'active':$ctrl.spi[field.dbField]}"
+            ng-click="$ctrl.toggleSpiData(field.dbField)"
+            uib-tooltip="{{::field.help}}">
+            {{::field.friendlyName}}
+          </a>
+        </div>
+        <div ng-if="value.spi" class="margined-top">
+          <div ng-repeat="spi in value.spi" class="spi-buckets">
+            <strong>{{::spi.field.friendlyName}}:</strong>&nbsp;
+            <span ng-repeat="bucket in spi.value.buckets">
+              <div class="spi-bucket margined-left-sm no-wrap">
+                <session-field field="::spi.field"
+                  value="{{::bucket.key}}" expr="{{::spi.field.exp}}"
+                  parse="true" pull-left="true">
+                </session-field><sup>({{bucket.doc_count}})</sup>
+              </div>
+            </span>
+          </div>
+        </div>
       </div>
     </uib-accordion>
   </div>
