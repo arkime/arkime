@@ -24,14 +24,17 @@
      * @param $scope          Angular application model object
      * @param $location       Exposes browser address bar URL (based on the window.location)
      * @param $routeParams    Retrieve the current set of route parameters
+     * @param UserService     Transacts users and user data with the server
      * @param FieldService    Retrieves available fields from the server
      * @param SpiviewService  Transacts spiview data with the server
      * @ngInject
      */
-    constructor($scope, $location, $routeParams, FieldService, SpiviewService) {
+    constructor($scope, $location, $routeParams,
+      UserService, FieldService, SpiviewService) {
       this.$scope         = $scope;
       this.$location      = $location;
       this.$routeParams   = $routeParams;
+      this.UserService    = UserService;
       this.FieldService   = FieldService;
       this.SpiviewService = SpiviewService;
     }
@@ -49,6 +52,7 @@
       }
 
       this.getFields(); // IMPORTANT: kicks off initial query for spi data!
+      this.getUserSettings();
 
       let initialized;
       this.$scope.$on('change:search', (event, args) => {
@@ -98,15 +102,15 @@
         .then((response) => {
           this.error = false;
           this.fields = response;
-          this.categoryFields = {};
+          this.categoryObjects = {};
 
           for (let i = 0, len = this.fields.length; i < len; ++i) {
             let field = this.fields[i];
-            if (this.categoryFields.hasOwnProperty(field.group)) {
+            if (this.categoryObjects.hasOwnProperty(field.group)) {
               // already created, just add a new field
-              this.categoryFields[field.group].fields.push(field);
+              this.categoryObjects[field.group].fields.push(field);
             } else { // create it
-              this.categoryFields[field.group] = { fields: [ field ] };
+              this.categoryObjects[field.group] = { fields: [ field ] };
             }
           }
 
@@ -138,13 +142,13 @@
 
               let category;
 
-              if (this.categoryFields.hasOwnProperty(key)) {
-                category = this.categoryFields[key];
+              if (this.categoryObjects.hasOwnProperty(key)) {
+                category = this.categoryObjects[key];
               } else { // categorize special protocols that don't match category
                 if (key === 'tcp' || key === 'udp' || key === 'icmp') {
-                  category = this.categoryFields.general;
+                  category = this.categoryObjects.general;
                 } else if (key === 'smtp' || key === 'lmtp') {
-                  category = this.categoryFields.email;
+                  category = this.categoryObjects.email;
                 }
               }
 
@@ -166,15 +170,22 @@
                   let field = this.fields[f];
                   if (field.dbField === key) { // found the field!
                     let spi = this.spi[key];
-                    let category = this.categoryFields[field.group];
+                    let category = this.categoryObjects[field.group];
                     if (category) { // found the category it belongs to
-                      if (category.spi) { // already created, just add new
-                        category.spi.push({ field:field, value:spi });
-                      } else { // create spi object
-                        category.spi = [{ field:field, value:spi }];
-                      }
+                      if (!category.spi)  { category.spi = {}; }
+                      category.spi[key] = { field:field, value:spi, active:true };
                     }
                   }
+                }
+              }
+            }
+          }
+
+          for (let key in this.categoryObjects) {
+            if (this.categoryObjects.hasOwnProperty(key)) {
+              if (localStorage && localStorage['spiview-collapsible']) {
+                if (localStorage['spiview-collapsible'].contains(key)) {
+                  this.categoryObjects[key].isopen = true;
                 }
               }
             }
@@ -186,14 +197,35 @@
         });
     }
 
+    /* Retrieves the current user's settings (specifically for timezone) */
+    getUserSettings() {
+      this.UserService.getSettings()
+      .then((settings) => {
+        this.settings = settings;
+      })
+      .catch((error) => {
+        this.error = error;
+      });
+    }
+
 
     /* exposed functions --------------------------------------------------- */
     /**
      * Toggles the view of field spi data by updating the query.spi string
-     * @param {string} fieldID The id (dbField) of the field to toggle
+     * @param {string} fieldID    The id (dbField) of the field to toggle
+     * @param {string} fieldGroup The group/category the field belongs to
      */
-    toggleSpiData(fieldID) {
+    toggleSpiData(fieldID, fieldGroup) {
+      // let spiData = this.categoryObjects[fieldGroup].spi[fieldID];
+      let spiData;
+      if (this.categoryObjects[fieldGroup].spi) {
+        spiData = this.categoryObjects[fieldGroup].spi[fieldID];
+      }
+
+      let addField = false;
+
       if (this.query.spi.contains(fieldID)) {
+        // remove this field's spi data
         let split = this.query.spi.split(',');
         for (let i = 0, len = split.length; i < len; ++i) {
           if (split[i].contains(fieldID)) {
@@ -202,20 +234,60 @@
           }
         }
         this.query.spi = split.join(',');
-      } else {
+
+        if (spiData) { spiData.active = false; }
+      } else { // add this field's spi data
         if (this.query.spi && this.query.spi !== '') {
           this.query.spi += ',';
         }
         this.query.spi += `${fieldID}:100`;
+
+        if (!spiData) { addField = true; }
+        else          { spiData.active = true; }
       }
 
-      this.getFields();
+      _query.spi = this.query.spi;
+      this.$location.search('spi', this.query.spi); // update url param
+
+      // issue query if user has added a field (need more info)
+      if (addField) { this.getFields(); }
+    }
+
+    /**
+     * Saves the open categories to spiview-collapsible localStorage
+     * @param {string} name   The name of the category
+     * @param {bool} isclosed Whether the category is closed
+     */
+    toggleCategory(name, isclosed) {
+      if (localStorage) {
+        if (localStorage['spiview-collapsible']) {
+          let visiblePanels = localStorage['spiview-collapsible'];
+          if (isclosed) {
+            let split = visiblePanels.split(',');
+            for (let i = 0, len = split.length; i < len; ++i) {
+              if (split[i].contains(name)) {
+                split.splice(i, 1);
+                break;
+              }
+            }
+            visiblePanels = split.join(',');
+          } else {
+            if (!visiblePanels.contains(name)) {
+              if (visiblePanels !== '') { visiblePanels += ','; }
+              visiblePanels += `${name}`;
+            }
+          }
+          localStorage['spiview-collapsible'] = visiblePanels;
+        } else {
+          localStorage['spiview-collapsible'] = name;
+        }
+      }
     }
 
   }
 
   SpiviewController.$inject = ['$scope','$location','$routeParams',
-    'FieldService','SpiviewService'];
+    'UserService','FieldService','SpiviewService'];
 
   /**
    * SPI View Directive

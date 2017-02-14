@@ -1,12 +1,13 @@
 moloch-spiview {
   .panel-heading { padding: 0; }
 
-  .panel-title a { // make entire heading clickable
+  .panel-title a.accordion-toggle { // make entire heading clickable
     display         : block;
     padding         : 10px 15px;
     text-decoration : none;
 
-    strong { font-size: 2.3rem; }
+    .protocol-value > sup { margin-left: -8px; }
+    strong.category-title { font-size: 2.3rem; }
   }
 
   .panel-body {

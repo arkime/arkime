@@ -2,6 +2,8 @@
 
   'use strict';
 
+  const defaultSettings = { timezone: 'local' };
+
   /**
    * @class UserService
    * @classdesc Transacts users and user data with the server
@@ -77,7 +79,12 @@
 
         this.$http(options)
           .then((response) => {
-            resolve(response.data);
+            let settings = response.data;
+            // if the settings are empty, set smart default
+            if (Object.keys(settings).length === 0) {
+              settings = defaultSettings;
+            }
+            resolve(settings);
           }, (error) => {
             reject(error.data);
           });

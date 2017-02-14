@@ -62,8 +62,12 @@
      * @param {string} field  The field name
      * @param {string} value  The field value
      * @param {string} op     The relational operator
+     * @param {object} $event The click event that triggered this function
      */
-    fieldClick(field, value, op) {
+    fieldClick(field, value, op, $event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+
       // close the dropdown
       this.isopen = false;
 

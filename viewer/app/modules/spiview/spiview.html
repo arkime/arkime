@@ -22,44 +22,54 @@
     {{$ctrl.total}} total entries
   </label>
 
-  <div ng-if="!$ctrl.loading && !$ctrl.error">
+  <div ng-if="!$ctrl.error">
     <uib-accordion close-others="false">
-      <div uib-accordion-group class="panel-default" is-open="isopen"
-        ng-repeat="(key, value) in $ctrl.categoryFields">
+      <div uib-accordion-group class="panel-default" is-open="value.isopen"
+        ng-repeat="(key, value) in $ctrl.categoryObjects">
         <uib-accordion-heading>
-          <strong>{{::key}}</strong>
-          <sup ng-if="::$ctrl.protocols[key]">
-            ({{::$ctrl.protocols[key]}})
-          </sup>
-          <span ng-if="::!$ctrl.protocols[key] && value.protocols.length">
-            -
-            <span ng-repeat="protocol in value.protocols">
-              {{::protocol.name}} <sup>({{::protocol.value}})</sup>
+          <div ng-click="$ctrl.toggleCategory(key, value.isopen)">
+            <strong class="category-title">{{::key}}</strong>
+            <sup ng-if="::$ctrl.protocols[key]">
+              ({{::$ctrl.protocols[key]}})
+            </sup>
+            <span ng-if="::!$ctrl.protocols[key] && value.protocols.length">
+              -
+              <span ng-repeat="protocol in value.protocols" class="protocol-value">
+                <session-field value="{{::protocol.name}}" expr="protocols"
+                   parse="false" pull-left="true">
+                </session-field>
+                <sup>({{::protocol.value}})</sup>
+              </span>
             </span>
-          </span>
-          <span class="pull-right fa"
-           ng-class="{'fa-minus': isopen, 'fa-plus': !isopen}"></span>
+            <span class="pull-right fa"
+             ng-class="{'fa-minus': value.isopen, 'fa-plus': !value.isopen}"></span>
+          </div>
         </uib-accordion-heading>
-        <div class="btn-drawer">
-          <a ng-repeat="field in value.fields | orderBy: 'friendlyName'"
-            class="btn btn-sm btn-default margined-right margined-bottom"
-            ng-class="{'active':$ctrl.spi[field.dbField]}"
-            ng-click="$ctrl.toggleSpiData(field.dbField)"
-            uib-tooltip="{{::field.help}}">
-            {{::field.friendlyName}}
-          </a>
-        </div>
-        <div ng-if="value.spi" class="margined-top">
-          <div ng-repeat="spi in value.spi" class="spi-buckets">
-            <strong>{{::spi.field.friendlyName}}:</strong>&nbsp;
-            <span ng-repeat="bucket in spi.value.buckets">
-              <div class="spi-bucket margined-left-sm no-wrap">
-                <session-field field="::spi.field"
-                  value="{{::bucket.key}}" expr="{{::spi.field.exp}}"
-                  parse="true" pull-left="true">
-                </session-field><sup>({{bucket.doc_count}})</sup>
-              </div>
-            </span>
+        <div ng-if="value.isopen">
+          <div class="btn-drawer">
+            <a ng-repeat="field in ::value.fields | orderBy: 'friendlyName'"
+              class="btn btn-sm btn-default margined-right margined-bottom"
+              ng-class="{'active':value.spi[field.dbField].active}"
+              ng-click="$ctrl.toggleSpiData(field.dbField, field.group)"
+              uib-tooltip="{{::field.help}}">
+              {{::field.friendlyName}}
+            </a>
+          </div>
+          <div ng-if="value.spi" class="margined-top">
+            <div ng-repeat="(key, value) in value.spi" class="spi-buckets"
+              ng-if="value.active">
+              <strong>{{value.field.friendlyName}}:</strong>&nbsp;
+              <span ng-repeat="bucket in value.value.buckets">
+                <div class="spi-bucket margined-left-sm no-wrap" ng-if="::bucket.key">
+                  <session-field field="::value.field"
+                    value="{{::bucket.key}}" expr="{{::value.field.exp}}"
+                    parse="true" pull-left="true"
+                    timezone="{{::$ctrl.settings.timezone}}">
+                  </session-field>
+                  <sup>({{bucket.doc_count}})</sup>
+                </div>
+              </span>
+            </div>
           </div>
         </div>
       </div>

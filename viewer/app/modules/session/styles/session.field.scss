@@ -51,6 +51,12 @@ session-field {
       }
     }
 
+    &.time-field {
+      // add margin to time fields to compensate for lack of down caret
+      display     : inline-block;
+      margin-right: 6px;
+    }
+
     &:hover {
       z-index         : 4;
       background-color: $color-white;
