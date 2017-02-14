@@ -91,6 +91,9 @@ void writer_disk_alloc_buf(MolochDiskOutput_t *out)
         out->buf = (void*)tmp;
     } else {
         out->buf = mmap (0, config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+        if (unlikely(out->buf == MAP_FAILED)) {
+            LOGEXIT("ERROR - MMap failure in disk_alloc_buf, %d: %s",errno, strerror(errno));
+        }
     }
 
     if (writeMethod & MOLOCH_WRITE_THREAD)

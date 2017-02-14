@@ -392,10 +392,14 @@ exports.healthCache = function (cb) {
         return cb(err, null);
       }
 
-      internals.healthCache = health;
-      internals.healthCache._timeStamp = Date.now();
-
-      cb(null, health);
+      exports.get("dstats", "version", "version", function(err, doc) {
+        if (doc !== undefined && doc._source !== undefined) {
+          health.molochDbVersion = doc._source.version;
+        }
+        internals.healthCache = health;
+        internals.healthCache._timeStamp = Date.now();
+        cb(null, health);
+      });
   });
 };
 

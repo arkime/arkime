@@ -14,7 +14,12 @@ config.output = {
 };
 
 config.plugins = [
-  new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js')
+  new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
+  new webpack.ProvidePlugin({
+    $               : 'jquery',
+    jQuery          : 'jquery',
+    'window.jQuery' : 'jquery'
+  })
 ];
 
 module.exports = config;

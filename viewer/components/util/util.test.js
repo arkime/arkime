@@ -215,6 +215,26 @@
 
     });
 
+    describe('Human Readable Bytes Filter ->', function() {
+
+      it('should return a string with correct human readable format', function() {
+        let result = $filter('humanReadable')(0);
+        expect(result).toEqual('0B');
+
+        result = $filter('humanReadable')(1);
+        expect(result).toEqual('1B');
+
+        result = $filter('humanReadable')(1024);
+        expect(result).toEqual('1.0K');
+
+        result = $filter('humanReadable')(33643982848);
+        expect(result).toEqual('31G');
+
+        result = $filter('humanReadable')(2146435072000);
+        expect(result).toEqual('2.0T');
+      });
+    });
+
 
     describe('Convert To Number Directive ->', function() {
 
