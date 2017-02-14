@@ -1922,6 +1922,22 @@ sub dbCheck {
     }
 }
 ################################################################################
+sub checkForOldIndices {
+    my $result = esGet("/_all/_settings/index.version.created?pretty");
+    my $found = 0;
+
+    while ( my ($key, $value) = each (%{$result})) {
+        if ($value->{settings}->{index}->{version}->{created} < 2000000) {
+            print "WARNING: You must delete index '$key' before upgrading to ES 5\n";
+            $found = 1;
+        }
+    }
+
+    if ($found) {
+        print "\nYou MUST delete (and optionally re-add) the indices above while still on ES 2.x or ES 5.x will NOT start.\n\n";
+    }
+}
+################################################################################
 sub progress {
     my ($msg) = @_;
     if ($verbose == 1) {
@@ -2089,12 +2105,12 @@ if ($ARGV[1] =~ /^users-?import$/) {
         $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }
 
-sub printIndex {
-    my ($status, $name) = @_;
-    my $index = $status->{indices}->{$PREFIX.$name};
-    return if (!$index);
-    printf "%-20s %10s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
-}
+    sub printIndex {
+        my ($status, $name) = @_;
+        my $index = $status->{indices}->{$PREFIX.$name};
+        return if (!$index);
+        printf "%-20s %10s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
+    }
 
     printf "ES Version:          %10s\n", $esversion->{version}->{number};
     printf "DB Version:          %10s\n", $main::versionNumber;
@@ -2403,12 +2419,15 @@ if ($ARGV[1] =~ /(init|wipe)/) {
 
         esDelete("/_template/${PREFIX}template_1", 1);
         sessionsUpdate();
+        checkForOldIndices();
     } elsif ($main::versionNumber <= 33) {
         createNewAliasesFromOld("stats", "stats_v2", "stats_v1", \&statsCreate);
         usersUpdate();
         sessionsUpdate();
+        checkForOldIndices();
     } elsif ($main::versionNumber <= 34) {
         sessionsUpdate();
+        checkForOldIndices();
     } else {
         print "db.pl is hosed\n";
     }
