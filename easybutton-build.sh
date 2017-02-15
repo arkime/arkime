@@ -53,7 +53,10 @@ if [ -f "/etc/redhat-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  DEPS="wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev"
+  DEPS="wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++
+        flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make
+        libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils
+        libffi-dev libssl-dev"
 
   if ! dpkg -l $DEPS >/dev/null; then
     apt-get install $DEPS
