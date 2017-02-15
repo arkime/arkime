@@ -32,7 +32,7 @@
         numMatching : 999999
       });
 
-      $httpBackend.whenPOST('scrub&expression=undefined',
+      $httpBackend.whenPOST('scrub',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
@@ -74,7 +74,7 @@
     });
 
     it('should send scrub request and close form', function() {
-      $httpBackend.expectPOST('scrub&expression=undefined');
+      $httpBackend.expectPOST('scrub');
 
       sessionScrubPCAPComponent.scrubPCAP();
 
@@ -87,7 +87,7 @@
     });
 
     it('should send scrub request with segment and close form', function() {
-      $httpBackend.expectPOST('scrub&expression=undefined');
+      $httpBackend.expectPOST('scrub');
 
       sessionScrubPCAPComponent.include = 'all';
 

@@ -33,7 +33,7 @@
         numMatching : 999999
       });
 
-      $httpBackend.whenPOST('addTags&expression=undefined',
+      $httpBackend.whenPOST('addTags',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
@@ -43,7 +43,7 @@
          }
       ).respond(200, { text: 'Tag success' });
 
-      $httpBackend.whenPOST('removeTags&expression=undefined',
+      $httpBackend.whenPOST('removeTags',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
@@ -87,7 +87,7 @@
     });
 
     it('should send add tags request and close form', function() {
-      $httpBackend.expectPOST('addTags&expression=undefined');
+      $httpBackend.expectPOST('addTags');
 
       sessionTagComponent.tags = 'tag1,tag2';
 
@@ -102,7 +102,7 @@
     });
 
     it('should send add tags request with segments and close form', function() {
-      $httpBackend.expectPOST('addTags&expression=undefined');
+      $httpBackend.expectPOST('addTags');
 
       sessionTagComponent.tags = 'tag1,tag2';
       sessionTagComponent.segments = 'all';
@@ -124,7 +124,7 @@
     });
 
     it('should send remove tags request and close form', function() {
-      $httpBackend.expectPOST('removeTags&expression=undefined');
+      $httpBackend.expectPOST('removeTags');
 
       sessionTagComponent.tags = 'tag1,tag2';
 

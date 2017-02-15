@@ -15,7 +15,12 @@ moloch-spiview {
       margin-right: -15px;
     }
 
-    a.active { font-weight: bold; }
+    .btn-drawer {
+      .field-btn {
+        color: $color-gray-dark;
+        &.active { color: $color-black; }
+      }
+    }
 
     .spi-buckets {
       margin-left   : -15px;

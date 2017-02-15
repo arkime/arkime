@@ -95,7 +95,8 @@
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode
 
-      $compileProvider.debugInfoEnabled(false);
+      // $compileProvider.debugInfoEnabled(false);
+      require('./watchers');
 
       $httpProvider.interceptors.push('myHttpInterceptor');
 

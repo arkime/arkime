@@ -27,16 +27,18 @@
      * @param UserService     Transacts users and user data with the server
      * @param FieldService    Retrieves available fields from the server
      * @param SpiviewService  Transacts spiview data with the server
+     * @param SessionService  Transacts sessions with the server
      * @ngInject
      */
     constructor($scope, $location, $routeParams,
-      UserService, FieldService, SpiviewService) {
+      UserService, FieldService, SpiviewService, SessionService) {
       this.$scope         = $scope;
       this.$location      = $location;
       this.$routeParams   = $routeParams;
       this.UserService    = UserService;
       this.FieldService   = FieldService;
       this.SpiviewService = SpiviewService;
+      this.SessionService = SessionService;
     }
 
     /* Callback when component is mounted and ready */
@@ -105,14 +107,45 @@
           this.categoryObjects = {};
 
           for (let i = 0, len = this.fields.length; i < len; ++i) {
-            let field = this.fields[i];
+            let field = this.fields[i], newField;
+
+            if (field.noFacet || field.regex) { continue; }
+            else if (field.dbField.match(/\.snow$/)) {
+              newField = {
+                friendlyName: field.friendlyName + ' Tokens',
+                dbField     : field.dbField,
+                group       : field.group,
+                exp         : field.exp
+              };
+              field.dbField = field.dbField.replace('.snow', '.raw');
+            } else if (field.rawField) {
+              newField = {
+                friendlyName: field.friendlyName + ' Tokens',
+                dbField     : field.dbField,
+                group       : field.group,
+                exp         : field.exp
+              };
+              field.dbField = field.rawField;
+            }
+
             if (this.categoryObjects.hasOwnProperty(field.group)) {
               // already created, just add a new field
               this.categoryObjects[field.group].fields.push(field);
             } else { // create it
               this.categoryObjects[field.group] = { fields: [ field ] };
             }
+
+
+            if (newField) {
+              this.categoryObjects[field.group].fields.push(newField);
+              this.fields.push(newField);
+            }
           }
+
+          // sorted list of categories
+          this.categoryList = Object.keys(this.categoryObjects).sort();
+          this.categoryList.splice(this.categoryList.indexOf('general'), 1);
+          this.categoryList.unshift('general');
 
           this.getSpiData(); // IMPORTANT: queries for spi data!
         })
@@ -200,12 +233,12 @@
     /* Retrieves the current user's settings (specifically for timezone) */
     getUserSettings() {
       this.UserService.getSettings()
-      .then((settings) => {
-        this.settings = settings;
-      })
-      .catch((error) => {
-        this.error = error;
-      });
+        .then((settings) => {
+          this.settings = settings;
+        })
+        .catch((error) => {
+          this.error = error;
+        });
     }
 
 
@@ -214,9 +247,9 @@
      * Toggles the view of field spi data by updating the query.spi string
      * @param {string} fieldID    The id (dbField) of the field to toggle
      * @param {string} fieldGroup The group/category the field belongs to
+     * @param {bool} issueQuery   Whether to issue the query at the end
      */
-    toggleSpiData(fieldID, fieldGroup) {
-      // let spiData = this.categoryObjects[fieldGroup].spi[fieldID];
+    toggleSpiData(fieldID, fieldGroup, issueQuery) {
       let spiData;
       if (this.categoryObjects[fieldGroup].spi) {
         spiData = this.categoryObjects[fieldGroup].spi[fieldID];
@@ -226,14 +259,14 @@
 
       if (this.query.spi.contains(fieldID)) {
         // remove this field's spi data
-        let split = this.query.spi.split(',');
-        for (let i = 0, len = split.length; i < len; ++i) {
-          if (split[i].contains(fieldID)) {
-            split.splice(i, 1);
+        let spiParamsArray = this.query.spi.split(',');
+        for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+          if (spiParamsArray[i].contains(fieldID)) {
+            spiParamsArray.splice(i, 1);
             break;
           }
         }
-        this.query.spi = split.join(',');
+        this.query.spi = spiParamsArray.join(',');
 
         if (spiData) { spiData.active = false; }
       } else { // add this field's spi data
@@ -250,7 +283,7 @@
       this.$location.search('spi', this.query.spi); // update url param
 
       // issue query if user has added a field (need more info)
-      if (addField) { this.getFields(); }
+      if (addField && issueQuery) { this.getSpiData(); }
     }
 
     /**
@@ -284,19 +317,81 @@
       }
     }
 
+    /**
+     * Shows more values for a specific field
+     * @param {string} fieldID The id (dbField) of the field to show more values
+     */
+    showMoreValues(fieldID) {
+      if (this.query.spi.contains(fieldID)) {
+        // make sure field is in the spi query parameter
+        let spiParamsArray = this.query.spi.split(',');
+        for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+          if (spiParamsArray[i].contains(fieldID)) {
+            let spiParam      = spiParamsArray[i].split(':');
+            spiParam[1]       = parseInt(spiParam[1]) + 100;
+            spiParamsArray[i] = spiParam.join(':');
+            break;
+          }
+        }
+        this.query.spi = spiParamsArray.join(',');
+      }
+
+      _query.spi = this.query.spi;
+      this.$location.search('spi', this.query.spi); // update url param
+
+      this.getSpiData();
+    }
+
+    // TODO ECR
+    toggleAllValues(name, $event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+
+      this.loading = true;
+      let category = this.categoryObjects[name];
+      category.showingAll = !category.showingAll;
+
+      for (let i = 0, len = category.fields.length; i < len; ++i) {
+        let field = category.fields[i];
+        let spiData = category.spi[field.dbField];
+        if (spiData) { // the spi data exists in the category
+          if ((spiData.active && !category.showingAll) ||
+             (!spiData.active && category.showingAll)) {
+            // the spi data for this field is already visible and we don't want
+            // it to be, or it's NOT visible and we want it to be
+            this.toggleSpiData(field.dbField, name, false);
+          }
+        } else if (category.showingAll) { // spi data doesn't exist in the category
+          this.toggleSpiData(field.dbField, name, false);
+        }
+      }
+
+      this.getSpiData();
+    }
+
+    // TODO ECR
+    openSpiGraph(fieldID) {
+      this.SessionService.openSpiGraph(fieldID);
+    }
+
+    // TODO ECR
+    exportUnique(fieldID, counts) {
+      this.SessionService.exportUniqueValues(fieldID, counts);
+    }
+
   }
 
   SpiviewController.$inject = ['$scope','$location','$routeParams',
-    'UserService','FieldService','SpiviewService'];
+    'UserService','FieldService','SpiviewService','SessionService'];
 
   /**
    * SPI View Directive
    * Displays SPI View page
    */
   angular.module('moloch')
-  .component('molochSpiview', {
-    template  : require('html!./spiview.html'),
-    controller: SpiviewController
-  });
+    .component('molochSpiview', {
+      template  : require('html!./spiview.html'),
+      controller: SpiviewController
+    });
 
 })();

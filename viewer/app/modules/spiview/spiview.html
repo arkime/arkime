@@ -24,43 +24,77 @@
 
   <div ng-if="!$ctrl.error">
     <uib-accordion close-others="false">
-      <div uib-accordion-group class="panel-default" is-open="value.isopen"
-        ng-repeat="(key, value) in $ctrl.categoryObjects">
+      <div uib-accordion-group class="panel-default" is-open="$ctrl.categoryObjects[category].isopen"
+        ng-repeat="category in $ctrl.categoryList track by category">
         <uib-accordion-heading>
-          <div ng-click="$ctrl.toggleCategory(key, value.isopen)">
-            <strong class="category-title">{{::key}}</strong>
-            <sup ng-if="::$ctrl.protocols[key]">
-              ({{::$ctrl.protocols[key]}})
+          <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
+            <strong class="category-title">{{::category}}</strong>
+            <sup ng-if="::$ctrl.protocols[category]">
+              ({{::$ctrl.protocols[category]}})
             </sup>
-            <span ng-if="::!$ctrl.protocols[key] && value.protocols.length">
+            <span ng-if="::!$ctrl.protocols[category] && $ctrl.categoryObjects[category].protocols.length">
               -
-              <span ng-repeat="protocol in value.protocols" class="protocol-value">
+              <span ng-repeat="protocol in ::$ctrl.categoryObjects[category].protocols track by protocol.name" class="protocol-value">
                 <session-field value="{{::protocol.name}}" expr="protocols"
                    parse="false" pull-left="true">
                 </session-field>
                 <sup>({{::protocol.value}})</sup>
               </span>
             </span>
-            <span class="pull-right fa"
-             ng-class="{'fa-minus': value.isopen, 'fa-plus': !value.isopen}"></span>
+            <span class="pull-right margined-top-lg fa"
+             ng-class="{'fa-minus': $ctrl.categoryObjects[category].isopen, 'fa-plus': !$ctrl.categoryObjects[category].isopen}"></span>
+            <button class="btn btn-primary btn-sm pull-right margined-right-lg"
+              ng-click="$ctrl.toggleAllValues(category, $event)">
+              <span ng-if="!$ctrl.categoryObjects[category].showingAll">
+                Load All
+              </span>
+              <span ng-if="$ctrl.categoryObjects[category].showingAll">
+                Unload All
+              </span>
+            </button>
           </div>
         </uib-accordion-heading>
-        <div ng-if="value.isopen">
+        <div ng-if="$ctrl.categoryObjects[category].isopen">
           <div class="btn-drawer">
-            <a ng-repeat="field in ::value.fields | orderBy: 'friendlyName'"
-              class="btn btn-sm btn-default margined-right margined-bottom"
-              ng-class="{'active':value.spi[field.dbField].active}"
-              ng-click="$ctrl.toggleSpiData(field.dbField, field.group)"
-              uib-tooltip="{{::field.help}}">
-              {{::field.friendlyName}}
-            </a>
+            <div class="btn-group margined-right margined-bottom"
+              uib-dropdown uib-tooltip="{{::field.help}}"
+              ng-repeat="field in ::$ctrl.categoryObjects[category].fields | orderBy: 'friendlyName' track by $index">
+              <button class="btn btn-xs btn-default field-btn"
+                 ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
+                 ng-click="$ctrl.toggleSpiData(field.dbField, field.group, true)">
+                {{::field.friendlyName}}
+              </button>
+              <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                <li role="menuitem">
+                  <a class="cursor-pointer"
+                    ng-click="$ctrl.openSpiGraph(field.dbField)">
+                    Open {{::field.friendlyName}} SPI Graph
+                  </a>
+                </li>
+                <li role="menuitem">
+                  <a class="cursor-pointer"
+                    ng-click="$ctrl.exportUnique(field.dbField, 0)">
+                    Export Unique {{::field.friendlyName}}
+                  </a>
+                </li>
+                <li role="menuitem">
+                  <a class="cursor-pointer"
+                    ng-click="$ctrl.exportUnique(field.dbField, 1)">
+                    Export Unique {{::field.friendlyName}} with counts
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div ng-if="value.spi" class="margined-top">
-            <div ng-repeat="(key, value) in value.spi" class="spi-buckets"
+          <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
+            <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key" class="spi-buckets"
               ng-if="value.active">
               <strong>{{value.field.friendlyName}}:</strong>&nbsp;
-              <span ng-repeat="bucket in value.value.buckets">
-                <div class="spi-bucket margined-left-sm no-wrap" ng-if="::bucket.key">
+              <span ng-repeat="bucket in value.value.buckets track by $index">
+                <div class="spi-bucket margined-left-sm no-wrap" ng-if="bucket.key || bucket.key === 0">
                   <session-field field="::value.field"
                     value="{{::bucket.key}}" expr="{{::value.field.exp}}"
                     parse="true" pull-left="true"
@@ -69,6 +103,11 @@
                   <sup>({{bucket.doc_count}})</sup>
                 </div>
               </span>
+              <a ng-if="value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
+                ng-click="$ctrl.showMoreValues(value.field.dbField)"
+                class="btn btn-link btn-xs" style="text-decoration:none;">
+                more...
+              </a>
             </div>
           </div>
         </div>

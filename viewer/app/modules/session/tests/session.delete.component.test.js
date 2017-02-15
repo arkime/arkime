@@ -32,7 +32,7 @@
         numMatching : 999999
       });
 
-      $httpBackend.whenPOST('delete&expression=undefined',
+      $httpBackend.whenPOST('delete',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
@@ -74,7 +74,7 @@
     });
 
     it('should send delete request and close form', function() {
-      $httpBackend.expectPOST('delete&expression=undefined');
+      $httpBackend.expectPOST('delete');
 
       sessionDeleteComponent.deleteSessions();
 
@@ -87,7 +87,7 @@
     });
 
     it('should send delete request with segment and close form', function() {
-      $httpBackend.expectPOST('delete&expression=undefined');
+      $httpBackend.expectPOST('delete');
 
       sessionDeleteComponent.segments = 'all';
 

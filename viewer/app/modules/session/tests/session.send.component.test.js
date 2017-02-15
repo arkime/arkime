@@ -68,8 +68,8 @@
     });
 
     it('should send send request and close form', function() {
-      $httpBackend.expectPOST('sendSessions&expression=undefined');
-      $httpBackend.whenPOST('sendSessions&expression=undefined',
+      $httpBackend.expectPOST('sendSessions');
+      $httpBackend.whenPOST('sendSessions',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
@@ -91,9 +91,9 @@
     });
 
     it('should send send request with segment and close form', function() {
-      $httpBackend.expectPOST('sendSessions&expression=undefined');
+      $httpBackend.expectPOST('sendSessions');
 
-      $httpBackend.whenPOST('sendSessions&expression=undefined',
+      $httpBackend.whenPOST('sendSessions',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
@@ -117,9 +117,9 @@
     });
 
     it('should send send request with tags and close form', function() {
-      $httpBackend.expectPOST('sendSessions&expression=undefined');
+      $httpBackend.expectPOST('sendSessions');
 
-      $httpBackend.whenPOST('sendSessions&expression=undefined',
+      $httpBackend.whenPOST('sendSessions',
          function(postData) {
            let jsonData = JSON.parse(postData);
            expect(jsonData.ids).toBe(id);
