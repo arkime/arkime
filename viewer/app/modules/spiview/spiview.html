@@ -29,16 +29,13 @@
         <uib-accordion-heading>
           <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
             <strong class="category-title">{{::category}}</strong>
-            <sup ng-if="::$ctrl.protocols[category]">
-              ({{::$ctrl.protocols[category]}})
-            </sup>
-            <span ng-if="::!$ctrl.protocols[category] && $ctrl.categoryObjects[category].protocols.length">
+            <span ng-if="$ctrl.categoryObjects[category].protocols">
               -
-              <span ng-repeat="protocol in ::$ctrl.categoryObjects[category].protocols track by protocol.name" class="protocol-value">
-                <session-field value="{{::protocol.name}}" expr="protocols"
+              <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key" class="protocol-value">
+                <session-field value="{{key}}" expr="protocols"
                    parse="false" pull-left="true">
                 </session-field>
-                <sup>({{::protocol.value}})</sup>
+                <sup>({{value}})</sup>
               </span>
             </span>
             <span class="pull-right margined-top-lg fa"

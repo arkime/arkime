@@ -8,6 +8,8 @@
     spi   : 'a2:100,prot-term:100,a1:100' // which spi data values to query for
   };
 
+  let newQuery = true, openedCategories = false;
+
   /**
    * @class SpiviewController
    * @classdesc Interacts with moloch spiview page
@@ -75,7 +77,7 @@
         // don't issue search when the first change:search event is fired
         if (!initialized) { initialized = true; return; }
 
-        // TODO: get one at a time
+        newQuery = true;
         this.getSpiData();
       });
 
@@ -143,7 +145,6 @@
           this.categoryList.splice(this.categoryList.indexOf('general'), 1);
           this.categoryList.unshift('general');
 
-          // TODO get one at a time
           this.getSpiData(); // IMPORTANT: queries for spi data!
         })
         .catch((error) => {
@@ -155,81 +156,28 @@
     /* Retrieves spiview data from the server and puts each piece of data into
      * it's appropriate category */
     getSpiData() {
-      this.loading = true;
+      let spiParamsArray = this.query.spi.split(',');
 
-      this.SpiviewService.get(this.query)
-        .then((response) => {
-          this.loading  = false;
-          this.error    = false;
+      // get each field from the spi query parameter and issue
+      // a query for one field at a time
+      for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+        let param   = spiParamsArray[i];
+        let split   = param.split(':');
+        let fieldID = split[0];
+        let count   = split[1];
 
-          this.spi        = response.spi;
-          this.mapData    = response.map;
-          this.graphData  = response.graph;
-          this.protocols  = response.protocols;
-          this.total      = response.recordsTotal;
-          this.filtered   = response.recordsFiltered;
+        let field;
 
-          // update protocols for categories
-          for (let key in this.protocols) {
-            if (this.protocols.hasOwnProperty(key)) {
-
-              let category;
-
-              if (this.categoryObjects.hasOwnProperty(key)) {
-                category = this.categoryObjects[key];
-              } else { // categorize special protocols that don't match category
-                if (key === 'tcp' || key === 'udp' || key === 'icmp') {
-                  category = this.categoryObjects.general;
-                } else if (key === 'smtp' || key === 'lmtp') {
-                  category = this.categoryObjects.email;
-                }
-              }
-
-              if (category) {
-                if (category.protocols) { // already created, just add new
-                  category.protocols.push({ name:key, value:this.protocols[key] });
-                } else { // create protocols object
-                  category.protocols = [{ name:key, value:this.protocols[key] }];
-                }
-              }
-
-            }
+        for (let key in this.fields) {
+          if (this.fields[key].dbField === fieldID) {
+            field = this.fields[key];
           }
+        }
 
-          // update spi data for categories
-          for (let key in this.spi) {
-            if (this.spi.hasOwnProperty(key)) {
-              for (let f in this.fields) {
-                if (this.fields.hasOwnProperty(f)) {
-                  let field = this.fields[f];
-                  if (field.dbField === key) { // found the field!
-                    let spi = this.spi[key];
-                    let category = this.categoryObjects[field.group];
-                    if (category) { // found the category it belongs to
-                      if (!category.spi)  { category.spi = {}; }
-                      category.spi[key] = { field:field, value:spi, active:true };
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // open categories that were previously opened
-          for (let key in this.categoryObjects) {
-            if (this.categoryObjects.hasOwnProperty(key)) {
-              if (localStorage && localStorage['spiview-collapsible']) {
-                if (localStorage['spiview-collapsible'].contains(key)) {
-                  this.categoryObjects[key].isopen = true;
-                }
-              }
-            }
-          }
-        })
-        .catch((error) => {
-          this.loading  = false;
-          this.error    = error.text;
-        });
+        if (field) {
+          this.getSingleSpiData(field, count);
+        }
+      }
     }
 
     /**
@@ -252,10 +200,34 @@
       category.spi[field.dbField].loading = true;
       category.spi[field.dbField].error   = false;
 
-      let query = { facets: 1, spi: `${field.dbField}:${count}`, date:-1 };
+      let query = {
+        facets    : 1,
+        spi       : `${field.dbField}:${count}`,
+        date      : this.query.date,
+        startTime : this.query.startTime,
+        stopTime  : this.query.stopTime,
+        expression: this.query.expression,
+        bounding  : this.query.bounding
+      };
 
       this.SpiviewService.get(query)
         .then((response) => {
+          if (newQuery) {
+            // if issuing a new query, update the map, graph protocol counts,
+            // total records, and filtered records
+            newQuery        = false;
+            this.loading    = false;
+            this.mapData    = response.map;
+            this.graphData  = response.graph;
+            this.protocols  = response.protocols;
+            this.total      = response.recordsTotal;
+            this.filtered   = response.recordsFiltered;
+
+            this.updateProtocols();
+          }
+
+          if (!openedCategories) { this.openCategories(); }
+
           // only update the requested spi data
           category.spi[field.dbField].loading = false;
           category.spi[field.dbField].value   = response.spi[field.dbField];
@@ -276,6 +248,48 @@
         .catch((error) => {
           this.error = error;
         });
+    }
+
+    /* opens categories that were opened in a previous session
+       should only run once on page load */
+    openCategories() {
+      openedCategories = true;
+      for (let key in this.categoryObjects) {
+        if (this.categoryObjects.hasOwnProperty(key)) {
+          if (localStorage && localStorage['spiview-collapsible']) {
+            if (localStorage['spiview-collapsible'].contains(key)) {
+              this.categoryObjects[key].isopen = true;
+            }
+          }
+        }
+      }
+    }
+
+    /* updates protocols and protocol counts for categories
+       should only run when issuing a new query */
+    updateProtocols() {
+      for (let key in this.protocols) {
+        if (this.protocols.hasOwnProperty(key)) {
+
+          let category;
+
+          if (this.categoryObjects.hasOwnProperty(key)) {
+            category = this.categoryObjects[key];
+          } else { // categorize special protocols that don't match category
+            if (key === 'tcp' || key === 'udp' || key === 'icmp') {
+              category = this.categoryObjects.general;
+            } else if (key === 'smtp' || key === 'lmtp') {
+              category = this.categoryObjects.email;
+            }
+          }
+
+          if (category) {
+            if (!category.protocols) { category.protocols = {}; }
+            category.protocols[key] = this.protocols[key];
+          }
+
+        }
+      }
     }
 
 
