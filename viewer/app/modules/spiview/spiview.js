@@ -4,8 +4,6 @@
 
   // local variable to save query state
   let _query = {  // set query defaults:
-    length: 50,   // page length
-    start : 0,    // first item index
     facets: 1,    // facets
     spi   : 'a2:100,prot-term:100,a1:100' // which spi data values to query for
   };
@@ -77,7 +75,8 @@
         // don't issue search when the first change:search event is fired
         if (!initialized) { initialized = true; return; }
 
-        this.getFields();
+        // TODO: get one at a time
+        this.getSpiData();
       });
 
       // watch for additions to search parameters from spi values
@@ -98,8 +97,6 @@
     /* Retrieves the list of fields from the server and groups them into
      * categories, then kicks of the query for spi data */
     getFields() {
-      this.loading = true;
-
       this.FieldService.get(true)
         .then((response) => {
           this.error = false;
@@ -135,7 +132,6 @@
               this.categoryObjects[field.group] = { fields: [ field ] };
             }
 
-
             if (newField) {
               this.categoryObjects[field.group].fields.push(newField);
               this.fields.push(newField);
@@ -147,6 +143,7 @@
           this.categoryList.splice(this.categoryList.indexOf('general'), 1);
           this.categoryList.unshift('general');
 
+          // TODO get one at a time
           this.getSpiData(); // IMPORTANT: queries for spi data!
         })
         .catch((error) => {
@@ -158,6 +155,8 @@
     /* Retrieves spiview data from the server and puts each piece of data into
      * it's appropriate category */
     getSpiData() {
+      this.loading = true;
+
       this.SpiviewService.get(this.query)
         .then((response) => {
           this.loading  = false;
@@ -170,6 +169,7 @@
           this.total      = response.recordsTotal;
           this.filtered   = response.recordsFiltered;
 
+          // update protocols for categories
           for (let key in this.protocols) {
             if (this.protocols.hasOwnProperty(key)) {
 
@@ -196,6 +196,7 @@
             }
           }
 
+          // update spi data for categories
           for (let key in this.spi) {
             if (this.spi.hasOwnProperty(key)) {
               for (let f in this.fields) {
@@ -214,6 +215,7 @@
             }
           }
 
+          // open categories that were previously opened
           for (let key in this.categoryObjects) {
             if (this.categoryObjects.hasOwnProperty(key)) {
               if (localStorage && localStorage['spiview-collapsible']) {
@@ -227,6 +229,41 @@
         .catch((error) => {
           this.loading  = false;
           this.error    = error.text;
+        });
+    }
+
+    /**
+     * Gets spi data for the specified field and adds it to the category object
+     * @param {object} field  The field to get spi data for
+     * @param {int} count     The amount of spi data to query for
+     */
+    getSingleSpiData(field, count) {
+      if (!count) { count = 100; } // default amount of spi data to retrieve
+
+      let category = this.categoryObjects[field.group];
+
+      if (!category.spi) { category.spi = {}; }
+
+      // setup new spi information if it doesn't exist
+      if (!category.spi[field.dbField]) {
+        category.spi[field.dbField] = { active:true, field:field };
+      }
+
+      category.spi[field.dbField].loading = true;
+      category.spi[field.dbField].error   = false;
+
+      let query = { facets: 1, spi: `${field.dbField}:${count}`, date:-1 };
+
+      this.SpiviewService.get(query)
+        .then((response) => {
+          // only update the requested spi data
+          category.spi[field.dbField].loading = false;
+          category.spi[field.dbField].value   = response.spi[field.dbField];
+        })
+        .catch((error) => {
+          // display error for the requested spi data
+          category.spi[field.dbField].loading = false;
+          category.spi[field.dbField].error   = error.text;
         });
     }
 
@@ -244,46 +281,46 @@
 
     /* exposed functions --------------------------------------------------- */
     /**
-     * Toggles the view of field spi data by updating the query.spi string
-     * @param {string} fieldID    The id (dbField) of the field to toggle
-     * @param {string} fieldGroup The group/category the field belongs to
-     * @param {bool} issueQuery   Whether to issue the query at the end
+     * Toggles the view of field spi data by updating the active state
+     * or fetching new spi data as necessary
+     * Also updates the spi query parameter in the url
+     * @param {object} field The field to get spi data for
      */
-    toggleSpiData(fieldID, fieldGroup, issueQuery) {
+    toggleSpiData(field) {
       let spiData;
-      if (this.categoryObjects[fieldGroup].spi) {
-        spiData = this.categoryObjects[fieldGroup].spi[fieldID];
+      if (this.categoryObjects[field.group].spi) {
+        spiData = this.categoryObjects[field.group].spi[field.dbField];
       }
 
-      let addField = false;
+      let addToQuery = false;
 
-      if (this.query.spi.contains(fieldID)) {
-        // remove this field's spi data
+      if (spiData) { // spi data exists, so we only need to toggle active state
+        spiData.active  = !spiData.active;
+        addToQuery      = spiData.active;
+      } else { // spi data doesn't exist, so fetch it
+        addToQuery = true;
+        this.getSingleSpiData(field);
+      }
+
+      // update spi query parameter by adding or removing field id
+      if (addToQuery) {
+        if (this.query.spi && this.query.spi !== '') {
+          this.query.spi += ',';
+        }
+        this.query.spi += `${field.dbField}:100`;
+      } else {
         let spiParamsArray = this.query.spi.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-          if (spiParamsArray[i].contains(fieldID)) {
+          if (spiParamsArray[i].contains(field.dbField)) {
             spiParamsArray.splice(i, 1);
             break;
           }
         }
         this.query.spi = spiParamsArray.join(',');
-
-        if (spiData) { spiData.active = false; }
-      } else { // add this field's spi data
-        if (this.query.spi && this.query.spi !== '') {
-          this.query.spi += ',';
-        }
-        this.query.spi += `${fieldID}:100`;
-
-        if (!spiData) { addField = true; }
-        else          { spiData.active = true; }
       }
 
       _query.spi = this.query.spi;
       this.$location.search('spi', this.query.spi); // update url param
-
-      // issue query if user has added a field (need more info)
-      if (addField && issueQuery) { this.getSpiData(); }
     }
 
     /**
@@ -319,17 +356,18 @@
 
     /**
      * Shows more values for a specific field
-     * @param {string} fieldID The id (dbField) of the field to show more values
+     * @param {object} field The field to get more spi data for
      */
-    showMoreValues(fieldID) {
-      if (this.query.spi.contains(fieldID)) {
+    showMoreValues(field) {
+      let count;
+      if (this.query.spi.contains(field.dbField)) {
         // make sure field is in the spi query parameter
         let spiParamsArray = this.query.spi.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-          if (spiParamsArray[i].contains(fieldID)) {
-            let spiParam      = spiParamsArray[i].split(':');
-            spiParam[1]       = parseInt(spiParam[1]) + 100;
-            spiParamsArray[i] = spiParam.join(':');
+          if (spiParamsArray[i].contains(field.dbField)) {
+            let spiParam        = spiParamsArray[i].split(':');
+            count = spiParam[1] = parseInt(spiParam[1]) + 100;
+            spiParamsArray[i]   = spiParam.join(':');
             break;
           }
         }
@@ -339,16 +377,19 @@
       _query.spi = this.query.spi;
       this.$location.search('spi', this.query.spi); // update url param
 
-      this.getSpiData();
+      this.getSingleSpiData(field, count);
     }
 
-    // TODO ECR
-    toggleAllValues(name, $event) {
+    /**
+     * Show/hide all values for a category
+     * @param {string} categoryName The name of the category to toggle values for
+     * @param {object} $event       The click event that triggered this function
+     */
+    toggleAllValues(categoryName, $event) {
       $event.preventDefault();
       $event.stopPropagation();
 
-      this.loading = true;
-      let category = this.categoryObjects[name];
+      let category = this.categoryObjects[categoryName];
       category.showingAll = !category.showingAll;
 
       for (let i = 0, len = category.fields.length; i < len; ++i) {
@@ -359,22 +400,27 @@
              (!spiData.active && category.showingAll)) {
             // the spi data for this field is already visible and we don't want
             // it to be, or it's NOT visible and we want it to be
-            this.toggleSpiData(field.dbField, name, false);
+            this.toggleSpiData(field);
           }
         } else if (category.showingAll) { // spi data doesn't exist in the category
-          this.toggleSpiData(field.dbField, name, false);
+          this.toggleSpiData(field);
         }
       }
-
-      this.getSpiData();
     }
 
-    // TODO ECR
+    /**
+     * Opens the spi graph page in a new browser tab
+     * @param {string} fieldID The field id (dbField) to display spi graph data for
+     */
     openSpiGraph(fieldID) {
       this.SessionService.openSpiGraph(fieldID);
     }
 
-    // TODO ECR
+    /**
+     * Opens a new browser tab containing all the unique values for a given field
+     * @param {string} fieldID  The field id (dbField) to display unique values for
+     * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+     */
     exportUnique(fieldID, counts) {
       this.SessionService.exportUniqueValues(fieldID, counts);
     }

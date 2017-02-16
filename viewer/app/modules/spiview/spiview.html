@@ -61,7 +61,7 @@
               ng-repeat="field in ::$ctrl.categoryObjects[category].fields | orderBy: 'friendlyName' track by $index">
               <button class="btn btn-xs btn-default field-btn"
                  ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
-                 ng-click="$ctrl.toggleSpiData(field.dbField, field.group, true)">
+                 ng-click="$ctrl.toggleSpiData(field, true)">
                 {{::field.friendlyName}}
               </button>
               <button class="btn btn-xs btn-default" uib-dropdown-toggle>
@@ -92,7 +92,16 @@
           <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
             <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key" class="spi-buckets"
               ng-if="value.active">
-              <strong>{{value.field.friendlyName}}:</strong>&nbsp;
+              <strong>{{::value.field.friendlyName}}:</strong>&nbsp;
+              <span ng-if="value.loading" class="fa fa-spinner fa-spin"></span>
+              <span ng-if="value.error" class="text-danger">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                {{::value.error}}
+              </span>
+              <i class="small"
+                ng-if="!value.loading && !value.error && !value.value.buckets.length">
+                No data for this field
+              </i>
               <span ng-repeat="bucket in value.value.buckets track by $index">
                 <div class="spi-bucket margined-left-sm no-wrap" ng-if="bucket.key || bucket.key === 0">
                   <session-field field="::value.field"
@@ -104,7 +113,7 @@
                 </div>
               </span>
               <a ng-if="value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
-                ng-click="$ctrl.showMoreValues(value.field.dbField)"
+                ng-click="$ctrl.showMoreValues(value.field)"
                 class="btn btn-link btn-xs" style="text-decoration:none;">
                 more...
               </a>

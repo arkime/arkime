@@ -42,4 +42,7 @@ moloch-spiview {
       sup { margin-left: -10px; }
     }
   }
+
+  // https://github.com/angular/angular.js/issues/8224
+  .fa-spin.ng-animate { -webkit-animation: none 0s; }
 }
