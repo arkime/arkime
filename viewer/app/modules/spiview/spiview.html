@@ -18,36 +18,37 @@
   </div>
 
   <label class="label label-primary">
-    Showing {{$ctrl.filtered}} entries filtered from
-    {{$ctrl.total}} total entries
+    Showing {{$ctrl.filtered | number}} entries filtered from
+    {{$ctrl.total | number}} total entries
   </label>
 
   <div ng-if="!$ctrl.error">
+
     <uib-accordion close-others="false">
       <div uib-accordion-group class="panel-default" is-open="$ctrl.categoryObjects[category].isopen"
-        ng-repeat="category in $ctrl.categoryList track by category">
+        ng-repeat="category in ::$ctrl.categoryList track by category">
         <uib-accordion-heading>
           <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
             <strong class="category-title">{{::category}}</strong>
-            <span ng-if="$ctrl.categoryObjects[category].protocols">
-              -
-              <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key" class="protocol-value">
-                <session-field value="{{key}}" expr="protocols"
+            <span ng-if="::$ctrl.categoryObjects[category].protocols">
+                 -
+              <span ng-repeat="(key, value) in ::$ctrl.categoryObjects[category].protocols track by key"
+                class="protocol-value">
+                <session-field value="{{::key}}" expr="protocols"
                    parse="false" pull-left="true">
                 </session-field>
-                <sup>({{value}})</sup>
+                <sup>({{value | number}})</sup>
               </span>
             </span>
             <span class="pull-right margined-top-lg fa"
              ng-class="{'fa-minus': $ctrl.categoryObjects[category].isopen, 'fa-plus': !$ctrl.categoryObjects[category].isopen}"></span>
-            <button class="btn btn-primary btn-sm pull-right margined-right-lg"
-              ng-click="$ctrl.toggleAllValues(category, $event)">
-              <span ng-if="!$ctrl.categoryObjects[category].showingAll">
-                Load All
-              </span>
-              <span ng-if="$ctrl.categoryObjects[category].showingAll">
-                Unload All
-              </span>
+            <button class="btn btn-info btn-sm pull-right margined-right-lg"
+              ng-click="$ctrl.toggleAllValues(category, true, $event)">
+              Load All
+            </button>
+            <button class="btn btn-info btn-sm pull-right margined-right-lg"
+              ng-click="$ctrl.toggleAllValues(category, false, $event)">
+              Unload All
             </button>
           </div>
         </uib-accordion-heading>
@@ -87,14 +88,40 @@
             </div>
           </div>
           <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
-            <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key" class="spi-buckets"
-              ng-if="value.active">
-              <strong>{{::value.field.friendlyName}}:</strong>&nbsp;
-              <span ng-if="value.loading" class="fa fa-spinner fa-spin"></span>
-              <span ng-if="value.error" class="text-danger">
-                <span class="fa fa-exclamation-triangle"></span>&nbsp;
-                {{::value.error}}
-              </span>
+            <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key"
+              class="spi-buckets" ng-if="value.active">
+              <div class="btn-group" uib-dropdown>
+                <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+                  <strong>{{::value.field.friendlyName}}</strong>&nbsp;
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.openSpiGraph(value.field.dbField)">
+                      Open {{::value.field.friendlyName}} SPI Graph
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.exportUnique(value.field.dbField, 0)">
+                      Export Unique {{::value.field.friendlyName}}
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.exportUnique(value.field.dbField, 1)">
+                      Export Unique {{::value.field.friendlyName}} with counts
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.toggleSpiData(value.field, true)">
+                      Hide {{::value.field.friendlyName}}
+                    </a>
+                  </li>
+                </ul>
+              </div>
               <i class="small"
                 ng-if="!value.loading && !value.error && !value.value.buckets.length">
                 No data for this field
@@ -106,23 +133,34 @@
                     parse="true" pull-left="true"
                     timezone="{{::$ctrl.settings.timezone}}">
                   </session-field>
-                  <sup>({{bucket.doc_count}})</sup>
+                  <sup>({{bucket.doc_count | number}})</sup>
                 </div>
               </span>
+              <a ng-if="value.count && value.count > 100"
+                 ng-click="$ctrl.showValues(value, false)"
+                 class="btn btn-link btn-xs" style="text-decoration:none;">
+                ...less
+              </a>
               <a ng-if="value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
-                ng-click="$ctrl.showMoreValues(value.field)"
+                ng-click="$ctrl.showValues(value, true)"
                 class="btn btn-link btn-xs" style="text-decoration:none;">
                 more...
               </a>
+              <span ng-if="value.loading" class="fa fa-spinner fa-spin"></span>
+              <span ng-if="value.error" class="text-danger">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                {{::value.error}}
+              </span>
             </div>
           </div>
         </div>
       </div>
     </uib-accordion>
+
   </div>
 
   <loading ng-if="$ctrl.loading"></loading>
 
-  <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
+  <error ng-if="$ctrl.error" message="$ctrl.error"></error>
 
 </div>

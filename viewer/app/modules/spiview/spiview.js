@@ -30,11 +30,12 @@
      * @param SessionService  Transacts sessions with the server
      * @ngInject
      */
-    constructor($scope, $location, $routeParams,
+    constructor($scope, $location, $routeParams, $q,
       UserService, FieldService, SpiviewService, SessionService) {
       this.$scope         = $scope;
       this.$location      = $location;
       this.$routeParams   = $routeParams;
+      this.$q = $q;
       this.UserService    = UserService;
       this.FieldService   = FieldService;
       this.SpiviewService = SpiviewService;
@@ -156,7 +157,12 @@
     /* Retrieves spiview data from the server and puts each piece of data into
      * it's appropriate category */
     getSpiData() {
+      this.error    = false;
+      this.loading  = true;
+
       let spiParamsArray = this.query.spi.split(',');
+
+      let promises = [];
 
       // get each field from the spi query parameter and issue
       // a query for one field at a time
@@ -174,16 +180,26 @@
           }
         }
 
-        if (field) {
-          this.getSingleSpiData(field, count);
+        if (field) { // TODO ARRAY OF PROMISES TO SET LOADING TO FALSE
+          promises.push(this.getSingleSpiData(field, count));
         }
       }
+
+      // let suppress = function(x) { return x.catch(function(){}); }
+      this.$q.all(promises).then(() => {
+        console.log('done successfully');
+        this.loading = false;
+        // for (let j = 0; j < coords.length ; j+=1) {
+        //   //coords[j] contains the coords on success or is undefined on failure
+        // }
+      });
     }
 
     /**
      * Gets spi data for the specified field and adds it to the category object
      * @param {object} field  The field to get spi data for
      * @param {int} count     The amount of spi data to query for
+     * TODO
      */
     getSingleSpiData(field, count) {
       if (!count) { count = 100; } // default amount of spi data to retrieve
@@ -210,8 +226,11 @@
         bounding  : this.query.bounding
       };
 
-      this.SpiviewService.get(query)
+      // TODO RETURN PROMISE HERE
+      let promise = this.SpiviewService.get(query);
+      promise
         .then((response) => {
+          // TODO DEAL WITH ERROR HERE response.bsqErr
           if (newQuery) {
             // if issuing a new query, update the map, graph protocol counts,
             // total records, and filtered records
@@ -231,12 +250,15 @@
           // only update the requested spi data
           category.spi[field.dbField].loading = false;
           category.spi[field.dbField].value   = response.spi[field.dbField];
+          category.spi[field.dbField].count   = count;
         })
         .catch((error) => {
           // display error for the requested spi data
           category.spi[field.dbField].loading = false;
           category.spi[field.dbField].error   = error.text;
         });
+
+      return promise;
     }
 
     /* Retrieves the current user's settings (specifically for timezone) */
@@ -299,8 +321,10 @@
      * or fetching new spi data as necessary
      * Also updates the spi query parameter in the url
      * @param {object} field The field to get spi data for
+     * TODO
      */
-    toggleSpiData(field) {
+    // TODO look in view and add true as second param
+    toggleSpiData(field, issueQuery) {
       let spiData;
       if (this.categoryObjects[field.group].spi) {
         spiData = this.categoryObjects[field.group].spi[field.dbField];
@@ -313,7 +337,7 @@
         addToQuery      = spiData.active;
       } else { // spi data doesn't exist, so fetch it
         addToQuery = true;
-        this.getSingleSpiData(field);
+        if (issueQuery) { this.getSingleSpiData(field); }
       }
 
       // update spi query parameter by adding or removing field id
@@ -370,23 +394,27 @@
 
     /**
      * Shows more values for a specific field
-     * @param {object} field The field to get more spi data for
+     * @param {object} field  The field to get more spi data for
+     * @param {bool} more     Whether to display more or less values
      */
-    showMoreValues(field) {
-      let count;
+    showValues(value, more) {
+      let count, field = value.field;
       if (this.query.spi.contains(field.dbField)) {
         // make sure field is in the spi query parameter
         let spiParamsArray = this.query.spi.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
           if (spiParamsArray[i].contains(field.dbField)) {
             let spiParam        = spiParamsArray[i].split(':');
-            count = spiParam[1] = parseInt(spiParam[1]) + 100;
+            if (more) { count   = spiParam[1] = parseInt(spiParam[1]) + 100; }
+            else      { count   = spiParam[1] = parseInt(spiParam[1]) - 100; }
             spiParamsArray[i]   = spiParam.join(':');
             break;
           }
         }
         this.query.spi = spiParamsArray.join(',');
       }
+
+      value.count = count;
 
       _query.spi = this.query.spi;
       this.$location.search('spi', this.query.spi); // update url param
@@ -397,29 +425,31 @@
     /**
      * Show/hide all values for a category
      * @param {string} categoryName The name of the category to toggle values for
+     * @param {bool} load           Whether to load (or unload) all values
      * @param {object} $event       The click event that triggered this function
      */
-    toggleAllValues(categoryName, $event) {
+    toggleAllValues(categoryName, load, $event) {
       $event.preventDefault();
       $event.stopPropagation();
 
       let category = this.categoryObjects[categoryName];
-      category.showingAll = !category.showingAll;
 
       for (let i = 0, len = category.fields.length; i < len; ++i) {
         let field = category.fields[i];
-        let spiData = category.spi[field.dbField];
-        if (spiData) { // the spi data exists in the category
-          if ((spiData.active && !category.showingAll) ||
-             (!spiData.active && category.showingAll)) {
+        if (category.spi && category.spi[field.dbField]) {
+          let spiData = category.spi[field.dbField];
+          if ((spiData.active && !load) ||
+             (!spiData.active && load)) {
             // the spi data for this field is already visible and we don't want
             // it to be, or it's NOT visible and we want it to be
             this.toggleSpiData(field);
           }
-        } else if (category.showingAll) { // spi data doesn't exist in the category
+        } else if (load) { // spi data doesn't exist in the category
           this.toggleSpiData(field);
         }
       }
+
+      if (load) { this.getSpiData(); }
     }
 
     /**
@@ -441,7 +471,7 @@
 
   }
 
-  SpiviewController.$inject = ['$scope','$location','$routeParams',
+  SpiviewController.$inject = ['$scope','$location','$routeParams','$q',
     'UserService','FieldService','SpiviewService','SessionService'];
 
   /**

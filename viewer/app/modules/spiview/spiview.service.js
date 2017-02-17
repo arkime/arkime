@@ -34,8 +34,10 @@
         this.$http({ url:'spiview.json', method:'GET', params:query })
           .then((response) => {
             resolve(response.data);
+            // if (!response.data.bsqErr) { resolve(response.data); }
+            // else { reject({ success:false, text:response.data.bsqErr}); }
           }, (error) => {
-            reject(error);
+            reject(error.data);
           });
 
       });
