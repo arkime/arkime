@@ -1,5 +1,3 @@
-CC            = @CC@
-
 INCLUDE_PCAP  = @PCAP_CFLAGS@
 
 INCLUDE_OTHER = -I.. -I../thirdparty \

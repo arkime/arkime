@@ -3,7 +3,6 @@ INSTALL_DIR   = @INSTALL_DIR@
 CC            = @CC@
 
 INCLUDE_PCAP  = @PCAP_CFLAGS@
-INCLUDE_SNF   = -I/opt/snf/include/
 
 INCLUDE_OTHER = -Ithirdparty \
                 @GLIB2_CFLAGS@ \
@@ -42,16 +41,6 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz
 	(cd parsers; $(MAKE))
 	(cd plugins; $(MAKE))
-
-snf:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	gcc -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
-	    $(INCLUDE_SNF) -DSNF \
-	    $(INCLUDE_OTHER) 
-	g++ -ggdb $(O_FILES) -o moloch-capture \
-            @UNDEFINED_FLAGS@ \
-	    $(LIB_SNF) \
-	    $(LIB_OTHER) \
-	    -lrt -lm -lpcre @RESOLV_LIB@ -luuid @MAGIC_LIBS@ -lffi -lz
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -c thirdparty/js0n.c -o thirdparty/js0n.o

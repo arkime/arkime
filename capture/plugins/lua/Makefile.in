@@ -1,5 +1,3 @@
-CC            = @CC@
-
 INCLUDE_OTHER = -I../.. -I../../thirdparty \
                 @GLIB2_CFLAGS@
 
