@@ -31,7 +31,7 @@ INSTALL         = @INSTALL@
 bindir          = @prefix@/bin
 
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
-	$(CC) -fPIC -O2 -ggdb -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
+	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) 
 	$(CC) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
@@ -49,7 +49,7 @@ thirdparty/patricia.o:thirdparty/patricia.c
 	$(CC) -c thirdparty/patricia.c -o thirdparty/patricia.o
 
 thirdparty/http_parser.o: thirdparty/http_parser.c
-	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 -O3 -c thirdparty/http_parser.c -o thirdparty/http_parser.o
+	$(CC) -ggdb -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 @CFLAGS@ -c thirdparty/http_parser.c -o thirdparty/http_parser.o
 
 install: installdirs
 	$(INSTALL) moloch-capture $(bindir)/moloch-capture
