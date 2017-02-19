@@ -68,7 +68,7 @@
             // if last char is not a space, add it
             newExpr += ' ';
           }
-          newExpr += '&& ';
+          newExpr += (args.op || '&&') + ' ';
         }
 
         newExpr += args.expression;

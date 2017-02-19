@@ -47,7 +47,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/capture/molochconfig.h
-CONFIG_CLEAN_FILES = capture/Makefile capture/plugins/Makefile \
+CONFIG_CLEAN_FILES = capture/Makefile capture/plugins/Makefile capture/parsers/Makefile \
 	db/Makefile viewer/version.js
 SOURCES =
 DIST_SOURCES =
