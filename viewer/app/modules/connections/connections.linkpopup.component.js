@@ -22,7 +22,7 @@
 
 
     addExpression(op) {
-      let fullExpression = `(${this.link.srcExp} == ${this.link.source.id} && ${this.link.dstExp} == ${this.link.target.id})`
+      let fullExpression = `(${this.link.srcExp} == ${this.link.source.id} && ${this.link.dstExp} == ${this.link.target.id})`;
 
       this.$rootScope.$broadcast('add:to:typeahead', { expression: fullExpression, op: op });
     }

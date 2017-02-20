@@ -18,11 +18,12 @@
      *
      * @ngInject
      */
-    constructor($scope, $http, $routeParams, $compile, ConnectionsService, FieldService, UserService) {
+    constructor($scope, $http, $routeParams, $compile, $filter, ConnectionsService, FieldService, UserService) {
       this.$scope             = $scope;
       this.$http              = $http;
       this.$routeParams       = $routeParams;
       this.$compile           = $compile;
+      this.$filter            = $filter;
       this.ConnectionsService = ConnectionsService;
       this.FieldService       = FieldService;
       this.UserService        = UserService;
@@ -32,7 +33,7 @@
     $onInit() {
       this.UserService.getSettings()
         .then((response) => {
-          this.settings = response; 
+          this.settings = response;
           if (this.settings.timezone === undefined) {
             this.settings.timezone = 'local';
           }
@@ -42,12 +43,12 @@
       this.FieldService.get(true)
         .then((response) => {
           this.fields = response.concat([{dbField: "ip.dst:port", exp: "ip.dst:port"}])
-                                .filter(function(a) {return a.dbField !== undefined})
-                                .sort(function(a,b) {return (a.exp > b.exp?1:-1);}); 
+                                .filter(function(a) {return a.dbField !== undefined;})
+                                .sort(function(a,b) {return (a.exp > b.exp?1:-1);});
         })
         .catch((error)   => {this.settings = {timezone: 'local'}; });
 
-       
+
       this.querySize = 100;
       this.srcField = "a1";
       this.dstField = "a2";
@@ -63,12 +64,12 @@
 
     startD3() {
       var self = this;
-       
+
       self.trans=[0,0];
       self.scale=1;
       self.width = $(window).width() - 4;
       self.height = $(window).height() - 40;
-      self.popupTimer;
+      self.popupTimer = null;
       self.colors = ["", "green", "red", "purple"];
 
       function redraw() {
@@ -137,16 +138,17 @@
     }
 
 
-    db2FieldType(dbField) {
+    dbField2Type(dbField) {
       for (var k = 0; k < this.fields.length; k++) {
         if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].rawField)
+            dbField === this.fields[k].rawField) {
           return this.fields[k].type;
+        }
       }
       return undefined;
     }
 
-    db2FieldExp(dbField) {
+    dbField2Exp(dbField) {
       for (var k = 0; k < this.fields.length; k++) {
         if (dbField === this.fields[k].dbField ||
             dbField === this.fields[k].rawField) {
@@ -159,28 +161,94 @@
     processData(json) {
       var self = this;
       var doConvert = 0;
-      doConvert |= (self.db2FieldType(self.srcField) === "seconds")?1:0;
-      doConvert |= (self.db2FieldType(self.dstField) === "seconds")?2:0;
+      doConvert |= (self.dbField2Type(self.srcField) === "seconds")?1:0;
+      doConvert |= (self.dbField2Type(self.dstField) === "seconds")?2:0;
 
       if (doConvert) {
+        var dateFilter = this.$filter('date');
         for (var i = 0; i < json.nodes.length; i++) {
-          var node = json.nodes[i];
-          if (doConvert & node.type) {
-            node.id = dateString(node.id, " ");
+          let dataNode = json.nodes[i];
+          if (doConvert & dataNode.type) {
+            dataNode.id = dateFilter(dataNode.id);
           }
         }
       }
 
       $("#actionsForm").data("moloch-visible", +$("#graphSize").val())
                        .data("moloch-all", json.recordsFiltered);
+
       //updateHealth(json.health);
       //updateString("#bsqErr", json.bsqErr);
+
       self.force
           .nodes(json.nodes)
           .links(json.links)
           .start();
 
-      var link = self.svg.selectAll(".link")
+      //Highlighting
+      var highlight_trans = 0.1,
+          highlight_color = "blue",
+          focus_node = null,
+          highlight_node = null;
+
+      var node, link;
+
+      //Highlighting helpers
+      var linkedByIndex = {};
+      json.links.forEach(function(d) {
+        linkedByIndex[d.source.index + "," + d.target.index] = true;
+      });
+
+      function isConnected(a, b) {
+        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index === b.index;
+      }
+
+      function set_focus(d) {
+        if (highlight_trans<1)  {
+          node.selectAll("circle").style("opacity", function(o) {
+            return isConnected(d, o) ? 1 : highlight_trans;
+          });
+
+          node.selectAll("text").style("opacity", function(o) {
+            return isConnected(d, o) ? 1 : highlight_trans;
+          });
+
+          link.style("opacity", function(o) {
+            return o.source.index === d.index || o.target.index === d.index ? 1 : highlight_trans;
+          });
+        }
+      }
+
+      function set_highlight(d) {
+        if (focus_node !== null) {
+          d = focus_node;
+        }
+        highlight_node = d;
+
+        if (highlight_color !== "white") {
+          node.selectAll("circle").style("stroke", function(o) {
+            return isConnected(d, o) ? highlight_color : "#333";
+          });
+          node.selectAll("text").style("font-weight", function(o) {
+            return isConnected(d, o) ? "bold" : "normal";
+          });
+          link.style("stroke", function(o) {
+            return o.source.index === d.index || o.target.index === d.index ? highlight_color : "#ccc";
+          });
+        }
+      }
+      function exit_highlight() {
+        highlight_node = null;
+        if (focus_node === null) {
+          if (highlight_color !== "white") {
+            node.selectAll("circle").style("stroke", "#333");
+            node.selectAll("text").style("font-weight", "normal");
+            link.style("stroke", "#ccc");
+          }
+        }
+      }
+
+      link = self.svg.selectAll(".link")
           .data(json.links)
           .enter().append("line")
           .attr("class", "link")
@@ -207,7 +275,7 @@
           d3.select(this).classed("dragging", false);
         });
 
-      var node = self.svg.selectAll(".node")
+      node = self.svg.selectAll(".node")
           .data(json.nodes)
           .enter().append("g")
           .attr("class", "node")
@@ -229,8 +297,9 @@
             d3.event.stopPropagation();
             focus_node = d;
             set_focus(d);
-            if (highlight_node === null)
+            if (highlight_node === null) {
               set_highlight(d);
+            }
           })
           .on("mouseout",function(d){
             window.clearTimeout(self.popupTimer);
@@ -266,11 +335,6 @@
         node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
       });
 
-      //Highlighting
-      var highlight_trans = 0.1,
-          highlight_color = "blue",
-          focus_node = null,
-          highlight_node = null;
 
       d3.select(window).on("mouseup", function() {
         if(focus_node !== null) {
@@ -281,72 +345,19 @@
             link.style("opacity", 1);
           }
         }
-        if (highlight_node === null)
+        if (highlight_node === null) {
           exit_highlight();
+        }
       });
-
-      //Highlighting helpers
-      var linkedByIndex = {};
-      json.links.forEach(function(d) {
-        linkedByIndex[d.source.index + "," + d.target.index] = true;
-      });
-
-      function isConnected(a, b) {
-        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
-      }
-
-      function exit_highlight() {
-        highlight_node = null;
-        if (focus_node===null) {
-          if (highlight_color!="white") {
-            node.selectAll("circle").style("stroke", "#333");
-            node.selectAll("text").style("font-weight", "normal");
-            link.style("stroke", "#ccc");
-          }
-        }
-      }
-
-      function set_focus(d) {
-        if (highlight_trans<1)  {
-          node.selectAll("circle").style("opacity", function(o) {
-            return isConnected(d, o) ? 1 : highlight_trans;
-          });
-
-          node.selectAll("text").style("opacity", function(o) {
-            return isConnected(d, o) ? 1 : highlight_trans;
-          });
-
-          link.style("opacity", function(o) {
-            return o.source.index == d.index || o.target.index == d.index ? 1 : highlight_trans;
-          });
-        }
-      }
-
-      function set_highlight(d) {
-        if (focus_node!==null) d = focus_node;
-          highlight_node = d;
-
-        if (highlight_color!="white") {
-          node.selectAll("circle").style("stroke", function(o) {
-            return isConnected(d, o) ? highlight_color : "#333";
-          });
-          node.selectAll("text").style("font-weight", function(o) {
-            return isConnected(d, o) ? "bold" : "normal";
-          });
-          link.style("stroke", function(o) {
-            return o.source.index == d.index || o.target.index == d.index ? highlight_color : "#ccc";
-          });
-        }
-      }
     }
 
     safeStr(str) {
       if (str === undefined) {
-        return ""
+        return "";
       }
 
       if (Array.isArray(str)) {
-        return str.map(safeStr);
+        return str.map(this.safeStr);
       }
 
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/\'/g, '&#39;').replace(/\//g, '&#47;');
@@ -400,7 +411,7 @@
     }
   }
 
-ConnectionsController.$inject = ['$scope', '$http', '$routeParams', '$compile', 'ConnectionsService', 'FieldService', 'UserService'];
+ConnectionsController.$inject = ['$scope', '$http', '$routeParams', '$compile', '$filter', 'ConnectionsService', 'FieldService', 'UserService'];
 
   /**
    * Moloch Connections Directive
