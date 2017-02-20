@@ -210,7 +210,7 @@
       if (!this.parsed[0].value || !this.molochClickables) { return; }
 
       let info  = this.getInfo();
-      let text  = this.parsed[0].value.toString();
+      let text  = this.parsed[0].queryVal.toString();
       let url   = text.indexOf('?') === -1 ? text :
          text.substring(0, text.indexOf('?'));
       let host  = url;
