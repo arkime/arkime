@@ -1,0 +1,112 @@
+<div class="container-fluid container-spigraph">
+  <moloch-search timezone="$ctrl.settings.timezone"> </moloch-search>
+  <form id="spigraphForm">
+    <div class="form-inline">
+
+      <!-- field select -->
+      <div class="form-group margined-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon cursor-help"
+            tooltip-placement="top"
+            uib-tooltip="SPI Graph Field">
+            SPI Graph:
+          </span>
+          <select class="form-control"
+            ng-model="$ctrl.field">
+            <option ng-repeat="field in ::$ctrl.fields" value="{{field.dbField}}">
+              {{field.exp}}
+            </option>
+          </select>
+        </div>
+      </div> <!-- /field select -->
+
+      <!-- maxElements select -->
+      <div class="form-group margined-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon cursor-help"
+            tooltip-placement="top"
+            uib-tooltip="Max Elements Shown">
+            Max Elements:
+          </span>
+          <select class="form-control" convert-to-number
+            ng-model="$ctrl.maxElements">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+          </select>
+        </div>
+      </div> <!-- /min connections select -->
+
+      <!-- sort select -->
+      <div class="form-group margined-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon cursor-help"
+            tooltip-placement="top"
+            uib-tooltip="Sort results by">
+            Sort by:
+          </span>
+          <select class="form-control" convert-to-number
+            ng-model="$ctrl.sortBy">
+            <option value="name">name</option>
+            <option value="count">count</option>
+          </select>
+        </div>
+      </div> <!-- /sort select -->
+
+      <!-- refresh input -->
+      <div class="form-group margined-bottom">
+        <div class="input-group input-group-sm">
+          <span class="input-group-addon cursor-help"
+            tooltip-placement="top"
+            uib-tooltip="Refresh page every X seconds">
+            Refresh:
+          </span>
+          <input class="form-control"
+            ng-model="$ctrl.refresh">
+          </input>
+        </div>
+      </div> <!-- /refresh input-->
+
+    </div> <!-- /form-inlne -->
+  </form>
+
+  <!-- session visualizations -->
+  <div class="row margin-for-search-navbar">
+    <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
+    <div class="col-md-12">
+      <div ng-if="::($ctrl.graphData)">
+        <session-graph graph-data="$ctrl.graphData"></session-graph>
+      </div>
+    </div>
+  </div>
+  <div id="sessionGraphs">
+    <div ng-repeat="item in $ctrl.items">
+      <div class="btn-drawer">
+        <div class="btn-group margined-right margined-bottom" uib-dropdown>
+          <button class="btn btn-xs btn-default field-btn">
+            {{::item.name}}
+            <span class="spicount">({{::item.count}})</span>
+          </button>
+          <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+            <li role="menuitem">
+              <a class="cursor-pointer"
+                ng-click="$ctrl.addExpression(item)">
+                and {{::item.name}}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <session-graph graph-data="item.graph"></session-graph>
+      </div>
+    </div>
+  </div>
+</div>

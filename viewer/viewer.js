@@ -799,7 +799,7 @@ app.get("/spiview", checkWebEnabled, function(req, res) {
   });
 });
 
-app.get("/spigraph", checkWebEnabled, function(req, res) {
+app.get("/spigraph.old", checkWebEnabled, function(req, res) {
   res.render('spigraph.jade', {
     user: req.user,
     title: makeTitle(req, 'SPI Graph'),
@@ -893,7 +893,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/sessions', '/help', '/settings', '/files', '/stats'], checkWebEnabled, function(req, res) {
+app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spigraph'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',

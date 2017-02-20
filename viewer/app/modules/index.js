@@ -43,3 +43,6 @@ require('./stats/stats.service');
 require('./stats/stats.component');
 require('./stats/stats.nodes.component');
 require('./stats/stats.es.component');
+
+require('./spigraph/spigraph.component');
+require('./spigraph/spigraph.service');
