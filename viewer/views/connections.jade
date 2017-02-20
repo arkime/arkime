@@ -228,7 +228,7 @@ block content
 
       var url = "connections.json?" + state;
       if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
-        history.pushState({}, this.title || '', "connections?" + state);
+        history.pushState({}, this.title || '', "connections.old?" + state);
       } else {
         doPushState = 1;
       }

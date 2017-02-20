@@ -1,0 +1,9 @@
+{{$ctrl.node.id}}<br>
+Type: {{["", "Source", "Target", "Both"][$ctrl.node.type]}}<br>
+Links: {{$ctrl.node.weight}}<br>
+Sessions: {{$ctrl.node.sessions | number}}<br>
+Bytes: {{$ctrl.node.by | number}}<br>
+Databytes: {{$ctrl.node.db | number}}<br>
+Packets: {{$ctrl.node.pa | number}}<br>
+Expressions: <a ng-click="$ctrl.addExpression('&&')">&amp;&amp;</a> <a ng-click="$ctrl.addExpression('||')">||</a><br>
+<a ng-click="$ctrl.hideNode()">Hide Node</a><br>

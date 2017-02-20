@@ -43,3 +43,8 @@ require('./stats/stats.service');
 require('./stats/stats.component');
 require('./stats/stats.nodes.component');
 require('./stats/stats.es.component');
+
+require('./connections/connections.component');
+require('./connections/connections.service');
+require('./connections/connections.nodepopup.component');
+require('./connections/connections.linkpopup.component');
