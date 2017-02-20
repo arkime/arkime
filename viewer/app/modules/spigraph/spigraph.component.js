@@ -40,7 +40,7 @@
       this.FieldService.get(true)
         .then((response) => {
           this.fields = response.concat([{dbField: "ip.dst:port", exp: "ip.dst:port"}])
-                                .filter(function(a) {return a.dbField !== undefined})
+                                .filter(function(a) {return a.dbField !== undefined;})
                                 .sort(function(a,b) {return (a.exp > b.exp?1:-1);}); 
         })
         .catch((error)   => {this.settings = {timezone: 'local'}; });
@@ -73,25 +73,24 @@
     db2Field(dbField) {
       for (var k = 0; k < this.fields.length; k++) {
         if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].rawField)
+            dbField === this.fields[k].rawField) {
           return this.fields[k];
+        }
       }
       return undefined;
     }
 
     processData(json) {
-      var self = this;
+      this.mapData = json.map;
+      this.graphData = json.graph;
 
-      self.mapData = json.map;
-      self.graphData = json.graph
-
-      if (self.sortBy === "name") {
+      if (this.sortBy === "name") {
         json.items = json.items.sort(function (a, b) {
           return a.name.localeCompare(b.name);
         });
       }
 
-      var finfo = self.db2Field(self.filed);
+      var finfo = this.db2Field(this.filed);
 
       for (var i = 0; i < json.items.length; i++) {
         json.items[i].type = finfo.type;
