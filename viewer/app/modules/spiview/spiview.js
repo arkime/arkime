@@ -10,6 +10,9 @@
 
   let newQuery = true, openedCategories = false;
 
+  // object to store loading categories and how many fields are loading within
+  let categoryLoadingCounts = {};
+
   /**
    * @class SpiviewController
    * @classdesc Interacts with moloch spiview page
@@ -82,7 +85,7 @@
         if (!initialized) { initialized = true; return; }
 
         newQuery = true;
-        this.getSpiData();
+        this.getSpiData(this.query.spi);
       });
 
       // watch for additions to search parameters from spi values
@@ -105,8 +108,9 @@
     getFields() {
       this.FieldService.get(true)
         .then((response) => {
-          this.error = false;
-          this.fields = response;
+          this.loading  = false;
+          this.error    = false;
+          this.fields   = response;
           this.categoryObjects = {};
 
           for (let i = 0, len = this.fields.length; i < len; ++i) {
@@ -149,7 +153,7 @@
           this.categoryList.splice(this.categoryList.indexOf('general'), 1);
           this.categoryList.unshift('general');
 
-          this.getSpiData(); // IMPORTANT: queries for spi data!
+          this.getSpiData(this.query.spi); // IMPORTANT: queries for spi data!
         })
         .catch((error) => {
           this.loading  = false;
@@ -167,6 +171,8 @@
     static setupCategory(catMap, field) {
       let category = catMap[field.group];
 
+      category.name = field.group;
+
       if (!category.spi) { category.spi = {}; }
 
       if (!category.spi[field.dbField]) {
@@ -174,6 +180,25 @@
       }
 
       return category;
+    }
+
+    /**
+     * Counts category fields that are being loaded so the user can know
+     * when there are fields in the category that are loading
+     * @param {object} category The category to count
+     * @param {bool} increment  Whether to increment or decrement the count
+     */
+    static countCategoryFieldsLoading(category, increment) {
+      if (increment) {
+        if (categoryLoadingCounts[category.name]) {
+          ++categoryLoadingCounts[category.name];
+        } else { categoryLoadingCounts[category.name] = 1; }
+      } else {
+        if (categoryLoadingCounts[category.name] &&
+            categoryLoadingCounts[category.name] > 1) {
+          --categoryLoadingCounts[category.name];
+        } else { category.loading = false; }
+      }
     }
 
     /**
@@ -210,19 +235,28 @@
         let taskDeferred = this.$q.defer();
         this.$timeout(() => { // timeout for angular to render previous data
           taskDeferred.resolve(this.getSingleSpiData(field, count));
-        }, 300);
+        }, 100);
         return taskDeferred.promise;
       };
 
       return task;
     }
 
-    /* Retrieves spi data from the server serially.
-     * Waits for previous call to the server to return before issuing another */
-    getSpiData() {
-      let spiParamsArray = this.query.spi.split(',');
+    /**
+     * Retrieves spi data from the server serially.
+     * Waits for previous call to the server to return before issuing another
+     * @param {string} spiQuery What to spidata to query the db for
+     *                          e.g. 'fp:100,lp:200'
+     */
+    getSpiData(spiQuery) {
+      // reset loading counts for categories
+      categoryLoadingCounts = {};
 
-      let tasks = [];
+      this.error = false;
+
+      let spiParamsArray = spiQuery.split(',');
+
+      let tasks = [], category;
 
       // get each field from the spi query parameter and issue
       // a query for one field at a time
@@ -241,8 +275,13 @@
           }
         }
 
-        let category  = SpiviewController.setupCategory(this.categoryObjects, field);
-        let spiData   = category.spi[field.dbField];
+        category = SpiviewController.setupCategory(this.categoryObjects, field);
+        category.loading = true; // loading is set to false in getSingleSpiData
+
+        // count the number of fields fetched for each category
+        SpiviewController.countCategoryFieldsLoading(category, true);
+
+        let spiData = category.spi[field.dbField];
 
         spiData.active  = true;
         spiData.loading = true;
@@ -251,28 +290,15 @@
         tasks.push(this.createTask(field, count));
       }
 
+      if (!openedCategories) { this.openCategories(); }
+
       // start processing tasks serially
       SpiviewController.serial(tasks)
         .then((response) => { // returns the last result in the series
-          if (newQuery) {
-            // if issuing a new query, update the map, graph protocol counts,
-            // total records, and filtered records
-            newQuery        = false;
-            this.loading    = false;
-            this.mapData    = response.map;
-            this.graphData  = response.graph;
-            this.protocols  = response.protocols;
-            this.total      = response.recordsTotal;
-            this.filtered   = response.recordsFiltered;
-
-            this.updateProtocols();
-          }
-
-          if (!openedCategories) { this.openCategories(); }
+          if (response.bsqErr) { this.error = response.bsqErr; }
         })
         .catch((error) => {
-          this.loading  = false;
-          this.error    = error;
+          this.error = error;
         });
     }
 
@@ -304,13 +330,30 @@
       let promise = this.SpiviewService.get(query);
 
       promise.then((response) => {
-        // TODO DEAL WITH ERROR HERE response.bsqErr
+        SpiviewController.countCategoryFieldsLoading(category, false);
+
+        if (response.bsqErr) { spiData.error = response.bsqErr; }
+
         // only update the requested spi data
         spiData.loading = false;
         spiData.value   = response.spi[field.dbField];
         spiData.count   = count;
+
+        if (newQuery) { // this data comes back with every request
+          // so we should it up for the view ASAP (on first request)
+          newQuery        = false;
+          this.mapData    = response.map;
+          this.graphData  = response.graph;
+          this.protocols  = response.protocols;
+          this.total      = response.recordsTotal;
+          this.filtered   = response.recordsFiltered;
+
+          this.updateProtocols();
+        }
       })
       .catch((error) => {
+        SpiviewController.countCategoryFieldsLoading(category, false);
+
         // display error for the requested spi data
         spiData.loading = false;
         spiData.error   = error.text;
@@ -378,8 +421,10 @@
      * Toggles the view of field spi data by updating the active state
      * or fetching new spi data as necessary
      * Also updates the spi query parameter in the url
-     * @param {object} field    The field to get spi data for
-     * @param {bool} issueQuery Whether to issue query for the data
+     * @param {object} field      The field to get spi data for
+     * @param {bool} issueQuery   Whether to issue query for the data
+     * @returns {string} newQuery The query string for the toggled on fields
+     *                            e.g. 'lp:200,fp:100'
      */
     toggleSpiData(field, issueQuery) {
       let spiData;
@@ -387,7 +432,7 @@
         spiData = this.categoryObjects[field.group].spi[field.dbField];
       }
 
-      let addToQuery = false;
+      let addToQuery = false, spiQuery = '';
 
       if (spiData) { // spi data exists, so we only need to toggle active state
         spiData.active  = !spiData.active;
@@ -402,7 +447,7 @@
         if (this.query.spi && this.query.spi !== '') {
           this.query.spi += ',';
         }
-        this.query.spi += `${field.dbField}:100`;
+        this.query.spi += spiQuery += `${field.dbField}:100`;
       } else {
         let spiParamsArray = this.query.spi.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
@@ -416,6 +461,8 @@
 
       _query.spi = this.query.spi;
       this.$location.search('spi', this.query.spi); // update url param
+
+      return spiQuery;
     }
 
     /**
@@ -489,7 +536,8 @@
       $event.preventDefault();
       $event.stopPropagation();
 
-      let category = this.categoryObjects[categoryName];
+      let query     = '';
+      let category  = this.categoryObjects[categoryName];
 
       for (let i = 0, len = category.fields.length; i < len; ++i) {
         let field = category.fields[i];
@@ -502,11 +550,12 @@
             this.toggleSpiData(field);
           }
         } else if (load) { // spi data doesn't exist in the category
-          this.toggleSpiData(field);
+          if (query) { query += ','; }
+          query += this.toggleSpiData(field);
         }
       }
 
-      if (load) { this.getSpiData(); }
+      if (load && query) { this.getSpiData(query); }
     }
 
     /**

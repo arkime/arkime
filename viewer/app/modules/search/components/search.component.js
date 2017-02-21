@@ -45,6 +45,10 @@
 
       this.actionFormItemRadio = 'visible';
 
+      if (!this.openSessions && !this.numVisibleSessions) {
+        this.actionFormItemRadio = 'matching';
+      }
+
       if (this.$routeParams.date) { // time range is available
         this.timeRange = this.$routeParams.date;
         if (this.timeRange === '-1') { // all time
