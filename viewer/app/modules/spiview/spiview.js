@@ -324,7 +324,8 @@
         startTime : this.query.startTime,
         stopTime  : this.query.stopTime,
         expression: this.query.expression,
-        bounding  : this.query.bounding
+        bounding  : this.query.bounding,
+        view      : this.query.view
       };
 
       let promise = this.SpiviewService.get(query);
