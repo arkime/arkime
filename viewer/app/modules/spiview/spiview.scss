@@ -1,0 +1,81 @@
+moloch-spiview {
+
+  .panel-heading {
+    padding: 0;
+    background-color: lighten($color-gray, 10%) !important;
+  }
+
+  .panel-title a.accordion-toggle { // make entire heading clickable
+    display         : block;
+    padding         : 10px 15px;
+    text-decoration : none;
+
+    .protocol-value > sup { margin-left: -8px; }
+    strong.category-title { font-size: 2.3rem; }
+  }
+
+  .panel-body {
+    .btn-drawer {
+      border-bottom: 1px solid $color-gray-light;
+      margin-top: -10px;
+
+      .btn-container {
+        margin-right: -15px;
+        max-height  : 30px;
+        overflow    : hidden;
+
+        -webkit-transition: max-height 400ms ease-in;
+           -moz-transition: max-height 400ms ease-in;
+                transition: max-height 400ms ease-in;
+
+        background:
+          linear-gradient($color-white 50%, rgba($color-white,0)),
+          linear-gradient(rgba($color-white,0), $color-white 50%) 0 100%,
+          radial-gradient(farthest-side at 50% 0, rgba($color-gray-dark, .3), rgba($color-black,0)),
+          radial-gradient(farthest-side at 50% 100%, rgba($color-gray-dark, .3), rgba($color-black,0)) 0 100%;
+
+        background-repeat : no-repeat;
+        background-color  : $color-white;
+        background-size   : 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+
+        background-attachment: local, local, scroll, scroll;
+      }
+
+      &:hover {
+        .btn-container {
+          max-height: 999px;
+        }
+      }
+    }
+
+    .btn-drawer {
+      .field-btn {
+        color: $color-gray-dark;
+        &.active { color: $color-black; }
+      }
+    }
+
+    .spi-buckets {
+      margin-left   : -15px;
+      margin-right  : -15px;
+      padding-left  : 15px;
+      padding-right : 15px;
+      padding-top   : 5px;
+      padding-bottom: 5px;
+
+      &:nth-child(odd) {
+        background-color: lighten($color-yellow-light, 32%);
+      }
+    }
+
+    .spi-bucket {
+      font-size : 85%;
+      display   : inline-block;
+
+      sup { margin-left: -10px; }
+    }
+  }
+
+  // https://github.com/angular/angular.js/issues/8224
+  .fa-spin.ng-animate { -webkit-animation: none 0s; }
+}

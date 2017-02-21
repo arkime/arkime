@@ -379,6 +379,20 @@
       this.$window.open(url, '_blank');
     }
 
+    /**
+     * Open a new page to view spi graph data
+     * @param {string} dbField The field to display spi graph data for
+     */
+    openSpiGraph(dbField) {
+      let url = 'spigraph';
+
+      url = SessionService.urlWithParams(url, this.$location.search());
+
+      url += `&field=${dbField}`;
+
+      this.$window.open(url, '_blank');
+    }
+
 
     /* internal functions -------------------------------------------------- */
     /**
@@ -394,7 +408,9 @@
         baseUrl += '&stopTime='   + params.stopTime;
       }
 
-      baseUrl += '&expression=' + encodeURIComponent(params.expression);
+      if (params.expression) {
+        baseUrl += '&expression=' + encodeURIComponent(params.expression);
+      }
 
       return baseUrl;
     }

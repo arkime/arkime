@@ -1,14 +1,14 @@
 <ul class="session-field-dropdown" ng-if="$ctrl.isopen"
   ng-class="::{'pull-left':$ctrl.pullLeft, 'pull-right':!$ctrl.pullLeft}">
   <div>
-    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '==')"
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '==', $event)"
       title="{{::$ctrl.expr}} == {{::parsed.value}}">
       <a href>
         <strong>and</strong>
         {{::parsed.value}}
       </a>
     </li>
-    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '!=')"
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal, '!=', $event)"
       title="{{::$ctrl.expr}} != {{::parsed.value}}">
       <a href>
         <strong>and not</strong>
@@ -17,14 +17,14 @@
     </li>
   </div>
   <div ng-if="::($ctrl.field.portField && $ctrl.session[$ctrl.field.portField] !== undefined)">
-    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.field.portField], '==')"
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.field.portField], '==', $event)"
       title="{{::$ctrl.expr}} == {{::parsed.value}}:{{::$ctrl.session[$ctrl.field.portField]}}">
       <a href>
         <strong>and</strong>
         {{::parsed.value}}:{{::$ctrl.session[$ctrl.field.portField]}}
       </a>
     </li>
-    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.field.portField], '!=')"
+    <li ng-click="$ctrl.fieldClick($ctrl.expr, parsed.queryVal + ':' + $ctrl.session[$ctrl.field.portField], '!=', $event)"
       title="{{::$ctrl.expr}} != {{::parsed.value}}:{{::$ctrl.session[$ctrl.field.portField]}}">
       <a href>
         <strong>and not</strong>
