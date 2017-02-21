@@ -30,7 +30,7 @@
         <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
           <strong class="category-title">{{::category}}</strong>
           <span ng-if="::$ctrl.categoryObjects[category].protocols">
-               -
+            -
             <span ng-repeat="(key, value) in ::$ctrl.categoryObjects[category].protocols track by key"
               class="protocol-value">
               <session-field value="{{::key}}" expr="protocols"
@@ -57,37 +57,39 @@
       </uib-accordion-heading>
       <div ng-if="$ctrl.categoryObjects[category].isopen">
         <div class="btn-drawer">
-          <div class="btn-group margined-right margined-bottom"
-            uib-dropdown uib-tooltip="{{::field.help}}"
-            ng-repeat="field in ::$ctrl.categoryObjects[category].fields | orderBy: 'friendlyName' track by $index">
-            <button class="btn btn-xs btn-default field-btn"
-               ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
-               ng-click="$ctrl.toggleSpiData(field, true)">
-              {{::field.friendlyName}}
-            </button>
-            <button class="btn btn-xs btn-default" uib-dropdown-toggle>
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-              <li role="menuitem">
-                <a class="cursor-pointer"
-                  ng-click="$ctrl.openSpiGraph(field.dbField)">
-                  Open {{::field.friendlyName}} SPI Graph
-                </a>
-              </li>
-              <li role="menuitem">
-                <a class="cursor-pointer"
-                  ng-click="$ctrl.exportUnique(field.dbField, 0)">
-                  Export Unique {{::field.friendlyName}}
-                </a>
-              </li>
-              <li role="menuitem">
-                <a class="cursor-pointer"
-                  ng-click="$ctrl.exportUnique(field.dbField, 1)">
-                  Export Unique {{::field.friendlyName}} with counts
-                </a>
-              </li>
-            </ul>
+          <div class="btn-container">
+            <div class="btn-group margined-right margined-bottom-lg"
+              uib-dropdown uib-tooltip="{{::field.help}}"
+              ng-repeat="field in ::$ctrl.categoryObjects[category].fields | orderBy: 'friendlyName' track by $index">
+              <button class="btn btn-xs btn-default field-btn"
+                ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
+                ng-click="$ctrl.toggleSpiData(field, true)">
+                {{::field.friendlyName}}
+              </button>
+              <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                <li role="menuitem">
+                  <a class="cursor-pointer"
+                    ng-click="$ctrl.openSpiGraph(field.dbField)">
+                    Open {{::field.friendlyName}} SPI Graph
+                  </a>
+                </li>
+                <li role="menuitem">
+                  <a class="cursor-pointer"
+                    ng-click="$ctrl.exportUnique(field.dbField, 0)">
+                    Export Unique {{::field.friendlyName}}
+                  </a>
+                </li>
+                <li role="menuitem">
+                  <a class="cursor-pointer"
+                    ng-click="$ctrl.exportUnique(field.dbField, 1)">
+                    Export Unique {{::field.friendlyName}} with counts
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
