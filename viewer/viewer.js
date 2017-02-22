@@ -809,7 +809,7 @@ app.get("/spigraph", checkWebEnabled, function(req, res) {
   });
 });
 
-app.get("/connections", checkWebEnabled, function(req, res) {
+app.get("/connections.old", checkWebEnabled, function(req, res) {
   res.render('connections.jade', {
     user: req.user,
     title: makeTitle(req, 'Connections'),
@@ -893,7 +893,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview'], checkWebEnabled, function(req, res) {
+app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview', '/connections'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -3228,7 +3228,7 @@ function buildConnections(req, res, cb) {
     console.log("buildConnections query", JSON.stringify(query));
 
     Db.searchPrimary(indices, 'session', query, function (err, graph) {
-    console.log("buildConnections result", JSON.stringify(graph));
+    //console.log("buildConnections result", JSON.stringify(graph));
       if (err || graph.error) {
         console.log("Build Connections ERROR", err, graph.error);
         return cb(err || graph.error);

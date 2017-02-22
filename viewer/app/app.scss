@@ -64,6 +64,7 @@ $color-purple-dark  : #66057A;
 @import './modules/user/styles/user.list';
 @import './modules/stats/stats';
 @import './modules/spiview/spiview';
+@import './modules/connections/connections';
 
 
 /* appwide styles ============================ */
@@ -225,6 +226,12 @@ body {
 }
 .no-overflow-y {
   overflow-y: hidden;
+}
+
+
+// anchor tag no decoration
+a.no-decoration {
+  text-decoration: none;
 }
 
 

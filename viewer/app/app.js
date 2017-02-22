@@ -90,6 +90,11 @@
           template      : '<moloch-spiview></moloch-spiview>',
           reloadOnSearch: false
         })
+        .when('/connections', {
+          title    : 'Connections',
+          template : '<moloch-connections></moloch-connections>',
+          reloadOnSearch: false
+        })
         // default route is the sessions page
         .otherwise({ redirectTo: '/sessions' });
 
