@@ -29,9 +29,9 @@
       <uib-accordion-heading>
         <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
           <strong class="category-title">{{::category}}</strong>
-          <span ng-if="::$ctrl.categoryObjects[category].protocols">
+          <span ng-if="$ctrl.categoryObjects[category].protocols">
             -
-            <span ng-repeat="(key, value) in ::$ctrl.categoryObjects[category].protocols track by key"
+            <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key"
               class="protocol-value">
               <session-field value="{{::key}}" expr="protocols"
                  parse="false" pull-left="true">
@@ -44,11 +44,15 @@
           <span class="fa fa-spin fa-spinner fa-lg pull-right margined-top-lg margined-right-lg"
             ng-if="$ctrl.categoryObjects[category].loading"></span>
           <span ng-if="!$ctrl.categoryObjects[category].loading">
-            <button class="btn btn-info btn-sm pull-right margined-right-lg"
+            <button class="btn btn-blue btn-sm pull-right margined-right-lg"
+              uib-tooltip="Load all of the values in this category"
+              tooltip-placement="top-right"
               ng-click="$ctrl.toggleAllValues(category, true, $event)">
               Load All
             </button>
-            <button class="btn btn-info btn-sm pull-right margined-right-lg"
+            <button class="btn btn-purple btn-sm pull-right margined-right-lg"
+              uib-tooltip="Unload all of the values in this category"
+              tooltip-placement="top-right"
               ng-click="$ctrl.toggleAllValues(category, false, $event)">
               Unload All
             </button>

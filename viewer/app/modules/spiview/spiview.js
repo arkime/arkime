@@ -231,15 +231,13 @@
      * @returns {function()}  The function to be executed
      */
     createTask(field, count) {
-      let task = () => {
+      return () => {
         let taskDeferred = this.$q.defer();
         this.$timeout(() => { // timeout for angular to render previous data
           taskDeferred.resolve(this.getSingleSpiData(field, count));
         }, 100);
         return taskDeferred.promise;
       };
-
-      return task;
     }
 
     /**
@@ -424,7 +422,7 @@
      * Also updates the spi query parameter in the url
      * @param {object} field      The field to get spi data for
      * @param {bool} issueQuery   Whether to issue query for the data
-     * @returns {string} newQuery The query string for the toggled on fields
+     * @returns {string} spiQuery The query string for the toggled on fields
      *                            e.g. 'lp:200,fp:100'
      */
     toggleSpiData(field, issueQuery) {
