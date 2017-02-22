@@ -67,8 +67,8 @@
 
       self.trans=[0,0];
       self.scale=1;
-      self.width = $(window).width() - 4;
-      self.height = $(window).height() - 40;
+      self.width = $(window).width();
+      self.height = $(window).height() - 100;
       self.popupTimer = null;
       self.colors = ["", "green", "red", "purple"];
 

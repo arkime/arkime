@@ -10,6 +10,7 @@
 
     /**
      * Initialize global variables for this controller
+     * @param $rootScope Angular application main scope
      *
      * @ngInject
      */
@@ -17,9 +18,9 @@
       this.$rootScope = $rootScope;
     }
 
-    $onInit() {
+    closePopup() {
+      $('#networkLabel').hide();
     }
-
 
     addExpression(op) {
       let fullExpression = `(${this.link.srcExp} == ${this.link.source.id} && ${this.link.dstExp} == ${this.link.target.id})`;
@@ -28,9 +29,9 @@
     }
 
     hideLink() {
-      var self = this;
+      let self = this;
       $('#networkLabel').hide();
-      self.svg.selectAll(".link")
+      self.svg.selectAll('.link')
          .filter(function(d, i) {
            return d.source.id === self.link.source.id && d.target.id === self.link.target.id;
          })
@@ -39,15 +40,15 @@
 
   }
 
-  ConnectionsLinkPopupController.$inject = ["$rootScope"];
+  ConnectionsLinkPopupController.$inject = ['$rootScope'];
 
   angular.module('moloch')
     .component('connectionsLinkPopup', {
       template  : require('html!./connections.linkpopup.html'),
       controller: ConnectionsLinkPopupController,
       bindings  : {
-        link: '<',
-        svg: '<'
+        link    : '<',
+        svg     : '<'
       }
     });
 

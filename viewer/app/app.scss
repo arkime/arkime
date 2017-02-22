@@ -228,6 +228,12 @@ body {
 }
 
 
+// anchor tag no decoration
+a.no-decoration {
+  text-decoration: none;
+}
+
+
 // buttons
 .btn {
   &.btn-purple {

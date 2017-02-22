@@ -1,4 +1,4 @@
-<div class="container-fluid margined-left margined-right">
+<div class="container-fluid margined-left margined-right margined-bottom-lg">
 
   <moloch-search open-sessions="$ctrl.stickySessions"
     num-visible-sessions="$ctrl.query.length"
@@ -7,7 +7,7 @@
   </moloch-search>
 
   <!-- session visualizations -->
-  <div class="row margin-for-search-navbar">
+  <div class="row margin-for-search-navbar no-overflow">
     <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
     <div class="col-md-12">
       <div ng-if="::($ctrl.graphData)">

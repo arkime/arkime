@@ -1,38 +1,47 @@
 moloch-connections {
-  pre { padding: 16px 0 0 0; }
 
-  .container-connections { margin-top: 72px; }
-
-  hr {
-    margin-top    : 32px;
-    margin-bottom : 32px;
-  }
+  select { -webkit-appearance: none; }
 
   #networkLabel {
-    position: absolute;
-    display: none;
-    border: solid 1px #CDCDCD;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-    background: lightblue;
-    color: black;
-    font-family: Arial, sans-serif;
-    font-size: smaller;
-    padding: 3px;
-    width: 200px;
+    position  : absolute;
+    display   : none;
+    font-size : smaller;
+    padding   : 4px 8px;
+    width     : 170px;
+    border    : solid 1px lighten($color-blue-light, 30%);
+    background: lighten($color-blue-light, 40%);
+
+    -webkit-border-radius: $px-sm;
+       -moz-border-radius: $px-sm;
+            border-radius: $px-sm;
+
+    -webkit-box-shadow: $px-md $px-md $px-xlg $px-none rgba($color-gray-dark, .8);
+       -moz-box-shadow: $px-md $px-md $px-xlg $px-none rgba($color-gray-dark, .8);
+            box-shadow: $px-md $px-md $px-xlg $px-none rgba($color-gray-dark, .8);
   }
 
-  form {
-    border            : none;
-    padding           : $px-xlg $px-lg $px-md $px-lg;
-    background-color  : lighten($color-blue-light, 50%);
+  form.connections-form {
+    position: fixed;
+    top     : 128px;
+    left    : 0;
+    right   : 0;
+    padding : $px-xlg $px-lg $px-md $px-lg;
+    background-color  : lighten($color-yellow-light, 35%);
     -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
-    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
-    box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
+       -moz-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+            box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
   }
 
-  #connectionsForm {
-    margin-top:100px;
+  // tiny key value pair list
+  .dl-horizontal {
+    margin-bottom: $px-md;
+
+    dt {
+      width     : 80px;
+      text-align: left;
+    }
+
+    dd { margin-left: 85px; }
   }
+
 }

@@ -1,12 +1,14 @@
-<div class="container-fluid container-connections">
-  <moloch-search timezone="$ctrl.settings.timezone"> </moloch-search>
-  <form id="connectionsForm">
+<div>
+
+  <moloch-search timezone="$ctrl.settings.timezone"></moloch-search>
+
+  <form class="connections-form">
     <div class="form-inline">
       <!-- query size select -->
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Query Size">
             Query Size
           </span>
@@ -14,11 +16,11 @@
             ng-model="$ctrl.querySize">
             <option value="100">100</option>
             <option value="500">500</option>
-            <option value="1000">1000</option>
-            <option value="5000">5000</option>
-            <option value="10000">10000</option>
-            <option value="50000">50000</option>
-            <option value="100000">100000</option>
+            <option value="1000">1,000</option>
+            <option value="5000">5,000</option>
+            <option value="10000">10,000</option>
+            <option value="50000">50,000</option>
+            <option value="100000">100,000</option>
           </select>
         </div>
       </div> <!-- /query size select -->
@@ -27,7 +29,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Source field">
             Src:
           </span>
@@ -44,7 +46,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Destination Field">
             Dst: 
           </span>
@@ -55,13 +57,13 @@
             </option>
           </select>
         </div>
-      </div> <!-- /Src select -->
+      </div> <!-- /dst select -->
 
       <!-- min connections select -->
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Min Connections">
             Min Connections
           </span>
@@ -80,7 +82,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Node distance in pixels">
             Node dist
           </span>
@@ -101,4 +103,5 @@
 
   <div id="network"></div>
   <div id="networkLabel"></div>
+
 </div>
