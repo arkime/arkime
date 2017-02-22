@@ -44,6 +44,7 @@ moloch-spiview {
       &:hover {
         .btn-container {
           max-height: 999px;
+          overflow  : visible;
         }
       }
     }
