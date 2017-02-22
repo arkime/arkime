@@ -649,15 +649,15 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         char help[100];
 
         if (type == 0) {
-            sprintf(expression, "%s%s", expBase, name);
-            sprintf(field, "%s%s.snow", dbBase, name);
-            sprintf(rawfield, "%s%s.raw", dbBase, name);
-            sprintf(help, "%s%s", helpBase, name);
+            snprintf(expression, sizeof(expression), "%s%s", expBase, name);
+            snprintf(field, sizeof(field), "%s%s.snow", dbBase, name);
+            snprintf(rawfield, sizeof(rawfield), "%s%s.raw", dbBase, name);
+            snprintf(help, sizeof(help), "%s%s", helpBase, name);
         } else {
-            sprintf(expression, "%s%s", expBase, name);
-            sprintf(field, "%s%s", dbBase, name);
+            snprintf(expression, sizeof(expression), "%s%s", expBase, name);
+            snprintf(field, sizeof(field), "%s%s", dbBase, name);
             rawfield[0] = 0;
-            sprintf(help, "%s%s", helpBase, name);
+            snprintf(help, sizeof(help), "%s%s", helpBase, name);
         }
 
         int pos;

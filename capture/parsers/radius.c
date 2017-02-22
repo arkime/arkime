@@ -34,7 +34,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
 
     unsigned char type = 0, length = 0;
     unsigned char *value;
-    char str[100];
+    char str[256];
     struct in_addr in;
     int i;
 
