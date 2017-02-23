@@ -405,6 +405,7 @@ writer_disk_file_time_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 void writer_disk_init(char *name)
 {
+    LOG("WARNING - pcapWriteMethod of %s is depreciated, please switch to pcapWriteMethod=simple", name);
     if (strcmp(name, "normal") == 0)
         writeMethod = MOLOCH_WRITE_NORMAL;
     else if (strcmp(name, "direct") == 0)

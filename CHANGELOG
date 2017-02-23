@@ -16,6 +16,8 @@
   - viewer - stats tab uses new ui (/stats.old available temporarily)
   - viewer - sessions tab uses new ui (/sessions.old available temporarily)
   - viewer - newUI setting removed
+  - viewer - spiview tab uses new ui (/spiview.old available temporarily)
+  - viewer - connections tab uses new ui (/connections.old available temporarily)
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)

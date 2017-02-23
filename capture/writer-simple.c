@@ -160,6 +160,9 @@ void writer_simple_process_buf(int thread, int closing)
     }
     MOLOCH_LOCK(simpleQ);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
+    if ((DLL_COUNT(simple_, &simpleQ) % 100) == 0) {
+        LOG("WARNING - Disk Q of %d is too large, check the Moloch FAQ about testing disk speed", DLL_COUNT(simple_, &simpleQ));
+    }
     MOLOCH_COND_SIGNAL(simpleQ);
     MOLOCH_UNLOCK(simpleQ);
 }
