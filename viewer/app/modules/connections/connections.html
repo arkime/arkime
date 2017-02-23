@@ -2,7 +2,7 @@
 
   <moloch-search timezone="$ctrl.settings.timezone"></moloch-search>
 
-  <form class="connections-form margin-for-main-and-sub-navbar">
+  <form class="connections-form">
     <div class="form-inline">
       <!-- query size select -->
       <div class="form-group margined-bottom">
@@ -13,6 +13,7 @@
             Query Size
           </span>
           <select class="form-control" convert-to-number
+            ng-change="$ctrl.loadData()"
             ng-model="$ctrl.querySize">
             <option value="100">100</option>
             <option value="500">500</option>
@@ -34,6 +35,7 @@
             Src:
           </span>
           <select class="form-control"
+            ng-change="$ctrl.loadData()"
             ng-model="$ctrl.srcField">
             <option ng-repeat="field in ::$ctrl.fields" value="{{field.dbField}}">
               {{field.exp}}
@@ -48,9 +50,10 @@
           <span class="input-group-addon cursor-help"
             tooltip-placement="bottom"
             uib-tooltip="Destination Field">
-            Dst: 
+            Dst:
           </span>
           <select class="form-control"
+            ng-change="$ctrl.loadData()"
             ng-model="$ctrl.dstField">
             <option ng-repeat="field in ::$ctrl.fields" value="{{field.dbField}}">
             {{field.exp}}
@@ -65,9 +68,10 @@
           <span class="input-group-addon cursor-help"
             tooltip-placement="bottom"
             uib-tooltip="Min Connections">
-            Min Connections
+            Min. Connections
           </span>
           <select class="form-control" convert-to-number
+            ng-change="$ctrl.loadData()"
             ng-model="$ctrl.minConn">
             <option value="1">1</option>
             <option value="2">2</option>
@@ -87,6 +91,7 @@
             Node dist
           </span>
           <select class="form-control" convert-to-number
+            ng-change="$ctrl.changeNodeDist()"
             ng-model="$ctrl.nodeDist">
             <option value="75">75</option>
             <option value="100">100</option>
@@ -98,10 +103,31 @@
         </div>
       </div> <!-- /node dist select -->
 
+      <button class="btn btn-default btn-sm"
+        ng-click="$ctrl.unlock()">
+        <span class="fa fa-unlock"></span>&nbsp;
+        Unlock
+      </button>
+
     </div> <!-- /form-inlne -->
   </form>
 
-  <div id="network"></div>
-  <div id="networkLabel"></div>
+  <div class="network-container" ng-show="!$ctrl.error && $ctrl.recordsFiltered !== 0">
+    <div id="network"></div>
+    <div id="networkLabel"></div>
+  </div>
+
+  <div class="margin-for-main-and-sub-navbar" ng-if="$ctrl.error || $ctrl.recordsFiltered === 0">
+    <!-- no results -->
+    <div class="info-area vertical-horizontal-center"
+      ng-if="!$ctrl.error && !$ctrl.loading && $ctrl.recordsFiltered === 0">
+      <span class="fa fa-3x text-muted-more fa-folder-open"></span>
+      No results or none that match your search.
+    </div> <!-- /no results -->
+
+    <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
+  </div>
+
+  <loading ng-if="$ctrl.loading"></loading>
 
 </div>

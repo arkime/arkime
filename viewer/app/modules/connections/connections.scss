@@ -2,6 +2,8 @@ moloch-connections {
 
   select { -webkit-appearance: none; }
 
+  .network-container { margin-top: 80px; }
+
   #networkLabel {
     position  : absolute;
     display   : none;
@@ -21,8 +23,8 @@ moloch-connections {
   }
 
   form.connections-form {
-    position: fixed;
-    top     : 15px;
+    position: relative;
+    top     : 78px;
     left    : 0;
     right   : 0;
     padding : $px-xlg $px-lg $px-md $px-lg;

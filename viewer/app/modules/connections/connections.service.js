@@ -25,16 +25,14 @@
 
     /**
      * Gets connections from the server
+     * @param {object} options    The query parameters for the request
      * @returns {Promise} Promise A promise object that signals the completion
      *                            or rejection of the request.
      */
     get(options) {
       return this.$q((resolve, reject) => {
 
-        let config = { method:'GET', 
-                          url:'stats.json', 
-                        cache:false,
-                       params:options};
+        let config = { method:'GET', url:'connections.json', params:options };
 
         this.$http(config)
           .then((response) => {
