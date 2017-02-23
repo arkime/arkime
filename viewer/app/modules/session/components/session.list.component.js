@@ -51,7 +51,7 @@
       this.UserService    = UserService;
 
       // offset anchor scroll position to account for navbars
-      this.$anchorScroll.yOffset = 140;
+      this.$anchorScroll.yOffset = 115;
     }
 
     /* Callback when component is mounted and ready */
