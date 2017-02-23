@@ -64,4 +64,5 @@ void moloch_writers_init()
     moloch_writers_add("thread", writer_disk_init);
     moloch_writers_add("thread-direct", writer_disk_init);
     moloch_writers_add("simple", writer_simple_init);
+    moloch_writers_add("simple-nodirect", writer_simple_init);
 }

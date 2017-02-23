@@ -73,6 +73,7 @@ LOCAL uint8_t                simpleKEK[EVP_MAX_KEY_LENGTH];
 LOCAL int                    simpleKEKLen;
 LOCAL uint8_t                simpleIV[EVP_MAX_IV_LENGTH];
 LOCAL const EVP_CIPHER      *cipher;
+LOCAL int                    openOptions;
 
 /******************************************************************************/
 uint32_t writer_simple_queue_length()
@@ -238,13 +239,7 @@ void writer_simple_write(const MolochSession_t * const session, MolochPacket_t *
             LOGEXIT("Unknown simpleMode %d", simpleMode);
         }
 
-        int options = O_NOATIME | O_WRONLY | O_CREAT | O_TRUNC;
-#ifdef O_DIRECT
-        options |= O_DIRECT;
-#else
-        LOG("No O_DIRECT");
-#endif
-        currentInfo[thread]->file->fd = open(name,  options, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+        currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         if (currentInfo[thread]->file->fd < 0) {
             LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d)", name, strerror(errno), errno);
             exit(2);
@@ -357,7 +352,7 @@ void writer_simple_exit()
     }
 }
 /******************************************************************************/
-void writer_simple_init(char *UNUSED(name))
+void writer_simple_init(char *name)
 {
     moloch_writer_queue_length = writer_simple_queue_length;
     moloch_writer_exit         = writer_simple_exit;
@@ -394,6 +389,17 @@ void writer_simple_init(char *UNUSED(name))
     if (config.pcapWriteSize % pageSize != 0) {
         config.pcapWriteSize = ((config.pcapWriteSize + pageSize - 1) / pageSize) * pageSize;
         LOG ("INFO: Reseting pcapWriteSize to %u since it must be a multiple of %u", config.pcapWriteSize, pageSize);
+    }
+
+    openOptions = O_NOATIME | O_WRONLY | O_CREAT | O_TRUNC;
+    if (strcmp(name, "simple") == 0) {
+#ifdef O_DIRECT
+        openOptions |= O_DIRECT;
+#else
+        LOG("No O_DIRECT defined, skipping");
+#endif
+    } else {
+        LOG("Not using O_DIRECT by config");
     }
 
     DLL_INIT(simple_, &simpleQ);
