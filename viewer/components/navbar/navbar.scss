@@ -1,4 +1,25 @@
 navbar {
+
+  .navbar {
+    max-height: 36px;
+    min-height: 36px;
+  }
+
+  .navbar-nav > li > a {
+    padding-top   : 8px;
+    padding-bottom: 8px;
+  }
+
+  .navbar-brand {
+    height : 36px;
+    padding: 8px 15px;
+  }
+
+  .navbar-text {
+    margin-top   : 6px;
+    margin-bottom: 8px;
+  }
+
   .navbar-inverse {
     background-color  : darken($color-purple-dark, 8%);
     -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm darken($color-purple-dark, 16%);
@@ -7,7 +28,7 @@ navbar {
 
     .navbar-brand {
       color       : $color-gray-light;
-      margin-left :42px !important;
+      margin-left : 36px !important;
     }
 
     li {
@@ -27,7 +48,8 @@ navbar {
 
   .moloch-logo {
     position: absolute;
-    height  : 48px;
-    top     : 6px;
+    height  : 46px;
+    top     : 2px;
   }
+
 }

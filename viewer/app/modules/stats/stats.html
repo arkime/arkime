@@ -1,7 +1,17 @@
 <script src='cubism.v1.js'></script>
 <script src='highlight.min.js'></script>
 
-<div class="container-fluid container-stats">
+<div class="container-fluid margin-for-main-and-sub-navbar">
+
+  <div class="sub-navbar">
+    <span class="sub-navbar-title">
+      <span class="fa-stack">
+        <span class="fa fa-signal fa-stack-1x"></span>
+        <span class="fa fa-square-o fa-stack-2x"></span>
+      </span>&nbsp;
+      Statistics
+    </span>
+  </div>
 
   <div class="text-center">
     <select ng-model="$ctrl.graphSelect" ng-change="$ctrl.loadData()">
@@ -38,11 +48,11 @@
     </select>
   </div>
 
-
   <!-- Stats Graphs-->
   <div id="statsGraph"></div>
 
   <moloch-nodes-stats></moloch-nodes-stats>
 
   <moloch-es-stats></moloch-es-stats>
+
 </div>

@@ -118,7 +118,8 @@ body {
 .margined-right-xxxxlg  { margin-right: $px-xxxxlg; }
 .margined-right-none    { margin-right: $px-none; }
 
-.margin-for-main-navbar   { margin-top: 50px; }
+.margin-for-main-navbar         { margin-top: 36px; }
+.margin-for-main-and-sub-navbar { margin-top: 100px; }
 .margin-for-search-navbar {
   margin-top: 85px;
 
@@ -356,8 +357,36 @@ a.no-decoration {
   &.alert-sm {
     padding       : 4px 35px 5px 8px;
     margin-top    : $px-md;
-    margin-bottom : $px-sm;
+    margin-bottom : $px-none;
   }
+}
+
+
+
+/* sub navbar ================================ */
+.sub-navbar {
+  position: fixed;
+  top     : 36px;
+  left    : 0;
+  right   : 0;
+  padding : $px-xlg $px-lg $px-md 13px;
+
+  background-color  : lighten($color-blue-light, 50%);
+  -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+     -moz-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+          box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+
+  .sub-navbar-title {
+    font-size   : $px-xxxlg;
+    font-weight : bold;
+
+    .fa-stack {
+      margin-top   : -6px;
+      margin-bottom: -4px;
+    }
+  }
+
+  .toast-container { margin-top: -6px; }
 }
 
 

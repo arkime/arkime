@@ -1,18 +1,18 @@
 moloch-help {
 
-  pre { padding: 16px 0 0 0; }
-
   .header-input { width:70%; }
 
-  .container-help { margin-top: 72px; }
-
-  hr {
-    margin-top    : 32px;
-    margin-bottom : 32px;
-  }
-
   ul {
-    &.nav-pills { min-width: 150px; }
+    &.nav-pills {
+      min-width     : 150px;
+      border        : 1px solid $color-gray;
+      border-radius : 4px;
+      padding       : 4px;
+
+      -webkit-box-shadow: $px-sm $px-sm $px-lg $px-none rgba($color-gray-dark, .5);
+         -moz-box-shadow: $px-sm $px-sm $px-lg $px-none rgba($color-gray-dark, .5);
+              box-shadow: $px-sm $px-sm $px-lg $px-none rgba($color-gray-dark, .5);
+    }
 
     li {
       a { padding: 5px 8px !important; }

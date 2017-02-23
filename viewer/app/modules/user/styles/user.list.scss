@@ -1,17 +1,9 @@
 moloch-users {
-  pre { padding: 16px 0 0 0; }
 
-  .container-users { margin-top: 72px; }
-
-  .btn-header {
-    margin-top: 3px;
-    margin-left: 10px;
-  }
+  .btn-header { margin-left: 10px; }
 
   table {
     tr {
-      //max-height: 100px;
-
       // animations for filtering table contents
       &.ng-move, &.ng-enter, &.ng-leave {
         -webkit-transition: all 400ms linear;
@@ -40,4 +32,5 @@ moloch-users {
       }
     }
   }
+
 }
