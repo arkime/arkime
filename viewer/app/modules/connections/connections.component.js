@@ -2,7 +2,7 @@
 
   'use strict';
 
-  // save frequently acessed elements
+  // save frequently accessed elements
   let networkLabelElem, networkElem;
 
   // save query parameters
@@ -21,7 +21,6 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $http               Angular service that communicates with remote HTTP servers
      * @param $scope              Angular application model object
      * @param $filter             Filters format the value of an expression
      * @param $compile            Compiles template and links scope and the template together
@@ -33,9 +32,8 @@
      *
      * @ngInject
      */
-    constructor($http, $scope, $filter, $compile, $location, $routeParams,
+    constructor($scope, $filter, $compile, $location, $routeParams,
       ConnectionsService, FieldService, UserService) {
-      this.$http              = $http;
       this.$scope             = $scope;
       this.$filter            = $filter;
       this.$compile           = $compile;
@@ -94,6 +92,9 @@
       });
 
       networkLabelElem = $('#networkLabel');
+
+      // hide the footer so that there is more space for the graph
+      $('footer').hide();
     }
 
     /* sets up d3 graph and saves variables for use in other functions */
@@ -103,7 +104,7 @@
       self.trans      = [0,0];
       self.scale      = 1;
       self.width      = $(window).width();
-      self.height     = $(window).height() - 210;
+      self.height     = $(window).height() - 166;
       self.popupTimer = null;
       self.colors     = ['', 'green', 'red', 'purple'];
       networkElem     = $('#network');
@@ -114,7 +115,7 @@
         self.scale = d3.event.scale;
 
         // transform the vis
-        self.svg.attr('transform', 'translate(' + self.trans + ')' + ' scale(' + self.scale + ')');
+        svg.attr('transform', 'translate(' + self.trans + ')' + ' scale(' + self.scale + ')');
       }
 
       self.zoom = d3.behavior.zoom()
@@ -123,15 +124,15 @@
         .scaleExtent([0.25,6])
         .on('zoom', redraw);
 
-      svgMain = self.svgMain = d3.select('#network').append('svg:svg')
+      svgMain = d3.select('#network').append('svg:svg')
         .attr('width', self.width)
         .attr('height', self.height);
 
-      svg = self.svg = self.svgMain.append('svg:g')
+      svg = svgMain.append('svg:g')
         .call(self.zoom)
         .append('svg:g');
 
-      self.svg.append('svg:rect')
+      svg.append('svg:rect')
         .attr('width', networkElem.width() + 1000)
         .attr('height', networkElem.height() + 1000)
         .attr('fill', 'white')
@@ -140,7 +141,7 @@
           networkLabelElem.hide();
         });
 
-      force = self.force = d3.layout.force()
+      force = d3.layout.force()
         .gravity(0.05)
         .distance(self.nodeDist)
         .charge(-300)
@@ -155,8 +156,8 @@
 
       networkLabelElem.hide();
 
-      this.svg.selectAll('.link').remove();
-      this.svg.selectAll('.node').remove();
+      svg.selectAll('.link').remove();
+      svg.selectAll('.node').remove();
 
       // build new query and save values in url parameters
       _query.length   = this.querySize;
@@ -238,10 +239,9 @@
         }
       }
 
-      self.force
-          .nodes(json.nodes)
-          .links(json.links)
-          .start();
+      force.nodes(json.nodes)
+           .links(json.links)
+           .start();
 
       // Highlighting
       let highlight_trans = 0.1,
@@ -307,7 +307,7 @@
         }
       }
 
-      link = self.svg.selectAll('.link')
+      link = svg.selectAll('.link')
         .data(json.links)
         .enter().append('line')
         .attr('class', 'link')
@@ -329,12 +329,12 @@
           d3.select(this).classed('dragging', true);
           d.fixed |= 1;
         })
-        .on('drag', function (d) {d.px = d3.event.x; d.py = d3.event.y; self.force.resume();})
+        .on('drag', function (d) {d.px = d3.event.x; d.py = d3.event.y; force.resume();})
         .on('dragend', function (d) {
           d3.select(this).classed('dragging', false);
         });
 
-      node = self.svg.selectAll('.node')
+      node = svg.selectAll('.node')
         .data(json.nodes)
         .enter().append('g')
         .attr('class', 'node')
@@ -381,7 +381,7 @@
         .attr('dy', '.35em')
         .text(function(d) { return d.id;});
 
-      self.force.on('tick', function() {
+      force.on('tick', function() {
         link.attr('x1', function(d) { return d.source.x; })
             .attr('y1', function(d) { return d.source.y; })
             .attr('x2', function(d) { return d.target.x; })
@@ -419,7 +419,7 @@
       that.$scope.$apply();
 
       networkLabelElem.html(content)
-        .css({ left: that.trans[0] + (node.px*that.scale),
+        .css({ left: that.trans[0] + (node.px*that.scale) + 25,
                 top: that.trans[1] + (node.py*that.scale) + networkLabelElem.height()/2
             })
         .show();
@@ -438,13 +438,13 @@
 
       networkLabelElem.html(content)
         .css({ left: that.trans[0] + (mouse[0]*that.scale) + 25,
-                top: that.trans[1] + (mouse[1]*that.scale) + networkLabelElem.height()/2 + 25
+                top: that.trans[1] + (mouse[1]*that.scale) + networkLabelElem.height()/2
             })
         .show();
     }
   }
 
-  ConnectionsController.$inject = ['$http','$scope','$filter','$compile','$location','$routeParams',
+  ConnectionsController.$inject = ['$scope','$filter','$compile','$location','$routeParams',
     'ConnectionsService','FieldService','UserService'];
 
   /**
