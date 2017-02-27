@@ -17,7 +17,7 @@
       function($filter, $timeout, $document) {
       return {
         template: require('html!../templates/session.graph.html'),
-        scope   : { graphData: '=' },
+        scope   : { graphData: '=', type: '@' },
         link    : function(scope, element, attrs) {
 
           /* internal functions -------------------------------------------- */
@@ -99,7 +99,7 @@
 
 
           /* setup --------------------------------------------------------- */
-          scope.type = 'lpHisto'; // default data type
+          if (!scope.type) { scope.type = 'lpHisto'; } // default data type
 
           // setup the graph data and options
           setup(scope.graphData);
@@ -160,6 +160,17 @@
             }
           });
 
+          scope.$on('update:histo:type', (event, newType) => {
+            if (scope.type !== newType) {
+              scope.type = newType;
+              scope.graph = [{data: scope.graphData[scope.type]}];
+
+              plot.setData(scope.graph);
+              plot.setupGrid();
+              plot.draw();
+            }
+          });
+
 
           /* exposed functions --------------------------------------------- */
           scope.changeHistoType = function() {
@@ -168,6 +179,8 @@
             plot.setData(scope.graph);
             plot.setupGrid();
             plot.draw();
+
+            scope.$emit('change:histo:type', scope.type);
           };
 
           scope.zoomOut = function() {

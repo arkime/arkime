@@ -1,6 +1,8 @@
-<div class="container-fluid container-spigraph">
-  <moloch-search timezone="$ctrl.settings.timezone"> </moloch-search>
-  <form id="spigraphForm">
+<div class="margined-bottom-xxlg">
+
+  <moloch-search timezone="$ctrl.settings.timezone"></moloch-search>
+
+  <form class="spigraph-form">
     <div class="form-inline">
 
       <!-- field select -->
@@ -12,7 +14,7 @@
             SPI Graph:
           </span>
           <select class="form-control"
-            ng-model="$ctrl.field">
+            ng-model="$ctrl.field" ng-change="$ctrl.loadData()">
             <option ng-repeat="field in ::$ctrl.fields" value="{{field.dbField}}">
               {{field.exp}}
             </option>
@@ -29,7 +31,7 @@
             Max Elements:
           </span>
           <select class="form-control" convert-to-number
-            ng-model="$ctrl.maxElements">
+            ng-model="$ctrl.maxElements" ng-change="$ctrl.loadData()">
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>
@@ -48,8 +50,8 @@
             uib-tooltip="Sort results by">
             Sort by:
           </span>
-          <select class="form-control" convert-to-number
-            ng-model="$ctrl.sortBy">
+          <select class="form-control"
+            ng-model="$ctrl.sortBy" ng-change="$ctrl.changeSortBy()">
             <option value="name">name</option>
             <option value="count">count</option>
           </select>
@@ -62,51 +64,75 @@
           <span class="input-group-addon cursor-help"
             tooltip-placement="top"
             uib-tooltip="Refresh page every X seconds">
-            Refresh:
+            Refresh every:
           </span>
-          <input class="form-control"
-            ng-model="$ctrl.refresh">
+          <input class="form-control" style="width:60px"
+            ng-model-options="{debounce:400}" ng-model="$ctrl.refresh"
+            ng-change="$ctrl.changeRefreshInterval()">
           </input>
+          <span class="input-group-addon">
+            seconds
+          </span>
         </div>
       </div> <!-- /refresh input-->
+
+      <strong class="small margined-top text-blue pull-right"
+        ng-if="!$ctrl.error && $ctrl.recordsFiltered !== undefined">
+        Showing {{$ctrl.recordsFiltered | number}} entries filtered from
+        {{$ctrl.recordsTotal | number}} total entries
+      </strong>
 
     </div> <!-- /form-inlne -->
   </form>
 
   <!-- session visualizations -->
-  <div class="row margin-for-search-navbar">
-    <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
-    <div class="col-md-12">
-      <div ng-if="::($ctrl.graphData)">
-        <session-graph graph-data="$ctrl.graphData"></session-graph>
-      </div>
-    </div>
-  </div>
-  <div id="sessionGraphs">
-    <div ng-repeat="item in $ctrl.items">
-      <div class="btn-drawer">
-        <div class="btn-group margined-right margined-bottom" uib-dropdown>
-          <button class="btn btn-xs btn-default field-btn">
-            {{::item.name}}
-            <span class="spicount">({{::item.count}})</span>
-          </button>
-          <button class="btn btn-xs btn-default" uib-dropdown-toggle>
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-            <li role="menuitem">
-              <a class="cursor-pointer"
-                ng-click="$ctrl.addExpression(item)">
-                and {{::item.name}}
-              </a>
-            </li>
-          </ul>
+  <div class="container-fluid">
+
+    <div class="row margin-for-search-navbar">
+      <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
+      <div class="col-md-12">
+        <div ng-if="::($ctrl.graphData)">
+          <session-graph graph-data="$ctrl.graphData"
+            type="{{::$ctrl.sort}}"></session-graph>
         </div>
       </div>
-
-      <div>
-        <session-graph graph-data="item.graph"></session-graph>
-      </div>
     </div>
+
+    <hr>
+
+    <div ng-repeat="item in $ctrl.items" class="margined-top-lg margined-bottom">
+      <div class="btn-group" uib-dropdown>
+        <button class="btn btn-primary btn-default field-btn" uib-dropdown-toggle>
+          <strong>{{::item.name}}</strong>
+          <sup class="spicount">({{::item.count | number}})</sup>&nbsp;
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+          <li role="menuitem">
+            <a class="cursor-pointer"
+              ng-click="$ctrl.addExpression(item)">
+              and {{::item.name}}
+            </a>
+          </li>
+        </ul>
+      </div>
+      <session-graph graph-data="item.graph"
+        type="{{::$ctrl.sort}}"></session-graph>
+    </div>
+
+    <div ng-if="$ctrl.error || $ctrl.recordsFiltered === 0">
+      <!-- no results -->
+      <div class="info-area vertical-horizontal-center"
+        ng-if="!$ctrl.error && !$ctrl.loading && $ctrl.recordsFiltered === 0">
+        <span class="fa fa-3x text-muted-more fa-folder-open"></span>
+        No results or none that match your search.
+      </div> <!-- /no results -->
+
+      <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
+    </div>
+
+    <loading ng-if="$ctrl.loading"></loading>
+
   </div>
+
 </div>

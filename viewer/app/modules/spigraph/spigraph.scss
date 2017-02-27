@@ -1,23 +1,17 @@
 moloch-spigraph {
-  pre { padding: 16px 0 0 0; }
 
-  .container-spigraph { margin-top: 72px; }
+  select { -webkit-appearance: none; }
 
-  hr {
-    margin-top    : 32px;
-    margin-bottom : 32px;
-  }
-
-  form {
-    border            : none;
-    padding           : $px-xlg $px-lg $px-md $px-lg;
-    background-color  : lighten($color-blue-light, 50%);
+  form.spigraph-form {
+    position: relative;
+    top     : 78px;
+    left    : 0;
+    right   : 0;
+    padding : $px-xlg $px-lg $px-md $px-lg;
+    background-color  : lighten($color-yellow-light, 35%);
     -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
-    -moz-box-shadow   : $px-none $px-none $px-xlg $px-sm $color-gray;
-    box-shadow        : $px-none $px-none $px-xlg $px-sm $color-gray;
+       -moz-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+            box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
   }
 
-  #spigraphForm {
-    margin-top:100px;
-  }
 }
