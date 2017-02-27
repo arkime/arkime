@@ -241,14 +241,14 @@
       <div class="btn-group">
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
-          uib-btn-radio="'open'"
+          uib-btn-radio="'open'" ng-if="$ctrl.openSessions"
           uib-tooltip="Apply action for {{$ctrl.openSessions.length}} opened sessions"
           tooltip-placement="top-left" tooltip-append-to-body="true">
           Open Items
         </label>
         <label class="btn btn-sm btn-default"
           ng-model="$ctrl.actionFormItemRadio"
-          uib-btn-radio="'visible'"
+          uib-btn-radio="'visible'" ng-if="$ctrl.numVisibleSessions"
           uib-tooltip="Apply action for {{[$ctrl.numVisibleSessions,$ctrl.numMatchingSessions] | min}} visible sessions"
           tooltip-placement="top-left" tooltip-append-to-body="true">
           Visible Items

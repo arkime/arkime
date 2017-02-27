@@ -9,10 +9,11 @@
   </span>
 
   <!-- time constraint -->
-  <span ng-if="::($ctrl.time)" class="field cursor-pointer"
-    ng-click="$ctrl.timeClick($ctrl.expr, parsed.queryVal)"
+  <span ng-if="::($ctrl.time)" class="field time-field cursor-pointer"
     uib-tooltip="Click to apply time constraint">
-    <a>{{::parsed.value}}</a>
+    <a class="value" ng-click="$ctrl.timeClick($ctrl.expr, parsed.queryVal)">
+      <span class="all-copy">{{::parsed.value}}</span>
+    </a>
   </span>
 
 </span>

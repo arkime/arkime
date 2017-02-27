@@ -62,8 +62,12 @@
      * @param {string} field  The field name
      * @param {string} value  The field value
      * @param {string} op     The relational operator
+     * @param {object} $event The click event that triggered this function
      */
-    fieldClick(field, value, op) {
+    fieldClick(field, value, op, $event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+
       // close the dropdown
       this.isopen = false;
 
@@ -210,7 +214,7 @@
       if (!this.parsed[0].value || !this.molochClickables) { return; }
 
       let info  = this.getInfo();
-      let text  = this.parsed[0].value.toString();
+      let text  = this.parsed[0].queryVal.toString();
       let url   = text.indexOf('?') === -1 ? text :
          text.substring(0, text.indexOf('?'));
       let host  = url;

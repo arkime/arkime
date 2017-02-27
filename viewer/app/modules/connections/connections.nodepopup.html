@@ -1,0 +1,39 @@
+<div>
+
+  <div class="margined-bottom">
+    <strong>{{$ctrl.node.id}}</strong>
+    <a class="pull-right cursor-pointer no-decoration"
+      ng-click="$ctrl.closePopup()">
+      <span class="fa fa-close"></span>
+    </a>
+  </div>
+
+  <dl class="dl-horizontal">
+    <dt>Type</dt>
+    <dd>{{['','Source','Target','Both'][$ctrl.node.type]}}</dd>
+    <dt>Links</dt>
+    <dd>{{$ctrl.node.weight}}</dd>
+    <dt>Sessions</dt>
+    <dd>{{$ctrl.node.sessions | number}}</dd>
+    <dt>Bytes</dt>
+    <dd>{{$ctrl.node.by | number}}</dd>
+    <dt>Databytes</dt>
+    <dd>{{$ctrl.node.db | number}}</dd>
+    <dt>Packets</dt>
+    <dd>{{$ctrl.node.pa | number}}</dd>
+    <dt>Expressions</dt>
+    <dd>
+      <a class="cursor-pointer no-decoration"
+        ng-click="$ctrl.addExpression('&&')">AND</a>&nbsp;
+      <a class="cursor-pointer no-decoration"
+        ng-click="$ctrl.addExpression('||')">OR</a>
+    </dd>
+  </dl>
+
+  <a class="cursor-pointer no-decoration"
+    ng-click="$ctrl.hideNode()">
+    <span class="fa fa-eye-slash"></span>&nbsp;
+    Hide Node
+  </a>
+
+</div>

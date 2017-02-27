@@ -2184,7 +2184,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
 
     key_len = snprintf(key, sizeof(key), "/%sfiles/file/%s-%d/_update", config.prefix, config.nodeName, fileid);
 
-    json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %lld}}", filesize);
+    json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %" PRIu64 "}}", filesize);
 
     moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
 }

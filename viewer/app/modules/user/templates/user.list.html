@@ -1,9 +1,14 @@
-<div class="container-fluid container-users">
+<div class="container-fluid margin-for-main-and-sub-navbar">
 
-  <h2 id="users" class="margined-bottom-none">
-    <span class="fa fa-fw fa-users"></span>&nbsp;
-    Users
-    <button class="pull-right btn btn-blue btn-header"
+  <div class="sub-navbar">
+    <span class="sub-navbar-title">
+      <span class="fa-stack">
+        <span class="fa fa-users fa-stack-1x"></span>
+        <span class="fa fa-square-o fa-stack-2x"></span>
+      </span>&nbsp;
+      Users
+    </span>
+    <button class="pull-right btn btn-sm btn-blue btn-header"
       ng-click="$ctrl.goToNewUserForm()">
       <span class="fa fa-plus-circle"></span>&nbsp;
       New User
@@ -12,9 +17,7 @@
       <toast message="$ctrl.msg" type="$ctrl.msgType"
         done="$ctrl.messageDone()"></toast>
     </div>
-  </h2>
-
-  <hr>
+  </div>
 
   <div class="row">
     <!-- top pagination controls -->

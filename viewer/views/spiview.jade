@@ -85,7 +85,7 @@ block content
           }
         });
         fullstate += "&" + $.param(params);
-        history.pushState({}, this.title || '', "spiview?spi=" + fullstate.substring(1));
+        history.pushState({}, this.title || '', "spiview.old?spi=" + fullstate.substring(1));
       } else {
         doPushState = 1;
       }

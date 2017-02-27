@@ -44,5 +44,14 @@ require('./stats/stats.component');
 require('./stats/stats.nodes.component');
 require('./stats/stats.es.component');
 
+
 require('./spigraph/spigraph.component');
 require('./spigraph/spigraph.service');
+
+require('./spiview/spiview');
+require('./spiview/spiview.service');
+
+require('./connections/connections.component');
+require('./connections/connections.service');
+require('./connections/connections.nodepopup.component');
+require('./connections/connections.linkpopup.component');

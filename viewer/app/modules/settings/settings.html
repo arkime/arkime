@@ -1,24 +1,23 @@
-<div class="container-fluid container-settings">
+<div class="container-fluid container-settings margin-for-main-and-sub-navbar">
 
-  <div class="row">
-    <div class="col-md-12">
-      <h2 class="margined-bottom-none">
-        <span class="fa fa-cogs"></span>&nbsp;
-        <span ng-if="!$ctrl.userId">
-          Settings
-        </span>
-        <span ng-if="$ctrl.userId" class="text-danger">
-          Admin Updating Settings for {{::$ctrl.userId}}
-        </span>
-        <div class="pull-right small toast-container">
-          <toast message="$ctrl.msg" type="$ctrl.msgType"
-            done="$ctrl.messageDone()"></toast>
-        </div>
-      </h2>
+  <div class="sub-navbar">
+    <span class="sub-navbar-title">
+      <span class="fa-stack">
+        <span class="fa fa-cogs fa-stack-1x"></span>
+        <span class="fa fa-square-o fa-stack-2x"></span>
+      </span>&nbsp;
+      <span ng-if="!$ctrl.userId">
+        Settings
+      </span>
+      <span ng-if="$ctrl.userId" class="text-danger">
+        Admin Updating Settings for {{::$ctrl.userId}}
+      </span>
+    </span>
+    <div class="pull-right small toast-container">
+      <toast message="$ctrl.msg" type="$ctrl.msgType"
+        done="$ctrl.messageDone()"></toast>
     </div>
   </div>
-
-  <hr>
 
   <loading ng-if="$ctrl.loading"></loading>
 

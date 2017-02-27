@@ -25,18 +25,18 @@ char *moloch_yara_version() {
 #ifdef YR_MAJOR_VERSION
  #ifdef YR_MINOR_VERSION
   #ifdef YR_MICRO_VERSION
-    sprintf(buf, "%d.%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION, YR_MICRO_VERSION);
+    snprintf(buf, sizeof(buf), "%d.%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION, YR_MICRO_VERSION);
   #else /* YR_MICRO_VERSION */
-    sprintf(buf, "%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION);
+    snprintf(buf, sizeof(buf), "%d.%d", YR_MAJOR_VERSION, YR_MINOR_VERSION);
   #endif /* YR_MICRO_VERSION */
  #else /* YR_MINOR_VERSION */
-    sprintf(buf, "%d.x", YR_MAJOR_VERSION);
+    snprintf(buf, sizeof(buf), "%d.x", YR_MAJOR_VERSION);
  #endif /* YR_MINOR_VERSION */
 #else /* YR_MAJOR_VERSION */
  #ifdef STRING_IS_HEX
-    sprintf(buf, "2.x");
+    snprintf(buf, sizeof(buf), "2.x");
  #else /* STRING_IS_HEX */
-    sprintf(buf, "1.x");
+    snprintf(buf, sizeof(buf), "1.x");
  #endif /* STRING_IS_HEX */
 #endif /* YR_MAJOR_VERSION */
     return buf;

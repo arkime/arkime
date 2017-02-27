@@ -1,0 +1,37 @@
+<div>
+
+  <div class="margined-bottom">
+    <strong>Link</strong>
+    <a class="pull-right cursor-pointer no-decoration"
+       ng-click="$ctrl.closePopup()">
+      <span class="fa fa-close"></span>
+    </a>
+  </div>
+  <div>{{$ctrl.link.source.id}}</div>
+  <div class="margined-bottom">{{$ctrl.link.target.id}}</div>
+
+  <dl class="dl-horizontal">
+    <dt>Sessions</dt>
+    <dd>{{$ctrl.link.value | number}}</dd>
+    <dt>Bytes</dt>
+    <dd>{{$ctrl.link.by | number}}</dd>
+    <dt>Databytes</dt>
+    <dd>{{$ctrl.link.db | number}}</dd>
+    <dt>Packets</dt>
+    <dd>{{$ctrl.link.pa | number}}</dd>
+    <dt>Expressions</dt>
+    <dd>
+      <a class="cursor-pointer no-decoration"
+        ng-click="$ctrl.addExpression('&&')">AND</a>&nbsp;
+      <a class="cursor-pointer no-decoration"
+        ng-click="$ctrl.addExpression('||')">OR</a>
+    </dd>
+  </dl>
+
+  <a class="cursor-pointer no-decoration"
+     ng-click="$ctrl.hideLink()">
+    <span class="fa fa-eye-slash"></span>&nbsp;
+    Hide Link
+  </a>
+
+</div>

@@ -22,22 +22,13 @@
       this.FieldService   = FieldService;
 
       // offset anchor scroll position to account for navbars
-      this.$anchorScroll.yOffset = 90;
-    }
-
-    fixFields(fields) {
-      fields.forEach(function(item) {
-        if (item.regex) {item.dbField = '';}
-        else if (item.rawField) {item.dbField = item.dbField + ', ' + item.rawField;}
-        else if (item.dbField === 'ipall') {item.dbField = '';}
-      });
-      return fields;
+      this.$anchorScroll.yOffset = 60;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
       this.FieldService.get(true)
-        .then((response)  => { this.fields = this.fixFields(response); })
+        .then((response)  => { this.fields = HelpController.fixFields(response); })
         .catch((error)    => { this.error = error; });
 
       this.info = {
@@ -52,13 +43,22 @@
       };
     }
 
+    static fixFields(fields) {
+      fields.forEach(function(item) {
+        if (item.regex) {item.dbField = '';}
+        else if (item.rawField) {item.dbField = item.dbField + ', ' + item.rawField;}
+        else if (item.dbField === 'ipall') {item.dbField = '';}
+      });
+      return fields;
+    }
+
   }
 
   HelpController.$inject = ['$anchorScroll','FieldService'];
 
   /**
-   * ES Health Directive
-   * Displays elasticsearch health status
+   * Help Directive
+   * Displays the moloch help page
    */
   angular.module('moloch')
      .component('molochHelp', {

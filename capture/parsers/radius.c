@@ -34,7 +34,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
 
     unsigned char type = 0, length = 0;
     unsigned char *value;
-    char str[100];
+    char str[256];
     struct in_addr in;
     int i;
 
@@ -59,7 +59,7 @@ int radius_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
             break;
         case 31:
             if (length == 12) {
-                sprintf(str, "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
+                snprintf(str, sizeof(str), "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
                         value[0], value[1],
                         value[2], value[3],
                         value[4], value[5],

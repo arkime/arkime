@@ -121,7 +121,7 @@
     });
 
     it('should be able to click the field', function() {
-      sessionField.fieldClick('ip.src', session.a1, '==');
+      sessionField.fieldClick('ip.src', session.a1, '==', { preventDefault:()=>{}, stopPropagation:()=>{} });
 
       expect(sessionField.$scope.$emit).toHaveBeenCalled();
       expect(sessionField.$scope.$emit).toHaveBeenCalledWith('add:to:search', {

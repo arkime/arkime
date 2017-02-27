@@ -71,18 +71,28 @@
           template : '<moloch-settings></moloch-settings>'
         })
         .when('/files', {
-          title    : 'Files',
-          template : '<moloch-files></moloch-files>',
+          title         : 'Files',
+          template      : '<moloch-files></moloch-files>',
           reloadOnSearch: false
         })
         .when('/users', {
-          title    : 'Users',
-          template : '<moloch-users></moloch-users>',
+          title         : 'Users',
+          template      : '<moloch-users></moloch-users>',
           reloadOnSearch: false
         })
         .when('/stats', {
-          title    : 'Stats',
-          template : '<moloch-stats></moloch-stats>',
+          title         : 'Stats',
+          template      : '<moloch-stats></moloch-stats>',
+          reloadOnSearch: false
+        })
+        .when('/spiview', {
+          title         : 'SPI View',
+          template      : '<moloch-spiview></moloch-spiview>',
+          reloadOnSearch: false
+        })
+        .when('/connections', {
+          title    : 'Connections',
+          template : '<moloch-connections></moloch-connections>',
           reloadOnSearch: false
         })
         .when('/spigraph', {
