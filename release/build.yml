@@ -1,6 +1,10 @@
 ---
-# Requires running: ansible-galaxy install rvm_io.rvm1-ruby
-# To just rebuild: ansible-playbook --private-key=~/.vagrant.d/insecure_private_key -u vagrant -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory build.yml -t rebuild
+# Requires running: sudo ansible-galaxy install rvm_io.ruby
+# NOTE: Vagrant 1.9.0 works, 1.9.2 has issues on some platforms
+# vagrant up
+# To rebuild either: vagrant provision
+#  OR
+# ansible-playbook --private-key=~/.vagrant.d/insecure_private_key -u vagrant -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory build.yml -t rebuild
 - hosts: all
   become: true
   become_method: sudo
@@ -16,6 +20,10 @@
     - lua_version: 5.3.3
     - rvm1_rubies:
       - ruby-1.9.3
+    - rvm1_user: root
+    - rvm1_bundler_install: True
+    - rvm1_install_path: /usr/local/rvm
+    - rvm1_install_flags: '--auto-dotfiles'
     - moloch_name: moloch
     - fpm_url: "http://molo.ch"
     - fpm_description: "Moloch Full Packet System"
@@ -122,7 +130,7 @@
 
 # Install ruby
   roles:
-    - {role: rvm_io.rvm1-ruby}
+    - {role: rvm_io.ruby}
 
 # Tasks after roles
   tasks:
