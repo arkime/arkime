@@ -15,6 +15,11 @@ moloch-search {
     .time-range-control { -webkit-appearance: none; }
   }
 
+  .action-form-separator {
+    margin    : 7px 15px;
+    border-top: 1px solid lighten($color-gray, 10%);
+  }
+
   @media (max-width: 768px) {
     position    : relative;
     margin-left : -15px;

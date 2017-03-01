@@ -513,6 +513,18 @@
           </tbody>
         </table>
 
+        <div ng-if="!$ctrl.colConfigs.length" class="alert alert-info">
+          <span class="fa fa-info-circle fa-lg"></span>
+          <strong>You have no custom column configurations.</strong>
+          <br><br>
+          To create one, go to the sessions page, rearrange the columns into
+          your preferred configuration, and click the column configuration
+          button ( <span class="fa fa-columns"></span> ) at the top left of the
+          table. Name your new custom column configuration then click the save
+          button. You can now switch to this column configuration anytime you
+          want by clicking on its name in the dropdown!
+        </div>
+
       </form> <!-- /col configs settings -->
 
       <!-- password settings -->

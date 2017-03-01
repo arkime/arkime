@@ -20,7 +20,7 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
-      if (this.open) { this.showMap = true; }
+      if (this.open && this.open !== 'false') { this.showMap = true; }
 
       this.$scope.$on('open:map', () => {
         this.showMap = true;
