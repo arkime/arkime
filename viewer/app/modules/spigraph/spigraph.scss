@@ -20,10 +20,21 @@ moloch-spigraph {
   .map-btn          { top: 160px !important; }
   .spigraph-content { margin-top: 170px; }
 
+  .well {
+    -webkit-box-shadow: $px-sm $px-md $px-xlg $px-xs $color-gray;
+       -moz-box-shadow: $px-sm $px-md $px-xlg $px-xs $color-gray;
+            box-shadow: $px-sm $px-md $px-xlg $px-xs $color-gray;
+  }
+
   // center the map on the row (there's a button)
   .spi-graph-item {
+    &:nth-child(odd) {
+      background-color: lighten($color-yellow-light, 36%);
+    }
+
     #moloch-map { margin-top: -25px; }
-    .session-graph-btn-container { margin-top: -25px; }
+
+    .session-graph-btn-container { margin-top: -28px; }
   }
 
 }

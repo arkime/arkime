@@ -62,7 +62,7 @@
       this.maxElements  = _query.size   = this.$routeParams.size  || '20';
 
       this.sortBy       = 'count';
-      this.refresh      = 0;
+      this.refresh      = '0';
       this.items        = [];
 
       this.$scope.$on('change:search', (event, args) => {
@@ -101,17 +101,27 @@
         this.$scope.$broadcast('update:histo:type', newType);
       });
 
+      // watch for additions to search parameters from session detail or map
+      this.$scope.$on('add:to:search', (event, args) => {
+        // notify children (namely expression typeahead)
+        this.$scope.$broadcast('add:to:typeahead', args);
+      });
+
       this.$scope.$on('open:maps', () => {
+        this.openMaps = true;
         this.$scope.$broadcast('open:map');
       });
       this.$scope.$on('close:maps', () => {
+        this.openMaps = false;
         this.$scope.$broadcast('close:map');
       });
     }
 
-    loadData() {
+    loadData(reload) {
       this.loading  = true;
       this.error    = false;
+
+      if (reload && interval) { this.$interval.cancel(interval); }
 
       // build new query and save values in url parameters
       _query.size   = this.maxElements;
@@ -127,6 +137,12 @@
 
           this.recordsTotal     = response.recordsTotal;
           this.recordsFiltered  = response.recordsFiltered;
+
+          if (reload && this.refresh && this.refresh > 0) {
+            interval = this.$interval(() => {
+              this.loadData();
+            }, this.refresh * 1000);
+          }
         })
         .catch((error) => {
           this.loading  = false;
@@ -149,11 +165,7 @@
     changeRefreshInterval() {
       if (interval) { this.$interval.cancel(interval); }
 
-      if (this.refresh && this.refresh > 0) {
-        interval = this.$interval(() => {
-          this.loadData();
-        }, this.refresh * 1000);
-      }
+      if (this.refresh && this.refresh > 0) { this.loadData(true); }
     }
 
     db2Field(dbField) {

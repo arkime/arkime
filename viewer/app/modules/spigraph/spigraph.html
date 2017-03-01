@@ -66,17 +66,23 @@
             uib-tooltip="Refresh page every X seconds">
             Refresh every:
           </span>
-          <input class="form-control" style="width:60px"
-            ng-model-options="{debounce:400}" ng-model="$ctrl.refresh"
-            ng-change="$ctrl.changeRefreshInterval()">
-          </input>
+          <select class="form-control" convert-to-number
+            ng-model="$ctrl.refresh" ng-change="$ctrl.changeRefreshInterval()">
+            <option value="0">0</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+            <option value="60">60</option>
+          </select>
           <span class="input-group-addon">
             seconds
           </span>
         </div>
       </div> <!-- /refresh input-->
 
-      <strong class="small margined-top text-blue pull-right"
+      <strong class="small margined-top margined-left-lg text-blue"
         ng-if="!$ctrl.error && $ctrl.recordsFiltered !== undefined">
         Showing {{$ctrl.recordsFiltered | number}} entries filtered from
         {{$ctrl.recordsTotal | number}} total entries
@@ -85,24 +91,23 @@
     </div> <!-- /form-inlne -->
   </form>
 
-  <div class="spigraph-content">
+  <div class="spigraph-content no-overflow">
 
-    <div class="row margined-bottom-xxxxlg">
-      <div class="col-md-12">
-        <moloch-graph-map ng-if="::($ctrl.mapData && $ctrl.graphData)"
+    <div ng-if="::($ctrl.mapData && $ctrl.graphData)"
+      class="well well-sm margined-left margined-right margined-bottom-xxlg no-overflow">
+      <div class="row margined-bottom-xxxlg">
+        <moloch-graph-map open="{{$ctrl.openMaps}}"
           graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true">
         </moloch-graph-map>
       </div>
     </div>
 
-    <hr>
-
     <div ng-repeat="item in $ctrl.items"
-      class="margined-top-lg margined-bottom spi-graph-item">
+      class="margined-top-lg margined-bottom spi-graph-item padded-top">
       <div class="row">
         <div class="col-md-12">
           <div class="btn-group margined-left-xlg" uib-dropdown>
-            <button class="btn btn-primary btn-default field-btn" uib-dropdown-toggle>
+            <button class="btn btn-sm btn-primary btn-default field-btn" uib-dropdown-toggle>
               <strong>{{::item.name}}</strong>
               <sup class="spicount">({{::item.count | number}})</sup>&nbsp;
               <span class="caret"></span>
@@ -120,9 +125,8 @@
       </div>
       <div class="row padded-bottom-lg">
         <div class="col-md-12">
-          <moloch-graph-map ng-if="::(item.map && item.graph)"
-            graph-data="item.graph" map-data="item.map">
-          </moloch-graph-map>
+          <moloch-graph-map graph-data="item.graph" open="{{$ctrl.openMaps}}"
+            map-data="item.map"></moloch-graph-map>
         </div>
       </div>
     </div>

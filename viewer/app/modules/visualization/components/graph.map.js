@@ -10,7 +10,8 @@
 
     /**
      * Initialize global variables for this controller
-     * TODO
+     * @param $scope Angular application model object
+     *
      * @ngInject
      */
     constructor($scope) {
@@ -19,6 +20,8 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      if (this.open) { this.showMap = true; }
+
       this.$scope.$on('open:map', () => {
         this.showMap = true;
       });
@@ -54,7 +57,8 @@
       bindings    : {
         graphData : '<',
         mapData   : '<',
-        primary   : '@'
+        primary   : '@',
+        open      : '@'
       }
     });
 
