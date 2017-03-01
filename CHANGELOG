@@ -3,8 +3,10 @@
   - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture.
             New 0.18.0 wiseService can be used with older moloch-capture.
   - NOTICE: db.pl upgrade REQUIRES *ALL* moloch-capture to be down
-  - NOTICE: ES 2.4 or ES 5.1.2 required
+  - NOTICE: ES 2.4.x or ES > 5.1.2 required
     ES 5 users READ: https://github.com/aol/moloch/wiki/FAQ#how-do-i-upgrade-to-es-5x
+  - NOTICE: 0.18.0 has a new look and feel. Some features have been added, removed,
+    or temporarily are missing.  Feedback using slack or github issues welcome.
   - wise - md5 lookups now associated with contentType
   - wise - virustotal support
   - capture - contentType now sent to wise for md5 lookups
@@ -20,6 +22,7 @@
   - viewer - connections tab uses new ui (/connections.old available temporarily)
   - capture - pcapWriteMethod=simple-nodirect uses the simple writer without direct
               writes.  Required for some file systems like zfs 
+  - viewer - spigraph tab uses new ui (/spigraph.old available temporarily)
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
