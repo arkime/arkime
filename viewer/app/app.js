@@ -95,6 +95,11 @@
           template : '<moloch-connections></moloch-connections>',
           reloadOnSearch: false
         })
+        .when('/spigraph', {
+          title    : 'SPIGraph',
+          template : '<moloch-spigraph></moloch-spigraph>',
+          reloadOnSearch: false
+        })
         // default route is the sessions page
         .otherwise({ redirectTo: '/sessions' });
 

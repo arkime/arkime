@@ -9,18 +9,18 @@ sticky-sessions {
   }
 
   .sticky-session-btn {
-    width           : 70px;
+    width           : 69px;
     display         : block;
     position        : fixed;
-    top             : 155px;
+    top             : 80px;
     right           : 0;
-    z-index         : 997;
+    z-index         : 9999;
     margin-right    : -30px;
     overflow        : hidden;
     padding         : 2px 10px 4px 12px;
     border-radius   : 4px 0 0 4px;
     cursor          : pointer;
-    background-color: $color-blue-light;
+    background-color: $color-yellow;
     color           : $color-white;
   }
 

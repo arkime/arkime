@@ -4,8 +4,6 @@
 require('./session/tests/session.service.test');
 require('./session/tests/session.list.component.test');
 require('./session/tests/session.detail.component.test');
-require('./session/tests/session.graph.component.test');
-require('./session/tests/session.map.component.test');
 require('./session/tests/session.info.component.test');
 require('./session/tests/session.field.component.test');
 require('./session/tests/session.actions.component.test');
@@ -32,3 +30,6 @@ require('./user/tests/has.permission.test');
 require('./help/help.test');
 
 require('./settings/settings.test');
+
+require('./visualization/tests/graph.test');
+require('./visualization/tests/map.test');

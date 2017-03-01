@@ -58,12 +58,12 @@
       expect(jvectormap.length).toBeGreaterThan(0);
     });
 
-    it('should be able to toggle map', function() {
-      isolateScope.toggleMap();
-      expect(isolateScope.state.open).toBeTruthy();
+    it('should be able to expand map', function() {
+      isolateScope.expandMap();
+      expect(isolateScope.status.expanded).toBeTruthy();
 
-      isolateScope.toggleMap();
-      expect(isolateScope.state.open).toBeFalsy();
+      isolateScope.expandMap();
+      expect(isolateScope.status.expanded).toBeFalsy();
     });
 
     it('should be able to toggle src/dst countries', function() {

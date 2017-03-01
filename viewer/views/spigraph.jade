@@ -103,7 +103,7 @@ block content
       var url = "spigraph.json?" + state;
 
       if (doPushState && state !== window.location.search.substring(1) && 'pushState' in history) {
-        history.pushState({}, this.title || '', "spigraph?" + state);
+        history.pushState({}, this.title || '', "spigraph.old?" + state);
       } else {
         doPushState = 1;
       }

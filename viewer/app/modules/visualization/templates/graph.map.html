@@ -1,0 +1,20 @@
+<div>
+  <div class="map-btn" ng-click="$ctrl.toggleMap()"
+    ng-if="!$ctrl.showMap && $ctrl.primary" uib-tooltip="View map"
+    tooltip-placement="left" tooltip-append-to-body="true">
+    <span class="fa fa-fw fa-globe"></span>
+  </div>
+  <div ng-class="{'col-md-12':!$ctrl.showMap,'col-md-8':$ctrl.showMap}">
+    <div ng-if="::($ctrl.graphData)">
+      <session-graph graph-data="$ctrl.graphData"></session-graph>
+    </div>
+  </div>
+  <div ng-if="$ctrl.showMap" class="col-md-4">
+    <a class="btn btn-xs btn-default btn-close-map btn-fw"
+      ng-click="$ctrl.toggleMap()"
+      uib-tooltip="Close map" tooltip-placement="left">
+      <span class="fa fa-close"></span>
+    </a>
+    <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
+  </div>
+</div>

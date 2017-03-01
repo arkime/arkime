@@ -8,8 +8,6 @@ require('./user/components/user.list');
 
 require('./session/services/session.service');
 require('./session/components/session.list.component');
-require('./session/components/session.map.component');
-require('./session/components/session.graph.component');
 require('./session/components/session.detail.component');
 require('./session/components/session.tag.component');
 require('./session/components/session.actions.component');
@@ -44,6 +42,10 @@ require('./stats/stats.component');
 require('./stats/stats.nodes.component');
 require('./stats/stats.es.component');
 
+
+require('./spigraph/spigraph.component');
+require('./spigraph/spigraph.service');
+
 require('./spiview/spiview');
 require('./spiview/spiview.service');
 
@@ -51,3 +53,7 @@ require('./connections/connections.component');
 require('./connections/connections.service');
 require('./connections/connections.nodepopup.component');
 require('./connections/connections.linkpopup.component');
+
+require('./visualization/components/graph.map');
+require('./visualization/components/graph');
+require('./visualization/components/map');
