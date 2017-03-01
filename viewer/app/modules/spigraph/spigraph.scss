@@ -3,8 +3,9 @@ moloch-spigraph {
   select { -webkit-appearance: none; }
 
   form.spigraph-form {
-    position: relative;
-    top     : 78px;
+    z-index : 999;
+    position: fixed;
+    top     : 115px;
     left    : 0;
     right   : 0;
     padding : $px-xlg $px-lg $px-md $px-lg;
@@ -12,6 +13,17 @@ moloch-spigraph {
     -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
        -moz-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
             box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
+  }
+
+  // fixes to compensate for second fixed form
+  moloch-search     { margin-top: -135px; }
+  .map-btn          { top: 160px !important; }
+  .spigraph-content { margin-top: 170px; }
+
+  // center the map on the row (there's a button)
+  .spi-graph-item {
+    #moloch-map { margin-top: -25px; }
+    .session-graph-btn-container { margin-top: -25px; }
   }
 
 }

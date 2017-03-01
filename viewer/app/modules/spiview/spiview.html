@@ -3,14 +3,11 @@
   <moloch-search num-matching-sessions="$ctrl.filtered"
     timezone="$ctrl.settings.timezone"></moloch-search>
 
-  <!-- session visualizations -->
+  <!-- graph/map visualizations -->
   <div class="row margin-for-search-navbar">
-    <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
-    <div class="col-md-12">
-      <div ng-if="::($ctrl.graphData)">
-        <session-graph graph-data="$ctrl.graphData"></session-graph>
-      </div>
-    </div>
+    <moloch-graph-map ng-if="::($ctrl.mapData && $ctrl.graphData)"
+      graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true">
+    </moloch-graph-map>
   </div>
 
   <label class="label label-primary" ng-if="!$ctrl.error && $ctrl.filtered">

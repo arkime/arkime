@@ -100,6 +100,13 @@
         // update all the other graphs
         this.$scope.$broadcast('update:histo:type', newType);
       });
+
+      this.$scope.$on('open:maps', () => {
+        this.$scope.$broadcast('open:map');
+      });
+      this.$scope.$on('close:maps', () => {
+        this.$scope.$broadcast('close:map');
+      });
     }
 
     loadData() {

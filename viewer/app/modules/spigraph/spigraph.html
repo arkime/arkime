@@ -9,7 +9,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom-left"
             uib-tooltip="SPI Graph Field">
             SPI Graph:
           </span>
@@ -26,7 +26,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Max Elements Shown">
             Max Elements:
           </span>
@@ -46,7 +46,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Sort results by">
             Sort by:
           </span>
@@ -62,7 +62,7 @@
       <div class="form-group margined-bottom">
         <div class="input-group input-group-sm">
           <span class="input-group-addon cursor-help"
-            tooltip-placement="top"
+            tooltip-placement="bottom"
             uib-tooltip="Refresh page every X seconds">
             Refresh every:
           </span>
@@ -85,39 +85,46 @@
     </div> <!-- /form-inlne -->
   </form>
 
-  <!-- session visualizations -->
-  <div class="container-fluid">
+  <div class="spigraph-content">
 
-    <div class="row margin-for-search-navbar">
-      <moloch-map ng-if="::($ctrl.mapData)" map-data="$ctrl.mapData"></moloch-map>
+    <div class="row margined-bottom-xxxxlg">
       <div class="col-md-12">
-        <div ng-if="::($ctrl.graphData)">
-          <session-graph graph-data="$ctrl.graphData"
-            type="{{::$ctrl.sort}}"></session-graph>
-        </div>
+        <moloch-graph-map ng-if="::($ctrl.mapData && $ctrl.graphData)"
+          graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true">
+        </moloch-graph-map>
       </div>
     </div>
 
     <hr>
 
-    <div ng-repeat="item in $ctrl.items" class="margined-top-lg margined-bottom">
-      <div class="btn-group" uib-dropdown>
-        <button class="btn btn-primary btn-default field-btn" uib-dropdown-toggle>
-          <strong>{{::item.name}}</strong>
-          <sup class="spicount">({{::item.count | number}})</sup>&nbsp;
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-          <li role="menuitem">
-            <a class="cursor-pointer"
-              ng-click="$ctrl.addExpression(item)">
-              and {{::item.name}}
-            </a>
-          </li>
-        </ul>
+    <div ng-repeat="item in $ctrl.items"
+      class="margined-top-lg margined-bottom spi-graph-item">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="btn-group margined-left-xlg" uib-dropdown>
+            <button class="btn btn-primary btn-default field-btn" uib-dropdown-toggle>
+              <strong>{{::item.name}}</strong>
+              <sup class="spicount">({{::item.count | number}})</sup>&nbsp;
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+              <li role="menuitem">
+                <a class="cursor-pointer"
+                  ng-click="$ctrl.addExpression(item)">
+                  and {{::item.name}}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <session-graph graph-data="item.graph"
-        type="{{::$ctrl.sort}}"></session-graph>
+      <div class="row padded-bottom-lg">
+        <div class="col-md-12">
+          <moloch-graph-map ng-if="::(item.map && item.graph)"
+            graph-data="item.graph" map-data="item.map">
+          </moloch-graph-map>
+        </div>
+      </div>
     </div>
 
     <div ng-if="$ctrl.error || $ctrl.recordsFiltered === 0">

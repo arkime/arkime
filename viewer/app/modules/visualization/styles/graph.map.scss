@@ -1,0 +1,65 @@
+moloch-graph-map {
+
+  // fixed width buttons are the same width regardless of content
+  .btn-fw { width: 26px; }
+
+  .map-btn {
+    width           : 40px;
+    display         : block;
+    position        : fixed;
+    top             : 115px;
+    right           : 0;
+    z-index         : 997;
+    margin-top      : 6px;
+    overflow        : hidden;
+    padding         : 2px 10px 4px 12px;
+    border-radius   : 4px 0 0 4px;
+    cursor          : pointer;
+    background-color: $color-water-dark;
+    color           : $color-white;
+  }
+
+  .btn-close-map {
+    position: absolute;
+    top     : 8px;
+    right   : 23px;
+    z-index : 997;
+  }
+
+  .btn-expand-map {
+    position: absolute;
+    top     : 32px;
+    right   : 23px;
+    z-index : 997;
+  }
+
+  .src-dst-btns {
+    position: absolute;
+    top     : 60px;
+    right   : 20px;
+    z-index : 997;
+  }
+
+
+  &.expanded {
+    .btn-expand-map {
+      position    : relative;
+      margin-right: -15px;
+      float       : right;
+      z-index     : 999;
+    }
+
+    .src-dst-btns {
+      top     : 60px;
+      z-index : 999;
+    }
+
+    .btn-close-map {
+      position: absolute;
+      top     : 8px;
+      right   : 23px;
+      z-index : 999;
+    }
+  }
+
+}

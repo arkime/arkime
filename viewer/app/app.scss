@@ -54,10 +54,8 @@ $color-purple-dark  : #66057A;
 @import './modules/search/styles/expression.typeahead';
 @import './modules/session/styles/session.list';
 @import './modules/session/styles/session.sticky';
-@import './modules/session/styles/session.graph';
 @import './modules/session/styles/session.actions';
 @import './modules/session/styles/session.detail';
-@import './modules/session/styles/session.map';
 @import './modules/session/styles/session.field';
 @import './modules/settings/settings';
 @import './modules/files/files';
@@ -66,6 +64,9 @@ $color-purple-dark  : #66057A;
 @import './modules/spigraph/spigraph';
 @import './modules/spiview/spiview';
 @import './modules/connections/connections';
+@import './modules/visualization/styles/graph.map';
+@import './modules/visualization/styles/graph';
+@import './modules/visualization/styles/map';
 
 
 /* appwide styles ============================ */

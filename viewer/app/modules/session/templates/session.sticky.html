@@ -3,9 +3,8 @@
   <div class="sticky-session-btn"
     ng-click="toggleStickySessions()"
     ng-if="sessions && sessions.length > 0"
-    tooltip-placement="left" uib-tooltip="View open/expanded sessions"
-    tooltip-popup-delay="500">
-    <span class="fa fa-fw fa-angle-double-left"></span>&nbsp;
+    tooltip-placement="left" uib-tooltip="Toggle view of expanded sessions">
+    <span ng-if="!state.open" class="fa fa-fw fa-angle-double-left"></span><span ng-if="state.open" class="fa fa-fw fa-angle-double-right"></span>&nbsp;
     <small>{{sessions.length}}</small>
   </div>
 
