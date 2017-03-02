@@ -99,9 +99,7 @@
           title    : 'SPIGraph',
           template : '<moloch-spigraph></moloch-spigraph>',
           reloadOnSearch: false
-        })
-        // default route is the sessions page
-        .otherwise({ redirectTo: '/sessions' });
+        });
 
       $locationProvider.html5Mode(true); // activate HTML5 Mode
 

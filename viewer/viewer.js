@@ -6004,14 +6004,9 @@ app.use(function(req,res) {
   res.status(404);
   // respond with html page
   if (req.accepts('html')) {
-    return res.render('404.jade', {
-      user: req.user,
-      title: makeTitle(req, 'Error'),
-      titleLink: 'errorLink'
-    });
+    return res.render('404.pug');
   }
   res.type('txt').send('Page not found');
-
 });
 
 
