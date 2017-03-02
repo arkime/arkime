@@ -14,7 +14,7 @@
     .directive('molochMap', ['FieldService', '$filter', '$document', '$timeout', '$window',
     function(FieldService, $filter, $document, $timeout, $window) {
       return {
-        scope   : { 'mapData': '=' },
+        scope   : { 'mapData': '=', 'toggleMap': '&' },
         template: require('html!../templates/map.html'),
         link    : function(scope, element, attrs) {
           /* setup --------------------------------------------------------- */

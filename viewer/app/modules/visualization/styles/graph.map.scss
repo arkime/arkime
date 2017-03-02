@@ -1,5 +1,17 @@
 moloch-graph-map {
 
+  .inline-graph {
+    position: relative;
+    display : inline-block;
+    width   : calc(100% - 420px)
+  }
+
+  .inline-map {
+    width   : 400px;
+    float   : right;
+    position: relative;
+  }
+
   // fixed width buttons are the same width regardless of content
   .btn-fw { width: 26px; }
 
@@ -21,45 +33,30 @@ moloch-graph-map {
 
   .btn-close-map {
     position: absolute;
-    top     : 8px;
-    right   : 23px;
+    top     : 2px;
+    right   : 2px;
     z-index : 997;
   }
 
   .btn-expand-map {
     position: absolute;
-    top     : 32px;
-    right   : 23px;
+    top     : 26px;
+    right   : 2px;
     z-index : 997;
   }
 
   .src-dst-btns {
     position: absolute;
-    top     : 60px;
-    right   : 20px;
+    top     : 54px;
+    right   : 2px;
     z-index : 997;
   }
 
-
+  // show the buttons on top of the map
   &.expanded {
-    .btn-expand-map {
-      position    : relative;
-      margin-right: -15px;
-      float       : right;
-      z-index     : 999;
-    }
-
-    .src-dst-btns {
-      top     : 60px;
-      z-index : 999;
-    }
-
-    .btn-close-map {
-      position: absolute;
-      top     : 8px;
-      right   : 23px;
-      z-index : 999;
-    }
+    .btn-expand-map { z-index : 999; }
+    .src-dst-btns   { z-index : 999; }
+    .btn-close-map  { z-index : 999; }
   }
 
 }

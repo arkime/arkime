@@ -2,6 +2,8 @@
 
   'use strict';
 
+  let basePath;
+
   /**
    * @class GraphMapController
    * @classdesc Interacts with the graph and map
@@ -10,16 +12,25 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $scope Angular application model object
+     * @param $scope    Angular application model object
+     * @param $location Exposes browser address bar URL (window.location)
      *
      * @ngInject
      */
-    constructor($scope) {
-      this.$scope = $scope;
+    constructor($scope, $location) {
+      this.$scope     = $scope;
+      this.$location  = $location;
     }
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      basePath = this.$location.path().split('/')[1];
+
+      if (localStorage && localStorage[`${basePath}-open-map`] &&
+          localStorage[`${basePath}-open-map`] !== 'false') {
+        this.showMap = true;
+      }
+
       if (this.open && this.open !== 'false') { this.showMap = true; }
 
       this.$scope.$on('open:map', () => {
@@ -37,14 +48,16 @@
 
       if (this.primary && this.showMap) {
         this.$scope.$emit('open:maps');
+        if (localStorage) { localStorage[`${basePath}-open-map`] = true; }
       } else if (this.primary && !this.showMap) {
         this.$scope.$emit('close:maps');
+        if (localStorage) { localStorage[`${basePath}-open-map`] = false; }
       }
     }
 
   }
 
-  GraphMapController.$inject = ['$scope'];
+  GraphMapController.$inject = ['$scope','$location'];
 
   /**
    * Graph Map Component

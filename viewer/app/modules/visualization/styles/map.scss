@@ -16,9 +16,9 @@ moloch-map {
     width         : 100%;
   }
 
-  .jvectormap-zoomin, .jvectormap-zoomout, .jvectormap-src, .jvectormap-dst {
+  .jvectormap-zoomin, .jvectormap-zoomout {
     position        : absolute;
-    left            : 10px;
+    left            : 2px;
     width           : 18px;
     height          : 20px;
     cursor          : pointer;
@@ -28,6 +28,7 @@ moloch-map {
     color           : #333;
     border-color    : #ccc;
     background-color: #fff;
+    font-weight     : bolder;
 
     &:hover {
       color           : #333;
@@ -36,9 +37,9 @@ moloch-map {
     }
   }
 
-  .jvectormap-zoomin  { top: 10px; }
+  .jvectormap-zoomin  { top: 2px; }
 
-  .jvectormap-zoomout { top: 32px; }
+  .jvectormap-zoomout { top: 24px; }
 
 }
 
