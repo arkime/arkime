@@ -3,9 +3,9 @@
   ng-mouseleave="$ctrl.tooltipVisible = false">
 
   <span class="fa fa-info-circle fa-lg margined-left" ng-if="!$ctrl.error"
-    ng-class="{'text-green':$ctrl.esHealth.status === 'green',
-      'text-yellow':$ctrl.esHealth.status === 'yellow',
-      'text-danger':$ctrl.esHealth.status === 'red'}"></span>
+    ng-class="{'health-green':$ctrl.esHealth.status === 'green',
+      'health-yellow':$ctrl.esHealth.status === 'yellow',
+      'health-red':$ctrl.esHealth.status === 'red'}"></span>
 
   <span class="fa fa-exclamation-triangle fa-lg"
     ng-if="$ctrl.error"></span>

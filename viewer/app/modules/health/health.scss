@@ -1,10 +1,12 @@
 es-health {
-  .es-health {
-    display: inline-block;
-  }
-
   .es-health-tooltip {
     top   : 44px;
     right : 14px;
   }
+
+  .es-health      { display: inline-block; }
+
+  .health-red     { color: #ff0000; }
+  .health-yellow  { color: #e6ce00; }
+  .health-green   { color: #00af00; }
 }
