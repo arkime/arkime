@@ -256,8 +256,9 @@
 
 
   angular.module('moloch')
-    .directive('sessionDetail', ['$timeout', '$filter', '$compile', '$routeParams',
-    function($timeout, $filter, $compile, $routeParams) {
+    .directive('sessionDetail',
+    ['$timeout','$filter','$compile','$routeParams','$location','$route',
+    function($timeout, $filter, $compile, $routeParams, $location, $route) {
       return {
         template    : require('html!../templates/session.detail.html'),
         controller  : SessionDetailController,
@@ -323,6 +324,15 @@
             element.find('.form-container').hide();
           };
 
+          scope.openPermalink = function() {
+            $location.path('sessions')
+              .search('expression', `id=${scope.session.id}`)
+              .search('startTime', scope.session.fp)
+              .search('stopTime', scope.session.lp)
+              .search('openAll', 1);
+
+            $route.reload();
+          };
 
           /**
            * Renders the session detail html
