@@ -68,6 +68,10 @@
 
       this.getCustomColumnConfigurations();
 
+      if (this.$routeParams.length) {
+        _query.length = this.query.length = this.$routeParams.length;
+      }
+
       /* Listen! */
       // watch for pagination changes (from pagination.component)
       this.$scope.$on('change:pagination', (event, args) => {
