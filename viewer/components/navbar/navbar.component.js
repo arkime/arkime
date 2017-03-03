@@ -35,7 +35,8 @@
         files       : { title: 'Files',       link: 'files' },
         stats       : { title: 'Stats',       link: 'stats' },
         settings    : { title: 'Settings',    link: 'settings' },
-        users       : { title: 'Users',       link: 'users', permission: 'createEnabled' }
+        users       : { title: 'Users',       link: 'users', permission: 'createEnabled' },
+        upload      : { title: 'Upload',      link: 'upload', permission: 'canUpload' }
       };
     }
 

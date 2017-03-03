@@ -976,6 +976,8 @@ app.get('/user/current', function(req, res) {
       }
     }
 
+    clone['canUpload'] = app.locals.allowUploads;
+
     // send default settings if user doesn't have settings
     if (Object.keys(clone.settings).length === 0) {
       clone.settings = settingDefaults;
