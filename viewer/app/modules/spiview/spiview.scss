@@ -14,34 +14,37 @@ moloch-spiview {
     strong.category-title { font-size: 2.3rem; }
   }
 
+
   .panel-body {
+    // remove focus outlines in the panel
+    *:focus { outline: none !important; }
+
+    .btn-drawer-toggle {
+      background-color: lighten($color-gray-light, 3%);
+      margin-right    : -15px;
+      margin-left     : -15px;
+    }
+
     .btn-drawer {
-      border-bottom: 1px solid $color-gray-light;
       margin-top: -10px;
+
+      .input-xs {
+        height        : 22px;
+        padding       : 2px 6px;
+        font-size     : 12px;
+        line-height   : 1.5;
+        border-radius : 3px;
+        vertical-align: top;
+        width         : 300px;
+      }
 
       .btn-container {
         margin-right: -15px;
         max-height  : 30px;
         overflow    : hidden;
-
-        -webkit-transition: max-height 400ms ease-in;
-           -moz-transition: max-height 400ms ease-in;
-                transition: max-height 400ms ease-in;
-
-        background:
-          linear-gradient($color-white 50%, rgba($color-white,0)),
-          linear-gradient(rgba($color-white,0), $color-white 50%) 0 100%,
-          radial-gradient(farthest-side at 50% 0, rgba($color-gray-dark, .3), rgba($color-black,0)),
-          radial-gradient(farthest-side at 50% 100%, rgba($color-gray-dark, .3), rgba($color-black,0)) 0 100%;
-
-        background-repeat : no-repeat;
-        background-color  : $color-white;
-        background-size   : 100% 40px, 100% 40px, 100% 14px, 100% 14px;
-
-        background-attachment: local, local, scroll, scroll;
       }
 
-      &:hover {
+      &.expanded {
         .btn-container {
           max-height: 999px;
           overflow  : visible;

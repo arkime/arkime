@@ -10,7 +10,7 @@
     </moloch-graph-map>
   </div>
 
-  <label class="label label-primary" ng-if="!$ctrl.error && $ctrl.filtered">
+  <label class="label label-primary" ng-if="!$ctrl.error && $ctrl.filtered !== undefined">
     Showing {{$ctrl.filtered | number}} entries filtered from
     {{$ctrl.total | number}} total entries
   </label>
@@ -26,16 +26,6 @@
       <uib-accordion-heading>
         <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
           <strong class="category-title">{{::category}}</strong>
-          <span ng-if="$ctrl.categoryObjects[category].protocols">
-            -
-            <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key"
-              class="protocol-value">
-              <session-field value="{{::key}}" expr="protocols"
-                 parse="false" pull-left="true">
-              </session-field>
-              <sup>({{value | number}})</sup>
-            </span>
-          </span>
           <span class="pull-right margined-top-lg fa"
            ng-class="{'fa-minus': $ctrl.categoryObjects[category].isopen, 'fa-plus': !$ctrl.categoryObjects[category].isopen}"></span>
           <span class="fa fa-spin fa-spinner fa-lg pull-right margined-top-lg margined-right-lg"
@@ -54,44 +44,66 @@
               Unload All
             </button>
           </span>
+          <span ng-if="$ctrl.categoryObjects[category].protocols"
+            class="pull-right margined-right-xxxlg">
+            <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key"
+              class="protocol-value">
+              <session-field value="{{::key}}" expr="protocols"
+                parse="false" pull-left="true"></session-field>
+              <sup>({{value | number}})</sup>
+            </span>
+          </span>
         </div>
       </uib-accordion-heading>
       <div ng-if="$ctrl.categoryObjects[category].isopen">
-        <div class="btn-drawer">
+        <div class="btn-drawer" ng-class="{'expanded':$ctrl.categoryObjects[category].openBtns}">
           <div class="btn-container">
-            <div class="btn-group margined-right margined-bottom-lg"
-              uib-dropdown uib-tooltip="{{::field.help}}"
-              ng-repeat="field in ::$ctrl.categoryObjects[category].fields | orderBy: 'friendlyName' track by $index">
-              <button class="btn btn-xs btn-default field-btn"
-                ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
-                ng-click="$ctrl.toggleSpiData(field, true)">
-                {{::field.friendlyName}}
-              </button>
-              <button class="btn btn-xs btn-default" uib-dropdown-toggle>
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.openSpiGraph(field.dbField)">
-                    Open {{::field.friendlyName}} SPI Graph
-                  </a>
-                </li>
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.exportUnique(field.dbField, 0)">
-                    Export Unique {{::field.friendlyName}}
-                  </a>
-                </li>
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.exportUnique(field.dbField, 1)">
-                    Export Unique {{::field.friendlyName}} with counts
-                  </a>
-                </li>
-              </ul>
-            </div>
+            <form class="form-inline">
+              <input type="text" placeholder="Search for fields in this category"
+                class="form-control input-xs" ng-model="$ctrl.fieldSearch"
+                ng-model-options="{debounce:300}">
+              <span class="small" ng-hide="$ctrl.filteredFields.length">
+                <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
+                No results match your query
+              </span>
+              <div class="btn-group margined-right margined-bottom-lg"
+                uib-dropdown uib-tooltip="{{::field.help}}" dropdown-append-to-body="true"
+                ng-repeat="field in $ctrl.filteredFields = ($ctrl.categoryObjects[category].fields | filter:$ctrl.fieldSearch) | orderBy: ['-active','friendlyName'] track by $index">
+                <button class="btn btn-xs btn-default field-btn"
+                  ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
+                  ng-click="$ctrl.toggleSpiData(field, true)">
+                  {{field.friendlyName}}
+                </button>
+                <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.openSpiGraph(field.dbField)">
+                      Open {{field.friendlyName}} SPI Graph
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.exportUnique(field.dbField, 0)">
+                      Export Unique {{field.friendlyName}}
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.exportUnique(field.dbField, 1)">
+                      Export Unique {{field.friendlyName}} with counts
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </form>
           </div>
+        </div>
+        <div class="text-center btn-drawer-toggle cursor-pointer"
+          ng-click="$ctrl.categoryObjects[category].openBtns = !$ctrl.categoryObjects[category].openBtns">
+          <span class="fa fa-lg" ng-class="{'fa-angle-double-down':!$ctrl.categoryObjects[category].openBtns,'fa-angle-double-up':$ctrl.categoryObjects[category].openBtns}"></span>
         </div>
         <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
           <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key"

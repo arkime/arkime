@@ -116,6 +116,8 @@
           for (let i = 0, len = this.fields.length; i < len; ++i) {
             let field = this.fields[i], newField;
 
+            field.active = false;
+
             if (field.noFacet || field.regex) { continue; }
             else if (field.dbField.match(/\.snow$/)) {
               newField = {
@@ -143,6 +145,7 @@
             }
 
             if (newField) {
+              newField.active = false;
               this.categoryObjects[field.group].fields.push(newField);
               this.fields.push(newField);
             }
@@ -281,6 +284,7 @@
 
         let spiData = category.spi[field.dbField];
 
+        field.active    = true;
         spiData.active  = true;
         spiData.loading = true;
         spiData.error   = false;
@@ -426,6 +430,8 @@
      *                            e.g. 'lp:200,fp:100'
      */
     toggleSpiData(field, issueQuery) {
+      field.active = !field.active;
+
       let spiData;
       if (this.categoryObjects[field.group].spi) {
         spiData = this.categoryObjects[field.group].spi[field.dbField];
