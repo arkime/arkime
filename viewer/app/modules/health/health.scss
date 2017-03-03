@@ -4,9 +4,16 @@ es-health {
     right : 14px;
   }
 
-  .es-health      { display: inline-block; }
+  .es-health      {
+    display: inline-block;
+
+    .fa {
+      font-size   : 1.8em;
+      line-height : .8em;
+    }
+  }
 
   .health-red     { color: #ff0000; }
-  .health-yellow  { color: #e6ce00; }
-  .health-green   { color: #00af00; }
+  .health-yellow  { color: #ffff00; }
+  .health-green   { color: #00aa00; }
 }
