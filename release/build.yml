@@ -1,5 +1,6 @@
 ---
-# Requires running: sudo ansible-galaxy install rvm_io.ruby
+# Requires running: ansible-galaxy install -p `pwd`/roles rvm_io.ruby
+# and set ANSIBLE_ROLES_PATH=`pwd`/roles
 # NOTE: Vagrant 1.9.0 works, 1.9.2 has issues on some platforms
 # vagrant up
 # To rebuild either: vagrant provision
@@ -85,6 +86,10 @@
             - libselinux-python
             - rpm-build
             - pfring
+            - ruby
+            - ruby-devel
+            - rubygems
+            - readline-devel
 
       # Block end
       when: ansible_distribution=='CentOS'
@@ -120,6 +125,8 @@
             - libffi-dev
             - libssl-dev
             - pfring
+            - ruby
+            - ruby-dev
 
       # Block end
       when: ansible_distribution == 'Ubuntu'
@@ -130,13 +137,19 @@
 
 # Install ruby
   roles:
-    - {role: rvm_io.ruby}
+    - {role: rvm_io.ruby,
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
+      }
 
 # Tasks after roles
   tasks:
-    - name: install fpm
-      gem: name=fpm user_install=no state=latest executable=/usr/local/bin/gem
+    - name: install fpm from /usr/bin
+      gem: name=fpm user_install=no state=latest executable='/usr/bin/gem'
+      when: not ( ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" )
 
+    - name: install fpm from RVM's area
+      gem: name=fpm user_install=no state=latest executable='/usr/local/rvm/rubies/ruby-1.9.3-p551/lib/ruby/gems/1.9.1/wrappers/gem'
+      when:     ( ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" )
 
 # Prepare prereqs
     - name: Download Packages
@@ -353,7 +366,7 @@
         shell: bash -lc "{{item}}"
         become: false
         with_items:
-          - fpm -s dir -t rpm -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d perl-libwww-perl -d perl-JSON -d ethtool /data/{{moloch_name}}
+          - /usr/bin/env fpm -s dir -t rpm -n {{moloch_name}} -v {{moloch_version}} --iteration {{iteration}} --template-scripts --after-install "{{moloch_name}}/release/afterinstall.sh" --url \"{{fpm_url}}\" --description \"{{fpm_description}}\" -d perl-libwww-perl -d perl-JSON -d ethtool /data/{{moloch_name}}
 
       - name: copy centos back
         fetch: src={{moloch_name}}-{{moloch_version}}-{{iteration}}.x86_64.rpm dest=./builds
