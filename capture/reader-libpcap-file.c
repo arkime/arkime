@@ -392,17 +392,17 @@ gboolean reader_libpcapfile_read()
     }
 
     // pause reading if too many waiting ES operations
-    if (moloch_http_queue_length(esServer) > 100) {
+    if (moloch_http_queue_length(esServer) > 50) {
         return TRUE;
     }
 
     // pause reading if too many packets are waiting to be processed
-    if (moloch_packet_outstanding() > (int32_t)(config.maxPacketsInQueue/2)) {
+    if (moloch_packet_outstanding() > (int32_t)(config.maxPacketsInQueue/3)) {
         return TRUE;
     }
 
     moloch_packet_batch_init(&batch);
-    int r = pcap_dispatch(pcap, 10000, reader_libpcapfile_pcap_cb, NULL);
+    int r = pcap_dispatch(pcap, 5000, reader_libpcapfile_pcap_cb, NULL);
     moloch_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
