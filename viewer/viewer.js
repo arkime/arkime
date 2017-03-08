@@ -681,6 +681,7 @@ function checkToken(req, res, next) {
   return next();
 }
 
+
 function checkCookieToken(req, res, next) {
   function error(text) {
     res.status(500);
@@ -819,16 +820,6 @@ app.get("/connections.old", checkWebEnabled, function(req, res) {
   });
 });
 
-app.get("/upload", checkWebEnabled, function(req, res) {
-  res.render('upload.jade', {
-    user: req.user,
-    title: makeTitle(req, 'Upload'),
-    titleLink: 'uploadLink',
-    helpLink: 'upload',
-    isIndex: false
-  });
-});
-
 app.get('/about', checkWebEnabled, function(req, res) {
   res.redirect("help");
 });
@@ -893,7 +884,7 @@ app.get('/style.css', function(req, res) {
 });
 
 // angular app pages
-app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview', '/spigraph', '/connections'], checkWebEnabled, function(req, res) {
+app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview', '/spigraph', '/connections', '/upload'], checkWebEnabled, function(req, res) {
   // send cookie for basic, non admin functions
   res.cookie(
      'MOLOCH-COOKIE',
@@ -4494,51 +4485,6 @@ app.get(/\/sessions.pcap.*/, function(req, res) {
 });
 
 
-app.post('/deleteUser/:userId', checkToken, function(req, res) {
-  if (!req.user.createEnabled) {
-    return res.send(JSON.stringify({success: false, text: "Need admin privileges"}));
-  }
-
-  if (req.params.userId === req.user.userId) {
-    return res.send(JSON.stringify({success: false, text: "Can not delete yourself"}));
-  }
-
-  Db.deleteUser(req.params.userId, function(err, data) {
-    setTimeout(function (){res.send(JSON.stringify({success: true, text: "User deleted"}));}, 200);
-  });
-});
-
-app.post('/changePassword', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return error("New password needs to be at least 3 characters");
-  }
-
-  if (req.token.cp && (req.user.passStore !== Config.pass2store(req.token.suserId, req.body.currentPassword) ||
-                   req.token.suserId !== req.user.userId)) {
-    return error("Current password mismatch");
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("changePassword failed", err, user);
-      return error("Unknown user");
-    }
-    user = user._source;
-    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("changePassword error", err, info);
-        return error("Update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
-    });
-  });
-});
-
 app.post('/changeSettings', checkToken, function(req, res) {
   function error(text) {
     return res.send(JSON.stringify({success: false, text: text}));
@@ -4560,80 +4506,6 @@ app.post('/changeSettings', checkToken, function(req, res) {
         return error("Change settings update failed");
       }
       return res.send(JSON.stringify({success: true, text: "Changed password successfully"}));
-    });
-  });
-});
-
-app.post('/updateView', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.viewName || !req.body.viewExpression) {
-    return error("Missing viewName or viewExpression");
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("updateView failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    var container = user.views;
-    if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
-      if (!user.views._groups) {
-        user.views._groups = {};
-      }
-      if (!user.views._groups[req.body.groupName]) {
-        user.views._groups[req.body.groupName] = {};
-      }
-      container = user.views._groups[req.body.groupName];
-    }
-    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
-    if (container[req.body.viewName]) {
-      container[req.body.viewName].expression = req.body.viewExpression;
-    } else {
-      container[req.body.viewName] = {expression: req.body.viewExpression};
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("updateView error", err, info);
-        return error("Create View update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Updated view successfully"}));
-    });
-  });
-});
-
-app.post('/deleteView', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.view) {
-    return error("Missing view");
-  }
-
-  Db.getUser(req.token.suserId, function(err, user) {
-    if (err || !user.found) {
-      console.log("deleteView failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    delete user.views[req.body.view];
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("deleteView error", err, info);
-        return error("Create View update failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
     });
   });
 });
@@ -4936,90 +4808,6 @@ app.post('/user/update', checkCookieToken, function(req, res) {
       console.log(user, err, info);
       return res.send(JSON.stringify({success: true, text:'User "' + req.body.userId + '" updated successfully'}));
     });
-  });
-});
-
-app.post('/cronQueries.json', checkToken, function(req, res) {
-  var results = [];
-  Db.search("queries", "query", {size:1000, query: {term: {creator: req.user.userId}}}, function (err, data) {
-    if (err || !data.hits || !data.hits.hits) {
-      return res.send(JSON.stringify(results));
-    }
-
-    for (var i = 0, ilen = data.hits.hits.length; i < ilen; i++) {
-      results.push(data.hits.hits[i]._source);
-    }
-
-    res.send(JSON.stringify(results));
-  });
-});
-
-app.post('/updateCronQuery', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.key || !req.body.name || req.body.query === undefined || !req.body.action) {
-    return error("Missing required parameter");
-  }
-
-  var document = {
-    doc: {
-      enabled: (req.body.enabled === "true"),
-      name:req.body.name,
-      query: req.body.query,
-      tags: req.body.tags,
-      action: req.body.action
-    }
-  };
-
-  if (req.body.key === "_create_") {
-    if (req.body.since === "-1") {
-      document.doc.lpValue =  document.doc.lastRun = 0;
-    } else {
-      document.doc.lpValue =  document.doc.lastRun = Math.floor(Date.now()/1000) - 60*60*parseInt(req.body.since || "0", 10);
-    }
-    document.doc.count = 0;
-    document.doc.creator = req.user.userId || "anonymous";
-    Db.indexNow("queries", "query", null, document.doc, function(err, info) {
-      if (Config.get("cronQueries", false)) {
-        processCronQueries();
-      }
-      return res.send(JSON.stringify({success: true, text: "Created", key: info._id}));
-    });
-    return;
-  }
-
-  Db.get("queries", 'query', req.body.key, function(err, sq) {
-    if (err || !sq.found) {
-      console.log("updateCronQuery failed", err, sq);
-      return error("Unknown query");
-    }
-
-    Db.update('queries', 'query', req.body.key, document, {refresh: 1}, function(err, data) {
-      if (err) {
-        console.log("updateCronQuery error", err, document, data);
-        return error("Cron query update failed");
-      }
-      if (Config.get("cronQueries", false)) {
-        processCronQueries();
-      }
-      return res.send(JSON.stringify({success: true, text: "Updated cron query successfully"}));
-    });
-  });
-});
-
-app.post('/deleteCronQuery', checkToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.key) {
-    return error("Missing cron query key");
-  }
-
-  Db.deleteDocument("queries", 'query', req.body.key, {refresh: 1}, function(err, sq) {
-    res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
   });
 });
 

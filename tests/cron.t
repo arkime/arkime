@@ -13,37 +13,42 @@ my $files = uri_escape($query);
 
 
 my $json;
-my $token = getToken();
-is (scalar @{viewerPost("/cronQueries.json", "token=$token")}, 0, "Queries empty");
+my $token = getTokenCookie();
 
-$json = viewerPost("/addUser", "token=$token&userId=anonymous&userName=anonymous&password=anonymous&enabled=on");
+$json = viewerGetToken("/user/cron", $token);
+is (scalar keys %{$json}, 0, "Queries empty");
 
-my $json = viewerPost("/updateCronQuery", "key=_create_&since=-1&enabled=true&name=test1&tags=cron&action=forward:test2&query=$files&token=$token");
+$json = viewerPostToken("/user/create", '{"userId": "anonymous", "userName": "anonymous", "enabled":true, "password":"password"}', $token);
+
+my $json = viewerPostToken("/user/cron/create", "since=-1&name=test1&tags=cron&action=forward:test2&query=$files", $token);
 my $key = $json->{key};
 esGet("/_refresh");
 
-sleep 3;
+
+sleep 5;
 esGet("/_refresh");
 esGet("/_flush");
 
-$json = viewerPost("/cronQueries.json", "token=$token");
+$json = viewerGetToken("/user/cron", $token);
 
-is ($json->[0]->{count}, 13, "Query count correct");
-is ($json->[0]->{creator}, "anonymous", "Query creator correct");
-is ($json->[0]->{name}, "test1", "Query name correct");
-is ($json->[0]->{tags}, "cron", "Query tags correct");
-is ($json->[0]->{action}, "forward:test2", "Query action correct");
-is ($json->[0]->{query}, $query, "Query query correct");
+is ($json->{$key}->{count}, 13, "Query count correct");
+is ($json->{$key}->{creator}, "anonymous", "Query creator correct");
+is ($json->{$key}->{name}, "test1", "Query name correct");
+is ($json->{$key}->{tags}, "cron", "Query tags correct");
+is ($json->{$key}->{action}, "forward:test2", "Query action correct");
+is ($json->{$key}->{query}, $query, "Query query correct");
 
-is (scalar @{$json}, 1, "Queries after add");
+is (scalar keys %{$json}, 1, "Queries after add");
 
 # See if it worked
 countTest2(13, "date=-1&expression=" . uri_escape("protocols==tcp"));
 countTest2(13, "date=-1&expression=" . uri_escape("tags==cron"));
 
 # Delete Cron
-$json = viewerPost("/deleteCronQuery", "key=$key&token=$token");
-is (scalar @{viewerPost("/cronQueries.json", "token=$token")}, 0, "Queries empty");
+$json = viewerPostToken("/user/cron/delete", "key=$key", $token);
+$json = viewerGetToken("/user/cron", $token);
+
+is (scalar keys %{$json}, 0, "Queries empty after delete");
 
 # Delete copied items
 $json = viewerPost2("/delete?date=-1&expression=" . uri_escape("protocols=tcp"));
