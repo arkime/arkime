@@ -104,6 +104,9 @@ SimpleSource.prototype.initSimple = function() {
   case "url":
     this.getURL = this.sendResult;
     break;
+  case "tuple":
+    this.getTuple = this.sendResult;
+    break;
   default:
     console.log(this.section, "- ERROR not loading since unknown type specified in config file", this.type);
     return false;

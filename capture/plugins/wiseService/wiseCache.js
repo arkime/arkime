@@ -31,7 +31,7 @@ var LRU = require('lru-cache')
 function WISEMemoryCache (options) {
   var cacheSize =  +options.cacheSize || 100000;
   var self = this;
-  self.cache = [LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize})];
+  self.cache = [LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize})];
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ function WISERedisCache (options) {
   options = options || {};
   var cacheSize =  +options.cacheSize || 10000;
   var self = this;
-  self.cache = [LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize})];
+  self.cache = [LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize}), LRU({max: cacheSize})];
 
   options.return_buffers = true; // force buffers on for the bson decoding to work
   self.client = redis.createClient(options);

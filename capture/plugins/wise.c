@@ -31,6 +31,8 @@ LOCAL uint32_t              maxConns;
 LOCAL uint32_t              maxRequests;
 LOCAL uint32_t              maxCache;
 LOCAL uint32_t              cacheSecs;
+LOCAL char                  tcpTuple;
+LOCAL char                  udpTuple;
 
 LOCAL int                   httpHostField;
 LOCAL int                   httpXffField;
@@ -41,6 +43,7 @@ LOCAL int                   emailDstField;
 LOCAL int                   dnsHostField;
 LOCAL int                   tagsField;
 LOCAL int                   httpUrlField;
+LOCAL int                   protocolField;
 
 LOCAL uint32_t              fieldsTS;
 LOCAL int                   fieldsMap[256];
@@ -60,9 +63,10 @@ LOCAL const int validDNS[256] = {
 #define INTEL_TYPE_MD5     2
 #define INTEL_TYPE_EMAIL   3
 #define INTEL_TYPE_URL     4
-#define INTEL_TYPE_SIZE    5
+#define INTEL_TYPE_TUPLE   5
+#define INTEL_TYPE_SIZE    6
 
-LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url"};
+LOCAL char *wiseStrings[] = {"ip", "domain", "md5", "email", "url", "tuple"};
 
 #define INTEL_STAT_LOOKUP     0
 #define INTEL_STAT_CACHE      1
@@ -402,6 +406,40 @@ void wise_lookup_ip(MolochSession_t *session, WiseRequest_t *request, uint32_t i
     wise_lookup(session, request, ipstr, INTEL_TYPE_IP);
 }
 /******************************************************************************/
+void wise_lookup_tuple(MolochSession_t *session, WiseRequest_t *request)
+{
+    char    str[1000];
+    BSB     bsb;
+
+    BSB_INIT(bsb, str, sizeof(str));
+
+    uint32_t ip1 = MOLOCH_V6_TO_V4(session->addr1);
+    uint32_t ip2 = MOLOCH_V6_TO_V4(session->addr2);
+
+    BSB_EXPORT_sprintf(bsb, "%ld;", session->firstPacket.tv_sec);
+
+    int first = 1;
+    MolochString_t *hstring;
+    MolochStringHashStd_t *shash = session->fields[protocolField]->shash;
+    HASH_FORALL(s_, *shash, hstring,
+        if (first) {
+            first = 0;
+        } else {
+            BSB_EXPORT_u08(bsb, ',');
+        }
+        BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
+    );
+
+    BSB_EXPORT_sprintf(bsb, ";%d.%d.%d.%d;%d;%d.%d.%d.%d;%d",
+                       ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
+                       session->port1,
+                       ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
+                       session->port2
+                      );
+
+    wise_lookup(session, request, str, INTEL_TYPE_TUPLE);
+}
+/******************************************************************************/
 void wise_lookup_url(MolochSession_t *session, WiseRequest_t *request, char *url)
 {
     char *question = strchr(url, '?');
@@ -433,7 +471,7 @@ LOCAL void wise_flush_locked()
     iBuf     = 0;
 }
 /******************************************************************************/
-LOCAL gboolean wise_flush(gpointer UNUSED(user_data)) 
+LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 {
     MOLOCH_LOCK(iRequest);
     wise_flush_locked();
@@ -542,6 +580,12 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         }
     }
 
+    // Tuples
+    if ((tcpTuple && session->ses == SESSION_TCP) ||
+        (udpTuple && session->ses == SESSION_UDP)) {
+        wise_lookup_tuple(session, iRequest);
+    }
+
     if (iRequest->numItems > 128) {
         wise_flush_locked();
     }
@@ -585,6 +629,8 @@ void moloch_plugin_init()
     maxRequests = moloch_config_int(NULL, "wiseMaxRequests", 100, 1, 50000);
     maxCache = moloch_config_int(NULL, "wiseMaxCache", 100000, 1, 500000);
     cacheSecs = moloch_config_int(NULL, "wiseCacheSecs", 600, 1, 5000);
+    tcpTuple = moloch_config_boolean(NULL, "wiseTcpTupleLookups", FALSE);
+    udpTuple = moloch_config_boolean(NULL, "wiseUdpTupleLookups", FALSE);
 
     int   port = moloch_config_int(NULL, "wisePort", 8081, 1, 0xffff);
     char *host = moloch_config_str(NULL, "wiseHost", "127.0.0.1");
@@ -598,6 +644,7 @@ void moloch_plugin_init()
     dnsHostField   = moloch_field_by_db("dnsho");
     tagsField      = moloch_field_by_db("ta");
     httpUrlField   = moloch_field_by_db("us");
+    protocolField  = moloch_field_by_db("prot-term");
 
     wiseService = moloch_http_create_server(host, port, maxConns, maxRequests, 0);
     g_free(host);
