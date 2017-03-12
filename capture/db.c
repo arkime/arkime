@@ -1410,19 +1410,21 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
     unsigned char      *version;
     uint32_t            version_len;
 
-    key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
+    while (1) {
+        key_len = snprintf(key, sizeof(key), "/%ssequence/sequence/%s", config.prefix, name);
 
-    data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
-    version = moloch_js0n_get(data, data_len, "_version", &version_len);
+        data = moloch_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len);
+        version = moloch_js0n_get(data, data_len, "_version", &version_len);
 
-    if (!version_len || !version) {
-        LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
-        free(data);
-        return moloch_db_get_sequence_number_sync(name);
-    } else {
-        uint32_t v = atoi((char *)version);
-        free(data);
-        return v;
+        if (!version_len || !version) {
+            LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
+            free(data);
+            continue;
+        } else {
+            uint32_t v = atoi((char *)version);
+            free(data);
+            return v;
+        }
     }
 }
 /******************************************************************************/
