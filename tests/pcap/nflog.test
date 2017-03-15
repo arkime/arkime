@@ -1,0 +1,156 @@
+{
+   "sessions" : [
+      {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-170315",
+               "_type" : "session"
+            }
+         },
+         "body" : {
+            "lp" : 1489603870,
+            "hh2cnt" : 13,
+            "fp" : 1489603870,
+            "by2" : 1800,
+            "hmd5cnt" : 1,
+            "pr" : 6,
+            "sl" : 0,
+            "hdrs" : {
+               "hres-location" : [
+                  "https://www.aol.com/"
+               ]
+            },
+            "fs" : [],
+            "ps" : [
+               216,
+               356,
+               552,
+               684,
+               988,
+               1176,
+               2532,
+               2664,
+               2796,
+               2984
+            ],
+            "http" : {
+               "statuscode-cnt" : 1,
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  301
+               ],
+               "bodymagic-term-cnt" : 1,
+               "bodymagic-term" : [
+                  "text/plain"
+               ],
+               "method-term-cnt" : 1
+            },
+            "db2" : 1167,
+            "ipDst" : "52.43.228.156",
+            "pa1" : 6,
+            "lpd" : 1489603870937,
+            "hh1cnt" : 3,
+            "by" : 2564,
+            "hsvercnt" : 1,
+            "hh2" : [
+               "http:header:cache-control",
+               "http:header:connection",
+               "http:header:content-length",
+               "http:header:content-type",
+               "http:header:date",
+               "http:header:location",
+               "http:header:request-id",
+               "http:header:server",
+               "http:header:set-cookie",
+               "http:header:vary",
+               "http:header:x-aol-hn",
+               "http:header:x-content-type-options",
+               "http:header:x-xss-protection"
+            ],
+            "no" : "test",
+            "db" : 1339,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "g2" : "USA",
+            "hocnt" : 1,
+            "hpath" : [
+               "/"
+            ],
+            "hsver" : [
+               "1.1"
+            ],
+            "a1" : "10.10.10.10",
+            "uscnt" : 1,
+            "lastPacket" : 1489603870937,
+            "pa2" : 4,
+            "portSrc" : 54064,
+            "psl" : [
+               124,
+               180,
+               116,
+               288,
+               172,
+               1340,
+               116,
+               116,
+               172,
+               100
+            ],
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "prot-term-cnt" : 2,
+            "tcpflags" : {
+               "urg" : 0,
+               "psh" : 2,
+               "syn-ack" : 1,
+               "syn" : 1,
+               "fin" : 2,
+               "rst" : 0,
+               "ack" : 4
+            },
+            "by1" : 764,
+            "uacnt" : 1,
+            "hdver" : [
+               "1.1"
+            ],
+            "firstPacket" : 1489603870937,
+            "as2" : "AS16509 Amazon.com, Inc.",
+            "ua" : [
+               "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
+            ],
+            "fb1" : "474554202f204854",
+            "hpathcnt" : 1,
+            "hdvercnt" : 1,
+            "ss" : 1,
+            "ipSrc" : "10.10.10.10",
+            "fpd" : 1489603870937,
+            "timestamp" : "SET",
+            "ho" : [
+               "www.aol.com"
+            ],
+            "us" : [
+               "//www.aol.com/"
+            ],
+            "db1" : 172,
+            "hmd5" : [
+               "cbd66d3fd40db184cf2af858b4184f87"
+            ],
+            "a2" : "52.43.228.156",
+            "p2" : 80,
+            "p1" : 54064,
+            "pa" : 10,
+            "fb2" : "485454502f312e31",
+            "portDst" : 80,
+            "rir2" : "ARIN"
+         }
+      }
+   ]
+}
+

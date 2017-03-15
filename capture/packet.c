@@ -1227,7 +1227,36 @@ int moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const pack
             return 1;
         } // switch
     }
-    return 0;
+    return 1;
+}
+/******************************************************************************/
+int moloch_packet_nflog(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    if (len < 14 ||
+        (data[0] != AF_INET && data[0] != AF_INET6) ||
+        data[1] != 0) {
+        return 1;
+    }
+    int n = 4;
+    while (n+4 < len) {
+        int length = data[n+1] << 8 | data[n];
+
+        // Make sure length is at least header and not bigger then remaining packet
+        if (length < 4 || length > len - n) {
+            return 1;
+        }
+
+        if (data[n+3] == 0 && data[n+2] == 9) {
+            if (data[0] == AF_INET) {
+                return moloch_packet_ip4(batch, packet, data+n+4, length - 4);
+            } else {
+                return moloch_packet_ip6(batch, packet, data+n+4, length - 4);
+            }
+        } else {
+            n += ((length + 3) & 0xfffffc);
+        }
+    }
+    return 1;
 }
 /******************************************************************************/
 void moloch_packet_batch_init(MolochPacketBatch_t *batch)
@@ -1273,11 +1302,13 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     case 1: // Ether
         rc = moloch_packet_ether(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 12: // RAW
-        rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
-        break;
+    case 12: // LOOP
+    case 101: // RAW
     case 113: // SLL
         rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case 239: // NFLOG
+        rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
     default:
         LOG("ERROR - Unsupported pcap link type %d", pcapFileHeader.linktype);

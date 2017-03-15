@@ -537,7 +537,8 @@ Pcap.prototype.pcap = function (buffer, obj) {
   case 1: // Ether
     this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
-  case 12: // Raw
+  case 12: // LOOP
+  case 101: // RAW
     this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 113: // SLL

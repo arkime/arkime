@@ -74,7 +74,7 @@ void reader_libpcapfile_monitor_do(struct inotify_event *event)
     MolochString_t *string = MOLOCH_TYPE_ALLOC0(MolochString_t);
     string->str = fullfilename;
 
-    if (config.debug) 
+    if (config.debug)
         LOG("Monitor enqueing %s", string->str);
     DLL_PUSH_TAIL(s_, &monitorQ, string);
     return;
@@ -453,7 +453,7 @@ void reader_libpcapfile_opened()
 
     offlineFile = pcap_file(pcap);
 
-    if (config.bpf) {
+    if (config.bpf && pcapFileHeader.linktype != 239) {
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -469,6 +469,9 @@ void reader_libpcapfile_opened()
 
     int t;
     for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
+        if (pcapFileHeader.linktype == 239) {
+            continue;
+        }
         if (config.bpfsNum[t]) {
             int i;
             if (bpf_programs[t]) {
