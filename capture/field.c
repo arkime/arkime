@@ -408,8 +408,22 @@ int moloch_field_by_exp(const char *exp)
 {
     MolochFieldInfo_t *info = 0;
     HASH_FIND(e_, fieldsByExp, exp, info);
-    if (info)
+    if (info) {
+        if (info->pos != -1)
+            return info->pos;
+
+        // Need to change from field we just know about to real field
+        if (strcmp(info->kind, "integer") == 0 || strcmp(info->kind, "seconds") == 0) {
+            info->type = MOLOCH_FIELD_TYPE_INT_HASH;
+        } else if (strcmp(info->kind, "ip") == 0) {
+            info->type = MOLOCH_FIELD_TYPE_IP_GHASH;
+        } else {
+            info->type = MOLOCH_FIELD_TYPE_STR_HASH;
+        }
+        info->pos = config.maxField++;
+        config.fields[info->pos] = info;
         return info->pos;
+    }
     return -1;
 }
 /******************************************************************************/
