@@ -23,6 +23,7 @@
   - capture - pcapWriteMethod=simple-nodirect uses the simple writer without direct
               writes.  Required for some file systems like zfs 
   - viewer - spigraph tab uses new ui (/spigraph.old available temporarily)
+  - capture - tpacketv3 handles multiple interfaces correctly (issue #658)
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)
