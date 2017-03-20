@@ -20,9 +20,9 @@ all:$(SOS)
 
 install:
 	$(INSTALL) taggerUpload.pl $(BINDIR)
-	test -z "$(PLUGINDIR)" || $(mkdir_p) "$(PLUGINDIR)"
+	@mkdir -p "$(PLUGINDIR)"
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
-	test -z "$(WISEDIR)" || $(mkdir_p) "$(WISEDIR)"
+	@mkdir -p "$(WISEDIR)"
 	$(INSTALL) wiseService/*.js wiseService/wiseService.ini.sample wiseService/package.json $(WISEDIR)
 	(cd $(WISEDIR) ; npm update)
 

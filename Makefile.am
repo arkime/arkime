@@ -1,1 +1,3 @@
-SUBDIRS = capture db viewer
+SUBDIRS = capture db viewer release
+config:
+	@prefix@/bin/Configure

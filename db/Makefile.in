@@ -7,7 +7,7 @@ DBDIR = @prefix@/db
 all:
 
 install:
-	test -z "$(DBDIR)" || $(mkdir_p) "$(DBDIR)"
+	@mkdir -p "$(DBDIR)"
 	$(INSTALL) daily.sh db.pl elasticsearch.yml.sample runes.sh.sample $(DBDIR)
 
 distclean realclean clean:

@@ -24,14 +24,14 @@ elasticsearch=MOLOCH_ELASTICSEARCH
 rotateIndex=daily
 
 # Cert file to use, comment out to use http instead
-# certFile=/data/MOLOCH_NAME/etc/moloch.cert
+# certFile=MOLOCH_INSTALL_DIR/etc/moloch.cert
 
 # File with trusted roots/certs. WARNING! this replaces default roots
 # Useful with self signed certs and can be set per node.
-# caTrustFile=/data/MOLOCH_NAME/etc/roots.cert
+# caTrustFile=MOLOCH_INSTALL_DIR/etc/roots.cert
 
 # Private key file to use, comment out to use http instead
-# keyFile=/data/MOLOCH_NAME/etc/moloch.key
+# keyFile=MOLOCH_INSTALL_DIR/etc/moloch.key
 
 # S2S and Password Hash secret - Must be in default section. Since elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
@@ -75,10 +75,10 @@ interface=MOLOCH_INTERFACE
 ## End wiseService configuration
 
 # Uncomment to log access requests to a different log file
-#accessLogFile = /data/MOLOCH_NAME/logs/access.log
+#accessLogFile = MOLOCH_INSTALL_DIR/logs/access.log
 
 # The directory to save raw pcap files to
-pcapDir = /data/MOLOCH_NAME/raw
+pcapDir = MOLOCH_INSTALL_DIR/raw
 
 # The max raw pcap file size in gigabytes, with a max value of 36G.  
 # The disk should have room for at least 10*maxFileSizeG
@@ -128,15 +128,15 @@ viewPort = 8005
 
 # Path of the maxmind geoip country file.  Download free version from:
 #  http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
-geoipFile = /data/MOLOCH_NAME/etc/GeoIP.dat
+geoipFile = MOLOCH_INSTALL_DIR/etc/GeoIP.dat
 
 # Path of the maxmind geoip ASN file.  Download free version from:
 #  http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
-geoipASNFile = /data/MOLOCH_NAME/etc/GeoIPASNum.dat
+geoipASNFile = MOLOCH_INSTALL_DIR/etc/GeoIPASNum.dat
 
 # Path of the rir assignments file
 #  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
-rirFile = /data/MOLOCH_NAME/etc/ipv4-address-space.csv
+rirFile = MOLOCH_INSTALL_DIR/etc/ipv4-address-space.csv
 
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=nobody
@@ -171,10 +171,10 @@ parseQSValue=false
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
 
 # Semicolon ';' seperated list of directories to load parsers from
-parsersDir=/data/MOLOCH_NAME/parsers
+parsersDir=MOLOCH_INSTALL_DIR/parsers
 
 # Semicolon ';' seperated list of directories to load plugins from
-pluginsDir=/data/MOLOCH_NAME/plugins
+pluginsDir=MOLOCH_INSTALL_DIR/plugins
 
 # Semicolon ';' seperated list of plugins to load and the order to load in
 # plugins=tagger.so; netflow.so
@@ -200,7 +200,7 @@ pluginsDir=/data/MOLOCH_NAME/plugins
 spiDataMaxIndices=3
 
 # Uncomment the following to allow direct uploads.  This is experimental
-#uploadCommand=/data/MOLOCH_NAME/bin/moloch-capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}
+#uploadCommand=MOLOCH_INSTALL_DIR/bin/moloch-capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}
 
 # Title Template
 # _cluster_ = ES cluster name

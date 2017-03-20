@@ -9,11 +9,11 @@
 # * build moloch-capture
 
 
-GLIB=2.47.4
+GLIB=2.50.2
 YARA=1.7
-GEOIP=1.6.0
+GEOIP=1.6.9
 PCAP=1.7.4
-CURL=7.42.1
+CURL=7.52.1
 
 TDIR="/data/moloch"
 DOPFRING=0
@@ -45,7 +45,7 @@ MAKE=make
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
-  yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
+  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
   if [ $? -ne 0 ]; then
     echo "MOLOCH - yum failed"
     exit 1
@@ -53,7 +53,7 @@ if [ -f "/etc/redhat-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  apt-get -y install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev
+  sudo apt-get -y install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev
   if [ $? -ne 0 ]; then
     echo "MOLOCH - apt-get failed"
     exit 1
@@ -61,7 +61,7 @@ if [ -f "/etc/debian_version" ]; then
 fi
 
 if [ $(uname) == "FreeBSD" ]; then
-    pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
+    sudo pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
     MAKE=gmake
 fi
 
@@ -87,7 +87,7 @@ else
 
   if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" -o ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
     xzcat glib-$GLIB.tar.xz | tar xf -
-    (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux; $MAKE)
+    (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal; $MAKE)
     if [ $? -ne 0 ]; then
       echo "MOLOCH: $MAKE failed"
       exit 1
@@ -115,6 +115,7 @@ fi
 
 # GeoIP
 if [ ! -f "GeoIP-$GEOIP.tar.gz" ]; then
+  wget https://github.com/maxmind/geoip-api-c/releases/download/v$GEOIP/GeoIP-$GEOIP.tar.gz
   wget http://www.maxmind.com/download/geoip/api/c/GeoIP-$GEOIP.tar.gz
 fi
 
@@ -182,5 +183,8 @@ fi
 if [ $DOPFRING -eq 1 ]; then
     (cd capture/plugins/pfring; $MAKE)
 fi
+
+#
+echo "Now type 'sudo make install' and 'sudo make config'"
 
 exit 0

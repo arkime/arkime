@@ -17,7 +17,7 @@ SOS=$(SRCS:.c=.so)
 all:$(SOS)
 
 install:
-	test -z "$(PARSERSDIR)" || $(mkdir_p) "$(PARSERSDIR)"
+	@mkdir -p "$(PARSERSDIR)"
 	$(INSTALL) *.so *.jade $(PARSERSDIR)
 
 distclean realclean clean:

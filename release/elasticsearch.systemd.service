@@ -6,12 +6,12 @@ After=network.target
 Type=simple
 Restart=on-failure
 StandardOutput=tty
-Environment=ES_DIR=/data/MOLOCH_NAME
+Environment=ES_DIR=MOLOCH_INSTALL_DIR
 Environment=ES_NODE_NAME=MOLOCH_HOSTNAME
 Environment=ES_HTTP_PORT=9200
 Environment=ES_TRANSPORT_PORT=9300
 Environment=ES_HEAP_SIZE=2G
-ExecStart=/bin/su -s /bin/sh -c 'exec "$0" "$@" > /dev/null' nobody -- /data/MOLOCH_NAME/elasticsearch/bin/elasticsearch -Des.default.path.conf=/data/MOLOCH_NAME/etc
+ExecStart=/bin/su -s /bin/sh -c 'exec "$0" "$@" > /dev/null' nobody -- MOLOCH_INSTALL_DIR/elasticsearch/bin/elasticsearch -Des.default.path.conf=MOLOCH_INSTALL_DIR/etc
 
 [Install]
 WantedBy=multi-user.target

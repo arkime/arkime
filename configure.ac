@@ -18,6 +18,7 @@ AC_CONFIG_FILES([
   tests/plugins/Makefile
   viewer/Makefile
   viewer/version.js
+  release/Makefile
 ])
 
 AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))

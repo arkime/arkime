@@ -304,39 +304,6 @@
       tags:
         - rebuild
 
-    - name: copy sample config
-      copy: src=../config.ini dest=/data/{{moloch_name}}/etc/config.ini.sample
-
-    - name: copy upstart/systemd files
-      copy: src="{{item}}" dest=/data/{{moloch_name}}/etc/
-      with_items:
-        - molochcapture.upstart.conf
-        - molochviewer.upstart.conf
-        - molochwise.upstart.conf
-        - elasticsearch.upstart.conf
-        - molochcapture.systemd.service
-        - molochviewer.systemd.service
-        - molochwise.systemd.service
-        - elasticsearch.systemd.service
-        - logging.demo.yml
-        - elasticsearch.demo.yml
-
-    - copy: src="README.txt" dest=/data/{{moloch_name}}/
-
-    - name: helper scripts
-      shell: sed -e "s/BUILD_MOLOCH_NAME/{{moloch_name}}/g" < {{moloch_name}}/release/{{item}} > /data/{{moloch_name}}/bin/{{item}}
-      with_items:
-        - moloch_update_geo.sh
-        - moloch_add_user.sh
-        - Configure
-
-    - name: helper scripts chmod
-      shell: chmod 0755 /data/{{moloch_name}}/bin/{{item}}
-      with_items:
-        - moloch_update_geo.sh
-        - moloch_add_user.sh
-        - Configure
-
     - set_fact:
         moloch_version: "stoperrors"
 

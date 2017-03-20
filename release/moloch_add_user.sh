@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/data/BUILD_MOLOCH_NAME/bin/node /data/BUILD_MOLOCH_NAME/viewer/addUser.js -c /data/BUILD_MOLOCH_NAME/etc/config.ini "$@"
+BUILD_MOLOCH_INSTALL_DIR/bin/node BUILD_MOLOCH_INSTALL_DIR/viewer/addUser.js -c BUILD_MOLOCH_INSTALL_DIR/etc/config.ini "$@"

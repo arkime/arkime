@@ -31,17 +31,16 @@ SPI View Tab
 RPM & DEB Downloads
 ===================
 
-Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  
-These are still experimental. Please open a github issue with any feedback or bugs found.
+Starting with Moloch 0.15 we are now offering prebuilt RPMs and DEBs.  Follow the directions in /data/moloch/README.txt after installing.
 
 http://molo.ch/#downloads
 
 .. _quick-start:
 
-Quick Start
-===========
+Building
+========
 
-If the prebuilt packages are not working, easybutton makes it possible to build a demo host quickly. Run ``./easybutton-singlehost.sh`` in the Moloch source distribution to build a complete single-machine Moloch system. This is good for a demo and can also be used as a starting point for a real production deployment.
+If you wish to build Moloch yourself run ``./easybutton-build.sh`` which will download all the prerequisites and build.  ``make install`` and ```make config`` can be used to install and configure moloch.
 
 .. _components:
 
@@ -61,14 +60,14 @@ The Moloch system is comprised of 3 components
 Building and Installing
 =======================
 
-Moloch is a complex system to build and install. The following are rough guidelines.
+Moloch is a complex system to build and install manually. The following are rough guidelines.
 
 .. _install-elasticsearch:
 
 Installing Elasticsearch
 ------------------------
 
-Recommended version **2.4.4**, Moloch versions since 0.17.0 requires at least 2.4.0.  Elasticsearch 5.x is not recommended for production use yet.
+Recommended version **2.4.4** for Moloch 0.17 and **5.2** for Moloch 0.18 and later.
 
 1. Prep the ``elasticsearch`` machines by increasing max file descriptors and allowing memory locking. 
    On CentOS and others this is done by adding the following to bottom of: 
@@ -81,16 +80,11 @@ Recommended version **2.4.4**, Moloch versions since 0.17.0 requires at least 2.
 
 3. `Download elasticsearch <https://www.elastic.co/downloads/elasticsearch>`_.
    **Important:** At this time all development is done with `elasticsearch
-   2.4.4 <https://www.elastic.co/downloads/past-releases/elasticsearch-2-4-4>`_.
+   5.2.2 <https://www.elastic.co/downloads/past-releases/elasticsearch-5-2-2>`_.
 
 4. Uncompress the archive you downloaded.
 
-5. Install ``elasticsearch-head`` **BEFORE** pushing to all machines::
-
-    cd elasticsearch-*
-    bin/plugin -install mobz/elasticsearch-head
-
-6. Create or modify ``elasticsearch.yml`` and push it to all machines. (See ``db/elasticsearch.yml.sample`` in the Moloch source distribution for an example.)
+5. Create or modify ``elasticsearch.yml`` and push it to all machines. (See ``db/elasticsearch.yml.sample`` in the Moloch source distribution for an example.)
    
    - set ``cluster.name`` to something unique
    - set ``node.name`` to ``${ES_HOSTNAME}``
@@ -104,21 +98,17 @@ Recommended version **2.4.4**, Moloch versions since 0.17.0 requires at least 2.
    - disable ``zen.ping.multicast``
    - enable ``zen.ping.unicast`` and set the list of hosts
 
-7. Create an ``elasticsearch`` launch script or use `one of the ones out there <https://gist.github.com/3569769>`_. (See ``db/runes.sh.sample`` in the Moloch source distribution for a simple one.)
+6. Create an ``elasticsearch`` launch script or use `one of the ones out there <https://gist.github.com/3569769>`_. (See ``db/runes.sh.sample`` in the Moloch source distribution for a simple one.)
 
    - Make sure you call ``ulimit -a`` first 
    - set ``ES_HEAP_SIZE=20G`` (or whatever number you are using, less then 32G) 
    - set ``JAVA_OPTS="-XX:+UseCompressedOops"`` if using real Java
    - set ``ES_HOSTNAME`` to ```hostname -s```
 
-8. Start the cluster, waiting ~5s between starting each node to give them time to properly mesh.
+7. Start the cluster, waiting ~5s between starting each node to give them time to properly mesh.
 
-9. Use ``elasticsearch-head`` to look at your cluster and make sure it is **GREEN**.
-
-10. Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
+8. Inside the *installed* ``$MOLOCH_PREFIX/db`` directory run the 
     ``db.pl http://A_ES_HOSTNAME:9200 init`` script.
-
-11. Check ``elasticsearch-head`` again and make sure it is still **GREEN** and now you should see some of the indexes.
 
 .. _building-capture:
 
@@ -229,29 +219,18 @@ Advanced Configuration
 Hardware Requirements
 ---------------------
 
-Moloch is built to run across many machines for large deployments. The following are rough guidelines for capturing large amounts of data with high bit rates, obviously tailor for your specific situation.  It is not recommended to run the ``capture`` and ``elasticsearch``  processes on the same machines for highly utilized GigE networks.
+Moloch is built to run across many machines for large deployments.  For demo, small network, or home installations everything on a single machine is fine.
 
-For demo, small network, or home installations everything on a single machine is fine.
+For larger installations please see the FAQ for recomended configurations.
 
-1. Moloch ``capture``/``viewer`` systems
 
-   * One dedicated management network interface and CPU for OS
-   * For each network interface being monitored recommend ~10G of memory and another dedicated CPU
-   * If running suricata or another IDS add an additional two (2) CPUs per interface, and an additional 5G memory (or more depending on IDS requirements)
-   * Disk space to store the PCAP files: We recommend at least 10TB, xfs (with inode64 option set in fstab), RAID 5, at least 5 spindles)
-   * Disable swap by removing it from fstab
-   * If networks are highly utilized and running IDS then CPU affinity is required
-   * See `FAQ Entry <https://github.com/aol/moloch/wiki/FAQ#What_kind_of_capture_machines_should_we_buy>`_
 
-2. Moloch ``elasticsearch`` systems (some black magic here!)
+The following are rough guidelines for capturing large amounts of data with high bit rates, obviously tailor for your specific situation.  It is not recommended to run the ``capture`` and ``elasticsearch``  processes on the same machines for highly utilized GigE networks.
 
-   * ``1/4 * Average_Total_Gigabit_Sec * Number_of_Days_of_History`` is a **ROUGH** guideline for number of ``elasticsearch`` instances (nodes) required. (Example: 1/4 * 8 Average Gb/s * 7 days = 14 nodes)
-   * Each ``elasticsearch`` node should have ~30G-64G memory (20G-32G [no more!] for the java process, at least 10G for the OS disk cache)
-   * You can have multiple nodes per machine (Example 128G machine can have 2 ES nodes, 32G for each of the java processes and 64G saved for the disk cache)
-   * Disable swap by removing it from fstab
-   * Obviously the more nodes, the faster responses will be
-   * You can always add more nodes, but it's hard to remove nodes
-   * See `FAQ Entry <https://github.com/aol/moloch/wiki/FAQ#How_many_elasticsearch_nodes_or_machines_do_I_need>`_
+
+1. Moloch ``capture``/``viewer`` systems read `FAQ Entry <https://github.com/aol/moloch/wiki/FAQ#What_kind_of_capture_machines_should_we_buy>`_
+
+2. Moloch ``elasticsearch`` systems read `FAQ Entry <https://github.com/aol/moloch/wiki/FAQ#How_many_elasticsearch_nodes_or_machines_do_I_need>`_
 
 Example Configuration
 ~~~~~~~~~~~~~~~~~~~~~
@@ -260,9 +239,9 @@ Here is an example system setup for monitoring 8x GigE highly-utilized networks,
 
 * ``capture``/``viewer`` machines
  
-  - 8x PenguinComputing Relion 4724 
-  - 48GB of memory 
-  - 40TB of disk-
+  - 5x HP Apollo 4200
+  - 64GB of memory 
+  - 80TB of disk
   - Running Moloch and `Suricata <http://suricata-ids.org/>`_
 
 * ``elasticsearch`` machines
@@ -270,7 +249,7 @@ Here is an example system setup for monitoring 8x GigE highly-utilized networks,
   - 10x HP DL380-G7
   - 128GB of memory
   - 6TB of disk
-  - Each system running 2 nodes
+  - Each system running 1 node
 
 .. _security:
 

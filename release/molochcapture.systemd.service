@@ -14,8 +14,8 @@ ExecStartPre=-/sbin/ethtool -K MOLOCH_INTERFACE ufo off
 ExecStartPre=-/sbin/ethtool -K MOLOCH_INTERFACE gso off
 ExecStartPre=-/sbin/ethtool -K MOLOCH_INTERFACE gro off
 ExecStartPre=-/sbin/ethtool -K MOLOCH_INTERFACE lro off
-ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/moloch-capture -c /data/MOLOCH_NAME/etc/config.ini >> /data/MOLOCH_NAME/logs/capture.log 2>&1'
-WorkingDirectory=/data/MOLOCH_NAME
+ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/moloch-capture -c MOLOCH_INSTALL_DIR/etc/config.ini >> MOLOCH_INSTALL_DIR/logs/capture.log 2>&1'
+WorkingDirectory=MOLOCH_INSTALL_DIR
 LimitCORE=infinity
 
 [Install]

@@ -1,4 +1,4 @@
-0.18.0 2017/02/xx
+0.18.0 2017/03/xx
   - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)
   - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture.
             New 0.18.0 wiseService can be used with older moloch-capture.
@@ -24,6 +24,8 @@
               writes.  Required for some file systems like zfs 
   - viewer - spigraph tab uses new ui (/spigraph.old available temporarily)
   - capture - tpacketv3 handles multiple interfaces correctly (issue #658)
+  - easybutton - singlehost and config removed, build remains for now
+                 make install & make config should work
 
 0.17.1 2017/01/30
   - NOTICE: ES 2.4 or ES 5.1.2 required (ES 5.x isn't recommended for production yet)

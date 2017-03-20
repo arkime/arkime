@@ -6,8 +6,8 @@ After=network.target
 Type=simple
 Restart=on-failure
 StandardOutput=tty
-ExecStart=/bin/sh -c '/data/MOLOCH_NAME/bin/node wiseService.js -c /data/MOLOCH_NAME/etc/wise.ini >> /data/MOLOCH_NAME/logs/wise.log 2>&1'
-WorkingDirectory=/data/MOLOCH_NAME/wiseService
+ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/node wiseService.js -c MOLOCH_INSTALL_DIR/etc/wise.ini >> MOLOCH_INSTALL_DIR/logs/wise.log 2>&1'
+WorkingDirectory=MOLOCH_INSTALL_DIR/wiseService
 
 [Install]
 WantedBy=multi-user.target

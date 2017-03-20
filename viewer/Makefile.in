@@ -8,7 +8,7 @@ CP = /bin/cp
 all:
 
 install:
-	test -z "$(VIEWERDIR)" || $(mkdir_p) "$(VIEWERDIR)"
+	@mkdir -p "$(VIEWERDIR)"
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json $(VIEWERDIR)
 	npm update

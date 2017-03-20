@@ -7,6 +7,14 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 MOLOCH_NAME=BUILD_MOLOCH_NAME
+if [ "$MOLOCH_NAME" == "BUILD_MOLOCH_NAME" ]; then
+    MOLOCH_NAME=moloch
+fi
+
+MOLOCH_INSTALL_DIR=BUILD_MOLOCH_INSTALL_DIR
+if [ "$MOLOCH_INSTALL_DIR" == "BUILD_MOLOCH_INSTALL_DIR" ]; then
+MOLOCH_INSTALL_DIR=/data/$MOLOCH_NAME
+fi
 
 ################################################################################
 ### Ask config questions
@@ -18,7 +26,8 @@ if [ -z $MOLOCH_INTERFACE ]; then
 fi
 if [ -z $MOLOCH_INTERFACE ]; then MOLOCH_INTERFACE="eth1"; fi
 
-until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" -o "$MOLOCH_LOCALELASTICSEARCH" == "no" ]; do
+MOLOCH_LOCALELASTICSEARCH=not-set
+until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" -o "$MOLOCH_LOCALELASTICSEARCH" == "no" -o "$MOLOCH_LOCALELASTICSEARCH" == "" ]; do
     echo -n "Install Elasticsearch server locally for demo, must have at least 3G of memory, NOT recommended for production use (yes or no) [no] "
     read MOLOCH_LOCALELASTICSEARCH
 done
@@ -48,61 +57,61 @@ if [ -z "$MOLOCH_PASSWORD" ]; then echo "Must provide a password"; exit; fi
 
 ################################################################################
 echo "Moloch - Creating configuration files"
-if [ ! -f "/data/$MOLOCH_NAME/etc/config.ini" ]; then
-    echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/config.ini.sample > /data/$MOLOCH_NAME/etc/config.ini
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/config.ini.sample > /data/$MOLOCH_NAME/etc/config.ini
+if [ ! -f "$MOLOCH_INSTALL_DIR/etc/config.ini" ]; then
+    echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/config.ini.sample > $MOLOCH_INSTALL_DIR/etc/config.ini
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/config.ini.sample > $MOLOCH_INSTALL_DIR/etc/config.ini
 else
-    echo "Not overwriting /data/$MOLOCH_NAME/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
+    echo "Not overwriting $MOLOCH_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
     sleep 2
 fi
 
 
 if [ -d "/etc/systemd" ]; then
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
 elif [ -d "/etc/init" ]; then
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
 else
     echo "No startup scripts created for capture and viewer"
 fi
 
 ################################################################################
-chown nobody /data/$MOLOCH_NAME/logs /data/$MOLOCH_NAME/raw
-chmod 0700 /data/$MOLOCH_NAME/raw
+chown nobody $MOLOCH_INSTALL_DIR/logs $MOLOCH_INSTALL_DIR/raw
+chmod 0700 $MOLOCH_INSTALL_DIR/raw
 
 ################################################################################
 if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
     echo "Moloch - Downloading and installing demo Elasticsearch"
     ES_VERSION=2.4.4
-    if [ ! -f "/data/$MOLOCH_NAME/elasticsearch-${ES_VERSION}.tar.gz" ]; then
-        wget http://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz -O /data/$MOLOCH_NAME/elasticsearch-${ES_VERSION}.tar.gz
-        (cd /data/$MOLOCH_NAME ; tar xf elasticsearch-${ES_VERSION}.tar.gz)
-        (cd /data/$MOLOCH_NAME/elasticsearch-${ES_VERSION}; ./bin/plugin install mobz/elasticsearch-head)
-        ln -sf /data/$MOLOCH_NAME/elasticsearch-${ES_VERSION} /data/$MOLOCH_NAME/elasticsearch
-        mkdir /data/$MOLOCH_NAME/data /data/$MOLOCH_NAME/etc/scripts /data/$MOLOCH_NAME/elasticsearch/plugins
-        chown nobody /data/$MOLOCH_NAME/data /data/$MOLOCH_NAME/etc/scripts
+    if [ ! -f "$MOLOCH_INSTALL_DIR/elasticsearch-${ES_VERSION}.tar.gz" ]; then
+        wget http://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz -O $MOLOCH_INSTALL_DIR/elasticsearch-${ES_VERSION}.tar.gz
+        (cd $MOLOCH_INSTALL_DIR ; tar xf elasticsearch-${ES_VERSION}.tar.gz)
+        (cd $MOLOCH_INSTALL_DIR/elasticsearch-${ES_VERSION}; ./bin/plugin install mobz/elasticsearch-head)
+        ln -sf $MOLOCH_INSTALL_DIR/elasticsearch-${ES_VERSION} $MOLOCH_INSTALL_DIR/elasticsearch
+        mkdir $MOLOCH_INSTALL_DIR/data $MOLOCH_INSTALL_DIR/etc/scripts $MOLOCH_INSTALL_DIR/elasticsearch/plugins
+        chown nobody $MOLOCH_INSTALL_DIR/data $MOLOCH_INSTALL_DIR/etc/scripts
     fi
 
     HOSTNAME=`hostname -s`
     if [ -d "/etc/systemd" ]; then
-        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/elasticsearch.systemd.service > /etc/systemd/system/elasticsearch.service
+        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/elasticsearch.systemd.service > /etc/systemd/system/elasticsearch.service
     elif [ -d "/etc/init" ]; then
-        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s/MOLOCH_NAME/${MOLOCH_NAME}/g" < /data/$MOLOCH_NAME/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
+        sed -e "s/MOLOCH_HOSTNAME/${HOSTNAME}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/elasticsearch.upstart.conf > /etc/init/elasticsearch.conf
     else
         echo "No startup scripts created for elasticsearch"
     fi
 
-    cp -f /data/$MOLOCH_NAME/etc/logging.demo.yml /data/$MOLOCH_NAME/etc/logging.yml
-    cp -f /data/$MOLOCH_NAME/etc/elasticsearch.demo.yml /data/$MOLOCH_NAME/etc/elasticsearch.yml
+    cp -f $MOLOCH_INSTALL_DIR/etc/logging.demo.yml $MOLOCH_INSTALL_DIR/etc/logging.yml
+    cp -f $MOLOCH_INSTALL_DIR/etc/elasticsearch.demo.yml $MOLOCH_INSTALL_DIR/etc/elasticsearch.yml
 fi
 
 ################################################################################
 if [ -d "/etc/logrotate.d" -a ! -f "/etc/logrotate.d/$MOLOCH_NAME" ]; then
     echo "Moloch - Installing /etc/logrotate.d/$MOLOCH_NAME to rotate files after 7 days"
     cat << EOF > /etc/logrotate.d/$MOLOCH_NAME
-/data/$MOLOCH_NAME/logs/capture.log
-/data/$MOLOCH_NAME/logs/viewer.log {
+$MOLOCH_INSTALL_DIR/logs/capture.log
+$MOLOCH_INSTALL_DIR/logs/viewer.log {
     daily
     rotate 7
     notifempty
@@ -124,11 +133,11 @@ fi
 
 ################################################################################
 echo "Moloch - Downloading GEO files"
-/data/$MOLOCH_NAME/bin/moloch_update_geo.sh > /dev/null
+$MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
 
 ################################################################################
 echo ""
-echo "Moloch - Configured - Now continue with step 4 in /data/$MOLOCH_NAME/README.txt"
+echo "Moloch - Configured - Now continue with step 4 in $MOLOCH_INSTALL_DIR/README.txt"
 echo ""
-tail -n +10 /data/$MOLOCH_NAME/README.txt
+tail -n +10 $MOLOCH_INSTALL_DIR/README.txt
 
