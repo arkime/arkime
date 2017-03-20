@@ -60,15 +60,15 @@
           <div class="btn-container">
             <form class="form-inline">
               <input type="text" placeholder="Search for fields in this category"
-                class="form-control input-xs" ng-model="$ctrl.fieldSearch"
+                class="form-control input-xs" ng-model="$ctrl.categoryObjects[category].fieldSearch"
                 ng-model-options="{debounce:300}">
-              <span class="small" ng-hide="$ctrl.filteredFields.length">
+              <span class="small" ng-hide="$ctrl.categoryObjects[category].filteredFields.length">
                 <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
                 No results match your query
               </span>
               <div class="btn-group margined-right margined-bottom-lg"
                 uib-dropdown uib-tooltip="{{::field.help}}" dropdown-append-to-body="true"
-                ng-repeat="field in $ctrl.filteredFields = ($ctrl.categoryObjects[category].fields | filter:$ctrl.fieldSearch) | orderBy: ['-active','friendlyName'] track by $index">
+                ng-repeat="field in $ctrl.categoryObjects[category].filteredFields = ($ctrl.categoryObjects[category].fields | filter:$ctrl.categoryObjects[category].fieldSearch) | orderBy: ['-active','friendlyName'] track by $index">
                 <button class="btn btn-xs btn-default field-btn"
                   ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
                   ng-click="$ctrl.toggleSpiData(field, true)">

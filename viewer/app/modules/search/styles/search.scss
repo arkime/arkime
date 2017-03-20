@@ -66,3 +66,6 @@ moloch-search {
   }
 
 }
+
+// put the action menu dropdown above sticky sessions button
+.action-menu-dropdown { z-index: 1030; }
