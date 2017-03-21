@@ -6,7 +6,7 @@ clean:
 
 install:
 	$(INSTALL) README.txt @prefix@
-	@mkdir -p $(etcdir) @prefix@/logs @prefix@/raw
+	@mkdir -p $(etcdir) @prefix@/logs
 	$(INSTALL) molochcapture.upstart.conf $(etcdir)/
 	$(INSTALL) molochviewer.upstart.conf $(etcdir)/
 	$(INSTALL) molochwise.upstart.conf $(etcdir)/
