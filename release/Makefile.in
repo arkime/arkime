@@ -2,6 +2,7 @@ INSTALL        = @INSTALL@
 etcdir         = @prefix@/etc
 
 all:
+clean:
 
 install:
 	$(INSTALL) README.txt @prefix@
