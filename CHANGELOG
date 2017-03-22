@@ -1,3 +1,5 @@
+0.18.1 2017/04/xx
+
 0.18.0 2017/03/21
   - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)
   - NOTICE: Must upgrade wiseService BEFORE upgrading moloch-capture.
