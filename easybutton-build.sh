@@ -20,6 +20,7 @@ DAQ=2.0.6
 TDIR="/data/moloch"
 DOPFRING=0
 DODAQ=0
+DOCLEAN=0
 
 while :
 do
@@ -34,6 +35,10 @@ do
     ;;
   --daq)
     DODAQ=1
+    shift
+    ;;
+  --clean)
+    DOCLEAN=1
     shift
     ;;
   -*)
@@ -220,6 +225,10 @@ echo "MOLOCH: Building capture"
 cd ..
 echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA"
 ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA
+
+if [ $DOCLEAN -eq 1 ]; then
+    $MAKE clean
+fi
 
 $MAKE
 if [ $? -ne 0 ]; then
