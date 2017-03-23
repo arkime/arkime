@@ -52,7 +52,7 @@ MAKE=make
 # Installing dependencies
 echo "MOLOCH: Installing Dependencies"
 if [ -f "/etc/redhat-release" ]; then
-  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel
+  sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel
   if [ $? -ne 0 ]; then
     echo "MOLOCH - yum failed"
     exit 1
@@ -60,14 +60,14 @@ if [ -f "/etc/redhat-release" ]; then
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -y install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev
+  sudo apt-get -y install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev
   if [ $? -ne 0 ]; then
     echo "MOLOCH - apt-get failed"
     exit 1
   fi
 fi
 
-if [ $(uname) == "FreeBSD" ]; then
+if [ "$(uname)" == "FreeBSD" ]; then
     sudo pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
     MAKE=gmake
 fi
@@ -84,7 +84,7 @@ cd thirdparty
 PWD=`pwd`
 
 # glib
-if [ $(uname) == "FreeBSD" ]; then
+if [ "$(uname)" == "FreeBSD" ]; then
   #Screw it, use whatever the OS has
   WITHGLIB=" "
 else
@@ -153,7 +153,7 @@ fi
 tar zxf libpcap-$PCAP.tar.gz
 if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
   echo "MOLOCH: Building libpcap";
-  (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth; $MAKE)
+  (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth --with-snf=no; $MAKE)
   if [ $? -ne 0 ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1
