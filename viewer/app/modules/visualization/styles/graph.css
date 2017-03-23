@@ -1,0 +1,43 @@
+/* displays a tooltip above the bar in the session graph */
+.graph-tooltip {
+  z-index         : 999;
+  position        : absolute;
+  white-space     : nowrap;
+  color           : var(--color-gray-lighter);
+  padding         : 3px;
+  font-size       : 8pt;
+  background-color: var(--color-black);
+  border-radius   : 4px;
+  border          : 1px solid var(--color-black);
+}
+
+.graph-tooltip:after {
+  content     : '';
+  display     : block;
+  width       : 0;
+  height      : 0;
+  position    : absolute;
+  left        : 2px;
+  top         : 20px;
+  border-style: solid;
+  border-width: 8px 8px 0 8px;
+  border-color: black transparent transparent transparent;
+}
+
+/* make graph labels smaller */
+session-graph .tickLabel {
+  font-size   : smaller;
+  margin-right: var(--px-md);
+  margin-left : var(--px-md);
+}
+
+/* center timeline buttons */
+session-graph .session-graph-btn-container {
+  position: absolute;
+  left    : 50%;
+}
+session-graph .session-graph-btn-container > div {
+  position: relative;
+  left    : -50%;
+  z-index : 9; /* above timeline */
+}

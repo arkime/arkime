@@ -1,0 +1,108 @@
+moloch-stats #statsGraph {
+  margin-bottom: 5px;
+}
+
+moloch-stats #statsGraphOptions {
+  position  : relative;
+  top       : -10px;
+  left      : 40%;
+  margin    : 1px;
+  font-size : xx-small;
+  z-index   : 1;
+}
+
+moloch-stats table tr {
+  max-height: 100px;
+}
+
+/* animations for filtering table contents */
+moloch-stats table tr.ng-move,
+moloch-stats table tr.ng-enter,
+moloch-stats table tr.ng-leave {
+  -webkit-transition: all 400ms linear;
+     -moz-transition: all 400ms linear;
+          transition: all 400ms linear;
+}
+
+moloch-stats table tr.ng-move,
+moloch-stats table tr.ng-enter,
+moloch-stats table tr.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
+moloch-stats table tr.ng-leave,
+moloch-stats table tr.ng-move.ng-move-active,
+moloch-stats table tr.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
+moloch-stats table.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: var(--color-gray-lighter);
+}
+
+moloch-stats table.table > tfoot > tr:first-child > td {
+  border-top: 2px solid var(--color-gray-light);
+}
+
+
+/* Cubism stuff -------------------- */
+moloch-stats .axis path, moloch-stats .axis line {
+  fill            : none;
+  stroke          : var(--color-black);
+  shape-rendering : crispEdges;
+}
+
+moloch-stats .axis {
+  font: 10px sans-serif;
+}
+
+moloch-stats .axis text {
+  -webkit-transition: fill-opacity 250ms linear;
+}
+
+moloch-stats .axis path {
+  display: none;
+}
+
+moloch-stats .axis line {
+  stroke          : var(--color-black);
+  shape-rendering : crispEdges;
+}
+
+moloch-stats .horizon {
+  border-bottom : solid 1px var(--color-black);
+  overflow      : hidden;
+  position      : relative;
+}
+
+moloch-stats .horizon + .horizon {
+  border-top: none;
+}
+
+moloch-stats .horizon canvas {
+  display: block;
+}
+
+moloch-stats .horizon .title, moloch-stats .horizon .value {
+  bottom      : 0;
+  line-height : 30px;
+  margin      : 0 6px;
+  position    : absolute;
+  text-shadow : 0 1px 0 rgba(255, 255, 255, 0.5);
+  white-space : nowrap;
+}
+
+moloch-stats .horizon .title {
+  left: 0;
+}
+
+moloch-stats .horizon .value {
+  right: 0;
+}
+
+moloch-stats .line {
+  background: var(--color-black);
+  opacity   : .2;
+  z-index   : 2;
+  right     : 0;
+}

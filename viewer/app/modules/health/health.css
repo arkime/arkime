@@ -1,0 +1,23 @@
+es-health .es-health-tooltip {
+  top: 44px;
+  right: 14px;
+}
+
+es-health .es-health {
+  display: inline-block;
+}
+
+es-health .es-health .fa {
+  font-size: 1.8em;
+  line-height: .8em;
+}
+
+es-health .health-red {
+  color: #ff0000;
+}
+es-health .health-yellow {
+  color: #ffff00;
+}
+es-health .health-green {
+  color: #00aa00;
+}

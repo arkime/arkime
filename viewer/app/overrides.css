@@ -1,6 +1,12 @@
 /* Bootstrap Overrides ======================= */
 
-// condense the table more!
+/* display labels inline with proper wrapping */
+.label {
+  /* https://github.com/twbs/bootstrap/issues/13219 */
+  display: inline-block;
+}
+
+/* condense the table more! */
 .table-condensed > thead > tr > th,
 .table-condensed > tbody > tr > th,
 .table-condensed > tfoot > tr > th,
@@ -10,12 +16,12 @@
   padding: 1px 4px;
 }
 
-// make stripes darker
+/* make stripes darker */
 .table-striped > tbody > tr:nth-of-type(odd) {
-  background-color: lighten($color-gray-light, 2%);
+  background-color: var(--color-gray-lighter);
 }
 
-// make active table items darker
+/* make active table items darker */
 .table > thead > tr > td.active,
 .table > tbody > tr > td.active,
 .table > tfoot > tr > td.active,
@@ -28,5 +34,12 @@
 .table > thead > tr.active > th,
 .table > tbody > tr.active > th,
 .table > tfoot > tr.active > th {
-  background-color: lighten($color-gray-light, 2%);
+  background-color: var(--color-gray-lighter);
+}
+
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+  color           : var(--color-white);
+  background-color: var(--color-primary-dark);
 }

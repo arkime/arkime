@@ -52,6 +52,12 @@
             Column Configs
           </a>
         </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'theme'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('theme')">
+            <span class="fa fa-fw fa-paint-brush"></span>&nbsp;
+            Themes
+          </a>
+        </li>
         <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'password'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('password')">
             <span class="fa fa-fw fa-lock"></span>&nbsp;
@@ -81,7 +87,7 @@
               <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
                 uib-btn-radio="'gmt'" ng-change="$ctrl.updateTime()">gmt</label>
             </div>
-            <label class="margined-left-xxlg text-purple">
+            <label class="margined-left-xxlg text-theme-primary">
               {{$ctrl.date | date : $ctrl.dateFormat : $ctrl.settings.timezone}}
             </label>
           </div>
@@ -526,6 +532,32 @@
         </div>
 
       </form> <!-- /col configs settings -->
+
+      <!-- theme settings -->
+      <form class="form-horizontal padded-bottom-lg" ng-if="$ctrl.visibleTab === 'theme'">
+
+        <h3>UI Themes</h3>
+
+        <p>
+          Pick from a preexisting theme below
+        </p>
+
+        <hr>
+
+        <!-- theme picker -->
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Theme</label>
+          <div class="col-sm-9">
+            <select class="form-control" ng-change="$ctrl.changeTheme()"
+              ng-model="$ctrl.theme">
+              <option value="default-theme">Default</option>
+              <option value="blue-theme">Blue</option>
+              <option value="cotton-candy-theme">Cotton Candy</option>
+            </select>
+          </div>
+        </div>
+
+      </form> <!-- /theme settings -->
 
       <!-- password settings -->
       <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'password'"

@@ -118,7 +118,7 @@ dl
         |)
 
   div.tag-list
-    +arrayList(session, "ta", "Tags:", "tags", '<div ng-click="displayFormContainer({form:\'add:tags\'})" uib-tooltip="Add a new tag to this session" class="btn btn-xs btn-blue margined-left-sm"><span class="fa fa-plus-circle"></span> </div>')
+    +arrayList(session, "ta", "Tags:", "tags", '<div ng-click="displayFormContainer({form:\'add:tags\'})" uib-tooltip="Add a new tag to this session" class="btn btn-xs btn-theme-secondary margined-left-sm"><span class="fa fa-plus-circle"></span> </div>')
 
   if (session.fs && session.fs.length > 0)
     +arrayList(session, "fs", "Files:", "file")

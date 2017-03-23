@@ -1,0 +1,74 @@
+moloch-search {
+  position: fixed;
+  right   : 0;
+  left    : 0;
+  z-index : 1029;
+}
+
+moloch-search form {
+  border          : none;
+  padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-secondary-lighter);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+}
+
+moloch-search form .time-range-control {
+  -webkit-appearance: none;
+}
+
+moloch-search .action-form-separator {
+  margin    : 7px 15px;
+  border-top: 1px solid var(--color-gray-light);
+}
+
+
+/* dropdown menus in search bar */
+moloch-search .dropdown-menu {
+  min-width: 200px;
+}
+
+moloch-search .dropdown-menu > li > div {
+  display     : block;
+  padding     : 2px 8px;
+  white-space : nowrap;
+  margin-left : 0;
+  margin-right: 0;
+}
+
+moloch-search .dropdown-menu > li > div > div {
+  padding-left : 0;
+  padding-right: 0;
+}
+
+moloch-search .dropdown-menu > li > div a {
+  color           : var(--color-black);
+  text-decoration : none;
+}
+
+moloch-search .dropdown-menu > li > div:hover,
+moloch-search .dropdown-menu > li > div:focus {
+  color           : var(--color-black);
+  text-decoration : none;
+  background-color: var(--color-gray-light);
+}
+
+moloch-search .dropdown-menu > .active > div,
+moloch-search .dropdown-menu > .active > div:hover,
+moloch-search .dropdown-menu > .active > div:focus {
+  background-color: var(--color-tertiary-dark);
+}
+
+moloch-search .dropdown-menu > .active > div a,
+moloch-search .dropdown-menu > .active > div:hover a,
+moloch-search .dropdown-menu > .active > div:focus a {
+  color           : var(--color-white);
+  text-decoration : none;
+}
+
+
+/* make sure action menu dropdown is above all the things
+ * but specifically above the sticky sessions button */
+.action-menu-dropdown { z-index: 1030; }

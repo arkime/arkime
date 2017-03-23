@@ -1,0 +1,85 @@
+session session-detail .packet-options .btn.active {
+  font-weight: bolder;
+}
+
+session session-detail .packet-container .tooltip .tooltip-inner {
+  max-width: 400px;
+}
+
+session session-detail .packet-container .file {
+  display       : inline-block;
+  margin-bottom : 20px;
+}
+
+
+/* src/dst packet text colors */
+session session-detail .sessiondst {
+  color: blue !important;
+}
+
+session session-detail .sessionsrc {
+  color: #CA0404 !important;
+}
+
+/* timestamps */
+session session-detail .session-detail-ts {
+  display       : none;
+  color         : var(--color-primary-light);
+  font-weight   : bold;
+  padding       : 0 4px;
+  margin-left   : 2px;
+  margin-right  : 2px;
+  border-bottom : 1px solid var(--color-gray);
+}
+
+session session-detail .session-detail-ts + pre {
+  color     : inherit;
+  margin-top: -1px;
+}
+
+session session-detail .session-detail-ts + pre .sessionln {
+  color: darkgreen;
+}
+
+session session-detail .detail-container.show-ts ~ .packet-container .session-detail-ts {
+  display: block;
+}
+
+
+/* list values */
+session session-detail dt {
+  font-size   : 16px;
+  float       : left;
+  clear       : left;
+  width       : 160px;
+  text-align  : right;
+  margin-right: 6px;
+}
+
+session session-detail dd {
+  margin: 0 0 0 165px;
+}
+
+session session-detail dd > strong {
+  font-size: 16px;
+}
+
+
+/* more items link */
+session session-detail .show-more-items {
+  margin-left     : 6px;
+  margin-right    : 6px;
+  font-size       : 12px;
+  text-decoration : none;
+}
+
+
+/* top navigation links */
+session session-detail .nav-pills {
+  border-bottom : 1px solid var(--color-gray-light);
+  padding-bottom: 4px;
+}
+
+session session-detail .nav-pills li a:hover {
+  background-color: var(--color-quaternary-lighter);
+}

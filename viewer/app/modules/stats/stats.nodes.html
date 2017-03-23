@@ -42,7 +42,7 @@
         ng-repeat-start="stat in $ctrl.filteredStats = ($ctrl.stats.data) track by stat.id">
         <td class="no-wrap">
           <a class="btn btn-sm btn-toggle"
-            ng-class="{'collapsed':!$ctrl.expanded[stat.id], 'btn-green':!$ctrl.expanded[stat.id], 'btn-danger':$ctrl.expanded[stat.id]}"
+            ng-class="{'collapsed':!$ctrl.expanded[stat.id], 'btn-theme-tertiary':!$ctrl.expanded[stat.id], 'btn-danger':$ctrl.expanded[stat.id]}"
             ng-click="$ctrl.toggleStatDetail(stat)">
             <span class="fa fa-close"></span>
           </a>

@@ -4,6 +4,8 @@
 
   let customCols = require('json!../session/components/custom.columns.json');
 
+  let bodyElem = $(document.body);
+
   /**
    * @class SettingsController
    * @classdesc Interacts with moloch settings page
@@ -42,6 +44,9 @@
 
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
+
+      this.theme = bodyElem.attr('class');
+      if (!this.theme) { this.theme = 'default-theme'; }
 
       this.UserService.getCurrent()
         .then((response) => {
@@ -490,6 +495,15 @@
           this.msg = error.text;
           this.msgType = 'danger';
         });
+    }
+
+
+    /* GENERAL ------------------------------------------------------------- */
+    /* changes the ui theme */
+    changeTheme() {
+      bodyElem.removeClass();
+      bodyElem.addClass(this.theme);
+      // TODO persist this choice
     }
 
 

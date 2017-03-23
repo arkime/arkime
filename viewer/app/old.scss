@@ -1,5 +1,4 @@
 /* variables ================================= */
-// pixels
 $px-none:   0;          // 0px
 $px-xs:     0.125rem;   // 2px
 $px-sm:     .25rem;     // 4px
@@ -18,25 +17,27 @@ $color-gray-dark  : #777;
 $color-gray-light : #EEE;
 $color-black      : #000;
 
+// main theme colors
+$color-primary        : #830B9C;
+$color-primary-dark   : darken($color-primary, 8%);
+$color-primary-light  : lighten($color-primary, 8%);
+
+$color-secondary      : #1F1FA5;
+$color-secondary-dark : darken($color-secondary, 8%);
+$color-secondary-light: lighten($color-secondary, 8%);
+
+$color-tertiary       : #079B72;
+$color-tertiary-dark  : darken($color-tertiary, 8%);
+$color-tertiary-light : lighten($color-tertiary, 8%);
+
+$color-quaternary       : #ECB30A;
+$color-quaternary-dark  : darken($color-quaternary, 8%);
+$color-quaternary-light : lighten($color-quaternary, 10%);
+
+// visualization colors
 $color-water        : #6FB5B5;
 $color-water-dark   : #459292;
 $color-water-light  : #A2D7D7;
-
-$color-yellow       : #ECB30A;
-$color-yellow-light : #FACA3D;
-$color-yellow-dark  : #B98B02;
-
-$color-green        : #079B72;
-$color-green-light  : #28A482;
-$color-green-dark   : #027958;
-
-$color-blue         : #1F1FA5;
-$color-blue-light   : #3E3EAF;
-$color-blue-dark    : #151582;
-
-$color-purple       : #830B9C;
-$color-purple-light : #902BA5;
-$color-purple-dark  : #66057A;
 
 
 
@@ -179,10 +180,10 @@ body {
 
 
 // text
-.text-blue    { color: $color-blue; }
-.text-green   { color: $color-green; }
-.text-purple  { color: $color-purple; }
-.text-yellow  { color: $color-yellow-dark; }
+.text-theme-primary   { color: $color-primary; }
+.text-theme-secondary { color: $color-secondary; }
+.text-theme-tertiary  { color: $color-tertiary; }
+.text-theme-quaternary{ color: $color-quaternary; }
 
 // lighter than muted text
 .text-muted-more {
@@ -240,44 +241,44 @@ a.no-decoration {
 
 // buttons
 .btn {
-  &.btn-purple {
+  &.btn-theme-primary {
     color           : $color-white;
-    background-color: $color-purple-light;
-    border-color    : darken($color-purple-light, 8%);
+    background-color: $color-primary;
+    border-color    : darken($color-primary, 8%);
 
     &:hover {
-      background-color: darken($color-purple-light, 5%);
-      border-color    : darken($color-purple-light, 12%);
+      background-color: darken($color-primary, 5%);
+      border-color    : darken($color-primary, 12%);
     }
   }
-  &.btn-blue {
+  &.btn-theme-secondary {
     color           : $color-white;
-    background-color: $color-blue-light;
-    border-color    : darken($color-blue-light, 8%);
+    background-color: $color-secondary;
+    border-color    : darken($color-secondary, 8%);
 
     &:hover {
-      background-color: darken($color-blue-light, 5%);
-      border-color    : darken($color-blue-light, 12%);
+      background-color: darken($color-secondary, 5%);
+      border-color    : darken($color-secondary, 12%);
     }
   }
-  &.btn-green {
+  &.btn-theme-tertiary {
     color           : $color-white;
-    background-color: $color-green-light;
-    border-color    : darken($color-green-light, 8%);
+    background-color: $color-tertiary;
+    border-color    : darken($color-tertiary, 8%);
 
     &:hover {
-      background-color: darken($color-green-light, 5%);
-      border-color    : darken($color-green-light, 12%);
+      background-color: darken($color-tertiary, 5%);
+      border-color    : darken($color-tertiary, 12%);
     }
   }
-  &.btn-yellow {
+  &.btn-theme-quaternary {
     color           : $color-white;
-    background-color: $color-yellow;
-    border-color    : darken($color-yellow, 8%);
+    background-color: $color-quaternary;
+    border-color    : darken($color-quaternary, 8%);
 
     &:hover {
-      background-color: darken($color-yellow, 5%);
-      border-color    : darken($color-yellow, 12%);
+      background-color: darken($color-quaternary, 5%);
+      border-color    : darken($color-quaternary, 12%);
     }
   }
 }
@@ -373,7 +374,7 @@ a.no-decoration {
   right   : 0;
   padding : $px-xlg $px-lg $px-md 13px;
 
-  background-color  : lighten($color-blue-light, 50%);
+  background-color  : lighten($color-secondary-light, 50%);
   -webkit-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
      -moz-box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;
           box-shadow: $px-none $px-none $px-xlg $px-sm $color-gray;

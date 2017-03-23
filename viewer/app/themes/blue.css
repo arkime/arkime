@@ -1,0 +1,32 @@
+body.blue-theme {
+  /* theme colors */
+  --color-primary         : #224573;
+  --color-primary-dark    : #152344;
+  --color-primary-darker  : #000000;
+  --color-primary-light   : #205b87;
+  --color-primary-lighter : #aab6cd;
+
+  --color-secondary         : #3d7b7e;
+  --color-secondary-dark    : #306264;
+  --color-secondary-darker  : #1b4f50;
+  --color-secondary-light   : #4d9599;
+  --color-secondary-lighter : #ceeae5;
+
+  --color-tertiary        : #42b7c5;
+  --color-tertiary-dark   : #33919b;
+  --color-tertiary-darker : #29757d;
+  --color-tertiary-light  : #7accd7;
+  --color-tertiary-lighter: #ceeef1;
+
+  --color-quaternary        : #ECB30A;
+  --color-quaternary-dark   : #D78A10;
+  --color-quaternary-darker : #AF770B;
+  --color-quaternary-light  : #FFB032;
+  --color-quaternary-lighter: #FFF8DD;
+
+
+  /* visualization colors */
+  --color-water        : #6FB5B5;
+  --color-water-dark   : #459292;
+  --color-water-light  : #A2D7D7;
+}
