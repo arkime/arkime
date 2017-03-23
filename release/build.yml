@@ -9,15 +9,7 @@
   become: true
   become_method: sudo
   vars:
-    - yara_version: 1.7
-    - geoip_version: 1.6.9
-    - pcap_version: 1.8.1
-    - curl_version: 7.53.1
-    - glib2_dir: "2.52"
-    - glib2_version: 2.52.0
     - node_version: 4.8.1
-    - daq_version: 2.0.6
-    - lua_version: 5.3.4
     - rvm1_rubies:
       - ruby-1.9.3
     - rvm1_user: root
@@ -59,31 +51,9 @@
         - yum: name={{item}} state=installed
           with_items:
             - git
-            - wget
-            - curl
-            - pcre
-            - pcre-devel
-            - pkgconfig
-            - flex
-            - bison
-            - gcc
-            - gcc-c++
-            - zlib-devel
-            - e2fsprogs-devel
-            - openssl-devel
-            - file-devel
-            - make
-            - gettext
-            - libuuid-devel
-            - perl-JSON
-            - bzip2-libs
-            - bzip2-devel
-            - perl-libwww-perl
-            - libpng-devel
-            - xz
-            - libffi-devel
-            - libselinux-python
             - rpm-build
+            - unzip
+            - xz
             - pfring
 
       # Block end
@@ -98,27 +68,6 @@
         - apt: update_cache=yes name={{item}} state=installed
           with_items:
             - git
-            - wget
-            - curl
-            - libpcre3-dev
-            - uuid-dev
-            - libmagic-dev
-            - pkg-config
-            - gcc
-            - g++
-            - flex
-            - bison
-            - zlib1g-dev
-            - libffi-dev
-            - gettext
-            - make
-            - libjson-perl
-            - libbz2-dev
-            - libwww-perl
-            - libpng-dev
-            - xz-utils
-            - libffi-dev
-            - libssl-dev
             - pfring
 
       # Block end
@@ -142,81 +91,7 @@
     - name: Download Packages
       get_url: url={{item}} dest=. validate_certs=no
       with_items:
-        - https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/yara-project/yara-{{yara_version}}.tar.gz
-        - https://github.com/maxmind/geoip-api-c/releases/download/v{{geoip_version}}/GeoIP-{{geoip_version}}.tar.gz
-        - http://www.tcpdump.org/release/libpcap-{{pcap_version}}.tar.gz
-        - http://curl.haxx.se/download/curl-{{curl_version}}.tar.gz
-        - http://ftp.gnome.org/pub/gnome/sources/glib/{{glib2_dir}}/glib-{{glib2_version}}.tar.xz
         - https://nodejs.org/download/release/v{{node_version}}/node-v{{node_version}}-linux-x64.tar.xz
-        - https://www.snort.org/downloads/snort/daq-{{daq_version}}.tar.gz
-        - https://www.lua.org/ftp/lua-{{lua_version}}.tar.gz
-
-    - name: Unarchive Packages
-      unarchive: src={{item}} dest=. copy=no
-      with_items:
-        - yara-{{yara_version}}.tar.gz
-        - GeoIP-{{geoip_version}}.tar.gz
-        - libpcap-{{pcap_version}}.tar.gz
-        - curl-{{curl_version}}.tar.gz
-        - glib-{{glib2_version}}.tar.xz
-        - daq-{{daq_version}}.tar.gz
-        - lua-{{lua_version}}.tar.gz
-
-    - name: Check yara
-      stat: path=yara-{{yara_version}}/libyara/.libs/libyara.a
-      register: st
-
-    - name: Build yara
-      shell: cd yara-{{yara_version}}; ./configure --enable-static; make
-      when: st.stat.exists == False
-
-    - name: Check GeoIP
-      stat: path=GeoIP-{{geoip_version}}/libGeoIP/.libs/libGeoIP.a
-      register: st
-
-    - name: Build GeoIP
-      shell: cd GeoIP-{{geoip_version}}; ./configure --enable-static; make
-      when: st.stat.exists == False
-
-    - name: Check libpcap
-      stat: path=libpcap-{{pcap_version}}/libpcap.a
-      register: st
-
-    - name: Build libpcap
-      shell: cd libpcap-{{pcap_version}}; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth --with-snf=no; make
-      when: st.stat.exists == False
-
-    - name: Check curl
-      stat: path=curl-{{curl_version}}/lib/.libs/libcurl.a
-      register: st
-
-    - name: Build curl
-      shell: cd curl-{{curl_version}}; ./configure --disable-ldap --disable-ldaps --without-libidn --without-librtmp; make
-      when: st.stat.exists == False
-
-    - name: Check glib2
-      stat: path=glib-{{glib2_version}}/glib/.libs/libglib-2.0.a
-      register: st
-
-    - name: Build glib2
-      shell: cd glib-{{glib2_version}}; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal; make
-      when: st.stat.exists == False
-
-    - name: Check daq
-      stat: path=/usr/local/include/daq.h
-      register: st
-
-    - name: Build daq
-      shell: cd daq-{{daq_version}}; ./configure --with-libpcap-includes=/home/vagrant/libpcap-{{pcap_version}}/ --with-libpcap-libraries=/home/vagrant/libpcap-{{pcap_version}}; make; make install
-      when: st.stat.exists == False
-
-    - name: Check lua
-      stat: path=lua-{{lua_version}}/src/liblua.a
-      register: st
-
-    - name: Build lua
-      shell: cd lua-{{lua_version}}; make MYCFLAGS=-fPIC linux
-      when: st.stat.exists == False
 
 # Only install snf if it exists locally.
     - name: Check for remote snf
@@ -266,27 +141,8 @@
       - name: git clone
         git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes
 
-      - name: configure
-        shell: cd {{moloch_name}}; ./configure --with-libpcap=../libpcap-{{pcap_version}} --with-yara=../yara-{{yara_version}} --with-GeoIP=../GeoIP-{{geoip_version}} --with-curl=../curl-{{curl_version}} --with-glib2=../glib-{{glib2_version}} --with-lua=../lua-{{lua_version}} --prefix="/data/{{moloch_name}}"
-
-      - name: clean build area
-        shell: cd {{moloch_name}}; make clean
-
       - name: build
-        shell: cd {{moloch_name}}; make
-
-      - name: build pfring plugin
-        shell: cd {{moloch_name}}/capture/plugins/pfring; make
-
-      - name: build daq plugin
-        shell: cd {{moloch_name}}/capture/plugins/daq; make
-
-      - name: build lua plugin
-        shell: cd {{moloch_name}}/capture/plugins/lua; make
-
-      - name: build snf plugin
-        shell: cd {{moloch_name}}/capture/plugins/snf; make
-        when: localsnf.stat.exists == True
+        shell: cd {{moloch_name}}; ./easybutton-build.sh -d /data/{{moloch_name}}
 
       - name: install centos 6
         shell: cd {{moloch_name}}; scl enable devtoolset-3 "make install"
