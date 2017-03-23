@@ -2,6 +2,7 @@
   - NOTICE: Upgrading from versions prior to 0.18 require an outage for db.pl
             upgrade (~5 min) see the 0.18.0 notes.
   - release - node 4.8.1, lua 5.3.4, curl 7.53.1, glib2 2.52.0
+  - capture - handle certs with after dates before the before date
 
 0.18.0 2017/03/21
   - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)
