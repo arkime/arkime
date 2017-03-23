@@ -508,24 +508,35 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
 
             /* If the host header is in the first 8 bytes of url then just use the url */
             if (result && result - http->urlString->str <= 8) {
-                moloch_field_string_add(urlsField, session, http->urlString->str, MIN(MAX_URL_LENGTH, http->urlString->len), FALSE);
-                truncated = http->urlString->len > MAX_URL_LENGTH;
+                if (http->urlString->len > MAX_URL_LENGTH) {
+                    truncated = TRUE;
+                    g_string_truncate(http->urlString, MAX_URL_LENGTH);
+                }
+                moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
                 g_string_free(http->urlString, FALSE);
                 g_string_free(http->hostString, TRUE);
             } else {
                 /* Host header doesn't match the url */
                 g_string_append(http->hostString, ";");
                 g_string_append(http->hostString, http->urlString->str);
-                moloch_field_string_add(urlsField, session, http->hostString->str, MIN(MAX_URL_LENGTH, http->hostString->len), FALSE);
-                truncated = http->hostString->len > MAX_URL_LENGTH;
+
+                if (http->hostString->len > MAX_URL_LENGTH) {
+                    truncated = TRUE;
+                    g_string_truncate(http->hostString, MAX_URL_LENGTH);
+                }
+                moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
                 g_string_free(http->urlString, TRUE);
                 g_string_free(http->hostString, FALSE);
             }
         } else {
             /* Normal case, url starts with /, so no extra host in url */
             g_string_append(http->hostString, http->urlString->str);
-            moloch_field_string_add(urlsField, session, http->hostString->str, MIN(MAX_URL_LENGTH, http->hostString->len), FALSE);
-            truncated = http->hostString->len > MAX_URL_LENGTH;
+
+            if (http->hostString->len > MAX_URL_LENGTH) {
+                truncated = TRUE;
+                g_string_truncate(http->hostString, MAX_URL_LENGTH);
+            }
+            moloch_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE);
             g_string_free(http->urlString, TRUE);
             g_string_free(http->hostString, FALSE);
         }
@@ -533,10 +544,13 @@ moloch_hp_cb_on_headers_complete (http_parser *parser)
         http->urlString = NULL;
         http->hostString = NULL;
     } else if (http->urlString) {
-        moloch_field_string_add(urlsField, session, http->urlString->str, MIN(MAX_URL_LENGTH, http->urlString->len), FALSE);
-        truncated = http->urlString->len > MAX_URL_LENGTH;
-        g_string_free(http->urlString, FALSE);
 
+        if (http->urlString->len > MAX_URL_LENGTH) {
+            truncated = TRUE;
+            g_string_truncate(http->urlString, MAX_URL_LENGTH);
+        }
+        moloch_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE);
+        g_string_free(http->urlString, FALSE);
 
         http->urlString = NULL;
     } else if (http->hostString) {
