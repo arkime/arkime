@@ -43,3 +43,16 @@
   color           : var(--color-white);
   background-color: var(--color-primary-dark);
 }
+
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
+  z-index         : 3;
+  color           : var(--color-white);
+  cursor          : default;
+  background-color: var(--color-secondary-light);
+  border-color    : var(--color-secondary);
+}

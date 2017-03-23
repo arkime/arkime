@@ -209,6 +209,10 @@ a.no-decoration { text-decoration: none; }
   background-color: var(--color-primary-dark);
   border-color    : var(--color-primary-darker);
 }
+.btn.btn-theme-primary.active {
+  background-color: var(--color-primary-darker);
+  border-color    : var(--color-primary-darker);
+}
 
 .btn.btn-theme-secondary {
   color           : var(--color-white);
@@ -217,6 +221,10 @@ a.no-decoration { text-decoration: none; }
 }
 .btn.btn-theme-secondary:hover {
   background-color: var(--color-secondary-dark);
+  border-color    : var(--color-secondary-darker);
+}
+.btn.btn-theme-secondary.active {
+  background-color: var(--color-secondary-darker);
   border-color    : var(--color-secondary-darker);
 }
 
@@ -229,6 +237,10 @@ a.no-decoration { text-decoration: none; }
   background-color: var(--color-tertiary-dark);
   border-color    : var(--color-tertiary-darker);
 }
+.btn.btn-theme-tertiary.active {
+  background-color: var(--color-tertiary-darker);
+  border-color    : var(--color-tertiary-darker);
+}
 
 .btn.btn-theme-quaternary {
   color           : var(--color-white);
@@ -237,6 +249,10 @@ a.no-decoration { text-decoration: none; }
 }
 .btn.btn-theme-quaternary:hover {
   background-color: var(--color-quaternary-dark);
+  border-color    : var(--color-quaternary-darker);
+}
+.btn.btn-theme-primary.active {
+  background-color: var(--color-quaternary-darker);
   border-color    : var(--color-quaternary-darker);
 }
 
