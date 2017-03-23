@@ -12,12 +12,12 @@
     - yara_version: 1.7
     - geoip_version: 1.6.9
     - pcap_version: 1.8.1
-    - curl_version: 7.52.1
-    - glib2_dir: "2.50"
-    - glib2_version: 2.50.2
-    - node_version: 4.6.2
+    - curl_version: 7.53.1
+    - glib2_dir: "2.52"
+    - glib2_version: 2.52.0
+    - node_version: 4.8.1
     - daq_version: 2.0.6
-    - lua_version: 5.3.3
+    - lua_version: 5.3.4
     - rvm1_rubies:
       - ruby-1.9.3
     - rvm1_user: root
