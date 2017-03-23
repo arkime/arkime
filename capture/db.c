@@ -1021,7 +1021,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
                 BSB_EXPORT_sprintf(jbsb, "\"notBefore\": %" PRId64 ",", certs->notBefore);
                 BSB_EXPORT_sprintf(jbsb, "\"notAfter\": %" PRId64 ",", certs->notAfter);
-                BSB_EXPORT_sprintf(jbsb, "\"diffDays\": %" PRId64 ",", (certs->notAfter - certs->notBefore)/(60*60*24));
+                if (certs->notAfter >= certs->notBefore)
+                    BSB_EXPORT_sprintf(jbsb, "\"diffDays\": %" PRId64 ",", (certs->notAfter - certs->notBefore)/(60*60*24));
 
                 BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
 
