@@ -1,22 +1,25 @@
 #!/bin/sh
 # Use this script to install OS dependencies, downloading and compile moloch dependencies, and compile moloch capture.
 
-# This script will 
+# This script will
 # * use apt-get/yum to install OS dependancies
 # * download known working versions of moloch dependancies
-# * build them statically 
+# * build them statically
 # * configure moloch-capture to use them
 # * build moloch-capture
 
 
-GLIB=2.50.2
+GLIB=2.52.0
 YARA=1.7
 GEOIP=1.6.9
-PCAP=1.7.4
-CURL=7.52.1
+PCAP=1.8.1
+CURL=7.53.1
+LUA=5.3.4
+DAQ=2.0.6
 
 TDIR="/data/moloch"
 DOPFRING=0
+DODAQ=0
 
 while :
 do
@@ -28,6 +31,10 @@ do
   -d | --dir)
     TDIR=$2
     shift 2
+    ;;
+  --daq)
+    DODAQ=1
+    shift
     ;;
   -*)
     echo "Unknown option '$1'"
@@ -73,6 +80,8 @@ if [ ! -d "thirdparty" ]; then
   mkdir thirdparty
 fi
 cd thirdparty
+
+PWD=`pwd`
 
 # glib
 if [ $(uname) == "FreeBSD" ]; then
@@ -137,18 +146,22 @@ else
   echo "MOLOCH: Not rebuilding libGeoIP"
 fi
 
-echo "MOLOCH: Building libpcap";
 # libpcap
 if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
   wget http://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
 fi
 tar zxf libpcap-$PCAP.tar.gz
-(cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth; $MAKE)
-if [ $? -ne 0 ]; then
-  echo "MOLOCH: $MAKE failed"
-  exit 1
+if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
+  echo "MOLOCH: Building libpcap";
+  (cd libpcap-$PCAP; ./configure --disable-dbus --disable-usb --disable-canusb --disable-bluetooth; $MAKE)
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: $MAKE failed"
+    exit 1
+  fi
+else
+  echo "MOLOCH: NOT rebuilding libpcap";
 fi
-PCAPDIR=`pwd`/libpcap-$PCAP
+PCAPDIR=$PWD/libpcap-$PCAP
 PCAPBUILD="--with-libpcap=$PCAPDIR"
 
 # curl
@@ -163,16 +176,50 @@ if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
     echo "MOLOCH: $MAKE failed"
     exit 1
   fi
-else 
+else
   echo "MOLOCH: Not rebuilding curl"
+fi
+
+# lua
+if [ ! -f "lua-$LUA.tar.gz" ]; then
+  wget https://www.lua.org/ftp/lua-$LUA.tar.gz
+fi
+
+if [ ! -f "lua-$LUA/src/liblua.a" ]; then
+  tar zxf lua-$LUA.tar.gz
+  ( cd lua-$LUA; make MYCFLAGS=-fPIC linux)
+  if [ $? -ne 0 ]; then
+    echo "MOLOCH: $MAKE failed"
+    exit 1
+  fi
+else
+  echo "MOLOCH: Not rebuilding lua"
+fi
+
+# daq
+if [ $DODAQ -eq 1 ]; then
+  if [ ! -f "daq-$DAQ.tar.gz" ]; then
+    wget https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
+  fi
+
+  if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
+    tar zxf daq-$DAQ.tar.gz
+    ( cd daq-$DAQ; ./configure --with-libpcap-includes=$PWD/libpcap-$PCAP/ --with-libpcap-libraries=$PWD/libpcap-$PCAP; make; sudo make install)
+    if [ $? -ne 0 ]; then
+      echo "MOLOCH: $MAKE failed"
+      exit 1
+    fi
+  else
+    echo "MOLOCH: Not rebuilding daq"
+  fi
 fi
 
 
 # Now build moloch
 echo "MOLOCH: Building capture"
 cd ..
-echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL"
-./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL
+echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA"
+./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara-$YARA --with-GeoIP=thirdparty/GeoIP-$GEOIP $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA
 
 $MAKE
 if [ $? -ne 0 ]; then
@@ -180,11 +227,24 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+(cd capture/plugins/lua; $MAKE)
 if [ $DOPFRING -eq 1 ]; then
     (cd capture/plugins/pfring; $MAKE)
 fi
 
-#
+if [ $DODAQ -eq 1 ]; then
+    (cd capture/plugins/daq; $MAKE)
+fi
+
+if [ -f "/opt/snf/lib/libsnf.so" ]; then
+    (cd capture/plugins/snf; $MAKE)
+fi
+
+if [ -f "/usr/local/lib/libpfring.so" ]; then
+    (cd capture/plugins/pfring; $MAKE)
+fi
+
+
 echo "Now type 'sudo make install' and 'sudo make config'"
 
 exit 0
