@@ -29,6 +29,10 @@
 #include "pcap.h"
 #include "molochconfig.h"
 
+#ifndef BUILD_VERSION
+#define BUILD_VERSION "unkn"
+#endif
+
 /******************************************************************************/
 MolochConfig_t         config;
 extern void           *esServer;
