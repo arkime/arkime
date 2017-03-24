@@ -2,6 +2,7 @@ AC_INIT([moloch], [0.18.1-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
+AC_CHECK_TOOL([GIT],[git],[:])
 AC_CONFIG_HEADERS([capture/molochconfig.h])
 AC_PREFIX_DEFAULT(["/data/moloch"])
 AC_CHECK_HEADERS([sys/inotify.h])
