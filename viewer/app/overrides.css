@@ -6,6 +6,7 @@
   display: inline-block;
 }
 
+
 /* condense the table more! */
 .table-condensed > thead > tr > th,
 .table-condensed > tbody > tr > th,
@@ -37,6 +38,7 @@
   background-color: var(--color-gray-lighter);
 }
 
+
 /* give nav-pills theme color */
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:hover,
@@ -45,7 +47,8 @@
   background-color: var(--color-primary-dark);
 }
 
-/* git pagination theme color */
+
+/* give pagination theme color */
 .pagination > .active > a,
 .pagination > .active > span,
 .pagination > .active > a:hover,
@@ -55,6 +58,28 @@
   z-index         : 3;
   color           : var(--color-white);
   cursor          : default;
-  background-color: var(--color-secondary-light);
-  border-color    : var(--color-secondary);
+  background-color: var(--color-primary);
+  border-color    : var(--color-primary-light);
+}
+
+
+/* give dropdowns theme color */
+ul.dropdown-menu li:hover,
+ul.dropdown-menu div li:hover,
+ul.dropdown-menu > li > div:hover,
+ul.dropdown-menu > li > div:focus {
+  background-color: var(--color-gray-light);
+}
+ul.dropdown-menu li.active a,
+ul.dropdown-menu div li.active,
+ul.dropdown-menu > .active > div,
+ul.dropdown-menu > .active > div:hover,
+ul.dropdown-menu > .active > div:focus {
+  background-color: var(--color-primary);
+}
+ul.dropdown-menu li.active a,
+ul.dropdown-menu div li.active a,
+ul.dropdown-menu > .active > div a,
+ul.dropdown-menu > .active > div:focus a {
+  color: var(--color-white) !important;
 }

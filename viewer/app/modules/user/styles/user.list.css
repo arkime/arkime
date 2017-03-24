@@ -1,29 +1,3 @@
 moloch-users .btn-header {
   margin-left: 10px;
 }
-
-moloch-users table tr.ng-move,
-moloch-users table tr.ng-enter,
-moloch-users table tr.ng-leave {
-  -webkit-transition: all 400ms linear;
-     -moz-transition: all 400ms linear;
-          transition: all 400ms linear;
-}
-
-moloch-users table tr.ng-move,
-moloch-users table tr.ng-enter,
-moloch-users table tr.ng-leave.ng-leave-active {
-  opacity: 0;
-}
-
-moloch-users table tr.ng-leave,
-moloch-users table tr.ng-move.ng-move-active,
-moloch-users table tr.ng-enter.ng-enter-active {
-  opacity: 1;
-}
-
-moloch-users form .form-group-sm .checkbox {
-  min-height    : 0;
-  padding-top   : 0;
-  margin-bottom : -8px;
-}

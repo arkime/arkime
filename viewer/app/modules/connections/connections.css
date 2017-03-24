@@ -13,7 +13,7 @@ moloch-connections #networkLabel {
   padding   : 4px 8px;
   width     : 170px;
   border    : solid 1px var(--color-gray);
-  background: var(--color-primary-lighter);
+  background: var(--color-primary-lightest);
 
   -webkit-border-radius: var(--px-sm);
      -moz-border-radius: var(--px-sm);
@@ -30,7 +30,7 @@ moloch-connections form.connections-form {
   left    : 0;
   right   : 0;
   padding : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
-  background-color: var(--color-quaternary-lighter);
+  background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
      -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);

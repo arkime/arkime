@@ -9,7 +9,7 @@ moloch-spigraph form.spigraph-form {
   left            : 0;
   right           : 0;
   padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
-  background-color: var(--color-quaternary-lighter);
+  background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
      -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
@@ -37,7 +37,7 @@ moloch-spigraph .well {
 
 /* vertically center the map on the row (there's a button) */
 moloch-spigraph .spi-graph-item:nth-child(odd) {
-  background-color: var(--color-quaternary-lighter);
+  background-color: var(--color-quaternary-lightest);
 }
 
 moloch-spigraph .spi-graph-item .moloch-map-container {

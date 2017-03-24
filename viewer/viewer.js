@@ -909,7 +909,9 @@ app.get(['/users'], checkWebEnabled, function(req, res) {
      { path: app.locals.basePath }
   );
 
-  res.render('app.pug');
+  var theme = req.user.settings.theme || 'default-theme';
+
+  res.render('app.pug', { theme:theme });
 });
 
 // angular app bundles

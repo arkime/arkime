@@ -8,7 +8,7 @@ moloch-search {
 moloch-search form {
   border          : none;
   padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
-  background-color: var(--color-secondary-lighter);
+  background-color: var(--color-secondary-lightest);
 
   -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
      -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
@@ -45,26 +45,6 @@ moloch-search .dropdown-menu > li > div > div {
 
 moloch-search .dropdown-menu > li > div a {
   color           : var(--color-black);
-  text-decoration : none;
-}
-
-moloch-search .dropdown-menu > li > div:hover,
-moloch-search .dropdown-menu > li > div:focus {
-  color           : var(--color-black);
-  text-decoration : none;
-  background-color: var(--color-gray-light);
-}
-
-moloch-search .dropdown-menu > .active > div,
-moloch-search .dropdown-menu > .active > div:hover,
-moloch-search .dropdown-menu > .active > div:focus {
-  background-color: var(--color-tertiary-dark);
-}
-
-moloch-search .dropdown-menu > .active > div a,
-moloch-search .dropdown-menu > .active > div:hover a,
-moloch-search .dropdown-menu > .active > div:focus a {
-  color           : var(--color-white);
   text-decoration : none;
 }
 

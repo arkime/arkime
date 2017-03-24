@@ -18,7 +18,7 @@ session .table thead tr th:first-child {
 }
 
 session .table tbody tr:not(.session-detail-row):hover {
-  background-color: var(--color-tertiary-lighter);
+  background-color: var(--color-tertiary-lightest);
 }
 
 session .table tbody tr:not(.session-detail-row):hover td.active {
@@ -26,7 +26,7 @@ session .table tbody tr:not(.session-detail-row):hover td.active {
 }
 
 session .table tbody tr.session-detail-row {
-  background-color: var(--color-quaternary-lighter);
+  background-color: var(--color-quaternary-lightest);
 }
 
 session .table tbody tr td {
@@ -72,7 +72,7 @@ session [ng-drag].drag-over {
 }
 
 session [ng-drop].drag-enter {
-  background-color: var(--color-quaternary-lighter) !important;
+  background-color: var(--color-quaternary-lightest) !important;
 }
 
 
@@ -104,17 +104,17 @@ ul.dropdown-menu div .group-header {
   border-bottom : var(--color-gray-light) 1px solid;
 }
 
-ul.dropdown-menu div li:hover {
-  background-color: var(--color-gray-light);
-}
+/*ul.dropdown-menu div li:hover {*/
+  /*background-color: var(--color-gray-light);*/
+/*}*/
 
-ul.dropdown-menu div li.active {
-  background-color: var(--color-tertiary-dark);
-}
+/*ul.dropdown-menu div li.active {*/
+  /*background-color: var(--color-primary);*/
+/*}*/
 
-ul.dropdown-menu div li.active a {
-  color: var(--color-white) !important;
-}
+/*ul.dropdown-menu div li.active a {*/
+  /*color: var(--color-white) !important;*/
+/*}*/
 
 ul.dropdown-menu div li a {
   display         : block;

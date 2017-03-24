@@ -78,8 +78,11 @@ session session-detail .show-more-items {
 session session-detail .nav-pills {
   border-bottom : 1px solid var(--color-gray-light);
   padding-bottom: 4px;
+  padding-top   : 4px;
 }
 
-session session-detail .nav-pills li a:hover {
-  background-color: var(--color-quaternary-light);
+session session-detail .nav-pills li a:hover,
+session session-detail .nav-pills li.open > a,
+session session-detail .nav-pills li.open > a:hover {
+  background-color: var(--color-quaternary-lighter);
 }

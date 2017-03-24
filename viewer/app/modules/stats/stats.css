@@ -11,31 +11,6 @@ moloch-stats #statsGraphOptions {
   z-index   : 1;
 }
 
-moloch-stats table tr {
-  max-height: 100px;
-}
-
-/* animations for filtering table contents */
-moloch-stats table tr.ng-move,
-moloch-stats table tr.ng-enter,
-moloch-stats table tr.ng-leave {
-  -webkit-transition: all 400ms linear;
-     -moz-transition: all 400ms linear;
-          transition: all 400ms linear;
-}
-
-moloch-stats table tr.ng-move,
-moloch-stats table tr.ng-enter,
-moloch-stats table tr.ng-leave.ng-leave-active {
-  opacity: 0;
-}
-
-moloch-stats table tr.ng-leave,
-moloch-stats table tr.ng-move.ng-move-active,
-moloch-stats table tr.ng-enter.ng-enter-active {
-  opacity: 1;
-}
-
 moloch-stats table.table-striped > tbody > tr:nth-of-type(odd) {
   background-color: var(--color-gray-lighter);
 }

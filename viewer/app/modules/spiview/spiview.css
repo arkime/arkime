@@ -70,7 +70,7 @@ moloch-spiview .panel-body .spi-buckets {
 }
 
 moloch-spiview .panel-body .spi-buckets:nth-child(odd) {
-  background-color: var(--color-quaternary-lighter);
+  background-color: var(--color-quaternary-lightest);
 }
 
 moloch-spiview .panel-body .spi-bucket {

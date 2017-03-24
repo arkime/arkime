@@ -5,7 +5,7 @@ session-field.detail-field .field {
 }
 
 session-field.detail-field .field a {
-  color     : var(--color-secondary-darker);
+  color     : var(--color-secondary-dark);
   word-break: break-word;
 }
 
