@@ -13,40 +13,46 @@
     </span>
   </div>
 
-  <div class="text-center">
-    <select ng-model="$ctrl.graphSelect" ng-change="$ctrl.loadData()">
-      <option value="deltaPacketsPerSec"> Packets/Sec</option>
-      <option value="deltaBytesPerSec"> Bytes/Sec</option>
-      <option value="deltaBitsPerSec"> Bits/Sec</option>
-      <option value="deltaSessionsPerSec"> Sessions/Sec</option>
-      <option value="deltaDroppedPerSec"> Input Dropped/Sec</option>
-      <option value="monitoring"> Active Sessions</option>
-      <option value="tcpSessions"> Active TCP Sessions</option>
-      <option value="udpSessions"> Active UDP Sessions</option>
-      <option value="icmpSessions"> Active ICMP Sessions</option>
-      <option value="freeSpaceM"> Free Space MB</option>
-      <option value="freeSpaceP"> Free Space %</option>
-      <option value="memory"> Memory</option>
-      <option value="memoryP"> Memory %</option>
-      <option value="cpu"> CPU</option>
-      <option value="diskQueue"> Disk Queue</option>
-      <option value="esQueue"> ES Queue</option>
-      <option value="deltaESDroppedPerSec"> ES Dropped/Sec</option>
-      <option value="packetQueue"> Packet Queue</option>
-      <option value="closeQueue"> Closing Queue</option>
-      <option value="needSave"> Waiting Queue</option>
-      <option value="fragsQueue"> Fragments Queue</option>
-      <option value="frags"> Active Fragments</option>
-      <option value="deltaFragsDroppedPerSec"> Fragments Dropped/Sec</option>
-      <option value="deltaOverloadDroppedPerS>c"> Overload Dropped/Sec</option>
-      <option value="deltaTotalDroppedPerSec"> Total Dropped/Sec</option>
-    </select>
-    <select ng-model="$ctrl.graphTimeSelect" ng-change="$ctrl.loadData()">
-      <option value="5"> Seconds</option>
-      <option value="60"> Minutes</option>
-      <option value="600"> 10 Minutes</option>
-    </select>
-  </div>
+  <form class="form-inline text-center">
+    <div class="form-group">
+      <select ng-model="$ctrl.graphSelect" ng-change="$ctrl.loadData()"
+        class="form-control input-sm">
+        <option value="deltaPacketsPerSec"> Packets/Sec</option>
+        <option value="deltaBytesPerSec"> Bytes/Sec</option>
+        <option value="deltaBitsPerSec"> Bits/Sec</option>
+        <option value="deltaSessionsPerSec"> Sessions/Sec</option>
+        <option value="deltaDroppedPerSec"> Input Dropped/Sec</option>
+        <option value="monitoring"> Active Sessions</option>
+        <option value="tcpSessions"> Active TCP Sessions</option>
+        <option value="udpSessions"> Active UDP Sessions</option>
+        <option value="icmpSessions"> Active ICMP Sessions</option>
+        <option value="freeSpaceM"> Free Space MB</option>
+        <option value="freeSpaceP"> Free Space %</option>
+        <option value="memory"> Memory</option>
+        <option value="memoryP"> Memory %</option>
+        <option value="cpu"> CPU</option>
+        <option value="diskQueue"> Disk Queue</option>
+        <option value="esQueue"> ES Queue</option>
+        <option value="deltaESDroppedPerSec"> ES Dropped/Sec</option>
+        <option value="packetQueue"> Packet Queue</option>
+        <option value="closeQueue"> Closing Queue</option>
+        <option value="needSave"> Waiting Queue</option>
+        <option value="fragsQueue"> Fragments Queue</option>
+        <option value="frags"> Active Fragments</option>
+        <option value="deltaFragsDroppedPerSec"> Fragments Dropped/Sec</option>
+        <option value="deltaOverloadDroppedPerS>c"> Overload Dropped/Sec</option>
+        <option value="deltaTotalDroppedPerSec"> Total Dropped/Sec</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <select ng-model="$ctrl.graphTimeSelect" ng-change="$ctrl.loadData()"
+        class="form-control input-sm">
+        <option value="5"> Seconds</option>
+        <option value="60"> Minutes</option>
+        <option value="600"> 10 Minutes</option>
+      </select>
+    </div>
+  </form>
 
   <!-- Stats Graphs-->
   <div id="statsGraph"></div>

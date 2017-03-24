@@ -37,6 +37,7 @@
   background-color: var(--color-gray-lighter);
 }
 
+/* give nav-pills theme color */
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
@@ -44,6 +45,7 @@
   background-color: var(--color-primary-dark);
 }
 
+/* git pagination theme color */
 .pagination > .active > a,
 .pagination > .active > span,
 .pagination > .active > a:hover,

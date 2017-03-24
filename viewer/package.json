@@ -73,8 +73,6 @@
     "karma-spec-reporter": "0.0.26",
     "karma-webpack": "^1.8.0",
     "ngdraggable": "^0.1.10",
-    "node-sass": "^3.8.0",
-    "sass-loader": "^4.0.0",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.2"

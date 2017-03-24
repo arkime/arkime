@@ -892,7 +892,9 @@ app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview', '/sp
      { path: app.locals.basePath }
   );
 
-  res.render('app.pug');
+  var theme = req.user.settings.theme || 'default-theme';
+
+  res.render('app.pug', { theme:theme });
 });
 
 app.get(['/users'], checkWebEnabled, function(req, res) {
@@ -938,7 +940,8 @@ var settingDefaults = {
   spiGraph      : 'no',
   connSrcField  : 'a1',
   connDstField  : 'ip.dst:port',
-  numPackets    : 'last'
+  numPackets    : 'last',
+  theme         : 'default-theme'
 };
 
 // gets the current user

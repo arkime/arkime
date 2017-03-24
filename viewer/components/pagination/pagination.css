@@ -17,6 +17,7 @@ select.page-select {
     padding       : 8px 10px 6px;
     margin-left   : -6px;
     border-radius : 0 var(--px-sm) var(--px-sm) 0;
+    background-color: var(--color-white);
   }
 
   select.page-select {

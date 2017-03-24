@@ -81,5 +81,5 @@ session session-detail .nav-pills {
 }
 
 session session-detail .nav-pills li a:hover {
-  background-color: var(--color-quaternary-lighter);
+  background-color: var(--color-quaternary-light);
 }

@@ -45,9 +45,6 @@
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
 
-      this.theme = bodyElem.attr('class');
-      if (!this.theme) { this.theme = 'default-theme'; }
-
       this.UserService.getCurrent()
         .then((response) => {
           let isAdminEdit = false;
@@ -502,8 +499,9 @@
     /* changes the ui theme */
     changeTheme() {
       bodyElem.removeClass();
-      bodyElem.addClass(this.theme);
-      // TODO persist this choice
+      bodyElem.addClass(this.settings.theme);
+
+      this.update();
     }
 
 
