@@ -191,11 +191,12 @@ void tls_process_server_hello(MolochSession_t *session, const unsigned char *dat
 #define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
 
 /******************************************************************************/
-uint64_t tls_parse_time(int tag, unsigned char* value, int len)
+uint64_t tls_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len)
 {
     int        offset = 0;
     int        pos = 0;
     struct tm  tm;
+    time_t     val;
 
     //UTCTime
     if (tag == 23 && len > 12) {
@@ -215,7 +216,12 @@ uint64_t tls_parse_time(int tag, unsigned char* value, int len)
         if (tm.tm_year < 50)
             tm.tm_year += 100;
 
-        return timegm(&tm) + offset;
+        val = timegm(&tm) + offset;
+        if (val < 0) {
+            val = 0;
+            moloch_session_add_tag(session, "cert:pre-epoch-time");
+        }
+        return val;
     }
     //GeneralizedTime
     else if (tag == 24 && len >= 10) {
@@ -245,17 +251,22 @@ uint64_t tls_parse_time(int tag, unsigned char* value, int len)
         }
     gtdone:
         if (pos == len) {
-            return mktime(&tm);
+            val = mktime(&tm);
+        } else {
+            if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
+                offset = str2num(value+pos+1) * 60 +  str2num(value+pos+3);
+
+                if (value[pos] == '-')
+                    offset = -offset;
+            }
+            val = timegm(&tm) + offset;
         }
 
-        if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
-            offset = str2num(value+pos+1) * 60 +  str2num(value+pos+3);
-
-            if (value[pos] == '-')
-                offset = -offset;
+        if (val < 0) {
+            val = 0;
+            moloch_session_add_tag(session, "cert:pre-epoch-time");
         }
-
-        return timegm(&tm) + offset;
+        return val;
     }
     return 0;
 }
@@ -344,11 +355,11 @@ void tls_process_server_certificate(MolochSession_t *session, const unsigned cha
         BSB_INIT(tbsb, value, alen);
         if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
-        certs->notBefore = tls_parse_time(atag, value, alen);
+        certs->notBefore = tls_parse_time(session, atag, value, alen);
 
         if (!(value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen)))
             {badreason = 7; goto bad_cert;}
-        certs->notAfter = tls_parse_time(atag, value, alen);
+        certs->notAfter = tls_parse_time(session, atag, value, alen);
 
         /* subject */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
