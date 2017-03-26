@@ -1,0 +1,34 @@
+body.green-theme {
+  /* theme colors */
+  --color-primary         : #2a7847;
+  --color-primary-dark    : #2a6e3d;
+  --color-primary-darker  : #235a32;
+  --color-primary-light   : #308c55;
+  --color-primary-lighter : #37a05f;
+  --color-primary-lightest: #c1dbca;
+
+  --color-secondary         : #3D7B7E;
+  --color-secondary-dark    : #306264;
+  --color-secondary-darker  : #1B4F50;
+  --color-secondary-light   : #4d9599;
+  --color-secondary-lighter : #63BED3;
+  --color-secondary-lightest: #DBECE7;
+
+  --color-tertiary          : #91c563;
+  --color-tertiary-dark     : #7eaa57;
+  --color-tertiary-darker   : #759b54;
+  --color-tertiary-light    : #a0d96e;
+  --color-tertiary-lighter  : #aae37c;
+  --color-tertiary-lightest : #e4f0d2;
+
+  --color-quaternary          : #becf14;
+  --color-quaternary-dark     : #adbc12;
+  --color-quaternary-darker   : #9caa10;
+  --color-quaternary-light    : #cdde15;
+  --color-quaternary-lighter  : #def015;
+  --color-quaternary-lightest : #fdffe2;
+
+
+  /* visualization colors */
+  --color-water: #e8f0f3;
+}

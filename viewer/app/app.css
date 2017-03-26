@@ -3,6 +3,7 @@
 @import './themes/default.css';
 @import './themes/blue.css';
 @import './themes/cottoncandy.css';
+@import './themes/green.css';
 
 /* import bootstrap overrides */
 @import 'overrides.css';

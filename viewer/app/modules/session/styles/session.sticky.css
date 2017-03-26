@@ -50,6 +50,11 @@ sticky-sessions .sticky-session-detail .list-group-item {
   padding     : 4px 8px;
 }
 
+a.list-group-item:hover,
+a.list-group-item:focus {
+  background-color: var(--color-secondary-lightest);
+}
+
 sticky-sessions .sticky-session-detail .list-group-item.ng-move,
 sticky-sessions .sticky-session-detail .list-group-item.ng-enter,
 sticky-sessions .sticky-session-detail .list-group-item.ng-leave {

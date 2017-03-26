@@ -18,6 +18,10 @@ navbar .navbar-text {
   margin-bottom : 8px;
 }
 
+navbar .navbar-text > small {
+  color: var(--color-gray);
+}
+
 navbar .navbar-inverse {
   background-color  : var(--color-primary-dark);
   border-color      : var(--color-primary-darker);
