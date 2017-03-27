@@ -11,8 +11,18 @@
 
     // load the module and enable debug info (to access isolateScope)
     beforeEach(function() {
-      angular.mock.module('moloch', function (_$compileProvider_) {
+      angular.mock.module('moloch', function (_$compileProvider_, $provide) {
         _$compileProvider_.debugInfoEnabled(true);
+        $provide.value('$window', {
+          getComputedStyle: () => {
+            return {
+              getPropertyValue: () => {
+                return '#000';
+              }
+            };
+          }
+        });
+        $provide.value('$document', angular.element(document));
       });
     });
 
@@ -21,8 +31,9 @@
     // Initialize and a mock scope
     beforeEach(inject(function(
       $compile,
+      $rootScope,
       _$timeout_,
-      $rootScope, _$httpBackend_) {
+      _$httpBackend_) {
         $httpBackend = _$httpBackend_;
         $timeout = _$timeout_;
 
