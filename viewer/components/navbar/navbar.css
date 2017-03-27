@@ -26,23 +26,18 @@ navbar .navbar-inverse {
   background-color  : var(--color-primary-dark);
   border-color      : var(--color-primary-darker);
 
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) var(--color-gray-darker);
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) var(--color-gray-darker);
-          box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) var(--color-gray-darker);
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) #333;
 }
 
 navbar .navbar-inverse .navbar-brand {
-  color       : var(--color-gray-light);
+  color       : var(--color-gray);
   margin-left : 36px !important;
-}
-
-navbar .navbar-inverse li a {
-  color: var(--color-white) !important;
 }
 
 navbar .navbar-inverse li.active a {
   background-color: var(--color-primary-darker) !important;
-  color           : var(--color-white) !important;
   font-weight     : 500;
 }
 

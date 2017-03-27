@@ -1,8 +1,10 @@
-select.page-select {
-  width: 120px;
+moloch-pagination select.page-select {
+  width           : 120px;
+  background-color: var(--color-background);
+  color           : var(--color-foreground);
 }
 
-.pagination-info {
+moloch-pagination .pagination-info {
   font-size : 1.2rem;
   color     : var(--color-gray-dark);
 }
@@ -23,7 +25,7 @@ select.page-select {
   select.page-select {
     display           : inline-flex;
     height            : 30px;
-    margin-right      : -8px;
+    margin-right      : -5px;
     margin-bottom     : var(--px-xs);
     padding-top       : var(--px-xs);
     padding-bottom    : var(--px-xs);

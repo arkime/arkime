@@ -24,9 +24,14 @@
           let mapEl = element.find('.moloch-map-container > #moloch-map');
 
           let styles = $window.getComputedStyle($document[0].body);
-          let primaryColorDark   = styles.getPropertyValue('--color-primary-dark').trim();
-          let primaryColorLight  = styles.getPropertyValue('--color-primary-lightest').trim();
-          let waterColor         = styles.getPropertyValue('--color-water').trim();
+          let waterColor        = styles.getPropertyValue('--color-water').trim();
+          let landColorDark     = styles.getPropertyValue('--color-land-dark').trim();
+          let landColorLight    = styles.getPropertyValue('--color-land-light').trim();
+
+          if (!landColorDark || !landColorLight) {
+            landColorDark  = styles.getPropertyValue('--color-primary-dark').trim();
+            landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
+          }
 
           mapEl.vectorMap({ // setup map
             map             : 'world_en',
@@ -35,7 +40,7 @@
             hoverOpacity    : 0.7,
             series: {
               regions: [{
-                scale: [ primaryColorLight, primaryColorDark ],
+                scale: [ landColorLight, landColorDark ],
                 normalizeFunction: 'polynomial',
                 attribute: 'fill'
               }]

@@ -241,7 +241,7 @@
             id="session{{::session.id}}">
             <td>
               <span ng-if=":refresh:$ctrl.showSessions">
-                <a class="btn btn-sm btn-toggle"
+                <a class="btn btn-sm btn-toggle margined-top-sm"
                   ng-class="{'collapsed':!session.expanded, 'btn-theme-tertiary':!session.expanded, 'btn-danger':session.expanded}"
                   ng-click="$ctrl.toggleSessionDetail(session)">
                   <span class="fa fa-close"></span>

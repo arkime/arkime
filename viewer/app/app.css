@@ -1,9 +1,10 @@
 /* imports =================================== */
 /* import themes */
 @import './themes/default.css';
+@import './themes/default-dark.css';
 @import './themes/blue.css';
-@import './themes/cottoncandy.css';
 @import './themes/green.css';
+@import './themes/cotton-candy.css';
 
 /* import bootstrap overrides */
 @import 'overrides.css';
@@ -48,7 +49,9 @@
 
 /* appwide styles ============================ */
 body {
-  font-size   : 16px;
+  font-size       : 16px;
+  color           : var(--color-foreground);
+  background-color: var(--color-background);
 
   --px-none   : 0;          /* 0px */
   --px-xs     : 0.125rem;   /* 2px */
@@ -60,15 +63,6 @@ body {
   --px-xxxlg  : 2rem;       /* 32px */
   --px-xxxxlg : 3rem;       /* 48px */
   --px-xxxxxlg: 3.5rem;     /* 56px */
-
-  /* basic colors */
-  --color-white       : #FFFFFF;
-  --color-gray        : #CCCCCC;
-  --color-gray-dark   : #777777;
-  --color-gray-darker : #555555;
-  --color-gray-light  : #EEEEEE;
-  --color-gray-lighter: #F6F6F6;
-  --color-black       : #000000;
 }
 
 
@@ -167,6 +161,7 @@ body {
 
 
 /* text */
+.text-theme-accent    { color: var(--color-foreground-accent); }
 .text-theme-primary   { color: var(--color-primary); }
 .text-theme-secondary { color: var(--color-secondary); }
 .text-theme-tertiary  { color: var(--color-tertiary); }
@@ -200,7 +195,7 @@ a.no-decoration { text-decoration: none; }
 
 /* themed buttons */
 .btn.btn-theme-primary {
-  color           : var(--color-white);
+  color           : var(--color-foreground, #FFFFFF);
   background-color: var(--color-primary);
   border-color    : var(--color-primary-dark);
 }
@@ -214,7 +209,7 @@ a.no-decoration { text-decoration: none; }
 }
 
 .btn.btn-theme-secondary {
-  color           : var(--color-white);
+  color           : var(--color-foreground, #FFFFFF);
   background-color: var(--color-secondary);
   border-color    : var(--color-secondary-dark);
 }
@@ -228,7 +223,7 @@ a.no-decoration { text-decoration: none; }
 }
 
 .btn.btn-theme-tertiary {
-  color           : var(--color-white);
+  color           : var(--color-foreground, #FFFFFF);
   background-color: var(--color-tertiary);
   border-color    : var(--color-tertiary-dark);
 }
@@ -242,7 +237,7 @@ a.no-decoration { text-decoration: none; }
 }
 
 .btn.btn-theme-quaternary {
-  color           : var(--color-white);
+  color           : var(--color-foreground, #FFFFFF);
   background-color: var(--color-quaternary);
   border-color    : var(--color-quaternary-dark);
 }
@@ -353,9 +348,9 @@ a.no-decoration { text-decoration: none; }
   padding : var(--px-xlg) var(--px-lg) var(--px-md) 13px;
 
   background-color  : var(--color-secondary-lightest);
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
-  -moz-box-shadow   : var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
-  box-shadow        : var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  -moz-box-shadow   : var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  box-shadow        : var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
 }
 
 .sub-navbar .sub-navbar-title {

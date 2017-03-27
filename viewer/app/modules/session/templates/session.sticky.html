@@ -13,15 +13,13 @@
     <ul class="list-group">
       <li class="list-group-item">
         <a class="btn btn-default btn-sm pull-right"
-          ng-click="toggleStickySessions()">
-          <span class="fa fa-angle-double-right"></span>
+          ng-click="closeAll()" uib-tooltip="Close all open sessions"
+          tooltip-placement="left">
+          <span class="fa fa-close"></span>
         </a>
         <h4>
           {{sessions.length}} Open
-          Session<span ng-if="sessions.length > 1">s</span>&nbsp;
-          <small><a class="cursor-pointer" ng-click="closeAll()">
-            close all
-          </a></small>
+          Session<span ng-if="sessions.length > 1">s</span>
         </h4>
       </li>
       <a class="list-group-item cursor-pointer"

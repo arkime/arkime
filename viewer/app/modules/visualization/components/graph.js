@@ -46,9 +46,10 @@
           }
 
           function setup(data) {
-            let primaryColor = $window.getComputedStyle(body)
-                                .getPropertyValue('--color-primary');
-            
+            let styles = $window.getComputedStyle(body);
+            let primaryColor    = styles.getPropertyValue('--color-primary').trim();
+            let highlightColor  = styles.getPropertyValue('--color-gray-darker').trim();
+
             scope.graph         = [{ data:data[scope.type] }];
 
             scope.graphOptions  = { // flot graph options
@@ -62,7 +63,7 @@
               },
               selection : {
                 mode    : 'x',
-                color   : '#333333'
+                color   : highlightColor
               },
               xaxis   : {
                 mode  : 'time',

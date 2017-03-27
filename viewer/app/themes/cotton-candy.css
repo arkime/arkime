@@ -1,4 +1,16 @@
 body.cotton-candy-theme {
+  /* basic colors */
+  --color-foreground-accent : #9A4E93;
+
+  --color-white       : #FFFFFF;
+  --color-gray        : #CCCCCC;
+  --color-gray-dark   : #777777;
+  --color-gray-darker : #555555;
+  --color-gray-light  : #EEEEEE;
+  --color-gray-lighter: #F6F6F6;
+  --color-black       : #000000;
+
+
   /* theme colors */
   --color-primary         : #C43D75;
   --color-primary-dark    : #B0346D;

@@ -1,4 +1,16 @@
 body.blue-theme {
+  /* basic colors */
+  --color-foreground-accent : #9A4E93;
+
+  --color-white       : #FFFFFF;
+  --color-gray        : #CCCCCC;
+  --color-gray-dark   : #777777;
+  --color-gray-darker : #555555;
+  --color-gray-light  : #EEEEEE;
+  --color-gray-lighter: #F6F6F6;
+  --color-black       : #000000;
+
+
   /* theme colors */
   --color-primary         : #214B78;
   --color-primary-dark    : #163254;
@@ -18,7 +30,7 @@ body.blue-theme {
   --color-tertiary-dark     : #33919b;
   --color-tertiary-darker   : #29757d;
   --color-tertiary-light    : #7ACCD7;
-  --color-tertiary-lighter  : #87E6f3;
+  --color-tertiary-lighter  : #87E6F3;
   --color-tertiary-lightest : #D3EEF1;
 
   --color-quaternary          : #ECB30A;

@@ -11,9 +11,9 @@ moloch-spigraph form.spigraph-form {
   padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
   background-color: var(--color-quaternary-lightest);
 
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
-          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
 }
 
 /* fixes to compensate for second fixed position form */
@@ -30,9 +30,9 @@ moloch-spigraph .spigraph-content {
 }
 
 moloch-spigraph .well {
-  -webkit-box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) var(--color-gray);
-     -moz-box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) var(--color-gray);
-          box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) var(--color-gray);
+  -webkit-box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) #777;
+     -moz-box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) #777;
+          box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) #777;
 }
 
 /* vertically center the map on the row (there's a button) */

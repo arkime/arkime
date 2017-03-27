@@ -1,3 +1,9 @@
+session session-detail {
+  display     : block;
+  margin-left : var(--px-md);
+  margin-right: var(--px-md);
+}
+
 session session-detail .packet-options .btn.active {
   font-weight: bolder;
 }
@@ -24,7 +30,7 @@ session session-detail .sessionsrc {
 /* timestamps */
 session session-detail .session-detail-ts {
   display       : none;
-  color         : var(--color-primary-light);
+  color         : var(--color-foreground-accent);
   font-weight   : bold;
   padding       : 0 4px;
   margin-left   : 2px;
@@ -79,6 +85,10 @@ session session-detail .nav-pills {
   border-bottom : 1px solid var(--color-gray-light);
   padding-bottom: 4px;
   padding-top   : 4px;
+}
+
+session session-detail .nav-pills li a {
+  color:var(--color-foreground);
 }
 
 session session-detail .nav-pills li a:hover,

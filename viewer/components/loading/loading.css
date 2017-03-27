@@ -25,7 +25,7 @@ loading .loading .loader {
   position      : relative;
   top           : 50%;
   left          : 50%;
-  border-radius: 50%;
+  border-radius : 50%;
 }
 
 loading .loading .loader:before {
@@ -57,11 +57,8 @@ loading .loading .loader-section.circle {
   height        : 260px;
   margin        : -130px 0 0 -130px;
   border-radius : 50%;
-  background    : rgba(34, 34, 34, 0.3);
-
-  -webkit-box-shadow: 0 0 16px 2px rgba(0, 0, 0, 0.2);
-     -moz-box-shadow: 0 0 16px 2px rgba(0, 0, 0, 0.2);
-          box-shadow: 0 0 16px 2px rgba(0, 0, 0, 0.2);
+  background    : var(--color-gray-light);
+  opacity       : 0.6;
 }
 
 /* use square for circle animation */
@@ -70,7 +67,8 @@ loading .loading .loader-section.square {
   height        : 180px;
   margin        : -90px 0 0 -90px;
   border-radius : 32px;
-  background    : rgba(34, 34, 34, 0.1);
+  background    : var(--color-gray-light);
+  opacity       : 0.6;
 }
 
 

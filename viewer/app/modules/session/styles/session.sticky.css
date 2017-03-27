@@ -8,7 +8,7 @@ sticky-sessions .sticky-session-btn {
   width           : 69px;
   display         : block;
   position        : fixed;
-  top             : 80px;
+  top             : 82px;
   right           : 0;
   z-index         : 1029;
   margin-right    : -30px;
@@ -17,7 +17,7 @@ sticky-sessions .sticky-session-btn {
   border-radius   : 4px 0 0 4px;
   cursor          : pointer;
   background-color: var(--color-quaternary);
-  color           : var(--color-white);
+  color           : var(--color-foreground, #FFF);
 }
 
 sticky-sessions .sticky-session-detail {
@@ -28,7 +28,8 @@ sticky-sessions .sticky-session-detail {
   bottom          : 0;
   z-index         : 999;
   width           : 360px;
-  box-shadow      : -1px 0px 14px 3px var(--color-gray);
+  box-shadow      : -1px 0px 14px 3px #333;
+  border-left     : 1px solid var(--color-gray);
   background-color: var(--color-gray-lighter);
 
   -webkit-transition: right 300ms linear;
@@ -45,9 +46,11 @@ sticky-sessions .sticky-session-detail ul {
 }
 
 sticky-sessions .sticky-session-detail .list-group-item {
-  border-left : none;
-  border-right: none;
-  padding     : 4px 8px;
+  border-left     : none;
+  border-right    : none;
+  padding         : 4px 8px;
+  background-color: var(--color-background, #FFF);
+  color           : var(--color-foreground, #333);
 }
 
 a.list-group-item:hover,
@@ -83,7 +86,7 @@ sticky-sessions .sticky-session-detail .list-group-item:last-child {
 sticky-sessions .sticky-session-detail .list-group-item:first-child {
   border-top-right-radius : 0;
   border-top-left-radius  : 0;
-  padding                 : 24px 8px 12px 8px;
+  padding                 : 12px 8px;
   background-color        : var(--color-gray-lighter);
 }
 

@@ -19,6 +19,11 @@ moloch-stats table.table > tfoot > tr:first-child > td {
   border-top: 2px solid var(--color-gray-light);
 }
 
+moloch-stats .well {
+  background-color: var(--color-gray-lighter);
+  border-color    : var(--color-gray-light);
+}
+
 
 /* Cubism stuff -------------------- */
 moloch-stats .axis path, moloch-stats .axis line {

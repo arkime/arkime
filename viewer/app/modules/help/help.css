@@ -9,9 +9,9 @@ moloch-help ul.nav-pills {
   border-radius : 4px;
   padding       : 4px;
 
-  -webkit-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) var(--color-gray);
-     -moz-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) var(--color-gray);
-          box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) var(--color-gray);
+  -webkit-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
+     -moz-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
+          box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
 }
 
 moloch-help ul li a {

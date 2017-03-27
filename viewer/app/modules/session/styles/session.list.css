@@ -41,7 +41,7 @@ session .moloch-col-header {
 }
 
 session .moloch-col-header.active {
-  color: var(--color-primary-dark);
+  color: var(--color-foreground-accent);
 }
 
 session .moloch-col-header:hover .btn-group {

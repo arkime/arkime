@@ -5,7 +5,7 @@ session-field.detail-field .field {
 }
 
 session-field.detail-field .field a {
-  color     : var(--color-secondary-dark);
+  color     : var(--color-foreground-accent);
   word-break: break-word;
 }
 
@@ -23,7 +23,7 @@ session-field .field {
 }
 
 session-field .field a {
-  color          : var(--color-gray-darker);
+  color          : var(--color-foreground);
   text-decoration: none;
 }
 
@@ -41,7 +41,7 @@ session-field .field.time-field {
 session-field .field:hover {
   z-index         : 4;
   background-color: var(--color-white);
-  border          : 1px solid var(--color-gray-darker);
+  border          : 1px solid var(--color-gray-light);
 }
 
 session-field .field:hover a {
@@ -88,13 +88,13 @@ session-field ul.session-field-dropdown {
   list-style      : none;
   border-radius   : 4px;
   background-color: var(--color-white);
-  border          : 1px solid var(--color-gray);
+  border          : 1px solid var(--color-gray-light);
 
           background-clip: padding-box;
   -webkit-background-clip: padding-box;
 
-          box-shadow: 0 6px 12px var(--color-gray);
-  -webkit-box-shadow: 0 6px 12px var(--color-gray);
+          box-shadow: 0 6px 12px -3px #333;
+  -webkit-box-shadow: 0 6px 12px -3px #333;
 }
 
 session-field ul.session-field-dropdown.pull-right {

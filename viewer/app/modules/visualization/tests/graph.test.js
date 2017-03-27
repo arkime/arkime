@@ -15,8 +15,18 @@
 
     // load the module// load the module and enable debug info (to access isolateScope)
     beforeEach(function() {
-      angular.mock.module('moloch', function (_$compileProvider_) {
+      angular.mock.module('moloch', function (_$compileProvider_, $provide) {
         _$compileProvider_.debugInfoEnabled(true);
+        $provide.value('$window', {
+          getComputedStyle: () => {
+            return {
+              getPropertyValue: () => {
+                return '#000';
+              }
+            };
+          }
+        });
+        $provide.value('$document', angular.element(document));
       });
     });
 
