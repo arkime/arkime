@@ -2,82 +2,104 @@
    "sessions" : [
       {
          "body" : {
-            "fp" : 1386358422,
-            "fb1" : "45484c4f20787878",
-            "p1" : 24962,
-            "emvcnt" : 1,
-            "prot-term-cnt" : 2,
-            "rir2" : "ARIN",
+            "lp" : 1386358429,
+            "ehhcnt" : 16,
+            "ipSrc" : "10.180.121.151",
+            "ipDst" : "64.236.64.225",
+            "eid" : [
+               "CEC790C3.1A0F0%xxxxxxxxx@xxxxxxx.com"
+            ],
+            "timestamp" : "SET",
+            "db" : 2059,
             "eho" : [
                "xxxxxxxxxxxxxxxxx2.xxxxx.net",
                "xxxxxxxxxxxxxxxxx4.xxxxx.net"
             ],
+            "p2" : 25,
+            "emd5" : [
+               "9f06243abcb89c70e0c331c61d871fa7"
+            ],
+            "ectcnt" : 1,
+            "firstPacket" : 1386358422209,
+            "as2" : "AS1668 AOL Transit Data Network",
+            "db1" : 1573,
+            "pa" : 24,
+            "ta" : [
+               "smtp:statuscode:250"
+            ],
+            "pr" : 6,
+            "fb1" : "45484c4f20787878",
+            "prot-term-cnt" : 2,
+            "eidcnt" : 1,
+            "eua" : [
+               "Microsoft-MacOutlook/14.3.9.131030"
+            ],
+            "mac1-term-cnt" : 2,
+            "edstcnt" : 1,
+            "by" : 3439,
+            "ss" : 1,
+            "fs" : [],
+            "euacnt" : 1,
+            "tcpflags" : {
+               "syn-ack" : 1,
+               "ack" : 8,
+               "rst" : 0,
+               "fin" : 2,
+               "urg" : 0,
+               "psh" : 12,
+               "syn" : 1
+            },
+            "lpd" : 1386358429964,
+            "fp" : 1386358422,
+            "fb2" : "3232302078787878",
+            "sl" : 7755,
+            "by2" : 1290,
             "rireip" : [
                "",
                "ARIN",
                ""
             ],
+            "a2" : "64.236.64.225",
+            "esrc" : [
+               "xxxxxxxxx@xxxxxxx.com"
+            ],
+            "pa1" : 10,
             "mac1-term" : [
                "00:00:0c:07:ac:01",
                "00:0b:5f:6b:5d:40"
             ],
-            "fb2" : "3232302078787878",
-            "portDst" : 25,
-            "esrccnt" : 1,
-            "ehh" : [
-               "content-type",
-               "message-id",
-               "mime-version",
-               "from",
-               "to",
-               "user-agent",
-               "x-ms-tnef-correlator",
-               "received",
-               "thread-index",
-               "date",
-               "subject",
-               "content-language",
-               "x-originating-ip",
-               "x-ms-has-attach",
-               "accept-language",
-               "thread-topic"
-            ],
+            "db2" : 486,
             "aseip" : [
                "---",
                "---",
                "---"
             ],
-            "ehocnt" : 2,
-            "ta" : [
+            "esubcnt" : 1,
+            "tags-term" : [
                "smtp:statuscode:250"
             ],
-            "pa" : 24,
-            "lastPacket" : 1386358429964,
-            "emd5cnt" : 1,
+            "portSrc" : 24962,
+            "mac2-term" : [
+               "00:25:90:7e:28:f6"
+            ],
+            "rir2" : "ARIN",
             "prot-term" : [
                "smtp",
                "tcp"
             ],
-            "eua" : [
-               "Microsoft-MacOutlook/14.3.9.131030"
+            "edst" : [
+               "xxxxxxxx@gmail.com"
             ],
-            "eipcnt" : 3,
-            "esubcnt" : 1,
-            "pr" : 6,
-            "mac2-term" : [
-               "00:25:90:7e:28:f6"
+            "esrccnt" : 1,
+            "emv" : [
+               "1.0"
             ],
-            "eid" : [
-               "CEC790C3.1A0F0%xxxxxxxxx@xxxxxxx.com"
-            ],
+            "mac2-term-cnt" : 1,
+            "by1" : 2149,
             "pa2" : 14,
-            "mac1-term-cnt" : 2,
-            "eip" : [
-               "10.0.0.4",
-               "169.254.4.195",
-               "10.180.121.151"
-            ],
-            "no" : "test",
+            "ehocnt" : 2,
+            "p1" : 24962,
+            "eipcnt" : 3,
             "ps" : [
                24,
                106,
@@ -104,23 +126,13 @@
                3695,
                3771
             ],
-            "g2" : "USA",
-            "as2" : "AS1668 AOL Transit Data Network",
-            "a2" : "64.236.64.225",
-            "lpd" : 1386358429964,
-            "a1" : "10.180.121.151",
-            "ect" : [
-               "multipart/alternative; boundary=\"_000_CEC790C31A0F0xxxxxxxxxxxxxxxxxx_\""
+            "g1" : "USA",
+            "emd5cnt" : 1,
+            "eip" : [
+               "10.0.0.4",
+               "169.254.4.195",
+               "10.180.121.151"
             ],
-            "tacnt" : 1,
-            "by" : 3439,
-            "ehhcnt" : 16,
-            "geip" : [
-               "---",
-               "---",
-               "USA"
-            ],
-            "sl" : 7755,
             "psl" : [
                82,
                82,
@@ -147,66 +159,48 @@
                76,
                76
             ],
-            "euacnt" : 1,
-            "timestamp" : "SET",
-            "fs" : [],
-            "tags-term" : [
-               "smtp:statuscode:250"
+            "lastPacket" : 1386358429964,
+            "tacnt" : 1,
+            "ect" : [
+               "multipart/alternative; boundary=\"_000_CEC790C31A0F0xxxxxxxxxxxxxxxxxx_\""
             ],
-            "ipSrc" : "10.180.121.151",
-            "tcpflags" : {
-               "syn-ack" : 1,
-               "rst" : 0,
-               "psh" : 12,
-               "ack" : 8,
-               "fin" : 2,
-               "syn" : 1,
-               "urg" : 0
-            },
-            "db" : 2059,
-            "edst" : [
-               "xxxxxxxx@gmail.com"
+            "portDst" : 25,
+            "emvcnt" : 1,
+            "ehh" : [
+               "content-type",
+               "message-id",
+               "mime-version",
+               "from",
+               "to",
+               "user-agent",
+               "x-ms-tnef-correlator",
+               "received",
+               "thread-index",
+               "date",
+               "subject",
+               "content-language",
+               "x-originating-ip",
+               "x-ms-has-attach",
+               "accept-language",
+               "thread-topic"
             ],
-            "by1" : 2149,
-            "firstPacket" : 1386358422209,
-            "ectcnt" : 1,
-            "db2" : 486,
-            "pa1" : 10,
-            "p2" : 25,
-            "emd5" : [
-               "9f06243abcb89c70e0c331c61d871fa7"
-            ],
-            "ipDst" : "64.236.64.225",
+            "a1" : "10.180.121.151",
+            "g2" : "USA",
             "esub" : [
                "test 测试"
             ],
-            "lp" : 1386358429,
             "fpd" : 1386358422209,
-            "emv" : [
-               "1.0"
-            ],
-            "db1" : 1573,
-            "portSrc" : 24962,
-            "email" : {
-               "bodymagic-term" : [
-                  "text/plain"
-               ],
-               "bodymagic-term-cnt" : 1
-            },
-            "g1" : "USA",
-            "eidcnt" : 1,
-            "by2" : 1290,
-            "ss" : 1,
-            "esrc" : [
-               "xxxxxxxxx@xxxxxxx.com"
-            ],
-            "mac2-term-cnt" : 1,
-            "edstcnt" : 1
+            "no" : "test",
+            "geip" : [
+               "---",
+               "---",
+               "USA"
+            ]
          },
          "header" : {
             "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-131206"
+               "_index" : "tests_sessions-131206",
+               "_type" : "session"
             }
          }
       }

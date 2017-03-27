@@ -1,58 +1,70 @@
 {
    "sessions" : [
       {
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions-161222",
+               "_type" : "session"
+            }
+         },
          "body" : {
-            "mac2-term" : [
-               "00:22:83:3f:17:c5"
+            "vlan" : [
+               50
             ],
-            "a1" : "10.10.10.10",
-            "portSrc" : 40041,
-            "by1" : 370,
-            "by2" : 152,
-            "lastPacket" : 1482381409513,
-            "portDst" : 3306,
-            "a2" : "10.176.176.11",
+            "ta" : [
+               "acked-unseen-segment-src",
+               "no-syn-ack"
+            ],
             "mysql" : {
-               "user-term" : "xxxxxxxxxxxxx",
-               "ver-term" : "5.6.12-log"
+               "ver-term" : "5.6.12-log",
+               "user-term" : "xxxxxxxxxxxxx"
             },
-            "mac1-term-cnt" : 1,
-            "ss" : 1,
-            "p1" : 40041,
-            "fb2" : "4e0000000a352e36",
             "tags-term" : [
                "no-syn-ack",
                "acked-unseen-segment-src"
             ],
-            "vlan" : [
-               50
-            ],
+            "vlan-cnt" : 1,
+            "ipSrc" : "10.10.10.10",
+            "mac2-term-cnt" : 1,
+            "mac1-term-cnt" : 1,
+            "pa2" : 1,
+            "tcpflags" : {
+               "syn" : 1,
+               "psh" : 2,
+               "rst" : 0,
+               "fin" : 0,
+               "syn-ack" : 0,
+               "urg" : 0,
+               "ack" : 2
+            },
+            "pa" : 5,
+            "p2" : 3306,
+            "by2" : 152,
+            "fb2" : "4e0000000a352e36",
             "tacnt" : 2,
-            "lpd" : 1482381409513,
-            "by" : 522,
+            "sl" : 0,
+            "fs" : [],
+            "a2" : "10.176.176.11",
+            "portDst" : 3306,
+            "prot-term" : [
+               "mysql",
+               "tcp"
+            ],
+            "db" : 164,
+            "pa1" : 4,
+            "pr" : 6,
             "mac1-term" : [
                "00:22:83:3f:17:cc"
             ],
             "timestamp" : "SET",
             "fpd" : 1482381409512,
-            "pa2" : 1,
-            "pr" : 6,
+            "no" : "test",
+            "fb1" : "4e0000018da20200",
             "prot-term-cnt" : 2,
-            "ipSrc" : "10.10.10.10",
-            "tcpflags" : {
-               "syn-ack" : 0,
-               "fin" : 0,
-               "ack" : 2,
-               "syn" : 1,
-               "psh" : 2,
-               "rst" : 0,
-               "urg" : 0
-            },
-            "firstPacket" : 1482381409512,
-            "ta" : [
-               "acked-unseen-segment-src",
-               "no-syn-ack"
-            ],
+            "by1" : 370,
+            "p1" : 40041,
+            "a1" : "10.10.10.10",
+            "db2" : 82,
             "ps" : [
                24,
                118,
@@ -60,24 +72,7 @@
                372,
                458
             ],
-            "sl" : 0,
-            "prot-term" : [
-               "mysql",
-               "tcp"
-            ],
-            "no" : "test",
-            "mac2-term-cnt" : 1,
-            "lp" : 1482381409,
-            "fs" : [],
-            "p2" : 3306,
-            "pa1" : 4,
-            "db2" : 82,
-            "db" : 164,
-            "pa" : 5,
-            "db1" : 82,
-            "vlan-cnt" : 1,
-            "fp" : 1482381409,
-            "fb1" : "4e0000018da20200",
+            "ss" : 1,
             "psl" : [
                94,
                86,
@@ -85,71 +80,34 @@
                86,
                168
             ],
-            "ipDst" : "10.176.176.11"
-         },
-         "header" : {
-            "index" : {
-               "_type" : "session",
-               "_index" : "tests_sessions-161222"
-            }
+            "firstPacket" : 1482381409512,
+            "lpd" : 1482381409513,
+            "lp" : 1482381409,
+            "portSrc" : 40041,
+            "db1" : 82,
+            "fp" : 1482381409,
+            "ipDst" : "10.176.176.11",
+            "by" : 522,
+            "mac2-term" : [
+               "00:22:83:3f:17:c5"
+            ],
+            "lastPacket" : 1482381409513
          }
       },
       {
          "body" : {
-            "hdvercnt" : 1,
-            "db" : 1873,
-            "pa1" : 3,
-            "db2" : 1460,
-            "psl" : [
-               86,
-               76,
-               487,
-               80,
-               1534
-            ],
-            "ipDst" : "10.13.13.13",
-            "fb1" : "474554202f787878",
-            "fp" : 1483544164,
             "db1" : 413,
-            "vlan-cnt" : 1,
-            "pa" : 5,
-            "mac2-term-cnt" : 1,
-            "no" : "test",
-            "prot-term" : [
-               "http",
-               "tcp"
+            "hsver" : [
+               "1.1"
             ],
-            "uacnt" : 1,
-            "ps" : [
-               626,
-               712,
-               788,
-               1275,
-               1355
-            ],
-            "sl" : 13,
-            "ta" : [
-               "no-syn-ack"
-            ],
-            "ho" : [
-               "xxxx.xxxxxxxx.com"
-            ],
-            "http" : {
-               "statuscode-cnt" : 1,
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "application/octet-stream"
-               ],
-               "method-term-cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "method-term" : [
-                  "GET"
-               ]
-            },
+            "portSrc" : 61181,
+            "lp" : 1483544164,
+            "hsvercnt" : 1,
+            "fp" : 1483544164,
             "firstPacket" : 1483544164032,
             "uscnt" : 1,
+            "lpd" : 1483544164045,
+            "hh1cnt" : 7,
             "hh2" : [
                "http:header:accept-ranges",
                "http:header:access-control-allow-origin",
@@ -161,8 +119,91 @@
                "http:header:last-modified",
                "http:header:server"
             ],
+            "mac2-term" : [
+               "00:1b:17:00:01:24"
+            ],
+            "lastPacket" : 1483544164045,
+            "ipDst" : "10.13.13.13",
             "hh2cnt" : 9,
+            "by" : 2183,
+            "us" : [
+               "//xxxx.xxxxxxxx.com/xxxxxx/xxxxxxxxx/xxxxxxxxxx/xxx/xx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.ts"
+            ],
+            "no" : "test",
+            "ua" : [
+               "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+            ],
+            "prot-term-cnt" : 2,
+            "fb1" : "474554202f787878",
+            "pa1" : 3,
+            "pr" : 6,
+            "timestamp" : "SET",
+            "fpd" : 1483544164032,
+            "mac1-term" : [
+               "00:22:83:3f:17:c5",
+               "2c:6b:f5:d6:17:c5"
+            ],
+            "a1" : "10.12.12.12",
+            "db2" : 1460,
+            "psl" : [
+               86,
+               76,
+               487,
+               80,
+               1534
+            ],
+            "ps" : [
+               626,
+               712,
+               788,
+               1275,
+               1355
+            ],
+            "ss" : 1,
+            "hpathcnt" : 1,
+            "hdvercnt" : 1,
+            "by1" : 601,
+            "p1" : 61181,
+            "pa" : 5,
+            "by2" : 1582,
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1,
+               "statuscode" : [
+                  200
+               ]
+            },
             "p2" : 80,
+            "uacnt" : 1,
+            "a2" : "10.13.13.13",
+            "fs" : [],
+            "portDst" : 80,
+            "sl" : 13,
+            "tacnt" : 1,
+            "ho" : [
+               "xxxx.xxxxxxxx.com"
+            ],
+            "db" : 1873,
+            "prot-term" : [
+               "http",
+               "tcp"
+            ],
+            "fb2" : "485454502f312e31",
+            "hpath" : [
+               "/xxxxxx/xxxxxxxxx/xxxxxxxxxx/xxx/xx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.ts"
+            ],
+            "tags-term" : [
+               "no-syn-ack"
+            ],
+            "vlan" : [
+               100
+            ],
+            "ta" : [
+               "no-syn-ack"
+            ],
             "hh1" : [
                "http:header:accept",
                "http:header:accept-encoding",
@@ -172,69 +213,24 @@
                "http:header:user-agent",
                "http:header:x-requested-with"
             ],
-            "lp" : 1483544164,
-            "fs" : [],
-            "hpath" : [
-               "/xxxxxx/xxxxxxxxx/xxxxxxxxxx/xxx/xx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.ts"
-            ],
             "pa2" : 2,
-            "fpd" : 1483544164032,
-            "mac1-term" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "timestamp" : "SET",
-            "by" : 2183,
-            "lpd" : 1483544164045,
-            "tacnt" : 1,
-            "hsvercnt" : 1,
-            "vlan" : [
-               100
-            ],
-            "tags-term" : [
-               "no-syn-ack"
-            ],
-            "hpathcnt" : 1,
-            "fb2" : "485454502f312e31",
+            "hocnt" : 1,
             "tcpflags" : {
+               "urg" : 0,
                "ack" : 3,
                "fin" : 0,
-               "syn" : 1,
                "syn-ack" : 0,
-               "urg" : 0,
+               "rst" : 0,
                "psh" : 1,
-               "rst" : 0
+               "syn" : 1
             },
-            "hocnt" : 1,
+            "mac1-term-cnt" : 2,
             "ipSrc" : "10.12.12.12",
-            "us" : [
-               "//xxxx.xxxxxxxx.com/xxxxxx/xxxxxxxxx/xxxxxxxxxx/xxx/xx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.ts"
-            ],
-            "prot-term-cnt" : 2,
-            "pr" : 6,
-            "portDst" : 80,
-            "lastPacket" : 1483544164045,
             "hdver" : [
                "1.1"
             ],
-            "hsver" : [
-               "1.1"
-            ],
-            "portSrc" : 61181,
-            "ua" : [
-               "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
-            ],
-            "by2" : 1582,
-            "by1" : 601,
-            "a1" : "10.12.12.12",
-            "mac2-term" : [
-               "00:1b:17:00:01:24"
-            ],
-            "p1" : 61181,
-            "ss" : 1,
-            "mac1-term-cnt" : 2,
-            "hh1cnt" : 7,
-            "a2" : "10.13.13.13"
+            "vlan-cnt" : 1,
+            "mac2-term-cnt" : 1
          },
          "header" : {
             "index" : {

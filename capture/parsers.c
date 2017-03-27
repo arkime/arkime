@@ -362,6 +362,10 @@ const char *moloch_parsers_magic_basic(MolochSession_t *session, int field, cons
     if (len > 257+5 && memcmp(data+257, "ustar", 5) == 0) {
         return moloch_field_string_add(field, session, "application/x-tar", 17, TRUE);
     }
+    if (moloch_memstr(data, len, "document.write", 14) ||
+        moloch_memstr(data, len, "'use strict'", 12)) {
+        return moloch_field_string_add(field, session, "text/javascript", 15, TRUE);
+    }
     return NULL;
 }
 /******************************************************************************/

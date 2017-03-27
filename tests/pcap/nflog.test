@@ -3,57 +3,22 @@
       {
          "header" : {
             "index" : {
-               "_index" : "tests_sessions-170315",
-               "_type" : "session"
+               "_type" : "session",
+               "_index" : "tests_sessions-170315"
             }
          },
          "body" : {
-            "lp" : 1489603870,
-            "hh2cnt" : 13,
-            "fp" : 1489603870,
-            "by2" : 1800,
-            "hmd5cnt" : 1,
-            "pr" : 6,
-            "sl" : 0,
-            "hdrs" : {
-               "hres-location" : [
-                  "https://www.aol.com/"
-               ]
-            },
-            "fs" : [],
-            "ps" : [
-               216,
-               356,
-               552,
-               684,
-               988,
-               1176,
-               2532,
-               2664,
-               2796,
-               2984
-            ],
-            "http" : {
-               "statuscode-cnt" : 1,
-               "method-term" : [
-                  "GET"
-               ],
-               "statuscode" : [
-                  301
-               ],
-               "bodymagic-term-cnt" : 1,
-               "bodymagic-term" : [
-                  "text/plain"
-               ],
-               "method-term-cnt" : 1
-            },
-            "db2" : 1167,
-            "ipDst" : "52.43.228.156",
-            "pa1" : 6,
-            "lpd" : 1489603870937,
-            "hh1cnt" : 3,
-            "by" : 2564,
+            "timestamp" : "SET",
+            "rir2" : "ARIN",
+            "no" : "test",
+            "ss" : 1,
             "hsvercnt" : 1,
+            "db" : 1339,
+            "hh1cnt" : 3,
+            "us" : [
+               "//www.aol.com/"
+            ],
+            "by1" : 764,
             "hh2" : [
                "http:header:cache-control",
                "http:header:connection",
@@ -69,26 +34,54 @@
                "http:header:x-content-type-options",
                "http:header:x-xss-protection"
             ],
-            "no" : "test",
-            "db" : 1339,
-            "hh1" : [
-               "http:header:accept",
-               "http:header:host",
-               "http:header:user-agent"
+            "lp" : 1489603870,
+            "ipSrc" : "10.10.10.10",
+            "fb2" : "485454502f312e31",
+            "hh2cnt" : 13,
+            "hdvercnt" : 1,
+            "ps" : [
+               216,
+               356,
+               552,
+               684,
+               988,
+               1176,
+               2532,
+               2664,
+               2796,
+               2984
             ],
-            "g2" : "USA",
-            "hocnt" : 1,
-            "hpath" : [
-               "/"
+            "pr" : 6,
+            "prot-term-cnt" : 2,
+            "a2" : "52.43.228.156",
+            "ho" : [
+               "www.aol.com"
+            ],
+            "hmd5cnt" : 1,
+            "pa" : 10,
+            "ipDst" : "52.43.228.156",
+            "p2" : 80,
+            "db2" : 1167,
+            "uacnt" : 1,
+            "fp" : 1489603870,
+            "prot-term" : [
+               "http",
+               "tcp"
             ],
             "hsver" : [
                "1.1"
             ],
-            "a1" : "10.10.10.10",
-            "uscnt" : 1,
-            "lastPacket" : 1489603870937,
-            "pa2" : 4,
-            "portSrc" : 54064,
+            "fs" : [],
+            "http" : {
+               "method-term" : [
+                  "GET"
+               ],
+               "statuscode" : [
+                  301
+               ],
+               "statuscode-cnt" : 1,
+               "method-term-cnt" : 1
+            },
             "psl" : [
                124,
                180,
@@ -101,54 +94,57 @@
                172,
                100
             ],
-            "prot-term" : [
-               "http",
-               "tcp"
-            ],
-            "prot-term-cnt" : 2,
             "tcpflags" : {
                "urg" : 0,
-               "psh" : 2,
-               "syn-ack" : 1,
-               "syn" : 1,
                "fin" : 2,
-               "rst" : 0,
-               "ack" : 4
+               "psh" : 2,
+               "ack" : 4,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "rst" : 0
             },
-            "by1" : 764,
-            "uacnt" : 1,
-            "hdver" : [
-               "1.1"
-            ],
-            "firstPacket" : 1489603870937,
-            "as2" : "AS16509 Amazon.com, Inc.",
-            "ua" : [
-               "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
-            ],
+            "p1" : 54064,
+            "portDst" : 80,
+            "sl" : 0,
             "fb1" : "474554202f204854",
+            "pa2" : 4,
             "hpathcnt" : 1,
-            "hdvercnt" : 1,
-            "ss" : 1,
-            "ipSrc" : "10.10.10.10",
-            "fpd" : 1489603870937,
-            "timestamp" : "SET",
-            "ho" : [
-               "www.aol.com"
-            ],
-            "us" : [
-               "//www.aol.com/"
-            ],
-            "db1" : 172,
             "hmd5" : [
                "cbd66d3fd40db184cf2af858b4184f87"
             ],
-            "a2" : "52.43.228.156",
-            "p2" : 80,
-            "p1" : 54064,
-            "pa" : 10,
-            "fb2" : "485454502f312e31",
-            "portDst" : 80,
-            "rir2" : "ARIN"
+            "g2" : "USA",
+            "db1" : 172,
+            "hh1" : [
+               "http:header:accept",
+               "http:header:host",
+               "http:header:user-agent"
+            ],
+            "ua" : [
+               "curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.21 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"
+            ],
+            "portSrc" : 54064,
+            "hdver" : [
+               "1.1"
+            ],
+            "lastPacket" : 1489603870937,
+            "by2" : 1800,
+            "by" : 2564,
+            "lpd" : 1489603870937,
+            "hpath" : [
+               "/"
+            ],
+            "firstPacket" : 1489603870937,
+            "hdrs" : {
+               "hres-location" : [
+                  "https://www.aol.com/"
+               ]
+            },
+            "as2" : "AS16509 Amazon.com, Inc.",
+            "pa1" : 6,
+            "uscnt" : 1,
+            "fpd" : 1489603870937,
+            "a1" : "10.10.10.10",
+            "hocnt" : 1
          }
       }
    ]
