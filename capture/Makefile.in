@@ -1,6 +1,6 @@
 INSTALL_DIR   = @INSTALL_DIR@
 
-BUILD_VERSION := $(@GIT@ describe --tags)
+BUILD_VERSION := $(shell @GIT@ describe --tags)
 
 CC            = @CC@
 
@@ -24,8 +24,7 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
-		@DL_LIB@ -lpthread -lssl -lcrypto \
-		-DBUILD_VERSION=${BUILD_VERSION}
+		@DL_LIB@ -lpthread -lssl -lcrypto
 
 C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c packet.c session.c molochmagic.c
 O_FILES         = $(C_FILES:.c=.o)
@@ -36,7 +35,8 @@ bindir          = @prefix@/bin
 all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	$(CC) -fPIC @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -c $(C_FILES) \
 	    $(INCLUDE_PCAP) \
-	    $(INCLUDE_OTHER) 
+	    $(INCLUDE_OTHER) \
+	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
 	$(CC) -rdynamic -ggdb $(O_FILES) -o moloch-capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
