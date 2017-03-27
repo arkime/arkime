@@ -1,4 +1,4 @@
-AC_INIT([moloch], m4_esyscmd([git describe --tags]))
+AC_INIT([moloch], [0.18.1-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
