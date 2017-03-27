@@ -202,6 +202,8 @@ sub esCopy
 {
     my ($srci, $dsti) = @_;
 
+    $main::userAgent->timeout(3600);
+
     my $status = esGet("/_stats", 1);
     print "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
 
@@ -215,6 +217,7 @@ sub esCopy
     }
 
     print "\n"
+    $main::userAgent->timeout(30);
 }
 ################################################################################
 sub esScroll
@@ -1836,8 +1839,8 @@ sub dbCheckForActivity {
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
 
-    my @hits1 = sort {$a->{_source}->{_id} cmp $b->{_source}->{_id}} @{$json1->{hits}->{hits}};
-    my @hits2 = sort {$a->{_source}->{_id} cmp $b->{_source}->{_id}} @{$json2->{hits}->{hits}};
+    my @hits1 = sort {$a->{_source}->{nodeName} cmp $b->{_source}->{nodeName}} @{$json1->{hits}->{hits}};
+    my @hits2 = sort {$a->{_source}->{nodeName} cmp $b->{_source}->{nodeName}} @{$json2->{hits}->{hits}};
 
     for (my $i = 0; $i < $json1->{hits}->{total}; $i++) {
         if ($hits1[$i]->{_source}->{nodeName} ne $hits2[$i]->{_source}->{nodeName}) {
@@ -2001,7 +2004,7 @@ showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] 
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt)$/);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 20);
+$main::userAgent = LWP::UserAgent->new(timeout => 30);
 
 if ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
