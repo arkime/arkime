@@ -28,7 +28,7 @@ moloch-graph-map .map-btn {
   border-radius   : 4px 0 0 4px;
   cursor          : pointer;
   background-color: var(--color-primary);
-  color           : var(--color-foreground, #FFF);
+  color           : #FFFFFF;
 }
 
 moloch-graph-map .btn-close-map {

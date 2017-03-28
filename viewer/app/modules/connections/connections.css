@@ -47,3 +47,13 @@ moloch-connections .dl-horizontal dt {
 moloch-connections .dl-horizontal dd {
   margin-left: 85px;
 }
+
+/* apply theme colors */
+moloch-connections rect {
+  stroke: var(--color-background, #FFF);
+  fill  : var(--color-background, #FFF);
+}
+moloch-connections svg {
+  fill  : var(--color-foreground, #333);
+}
+

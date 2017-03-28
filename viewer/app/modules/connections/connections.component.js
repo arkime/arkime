@@ -72,6 +72,12 @@
       this.nodeDist   = _query.nodeDist   = parseInt(this.$routeParams.nodeDist || '125');
       this.minConn    = _query.minConn    = parseInt(this.$routeParams.minConn || '1');
 
+      let styles = window.getComputedStyle(document.body);
+      let primary   = styles.getPropertyValue('--color-primary').trim();
+      let secondary = styles.getPropertyValue('--color-tertiary').trim();
+      let tertiary  = styles.getPropertyValue('--color-quaternary').trim();
+      this.colors = ['', primary, tertiary, secondary];
+
       this.startD3();
 
       this.$scope.$on('change:search', (event, args) => {
@@ -106,7 +112,7 @@
       self.width      = $(window).width();
       self.height     = $(window).height() - 166;
       self.popupTimer = null;
-      self.colors     = ['', 'green', 'red', 'purple'];
+      // self.colors     = ['', 'green', 'red', 'purple'];
       networkElem     = $('#network');
 
       function redraw() {

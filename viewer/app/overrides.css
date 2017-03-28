@@ -26,6 +26,12 @@
 }
 
 
+/* give error text theme color */
+.text-danger {
+  color: var(--color-foreground-accent);
+}
+
+
 /* display labels inline with proper wrapping */
 .label {
   /* https://github.com/twbs/bootstrap/issues/13219 */
@@ -155,4 +161,11 @@ ul.dropdown-menu > .active > div:focus a {
 .panel-group .panel-heading + .panel-collapse > .panel-body,
 .panel-group .panel-heading + .panel-collapse > .list-group {
   border-top-color: var(--color-gray-light);
+}
+
+
+/* give wells theme color */
+.well {
+  background-color: var(--color-gray-lighter);
+  border-color    : var(--color-gray-light);
 }

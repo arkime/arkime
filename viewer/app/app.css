@@ -5,6 +5,8 @@
 @import './themes/blue.css';
 @import './themes/green.css';
 @import './themes/cotton-candy.css';
+@import './themes/dark-2.css';
+@import './themes/dark-3.css';
 
 /* import bootstrap overrides */
 @import 'overrides.css';
@@ -195,7 +197,7 @@ a.no-decoration { text-decoration: none; }
 
 /* themed buttons */
 .btn.btn-theme-primary {
-  color           : var(--color-foreground, #FFFFFF);
+  color           : #FFFFFF;
   background-color: var(--color-primary);
   border-color    : var(--color-primary-dark);
 }
@@ -209,7 +211,7 @@ a.no-decoration { text-decoration: none; }
 }
 
 .btn.btn-theme-secondary {
-  color           : var(--color-foreground, #FFFFFF);
+  color           : #FFFFFF;
   background-color: var(--color-secondary);
   border-color    : var(--color-secondary-dark);
 }
@@ -223,7 +225,7 @@ a.no-decoration { text-decoration: none; }
 }
 
 .btn.btn-theme-tertiary {
-  color           : var(--color-foreground, #FFFFFF);
+  color           : #FFFFFF;
   background-color: var(--color-tertiary);
   border-color    : var(--color-tertiary-dark);
 }
@@ -237,7 +239,7 @@ a.no-decoration { text-decoration: none; }
 }
 
 .btn.btn-theme-quaternary {
-  color           : var(--color-foreground, #FFFFFF);
+  color           : #FFFFFF;
   background-color: var(--color-quaternary);
   border-color    : var(--color-quaternary-dark);
 }

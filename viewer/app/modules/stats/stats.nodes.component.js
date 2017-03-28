@@ -135,7 +135,6 @@
       }
 
       d3.select("#statsGraph-" + stat.id).call(function(div) {
-
         div.append("div")
             .attr("class", "axis")
             .call(dcontext.axis().orient("top"));
@@ -144,7 +143,7 @@
           .data(metrics)
           .enter().append("div")
             .attr("class", "horizon")
-            .call(dcontext.horizon());
+            .call(dcontext.horizon().colors(self.colors()));
 
         div.append("div")
             .attr("class", "rule")
@@ -167,7 +166,8 @@
   angular.module('moloch')
      .component('molochNodesStats', {
        template  : require('html!./stats.nodes.html'),
-       controller: StatsNodesController
+       controller: StatsNodesController,
+       bindings   : { colors: '&' }
      });
 
 })();

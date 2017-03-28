@@ -17,7 +17,7 @@ sticky-sessions .sticky-session-btn {
   border-radius   : 4px 0 0 4px;
   cursor          : pointer;
   background-color: var(--color-quaternary);
-  color           : var(--color-foreground, #FFF);
+  color           : #FFFFFF;
 }
 
 sticky-sessions .sticky-session-detail {

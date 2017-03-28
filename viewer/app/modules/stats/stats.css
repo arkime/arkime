@@ -19,16 +19,11 @@ moloch-stats table.table > tfoot > tr:first-child > td {
   border-top: 2px solid var(--color-gray-light);
 }
 
-moloch-stats .well {
-  background-color: var(--color-gray-lighter);
-  border-color    : var(--color-gray-light);
-}
-
 
 /* Cubism stuff -------------------- */
 moloch-stats .axis path, moloch-stats .axis line {
   fill            : none;
-  stroke          : var(--color-black);
+  stroke          : var(--color-foreground);
   shape-rendering : crispEdges;
 }
 
@@ -38,6 +33,7 @@ moloch-stats .axis {
 
 moloch-stats .axis text {
   -webkit-transition: fill-opacity 250ms linear;
+  stroke : var(--color-foreground);
 }
 
 moloch-stats .axis path {
@@ -45,12 +41,12 @@ moloch-stats .axis path {
 }
 
 moloch-stats .axis line {
-  stroke          : var(--color-black);
+  stroke          : var(--color-foreground);
   shape-rendering : crispEdges;
 }
 
 moloch-stats .horizon {
-  border-bottom : solid 1px var(--color-black);
+  border-bottom : solid 1px var(--color-foreground);
   overflow      : hidden;
   position      : relative;
 }
