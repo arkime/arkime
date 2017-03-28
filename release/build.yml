@@ -142,7 +142,7 @@
         git: repo=https://github.com/aol/moloch dest={{moloch_name}} update=yes force=yes
 
       - name: build
-        shell: cd {{moloch_name}}; ./easybutton-build.sh -d /data/{{moloch_name}}
+        shell: cd {{moloch_name}}; make clean; ./easybutton-build.sh -d /data/{{moloch_name}}
 
       - name: install centos 6
         shell: cd {{moloch_name}}; scl enable devtoolset-3 "make install"

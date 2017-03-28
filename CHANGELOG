@@ -1,3 +1,7 @@
+0.18.2 2017/04/XX
+  - NOTICE: Upgrading from versions prior to 0.18 require an outage for db.pl
+            upgrade (~5 min) see the 0.18.0 notes.
+
 0.18.1 2017/03/28
   - NOTICE: Upgrading from versions prior to 0.18 require an outage for db.pl
             upgrade (~5 min) see the 0.18.0 notes.
