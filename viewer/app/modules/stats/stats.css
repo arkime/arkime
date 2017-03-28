@@ -46,7 +46,7 @@ moloch-stats .axis line {
 }
 
 moloch-stats .horizon {
-  border-bottom : solid 1px var(--color-foreground);
+  border-bottom : solid 1px #000;
   overflow      : hidden;
   position      : relative;
 }

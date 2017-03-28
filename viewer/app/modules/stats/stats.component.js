@@ -44,7 +44,7 @@
       let secondary       = styles.getPropertyValue('--color-tertiary').trim();
       let secondaryDark   = styles.getPropertyValue('--color-tertiary-dark').trim();
       this.colors = [primaryDark, primary, primaryLight, primaryLighter,
-        secondaryDark, secondary, secondaryLight, secondaryLighter];
+                     secondaryLighter, secondaryLight, secondary, secondaryDark];
 
       this.loadData();
 

@@ -70,6 +70,9 @@
             this.loading  = false;
             this.settings = response.settings;
 
+            // default to default theme if the user has not set a theme
+            if (!this.settings.theme) { this.settings.theme = 'default-theme'; }
+
             this.startClock();
           }
 

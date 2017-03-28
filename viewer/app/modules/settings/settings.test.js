@@ -20,7 +20,8 @@
       spiGraph        : 'no',
       connSrcField    : 'a1',
       connDstField    : 'ip.dst:port',
-      numPackets      : 'last'
+      numPackets      : 'last',
+      theme           : 'dark-theme'
     }
   };
 
@@ -1087,7 +1088,8 @@
           spiGraph        : 'no',
           connSrcField    : 'p1',
           connDstField    : 'ip.dst',
-          numPackets      : '50'
+          numPackets      : '50',
+          theme           : 'default-theme'
         }
       };
 
