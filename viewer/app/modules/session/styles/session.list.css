@@ -104,18 +104,6 @@ ul.dropdown-menu div .group-header {
   border-bottom : var(--color-gray-light) 1px solid;
 }
 
-/*ul.dropdown-menu div li:hover {*/
-  /*background-color: var(--color-gray-light);*/
-/*}*/
-
-/*ul.dropdown-menu div li.active {*/
-  /*background-color: var(--color-primary);*/
-/*}*/
-
-/*ul.dropdown-menu div li.active a {*/
-  /*color: var(--color-white) !important;*/
-/*}*/
-
 ul.dropdown-menu div li a {
   display         : block;
   padding         : 2px 10px;

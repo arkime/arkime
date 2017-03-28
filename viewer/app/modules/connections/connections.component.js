@@ -112,7 +112,6 @@
       self.width      = $(window).width();
       self.height     = $(window).height() - 166;
       self.popupTimer = null;
-      // self.colors     = ['', 'green', 'red', 'purple'];
       networkElem     = $('#network');
 
       function redraw() {

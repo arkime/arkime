@@ -2,8 +2,7 @@
 
   'use strict';
 
-
-  require ('./app.css');
+  require('./app.css');
   require('angular-route');
   require('angular-filter');
   require('angular-animate');

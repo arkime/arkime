@@ -7,8 +7,3 @@ moloch-users form .form-group-sm .checkbox {
   padding-top   : 0;
   margin-bottom : -8px;
 }
-
-moloch-users .well {
-  background-color: var(--color-gray-lighter);
-  border-color    : var(--color-gray-light);
-}
