@@ -47,6 +47,7 @@
 
           function setup(data) {
             let styles = $window.getComputedStyle(body);
+            let foregroundColor = styles.getPropertyValue('--color-foreground').trim();
             let primaryColor    = styles.getPropertyValue('--color-primary').trim();
             let highlightColor  = styles.getPropertyValue('--color-gray-darker').trim();
 
@@ -68,7 +69,7 @@
               xaxis   : {
                 mode  : 'time',
                 label : 'Datetime',
-                color : '#777',
+                color : foregroundColor,
                 min   : data.xmin || null,
                 max   : data.xmax || null,
                 tickFormatter: function(v, axis) {
@@ -77,7 +78,7 @@
               },
               yaxis   : {
                 min   : 0,
-                color : '#777',
+                color : foregroundColor,
                 zoomRange       : false,
                 autoscaleMargin : 0.2,
                 tickFormatter   : function(v, axis) {
@@ -86,7 +87,7 @@
               },
               grid          : {
                 borderWidth : 0,
-                color       : '#777',
+                color       : foregroundColor,
                 hoverable   : true,
                 clickable   : true
               },

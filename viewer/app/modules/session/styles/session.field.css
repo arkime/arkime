@@ -23,7 +23,7 @@ session-field .field {
 }
 
 session-field .field a {
-  color          : var(--color-foreground);
+  color          : var(--color-foreground-accent);
   text-decoration: none;
 }
 

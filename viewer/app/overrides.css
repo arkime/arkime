@@ -169,3 +169,10 @@ ul.dropdown-menu > .active > div:focus a {
   background-color: var(--color-gray-lighter);
   border-color    : var(--color-gray-light);
 }
+
+
+/* give pres theme color */
+pre {
+  background-color: var(--color-gray-lighter);
+  border-color    : var(--color-gray-light);
+}

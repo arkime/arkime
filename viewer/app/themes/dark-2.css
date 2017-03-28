@@ -2,7 +2,7 @@ body.dark-2-theme {
   /* basic colors */
   --color-background        : #111111;
   --color-foreground        : #C7C7C7;
-  --color-foreground-accent : #1BEE3F;
+  --color-foreground-accent : #00CA16;
 
   --color-white       : #333333;
   --color-gray        : #AAAAAA;
@@ -14,26 +14,26 @@ body.dark-2-theme {
 
 
   /* theme colors */
-  --color-primary         : #565DD7;
-  --color-primary-dark    : #4A50B9;
-  --color-primary-darker  : #31359B;
-  --color-primary-light   : #5E65F5;
-  --color-primary-lighter : #8E96FF;
-  --color-primary-lightest: #2E317D;
+  --color-primary         : #444A9B;
+  --color-primary-dark    : #363A7D;
+  --color-primary-darker  : #2F2F5F;
+  --color-primary-light   : #4A50AF;
+  --color-primary-lighter : #4B51C3;
+  --color-primary-lightest: #191937;
 
-  --color-secondary         : #00C5C7;
-  --color-secondary-dark    : #00A8AA;
-  --color-secondary-darker  : #008B8C;
-  --color-secondary-light   : #00DEE0;
-  --color-secondary-lighter : #00EEF0;
-  --color-secondary-lightest: #006768;
+  --color-secondary          : #2E5D9B;
+  --color-secondary-dark     : #264B7E;
+  --color-secondary-darker   : #193D5E;
+  --color-secondary-light    : #3371B4;
+  --color-secondary-lighter  : #3b74C3;
+  --color-secondary-lightest : #0F2237;
 
-  --color-tertiary          : #FF6E67;
-  --color-tertiary-dark     : #D75F59;
-  --color-tertiary-darker   : #AF4A45;
-  --color-tertiary-light    : #FF8E89;
-  --color-tertiary-lighter  : #FFBAB7;
-  --color-tertiary-lightest : #7D3338;
+  --color-tertiary          : #00BB20;
+  --color-tertiary-dark     : #009D1D;
+  --color-tertiary-darker   : #007F12;
+  --color-tertiary-light    : #00CF20;
+  --color-tertiary-lighter  : #00E326;
+  --color-tertiary-lightest : #002806;
 
   --color-quaternary          : #686868;
   --color-quaternary-dark     : #4B4B4B;
@@ -44,7 +44,12 @@ body.dark-2-theme {
 
 
   /* visualization colors */
-  --color-water     : #475D69;
-  --color-land-dark : #000000;
-  --color-land-light: #FFFFFF;
+  --color-water     : #333333;
+  --color-land-dark : #006911;
+  --color-land-light: #00E116;
+
+
+  /* src/dst packet colors */
+  --color-src: #F34545;
+  --color-dst: #6C95E6;
 }

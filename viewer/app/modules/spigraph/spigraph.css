@@ -51,3 +51,8 @@ moloch-spigraph .spi-graph-item .moloch-map-container .btn-fw {
 moloch-spigraph .spi-graph-item .session-graph-btn-container {
   margin-top: -28px;
 }
+
+moloch-spigraph .well {
+  background-color: var(--color-background);
+  border-color    : var(--color-gray-light);
+}

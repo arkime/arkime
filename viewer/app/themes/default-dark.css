@@ -2,14 +2,14 @@ body.default-dark-theme {
   /* basic colors */
   --color-background        : #333333;
   --color-foreground        : #EEEEEE;
-  --color-foreground-accent : #B18EAD;
+  --color-foreground-accent : #DCABE6;
 
   --color-white       : #333333;
   --color-gray        : #CCCCCC;
   --color-gray-dark   : #EEEEEE;
   --color-gray-darker : #F6F6F6;
   --color-gray-light  : #777777;
-  --color-gray-lighter: #555555;
+  --color-gray-lighter: #444444;
   --color-black       : #FFFFFF;
 
 
@@ -45,6 +45,11 @@ body.default-dark-theme {
 
   /* visualization colors */
   --color-water     : #0E716B;
-  --color-land-dark : #000000;
-  --color-land-light: #FFFFFF;
+  --color-land-dark : #480855;
+  --color-land-light: #DCABE6;
+
+
+  /* src/dst packet colors */
+  --color-src: #F34545;
+  --color-dst: #6C95E6;
 }

@@ -20,11 +20,11 @@ session session-detail .packet-container .file {
 
 /* src/dst packet text colors */
 session session-detail .sessiondst {
-  color: blue !important;
+  color: var(--color-dst, #0000FF) !important;
 }
 
 session session-detail .sessionsrc {
-  color: #CA0404 !important;
+  color: var(--color-src, #CA0404) !important;
 }
 
 /* timestamps */
