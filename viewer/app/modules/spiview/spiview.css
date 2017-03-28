@@ -1,0 +1,88 @@
+moloch-spiview .panel-heading {
+  padding         : 0;
+  background-color: var(--color-gray-light) !important;
+}
+
+moloch-spiview .panel-title a.accordion-toggle {
+  display         : block;
+  padding         : 10px 15px;
+  text-decoration : none;
+}
+
+moloch-spiview .panel-title a.accordion-toggle .protocol-value > sup {
+  margin-left: -8px;
+}
+
+moloch-spiview .panel-title a.accordion-toggle strong.category-title {
+  font-size: 2.3rem;
+}
+
+moloch-spiview .panel-body *:focus {
+  outline: none !important;
+}
+
+moloch-spiview .panel-body .btn-drawer-toggle {
+  background-color: var(--color-gray-lighter);
+  margin-right    : -15px;
+  margin-left     : -15px;
+}
+
+moloch-spiview .panel-body .btn-drawer {
+  margin-top: -10px;
+}
+
+moloch-spiview .panel-body .btn-drawer .input-xs {
+  height        : 22px;
+  padding       : 2px 6px;
+  font-size     : 12px;
+  line-height   : 1.5;
+  border-radius : 3px;
+  vertical-align: top;
+  width         : 300px;
+}
+
+moloch-spiview .panel-body .btn-drawer .btn-container {
+  margin-right: -15px;
+  max-height  : 30px;
+  overflow    : hidden;
+}
+
+moloch-spiview .panel-body .btn-drawer.expanded .btn-container {
+  max-height: 999px;
+  overflow  : visible;
+}
+
+moloch-spiview .panel-body .btn-drawer .field-btn {
+  color: var(--color-gray-dark);
+}
+
+moloch-spiview .panel-body .btn-drawer .field-btn.active {
+  color: var(--color-black);
+}
+
+moloch-spiview .panel-body .spi-buckets {
+  margin-left   : -15px;
+  margin-right  : -15px;
+  padding-left  : 15px;
+  padding-right : 15px;
+  padding-top   : 5px;
+  padding-bottom: 5px;
+}
+
+moloch-spiview .panel-body .spi-buckets:nth-child(odd) {
+  background-color: var(--color-quaternary-lightest);
+}
+
+moloch-spiview .panel-body .spi-bucket {
+  font-size: 85%;
+  display: inline-block;
+}
+
+moloch-spiview .panel-body .spi-bucket sup {
+  margin-left: -10px;
+}
+
+/* https://github.com/angular/angular.js/issues/8224 */
+moloch-spiview .fa-spin.ng-animate {
+  -webkit-animation: none 0s;
+}

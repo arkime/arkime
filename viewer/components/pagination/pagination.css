@@ -1,0 +1,47 @@
+moloch-pagination select.page-select {
+  width           : 120px;
+  background-color: var(--color-background);
+  color           : var(--color-foreground);
+}
+
+moloch-pagination .pagination-info {
+  font-size : 1.2rem;
+  color     : var(--color-gray-dark);
+}
+
+@media (min-width: 768px) {
+  .pagination.pagination-sm {
+    margin: 0 0 -10px 0;
+  }
+
+  .pagination-info {
+    border        : 1px solid var(--color-gray-light);
+    padding       : 8px 10px 6px;
+    margin-left   : -6px;
+    border-radius : 0 var(--px-sm) var(--px-sm) 0;
+    background-color: var(--color-white);
+  }
+
+  select.page-select {
+    display           : inline-flex;
+    height            : 30px;
+    margin-right      : -5px;
+    margin-bottom     : var(--px-xs);
+    padding-top       : var(--px-xs);
+    padding-bottom    : var(--px-xs);
+    border-right      : none;
+    border-radius     : var(--px-sm) 0 0 var(--px-sm);
+    border-color      : var(--color-gray-light);
+    -webkit-appearance: none;
+  }
+}
+@media (max-width: 767px) {
+  .pagination.pagination-sm {
+    margin: var(--px-sm) 0;
+  }
+
+  .pagination-info {
+    display       : flex;
+    margin-bottom : var(--px-sm);
+  }
+}

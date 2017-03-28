@@ -1,0 +1,164 @@
+/* loading overlay */
+loading .loading {
+  position: fixed;
+  top     : 0;
+  left    : 0;
+  width   : 100%;
+  height  : 100%;
+  z-index : 1001;
+}
+
+loading .loading img {
+  display : flex;
+  z-index : 1499;
+  position: relative;
+  top     : 50%;
+  left    : 50%;
+  height  : 50px;
+  margin  : -25px;
+  opacity : .7;
+}
+
+loading .loading .loader {
+  display       : flex;
+  z-index       : 1500;
+  position      : relative;
+  top           : 50%;
+  left          : 50%;
+  border-radius : 50%;
+}
+
+loading .loading .loader:before {
+  content       : "";
+  border-radius : 50%;
+  position      : fixed;
+}
+
+loading .loading .loader:after {
+  content       : "";
+  position      : fixed;
+  top           : 15px;
+  left          : 15px;
+  right         : 15px;
+  bottom        : 15px;
+  border-radius : 50%;
+}
+
+loading .loading .loader-section {
+  position: fixed;
+  top     : 50%;
+  left    : 50%;
+  z-index : 1000;
+}
+
+/* use circle for planet animation */
+loading .loading .loader-section.circle {
+  width         : 260px;
+  height        : 260px;
+  margin        : -130px 0 0 -130px;
+  border-radius : 50%;
+  background    : var(--color-gray-light);
+  opacity       : 0.6;
+}
+
+/* use square for circle animation */
+loading .loading .loader-section.square {
+  width         : 180px;
+  height        : 180px;
+  margin        : -90px 0 0 -90px;
+  border-radius : 32px;
+  background    : var(--color-gray-light);
+  opacity       : 0.6;
+}
+
+
+/* planet animation */
+loading .loading .loader.planets {
+  width             : 20px;
+  height            : 20px;
+  margin            : -45px 0 0 -20px;
+  background-color  : var(--color-primary-light);
+
+          animation: rot 2s infinite linear;
+  -webkit-animation: rot 2s infinite linear;
+}
+loading .loading .loader.planets:before {
+  width           : 14px;
+  height          : 14px;
+  top             : 2px;
+  left            : 2px;
+  right           : 2px;
+  bottom          : 2px;
+  background-color: var(--color-tertiary-light);
+
+          animation: rot 3s infinite linear;
+  -webkit-animation: rot 3s infinite linear;
+}
+loading .loading .loader.planets:after {
+  animation       : rot 1.5s infinite linear;
+  width           : 26px;
+  height          : 26px;
+  background-color: var(--color-quaternary-light);
+}
+
+/* spinning circles animation */
+loading .loading .loader.circles {
+  width           : 150px;
+  height          : 150px;
+  margin          : -100px 0 0 -75px;
+  border          : var(--px-md) solid transparent;
+  border-top-color: var(--color-primary-light);
+
+          animation: spin 2s linear infinite;
+  -webkit-animation: spin 2s linear infinite;
+}
+loading .loading .loader.circles:before {
+  top             : 5px;
+  left            : 5px;
+  right           : 5px;
+  bottom          : 5px;
+  border          : var(--px-md) solid transparent;
+  border-top-color: var(--color-tertiary-light);
+
+          animation: spin 3s linear infinite;
+  -webkit-animation: spin 3s linear infinite;
+}
+loading .loading .loader.circles:after {
+  border           : var(--px-md) solid transparent;
+  border-top-color : var(--color-quaternary-light);
+
+          animation: spin 1.5s linear infinite;
+  -webkit-animation: spin 1.5s linear infinite;
+}
+
+
+/* keyframes */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
+}
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
+}
+
+@keyframes rot {
+  from {
+    transform: rotate(0deg) translate(-50px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translate(-50px) rotate(-360deg);
+  }
+}

@@ -4,6 +4,8 @@
 
   let customCols = require('json!../session/components/custom.columns.json');
 
+  let bodyElem = $(document.body);
+
   /**
    * @class SettingsController
    * @classdesc Interacts with moloch settings page
@@ -490,6 +492,16 @@
           this.msg = error.text;
           this.msgType = 'danger';
         });
+    }
+
+
+    /* GENERAL ------------------------------------------------------------- */
+    /* changes the ui theme */
+    changeTheme() {
+      bodyElem.removeClass();
+      bodyElem.addClass(this.settings.theme);
+
+      this.update();
     }
 
 

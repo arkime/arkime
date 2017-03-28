@@ -41,7 +41,7 @@
               <div class="btn-group" uib-dropdown is-open="$ctrl.colVisOpen"
                 dropdown-append-to-body="true" auto-close="outsideClick">
                 <button id="visibility-button" type="button"
-                  class="btn btn-sm btn-purple" tooltip-append-to-body="true"
+                  class="btn btn-sm btn-theme-primary" tooltip-append-to-body="true"
                   uib-dropdown-toggle tooltip-placement="top-left"
                   uib-tooltip="Column Visibility">
                   <span class="fa fa-th"></span>
@@ -80,7 +80,7 @@
               <!-- column save button -->
               <div class="btn-group" uib-dropdown is-open="$ctrl.colConfigsOpen"
                  dropdown-append-to-body="true" auto-close="outsideClick">
-                <button class="btn btn-sm btn-blue dropdown-toggle" uib-dropdown-toggle
+                <button class="btn btn-sm btn-theme-secondary dropdown-toggle" uib-dropdown-toggle
                   tooltip-append-to-body="true" tooltip-placement="top-left"
                   uib-tooltip="Save or load custom column configuration">
                   <span class="fa fa-columns"></span>
@@ -94,7 +94,7 @@
                         placeholder="Enter new column configuration name"
                         enter-click="$ctrl.saveColumnConfiguration()">
                       <span class="input-group-btn">
-                        <button class="btn btn-blue" type="button"
+                        <button class="btn btn-theme-secondary" type="button"
                           ng-disabled="!$ctrl.newColConfigName"
                           ng-click="$ctrl.saveColumnConfiguration()"
                           tooltip-placement="right" tooltip-append-to-body="true"
@@ -241,8 +241,8 @@
             id="session{{::session.id}}">
             <td>
               <span ng-if=":refresh:$ctrl.showSessions">
-                <a class="btn btn-sm btn-toggle"
-                  ng-class="{'collapsed':!session.expanded, 'btn-green':!session.expanded, 'btn-danger':session.expanded}"
+                <a class="btn btn-sm btn-toggle margined-top-sm"
+                  ng-class="{'collapsed':!session.expanded, 'btn-theme-tertiary':!session.expanded, 'btn-danger':session.expanded}"
                   ng-click="$ctrl.toggleSessionDetail(session)">
                   <span class="fa fa-close"></span>
                 </a>
@@ -282,7 +282,7 @@
       <div ng-if="!$ctrl.loading">
         <span class="fa fa-3x text-muted-more fa-folder-open"></span>
         No results or none that match your search.
-        <small ng-if="$ctrl.query.view" class="text-purple">
+        <small ng-if="$ctrl.query.view" class="text-theme-primary">
           <br>
           Don't forget! You have a view applied to your search:&nbsp;
           <strong>{{::$ctrl.query.view}}</strong>

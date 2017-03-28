@@ -52,6 +52,12 @@
             Column Configs
           </a>
         </li>
+        <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'theme'}">
+          <a class="pointer-cursor" ng-click="$ctrl.openView('theme')">
+            <span class="fa fa-fw fa-paint-brush"></span>&nbsp;
+            Themes
+          </a>
+        </li>
         <li role="presentation" ng-class="{'active':$ctrl.visibleTab === 'password'}">
           <a class="pointer-cursor" ng-click="$ctrl.openView('password')">
             <span class="fa fa-fw fa-lock"></span>&nbsp;
@@ -76,12 +82,12 @@
           <label class="col-sm-3 control-label">Timezone Format</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.timezone"
                 uib-btn-radio="'local'" ng-change="$ctrl.updateTime()">local</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.timezone"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.timezone"
                 uib-btn-radio="'gmt'" ng-change="$ctrl.updateTime()">gmt</label>
             </div>
-            <label class="margined-left-xxlg text-purple">
+            <label class="margined-left-xxlg text-theme-primary">
               {{$ctrl.date | date : $ctrl.dateFormat : $ctrl.settings.timezone}}
             </label>
           </div>
@@ -94,15 +100,15 @@
           <label class="col-sm-3 control-label">Session Detail Format</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'natural'" ng-change="$ctrl.update()">natural</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'ascii'" ng-change="$ctrl.update()">ascii</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'utf8'" ng-change="$ctrl.update()">utf8</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.detailFormat"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.detailFormat"
                 uib-btn-radio="'hex'" ng-change="$ctrl.update()">hex</label>
             </div>
           </div>
@@ -115,17 +121,17 @@
           <label class="col-sm-3 control-label">Number of Packets</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'50'" ng-change="$ctrl.update()">50</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'200'" ng-change="$ctrl.update()">200</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'500'" ng-change="$ctrl.update()">500</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'1000'" ng-change="$ctrl.update()">1,000</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.numPackets"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.numPackets"
                 uib-btn-radio="'2000'" ng-change="$ctrl.update()">2,000</label>
             </div>
           </div>
@@ -138,11 +144,11 @@
           <label class="col-sm-3 control-label">Show Packet Timestamps</label>
           <div class="col-sm-9">
             <div class="btn-group">
-              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.showTimestamps"
                 uib-btn-radio="'last'" ng-change="$ctrl.update()">last used</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.showTimestamps"
                 uib-btn-radio="'on'" ng-change="$ctrl.update()">on</label>
-              <label class="btn btn-primary" ng-model="$ctrl.settings.showTimestamps"
+              <label class="btn btn-theme-tertiary" ng-model="$ctrl.settings.showTimestamps"
                 uib-btn-radio="'off'" ng-change="$ctrl.update()">off</label>
             </div>
           </div>
@@ -237,7 +243,7 @@
               <td>
                 <div class="btn-group btn-group-sm pull-right" role="group"
                   ng-if="val.changed">
-                  <a class="btn btn-primary" tooltip-append-to-body="true"
+                  <a class="btn btn-theme-tertiary" tooltip-append-to-body="true"
                      uib-tooltip="Save changes to this view"
                      ng-click="$ctrl.updateView(key)">
                     <span class="fa fa-save"></span>
@@ -277,7 +283,7 @@
                   class="form-control" placeholder="Enter a new view expression">
               </td>
               <td>
-                <a class="btn btn-primary btn-sm pull-right"
+                <a class="btn btn-theme-tertiary btn-sm pull-right"
                   ng-click="$ctrl.createView()">
                   <span class="fa fa-plus-circle"></span>&nbsp;
                   Create
@@ -357,7 +363,7 @@
               </td>
               <td>
                 <div class="btn-group btn-group-sm pull-right" role="group" ng-if="val.changed">
-                  <a class="btn btn-primary" tooltip-append-to-body="true"
+                  <a class="btn btn-theme-tertiary" tooltip-append-to-body="true"
                     uib-tooltip="Save changes to this cron query"
                     ng-click="$ctrl.updateCronQuery(key)">
                     <span class="fa fa-save"></span>
@@ -429,7 +435,7 @@
                   placeholder="Comma separated list of tags">
               </td>
               <td>
-                <a class="btn btn-primary btn-sm pull-right"
+                <a class="btn btn-theme-tertiary btn-sm pull-right"
                   ng-click="$ctrl.createCronQuery()">
                   <span class="fa fa-plus-circle"></span>&nbsp;
                   Create
@@ -527,6 +533,36 @@
 
       </form> <!-- /col configs settings -->
 
+      <!-- theme settings -->
+      <form class="form-horizontal padded-bottom-lg" ng-if="$ctrl.visibleTab === 'theme'">
+
+        <h3>UI Themes</h3>
+
+        <p>
+          Pick from a preexisting theme below
+        </p>
+
+        <hr>
+
+        <!-- theme picker -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Theme</label>
+          <div class="col-sm-5">
+            <select class="form-control" ng-change="$ctrl.changeTheme()"
+              ng-model="$ctrl.settings.theme">
+              <option value="default-theme">Default</option>
+              <option value="blue-theme">Blue</option>
+              <option value="green-theme">Green</option>
+              <option value="cotton-candy-theme">Cotton Candy</option>
+              <option value="default-dark-theme">Default Dark</option>
+              <option value="dark-2-theme">Dark 2</option>
+              <option value="dark-3-theme">Dark 3</option>
+            </select>
+          </div>
+        </div>
+
+      </form> <!-- /theme settings -->
+
       <!-- password settings -->
       <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'password'"
         enter-click="$ctrl.changePassword()">
@@ -580,7 +616,7 @@
         <div class="form-group">
           <label class="col-sm-3 control-label">&nbsp;</label>
           <div class="col-sm-9">
-            <a class="btn btn-primary"
+            <a class="btn btn-theme-tertiary"
               ng-click="$ctrl.changePassword()">
               Change Password
             </a>

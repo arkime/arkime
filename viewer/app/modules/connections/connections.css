@@ -1,0 +1,59 @@
+moloch-connections select {
+  -webkit-appearance: none;
+}
+
+moloch-connections .network-container {
+  margin-top: 80px;
+}
+
+moloch-connections #networkLabel {
+  position  : absolute;
+  display   : none;
+  font-size : smaller;
+  padding   : 4px 8px;
+  width     : 170px;
+  border    : solid 1px var(--color-gray);
+  background: var(--color-primary-lightest);
+
+  -webkit-border-radius: var(--px-sm);
+     -moz-border-radius: var(--px-sm);
+          border-radius: var(--px-sm);
+
+  -webkit-box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
+     -moz-box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
+          box-shadow: var(--px-md) var(--px-md) var(--px-xlg) var(--px-none) var(--color-gray);
+}
+
+moloch-connections form.connections-form {
+  position: relative;
+  top     : 78px;
+  left    : 0;
+  right   : 0;
+  padding : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) var(--color-gray);
+}
+
+moloch-connections .dl-horizontal {
+  margin-bottom: var(--px-md);
+}
+moloch-connections .dl-horizontal dt {
+  width     : 80px;
+  text-align: left;
+}
+moloch-connections .dl-horizontal dd {
+  margin-left: 85px;
+}
+
+/* apply theme colors */
+moloch-connections rect {
+  stroke: var(--color-background, #FFF);
+  fill  : var(--color-background, #FFF);
+}
+moloch-connections svg {
+  fill  : var(--color-foreground, #333);
+}
+

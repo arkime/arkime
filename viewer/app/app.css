@@ -1,0 +1,437 @@
+/* imports =================================== */
+/* import themes */
+@import './themes/default.css';
+@import './themes/default-dark.css';
+@import './themes/blue.css';
+@import './themes/green.css';
+@import './themes/cotton-candy.css';
+@import './themes/dark-2.css';
+@import './themes/dark-3.css';
+
+/* import bootstrap overrides */
+@import 'overrides.css';
+
+/* import component styles */
+@import '../components/navbar/navbar.css';
+@import '../components/footer/footer.css';
+@import '../components/loading/loading.css';
+@import '../components/pagination/pagination.css';
+
+/* import modules styles */
+@import './modules/connections/connections.css';
+
+@import './modules/health/health.css';
+
+@import './modules/help/help.css';
+
+@import './modules/search/styles/search.css';
+@import './modules/search/styles/expression.typeahead.css';
+
+@import './modules/session/styles/session.actions.css';
+@import './modules/session/styles/session.detail.css';
+@import './modules/session/styles/session.field.css';
+@import './modules/session/styles/session.list.css';
+@import './modules/session/styles/session.sticky.css';
+
+@import './modules/settings/settings.css';
+
+@import './modules/spigraph/spigraph.css';
+
+@import './modules/spiview/spiview.css';
+
+@import './modules/stats/stats.css';
+
+@import './modules/user/styles/user.list.css';
+
+@import './modules/visualization/styles/graph.map.css';
+@import './modules/visualization/styles/graph.css';
+@import './modules/visualization/styles/map.css';
+
+
+
+/* appwide styles ============================ */
+body {
+  font-size       : 16px;
+  color           : var(--color-foreground);
+  background-color: var(--color-background);
+
+  --px-none   : 0;          /* 0px */
+  --px-xs     : 0.125rem;   /* 2px */
+  --px-sm     : .25rem;     /* 4px */
+  --px-md     : .5rem;      /* 8px */
+  --px-lg     : .75rem;     /* 12px */
+  --px-xlg    : 1rem;       /* 16px */
+  --px-xxlg   : 1.5rem;     /* 24px */
+  --px-xxxlg  : 2rem;       /* 32px */
+  --px-xxxxlg : 3rem;       /* 48px */
+  --px-xxxxxlg: 3.5rem;     /* 56px */
+}
+
+
+/* margins */
+.margined               { margin: var(--px-md); }
+.margined-sm            { margin: var(--px-sm); }
+.margined-lg            { margin: var(--px-lg); }
+.margined-xlg           { margin: var(--px-xlg); }
+.margined-xxlg          { margin: var(--px-xxlg); }
+.margined-xxxlg         { margin: var(--px-xxxlg); }
+.margined-xxxxlg        { margin: var(--px-xxxxlg); }
+.margined-none          { margin: var(--px-none); }
+
+.margined-top           { margin-top: var(--px-md); }
+.margined-top-sm        { margin-top: var(--px-sm); }
+.margined-top-lg        { margin-top: var(--px-lg); }
+.margined-top-xlg       { margin-top: var(--px-xlg); }
+.margined-top-xxlg      { margin-top: var(--px-xxlg); }
+.margined-top-xxxlg     { margin-top: var(--px-xxxlg); }
+.margined-top-xxxxlg    { margin-top: var(--px-xxxxlg); }
+.margined-top-none      { margin-top: var(--px-none); }
+
+.margined-bottom        { margin-bottom: var(--px-md); }
+.margined-bottom-sm     { margin-bottom: var(--px-sm); }
+.margined-bottom-lg     { margin-bottom: var(--px-lg); }
+.margined-bottom-xlg    { margin-bottom: var(--px-xlg); }
+.margined-bottom-xxlg   { margin-bottom: var(--px-xxlg); }
+.margined-bottom-xxxlg  { margin-bottom: var(--px-xxxlg); }
+.margined-bottom-xxxxlg { margin-bottom: var(--px-xxxxlg); }
+.margined-bottom-none   { margin-bottom: var(--px-none); }
+
+.margined-left          { margin-left: var(--px-md); }
+.margined-left-sm       { margin-left: var(--px-sm); }
+.margined-left-lg       { margin-left: var(--px-lg); }
+.margined-left-xlg      { margin-left: var(--px-xlg); }
+.margined-left-xxlg     { margin-left: var(--px-xxlg); }
+.margined-left-xxxlg    { margin-left: var(--px-xxxlg); }
+.margined-left-xxxxlg   { margin-left: var(--px-xxxxlg); }
+.margined-left-none     { margin-left: var(--px-none); }
+
+.margined-right         { margin-right: var(--px-md); }
+.margined-right-sm      { margin-right: var(--px-sm); }
+.margined-right-lg      { margin-right: var(--px-lg); }
+.margined-right-xlg     { margin-right: var(--px-xlg); }
+.margined-right-xxlg    { margin-right: var(--px-xxlg); }
+.margined-right-xxxlg   { margin-right: var(--px-xxxlg); }
+.margined-right-xxxxlg  { margin-right: var(--px-xxxxlg); }
+.margined-right-none    { margin-right: var(--px-none); }
+
+.margin-for-main-navbar         { margin-top: 36px; }
+.margin-for-search-navbar       { margin-top: 85px; }
+.margin-for-main-and-sub-navbar { margin-top: 100px; }
+
+
+/* padding */
+.padded             { padding: var(--px-md); }
+.padded-sm          { padding: var(--px-sm); }
+.padded-lg          { padding: var(--px-lg); }
+.padded-xlg         { padding: var(--px-xlg); }
+.padded-none        { padding: var(--px-none); }
+
+.padded-top         { padding-top: var(--px-md); }
+.padded-top-sm      { padding-top: var(--px-sm); }
+.padded-top-lg      { padding-top: var(--px-lg); }
+.padded-top-xlg     { padding-top: var(--px-xlg); }
+.padded-top-none    { padding-top: var(--px-none); }
+
+.padded-bottom      { padding-bottom: var(--px-md); }
+.padded-bottom-sm   { padding-bottom: var(--px-sm); }
+.padded-bottom-lg   { padding-bottom: var(--px-lg); }
+.padded-bottom-xlg  { padding-bottom: var(--px-xlg); }
+.padded-bottom-none { padding-bottom: var(--px-none); }
+
+.padded-left        { padding-left: var(--px-md); }
+.padded-left-sm     { padding-left: var(--px-sm); }
+.padded-left-lg     { padding-left: var(--px-lg); }
+.padded-left-xlg    { padding-left: var(--px-xlg); }
+.padded-left-none   { padding-left: var(--px-none); }
+
+.padded-right       { padding-right: var(--px-md); }
+.padded-right-sm    { padding-right: var(--px-sm); }
+.padded-right-lg    { padding-right: var(--px-lg); }
+.padded-right-xlg   { padding-right: var(--px-xlg); }
+.padded-right-none  { padding-right: var(--px-none); }
+
+
+/* cursors */
+.cursor-help      { cursor: help; }
+.help-cursor      { cursor: help; }
+
+.cursor-pointer   { cursor: pointer; }
+.pointer-cursor   { cursor: pointer; }
+
+.cursor-crosshair { cursor: crosshair; }
+.crosshair-cursor { cursor: crosshair; }
+
+
+/* text */
+.text-theme-accent    { color: var(--color-foreground-accent); }
+.text-theme-primary   { color: var(--color-primary); }
+.text-theme-secondary { color: var(--color-secondary); }
+.text-theme-tertiary  { color: var(--color-tertiary); }
+.text-theme-quaternary{ color: var(--color-quaternary); }
+.text-muted-more      { color: var(--color-gray); }
+
+
+/* font sizes */
+.medium { font-size: 95%; }
+.large  { font-size: 1.8rem; }
+.xlarge { font-size: 2rem; }
+
+
+/* wrapping */
+.no-wrap { white-space: nowrap; }
+
+
+/* displaying */
+.display-inline { display: inline; }
+
+
+/* overflow */
+.no-overflow    { overflow: hidden; }
+.no-overflow-x  { overflow-x: hidden; }
+.no-overflow-y  { overflow-y: hidden; }
+
+
+/* anchor tag no decoration */
+a.no-decoration { text-decoration: none; }
+
+
+/* themed buttons */
+.btn.btn-theme-primary {
+  color           : #FFFFFF;
+  background-color: var(--color-primary);
+  border-color    : var(--color-primary-dark);
+}
+.btn.btn-theme-primary:hover {
+  background-color: var(--color-primary-dark);
+  border-color    : var(--color-primary-darker);
+}
+.btn.btn-theme-primary.active {
+  background-color: var(--color-primary-darker);
+  border-color    : var(--color-primary-darker);
+}
+
+.btn.btn-theme-secondary {
+  color           : #FFFFFF;
+  background-color: var(--color-secondary);
+  border-color    : var(--color-secondary-dark);
+}
+.btn.btn-theme-secondary:hover {
+  background-color: var(--color-secondary-dark);
+  border-color    : var(--color-secondary-darker);
+}
+.btn.btn-theme-secondary.active {
+  background-color: var(--color-secondary-darker);
+  border-color    : var(--color-secondary-darker);
+}
+
+.btn.btn-theme-tertiary {
+  color           : #FFFFFF;
+  background-color: var(--color-tertiary);
+  border-color    : var(--color-tertiary-dark);
+}
+.btn.btn-theme-tertiary:hover {
+  background-color: var(--color-tertiary-dark);
+  border-color    : var(--color-tertiary-darker);
+}
+.btn.btn-theme-tertiary.active {
+  background-color: var(--color-tertiary-darker);
+  border-color    : var(--color-tertiary-darker);
+}
+
+.btn.btn-theme-quaternary {
+  color           : #FFFFFF;
+  background-color: var(--color-quaternary);
+  border-color    : var(--color-quaternary-dark);
+}
+.btn.btn-theme-quaternary:hover {
+  background-color: var(--color-quaternary-dark);
+  border-color    : var(--color-quaternary-darker);
+}
+.btn.btn-theme-primary.active {
+  background-color: var(--color-quaternary-darker);
+  border-color    : var(--color-quaternary-darker);
+}
+
+
+/* themed labels */
+.label.label-theme-primary {
+  background-color: var(--color-primary);
+}
+.label.label-theme-secondary {
+  background-color: var(--color-secondary);
+}
+.label.label-theme-tertiary {
+  background-color: var(--color-tertiary);
+}
+.label.label-theme-quaternary {
+  background-color: var(--color-quaternary);
+}
+
+
+/* small horizontal rule */
+.hr-small {
+  margin-top   : var(--px-sm);
+  margin-bottom:var(--px-xs);
+}
+
+
+/* flex block to display text centered
+ * (horizontally and vertically) on the page
+ * note: takes up half of the page
+ */
+.vertical-horizontal-center {
+  min-height      : 40vh;
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  text-align      : center;
+  flex-direction  : column;
+}
+
+
+/* displays large text for important information
+ * note: must contain an inner div with the text
+ * example:
+ * <div class="info-area">
+ *   <div>Some important text!</div>
+ * </div>
+ */
+.info-area {
+  font-size : var(--px-xxxlg);
+  color     : var(--color-gray-dark);
+}
+
+.info-area div {
+  padding         : var(--px-xxxlg);
+  border-radius   : var(--px-sm);
+  background-color: var(--color-gray-light);
+}
+
+.info-area span.fa {
+  display         : flex;
+  justify-content : center;
+}
+
+
+
+/* transition for font awesome icon
+ * only works for rotating icons 45 degrees
+ */
+.btn-toggle .fa {
+  -webkit-transform-origin: 50% 50%;
+  -ms-transform-origin    : 50% 50%;
+  transform-origin        : 50% 50%;
+  -webkit-transition      : all 750ms;
+  transition              : all 750ms;
+}
+.btn-toggle.collapsed > .fa {
+  -webkit-transform : rotate(-45deg);
+  -ms-transform     : rotate(-45deg);
+  transform         : rotate(-45deg);
+}
+
+
+/* small alert areas */
+.alert.alert-sm {
+  padding       : 4px 35px 5px 8px;
+  margin-top    : var(--px-md);
+  margin-bottom : var(--px-none);
+}
+
+
+
+/* sub navbar ================================ */
+.sub-navbar {
+  position: fixed;
+  top     : 36px;
+  left    : 0;
+  right   : 0;
+  z-index : 1029;
+  padding : var(--px-xlg) var(--px-lg) var(--px-md) 13px;
+
+  background-color  : var(--color-secondary-lightest);
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  -moz-box-shadow   : var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+  box-shadow        : var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+.sub-navbar .sub-navbar-title {
+  font-size   : var(--px-xxxlg);
+  font-weight : bold;
+}
+
+.sub-navbar .sub-navbar-title .fa-stack {
+  margin-top   : -6px;
+  margin-bottom: -4px;
+}
+
+.sub-navbar > .toast-container { margin-top: -6px; }
+
+
+
+/* animations ================================ */
+.animate-opacity { opacity: 1; }
+
+.animate-opacity.ng-enter {
+  -webkit-transition: opacity 400ms linear;
+  transition        : opacity 400ms linear;
+
+  opacity           : 0;
+}
+
+.animate-opacity.ng-enter-active {
+  opacity           : 1;
+}
+
+.animate-opacity.ng-leave {
+  -webkit-transition: opacity 400ms linear;
+  transition        : opacity 400ms linear;
+
+  opacity           : 1;
+}
+
+.animate-opacity.ng-leave-active {
+  opacity           : 0;
+}
+
+
+/* animations for filtering table contents */
+table tr.ng-move,
+table tr.ng-enter,
+table tr.ng-leave {
+  -webkit-transition: all 400ms linear;
+  -moz-transition: all 400ms linear;
+  transition: all 400ms linear;
+}
+
+table tr.ng-move,
+table tr.ng-enter,
+table tr.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
+table tr.ng-leave,
+table tr.ng-move.ng-move-active,
+table tr.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
+
+
+
+
+/* responsive styles ========================= */
+/* responsive floats */
+@media (min-width: 1500px) {
+  .pull-right-xlg { float: right; }
+}
+@media (min-width: 1200px) {
+  .pull-right-lg  { float: right; }
+}
+@media (min-width: 992px) {
+  .pull-right-md  { float: right; }
+}
+@media (min-width: 768px) {
+  .pull-right-sm  { float: right; }
+}
+.pull-right-xs    { float: right; }

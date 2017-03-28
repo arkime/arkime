@@ -1,0 +1,48 @@
+navbar .navbar {
+  max-height: 36px;
+  min-height: 36px;
+}
+
+navbar .navbar-nav > li > a {
+  padding-top   : 8px;
+  padding-bottom: 8px;
+}
+
+navbar .navbar-brand {
+  height : 36px;
+  padding: 8px 15px;
+}
+
+navbar .navbar-text {
+  margin-top    : 6px;
+  margin-bottom : 8px;
+}
+
+navbar .navbar-text > small {
+  color: var(--color-gray);
+}
+
+navbar .navbar-inverse {
+  background-color  : var(--color-primary-dark);
+  border-color      : var(--color-primary-darker);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-lg) var(--px-sm) #333;
+}
+
+navbar .navbar-inverse .navbar-brand {
+  color       : var(--color-gray);
+  margin-left : 36px !important;
+}
+
+navbar .navbar-inverse li.active a {
+  background-color: var(--color-primary-darker) !important;
+  font-weight     : 500;
+}
+
+navbar .moloch-logo {
+  position: absolute;
+  height  : 46px;
+  top     : 2px;
+}

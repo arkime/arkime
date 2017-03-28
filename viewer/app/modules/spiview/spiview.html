@@ -10,7 +10,7 @@
     </moloch-graph-map>
   </div>
 
-  <label class="label label-primary" ng-if="!$ctrl.error && $ctrl.filtered !== undefined">
+  <label class="label label-theme-primary" ng-if="!$ctrl.error && $ctrl.filtered !== undefined">
     Showing {{$ctrl.filtered | number}} entries filtered from
     {{$ctrl.total | number}} total entries
   </label>
@@ -31,13 +31,13 @@
           <span class="fa fa-spin fa-spinner fa-lg pull-right margined-top-lg margined-right-lg"
             ng-if="$ctrl.categoryObjects[category].loading"></span>
           <span ng-if="!$ctrl.categoryObjects[category].loading">
-            <button class="btn btn-blue btn-sm pull-right margined-right-lg"
+            <button class="btn btn-theme-secondary btn-sm pull-right margined-right-lg"
               uib-tooltip="Load all of the values in this category"
               tooltip-placement="top-right"
               ng-click="$ctrl.toggleAllValues(category, true, $event)">
               Load All
             </button>
-            <button class="btn btn-purple btn-sm pull-right margined-right-lg"
+            <button class="btn btn-theme-primary btn-sm pull-right margined-right-lg"
               uib-tooltip="Unload all of the values in this category"
               tooltip-placement="top-right"
               ng-click="$ctrl.toggleAllValues(category, false, $event)">

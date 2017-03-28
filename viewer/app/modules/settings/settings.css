@@ -1,0 +1,18 @@
+moloch-settings .label-lg {
+  padding     : .3em 1.2em .5em;
+  font-size   : 100%;
+  margin-left : 1em;
+}
+
+moloch-settings .label-md {
+  font-size: 85%;
+}
+
+moloch-settings input.short-control {
+  width   : 50%;
+  display : inline-block;
+}
+
+moloch-settings form {
+  min-height: 250px;
+}

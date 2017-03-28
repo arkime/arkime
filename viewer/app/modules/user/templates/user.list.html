@@ -8,7 +8,7 @@
       </span>&nbsp;
       Users
     </span>
-    <button class="pull-right btn btn-sm btn-blue btn-header"
+    <button class="pull-right btn btn-sm btn-theme-secondary btn-header"
       ng-click="$ctrl.goToNewUserForm()">
       <span class="fa fa-plus-circle"></span>&nbsp;
       New User
@@ -78,7 +78,7 @@
         <td class="no-wrap"><input type="checkbox" ng-model="user.emailSearch" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap"><input type="checkbox" ng-model="user.removeEnabled" ng-change="$ctrl.userChanged(user);"></td>
         <td class="no-wrap">
-          <a class="btn btn-sm btn-green"
+          <a class="btn btn-sm btn-theme-tertiary"
             href="settings?userId={{user.userId}}"
             uib-tooltip="Settings for {{user.userId}}">
             <span class="fa fa-gear"></span>
@@ -144,7 +144,7 @@
                 </div>
               </div>
               <div>
-              <button class="btn btn-sm btn-green pull-right margined-top"
+              <button class="btn btn-sm btn-theme-tertiary pull-right margined-top"
                 ng-click="$ctrl.createUser()">
                 <span class="fa fa-plus-circle"></span>&nbsp;
                 Create

@@ -3,7 +3,7 @@
   <!-- actions dropdown -->
   <div class="btn-group btn-group-sm pull-right margined-left"
     uib-dropdown dropdown-append-to-body is-open="$ctrl.isopen">
-    <button id="single-button" type="button" class="btn btn-purple"
+    <button id="single-button" type="button" class="btn btn-theme-primary"
       uib-dropdown-toggle>
       <span class="fa fa-caret-down fa-lg"></span>
     </button>
@@ -64,13 +64,13 @@
   <!-- views dropdown -->
   <div class="btn-group btn-group-sm pull-right margined-left"
     uib-dropdown is-open="$ctrl.viewsopen">
-    <button type="button" class="btn btn-blue"
+    <button type="button" class="btn btn-theme-secondary"
       ng-if="!$ctrl.view" tooltip-placement="left"
       uib-dropdown-toggle tooltip-append-to-body="true"
       uib-tooltip="Apply a view to the results. Currently, there is no view applied to these results.">
       <span class="fa fa-eye fa-lg"></span>
     </button>
-    <button type="button" class="btn btn-yellow"
+    <button type="button" class="btn btn-theme-quaternary"
       ng-if="$ctrl.view" tooltip-placement="left"
       uib-dropdown-toggle tooltip-append-to-body="true"
       uib-tooltip="{{$ctrl.view}} view applied to these results. Click to change or remove this view.">
@@ -117,7 +117,7 @@
   </div> <!-- /views dropdown -->
 
   <!-- search button -->
-  <a class="btn btn-sm btn-green pull-right margined-left"
+  <a class="btn btn-sm btn-theme-tertiary pull-right margined-left"
     ng-click="$ctrl.change()">Search</a>
 
   <!-- search box typeahead -->
@@ -224,7 +224,7 @@
 
     <!-- human readable time range -->
     <div class="margined-top margined-left-lg display-inline">
-      <strong class="small text-purple no-wrap">
+      <strong class="small text-theme-accent no-wrap">
         Time Range: {{$ctrl.deltaTime | readableTime}}
       </strong>
     </div>

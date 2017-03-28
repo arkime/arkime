@@ -33,6 +33,19 @@
         .then((response) => {this.settings = response; })
         .catch((error)   => {this.settings = {timezone: "local"}; });
 
+      // build colors array from css variables
+      let styles = window.getComputedStyle(document.body);
+      let primaryLighter  = styles.getPropertyValue('--color-primary-lighter').trim();
+      let primaryLight    = styles.getPropertyValue('--color-primary-light').trim();
+      let primary         = styles.getPropertyValue('--color-primary').trim();
+      let primaryDark     = styles.getPropertyValue('--color-primary-dark').trim();
+      let secondaryLighter= styles.getPropertyValue('--color-tertiary-lighter').trim();
+      let secondaryLight  = styles.getPropertyValue('--color-tertiary-light').trim();
+      let secondary       = styles.getPropertyValue('--color-tertiary').trim();
+      let secondaryDark   = styles.getPropertyValue('--color-tertiary-dark').trim();
+      this.colors = [primaryDark, primary, primaryLight, primaryLighter,
+        secondaryDark, secondary, secondaryLight, secondaryLighter];
+
       this.loadData();
 
       // watch for the user to leave or return to the page
@@ -111,9 +124,9 @@
 
         div.selectAll(".horizon")
             .data(metrics)
-          .enter().append("div")
+            .enter().append("div")
             .attr("class", "horizon")
-            .call(context.horizon());
+            .call(context.horizon().colors(self.colors));
 
         div.append("div")
             .attr("class", "rule")

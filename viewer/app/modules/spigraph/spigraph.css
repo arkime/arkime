@@ -1,0 +1,53 @@
+moloch-spigraph select {
+  -webkit-appearance: none;
+}
+
+moloch-spigraph form.spigraph-form {
+  z-index         : 999;
+  position        : fixed;
+  top             : 115px;
+  left            : 0;
+  right           : 0;
+  padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+/* fixes to compensate for second fixed position form */
+moloch-spigraph moloch-search {
+  margin-top: -135px;
+}
+
+moloch-spigraph .map-btn {
+  top: 160px !important;
+}
+
+moloch-spigraph .spigraph-content {
+  margin-top: 170px;
+}
+
+moloch-spigraph .well {
+  -webkit-box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) #777;
+     -moz-box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) #777;
+          box-shadow: var(--px-sm) var(--px-md) var(--px-xlg) var(--px-xs) #777;
+}
+
+/* vertically center the map on the row (there's a button) */
+moloch-spigraph .spi-graph-item:nth-child(odd) {
+  background-color: var(--color-quaternary-lightest);
+}
+
+moloch-spigraph .spi-graph-item .moloch-map-container {
+  margin-top: -25px;
+}
+
+moloch-spigraph .spi-graph-item .moloch-map-container .btn-fw {
+  margin-top: -25px;
+}
+
+moloch-spigraph .spi-graph-item .session-graph-btn-container {
+  margin-top: -28px;
+}

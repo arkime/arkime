@@ -1,0 +1,28 @@
+moloch-help .header-input {
+  width: 70%;
+}
+
+/* help navigation */
+moloch-help ul.nav-pills {
+  min-width     : 150px;
+  border        : 1px solid var(--color-gray);
+  border-radius : 4px;
+  padding       : 4px;
+
+  -webkit-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
+     -moz-box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
+          box-shadow: var(--px-sm) var(--px-sm) var(--px-xlg) var(--px-none) #333;
+}
+
+moloch-help ul li a {
+  padding: 5px 8px !important;
+}
+
+moloch-help ul li.nested {
+  margin-left : 2.4em;
+  font-size   : 0.85em;
+}
+
+moloch-help ul li.nested a {
+  padding: 2px 5px !important;
+}

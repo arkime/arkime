@@ -23,15 +23,26 @@
           let map, countryCodes;
           let mapEl = element.find('.moloch-map-container > #moloch-map');
 
+          let styles = $window.getComputedStyle($document[0].body);
+          let waterColor        = styles.getPropertyValue('--color-water').trim();
+          let landColorDark     = styles.getPropertyValue('--color-land-dark').trim();
+          let landColorLight    = styles.getPropertyValue('--color-land-light').trim();
+
+          if (!landColorDark || !landColorLight) {
+            landColorDark  = styles.getPropertyValue('--color-primary-dark').trim();
+            landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
+          }
+
           mapEl.vectorMap({ // setup map
             map             : 'world_en',
-            backgroundColor : '#6FB5B5',
+            backgroundColor : waterColor,
             hoverColor      : 'black',
             hoverOpacity    : 0.7,
             series: {
               regions: [{
-                scale: ['#CFAED6', '#630078'],
-                normalizeFunction: 'polynomial'
+                scale: [ landColorLight, landColorDark ],
+                normalizeFunction: 'polynomial',
+                attribute: 'fill'
               }]
             },
             onRegionLabelShow: function(e, el, code){
@@ -44,6 +55,7 @@
               });
             }
           });
+
 
           // save reference to the map
           map = mapEl.children('.jvectormap-container').data('mapObject');
