@@ -216,7 +216,7 @@ sub esCopy
         die "ERROR - Copy failed from $srci to $dsti\n";
     }
 
-    print "\n"
+    print "\n";
     $main::userAgent->timeout(30);
 }
 ################################################################################
