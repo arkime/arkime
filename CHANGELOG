@@ -7,6 +7,7 @@
   - capture - handle certs with pre epoch times
   - capture - more magicMode basic detections
   - db - Handle timeouts and nodeNames better with upgrading from db version 30 to 34
+  - capture - fix race condition when quiting and processing unsaved sessions
 
 0.18.0 2017/03/21
   - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)

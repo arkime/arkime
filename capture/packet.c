@@ -45,6 +45,7 @@ LOCAL int                    greIpField;
 LOCAL uint64_t               droppedFrags;
 
 time_t                       lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
+int                          inProgress[MOLOCH_MAX_PACKET_THREADS];
 
 LOCAL patricia_tree_t       *ipTree = 0;
 
@@ -432,6 +433,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
 
     while (1) {
         MOLOCH_LOCK(packetQ[thread].lock);
+        inProgress[thread] = 0;
         if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
             struct timeval tv;
             struct timespec ts;
@@ -440,6 +442,7 @@ LOCAL void *moloch_packet_thread(void *threadp)
             ts.tv_nsec = 0;
             MOLOCH_COND_TIMEDWAIT(packetQ[thread].lock, ts);
         }
+        inProgress[thread] = 1;
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
         MOLOCH_UNLOCK(packetQ[thread].lock);
 
@@ -1326,6 +1329,7 @@ int moloch_packet_outstanding()
 
     for (t = 0; t < config.packetThreads; t++) {
         count += DLL_COUNT(packet_, &packetQ[t]);
+        count += inProgress[t];
     }
     return count;
 }
