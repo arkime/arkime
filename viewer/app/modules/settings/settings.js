@@ -45,6 +45,15 @@
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
 
+      this.themeDisplays = [
+        { name: 'Purp-purp', class: 'default-theme' },
+        { name: 'Blue', class: 'blue-theme' },
+        { name: 'Green', class: 'green-theme' },
+        { name: 'Cotton Candy', class: 'cotton-candy-theme' },
+        { name: 'Green on Black', class: 'dark-2-theme' },
+        { name: 'Dark Blue', class: 'dark-3-theme' }
+      ];
+
       this.UserService.getCurrent()
         .then((response) => {
           let isAdminEdit = false;
