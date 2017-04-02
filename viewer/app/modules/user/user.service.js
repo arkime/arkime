@@ -86,7 +86,7 @@
             }
             resolve(settings);
           }, (error) => {
-            reject(error.data);
+            resolve(defaultSettings);
           });
 
       });
