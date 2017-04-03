@@ -668,7 +668,7 @@
                     colorpicker-position="left"
                     ng-change="$ctrl.changeColor()"
                     ng-model-options="{debounce:400}"
-                    style="background-color:{{$ctrl.background}}">
+                    ng-style="{'background-color':$ctrl.background}">
                     &nbsp;&nbsp;&nbsp;
                   </div>
                 </div>
@@ -678,7 +678,7 @@
                   <div class="input-group-addon">
                     Foreground
                   </div>
-                  <input colorpicker ng-model="$ctrl.foreground"
+                  <input colorpicker ng-model="$ctrl.foreground"f
                     ng-change="$ctrl.changeColor()"
                     ng-model-options="{debounce:400}"
                     colorpicker-position="top" type="text" class="form-control">
@@ -687,7 +687,7 @@
                     colorpicker-position="left"
                     ng-change="$ctrl.changeColor()"
                     ng-model-options="{debounce:400}"
-                    style="background-color:{{$ctrl.foreground}}">
+                    ng-style="{'background-color':$ctrl.foreground}">
                     &nbsp;&nbsp;&nbsp;
                   </div>
                 </div>
@@ -706,7 +706,7 @@
                     colorpicker-position="left"
                     ng-change="$ctrl.changeColor()"
                     ng-model-options="{debounce:400}"
-                    style="background-color:{{$ctrl.foregroundAccent}}">
+                    ng-style="{'background-color':$ctrl.foregroundAccent}">
                     &nbsp;&nbsp;&nbsp;
                   </div>
                 </div>
@@ -830,7 +830,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.primary}}">
+                  ng-style="{'background-color':$ctrl.primary}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -852,7 +852,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.secondary}}">
+                  ng-style="{'background-color':$ctrl.secondary}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -874,7 +874,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.tertiary}}">
+                  ng-style="{'background-color':$ctrl.tertiary}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -896,7 +896,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.quaternary}}">
+                  ng-style="{'background-color':$ctrl.quaternary}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -929,7 +929,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.primaryLightest}}">
+                  ng-style="{'background-color':$ctrl.primaryLightest}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -951,7 +951,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.secondaryLightest}}">
+                  ng-style="{'background-color':$ctrl.secondaryLightest}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -973,7 +973,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.tertiaryLightest}}">
+                  ng-style="{'background-color':$ctrl.tertiaryLightest}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -995,7 +995,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.quaternaryLightest}}">
+                  ng-style="{'background-color':$ctrl.quaternaryLightest}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -1023,7 +1023,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.water}}">
+                  ng-style="{'background-color':$ctrl.water}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -1042,7 +1042,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.land}}">
+                  ng-style="{'background-color':$ctrl.land}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -1062,7 +1062,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.src}}">
+                  ng-style="{'background-color':$ctrl.src}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
@@ -1081,7 +1081,7 @@
                   colorpicker-position="left"
                   ng-change="$ctrl.changeColor()"
                   ng-model-options="{debounce:400}"
-                  style="background-color:{{$ctrl.dst}}">
+                  ng-style="{'background-color':$ctrl.dst}">
                   &nbsp;&nbsp;&nbsp;
                 </div>
               </div>
