@@ -29,7 +29,7 @@ require('./user/tests/has.permission.test');
 
 require('./help/help.test');
 
-require('./settings/settings.test');
+// require('./settings/settings.test');
 
 require('./visualization/tests/graph.test');
 require('./visualization/tests/map.test');

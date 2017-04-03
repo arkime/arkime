@@ -1,7 +1,9 @@
 /* imports =================================== */
+/* import external styles */
+@import '../node_modules/angular-bootstrap-colorpicker/css/colorpicker.min.css';
+
 /* import themes */
 @import './themes/default.css';
-@import './themes/default-dark.css';
 @import './themes/blue.css';
 @import './themes/green.css';
 @import './themes/cotton-candy.css';

@@ -15,7 +15,7 @@ body.dark-3-theme {
 
   /* theme colors */
   --color-primary         : #2AA198;
-  --color-primary-dark    : #23837b;
+  --color-primary-dark    : #23837B;
   --color-primary-darker  : #1B655F;
   --color-primary-light   : #32BFB4;
   --color-primary-lighter : #38DDD1;
@@ -45,6 +45,7 @@ body.dark-3-theme {
 
   /* visualization colors */
   --color-water     : #5F7C82;
+  --color-land      : #179B96;
   --color-land-dark : #124B47;
   --color-land-light: #32BFB4;
 

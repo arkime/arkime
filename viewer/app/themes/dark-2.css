@@ -45,6 +45,7 @@ body.dark-2-theme {
 
   /* visualization colors */
   --color-water     : #333333;
+  --color-land      : #00A517;
   --color-land-dark : #006911;
   --color-land-light: #00E116;
 

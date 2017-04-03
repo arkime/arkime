@@ -54,7 +54,20 @@
   describe('Settings Component ->', function() {
 
     // load modules
-    beforeEach(angular.mock.module('moloch'));
+    beforeEach(function() {
+      angular.mock.module('moloch', function($provide) {
+        $provide.value('$window', {
+          getComputedStyle: () => {
+            return {
+              getPropertyValue: () => {
+                return '#000';
+              }
+            };
+          }
+        });
+        $provide.value('$document', angular.element(document));
+       });
+     });
 
     let scope, settingsCtrl, $httpBackend;
 

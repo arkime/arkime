@@ -16,6 +16,8 @@
 
     /**
      * Initialize global variables for this controller
+     * @param $window       Angular's reference to the browser's window object
+     * @param $document     Angular's jQuery wrapper for window.document object
      * @param $interval     Angular's wrapper for window.setInterval
      * @param $location     Exposes browser address bar URL (window.location)
      * @param $routeParams  Retrieves the current set of route parameters
@@ -25,8 +27,10 @@
      *
      * @ngInject
      */
-    constructor($interval, $routeParams, $location,
+    constructor($interval, $routeParams, $location, $window, $document,
                 UserService, FieldService, ConfigService) {
+      this.$window        = $window;
+      this.$document      = $document;
       this.$interval      = $interval;
       this.$location      = $location;
       this.$routeParams   = $routeParams;
@@ -45,6 +49,7 @@
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
 
+      this.getThemeColors();
       this.themeDisplays = [
         { name: 'Purp-purp', class: 'default-theme' },
         { name: 'Blue', class: 'blue-theme' },
@@ -79,8 +84,7 @@
             this.loading  = false;
             this.settings = response.settings;
 
-            // default to default theme if the user has not set a theme
-            if (!this.settings.theme) { this.settings.theme = 'default-theme'; }
+            this.setTheme();
 
             this.startClock();
           }
@@ -134,6 +138,8 @@
         .then((response) => {
           this.settings = response;
           this.loading  = false;
+
+          this.setTheme();
 
           this.startClock();
         })
@@ -197,13 +203,25 @@
 
 
     /* GENERAL ------------------------------------------------------------- */
-    /* saves the user's settings and displays a message */
-    update() {
+    /**
+     * saves the user's settings and displays a message
+     * @param updateTheme whether to update the UI theme
+     */
+    update(updateTheme) {
       this.UserService.saveSettings(this.settings, this.userId)
         .then((response) => {
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
+
+          if (updateTheme) {
+            let now = Date.now();
+            if ($('link[href^="user.css"]').length) {
+              $('link[href^="user.css"]').remove();
+            }
+            $('head').append(`<link rel="stylesheet"
+                              href="user.css?v${now}" type="text/css" />`);
+          }
         })
         .catch((error) => {
           // display error message to user
@@ -507,13 +525,98 @@
     }
 
 
-    /* GENERAL ------------------------------------------------------------- */
-    /* changes the ui theme */
+    /* THEMES -------------------------------------------------------------- */
+    setTheme() {
+      // default to default theme if the user has not set a theme
+      if (!this.settings.theme) { this.settings.theme = 'default-theme'; }
+      if (this.settings.theme.startsWith('custom')) {
+        this.settings.theme = 'custom-theme';
+        this.creatingCustom = true;
+      }
+    }
+
+    /* changes the ui theme (picked from existing themes) */
     changeTheme() {
       bodyElem.removeClass();
       bodyElem.addClass(this.settings.theme);
 
       this.update();
+
+      this.getThemeColors();
+    }
+
+    /* changes a color value of a custom theme and applies the theme */
+    changeColor() {
+      bodyElem.removeClass();
+      bodyElem.addClass('custom-theme');
+
+      this.setThemeString();
+
+      this.settings.theme = `custom1:${this.themeString}`;
+
+      this.update(true);
+    }
+
+    /* retrievs the theme colors from the document body's property values */
+    getThemeColors() {
+      let styles  = this.$window.getComputedStyle(this.$document[0].body);
+
+      this.background       = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
+      this.foreground       = styles.getPropertyValue('--color-foreground').trim() || '#333333';
+      this.foregroundAccent = styles.getPropertyValue('--color-foreground-accent').trim();
+
+      this.primary = styles.getPropertyValue('--color-primary').trim();
+      this.primaryLightest = styles.getPropertyValue('--color-primary-lightest').trim();
+
+      this.secondary = styles.getPropertyValue('--color-secondary').trim();
+      this.secondaryLightest = styles.getPropertyValue('--color-secondary-lightest').trim();
+
+      this.tertiary = styles.getPropertyValue('--color-tertiary').trim();
+      this.tertiaryLightest = styles.getPropertyValue('--color-tertiary-lightest').trim();
+
+      this.quaternary = styles.getPropertyValue('--color-quaternary').trim();
+      this.quaternaryLightest = styles.getPropertyValue('--color-quaternary-lightest').trim();
+
+      this.water      = styles.getPropertyValue('--color-water').trim();
+      this.land       = styles.getPropertyValue('--color-land').trim() || this.primary;
+
+      this.src = styles.getPropertyValue('--color-src').trim() || '#CA0404';
+      this.dst = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
+
+      this.setThemeString();
+    }
+
+    updateThemeString() {
+      let theme = this.themeString.split(':')[1];
+      let colors = theme.split(',');
+
+      this.background = colors[0];
+      this.foreground = colors[1];
+      this.foregroundAccent = colors[2];
+
+      this.primary = colors[3];
+      this.primaryLightest = colors[4];
+
+      this.secondary = colors[5];
+      this.secondaryLightest = colors[6];
+
+      this.tertiary = colors[7];
+      this.tertiaryLightest = colors[8];
+
+      this.quaternary = colors[9];
+      this.quaternaryLightest = colors[10];
+
+      this.water = colors[11];
+      this.land = colors[12];
+
+      this.src = colors[13];
+      this.dst = colors[14];
+
+      this.changeColor();
+    }
+
+    setThemeString() {
+      this.themeString = `${this.background},${this.foreground},${this.foregroundAccent},${this.primary},${this.primaryLightest},${this.secondary},${this.secondaryLightest},${this.tertiary},${this.tertiaryLightest},${this.quaternary},${this.quaternaryLightest},${this.water},${this.land},${this.src},${this.dst}`;
     }
 
 
@@ -586,8 +689,8 @@
     }
   }
 
-  SettingsController.$inject = ['$interval', '$routeParams', '$location',
-    'UserService', 'FieldService', 'ConfigService'];
+  SettingsController.$inject = ['$interval','$routeParams','$location','$window','$document',
+    'UserService','FieldService','ConfigService'];
 
   /**
    * ES Health Directive

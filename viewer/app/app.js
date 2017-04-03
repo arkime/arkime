@@ -10,6 +10,7 @@
   require('angular-sanitize');
   require('angular-ui-bootstrap');
   require('angular-bind-notifier');
+  require('angular-bootstrap-colorpicker');
   require('ngdraggable');
   require('bootstrap/js/tooltip');
   require('bootstrap/js/dropdown');
@@ -26,7 +27,7 @@
    */
   angular.module('moloch', [
     // angular dependencies
-    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate',
+    'ngResource', 'ngRoute', 'ui.bootstrap', 'ngAnimate', 'colorpicker.module',
     'angular.filter', 'ngDraggable', 'ngSanitize', 'angular.bind.notifier',
 
     // custom directives

@@ -55,7 +55,7 @@ sticky-sessions .sticky-session-detail .list-group-item {
 
 a.list-group-item:hover,
 a.list-group-item:focus {
-  background-color: var(--color-secondary-lightest);
+  background-color: var(--color-tertiary-lightest);
 }
 
 sticky-sessions .sticky-session-detail .list-group-item.ng-move,

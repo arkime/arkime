@@ -893,6 +893,7 @@ app.get(['/sessions', '/help', '/settings', '/files', '/stats', '/spiview', '/sp
   );
 
   var theme = req.user.settings.theme || 'default-theme';
+  if (theme.startsWith('custom1')) { theme  = 'custom-theme'; }
 
   res.render('app.pug', { theme:theme });
 });
@@ -910,6 +911,7 @@ app.get(['/users'], checkWebEnabled, function(req, res) {
   );
 
   var theme = req.user.settings.theme || 'default-theme';
+  if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
   res.render('app.pug', { theme:theme });
 });
@@ -928,6 +930,56 @@ app.get('/app.bundle.js.map', function(req, res) {
 });
 app.get('/vendor.bundle.js.map', function(req, res) {
   res.sendFile(__dirname + '/bundle/vendor.bundle.js.map');
+});
+
+// custom user css
+app.get('/user.css', function(req, res) {
+  fs.readFile("./views/user.styl", 'utf8', function(err, str) {
+    if (err) { return console.log("ERROR - ", err); }
+    if (!req.user.settings.theme) {
+      return console.log("ERROR - no custom theme defined");
+    }
+
+    var style = stylus(str);
+
+    var colors = req.user.settings.theme.split(':')[1].split(',');
+
+    style.define('colorBackground', new stylus.nodes.Literal(colors[0]));
+    style.define('colorForeground', new stylus.nodes.Literal(colors[1]));
+    style.define('colorForegroundAccent', new stylus.nodes.Literal(colors[2]));
+
+    style.define('colorWhite', new stylus.nodes.Literal('#FFFFFF'));
+    style.define('colorBlack', new stylus.nodes.Literal('#333333'));
+    style.define('colorGray', new stylus.nodes.Literal('#CCCCCC'));
+    style.define('colorGrayDark', new stylus.nodes.Literal('#777777'));
+    style.define('colorGrayDarker', new stylus.nodes.Literal('#555555'));
+    style.define('colorGrayLight', new stylus.nodes.Literal('#EEEEEE'));
+    style.define('colorGrayLighter', new stylus.nodes.Literal('#F6F6F6'));
+
+    style.define('colorPrimary', new stylus.nodes.Literal(colors[3]));
+    style.define('colorPrimaryLightest', new stylus.nodes.Literal(colors[4]));
+    style.define('colorSecondary', new stylus.nodes.Literal(colors[5]));
+    style.define('colorSecondaryLightest', new stylus.nodes.Literal(colors[6]));
+    style.define('colorTertiary', new stylus.nodes.Literal(colors[7]));
+    style.define('colorTertiaryLightest', new stylus.nodes.Literal(colors[8]));
+    style.define('colorQuaternary', new stylus.nodes.Literal(colors[9]));
+    style.define('colorQuaternaryLightest', new stylus.nodes.Literal(colors[10]));
+
+    style.define('colorWater', new stylus.nodes.Literal(colors[11]));
+    style.define('colorLand', new stylus.nodes.Literal(colors[12]));
+    style.define('colorSrc', new stylus.nodes.Literal(colors[13]));
+    style.define('colorDst', new stylus.nodes.Literal(colors[14]));
+
+    style.render(function(err, css){
+      if (err) {return console.log("ERROR - ", err);}
+      var date = new Date().toUTCString();
+      res.setHeader('Content-Type', 'text/css');
+      res.setHeader('Date', date);
+      res.setHeader('Cache-Control', 'public, max-age=0');
+      res.setHeader('Last-Modified', date);
+      res.send(css);
+    });
+  });
 });
 
 

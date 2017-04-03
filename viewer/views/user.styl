@@ -1,0 +1,63 @@
+body.custom-theme
+  /* basic colors */
+  --color-background: colorBackground
+  --color-foreground: colorForeground
+  --color-foreground-accent: colorForegroundAccent
+
+  if (dark(convert(colorBackground)))
+    --color-white       : colorBlack
+    --color-gray-dark   : colorGrayLighter
+    --color-gray-darker : colorGrayLight
+    --color-gray        : colorGray
+    --color-gray-light  : colorGrayDark
+    --color-gray-lighter: colorGrayDarker
+    --color-black       : colorWhite
+  else
+    --color-white       : colorWhite
+    --color-gray-dark   : colorGrayDark
+    --color-gray-darker : colorGrayDarker
+    --color-gray        : colorGray
+    --color-gray-light  : colorGrayLight
+    --color-gray-lighter: colorGrayLighter
+    --color-black       : colorBlack
+
+  /* theme colors */
+  --color-primary         : colorPrimary
+  --color-primary-dark    : darken(convert(colorPrimary), 6)
+  --color-primary-darker  : darken(convert(colorPrimary), 12)
+  --color-primary-light   : lighten(convert(colorPrimary), 6)
+  --color-primary-lighter : lighten(convert(colorPrimary), 12)
+  --color-primary-lightest: colorPrimaryLightest
+
+  --color-secondary          : colorSecondary
+  --color-secondary-dark     : darken(convert(colorSecondary), 6)
+  --color-secondary-darker   : darken(convert(colorSecondary), 12)
+  --color-secondary-light    : lighten(convert(colorSecondary), 6)
+  --color-secondary-lighter  : lighten(convert(colorSecondary), 12)
+  --color-secondary-lightest : colorSecondaryLightest
+
+  --color-tertiary          : colorTertiary
+  --color-tertiary-dark     : darken(convert(colorTertiary), 6)
+  --color-tertiary-darker   : darken(convert(colorTertiary), 12)
+  --color-tertiary-light    : lighten(convert(colorTertiary), 6)
+  --color-tertiary-lighter  : lighten(convert(colorTertiary), 12)
+  --color-tertiary-lightest : colorTertiaryLightest
+
+  --color-quaternary          : colorQuaternary
+  --color-quaternary-dark     : darken(convert(colorQuaternary), 6)
+  --color-quaternary-darker   : darken(convert(colorQuaternary), 12)
+  --color-quaternary-light    : lighten(convert(colorQuaternary), 6)
+  --color-quaternary-lighter  : lighten(convert(colorQuaternary), 12)
+  --color-quaternary-lightest : colorQuaternaryLightest
+
+
+  /* visualization colors */
+  --color-water     : colorWater
+  --color-land      : colorLand
+  --color-land-dark : darken(convert(colorLand), 25)
+  --color-land-light: lighten(convert(colorLand), 25)
+
+
+  /* src/dst packet colors */
+  --color-src: colorSrc
+  --color-dst: colorDst
