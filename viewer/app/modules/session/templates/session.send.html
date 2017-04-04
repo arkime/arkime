@@ -22,6 +22,7 @@
       </span>
       <input ng-model="$ctrl.tags"
         type="text" class="form-control"
+        enter-click="$ctrl.send()"
         placeholder="Enter a comma separated list of tags">
       <span class="input-group-btn">
         <button class="btn btn-theme-tertiary" ng-click="$ctrl.send()"

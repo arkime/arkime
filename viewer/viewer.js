@@ -5324,7 +5324,8 @@ app.post('/scrub', function(req, res) {
       scrubList(req, res, false, list);
     });
   } else {
-    res.end("Missing expression or list of ids");
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: 'Error: Missing expression. An expression is required so you don\'t scrub everything.' }));
   }
 });
 
@@ -5344,7 +5345,8 @@ app.post('/delete', function(req, res) {
       scrubList(req, res, true, list);
     });
   } else {
-    res.end("Missing expression or list of ids");
+    res.status(403);
+    return res.send(JSON.stringify({ success: false, text: 'Error: Missing expression. An expression is required so you don\'t delete everything.' }));
   }
 });
 

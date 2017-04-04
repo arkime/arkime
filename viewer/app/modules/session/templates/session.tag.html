@@ -21,6 +21,7 @@
         Tags
       </span>
       <input ng-model="$ctrl.tags"
+        enter-click="$ctrl.apply($ctrl.add)"
         type="text" class="form-control"
         placeholder="Enter a comma separated list of tags">
       <span class="input-group-btn">

@@ -310,7 +310,7 @@
           .then((response) => {
             resolve(response);
           }, (error) => {
-            reject(error);
+            reject(error.data);
           });
 
       });
@@ -332,7 +332,7 @@
           .then((response) => {
             resolve(response);
           }, (error) => {
-            reject(error);
+            reject(error.data);
           });
 
       });

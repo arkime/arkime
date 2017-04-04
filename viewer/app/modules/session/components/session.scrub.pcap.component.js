@@ -64,7 +64,7 @@
           this.$scope.$emit('close:form:container', args);
         })
         .catch((error) => {
-          this.error    = error;
+          this.error    = error.text;
           this.loading  = false;
         });
     }
