@@ -111,7 +111,7 @@
           this.stopTime   = parseInt(args.stop * 1000, 10);
         }
 
-        this.changeDate();
+        this.changeDate(true);
       });
 
       // watch for closing the action form
@@ -143,8 +143,9 @@
 
     /**
      * Fired when a date value is changed
+     * @param {bool} loadData Whether to issue query after updating time
      */
-     changeDate() {
+     changeDate(loadData) {
        this.timeRange = '0'; // custom time range
 
        let stopSec  = (this.stopTime / 1000).toFixed();
@@ -159,7 +160,7 @@
        this.$location.search('stopTime', (this.stopTime / 1000).toFixed());
        this.$location.search('startTime', (this.startTime / 1000).toFixed());
 
-       this.change();
+       if (loadData) { this.change(); }
      }
 
      /**

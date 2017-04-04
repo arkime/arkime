@@ -166,7 +166,8 @@
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.startTime" is-open="$ctrl.startTimePopup.opened"
           close-text="Close" enter-click="$ctrl.changeDate()"
-          ng-model-options="{ debounce: 600 }"
+          ng-change="$ctrl.changeDate()"
+          ng-model-options="{ debounce: 500 }"
           alt-input-formats="$ctrl.altInputFormats" />
         <div class="input-group-btn">
           <button type="button" class="btn btn-default"
@@ -191,7 +192,8 @@
           uib-datepicker-popup="{{$ctrl.dateTimeFormat}}" epoch-date="{{::$ctrl.timezone}}"
           ng-model="$ctrl.stopTime" is-open="$ctrl.stopTimePopup.opened"
           close-text="Close" enter-click="$ctrl.changeDate()"
-          ng-model-options="{ debounce: 600 }"
+          ng-change="$ctrl.changeDate()"
+          ng-model-options="{ debounce: 500 }"
           alt-input-formats="$ctrl.altInputFormats" />
         <div class="input-group-btn">
           <button type="button" class="btn btn-default"
