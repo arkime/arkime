@@ -587,8 +587,7 @@
     }
 
     updateThemeString() {
-      let theme = this.themeString.split(':')[1];
-      let colors = theme.split(',');
+      let colors = this.themeString.split(',');
 
       this.background = colors[0];
       this.foreground = colors[1];
