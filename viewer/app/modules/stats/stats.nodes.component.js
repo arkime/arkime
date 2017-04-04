@@ -97,11 +97,13 @@
     }
     toggleStatDetail(stat) {
       var self = this;
-      this.expanded[stat.id] = !this.expanded[stat.id];
+      let id   = stat.id.replace(/[.:]/g, '\\$&');
 
-      $(document.getElementById("statsGraph-" + stat.id)).empty();
+      this.expanded[id] = !this.expanded[id];
+      
+      $(document.getElementById("statsGraph-" + id)).empty();
 
-      if (!this.expanded[stat.id]) {return;}
+      if (!this.expanded[id]) {return;}
 
       var dcontext = cubism.context()
           .serverDelay(0)
@@ -134,7 +136,7 @@
         }
       }
 
-      d3.select("#statsGraph-" + stat.id).call(function(div) {
+      d3.select("#statsGraph-" + id).call(function(div) {
         div.append("div")
             .attr("class", "axis")
             .call(dcontext.axis().orient("top"));
