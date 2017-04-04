@@ -650,9 +650,13 @@
             <div class="col-md-4">
               <h3 class="margined-top-none margined-bottom-xxxxlg">
                 Custom Theme
-                <span class="fa fa-question-circle pull-right cursor-pointer"
-                  uib-tooltip="Toggle color theme help" tooltip-placement="left"
-                  ng-click="$ctrl.displayHelp = !$ctrl.displayHelp"></span>
+                <a class="btn btn-theme-tertiary pull-right"
+                  ng-class="{'active':$ctrl.displayHelp}"
+                  uib-tooltip="Toggle color theme help"
+                  ng-click="$ctrl.displayHelp = !$ctrl.displayHelp">
+                  <span class="fa fa-question-circle"></span>&nbsp;
+                  Help
+                </a>
               </h3>
               <div class="form-group">
                 <div class="input-group input-group-sm">

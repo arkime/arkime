@@ -249,7 +249,7 @@ a.no-decoration { text-decoration: none; }
   background-color: var(--color-quaternary-dark);
   border-color    : var(--color-quaternary-darker);
 }
-.btn.btn-theme-primary.active {
+.btn.btn-theme-quaternary.active {
   background-color: var(--color-quaternary-darker);
   border-color    : var(--color-quaternary-darker);
 }
