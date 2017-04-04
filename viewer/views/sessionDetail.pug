@@ -14,7 +14,7 @@ ul.nav.nav-pills.margined-bottom-xlg
   li.cursor-pointer
     a(href=session.no + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
   li.cursor-pointer
-    a(ng-click="openPermalink()") Permalink
+    a(ng-click="openPermalink()", href='sessions?expression=id=' + session.id + '&startTime=' + session.fp + '&stopTime=' + session.lp + '&openAll=1') Permalink
   li.cursor-pointer.dropdown
     a(data-toggle="dropdown", role="button") Actions &nbsp;
       span.fa.fa-caret-down
