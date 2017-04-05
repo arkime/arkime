@@ -3365,7 +3365,8 @@ app.get('/connections.json', function(req, res) {
   Db.healthCache(function(err, h) {health = h;});
   buildConnections(req, res, function (err, nodes, links, total) {
     if (err) {
-      return res.send({health: health, bsqErr: err.toString()});
+      res.status(403);
+      return res.send(JSON.stringify({success: false, text: err.toString()}));
     }
     res.send({health: health, nodes: nodes, links: links, recordsFiltered: total});
   });

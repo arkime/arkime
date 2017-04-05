@@ -38,7 +38,7 @@
           .then((response) => {
             resolve(response.data);
           }, (error) => {
-            reject(error);
+            reject(error.data);
           });
 
       });

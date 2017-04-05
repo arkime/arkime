@@ -188,7 +188,7 @@
         })
         .catch((error) => {
           this.loading  = false;
-          this.error    = error;
+          this.error    = error.text;
         });
     }
 
@@ -229,6 +229,11 @@
     }
 
     processData(json) {
+      if (!json.nodes) {
+        this.error = 'No nodes returned from your query.';
+        return;
+      }
+
       let self = this;
       let doConvert = 0;
       doConvert |= (self.dbField2Type(self.srcField) === 'seconds')?1:0;
@@ -238,7 +243,7 @@
         let dateFilter = this.$filter('date');
         for (let i = 0; i < json.nodes.length; i++) {
           let dataNode = json.nodes[i];
-          if (doConvert & dataNode.type) {
+          if (dataNode.type) {
             dataNode.id = dateFilter(dataNode.id);
           }
         }
