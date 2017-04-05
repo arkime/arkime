@@ -27,7 +27,7 @@
      *
      * @ngInject
      */
-    constructor($interval, $routeParams, $location, $window, $document,
+    constructor($window, $document, $interval, $location, $routeParams,
                 UserService, FieldService, ConfigService) {
       this.$window        = $window;
       this.$document      = $document;
@@ -44,7 +44,16 @@
       this.loading  = true;
       this.error    = false;
 
-      this.visibleTab = 'general';
+      this.visibleTab = 'general'; // default tab
+
+      // does the url specify a tab in hash
+      let tab = this.$location.hash();
+      if (tab) { // if there is a tab specified and it's a valid tab
+        if (tab === 'general' || tab === 'views' || tab === 'cron' ||
+            tab === 'col' || tab === 'theme' || tab === 'password') {
+          this.visibleTab = tab;
+        }
+      }
 
       this.newCronQueryProcess  = '0';
       this.newCronQueryAction   = 'tag';
@@ -187,6 +196,8 @@
     /* opens a specific settings tab */
     openView(tabName) {
       this.visibleTab = tabName;
+
+      this.$location.hash(tabName);
     }
 
     /* remove the message when user is done with it or duration ends */
@@ -577,8 +588,8 @@
       this.quaternary = styles.getPropertyValue('--color-quaternary').trim();
       this.quaternaryLightest = styles.getPropertyValue('--color-quaternary-lightest').trim();
 
-      this.water      = styles.getPropertyValue('--color-water').trim();
-      this.land       = styles.getPropertyValue('--color-land').trim() || this.primary;
+      this.water  = styles.getPropertyValue('--color-water').trim();
+      this.land   = styles.getPropertyValue('--color-land').trim() || this.primary;
 
       this.src = styles.getPropertyValue('--color-src').trim() || '#CA0404';
       this.dst = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
@@ -688,8 +699,8 @@
     }
   }
 
-  SettingsController.$inject = ['$interval','$routeParams','$location','$window','$document',
-    'UserService','FieldService','ConfigService'];
+  SettingsController.$inject = ['$window','$document','$interval','$location',
+    '$routeParams','UserService','FieldService','ConfigService'];
 
   /**
    * ES Health Directive

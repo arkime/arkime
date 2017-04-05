@@ -100,7 +100,7 @@
       let id   = stat.id.replace(/[.:]/g, '\\$&');
 
       this.expanded[id] = !this.expanded[id];
-      
+
       $(document.getElementById("statsGraph-" + id)).empty();
 
       if (!this.expanded[id]) {return;}

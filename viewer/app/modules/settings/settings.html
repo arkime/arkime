@@ -71,7 +71,7 @@
     <div class="col-md-10 col-sm-9">
 
       <!-- general settings -->
-      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'general'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'general'" id="general">
 
         <h3>General</h3>
 
@@ -209,7 +209,7 @@
       </form> <!-- /general settings -->
 
       <!-- view settings -->
-      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'views'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'views'" id="views">
 
         <h3>Views</h3>
 
@@ -305,7 +305,7 @@
       </form> <!-- /view settings -->
 
       <!-- cron query settings -->
-      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'cron'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'cron'" id="cron">
 
         <h3>Cron Queries</h3>
 
@@ -457,7 +457,7 @@
       </form> <!-- /cron query settings -->
 
       <!-- col configs settings -->
-      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'col'">
+      <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'col'" id="col">
 
         <h3>Custom Column Configurations</h3>
 
@@ -534,7 +534,7 @@
       </form> <!-- /col configs settings -->
 
       <!-- theme settings -->
-      <form class="padded-bottom-lg" ng-if="$ctrl.visibleTab === 'theme'">
+      <form class="padded-bottom-lg" ng-if="$ctrl.visibleTab === 'theme'" id="theme">
 
         <h3>UI Themes</h3>
 
@@ -1115,7 +1115,7 @@
 
       <!-- password settings -->
       <form class="form-horizontal" ng-if="$ctrl.visibleTab === 'password'"
-        enter-click="$ctrl.changePassword()">
+        enter-click="$ctrl.changePassword()" id="password">
 
         <h3>Change Password</h3>
 
