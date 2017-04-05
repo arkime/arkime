@@ -15,12 +15,9 @@
     {{$ctrl.total | number}} total entries
   </label>
 
-  <div class="alert alert-danger margined-top" ng-if="$ctrl.error">
-    <span class="fa fa-exclamation-triangle fa-lg"></span>&nbsp;
-    {{::$ctrl.error}}
-  </div>
+  <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
 
-  <uib-accordion close-others="false">
+  <uib-accordion close-others="false" ng-if="!$ctrl.error">
     <div uib-accordion-group class="panel-default" is-open="$ctrl.categoryObjects[category].isopen"
       ng-repeat="category in ::$ctrl.categoryList track by category">
       <uib-accordion-heading>

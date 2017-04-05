@@ -83,7 +83,7 @@
         this.expression = { value: this.$routeParams.expression };
       } else { this.expression = { value: null }; }
 
-      this.timeBounding = "last"; // default to lastPacket
+      this.timeBounding = 'last'; // default to lastPacket
       if (this.$routeParams.bounding) { this.timeBounding = this.$routeParams.bounding; }
 
       // load user's previous view choice
@@ -243,6 +243,13 @@
      */
     change() {
       let useDateRange = false;
+
+      // update the parameters with the expression
+      if (this.expression.value && this.expression.value !== '') {
+        this.$location.search('expression', this.expression.value);
+      } else {
+        this.$location.search('expression', null);
+      }
 
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time

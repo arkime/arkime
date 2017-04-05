@@ -14,6 +14,7 @@
 @import 'overrides.css';
 
 /* import component styles */
+@import '../components/error/error.css';
 @import '../components/navbar/navbar.css';
 @import '../components/footer/footer.css';
 @import '../components/loading/loading.css';

@@ -2879,14 +2879,16 @@ app.get('/sessions.json', function(req, res) {
 });
 
 app.get('/spigraph.json', function(req, res) {
+  function error(text) {
+    res.status(403);
+    return res.send(JSON.stringify({success: false, text: text}));
+  }
+
   req.query.facets = 1;
   buildSessionQuery(req, function(bsqErr, query, indices) {
     var results = {items: [], graph: {}, map: {}, iTotalRecords: 0};
     if (bsqErr) {
-      results.bsqErr = bsqErr.toString();
-      results.health = Db.healthCache();
-      res.send(results);
-      return;
+      return error(bsqErr.toString());
     }
 
     delete query.sort;
@@ -2930,9 +2932,8 @@ app.get('/spigraph.json', function(req, res) {
     Db.numberOfDocuments('sessions-*', function (err, total) {results.recordsTotal = total;});
     Db.searchPrimary(indices, 'session', query, function(err, result) {
       if (err || result.error) {
-        results.bsqErr = errorString(err, result);
         console.log("spigraph.json error", err, (result?result.error:null));
-        return res.send(results);
+        return error(errorString(err, result));
       }
       results.recordsFiltered = result.hits.total;
 
