@@ -11,7 +11,8 @@
      * uses Angular Flot
      *
      * @example
-     * <session-graph graph-data="$ctrl.graphData"></session-graph>
+     * <session-graph graph-data="$ctrl.graphData" graph-type="'lpHisto'">
+     * </session-graph>
      */
     .directive('sessionGraph', ['$filter', '$timeout', '$document', '$window',
       function($filter, $timeout, $document, $window) {
