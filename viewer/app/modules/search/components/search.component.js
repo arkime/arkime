@@ -167,7 +167,7 @@
       * Fired when change bounded checkbox is (un)checked
       */
      changeTimeBounding() {
-       if (this.timeBounding !== "last") {
+       if (this.timeBounding !== 'last') {
          this.$location.search('bounding', this.timeBounding);
        } else {
          this.$location.search('bounding', null);
@@ -243,13 +243,6 @@
      */
     change() {
       let useDateRange = false;
-
-      // update the parameters with the expression
-      if (this.expression.value && this.expression.value !== '') {
-        this.$location.search('expression', this.expression.value);
-      } else {
-        this.$location.search('expression', null);
-      }
 
       if (this.timeRange > 0) {
         // if it's not a custom time range or all, update the time

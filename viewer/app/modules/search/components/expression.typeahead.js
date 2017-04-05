@@ -15,14 +15,18 @@
 
     /**
      * Initialize global variables for this controller
-     * @param $routeParams Retrieve the current set of route parameters
-     * @param FieldService Retrieve fields
+     * @param $scope        Angular application model object
+     * @param $timeout      Angular's wrapper for window.setTimeout
+     * @param $location     Exposes browser address bar URL (based on the window.location)
+     * @param $routeParams  Retrieve the current set of route parameters
+     * @param FieldService  Retrieve fields
      *
      * @ngInject
      */
-    constructor($scope, $timeout, $routeParams, FieldService) {
+    constructor($scope, $timeout, $location, $routeParams, FieldService) {
       this.$scope       = $scope;
       this.$timeout     = $timeout;
+      this.$location    = $location;
       this.$routeParams = $routeParams;
       this.FieldService = FieldService;
     }
@@ -74,6 +78,8 @@
         newExpr += args.expression;
 
         this.query.value += newExpr;
+
+        this.updateUrl();
       });
     }
 
@@ -93,7 +99,17 @@
       if (timeout) { this.$timeout.cancel(timeout); }
       timeout = this.$timeout(() => {
         this.changeExpression();
+        this.updateUrl();
       }, 300);
+    }
+
+    /* Apply the search expression value to the expression url parameter */
+    updateUrl() {
+      if (this.query.value && this.query.value !== '') {
+        this.$location.search('expression', this.query.value);
+      } else {
+        this.$location.search('expression', null);
+      }
     }
 
     /* Displays appropriate autocomplete suggestions */
@@ -251,12 +267,13 @@
       let str = val;
       if (val.exp) { str = val.exp; }
 
-      let newValue = ExpressionController.rebuildQuery(this.query.value, str);
-      this.query.value = newValue;
+      this.query.value = ExpressionController.rebuildQuery(this.query.value, str);
 
       this.results     = null;
       this.focusInput  = true; // re-focus on input
       this.activeIdx   = -1;
+
+      this.updateUrl();
     }
 
     /**
@@ -264,6 +281,7 @@
      */
     clear() {
       this.query.value = null;
+      this.updateUrl();
     }
 
     /**
@@ -429,7 +447,8 @@
      }
   }
 
-  ExpressionController.$inject = ['$scope','$timeout','$routeParams','FieldService'];
+  ExpressionController.$inject = ['$scope','$timeout','$location','$routeParams',
+    'FieldService'];
 
   /**
    * Expression Typeahead Directive
