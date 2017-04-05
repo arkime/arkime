@@ -10,7 +10,7 @@
 
     <div ng-class="{'inline-graph':$ctrl.showMap}">
       <div ng-if="::($ctrl.graphData)">
-        <session-graph graph-data="$ctrl.graphData" type="{{::$ctrl.graphType}}">
+        <session-graph graph-data="$ctrl.graphData" type="{{::$ctrl.graphType || 'lpHisto'}}">
         </session-graph>
       </div>
     </div>

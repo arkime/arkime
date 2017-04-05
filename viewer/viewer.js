@@ -1187,7 +1187,8 @@ app.post('/user/views/create', checkCookieToken, function(req, res) {
       }
       return res.send(JSON.stringify({
         success : true,
-        text    : 'Created view successfully'
+        text    : 'Created view successfully',
+        views   : user.views
       }));
     });
   });
@@ -4631,50 +4632,6 @@ app.post('/user/views/delete', checkCookieToken, function(req, res) {
         return error("Delete view failed");
       }
       return res.send(JSON.stringify({success: true, text: "Deleted view successfully"}));
-    });
-  });
-});
-
-app.post('/user/views/create', checkCookieToken, function(req, res) {
-  function error(text) {
-    return res.send(JSON.stringify({success: false, text: text}));
-  }
-
-  if (!req.body.viewName)   { return error("Missing view name"); }
-  if (!req.body.expression) { return error("Missing view expression"); }
-
-  Db.getUser(req.token.userId, function(err, user) {
-    if (err || !user.found) {
-      console.log("Create view failed", err, user);
-      return error("Unknown user");
-    }
-
-    user = user._source;
-    user.views = user.views || {};
-    var container = user.views;
-    if (req.body.groupName) {
-      req.body.groupName = req.body.groupName.replace(/[^-a-zA-Z0-9_: ]/g, "");
-      if (!user.views._groups) {
-        user.views._groups = {};
-      }
-      if (!user.views._groups[req.body.groupName]) {
-        user.views._groups[req.body.groupName] = {};
-      }
-      container = user.views._groups[req.body.groupName];
-    }
-    req.body.viewName = req.body.viewName.replace(/[^-a-zA-Z0-9_: ]/g, "");
-    if (container[req.body.viewName]) {
-      container[req.body.viewName].expression = req.body.expression;
-    } else {
-      container[req.body.viewName] = {expression: req.body.expression};
-    }
-
-    Db.setUser(user.userId, user, function(err, info) {
-      if (err) {
-        console.log("Create view error", err, info);
-        return error("Create view failed");
-      }
-      return res.send(JSON.stringify({success: true, text: "Created view successfully", views:user.views}));
     });
   });
 });
