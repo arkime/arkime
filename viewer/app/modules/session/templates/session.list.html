@@ -185,29 +185,30 @@
                     </span>
                   </div> <!-- /single field column -->
                   <!-- multiple field column -->
-                  <div ng-repeat="child in ::header.children track by child.dbField"
-                    ng-if="::(header.children && header.type !== 'seconds')">
-                    <li role="menuitem">
-                      <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 0)">
-                        Export Unique {{::child.friendlyName}}
-                      </a>
-                    </li>
-                    <li role="menuitem">
-                      <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 1)">
-                        Export Unique {{::child.friendlyName}} with counts
-                      </a>
-                    </li>
-                    <span ng-if="::(child.portField)">
+                  <div ng-if="::(header.children && header.type !== 'seconds')">
+                    <span ng-repeat="child in ::header.children track by child.dbField">
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField + ':' + child.portField, 0)">
-                          Export Unique {{::child.friendlyName}}:Ports
+                        <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 0)">
+                          Export Unique {{::child.friendlyName}}
                         </a>
                       </li>
                       <li role="menuitem">
-                        <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField + ':' + child.portField, 1)">
-                          Export Unique {{::child.friendlyName}}:Ports with counts
+                        <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField, 1)">
+                          Export Unique {{::child.friendlyName}} with counts
                         </a>
                       </li>
+                      <span ng-if="::(child.portField)">
+                        <li role="menuitem">
+                          <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField + ':' + child.portField, 0)">
+                            Export Unique {{::child.friendlyName}}:Ports
+                          </a>
+                        </li>
+                        <li role="menuitem">
+                          <a ng-click="$ctrl.exportUnique(child.rawField || child.dbField + ':' + child.portField, 1)">
+                            Export Unique {{::child.friendlyName}}:Ports with counts
+                          </a>
+                        </li>
+                      </span>
                     </span>
                   </div>
                 </ul> <!-- /multiple field column -->
@@ -255,11 +256,22 @@
               </span>&nbsp;
             </td>
             <td ng-repeat="col in :refresh:$ctrl.headers track by $index">
-              <session-field ng-if=":refresh:$ctrl.showSessions"
-                field="::col" session="::session"
-                value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
-                parse="true" timezone="{{::$ctrl.settings.timezone}}">
-              </session-field>
+              <span ng-if=":refresh:$ctrl.showSessions">
+                <span ng-if="::$ctrl.isArray(session[col.dbField])">
+                  <span ng-repeat="value in ::session[col.dbField] track by $index">
+                    <session-field field="::col" session="::session"
+                      value="{{::value}}" expr="{{::col.exp}}"
+                      parse="true" timezone="{{::$ctrl.settings.timezone}}">
+                    </session-field>
+                  </span>
+                </span>
+                <span ng-if="::!$ctrl.isArray(session[col.dbField])">
+                  <session-field field="::col" session="::session"
+                    value="{{::session[col.dbField]}}" expr="{{::col.exp}}"
+                    parse="true" timezone="{{::$ctrl.settings.timezone}}">
+                  </session-field>
+                </span>
+              </span>
             </td>
           </tr>
           <tr ng-repeat-end ng-if="session.expanded" class="session-detail-row">

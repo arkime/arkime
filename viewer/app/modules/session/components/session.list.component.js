@@ -693,6 +693,17 @@
       this.SessionService.exportUniqueValues(dbField, counts);
     }
 
+
+    /* MISC */
+    /**
+     * Determines whether a reference is an array
+     * @param {?} value   Reference to check
+     * @returns {boolean} True if value is an array
+     */
+    isArray(value) {
+      return angular.isArray(value);
+    }
+
   }
 
   SessionListController.$inject = ['$scope', '$timeout', '$location',
