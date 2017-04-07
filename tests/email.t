@@ -33,7 +33,7 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 # email.bodymagic
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"application/zip\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"Application/zip\""));
-    countTest(2, "date=-1&expression=" . uri_escape("$files&&email.bodymagic.cnt==1"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic.cnt==1"));
 
 # email.dst
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.dst==\"xxxxxxxxx\@xxxxxxx.com\""));
@@ -53,7 +53,7 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 # email.bodymagic
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"application/zip\""));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"Application/zip\""));
-    countTest(2, "date=-1&expression=" . uri_escape("$files&&email.bodymagic.cnt==1"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic.cnt==1"));
 
 # email.md5
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.md5==\"5b153a606bea42005e1eedb5ddeabcf0\""));

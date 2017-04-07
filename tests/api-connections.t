@@ -44,8 +44,8 @@ my $json;
 # ip.protocol unknown
     $json = viewerGet("/connections.json?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
     delete $json->{health};
-    eq_or_diff($json, from_json('{ "bsqErr": "Unknown protocol string blah" }', {relaxed => 1}), "ip.protocol==blah", { context => 3 });
+    eq_or_diff($json, from_json('{ "success": false,  "text": "Unknown protocol string blah" }', {relaxed => 1}), "ip.protocol==blah", { context => 3 });
 
     $json = multiGet("/connections.json?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
     delete $json->{health};
-    eq_or_diff($json, from_json('{ "bsqErr": "Unknown protocol string blah" }', {relaxed => 1}), "multi ip.protocol==blah", { context => 3 });
+    eq_or_diff($json, from_json('{ "success": false, "text": "Unknown protocol string blah" }', {relaxed => 1}), "multi ip.protocol==blah", { context => 3 });
