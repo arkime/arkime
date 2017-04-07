@@ -276,20 +276,22 @@
           }
         }
 
-        category = SpiviewController.setupCategory(this.categoryObjects, field);
-        category.loading = true; // loading is set to false in getSingleSpiData
+        if (field) {
+          category = SpiviewController.setupCategory(this.categoryObjects, field);
+          category.loading = true; // loading is set to false in getSingleSpiData
 
-        // count the number of fields fetched for each category
-        SpiviewController.countCategoryFieldsLoading(category, true);
+          // count the number of fields fetched for each category
+          SpiviewController.countCategoryFieldsLoading(category, true);
 
-        let spiData = category.spi[field.dbField];
+          let spiData = category.spi[field.dbField];
 
-        field.active    = true;
-        spiData.active  = true;
-        spiData.loading = true;
-        spiData.error   = false;
+          field.active = true;
+          spiData.active = true;
+          spiData.loading = true;
+          spiData.error = false;
 
-        tasks.push(this.createTask(field, count));
+          tasks.push(this.createTask(field, count));
+        }
       }
 
       if (!openedCategories) { this.openCategories(); }
@@ -343,7 +345,7 @@
         spiData.count   = count;
 
         if (newQuery) { // this data comes back with every request
-          // so we should it up for the view ASAP (on first request)
+          // we should show it in the view ASAP (on first request)
           newQuery        = false;
           this.mapData    = response.map;
           this.graphData  = response.graph;

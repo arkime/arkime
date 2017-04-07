@@ -141,7 +141,7 @@
               ng-if="!value.loading && !value.error && !value.value.buckets.length">
               No data for this field
             </i>
-            <span ng-repeat="bucket in value.value.buckets track by $index">
+            <span ng-repeat="bucket in value.value.buckets track by bucket.key">
               <div class="spi-bucket margined-left-sm no-wrap" ng-if="bucket.key || bucket.key === 0">
                 <session-field field="::value.field"
                   value="{{::bucket.key}}" expr="{{::value.field.exp}}"
