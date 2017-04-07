@@ -205,18 +205,27 @@
        // autocomplete http.hasheader values after 1 char
        if (lastToken.length >= 1) {
          if (/^(tags|http.hasheader)/.test(token)) {
+           // if there's a request in progress, cancel it
+           if (this.promise) { this.cancelPromise(); }
+
            this.loadingValues = true;
-           this.FieldService.getHasheaderValues({type:token,filter:lastToken})
-             .then((result) => {
+
+           this.promise = this.FieldService.getHasheaderValues({
+             type:token, filter:lastToken
+           });
+
+           this.promise.then((result) => {
+             this.promise         = null;
+             if (result) {
                this.loadingValues = false;
                this.results       = result;
                this.addExistsItem(lastToken, operatorToken);
-               return;
-             })
-             .catch((error) => {
-               this.loadingValues = false;
-               this.loadingError  = error;
-             });
+             }
+           }).catch((error) => {
+             this.promise       = null;
+             this.loadingValues = false;
+             this.loadingError  = error;
+           });
 
            return;
          }
@@ -242,21 +251,26 @@
            params.expression = token + '==' + lastToken + '*';
          }
 
-         this.loadingValues = true;
-         this.FieldService.getValues(params)
-           .then((result) => {
-             this.loadingValues = false;
-             this.results       = result;
-             this.addExistsItem(lastToken, operatorToken);
-             return;
-           })
-           .catch((error) => {
-             this.loadingValues = false;
-             this.loadingError  = error;
-           });
-       }
+         // if there's a request in progress, cancel it
+         if (this.promise) { this.cancelPromise(); }
 
-       return;
+         this.loadingValues = true;
+
+         this.promise = this.FieldService.getValues(params);
+
+         this.promise.then((result) => {
+           this.promise       = null;
+           if (result) {
+             this.loadingValues = false;
+             this.results = result;
+             this.addExistsItem(lastToken, operatorToken);
+           }
+         }).catch((error) => {
+           this.promise       = null;
+           this.loadingValues = false;
+           this.loadingError  = error;
+         });
+       }
      }
 
     /**
@@ -294,8 +308,32 @@
     keydown(event) {
       let target;
 
-      // there's nothing to do if there are no results in the dropdown menu
-      if (!this.results || this.results.length === 0) { return; }
+      // always check for escape before anything else
+      if (event.keyCode === 27) {
+        // if there's a request in progress, cancel it
+        if (this.promise) { this.cancelPromise(); }
+
+        this.loadingValues = false;
+        this.loadingError  = false;
+        this.results       = null;
+        this.activeIdx     = -1;
+
+        return;
+      }
+
+      // if there are no results, just check for enter click to remove typeahead
+      if (!this.results || this.results.length === 0) {
+        if (event.keyCode === 13) {
+          if (this.promise) { this.cancelPromise(); }
+
+          this.loadingValues = false;
+          this.loadingError  = false;
+          this.results       = null;
+          this.activeIdx     = -1;
+        }
+
+        return;
+      }
 
       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
@@ -320,11 +358,13 @@
            if (result) { this.addToQuery(result); }
          }
          break;
-       case 27: // escape
-         this.results   = null;
-         this.activeIdx = -1;
-         break;
       }
+    }
+
+    /* aborts a pending promise */
+    cancelPromise() {
+      this.promise.abort();
+      this.promise = null;
     }
 
     /**

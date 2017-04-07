@@ -55,22 +55,33 @@
      *                            or rejection of the request.
      */
     getValues(params) {
-      return this.$q((resolve, reject) => {
+      let deferred = this.$q.defer();
 
-        var config = {
-          method: 'GET',
-          url   : 'unique.txt',
-          params: params
-        };
-
-        this.$http(config)
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error);
-          });
-
+      let request = this.$http({
+        url     : 'unique.txt',
+        method  : 'GET',
+        params  : params,
+        timeout : deferred.promise
       });
+
+      let promise = request
+        .then((response) => {
+          return(response.data);
+        }, (error) => {
+          return(this.$q.reject(error));
+        }).catch(angular.noop); // handle abort
+
+      promise.abort = () => {
+        deferred.resolve({error:'Request canceled.'});
+      };
+
+      // cleanup
+      promise.finally(() => {
+        promise.abort = angular.noop;
+        deferred = request = promise = null;
+      });
+
+      return(promise);
     }
 
     /**
@@ -80,22 +91,33 @@
      *                            or rejection of the request.
      */
     getHasheaderValues(params) {
-      return this.$q((resolve, reject) => {
+      let deferred = this.$q.defer();
 
-        var config = {
-          method: 'GET',
-          url   : 'uniqueValue.json',
-          params: params
-        };
-
-        this.$http(config)
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error);
-          });
-
+      let request = this.$http({
+        url     : 'uniqueValue.json',
+        method  : 'GET',
+        params  : params,
+        timeout : deferred.promise
       });
+
+      let promise = request
+        .then((response) => {
+          return(response.data);
+        }, (error) => {
+          return(this.$q.reject(error));
+        }).catch(angular.noop); // handle abort
+
+      promise.abort = () => {
+        deferred.resolve({error:'Request canceled.'});
+      };
+
+      // cleanup
+      promise.finally(() => {
+        promise.abort = angular.noop;
+        deferred = request = promise = null;
+      });
+
+      return(promise);
     }
 
     /**
