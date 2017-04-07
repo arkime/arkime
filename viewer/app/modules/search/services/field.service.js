@@ -2,8 +2,9 @@
 
   'use strict';
 
-  var _country_codes_cache;
-  var _recent_expressions = [];
+  const _country_codes_cache = require('json!./countries.json');
+
+  let _recent_expressions = [];
 
   /**
    * @class FieldService
@@ -118,23 +119,6 @@
       });
 
       return(promise);
-    }
-
-    /**
-     * Caches a country code list for later use
-     * @param {Object} codes The jQuery vectorMap country code object
-     */
-    saveCountryCodes(codes) {
-      var result = [];
-
-      for (var key in codes) {
-        if (codes.hasOwnProperty(key)) {
-          var code = codes[key];
-          result.push({ exp: key, friendlyName: code.config.name });
-        }
-      }
-
-      _country_codes_cache = result;
     }
 
     /**

@@ -20,8 +20,7 @@
           /* setup --------------------------------------------------------- */
           scope.state = { open:false, src:true, dst:true };
 
-          let map, countryCodes;
-          let mapEl = element.find('.moloch-map-container > #moloch-map');
+          let map, mapEl = element.find('.moloch-map-container > #moloch-map');
 
           let styles = $window.getComputedStyle($document[0].body);
           let waterColor        = styles.getPropertyValue('--color-water').trim();
@@ -59,10 +58,6 @@
 
           // save reference to the map
           map = mapEl.children('.jvectormap-container').data('mapObject');
-          countryCodes = map.regions;
-
-          // save the maps country codes to be used throughout the app
-          FieldService.saveCountryCodes(countryCodes);
 
 
           function setup(data) {
