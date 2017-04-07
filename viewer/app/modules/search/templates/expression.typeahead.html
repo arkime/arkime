@@ -34,6 +34,15 @@
     </li>
   </ul>
 
+  <!-- no results -->
+  <ul class="dropdown-menu typeahead-results" uib-dropdown-menu
+    ng-show="$ctrl.query.value && $ctrl.results.length === 0">
+    <li><a>
+      <span class="fa fa-info-circle"></span>&nbsp;
+      No results match your search
+    </a></li>
+  </ul>
+
   <!-- error -->
   <ul class="dropdown-menu typeahead-results" uib-dropdown-menu
     ng-show="$ctrl.query.value && $ctrl.loadingError">

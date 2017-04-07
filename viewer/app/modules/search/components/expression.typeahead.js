@@ -89,6 +89,10 @@
     onOffFocus() {
       this.$timeout(() => {
         if (timeout) { this.$timeout.cancel(timeout); }
+
+        // if there's a request in progress, cancel it
+        if (this.promise) { this.cancelPromise(); }
+
         this.results    = null;
         this.activeIdx  = -1;
       }, 300);
@@ -203,7 +207,7 @@
        }
 
        // autocomplete http.hasheader values after 1 char
-       if (lastToken.length >= 1) {
+       if (lastToken.trim().length >= 1) {
          if (/^(tags|http.hasheader)/.test(token)) {
            // if there's a request in progress, cancel it
            if (this.promise) { this.cancelPromise(); }
@@ -232,7 +236,7 @@
        }
 
        // autocomplete other values after 2 chars
-       if (lastToken.length >= 2) {
+       if (lastToken.trim().length >= 2) {
          let params = { // build parameters for getting value(s)
            autocomplete : true,
            field        : field.dbField
@@ -259,10 +263,10 @@
          this.promise = this.FieldService.getValues(params);
 
          this.promise.then((result) => {
-           this.promise       = null;
+           this.promise         = null;
            if (result) {
              this.loadingValues = false;
-             this.results = result;
+             this.results       = result;
              this.addExistsItem(lastToken, operatorToken);
            }
          }).catch((error) => {
@@ -387,7 +391,7 @@
       * @param {Object} values      Map or Array of values to compare against
       */
      static findMatch(strToMatch, values) {
-       if (!strToMatch || strToMatch === '') { return []; }
+       if (!strToMatch || strToMatch === '') { return null; }
 
        let results = [], exact = false;
 
@@ -409,6 +413,8 @@
 
        // put the exact match at the top (the rest are in the order received)
        if (exact) { results.unshift(exact); }
+
+       if (!results.length) { results = null; }
 
        return results;
      }
