@@ -47,9 +47,37 @@
         this.length = 50;     // default to page size of 50
       }
 
+      this.setupLengthOptions();
+
       // update page length if length parameter exists
       let lenParam = this.$location.search().length;
       if (lenParam) { this.length = parseInt(lenParam); }
+    }
+
+    /* Creates page length options. Adds a custom value if the page length
+     * specified in the url does not exist in the default options */
+    setupLengthOptions() {
+      this.options = [
+        { value: 50, label: '50 per page' },
+        { value: 100, label: '100 per page' },
+        { value: 200, label: '200 per page' },
+        { value: 500, label: '500 per page' },
+      ];
+
+      let exists = false;
+      for (let i = 0, len = this.options.length; i < len; ++i) {
+        if (parseInt(this.length) === this.options[i].value) {
+          exists = true;
+          break;
+        }
+      }
+
+      if (!exists) { // add custom option
+        this.options.push({
+          value: parseInt(this.length),
+          label: `${this.length} per page`
+        });
+      }
     }
 
 

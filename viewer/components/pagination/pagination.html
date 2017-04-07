@@ -1,12 +1,9 @@
 <div>
 
   <!-- page size -->
-  <select convert-to-number ng-model="$ctrl.length"
-    ng-change="$ctrl.change()" class="form-control page-select">
-    <option value="50">50 per page</option>
-    <option value="100">100 per page</option>
-    <option value="200">200 per page</option>
-    <option value="500">500 per page</option>
+  <select ng-model="$ctrl.length" ng-change="$ctrl.change()"
+    ng-options="option.value as option.label for option in $ctrl.options | orderBy: 'value'"
+    class="form-control page-select">
   </select> <!-- /page size -->
 
   <!-- pagination -->
