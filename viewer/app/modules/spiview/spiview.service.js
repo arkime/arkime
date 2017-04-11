@@ -29,16 +29,33 @@
      *                            or rejection of the request.
      */
     get(query) {
-      return this.$q((resolve, reject) => {
+      let deferred = this.$q.defer();
 
-        this.$http({ url:'spiview.json', method:'GET', params:query })
-          .then((response) => {
-            resolve(response.data);
-          }, (error) => {
-            reject(error.data);
-          });
-
+      let request = this.$http({
+        url     : 'spiview.json',
+        method  : 'GET',
+        params  : query,
+        timeout : deferred.promise
       });
+
+      let promise = request
+        .then((response) => {
+          return(response.data);
+        }, (error) => {
+          return(this.$q.reject(error.data));
+        }).catch(angular.noop); // handle abort
+
+      promise.abort = () => {
+        deferred.resolve({error:'Request canceled.'});
+      };
+
+      // cleanup
+      promise.finally(() => {
+        promise.abort = angular.noop;
+        deferred = request = promise = null;
+      });
+
+      return(promise);
     }
 
   }

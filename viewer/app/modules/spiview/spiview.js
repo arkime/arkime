@@ -13,6 +13,9 @@
   // object to store loading categories and how many fields are loading within
   let categoryLoadingCounts = {};
 
+  // save currently executing promise
+  let pendingPromise;
+
   /**
    * @class SpiviewController
    * @classdesc Interacts with moloch spiview page
@@ -50,6 +53,8 @@
 
     /* Callback when component is mounted and ready */
     $onInit() {
+      this.loadingVisualizations = true;
+
       this.loading  = true;
       this.query    = _query; // load saved query
 
@@ -85,7 +90,15 @@
         if (!initialized) { initialized = true; return; }
 
         newQuery = true;
-        this.getSpiData(this.query.spi);
+
+        if (pendingPromise) {   // if there's already a req (or series of reqs)
+          this.cancelLoading(); // cancel any current requests
+          this.$timeout(() => { // wait for promise abort to complete
+            this.getSpiData(this.query.spi);
+          }, 100);
+        } else {
+          this.getSpiData(this.query.spi);
+        }
       });
 
       // watch for additions to search parameters from spi values
@@ -228,7 +241,6 @@
 
     /**
      * Creates a task function to be executed in sequence
-     * TODO put this in spiview.service?
      * @param {object} field  The field to get spi data for
      * @param {int} count     The amount of spi data to query for
      * @returns {function()}  The function to be executed
@@ -236,9 +248,12 @@
     createTask(field, count) {
       return () => {
         let taskDeferred = this.$q.defer();
+
         this.$timeout(() => { // timeout for angular to render previous data
-          taskDeferred.resolve(this.getSingleSpiData(field, count));
+          if (this.canceled) { taskDeferred.promise.then(angular.noop); }
+          else { taskDeferred.resolve(this.getSingleSpiData(field, count)); }
         }, 100);
+
         return taskDeferred.promise;
       };
     }
@@ -253,6 +268,9 @@
       // reset loading counts for categories
       categoryLoadingCounts = {};
 
+      this.dataLoading = true;
+      this.staleData = false;
+      this.canceled = false;
       this.error = false;
 
       let spiParamsArray = spiQuery.split(',');
@@ -285,10 +303,10 @@
 
           let spiData = category.spi[field.dbField];
 
-          field.active = true;
-          spiData.active = true;
+          field.active    = true;
+          spiData.active  = true;
           spiData.loading = true;
-          spiData.error = false;
+          spiData.error   = false;
 
           tasks.push(this.createTask(field, count));
         }
@@ -299,10 +317,12 @@
       // start processing tasks serially
       SpiviewController.serial(tasks)
         .then((response) => { // returns the last result in the series
-          if (response.bsqErr) { this.error = response.bsqErr; }
+          if (response && response.bsqErr) { this.error = response.bsqErr; }
+          this.dataLoading = false;
         })
         .catch((error) => {
           this.error = error;
+          this.dataLoading = false;
         });
     }
 
@@ -312,10 +332,13 @@
      * @param {int} count     The amount of spi data to query for
      */
     getSingleSpiData(field, count) {
-      if (!count) { count = 100; } // default amount of spi data to retrieve
-
       let category  = SpiviewController.setupCategory(this.categoryObjects, field);
       let spiData   = category.spi[field.dbField];
+
+      // don't continue if the active flag is defined and false
+      if (spiData.active !== undefined && !spiData.active) { return; }
+
+      if (!count) { count = 100; } // default amount of spi data to retrieve
 
       spiData.active  = true;
       spiData.loading = true;
@@ -332,39 +355,44 @@
         view      : this.query.view
       };
 
-      let promise = this.SpiviewService.get(query);
+      pendingPromise = this.SpiviewService.get(query);
 
-      promise.then((response) => {
-        SpiviewController.countCategoryFieldsLoading(category, false);
+      pendingPromise
+        .then((response) => {
+          SpiviewController.countCategoryFieldsLoading(category, false);
 
-        if (response.bsqErr) { spiData.error = response.bsqErr; }
+          if (response.bsqErr) { spiData.error = response.bsqErr; }
 
-        // only update the requested spi data
-        spiData.loading = false;
-        spiData.value   = response.spi[field.dbField];
-        spiData.count   = count;
+          // only update the requested spi data
+          spiData.loading     = false;
+          spiData.value       = response.spi[field.dbField];
+          spiData.count       = count;
 
-        if (newQuery) { // this data comes back with every request
-          // we should show it in the view ASAP (on first request)
-          newQuery        = false;
-          this.mapData    = response.map;
-          this.graphData  = response.graph;
-          this.protocols  = response.protocols;
-          this.total      = response.recordsTotal;
-          this.filtered   = response.recordsFiltered;
+          if (newQuery) { // this data comes back with every request
+            // we should show it in the view ASAP (on first request)
+            newQuery        = false;
+            this.mapData    = response.map;
+            this.graphData  = response.graph;
+            this.protocols  = response.protocols;
+            this.total      = response.recordsTotal;
+            this.filtered   = response.recordsFiltered;
 
-          this.updateProtocols();
-        }
-      })
-      .catch((error) => {
-        SpiviewController.countCategoryFieldsLoading(category, false);
+            this.loadingVisualizations = false;
 
-        // display error for the requested spi data
-        spiData.loading = false;
-        spiData.error   = error.text;
-      });
+            this.updateProtocols();
+          }
+        })
+        .catch((error) => {
+          SpiviewController.countCategoryFieldsLoading(category, false);
 
-      return promise;
+          // display error for the requested spi data
+          spiData.loading     = false;
+          spiData.error       = error.text;
+
+          this.loadingVisualizations = false;
+        });
+
+      return pendingPromise;
     }
 
     /* Retrieves the current user's settings (specifically for timezone) */
@@ -441,9 +469,12 @@
 
       let addToQuery = false, spiQuery = '';
 
-      if (spiData) { // spi data exists, so we only need to toggle active state
+      if (spiData) { // spi data exists, so we need to toggle active state
         spiData.active  = !spiData.active;
         addToQuery      = spiData.active;
+        // if spiData was not populated with a value and it's now active
+        // we need to show get the spi data from the server
+        if (!spiData.value && spiData.active) { this.getSingleSpiData(field); }
       } else { // spi data doesn't exist, so fetch it
         addToQuery = true;
         if (issueQuery) { this.getSingleSpiData(field); }
@@ -580,6 +611,33 @@
      */
     exportUnique(fieldID, counts) {
       this.SessionService.exportUniqueValues(fieldID, counts);
+    }
+
+    /* Cancels the loading of all server requests */
+    cancelLoading() {
+      pendingPromise.abort(); // cancel current server request
+      pendingPromise  = null; // reset
+
+      this.canceled = true;   // indicate cancellation for future requests
+
+      this.dataLoading = false;
+
+      this.staleData = newQuery;
+
+      // set loading to false for all categories and fields
+      for (let key in this.categoryObjects) {
+        if (this.categoryObjects.hasOwnProperty(key)) {
+          let cat = this.categoryObjects[key];
+          cat.loading = false;
+          if (cat.spi) {
+            for (let field in cat.spi) {
+              if (cat.spi.hasOwnProperty(field)) {
+                cat.spi[field].loading = false;
+              }
+            }
+          }
+        }
+      }
     }
 
   }

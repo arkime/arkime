@@ -3,11 +3,39 @@
   <moloch-search num-matching-sessions="$ctrl.filtered"
     timezone="$ctrl.settings.timezone"></moloch-search>
 
+  <form class="loading-nav" ng-if="$ctrl.dataLoading">
+    <div class="form-inline" ng-if="$ctrl.dataLoading">
+      <span class="fa fa-spinner fa-lg fa-spin"></span>&nbsp;
+      <em>Loading SPI data</em>
+      <a class="btn btn-warning btn-sm pull-right"
+        ng-click="$ctrl.cancelLoading()">
+        <span class="fa fa-ban"></span>&nbsp;
+        cancel
+      </a>
+    </div>
+  </form>
+  <form class="loading-nav" ng-if="$ctrl.staleData && !$ctrl.dataLoading">
+    <div class="form-inline text-theme-accent">
+      <span class="fa fa-exclamation-triangle"></span>&nbsp;
+      <strong>Warning:</strong> much of the data below does not match your query
+      because the request was canceled.
+      <em>Click search to reissue your query.</em>
+      <span class="fa fa-close pull-right cursor-pointer"
+        ng-click="$ctrl.staleData = false"></span>
+    </div>
+  </form>
+
   <!-- graph/map visualizations -->
   <div class="row margin-for-search-navbar">
     <moloch-graph-map ng-if="::($ctrl.mapData && $ctrl.graphData)"
       graph-data="$ctrl.graphData" map-data="$ctrl.mapData" primary="true">
     </moloch-graph-map>
+    <div class="col-md-12 margined-top-xxxxlg margined-bottom-xxxxlg text-center text-theme-accent"
+      ng-if="!$ctrl.loadingVisualizations && !$ctrl.mapData && !$ctrl.graphData">
+      <span class="fa fa-exclamation-triangle"></span>&nbsp;
+      No data to render visualizations
+      <span ng-if="$ctrl.canceled">(request was canceled)</span>
+    </div>
   </div>
 
   <label class="label label-theme-primary" ng-if="!$ctrl.error && $ctrl.filtered !== undefined">
@@ -17,160 +45,179 @@
 
   <error ng-if="$ctrl.error" message="::$ctrl.error"></error>
 
-  <uib-accordion close-others="false" ng-if="!$ctrl.error">
-    <div uib-accordion-group class="panel-default" is-open="$ctrl.categoryObjects[category].isopen"
-      ng-repeat="category in ::$ctrl.categoryList track by category">
-      <uib-accordion-heading>
-        <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
-          <strong class="category-title">{{::category}}</strong>
-          <span class="pull-right margined-top-lg fa"
-           ng-class="{'fa-minus': $ctrl.categoryObjects[category].isopen, 'fa-plus': !$ctrl.categoryObjects[category].isopen}"></span>
-          <span class="fa fa-spin fa-spinner fa-lg pull-right margined-top-lg margined-right-lg"
-            ng-if="$ctrl.categoryObjects[category].loading"></span>
-          <span ng-if="!$ctrl.categoryObjects[category].loading">
-            <button class="btn btn-theme-secondary btn-sm pull-right margined-right-lg"
-              uib-tooltip="Load all of the values in this category"
-              tooltip-placement="top-right"
-              ng-click="$ctrl.toggleAllValues(category, true, $event)">
-              Load All
-            </button>
-            <button class="btn btn-theme-primary btn-sm pull-right margined-right-lg"
-              uib-tooltip="Unload all of the values in this category"
-              tooltip-placement="top-right"
-              ng-click="$ctrl.toggleAllValues(category, false, $event)">
-              Unload All
-            </button>
-          </span>
-          <span ng-if="$ctrl.categoryObjects[category].protocols"
-            class="pull-right margined-right-xxxlg">
-            <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key"
-              class="protocol-value">
-              <session-field value="{{::key}}" expr="protocols"
-                parse="false" pull-left="true"></session-field>
-              <sup>({{value | number}})</sup>
+  <div class="margined-top">
+    <uib-accordion close-others="false" ng-if="!$ctrl.error">
+      <div uib-accordion-group class="panel-default" is-open="$ctrl.categoryObjects[category].isopen"
+        ng-repeat="category in ::$ctrl.categoryList track by category">
+        <uib-accordion-heading>
+          <div ng-click="$ctrl.toggleCategory(category, $ctrl.categoryObjects[category].isopen)">
+            <strong class="category-title">{{::category}}</strong>
+            <span class="pull-right margined-top-lg fa"
+             ng-class="{'fa-minus': $ctrl.categoryObjects[category].isopen, 'fa-plus': !$ctrl.categoryObjects[category].isopen}"></span>
+            <span ng-if="$ctrl.categoryObjects[category].loading"
+              class="fa fa-spin fa-spinner fa-lg pull-right margined-top-lg margined-right-lg"></span>
+            <span ng-if="!$ctrl.categoryObjects[category].loading">
+              <button class="btn btn-theme-secondary btn-sm pull-right margined-right-lg"
+                uib-tooltip="Load all of the values in this category"
+                tooltip-placement="top-right"
+                ng-click="$ctrl.toggleAllValues(category, true, $event)">
+                Load All
+              </button>
+              <button class="btn btn-theme-primary btn-sm pull-right margined-right-lg"
+                uib-tooltip="Unload all of the values in this category"
+                tooltip-placement="top-right"
+                ng-click="$ctrl.toggleAllValues(category, false, $event)">
+                Unload All
+              </button>
             </span>
-          </span>
-        </div>
-      </uib-accordion-heading>
-      <div ng-if="$ctrl.categoryObjects[category].isopen">
-        <div class="btn-drawer" ng-class="{'expanded':$ctrl.categoryObjects[category].openBtns}">
-          <div class="btn-container">
-            <form class="form-inline">
-              <input type="text" placeholder="Search for fields in this category"
-                class="form-control input-xs" ng-model="$ctrl.categoryObjects[category].fieldSearch"
-                ng-model-options="{debounce:300}">
-              <span class="small" ng-hide="$ctrl.categoryObjects[category].filteredFields.length">
-                <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
-                No results match your query
+            <span ng-if="$ctrl.categoryObjects[category].protocols"
+              class="pull-right margined-right-xxxlg">
+              <span ng-repeat="(key, value) in $ctrl.categoryObjects[category].protocols track by key"
+                class="protocol-value">
+                <session-field value="{{::key}}" expr="protocols"
+                  parse="false" pull-left="true"></session-field>
+                <sup>({{value | number}})</sup>
               </span>
-              <div class="btn-group margined-right margined-bottom-lg"
-                uib-dropdown uib-tooltip="{{::field.help}}" dropdown-append-to-body="true"
-                ng-repeat="field in $ctrl.categoryObjects[category].filteredFields = ($ctrl.categoryObjects[category].fields | filter:$ctrl.categoryObjects[category].fieldSearch) | orderBy: ['-active','friendlyName'] track by $index">
-                <button class="btn btn-xs btn-default field-btn"
-                  ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
-                  ng-click="$ctrl.toggleSpiData(field, true)">
-                  {{field.friendlyName}}
-                </button>
+            </span>
+          </div>
+        </uib-accordion-heading>
+        <div ng-if="$ctrl.categoryObjects[category].isopen">
+          <div class="btn-drawer" ng-class="{'expanded':$ctrl.categoryObjects[category].openBtns}">
+            <div class="btn-container">
+              <form class="form-inline">
+                <input type="text" placeholder="Search for fields in this category"
+                  class="form-control input-xs" ng-model="$ctrl.categoryObjects[category].fieldSearch"
+                  ng-model-options="{debounce:300}">
+                <span class="small" ng-hide="$ctrl.categoryObjects[category].filteredFields.length">
+                  <span class="fa fa-fw fa-exclamation-circle"></span>&nbsp;
+                  No results match your query
+                </span>
+                <div class="btn-group margined-right margined-bottom-lg"
+                  uib-dropdown uib-tooltip="{{::field.help}}" dropdown-append-to-body="true"
+                  ng-repeat="field in $ctrl.categoryObjects[category].filteredFields = ($ctrl.categoryObjects[category].fields | filter:$ctrl.categoryObjects[category].fieldSearch) | orderBy: ['-active','friendlyName'] track by $index">
+                  <button class="btn btn-xs btn-default field-btn"
+                    ng-class="{'active':$ctrl.categoryObjects[category].spi[field.dbField].active}"
+                    ng-click="$ctrl.toggleSpiData(field, true)">
+                    {{field.friendlyName}}
+                  </button>
+                  <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                    <li role="menuitem">
+                      <a class="cursor-pointer"
+                        ng-click="$ctrl.openSpiGraph(field.dbField)">
+                        Open {{field.friendlyName}} SPI Graph
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a class="cursor-pointer"
+                        ng-click="$ctrl.exportUnique(field.dbField, 0)">
+                        Export Unique {{field.friendlyName}}
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a class="cursor-pointer"
+                        ng-click="$ctrl.exportUnique(field.dbField, 1)">
+                        Export Unique {{field.friendlyName}} with counts
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="text-center btn-drawer-toggle cursor-pointer"
+            ng-click="$ctrl.categoryObjects[category].openBtns = !$ctrl.categoryObjects[category].openBtns">
+            <span class="fa fa-lg" ng-class="{'fa-angle-double-down':!$ctrl.categoryObjects[category].openBtns,'fa-angle-double-up':$ctrl.categoryObjects[category].openBtns}"></span>
+          </div>
+          <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
+
+            <!-- spiview field -->
+            <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key"
+              class="spi-buckets" ng-if="value.active">
+
+              <!-- spiview field button -->
+              <div class="btn-group" uib-dropdown>
                 <button class="btn btn-xs btn-default" uib-dropdown-toggle>
+                  <strong>{{::value.field.friendlyName}}</strong>&nbsp;
                   <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" uib-dropdown-menu role="menu">
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.openSpiGraph(field.dbField)">
-                      Open {{field.friendlyName}} SPI Graph
+                      ng-click="$ctrl.openSpiGraph(value.field.dbField)">
+                      Open {{::value.field.friendlyName}} SPI Graph
                     </a>
                   </li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.exportUnique(field.dbField, 0)">
-                      Export Unique {{field.friendlyName}}
+                      ng-click="$ctrl.exportUnique(value.field.dbField, 0)">
+                      Export Unique {{::value.field.friendlyName}}
                     </a>
                   </li>
                   <li role="menuitem">
                     <a class="cursor-pointer"
-                      ng-click="$ctrl.exportUnique(field.dbField, 1)">
-                      Export Unique {{field.friendlyName}} with counts
+                      ng-click="$ctrl.exportUnique(value.field.dbField, 1)">
+                      Export Unique {{::value.field.friendlyName}} with counts
+                    </a>
+                  </li>
+                  <li role="menuitem">
+                    <a class="cursor-pointer"
+                      ng-click="$ctrl.toggleSpiData(value.field, true)">
+                      Hide {{::value.field.friendlyName}}
                     </a>
                   </li>
                 </ul>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="text-center btn-drawer-toggle cursor-pointer"
-          ng-click="$ctrl.categoryObjects[category].openBtns = !$ctrl.categoryObjects[category].openBtns">
-          <span class="fa fa-lg" ng-class="{'fa-angle-double-down':!$ctrl.categoryObjects[category].openBtns,'fa-angle-double-up':$ctrl.categoryObjects[category].openBtns}"></span>
-        </div>
-        <div ng-if="$ctrl.categoryObjects[category].spi" class="margined-top">
-          <div ng-repeat="(key, value) in $ctrl.categoryObjects[category].spi track by key"
-            class="spi-buckets" ng-if="value.active">
-            <div class="btn-group" uib-dropdown>
-              <button class="btn btn-xs btn-default" uib-dropdown-toggle>
-                <strong>{{::value.field.friendlyName}}</strong>&nbsp;
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.openSpiGraph(value.field.dbField)">
-                    Open {{::value.field.friendlyName}} SPI Graph
-                  </a>
-                </li>
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.exportUnique(value.field.dbField, 0)">
-                    Export Unique {{::value.field.friendlyName}}
-                  </a>
-                </li>
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.exportUnique(value.field.dbField, 1)">
-                    Export Unique {{::value.field.friendlyName}} with counts
-                  </a>
-                </li>
-                <li role="menuitem">
-                  <a class="cursor-pointer"
-                    ng-click="$ctrl.toggleSpiData(value.field, true)">
-                    Hide {{::value.field.friendlyName}}
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <i class="small"
-              ng-if="!value.loading && !value.error && !value.value.buckets.length">
-              No data for this field
-            </i>
-            <span ng-repeat="bucket in value.value.buckets track by bucket.key">
-              <div class="spi-bucket margined-left-sm no-wrap" ng-if="bucket.key || bucket.key === 0">
-                <session-field field="::value.field"
-                  value="{{::bucket.key}}" expr="{{::value.field.exp}}"
-                  parse="true" pull-left="true"
-                  timezone="{{::$ctrl.settings.timezone}}">
-                </session-field>
-                <sup>({{bucket.doc_count | number}})</sup>
-              </div>
-            </span>
-            <a ng-if="value.count && value.count > 100"
-               ng-click="$ctrl.showValues(value, false)"
-               class="btn btn-link btn-xs" style="text-decoration:none;">
-              ...less
-            </a>
-            <a ng-if="value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
-              ng-click="$ctrl.showValues(value, true)"
-              class="btn btn-link btn-xs" style="text-decoration:none;">
-              more...
-            </a>
-            <span ng-if="value.loading" class="fa fa-spinner fa-spin"></span>
-            <span ng-if="value.error" class="text-danger margined-left">
-              <span class="fa fa-exclamation-triangle"></span>&nbsp;
-              {{::value.error}}
-            </span>
+              </div> <!-- /spiview field button -->
+
+              <!-- spiview field data -->
+              <span ng-repeat="bucket in value.value.buckets track by bucket.key">
+                <div class="spi-bucket margined-left-sm no-wrap" ng-if="bucket.key || bucket.key === 0">
+                  <session-field field="::value.field"
+                    value="{{::bucket.key}}" expr="{{::value.field.exp}}"
+                    parse="true" pull-left="true"
+                    timezone="{{::$ctrl.settings.timezone}}">
+                  </session-field>
+                  <sup>({{bucket.doc_count | number}})</sup>
+                </div>
+              </span> <!-- /spiview field data -->
+
+              <!-- spiview no data -->
+              <i class="small"
+                ng-if="!value.loading && !value.error && !value.value.buckets.length">
+                No data for this field
+                <span ng-if="$ctrl.canceled && !value.value">(request was canceled)</span>
+              </i>
+
+              <!-- spiview field more/less values -->
+              <a ng-if="value.count && value.count > 100"
+                 ng-click="$ctrl.showValues(value, false)"
+                 class="btn btn-link btn-xs" style="text-decoration:none;">
+                ...less
+              </a>
+              <a ng-if="value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
+                ng-click="$ctrl.showValues(value, true)"
+                class="btn btn-link btn-xs" style="text-decoration:none;">
+                more...
+              </a>
+
+              <!-- spiview field loading -->
+              <span ng-if="value.loading" class="fa fa-spinner fa-spin"></span>&nbsp;
+
+              <!-- spiview field error -->
+              <span ng-if="value.error" class="text-danger margined-left">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                {{::value.error}}
+              </span>
+
+            </div> <!-- spiview field -->
+
           </div>
         </div>
       </div>
-    </div>
-  </uib-accordion>
+    </uib-accordion>
+  </div>
 
   <loading ng-if="$ctrl.loading"></loading>
 

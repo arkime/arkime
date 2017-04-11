@@ -1,3 +1,20 @@
+/* loading navbar ------------------ */
+moloch-spiview form.loading-nav {
+  z-index         : 999;
+  position        : fixed;
+  top             : 115px;
+  left            : 0;
+  right           : 0;
+  padding         : var(--px-xlg) var(--px-lg) var(--px-md) var(--px-lg);
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+          box-shadow: var(--px-none) var(--px-none) var(--px-xlg) var(--px-sm) #333;
+}
+
+
+/* panels -------------------------- */
 moloch-spiview .panel-heading {
   padding         : 0;
   background-color: var(--color-gray-light) !important;
@@ -81,6 +98,17 @@ moloch-spiview .panel-body .spi-bucket {
 moloch-spiview .panel-body .spi-bucket sup {
   margin-left: -10px;
 }
+
+
+/* loading alert ------------------- */
+moloch-spiview .alert {
+  margin-bottom: 0;
+}
+
+moloch-spiview .alert .btn {
+  margin-top: -4px;
+}
+
 
 /* https://github.com/angular/angular.js/issues/8224 */
 moloch-spiview .fa-spin.ng-animate {
