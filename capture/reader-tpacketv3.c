@@ -234,12 +234,12 @@ void reader_tpacketv3_init(char *UNUSED(name))
         LOGEXIT("block size %d not divisible by pagesize %d", blocksize, getpagesize());
     }
 
-    if (blocksize % 16384 != 0) {
-        LOGEXIT("block size %d not divisible by 16384", blocksize);
+    if (blocksize % config.snapLen != 0) {
+        LOGEXIT("block size %d not divisible by %d", blocksize, config.snapLen);
     }
 
     pcapFileHeader.linktype = 1;
-    pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
+    pcapFileHeader.snaplen = config.snapLen;
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
 
     if (config.bpf) {
@@ -264,7 +264,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         memset(&infos[i].req, 0, sizeof(infos[i].req));
         infos[i].req.tp_block_size = blocksize;
         infos[i].req.tp_block_nr = numThreads*64;
-        infos[i].req.tp_frame_size = 16384;
+        infos[i].req.tp_frame_size = config.snapLen;
         infos[i].req.tp_frame_nr = (blocksize * infos[i].req.tp_block_nr) / infos[i].req.tp_frame_size;
         infos[i].req.tp_retire_blk_tov = 60;
         infos[i].req.tp_feature_req_word = 0;
