@@ -1,10 +1,27 @@
 0.18.2 2017/04/XX
   - NOTICE: Upgrading from versions prior to 0.18 require an outage for db.pl
             upgrade (~5 min) see the 0.18.0 notes.
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
+  - capture - New snapLen variable, by default 16384
+  - release - Configure improvements
+  - release - ethtool startup commands moved to moloch_config_interfaces.sh
+  - viewer - custom themes
+  - viewer - fix clickable session field off-focusing too easily
+  - viewer - can cancel spiview loads (issue #637)
+  - viewer - expose session length in pagination select box (issue #677)
+  - viewer - fix spiview not updating (issue #656)
+  - viewer - type ahead fixes/dismiss (issue #591)
+  - viewer - apply search expression to url (issue #649)
+  - viewer - display array values in sessions correctly (issue #625)
+  - viewer - fix broken node display in stats (issue #672)
+  - viewer - permalink fixes (issue #673)
+  - viewer - spigraph field typeahead fixes (issues #647)
+
 
 0.18.1 2017/03/28
   - NOTICE: Upgrading from versions prior to 0.18 require an outage for db.pl
             upgrade (~5 min) see the 0.18.0 notes.
+  - NOTICE: Supported ES Versions: 2.4.x, 5.1.2, 5.2.x (5.3.0 is NOT supported)
   - release - node 4.8.1, lua 5.3.4, curl 7.53.1, glib2 2.52.0
   - capture - handle certs with after dates before the before date
   - capture - actually truncate urls, previous fix didn't work (issue #458, #667)
