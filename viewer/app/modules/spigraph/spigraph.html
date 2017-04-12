@@ -8,18 +8,17 @@
 
       <!-- field select -->
       <div class="form-group margined-bottom">
-        <div class="input-group input-group-sm">
+        <div class="input-group input-group-sm" ng-if="$ctrl.fields">
           <span class="input-group-addon cursor-help"
             tooltip-placement="bottom-left"
             uib-tooltip="SPI Graph Field">
             SPI Graph:
           </span>
-          <select class="form-control"
-            ng-model="$ctrl.field" ng-change="$ctrl.loadData()">
-            <option ng-repeat="field in ::$ctrl.fields" value="{{field.dbField}}">
-              {{field.exp}}
-            </option>
-          </select>
+          <input type="text" ng-model="$ctrl.field"
+            class="form-control short-control"
+            typeahead-on-select="$ctrl.loadData()"
+            typeahead-input-formatter="$ctrl.formatField($model)"
+            uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:20">
         </div>
       </div> <!-- /field select -->
 
@@ -103,7 +102,7 @@
       </div>
     </div>
 
-    <div ng-repeat="item in $ctrl.items track by $index"
+    <div ng-repeat="item in $ctrl.items track by item.name"
       class="margined-top-lg margined-bottom spi-graph-item padded-top">
       <div class="row">
         <div class="col-md-12">
