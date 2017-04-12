@@ -2,6 +2,9 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--memory", "2500"]
   end
@@ -22,7 +25,11 @@ Vagrant.configure("2") do |config|
     centos7.vm.box = "bento/centos-7.2"
   end
 
-  
+  config.vm.define "debian8" do |debian8|
+    debian8.vm.box = "debian/jessie64"
+  end
+
+
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "build.yml"
     ansible.raw_arguments = ENV['ANSIBLE_ARGS'] if ENV['ANSIBLE_ARGS']
