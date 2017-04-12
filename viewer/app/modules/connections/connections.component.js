@@ -9,7 +9,7 @@
   let _query = {};
 
   // save visualization data
-  let svg, force, svgMain;
+  let force, svgMain;
 
   /**
    * @class ConnectionsController
@@ -120,7 +120,7 @@
         self.scale = d3.event.scale;
 
         // transform the vis
-        svg.attr('transform', 'translate(' + self.trans + ')' + ' scale(' + self.scale + ')');
+        self.svg.attr('transform', 'translate(' + self.trans + ')' + ' scale(' + self.scale + ')');
       }
 
       self.zoom = d3.behavior.zoom()
@@ -133,11 +133,11 @@
         .attr('width', self.width)
         .attr('height', self.height);
 
-      svg = svgMain.append('svg:g')
+      self.svg = svgMain.append('svg:g')
         .call(self.zoom)
         .append('svg:g');
 
-      svg.append('svg:rect')
+      self.svg.append('svg:rect')
         .attr('width', networkElem.width() + 1000)
         .attr('height', networkElem.height() + 1000)
         .attr('fill', 'white')
@@ -161,8 +161,8 @@
 
       networkLabelElem.hide();
 
-      svg.selectAll('.link').remove();
-      svg.selectAll('.node').remove();
+      this.svg.selectAll('.link').remove();
+      this.svg.selectAll('.node').remove();
 
       // build new query and save values in url parameters
       _query.length   = this.querySize;
@@ -202,7 +202,7 @@
 
     /* unlocks nodes in the graph */
     unlock() {
-      svg.selectAll('.node circle').each(function(d) { d.fixed = 0; });
+      this.svg.selectAll('.node circle').each(function(d) { d.fixed = 0; });
       force.resume();
     }
 
@@ -317,11 +317,12 @@
         }
       }
 
-      link = svg.selectAll('.link')
+      link = self.svg.selectAll('.link')
         .data(json.links)
         .enter().append('line')
         .attr('class', 'link')
         .style('stroke-width', function(d) { return Math.min(1 + Math.log(d.value), 12);})
+        .style('stroke', '#ccc')
         .on('mouseover',function(d) {
           if (self.popupTimer) {
             window.clearTimeout(self.popupTimer);
@@ -344,7 +345,7 @@
           d3.select(this).classed('dragging', false);
         });
 
-      node = svg.selectAll('.node')
+      node = self.svg.selectAll('.node')
         .data(json.nodes)
         .enter().append('g')
         .attr('class', 'node')
@@ -451,6 +452,18 @@
                 top: that.trans[1] + (mouse[1]*that.scale) + networkLabelElem.height()/2
             })
         .show();
+    }
+
+    /**
+     * Displays the field.exp instead of field.dbField in the field typeahead
+     * @param {string} value The dbField of the field
+     */
+    formatField(value) {
+      for (let i = 0, len = this.fields.length; i < len; i++) {
+        if (value === this.fields[i].dbField) {
+          return this.fields[i].exp;
+        }
+      }
     }
   }
 

@@ -118,6 +118,13 @@
 }
 
 
+/* display dropdown results in scrolling div */
+input.field-typeahead + ul[uib-typeahead-popup] {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 /* give dropdowns theme color */
 .dropdown-menu {
   background-color: var(--color-background, #FFF);

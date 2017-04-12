@@ -15,7 +15,8 @@
             SPI Graph:
           </span>
           <input type="text" ng-model="$ctrl.field"
-            class="form-control short-control"
+            class="form-control field-typeahead"
+            typeahead-min-length="0"
             typeahead-on-select="$ctrl.loadData()"
             typeahead-input-formatter="$ctrl.formatField($model)"
             uib-typeahead="field.dbField as field.exp for field in $ctrl.fields | filter:$viewValue | limitTo:20">
