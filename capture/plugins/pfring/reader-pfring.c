@@ -106,7 +106,7 @@ void reader_pfring_start() {
     int dlt_to_linktype(int dlt);
 
     pcapFileHeader.linktype = 1;
-    pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
+    pcapFileHeader.snaplen = config.snapLen;
 
 
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
@@ -156,7 +156,7 @@ void reader_pfring_init(char *UNUSED(name))
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        rings[i] = pfring_open(config.interface[i], MOLOCH_SNAPLEN, flags);
+        rings[i] = pfring_open(config.interface[i], config.snapLen, flags);
 
         if (config.bpf) {
             int err = pfring_set_bpf_filter(rings[i], config.bpf);

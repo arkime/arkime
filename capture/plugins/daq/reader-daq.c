@@ -104,7 +104,7 @@ void reader_daq_start() {
 
     //ALW - Bug: assumes all linktypes are the same
     pcapFileHeader.linktype = daq_get_datalink_type(module, handles[0]);
-    pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
+    pcapFileHeader.snaplen = config.snapLen;
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
     int t;
     for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
@@ -186,7 +186,7 @@ void reader_daq_init(char *UNUSED(name))
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         memset(&cfg, 0, sizeof(cfg));
         cfg.name = config.interface[i];
-        cfg.snaplen = MOLOCH_SNAPLEN;
+        cfg.snaplen = config.snapLen;
         cfg.timeout = -1;
         cfg.mode = DAQ_MODE_PASSIVE;
 

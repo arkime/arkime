@@ -106,7 +106,7 @@ int reader_snf_should_filter(const MolochPacket_t *packet, enum MolochFilterType
 /******************************************************************************/
 void reader_snf_start() {
     pcapFileHeader.linktype = DLT_EN10MB;
-    pcapFileHeader.snaplen = MOLOCH_SNAPLEN;
+    pcapFileHeader.snaplen = config.snapLen;
     pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
     int t;
     for (t = 0; t < MOLOCH_FILTER_MAX; t++) {
