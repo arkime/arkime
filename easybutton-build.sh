@@ -72,7 +72,7 @@ if [ -f "/etc/debian_version" ]; then
   fi
 fi
 
-if [ "$(uname)" == "FreeBSD" ]; then
+if [ "$(uname)" = "FreeBSD" ]; then
     sudo pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
     MAKE=gmake
 fi
@@ -89,7 +89,7 @@ cd thirdparty
 PWD=`pwd`
 
 # glib
-if [ "$(uname)" == "FreeBSD" ]; then
+if [ "$(uname)" = "FreeBSD" ]; then
   #Screw it, use whatever the OS has
   WITHGLIB=" "
 else
