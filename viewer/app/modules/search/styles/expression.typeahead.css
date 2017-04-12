@@ -9,7 +9,8 @@ expression-typeahead .typeahead-results {
   top       : initial;
   left      : initial;
   display   : block;
-  overflow  : scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
   max-height: 500px;
 }
 
