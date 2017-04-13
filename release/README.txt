@@ -20,10 +20,10 @@ Basic Moloch Installation steps:
  6) Add an admin user if a new install or after an init
       /data/moloch/bin/moloch_add_user.sh admin "Admin User" THEPASSWORD --admin
  7) Start everything
-   a) If using Centos 6 or Ubuntu 14.02:
+   a) If using upstart (Centos 6 or sometimes Ubuntu 14.04):
       /sbin/start molochcapture
       /sbin/start molochviewer
-   b) If using Centos 7 or Ubuntu 16.02
+   b) If using systemd (Centos 7 or Ubuntu 16.04 or sometimes Ubuntu 14.04)
       systemctl start molochcapture.service
       systemctl start molochviewer.service
  8) Look at log files for errors

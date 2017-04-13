@@ -67,9 +67,11 @@ fi
 
 
 if [ -d "/etc/systemd" ]; then
+    echo "Installing systemd start files, use systemctl"
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
 elif [ -d "/etc/init" ]; then
+    echo "Installing upstart start files, use start"
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
     sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
 else
